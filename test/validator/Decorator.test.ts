@@ -149,6 +149,19 @@ test.suite('Decorator', () => {
 				% (entry_type__named__optional)
 			`]],
 
+			['Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					type T = U.1;
+				}
+				% (property_accessor_type)
+			`]],
+			['Decorate(PropertyAccessorType ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
+				{
+					type T = U.p;
+				}
+				% (property_accessor_type)
+			`]],
+
 			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
 				{
 					type T = (3 | float);
@@ -202,19 +215,6 @@ test.suite('Decorator', () => {
 					type T = {int -> float};
 				}
 				% (type_map_literal)
-			`]],
-
-			['Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				{
-					type T = U.1;
-				}
-				% (property_accessor_type)
-			`]],
-			['Decorate(PropertyAccessorType ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					type T = U.p;
-				}
-				% (property_accessor_type)
 			`]],
 
 			['Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
@@ -310,6 +310,44 @@ test.suite('Decorator', () => {
 				% (case)
 			`]],
 
+			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					v.1;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
+				{
+					v.p;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+				{
+					v.[a + b];
+				}
+				% (property_accessor)
+			`]],
+
+			['Decorate(Assignee > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					set v.1 = false;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(Assignee > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
+				{
+					set v.p = false;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(Assignee > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+				{
+					set v.[a + b] = false;
+				}
+				% (property_accessor)
+			`]],
+
 			['Decorate(ExpressionGrouped ::= "(" Expression<+Block> ")") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					(42 || 6.9);
@@ -391,44 +429,6 @@ test.suite('Decorator', () => {
 				% (expression_block)
 			`]],
 
-			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				{
-					v.1;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					v.p;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
-				{
-					v.[a + b];
-				}
-				% (property_accessor)
-			`]],
-
-			['Decorate(Assignee > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				{
-					set v.1 = false;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(Assignee > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					set v.p = false;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(Assignee > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
-				{
-					set v.[a + b] = false;
-				}
-				% (property_accessor)
-			`]],
-
 			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v.p;
@@ -458,19 +458,6 @@ test.suite('Decorator', () => {
 					List.<T>();
 				}
 				% (expression_compound)
-			`]],
-
-			['Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
-				{
-					set v = 42;
-				}
-				% (assignee)
-			`]],
-			['Decorate(Assignee ::= ExpressionCompound<+Block> "." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
-				{
-					set v.1 = 42;
-				}
-				% (assignee)
 			`]],
 
 			['Decorate(ExpressionUnarySymbol<Block> ::= "!" ExpressionUnarySymbol<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
@@ -649,6 +636,44 @@ test.suite('Decorator', () => {
 				% (statement_conditional__unless)
 			`]],
 
+			['Decorate(StatementLoop ::= "while" Expression<+Block> "do" Block ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					while condition do { loop; };
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "do" Block "while" Expression<+Block> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					do { loop; } while condition;
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "until" Expression<+Block> "do" Block ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					until condition do { loop; };
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "do" Block "until" Expression<+Block> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					do { loop; } until condition;
+				}
+				% (statement_loop)
+			`]],
+
+			['Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block> "do" Block ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+				{
+					for _: T of iterable do { iterate; };
+				}
+				% (statement_iteration)
+			`]],
+			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block> "do" Block ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+				{
+					for it: T of iterable do { iterate; };
+				}
+				% (statement_iteration)
+			`]],
+
 			['Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
 				{
 					type T = U;
@@ -659,8 +684,24 @@ test.suite('Decorator', () => {
 					{
 						b;
 					};
+					if condition then { consequent; };
+					while condition do { loop; };
+					for it: T of iterable do { iterate; };
 				}
 				% (block)
+			`]],
+
+			['Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
+				{
+					set v = 42;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee ::= ExpressionCompound<+Block> "." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					set v.1 = 42;
+				}
+				% (assignee)
 			`]],
 
 			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `

@@ -82,6 +82,11 @@ KeywordOther :::=
 		| "var"
 	// control
 		| "unless"
+		| "while"
+		| "until"
+		| "for"
+		| "of"
+		| "do"
 ;
 
 
@@ -95,66 +100,64 @@ Identifier
 
 
 
-Integer<Radix, Separator>
-	:::= ("+" | "-")? <Radix->DigitSequenceDec<?Separator> & <Radix+>IntegerDigitsRadix<?Separator>;
+Integer
+	:::= ("+" | "-")? WholeDigits;
 
-IntegerDigitsRadix<Separator> :::=
-	| "\b"  DigitSequenceBin<?Separator>
-	| "\q"  DigitSequenceQua<?Separator>
-	| "\s"  DigitSequenceSex<?Separator>
-	| "\o"  DigitSequenceOct<?Separator>
-	| "\d"? DigitSequenceDec<?Separator>
-	| "\x"  DigitSequenceHex<?Separator>
-	| "\z"  DigitSequenceNif<?Separator>
+WholeDigits :::=
+	| "\b"  DigitSequenceBin
+	| "\q"  DigitSequenceQua
+	| "\s"  DigitSequenceSex
+	| "\o"  DigitSequenceOct
+	| "\d"? DigitSequenceDec
+	| "\x"  DigitSequenceHex
+	| "\z"  DigitSequenceNif
 ;
 
-Float<Separator>
-	:::= SignedDigitSequenceDec<?Separator> "." DigitSequenceDec<?Separator> ExponentPart<?Separator>?;
+Float
+	:::= SignedDigitSequenceDec "." DigitSequenceDec ExponentPart?;
 
-ExponentPart<Separator>
-	:::= "e" SignedDigitSequenceDec<?Separator>;
+ExponentPart
+	:::= "e" SignedDigitSequenceDec;
 
-SignedDigitSequenceDec<Separator>
-	:::= ("+" | "-")? DigitSequenceDec<?Separator>;
+SignedDigitSequenceDec
+	:::= ("+" | "-")? DigitSequenceDec;
 
-DigitSequenceBin<Separator> :::= ( DigitSequenceBin<?Separator> & <Separator+>"_"? )? [0-1];
-DigitSequenceQua<Separator> :::= ( DigitSequenceQua<?Separator> & <Separator+>"_"? )? [0-3];
-DigitSequenceSex<Separator> :::= ( DigitSequenceSex<?Separator> & <Separator+>"_"? )? [0-5];
-DigitSequenceOct<Separator> :::= ( DigitSequenceOct<?Separator> & <Separator+>"_"? )? [0-7];
-DigitSequenceDec<Separator> :::= ( DigitSequenceDec<?Separator> & <Separator+>"_"? )? [0-9];
-DigitSequenceHex<Separator> :::= ( DigitSequenceHex<?Separator> & <Separator+>"_"? )? [0-9a-f];
-DigitSequenceNif<Separator> :::= ( DigitSequenceNif<?Separator> & <Separator+>"_"? )? [0-9a-z];
+DigitSequenceBin :::= ( DigitSequenceBin "_"? )? [0-1];
+DigitSequenceQua :::= ( DigitSequenceQua "_"? )? [0-3];
+DigitSequenceSex :::= ( DigitSequenceSex "_"? )? [0-5];
+DigitSequenceOct :::= ( DigitSequenceOct "_"? )? [0-7];
+DigitSequenceDec :::= ( DigitSequenceDec "_"? )? [0-9];
+DigitSequenceHex :::= ( DigitSequenceHex "_"? )? [0-9a-f];
+DigitSequenceNif :::= ( DigitSequenceNif "_"? )? [0-9a-z];
 
 
 
-String<Comment, Separator>
-	:::= #x22 StringChars<?Comment><?Separator>? StringUnfinished<?Comment>? #x22;
+String
+	:::= #x22 StringChars? StringUnfinished? #x22;
 
-	StringChars<Comment, Separator>
-		:::= StringChar<?Comment><?Separator> StringChars<?Comment><?Separator>?;
+	StringChars
+		:::= StringChar StringChars?;
 
-		StringChar<Comment, Separator> :::=
-			| <Comment->[^"\#x03]
-			| <Comment+>[^"\%#x03]
-			| "\"  StringEscape<?Comment><?Separator>
+		StringChar :::=
+			| [^"\%#x03]
+			| "\"  StringEscape
 			| "\u" [^"{#x03]
-			| <Comment+>("%"  ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a)
-			| <Comment+>("%%" ("%"? [^"%#x03])*              "%%")
+			| "%"  ([^"%#x0a#x03] [^"#x0a#x03]*)? #x0a
+			| "%%" ("%"? [^"%#x03])*              "%%"
 		;
 
-			StringEscape<Comment, Separator> :::=
-				| #x22 | "\" | <Comment+>"%"
+			StringEscape :::=
+				| #x22 | "\" | "%"
 				| "s" | "t" | "n" | "r"
-				| "u{" DigitSequenceHex<?Separator>? "}"
+				| "u{" DigitSequenceHex? "}"
 				| #x0a
-				| <Comment->[^"\stnru#x0a#x03]
-				| <Comment+>[^"\%stnru#x0a#x03]
+				| [^"\%stnru#x0a#x03]
 			;
 
-	StringUnfinished<Comment> :::=
+	StringUnfinished :::=
 		| "\u"
-		| <Comment+>("%"  ([^"%#x0a#x03] [^"#x0a#x03]*)?)
-		| <Comment+>("%%" ("%"? [^"%#x03])*)
+		| "%"  ([^"%#x0a#x03] [^"#x0a#x03]*)?
+		| "%%" ("%"? [^"%#x03])*
 	;
 
 
@@ -392,18 +395,18 @@ TemplateTail   :::= "}}"           TemplateChars__EndDelim?  #x22 #x22 #x22;
 
 
 
-Goal<Comment, Radix, Separator> :::=
+Goal :::=
 	| Filebound
 	| Whitespace
-	| <Comment+>Comment
+	| Comment
 	| Punctuator
 	| KeywordType
 	| KeywordValue
 	| KeywordOther
 	| Identifier
-	| Integer<?Radix><?Separator>
-	| Float<?Separator>
-	| String<?Comment><?Separator>
+	| Integer
+	| Float
+	| String
 	| TemplateFull
 	| TemplateHead
 	| TemplateMiddle

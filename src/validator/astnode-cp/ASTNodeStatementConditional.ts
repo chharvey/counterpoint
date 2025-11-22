@@ -57,7 +57,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		let   condition_build:   binaryen.ExpressionRef = this.condition.build();
+		const condition_build:   binaryen.ExpressionRef = this.condition.build();
 		const consequent_build:  binaryen.ExpressionRef = this.consequent.build();
 		const alternative_build: binaryen.ExpressionRef = this.alternative?.build() ?? this.builder.module.nop();
 
@@ -67,17 +67,17 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 		if (!this.unless && condition_truthy || this.unless && condition_falsy) {
 			// `if true…` or `unless false…` -> just return the consequent
-			return drop_then(this.builder.module, [condition_build], consequent_build, binaryen.none);
+			return drop_then(this.builder.module, [condition_build], consequent_build);
 		} else if (!this.unless && condition_falsy || this.unless && condition_truthy) {
 			// `if false…` or `unless true…` -> just return the alternative
-			return drop_then(this.builder.module, [condition_build], alternative_build, binaryen.none);
+			return drop_then(this.builder.module, [condition_build], alternative_build);
 		}
 
-		if (this.unless) {
-			condition_build = this.builder.module.call('vnot', [condition_build], binaryen.v128);
-		}
 		return this.builder.module.if(
-			new BinVect(this.builder.module, condition_build).isSpecial(true),
+			new BinVect(
+				this.builder.module,
+				this.unless ? this.builder.module.call('vnot', [condition_build], binaryen.v128) : condition_build,
+			).isSpecial(true),
 			consequent_build,
 			alternative_build,
 		);

@@ -6,6 +6,7 @@ import {
 	assert_instanceof,
 	AST,
 	TYPE,
+	drop_then,
 	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
@@ -125,7 +126,7 @@ test.suite('ASTNodeCP', () => {
 					stmt.alternative!.build(),
 				));
 			});
-			test.test('produces `(nop)` for antecedent if there is none.', () => {
+			test.test('produces `(nop)` for alternative if there is none.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
 					if cond then {
@@ -133,11 +134,64 @@ test.suite('ASTNodeCP', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
-				assertEqualBins(stmt.build(), mod.if(
+				return assertEqualBins(stmt.build(), mod.if(
 					new BinVect(mod, stmt.condition.build()).isSpecial(true),
 					stmt.consequent.build(),
 					mod.nop(),
 				));
+			});
+			test.test('produces a simple block if the condition is definitely truthy/falsy.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var TRUE:  true  = true;
+					let var FALSE: false = false;
+					if TRUE then {
+						42;
+					};
+					if TRUE then {
+						42;
+					} else {
+						69;
+					};
+					if FALSE then {
+						42;
+					};
+					if FALSE then {
+						42;
+					} else {
+						69;
+					};
+				}`);
+				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
+					drop_then(
+						mod,
+						[(stmts[2] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[2] as AST.ASTNodeStatementConditional).consequent.build(),
+					),
+					drop_then(
+						mod,
+						[(stmts[3] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[3] as AST.ASTNodeStatementConditional).consequent.build(),
+					),
+					drop_then(
+						mod,
+						[(stmts[4] as AST.ASTNodeStatementConditional).condition.build()],
+						mod.nop(),
+					),
+					drop_then(
+						mod,
+						[(stmts[5] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[5] as AST.ASTNodeStatementConditional).alternative!.build(),
+					),
+				]);
+			});
+			test.test('produces `(nop)` if entire statement is foldable.', () => {
+				const {stmts, mod} = setupScript(`{
+					let cond: bool = false;
+					if cond then {
+						42;
+					};
+				}`);
+				return assertEqualBins((stmts[1] as AST.ASTNodeStatementConditional).build(), mod.nop());
 			});
 			test.test('negates the condition for `unless` statements.', () => {
 				const {stmts, mod} = setupScript(`{
@@ -147,7 +201,7 @@ test.suite('ASTNodeCP', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
-				assertEqualBins(stmt.build(), mod.if(
+				return assertEqualBins(stmt.build(), mod.if(
 					new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(true),
 					stmt.consequent.build(),
 					mod.nop(),

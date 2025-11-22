@@ -106,48 +106,49 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 
 /* # LEXER HELPERS */
+function rg(s: string | RegExp): RegExp { // s -> (s)
+	return new RegExp(`(${ typeof s === 'string' ? s.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&') : s.source })`); // TODO: in Node 24, use `RegExp.escape()`
+}
+function ro(s: string | RegExp): RegExp { // s -> (s)?
+	return new RegExp(rg(s).source.concat('?'));
+}
+function rr0(s: string | RegExp): RegExp { // s -> (s)*
+	return new RegExp(rg(s).source.concat('*'));
+}
+function rr1(s: string | RegExp): RegExp { // s -> (s)+
+	return new RegExp(rg(s).source.concat('+'));
+}
+function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)(t)
+	return new RegExp(ss.map((s) => rg(s).source).join(''));
+}
+function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)|(t)
+	return new RegExp(ss.map((s) => rg(s).source).join('|'));
+}
+
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
 const WORD_UNICODE = /'[^']*'/;
 
-const DIGIT_SEQ_BIN            = /[0-1]+/;
-const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
-const DIGIT_SEQ_QUA            = /[0-3]+/;
-const DIGIT_SEQ_QUA__SEPARATOR = /([0-3]_?)*[0-3]/;
-const DIGIT_SEQ_SEX            = /[0-5]+/;
-const DIGIT_SEQ_SEX__SEPARATOR = /([0-5]_?)*[0-5]/;
-const DIGIT_SEQ_OCT            = /[0-7]+/;
-const DIGIT_SEQ_OCT__SEPARATOR = /([0-7]_?)*[0-7]/;
-const DIGIT_SEQ_DEC            = /[0-9]+/;
-const DIGIT_SEQ_DEC__SEPARATOR = /([0-9]_?)*[0-9]/;
-const DIGIT_SEQ_HEX            = /[0-9a-f]+/;
-const DIGIT_SEQ_HEX__SEPARATOR = /([0-9a-f]_?)*[0-9a-f]/;
-const DIGIT_SEQ_NIF            = /[0-9a-z]+/;
-const DIGIT_SEQ_NIF__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
+const DIGIT_SEQ_BIN = /([0-1]_?)*[0-1]/;
+const DIGIT_SEQ_QUA = /([0-3]_?)*[0-3]/;
+const DIGIT_SEQ_SEX = /([0-5]_?)*[0-5]/;
+const DIGIT_SEQ_OCT = /([0-7]_?)*[0-7]/;
+const DIGIT_SEQ_DEC = /([0-9]_?)*[0-9]/;
+const DIGIT_SEQ_HEX = /([0-9a-f]_?)*[0-9a-f]/;
+const DIGIT_SEQ_NIF = /([0-9a-z]_?)*[0-9a-z]/;
 
-const INTEGER_DIGITS_RADIX = choice(
-	seq('\\b',           DIGIT_SEQ_BIN),
-	seq('\\q',           DIGIT_SEQ_QUA),
-	seq('\\s',           DIGIT_SEQ_SEX),
-	seq('\\o',           DIGIT_SEQ_OCT),
-	seq(optional('\\d'), DIGIT_SEQ_DEC),
-	seq('\\x',           DIGIT_SEQ_HEX),
-	seq('\\z',           DIGIT_SEQ_NIF),
-);
-const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
-	seq('\\b',           DIGIT_SEQ_BIN__SEPARATOR),
-	seq('\\q',           DIGIT_SEQ_QUA__SEPARATOR),
-	seq('\\s',           DIGIT_SEQ_SEX__SEPARATOR),
-	seq('\\o',           DIGIT_SEQ_OCT__SEPARATOR),
-	seq(optional('\\d'), DIGIT_SEQ_DEC__SEPARATOR),
-	seq('\\x',           DIGIT_SEQ_HEX__SEPARATOR),
-	seq('\\z',           DIGIT_SEQ_NIF__SEPARATOR),
+const WHOLE_DIGITS = rc(
+	rs('\\b',     DIGIT_SEQ_BIN),
+	rs('\\q',     DIGIT_SEQ_QUA),
+	rs('\\s',     DIGIT_SEQ_SEX),
+	rs('\\o',     DIGIT_SEQ_OCT),
+	rs(ro('\\d'), DIGIT_SEQ_DEC),
+	rs('\\x',     DIGIT_SEQ_HEX),
+	rs('\\z',     DIGIT_SEQ_NIF),
 );
 
-const SIGNED_DIGIT_SEQ_DEC            = seq(/[+-]?/, DIGIT_SEQ_DEC);
-const SIGNED_DIGIT_SEQ_DEC__SEPARATOR = seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR);
+const SIGNED_DIGIT_SEQ_DEC = rs(/[+-]?/, DIGIT_SEQ_DEC);
 
-const EXPONENT_PART            = seq('e', SIGNED_DIGIT_SEQ_DEC);
-const EXPONENT_PART__SEPARATOR = seq('e', SIGNED_DIGIT_SEQ_DEC__SEPARATOR);
+const EXPONENT_PART = rs('e', SIGNED_DIGIT_SEQ_DEC);
 
 const ESCAPER            = '\\';
 const DELIM_STRING       = '"';
@@ -156,95 +157,47 @@ const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 
-/* eslint-disable @stylistic/function-call-argument-newline */
-const STRING_ESCAPE = choice(
-	DELIM_STRING,
-	ESCAPER,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
-	'\n',
-	/[^"\\stnru\n]/,
-);
-const STRING_ESCAPE__COMMENT = choice(
+const STRING_ESCAPE = rc(
 	DELIM_STRING,
 	ESCAPER,
 	COMMENTER_LINE,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
+	's', 't', 'n', 'r', // eslint-disable-line @stylistic/function-call-argument-newline
+	rs('u{', ro(DIGIT_SEQ_HEX), '}'),
 	'\n',
 	/[^"\\%stnru\n]/,
 );
-const STRING_ESCAPE__SEPARATOR = choice(
-	DELIM_STRING,
-	ESCAPER,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
-	'\n',
-	/[^"\\stnru\n]/,
-);
-const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
-	DELIM_STRING,
-	ESCAPER,
-	COMMENTER_LINE,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
-	'\n',
-	/[^"\\%stnru\n]/,
-);
-/* eslint-enable @stylistic/function-call-argument-newline */
 
-const STRING_CHAR = choice(
-	/[^"\\]/,
-	seq(ESCAPER, STRING_ESCAPE),
-	/\\u[^"{]/,
-);
-const STRING_CHAR__COMMENT = choice(
+const STRING_CHAR = rc(
 	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE__COMMENT),
-	/\\u[^"{]/,
-	/%([^"%\n][^"\n]*)?\n/,
-	/%%(%?[^"%])*%%/,
-);
-const STRING_CHAR__SEPARATOR = choice(
-	/[^"\\]/,
-	seq(ESCAPER, STRING_ESCAPE__SEPARATOR),
-	/\\u[^"{]/,
-);
-const STRING_CHAR__COMMENT__SEPARATOR = choice(
-	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE__COMMENT_SEPARATOR),
+	rs(ESCAPER, STRING_ESCAPE),
 	/\\u[^"{]/,
 	/%([^"%\n][^"\n]*)?\n/,
 	/%%(%?[^"%])*%%/,
 );
 
-const STRING_CHARS                     = repeat1(STRING_CHAR);
-const STRING_CHARS__COMMENT            = repeat1(STRING_CHAR__COMMENT);
-const STRING_CHARS__SEPARATOR          = repeat1(STRING_CHAR__SEPARATOR);
-const STRING_CHARS__COMMENT__SEPARATOR = repeat1(STRING_CHAR__COMMENT__SEPARATOR);
+const STRING_CHARS = rr1(STRING_CHAR);
 
-const STRING_UNFINISHED          = '\\u';
-const STRING_UNFINISHED__COMMENT = choice(
+const STRING_UNFINISHED = rc(
 	'\\u',
 	/%([^"%\n][^"\n]*)?/,
 	/%%(%?[^"%])*/,
 );
 
-const TEMPLATE_CHARS_NO_END = choice(
+const TEMPLATE_CHARS_NO_END = rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]/,
 	/("\{|""\{)+[^"{]/,
 	/(\{"|\{"")*\{[^"{]/,
 	/(\{"|\{"")+[^"{]/,
 );
-const TEMPLATE_CHARS_END_DELIM = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
+const TEMPLATE_CHARS_END_DELIM = rs(rr0(TEMPLATE_CHARS_NO_END), rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]/,
 	/("\{|""\{)+[^"{]?/,
 	/(\{"|\{"")*\{[^"{]?/,
 	/(\{"|\{"")+[^"{]/,
 ));
-const TEMPLATE_CHARS_END_INTERP = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
+const TEMPLATE_CHARS_END_INTERP = rs(rr0(TEMPLATE_CHARS_NO_END), rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]?/,
 	/("\{|""\{)+[^"{]/,
@@ -264,20 +217,16 @@ const OPT_COM = optional(',');
  * ```
  * condition ? consequent : alternative
  * ```
+ * Otherwise, spread it into a rule:
+ * @example
+ * {
+ * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?:', $._type), 'named'),
+ * }
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
- * @returns           either `consequent` or `blank()` based on `condition`
+ * @returns           if `condition`, then `[consequent]`; else `[]`
  */
-function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
-	return condition ? consequent : blank();
-}
-/**
- * Like {@link iff}, but meant for spreading, like in a choice list.
- * @param condition   the condition to test
- * @param consequent  if condition is true, this will be produced
- * @returns           either `[consequent]` or `[]` based on `condition`
- */
-function iffSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
+function iff(condition: boolean, consequent: RuleOrLiteral): [RuleOrLiteral] | [] {
 	return condition ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
@@ -286,6 +235,12 @@ function repCom1(production: RuleOrLiteral): SeqRule {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
+}
+function uSeq(left: RuleOrLiteral, right: RuleOrLiteral): ChoiceRule {
+	return choice(
+		seq(left, right),
+		seq(right, left),
+	);
 }
 
 
@@ -300,43 +255,31 @@ module.exports = grammar({
 
 
 		/* # LEXICON */
-		identifier: _$ => token(choice(
+		identifier: _$ => token(rc(
 			WORD_BASIC,
 			WORD_UNICODE,
 		)),
 
-		...parameterize('integer', ({radix, separator}) => (
-			_$ => token(seq(/[+-]?/, ((!radix)
-				? (!separator) ? DIGIT_SEQ_DEC        : DIGIT_SEQ_DEC__SEPARATOR
-				: (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR
-			)))
-		), 'radix', 'separator'),
+		integer: _$ => token(rs(/[+-]?/, WHOLE_DIGITS)),
 
-		...parameterize('float', ({separator}) => (
-			_$ => token(seq(
-				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
-				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
-				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
-			))
-		), 'separator'),
+		float: _$ => token(rs(
+			SIGNED_DIGIT_SEQ_DEC,
+			'.',
+			DIGIT_SEQ_DEC,
+			ro(EXPONENT_PART),
+		)),
 
-		...parameterize('string', ({comment, separator}) => (
-			_$ => token(seq(
-				DELIM_STRING,
-				optional(((!comment)
-					? (!separator) ? STRING_CHARS          : STRING_CHARS__SEPARATOR
-					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR
-				)),
-				optional((!comment) ? STRING_UNFINISHED : STRING_UNFINISHED__COMMENT),
-				DELIM_STRING,
-			))
-		), 'comment', 'separator'),
+		string: _$ => token(rs(
+			DELIM_STRING,
+			ro(STRING_CHARS),
+			ro(STRING_UNFINISHED),
+			DELIM_STRING,
+		)),
 
-		template_full:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
-		template_head:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
-		template_middle: _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
-		template_tail:   _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_full:   _$ => token(rs(DELIM_TEMPLATE,   ro(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_head:   _$ => token(rs(DELIM_TEMPLATE,   ro(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_middle: _$ => token(rs(DELIM_INTERP_END, ro(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_tail:   _$ => token(rs(DELIM_INTERP_END, ro(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
 
 
 
@@ -377,6 +320,11 @@ module.exports = grammar({
 			'var',
 			// control
 			'unless',
+			'while',
+			'until',
+			'for',
+			'of',
+			'do',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -384,15 +332,8 @@ module.exports = grammar({
 
 		primitive_literal: $ => choice(
 			$.integer,
-			$.integer__radix,
-			$.integer__separator,
-			$.integer__radix__separator,
 			$.float,
-			$.float__separator,
 			$.string,
-			$.string__comment,
-			$.string__separator,
-			$.string__comment__separator,
 			$.keyword_value,
 			seq('@', $.word),
 		),
@@ -400,7 +341,7 @@ module.exports = grammar({
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $._type)
+			$ => seq(...iff(named, seq($.word, ...iff(!optional, ':'))), ...iff(optional, '?:'), $._type)
 		), 'named', 'optional'),
 
 		_items_type: $ => {
@@ -413,6 +354,8 @@ module.exports = grammar({
 		},
 
 		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
+
+		property_accessor_type: $ => choice($.integer, $.word),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
@@ -436,40 +379,27 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		property_accessor_type: $ => choice($.integer, $.word),
-
-		_type_compound: $ => choice(
-			$._type_unit,
-			alias($.type_compound_dfn, $.type_compound),
-		),
-		type_compound_dfn: $ => seq($._type_compound, choice(
+		type_compound: $ => prec(5, seq($._type, choice(
 			seq(choice('.', '?.'), $.property_accessor_type),
 			seq('.',               $.generic_arguments),
-		)),
+		))),
 
-		_type_unary_symbol: $ => choice(
-			$._type_compound,
-			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
-		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice('?', '!')),
+		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
+		type_unary_keyword: $ => prec(3, seq('mut', $._type)),
 
-		_type_unary_keyword: $ => choice(
-			$._type_unary_symbol,
-			alias($.type_unary_keyword_dfn, $.type_unary_keyword),
-		),
-		type_unary_keyword_dfn: $ => seq('mut', $._type_unary_keyword),
+		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
+		type_union:        $ => prec.left(1, seq($._type, '|', $._type)),
 
-		_type_intersection: $ => choice($._type_unary_keyword, alias($.type_intersection_dfn, $.type_intersection)),
-		_type_union:        $ => choice($._type_intersection,  alias($.type_union_dfn,        $.type_union)),
-
-		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
-		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
-
-		/* eslint-disable @stylistic/function-paren-newline */
 		_type: $ => choice(
-			$._type_union,
+			$._type_unit,
+
+			// once parameterized, alias these:
+			$.type_compound,
+			$.type_unary_symbol,
+			$.type_unary_keyword,
+			$.type_intersection,
+			$.type_union,
 		),
-		/* eslint-enable @stylistic/function-paren-newline */
 
 
 		/* ## Expressions */
@@ -485,6 +415,8 @@ module.exports = grammar({
 
 		property: $ => seq($.word,               '=',  $._expression__block),
 		case:     $ => seq($._expression__block, '->', $._expression__block),
+
+		property_accessor: $ => choice($.integer, $.word, seq('[', $._expression__block, ']')),
 
 		expression_grouped: $ => seq('(',                       $._expression__block,                     ')'),
 		tuple_literal:      $ => seq('(', optional(             $._items                               ), ')'),
@@ -506,53 +438,43 @@ module.exports = grammar({
 			$.dict_literal,
 			$.set_literal,
 			$.map_literal,
-			...iffSpread(block, alias($.block, $.expression_block)),
+			...iff(block, alias($.block, $.expression_block)),
 		), 'block'),
 
-		property_accessor: $ => choice($.integer, $.word, seq('[', $._expression__block, ']')),
-
-		...parameterize('_expression_compound', ({block}) => $ => choice(
-			call($, '_expression_unit', {block}),
-			alias(call($, 'expression_compound_dfn', {block}), $.expression_compound),
-		), 'block'),
-		...parameterize('expression_compound_dfn', ({block}) => $ => seq(call($, '_expression_compound', {block}), choice(
+		...parameterize('expression_compound', ({block}) => $ => prec(11, seq(call($, '_expression', {block}), choice(
 			seq(choice('.', '?.', '!.'), $.property_accessor),
 			seq('.',                     optional($.generic_arguments), $.function_arguments),
-		)), 'block'),
+		))), 'block'),
 
-		assignee: $ => choice(
-			$.identifier,
-			seq($._expression_compound__block, '.', $.property_accessor),
-		),
+		...parameterize('expression_unary_symbol',  ({block}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}))), 'block'),
+		...parameterize('expression_unary_keyword', ({block}) => $ => prec( 9, seq(choice('int', 'float'),     call($, '_expression', {block}))), 'block'),
 
-		...parameterize('_expression_unary_symbol',  ({block}) => $ => choice(call($, '_expression_compound',     {block}), alias(call($, 'expression_unary_symbol_dfn',  {block}), $.expression_unary_symbol)),  'block'),
-		...parameterize('_expression_unary_keyword', ({block}) => $ => choice(call($, '_expression_unary_symbol', {block}), alias(call($, 'expression_unary_keyword_dfn', {block}), $.expression_unary_keyword)), 'block'),
-
-		...parameterize('expression_unary_symbol_dfn',  ({block}) => $ => seq(choice('!', '?', '+', '-'), call($, '_expression_unary_symbol',  {block})), 'block'),
-		...parameterize('expression_unary_keyword_dfn', ({block}) => $ => seq(choice('int', 'float'),     call($, '_expression_unary_keyword', {block})), 'block'),
-
-		...parameterize('_expression_cast',           ({block}) => $ => choice(call($, '_expression_unary_keyword',  {block}), alias(call($, 'expression_cast_dfn',           {block}), $.expression_cast)),           'block'),
-		...parameterize('_expression_exponential',    ({block}) => $ => choice(call($, '_expression_cast',           {block}), alias(call($, 'expression_exponential_dfn',    {block}), $.expression_exponential)),    'block'),
-		...parameterize('_expression_multiplicative', ({block}) => $ => choice(call($, '_expression_exponential',    {block}), alias(call($, 'expression_multiplicative_dfn', {block}), $.expression_multiplicative)), 'block'),
-		...parameterize('_expression_additive',       ({block}) => $ => choice(call($, '_expression_multiplicative', {block}), alias(call($, 'expression_additive_dfn',       {block}), $.expression_additive)),       'block'),
-		...parameterize('_expression_comparative',    ({block}) => $ => choice(call($, '_expression_additive',       {block}), alias(call($, 'expression_comparative_dfn',    {block}), $.expression_comparative)),    'block'),
-		...parameterize('_expression_equality',       ({block}) => $ => choice(call($, '_expression_comparative',    {block}), alias(call($, 'expression_equality_dfn',       {block}), $.expression_equality)),       'block'),
-		...parameterize('_expression_conjunctive',    ({block}) => $ => choice(call($, '_expression_equality',       {block}), alias(call($, 'expression_conjunctive_dfn',    {block}), $.expression_conjunctive)),    'block'),
-		...parameterize('_expression_disjunctive',    ({block}) => $ => choice(call($, '_expression_conjunctive',    {block}), alias(call($, 'expression_disjunctive_dfn',    {block}), $.expression_disjunctive)),    'block'),
-
-		...parameterize('expression_cast_dfn',           ({block}) => $ => choice(seq(call($, '_expression_cast',           {block}), choice('as', 'as?', 'as!'),                             call($, '_expression_unary_symbol',   {block})), seq(call($, '_expression_cast', {block}), 'as', '<', $._type, '>')), 'block'),
-		...parameterize('expression_exponential_dfn',    ({block}) => $ =>        seq(call($, '_expression_cast',           {block}), '^',                                                    call($, '_expression_exponential',    {block})), 'block'),
-		...parameterize('expression_multiplicative_dfn', ({block}) => $ =>        seq(call($, '_expression_multiplicative', {block}), choice('*', '/'),                                       call($, '_expression_exponential',    {block})), 'block'),
-		...parameterize('expression_additive_dfn',       ({block}) => $ =>        seq(call($, '_expression_additive',       {block}), choice('+', '-'),                                       call($, '_expression_multiplicative', {block})), 'block'),
-		...parameterize('expression_comparative_dfn',    ({block}) => $ =>        seq(call($, '_expression_comparative',    {block}), choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), call($, '_expression_additive',       {block})), 'block'),
-		...parameterize('expression_equality_dfn',       ({block}) => $ =>        seq(call($, '_expression_equality',       {block}), choice('===', '!==', '==', '!='),                       call($, '_expression_comparative',    {block})), 'block'),
-		...parameterize('expression_conjunctive_dfn',    ({block}) => $ =>        seq(call($, '_expression_conjunctive',    {block}), choice('&&', '!&'),                                     call($, '_expression_equality',       {block})), 'block'),
-		...parameterize('expression_disjunctive_dfn',    ({block}) => $ =>        seq(call($, '_expression_disjunctive',    {block}), choice('||', '!|'),                                     call($, '_expression_conjunctive',    {block})), 'block'),
+		...parameterize('expression_cast',           ({block}) => $ => choice(prec.left (8, seq(call($, '_expression', {block}), choice('as', 'as?', 'as!'),                             call($, '_expression', {block}))), prec(8, seq(call($, '_expression', {block}), 'as', '<', $._type, '>'))), 'block'),
+		...parameterize('expression_exponential',    ({block}) => $ =>        prec.right(7, seq(call($, '_expression', {block}), '^',                                                    call($, '_expression', {block}))),                                                                          'block'),
+		...parameterize('expression_multiplicative', ({block}) => $ =>        prec.left (6, seq(call($, '_expression', {block}), choice('*', '/'),                                       call($, '_expression', {block}))),                                                                          'block'),
+		...parameterize('expression_additive',       ({block}) => $ =>        prec.left (5, seq(call($, '_expression', {block}), choice('+', '-'),                                       call($, '_expression', {block}))),                                                                          'block'),
+		...parameterize('expression_comparative',    ({block}) => $ =>        prec.left (4, seq(call($, '_expression', {block}), choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), call($, '_expression', {block}))),                                                                          'block'),
+		...parameterize('expression_equality',       ({block}) => $ =>        prec.left (3, seq(call($, '_expression', {block}), choice('===', '!==', '==', '!='),                       call($, '_expression', {block}))),                                                                          'block'),
+		...parameterize('expression_conjunctive',    ({block}) => $ =>        prec.left (2, seq(call($, '_expression', {block}), choice('&&', '!&'),                                     call($, '_expression', {block}))),                                                                          'block'),
+		...parameterize('expression_disjunctive',    ({block}) => $ =>        prec.left (1, seq(call($, '_expression', {block}), choice('||', '!|'),                                     call($, '_expression', {block}))),                                                                          'block'),
 
 		expression_conditional: $ => seq('if', $._expression__block, 'then', $._expression, 'else', $._expression),
 
 		...parameterize('_expression', ({block}) => $ => choice(
-			call($, '_expression_disjunctive', {block}),
+			call($, '_expression_unit', {block}),
+
+			alias(call($, 'expression_compound',       {block}), $.expression_compound),
+			alias(call($, 'expression_unary_symbol',   {block}), $.expression_unary_symbol),
+			alias(call($, 'expression_unary_keyword',  {block}), $.expression_unary_keyword),
+			alias(call($, 'expression_cast',           {block}), $.expression_cast),
+			alias(call($, 'expression_exponential',    {block}), $.expression_exponential),
+			alias(call($, 'expression_multiplicative', {block}), $.expression_multiplicative),
+			alias(call($, 'expression_additive',       {block}), $.expression_additive),
+			alias(call($, 'expression_comparative',    {block}), $.expression_comparative),
+			alias(call($, 'expression_equality',       {block}), $.expression_equality),
+			alias(call($, 'expression_conjunctive',    {block}), $.expression_conjunctive),
+			alias(call($, 'expression_disjunctive',    {block}), $.expression_disjunctive),
+
 			$.expression_conditional,
 		), 'block'),
 
@@ -561,25 +483,36 @@ module.exports = grammar({
 		statement_expression: $ => seq(optional($._expression__block), ';'),
 
 		...parameterize('statement_conditional', ({unless}) => $ => seq(
-			iff(!unless, 'if'),
-			iff( unless, 'unless'),
+			!unless ? 'if' : 'unless',
 			$._expression__block,
 			'then',
 			$.block,
-			iff(!unless, choice(
-				seq(optional(seq('else', $.block)), ';'),
-				seq('else', call($, 'statement_conditional', {unless})),
-			)),
-			iff(unless, ';'),
+			!unless
+				? choice(
+					seq(optional(seq('else', $.block)), ';'),
+					seq('else', call($, 'statement_conditional', {unless})),
+				)
+				: ';',
 		), 'unless'),
+
+		statement_loop: $ => seq(uSeq(seq(choice('while', 'until'), $._expression__block), seq('do', $.block)), ';'),
+
+		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'of', $._expression__block, 'do', $.block, ';'),
 
 		_statement: $ => choice(
 			$.statement_expression,
 			call($, 'statement_conditional', ['', 'unless']),
+			$.statement_loop,
+			$.statement_iteration,
 			$._declaration,
 		),
 
 		block: $ => seq('{', repeat1($._statement), '}'),
+
+		assignee: $ => choice(
+			$.identifier,
+			seq($._expression__block, '.', $.property_accessor),
+		),
 
 		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
@@ -613,7 +546,7 @@ module.exports = grammar({
 	 */
 	conflicts: _$ => [
 		// example:
-		// familyNameAll('integer', ['radix', 'separator']).map((rulename) => _$[rulename]),
+		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => _$[rulename]),
 	],
 
 	/**
@@ -653,6 +586,11 @@ module.exports = grammar({
 			'var',
 			// control
 			'unless',
+			'while',
+			'until',
+			'for',
+			'of',
+			'do',
 			// type keyword
 			'nothing',
 			'bool',

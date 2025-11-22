@@ -48,6 +48,11 @@ Word ::=
 		| "var"
 	// control
 		| "unless"
+		| "while"
+		| "until"
+		| "for"
+		| "of"
+		| "do"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -77,6 +82,9 @@ ItemsType ::=
 PropertiesType
 	::= ","? EntryType<+Named><∓Optional># ","?;
 
+PropertyAccessorType
+	::= INTEGER | Word;
+
 TypeGrouped       ::= "(" Type             ")";
 TypeTupleLiteral  ::= "(" ItemsType?       ")";
 TypeRecordLiteral ::= "(" PropertiesType   ")";
@@ -99,8 +107,6 @@ TypeUnit ::=
 	| TypeMapLiteral
 ;
 
-PropertyAccessorType ::= INTEGER | Word;
-
 TypeCompound ::=
 	| TypeUnit
 	| TypeCompound (
@@ -109,15 +115,8 @@ TypeCompound ::=
 	)
 ;
 
-TypeUnarySymbol ::=
-	| TypeCompound
-	| TypeUnarySymbol ("?" | "!")
-;
-
-TypeUnaryKeyword ::=
-	| TypeUnarySymbol
-	| "mut" TypeUnaryKeyword
-;
+TypeUnarySymbol  ::= TypeCompound    | TypeUnarySymbol ("?" | "!");
+TypeUnaryKeyword ::= TypeUnarySymbol | "mut" TypeUnaryKeyword;
 
 TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
 TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
@@ -140,6 +139,9 @@ Items ::=
 
 Property ::= Word               "="  Expression<+Block>;
 Case     ::= Expression<+Block> "->" Expression<+Block>;
+
+PropertyAccessor
+	::= INTEGER | Word | "[" Expression<+Block> "]";
 
 ExpressionGrouped ::= "("        Expression<+Block>          ")";
 TupleLiteral      ::= "("        Items?                      ")";
@@ -164,19 +166,12 @@ ExpressionUnit<Block> ::=
 	| <Block+>Block
 ;
 
-PropertyAccessor ::= INTEGER | Word | "[" Expression<+Block> "]";
-
 ExpressionCompound<Block> ::=
 	| ExpressionUnit<?Block>
 	| ExpressionCompound<?Block> (
 		| ("." | "?." | "!.") PropertyAccessor
 		|  "."                GenericArguments? FunctionArguments
 	)
-;
-
-Assignee ::=
-	| IDENTIFIER
-	| ExpressionCompound<+Block> "." PropertyAccessor
 ;
 
 ExpressionUnarySymbol  <Block> ::= ExpressionCompound    <?Block> | ("!" | "?" | "+" | "-") ExpressionUnarySymbol  <?Block>;
@@ -220,9 +215,17 @@ StatementConditional<Unless> ::=
 	& <Unless+>";"
 ;
 
+StatementLoop
+	::= (("while" | "until") Expression<+Block> && "do" Block) ";";
+
+StatementIteration
+	::= "for" ("_" | IDENTIFIER) ":" Type "of" Expression<+Block> "do" Block ";";
+
 Statement ::=
 	| StatementExpression
 	| StatementConditional<∓Unless>
+	| StatementLoop
+	| StatementIteration
 	| Declaration
 ;
 
@@ -230,6 +233,13 @@ Statement ::=
 
 Block
 	::= "{" Statement+ "}";
+
+
+
+Assignee ::=
+	| IDENTIFIER
+	| ExpressionCompound<+Block> "." PropertyAccessor
+;
 
 
 

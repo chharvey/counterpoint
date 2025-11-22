@@ -135,7 +135,7 @@ test.suite('ASTNodeType', () => {
 					if true then {
 						type T = int;
 					};
-					type U = float | T;
+					type _ = float | T;
 				}`).varCheck(), ReferenceErrorUndeclared);
 			});
 			test.test.todo('throws when there is a temporal dead zone.', () => {
@@ -147,7 +147,12 @@ test.suite('ASTNodeType', () => {
 			test.test('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let FOO: int = 42;
-					type T = FOO | float;
+					type _ = FOO | float;
+				}`).varCheck(), ReferenceErrorKind);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for FOO: int of [42] do {
+						type _ = FOO | float;
+					};
 				}`).varCheck(), ReferenceErrorKind);
 			});
 		});

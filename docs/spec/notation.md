@@ -1269,9 +1269,9 @@ The step is shorthand for the following steps:
 	1. *Return:* ‹s›.
 2. *Assert:* ‹s› is a normal completion.
 3. *If* ‹s› has a `value` property:
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `‹s›.value`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «`‹s›.value`».
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with *none*.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «*none*».
 ```
 
 For example, setting a variable to an unwrap step …
@@ -1298,9 +1298,9 @@ The step is shorthand for the following steps:
 ```
 1. *Assert:* ‹s› is a normal completion.
 2. *If* ‹s› has a `value` property:
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `‹s›.value`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «`‹s›.value`».
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with *none*.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «*none*».
 ```
 
 For example, setting a variable to an unwrap-affirm step …

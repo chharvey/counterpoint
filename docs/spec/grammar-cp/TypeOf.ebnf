@@ -136,11 +136,11 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `genericarg` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `base.source` is "List":
-					1. *Let* `returntype` be a List type whose items’ type is `genericarg`.
+					1. *Let* `returntype` be a List type under the type argument `genericarg`.
 				3. *Else If* `base.source` is "Dict":
-					1. *Let* `returntype` be a Dict type whose values’ type is `genericarg`.
+					1. *Let* `returntype` be a Dict type under the type argument `genericarg`.
 				4. *Else If* `base.source` is "Set":
-					1. *Let* `returntype` be a Set type whose elements’ type is `genericarg`.
+					1. *Let* `returntype` be a Set type under the type argument `genericarg`.
 				5. *If* `call.children.count` is 3:
 					1. *If* `call.children.2` is a SemanticExpression:
 						1. *Let* `arg` be `call.children.2`.
@@ -171,7 +171,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 						5. *Else If* `base.source` is "Set":
-							1. *Let* `listtype` be a List type whose items’ type is `genericarg`.
+							1. *Let* `listtype` be a List type under the type argument `genericarg`.
 							2. *Let* `is_assignable` be `TypeCheckAssign(arg, listtype)`.
 							3. *If* `is_assignable` is an abrupt completion:
 								1. *If* `arg` is a SemanticTuple:
@@ -217,7 +217,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 					EntryTypeSchema [type= `antecedenttype`, optional= `false`],
 					EntryTypeSchema [type= `consequenttype`, optional= `false`],
 				].
-				6. *Let* `paramtype` be a List type whose items’ type is `entrytype`.
+				6. *Let* `paramtype` be a List type under the type argument `entrytype`.
 				7. *If* `arg` is set:
 					1. *Let* `is_assignable` be `TypeCheckAssign(arg, paramtype)`.
 					2. *If* `is_assignable` is an abrupt completion:
@@ -230,8 +230,8 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								1. *Throw:* a new TypeErrorNotAssignable.
 						3. *Else:*
 							1. *Throw:* a new TypeErrorNotAssignable.
-				8. *Return:* a mutable Map type whose antecedents’ type is `antecedenttype`
-					and whose consequents’ type is `consequenttype`.
+				8. *Return:* a mutable Map type under an antecedent type argument `antecedenttype`
+					and a consequent type argument `consequenttype`.
 		2. *Throw:* a new TypeErrorArgCount.
 	6. *Throw:* a new SyntaxError.
 ;
@@ -308,11 +308,9 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
+	5. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
 		1. *Return:* `Boolean`.
-	6. *Else If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
-		1. *Return:* `Boolean`.
-	7. *Throw:* a new TypeErrorInvalidOperation.
+	6. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: IS] expr) :=

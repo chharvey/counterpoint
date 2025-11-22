@@ -79,17 +79,10 @@ test.suite('ASTNodeExpression', () => {
 				]);
 			});
 			test.test('computes int values.', () => {
-				const integer_radices_on: CPConfig = {
-					...CONFIG_DEFAULT,
-					languageFeatures: {
-						...CONFIG_DEFAULT.languageFeatures,
-						integerRadices: true,
-					},
-				};
 				assert.deepStrictEqual(extract_tokens(`
 					55  -55  033  -033  0  -0
 					\\o55  -\\o55  \\q033  -\\q033
-				`).map((src) => AST.ASTNodeConstant.fromSource(src, integer_radices_on).fold()), [
+				`).map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));
@@ -172,6 +165,24 @@ test.suite('ASTNodeExpression', () => {
 					type FOO = int;
 					42 || FOO;
 				}`).varCheck(), ReferenceErrorKind);
+			});
+			test.test('iteration variable of `for` loop is scoped only to the block.', () => {
+				AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3] do {
+						it;
+					};
+				}`).varCheck(); // assert does not throw
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3, it] do {
+						42;
+					};
+				}`).varCheck(), ReferenceErrorUndeclared, 'iteraion variable cannot be referenced in the iterator expression.');
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3] do {
+						42;
+					};
+					it;
+				}`).varCheck(), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
 			});
 		});
 

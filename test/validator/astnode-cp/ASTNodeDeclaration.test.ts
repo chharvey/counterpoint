@@ -46,9 +46,9 @@ test.suite('ASTNodeDeclaration', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					type _ = str;
 				}`);
-				assert.ok(!goal.block!.validator.hasSymbol(256n));
+				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 				goal.varCheck();
-				return assert.ok(!goal.block!.validator.hasSymbol(256n));
+				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the symbol.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
@@ -59,11 +59,28 @@ test.suite('ASTNodeDeclaration', () => {
 					let FOO: int = 42;
 					type FOO = float;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3] do {
+						type it = int;
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = int;
 					if true then {
+						type T = float;
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					type T = int;
+					while false do {
+						type T = float;
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					type T = int;
+					for it: float of [1.1, 2.2, 3.3] do {
 						type T = float;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
@@ -146,9 +163,9 @@ test.suite('ASTNodeDeclaration', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let _: float = 4.2;
 				}`);
-				assert.ok(!goal.block!.validator.hasSymbol(256n));
+				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 				goal.varCheck();
-				return assert.ok(!goal.block!.validator.hasSymbol(256n));
+				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
@@ -159,11 +176,28 @@ test.suite('ASTNodeDeclaration', () => {
 					type FOO = float;
 					let FOO: int = 42;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for it: float of [1.1, 2.2, 3.3] do {
+						let it: int = 42;
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let var x: int = 42;
 					if true then {
+						let var x: float = 4.2;
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					let var x: int = 42;
+					while false do {
+						let var x: float = 4.2;
+					};
+				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					let var x: int = 42;
+					for it: float of [1.1, 2.2, 3.3] do {
 						let var x: float = 4.2;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
@@ -812,6 +846,13 @@ test.suite('ASTNodeDeclaration', () => {
 					type T = 42;
 					set T = 43;
 				}`).varCheck(), ReferenceErrorKind);
+			});
+			test.test('disallows manual reassignment of the iteration variable.', () => {
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+					for it: int of [11, 22, 33] do {
+						set it = 44;
+					};
+				}`).varCheck(), AssignmentErrorReassignment);
 			});
 		});
 

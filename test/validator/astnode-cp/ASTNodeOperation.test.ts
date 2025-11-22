@@ -849,22 +849,47 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#type', () => {
 			test.test('with folding on, returns a constant value.', () => {
 				typeOperations(new Map<string, VALUE.Boolean>([
-					['2 <  3', VALUE.TRUE],
-					['2 >  3', VALUE.FALSE],
-					['2 <= 3', VALUE.TRUE],
-					['2 >= 3', VALUE.FALSE],
-					['2 !< 3', VALUE.FALSE],
-					['2 !> 3', VALUE.TRUE],
+					['2   <  3',   VALUE.TRUE],
+					['2   >  3',   VALUE.FALSE],
+					['2   <= 3',   VALUE.TRUE],
+					['2   >= 3',   VALUE.FALSE],
+					['2   !< 3',   VALUE.FALSE],
+					['2   !> 3',   VALUE.TRUE],
+					['2.0 <  3',   VALUE.TRUE],
+					['2.0 >  3',   VALUE.FALSE],
+					['2.0 <= 3',   VALUE.TRUE],
+					['2.0 >= 3',   VALUE.FALSE],
+					['2.0 !< 3',   VALUE.FALSE],
+					['2.0 !> 3',   VALUE.TRUE],
+					['2   <  3.0', VALUE.TRUE],
+					['2   >  3.0', VALUE.FALSE],
+					['2   <= 3.0', VALUE.TRUE],
+					['2   >= 3.0', VALUE.FALSE],
+					['2   !< 3.0', VALUE.FALSE],
+					['2   !> 3.0', VALUE.TRUE],
 				]));
 			});
-			test.suite('with folding off.', () => {
-				test.test('returns `Boolean` if both operands are of the same numeric type.', () => {
-					assert.strictEqual(typeOfOperationFromSource('7   <  3'),   TYPE.BOOL);
-					assert.strictEqual(typeOfOperationFromSource('7.0 >= 3.0'), TYPE.BOOL);
-				});
-				test.test('throws for any operation of mix of integers and floats.', () => {
-					assert.throws(() => typeOfOperationFromSource('7.0 <= 3'), TypeErrorInvalidOperation);
-				});
+			test.test('with folding off, returns `Boolean` if both operands are of numeric type.', () => {
+				xjs.Array.forEachAggregated(extract_lines`
+					2   <  3
+					2   >  3
+					2   <= 3
+					2   >= 3
+					2   !< 3
+					2   !> 3
+					2.0 <  3
+					2.0 >  3
+					2.0 <= 3
+					2.0 >= 3
+					2.0 !< 3
+					2.0 !> 3
+					2   <  3.0
+					2   >  3.0
+					2   <= 3.0
+					2   >= 3.0
+					2   !< 3.0
+					2   !> 3.0
+				`, (src) => assert.strictEqual(AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type(), TYPE.BOOL));
 			});
 			test.test('throws for comparative operation of non-numbers.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
@@ -1044,8 +1069,8 @@ test.suite('ASTNodeOperation', () => {
 					['@a ==  @a',                              VALUE.TRUE],
 					['@a === @b',                              VALUE.FALSE],
 					['@a ==  @b',                              VALUE.FALSE],
-					['@a === 256',                             VALUE.FALSE], // TODO: turn on integerRadices
-					['@a ==  256',                             VALUE.FALSE], // TODO: turn on integerRadices
+					['@a === 256',                             VALUE.FALSE], // TODO: use \x100
+					['@a ==  256',                             VALUE.FALSE], // TODO: use \x100
 					['@a === @\'a\'',                          VALUE.FALSE],
 					['@a ==  @\'a\'',                          VALUE.FALSE],
 					['@\'a\' === @\'\\u{61}\'',                VALUE.FALSE],
@@ -1198,7 +1223,7 @@ test.suite('ASTNodeOperation', () => {
 
 						['@a === null',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
 						['@a === false', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
-						['@a === 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: turn on integerRadices
+						['@a === 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: use \x100
 						['@a === @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
 					]));
 				});
@@ -1245,7 +1270,7 @@ test.suite('ASTNodeOperation', () => {
 
 						['@a == null',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
 						['@a == false', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
-						['@a == 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: turn on integerRadices
+						['@a == 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: use \x100
 						['@a == @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
 					]));
 				});

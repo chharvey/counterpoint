@@ -61,6 +61,10 @@ export class Integer extends ValueNumber<Integer> {
 	@instanceOf(() => ValueNumber)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
+		if (value instanceof Integer) {
+			// non-identical integers will never be equal
+			return false;
+		}
 		return this.toFloat().equal(value);
 	}
 
@@ -237,7 +241,10 @@ export class Integer extends ValueNumber<Integer> {
 		return this.data === 1n;
 	}
 
-	public override lt(y: Integer): boolean {
-		return this.data < y.data;
+	public override lt(y: ValueNumber): boolean {
+		if (y instanceof Integer) {
+			return this.data < y.data;
+		}
+		return this.toFloat().lt(y);
 	}
 }

@@ -18,10 +18,7 @@ import {
 	Operator,
 	type ValidOperatorComparative,
 } from '../Operator.ts';
-import {
-	bothInts,
-	bothFloats,
-} from './utils-private.ts';
+import {bothNumbers} from './utils-private.ts';
 import {
 	buildDeco,
 	ASTNodeExpression,
@@ -65,7 +62,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			return TYPE.NOTHING;
 		}
 		return (
-			bothInts(t0, t1) || bothFloats(t0, t1) ? TYPE.BOOL :
+			bothNumbers(t0, t1) ? TYPE.BOOL :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);
 	}
