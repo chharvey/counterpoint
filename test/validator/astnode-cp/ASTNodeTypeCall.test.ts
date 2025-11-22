@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import {
 	AST,
 	TYPE,
@@ -9,9 +10,9 @@ import {assertEqualTypes} from '../../assert-helpers.ts';
 
 
 
-describe('ASTNodeTypeCall', () => {
-	describe('#eval', () => {
-		it('evaluates List, Dict, Set, and Map.', () => {
+test.suite('ASTNodeTypeCall', () => {
+	test.suite('#eval', () => {
+		test.test('evaluates List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
 				[
 					'List.<null>',
@@ -27,13 +28,13 @@ describe('ASTNodeTypeCall', () => {
 				],
 			);
 		});
-		it('Map has a default type parameter.', () => {
+		test.test('Map has a default type parameter.', () => {
 			assertEqualTypes(
 				AST.ASTNodeTypeCall.fromSource('Map.<int>').eval(),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);
 		});
-		it('throws if base is not an ASTNodeTypeAlias.', () => {
+		test.test('throws if base is not an ASTNodeTypeAlias.', () => {
 			[
 				'int.<str>',
 				'(int | float).<bool>',
@@ -41,7 +42,7 @@ describe('ASTNodeTypeCall', () => {
 				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable);
 			});
 		});
-		it('throws if base is not one of the allowed strings.', () => {
+		test.test('throws if base is not one of the allowed strings.', () => {
 			[
 				'SET.<str>',
 				'Mapping.<bool>',
@@ -49,7 +50,7 @@ describe('ASTNodeTypeCall', () => {
 				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), SyntaxError);
 			});
 		});
-		it('throws when providing incorrect number of arguments.', () => {
+		test.test('throws when providing incorrect number of arguments.', () => {
 			[
 				'List.<null, null>',
 				'Dict.<bool, bool, bool>',

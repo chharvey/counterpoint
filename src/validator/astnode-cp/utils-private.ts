@@ -206,7 +206,7 @@ export function validate_access_kind(access_kind: ValidTypeAccessOperator | Vali
 		throw new TypeErrorInvalidOperation(access);
 	}
 	if (access_kind === Operator.DOT_RES) {
-		throw new TypeError('Operator `!.` not yet supported.');
+		assert.fail('Operator `!.` not yet supported.');
 	}
 }
 
@@ -221,7 +221,7 @@ export function update_accessed_type(type: TYPE.Type, access_kind: ValidTypeAcce
 			return type.union(TYPE.NULL);
 		}
 		case Operator.DOT_RES: {
-			throw new TypeError('Operator `!.` not yet supported.');
+			assert.fail('Operator `!.` not yet supported.');
 		}
 	}
 }

@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
@@ -16,8 +17,8 @@ import {
 
 
 
-describe('ASTNodeTypeAccess', () => {
-	describe('#eval', () => {
+test.suite('ASTNodeTypeAccess', () => {
+	test.suite('#eval', () => {
 		/**
 		 * Takes a program source text and compares it to the array of expected types.
 		 * The format of the program source text must be 0 or more type declarations.
@@ -51,8 +52,8 @@ describe('ASTNodeTypeAccess', () => {
 		}
 
 
-		context('access kind: normal access (`a.‹b›`).', () => {
-			it('returns individual entry types.', () => {
+		test.suite('access kind: normal access (`a.‹b›`).', () => {
+			test.test('returns individual entry types.', () => {
 				testTypeEvals(`{
 					type TupC = (1,   2.0,   "three");
 					type TupV = (int, float, str);
@@ -101,7 +102,7 @@ describe('ASTNodeTypeAccess', () => {
 					TYPE.STR,
 				]);
 			});
-			it('throws when entry is optional.', () => {
+			test.test('throws when entry is optional.', () => {
 				testTypeEvals(`{
 					type TupoC = (1,   2.0,   ?: "three");
 					type TupoV = (int, float, ?: str);
@@ -116,13 +117,13 @@ describe('ASTNodeTypeAccess', () => {
 					type E2 = RecoV.b;
 				}`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
-			it('throws when base object is of incorrect type.', () => {
+			test.test('throws when base object is of incorrect type.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					List.<int>.1
 					Dict.<int>.b
 				`, (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry, src));
 			});
-			it('throws when index is out of bounds / when key is out of range.', () => {
+			test.test('throws when index is out of bounds / when key is out of range.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					(1, 2.0, "three").3
 					(1, 2.0, "three").-4
@@ -132,8 +133,8 @@ describe('ASTNodeTypeAccess', () => {
 		});
 
 
-		context('access kind: maybe access (`a?.‹b›`).', () => {
-			it('unions with null if entry is optional.', () => {
+		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
+			test.test('unions with null if entry is optional.', () => {
 				testTypeEvals(`{
 					type TupoC = (1,   2.0,   ?: "three");
 					type TupoV = (int, float, ?: str);
@@ -154,7 +155,7 @@ describe('ASTNodeTypeAccess', () => {
 					TYPE.FLOAT.union(TYPE.NULL),
 				]);
 			});
-			it('throws when entry is not optional.', () => {
+			test.test('throws when entry is not optional.', () => {
 				testTypeEvals(`{
 					type TupoC = (1,   2.0,   "three");
 					type TupoV = (int, float, str);

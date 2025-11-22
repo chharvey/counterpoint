@@ -54,7 +54,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		public readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		if (this.kind === Operator.DOT_RES) {
+		if ([Operator.DOT_RES].includes(this.kind)) {
 			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
 		}
 	}

@@ -1,4 +1,5 @@
 import * as assert from 'assert';
+import * as test from 'node:test';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -20,9 +21,9 @@ import {extract_lines} from '../../utils.ts';
 
 
 
-describe('ASTNodeStatement', () => {
-	describe('#typeCheck', () => {
-		describe('ASTNodeStatementLoop', () => {
+test.suite('ASTNodeStatement', () => {
+	test.suite('#typeCheck', () => {
+		test.suite('ASTNodeStatementLoop', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
 				let var cond: int         = 42;
 				let var cond: int | false = 42;
@@ -34,7 +35,7 @@ describe('ASTNodeStatement', () => {
 				let var cond: true  = true;
 				let var cond: bool  = false;
 			`;
-			it('passes when condition is subtype of Boolean.', () => {
+			test.test('passes when condition is subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
 					setupScript(`{
 						${ decl }
@@ -43,7 +44,7 @@ describe('ASTNodeStatement', () => {
 					}`, null, {build: false}); // assert does not throw
 				}));
 			});
-			it('throws when condition is not subtype of Boolean.', () => {
+			test.test('throws when condition is not subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
 					const {stmts} = setupScript(`{
 						${ decl }
@@ -56,8 +57,8 @@ describe('ASTNodeStatement', () => {
 			});
 		});
 
-		describe('ASTNodeStatementIteration', () => {
-			it('passes when iterable is subtype of List and iteration variable is a supertype of List item type.', () => {
+		test.suite('ASTNodeStatementIteration', () => {
+			test.test('passes when iterable is subtype of List and iteration variable is a supertype of List item type.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					str
 					"hello" | "to the" | "world"
@@ -70,7 +71,7 @@ describe('ASTNodeStatement', () => {
 					}`, null, {build: false}); // assert does not throw
 				});
 			});
-			it('throws when iterable is not subtype of List.', () => {
+			test.test('throws when iterable is not subtype of List.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					"hello, world"
 					("hello", "world")
@@ -87,7 +88,7 @@ describe('ASTNodeStatement', () => {
 					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotAssignable);
 				});
 			});
-			it('throws when iteration variable is not supertype of List item type.', () => {
+			test.test('throws when iteration variable is not supertype of List item type.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					int
 					[str]
@@ -105,7 +106,7 @@ describe('ASTNodeStatement', () => {
 					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotNarrow);
 				});
 			});
-			it('throws when block type-checking fails.', () => {
+			test.test('throws when block type-checking fails.', () => {
 				const {stmts} = setupScript(`{
 					for it: str of ["hello", "world"] do {
 						42 + it; %> TypeErrorInvalidOperation
@@ -118,12 +119,12 @@ describe('ASTNodeStatement', () => {
 	});
 
 
-	describe('#build', () => {
-		describe('ASTNodeStatementLoop', () => {
+	test.suite('#build', () => {
+		test.suite('ASTNodeStatementLoop', () => {
 			function makeLoop(mod: binaryen.Module, label_block: string, label_loop: string, instrs: readonly binaryen.ExpressionRef[], branch_depth: number): binaryen.ExpressionRef {
 				return mod.block(label_block, [mod.loop(label_loop, mod.block(null, [...instrs, mod.br([label_loop, label_block][branch_depth])]))]);
 			}
-			it('always retuns `(block (loop (block)))`.', () => {
+			test.test('always retuns `(block (loop (block)))`.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
 					while cond do {
@@ -137,7 +138,7 @@ describe('ASTNodeStatement', () => {
 					stmt.block.build(),
 				], 0));
 			});
-			it('skips condition check if condition is definitely truthy/falsy.', () => {
+			test.test('skips condition check if condition is definitely truthy/falsy.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var TRUE:  true  = true;
 					let var FALSE: false = false;
@@ -173,7 +174,7 @@ describe('ASTNodeStatement', () => {
 					], 1),
 				]);
 			});
-			it('produces `(nop)` if entire statement is foldable.', () => {
+			test.test('produces `(nop)` if entire statement is foldable.', () => {
 				const {stmts, mod} = setupScript(`{
 					let cond: bool = true;
 					while cond do {
@@ -182,7 +183,7 @@ describe('ASTNodeStatement', () => {
 				}`);
 				return assertEqualBins(stmts[1].build(), mod.nop());
 			});
-			it('negates the condition for `until` statements.', () => {
+			test.test('negates the condition for `until` statements.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
 					until cond do {
@@ -197,8 +198,8 @@ describe('ASTNodeStatement', () => {
 			});
 		});
 
-		describe('ASTNodeStatementIteration', () => {
-			it('produces `(nop)` if entire statement is foldable.', () => {
+		test.suite('ASTNodeStatementIteration', () => {
+			test.test('produces `(nop)` if entire statement is foldable.', () => {
 				const {stmts, mod} = setupScript(`{
 					for it: int of [10, 20, 30, 40] do {
 						42;
@@ -206,7 +207,7 @@ describe('ASTNodeStatement', () => {
 				}`);
 				return assertEqualBins(stmts[0].build(), mod.nop());
 			});
-			it('if not foldable, is not yet supported.', () => {
+			test.test('if not foldable, is not yet supported.', () => {
 				const {stmts} = setupScript(`{
 					let var i: int = 42;
 					for it: int of [10, 20, 30, 40] do {
@@ -220,9 +221,9 @@ describe('ASTNodeStatement', () => {
 	});
 
 
-	describe('ASTNodeStatementIteration', () => {
-		describe('#varCheck', () => {
-			it('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
+	test.suite('ASTNodeStatementIteration', () => {
+		test.suite('#varCheck', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					for it: float of [1.1, 2.2, 3.3] do {
 						42;
@@ -241,7 +242,7 @@ describe('ASTNodeStatement', () => {
 					value:           null,
 				});
 			});
-			it('for blank identifiers, does not add to symbol table.', () => {
+			test.test('for blank identifiers, does not add to symbol table.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					for _: float of [1.1, 2.2, 3.3] do {
 						42;
@@ -252,7 +253,7 @@ describe('ASTNodeStatement', () => {
 				goal.varCheck();
 				return assert.ok(!validator.hasSymbol(0x100n));
 			});
-			it('allows duplicate declaration of iteration variable.', () => {
+			test.test('allows duplicate declaration of iteration variable.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					for it: float of [1.1, 2.2, 3.3] do {
 						42;
@@ -262,7 +263,7 @@ describe('ASTNodeStatement', () => {
 					};
 				}`).varCheck(); // assert does not throw
 			});
-			it('allows duplicate declaration in nested scopes (not technically shadowing).', () => {
+			test.test('allows duplicate declaration in nested scopes (not technically shadowing).', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					for it: int of [11, 22, 33] do {
 						42;
@@ -294,7 +295,7 @@ describe('ASTNodeStatement', () => {
 					};
 				}`).varCheck(); // assert does not throw
 			});
-			it('throws if the same identifier was declared in an outer scope (shadowing).', () => {
+			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let i: int = 42;
 					for i: bool of [false, true] do {

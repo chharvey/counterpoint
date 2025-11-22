@@ -111,7 +111,7 @@ Type! TypeOfUnfolded(SemanticExpressionBlock block) :=
 
 
 Type! TypeOfUnfolded(SemanticAccess[kind: RESULT] access) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
@@ -314,7 +314,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
