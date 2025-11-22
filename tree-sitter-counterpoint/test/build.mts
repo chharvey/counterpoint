@@ -236,6 +236,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// PropertiesType
 		// tested in #TypeRecordLiteral
 
+		// PropertyAccessorType
+		// tested in #TypeCompound
+
 		TypeGrouped: [
 			xjs.String.dedent`
 				{
@@ -407,9 +410,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// TypeUnit
 		// consists of #{IDENTIFIER,KeywordType,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
-
-		// PropertyAccessorType
-		// tested in #TypeCompound
 
 		// GenericCall
 		// tested in #TypeCompound
@@ -604,6 +604,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// Case
 		// tested in #MapLiteral
+
+		// PropertyAccessor
+		// tested in #{ExpressionCompound,Assignee}
 
 		ExpressionGrouped: [
 			xjs.String.dedent`
@@ -828,9 +831,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// ExpressionUnit
 		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal,Block}
 
-		// PropertyAccessor
-		// tested in #{ExpressionCompound,Assignee}
-
 		// FunctionCall
 		// tested in #ExpressionCompound
 
@@ -939,9 +939,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 			),
 		],
-
-		// Assignee
-		// tested in #DeclarationReassignment
 
 		ExpressionUnarySymbol: [
 			xjs.String.dedent`
@@ -1417,6 +1414,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 			),
 		],
+
+		// Assignee
+		// tested in #DeclarationReassignment
 
 		DeclarationType: [
 			xjs.String.dedent`
