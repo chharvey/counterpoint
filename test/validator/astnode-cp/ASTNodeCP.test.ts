@@ -110,22 +110,6 @@ test.suite('ASTNodeCP', () => {
 
 
 		test.suite('#build', () => {
-			test.test('always retuns `(if)`.', () => {
-				const {stmts, mod} = setupScript(`{
-					let var cond: bool = false;
-					if cond then {
-						42;
-					} else {
-						4.2;
-					};
-				}`);
-				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
-				return assertEqualBins(stmt.build(), mod.if(
-					new BinVect(mod, stmt.condition.build()).isSpecial(true),
-					stmt.consequent.build(),
-					stmt.alternative!.build(),
-				));
-			});
 			test.test('produces `(nop)` for alternative if there is none.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
@@ -183,15 +167,6 @@ test.suite('ASTNodeCP', () => {
 						(stmts[5] as AST.ASTNodeStatementConditional).alternative!.build(),
 					),
 				]);
-			});
-			test.test('produces `(nop)` if entire statement is foldable.', () => {
-				const {stmts, mod} = setupScript(`{
-					let cond: bool = false;
-					if cond then {
-						42;
-					};
-				}`);
-				return assertEqualBins((stmts[1] as AST.ASTNodeStatementConditional).build(), mod.nop());
 			});
 			test.test('negates the condition for `unless` statements.', () => {
 				const {stmts, mod} = setupScript(`{

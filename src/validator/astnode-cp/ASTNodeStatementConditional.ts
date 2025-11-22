@@ -43,7 +43,18 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 	@if_constant_folding
 	public override get isFoldable(): boolean {
-		return !!this.condition.fold() && this.consequent.isFoldable && (!this.alternative || !!this.alternative.isFoldable);
+		const condition_type:   TYPE.Type = this.condition.type();
+		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
+		const condition_falsy:  boolean   = condition_type.isSubtypeOf(TYPE.FALSE);
+
+		return !!this.condition.fold() && (
+			/*
+				- `if true…`  or `unless false…`, and consequent  is foldable                    -> sufficient
+				- `if false…` or `unless true…`,  and alternative is foldable (or doesn’t exist) -> sufficient
+			*/
+			(!this.unless && condition_truthy || this.unless && condition_falsy)  && this.consequent.isFoldable ||
+			(!this.unless && condition_falsy  || this.unless && condition_truthy) && (!this.alternative || !!this.alternative.isFoldable)
+		);
 	}
 
 	public override typeCheck(): void {
