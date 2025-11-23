@@ -22,12 +22,12 @@ import {
 	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {Reassignable} from './Reassignable.ts';
 import {
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
+import type {Reassignable} from './Reassignable.ts';
 
 
 
@@ -61,7 +61,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
+		return this.builder.getLocal(this.validator.getSymbolInfo(this.id) as SymbolSchemaVar)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod
@@ -70,7 +70,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.uninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
 	}
 
 	@memoizeMethod
@@ -78,7 +78,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
-		if (!symbol.unfixed) {
+		if (!symbol.isUnfixed) {
 			return symbol.value;
 		}
 		return null;

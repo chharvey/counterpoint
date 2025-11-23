@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	drop_then,
 	type Local,
 	BinVect,
 } from '../../index.ts';
@@ -45,36 +46,33 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		// eslint-disable-next-line prefer-const --- one of them is reassigned
-		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+		const mod:          binaryen.Module          = this.builder.module;
+		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
 		const t0:     TYPE.Type              = this.operand0.type();
-		const block1: binaryen.ExpressionRef = this.builder.module.block(null, [
-			this.builder.module.drop(arg0),
-			arg1,
-		], binaryen.v128);
+		const block1: binaryen.ExpressionRef = drop_then(mod, [arg0], arg1);
 		if (t0.isDefinitelyFalsy) {
 			return this.operator === Operator.AND ? arg0 : block1;
 		} else if (t0.isDefinitelyTruthy) {
 			return this.operator === Operator.AND ? block1 : arg0;
 		}
 
-		const local: Local = this.builder.addLocal(arg0)[1];
+		const local0: Local = this.builder.addLocal(arg0);
 
-		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
+		const arg0_truthy: binaryen.ExpressionRef = new BinVect(mod, mod.call(
 			'vnot',
-			[local.tee()],
+			[local0.tee()],
 			binaryen.v128,
 		)).isSpecial(false);
-		arg0 = local.get();
 
-		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
-		return this.builder.module.if(condition, if_true, if_false);
+		return this.operator === Operator.AND
+			? mod.if(arg0_truthy, arg1,         local0.get())
+			: mod.if(arg0_truthy, local0.get(), arg1);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
 			case Operator.AND: {

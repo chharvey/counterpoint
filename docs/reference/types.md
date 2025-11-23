@@ -28,22 +28,22 @@ An instance of a reference type is called a “reference object” or simply an 
 Simple types are individual basic types. They cannot be broken up into smaller types.
 
 
-### `never`
-Type `never` is at the bottom of the type hierarchy —
+### `nothing`
+Type `nothing` is at the bottom of the type hierarchy —
 it contains no values and is a subtype of every other type.
 
-Type `never` is used to describe the return type of functions that never return,
+Type `nothing` is used to describe the return type of functions that never return,
 or the type of an expression that never evaluates.
 
-Type `never` is most commonly a result of a type operation that produces the Bottom type,
+Type `nothing` is most commonly a result of a type operation that produces the Bottom type,
 for example, the intersection of two disjoint types.
 
 
-### `unknown`
-Type  `unknown` is at the top of the type hierarchy —
+### `anything`
+Type `anything` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
-Type `unknown` is used to describe a value or expression about which nothing is known.
+Type `anything` is used to describe a value or expression about which nothing is known.
 Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 ### `null`
@@ -207,12 +207,6 @@ The coefficient need not be between 1 and 10. `-42.0e-1` is a valid floating-poi
 Floating-point values can be operated on just as integers can.
 There is no truncation for division, but dividing by zero still raises an error.
 The floating-point value `0.0` is *not identical* to the value `-0.0`.
-
-Float values are considered “contageous” in that they “infect” any integers they are operated with.
-For example, in the expression `1 + 2.3`, the integer `1` is *coerced* into the float `1.0`,
-giving the same result as `1.0 + 2.3`.
-If an expression contains *any* float value anywhere, then
-*all* the integers in the expression are coerced into floats.
 
 
 ### `str`
@@ -499,12 +493,12 @@ but they can only be reassigned to the same value, so having an unfixed variable
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
 let var TAU: true = true;
-TAU = true;
-TAU = false; %> TypeError
+set TAU = true;
+set TAU = false; %> TypeError
 
 let var CAR_WHEELS: 4 = 4;
 let CAT_FEET: \b100 = \o4;
-CAR_WHEELS = CAT_FEET;
+set CAR_WHEELS = CAT_FEET;
 ```
 
 The assigned value doesn’t need to be a literal; it may be an expression,

@@ -1,4 +1,4 @@
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeExpression} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 
@@ -6,7 +6,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 
 export class ASTNodeCase extends ASTNodeCP {
 	public constructor(
-		start_node: SyntaxNodeType<'case'>,
+		start_node: SyntaxNodeFamily<'case', ['break']>,
 		public readonly antecedent: ASTNodeExpression,
 		public readonly consequent: ASTNodeExpression,
 	) {

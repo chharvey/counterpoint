@@ -11,9 +11,13 @@ import {
 } from '../../core/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
+import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
@@ -29,11 +33,18 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		private readonly assignee: ASTNodeTypeAlias | null,
 		public  readonly assigned: ASTNodeType,
 	) {
-		super(
-			start_node,
-			{},
-			(assignee) ? [assignee, assigned] : [assigned],
-		);
+		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
+	}
+
+	// @memoizeGetter // memoizing takes longer than returning a constant
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return true;
+	}
+
+	// @memoizeGetter // memoizing takes longer than returning a constant
+	public override get hasBottomType(): boolean {
+		return false;
 	}
 
 	public override varCheck(): void {
@@ -56,7 +67,8 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.nop();
+		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');
 	}
 }

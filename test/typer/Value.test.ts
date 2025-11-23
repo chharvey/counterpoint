@@ -1,7 +1,9 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import binaryen from 'binaryen';
 import {
 	VALUE,
+	bigint_to_i64,
 	Builder,
 	BinVect,
 } from '../../src/index.ts';
@@ -13,10 +15,10 @@ import {
 
 
 
-describe('Value', () => {
-	describe('#identical', () => {
-		describe('Tuple', () => {
-			it('Tuples with the same items are identical.', () => {
+test.suite('Value', () => {
+	test.suite('#identical', () => {
+		test.suite('Tuple', () => {
+			test.test('Tuples with the same items are identical.', () => {
 				assert.ok(new VALUE.Tuple<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
@@ -29,8 +31,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('Record', () => {
-			it('Records with the same items are identical.', () => {
+		test.suite('Record', () => {
+			test.test('Records with the same items are identical.', () => {
 				assert.ok(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -43,8 +45,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('List', () => {
-			it('Lists with the same items are not identical.', () => {
+		test.suite('List', () => {
+			test.test('Lists with the same items are not identical.', () => {
 				assert.ok(!new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
@@ -57,8 +59,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('Dict', () => {
-			it('Dicts with the same items are not identical.', () => {
+		test.suite('Dict', () => {
+			test.test('Dicts with the same items are not identical.', () => {
 				assert.ok(!new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -73,9 +75,9 @@ describe('Value', () => {
 	});
 
 
-	describe('#equal', () => {
-		describe('CollectionIndexed', () => {
-			it('Tuples and Lists are not equal even if they have the same items.', () => {
+	test.suite('#equal', () => {
+		test.suite('CollectionIndexed', () => {
+			test.test('Tuples and Lists are not equal even if they have the same items.', () => {
 				const tuple = new VALUE.Tuple<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
@@ -90,8 +92,8 @@ describe('Value', () => {
 				assert.ok(!list.equal(tuple), '["earth", "wind", "fire"] != ("earth", "wind", "fire")');
 			});
 		});
-		describe('CollectionKeyed', () => {
-			it('Records and Dicts are not equal even if they have the same properties.', () => {
+		test.suite('CollectionKeyed', () => {
+			test.test('Records and Dicts are not equal even if they have the same properties.', () => {
 				const record = new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -107,8 +109,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('Tuple', () => {
-			it('Tuples are equal if they have the same items.', () => {
+		test.suite('Tuple', () => {
+			test.test('Tuples are equal if they have the same items.', () => {
 				assert.ok(new VALUE.Tuple<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
@@ -121,8 +123,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('Record', () => {
-			it('Records are equal if they have the same properties.', () => {
+		test.suite('Record', () => {
+			test.test('Records are equal if they have the same properties.', () => {
 				assert.ok(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -135,8 +137,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('List', () => {
-			it('Lists are equal if they have the same items.', () => {
+		test.suite('List', () => {
+			test.test('Lists are equal if they have the same items.', () => {
 				assert.ok(new VALUE.List<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
@@ -147,7 +149,7 @@ describe('Value', () => {
 					new VALUE.String('fire'),
 				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
 			});
-			it.skip('Lists may contain circular references.', () => {
+			test.test.todo('Lists may contain circular references.', () => {
 				`
 					let a: mut List.<List.<Object>> = List.<List.<Object>>(());
 					let b: mut List.<List.<Object>> = List.<List.<Object>>(());
@@ -159,8 +161,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('Dict', () => {
-			it('Dicts are equal if they have the same properties.', () => {
+		test.suite('Dict', () => {
+			test.test('Dicts are equal if they have the same properties.', () => {
 				assert.ok(new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -171,20 +173,20 @@ describe('Value', () => {
 					[0x101n, new VALUE.String('wind')],
 				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
 			});
-			it.skip('Dicts may contain circular references.', () => {
+			test.test.todo('Dicts may contain circular references.', () => {
 				`
-					let a: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>((x= null));
-					let b: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>((x= null));
-					a.set.(@y, b);
-					b.set.(@y, a);
+					let a: mut Dict.<anything> = [x= null];
+					let b: mut Dict.<anything> = [x= null];
+					a.set.(@x, b);
+					b.set.(@x, a);
 					assert.equal.(a, b);
 					assert.equal.(b, a);
 				`;
 			});
 		});
 
-		describe('Set', () => {
-			it('return false if sets have different counts.', () => {
+		test.suite('Set', () => {
+			test.test('return false if sets have different counts.', () => {
 				assert.ok(!new VALUE.Set<VALUE.String>(new Set([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
@@ -196,7 +198,7 @@ describe('Value', () => {
 					new VALUE.String('water'),
 				]))));
 			});
-			it('returns true if sets contain equal elements.', () => {
+			test.test('returns true if sets contain equal elements.', () => {
 				assert.ok(new VALUE.Set<VALUE.String>(new Set([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
@@ -211,9 +213,9 @@ describe('Value', () => {
 	});
 
 
-	describe('#build', () => {
-		describe('Null', () => {
-			it('returns a v128 with `null` as an argument.', () => {
+	test.suite('#build', () => {
+		test.suite('Null', () => {
+			test.test('returns a v128 with `null` as an argument.', () => {
 				const builder = new Builder();
 				return assertEqualBins(
 					VALUE.NULL.build(builder),
@@ -222,7 +224,7 @@ describe('Value', () => {
 			});
 		});
 
-		specify('Boolean', () => {
+		test.test('Boolean', () => {
 			const builder = new Builder();
 			return assertEqualBins(
 				[VALUE.FALSE.build(builder),              VALUE.TRUE.build(builder)],
@@ -230,17 +232,17 @@ describe('Value', () => {
 			);
 		});
 
-		specify('Symbol', () => {
+		test.test('Symbol', () => {
 			const builder = new Builder();
 			const mod: binaryen.Module = builder.module;
 			return assertEqualBins(
-				[VALUE.SYM_NEVER.build(builder),             new VALUE.Symbol(0x100n, 'hello').build(builder)],
-				[new BinVect(mod, mod.i32.const(0x80)).vect, new BinVect(mod, mod.i32.const(0x100)).vect],
+				[VALUE.SYM_NOTHING.build(builder),              new VALUE.Symbol(0x100n, 'hello').build(builder)],
+				[new BinVect(mod, mod.i64.const(0x80, 0)).vect, new BinVect(mod, mod.i64.const(0x100, 0)).vect],
 			);
 		});
 
-		describe('Integer', () => {
-			it('generates `(i32.const)`.', () => {
+		test.suite('Integer', () => {
+			test.test('generates `(i64.const)`.', () => {
 				const data: bigint[] = [
 					42n + -420n,
 					...[
@@ -259,13 +261,13 @@ describe('Value', () => {
 				const builder = new Builder();
 				return assertEqualBins(
 					data.map((x) => new VALUE.Integer(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, builder.module.i32.const(Number(x))).vect),
+					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x)).vect),
 				);
 			});
 		});
 
-		describe('Float', () => {
-			it('generates `(f64.const)`.', () => {
+		test.suite('Float', () => {
+			test.test('generates `(f64.const)`.', () => {
 				/* eslint-disable @stylistic/array-element-newline */
 				const data: number[] = [
 					55, -55, 33, -33, 2.007, -2.007,
@@ -280,7 +282,7 @@ describe('Value', () => {
 					data.map((x) => new BinVect(builder.module, builder.module.f64.const(x)).vect),
 				);
 			});
-			it('builds `0.0` and `-0.0` differently.', () => {
+			test.test('builds `0.0` and `-0.0` differently.', () => {
 				const builder = new Builder();
 				const mod: binaryen.Module = builder.module;
 				return assertEqualBins(
@@ -290,8 +292,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe.skip('String', () => {
-			specify('#build', () => {
+		test.suite.todo('String', () => {
+			test.test('#build', () => {
 				const builder = new Builder();
 				return assertEqualBins(
 					new VALUE.String('hello world').build(builder),
@@ -300,58 +302,58 @@ describe('Value', () => {
 			});
 		});
 
-		describe('Collection', () => {
+		test.suite('Collection', () => {
 			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
 			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
 
-			describe('Tuple', () => {
+			test.suite('Tuple', () => {
 				let builder: Builder = new Builder();
-				beforeEach(() => {
+				test.test.beforeEach(() => {
 					builder = new Builder();
 				});
-				it('returns `(tuple.make)`.', () => {
+				test.test('returns `(tuple.make)`.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([VALUE.INT_1, new VALUE.Float(2.0)]).build(builder),
 						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
 						'(1, 2.0)',
 					);
 				});
-				it('empty tuple returns unique BinVect representation.', () => {
+				test.test('empty tuple returns unique BinVect representation.', () => {
 					assertEqualBins(
 						new VALUE.Tuple().build(builder),
 						new BinVect(builder.module, [0n]).vect,
 						'()',
 					);
 				});
-				it('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
+				test.test('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Float(3.4)]).build(builder),
 						singletonTuple(builder, buildConst(builder, 3.4)),
 						'(3.4,)',
 					);
 				});
-				it('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
+				test.test('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
 						singletonTuple(builder, new BinVect(builder.module, [0n]).vect),
 						'((),)',
 					);
 				});
-				it('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
+				test.test('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Tuple()])]).build(builder),
 						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, [0n]).vect), 0)),
 						'(((),),)',
 					);
 				});
-				it('boxed tuple with 1 item.', () => {
+				test.test('boxed tuple with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Float(3.4)])]).build(builder),
 						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
 						'((3.4,),)',
 					);
 				});
-				it('boxed tuple with many items.', () => {
+				test.test('boxed tuple with many items.', () => {
 					const mod:   binaryen.Module        = builder.module;
 					const inner: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 1n),
@@ -372,7 +374,7 @@ describe('Value', () => {
 						'((1, 2.0, true),)',
 					);
 				});
-				it('nested tuples.', () => {
+				test.test('nested tuples.', () => {
 					const mod:    binaryen.Module        = builder.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 3n),
@@ -396,7 +398,7 @@ describe('Value', () => {
 						'(1, (2.0,), (3, (4.0,)))',
 					);
 				});
-				it('multiple entries.', () => {
+				test.test('multiple entries.', () => {
 					const mod:     binaryen.Module        = builder.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 2.0),
@@ -456,12 +458,12 @@ describe('Value', () => {
 				});
 			});
 
-			describe('Record', () => {
+			test.suite('Record', () => {
 				let builder: Builder = new Builder();
-				beforeEach(() => {
+				test.test.beforeEach(() => {
 					builder = new Builder();
 				});
-				it('returns `(tuple.make)`.', () => {
+				test.test('returns `(tuple.make)`.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([
 							[0x100n, VALUE.INT_1],
@@ -471,21 +473,21 @@ describe('Value', () => {
 						'(a= 1, b= 2.0)',
 					);
 				});
-				it('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
+				test.test('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]])).build(builder),
 						singletonTuple(builder, buildConst(builder, 3.4)),
 						'(a= 3.4)',
 					);
 				});
-				it('boxed record with 1 prop.', () => {
+				test.test('boxed record with 1 prop.', () => {
 					assertEqualBins(
 						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]]))]])).build(builder),
 						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
 						'(a= (a= 3.4))',
 					);
 				});
-				it('boxed record with many props.', () => {
+				test.test('boxed record with many props.', () => {
 					const mod:   binaryen.Module        = builder.module;
 					const inner: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 1n),
@@ -506,7 +508,7 @@ describe('Value', () => {
 						'(a= (a= 1, b= 2.0, c= true))',
 					);
 				});
-				it('nested records.', () => {
+				test.test('nested records.', () => {
 					const mod:    binaryen.Module        = builder.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 3n),
@@ -534,7 +536,7 @@ describe('Value', () => {
 						)`,
 					);
 				});
-				it('multiple entries.', () => {
+				test.test('multiple entries.', () => {
 					const mod:     binaryen.Module        = builder.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(builder, 2.0),
@@ -605,9 +607,9 @@ describe('Value', () => {
 	});
 
 
-	describe('Set', () => {
-		describe('.constructor', () => {
-			it('overwrites identical elements.', () => {
+	test.suite('Set', () => {
+		test.suite('.constructor', () => {
+			test.test('overwrites identical elements.', () => {
 				assert.deepStrictEqual(
 					new VALUE.Set(new Set([
 						new VALUE.String('a'),
@@ -620,7 +622,7 @@ describe('Value', () => {
 					])),
 				);
 			});
-			it('does not overwrite non-identical (even if equal) elements.', () => {
+			test.test('does not overwrite non-identical (even if equal) elements.', () => {
 				assert.strictEqual(new VALUE.Set(new Set([
 					VALUE.FLOAT_0,
 					VALUE.FLOAT_N0,
@@ -628,8 +630,8 @@ describe('Value', () => {
 			});
 		});
 
-		describe('#get', () => {
-			it('compares by identity, not equality', () => {
+		test.suite('#get', () => {
+			test.test('compares by identity, not equality', () => {
 				const tuples = new VALUE.Set(new Set([new VALUE.Tuple()]));
 				assert.strictEqual(tuples.get(new VALUE.Tuple()), VALUE.TRUE, 'returns true when testing identical value types.');
 
@@ -643,9 +645,32 @@ describe('Value', () => {
 	});
 
 
-	describe('Map', () => {
-		describe('.constructor', () => {
-			it('overwrites identical antecedents.', () => {
+	test.suite('Number', () => {
+		test.suite('#toInt', () => {
+			test.test('Integer', () => {
+				const i = new VALUE.Integer(42n);
+				assert.strictEqual(i.toInt(), i, '`Integer#toInt` should return self.');
+			});
+			test.test('Float', () => {
+				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), '`Float#toInt` should truncate (round-to-zero).');
+			});
+		});
+
+		test.suite('#toFloat', () => {
+			test.test('Integer', () => {
+				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), '`Integer#toFloat` should return an equivalent value.');
+			});
+			test.test('Float', () => {
+				const f = new VALUE.Float(42.69);
+				assert.strictEqual(f.toFloat(), f, '`Float#toFloat` should return self.');
+			});
+		});
+	});
+
+
+	test.suite('Map', () => {
+		test.suite('.constructor', () => {
+			test.test('overwrites identical antecedents.', () => {
 				assert.deepStrictEqual(
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
 						[new VALUE.String('a'),  VALUE.INT_1],
@@ -658,7 +683,7 @@ describe('Value', () => {
 					])),
 				);
 			});
-			it('does not overwrite non-identical (even if equal) antecedents.', () => {
+			test.test('does not overwrite non-identical (even if equal) antecedents.', () => {
 				assert.deepStrictEqual(
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
 						[new VALUE.String('a'), VALUE.INT_1],

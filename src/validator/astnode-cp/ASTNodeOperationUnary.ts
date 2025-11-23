@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	BinVect,
+	drop_then,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 } from '../../index.ts';
@@ -49,39 +49,28 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		const t0:   TYPE.Type              = this.operand.type();
 		const arg0: binaryen.ExpressionRef = this.operand.build();
-		if (this.operator === Operator.NOT) {
-			if (t0.isDefinitelyFalsy) {
-				return this.builder.module.block(null, [
-					this.builder.module.drop(arg0),
-					new BinVect(this.builder.module, true).vect,
-				], binaryen.v128);
-			} else if (t0.isDefinitelyTruthy) {
-				return this.builder.module.block(null, [
-					this.builder.module.drop(arg0),
-					new BinVect(this.builder.module, false).vect,
-				], binaryen.v128);
-			}
-		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				new BinVect(this.builder.module, true).vect,
-			], binaryen.v128);
+		if (this.type().isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(this.builder.module, [arg0], true);
+		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], false);
 		}
 		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.NOT, 'vnot'],
-			[Operator.EMP, 'vemp'],
-			[Operator.NEG, 'vneg'],
+			[Operator.NOT,   'vnot'],
+			[Operator.EMP,   'vemp'],
+			[Operator.NEG,   'vneg'],
+			[Operator.INT,   'vtoi'],
+			[Operator.FLOAT, 'vtof'],
 		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
 
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		const TYPE_NUMBER = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		const t: TYPE.Type = this.operand.type();
 		if (t.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
 			case Operator.NOT: {
@@ -95,8 +84,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
-				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
 				return t;
+			}
+			case Operator.INT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.INT;
+			}
+			case Operator.FLOAT: {
+				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.FLOAT;
 			}
 		}
 	}
@@ -107,11 +104,23 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		if (!v) {
 			return v;
 		}
-		return (
-			(this.operator === Operator.NOT) ?                VALUE.Boolean.fromBoolean(!v.isTruthy)              :
-			(this.operator === Operator.EMP) ?                VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty) :
-			(assert.strictEqual(this.operator, Operator.NEG), this.foldNumeric(v as VALUE.Number<any>)) // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
-		);
+		switch (this.operator) {
+			case Operator.NOT: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy);
+			}
+			case Operator.EMP: {
+				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
+			}
+			case Operator.NEG: {
+				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+			}
+			case Operator.INT: {
+				return (v as VALUE.Number).toInt();
+			}
+			case Operator.FLOAT: {
+				return (v as VALUE.Number).toFloat();
+			}
+		}
 	}
 
 	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {

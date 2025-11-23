@@ -80,14 +80,42 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th rowspan="2">4</th>
+			<td>Integer Conversion</td>
+			<td rowspan="2">unary prefix</td>
+			<td rowspan="2">right-to-left</td>
+			<td><code>int …</code></td>
+		</tr>
+		<tr>
+			<td>Float Conversion</td>
+			<td><code>float …</code></td>
+		</tr>
+		<tr>
+			<th rowspan="4">5</th>
+			<td rowspan="3">Type Cast</td>
+			<td rowspan="4">binary infix</td>
+			<td rowspan="4">left-to-right</td>
+			<td><code>… as …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as? …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as! …</code></td>
+		</tr>
+		<tr>
+			<td>Type Claim</td>
+			<td><code>… as &lt; … &gt;</code></td>
+		</tr>
+		<tr>
+			<th>6</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">5</th>
+			<th rowspan="2">7</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -98,7 +126,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">6</th>
+			<th rowspan="2">8</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -109,7 +137,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">7</th>
+			<th rowspan="8">9</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -144,7 +172,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… isnt …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">8</th>
+			<th rowspan="4">10</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -163,7 +191,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">9</th>
+			<th rowspan="2">11</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -174,7 +202,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">10</th>
+			<th rowspan="2">12</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -185,7 +213,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>11</th>
+			<th>13</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -214,6 +242,96 @@ Operations that are associative are indicated as so in their respective sections
 
 ### Grouping
 Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
+
+#### Block-Expressions
+```
+`{` Statement+ `}`
+```
+Block-expressions are blocks of statements that produce expressions.
+A block-expression *is* an expression — its value has a type and can be passed around and operated on like any other expression.
+```cpl
+let blex: int = {
+	print.("evaluates to 42");
+	42;
+};
+blex == 42; %== true
+```
+Like all [blocks](./statements.md#blocks-and-scoping), a block-expression must contain at least one statement.
+Furthermore, if the last statement in a block-expression is an [expression-statement](./statements.md#expression-statements),
+then it has a special name: the **determinant** — as it determines the block-expression’s value.
+In the example above, the determinant is `42;`.
+
+If the last statement of a block-expression is not an expression-statement, then the expression has no value, and it has a void type.
+```cpl
+let blex: int = {
+	print.("evaluates, but does not have a value");
+	let value: int = 42;
+}; %> TypeError
+```
+An expression with a void type is like a void function call. These types of expressions cannot be passed around or operated on.
+(“Void” is not a real type in the type system; it’s just a marker given to expressions that execute but do not have a value.)
+
+We run into a similar situation when block-expression *has* a determinant, but that determinant itself is void.
+```cpl
+let blex: int = {
+	print.("evaluates, but does not have a value");
+	let value: int = 42;
+	print.(value); % <-- determinant
+}; %> TypeError
+```
+Because the `print` is a void function, the block-expression has a void type, thus can’t be assigned to the variable.
+(The only exception is when a void block-expression is returned from a void function.
+See the [Functions](./functions.md) chapter for details.)
+
+A block-expression might never finish execution!
+```cpl
+let var count: int = 0;
+let blex: int = {
+	while count >= 0 do {
+		set count += 1;
+	};
+	42; % <-- determinant
+}; % no type error
+```
+In this example, static control flow analysis can reach the determinant and determine the block’s type, so the assignment is valid.
+At runtime however, the [`while` loop](./statements.md#loops) runs indefinitely, so the variable never actually gets assigned.
+While this program compiles successfully, it’ll crash when run.
+
+Block-expressions may contain `break`, `continue`, `return`, and `throw` statements (depending on lexical context).
+These are called **abrupt completions**, because they abruptly transfer control out of the block
+without finishing the evaluation of it.
+Specifically, `break` or `continue` statements will break out of the containing loop,
+and `return`/`throw` statements will apply to the containing function.
+```cpl
+function f(var i: int): str {
+	while true do {
+		set i += 1;
+		let is_threeven: bool = mod.(i, 3) == 0 && {
+			continue; % restarts the `while` loop, not this block-expression
+		}; % no type error
+		let is_divisble_by_7: bool = mod.(i, 7) == 0 && {
+			return "exit"; % returns from the function, not this block-expression
+		}; % no type error
+	};
+	return "done";
+}
+```
+Because these statements are abrupt, the end of the block-expression is unreachable via control flow analysis;
+therefore the block-expression is of type `nothing`, the bottom type (a subtype of every type).
+That’s why these block-expressions are assignable to `bool` variables, and we don’t get type errors as we did in the examples above.
+The difference is that the compiler can determine that a *void* block-expression will finish evaluation but will not produce a value;
+whereas it knows that block-expressions with abrupt statements will never even finish evaluation.
+
+This table highlights some exceptional cases.
+
+| Case  | Block Type | Runtime Behavior | Is Assignable |
+| ----- | ---------- | ---------------- | ------------- |
+| last statement is an expression-statement with type `T` | `T` | completes execution | yes, to type `T` or wider |
+| last statement is a void expression-statement | void | completes execution | no |
+| last statement is not an expression-statement | void | completes execution | no |
+| contains an expression of type `nothing` | `nothing` | fails to complete execution | yes, to any type |
+| contains an abrupt statement | `nothing` | fails to complete execution | yes, to any type |
+| contains an infinite loop or infinite recursive call | `T` | fails to complete execution | yes, to type `T` or wider |
 
 
 ### Property Access
@@ -309,8 +427,8 @@ dict?.[@prop]; %: float | null
 
 ### Logical Negation, Emptiness
 ```
-`!` <unknown>
-`?` <unknown>
+`!` <anything>
+`?` <anything>
 ```
 The **logical negation** operator, `!`, returns the opposite boolean value of the operand’s “logical value”.
 
@@ -370,6 +488,138 @@ Even though these tokens’ values are the same as the computed values of
 the expressions `-(\x200)` and `+(\x200)`,
 this is important to mention because it could affect how we write
 [additive expressions](#parsing-additive-expressions).
+
+
+### Numeric Conversions
+```
+int   <Number>
+float <Number>
+```
+The keywords `int` and `float` can also be used as unary prefix operators.
+They convert their numeric operand into their respective type. If the operand is not numeric, a type error is raised.
+```
+let my_int: int   = 7;
+let my_flt: float = -3.5;
+
+2 * int my_flt;     % converts -3.5 to -3; result is same as `2 * -3`
+float my_int / 3.5; % converts 7 to 7.0; result is same as `7.0 / 3.5`
+```
+When converting floats to integers, the “round-toward-zero” (truncation) method is used.
+Both `-0.0` and `0.0` convert to `0`.
+If the floating-point number is greater than the maximal integer *2^63 &minus; 1*, the maximal integer is returned;
+likewise for less than the minimal integer *&minus;2^63*.
+For NaN and other unrepresentable values, an error is raised.
+
+When converting integers to floats, some precision will be lost for integers greater than *2^53*, as per the *IEEE 754* specification.
+
+
+### Type Cast/Claim
+```
+<Object>   as  <Class>
+<Object>   as? <Class>
+<Object>   as! <Class>
+<anything> as  `<` <Type> `>`
+```
+The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
+This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
+and the object to which `expr` evaluates is converted to a `Klass` instance at runtime.
+If the runtime conversion is not possible, than an error is thrown.
+
+`expr as? Klass` always returns a `Maybe` object and never throws.
+If `expr` is a `Klass` instance, a `Some` is returned; otherwise it returns a `None`.
+
+`expr as! Klass` always returns a `Result` object and never throws.
+If `expr` is a `Klass` instance, an `Ok` is returned; otherwise it returns a `Fail`.
+
+The expression `expr as <T>` tells the type system to treat `expr` as type `T`,
+even though it might have been computed as a different type.
+This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
+(We say “claim” instead of “assert”, because no runtime error is thrown.)
+
+Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
+or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
+We can use a claim to tell the compiler, “I know what I’m doing and the type should be *that*.”
+
+Type claims are a general form of [non-null assertions] (link pending).
+For example, we could use non-null assertion to say that an optional entry exists on an object:
+```
+let var item: (str, ?: int) = ("apples", 42);
+let quantity: int = item?.1~?;
+```
+Since `item.1` is optional, `item?.1` is of type `int | null`.
+By using the non-null assertion `~?`, we can subtract type null.
+
+The more general form of this is simply claiming that `item?.1` is of type `int`:
+```
+let var item: (str, ?: int) = ("apples", 42);
+let quantity: int = item?.1 as <int>;
+```
+
+Type claims can be used in situations where non-null assertion cannot.
+Whereas non-null assertions can only tell the compiler that a property *exists*,
+type claims can widen, narrow, or shift the type of an expression.
+```
+let var item: (str, int | str) = ("apples", 42);
+let ingredient: anything   = item.0 as <anything>;   % widening
+let quantity:   int        = item.1 as <int>;        % narrowing
+let in_stock:   int | bool = item.1 as <int | bool>; % shifting
+```
+
+The compiler will throw an error when encountering a type claim if its operand’s computed type
+and its claimed type are disjoint (i.e. if there’s no overlap).
+```
+42 as <str>; %> TypeError
+```
+
+#### Cast vs Claim
+A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
+if not, then the program throws. This operator is preferred in such circumstances.
+```
+let animal: Animal = Cat.();
+let cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
+cat.meow.();                  % calls `meow` on the `Cat` instance
+
+let dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
+dog.woof.();                  % unreachable
+```
+The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+```
+let cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
+cat_m?.meow.();                          % calls `meow`
+
+let dog_m: Maybe.<Dog> = animal as? Dog; %== None
+dog_m?.woof.();                          %== None
+
+let cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
+cat_r!.meow.();                           % calls `meow`
+
+let dog_r: Result.<Dog> = animal as! Dog; %== Fail
+dog_r?.woof.();                           %== Fail
+```
+
+A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
+but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
+That means that if it’s *not* such an instance, an error could be thrown down the line,
+for example, when attempting to access a nonexistent method.
+```
+let animal: Animal = Cat.();
+let cat: Cat = animal as <Cat>; % claim is allowed (`Animal` and `Cat` overlap)
+cat.meow.();                    % calls `meow` on the `Cat` instance
+
+let dog: Dog = animal as <Dog>; % claim is allowed (`Animal` and `Dog` overlap)
+dog.woof.();                    % throws error: method `woof` not found on `Cat` instance
+```
+
+The benefits that type claim over type cast include the following, as demonstrated in the last section.
+- We can narrow types that would otherwise be too wide.
+- We can use type operator syntax like intersections and unions.
+- We can reference non-class types and type aliases by name.
+
+A note of caution: **Type claims should never be used to “hack” the compiler**.
+Using type claims to “just get your code to compile” is never recommended,
+because it won’t prevent runtime errors and it will most likely cause more problems down the road.
+But there are cases in which human reasoning about type safety outsmarts the compiler,
+so in those cases we may use type claims to write good code.
 
 
 ### Exponentiation
@@ -536,10 +786,10 @@ but they are reserved for future semantics.
 
 ### Equality
 ```
-<unknown> `===`  <unknown>
-<unknown> `!==`  <unknown>
-<unknown> `==`   <unknown>
-<unknown> `!=`   <unknown>
+<anything> `===`  <anything>
+<anything> `!==`  <anything>
+<anything> `==`   <anything>
+<anything> `!=`   <anything>
 ```
 These operators compare two values.
 Any type of operands are valid. The result is a boolean value.
@@ -595,8 +845,8 @@ assume equal until determined otherwise.
 
 ### Conjunctive
 ```
-<unknown> `&&` <unknown>
-<unknown> `!&` <unknown>
+<anything> `&&` <anything>
+<anything> `!&` <anything>
 ```
 The **logical conjunction** operator `&&` (”and”) produces the left-hand operand if it is “falsy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -622,8 +872,8 @@ a !& b; % sugar for `!(a && b)`
 
 ### Disjunctive
 ```
-<unknown> `||` <unknown>
-<unknown> `!|` <unknown>
+<anything> `||` <anything>
+<anything> `!|` <anything>
 ```
 The **logical disjunction** operator `||` (“or”) produces the left-hand operand if it is “truthy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -649,7 +899,7 @@ a !| b; % sugar for `!(a || b)`
 
 ### Conditional
 ```
-`if` <bool> `then` <unknown> `else` <unknown>
+`if` <bool> `then` <anything> `else` <anything>
 ```
 The conditional operator is a ternary operator that takes three operand expressions:
 a condition, a consequent, and an alternative.
@@ -790,7 +1040,7 @@ type T = int?; % equivalent to `type T = int | null;`
 This operator is useful for describing values that might be null.
 ```
 let var hello: str? = null;
-hello = "world";
+set hello = "world";
 ```
 
 
@@ -881,7 +1131,7 @@ The **union** operator creates a type that is either one operand, or the other, 
 ```
 type T = bool | int;
 let var v: T = false;
-v = 42;
+set v = 42;
 ```
 
 When accessing a *union* of record types, we can only access the *intersection* of the properties of each type.

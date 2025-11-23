@@ -1,13 +1,13 @@
 export enum Keyword {
 	// type literal
-	NEVER   = 'never',
-	VOID    = 'void',
-	BOOL    = 'bool',
-	SYM     = 'sym',
-	INT     = 'int',
-	FLOAT   = 'float',
-	STR     = 'str',
-	UNKNOWN = 'unknown',
+	NOTHING  = 'nothing',
+	VOID     = 'void',
+	BOOL     = 'bool',
+	SYM      = 'sym',
+	INT      = 'int',
+	FLOAT    = 'float',
+	STR      = 'str',
+	ANYTHING = 'anything',
 
 	// value literal
 	NULL  = 'null',
@@ -16,6 +16,9 @@ export enum Keyword {
 
 	// operator
 	MUTABLE = 'mut',
+	AS      = 'as',
+	AS_MAY  = 'as?',
+	AS_RES  = 'as!',
 	IS      = 'is',
 	ISNT    = 'isnt',
 	IF      = 'if',
@@ -25,10 +28,23 @@ export enum Keyword {
 	// storage
 	TYPE  = 'type',
 	LET   = 'let',
+	CLAIM = 'claim',
+	SET   = 'set',
 	BLANK = '_',
 
 	// modifier
+	NOMINAL = 'nominal',
 	UNFIXED = 'var',
+
+	// control
+	UNLESS   = 'unless',
+	WHILE    = 'while',
+	UNTIL    = 'until',
+	FOR      = 'for',
+	OF       = 'of',
+	DO       = 'do',
+	BREAK    = 'break',
+	CONTINUE = 'continue',
 }
 
 

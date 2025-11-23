@@ -5,41 +5,59 @@ import {
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+	memoizeGetter,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
-import {ASTNodeStatement} from './ASTNodeStatement.ts';
+import {
+	buildDeco,
+	ASTNodeStatement,
+} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeAssignment extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
+export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeAssignment);
+		assert_instanceof(statement, ASTNodeDeclarationReassignment);
 		return statement;
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'statement_assignment'>,
+		start_node: SyntaxNodeFamily<'declaration_reassignment', ['break']>,
 		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
 
+	// @memoizeGetter // memoizing takes longer than returning a constant
+	@if_constant_folding
+	public override get isFoldable(): boolean {
+		return false;
+	}
+
+	@memoizeGetter
+	public override get hasBottomType(): boolean {
+		return this.assigned.type().isBottomType;
+	}
+
 	public override varCheck(): void {
 		super.varCheck();
-		const assignee: ASTNodeVariable | ASTNodeAccess = this.assignee;
-		if (assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(assignee.id) as SymbolSchemaVar).unfixed) {
-			throw new AssignmentErrorReassignment(assignee);
+		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar).isUnfixed) {
+			throw new AssignmentErrorReassignment(this.assignee);
 		}
 	}
 
@@ -54,14 +72,10 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
+	@memoizeMethod
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		return this.builder.getLocal(this.assignee.id)?.set(ASTNodeStatement.coerceAssignment(
-			this.builder.module,
-			this.assignee.writeType(),
-			this.assigned.type(),
-			this.assigned.build(),
-			this.validator.config.compilerOptions.intCoercion,
-		)) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
+		return this.builder.getLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }

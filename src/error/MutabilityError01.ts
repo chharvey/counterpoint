@@ -16,7 +16,7 @@ export class MutabilityError01 extends MutabilityError {
 	 * @param typ  the type that is being mutated
 	 * @param node the reassignment node where it happens
 	 */
-	public constructor(typ: TYPE.Type, node: AST.ASTNodeAssignment) {
+	public constructor(typ: TYPE.Type, node: AST.ASTNodeDeclarationReassignment) {
 		super(
 			`Mutation of an object of immutable type \`${ typ }\`.`,
 			MutabilityError.CODES.get(MutabilityError01),

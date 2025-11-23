@@ -2,8 +2,11 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	VALUE,
+	type VALUE,
 	TYPE,
+	bigint_to_i64,
+	type Local,
+	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -22,8 +25,6 @@ import {
 	type ValidOperatorArithmetic,
 } from '../Operator.ts';
 import {
-	bothNumeric,
-	eitherFloats,
 	bothInts,
 	bothFloats,
 } from './utils-private.ts';
@@ -54,23 +55,67 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
+		const mod:          binaryen.Module          = this.builder.module;
+		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
+		const v0:           VALUE.Value | null       = this.operand0.fold();
+
+		// if operand0 is not foldable, short-circuit by using identity laws
+		if (!v0) {
+			const local0: Local = this.builder.addLocal(arg0);
+			const teeer         = new BinVect(mod, local0.tee());
+			const getter        = new BinVect(mod, local0.get());
+			if (this.operator === Operator.MUL) {
+				// if arg0 is mathematically 0, return it
+				return mod.if(
+					mod.i32.or(
+						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+					),
+					local0.get(),
+					// else if arg0 is mathematically 1, return arg1
+					mod.if(
+						mod.i32.or(
+							mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
+							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
+						),
+						arg1,
+						// else return a `vmul` call
+						mod.call('vmul', [local0.get(), arg1], binaryen.v128),
+					),
+				);
+			} else if (this.operator === Operator.ADD) {
+				// if arg0 is mathematically 0, return arg1
+				return mod.if(
+					mod.i32.or(
+						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+					),
+					arg1,
+					// else return a `vadd` call
+					mod.call('vadd', [local0.get(), arg1], binaryen.v128),
+				);
+			}
+		}
+
+		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
+			return arg1;
+		}
+
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.EXP, 'vexp'],
 			[Operator.MUL, 'vmul'],
 			[Operator.DIV, 'vdiv'],
 			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
+		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NEVER;
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
+		if (t0.isBottomType) {
+			return TYPE.NOTHING;
 		}
-		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
 		return (
-			bothInts(t0, t1)   ? TYPE.INT :
+			bothInts  (t0, t1) ? TYPE.INT :
 			bothFloats(t0, t1) ? TYPE.FLOAT :
-			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);
 	}
@@ -81,19 +126,23 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		if (!v0) {
 			return v0;
 		}
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq0()) {
+			return v0;
+		}
 		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof VALUE.Number && v1.eq0()) {
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0()) {
+			return v1;
+		}
+		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {
 			throw new NanErrorDivZero(this.operand1);
 		}
-		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
-			? this.foldNumeric(v0, v1)
-			: this.foldNumeric(
-				(v0 as VALUE.Number).toFloat(),
-				(v1 as VALUE.Number).toFloat(),
-			);
+		return this.foldNumeric(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+		);
 	}
 
 	private foldNumeric<T extends VALUE.Number<T>>(v0: T, v1: T): T {

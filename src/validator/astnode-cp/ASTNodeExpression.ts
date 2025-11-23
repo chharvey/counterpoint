@@ -5,20 +5,14 @@ import {
 	TYPE,
 	ErrorCode,
 } from '../../index.ts';
-import {
-	assert_instanceof,
-	assert_context_name,
-} from '../../lib/index.ts';
+import {assert_context_name} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {
-	ASTNodeStatement,
-	ASTNodeStatementExpression,
-} from './index.ts';
-import type {Buildable} from './Buildable.ts';
+import {ASTNodeStatementExpression} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Buildable} from './Buildable.ts';
 
 
 
@@ -61,7 +55,7 @@ export function typeDeco(
 			} catch (err) {
 				if (err instanceof ErrorCode) {
 					// ignore evaluation errors such as VoidError, NanError, etc.
-					return TYPE.NEVER;
+					return TYPE.NOTHING;
 				} else {
 					throw err;
 				}
@@ -83,6 +77,7 @@ export function typeDeco(
  * - ASTNodeVariable
  * - ASTNodeTemplate
  * - ASTNodeCollectionLiteral
+ * - ASTNodeExpressionBlock
  * - ASTNodeAccess
  * - ASTNodeCall
  * - ASTNodeClaim
@@ -97,10 +92,9 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @returns      a new ASTNodeExpression representing the given source
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeStatementExpression);
-		assert.ok(statement.expr, 'semantic statement should have 1 child');
-		return statement.expr;
+		const statement_expr: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(`${ src };`, config);
+		assert.ok(statement_expr.expr, 'semantic statement expression should have 1 child');
+		return statement_expr.expr;
 	}
 
 	/**

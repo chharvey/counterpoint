@@ -145,21 +145,21 @@ Symbol structures’ properties are described in the tables below.
 ##### SymbolSchemaType
 A **SymbolSchemaType** represents a type alias referencing a Counterpoint Language Type.
 
-Property      | Description
-------------- | -----------
-\`id\`        | the unique identifier of the declared symbol
-\`typevalue\` | the assessed type (a Counterpoint Language Type) of this symbol
+Property      | Read-Only? | Description
+------------- | ---------- | -----------
+\`id\`        | yes        | the unique identifier of the declared symbol
+\`typevalue\` | no         | the assessed type (a Counterpoint Language Type) of this symbol
 
 ##### SymbolSchemaVar
 A **SymbolSchemaVar** represents a variable referencing a Counterpoint Language Value.
 
-Property          | Description
------------------ | -----------
-\`id\`            | the unique identifier of the declared symbol
-\`unfixed\`       | a Boolean, whether the variable may be reassigned
-\`uninitialized\` | a Boolean, whether the variable was declared without an initial value
-\`type\`          | the Counterpoint Language Type of the variable
-\`value\`         | if \`unfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
+Property            | Read-Only? | Description
+------------------- | ---------- | -----------
+\`id\`              | yes        | the unique identifier of the declared symbol
+\`isUnfixed\`       | yes        | a Boolean, whether the variable may be reassigned
+\`isUninitialized\` | yes        | a Boolean, whether the variable was declared without an initial value
+\`type\`            | no         | the Counterpoint Language Type of the variable
+\`value\`           | no         | if \`isUnfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes
@@ -198,8 +198,8 @@ and [reference objects](./intrinsics.md#reference-objects) respectively.
 ### Simple Types
 Simple types do not comprise other types.
 
-- [Never](#never)
-- [Unknown](#unknown)
+- [Nothing](#nothing)
+- [Anything](#anything)
 - [Null](#null)
 - [Boolean](#boolean)
 - [Symbol](#symbol)
@@ -208,24 +208,24 @@ Simple types do not comprise other types.
 - [String](#string)
 - [Object](#object)
 
-#### Never
-The **Never** type is the Botton Type and it represents the set of no values.
-No value is assignable to Never,
-and expressions of type Never are accepted everywhere.
+#### Nothing
+The **Nothing** type is the Botton Type and it represents the set of no values.
+No value is assignable to Nothing,
+and expressions of type Nothing are accepted everywhere.
 
-Never is a subtype of every type,
-and no type (except Never itself) is a subtype of Never.
-Never is the the “absorption element” of the [intersection](#intersection) operation
+Nothing is a subtype of every type,
+and no type (except Nothing itself) is a subtype of Nothing.
+Nothing is the the “absorption element” of the [intersection](#intersection) operation
 and the “identity element” of the [union](#union) operation.
 
-#### Unknown
-The **Unknown** type is the Top Type and it represents the set of all possible values.
-Any value or expression is assignable to Unknown,
-and expressions of type Unknown are accepted almost nowhere.
+#### Anything
+The **Anything** type is the Top Type and it represents the set of all possible values.
+Any value or expression is assignable to Anything,
+and expressions of type Anything are accepted almost nowhere.
 
-Unknown is a supertype of every type,
-and no type (except Unknown itself) is a supertype of Unknown.
-Unknown is the the “identity element” of the [intersection](#intersection) operation
+Anything is a supertype of every type,
+and no type (except Anything itself) is a supertype of Anything.
+Anything is the the “identity element” of the [intersection](#intersection) operation
 and the “absorption element” of the [union](#union) operation.
 
 #### Null
@@ -248,43 +248,43 @@ instances of [`Integer`](./intrinsics.md#integer) and [`Float`](./intrinsics.md#
 
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
-The Counterpoint compiler represents Integers as 16-bit signed two’s complement values.
+The Counterpoint compiler represents Integers as 64-bit signed two’s complement values.
 
 The Integers `0` and `-0` represent the same mathematical value, *0*.
-The maximum possible value of an Integer is *32,767* and the minimum value is *&minus;32,768*.
+The maximum possible value of an Integer is *9,223,372,036,854,775,807* and the minimum value is *&minus;9,223,372,036,854,775,808*.
 
 The following table lays out some integers and their encodings.
 
-| Encoding                                       | Value      | Notes
-| ---------------------------------------------- | ---------- | ---
-| `\b0000_0000 \b0000_0000` &emsp; (`\x00 \x00`) | *0* = *&minus;0*
-| `\b0000_0000 \b0000_0001` &emsp; (`\x00 \x01`) | *1*
-| `\b0000_0000 \b0000_0010` &emsp; (`\x00 \x02`) | *2*
-| `\b0000_0000 \b0000_0011` &emsp; (`\x00 \x03`) | *3*
-…
-| `\b0111_1111 \b1111_1100` &emsp; (`\x7f \xfc`) | *32,764* &emsp; (*7FFC<sub>16</sub>*)
-| `\b0111_1111 \b1111_1101` &emsp; (`\x7f \xfd`) | *32,765* &emsp; (*7FFD<sub>16</sub>*)
-| `\b0111_1111 \b1111_1110` &emsp; (`\x7f \xfe`) | *32,766* &emsp; (*7FFE<sub>16</sub>*)
-| `\b0111_1111 \b1111_1111` &emsp; (`\x7f \xff`) | *32,767* &emsp; (*7FFF<sub>16</sub>*)               | maximum value, *2<sup>15</sup> &minus; 1*
-| `\b1000_0000 \b0000_0000` &emsp; (`\x80 \x00`) | *&minus;32,768* &emsp; (*&minus;8000<sub>16</sub>*) | minimum value, *&minus;2<sup>15</sup>*
-| `\b1000_0000 \b0000_0001` &emsp; (`\x80 \x01`) | *&minus;32,767* &emsp; (*&minus;7FFF<sub>16</sub>*)
-| `\b1000_0000 \b0000_0010` &emsp; (`\x80 \x02`) | *&minus;32,766* &emsp; (*&minus;7FFE<sub>16</sub>*)
-| `\b1000_0000 \b0000_0011` &emsp; (`\x80 \x03`) | *&minus;32,765* &emsp; (*&minus;7FFD<sub>16</sub>*)
-…
-| `\b1111_1111 \b1111_1100` &emsp; (`\xff \xfc`) | *&minus;4*
-| `\b1111_1111 \b1111_1101` &emsp; (`\xff \xfd`) | *&minus;3*
-| `\b1111_1111 \b1111_1110` &emsp; (`\xff \xfe`) | *&minus;2*
-| `\b1111_1111 \b1111_1111` &emsp; (`\xff \xff`) | *&minus;1*
+| Encoding (written in hexadecimal)  | Value  | Notes
+| ---------------------------------- | ------ | -----
+| `\x00_00_00_00_00_00_00_00`        | *0* = *&minus;0*
+| `\x00_00_00_00_00_00_00_01`        | *1*
+| `\x00_00_00_00_00_00_00_02`        | *2*
+| `\x00_00_00_00_00_00_00_03`        | *3*
+| …
+| `\x7f_ff_ff_ff_ff_ff_ff_fc`        | *9,223,372,036,854,775,804* &emsp; (*7FFF,FFFF,FFFF,FFFC<sub>16</sub>*)
+| `\x7f_ff_ff_ff_ff_ff_ff_fd`        | *9,223,372,036,854,775,805* &emsp; (*7FFF,FFFF,FFFF,FFFD<sub>16</sub>*)
+| `\x7f_ff_ff_ff_ff_ff_ff_fe`        | *9,223,372,036,854,775,806* &emsp; (*7FFF,FFFF,FFFF,FFFE<sub>16</sub>*)
+| `\x7f_ff_ff_ff_ff_ff_ff_ff`        | *9,223,372,036,854,775,807* &emsp; (*7FFF,FFFF,FFFF,FFFF<sub>16</sub>*)               | maximum value, *2<sup>63</sup> &minus; 1*
+| `\x80_00_00_00_00_00_00_00`        | *&minus;9,223,372,036,854,775,808* &emsp; (*&minus;8000,0000,0000,0000<sub>16</sub>*) | minimum value, *&minus;2<sup>63</sup>*
+| `\x80_00_00_00_00_00_00_01`        | *&minus;9,223,372,036,854,775,807* &emsp; (*&minus;7FFF,FFFF,FFFF,FFFF<sub>16</sub>*)
+| `\x80_00_00_00_00_00_00_02`        | *&minus;9,223,372,036,854,775,806* &emsp; (*&minus;7FFF,FFFF,FFFF,FFFE<sub>16</sub>*)
+| `\x80_00_00_00_00_00_00_03`        | *&minus;9,223,372,036,854,775,805* &emsp; (*&minus;7FFF,FFFF,FFFF,FFFD<sub>16</sub>*)
+| …
+| `\xff_ff_ff_ff_ff_ff_ff_fc`        | *&minus;4*
+| `\xff_ff_ff_ff_ff_ff_ff_fd`        | *&minus;3*
+| `\xff_ff_ff_ff_ff_ff_ff_fe`        | *&minus;2*
+| `\xff_ff_ff_ff_ff_ff_ff_ff`        | *&minus;1*
 
 Note: To encode a mathematical integer *i* in two’s complement:
-If *i* is within the interval *[0, 2<sup>15</sup> - 1]*, simply return its representation in base 2.
-If *i* is within the interval *[&minus;2<sup>15</sup>, -1]*, return the binary representation of *i + 2<sup>16</sup>*.
+If *i* is within the interval *[0, 2<sup>63</sup> &minus; 1]*, simply return its representation in base 2.
+If *i* is within the interval *[&minus;2<sup>63</sup>, &minus;1]*, return the binary representation of *i + 2<sup>64</sup>*.
 Else, *i* cannot be encoded.
 
 When performing arithmetic operations such as addition, subtraction, and multiplication,
-computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>16</sup>*,
-offset towards negative infinity by *2<sup>15</sup>*.
-For example, the sum represented by *32,767 + 1* will overflow and produce the value represented by *&minus;32,768*.
+computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>64</sup>*,
+offset towards negative infinity by *2<sup>63</sup>*.
+For example, the sum represented by *9,223,372,036,854,775,807 + 1* will overflow and produce the value represented by *&minus;9,223,372,036,854,775,808*.
 The behavior of performing arithmetic operations that are invalid in the integers
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 The result of division is rounded towards zero. Dividing by zero results in an error.
@@ -381,6 +381,26 @@ Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 <sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
 
 
+### Nominal Types
+Nominal types form a type hierarchy where assignability is determined by name alone.
+
+For classes:
+- Any value assigned to a nominal class must be instantiated by it (or a subclass thereof).
+- Any type assignable to a nominal class must be either a subclass of it,
+	or an interface (or sub-interface thereof) that explicitly extends it (or a subclass thereof).
+- Any class or interface that extends a nominal class must also be nominal.
+
+For interfaces:
+- Any value assigned to a nominal interface must be instantiated by
+	a class (or subclass thereof) that explicitly implements it (or a sub-interface thereof).
+- Any type assignable to a nominal interface must be either a sub-interface of it,
+	or a class (or subclass thereof) that explicitly implements it (or a sub-interface thereof).
+- Futher, if a nominal interface *extends some nominal superclass*, then
+	any class that explicitly implements it must *also* explicitly extend the superclass.
+- Any class that implements a nominal interface must also be nominal.
+- Any interface that inherits from a nominal interface must also be nominal.
+
+
 
 ## Type Operations
 
@@ -393,7 +413,7 @@ Boolean IsReference(Type t) :=
 		1. *Return:* `false`.
 	2. *Assert:* `t` is a Counterpoint Language Type.
 	3. *Let* `valuetypes` be a new Sequence [
-		`Never`,
+		`Nothing`,
 		`Null`,
 		`Boolean`,
 		`Number`,
@@ -414,11 +434,11 @@ Boolean IsReference(Type t) :=
 
 
 ### IsBottomType
-A type \`‹T›\` is the **bottom type**, named Never, iff \`‹T›\` contains no values.
+A type \`‹T›\` is the **bottom type**, named Nothing, iff \`‹T›\` contains no values.
 
 
 ### IsTopType
-A type \`‹T›\` is the **top type**, named Unknown, iff \`‹T›\` contains all possible values.
+A type \`‹T›\` is the **top type**, named Anything, iff \`‹T›\` contains all possible values.
 
 
 ### IsDefinitelyFalsy
@@ -461,7 +481,7 @@ Type FalsySide(Type t) :=
 	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)` is `true`:
 		1. *Return:* `t`.
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
-		1. *Return:* Never.
+		1. *Return:* `Nothing`.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
 	4. *Let* `falsy_types` be *UnwrapAffirm:* `Union(Null, false_type)`.
 	5. *Return:* `Intersection(t, falsy_types)`.
@@ -477,7 +497,7 @@ Equivalently, the **truthy side** of a type comprises all the values in the type
 ```
 Type TruthySide(Type t) :=
 	1. *If* *UnwrapAffirm:* `IsDefinitelyFalsy(t)` is `true`:
-		1. *Return:* Never.
+		1. *Return:* `Nothing`.
 	2. *Else If* *UnwrapAffirm:* `IsDefinitelyTruthy(t)` is `true`:
 		1. *Return:* `t`.
 	3. *Let* `false_type` be *UnwrapAffirm:* `ToType(false)`.
@@ -495,10 +515,10 @@ Such a data type is called the **intersection** of \`‹T›\` and \`‹U›\`.
 
 ```
 Type Intersection(Type a, Type b) :=
-	// 1-5 | `T  & never   == never`
+	// 1-5 | `T  & nothing  == nothing`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true` *or* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
-		1. *Return:* `Never`.
-	// 1-6 | `T  & unknown == T`
+		1. *Return:* `Nothing`.
+	// 1-6 | `T  & anything == T`
 	2. *If* *UnwrapAffirm:* `IsTopType(a)` is `true`:
 		1. *Return:* `b`.
 	3. *If* *UnwrapAffirm:* `IsTopType(b)` is `true`:
@@ -524,14 +544,14 @@ For example, the type \`Or<Integer, Null>\` contains values of either \`Integer\
 
 ```
 Type Union(Type a, Type b) :=
-	// 1-7 | `T \| never   == T`
+	// 1-7 | `T \| nothing  == T`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true`:
 		1. *Return:* `b`.
 	2. *If* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
 		1. *Return:* `a`.
-	// 1-8 | `T \| unknown == unknown`
+	// 1-8 | `T \| anything == anything`
 	3. *If* *UnwrapAffirm:* `IsTopType(a)` is `true` *or* *UnwrapAffirm:* `IsTopType(b)` is `true`:
-		1. *Return:* `Unknown`.
+		1. *Return:* `Anything`.
 	// 3-4 | `A <: B  <->  A \| B == B`
 	4. *If* *UnwrapAffirm:* `Subtype(a, b)` is `true`:
 		1. *Return:* `b`.
@@ -569,16 +589,16 @@ A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignab
 
 ```
 Boolean Subtype(Type a, Type b) :=
-	// 1-1 | `never <: T`
+	// 1-1 | `nothing  <: T`
 	1. *If* *UnwrapAffirm:* `IsBottomType(a)` is `true`:
 		1. *Return:* `true`.
-	// 1-3 | `T       <: never  <->  T == never`
+	// 1-3 | `T        <: nothing  <->  T == nothing`
 	2. *If* *UnwrapAffirm:* `IsBottomType(b)` is `true`:
 		1. *Return:* `IsBottomType(a)`.
-	// 1-4 | `unknown <: T      <->  T == unknown`
+	// 1-4 | `anything <: T        <->  T == anything`
 	3. *If* *UnwrapAffirm:* `IsTopType(a)` is `true`:
 		1. *Return:* `IsTopType(b)`.
-	// 1-2 | `T     <: unknown`
+	// 1-2 | `T        <: anything`
 	4. *If* *UnwrapAffirm:* `IsTopType(b)` is `true`:
 		1. *Return:* `true`.
 	5. *If* `a` is the intersection of some types `x` and `y`:
@@ -694,7 +714,7 @@ Boolean Equal(Type a, Type b) :=
 
 ### Disjoint
 A type \`‹T›\` is **disjoint** with type \`‹U›\` iff \`‹T›\` and \`‹U›\` have no values in common.
-That is, their intersection is empty, or equal to the [Bottom Type](#never).
+That is, their intersection is empty, or equal to the [Bottom Type](#nothing).
 
 
 
@@ -721,14 +741,14 @@ For brevity, this section uses the following notational conventions:
 ### Special Elements
 \# | Law | Description
 -- | --- | -----------
-1-1 | `never <: T`              | Bottom is a subtype   of any type.
-1-2 | `T     <: unknown`        | Top    is a supertype of any type.
-1-3 | `T       <: never  <->  T == never`   | Any subtype   of Bottom is Bottom (follows from 3-3, 1-5, 2-7)
-1-4 | `unknown <: T      <->  T == unknown` | Any supertype of Top    is Top    (follows from 3-4, 1-8, 2-7)
-1-5 | `T  & never   == never`   | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
-1-6 | `T  & unknown == T`       | Top    is The Identity   Element of Intersection (follows from 1-2 and 3-3)
-1-7 | `T \| never   == T`       | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)
-1-8 | `T \| unknown == unknown` | Top    is The Absorption Element of Union        (follows from 1-2 and 3-4)
+1-1 | `nothing  <: T`        | Bottom is a subtype   of any type.
+1-2 | `T        <: anything` | Top    is a supertype of any type.
+1-3 | `T        <: nothing  <->  T == nothing`  | Any subtype   of Bottom is Bottom (follows from 3-3, 1-5, 2-7)
+1-4 | `anything <: T        <->  T == anything` | Any supertype of Top    is Top    (follows from 3-4, 1-8, 2-7)
+1-5 | `T  & nothing  == nothing`  | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
+1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection (follows from 1-2 and 3-3)
+1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)
+1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union        (follows from 1-2 and 3-4)
 
 
 ### Operation Properties
@@ -763,8 +783,8 @@ For brevity, this section uses the following notational conventions:
 ### Difference Properties
 \# | Law | Description
 -- | --- | -----------
-4-1 | `A - B == A  <->  A & B == never`             | The difference of two types is the first type iff they are disjoint.
-4-2 | `A - B == never  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
-4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
+4-1 | `A - B == A  <->  A & B == nothing`             | The difference of two types is the first type iff they are disjoint.
+4-2 | `A - B == nothing  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
+4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
 4-4 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
 4-5 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union

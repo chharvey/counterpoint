@@ -1,8 +1,10 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "3.0.1",
+  "version": "3.4.0",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
+    "incremental",
+    "parsing",
     "tree-sitter",
     "Counterpoint",
     "language",
@@ -30,7 +32,8 @@
     "postdist": "tree-sitter generate",
     "pretest": "tsc --project ./test/tsconfig.json && tsx ./test/build.mts",
     "test": "tree-sitter test",
-    "build": "npm run dist && npm run test && npm run prebuildify",
+    "build": "npm run dist && npm run test",
+    "postbuild": "npm run prebuildify",
     "install": "node-gyp-build",
     "prebuildify": "prebuildify --napi --strip"
   },
@@ -42,7 +45,7 @@
     "tree-sitter": "^0.25.0"
   },
   "peerDependenciesMeta": {
-    "tree_sitter": {
+    "tree-sitter": {
       "optional": true
     }
   },
@@ -51,6 +54,6 @@
     "prebuildify": "^6.0.0",
     "tree-sitter-cli": "^0.25.0",
     "tsx": "^4.19.3",
-    "typescript": "~5.8.0"
+    "typescript": "~5.9.0"
   }
 }

@@ -11,7 +11,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	buildDeco,
 	typeDeco,
@@ -29,7 +29,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'string_template'>,
+		start_node: SyntaxNodeFamily<'string_template', ['break']>,
 		public override readonly children: // FIXME spread types
 			| readonly [ASTNodeConstant]
 			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]

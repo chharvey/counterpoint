@@ -14,12 +14,22 @@ function s(name: string, ...operands: readonly string[]): string {
 	`;
 }
 
+function sourceStatements(...statements: readonly string[]): string {
+	return s(
+		'source_file',
+		s(
+			'block',
+			statements.join(''),
+		),
+	);
+}
+
 function sourceTypes(...types: readonly string[]): string {
-	return s('source_file', ...types.map((typ) => s('declaration_type', s('identifier'), typ)));
+	return sourceStatements(...types.map((typ) => s('declaration_type', s('identifier'), typ)));
 }
 
 function sourceExpressions(...expressions: readonly string[]): string {
-	return s('source_file', ...expressions.map((expr) => s('statement_expression', expr)));
+	return sourceStatements(...expressions.map((expr) => s('statement_expression', expr)));
 }
 
 
@@ -29,45 +39,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 	await fs.promises.mkdir(path.dirname(FILEPATH), {recursive: true});
 	return fs.promises.writeFile(FILEPATH, Object.entries({
 		/* # TERMINALS */
-		KEYWORD_TYPE: [
-			xjs.String.dedent`
-				type T = never;
-				type T = bool;
-				type T = sym;
-				type T = int;
-				type T = float;
-				type T = str;
-				type T = unknown;
-			`,
-			sourceTypes(
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-				s('keyword_type'),
-			),
-		],
-
-		KEYWORD_VALUE: [
-			xjs.String.dedent`
-				null;
-				false;
-				true;
-			`,
-			sourceExpressions(
-				s('primitive_literal', s('keyword_value')),
-				s('primitive_literal', s('keyword_value')),
-				s('primitive_literal', s('keyword_value')),
-			),
-		],
-
 		IDENTIFIER: [
 			xjs.String.dedent`
-				my_variable;
-				'my variable';
-				Object;
+				{
+					my_variable;
+					'my variable';
+					Object;
+				}
 			`,
 			sourceExpressions(
 				s('identifier'),
@@ -78,31 +56,35 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		INTEGER: [
 			xjs.String.dedent`
-				42;
-				\\b01000101;
-				4_2;
-				\\b0100_0101;
+				{
+					42;
+					\\b01000101;
+					4_2;
+					\\b0100_0101;
+				}
 			`,
 			sourceExpressions(
 				s('primitive_literal', s('integer')),
-				s('primitive_literal', s('integer__radix')),
-				s('primitive_literal', s('integer__separator')),
-				s('primitive_literal', s('integer__radix__separator')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
 			),
 		],
 
 		FLOAT: [
 			xjs.String.dedent`
-				42.0;
-				42.69;
-				42.69e15;
-				42.69e+15;
-				42.69e-15;
-				4_2.0;
-				4_2.6_9;
-				4_2.6_9e1_5;
-				4_2.6_9e+1_5;
-				4_2.6_9e-1_5;
+				{
+					42.0;
+					42.69;
+					42.69e15;
+					42.69e+15;
+					42.69e-15;
+					4_2.0;
+					4_2.6_9;
+					4_2.6_9e1_5;
+					4_2.6_9e+1_5;
+					4_2.6_9e-1_5;
+				}
 			`,
 			sourceExpressions(
 				s('primitive_literal', s('float')),
@@ -110,32 +92,34 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('primitive_literal', s('float')),
 				s('primitive_literal', s('float')),
 				s('primitive_literal', s('float')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
 			),
 		],
 
 		STRING: [
 			xjs.String.dedent`
-				"hello world";
+				{
+					"hello world";
 
-				"hello world %ignore";
+					"hello world %ignore";
 
-				"hello %ignore
-				world";
+					"hello %ignore
+					world";
 
-				"hello world %%ignore
-				ignore";
+					"hello world %%ignore
+					ignore";
 
-				"hello %%ignore
-				ignore%% world";
+					"hello %%ignore
+					ignore%% world";
 
-				"hello\\u{0020}world";
+					"hello\\u{0020}world";
 
-				"hello\\u{00_20}world";
+					"hello\\u{00_20}world";
+				}
 			`,
 			sourceExpressions(
 				s('primitive_literal', s('string')),
@@ -144,7 +128,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
-				s('primitive_literal', s('string__separator')),
+				s('primitive_literal', s('string')),
 			),
 		],
 
@@ -157,29 +141,69 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// Word
 		// tested in #{PrimitiveLiteral,EntryType,PropertyAccessorType,Property,PropertyAccessor}
 
+		KeywordType: [
+			xjs.String.dedent`
+				{
+					type T = nothing;
+					type T = bool;
+					type T = sym;
+					type T = int;
+					type T = float;
+					type T = str;
+					type T = anything;
+				}
+			`,
+			sourceTypes(
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+				s('keyword_type'),
+			),
+		],
+
+		KeywordValue: [
+			xjs.String.dedent`
+				{
+					null;
+					false;
+					true;
+				}
+			`,
+			sourceExpressions(
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
+				s('primitive_literal', s('keyword_value')),
+			),
+		],
+
 		PrimitiveLiteral: [
 			xjs.String.dedent`
-				type T = null;
-				type T = false;
-				type T = true;
-				type T = @type;
-				type T = @bool;
-				type T = @true;
-				type T = @hello;
-				type T = 42;
-				type T = 4.2;
-				type T = "hello";
+				{
+					type T = null;
+					type T = false;
+					type T = true;
+					type T = @type;
+					type T = @bool;
+					type T = @true;
+					type T = @hello;
+					type T = 42;
+					type T = 4.2;
+					type T = "hello";
 
-				null;
-				false;
-				true;
-				@let;
-				@bool;
-				@true;
-				@hello;
-				42;
-				4.2;
-				"hello";
+					null;
+					false;
+					true;
+					@let;
+					@bool;
+					@true;
+					@hello;
+					42;
+					4.2;
+					"hello";
+				}
 			`,
 			(() => {
 				const primitive_literals = [
@@ -194,8 +218,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('float'),
 					s('string'),
 				].map((term) => s('primitive_literal', term));
-				return s(
-					'source_file',
+				return sourceStatements(
 					...primitive_literals.map((pl) => s('declaration_type', s('identifier'), pl)),
 					...primitive_literals.map((pl) => s('statement_expression', pl)),
 				);
@@ -213,11 +236,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// PropertiesType
 		// tested in #TypeRecordLiteral
 
+		// PropertyAccessorType
+		// tested in #TypeCompound
+
 		TypeGrouped: [
 			xjs.String.dedent`
-				type T = (42);
-				type T = (int);
-				type T = (T);
+				{
+					type T = (42);
+					type T = (int);
+					type T = (T);
+				}
 			`,
 			sourceTypes(
 				s('type_grouped', s('primitive_literal', s('integer'))),
@@ -228,15 +256,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeTupleLiteral: [
 			xjs.String.dedent`
-				type A = ();
-				type B = (bool,);
-				type C = (?: bool);
-				type D = (bool, int);
-				type E = (bool, ?: int);
-				type U = (
-					V.0,
-					W.<float>,
-				);
+				{
+					type A = ();
+					type B = (bool,);
+					type C = (?: bool);
+					type D = (bool, int);
+					type E = (bool, ?: int);
+					type U = (
+						V.0,
+						W.<float>,
+					);
+				}
 			`,
 			sourceTypes(
 				s('type_tuple_literal'),
@@ -282,11 +312,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeRecordLiteral: [
 			xjs.String.dedent`
-				type T = (a: bool, b?: int, _: str);
-				type U = (
-					a: V.0,
-					b: W.<float>,
-				);
+				{
+					type T = (a: bool, b?: int, _: str);
+					type U = (
+						a: V.0,
+						b: W.<float>,
+					);
+					type V = (let: str, bool: str, true: str, foo: str);
+				}
 			`,
 			sourceTypes(
 				s(
@@ -316,12 +349,21 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						),
 					),
 				),
+				s(
+					'type_record_literal',
+					s('entry_type__named', s('word'),                     s('keyword_type')),
+					s('entry_type__named', s('word', s('keyword_type')),  s('keyword_type')),
+					s('entry_type__named', s('word', s('keyword_value')), s('keyword_type')),
+					s('entry_type__named', s('word', s('identifier')),    s('keyword_type')),
+				),
 			),
 		],
 
 		TypeListLiteral: [
 			xjs.String.dedent`
-				type T = [bool];
+				{
+					type T = [bool];
+				}
 			`,
 			sourceTypes(s(
 				'type_list_literal',
@@ -331,7 +373,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeDictLiteral: [
 			xjs.String.dedent`
-				type T = [: bool];
+				{
+					type T = [: bool];
+				}
 			`,
 			sourceTypes(s(
 				'type_dict_literal',
@@ -341,7 +385,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeSetLiteral: [
 			xjs.String.dedent`
-				type T = {bool};
+				{
+					type T = {bool};
+				}
 			`,
 			sourceTypes(s(
 				'type_set_literal',
@@ -351,7 +397,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeMapLiteral: [
 			xjs.String.dedent`
-				type T = {int -> float};
+				{
+					type T = {int -> float};
+				}
 			`,
 			sourceTypes(s(
 				'type_map_literal',
@@ -361,23 +409,26 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// TypeUnit
-		// consists of #{KEYWORD_TYPE,IDENTIFIER,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
-
-		// PropertyAccessorType
-		// tested in #TypeCompound
+		// consists of #{IDENTIFIER,KeywordType,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
 
 		// GenericCall
 		// tested in #TypeCompound
 
 		TypeCompound: [
 			xjs.String.dedent`
-				type T = TupleType.0;
-				type T = RecordType.prop;
-				type T = RecordType._;
-				type T = TupleType?.0;
-				type T = RecordType?.prop;
-				type T = RecordType?._;
-				type T = Set.<T>;
+				{
+					type T = TupleType.0;
+					type T = RecordType.prop;
+					type T = RecordType._;
+					type T = TupleType?.0;
+					type T = RecordType?.prop;
+					type T = RecordType?._;
+					type T = Set.<T>;
+					type T = SomeType.let;
+					type T = SomeType.bool;
+					type T = SomeType.true;
+					type T = SomeType.foo;
+				}
 			`,
 			sourceTypes(
 				s(
@@ -415,13 +466,35 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 					s('generic_arguments', s('identifier')),
 				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_accessor_type', s('word')),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_accessor_type', s('word', s('keyword_type'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_accessor_type', s('word', s('keyword_value'))),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_accessor_type', s('word', s('identifier'))),
+				),
 			),
 		],
 
 		TypeUnarySymbol: [
 			xjs.String.dedent`
-				type T = T?;
-				type T = T!;
+				{
+					type T = T?;
+					type T = T!;
+				}
 			`,
 			sourceTypes(
 				s(
@@ -437,7 +510,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeUnaryKeyword: [
 			xjs.String.dedent`
-				type T = mut T;
+				{
+					type T = mut T;
+				}
 			`,
 			sourceTypes(s(
 				'type_unary_keyword',
@@ -447,7 +522,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeIntersection: [
 			xjs.String.dedent`
-				type T = T & U;
+				{
+					type T = T & U;
+				}
 			`,
 			sourceTypes(s(
 				'type_intersection',
@@ -458,7 +535,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TypeUnion: [
 			xjs.String.dedent`
-				type T = T | U;
+				{
+					type T = T | U;
+				}
 			`,
 			sourceTypes(s(
 				'type_union',
@@ -474,13 +553,15 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		/* ## Expressions */
 		StringTemplate: [
 			xjs.String.dedent`
-				"""hello {{ to }} the
-				the {{ big }} world""";
+				{
+					"""hello {{ to }} the
+					the {{ big }} world""";
 
-				"""hello {{ to }} the {{ whole }} great {{ big }} world""";
+					"""hello {{ to }} the {{ whole }} great {{ big }} world""";
 
-				"""hello {{ """to {{ """the
-				the""" }} big""" }} world""";
+					"""hello {{ """to {{ """the
+					the""" }} big""" }} world""";
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -524,10 +605,15 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// Case
 		// tested in #MapLiteral
 
+		// PropertyAccessor
+		// tested in #{ExpressionCompound,Assignee}
+
 		ExpressionGrouped: [
 			xjs.String.dedent`
-				(42);
-				(a);
+				{
+					(42);
+					(a);
+				}
 			`,
 			sourceExpressions(
 				s('expression_grouped', s('primitive_literal', s('integer'))),
@@ -537,11 +623,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		TupleLiteral: [
 			xjs.String.dedent`
-				();
-				(,a);
-				(,a, b);
-				(a, b, c);
-				(1, (2,), ((3,),),);
+				{
+					();
+					(,a);
+					(,a, b);
+					(a, b, c);
+					(1, (2,), ((3,),),);
+				}
 			`,
 			sourceExpressions(
 				s('tuple_literal'),
@@ -561,7 +649,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		RecordLiteral: [
 			xjs.String.dedent`
-				(a= 1, b= (x= 2), _= (y= (k= 3)));
+				{
+					(a= 1, b= (x= 2), _= (y= (k= 3)), let= 4, bool= 5, true= 6);
+				}
 			`,
 			sourceExpressions(s(
 				'record_literal',
@@ -601,12 +691,29 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						),
 					),
 				),
+				s(
+					'property',
+					s('word'),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_type')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_value')),
+					s('primitive_literal', s('integer')),
+				),
 			)),
 		],
 
 		ListLiteral: [
 			xjs.String.dedent`
-				[1, 2, 3];
+				{
+					[1, 2, 3];
+				}
 			`,
 			sourceExpressions(s(
 				'list_literal',
@@ -618,7 +725,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		DictLiteral: [
 			xjs.String.dedent`
-				[a= 1, b= [x= 2], _= [y= [k= 3]]];
+				{
+					[a= 1, b= [x= 2], _= [y= [k= 3]], let= 4, bool= 5, true= 6];
+				}
 			`,
 			sourceExpressions(s(
 				'dict_literal',
@@ -658,12 +767,29 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						),
 					),
 				),
+				s(
+					'property',
+					s('word'),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_type')),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'property',
+					s('word', s('keyword_value')),
+					s('primitive_literal', s('integer')),
+				),
 			)),
 		],
 
 		SetLiteral: [
 			xjs.String.dedent`
-				{1, 2, 3};
+				{
+					{1, 2, 3};
+				}
 			`,
 			sourceExpressions(s(
 				'set_literal',
@@ -675,7 +801,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		MapLiteral: [
 			xjs.String.dedent`
-				{"1" -> 1, "2" -> 2, "3" -> 3};
+				{
+					{"1" -> 1, "2" -> 2, "3" -> 3};
+				}
 			`,
 			sourceExpressions(s(
 				'map_literal',
@@ -701,29 +829,31 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// tested in #FunctionCall
 
 		// ExpressionUnit
-		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal}
-
-		// PropertyAccessor
-		// tested in #{ExpressionCompound,Assignee}
+		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal,Block}
 
 		// FunctionCall
 		// tested in #ExpressionCompound
 
 		ExpressionCompound: [
 			xjs.String.dedent`
-				tuple.0;
-				tuple?.0;
-				tuple!.0;
-				record.prop;
-				record?.prop;
-				record!.prop;
-				record._;
-				list.[index];
-				list?.[index];
-				list!.[index];
-				List.();
-				Dict.(record);
-				Set.<T>();
+				{
+					tuple.0;
+					tuple?.0;
+					tuple!.0;
+					record.prop;
+					record?.prop;
+					record!.prop;
+					record._;
+					list.[index];
+					list?.[index];
+					list!.[index];
+					List.();
+					Dict.(record);
+					Set.<T>();
+					record.let;
+					record.bool;
+					record.true;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -792,18 +922,32 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('generic_arguments', s('identifier')),
 					s('function_arguments'),
 				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_accessor', s('word')),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_accessor', s('word', s('keyword_type'))),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_accessor', s('word', s('keyword_value'))),
+				),
 			),
 		],
 
-		// Assignee
-		// tested in #StatementAssignment
-
 		ExpressionUnarySymbol: [
 			xjs.String.dedent`
-				!value;
-				?value;
-				+value;
-				-value;
+				{
+					!value;
+					?value;
+					+value;
+					-value;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -825,10 +969,64 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		ExpressionUnaryKeyword: [
+			xjs.String.dedent`
+				{
+					int   value;
+					float value;
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_unary_keyword',
+					s('identifier'),
+				),
+				s(
+					'expression_unary_keyword',
+					s('identifier'),
+				),
+			),
+		],
+
+		ExpressionCast: [
+			xjs.String.dedent`
+				{
+					value as  Klass;
+					value as? Klass;
+					value as! Klass;
+					value as  <T>;
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_cast',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'expression_cast',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'expression_cast',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'expression_cast',
+					s('identifier'),
+					s('identifier'),
+				),
+			),
+		],
+
 		ExpressionExponential: [
 			xjs.String.dedent`
-				a ^ b;
-				a ^ b ^ c;
+				{
+					a ^ b;
+					a ^ b ^ c;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -850,9 +1048,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		ExpressionMultiplicative: [
 			xjs.String.dedent`
-				a * b;
-				a / b;
-				a * b * c;
+				{
+					a * b;
+					a / b;
+					a * b * c;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -879,8 +1079,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		ExpressionAdditive: [
 			xjs.String.dedent`
-				a + b;
-				a - b;
+				{
+					a + b;
+					a - b;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -898,14 +1100,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		ExpressionComparative: [
 			xjs.String.dedent`
-				a < b;
-				a > b;
-				a <= b;
-				a >= b;
-				a !< b;
-				a !> b;
-				a is b;
-				a isnt b;
+				{
+					a < b;
+					a > b;
+					a <= b;
+					a >= b;
+					a !< b;
+					a !> b;
+					a is b;
+					a isnt b;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -953,10 +1157,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		ExpressionEquality: [
 			xjs.String.dedent`
-				a === b;
-				a !== b;
-				a == b;
-				a != b;
+				{
+					a === b;
+					a !== b;
+					a == b;
+					a != b;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -984,8 +1190,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		ExpressionConjunctive: [
 			xjs.String.dedent`
-				a && b;
-				a !& b;
+				{
+					a && b;
+					a !& b;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -1003,8 +1211,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		ExpressionDisjunctive: [
 			xjs.String.dedent`
-				a || b;
-				a !| b;
+				{
+					a || b;
+					a !| b;
+				}
 			`,
 			sourceExpressions(
 				s(
@@ -1022,14 +1232,39 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		ExpressionConditional: [
 			xjs.String.dedent`
-				if a then b else c;
+				{
+					if a then b else c;
+					if a then {b} else {c};
+					if a then ({b}) else ({c});
+					if a then ({ b; }) else ({ c; });
+				}
 			`,
-			sourceExpressions(s(
-				'expression_conditional',
-				s('identifier'),
-				s('identifier'),
-				s('identifier'),
-			)),
+			sourceExpressions(
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('set_literal', s('identifier')),
+					s('set_literal', s('identifier')),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('expression_grouped', s('set_literal', s('identifier'))),
+					s('expression_grouped', s('set_literal', s('identifier'))),
+				),
+				s(
+					'expression_conditional',
+					s('identifier'),
+					s('expression_grouped', s('expression_block', s('statement_expression', s('identifier')))),
+					s('expression_grouped', s('expression_block', s('statement_expression', s('identifier')))),
+				),
+			),
 		],
 
 		// Expression
@@ -1037,14 +1272,190 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 
 		/* ## Statements */
+		StatementExpression: [
+			xjs.String.dedent`
+				{
+					my_var;
+				}
+			`,
+			sourceStatements(s('statement_expression', s('identifier'))),
+		],
+
+		StatementConditional: [
+			xjs.String.dedent`
+				{
+					if     condition  then { consequent; };
+					unless condition  then { alternative; };
+					if     condition  then { consequent; }  else { alternative; };
+					if     condition1 then { consequent1; } else if condition2 then { consequent2; } else { alternative; };
+					if     condition1 then { consequent1; } else if condition2 then { consequent2; } else if condition3 then { consequent3; } else { alternative; };
+				}
+			`,
+			sourceStatements(
+				s('statement_conditional',         s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_conditional__unless', s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s(
+					'statement_conditional',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s('block', s('statement_expression', s('identifier'))),
+				),
+				s(
+					'statement_conditional',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s(
+						'statement_conditional',
+						s('identifier'),
+						s('block', s('statement_expression', s('identifier'))),
+						s('block', s('statement_expression', s('identifier'))),
+					),
+				),
+				s(
+					'statement_conditional',
+					s('identifier'),
+					s('block', s('statement_expression', s('identifier'))),
+					s(
+						'statement_conditional',
+						s('identifier'),
+						s('block', s('statement_expression', s('identifier'))),
+						s(
+							'statement_conditional',
+							s('identifier'),
+							s('block', s('statement_expression', s('identifier'))),
+							s('block', s('statement_expression', s('identifier'))),
+						),
+					),
+				),
+			),
+		],
+
+		StatementLoop: [
+			xjs.String.dedent`
+				{
+					while condition do { loop; };
+					until condition do { loop; };
+					do { loop; } while condition;
+					do { loop; } until condition;
+					while condition do {
+						if condition then { consequent; };
+					};
+				}
+			`,
+			sourceStatements(
+				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
+				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
+				s('statement_loop', s('identifier'), s(
+					'block__break',
+					s('statement_conditional__break', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				)),
+			),
+		],
+
+		StatementIteration: [
+			xjs.String.dedent`
+				{
+					for _:  T of iterable do { iterate; };
+					for it: T of iterable do { iterate; };
+				}
+			`,
+			sourceStatements(
+				s('statement_iteration',                  s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration', s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+			),
+		],
+
+		StatementBreak: [
+			xjs.String.dedent`
+				{
+					while condition do {
+						break;
+						continue;
+					};
+				}
+			`,
+			sourceStatements(s('statement_loop', s('identifier'), s(
+				'block__break',
+				s('statement_break'),
+				s('statement_break'),
+			))),
+		],
+
+		// Statement
+		// consists of #{Statement{Expression,Conditional,Loop,Iteration,Break},Declaration}
+
+		Block: [
+			xjs.String.dedent`
+				{
+					type T = U;
+					let a: T = b;
+					claim a: U;
+					set a = b;
+					a;
+					{
+						b;
+					};
+					if condition then { consequent; };
+					while condition do { loop; };
+					for it: T of iterable do { iterate; };
+				}
+			`,
+			sourceStatements(
+				s(
+					'declaration_type',
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_variable',
+					s('identifier'),
+					s('identifier'),
+					s('identifier'),
+				),
+				s(
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_expression',
+					s('identifier'),
+				),
+				s(
+					'statement_expression',
+					s('expression_block', s('statement_expression', s('identifier'))),
+				),
+				s('statement_conditional',                                   s('identifier'), s('block',        s('statement_expression',        s('identifier')))),
+				s('statement_loop',                                          s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration',   s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+			),
+		],
+
+		// Assignee
+		// tested in #DeclarationReassignment
+
 		DeclarationType: [
 			xjs.String.dedent`
-				type T = A | B & C;
-				type 'Ü' = T;
-				type _ = D;
+				{
+					type T = A | B & C;
+					type 'Ü' = T;
+					type _ = D;
+				}
 			`,
-			s(
-				'source_file',
+			sourceStatements(
 				s(
 					'declaration_type',
 					s('identifier'),
@@ -1072,17 +1483,18 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		DeclarationVariable: [
 			xjs.String.dedent`
-				let v: T = a + b * c;
-				let var u: A | B & C = v;
-				let 'å': A = a;
-				let var 'é': E = e;
-				let _: T = v;
-				let var _: T = v;
-				let var uninit?: T;
-				let var _?: T;
+				{
+					let v: T = a + b * c;
+					let var u: A | B & C = v;
+					let 'å': A = a;
+					let var 'é': E = e;
+					let _: T = v;
+					let var _: T = v;
+					let var uninit?: T;
+					let var _?: T;
+				}
 			`,
-			s(
-				'source_file',
+			sourceStatements(
 				s(
 					'declaration_variable',
 					s('identifier'),
@@ -1145,28 +1557,22 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
-		// Declaration
-		// consists of #Declaration{Type,Variable}
-
-		StatementExpression: [
+		DeclarationClaim: [
 			xjs.String.dedent`
-				my_var;
+				{
+					claim my_var:       T;
+					claim tuple.1:      U;
+					claim record.prop:  V;
+					claim record._:     X;
+					claim list.[index]: W;
+					claim record.let:   Y;
+					claim record.bool:  Z;
+					claim record.true:  S;
+				}
 			`,
-			s('source_file', s('statement_expression', s('identifier'))),
-		],
-
-		StatementAssignment: [
-			xjs.String.dedent`
-				my_var       = a;
-				tuple.1      = b;
-				record.prop  = c;
-				record._     = c;
-				list.[index] = d;
-			`,
-			s(
-				'source_file',
+			sourceStatements(
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1174,7 +1580,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1183,7 +1589,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1192,7 +1598,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1201,7 +1607,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_assignment',
+					'declaration_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1209,11 +1615,126 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					),
 					s('identifier'),
 				),
+				s(
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_type'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_value'))),
+					),
+					s('identifier'),
+				),
 			),
 		],
 
-		// Statement
-		// consists of #{Declaration,Statement{Expression,Assignment}}
+		DeclarationReassignment: [
+			xjs.String.dedent`
+				{
+					set my_var       = a;
+					set tuple.1      = b;
+					set record.prop  = c;
+					set record._     = c;
+					set list.[index] = d;
+					set record.let   = 1;
+					set record.bool  = 2;
+					set record.true  = 3;
+				}
+			`,
+			sourceStatements(
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('integer')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('identifier')),
+					),
+					s('identifier'),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word')),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_type'))),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'declaration_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_value'))),
+					),
+					s('primitive_literal', s('integer')),
+				),
+			),
+		],
+
+		// Declaration
+		// consists of #Declaration{Type,Variable,Claim,Reassignment}
 	}).map(([title, [source, expected]]) => xjs.String.dedent`
 		${ '='.repeat(title.length) }
 		${ title }

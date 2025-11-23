@@ -46,13 +46,9 @@ type CustomArgsType = {
 	p:        string,
 
 	// Language Features
-	comments:          null | boolean,
-	integerRadices:    null | boolean,
-	numericSeparators: null | boolean,
 
 	// Compiler Options
 	constantFolding: null | boolean,
-	intCoercion:     null | boolean,
 };
 
 
@@ -64,7 +60,7 @@ type CustomArgsType = {
 export class CLI {
 	/** Text to print on --help. */
 	public static readonly HELPTEXT: string = xjs.String.dedent`
-		Usage: cpc <command> <filepath> [<options>]
+		Usage: cplc <command> <filepath> [<options>]
 
 		Parse, analyze, and compile a Counterpoint source code file.
 		Executables are in WASM binary format. Plaintext outputs are in WAT format.
@@ -72,17 +68,17 @@ export class CLI {
 
 		Examples:
 		\`\`\`
-		# Compile \`test.cp\` to \`test.wasm\`:
-		$ cpc compile test.cp
+		# Compile \`test.cpls\` to \`test.wasm\`:
+		$ cplc compile test.cpls
 
-		# Compile \`src/input.cp\` to \`build/output.wasm\`:
-		$ cpc compile src/input.cp --out build/output.wasm
+		# Compile \`src/input.cpls\` to \`build/output.wasm\`:
+		$ cplc compile src/input.cpls --out build/output.wasm
 
-		# Debug \`program.cp\` (writes to \`program.wat\`):
-		$ cpc dev program.cp
+		# Debug \`program.cpls\` (writes to \`program.wat\`):
+		$ cplc dev program.cpls
 
 		# Execute \`program.wasm\`:
-		$ cpc run program.wasm
+		$ cplc run program.wasm
 		\`\`\`
 
 		Commands:
@@ -108,13 +104,9 @@ export class CLI {
 		These options will override those in the configuration file provided by \`--project\`.
 
 		Language Features:
-		--[no-]comments                (on by default)
-		--[no-]integerRadices
-		--[no-]numericSeparators
 
 		Compiler Options:
 		--[no-]constantFolding         (on by default)
-		--[no-]intCoercion             (on by default)
 	`.trimStart();
 
 	/** Options argument to `minimist` function. */
@@ -125,12 +117,8 @@ export class CLI {
 			'version',
 			'config',
 			// Language Features
-			'comments',
-			'integerRadices',
-			'numericSeparators',
 			// Compiler Options
 			'constantFolding',
-			'intCoercion',
 		],
 		string: [
 			// CLI Options
@@ -150,13 +138,9 @@ export class CLI {
 			config:  false,
 
 			// Language Features
-			comments:          null,
-			integerRadices:    null,
-			numericSeparators: null,
 
 			// Compiler Options
 			constantFolding: null,
-			intCoercion:     null,
 		},
 		unknown(arg) {
 			if (arg.startsWith('-')) { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
@@ -228,11 +212,7 @@ export class CLI {
 		};
 
 		/* eslint-disable curly */
-		if (this.argv.comments          !== null) returned.languageFeatures.comments          = this.argv.comments;
-		if (this.argv.integerRadices    !== null) returned.languageFeatures.integerRadices    = this.argv.integerRadices;
-		if (this.argv.numericSeparators !== null) returned.languageFeatures.numericSeparators = this.argv.numericSeparators;
 		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding;
-		if (this.argv.intCoercion       !== null) returned.compilerOptions.intCoercion        = this.argv.intCoercion;
 		/* eslint-enable curly */
 
 		return returned;
@@ -284,8 +264,8 @@ export class CLI {
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
 	public async run(cwd: string): Promise<[string, ...unknown[]]> {
-		const inputfilepath: string          = this.inputPath(cwd);
-		const bytes:         Promise<Buffer> = fs.promises.readFile(inputfilepath);
+		const inputfilepath: string                = this.inputPath(cwd);
+		const bytes:         Promise<BufferSource> = fs.promises.readFile(inputfilepath);
 		return [
 			xjs.String.dedent`
 				Executing………

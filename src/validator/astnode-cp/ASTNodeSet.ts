@@ -13,7 +13,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
 	ASTNodeExpression,
@@ -35,7 +35,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'set_literal'>,
+		start_node: SyntaxNodeFamily<'set_literal', ['break']>,
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
@@ -50,6 +50,9 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return new TYPE.Set(
 			TYPE.Union.all(this.children.map((c) => c.type())),
 			true,
@@ -70,6 +73,6 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
 			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.typearg, expr));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

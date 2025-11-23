@@ -11,7 +11,6 @@ import {
 	type ConstructorType,
 	assert_instanceof,
 } from '../../lib/index.ts';
-import type {CPConfig} from '../../core/index.ts';
 import {
 	Operator,
 	type ValidTypeAccessOperator,
@@ -63,63 +62,158 @@ export function is_valid_intrinsic_name(source: string): source is ValidIntrinsi
 	return Object.values<string>(ValidIntrinsicName).includes(source);
 }
 
-export function invalid_function_name(source: string): never {
-	throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
+export function check_valid_function_name(source: string): asserts source is ValidFunctionName {
+	if (!Object.values<string>(ValidFunctionName).includes(source)) {
+		throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
+	}
 }
 
 
 
-export function bothNumeric(t0: TYPE.Type, t1: TYPE.Type): boolean;
-export function bothNumeric(v0: VALUE.Value, v1: VALUE.Value): boolean;
-export function bothNumeric(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE.Value): boolean {
-	const int_float: TYPE.Type = TYPE.INT.union(TYPE.FLOAT);
-	return (arg0 instanceof TYPE.Type && arg1 instanceof TYPE.Type)
-		? [arg0, arg1].every((t) => t.isSubtypeOf(int_float))
-		: [arg0, arg1].every((o) => o instanceof VALUE.Number);
+type GenericArgsSpec = readonly TYPE.Type[]; // TODO: intersect with `Readonly<Record<string, TYPE.Type>>` once we have named arguments
+
+/**
+ * A schema for a generic parameter.
+ * @property positional    - Is the parameter positional (as opposed to named)? If true, this schema must not have a `name` property.
+ * @property name          - Is the parameter named? If true, this schema must not have a `positional` property.
+ * @property covariant     - The manner in which the parameter is covariant (in the `out` position).
+ * @property contravariant - The manner in which the parameter is contravariant (in the `in` position).
+ * @property constraint    - The type, if any, that the parameter is required to narrow or widen.
+ * @property default       - The default value of the parameter, which is an optional parameter.
+ */
+type GenericParameterSchema = (
+	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
+	& {
+		readonly covariant?:     'never' | 'always' | 'when_mutable',
+		readonly contravariant?: 'never' | 'always' | 'when_mutable',
+		readonly constraint?:    {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
+		readonly default?:       (generic_params: GenericArgsSpec) => TYPE.Type,
+	}
+);
+
+/**
+ * A schema for a functional parameter.
+ * @property positional - Is the parameter positional (as opposed to named)? If true, this schema must not have a `name` property.
+ * @property name       - Is the parameter named? If true, this schema must not have a `positional` property.
+ * @property type       - The required type of the parameter.
+ * @property optional   - Is the parameter optional? If true, it may or may not have a default value.
+ * @property default    - The default value of the parameter. If present, this schema’s `optional` property must be `true`.
+ */
+type FunctionParameterSchema = (
+	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
+	& {readonly type: (generic_params: GenericArgsSpec) => TYPE.Type}
+	& ({readonly optional?: false} | {readonly optional: true, readonly default?: unknown})
+);
+
+/**
+ * A schema for a constructor type call or constructor call.
+ * @property genericParams - an array of generic parameters for the class
+ * @property overloads     - a list of class constructor overload signatures
+ * @property returnType    - the return type of the constructor call, or type of the type call (they’re the same)
+ */
+export type ConstructorSchema = {
+	readonly genericParams: readonly GenericParameterSchema[],
+	readonly overloads:     readonly (readonly FunctionParameterSchema[])[],
+	readonly returnType:    (generic_params: GenericArgsSpec) => TYPE.Type,
+};
+
+/**
+ * ```cpl
+ * declare class List<T> {
+ * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  (T,));
+ * 	new (tup2:  (T, T));
+ * 	new (tup:   anything); % any tuple type with items of type `T`
+ * 	new (list:  List.<T>);
+ * 	new ('set': Set.<T>);
+ * }
+ * declare class Dict<T> {
+ * 	new ();
+ * 	new (recA:  (a: T));
+ * 	new (recAB: (a: T, b: T));
+ * 	new (rec:   anything); % any record type with values of type `T`
+ * 	new (dict:  Dict.<T>);
+ * }
+ * declare class Set<T> {
+ * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  (T,));
+ * 	new (tup2:  (T, T));
+ * 	new (tup:   anything); % any tuple type with items of type `T`
+ * 	new (list:  List.<T>);
+ * 	new ('set': Set.<T>);
+ * }
+ * declare class Map<K, V> {
+ * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  ((K, V),));
+ * 	new (tup2:  ((K, V), (K, V)));
+ * 	new (tup:   anything); % any tuple type with items of type `(K, V)`
+ * 	new (list:  List.<(K, V)>);
+ * 	new ('set': Set.<(K, V)>);
+ * 	new (map:   Map.<K, V>);
+ * }
+ * ```
+ */
+export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
+	[ValidFunctionName.LIST, {
+		genericParams: [{positional: true}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
+			[{positional: true, type: (generic_params) => new TYPE.Set (generic_params[0])}],
+		],
+		returnType: (generic_params) => new TYPE.List(generic_params[0]),
+	}],
+	[ValidFunctionName.DICT, {
+		genericParams: [{positional: true}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.Dict(generic_params[0])}],
+		],
+		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
+	}],
+	[ValidFunctionName.SET, {
+		genericParams: [{positional: true}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
+			[{positional: true, type: (generic_params) => new TYPE.Set (generic_params[0])}],
+		],
+		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
+	}],
+	[ValidFunctionName.MAP, {
+		genericParams: [{positional: true}, {positional: true, default: (generic_params) => generic_params[0]}],
+		overloads:     [
+			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
+			[{positional: true, type: (generic_params) => new TYPE.Set (TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
+			[{positional: true, type: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1])}],
+		],
+		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
+	}],
+]);
+
+
+
+export function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
 }
 
-export function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean;
-export function bothInts(v0: VALUE.Value, v1: VALUE.Value): boolean;
-export function bothInts(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE.Value): boolean {
-	return (arg0 instanceof TYPE.Type && arg1 instanceof TYPE.Type)
-		? [arg0, arg1].every((t) => t.isSubtypeOf(TYPE.INT))
-		: [arg0, arg1].every((o) => o instanceof VALUE.Integer);
+export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
 }
 
-export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean;
-export function bothFloats(v0: VALUE.Value, v1: VALUE.Value): boolean;
-export function bothFloats(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE.Value): boolean {
-	return (arg0 instanceof TYPE.Type && arg1 instanceof TYPE.Type)
-		? [arg0, arg1].every((t) => t.isSubtypeOf(TYPE.FLOAT))
-		: [arg0, arg1].every((o) => o instanceof VALUE.Float);
-}
-
-export function eitherFloats(t0: TYPE.Type, t1: TYPE.Type): boolean;
-export function eitherFloats(v0: VALUE.Value, v1: VALUE.Value): boolean;
-export function eitherFloats(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE.Value): boolean {
-	return (arg0 instanceof TYPE.Type && arg1 instanceof TYPE.Type)
-		? [arg0, arg1].some((t) => t.isSubtypeOf(TYPE.FLOAT))
-		: [arg0, arg1].some((o) => o instanceof VALUE.Float);
-}
-
-export function neitherFloats(t0: TYPE.Type, t1: TYPE.Type): boolean;
-export function neitherFloats(v0: VALUE.Value, v1: VALUE.Value): boolean;
-export function neitherFloats(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE.Value): boolean {
-	// @ts-expect-error --- both args are either both `TYPE.Type`s or both `VALUE.Value`s
-	return !eitherFloats(arg0, arg1);
-}
-
-export function oneFloats(t0: TYPE.Type, t1: TYPE.Type): boolean;
-export function oneFloats(v0: VALUE.Value, v1: VALUE.Value): boolean;
-export function oneFloats(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE.Value): boolean {
-	// @ts-expect-error --- both args are either both `TYPE.Type`s or both `VALUE.Value`s
-	return eitherFloats(arg0, arg1) && !bothFloats(arg0, arg1);
+export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+	return t0.isSubtypeOf(NUMBER) && t1.isSubtypeOf(NUMBER);
 }
 
 
 
-export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Integer | VALUE.Float {
-	const cooked: bigint | number = Validator.cookTokenNumber(source, config);
+export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Float {
+	const cooked: bigint | number = Validator.cookTokenNumber(source);
 	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
 }
 
@@ -128,7 +222,7 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
 	if (base_type.isTopType && accessor_maybe) {
-		return {type: TYPE.UNKNOWN, optional: true};
+		return {type: TYPE.ANYTHING, optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const entry_infos: readonly (EntryType | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
@@ -241,7 +335,7 @@ export function validate_access_kind(access_kind: ValidTypeAccessOperator | Vali
 		throw new TypeErrorInvalidOperation(access);
 	}
 	if (access_kind === Operator.DOT_RES) {
-		throw new TypeError('Operator `!.` not yet supported.');
+		assert.fail('Operator `!.` not yet supported.');
 	}
 }
 
@@ -256,7 +350,7 @@ export function update_accessed_type(type: TYPE.Type, access_kind: ValidTypeAcce
 			return type.union(TYPE.NULL);
 		}
 		case Operator.DOT_RES: {
-			throw new TypeError('Operator `!.` not yet supported.');
+			assert.fail('Operator `!.` not yet supported.');
 		}
 	}
 }

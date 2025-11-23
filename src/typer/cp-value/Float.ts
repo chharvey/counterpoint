@@ -8,6 +8,7 @@ import {
 	strictEqual,
 	instanceOf,
 } from '../utils-private.ts';
+import {Integer} from './index.ts';
 import {
 	identical,
 	type Value,
@@ -54,6 +55,10 @@ export class Float extends ValueNumber<Float> {
 		).vect;
 	}
 
+	public override toInt(): Integer {
+		return new Integer(BigInt(Math.trunc(this.data)));
+	}
+
 	public override toFloat(): this {
 		return this;
 	}
@@ -66,12 +71,12 @@ export class Float extends ValueNumber<Float> {
 		return new Float(this.data - subtrahend.data);
 	}
 
-	public override times(multiplicand: Float): Float {
-		return new Float(this.data * multiplicand.data);
+	public override times(multiplier: Float): Float {
+		return new Float(this.data * multiplier.data);
 	}
 
 	public override divide(divisor: Float): Float {
-		if (divisor.data === 0) {
+		if (divisor.eq0()) {
 			throw new RangeError('Division by zero.');
 		}
 		return new Float(this.data / divisor.data);
@@ -89,10 +94,14 @@ export class Float extends ValueNumber<Float> {
 	 * The floating-point numbers `0.0` and `-0.0`, while not identical, are mathematically equal.
 	 */
 	public override eq0(): boolean {
-		return this.data === 0;
+		return this.data === 0.0;
 	}
 
-	public override lt(y: Float): boolean {
-		return this.data < y.data;
+	public override eq1(): boolean {
+		return this.data === 1.0;
+	}
+
+	public override lt(y: ValueNumber): boolean {
+		return this.data < (y instanceof Float ? y.data : y.toFloat().data);
 	}
 }

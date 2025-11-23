@@ -1,6 +1,6 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
+	bigint_to_i64,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -9,10 +9,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import {
-	Float,
-	INT_0,
-} from './index.ts';
+import {Float} from './index.ts';
 import {
 	identical,
 	type Value,
@@ -26,24 +23,24 @@ const BITS_PER_BYTE = 8;
 
 
 /**
- * A 16-bit signed integer in two’s complement.
+ * A 64-bit signed integer in two’s complement.
  * @final
  */
 export class Integer extends ValueNumber<Integer> {
 	/**
 	 * Internal implementation of this Int16.
-	 * A 16-bit integer stored in a Int16Array.
+	 * A 64-bit integer stored in a BigInt64Array.
 	 */
-	private readonly data: number;
+	private readonly data: bigint;
 
 	/**
 	 * Construct a new Integer object from a bigint or from data.
 	 * @param data - a numeric value or data
-	 * @returns the value represented as a 16-bit signed integer
+	 * @returns the value represented as a 64-bit signed integer
 	 */
 	public constructor(data: bigint = 0n) {
-		const internal = new Int16Array(1);
-		internal[0] = Number(data); // need to store in Int16Array first to ensure 16-bit
+		const internal = new BigInt64Array(1);
+		internal[0] = data; // need to store in BigInt64Array first to ensure 64-bit
 		super();
 		this.data = internal[0];
 	}
@@ -64,11 +61,19 @@ export class Integer extends ValueNumber<Integer> {
 	@instanceOf(() => ValueNumber)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
+		if (value instanceof Integer) {
+			// non-identical integers will never be equal
+			return false;
+		}
 		return this.toFloat().equal(value);
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, builder.module.i32.const(this.toNumber())).vect;
+		return new BinVect(builder.module, bigint_to_i64(builder.module, this.data)).vect;
+	}
+
+	public override toInt(): Integer {
+		return this;
 	}
 
 	public override toFloat(): Float {
@@ -80,8 +85,18 @@ export class Integer extends ValueNumber<Integer> {
 	 * @param  u Interpret as unsigned?
 	 * @return   the numeric value
 	 */
+	private toBigInt(u: boolean = false): bigint {
+		return u && this.data < 0n ? this.data + 2n ** BigInt(BigInt64Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : this.data;
+	}
+
+	/**
+	 * Return the signed or unsigned interpretation of this integer as a number.
+	 * Note: Some precision may be lost, especially for integers larger than 2^53.
+	 * @param  u Interpret as unsigned?
+	 * @return   the numeric value as a number
+	 */
 	public toNumber(u: boolean = false): number {
-		return u && this.data < 0 ? this.data + 2 ** (Int16Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : this.data;
+		return Number(this.toBigInt(u));
 	}
 
 	public override plus(addend: Integer): Integer {
@@ -94,36 +109,36 @@ export class Integer extends ValueNumber<Integer> {
 
 	/**
 	 * ```ts
-	 * function mulSlow(multiplier: number, multiplicand: number): number {
+	 * function mulSlow(multiplicand: number, multiplier: number): number {
 	 * 	return (
-	 * 		(multiplier === 0) ? 0                 :
-	 * 		(multiplier === 1) ? multiplicand      :
+	 * 		(multiplicand === 0) ? 0 :
+	 * 		(multiplicand === 1) ? multiplier :
+	 * 		(multiplicand === 2) ? multiplier << 1 :
+	 * 		(multiplier <   0) ? -mulSlow(multiplicand, -multiplier) :
+	 * 		(multiplier === 0) ? 0 :
+	 * 		(multiplier === 1) ? multiplicand :
 	 * 		(multiplier === 2) ? multiplicand << 1 :
-	 * 		(multiplicand <   0) ? -mulSlow(multiplier, -multiplicand) :
-	 * 		(multiplicand === 0) ? 0                                   :
-	 * 		(multiplicand === 1) ? multiplier                          :
-	 * 		(multiplicand === 2) ? multiplier << 1                     :
-	 * 		multiplier + mulSlow(multiplier, multiplicand - 1)
+	 * 		multiplicand + mulSlow(multiplicand, multiplier - 1)
 	 * 	)
 	 * }
-	 * function mulFast(multiplier: number, multiplicand: number): number {
+	 * function mulFast(multiplicand: number, multiplier: number): number {
 	 * 	return (
-	 * 		(multiplier === 0) ? 0                 :
-	 * 		(multiplier === 1) ? multiplicand      :
+	 * 		(multiplicand === 0) ? 0 :
+	 * 		(multiplicand === 1) ? multiplier :
+	 * 		(multiplicand === 2) ? multiplier << 1 :
+	 * 		(multiplier <   0) ? -mulFast(multiplicand, -multiplier) :
+	 * 		(multiplier === 0) ? 0 :
+	 * 		(multiplier === 1) ? multiplicand :
 	 * 		(multiplier === 2) ? multiplicand << 1 :
-	 * 		(multiplicand <   0) ? -mulFast(multiplier, -multiplicand) :
-	 * 		(multiplicand === 0) ? 0                                   :
-	 * 		(multiplicand === 1) ? multiplier                          :
-	 * 		(multiplicand === 2) ? multiplier << 1                     :
-	 * 		(multiplicand % 2 === 0)
-	 * 			?              mulFast(multiplier * 2,  multiplicand      / 2)
-	 * 			: multiplier + mulFast(multiplier * 2, (multiplicand - 1) / 2)
+	 * 		(multiplier % 2 === 0)
+	 * 			?                mulFast(multiplicand * 2,  multiplier      / 2)
+	 * 			: multiplicand + mulFast(multiplicand * 2, (multiplier - 1) / 2)
 	 * 	)
 	 * }
 	 * ```
 	 */
-	public override times(multiplicand: Integer): Integer {
-		return new Integer(BigInt(this.data * multiplicand.data));
+	public override times(multiplier: Integer): Integer {
+		return new Integer(BigInt(this.data * multiplier.data));
 	}
 
 	/**
@@ -172,9 +187,10 @@ export class Integer extends ValueNumber<Integer> {
 	 * ```
 	 */
 	public override divide(divisor: Integer): Integer {
-		return (divisor.eq0())
-			? assert.fail(new RangeError('Division by zero.'))
-			: new Integer(BigInt(Math.trunc(this.data / divisor.data)));
+		if (divisor.eq0()) {
+			throw new RangeError('Division by zero.');
+		}
+		return new Integer(this.data / divisor.data);
 	}
 
 	/**
@@ -196,9 +212,11 @@ export class Integer extends ValueNumber<Integer> {
 	 * 		(exponent === 2) ? base * base :
 	 * 		(base === 0)     ? 0           :
 	 * 		(base === 1)     ? 1           :
+	 * 		(base === 2 && exponent < 64) ? 1 << exponent : // `1 << x` (when `x` is less than bit width) is a more performant way to do `2 ** x`
 	 * 		(exponent % 2 === 0)
-	 * 			?        expFast(base ** 2,  exponent      / 2)
-	 * 			: base * expFast(base ** 2, (exponent - 1) / 2)
+	 * 			// `x >> 1` is a more performant way to do `x / 2`
+	 * 			?        expFast(base ** 2,  exponent      >> 1)
+	 * 			: base * expFast(base ** 2, (exponent - 1) >> 1)
 	 * 	);
 	 * }
 	 * ```
@@ -216,10 +234,17 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	public override eq0(): boolean {
-		return this.equal(INT_0);
+		return this.data === 0n;
 	}
 
-	public override lt(y: Integer): boolean {
-		return this.data < y.data;
+	public override eq1(): boolean {
+		return this.data === 1n;
+	}
+
+	public override lt(y: ValueNumber): boolean {
+		if (y instanceof Integer) {
+			return this.data < y.data;
+		}
+		return this.toFloat().lt(y);
 	}
 }

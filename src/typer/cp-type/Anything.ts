@@ -1,3 +1,4 @@
+import {Keyword} from '../../parser/index.ts';
 import {
 	strictEqual,
 	memoizeBinOp,
@@ -12,13 +13,13 @@ import {ReferenceType} from './ReferenceType.ts';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class Unknown extends ReferenceType {
+export class Anything extends ReferenceType {
 	public constructor() {
 		super(false, new Set<VALUE.Value>([
 			VALUE.NULL,
 			VALUE.FALSE,
 			VALUE.TRUE,
-			VALUE.SYM_NEVER,
+			VALUE.SYM_NOTHING,
 			VALUE.INT_0,
 			VALUE.INT_1,
 			VALUE.FLOAT_0,
@@ -36,7 +37,7 @@ export class Unknown extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return 'unknown';
+		return Keyword.ANYTHING;
 	}
 
 	public override includes(_v: VALUE.Value): boolean {

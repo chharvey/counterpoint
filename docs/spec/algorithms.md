@@ -353,7 +353,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `expr.children[i]` is set.
 		6. *For index* `i` in `expr.children`:
-			1. Let `ib` be `seq_b[i]`.
+			1. *Let* `ib` be `seq_b[i]`.
 			2. *If:* `ib` is set:
 				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
 		7. *Return.*
@@ -369,7 +369,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				2. *If* `property` is not set:
 					1. *Throw:* a new TypeErrorNotAssignable.
 		6. *For each* `property` in `expr.children`:
-			1. Let `vb` be `struct_b[property.children.0.id]`.
+			1. *Let* `vb` be `struct_b[property.children.0.id]`.
 			2. *If:* `vb` is set:
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
@@ -462,7 +462,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 	2. *Let* `accessor` be `access.children.1`.
 	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
 		1. *Return:* a new EntryTypeSchema [
-				type=     `Unknown`,
+				type=     `Anything`,
 				optional= `true`,
 			].
 	4. *If* `base_type` is the intersection or union of some types `a` and `b`:
@@ -480,7 +480,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			2. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `false`:
 					1. *Set* `all_optional` to `false`.
-			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to `Intersection(x.type, y.type)`.
+			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Intersection(x.type, y.type)`.
 			4. *Return:* a new EntryTypeSchema [
 					type=     `intersection`,
 					optional= `all_optional`,
@@ -493,7 +493,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 					1. *Set* `any_optional` to `true`.
 			4. *If* `errors.count` is greater than 0:
 				1. *Set* `any_optional` to `true`.
-			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to `Union(x.type, y.type)`.
+			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Union(x.type, y.type)`.
 			6. *Return:* a new EntryTypeSchema [
 					type=     `union`,
 					optional= `any_optional`,
@@ -575,7 +575,7 @@ None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry
 	2. *If* `access_kind` is *MAYBE* *and* `is_entry_optional` is `true`:
 		1. *Return.*
 	3. *If* `access_kind` is *RESULT*:
-		1. *Throw:* a new TypeError "Operator not yet supported.".
+		// TODO: implement
 	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
@@ -590,7 +590,7 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 	1. *If* `access_kind` is *MAYBE*:
 		1. *Return:* `Union(type, Null)`.
 	2. *Else If* `access_kind` is *RESULT*:
-		1. *Throw:* a new TypeError "Operator not yet supported.".
+		// TODO: implement
 	3. *Else:*
 		1. *Assert:* `access_kind` is *NORMAL*.
 		2. *Return:* `type`.

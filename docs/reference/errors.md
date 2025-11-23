@@ -120,7 +120,7 @@ A type error is raised when the compiler recognizes a type mismatch.
 1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
 1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
 1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
-1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments is passed to a callable object.
+1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments was passed to a callable object.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -139,8 +139,8 @@ Solution(s): Ensure the assigned type is a subtype of the assignee.
 #### 2303: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
 ```
-let x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
-((x: int): int => x + 1).(4.2); % TypeError: Expression of type `4.2` is not assignable to type `int`.
+let x: int = true;               % TypeError: Expression `true` is not assignable to type `int`.
+(\(x: int): int => x + 1).(4.2); % TypeError: Expression `4.2` is not assignable to type `int`.
 ```
 Solution(s): Ensure the expression has an assignable type.
 

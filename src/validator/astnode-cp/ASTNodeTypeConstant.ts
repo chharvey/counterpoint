@@ -32,16 +32,16 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private static keywordType(source: string): TYPE.Type {
 		return new Map<string, TYPE.Type>([
-			[Keyword.NEVER,   TYPE.NEVER],
-			[Keyword.NULL,    TYPE.NULL],
-			[Keyword.BOOL,    TYPE.BOOL],
-			[Keyword.SYM,     TYPE.SYM],
-			[Keyword.FALSE,   TYPE.FALSE],
-			[Keyword.TRUE,    TYPE.TRUE],
-			[Keyword.INT,     TYPE.INT],
-			[Keyword.FLOAT,   TYPE.FLOAT],
-			[Keyword.STR,     TYPE.STR],
-			[Keyword.UNKNOWN, TYPE.UNKNOWN],
+			[Keyword.NOTHING,  TYPE.NOTHING],
+			[Keyword.NULL,     TYPE.NULL],
+			[Keyword.BOOL,     TYPE.BOOL],
+			[Keyword.SYM,      TYPE.SYM],
+			[Keyword.FALSE,    TYPE.FALSE],
+			[Keyword.TRUE,     TYPE.TRUE],
+			[Keyword.INT,      TYPE.INT],
+			[Keyword.FLOAT,    TYPE.FLOAT],
+			[Keyword.STR,      TYPE.STR],
+			[Keyword.ANYTHING, TYPE.ANYTHING],
 		]).get(source) ?? assert.fail(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`);
 	}
 
@@ -57,23 +57,23 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	public override eval(): TYPE.Type {
 		switch (true) {
 			case isSyntaxNodeType(this.start_node, 'keyword_type'): {
-				return ASTNodeTypeConstant.keywordType(this.start_node.text);
+				return ASTNodeTypeConstant.keywordType(this.start_node.children[0].text);
 			}
 			default: {
 				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
 				const children: readonly SyntaxNode[] = this.start_node.children;
 				switch (true) {
+					case isSyntaxNodeType(children[0], 'integer'): {
+						return valueOfTokenNumber(children[0].text).toType();
+					}
+					case isSyntaxNodeType(children[0], 'float'): {
+						return valueOfTokenNumber(children[0].text).toType();
+					}
+					case isSyntaxNodeType(children[0], 'string'): {
+						return new VALUE.String(Validator.cookTokenString(children[0].text)).toType();
+					}
 					case isSyntaxNodeType(children[0], 'keyword_value'): {
-						return ASTNodeTypeConstant.keywordType(children[0].text);
-					}
-					case isSyntaxNodeType(children[0], /^integer(__radix)?(__separator)?$/): {
-						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
-					}
-					case isSyntaxNodeType(children[0], /^float(__separator)?$/): {
-						return valueOfTokenNumber(children[0].text, this.validator.config).toType();
-					}
-					case isSyntaxNodeType(children[0], /^string(__comment)?(__separator)?$/): {
-						return new VALUE.String(Validator.cookTokenString(children[0].text, this.validator.config)).toType();
+						return ASTNodeTypeConstant.keywordType(children[0].children[0].text);
 					}
 					default: {
 						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
