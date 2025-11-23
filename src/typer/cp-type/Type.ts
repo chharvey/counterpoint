@@ -471,6 +471,7 @@ export class TypeInterface extends Type {
 		super(is_mutable);
 	}
 
+	@memoizeGetter
 	public override get isBottomType(): boolean {
 		return [...this.properties.values()].some((value) => value.isBottomType);
 	}

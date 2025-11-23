@@ -8,6 +8,7 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -41,6 +42,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		const condition_type:   TYPE.Type = this.condition.type();
@@ -57,6 +59,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		);
 	}
 
+	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.condition.type().isBottomType || this.consequent.hasBottomType || (this.alternative?.hasBottomType ?? false);
 	}

@@ -3,6 +3,7 @@ import {VALUE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -32,11 +33,13 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !this.expr || !!this.expr.fold();
 	}
 
+	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.expr?.type().isBottomType ?? false;
 	}

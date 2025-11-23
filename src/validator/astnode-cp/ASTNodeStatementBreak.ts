@@ -33,11 +33,13 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		super(start_node, {}, []);
 	}
 
+	// @memoizeGetter // memoizing takes longer than returning a constant
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return false; // break statements will always have side-effects
 	}
 
+	// @memoizeGetter // memoizing takes longer than returning a constant
 	public override get hasBottomType(): boolean {
 		return false;
 	}

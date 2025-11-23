@@ -8,6 +8,7 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -42,11 +43,13 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 		super(start_node, {}, [assignee, assigned]);
 	}
 
+	// @memoizeGetter // memoizing takes longer than returning a constant
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return false;
 	}
 
+	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.assigned.type().isBottomType;
 	}

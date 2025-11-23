@@ -40,11 +40,13 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
 
+	// @memoizeGetter // memoizing takes longer than returning a constant
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return true;
 	}
 
+	// @memoizeGetter // memoizing takes longer than returning a constant
 	public override get hasBottomType(): boolean {
 		return false;
 	}

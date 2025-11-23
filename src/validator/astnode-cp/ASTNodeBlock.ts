@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type NonemptyArray,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -55,12 +56,14 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	}
 
 	/** @implements Foldable */
+	@memoizeGetter
 	@if_constant_folding
 	public get isFoldable(): boolean {
 		return this.children.every((stmt) => stmt.isFoldable);
 	}
 
 	/** @implements Foldable */
+	@memoizeGetter
 	public get hasBottomType(): boolean {
 		return this.children.some((c) => c.hasBottomType);
 	}

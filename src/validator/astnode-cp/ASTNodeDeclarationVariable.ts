@@ -9,6 +9,7 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -53,6 +54,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		/*
@@ -80,6 +82,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		);
 	}
 
+	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.assigned?.type().isBottomType ?? false;
 	}
