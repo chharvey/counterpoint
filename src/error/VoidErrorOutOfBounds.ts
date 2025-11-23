@@ -6,13 +6,13 @@ import {VoidError} from './VoidError.ts';
 /**
  * A VoidErrorOutOfBounds is thrown when accessing a List/Dict/Map with an index/key out of its bounds or range.
  * @example
- * List.<str>(["earth", "wind", "fire"]).[4]; % VoidErrorOutOfBounds: Index `4` is out of bounds on…
+ * ["earth", "wind", "fire"].[4]; % VoidErrorOutOfBounds: Index `4` is out of bounds on…
  *
- * Dict.<str>([
+ * [
  * 	socrates=  "earth",
  * 	plato=     "wind",
  * 	aristotle= "fire",
- * ]).[@pythagoras]; % VoidErrorOutOfBounds: Key `"pythagoras"` is out of bounds on…
+ * ].[@pythagoras]; % VoidErrorOutOfBounds: Key `"pythagoras"` is out of bounds on…
  */
 export class VoidErrorOutOfBounds extends VoidError {
 	/**

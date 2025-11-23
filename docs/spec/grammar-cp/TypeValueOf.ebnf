@@ -45,20 +45,7 @@ Type! TypeValueOf(SemanticTypeRecord recordtype) :=
 Type! TypeValueOf(SemanticTypeList listtype) :=
 	1. *Assert:* `listtype.children.count` is 1.
 	2. *Let* `itemtype` be *Unwrap:* `TypeValueOf(listtype.children.0)`.
-	3. *If* `listtype.count` is a RealNumber:
-		1. *If* `listtype.count` is less than 0:
-			1. *Throw:* a new TypeError.
-		2. *Let* `data` be a new Sequence.
-		3. *Let* `i` be 0.
-		4. *While* `i` is less than `listtype.count`:
-			1. Push a new EntryTypeSchema [
-				type=     `itemtype`,
-				optional= `false`,
-			] to `data`.
-			2. Increment `i`.
-		5. *Return:* a new Tuple type containing the items in `data`.
-	4. *Else:*
-		1. *Return:* a new List type whose items’ type is `itemtype`.
+	3. *Return:* a new List type whose items’ type is `itemtype`.
 ;
 
 

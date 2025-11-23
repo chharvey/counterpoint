@@ -1,7 +1,4 @@
-import {
-	TYPE,
-	TypeError,
-} from '../../index.ts';
+import {TYPE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -24,23 +21,14 @@ export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'type_unary_symbol'>,
+		start_node: SyntaxNodeType<'type_list_literal'>,
 		private readonly type:  ASTNodeType,
-		private readonly count: bigint | null = null,
 	) {
-		super(start_node, [type], {count});
+		super(start_node, [type]);
 	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const itemstype: TYPE.Type = this.type.eval();
-		if (this.count === null) {
-			return new TYPE.List(itemstype);
-		} else if (this.count >= 0) {
-			const types: readonly TYPE.Type[] = [...new Array<undefined>(Number(this.count))].map(() => itemstype);
-			return TYPE.Tuple.fromTypes(types);
-		} else {
-			throw new TypeError(`Tuple type \`${ this.source }\` instantiated with count less than 0.`, 0, this.line_index, this.col_index);
-		}
+		return new TYPE.List(this.type.eval());
 	}
 }

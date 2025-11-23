@@ -67,7 +67,7 @@ class TypeTuple extends ValueType {
 	}
 
 	public override toString(): string {
-		return `[${ this.typeargs.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
+		return `(${ this.typeargs.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }${ this.typeargs.length === 1 ? ',' : '' })`;
 	}
 
 	@instanceOf(() => VALUE.Tuple)
