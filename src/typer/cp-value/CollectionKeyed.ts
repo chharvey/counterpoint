@@ -48,7 +48,7 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	}
 
 	public override toString(): string {
-		return `[${ [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ') }]`;
+		return [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ');
 	}
 
 	/** @final */

@@ -48,7 +48,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	public override toString(): string {
-		return `[${ this.items.map((it) => it.toString()).join(', ') }]`;
+		return this.items.map((it) => it.toString()).join(', ');
 	}
 
 	/** @final */
