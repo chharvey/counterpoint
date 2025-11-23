@@ -111,15 +111,17 @@ Type! TypeOfUnfolded(SemanticMap map) :=
 
 
 Type! TypeOfUnfolded(SemanticExpressionBlock block) :=
-	1. *Assert:* `block.children.count` is greater than 0.
-	2. *Let* `last_stmt` be `block.children.-1`.
-	3. *If* `last_stmt` is not a SemanticStatementExpression:
+	1. *If* `block.children` contains any statement that contains any expression `expr` for which *UnwrapAffirm:* `IsBottomType(expr)` is `true`:
+		1. *Return:* `Nothing`.
+	2. *Assert:* `block.children.count` is greater than 0.
+	3. *Let* `last_stmt` be `block.children.-1`.
+	4. *If* `last_stmt` is not a SemanticStatementExpression:
 		1. *Throw:* a new Error.
-	4. *If* `last_stmt.children.count` is less than 1:
+	5. *If* `last_stmt.children.count` is less than 1:
 		1. *Throw:* a new Error.
-	5. *Let* `expr` be `last_stmt.children.0`.
-	6. *Assert:* `expr` is a SemanticExpression.
-	7. *Return:* `TypeOf(expr)`.
+	6. *Let* `expr` be `last_stmt.children.0`.
+	7. *Assert:* `expr` is a SemanticExpression.
+	8. *Return:* `TypeOf(expr)`.
 ;
 
 
