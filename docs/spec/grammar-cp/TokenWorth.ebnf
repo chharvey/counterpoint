@@ -72,6 +72,8 @@ TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x9d;
 TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x9e;
 TokenWorth(KeywordOther :::= "of")       -> RealNumber := \x9f;
 TokenWorth(KeywordOther :::= "do")       -> RealNumber := \xa0;
+TokenWorth(KeywordOther :::= "break")    -> RealNumber := \xa1;
+TokenWorth(KeywordOther :::= "continue") -> RealNumber := \xa2;
 
 
 

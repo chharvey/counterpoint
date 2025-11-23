@@ -142,6 +142,7 @@ SemanticStatement =:=
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration
+	| SemanticStatementBreak
 	| SemanticDeclaration
 ;
 
@@ -164,6 +165,11 @@ SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 
 SemanticStatementIteration
 	::= SemanticVariable? SemanticType SemanticExpression SemanticBlock;
+
+
+
+SemanticStatementBreak[continue: Boolean]
+	::= ();
 
 
 

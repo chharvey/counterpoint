@@ -53,6 +53,8 @@ Word ::=
 		| "for"
 		| "of"
 		| "do"
+		| "break"
+		| "continue"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -127,118 +129,122 @@ Type ::=
 
 
 
-StringTemplate ::=
+StringTemplate<Break> ::=
 	| TEMPLATE_FULL
-	| TEMPLATE_HEAD Expression<+Block>? (TEMPLATE_MIDDLE Expression<+Block>?)* TEMPLATE_TAIL
+	| TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL
 ;
 
-Items ::=
-	| Expression<+Block>  ","
-	| Expression<+Block>? "," Expression<+Block># ","?
+Items<Break> ::=
+	| Expression<+Block><?Break>  ","
+	| Expression<+Block><?Break>? "," Expression<+Block><?Break># ","?
 ;
 
-Property ::= Word               "="  Expression<+Block>;
-Case     ::= Expression<+Block> "->" Expression<+Block>;
+Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
+Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
 
-PropertyAccessor
-	::= INTEGER | Word | "[" Expression<+Block> "]";
+PropertyAccessor<Break>
+	::= INTEGER | Word | "[" Expression<+Block><?Break> "]";
 
-ExpressionGrouped ::= "("        Expression<+Block>          ")";
-TupleLiteral      ::= "("        Items?                      ")";
-RecordLiteral     ::= "("   ","? Property#           ","?    ")";
-ListLiteral       ::= "[" ( ","? Expression<+Block># ","? )? "]";
-DictLiteral       ::= "["   ","? Property#           ","?    "]";
-SetLiteral        ::= "{" ( ","? Expression<+Block># ","? )? "}";
-MapLiteral        ::= "{"   ","? Case#               ","?    "}";
-FunctionArguments ::= "(" ( ","? Expression<+Block># ","? )? ")";
+ExpressionGrouped <Break> ::= "("       Expression<+Block><?Break>         ")";
+TupleLiteral      <Break> ::= "("       Items<?Break>?                     ")";
+RecordLiteral     <Break> ::= "("  ","? Property<?Break>#           ","?   ")";
+ListLiteral       <Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]";
+DictLiteral       <Break> ::= "["  ","? Property<?Break>#           ","?   "]";
+SetLiteral        <Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}";
+MapLiteral        <Break> ::= "{"  ","? Case<?Break>#               ","?   "}";
+FunctionArguments <Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")";
 
-ExpressionUnit<Block> ::=
+ExpressionUnit<Block, Break> ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| StringTemplate
-	| ExpressionGrouped
-	| TupleLiteral
-	| RecordLiteral
-	| ListLiteral
-	| DictLiteral
-	| SetLiteral
-	| MapLiteral
-	| <Block+>Block
+	| StringTemplate    <?Break>
+	| ExpressionGrouped <?Break>
+	| TupleLiteral      <?Break>
+	| RecordLiteral     <?Break>
+	| ListLiteral       <?Break>
+	| DictLiteral       <?Break>
+	| SetLiteral        <?Break>
+	| MapLiteral        <?Break>
+	| <Block+>Block     <?Break>
 ;
 
-ExpressionCompound<Block> ::=
-	| ExpressionUnit<?Block>
-	| ExpressionCompound<?Block> (
-		| ("." | "?." | "!.") PropertyAccessor
-		|  "."                GenericArguments? FunctionArguments
+ExpressionCompound<Block, Break> ::=
+	| ExpressionUnit<?Block><?Break>
+	| ExpressionCompound<?Block><?Break> (
+		| ("." | "?." | "!.") PropertyAccessor<?Break>
+		|  "."                GenericArguments? FunctionArguments<?Break>
 	)
 ;
 
-ExpressionUnarySymbol  <Block> ::= ExpressionCompound    <?Block> | ("!" | "?" | "+" | "-") ExpressionUnarySymbol  <?Block>;
-ExpressionUnaryKeyword <Block> ::= ExpressionUnarySymbol <?Block> | ("int" | "float")       ExpressionUnaryKeyword <?Block>;
+ExpressionUnarySymbol  <Block, Break> ::= ExpressionCompound    <?Block><?Break> | ("!" | "?" | "+" | "-") ExpressionUnarySymbol  <?Block><?Break>;
+ExpressionUnaryKeyword <Block, Break> ::= ExpressionUnarySymbol <?Block><?Break> | ("int" | "float")       ExpressionUnaryKeyword <?Block><?Break>;
 
-ExpressionCast<Block> ::=
-	| (ExpressionCast<?Block> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block>
-	|  ExpressionCast<?Block>  "as"                    "<" Type ">"
+ExpressionCast<Block, Break> ::=
+	| (ExpressionCast<?Block><?Break> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block><?Break>
+	|  ExpressionCast<?Block><?Break>  "as"                    "<" Type ">"
 ;
 
-ExpressionExponential<Block>
-	::= ExpressionCast<?Block> ("^" ExpressionExponential<?Block>)?;
+ExpressionExponential<Block, Break>
+	::= ExpressionCast<?Block><?Break> ("^" ExpressionExponential<?Block><?Break>)?;
 
-ExpressionMultiplicative <Block> ::= (ExpressionMultiplicative <?Block> ("*" | "/" ))?                                            ExpressionExponential    <?Block>;
-ExpressionAdditive       <Block> ::= (ExpressionAdditive       <?Block> ("+" | "-" ))?                                            ExpressionMultiplicative <?Block>;
-ExpressionComparative    <Block> ::= (ExpressionComparative    <?Block> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Block>;
-ExpressionEquality       <Block> ::= (ExpressionEquality       <?Block> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Block>;
-ExpressionConjunctive    <Block> ::= (ExpressionConjunctive    <?Block> ("&&" | "!&"))?                                           ExpressionEquality       <?Block>;
-ExpressionDisjunctive    <Block> ::= (ExpressionDisjunctive    <?Block> ("||" | "!|"))?                                           ExpressionConjunctive    <?Block>;
+ExpressionMultiplicative <Block, Break> ::= (ExpressionMultiplicative <?Block><?Break> ("*" | "/" ))?                                            ExpressionExponential    <?Block><?Break>;
+ExpressionAdditive       <Block, Break> ::= (ExpressionAdditive       <?Block><?Break> ("+" | "-" ))?                                            ExpressionMultiplicative <?Block><?Break>;
+ExpressionComparative    <Block, Break> ::= (ExpressionComparative    <?Block><?Break> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Block><?Break>;
+ExpressionEquality       <Block, Break> ::= (ExpressionEquality       <?Block><?Break> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Block><?Break>;
+ExpressionConjunctive    <Block, Break> ::= (ExpressionConjunctive    <?Block><?Break> ("&&" | "!&"))?                                           ExpressionEquality       <?Block><?Break>;
+ExpressionDisjunctive    <Block, Break> ::= (ExpressionDisjunctive    <?Block><?Break> ("||" | "!|"))?                                           ExpressionConjunctive    <?Block><?Break>;
 
-ExpressionConditional
-	::= "if" Expression<+Block> "then" Expression<-Block> "else" Expression<-Block>;
+ExpressionConditional<Break>
+	::= "if" Expression<+Block><?Break> "then" Expression<-Block><?Break> "else" Expression<-Block><?Break>;
 
-Expression<Block> ::=
-	| ExpressionDisjunctive<?Block>
-	| ExpressionConditional
+Expression<Block, Break> ::=
+	| ExpressionDisjunctive<?Block><?Break>
+	| ExpressionConditional<?Break>
 ;
 
 
 
-StatementExpression
-	::= Expression<+Block>? ";";
+StatementExpression<Break>
+	::= Expression<+Block><?Break>? ";";
 
-StatementConditional<Unless> ::=
-	& <Unless->"if" <Unless+>"unless" Expression<+Block>
-	& "then" Block
+StatementConditional<Unless, Break> ::=
+	& <Unless->"if" <Unless+>"unless" Expression<+Block><?Break>
+	& "then" Block<?Break>
 	& <Unless->(
-		| ("else" Block)? ";"
-		| "else" StatementConditional<?Unless>
+		| ("else" Block<?Break>)? ";"
+		| "else" StatementConditional<?Unless><?Break>
 	)
 	& <Unless+>";"
 ;
 
 StatementLoop
-	::= (("while" | "until") Expression<+Block> && "do" Block) ";";
+	::= (("while" | "until") Expression<+Block><-Break> && "do" Block<+Break>) ";";
 
 StatementIteration
-	::= "for" ("_" | IDENTIFIER) ":" Type "of" Expression<+Block> "do" Block ";";
+	::= "for" ("_" | IDENTIFIER) ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";";
 
-Statement ::=
-	| StatementExpression
-	| StatementConditional<∓Unless>
+StatementBreak
+	::= ("break" | "continue") ";";
+
+Statement<Break> ::=
+	| StatementExpression<?Break>
+	| StatementConditional<∓Unless><?Break>
 	| StatementLoop
 	| StatementIteration
-	| Declaration
+	| <Break+>StatementBreak
+	| Declaration<?Break>
 ;
 
 
 
-Block
-	::= "{" Statement+ "}";
+Block<Break>
+	::= "{" Statement<?Break>+ "}";
 
 
 
-Assignee ::=
+Assignee<Break> ::=
 	| IDENTIFIER
-	| ExpressionCompound<+Block> "." PropertyAccessor
+	| ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>
 ;
 
 
@@ -246,22 +252,22 @@ Assignee ::=
 DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
-DeclarationVariable ::=
-	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression<+Block> ";"
-	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                        ";"
+DeclarationVariable<Break> ::=
+	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression<+Block><?Break> ";"
+	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                                ";"
 ;
 
-DeclarationClaim        ::= "claim" Assignee ":" Type               ";";
-DeclarationReassignment ::= "set"   Assignee "=" Expression<+Block> ";";
+DeclarationClaim        <Break> ::= "claim" Assignee<?Break> ":" Type                       ";";
+DeclarationReassignment <Break> ::= "set"   Assignee<?Break> "=" Expression<+Block><?Break> ";";
 
-Declaration ::=
+Declaration<Break> ::=
 	| DeclarationType
-	| DeclarationVariable
-	| DeclarationClaim
-	| DeclarationReassignment
+	| DeclarationVariable     <?Break>
+	| DeclarationClaim        <?Break>
+	| DeclarationReassignment <?Break>
 ;
 
 
 
 Goal
-	::= #x02 Block? #x03;
+	::= #x02 Block<-Break>? #x03;

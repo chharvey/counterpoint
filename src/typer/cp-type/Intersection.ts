@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
+import {memoizeGetter} from '../../lib/index.ts';
 import {
 	language_types_equal,
 	language_values_identical,
@@ -69,6 +70,7 @@ export class Intersection extends Combinable {
 		);
 	}
 
+	@memoizeGetter
 	public override get isBottomType(): boolean {
 		/* This could be bottom if the operands are disjoint. */
 		return this.operands.some((s) => s.isBottomType) || this.values.size === 0;

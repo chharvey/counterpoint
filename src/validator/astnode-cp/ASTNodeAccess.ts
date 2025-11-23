@@ -13,7 +13,10 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {
+	SyntaxNodeType,
+	SyntaxNodeFamily,
+} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -44,7 +47,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
-			| SyntaxNodeType<'assignee'>,
+			| SyntaxNodeFamily<'assignee', ['break']>,
 
 		public readonly kind:     ValidAccessOperator,
 		public readonly base:     ASTNodeExpression,

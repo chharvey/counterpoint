@@ -120,11 +120,80 @@ test.suite('ASTNodeStatement', () => {
 
 
 	test.suite('#build', () => {
+		test.suite('ASTNodeStatementConditional', () => {
+			test.suite('produces `(nop)` for entire statement when …', () => {
+				test.test('… condition is foldable and truthy (or falsy for `unless`), and consequent is foldable.', () => {
+					const {stmts, mod} = setupScript(`{
+						let var value: float = 4.2;
+						let truthy_cond: bool = true;
+						if truthy_cond then {
+							42;
+						} else {
+							set value = 6.9;
+						};
+						unless !truthy_cond then {
+							42;
+						};
+					}`);
+					return assertEqualBins(
+						stmts.slice(2, 4).map((stmt) => (stmt as AST.ASTNodeStatementConditional).build()),
+						[mod.nop(), mod.nop()],
+					);
+				});
+				test.test('… condition is foldable and falsy (or truthy for `unless`), and alternative is foldable (or doesn’t exist).', () => {
+					const {stmts, mod} = setupScript(`{
+						let var value: float = 4.2;
+						let falsy_cond: bool = !"hello";
+						if falsy_cond then {
+							set value = 6.9;
+						} else {
+							42;
+						};
+						if falsy_cond then {
+							set value = 6.9;
+						};
+						unless !falsy_cond then {
+							set value = 6.9;
+						};
+					}`);
+					return assertEqualBins(
+						stmts.slice(2, 5).map((stmt) => (stmt as AST.ASTNodeStatementConditional).build()),
+						[mod.nop(), mod.nop(), mod.nop()],
+					);
+				});
+			});
+			test.test('if not foldable, retuns `(if)`.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var unknown_cond: bool = false;
+					if unknown_cond then {
+						42;
+					} else {
+						4.2;
+					};
+				}`);
+				const stmt1 = stmts[1] as AST.ASTNodeStatementConditional;
+				return assertEqualBins(stmt1.build(), mod.if(
+					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
+					stmt1.consequent.build(),
+					stmt1.alternative!.build(),
+				));
+			});
+		});
+
 		test.suite('ASTNodeStatementLoop', () => {
 			function makeLoop(mod: binaryen.Module, label_block: string, label_loop: string, instrs: readonly binaryen.ExpressionRef[], branch_depth: number): binaryen.ExpressionRef {
 				return mod.block(label_block, [mod.loop(label_loop, mod.block(null, [...instrs, mod.br([label_loop, label_block][branch_depth])]))]);
 			}
-			test.test('always retuns `(block (loop (block)))`.', () => {
+			test.test('produces `(nop)` if entire statement is foldable.', () => {
+				const {stmts, mod} = setupScript(`{
+					let cond: bool = true;
+					while cond do {
+						42;
+					};
+				}`);
+				return assertEqualBins(stmts[1].build(), mod.nop());
+			});
+			test.test('if not foldable, retuns `(block (loop (block)))`.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
 					while cond do {
@@ -174,15 +243,6 @@ test.suite('ASTNodeStatement', () => {
 					], 1),
 				]);
 			});
-			test.test('produces `(nop)` if entire statement is foldable.', () => {
-				const {stmts, mod} = setupScript(`{
-					let cond: bool = true;
-					while cond do {
-						42;
-					};
-				}`);
-				return assertEqualBins(stmts[1].build(), mod.nop());
-			});
 			test.test('negates the condition for `until` statements.', () => {
 				const {stmts, mod} = setupScript(`{
 					let var cond: bool = false;
@@ -216,6 +276,56 @@ test.suite('ASTNodeStatement', () => {
 				}`, null, {build: false});
 				stmts[0].build(); // assert does not throw
 				return assert.throws(() => stmts[1].build(), /not yet supported/);
+			});
+		});
+
+		test.suite('ASTNodeStatementBreak', () => {
+			test.test('produces (br).', () => {
+				const {stmts, mod} = setupScript(`{
+					while true do {
+						break;
+						continue;
+					};
+				}`);
+				const while_block: AST.ASTNodeBlock = (stmts[0] as AST.ASTNodeStatementLoop).block;
+				return assertEqualBins([
+					while_block.children[0].build(),
+					while_block.children[1].build(),
+				], [
+					mod.br('exit0'),
+					mod.br('repeat0'),
+				]);
+			});
+			test.test('nested loops.', () => {
+				const {stmts, mod} = setupScript(`{
+					while true do {
+						break;
+						if true then {
+							while true do {
+								continue;
+							};
+						};
+					};
+				}`);
+				const outer_block: AST.ASTNodeBlock = (stmts[0] as AST.ASTNodeStatementLoop).block;
+				const inner_block: AST.ASTNodeBlock = ((outer_block.children[1] as AST.ASTNodeStatementConditional).consequent.children[0] as AST.ASTNodeStatementLoop).block;
+				return assertEqualBins([
+					outer_block.children[0].build(),
+					inner_block.children[0].build(),
+				], [
+					mod.br('exit0'),
+					mod.br('repeat1'),
+				]);
+			});
+			test.test('throws if the parent block has not been built yet.', () => {
+				const while_block: AST.ASTNodeBlock = (setupScript(`{
+					while true do {
+						break;
+						continue;
+					};
+				}`, null, {build: false}).stmts[0] as AST.ASTNodeStatementLoop).block;
+				assert.throws(() => while_block.children[0].build(), /Expected builder to store/);
+				assert.throws(() => while_block.children[1].build(), /Expected builder to store/);
 			});
 		});
 	});

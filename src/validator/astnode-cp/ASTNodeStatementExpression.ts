@@ -3,12 +3,13 @@ import {VALUE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
@@ -26,15 +27,21 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'statement_expression'>,
+		start_node: SyntaxNodeFamily<'statement_expression', ['break']>,
 		public readonly expr?: ASTNodeExpression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !this.expr || !!this.expr.fold();
+	}
+
+	@memoizeGetter
+	public override get hasBottomType(): boolean {
+		return this.expr?.type().isBottomType ?? false;
 	}
 
 	@memoizeMethod

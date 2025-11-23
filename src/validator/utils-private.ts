@@ -37,18 +37,18 @@ export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<None
 
 
 // NOTE: copied from `../../tree-sitter-counterpoint/grammar.ts`
-function argsArr(nth: number, params: readonly string[]): readonly string[] {
+function argsArr(nth: number, params: readonly string[]): string[] {
 	// e.g. `['await', 'static', 'instance', 'method']`
-	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `['0', '1', '0', '1']`
 		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
 		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
 		.map(([param, _to_include]) => param);                   // `['static', 'method']`
 }
-function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
+function familyName<RuleName extends string>(family_name: string, suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
-	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, argsArr(nth, params)));
 }
 
 
@@ -90,14 +90,14 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 ) : C extends 'expression' ? (
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeType<'string_template'>
-	| SyntaxNodeType<'expression_grouped'>
-	| SyntaxNodeType<'tuple_literal'>
-	| SyntaxNodeType<'record_literal'>
-	| SyntaxNodeType<'list_literal'>
-	| SyntaxNodeType<'dict_literal'>
-	| SyntaxNodeType<'set_literal'>
-	| SyntaxNodeType<'map_literal'>
+	| SyntaxNodeFamily<'string_template',    ['break']>
+	| SyntaxNodeFamily<'expression_grouped', ['break']>
+	| SyntaxNodeFamily<'tuple_literal',      ['break']>
+	| SyntaxNodeFamily<'record_literal',     ['break']>
+	| SyntaxNodeFamily<'list_literal',       ['break']>
+	| SyntaxNodeFamily<'dict_literal',       ['break']>
+	| SyntaxNodeFamily<'set_literal',        ['break']>
+	| SyntaxNodeFamily<'map_literal',        ['break']>
 	| SyntaxNodeType<'expression_block'>
 	| SyntaxNodeType<'expression_compound'>
 	| SyntaxNodeType<'expression_unary_symbol'>
@@ -109,18 +109,19 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'expression_equality'>
 	| SyntaxNodeType<'expression_conjunctive'>
 	| SyntaxNodeType<'expression_disjunctive'>
-	| SyntaxNodeType<'expression_conditional'>
+	| SyntaxNodeFamily<'expression_conditional', ['break']>
 ) : C extends 'statement' ? (
-	| SyntaxNodeType<'statement_expression'>
-	| SyntaxNodeType<'statement_conditional'>
+	| SyntaxNodeFamily<'statement_expression', ['break']>
+	| SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>
 	| SyntaxNodeType<'statement_loop'>
 	| SyntaxNodeType<'statement_iteration'>
+	| SyntaxNodeType<'statement_break'>
 	| SyntaxNodeSupertype<'declaration'>
 ) : C extends 'declaration' ? (
 	| SyntaxNodeType<'declaration_type'>
-	| SyntaxNodeType<'declaration_variable'>
-	| SyntaxNodeType<'declaration_claim'>
-	| SyntaxNodeType<'declaration_reassignment'>
+	| SyntaxNodeFamily<'declaration_variable',     ['break']>
+	| SyntaxNodeFamily<'declaration_claim',        ['break']>
+	| SyntaxNodeFamily<'declaration_reassignment', ['break']>
 ) : never;
 
 
@@ -128,9 +129,9 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|list|dict|set|map)_literal|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
-		['statement',   (node) => isSyntaxNodeType(node, /^statement_(expression|conditional|loop|iteration)|declaration$/) || isSyntaxNodeSupertype(node, 'declaration')],
-		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable|claim|reassignment)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_grouped(__break)?|(tuple|record|list|dict|set|map)_literal(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?)$/)],
+		['statement',   (node) => isSyntaxNodeType(node, /^statement_(expression(__break)?|conditional(__unless)?(__break)?|loop|iteration|break)|declaration$/) || isSyntaxNodeSupertype(node, 'declaration')],
+		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?|claim(__break)?|reassignment(__break)?)$/)],
 	]).get(category)!(syntaxnode);
 }
 

@@ -8,6 +8,7 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -32,7 +33,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'statement_conditional', ['unless']>,
+		start_node: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>,
 		private readonly unless:       boolean,
 		public  readonly condition:    ASTNodeExpression,
 		public  readonly consequent:   ASTNodeBlock,
@@ -41,9 +42,26 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
-		return !!this.condition.fold() && this.consequent.isFoldable && (!this.alternative || !!this.alternative.isFoldable);
+		const condition_type:   TYPE.Type = this.condition.type();
+		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
+		const condition_falsy:  boolean   = condition_type.isSubtypeOf(TYPE.FALSE);
+
+		return !!this.condition.fold() && (
+			/*
+				- `if true…`  or `unless false…`, and consequent  is foldable                    -> sufficient
+				- `if false…` or `unless true…`,  and alternative is foldable (or doesn’t exist) -> sufficient
+			*/
+			(!this.unless && condition_truthy || this.unless && condition_falsy)  && this.consequent.isFoldable ||
+			(!this.unless && condition_falsy  || this.unless && condition_truthy) && (!this.alternative || !!this.alternative.isFoldable)
+		);
+	}
+
+	@memoizeGetter
+	public override get hasBottomType(): boolean {
+		return this.condition.type().isBottomType || this.consequent.hasBottomType || (this.alternative?.hasBottomType ?? false);
 	}
 
 	public override typeCheck(): void {

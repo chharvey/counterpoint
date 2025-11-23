@@ -10,7 +10,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.js';
 import type {SymbolSchemaVar} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+import type {SyntaxNodeFamily} from '../utils-private.js';
 import {if_constant_folding} from './Foldable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.js';
 import {ASTNodeKey} from './ASTNodeKey.js';
@@ -33,16 +33,22 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'declaration_claim'>,
+		start_node: SyntaxNodeFamily<'declaration_claim', ['break']>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		private readonly claimed_type: ASTNodeType,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
 
+	// @memoizeGetter // memoizing takes longer than returning a constant
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return true;
+	}
+
+	// @memoizeGetter // memoizing takes longer than returning a constant
+	public override get hasBottomType(): boolean {
+		return false;
 	}
 
 	public override typeCheck(): void {

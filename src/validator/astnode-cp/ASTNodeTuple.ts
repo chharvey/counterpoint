@@ -16,7 +16,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {EntryType} from '../../typer/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
 	buildDeco,
@@ -38,7 +38,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'tuple_literal'>,
+		start_node: SyntaxNodeFamily<'tuple_literal', ['break']>,
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
@@ -58,6 +58,9 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
 	}
 

@@ -8,6 +8,7 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -41,9 +42,15 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		super(start_node, {doFirst, until}, [condition, block]);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !!this.condition.fold() && this.block.isFoldable;
+	}
+
+	@memoizeGetter
+	public override get hasBottomType(): boolean {
+		return this.condition.type().isBottomType || this.block.hasBottomType;
 	}
 
 	public override varCheck(): void {
