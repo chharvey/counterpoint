@@ -58,6 +58,9 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
 	}
 

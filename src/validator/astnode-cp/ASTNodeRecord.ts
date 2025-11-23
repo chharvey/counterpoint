@@ -71,6 +71,9 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.val.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),

@@ -50,6 +50,9 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return new TYPE.Set(
 			TYPE.Union.all(this.children.map((c) => c.type())),
 			true,

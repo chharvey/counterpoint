@@ -52,6 +52,9 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.antecedent.type().isBottomType || c.consequent.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return new TYPE.Map(
 			TYPE.Union.all(this.children.map((c) => c.antecedent.type())),
 			TYPE.Union.all(this.children.map((c) => c.consequent.type())),
