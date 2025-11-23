@@ -47,6 +47,10 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 		return false;
 	}
 
+	public override get hasBottomType(): boolean {
+		return this.assigned.type().isBottomType;
+	}
+
 	public override varCheck(): void {
 		super.varCheck();
 		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar).isUnfixed) {

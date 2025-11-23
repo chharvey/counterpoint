@@ -38,6 +38,10 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		return false; // break statements will always have side-effects
 	}
 
+	public override get hasBottomType(): boolean {
+		return false;
+	}
+
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {

@@ -51,6 +51,10 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 		return !!this.iterable.fold() && this.block.isFoldable;
 	}
 
+	public override get hasBottomType(): boolean {
+		return this.iterable.type().isBottomType || this.block.hasBottomType;
+	}
+
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
 		xjs.Array.forEachAggregated([this.typenode, this.iterable], (c) => c.varCheck());

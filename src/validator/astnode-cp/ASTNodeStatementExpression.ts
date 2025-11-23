@@ -37,6 +37,10 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		return !this.expr || !!this.expr.fold();
 	}
 
+	public override get hasBottomType(): boolean {
+		return this.expr?.type().isBottomType ?? false;
+	}
+
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {

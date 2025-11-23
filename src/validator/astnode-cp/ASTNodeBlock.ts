@@ -60,6 +60,11 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 		return this.children.every((stmt) => stmt.isFoldable);
 	}
 
+	/** @implements Foldable */
+	public get hasBottomType(): boolean {
+		return this.children.some((c) => c.hasBottomType);
+	}
+
 	/** @implements Buildable */
 	@memoizeMethod
 	public build(): binaryen.ExpressionRef {

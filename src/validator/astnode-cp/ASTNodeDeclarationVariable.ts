@@ -80,6 +80,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		);
 	}
 
+	public override get hasBottomType(): boolean {
+		return this.assigned?.type().isBottomType ?? false;
+	}
+
 	public override varCheck(): void {
 		if (!this.unfixed) {
 			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);

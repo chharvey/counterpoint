@@ -41,6 +41,10 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		return true;
 	}
 
+	public override get hasBottomType(): boolean {
+		return false;
+	}
+
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
 		this.assigned.varCheck();

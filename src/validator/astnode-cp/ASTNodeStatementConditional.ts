@@ -57,6 +57,10 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		);
 	}
 
+	public override get hasBottomType(): boolean {
+		return this.condition.type().isBottomType || this.consequent.hasBottomType || (this.alternative?.hasBottomType ?? false);
+	}
+
 	public override typeCheck(): void {
 		super.typeCheck();
 		const condition_type: TYPE.Type = this.condition.type();

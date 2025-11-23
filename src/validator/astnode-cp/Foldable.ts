@@ -27,4 +27,11 @@ export function if_constant_folding(
 export interface Foldable extends ASTNodeCP {
 	/** Return whether this node may be omitted from the compiled output when built. */
 	get isFoldable(): boolean;
+
+	/**
+	 * Return whether this node contains an expression of type `nothing` (the bottom type).
+	 * For expressions, any sub-expression that’s of type `nothing` bubbles up.
+	 * This method emulates that for statements and blocks.
+	 */
+	get hasBottomType(): boolean;
 }

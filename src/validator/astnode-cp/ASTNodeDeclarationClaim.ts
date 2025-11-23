@@ -45,6 +45,10 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 		return true;
 	}
 
+	public override get hasBottomType(): boolean {
+		return false;
+	}
+
 	public override typeCheck(): void {
 		super.typeCheck();
 		const computed_type: TYPE.Type = this.assignee.type();

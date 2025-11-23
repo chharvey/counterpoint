@@ -46,6 +46,10 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		return !!this.condition.fold() && this.block.isFoldable;
 	}
 
+	public override get hasBottomType(): boolean {
+		return this.condition.type().isBottomType || this.block.hasBottomType;
+	}
+
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we VarCheck children in a different order.
 		xjs.Array.forEachAggregated(this.doFirst ? [this.block, this.condition] : [this.condition, this.block], (c) => c.varCheck());
