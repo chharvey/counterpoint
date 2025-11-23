@@ -243,6 +243,96 @@ Operations that are associative are indicated as so in their respective sections
 ### Grouping
 Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
 
+#### Block-Expressions
+```
+`{` Statement+ `}`
+```
+Block-expressions are blocks of statements that produce expressions.
+A block-expression *is* an expression — its value has a type and can be passed around and operated on like any other expression.
+```cpl
+let blex: int = {
+	print.("evaluates to 42");
+	42;
+};
+blex == 42; %== true
+```
+Like all [blocks](./statements.md#blocks-and-scoping), a block-expression must contain at least one statement.
+Furthermore, if the last statement in a block-expression is an [expression-statement](./statements.md#expression-statements),
+then it has a special name: the **determinant** — as it determines the block-expression’s value.
+In the example above, the determinant is `42;`.
+
+If the last statement of a block-expression is not an expression-statement, then the expression has no value, and it has a void type.
+```cpl
+let blex: int = {
+	print.("evaluates, but does not have a value");
+	let value: int = 42;
+}; %> TypeError
+```
+An expression with a void type is like a void function call. These types of expressions cannot be passed around or operated on.
+(“Void” is not a real type in the type system; it’s just a marker given to expressions that execute but do not have a value.)
+
+We run into a similar situation when block-expression *has* a determinant, but that determinant itself is void.
+```cpl
+let blex: int = {
+	print.("evaluates, but does not have a value");
+	let value: int = 42;
+	print.(value); % <-- determinant
+}; %> TypeError
+```
+Because the `print` is a void function, the block-expression has a void type, thus can’t be assigned to the variable.
+(The only exception is when a void block-expression is returned from a void function.
+See the [Functions](./functions.md) chapter for details.)
+
+A block-expression might never finish execution!
+```cpl
+let var count: int = 0;
+let blex: int = {
+	while count >= 0 do {
+		set count += 1;
+	};
+	42; % <-- determinant
+}; % no type error
+```
+In this example, static control flow analysis can reach the determinant and determine the block’s type, so the assignment is valid.
+At runtime however, the [`while` loop](./statements.md#loops) runs indefinitely, so the variable never actually gets assigned.
+While this program compiles successfully, it’ll crash when run.
+
+Block-expressions may contain `break`, `continue`, `return`, and `throw` statements (depending on lexical context).
+These are called **abrupt completions**, because they abruptly transfer control out of the block
+without finishing the evaluation of it.
+Specifically, `break` or `continue` statements will break out of the containing loop,
+and `return`/`throw` statements will apply to the containing function.
+```cpl
+function f(var i: int): str {
+	while true do {
+		set i += 1;
+		let is_threeven: bool = mod.(i, 3) == 0 && {
+			continue; % restarts the `while` loop, not this block-expression
+		}; % no type error
+		let is_divisble_by_7: bool = mod.(i, 7) == 0 && {
+			return "exit"; % returns from the function, not this block-expression
+		}; % no type error
+	};
+	return "done";
+}
+```
+Because these statements are abrupt, the end of the block-expression is unreachable via control flow analysis;
+therefore the block-expression is of type `nothing`, the bottom type (a subtype of every type).
+That’s why these block-expressions are assignable to `bool` variables, and we don’t get type errors as we did in the examples above.
+The difference is that the compiler can determine that a *void* block-expression will finish evaluation but will not produce a value;
+whereas it knows that block-expressions with abrupt statements will never even finish evaluation.
+
+This table highlights some exceptional cases.
+
+| Case  | Block Type | Runtime Behavior | Is Assignable |
+| ----- | ---------- | ---------------- | ------------- |
+| last statement is an expression-statement with type `T` | `T` | completes execution | yes, to type `T` or wider |
+| last statement is a void expression-statement | void | completes execution | no |
+| last statement is not an expression-statement | void | completes execution | no |
+| contains an expression of type `nothing` | `nothing` | fails to complete execution | yes, to any type |
+| contains an abrupt statement | `nothing` | fails to complete execution | yes, to any type |
+| contains an infinite loop or infinite recursive call | `T` | fails to complete execution | yes, to type `T` or wider |
+
 
 ### Property Access
 ```
