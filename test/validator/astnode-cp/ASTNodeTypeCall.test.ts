@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -11,9 +12,9 @@ import {extract_lines} from '../../utils.ts';
 
 
 
-describe('ASTNodeTypeCall', () => {
-	describe('#varCheck', () => {
-		it('throws if base is not one of the allowed strings.', () => {
+test.suite('ASTNodeTypeCall', () => {
+	test.suite('#varCheck', () => {
+		test.test('throws if base is not one of the allowed strings.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				SET.<str>
 				Mapping.<bool>
@@ -24,8 +25,8 @@ describe('ASTNodeTypeCall', () => {
 	});
 
 
-	describe('#eval', () => {
-		it('evaluates List, Dict, Set, and Map.', () => {
+	test.suite('#eval', () => {
+		test.test('evaluates List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
 				[
 					'List.<null>',
@@ -41,19 +42,19 @@ describe('ASTNodeTypeCall', () => {
 				],
 			);
 		});
-		it('Map has a default type parameter.', () => {
+		test.test('Map has a default type parameter.', () => {
 			assertEqualTypes(
 				AST.ASTNodeTypeCall.fromSource('Map.<int>').eval(),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);
 		});
-		it('throws if base is not an ASTNodeTypeAlias.', () => {
+		test.test('throws if base is not an ASTNodeTypeAlias.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				int.<str>
 				(int | float).<bool>
 			`, (src) => assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable));
 		});
-		it('throws when providing incorrect number of arguments.', () => {
+		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				List.<null, null>
 				Dict.<bool, bool, bool>

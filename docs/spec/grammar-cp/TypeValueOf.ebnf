@@ -98,11 +98,11 @@ Type! TypeValueOf(SemanticTypeCall call) :=
 		1. *If* `call.children.count` is 2:
 			1. *Let* `genericarg` be *Unwrap:* `TypeValueOf(call.children.1)`.
 			2. *If* `base.source` is "List":
-				1. *Return:* a List type whose items’ type is `genericarg`.
+				1. *Return:* a List type under the type argument `genericarg`.
 			3. *If* `base.source` is "Dict":
-				1. *Return:* a Dict type whose values’ type is `genericarg`.
+				1. *Return:* a Dict type under the type argument `genericarg`.
 			4. *If* `base.source` is "Set":
-				1. *Return:* a Set type whose elements’ type is `genericarg`.
+				1. *Return:* a Set type under the type argument `genericarg`.
 		2. *Throw:* a new TypeError.
 	5. *Else:*
 		1. *Assert:* `base.source` is "Map".
@@ -113,8 +113,8 @@ Type! TypeValueOf(SemanticTypeCall call) :=
 			1. *Let* `consequenttype` be *Unwrap:* `TypeValueOf(call.children.2)`.
 		5. *Else:*
 			1. *Throw:* a new TypeError.
-		6. *Return:* a Map type whose antecedents’ type is `antecedenttype`
-			and whose consequents’ type is `consequenttype`.
+		6. *Return:* a Map type under an antecedent type argument `antecedenttype`
+			and a consequent type argument `consequenttype`.
 ;
 
 
@@ -126,7 +126,7 @@ Type! TypeValueOf(SemanticTypeOperation[operator: ORNULL] oper) :=
 ;
 
 Type! TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Type! TypeValueOf(SemanticTypeOperation[operator: MUTABLE] oper) :=

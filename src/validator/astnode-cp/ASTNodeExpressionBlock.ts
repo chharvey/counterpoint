@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
-import type {
-	VALUE,
+import {
+	type VALUE,
 	TYPE,
 } from '../../index.ts';
 import {
@@ -54,6 +54,9 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.block.hasBottomType) {
+			return TYPE.NOTHING;
+		}
 		assert.ok(this.block.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');
 		const last_stmt: ASTNodeStatement = this.block.children.at(-1)!;
 		/* TODO: For now, all block-expressions must have a type, thus must have a determinant.

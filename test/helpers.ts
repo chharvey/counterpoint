@@ -15,15 +15,6 @@ const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALU
 
 
 
-export const CONFIG_RADICES_SEPARATORS_ON: CPConfig = {
-	...CONFIG_DEFAULT,
-	languageFeatures: {
-		...CONFIG_DEFAULT.languageFeatures,
-		integerRadices:    true,
-		numericSeparators: true,
-	},
-};
-
 export const CONFIG_FOLDING_OFF: CPConfig = {
 	...CONFIG_DEFAULT,
 	compilerOptions: {

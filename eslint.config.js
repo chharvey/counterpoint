@@ -259,6 +259,11 @@ export default [
 			// Comment why the override is needed.
 
 			/* ## Overrides of `tseslint.configs.recommendedTypeCheckedOnly` */
+			'@typescript-eslint/no-floating-promises': ['error', {
+				allowForKnownSafeCalls: [
+					{from: 'package', name: ['suite', 'test', 'skip', 'todo', 'only'], package: 'node:test'}, // `suite()` and `test()` calls are normally automatically awaited
+				],
+			}],
 			'@typescript-eslint/no-unsafe-enum-comparison':     'off',   // some enums have transparent values
 			'@typescript-eslint/restrict-template-expressions': 'off',   // template interpolation is designed for this
 			'@typescript-eslint/require-await':                 'off',   // disallow functions to be `async` without containing an `await`, even if they are promise-returning

@@ -13,7 +13,10 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {
+	SyntaxNodeType,
+	SyntaxNodeFamily,
+} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -44,14 +47,14 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
-			| SyntaxNodeType<'assignee'>,
+			| SyntaxNodeFamily<'assignee', ['break']>,
 
 		public readonly kind:     ValidAccessOperator,
 		public readonly base:     ASTNodeExpression,
 		public readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		if (this.kind === Operator.DOT_RES) {
+		if ([Operator.DOT_RES].includes(this.kind)) {
 			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
 		}
 	}

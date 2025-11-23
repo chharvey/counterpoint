@@ -9,13 +9,14 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
@@ -36,7 +37,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'declaration_variable'>,
+		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable | null,
 		public  readonly typenode: ASTNodeType,
@@ -53,6 +54,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
 		/*
@@ -80,11 +82,16 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		);
 	}
 
+	@memoizeGetter
+	public override get hasBottomType(): boolean {
+		return this.assigned?.type().isBottomType ?? false;
+	}
+
 	public override varCheck(): void {
-		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
 		if (!this.unfixed) {
 			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
 		}
+		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {

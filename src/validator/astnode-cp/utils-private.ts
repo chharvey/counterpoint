@@ -11,7 +11,6 @@ import {
 	type ConstructorType,
 	assert_instanceof,
 } from '../../lib/index.ts';
-import type {CPConfig} from '../../core/index.ts';
 import {
 	Operator,
 	type ValidTypeAccessOperator,
@@ -206,10 +205,15 @@ export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
 }
 
+export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+	return t0.isSubtypeOf(NUMBER) && t1.isSubtypeOf(NUMBER);
+}
 
 
-export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Integer | VALUE.Float {
-	const cooked: bigint | number = Validator.cookTokenNumber(source, config);
+
+export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Float {
+	const cooked: bigint | number = Validator.cookTokenNumber(source);
 	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
 }
 
@@ -331,7 +335,7 @@ export function validate_access_kind(access_kind: ValidTypeAccessOperator | Vali
 		throw new TypeErrorInvalidOperation(access);
 	}
 	if (access_kind === Operator.DOT_RES) {
-		throw new TypeError('Operator `!.` not yet supported.');
+		assert.fail('Operator `!.` not yet supported.');
 	}
 }
 
@@ -346,7 +350,7 @@ export function update_accessed_type(type: TYPE.Type, access_kind: ValidTypeAcce
 			return type.union(TYPE.NULL);
 		}
 		case Operator.DOT_RES: {
-			throw new TypeError('Operator `!.` not yet supported.');
+			assert.fail('Operator `!.` not yet supported.');
 		}
 	}
 }
