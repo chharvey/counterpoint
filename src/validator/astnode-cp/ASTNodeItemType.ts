@@ -7,9 +7,9 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 export class ASTNodeItemType extends ASTNodeCP {
 	public constructor(
 		start_node: SyntaxNodeFamily<'entry_type', ['optional']>,
-		public readonly optional: boolean,
-		public readonly val:      ASTNodeType,
+		public readonly optional:  boolean,
+		public readonly typevalue: ASTNodeType,
 	) {
-		super(start_node, {optional}, [val]);
+		super(start_node, {optional}, [typevalue]);
 	}
 }

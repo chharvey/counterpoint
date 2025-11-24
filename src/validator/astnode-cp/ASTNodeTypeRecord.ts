@@ -48,7 +48,7 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		const entries: ReadonlyMap<bigint, EntryType> = new Map<bigint, EntryType>(this.children.map((c) => {
-			const valuetype: TYPE.Type = c.val.eval();
+			const valuetype: TYPE.Type = c.typevalue.eval();
 			return [
 				c.key.id,
 				{

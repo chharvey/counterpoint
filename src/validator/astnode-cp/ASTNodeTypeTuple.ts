@@ -34,7 +34,7 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		const entries: readonly EntryType[] = this.children.map((c) => {
-			const itemtype: TYPE.Type = c.val.eval();
+			const itemtype: TYPE.Type = c.typevalue.eval();
 			return {
 				type:     itemtype,
 				optional: c.optional,
