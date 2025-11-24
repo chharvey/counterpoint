@@ -92,6 +92,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
 		}
 		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
+		// Note: Variables are *not* hoisted, so first we var-check the children before adding the variable to the symbol table.
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {

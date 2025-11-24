@@ -301,7 +301,7 @@ let my_next_var:  MyNextType  = "Hello, programmer!"; %> ReferenceError [2]
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%
-type MyType = str;
+type MyNextType = str;
 ```
 > 1. ReferenceError: `MyFirstType` is never declared.
 > 2. ReferenceError: `MyNextType` is used before it is declared.
