@@ -1,7 +1,4 @@
-import {
-	type EntryType,
-	TYPE,
-} from '../../index.ts';
+import {TYPE} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -33,13 +30,9 @@ export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entries: readonly EntryType[] = this.children.map((c) => {
-			const itemtype: TYPE.Type = c.typevalue.eval();
-			return {
-				type:     itemtype,
-				optional: c.optional,
-			};
-		});
-		return new TYPE.Tuple(entries);
+		return new TYPE.Tuple(this.children.map((c) => ({
+			type:     c.typevalue.eval(),
+			optional: c.optional,
+		})));
 	}
 }
