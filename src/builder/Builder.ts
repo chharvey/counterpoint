@@ -72,12 +72,12 @@ export class Builder {
 	}
 
 	/**
-	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `null`.
+	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `undefined`.
 	 * @param  schema the symbol schema of the local to get
-	 * @return        the local or `null`
+	 * @return        the local or `undefined`
 	 */
-	public getLocal(schema: SymbolSchemaVar): Local | null {
-		return [...this.locals].find((local) => local.schema === schema) ?? null;
+	public getLocal(schema: SymbolSchemaVar): Local | undefined {
+		return [...this.locals].find((local) => local.schema === schema);
 	}
 
 	/**
@@ -115,12 +115,12 @@ export class Builder {
 	}
 
 	/**
-	 * Get the block with the given node in this Builder’s list, if it’s been added; else, return `null`.
+	 * Get the block with the given node in this Builder’s list, if it’s been added; else, return `undefined`.
 	 * @param  node the node of the block to get
-	 * @return      the block or `null`
+	 * @return      the block or `undefined`
 	 */
-	public getBlock(node: AST.ASTNodeCP): Block | null {
-		return [...this.blocks].find((block) => block.node === node) ?? null;
+	public getBlock(node: AST.ASTNodeCP): Block | undefined {
+		return [...this.blocks].find((block) => block.node === node);
 	}
 
 	/**

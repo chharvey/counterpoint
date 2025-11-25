@@ -171,7 +171,7 @@ export class Union extends Combinable {
 		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
 		 *     | `(B  & C) \| A == (B \| A)  & (C \| A)`
 		 */
-		const intersection: Intersection | null = this.operands.find((s): s is Intersection => s instanceof Intersection) ?? null;
+		const intersection: Intersection | undefined = this.operands.find((s): s is Intersection => s instanceof Intersection);
 		if (intersection) {
 			const not_intersection: readonly Type[] = this.operands.filter((s) => s !== intersection);
 			const right: Type = not_intersection.length >= 2

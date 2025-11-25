@@ -343,7 +343,7 @@ test.suite('ASTNodeStatement', () => {
 				assert.ok(!validator.hasSymbol(0x100n));
 				goal.varCheck();
 				assert.ok(validator.hasSymbol(0x100n));
-				const info_it: SymbolSchema | null = validator.getSymbol(0x100n);
+				const info_it: SymbolSchema | undefined = validator.getSymbol(0x100n);
 				assert_instanceof(info_it, SymbolSchemaVar);
 				return assert.partialDeepStrictEqual(info_it, {
 					isUnfixed:       false,

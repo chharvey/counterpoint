@@ -283,10 +283,10 @@ export class Validator {
 	/**
 	 * Return the information of a symbol in this Validator’s symbol table.
 	 * @param id the symbol id to check
-	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
+	 * @returns the symbol information of `id`, or `undefined` if there is no corresponding entry
 	 */
-	public getSymbol(id: bigint): SymbolSchema | null {
-		return this.symbol_table.get(id) ?? this.parent?.getSymbol(id) ?? null;
+	public getSymbol(id: bigint): SymbolSchema | undefined {
+		return this.symbol_table.get(id) ?? this.parent?.getSymbol(id);
 	}
 
 	/**

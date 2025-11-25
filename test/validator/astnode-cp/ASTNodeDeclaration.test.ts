@@ -38,7 +38,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 				goal.varCheck();
 				assert.ok(goal.block!.validator.hasSymbol(0x100n));
-				const info: SymbolSchema | null = goal.block!.validator.getSymbol(0x100n);
+				const info: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x100n);
 				assert_instanceof(info, SymbolSchemaType);
 				assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 			});
@@ -94,7 +94,7 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('hoists type aliases before var-checking assigned expression.', () => {
 				const decl: AST.ASTNodeDeclarationType = AST.ASTNodeDeclarationType.fromSource('type LinkedListOfInt = (int, LinkedListOfInt);');
 				decl.varCheck();
-				const symb: SymbolSchema | null = decl.validator.getSymbol(0x100n);
+				const symb: SymbolSchema | undefined = decl.validator.getSymbol(0x100n);
 				assert_instanceof(symb, SymbolSchemaType);
 				assert.strictEqual(symb.typevalue, TYPE.ANYTHING);
 			});
@@ -141,9 +141,9 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.ok(goal.block!.validator.hasSymbol(0x100n));
 				assert.ok(goal.block!.validator.hasSymbol(0x101n));
 				assert.ok(goal.block!.validator.hasSymbol(0x102n));
-				const info_a: SymbolSchema | null = goal.block!.validator.getSymbol(0x100n);
-				const info_b: SymbolSchema | null = goal.block!.validator.getSymbol(0x101n);
-				const info_c: SymbolSchema | null = goal.block!.validator.getSymbol(0x102n);
+				const info_a: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x100n);
+				const info_b: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x101n);
+				const info_c: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x102n);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
