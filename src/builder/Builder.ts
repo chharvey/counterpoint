@@ -96,7 +96,7 @@ export class Builder {
 	 * Return a copy of a list of this Builder’s local variables.
 	 * @return the local variables in an array
 	 */
-	public getLocals(): Local[] {
+	public getAllLocals(): Local[] {
 		return [...this.locals];
 	}
 

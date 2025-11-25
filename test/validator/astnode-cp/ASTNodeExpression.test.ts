@@ -305,7 +305,7 @@ test.suite('ASTNodeExpression', () => {
 				}`);
 				const var0 = (stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const var1 = (stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getLocals().map((local) => local.type);
+				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map((local) => local.type);
 				return assertEqualBins(
 					[
 						var0.build(),
@@ -326,7 +326,7 @@ test.suite('ASTNodeExpression', () => {
 				}`, CONFIG_FOLDING_OFF);
 				const var0 = (stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const var1 = (stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getLocals().map((local) => local.type);
+				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map((local) => local.type);
 				assertEqualBins(
 					[
 						var0.build(),
@@ -980,13 +980,13 @@ test.suite('ASTNodeExpression', () => {
 			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
 				const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource('n as <int>');
 				claim.validator.addSymbol(new SymbolSchemaVar(claim.operand as AST.ASTNodeVariable, false, false));
-				(claim.validator.getSymbolInfo(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
+				(claim.validator.getSymbol(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.ASTNodeClaim = AST.ASTNodeClaim.fromSource('"Alice" as <Name>');
 				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.ASTNodeTypeAlias));
-				(claim.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
+				(claim.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
 				assert.strictEqual(claim.type(), TYPE.STR);
 			});
 			test.test('throws when the operand type and claimed type do not overlap (and neither is `nothing`).', () => {

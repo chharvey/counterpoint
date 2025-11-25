@@ -38,7 +38,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 				goal.varCheck();
 				assert.ok(goal.block!.validator.hasSymbol(0x100n));
-				const info: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x100n);
+				const info: SymbolSchema | null = goal.block!.validator.getSymbol(0x100n);
 				assert_instanceof(info, SymbolSchemaType);
 				assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 			});
@@ -94,7 +94,7 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('hoists type aliases before var-checking assigned expression.', () => {
 				const decl: AST.ASTNodeDeclarationType = AST.ASTNodeDeclarationType.fromSource('type LinkedListOfInt = (int, LinkedListOfInt);');
 				decl.varCheck();
-				const symb: SymbolSchema | null = decl.validator.getSymbolInfo(0x100n);
+				const symb: SymbolSchema | null = decl.validator.getSymbol(0x100n);
 				assert_instanceof(symb, SymbolSchemaType);
 				assert.strictEqual(symb.typevalue, TYPE.ANYTHING);
 			});
@@ -106,7 +106,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
+					}`, null, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -141,9 +141,9 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.ok(goal.block!.validator.hasSymbol(0x100n));
 				assert.ok(goal.block!.validator.hasSymbol(0x101n));
 				assert.ok(goal.block!.validator.hasSymbol(0x102n));
-				const info_a: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x100n);
-				const info_b: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x101n);
-				const info_c: SymbolSchema | null = goal.block!.validator.getSymbolInfo(0x102n);
+				const info_a: SymbolSchema | null = goal.block!.validator.getSymbol(0x100n);
+				const info_b: SymbolSchema | null = goal.block!.validator.getSymbol(0x101n);
+				const info_c: SymbolSchema | null = goal.block!.validator.getSymbol(0x102n);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
@@ -255,7 +255,7 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					let var the_answer?: int | float;
-				}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
+				}`, null, {build: false}).goal.block!.validator.getSymbol(0x100n), {
 					isUnfixed:       true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
@@ -279,9 +279,9 @@ test.suite('ASTNodeDeclaration', () => {
 					let mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
 				}`, null, {build: false});
 				const [immut, mut, mutmut] = [
-					goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
-					goal.block!.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
-					goal.block!.validator.getSymbolInfo(0x102n) as SymbolSchemaVar,
+					goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar,
+					goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar,
+					goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar,
 				];
 				assert.deepStrictEqual(
 					[immut.source, immut.value],
@@ -613,7 +613,7 @@ test.suite('ASTNodeDeclaration', () => {
 				const [tup, rec] = stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				assert.deepStrictEqual(goal.builder.getLocals().map((local) => local.value), [
+				assert.deepStrictEqual(goal.builder.getAllLocals().map((local) => local.value), [
 					tup_2_1.build(),
 					tup_2.build(),
 					tup.build(),
@@ -881,7 +881,7 @@ test.suite('ASTNodeDeclaration', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						let var x?: int;
 						set x = 42;
-					}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
+					}`, null, {build: false}).goal.block!.validator.getSymbol(0x100n), {
 						isUnfixed:       true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -894,7 +894,7 @@ test.suite('ASTNodeDeclaration', () => {
 						set x = null;
 					}`);
 					goal.varCheck();
-					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolInfo(0x100n), {
+					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
 						isUnfixed:       true,
 						isUninitialized: true,
 					});

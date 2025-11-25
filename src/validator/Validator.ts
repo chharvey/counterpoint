@@ -285,15 +285,15 @@ export class Validator {
 	 * @param id the symbol id to check
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
-	public getSymbolInfo(id: bigint): SymbolSchema | null {
-		return this.symbol_table.get(id) ?? this.parent?.getSymbolInfo(id) ?? null;
+	public getSymbol(id: bigint): SymbolSchema | null {
+		return this.symbol_table.get(id) ?? this.parent?.getSymbol(id) ?? null;
 	}
 
 	/**
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
-	public getSymbols(): Map<bigint, SymbolSchema> {
+	public getAllSymbols(): Map<bigint, SymbolSchema> {
 		return new Map([...(this.parent?.symbol_table ?? []), ...this.symbol_table]);
 	}
 

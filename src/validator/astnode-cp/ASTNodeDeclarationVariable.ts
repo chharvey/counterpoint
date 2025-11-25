@@ -109,7 +109,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (this.assignee) {
 			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
+			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
 				assert.ok(!symbol.isUnfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
@@ -123,7 +123,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override build(): binaryen.ExpressionRef {
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		return this.assignee
-			? this.builder.teeLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar, value).set()
+			? this.builder.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
 			: this.builder.module.drop(value);
 	}
 }

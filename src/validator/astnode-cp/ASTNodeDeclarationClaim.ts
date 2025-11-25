@@ -60,7 +60,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 			throw new TypeErrorNotNarrow(claimed_type, computed_type, this.line_index, this.col_index);
 		}
 		if (this.assignee instanceof ASTNodeVariable) {
-			const symbol: SymbolSchemaVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar | null;
+			const symbol: SymbolSchemaVar | null = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar | null;
 			if (symbol) {
 				symbol.type = claimed_type;
 			}

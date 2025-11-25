@@ -52,7 +52,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaType) {
+		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
@@ -61,14 +61,14 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return this.builder.getLocal(this.validator.getSymbolInfo(this.id) as SymbolSchemaVar)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
+		return this.builder.getLocal(this.validator.getSymbol(this.id) as SymbolSchemaVar)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
 		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
 	}
@@ -76,7 +76,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	public override fold(): VALUE.Value | null {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
 		if (!symbol.isUnfixed) {
 			return symbol.value;
@@ -91,6 +91,6 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	public writeType(): TYPE.Type {
 		this.type(); // re-assert any assumptions and re-throw any errors
-		return (this.validator.getSymbolInfo(this.id) as SymbolSchemaVar).type;
+		return (this.validator.getSymbol(this.id) as SymbolSchemaVar).type;
 	}
 }
