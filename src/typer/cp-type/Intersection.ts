@@ -83,14 +83,6 @@ export class Intersection extends Combinable {
 	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
 
-	public override get isReference(): boolean {
-		return this.operands.some((s) => s.isReference);
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.operands.some((s) => s.hasMutable);
-	}
-
 	@botOrTopString
 	public override toString(): string {
 		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' & ');
