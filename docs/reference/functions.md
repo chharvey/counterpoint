@@ -318,6 +318,26 @@ let g: Stringify = \(n: int): str {...}; %> TypeError % parameter type `int | fl
 Aside from the parameter *types* being compatible, the parameter positions and names are also taken into account.
 For positional parameters, the rules of tuple type assignment apply; for named parameters, the rules of record assignment apply.
 
+Like tuple assignment, positional parameters are matched in the same order.
+```cpl
+type BinaryOperator = \(int, float) => void;
+let add: BinaryOperator = \(x: float, y: int): void { float y + x; return; }; %> TypeError
+```
+> TypeError: Type `\(float, int) => void` is not assignable to type `\(int, float) => void`.
+
+One should expect to be able to call any `BinaryOperator` with the positional arguments of an `int` followed by a `float`;
+providing the arguments in a different order would fail. The `add` function must switch its parameters to fix it.
+
+Like record assignment, named parameters are matched up by key.
+```cpl
+type BinaryOperator = \(first: float, second: float) => void;
+let subtract: BinaryOperator = \($x: float, $y: float): void { x - y; return; }; %> TypeError
+```
+> TypeError: Type `\(x: float, y: float) => void` is not assignable to type `\(first: float, second: float) => void`.
+
+This fails because a caller must be able to call `subtract` with the named arguments `first` and `second`.
+To fix this, we can either rename the parameters, or [alias](#named-parameters-and-arguments) them with the correct external names.
+
 Parameter assignment in a nutshell (assigning function type `G` to function type `F`):
 - positional parameters are matched up one-by-one by index
 - named parameters are matched up one-by-one by key, and they don’t need to be in the same order
