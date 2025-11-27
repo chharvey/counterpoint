@@ -55,7 +55,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 				because neither type sufficiently overlaps with the other.
 				If this was intentional, convert the expression to \`anything\` first.`;
 			*/
-			throw new TypeErrorNotAssignable(computed_type, claimed_type, this);
+			throw new TypeErrorNotAssignable(this.operand, claimed_type, this);
 		}
 		return claimed_type;
 	}

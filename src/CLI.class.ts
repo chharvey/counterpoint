@@ -46,9 +46,6 @@ type CustomArgsType = {
 	p:        string,
 
 	// Language Features
-	comments:          null | boolean,
-	integerRadices:    null | boolean,
-	numericSeparators: null | boolean,
 
 	// Compiler Options
 	constantFolding: null | boolean,
@@ -107,9 +104,6 @@ export class CLI {
 		These options will override those in the configuration file provided by \`--project\`.
 
 		Language Features:
-		--[no-]comments                (on by default)
-		--[no-]integerRadices
-		--[no-]numericSeparators
 
 		Compiler Options:
 		--[no-]constantFolding         (on by default)
@@ -123,9 +117,6 @@ export class CLI {
 			'version',
 			'config',
 			// Language Features
-			'comments',
-			'integerRadices',
-			'numericSeparators',
 			// Compiler Options
 			'constantFolding',
 		],
@@ -147,9 +138,6 @@ export class CLI {
 			config:  false,
 
 			// Language Features
-			comments:          null,
-			integerRadices:    null,
-			numericSeparators: null,
 
 			// Compiler Options
 			constantFolding: null,
@@ -224,9 +212,6 @@ export class CLI {
 		};
 
 		/* eslint-disable curly */
-		if (this.argv.comments          !== null) returned.languageFeatures.comments          = this.argv.comments;
-		if (this.argv.integerRadices    !== null) returned.languageFeatures.integerRadices    = this.argv.integerRadices;
-		if (this.argv.numericSeparators !== null) returned.languageFeatures.numericSeparators = this.argv.numericSeparators;
 		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding;
 		/* eslint-enable curly */
 
@@ -279,8 +264,8 @@ export class CLI {
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
 	public async run(cwd: string): Promise<[string, ...unknown[]]> {
-		const inputfilepath: string          = this.inputPath(cwd);
-		const bytes:         Promise<Buffer> = fs.promises.readFile(inputfilepath);
+		const inputfilepath: string                = this.inputPath(cwd);
+		const bytes:         Promise<BufferSource> = fs.promises.readFile(inputfilepath);
 		return [
 			xjs.String.dedent`
 				Executing………

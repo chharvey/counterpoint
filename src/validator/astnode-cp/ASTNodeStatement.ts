@@ -34,6 +34,9 @@ export function buildDeco(
  * Known subclasses:
  * - ASTNodeStatementExpression
  * - ASTNodeStatementConditional
+ * - ASTNodeStatementLoop
+ * - ASTNodeStatementIteration
+ * - ASTNodeStatementBreak
  * - ASTNodeDeclaration
  */
 export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {
@@ -53,6 +56,9 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Bu
 
 	/** @implements Foldable */
 	public abstract get isFoldable(): boolean;
+
+	/** @implements Foldable */
+	public abstract get hasBottomType(): boolean;
 
 	/** @implements Buildable */
 	public abstract build(): binaryen.ExpressionRef;

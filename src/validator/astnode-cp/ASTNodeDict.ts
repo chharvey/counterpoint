@@ -15,7 +15,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
@@ -39,7 +39,7 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'dict_literal'>,
+		start_node: SyntaxNodeFamily<'dict_literal', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
 	) {
 		super(start_node, children);
@@ -64,6 +64,9 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.val.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return new TYPE.Dict(
 			TYPE.Union.all(this.children.map((c) => c.val.type())),
 			true,
@@ -87,6 +90,6 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
 			return xjs.Array.forEachAggregated(this.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, assignee.typearg, prop));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

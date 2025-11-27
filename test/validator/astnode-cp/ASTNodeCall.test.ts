@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
@@ -20,7 +21,7 @@ import {
 
 
 
-describe('ASTNodeCall', () => {
+test.suite('ASTNodeCall', () => {
 	const EVALUATE = [
 		'List.<int>((1, 2, 3))',
 		'Dict.<int>((a= 1, b= 2, c= 3))',
@@ -113,8 +114,18 @@ describe('ASTNodeCall', () => {
 	] as const;
 
 
-	describe('#type', () => {
-		it('evaluates List, Dict, Set, and Map.', () => {
+	test.suite('#varCheck', () => {
+		test.test('throws if base is not one of the allowed strings.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				SET.<str>()
+				Mapping.<bool>()
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).varCheck(), SyntaxError));
+		});
+	});
+
+
+	test.suite('#type', () => {
+		test.test('evaluates List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
 				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				[
@@ -125,31 +136,31 @@ describe('ASTNodeCall', () => {
 				],
 			);
 		});
-		specify('`List.(‹…›)`', () => {
+		test.test('`List.(‹…›)`', () => {
 			assertEqualTypes(
 				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.List(TYPE.INT, true), 11),
 			);
 		});
-		specify('`Dict.(‹…›)`', () => {
+		test.test('`Dict.(‹…›)`', () => {
 			assertEqualTypes(
 				DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.Dict(TYPE.INT, true), 5),
 			);
 		});
-		specify('`Set.(‹…›)`', () => {
+		test.test('`Set.(‹…›)`', () => {
 			assertEqualTypes(
 				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.Set(TYPE.INT, true), 11),
 			);
 		});
-		specify('`Map.(‹…›)`', () => {
+		test.test('`Map.(‹…›)`', () => {
 			assertEqualTypes(
 				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 14),
 			);
 		});
-		it('bypasses invariance for generic arguments.', () => {
+		test.test('bypasses invariance for generic arguments.', () => {
 			extract_lines`
 				List.<mut {int}>((   {42},))
 				Dict.<mut {int}>((a= {42}))
@@ -158,69 +169,68 @@ describe('ASTNodeCall', () => {
 				Map.<mut {int}, float>((({42}, 4.2),))
 			`.map((src) => AST.ASTNodeCall.fromSource(src).type());
 		});
-		it('Map has a default type parameter.', () => {
+		test.test('Map has a default type parameter.', () => {
 			assertEqualTypes(
 				AST.ASTNodeCall.fromSource('Map.<int>()').type(),
 				new TYPE.Map(TYPE.INT, TYPE.INT, true),
 			);
 		});
-		it('throws if base is not an ASTNodeVariable.', () => {
+		test.test('throws if base is not an ASTNodeVariable.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				null.()
 				(42 || 43).<bool>()
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotCallable));
 		});
-		it('throws if base is not one of the allowed strings.', () => {
-			xjs.Array.forEachAggregated(extract_lines`
-				SET.<str>()
-				Mapping.<bool>()
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), SyntaxError, src));
-		});
-		it('throws when providing incorrect number of arguments.', () => {
+		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				List.<int>((), ())
 				Dict.<int>((), ())
 				Set.<int>((), ())
 				Map.<int>((), ())
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorArgCount));
 		});
-		it('throws when providing incorrect type of arguments.', () => {
+		test.test('throws when providing incorrect type of arguments.', () => {
+			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
 				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
+				['Dict.<int>(42)', ['42', ['Dict.<int>']]],
 				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
-			]), ([argtype, allowed_types], src) => assert.throws(
+			]), ([argexpr, allowed_types], src) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
-						errors: allowed_types.map((allowed_type) => ({
-							cons:    TypeErrorNotAssignable,
-							message: `Expression of type \`${ argtype }\` is not assignable to type \`${ allowed_type }\`.`,
-						})),
+						errors: [
+							{cons: TypeErrorArgCount, message: 'Got `1` arguments, but expected `0`.'},
+							...allowed_types.map((allowed_type) => ({
+								cons:    TypeErrorNotAssignable,
+								message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
+							})),
+						],
 					});
 					return true;
 				},
 			));
+			// if API overload checks fail, check allowed types not in API
 			return xjs.Array.forEachAggregated(extract_lines`
 				List.<int>((4.2,))
-				Dict.<int>(42)
-				Dict.<int>((4.2,))
+				Dict.<int>((a= 4.2))
 				Set.<int>((42, "42"))
 				Map.<int>(((42, "42"),))
-			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable, src));
+			`, (src) => assert.throws(() => AST.ASTNodeCall.fromSource(src).type(), TypeErrorNotAssignable));
 		});
 	});
 
 
-	describe('#fold', () => {
+	test.suite('#fold', () => {
 		const TEST_VALUES = [
 			VALUE.INT_1,
 			new VALUE.Integer(2n),
 			new VALUE.Integer(3n),
 		] as const;
-		it('evaluates List, Dict, Set, and Map.', () => {
+		test.test('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
 				EVALUATE.map((src) => AST.ASTNodeCall.fromSource(src).fold()),
 				[
@@ -239,13 +249,13 @@ describe('ASTNodeCall', () => {
 				],
 			);
 		});
-		specify('`List.(‹…›)`', () => {
+		test.test('`List.(‹…›)`', () => {
 			assert.deepStrictEqual(LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
 				...repeat(new VALUE.List<never>(), 6),
 				...repeat(new VALUE.List<VALUE.Integer>(TEST_VALUES), 5),
 			]);
 		});
-		specify('`Dict.(‹…›)`', () => {
+		test.test('`Dict.(‹…›)`', () => {
 			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
 				...repeat(new VALUE.Dict<never>(), 2),
 				...repeat(new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
@@ -255,13 +265,13 @@ describe('ASTNodeCall', () => {
 				])), 3),
 			]);
 		});
-		specify('`Set.(‹…›)`', () => {
+		test.test('`Set.(‹…›)`', () => {
 			assert.deepStrictEqual(SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
 				...repeat(new VALUE.Set<never>(), 6),
 				...repeat(new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)), 5),
 			]);
 		});
-		specify('`Map.(‹…›)`', () => {
+		test.test('`Map.(‹…›)`', () => {
 			assert.deepStrictEqual(MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
 				...repeat(new VALUE.Map<never, never>(), 7),
 				...repeat(new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([

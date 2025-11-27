@@ -65,9 +65,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			`,
 			sourceExpressions(
 				s('primitive_literal', s('integer')),
-				s('primitive_literal', s('integer__radix')),
-				s('primitive_literal', s('integer__separator')),
-				s('primitive_literal', s('integer__radix__separator')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
 			),
 		],
 
@@ -92,11 +92,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('primitive_literal', s('float')),
 				s('primitive_literal', s('float')),
 				s('primitive_literal', s('float')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
-				s('primitive_literal', s('float__separator')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
+				s('primitive_literal', s('float')),
 			),
 		],
 
@@ -128,7 +128,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
 				s('primitive_literal', s('string')),
-				s('primitive_literal', s('string__separator')),
+				s('primitive_literal', s('string')),
 			),
 		],
 
@@ -235,6 +235,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// PropertiesType
 		// tested in #TypeRecordLiteral
+
+		// PropertyAccessorType
+		// tested in #TypeCompound
 
 		TypeGrouped: [
 			xjs.String.dedent`
@@ -407,9 +410,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// TypeUnit
 		// consists of #{IDENTIFIER,KeywordType,PrimitiveLiteral,TypeGrouped,Type{Tuple,Record,Dict,Map}Literal}
-
-		// PropertyAccessorType
-		// tested in #TypeCompound
 
 		// GenericCall
 		// tested in #TypeCompound
@@ -604,6 +604,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// Case
 		// tested in #MapLiteral
+
+		// PropertyAccessor
+		// tested in #{ExpressionCompound,Assignee}
 
 		ExpressionGrouped: [
 			xjs.String.dedent`
@@ -828,9 +831,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// ExpressionUnit
 		// consists of #{IDENTIFIER,PrimitiveLiteral,StringTemplate,ExpressionGrouped,{Tuple,Record,Set,Map}Literal,Block}
 
-		// PropertyAccessor
-		// tested in #{ExpressionCompound,Assignee}
-
 		// FunctionCall
 		// tested in #ExpressionCompound
 
@@ -939,9 +939,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 			),
 		],
-
-		// Assignee
-		// tested in #DeclarationReassignment
 
 		ExpressionUnarySymbol: [
 			xjs.String.dedent`
@@ -1333,8 +1330,61 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		StatementLoop: [
+			xjs.String.dedent`
+				{
+					while condition do { loop; };
+					until condition do { loop; };
+					do { loop; } while condition;
+					do { loop; } until condition;
+					while condition do {
+						if condition then { consequent; };
+					};
+				}
+			`,
+			sourceStatements(
+				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
+				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
+				s('statement_loop', s('identifier'), s(
+					'block__break',
+					s('statement_conditional__break', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				)),
+			),
+		],
+
+		StatementIteration: [
+			xjs.String.dedent`
+				{
+					for _:  T of iterable do { iterate; };
+					for it: T of iterable do { iterate; };
+				}
+			`,
+			sourceStatements(
+				s('statement_iteration',                  s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration', s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+			),
+		],
+
+		StatementBreak: [
+			xjs.String.dedent`
+				{
+					while condition do {
+						break;
+						continue;
+					};
+				}
+			`,
+			sourceStatements(s('statement_loop', s('identifier'), s(
+				'block__break',
+				s('statement_break'),
+				s('statement_break'),
+			))),
+		],
+
 		// Statement
-		// consists of #{StatementExpression,StatementConditional,Declaration}
+		// consists of #{Statement{Expression,Conditional,Loop,Iteration,Break},Declaration}
 
 		Block: [
 			xjs.String.dedent`
@@ -1347,6 +1397,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					{
 						b;
 					};
+					if condition then { consequent; };
+					while condition do { loop; };
+					for it: T of iterable do { iterate; };
 				}
 			`,
 			sourceStatements(
@@ -1385,8 +1438,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_expression',
 					s('expression_block', s('statement_expression', s('identifier'))),
 				),
+				s('statement_conditional',                                   s('identifier'), s('block',        s('statement_expression',        s('identifier')))),
+				s('statement_loop',                                          s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration',   s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
+
+		// Assignee
+		// tested in #DeclarationReassignment
 
 		DeclarationType: [
 			xjs.String.dedent`

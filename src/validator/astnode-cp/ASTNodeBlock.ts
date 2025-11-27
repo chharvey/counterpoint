@@ -3,13 +3,14 @@ import type binaryen from 'binaryen';
 import {
 	type NonemptyArray,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {Validator} from '../Validator.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeGoal} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
@@ -41,7 +42,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	#validator?: Validator;
 
 	public constructor(
-		start_node: SyntaxNodeType<'block'>,
+		start_node: SyntaxNodeFamily<'block', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
 		private readonly config:           CPConfig,
 	) {
@@ -55,9 +56,16 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	}
 
 	/** @implements Foldable */
+	@memoizeGetter
 	@if_constant_folding
 	public get isFoldable(): boolean {
 		return this.children.every((stmt) => stmt.isFoldable);
+	}
+
+	/** @implements Foldable */
+	@memoizeGetter
+	public get hasBottomType(): boolean {
+		return this.children.some((c) => c.hasBottomType);
 	}
 
 	/** @implements Buildable */

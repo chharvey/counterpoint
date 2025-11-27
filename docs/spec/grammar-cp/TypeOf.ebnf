@@ -42,7 +42,9 @@ Type! TypeOfUnfolded(SemanticTuple tuple) :=
 			type=     *Unwrap:* `TypeOf(item)`,
 			optional= `false`,
 		].
-		2. Push `typedatum` to `data`.
+		2. *If* *UnwrapAffirm:* `IsBottomType(typedatum.type)` is `true`:
+			1. *Return:* `Nothing`.
+		3. Push `typedatum` to `data`.
 	3. *Return:* a new Tuple type containing the items in `data`.
 ;
 
@@ -56,7 +58,9 @@ Type! TypeOfUnfolded(SemanticRecord record) :=
 			type=     *Unwrap:* `TypeOf(property.children.1)`,
 			optional= `false`,
 		].
-		3. Set the property `property.children.0.id` on `data` to the value `typedatum`.
+		3. *If* *UnwrapAffirm:* `IsBottomType(typedatum.type)` is `true`:
+			1. *Return:* `Nothing`.
+		4. Set the property `property.children.0.id` on `data` to the value `typedatum`.
 	3. *Return:* a new Record type containing the properties in `data`.
 ;
 
@@ -64,24 +68,30 @@ Type! TypeOfUnfolded(SemanticRecord record) :=
 
 Type! TypeOfUnfolded(SemanticList list) :=
 	1. *Let* `types` be a mapping of `list` for each `it` to *Unwrap:* `TypeOf(it)`.
-	2. *Let* `t` be `Union(...types)`.
-	3. *Return:* a new mutable List type whose types are `t`.
+	2. *If* `types` contains `Nothing`:
+		1. *Return:* `Nothing`.
+	3. *Let* `t` be `Union(...types)`.
+	4. *Return:* a new mutable List type whose types are `t`.
 ;
 
 
 
 Type! TypeOfUnfolded(SemanticDict dict) :=
 	1. *Let* `types` be a mapping of `dict` for each `prop` to *Unwrap:* `TypeOf(prop.children.1)`.
-	2. *Let* `t` be `Union(...types)`.
-	3. *Return:* a new mutable Dict type whose types are `t`.
+	2. *If* `types` contains `Nothing`:
+		1. *Return:* `Nothing`.
+	3. *Let* `t` be `Union(...types)`.
+	4. *Return:* a new mutable Dict type whose types are `t`.
 ;
 
 
 
 Type! TypeOfUnfolded(SemanticSet set) :=
 	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
-	2. *Let* `t` be *UnwrapAffirm:* `Union(...types)`.
-	3. *Return:* a new mutable Set type whose types are `t`.
+	2. *If* `types` contains `Nothing`:
+		1. *Return:* `Nothing`.
+	3. *Let* `t` be *UnwrapAffirm:* `Union(...types)`.
+	4. *Return:* a new mutable Set type whose types are `t`.
 ;
 
 
@@ -89,29 +99,35 @@ Type! TypeOfUnfolded(SemanticSet set) :=
 Type! TypeOfUnfolded(SemanticMap map) :=
 	1. *Let* `ant_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
 	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
-	3. *Let* `k` be *UnwrapAffirm:* `Union(...ant_types)`.
-	4. *Let* `v` be *UnwrapAffirm:* `Union(...con_types)`.
-	5. *Return:* a new mutable Map type whose antecedent types are `k` and whose consequent types are `v`.
+	3. *If* `ant_types` contains `Nothing`:
+		1. *Return:* `Nothing`.
+	4. *If* `con_types` contains `Nothing`:
+		1. *Return:* `Nothing`.
+	5. *Let* `k` be *UnwrapAffirm:* `Union(...ant_types)`.
+	6. *Let* `v` be *UnwrapAffirm:* `Union(...con_types)`.
+	7. *Return:* a new mutable Map type whose antecedent types are `k` and whose consequent types are `v`.
 ;
 
 
 
 Type! TypeOfUnfolded(SemanticExpressionBlock block) :=
-	1. *Assert:* `block.children.count` is greater than 0.
-	2. *Let* `last_stmt` be `block.children.-1`.
-	3. *If* `last_stmt` is not a SemanticStatementExpression:
+	1. *If* `block.children` contains any statement that contains any expression `expr` for which *UnwrapAffirm:* `IsBottomType(expr)` is `true`:
+		1. *Return:* `Nothing`.
+	2. *Assert:* `block.children.count` is greater than 0.
+	3. *Let* `last_stmt` be `block.children.-1`.
+	4. *If* `last_stmt` is not a SemanticStatementExpression:
 		1. *Throw:* a new Error.
-	4. *If* `last_stmt.children.count` is less than 1:
+	5. *If* `last_stmt.children.count` is less than 1:
 		1. *Throw:* a new Error.
-	5. *Let* `expr` be `last_stmt.children.0`.
-	6. *Assert:* `expr` is a SemanticExpression.
-	7. *Return:* `TypeOf(expr)`.
+	6. *Let* `expr` be `last_stmt.children.0`.
+	7. *Assert:* `expr` is a SemanticExpression.
+	8. *Return:* `TypeOf(expr)`.
 ;
 
 
 
 Type! TypeOfUnfolded(SemanticAccess[kind: RESULT] access) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
@@ -136,11 +152,11 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `genericarg` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `base.source` is "List":
-					1. *Let* `returntype` be a List type whose items’ type is `genericarg`.
+					1. *Let* `returntype` be a List type under the type argument `genericarg`.
 				3. *Else If* `base.source` is "Dict":
-					1. *Let* `returntype` be a Dict type whose values’ type is `genericarg`.
+					1. *Let* `returntype` be a Dict type under the type argument `genericarg`.
 				4. *Else If* `base.source` is "Set":
-					1. *Let* `returntype` be a Set type whose elements’ type is `genericarg`.
+					1. *Let* `returntype` be a Set type under the type argument `genericarg`.
 				5. *If* `call.children.count` is 3:
 					1. *If* `call.children.2` is a SemanticExpression:
 						1. *Let* `arg` be `call.children.2`.
@@ -154,7 +170,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								2. *Else If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
-										1. *Throw:* a new TypeErrorNotAssignable.
+										1. *Throw:* a new TypeErrorNotNarrow.
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 						4. *Else If* `base.source` is "Dict":
@@ -167,11 +183,11 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								2. *Else If* `argtype` is a Record type:
 									1. *Let* `values` be the union of all value types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(values, genericarg)` is `false`:
-										1. *Throw:* a new TypeErrorNotAssignable.
+										1. *Throw:* a new TypeErrorNotNarrow.
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 						5. *Else If* `base.source` is "Set":
-							1. *Let* `listtype` be a List type whose items’ type is `genericarg`.
+							1. *Let* `listtype` be a List type under the type argument `genericarg`.
 							2. *Let* `is_assignable` be `TypeCheckAssign(arg, listtype)`.
 							3. *If* `is_assignable` is an abrupt completion:
 								1. *If* `arg` is a SemanticTuple:
@@ -180,15 +196,16 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								2. *Else If* `argtype` is a Tuple type:
 									1. *Let* `items` be the union of all item types in `argtype`.
 									2. *If* *UnwrapAffirm:* `Subtype(items, genericarg)` is `false`:
-										1. *Throw:* a new TypeErrorNotAssignable.
+										1. *Throw:* a new TypeErrorNotNarrow.
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 					2. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
 				6. *Return:* a mutable copy of `returntype`.
 		2. *Throw:* a new TypeErrorArgCount.
-	5. *Else If* `base.source` is "Map":
-		1. *If* `call.children.count` is 2 or 3 or 4:
+	5. *Else:*
+		1. *Assert:* `base.source` is "Map".
+		2. *If* `call.children.count` is 2 or 3 or 4:
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `call.children.count` is 2:
@@ -217,7 +234,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 					EntryTypeSchema [type= `antecedenttype`, optional= `false`],
 					EntryTypeSchema [type= `consequenttype`, optional= `false`],
 				].
-				6. *Let* `paramtype` be a List type whose items’ type is `entrytype`.
+				6. *Let* `paramtype` be a List type under the type argument `entrytype`.
 				7. *If* `arg` is set:
 					1. *Let* `is_assignable` be `TypeCheckAssign(arg, paramtype)`.
 					2. *If* `is_assignable` is an abrupt completion:
@@ -227,13 +244,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						2. *Else If* `argtype` is a Tuple type:
 							1. *Let* `items` be the union of all item types in `argtype`.
 							2. *If* *UnwrapAffirm:* `Subtype(items, entrytype)` is `false`:
-								1. *Throw:* a new TypeErrorNotAssignable.
+								1. *Throw:* a new TypeErrorNotNarrow.
 						3. *Else:*
 							1. *Throw:* a new TypeErrorNotAssignable.
-				8. *Return:* a mutable Map type whose antecedents’ type is `antecedenttype`
-					and whose consequents’ type is `consequenttype`.
-		2. *Throw:* a new TypeErrorArgCount.
-	6. *Throw:* a new SyntaxError.
+				8. *Return:* a mutable Map type under an antecedent type argument `antecedenttype`
+					and a consequent type argument `consequenttype`.
+		3. *Throw:* a new TypeErrorArgCount.
 ;
 
 
@@ -308,15 +324,13 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
+	5. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Number)` is `true`:
 		1. *Return:* `Boolean`.
-	6. *Else If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
-		1. *Return:* `Boolean`.
-	7. *Throw:* a new TypeErrorInvalidOperation.
+	6. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=

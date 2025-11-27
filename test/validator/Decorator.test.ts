@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import {
 	Query,
 	type QueryCapture,
@@ -15,8 +16,8 @@ import {
 
 
 
-describe('Decorator', () => {
-	describe('#decorateTS', () => {
+test.suite('Decorator', () => {
+	test.suite('#decorateTS', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
 			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
@@ -148,6 +149,19 @@ describe('Decorator', () => {
 				% (entry_type__named__optional)
 			`]],
 
+			['Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					type T = U.1;
+				}
+				% (property_accessor_type)
+			`]],
+			['Decorate(PropertyAccessorType ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
+				{
+					type T = U.p;
+				}
+				% (property_accessor_type)
+			`]],
+
 			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
 				{
 					type T = (3 | float);
@@ -203,19 +217,6 @@ describe('Decorator', () => {
 				% (type_map_literal)
 			`]],
 
-			['Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				{
-					type T = U.1;
-				}
-				% (property_accessor_type)
-			`]],
-			['Decorate(PropertyAccessorType ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					type T = U.p;
-				}
-				% (property_accessor_type)
-			`]],
-
 			['Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess', [AST.ASTNodeTypeAccess, `
 				{
 					type T = U.p;
@@ -241,7 +242,7 @@ describe('Decorator', () => {
 				}
 				% (type_unary_symbol)
 			`]],
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
+			['todo: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.ASTNodeTypeOperation, `
 				{
 					type T = U!;
 				}
@@ -270,113 +271,151 @@ describe('Decorator', () => {
 			`]],
 
 			/* ## Expressions */
-			['Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+			['Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
 					"""full1""";
 				}
 				% (string_template)
 			`]],
-			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression<+Block>? (TEMPLATE_MIDDLE Expression<+Block>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
 					"""hello {{ "to" }} the {{ "whole" }} great {{ "big" }} world""";
 				}
 				% (string_template)
 			`]],
-			['Decorate(StringTemplate ::= TEMPLATE_HEAD Expression<+Block>? (TEMPLATE_MIDDLE Expression<+Block>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
+			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.ASTNodeTemplate, `
 				{
 					"""hello {{ """to {{ """the {{ "whole" }} great""" }} big""" }} world""";
 				}
 				% (string_template)
 			`]],
 
-			['Decorate(Property ::= Word "=" Expression<+Block>) -> SemanticProperty', [AST.ASTNodeProperty, `
+			['Decorate(Property<Break> ::= Word "=" Expression<+Block><?Break>) -> SemanticProperty', [AST.ASTNodeProperty, `
 				{
 					(a= 42);
 				}
 				% (property)
 			`]],
-			['Decorate(Property ::= Word "=" Expression<+Block>) -> SemanticProperty', [AST.ASTNodeProperty, `
+			['Decorate(Property<Break> ::= Word "=" Expression<+Block><?Break>) -> SemanticProperty', [AST.ASTNodeProperty, `
 				{
 					(_= 42);
 				}
 				% (property)
 			`]],
 
-			['Decorate(Case ::= Expression<+Block> "->" Expression<+Block>) -> SemanticCase', [AST.ASTNodeCase, `
+			['Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase', [AST.ASTNodeCase, `
 				{
 					{42 -> 6.9};
 				}
 				% (case)
 			`]],
 
-			['Decorate(ExpressionGrouped ::= "(" Expression<+Block> ")") -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					v.1;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
+				{
+					v.p;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+				{
+					v.[a + b];
+				}
+				% (property_accessor)
+			`]],
+
+			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					set v.1 = false;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
+				{
+					set v.p = false;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
+				{
+					set v.[a + b] = false;
+				}
+				% (property_accessor)
+			`]],
+
+			['Decorate(ExpressionGrouped<Break> ::= "(" Expression<+Block><?Break> ")") -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					(42 || 6.9);
 				}
 				% (expression_grouped)
 			`]],
 
-			['Decorate(TupleLiteral ::= "(" ")") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral<Break> ::= "(" ")") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
 					();
 				}
 				% (tuple_literal)
 			`]],
-			['Decorate(TupleLiteral ::= "(" Items ")") -> SemanticTuple', [AST.ASTNodeTuple, `
+			['Decorate(TupleLiteral<Break> ::= "(" Items<?Break> ")") -> SemanticTuple', [AST.ASTNodeTuple, `
 				{
 					(42, 6.9);
 				}
 				% (tuple_literal)
 			`]],
 
-			['Decorate(RecordLiteral ::= "(" ","? Property# ","? ")") -> SemanticRecord', [AST.ASTNodeRecord, `
+			['Decorate(RecordLiteral<Break> ::= "(" ","? Property<?Break># ","? ")") -> SemanticRecord', [AST.ASTNodeRecord, `
 				{
 					(a= 42, b= 6.9);
 				}
 				% (record_literal)
 			`]],
 
-			['Decorate(ListLiteral ::= "[" "]") -> SemanticSet', [AST.ASTNodeList, `
+			['Decorate(ListLiteral<Break> ::= "[" "]") -> SemanticSet', [AST.ASTNodeList, `
 				{
 					[];
 				}
 				% (list_literal)
 			`]],
-			['Decorate(ListLiteral ::= "[" ","? Expression<+Block># ","? "]") -> SemanticSet', [AST.ASTNodeList, `
+			['Decorate(ListLiteral<Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]") -> SemanticList', [AST.ASTNodeList, `
 				{
 					[42, 6.9];
 				}
 				% (list_literal)
 			`]],
 
-			['Decorate(DictLiteral ::= "[" ","? Property# ","? "]") -> SemanticRecord', [AST.ASTNodeDict, `
+			['Decorate(DictLiteral<Break> ::= "[" ","? Property<?Break># ","? "]") -> SemanticRecord', [AST.ASTNodeDict, `
 				{
 					[a= 42, b= 6.9];
 				}
 				% (dict_literal)
 			`]],
 
-			['Decorate(SetLiteral ::= "{" "}") -> SemanticSet', [AST.ASTNodeSet, `
+			['Decorate(SetLiteral<Break> ::= "{" "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{
 					{};
 				}
 				% (set_literal)
 			`]],
-			['Decorate(SetLiteral ::= "{" ","? Expression<+Block># ","? "}") -> SemanticSet', [AST.ASTNodeSet, `
+			['Decorate(SetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}") -> SemanticSet', [AST.ASTNodeSet, `
 				{
 					{42, 6.9};
 				}
 				% (set_literal)
 			`]],
 
-			['Decorate(MapLiteral ::= "{" ","? Case# ","? "}") -> SemanticMap', [AST.ASTNodeMap, `
+			['Decorate(MapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticMap', [AST.ASTNodeMap, `
 				{
 					{42 -> 6.9, "hello" -> true};
 				}
 				% (map_literal)
 			`]],
 
-			['Decorate(ExpressionUnit<Block> ::= <Block+>Block) -> SemanticExpressionBlock', [AST.ASTNodeExpressionBlock, `
+			['Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBlock', [AST.ASTNodeExpressionBlock, `
 				{
 					type T = U;
 					let a: T = b;
@@ -390,225 +429,174 @@ describe('Decorator', () => {
 				% (expression_block)
 			`]],
 
-			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				{
-					v.1;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					v.p;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(ExpressionCompound<Block> > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
-				{
-					v.[a + b];
-				}
-				% (property_accessor)
-			`]],
-
-			['Decorate(Assignee > PropertyAccessor ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
-				{
-					set v.1 = false;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(Assignee > PropertyAccessor ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
-				{
-					set v.p = false;
-				}
-				% (property_accessor)
-			`]],
-			['Decorate(Assignee > PropertyAccessor ::= "[" Expression<+Block> "]") -> SemanticExpression', [AST.ASTNodeExpression, `
-				{
-					set v.[a + b] = false;
-				}
-				% (property_accessor)
-			`]],
-
-			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v.p;
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "?." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "?." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v?.p;
 				}
 				% (expression_compound)
 			`]],
-			['skip: Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "!." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
+			['todo: Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "!." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
 				{
 					v!.p;
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "." FunctionArguments) -> SemanticCall', [AST.ASTNodeCall, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." FunctionArguments<?Break>) -> SemanticCall', [AST.ASTNodeCall, `
 				{
 					List.();
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "." GenericArguments FunctionArguments) -> SemanticCall', [AST.ASTNodeCall, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." GenericArguments FunctionArguments<?Break>) -> SemanticCall', [AST.ASTNodeCall, `
 				{
 					List.<T>();
 				}
 				% (expression_compound)
 			`]],
 
-			['Decorate(Assignee ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
-				{
-					set v = 42;
-				}
-				% (assignee)
-			`]],
-			['Decorate(Assignee ::= ExpressionCompound<+Block> "." PropertyAccessor) -> SemanticAccess', [AST.ASTNodeAccess, `
-				{
-					set v.1 = 42;
-				}
-				% (assignee)
-			`]],
-
-			['Decorate(ExpressionUnarySymbol<Block> ::= "!" ExpressionUnarySymbol<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnarySymbol<Block, Break> ::= "!" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					!v;
 				}
 				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Block> ::= "?" ExpressionUnarySymbol<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnarySymbol<Block, Break> ::= "?" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					?v;
 				}
 				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Block> ::= "+" ExpressionUnarySymbol<?Block>) -> SemanticExpression', [AST.ASTNodeExpression, `
+			['Decorate(ExpressionUnarySymbol<Block, Break> ::= "+" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression', [AST.ASTNodeExpression, `
 				{
 					+v;
 				}
 				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Block> ::= "-" ExpressionUnarySymbol<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					-v;
 				}
 				% (expression_unary_symbol)
 			`]],
 
-			['Decorate(ExpressionUnaryKeyword<Block> ::= "int" ExpressionUnaryKeyword<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					int v;
 				}
 				% (expression_unary_keyword)
 			`]],
-			['Decorate(ExpressionUnaryKeyword<Block> ::= "float" ExpressionUnaryKeyword<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					float v;
 				}
 				% (expression_unary_keyword)
 			`]],
 
-			['Decorate(ExpressionCast<Block> ::= ExpressionCast<?Block> "as" ExpressionUnaryKeyword<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a as Klass;
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block> ::= ExpressionCast<?Block> "as?" ExpressionUnaryKeyword<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a as? Klass;
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block> ::= ExpressionCast<?Block> "as!" ExpressionUnaryKeyword<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a as! Klass;
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block> ::= ExpressionCast<?Block> "as" "<" Type ">") -> SemanticOperation', [AST.ASTNodeClaim, `
+			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticClaim', [AST.ASTNodeClaim, `
 				{
 					a as <T>;
 				}
 				% (expression_cast)
 			`]],
 
-			['Decorate(ExpressionExponential<Block> ::= ExpressionCast<?Block> "^" ExpressionExponential<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break> "^" ExpressionExponential<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a ^ b;
 				}
 				% (expression_exponential)
 			`]],
 
-			['Decorate(ExpressionMultiplicative<Block> ::= ExpressionMultiplicative<?Block> "*" ExpressionExponential<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "*" ExpressionExponential<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a * b;
 				}
 				% (expression_multiplicative)
 			`]],
-			['Decorate(ExpressionMultiplicative<Block> ::= ExpressionMultiplicative<?Block> "/" ExpressionExponential<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "/" ExpressionExponential<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a / b;
 				}
 				% (expression_multiplicative)
 			`]],
 
-			['Decorate(ExpressionAdditive<Block> ::= ExpressionAdditive<?Block> "+" ExpressionMultiplicative<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "+" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a + b;
 				}
 				% (expression_additive)
 			`]],
-			['Decorate(ExpressionAdditive<Block> ::= ExpressionAdditive<?Block> "-" ExpressionMultiplicative<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a - b;
 				}
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'skip: ' : '' }Decorate(ExpressionComparative<Block> ::= ExpressionComparative<?Block> "${ op }" ExpressionAdditive<?Block>) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'todo: ' : '' }Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${ op }" ExpressionAdditive<?Block><?Break>) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}
 				% (expression_comparative)
 			`]] as const),
 
-			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality<Block> ::= ExpressionEquality<?Block> "${ op }" ExpressionComparative<?Block>) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "${ op }" ExpressionComparative<?Block><?Break>) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}
 				% (expression_equality)
 			`]] as const),
 
-			['Decorate(ExpressionConjunctive<Block> ::= ExpressionConjunctive<?Block> "&&" ExpressionEquality<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "&&" ExpressionEquality<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a && b;
 				}
 				% (expression_conjunctive)
 			`]],
-			['Decorate(ExpressionConjunctive<Block> ::= ExpressionConjunctive<?Block> "!&" ExpressionEquality<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "!&" ExpressionEquality<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a !& b;
 				}
 				% (expression_conjunctive)
 			`]],
 
-			['Decorate(ExpressionDisjunctive<Block> ::= ExpressionDisjunctive<?Block> "||" ExpressionConjunctive<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionDisjunctive<Block> ::= ExpressionDisjunctive<?Block><?Break> "||" ExpressionConjunctive<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a || b;
 				}
 				% (expression_disjunctive)
 			`]],
-			['Decorate(ExpressionDisjunctive<Block> ::= ExpressionDisjunctive<?Block> "!|" ExpressionConjunctive<?Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionDisjunctive<Block> ::= ExpressionDisjunctive<?Block><?Break> "!|" ExpressionConjunctive<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					a !| b;
 				}
 				% (expression_disjunctive)
 			`]],
 
-			['Decorate(ExpressionConditional ::= "if" Expression__0<+Block> "then" Expression__1<-Block> "else" Expression__2<-Block>) -> SemanticOperation', [AST.ASTNodeOperation, `
+			['Decorate(ExpressionConditional<Break> ::= "if" Expression__0<+Block><?Break> "then" Expression__1<-Block><?Break> "else" Expression__2<-Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					if a then b else c;
 				}
@@ -616,39 +604,90 @@ describe('Decorator', () => {
 			`]],
 
 			/* ## Statements */
-			['Decorate(StatementExpression ::= Expression<+Block> ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
+			['Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
 				}
 				% (statement_expression)
 			`]],
 
-			['Decorate(StatementConditional<-Unless> ::= "if" Expression<+Block> "then" Block ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					if condition then { consequent; };
 				}
 				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<-Unless> ::= "if" Expression<+Block> "then" Block__0 "else" Block__1 ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block__0<?Break> "else" Block__1<?Break> ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					if condition then { consequent; } else { alternative; };
 				}
 				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<-Unless> ::= "if" Expression<+Block> "then" Block "else" StatementConditional<-Unless>) -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> "else" StatementConditional<-Unless><?Break>) -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					if condition1 then { consequent1; } else if condition2 then { consequent2; } else { alternative; };
 				}
 				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<+Unless> ::= "unless" Expression<+Block> "then" Block ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "unless" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					unless condition then { alternative; };
 				}
 				% (statement_conditional__unless)
 			`]],
 
-			['Decorate(Block ::= "{" Statement+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
+			['Decorate(StatementLoop ::= "while" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					while condition do { loop; };
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "do" Block<+Break> "while" Expression<+Block><-Break> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					do { loop; } while condition;
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "until" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					until condition do { loop; };
+				}
+				% (statement_loop)
+			`]],
+			['Decorate(StatementLoop ::= "do" Block<+Break> "until" Expression<+Block><-Break> ";") -> SemanticStatementLoop', [AST.ASTNodeStatementLoop, `
+				{
+					do { loop; } until condition;
+				}
+				% (statement_loop)
+			`]],
+
+			['Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+				{
+					for _: T of iterable do { iterate; };
+				}
+				% (statement_iteration)
+			`]],
+			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+				{
+					for it: T of iterable do { iterate; };
+				}
+				% (statement_iteration)
+			`]],
+
+			['Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
+				{
+					while condition do { break; };
+				}
+				% (statement_break)
+			`]],
+			['Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
+				{
+					while condition do { continue; };
+				}
+				% (statement_break)
+			`]],
+
+			['Decorate(Block<Break> ::= "{" Statement<?Break>+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
 				{
 					type T = U;
 					let a: T = b;
@@ -658,8 +697,24 @@ describe('Decorator', () => {
 					{
 						b;
 					};
+					if condition then { consequent; };
+					while condition do { loop; };
+					for it: T of iterable do { iterate; };
 				}
 				% (block)
+			`]],
+
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
+				{
+					set v = 42;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					set v.1 = 42;
+				}
+				% (assignee)
 			`]],
 
 			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
@@ -675,69 +730,100 @@ describe('Decorator', () => {
 				% (declaration_type)
 			`]],
 
-			['Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression<+Block> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let _: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression<+Block> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "var" "_" ":" Type "=" Expression<+Block> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let var _: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression<+Block> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let var a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let var _?: T;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let var a?: T;
 				}
 				% (declaration_variable)
 			`]],
 
-			['Decorate(DeclarationClaim ::= "claim" Assignee ":" Type ";") -> DeclarationClaim', [AST.ASTNodeDeclarationClaim, `
+			['Decorate(DeclarationClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticDeclarationClaim', [AST.ASTNodeDeclarationClaim, `
 				{
 					claim a: T;
 				}
 				% (declaration_claim)
 			`]],
 
-			['Decorate(DeclarationReassignment ::= "set" Assignee "=" Expression<+Block> ";") -> DeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
+			['Decorate(DeclarationReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticDeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
 				{
 					set a = b;
 				}
 				% (declaration_reassignment)
 			`]],
-
-		]).forEach(([klass, text], description) => (description.startsWith('only:') ? specify.only : description.startsWith('skip:') ? specify.skip : specify)(description, () => {
-			const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-			return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
-		}));
-		['is', 'isnt'].forEach((op) => describe(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
-			it(`operator \`${ op }\` is not yet supported.`, () => {
-				assert.throws(() => new Decorator().decorateTS(captureParseNode(`
-					{
-						a ${ op } b;
-					}
-				`, '(expression_comparative)')), /not yet supported/);
+		]).forEach(([klass, text], description) => {
+			test.test(description, {
+				skip: description.startsWith('skip:'),
+				todo: description.startsWith('todo:'),
+				only: description.startsWith('only:'),
+			}, () => {
+				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
+				return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 			});
-		}));
+		});
+		['!'].forEach((op) => {
+			test.suite(`Decorate(TypeUnarySymbol ::= TypeUnarySymbol "${ op }") -> SemanticTypeOperation`, () => {
+				test.test(`operator \`${ op }\` is not yet supported.`, () => {
+					assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+						{
+							type T = U${ op };
+						}
+					`, '(type_unary_symbol)')), /not yet supported/);
+				});
+			});
+		});
+		['!.'].forEach((op) => {
+			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
+				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccessor) -> SemanticAccess`, () => {
+					test.test(`operator \`${ op }\` is not yet supported.`, () => {
+						assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+							{
+								v${ op }${ accessor };
+							}
+						`, '(expression_compound)')), /not yet supported/);
+					});
+				});
+			});
+		});
+		['is', 'isnt'].forEach((op) => {
+			test.suite(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
+				test.test(`operator \`${ op }\` is not yet supported.`, () => {
+					assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+						{
+							a ${ op } b;
+						}
+					`, '(expression_comparative)')), /not yet supported/);
+				});
+			});
+		});
 	});
 });

@@ -8,6 +8,7 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -32,7 +33,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'statement_conditional', ['unless']>,
+		start_node: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>,
 		private readonly unless:       boolean,
 		public  readonly condition:    ASTNodeExpression,
 		public  readonly consequent:   ASTNodeBlock,
@@ -41,23 +42,39 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
 	}
 
+	@memoizeGetter
 	@if_constant_folding
 	public override get isFoldable(): boolean {
-		return !!this.condition.fold() && this.consequent.isFoldable && (!this.alternative || !!this.alternative.isFoldable);
+		const condition_type:   TYPE.Type = this.condition.type();
+		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
+		const condition_falsy:  boolean   = condition_type.isSubtypeOf(TYPE.FALSE);
+
+		return !!this.condition.fold() && (
+			/*
+				- `if true…`  or `unless false…`, and consequent  is foldable                    -> sufficient
+				- `if false…` or `unless true…`,  and alternative is foldable (or doesn’t exist) -> sufficient
+			*/
+			(!this.unless && condition_truthy || this.unless && condition_falsy)  && this.consequent.isFoldable ||
+			(!this.unless && condition_falsy  || this.unless && condition_truthy) && (!this.alternative || !!this.alternative.isFoldable)
+		);
+	}
+
+	@memoizeGetter
+	public override get hasBottomType(): boolean {
+		return this.condition.type().isBottomType || this.consequent.hasBottomType || (this.alternative?.hasBottomType ?? false);
 	}
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		const condition_type: TYPE.Type = this.condition.type();
-		if (!condition_type.isSubtypeOf(TYPE.BOOL)) {
-			throw new TypeErrorNotAssignable(condition_type, TYPE.BOOL, this.condition);
+		if (!this.condition.type().isSubtypeOf(TYPE.BOOL)) {
+			throw new TypeErrorNotAssignable(this.condition, TYPE.BOOL);
 		}
 	}
 
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		let   condition_build:   binaryen.ExpressionRef = this.condition.build();
+		const condition_build:   binaryen.ExpressionRef = this.condition.build();
 		const consequent_build:  binaryen.ExpressionRef = this.consequent.build();
 		const alternative_build: binaryen.ExpressionRef = this.alternative?.build() ?? this.builder.module.nop();
 
@@ -67,17 +84,17 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 		if (!this.unless && condition_truthy || this.unless && condition_falsy) {
 			// `if true…` or `unless false…` -> just return the consequent
-			return drop_then(this.builder.module, [condition_build], consequent_build, binaryen.none);
+			return drop_then(this.builder.module, [condition_build], consequent_build);
 		} else if (!this.unless && condition_falsy || this.unless && condition_truthy) {
 			// `if false…` or `unless true…` -> just return the alternative
-			return drop_then(this.builder.module, [condition_build], alternative_build, binaryen.none);
+			return drop_then(this.builder.module, [condition_build], alternative_build);
 		}
 
-		if (this.unless) {
-			condition_build = this.builder.module.call('vnot', [condition_build], binaryen.v128);
-		}
 		return this.builder.module.if(
-			new BinVect(this.builder.module, condition_build).isSpecial(true),
+			new BinVect(
+				this.builder.module,
+				this.unless ? this.builder.module.call('vnot', [condition_build], binaryen.v128) : condition_build,
+			).isSpecial(true),
 			consequent_build,
 			alternative_build,
 		);
