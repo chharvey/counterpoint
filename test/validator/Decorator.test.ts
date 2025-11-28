@@ -637,6 +637,20 @@ test.suite('Decorator', () => {
 				% (statement_expression)
 			`]],
 
+			['Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticDeclarationClaim', [AST.ASTNodeDeclarationClaim, `
+				{
+					claim a: T;
+				}
+				% (statement_claim)
+			`]],
+
+			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticDeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
+				{
+					set a = b;
+				}
+				% (statement_reassignment)
+			`]],
+
 			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
 				{
 					if condition then { consequent; };
@@ -778,20 +792,6 @@ test.suite('Decorator', () => {
 					let var a?: T;
 				}
 				% (declaration_variable)
-			`]],
-
-			['Decorate(DeclarationClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticDeclarationClaim', [AST.ASTNodeDeclarationClaim, `
-				{
-					claim a: T;
-				}
-				% (declaration_claim)
-			`]],
-
-			['Decorate(DeclarationReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticDeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
-				{
-					set a = b;
-				}
-				% (declaration_reassignment)
 			`]],
 		]).forEach(([klass, text], description) => {
 			test.test(description, {

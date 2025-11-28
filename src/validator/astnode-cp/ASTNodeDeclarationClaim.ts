@@ -33,7 +33,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'declaration_claim', ['break']>,
+		start_node: SyntaxNodeFamily<'statement_claim', ['break']>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		private readonly claimed_type: ASTNodeType,
 	) {

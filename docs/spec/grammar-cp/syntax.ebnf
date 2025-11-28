@@ -213,6 +213,9 @@ Assignee<Break> ::=
 StatementExpression<Break>
 	::= Expression<+Block><?Break>? ";";
 
+StatementClaim        <Break> ::= "claim" Assignee<?Break> ":" Type                       ";";
+StatementReassignment <Break> ::= "set"   Assignee<?Break> "=" Expression<+Block><?Break> ";";
+
 StatementConditional<Unless, Break> ::=
 	& <Unless->"if" <Unless+>"unless" Expression<+Block><?Break>
 	& "then" Block<?Break>
@@ -233,9 +236,11 @@ StatementBreak
 	::= ("break" | "continue") ";";
 
 Statement<Break> ::=
-	| Declaration<?Break>
-	| StatementExpression<?Break>
-	| StatementConditional<∓Unless><?Break>
+	| Declaration                     <?Break>
+	| StatementExpression             <?Break>
+	| StatementClaim                  <?Break>
+	| StatementReassignment           <?Break>
+	| StatementConditional   <∓Unless><?Break>
 	| StatementLoop
 	| StatementIteration
 	| <Break+>StatementBreak
@@ -256,14 +261,9 @@ DeclarationVariable<Break> ::=
 	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                                ";"
 ;
 
-DeclarationClaim        <Break> ::= "claim" Assignee<?Break> ":" Type                       ";";
-DeclarationReassignment <Break> ::= "set"   Assignee<?Break> "=" Expression<+Block><?Break> ";";
-
 Declaration<Break> ::=
 	| DeclarationType
-	| DeclarationVariable     <?Break>
-	| DeclarationClaim        <?Break>
-	| DeclarationReassignment <?Break>
+	| DeclarationVariable<?Break>
 ;
 
 

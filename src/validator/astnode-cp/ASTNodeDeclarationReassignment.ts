@@ -36,7 +36,7 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'declaration_reassignment', ['break']>,
+		start_node: SyntaxNodeFamily<'statement_reassignment', ['break']>,
 		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		public readonly assigned: ASTNodeExpression,
 	) {
