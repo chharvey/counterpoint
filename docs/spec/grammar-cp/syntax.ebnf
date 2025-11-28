@@ -203,6 +203,13 @@ Expression<Block, Break> ::=
 
 
 
+Assignee<Break> ::=
+	| IDENTIFIER
+	| ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>
+;
+
+
+
 StatementExpression<Break>
 	::= Expression<+Block><?Break>? ";";
 
@@ -226,25 +233,18 @@ StatementBreak
 	::= ("break" | "continue") ";";
 
 Statement<Break> ::=
+	| Declaration<?Break>
 	| StatementExpression<?Break>
 	| StatementConditional<∓Unless><?Break>
 	| StatementLoop
 	| StatementIteration
 	| <Break+>StatementBreak
-	| Declaration<?Break>
 ;
 
 
 
 Block<Break>
 	::= "{" Statement<?Break>+ "}";
-
-
-
-Assignee<Break> ::=
-	| IDENTIFIER
-	| ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>
-;
 
 
 

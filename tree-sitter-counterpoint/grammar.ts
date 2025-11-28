@@ -480,6 +480,11 @@ module.exports = grammar({
 
 
 		/* ## Statements */
+		...parameterize('assignee', ({break: brk}) => $ => choice(
+			$.identifier,
+			seq(call($, '_expression', 'block', {break: brk}), '.', call($, 'property_accessor', {break: brk})),
+		), 'break'),
+
 		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
 
 		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
@@ -502,20 +507,15 @@ module.exports = grammar({
 		statement_break: _$ => seq(choice('break', 'continue'), ';'),
 
 		...parameterize('_statement', ({break: brk}) => $ => choice(
+			call($, '_declaration', {break: brk}),
 			call($, 'statement_expression', {break: brk}),
 			call($, 'statement_conditional', ['', 'unless'], {break: brk}),
 			$.statement_loop,
 			$.statement_iteration,
 			...iff(brk, $.statement_break),
-			call($, '_declaration', {break: brk}),
 		), 'break'),
 
 		...parameterize('block', ({break: brk}) => $ => seq('{', repeat1(call($, '_statement', {break: brk})), '}'), 'break'),
-
-		...parameterize('assignee', ({break: brk}) => $ => choice(
-			$.identifier,
-			seq(call($, '_expression', 'block', {break: brk}), '.', call($, 'property_accessor', {break: brk})),
-		), 'break'),
 
 		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 

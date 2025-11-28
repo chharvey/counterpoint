@@ -604,6 +604,32 @@ test.suite('Decorator', () => {
 			`]],
 
 			/* ## Statements */
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
+				{
+					claim v: int;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
+				{
+					set v = 42;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					claim v.1: int;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					set v.1 = 42;
+				}
+				% (assignee)
+			`]],
+
+
 			['Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
@@ -702,19 +728,6 @@ test.suite('Decorator', () => {
 					for it: T of iterable do { iterate; };
 				}
 				% (block)
-			`]],
-
-			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
-				{
-					set v = 42;
-				}
-				% (assignee)
-			`]],
-			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
-				{
-					set v.1 = 42;
-				}
-				% (assignee)
 			`]],
 
 			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `

@@ -1272,6 +1272,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 
 		/* ## Statements */
+		// Assignee
+		// tested in #Declaration{Claim,Reassignment}
+
 		StatementExpression: [
 			xjs.String.dedent`
 				{
@@ -1384,7 +1387,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// Statement
-		// consists of #{Statement{Expression,Conditional,Loop,Iteration,Break},Declaration}
+		// consists of #{Declaration,Statement{Expression,Conditional,Loop,Iteration,Break}}
 
 		Block: [
 			xjs.String.dedent`
@@ -1443,9 +1446,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('statement_iteration',   s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
-
-		// Assignee
-		// tested in #DeclarationReassignment
 
 		DeclarationType: [
 			xjs.String.dedent`

@@ -640,6 +640,16 @@ Decorate(Expression<Block, Break> ::= ExpressionConditional) -> SemanticExpressi
 
 
 
+Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable
+	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
+Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
+	:= (SemanticAccess[kind=NORMAL]
+		Decorate(ExpressionCompound<+Block><?Break>)
+		Decorate(PropertyAccessor<?Break>)
+	);
+
+
+
 Decorate(StatementExpression<Break> ::= ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression);
 Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression
@@ -716,6 +726,8 @@ Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
 Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak
 	:= (SemanticStatementBreak[continue=true]);
 
+Decorate(Statement<Break> ::= Declaration<?Break>) -> SemanticDeclaration
+	:= Decorate(Declaration<?Break>);
 Decorate(Statement<Break> ::= StatementExpression<?Break>) -> SemanticStatementExpression
 	:= Decorate(StatementExpression<?Break>);
 Decorate(Statement<Break> ::= StatementConditional<∓Unless><?Break>) -> SemanticStatementConditional
@@ -726,24 +738,12 @@ Decorate(Statement<Break> ::= StatementIteration) -> SemanticStatementIteration
 	:= Decorate(StatementIteration);
 Decorate(Statement<Break> ::= StatementBreak) -> SemanticStatementBreak
 	:= Decorate(StatementBreak);
-Decorate(Statement<Break> ::= Declaration<?Break>) -> SemanticDeclaration
-	:= Decorate(Declaration<?Break>);
 
 
 
 Decorate(Block<Break> ::= "{" Statement<?Break>+ "}") -> SemanticBlock
 	:= (SemanticBlock
 		...ParseList(Statement<?Break>, SemanticStatement)
-	);
-
-
-
-Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable
-	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
-Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=NORMAL]
-		Decorate(ExpressionCompound<+Block><?Break>)
-		Decorate(PropertyAccessor<?Break>)
 	);
 
 

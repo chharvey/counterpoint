@@ -137,14 +137,14 @@ export class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                       AST.ASTNodeOperationUnary | AST.ASTNodeOperationBinaryLogical;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):          AST.ASTNodeOperationTernary;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'expression'>):                              AST.ASTNodeExpression;
-	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_expression', ['break']>):            AST.ASTNodeStatementExpression;
+	public decorateTS(syntaxnode: SyntaxNodeFamily<'assignee',              ['break']>):           AST.ASTNodeVariable | AST.ASTNodeAccess;
+	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_expression',  ['break']>):           AST.ASTNodeStatementExpression;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>): AST.ASTNodeStatementConditional;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_loop'>):                               AST.ASTNodeStatementLoop;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_iteration'>):                          AST.ASTNodeStatementIteration;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_break'>):                              AST.ASTNodeStatementBreak;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'statement'>):                               AST.ASTNodeStatement;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'block', ['break']>):                           AST.ASTNodeBlock;
-	public decorateTS(syntaxnode: SyntaxNodeFamily<'assignee', ['break']>):                        AST.ASTNodeVariable | AST.ASTNodeAccess;
 	public decorateTS(syntaxnode: SyntaxNodeType<'declaration_type'>):                             AST.ASTNodeDeclarationType;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'declaration_variable',     ['break']>):        AST.ASTNodeDeclarationVariable;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'declaration_claim',        ['break']>):        AST.ASTNodeDeclarationClaim;
@@ -164,7 +164,7 @@ export class Decorator {
 			/* # TERMINALS */
 			['identifier', (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|declaration_(variable|reassignment(__break)?)|statement_expression)$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
 			)],
 
@@ -175,7 +175,7 @@ export class Decorator {
 
 			['primitive_literal', (node) => (
 				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|declaration_(variable|reassignment(__break)?)|statement_expression)$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
 			)],
 
@@ -617,6 +617,16 @@ export class Decorator {
 			)],
 
 			/* ## Statements */
+			[/^assignee(__break)?$/, (node) => (node.children.length === 1
+				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
+				: new AST.ASTNodeAccess(
+					node as SyntaxNodeFamily<'assignee', ['break']>,
+					Operator.DOT,
+					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.children[2] as SyntaxNodeFamily<'property_accessor', ['break']>),
+				)
+			)],
+
 			[/^statement_expression(__break)?$/, (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeFamily<'statement_expression', ['break']>,
 				(node.children.length === 2) ? this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
@@ -675,16 +685,6 @@ export class Decorator {
 			)],
 
 			[/^block(__break)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break']>)],
-
-			[/^assignee(__break)?$/, (node) => (node.children.length === 1
-				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
-				: new AST.ASTNodeAccess(
-					node as SyntaxNodeFamily<'assignee', ['break']>,
-					Operator.DOT,
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateTS(node.children[2] as SyntaxNodeFamily<'property_accessor', ['break']>),
-				)
-			)],
 
 			['declaration_type', (node) => new AST.ASTNodeDeclarationType(
 				node as SyntaxNodeType<'declaration_type'>,
