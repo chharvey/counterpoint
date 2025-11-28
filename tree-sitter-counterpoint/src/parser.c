@@ -48552,7 +48552,7 @@ TS_PUBLIC const TSLanguage *tree_sitter_counterpoint(void) {
     .max_reserved_word_set_size = 32,
     .metadata = {
       .major_version = 3,
-      .minor_version = 4,
+      .minor_version = 5,
       .patch_version = 0,
     },
   };
