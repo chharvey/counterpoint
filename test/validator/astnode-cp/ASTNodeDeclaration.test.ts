@@ -635,7 +635,7 @@ test.suite('ASTNodeDeclaration', () => {
 	});
 
 
-	test.suite('ASTNodeDeclarationClaim', () => {
+	test.suite('ASTNodeStatementClaim', () => {
 		test.suite('#typeCheck', () => {
 			test.suite('for variables.', () => {
 				test.test('allows claimed type to be a subtype of assignee type.', () => {
@@ -832,7 +832,7 @@ test.suite('ASTNodeDeclaration', () => {
 
 
 
-	test.suite('ASTNodeDeclarationReassignment', () => {
+	test.suite('ASTNodeStatementReassignment', () => {
 		test.suite('#varCheck', () => {
 			test.test('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`{
@@ -985,7 +985,7 @@ test.suite('ASTNodeDeclaration', () => {
 				}`);
 				return assertEqualBins(
 					stmts[1].build(),
-					mod.local.set(0, (stmts[1] as AST.ASTNodeDeclarationReassignment).assigned.build()),
+					mod.local.set(0, (stmts[1] as AST.ASTNodeStatementReassignment).assigned.build()),
 				);
 			});
 			test.test('allows switching between union members.', () => {
@@ -999,7 +999,7 @@ test.suite('ASTNodeDeclaration', () => {
 				}`);
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
-					stmts.slice(2).map((stmt) => mod.local.set(0, (stmt as AST.ASTNodeDeclarationReassignment).assigned.build())),
+					stmts.slice(2).map((stmt) => mod.local.set(0, (stmt as AST.ASTNodeStatementReassignment).assigned.build())),
 				);
 			});
 		});

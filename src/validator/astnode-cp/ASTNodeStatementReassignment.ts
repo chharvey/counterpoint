@@ -28,10 +28,10 @@ import {
 
 
 
-export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationReassignment {
+export class ASTNodeStatementReassignment extends ASTNodeStatement {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeDeclarationReassignment);
+		assert_instanceof(statement, ASTNodeStatementReassignment);
 		return statement;
 	}
 

@@ -637,14 +637,14 @@ test.suite('Decorator', () => {
 				% (statement_expression)
 			`]],
 
-			['Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticDeclarationClaim', [AST.ASTNodeDeclarationClaim, `
+			['Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticStatementClaim', [AST.ASTNodeStatementClaim, `
 				{
 					claim a: T;
 				}
 				% (statement_claim)
 			`]],
 
-			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticDeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
+			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.ASTNodeStatementReassignment, `
 				{
 					set a = b;
 				}

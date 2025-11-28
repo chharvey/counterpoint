@@ -25,10 +25,10 @@ import {
 
 
 
-export class ASTNodeDeclarationClaim extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationClaim {
+export class ASTNodeStatementClaim extends ASTNodeStatement {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementClaim {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeDeclarationClaim);
+		assert_instanceof(statement, ASTNodeStatementClaim);
 		return statement;
 	}
 
@@ -79,7 +79,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 				}
 				default: {
 					assert_instanceof(accessor, ASTNodeExpression);
-					throw new Error('`ASTNodeDeclarationClaim[assignee: ASTNodeAccess[accessor: ASTNodeExpression]]#typeCheck` not yet supported.');
+					throw new Error('`ASTNodeStatementClaim[assignee: ASTNodeAccess[accessor: ASTNodeExpression]]#typeCheck` not yet supported.');
 				}
 			}
 		}
@@ -87,6 +87,6 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeDeclarationClaim#isFoldable` to be true.');
+		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
 	}
 }

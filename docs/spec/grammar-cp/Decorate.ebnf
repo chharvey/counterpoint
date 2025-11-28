@@ -657,16 +657,16 @@ Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> Seman
 
 
 
-Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticDeclarationClaim
-	:= (SemanticDeclarationClaim
+Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticStatementClaim
+	:= (SemanticStatementClaim
 		Decorate(Assignee<?Break>)
 		Decorate(Type)
 	);
 
 
 
-Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticDeclarationReassignment
-	:= (SemanticDeclarationReassignment
+Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment
+	:= (SemanticStatementReassignment
 		Decorate(Assignee<?Break>)
 		Decorate(Expression<+Block><?Break>)
 	);
@@ -748,9 +748,9 @@ Decorate(Statement<Break> ::= Declaration<?Break>) -> SemanticDeclaration
 	:= Decorate(Declaration<?Break>);
 Decorate(Statement<Break> ::= StatementExpression<?Break>) -> SemanticStatementExpression
 	:= Decorate(StatementExpression<?Break>);
-Decorate(Statement<Break> ::= StatementClaim<?Break>) -> SemanticDeclarationClaim
+Decorate(Statement<Break> ::= StatementClaim<?Break>) -> SemanticStatementClaim
 	:= Decorate(StatementClaim<?Break>);
-Decorate(Statement<Break> ::= StatementReassignment<?Break>) -> SemanticDeclarationReassignment
+Decorate(Statement<Break> ::= StatementReassignment<?Break>) -> SemanticStatementReassignment
 	:= Decorate(StatementReassignment<?Break>);
 Decorate(Statement<Break> ::= StatementConditional<∓Unless><?Break>) -> SemanticStatementConditional
 	:= Decorate(StatementConditional<∓Unless><?Break>);

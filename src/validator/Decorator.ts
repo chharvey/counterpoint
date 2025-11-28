@@ -139,8 +139,8 @@ export class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'expression'>):                               AST.ASTNodeExpression;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.ASTNodeVariable | AST.ASTNodeAccess;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_expression',   ['break']>):           AST.ASTNodeStatementExpression;
-	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_claim',        ['break']>):           AST.ASTNodeDeclarationClaim;
-	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_reassignment', ['break']>):           AST.ASTNodeDeclarationReassignment;
+	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_claim',        ['break']>):           AST.ASTNodeStatementClaim;
+	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_reassignment', ['break']>):           AST.ASTNodeStatementReassignment;
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'statement_conditional',  ['unless', 'break']>): AST.ASTNodeStatementConditional;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_loop'>):                                AST.ASTNodeStatementLoop;
 	public decorateTS(syntaxnode: SyntaxNodeType<'statement_iteration'>):                           AST.ASTNodeStatementIteration;
@@ -632,13 +632,13 @@ export class Decorator {
 				(node.children.length === 2) ? this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>) : void 0,
 			)],
 
-			[/^statement_claim(__break)?$/, (node) => new AST.ASTNodeDeclarationClaim(
+			[/^statement_claim(__break)?$/, (node) => new AST.ASTNodeStatementClaim(
 				node as SyntaxNodeFamily<'statement_claim', ['break']>,
 				this.decorateTS(node.children[1] as SyntaxNodeFamily<'assignee', ['break']>),
 				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
-			[/^statement_reassignment(__break)?$/, (node) => new AST.ASTNodeDeclarationReassignment(
+			[/^statement_reassignment(__break)?$/, (node) => new AST.ASTNodeStatementReassignment(
 				node as SyntaxNodeFamily<'statement_reassignment', ['break']>,
 				this.decorateTS(node.children[1] as SyntaxNodeFamily<'assignee', ['break']>),
 				this.decorateExprNode(node.children[3] as SyntaxNodeSupertype<'expression'>),

@@ -45,6 +45,24 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 
+Sequence<Instruction> Build(SemanticStatementClaim decl) :=
+	1. *Return:* [].
+;
+
+
+
+Sequence<Instruction> Build(SemanticStatementReassignment assign) :=
+	1. *Assert:* `assign.children.count` is 2.
+	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
+	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
+	4. *Return:* [
+		...instrs,
+		"SET the global variable `name`.",
+	].
+;
+
+
+
 Sequence<Instruction> Build(SemanticStatementConditional stmt) :=
 	1. *Assert:* `stmt.children.count` is greater than 1.
 	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(stmt.children.0)`.
@@ -126,6 +144,8 @@ Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 	1. *Return:* [].
 ;
 
+
+
 Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
 	2. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
@@ -152,20 +172,6 @@ Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 			...instrs,
 			"DECL the global variable `name`.",
 		].
-;
-
-Sequence<Instruction> Build(SemanticDeclarationClaim decl) :=
-	1. *Return:* [].
-;
-
-Sequence<Instruction> Build(SemanticDeclarationReassignment assign) :=
-	1. *Assert:* `assign.children.count` is 2.
-	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
-	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
-	4. *Return:* [
-		...instrs,
-		"SET the global variable `name`.",
-	].
 ;
 
 
