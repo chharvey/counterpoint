@@ -3,21 +3,21 @@ import type binaryen from 'binaryen';
 import {
 	TYPE,
 	TypeErrorNotNarrow,
-} from '../../index.js';
+} from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SymbolSchemaVar} from '../index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SymbolSchemaVar} from '../index.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {if_constant_folding} from './Foldable.ts';
-import {ASTNodeIndex} from './ASTNodeIndex.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeAccess} from './ASTNodeAccess.js';
+import {ASTNodeIndex} from './ASTNodeIndex.ts';
+import {ASTNodeKey} from './ASTNodeKey.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {
 	buildDeco,
 	ASTNodeStatement,
