@@ -162,17 +162,11 @@ SemanticStatementReassignment
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
 
-
-
 SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 	::= SemanticExpression SemanticBlock;
 
-
-
 SemanticStatementIteration
 	::= SemanticVariable? SemanticType SemanticExpression SemanticBlock;
-
-
 
 SemanticStatementBreak[continue: Boolean]
 	::= ();

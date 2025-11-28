@@ -45,7 +45,7 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 
-Sequence<Instruction> Build(SemanticStatementClaim decl) :=
+Sequence<Instruction> Build(SemanticStatementClaim claim) :=
 	1. *Return:* [].
 ;
 
