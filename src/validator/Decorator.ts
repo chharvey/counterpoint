@@ -487,7 +487,7 @@ export class Decorator {
 						...operands,
 					),
 				) :
-				// `a isnt b` is syntax sugar for `!(a is b)`
+				// `a !is b` is syntax sugar for `!(a is b)`
 				(operator === Operator.ISNT) ? new AST.ASTNodeOperationUnary(
 					n,
 					Operator.NOT,

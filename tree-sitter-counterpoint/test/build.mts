@@ -1108,7 +1108,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					a !< b;
 					a !> b;
 					a is b;
-					a isnt b;
+					a !is b;
 				}
 			`,
 			sourceExpressions(

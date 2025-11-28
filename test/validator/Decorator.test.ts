@@ -556,7 +556,7 @@ test.suite('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'todo: ' : '' }Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${ op }" ExpressionAdditive<?Block><?Break>) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', '!is'].map((op) => [`${ ['is', '!is'].includes(op) ? 'todo: ' : '' }Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${ op }" ExpressionAdditive<?Block><?Break>) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}
@@ -814,7 +814,7 @@ test.suite('Decorator', () => {
 				});
 			});
 		});
-		['is', 'isnt'].forEach((op) => {
+		['is', '!is'].forEach((op) => {
 			test.suite(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 				test.test(`operator \`${ op }\` is not yet supported.`, () => {
 					assert.throws(() => new Decorator().decorateTS(captureParseNode(`

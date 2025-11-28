@@ -32,7 +32,6 @@ Word ::=
 		| "mut"
 		| "as"
 		| "is"
-		| "isnt"
 		| "if"
 		| "then"
 		| "else"
@@ -187,12 +186,12 @@ ExpressionCast<Block, Break> ::=
 ExpressionExponential<Block, Break>
 	::= ExpressionCast<?Block><?Break> ("^" ExpressionExponential<?Block><?Break>)?;
 
-ExpressionMultiplicative <Block, Break> ::= (ExpressionMultiplicative <?Block><?Break> ("*" | "/" ))?                                            ExpressionExponential    <?Block><?Break>;
-ExpressionAdditive       <Block, Break> ::= (ExpressionAdditive       <?Block><?Break> ("+" | "-" ))?                                            ExpressionMultiplicative <?Block><?Break>;
-ExpressionComparative    <Block, Break> ::= (ExpressionComparative    <?Block><?Break> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "isnt"))? ExpressionAdditive       <?Block><?Break>;
-ExpressionEquality       <Block, Break> ::= (ExpressionEquality       <?Block><?Break> ("===" | "!==" | "==" | "!="))?                           ExpressionComparative    <?Block><?Break>;
-ExpressionConjunctive    <Block, Break> ::= (ExpressionConjunctive    <?Block><?Break> ("&&" | "!&"))?                                           ExpressionEquality       <?Block><?Break>;
-ExpressionDisjunctive    <Block, Break> ::= (ExpressionDisjunctive    <?Block><?Break> ("||" | "!|"))?                                           ExpressionConjunctive    <?Block><?Break>;
+ExpressionMultiplicative <Block, Break> ::= (ExpressionMultiplicative <?Block><?Break> ("*" | "/" ))?                                           ExpressionExponential    <?Block><?Break>;
+ExpressionAdditive       <Block, Break> ::= (ExpressionAdditive       <?Block><?Break> ("+" | "-" ))?                                           ExpressionMultiplicative <?Block><?Break>;
+ExpressionComparative    <Block, Break> ::= (ExpressionComparative    <?Block><?Break> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "!is"))? ExpressionAdditive       <?Block><?Break>;
+ExpressionEquality       <Block, Break> ::= (ExpressionEquality       <?Block><?Break> ("===" | "!==" | "==" | "!="))?                          ExpressionComparative    <?Block><?Break>;
+ExpressionConjunctive    <Block, Break> ::= (ExpressionConjunctive    <?Block><?Break> ("&&" | "!&"))?                                          ExpressionEquality       <?Block><?Break>;
+ExpressionDisjunctive    <Block, Break> ::= (ExpressionDisjunctive    <?Block><?Break> ("||" | "!|"))?                                          ExpressionConjunctive    <?Block><?Break>;
 
 ExpressionConditional<Break>
 	::= "if" Expression<+Block><?Break> "then" Expression<-Block><?Break> "else" Expression<-Block><?Break>;

@@ -3,7 +3,6 @@ _KEYWORD_OTHER =:=
 		| "mut"
 		| "as"
 		| "is"
-		| "isnt"
 		| "if"
 		| "then"
 		| "else"
@@ -552,7 +551,7 @@ Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "isnt" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!is" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
 		(SemanticOperation[operator=IS]
 			Decorate(ExpressionComparative<?Block><?Break>)
