@@ -621,6 +621,12 @@ elements.-1;    %== "fire"
 elements.-\b10; %== "wind"
 ```
 
+We can also access by natural number index.
+```cpl
+elements.+\b01; %== "wind"
+elements.+\b10; %== "fire"
+```
+
 Tuple size is known at compile-time,
 so attempting to retrieve an out-of-bounds index results in a compile-time error.
 Positive indices beyond the end of the list, and negative indices beyond the beginning,
@@ -841,7 +847,7 @@ The bracketed expression must be an Integer value (of type `int`).
 ```
 let elements: [str] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"
-elements.[3 - 2];   %== "wind"
+elements.[+3 - +2]; %== "wind"
 elements.[-3 + 2];  %== "fire"
 elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```

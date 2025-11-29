@@ -82,10 +82,13 @@ TokenWorth(Identifier) -> RealNumber
 
 
 
-TokenWorth(Integer :::= "+"? WholeDigits) -> RealNumber
+TokenWorth(Integer :::= WholeDigits) -> RealNumber
 	:= TokenWorth(WholeDigits);
 TokenWorth(Integer :::= "-" WholeDigits) -> RealNumber
 	:= -1 * TokenWorth(WholeDigits);
+
+TokenWorth(Natural :::= "+" WholeDigits) -> RealNumber
+	:= TokenWorth(WholeDigits);
 
 TokenWorth(WholeDigits :::= "\b"  DigitSequenceBin) -> RealNumber
 	:= TokenWorth(DigitSequenceBin);

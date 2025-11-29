@@ -1,5 +1,6 @@
 // IDENTIFIER      ::= [./lexicon.ebnf#Identifier];
 // INTEGER         ::= [./lexicon.ebnf#Integer];
+// NATURAL         ::= [./lexicon.ebnf#Natural];
 // FLOAT           ::= [./lexicon.ebnf#Float];
 // STRING          ::= [./lexicon.ebnf#String];
 // TEMPLATE_FULL   ::= [./lexicon.ebnf#TemplateFull];
@@ -63,6 +64,7 @@ Word ::=
 
 PrimitiveLiteral ::=
 	| INTEGER
+	| NATURAL
 	| FLOAT
 	| STRING
 	| KeywordValue
@@ -84,7 +86,7 @@ PropertiesType
 	::= ","? EntryType<+Named><∓Optional># ","?;
 
 PropertyAccessorType
-	::= INTEGER | Word;
+	::= INTEGER | NATURAL | Word;
 
 TypeGrouped       ::= "(" Type             ")";
 TypeTupleLiteral  ::= "(" ItemsType?       ")";
@@ -142,7 +144,7 @@ Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
 Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
 
 PropertyAccessor<Break>
-	::= INTEGER | Word | "[" Expression<+Block><?Break> "]";
+	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break> "]";
 
 ExpressionGrouped <Break> ::= "("       Expression<+Block><?Break>         ")";
 TupleLiteral      <Break> ::= "("       Items<?Break>?                     ")";

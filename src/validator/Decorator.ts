@@ -207,7 +207,7 @@ export class Decorator {
 			)],
 
 			['property_accessor_type', (node) => (
-				(isSyntaxNodeType(node.children[0], 'integer')) ? new AST.ASTNodeIndex(node.children[0]) :
+				isSyntaxNodeType(node.children[0], /integer|natural/) ? new AST.ASTNodeIndex(node.children[0] as SyntaxNodeType<'integer' | 'natural'>) :
 				(assert.ok(
 					isSyntaxNodeType(node.children[0], 'word'),
 					`Expected ${ node.children[0] } to be a \`SyntaxNodeType<'word'>\`.`,
@@ -317,7 +317,7 @@ export class Decorator {
 			)],
 
 			[/^property_accessor(__break)?$/, (node) => (
-				(isSyntaxNodeType(node.children[0], 'integer')) ? new AST.ASTNodeIndex(node.children[0]) :
+				isSyntaxNodeType(node.children[0], /integer|natural/) ? new AST.ASTNodeIndex(node.children[0] as SyntaxNodeType<'integer' | 'natural'>) :
 				(isSyntaxNodeType(node.children[0], 'word'))    ? this.decorateTS(node.children[0]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[1], 'expression'), `Expected ${ node.children[1] } to be an expression node.`), this.decorateExprNode(node.children[1]))
 			)],

@@ -259,7 +259,8 @@ module.exports = grammar({
 			WORD_UNICODE,
 		)),
 
-		integer: _$ => token(rs(/[+-]?/, WHOLE_DIGITS)),
+		integer: _$ => token(rs(/-?/, WHOLE_DIGITS)),
+		natural: _$ => token(rs('+',  WHOLE_DIGITS)),
 
 		float: _$ => token(rs(
 			SIGNED_DIGIT_SEQ_DEC,
@@ -332,6 +333,7 @@ module.exports = grammar({
 
 		primitive_literal: $ => choice(
 			$.integer,
+			$.natural,
 			$.float,
 			$.string,
 			$.keyword_value,
@@ -355,7 +357,7 @@ module.exports = grammar({
 
 		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
 
-		property_accessor_type: $ => choice($.integer, $.word),
+		property_accessor_type: $ => choice($.integer, $.natural, $.word),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
@@ -416,7 +418,7 @@ module.exports = grammar({
 		...parameterize('property', ({break: brk}) => $ => seq($.word,                                        '=',  call($, '_expression', 'block', {break: brk})), 'break'),
 		...parameterize('case',     ({break: brk}) => $ => seq(call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
 
-		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
+		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
 
 		...parameterize('expression_grouped', ({break: brk}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}),             ')'), 'break'),
 		...parameterize('tuple_literal',      ({break: brk}) => $ => seq('(', optional(                     call($, '_items',   {break: brk})                       ), ')'), 'break'),

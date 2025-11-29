@@ -48,7 +48,7 @@ test.suite('ASTNodeExpression', () => {
 				const constants: AST.ASTNodeConstant[] = extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
-					55  -55  033  -033  0  -0
+					55  -55  +033  -033  0  -0
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
@@ -85,6 +85,15 @@ test.suite('ASTNodeExpression', () => {
 				`).map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
+				].map((v) => new VALUE.Integer(BigInt(v))));
+			});
+			test.test('computes nat values.', () => {
+				assert.deepStrictEqual(extract_tokens(`
+					+55  +033  +0
+					+\\o55  +\\q033
+				`).map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
+					55, 33, 0,
+					parseInt('55', 8), parseInt('33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));
 			});
 			test.test('computes float values.', () => {

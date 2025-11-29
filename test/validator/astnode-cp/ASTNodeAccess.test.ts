@@ -132,12 +132,12 @@ test.suite('ASTNodeAccess', () => {
 				let     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
 				let var rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
 
-				tup_fixed.0;   % type \`1\`       % value \`1\`
-				tup_fixed.1;   % type \`2.0\`     % value \`2.0\`
-				tup_fixed.2;   % type \`"three"\` % value \`"three"\`
-				tup_unfixed.0; % type \`int\`     % non-foldable value
-				tup_unfixed.1; % type \`float\`   % non-foldable value
-				tup_unfixed.2; % type \`str\`     % non-foldable value
+				tup_fixed.0;    % type \`1\`       % value \`1\`
+				tup_fixed.1;    % type \`2.0\`     % value \`2.0\`
+				tup_fixed.+2;   % type \`"three"\` % value \`"three"\`
+				tup_unfixed.0;  % type \`int\`     % non-foldable value
+				tup_unfixed.1;  % type \`float\`   % non-foldable value
+				tup_unfixed.+2; % type \`str\`     % non-foldable value
 				tup_fixed.-3;   % type \`1\`       % value \`1\`
 				tup_fixed.-2;   % type \`2.0\`     % value \`2.0\`
 				tup_fixed.-1;   % type \`"three"\` % value \`"three"\`
@@ -381,7 +381,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_fixed.[0];      % type \`1\`       % value \`1\`
 				list_fixed.[1];      % type \`2.0\`     % value \`2.0\`
-				list_fixed.[2];      % type \`"three"\` % value \`"three"\`
+				list_fixed.[+2];     % type \`"three"\` % value \`"three"\`
 				dict_fixed.[@a];     % type \`1\`       % value \`1\`
 				dict_fixed.[@b];     % type \`2.0\`     % value \`2.0\`
 				dict_fixed.[@c];     % type \`"three"\` % value \`"three"\`
@@ -394,7 +394,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_unfixed.[0];      % type \`int | float | str\` % non-foldable value
 				list_unfixed.[1];      % type \`int | float | str\` % non-foldable value
-				list_unfixed.[2];      % type \`int | float | str\` % non-foldable value
+				list_unfixed.[+2];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@a];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@b];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@c];     % type \`int | float | str\` % non-foldable value
@@ -614,9 +614,9 @@ test.suite('ASTNodeAccess', () => {
 				let var reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
 				let var reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-				tupo1_f?.2; % type \`"three"\` % value \`"three"\`
-				tupo1_u?.2; % type \`str?\`    % non-foldable value
-				tupo2_u?.2; % type \`str?\`    % non-foldable value
+				tupo1_f?.+2; % type \`"three"\` % value \`"three"\`
+				tupo1_u?.+2; % type \`str?\`    % non-foldable value
+				tupo2_u?.2;  % type \`str?\`    % non-foldable value
 
 				reco1_f?.b; % type \`"three"\` % value \`"three"\`
 				reco1_u?.b; % type \`str?\`    % non-foldable value
@@ -832,7 +832,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_fixed?.[0];  % type \`1\`       % value \`1\`
 				list_fixed?.[1];  % type \`2.0\`     % value \`2.0\`
-				list_fixed?.[2];  % type \`"three"\` % value \`"three"\`
+				list_fixed?.[+2]; % type \`"three"\` % value \`"three"\`
 				dict_fixed?.[@a]; % type \`1\`       % value \`1\`
 				dict_fixed?.[@b]; % type \`2.0\`     % value \`2.0\`
 				dict_fixed?.[@c]; % type \`"three"\` % value \`"three"\`
@@ -842,7 +842,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_unfixed?.[0];  % type \`int | float | str | null\` % non-foldable value
 				list_unfixed?.[1];  % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[2];  % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[+2]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@a]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@b]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@c]; % type \`int | float | str | null\` % non-foldable value

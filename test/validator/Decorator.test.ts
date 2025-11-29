@@ -155,6 +155,12 @@ test.suite('Decorator', () => {
 				}
 				% (property_accessor_type)
 			`]],
+			['Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					type T = U.+1;
+				}
+				% (property_accessor_type)
+			`]],
 			['Decorate(PropertyAccessorType ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
 					type T = U.p;
@@ -316,6 +322,12 @@ test.suite('Decorator', () => {
 				}
 				% (property_accessor)
 			`]],
+			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= NATURAL) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					v.+1;
+				}
+				% (property_accessor)
+			`]],
 			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
 					v.p;
@@ -332,6 +344,12 @@ test.suite('Decorator', () => {
 			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
 					set v.1 = false;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= NATURAL) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					set v.-1 = false;
 				}
 				% (property_accessor)
 			`]],

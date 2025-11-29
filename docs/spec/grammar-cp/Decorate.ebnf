@@ -27,6 +27,8 @@ Decorate(Word ::= KeywordValue) -> SemanticKey
 
 Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
 	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
+Decorate(PrimitiveLiteral ::= NATURAL) -> SemanticConstant
+	:= (SemanticConstant[value=Integer(TokenWorth(NATURAL))]);
 Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
@@ -94,6 +96,8 @@ Decorate(PropertiesType ::= ","? EntryType<+Named><+Optional># ","?) -> Sequence
 
 Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
 Decorate(PropertyAccessorType ::= Word) -> SemanticKey
 	:= Decorate(Word);
 
@@ -306,6 +310,8 @@ Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Bre
 
 Decorate(PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessor<Break> ::= NATURAL) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
 Decorate(PropertyAccessor<Break> ::= Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression

@@ -61,6 +61,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					\\b01000101;
 					4_2;
 					\\b0100_0101;
+					-42;
+					-\\b01000101;
+					-4_2;
+					-\\b0100_0101;
 				}
 			`,
 			sourceExpressions(
@@ -68,6 +72,27 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+			),
+		],
+
+		NATURAL: [
+			xjs.String.dedent`
+				{
+					+42;
+					+\\b01000101;
+					+4_2;
+					+\\b0100_0101;
+				}
+			`,
+			sourceExpressions(
+				s('primitive_literal', s('natural')),
+				s('primitive_literal', s('natural')),
+				s('primitive_literal', s('natural')),
+				s('primitive_literal', s('natural')),
 			),
 		],
 
@@ -190,6 +215,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = @true;
 					type T = @hello;
 					type T = 42;
+					type T = -42;
+					type T = +42;
 					type T = 4.2;
 					type T = "hello";
 
@@ -201,6 +228,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					@true;
 					@hello;
 					42;
+					-42;
+					+42;
 					4.2;
 					"hello";
 				}
@@ -215,6 +244,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('word', s('keyword_value')),
 					s('word', s('identifier')),
 					s('integer'),
+					s('integer'),
+					s('natural'),
 					s('float'),
 					s('string'),
 				].map((term) => s('primitive_literal', term));
@@ -418,6 +449,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					type T = TupleType.0;
+					type T = TupleType.-1;
+					type T = TupleType.+1;
 					type T = RecordType.prop;
 					type T = RecordType._;
 					type T = TupleType?.0;
@@ -435,6 +468,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'type_compound',
 					s('identifier'),
 					s('property_accessor_type', s('integer')),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_accessor_type', s('integer')),
+				),
+				s(
+					'type_compound',
+					s('identifier'),
+					s('property_accessor_type', s('natural')),
 				),
 				s(
 					'type_compound',
@@ -838,6 +881,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					tuple.0;
+					tuple.-1;
+					tuple.+1;
 					tuple?.0;
 					tuple!.0;
 					record.prop;
@@ -860,6 +905,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'expression_compound',
 					s('identifier'),
 					s('property_accessor', s('integer')),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_accessor', s('integer')),
+				),
+				s(
+					'expression_compound',
+					s('identifier'),
+					s('property_accessor', s('natural')),
 				),
 				s(
 					'expression_compound',
