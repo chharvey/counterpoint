@@ -54,7 +54,7 @@ TokenWorth(KeywordOther :::= "as")       -> RealNumber := \x8b;
 TokenWorth(KeywordOther :::= "as?")      -> RealNumber := \x8c;
 TokenWorth(KeywordOther :::= "as!")      -> RealNumber := \x8d;
 TokenWorth(KeywordOther :::= "is")       -> RealNumber := \x8e;
-TokenWorth(KeywordOther :::= "isnt")     -> RealNumber := \x8f;
+TokenWorth(KeywordOther :::= "!is")      -> RealNumber := \x8f;
 TokenWorth(KeywordOther :::= "if")       -> RealNumber := \x90;
 TokenWorth(KeywordOther :::= "then")     -> RealNumber := \x91;
 TokenWorth(KeywordOther :::= "else")     -> RealNumber := \x92;

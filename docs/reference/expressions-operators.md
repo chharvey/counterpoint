@@ -169,7 +169,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<td>TBA</td>
-			<td><code>… isnt …</code></td>
+			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
 			<th rowspan="4">10</th>
@@ -759,8 +759,8 @@ The parser receives these tokens and produces the correct expression.
 <int | float> `!<` <int | float>
 <int | float> `!>` <int | float>
 
-<Object> `is`   <Class>
-<Object> `isnt` <Class>
+<Object> `is`  <Class>
+<Object> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -780,7 +780,7 @@ For instance, if the relational operators were overloaded to mean “subset” f
 then `a !< b` (“`a` is not a strict subset of `b`”) does not necessarily mean
 that `a >= b` (“`a` is a superset of ”).
 
-The object comparative operators `is` and `isnt` are not currently available,
+The object comparative operators `is` and `!is` are not currently available,
 but they are reserved for future semantics.
 
 

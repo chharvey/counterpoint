@@ -138,12 +138,14 @@ SemanticOperation[operator: COND]
 
 
 SemanticStatement =:=
+	| SemanticDeclaration
 	| SemanticStatementExpression
+	| SemanticStatementClaim
+	| SemanticStatementReassignment
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration
 	| SemanticStatementBreak
-	| SemanticDeclaration
 ;
 
 
@@ -151,22 +153,20 @@ SemanticStatement =:=
 SemanticStatementExpression
 	::= SemanticExpression?;
 
+SemanticStatementClaim
+	::= (SemanticVariable | SemanticAccess) SemanticType;
 
+SemanticStatementReassignment
+	::= (SemanticVariable | SemanticAccess) SemanticExpression;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
 
-
-
 SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 	::= SemanticExpression SemanticBlock;
 
-
-
 SemanticStatementIteration
 	::= SemanticVariable? SemanticType SemanticExpression SemanticBlock;
-
-
 
 SemanticStatementBreak[continue: Boolean]
 	::= ();
@@ -181,8 +181,6 @@ SemanticBlock
 SemanticDeclaration =:=
 	| SemanticDeclarationType
 	| SemanticDeclarationVariable
-	| SemanticDeclarationClaim
-	| SemanticDeclarationReassignment
 ;
 
 SemanticDeclarationType
@@ -190,12 +188,6 @@ SemanticDeclarationType
 
 SemanticDeclarationVariable[unfixed: Boolean]
 	::= SemanticVariable? SemanticType SemanticExpression?;
-
-SemanticDeclarationClaim
-	::= (SemanticVariable | SemanticAccess) SemanticType;
-
-SemanticDeclarationReassignment
-	::= (SemanticVariable | SemanticAccess) SemanticExpression;
 
 
 

@@ -20,7 +20,7 @@ export enum Keyword {
 	AS_MAY  = 'as?',
 	AS_RES  = 'as!',
 	IS      = 'is',
-	ISNT    = 'isnt',
+	ISNT    = '!is',
 	IF      = 'if',
 	THEN    = 'then',
 	ELSE    = 'else',

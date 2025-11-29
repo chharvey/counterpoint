@@ -1108,7 +1108,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					a !< b;
 					a !> b;
 					a is b;
-					a isnt b;
+					a !is b;
 				}
 			`,
 			sourceExpressions(
@@ -1272,6 +1272,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 
 		/* ## Statements */
+		// Assignee
+		// tested in #Statement{Claim,Reassignment}
+
 		StatementExpression: [
 			xjs.String.dedent`
 				{
@@ -1279,6 +1282,182 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceStatements(s('statement_expression', s('identifier'))),
+		],
+
+		StatementClaim: [
+			xjs.String.dedent`
+				{
+					claim my_var:       T;
+					claim tuple.1:      U;
+					claim record.prop:  V;
+					claim record._:     X;
+					claim list.[index]: W;
+					claim record.let:   Y;
+					claim record.bool:  Z;
+					claim record.true:  S;
+				}
+			`,
+			sourceStatements(
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('integer')),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word')),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('identifier')),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word')),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_type'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_claim',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_value'))),
+					),
+					s('identifier'),
+				),
+			),
+		],
+
+		StatementReassignment: [
+			xjs.String.dedent`
+				{
+					set my_var       = a;
+					set tuple.1      = b;
+					set record.prop  = c;
+					set record._     = c;
+					set list.[index] = d;
+					set record.let   = 1;
+					set record.bool  = 2;
+					set record.true  = 3;
+				}
+			`,
+			sourceStatements(
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('integer')),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word')),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('identifier')),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word')),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_type'))),
+					),
+					s('primitive_literal', s('integer')),
+				),
+				s(
+					'statement_reassignment',
+					s(
+						'assignee',
+						s('identifier'),
+						s('property_accessor', s('word', s('keyword_value'))),
+					),
+					s('primitive_literal', s('integer')),
+				),
+			),
 		],
 
 		StatementConditional: [
@@ -1384,7 +1563,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// Statement
-		// consists of #{Statement{Expression,Conditional,Loop,Iteration,Break},Declaration}
+		// consists of #{Declaration,Statement{Expression,Claim,Reassignment,Conditional,Loop,Iteration,Break}}
 
 		Block: [
 			xjs.String.dedent`
@@ -1415,7 +1594,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'declaration_claim',
+					'statement_claim',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1423,7 +1602,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'declaration_reassignment',
+					'statement_reassignment',
 					s(
 						'assignee',
 						s('identifier'),
@@ -1443,9 +1622,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('statement_iteration',   s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
-
-		// Assignee
-		// tested in #DeclarationReassignment
 
 		DeclarationType: [
 			xjs.String.dedent`
@@ -1557,184 +1733,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
-		DeclarationClaim: [
-			xjs.String.dedent`
-				{
-					claim my_var:       T;
-					claim tuple.1:      U;
-					claim record.prop:  V;
-					claim record._:     X;
-					claim list.[index]: W;
-					claim record.let:   Y;
-					claim record.bool:  Z;
-					claim record.true:  S;
-				}
-			`,
-			sourceStatements(
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('integer')),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('identifier'))),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('identifier')),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_type'))),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_claim',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_value'))),
-					),
-					s('identifier'),
-				),
-			),
-		],
-
-		DeclarationReassignment: [
-			xjs.String.dedent`
-				{
-					set my_var       = a;
-					set tuple.1      = b;
-					set record.prop  = c;
-					set record._     = c;
-					set list.[index] = d;
-					set record.let   = 1;
-					set record.bool  = 2;
-					set record.true  = 3;
-				}
-			`,
-			sourceStatements(
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('integer')),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('identifier'))),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('identifier')),
-					),
-					s('identifier'),
-				),
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
-					),
-					s('primitive_literal', s('integer')),
-				),
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_type'))),
-					),
-					s('primitive_literal', s('integer')),
-				),
-				s(
-					'declaration_reassignment',
-					s(
-						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_value'))),
-					),
-					s('primitive_literal', s('integer')),
-				),
-			),
-		],
-
 		// Declaration
-		// consists of #Declaration{Type,Variable,Claim,Reassignment}
+		// consists of #Declaration{Type,Variable}
 	}).map(([title, [source, expected]]) => xjs.String.dedent`
 		${ '='.repeat(title.length) }
 		${ title }

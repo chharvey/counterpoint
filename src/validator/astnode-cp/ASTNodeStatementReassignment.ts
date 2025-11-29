@@ -28,15 +28,15 @@ import {
 
 
 
-export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationReassignment {
+export class ASTNodeStatementReassignment extends ASTNodeStatement {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeDeclarationReassignment);
+		assert_instanceof(statement, ASTNodeStatementReassignment);
 		return statement;
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'declaration_reassignment', ['break']>,
+		start_node: SyntaxNodeFamily<'statement_reassignment', ['break']>,
 		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		public readonly assigned: ASTNodeExpression,
 	) {
@@ -75,7 +75,7 @@ export class ASTNodeDeclarationReassignment extends ASTNodeStatement {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
+		assert_instanceof(this.assignee, ASTNodeVariable, '`ASTNodeStatementReassignment[assignee: ASTNodeAccess]#build` not yet supported.');
 		return this.builder.getLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }
