@@ -91,13 +91,6 @@ test.suite('ASTNodeDeclaration', () => {
 					type _ = (str, bool);
 				}`).varCheck(); // assert does not throw
 			});
-			test.test('hoists type aliases before var-checking assigned expression.', () => {
-				const decl: AST.ASTNodeDeclarationType = AST.ASTNodeDeclarationType.fromSource('type LinkedListOfInt = (int, LinkedListOfInt);');
-				decl.varCheck();
-				const symb: SymbolSchema | undefined = decl.validator.getSymbol(0x100n);
-				assert_instanceof(symb, SymbolSchemaType);
-				assert.strictEqual(symb.typevalue, TYPE.ANYTHING);
-			});
 		});
 
 
@@ -433,8 +426,8 @@ test.suite('ASTNodeDeclaration', () => {
 						assertAssignable(err, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(257: str, 258: int, 259: str, 260: float)\`.`},
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(257: str, 262: str, 260: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 257: int, 258: str, 259: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 261: str, 259: float)\`.`},
 							],
 						});
 						return true;

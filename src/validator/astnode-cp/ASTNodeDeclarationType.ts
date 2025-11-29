@@ -49,15 +49,13 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
-		// Note: Type aliases are hoisted, so first we add it to the symbol table before var-checking the assigned expression.
-		// TODO: Type aliases should be hoisted to the top of the block, so there should be no temporal dead zone.
+		this.assigned.varCheck();
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
 			this.validator.addSymbol(new SymbolSchemaType(this.assignee));
 		}
-		this.assigned.varCheck();
 	}
 
 	public override typeCheck(): void {
