@@ -48,18 +48,11 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	public override toString(): string {
-		return `[${ this.items.map((it) => it.toString()).join(', ') }]`;
+		return this.items.map((it) => it.toString()).join(', ');
 	}
 
 	/** @final */
 	public get(index: bigint, is_access_maybe: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
-		const n: number = this.items.length;
-		const i: number = Number(index);
-		return (
-			-n <= i && i < 0 ? this.items[i + n] :
-			0  <= i && i < n ? this.items[i] :
-			is_access_maybe  ? NULL :
-			assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor))
-		);
+		return this.items.at(Number(index)) ?? (is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor)));
 	}
 }

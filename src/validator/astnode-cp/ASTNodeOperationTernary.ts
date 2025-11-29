@@ -1,8 +1,8 @@
-import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	drop_then,
 	BinVect,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
@@ -14,7 +14,7 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
 import {
 	buildDeco,
@@ -33,7 +33,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeFamily<'expression_conditional', ['break']>,
 		operator: Operator.COND,
 		public readonly operand0: ASTNodeExpression,
 		public readonly operand1: ASTNodeExpression,
@@ -48,16 +48,10 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		const t0:                 TYPE.Type                = this.operand0.type();
 		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 
-		if (t0.equals(TYPE.FALSE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				arg2,
-			], binaryen.v128);
-		} else if (t0.equals(TYPE.TRUE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				arg1,
-			], binaryen.v128);
+		if (t0.isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(this.builder.module, [arg0], arg1);
+		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], arg2);
 		}
 
 		return this.builder.module.if(new BinVect(this.builder.module, arg0).isSpecial(true), arg1, arg2);
@@ -68,7 +62,9 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	public override type(): TYPE.Type {
 		// compute types early to rethrow any errors
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
-		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeErrorInvalidOperation(this));
+		if (!t0.isSubtypeOf(TYPE.BOOL)) {
+			throw new TypeErrorInvalidOperation(this);
+		}
 		return (
 			t0.isBottomType       ? TYPE.NOTHING :
 			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.

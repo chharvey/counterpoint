@@ -373,19 +373,29 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			2. *If:* `vb` is set:
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
-	3. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+	3. *If* `expr` is a SemanticList *and* `type` is a List type:
+		1. *Let* `b_type` be the type argument over `type`.
+		2. *For each* `a_it` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_it, b_type)`.
+		3. *Return.*
+	4. *If* `expr` is a SemanticDict *and* `type` is a Dict type:
+		1. *Let* `b_type` be the type argument over `type`.
+		2. *For each* `a_prop` in `expr.children`:
+			1. *Perform:* `TypeCheckAssign(a_prop.children.1, b_type)`.
+		3. *Return.*
+	5. *If* `expr` is a SemanticSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_el` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
 		3. *Return.*
-	4. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+	6. *If* `expr` is a SemanticMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent type argument over `type`.
 		2. *Let* `b_con_type` be the consequent type argument over `type`.
 		3. *For each* `a_case` in `expr.children`:
-			1. *Perform:* `TypeCheckAssign(a_case.0, b_ant_type)`.
-			2. *Perform:* `TypeCheckAssign(a_case.1, b_con_type)`.
+			1. *Perform:* `TypeCheckAssign(a_case.children.0, b_ant_type)`.
+			2. *Perform:* `TypeCheckAssign(a_case.children.1, b_con_type)`.
 		4. *Return.*
-	5. *Throw:* a new TypeErrorNotAssignable.
+	7. *Throw:* a new TypeErrorNotAssignable.
 ;
 ```
 
@@ -507,7 +517,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 		4. *If* `access.kind` is `MAYBE`:
 			1. *Set* `accessor_maybe` to `true`.
 		5. *If* `base_type` is a List type:
-			1. *Let* `t` be the type of the items in `base_type`.
+			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
@@ -516,7 +526,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		6. *Else If* `base_type` is a Dict type:
-			1. *Let* `t` be the type of the values in `base_type`.
+			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
@@ -527,7 +537,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		7. *Else If* `base_type` is a Set type:
-			1. *Let* `t` be the type of the elements in `base_type`.
+			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `Boolean`,
@@ -536,8 +546,8 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		8. *Else If* `base_type` is a Map type:
-			1. *Let* `k` be the type of the antecedents in `base_type`.
-			2. *Let* `v` be the type of the consequents in `base_type`.
+			1. *Let* `k` be the antecedent type argument over `base_type`.
+			2. *Let* `v` be the consequent type argument over `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `v`,
@@ -565,7 +575,7 @@ None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry
 	2. *If* `access_kind` is *MAYBE* *and* `is_entry_optional` is `true`:
 		1. *Return.*
 	3. *If* `access_kind` is *RESULT*:
-		1. *Throw:* a new TypeError "Operator not yet supported.".
+		// TODO: implement
 	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
@@ -580,7 +590,7 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 	1. *If* `access_kind` is *MAYBE*:
 		1. *Return:* `Union(type, Null)`.
 	2. *Else If* `access_kind` is *RESULT*:
-		1. *Throw:* a new TypeError "Operator not yet supported.".
+		// TODO: implement
 	3. *Else:*
 		1. *Assert:* `access_kind` is *NORMAL*.
 		2. *Return:* `type`.

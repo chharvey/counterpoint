@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
+import {memoizeGetter} from '../../lib/index.ts';
 import {
 	language_types_equal,
 	language_values_identical,
@@ -69,6 +70,7 @@ export class Intersection extends Combinable {
 		);
 	}
 
+	@memoizeGetter
 	public override get isBottomType(): boolean {
 		/* This could be bottom if the operands are disjoint. */
 		return this.operands.some((s) => s.isBottomType) || this.values.size === 0;
@@ -80,14 +82,6 @@ export class Intersection extends Combinable {
 	 * if both the left and the right are top,
 	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
-
-	public override get isReference(): boolean {
-		return this.operands.some((s) => s.isReference);
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.operands.some((s) => s.hasMutable);
-	}
 
 	@botOrTopString
 	public override toString(): string {
@@ -170,7 +164,7 @@ export class Intersection extends Combinable {
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     | `(B \| C)  & A == (B  & A) \| (C  & A)`
 		 */
-		const union: Union | null = this.operands.find((s): s is Union => s instanceof Union) ?? null;
+		const union: Union | undefined = this.operands.find((s): s is Union => s instanceof Union);
 		if (union) {
 			const not_union: readonly Type[] = this.operands.filter((s) => s !== union);
 			const right: Type = not_union.length >= 2

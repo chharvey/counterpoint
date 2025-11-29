@@ -16,4 +16,5 @@ import {String as ValueString} from './String.ts';
 /** The Counterpoint Language Integer Value `1`.        */ export const INT_1:       Integer      = new Integer(1n);
 /** The Counterpoint Language Float   Value `0.0`.      */ export const FLOAT_0:     Float        = new Float();
 /** The Counterpoint Language Float   Value `-0.0`.     */ export const FLOAT_N0:    Float        = new Float(-0.0);
+/** The Counterpoint Language Float   Value `1.0`.      */ export const FLOAT_1:     Float        = new Float(1.0);
 /** The Counterpoint Language String  Value `''`.       */ export const STR_EMPTY:   ValueString  = new ValueString();

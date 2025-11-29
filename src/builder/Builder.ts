@@ -1,8 +1,22 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
+import type {
+	AST,
+	SymbolSchemaVar,
+} from '../validator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
+
+
+
+/**
+ * A type modeling the Binaryen `module.block`.
+ */
+type Block = {
+	readonly index: number,
+	readonly node:  AST.ASTNodeCP,
+};
 
 
 
@@ -16,15 +30,11 @@ export class Builder {
 	];
 
 
-	/**
-	 * A counter for internal variables.
-	 * Used for optimizing short-circuited expressions.
-	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
-	 */
-	#varCount: bigint = -0x40n;
+	/** A set containing local variables. */
+	private readonly locals = new Set<Local>();
 
-	/** A setlist containing ids of local variables. */
-	private readonly locals: Local[] = [];
+	/** A set containing blocks. */
+	private readonly blocks = new Set<Block>();
 
 	/** The Binaryen module to build upon building. */
 	public readonly module: binaryen.Module = binaryen.parseText(`
@@ -39,108 +49,136 @@ export class Builder {
 	 * @param value the binaryen value of the variable to add
 	 * @return      [`this`, the new local variable]
 	 */
-	public addLocal(value: binaryen.ExpressionRef): [this, Local] {
-		const local = new Local(this.module, this.#varCount++, this.locals.length, value);
-		this.locals.push(local);
-		return [this, local];
+	public addLocal(value: binaryen.ExpressionRef): Local {
+		const local = new Local(this.module, this.locals.size, value);
+		this.locals.add(local);
+		return local;
 	}
 
 	/**
 	 * Set a local variable, given a variable id.
 	 * If a variable with that id has already been added, do nothing.
-	 * @param id    the id of the variable to set
-	 * @param value the binaryen value of the variable to set
-	 * @return      [`this`, Was the operation performed?]
+	 * @param schema the compiler’s internal data for a declared variable
+	 * @param value  the binaryen value of the variable to set
+	 * @return       Was the operation performed?
 	 */
-	public setLocal(id: bigint, value: binaryen.ExpressionRef): [this, boolean] {
+	public setLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): boolean {
 		let did: boolean = false;
-		if (!this.hasLocal(id)) {
-			this.locals.push(new Local(this.module, id, this.locals.length, value));
+		if (!this.getLocal(schema)) {
+			this.locals.add(new Local(this.module, this.locals.size, value, schema));
 			did = true;
 		}
-		return [this, did];
+		return did;
 	}
 
 	/**
-	 * Remove a local variable.
-	 * If the local variable doesn’t exist, do nothing.
-	 * @param id the id of the variable to remove
-	 * @return [`this`, Was the operation performed?]
+	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `undefined`.
+	 * @param  schema the symbol schema of the local to get
+	 * @return        the local or `undefined`
 	 */
-	public removeLocal(id: bigint): [this, boolean] {
-		let did = false;
-		const found = this.getLocal(id);
-		if (found) {
-			this.locals.splice(this.locals.indexOf(found), 1);
-			did = true;
-		}
-		return [this, did];
-	}
-
-	/**
-	 * Check whether this Builder’s setlist of locals has the given id.
-	 * @param id the id to check
-	 * @return Does the setlist of locals include the id?
-	 */
-	public hasLocal(id: bigint): boolean {
-		return !!this.getLocal(id);
-	}
-
-	/**
-	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `null`.
-	 * @param  id the id of the local to get
-	 * @return    the local or `null`
-	 */
-	public getLocal(id: bigint): Local | null {
-		return this.locals.find((var_) => var_.id === id) ?? null;
+	public getLocal(schema: SymbolSchemaVar): Local | undefined {
+		return [...this.locals].find((local) => local.schema === schema);
 	}
 
 	/**
 	 * Set a local variable to the given id and return it.
 	 * If a variable with that id has already been added, this Builder’s state is not changed.
-	 * @param id    the id of the variable to set
-	 * @param value the binaryen value of the variable to set
+	 * @param schema the symbol schema of the variable to set
+	 * @param value  the binaryen value of the variable to set
 	 * @return      the local variable set (or retreived)
 	 */
-	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local {
-		return this.setLocal(id, value)[0].getLocal(id)!;
+	public teeLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): Local {
+		this.setLocal(schema, value);
+		return this.getLocal(schema)!;
 	}
 
 	/**
 	 * Return a copy of a list of this Builder’s local variables.
 	 * @return the local variables in an array
 	 */
-	public getLocals(): Local[] {
+	public getAllLocals(): Local[] {
 		return [...this.locals];
 	}
 
 	/**
-	 * Remove all local variables in this Builder.
-	 * @return `this`
+	 * Set a new block, given an ASTNode.
+	 * @param node node that builds the block
+	 * @return     Was the operation performed?
 	 */
-	public clearLocals(): this {
-		this.locals.length = 0;
-		return this;
+	public setBlock(node: AST.ASTNodeCP): boolean {
+		let did: boolean = false;
+		if (!this.getBlock(node)) {
+			this.blocks.add({node, index: this.blocks.size});
+			did = true;
+		}
+		return did;
 	}
 
-	#binOpFunction(
-		name:                                   string,
-		[result_both_ints, result_both_floats]: readonly [binaryen.ExpressionRef, binaryen.ExpressionRef],
+	/**
+	 * Get the block with the given node in this Builder’s list, if it’s been added; else, return `undefined`.
+	 * @param  node the node of the block to get
+	 * @return      the block or `undefined`
+	 */
+	public getBlock(node: AST.ASTNodeCP): Block | undefined {
+		return [...this.blocks].find((block) => block.node === node);
+	}
+
+	/**
+	 * Set a block to the given id and return it.
+	 * If a block with that id has already been added, this Builder’s state is not changed.
+	 * @param node the node of the block to set
+	 * @return     the block set (or retreived)
+	 */
+	public teeBlock(node: AST.ASTNodeCP): Block {
+		this.setBlock(node);
+		return this.getBlock(node)!;
+	}
+
+	#binOpArithmetic(
+		name:       string,
+		method_i64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_f64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
+		const int_int:     binaryen.ExpressionRef = new BinVect(mod, method_i64.call(null, local_vects[0].intValue,   local_vects[1].intValue))   .vect;
+		const float_float: binaryen.ExpressionRef = new BinVect(mod, method_f64.call(null, local_vects[0].floatValue, local_vects[1].floatValue)) .vect;
 		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-				result_both_ints,
+				int_int,
 				mod.if(
 					mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-					result_both_floats,
+					float_float,
 					mod.unreachable(),
 				),
+			),
+		], binaryen.v128));
+	}
+
+	#binOpComparative(
+		name:       string,
+		method_i64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_f64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		neither?:   binaryen.ExpressionRef,
+	): binaryen.FunctionRef {
+		const mod: binaryen.Module = this.module;
+		const local_vects = [
+			new BinVect(mod, mod.local.get(0, binaryen.v128)),
+			new BinVect(mod, mod.local.get(1, binaryen.v128)),
+		] as const;
+		const int_int:     binaryen.ExpressionRef = BinVect.asBool(mod, method_i64.call(null,                       local_vects[0].intValue,                         local_vects[1].intValue));
+		const int_float:   binaryen.ExpressionRef = BinVect.asBool(mod, method_f64.call(null, mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue));
+		const float_int:   binaryen.ExpressionRef = BinVect.asBool(mod, method_f64.call(null,                       local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue)));
+		const float_float: binaryen.ExpressionRef = BinVect.asBool(mod, method_f64.call(null,                       local_vects[0].floatValue,                       local_vects[1].floatValue));
+		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				mod.if(local_vects[1].isInt, int_int,   mod.if(local_vects[1].isFloat, int_float,   neither ?? mod.unreachable())),
+				mod.if(local_vects[1].isInt, float_int, mod.if(local_vects[1].isFloat, float_float, neither ?? mod.unreachable())),
 			),
 		], binaryen.v128));
 	}
@@ -199,48 +237,23 @@ export class Builder {
 				),
 			),
 		], binaryen.v128));
-		this.#binOpFunction('vexp', [
-			new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
-			mod.unreachable(),
-		]);
-		this.#binOpFunction('_vmul', [
-			new BinVect(mod, mod.i64.mul(local_vects[0].intValue,   local_vects[1].intValue)).vect,
-			new BinVect(mod, mod.f64.mul(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
-		]);
-		mod.addFunction('vmul', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+		mod.addFunction('vexp', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
-				mod.i32.or(
-					mod.i32.and(local_vects[0].isInt,   mod.i64.eqz(local_vects[0].intValue)),
-					mod.i32.and(local_vects[0].isFloat, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-				),
-				local_vects[0].vect,
-				mod.call('_vmul', [local_vects[0].vect, local_vects[1].vect], binaryen.v128),
+				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
+				new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
+				mod.unreachable(),
 			),
 		], binaryen.v128));
-		this.#binOpFunction('vdiv', [
-			new BinVect(mod, mod.i64.div_s(local_vects[0].intValue,   local_vects[1].intValue)).vect,
-			new BinVect(mod, mod.f64.div  (local_vects[0].floatValue, local_vects[1].floatValue)).vect,
-		]);
-		this.#binOpFunction('vadd', [
-			new BinVect(mod, mod.i64.add(local_vects[0].intValue,   local_vects[1].intValue)).vect,
-			new BinVect(mod, mod.f64.add(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
-		]);
-		this.#binOpFunction('vlt', [
-			BinVect.asBool(mod, mod.i64.lt_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.lt  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
-		this.#binOpFunction('vgt', [
-			BinVect.asBool(mod, mod.i64.gt_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.gt  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
-		this.#binOpFunction('vle', [
-			BinVect.asBool(mod, mod.i64.le_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.le  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
-		this.#binOpFunction('vge', [
-			BinVect.asBool(mod, mod.i64.ge_s(local_vects[0].intValue,   local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.ge  (local_vects[0].floatValue, local_vects[1].floatValue)),
-		]);
+
+		this.#binOpArithmetic('vmul', (i0, i1) => mod.i64.mul   (i0, i1), (f0, f1) => mod.f64.mul(f0, f1));
+		this.#binOpArithmetic('vdiv', (i0, i1) => mod.i64.div_s (i0, i1), (f0, f1) => mod.f64.div(f0, f1));
+		this.#binOpArithmetic('vadd', (i0, i1) => mod.i64.add   (i0, i1), (f0, f1) => mod.f64.add(f0, f1));
+
+		this.#binOpComparative('vlt', (i0, i1) => mod.i64.lt_s(i0, i1), (f0, f1) => mod.f64.lt(f0, f1));
+		this.#binOpComparative('vgt', (i0, i1) => mod.i64.gt_s(i0, i1), (f0, f1) => mod.f64.gt(f0, f1));
+		this.#binOpComparative('vle', (i0, i1) => mod.i64.le_s(i0, i1), (f0, f1) => mod.f64.le(f0, f1));
+		this.#binOpComparative('vge', (i0, i1) => mod.i64.ge_s(i0, i1), (f0, f1) => mod.f64.ge(f0, f1));
+
 		mod.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
@@ -256,30 +269,15 @@ export class Builder {
 				),
 			),
 		], binaryen.v128));
-		const veq_opts = [
-			BinVect.asBool(mod, mod.i64.eq(                      local_vects[0].intValue,                         local_vects[1].intValue)),
-			BinVect.asBool(mod, mod.f64.eq(mod.f64.convert_s.i64(local_vects[0].intValue),                        local_vects[1].floatValue)),
-			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue, mod.f64.convert_s.i64(local_vects[1].intValue))),
-			BinVect.asBool(mod, mod.f64.eq(                      local_vects[0].floatValue,                       local_vects[1].floatValue)),
-		] as const;
-		mod.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				mod.call('vid', local_vects.map((v) => v.vect), binaryen.v128),
-				mod.if(
-					local_vects[0].isInt,
-					mod.if(local_vects[1].isInt, veq_opts[0b00], mod.if(local_vects[1].isFloat, veq_opts[0b01], new BinVect(mod, false).vect)),
-					mod.if(local_vects[1].isInt, veq_opts[0b10], mod.if(local_vects[1].isFloat, veq_opts[0b11], new BinVect(mod, false).vect)),
-				),
-			),
-		], binaryen.v128));
+
+		this.#binOpComparative('veq', (i0, i1) => mod.i64.eq(i0, i1), (f0, f1) => mod.f64.eq(f0, f1));
 	}
 
 	/**
-	 * Prepare this builder’s module and return an action to validate it.
-	 * @return a callback that validates the module, to be performed after any further modifications to the module are made
+	 * Prepare this builder’s module, with optional additional actions/modifications.
+	 * @param main a callback to run after setup but before validation
 	 */
-	public setupModule(): () => void {
+	public setupModule(main?: (mod: binaryen.Module) => void): void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
 			/* eslint-disable @stylistic/operator-linebreak */
 			binaryen.Features.SIMD128 |
@@ -288,10 +286,9 @@ export class Builder {
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
 		this.#setupFunctions();
-		return () => {
-			if (!this.module.validate()) {
-				throw new Error('Invalid WebAssembly module.');
-			}
-		};
+		main?.call(null, this.module);
+		if (!this.module.validate()) {
+			throw new Error('Invalid WebAssembly module.');
+		}
 	}
 }

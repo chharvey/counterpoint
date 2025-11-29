@@ -4,7 +4,7 @@ import {
 	assert_context_name,
 	forEither,
 } from '../../lib/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
@@ -41,16 +41,20 @@ export function assignToDeco(
  * Known subclasses:
  * - ASTNodeTuple
  * - ASTNodeRecord
+ * - ASTNodeList
+ * - ASTNodeDict
  * - ASTNodeSet
  * - ASTNodeMap
  */
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	protected constructor(
 		start_node:
-			| SyntaxNodeType<'tuple_literal'>
-			| SyntaxNodeType<'record_literal'>
-			| SyntaxNodeType<'set_literal'>
-			| SyntaxNodeType<'map_literal'>,
+			| SyntaxNodeFamily<'tuple_literal',  ['break']>
+			| SyntaxNodeFamily<'record_literal', ['break']>
+			| SyntaxNodeFamily<'list_literal',   ['break']>
+			| SyntaxNodeFamily<'dict_literal',   ['break']>
+			| SyntaxNodeFamily<'set_literal',    ['break']>
+			| SyntaxNodeFamily<'map_literal',    ['break']>,
 
 		children: readonly ASTNodeCP[],
 	) {

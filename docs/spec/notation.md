@@ -286,14 +286,14 @@ The following table is an informative summary of the operators described below.
 		</tr>
 		<tr>
 			<td>Ordered Concatenation (Explicit)</td>
-			<td><code>… . …</code></td>
+			<td><code>… & …</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
 			<td>Unordered Concatenation</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
-			<td><code>… & …</code></td>
+			<td><code>… && …</code></td>
 		</tr>
 		<tr>
 			<th>6</th>
@@ -317,10 +317,10 @@ N
 ##### Ordered Concatenation
 Ordered Concatenation is exactly the same as a sequence of symbols as described above.
 
-Ordered Concatenation syntax uses the optional symbol `.`, but it is equivalent to whitespace.
+Ordered Concatenation syntax uses the optional symbol `&`, but it is equivalent to whitespace.
 ```
 N
-	::= A . B;
+	::= A & B;
 ```
 is equivalent to
 ```
@@ -333,10 +333,10 @@ Usage of an explicit operator can help control grouping and separation of items 
 ##### Unordered Concatenation
 Unordered Concatenation of symbols is concatenation where the order is not important.
 
-Unordered Concatenation syntax uses the symbol `&` and is shorthand for an alternative choice with concatenation:
+Unordered Concatenation syntax uses the symbol `&&` and is shorthand for an alternative choice of concatenation:
 ```
 N
-	::= A & B;
+	::= A && B;
 ```
 transforms to
 ```
@@ -346,17 +346,17 @@ N ::=
 ;
 ```
 
-Unordered Concatenation is evaluated left-to-right, so the EBNF expression `A & B & C`
-is equivalent to `(A & B) & C`.
+Unordered Concatenation is evaluated left-to-right, so the EBNF expression `A && B && C`
+is equivalent to `(A && B) && C`.
 ```
 N
-	::= A & B & C;
+	::= A && B && C;
 ```
 transforms to
 ```
 N ::=
-	| (A & B) C
-	| C (A & B)
+	| (A && B) C
+	| C (A && B)
 ;
 ```
 which in turn transforms to
@@ -370,8 +370,65 @@ N ::=
 ```
 **(Notice that not all permutations are available here — namely, `A C B` and `B C A` are missing.)**
 
-Unordered Concatenation is weaker than concatenation:
-`A & B C` is equivalent to `A & (B C)`.
+Unordered Concatenation is weaker than Ordered Concatenation:
+`A && B C` is equivalent to `A && (B C)`.
+`A && B & C` is equivalent to `A && (B & C)`.
+
+##### Unordered Alternation
+Unordered Alternation of symbols is Unordered Concatenation, where only at least one symbol is required.
+
+Unordered Alternation syntax uses the symbol `||` and is shorthand for an alternative choice of concatenation with optional operands:
+```
+N
+	::= A || B;
+```
+transforms to
+```
+N ::=
+	| A
+	| B
+	| A B
+	| B A
+;
+```
+
+Unordered Alternation is evaluated left-to-right, so the EBNF expression `A || B || C`
+is equivalent to `(A || B) || C`.
+```
+N
+	::= A || B || C;
+```
+transforms to
+```
+N ::=
+	| A || B
+	| C
+	| (A || B) C
+	| C (A || B)
+;
+```
+which in turn transforms to
+```
+N ::=
+	| A
+	| B
+	| A B
+	| B A
+	| C
+	| A C
+	| B C
+	| A B C
+	| B A C
+	| C A
+	| C B
+	| C A B
+	| C B A
+;
+```
+**(Notice that not all permutations are available here — namely, `A C B` and `B C A` are missing.)**
+
+Unordered Alternation is weaker than Unordered Concatenation:
+`A || B && C` is equivalent to `A || (B && C)`.
 
 ##### Alternation
 Alternation of symbols indicates an alternative choice of those symbols in the formal grammar.
@@ -411,8 +468,8 @@ N ::=
 ;
 ```
 
-Alternation is weaker than Unordered Concatenation:
-`A | B & C` is equivalent to `A | (B & C)`.
+Alternation is weaker than Unordered Alternation:
+`A | B && C` is equivalent to `A | (B && C)`.
 
 Alternation on its own is not that interesting, but it can be useful when combined with other operations:
 ```
@@ -553,14 +610,22 @@ Therefore, a nonterminal on the left-hand side `P<F, G>` is equivalent to `P<F><
 ##### Production Arguments
 When a parameterized production is referenced as a nonterminal on the right-hand side,
 identifiers are sent as arguments, which determine the production used.
+
+- `<+F>`: definitely include the suffix `F`
+- `<-F>`: definitely exclude the suffix `F`
+- `<?F>`: include the suffix `F` if and only if it appears in the nonterminal
+- `<!F>`: include the suffix `F` exactly when it does not appear in the nonterminal
+
 ```
 N ::=
 	| A<+X>
 	| B<-X>
 ;
 
-M<Y>
-	::= C<?Y>;
+M<Y> ::=
+	| C<?Y>
+	| D<!Y>
+;
 ```
 transforms to
 ```
@@ -569,16 +634,26 @@ N ::=
 	| B
 ;
 
-M   ::= C;
-M_Y ::= C_Y;
+M ::=
+	| C
+	| D_Y
+;
+M_Y ::=
+	| C_Y
+	| D
+;
 ```
 Production arguments expand combinatorially, the same way parameters do.
+
+- `<∓F>`: shorthand for the argument `<-F, +F>`
+
 ```
 N ::=
 	| I<-X, +X>
 	| J<+Y, -Y>
 	| K<-X><+X>
 	| L<+Y><-Y>
+	| II<∓X>
 ;
 
 M ::=
@@ -594,7 +669,13 @@ M ::=
 
 O<Z, W> ::=
 	| P<?Z, ?W>
-	| Q<?Z><?W>
+	| Q<?Z, !W>
+	| R<!Z, ?W>
+	| S<!Z, !W>
+	| T<?Z><?W>
+	| U<?Z><!W>
+	| V<!Z><?W>
+	| W<!Z><!W>
 ;
 ```
 transforms to
@@ -606,6 +687,8 @@ N ::=
 	| J
 	| K_X
 	| L_Y
+	| II
+	| II_X
 ;
 
 M ::=
@@ -625,19 +708,43 @@ M ::=
 
 O ::=
 	| P
-	| Q
+	| Q_W
+	| R_Z
+	| S_Z_W
+	| T
+	| U_W
+	| V_Z
+	| W_Z_W
 ;
 O_Z ::=
 	| P_Z
-	| Q_Z
+	| Q_Z_W
+	| R
+	| S_W
+	| T_Z
+	| U_Z_W
+	| V
+	| W_W
 ;
 O_W ::=
 	| P_W
-	| Q_W
+	| Q
+	| R_Z_W
+	| S_Z
+	| T_W
+	| U
+	| V_Z_W
+	| W_Z
 ;
 O_Z_W ::=
 	| P_Z_W
-	| Q_Z_W
+	| Q_Z
+	| R_W
+	| S
+	| T_Z_W
+	| U_Z
+	| V_W
+	| W
 ;
 ```
 Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equivalent to `P<⊛F><⊗G>`.
@@ -645,7 +752,8 @@ Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equiva
 The former (`P<⊛F, ⊗G>`) acts like a disjunction (`P<⊛F> | P<⊗G> | P<⊛F><⊗G>`), while
 the latter (`P<⊛F><⊗G>`) acts like a conjunction (only `P<⊛F><⊗G>`).
 
-However, a nonterminal on the right-hand side `P<?F, ?G>` *is* equivalent to `P<?F><?G>`.
+However, a nonterminal on the right-hand side `P<⊛F, ⊗G>` *is* equivalent to `P<⊛F><⊗G>`,
+where `⊛` and `⊗` are metavariables representing one of the symbols `?` and `!`.
 
 ##### Production Conditionals
 A production conditional determines whether or not an item appears in the sequence of a production.
@@ -1161,9 +1269,9 @@ The step is shorthand for the following steps:
 	1. *Return:* ‹s›.
 2. *Assert:* ‹s› is a normal completion.
 3. *If* ‹s› has a `value` property:
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `‹s›.value`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «`‹s›.value`».
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with *none*.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «*none*».
 ```
 
 For example, setting a variable to an unwrap step …
@@ -1190,9 +1298,9 @@ The step is shorthand for the following steps:
 ```
 1. *Assert:* ‹s› is a normal completion.
 2. *If* ‹s› has a `value` property:
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `‹s›.value`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «`‹s›.value`».
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with *none*.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «*none*».
 ```
 
 For example, setting a variable to an unwrap-affirm step …

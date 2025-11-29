@@ -241,7 +241,97 @@ Operations that are associative are indicated as so in their respective sections
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
+
+#### Block-Expressions
+```
+`{` Statement+ `}`
+```
+Block-expressions are blocks of statements that produce expressions.
+A block-expression *is* an expression — its value has a type and can be passed around and operated on like any other expression.
+```cpl
+let blex: int = {
+	print.("evaluates to 42");
+	42;
+};
+blex == 42; %== true
+```
+Like all [blocks](./statements.md#blocks-and-scoping), a block-expression must contain at least one statement.
+Furthermore, if the last statement in a block-expression is an [expression-statement](./statements.md#expression-statements),
+then it has a special name: the **determinant** — as it determines the block-expression’s value.
+In the example above, the determinant is `42;`.
+
+If the last statement of a block-expression is not an expression-statement, then the expression has no value, and it has a void type.
+```cpl
+let blex: int = {
+	print.("evaluates, but does not have a value");
+	let value: int = 42;
+}; %> TypeError
+```
+An expression with a void type is like a void function call. These types of expressions cannot be passed around or operated on.
+(“Void” is not a real type in the type system; it’s just a marker given to expressions that execute but do not have a value.)
+
+We run into a similar situation when block-expression *has* a determinant, but that determinant itself is void.
+```cpl
+let blex: int = {
+	print.("evaluates, but does not have a value");
+	let value: int = 42;
+	print.(value); % <-- determinant
+}; %> TypeError
+```
+Because the `print` is a void function, the block-expression has a void type, thus can’t be assigned to the variable.
+(The only exception is when a void block-expression is returned from a void function.
+See the [Functions](./functions.md) chapter for details.)
+
+A block-expression might never finish execution!
+```cpl
+let var count: int = 0;
+let blex: int = {
+	while count >= 0 do {
+		set count += 1;
+	};
+	42; % <-- determinant
+}; % no type error
+```
+In this example, static control flow analysis can reach the determinant and determine the block’s type, so the assignment is valid.
+At runtime however, the [`while` loop](./statements.md#loops) runs indefinitely, so the variable never actually gets assigned.
+While this program compiles successfully, it’ll crash when run.
+
+Block-expressions may contain `break`, `continue`, `return`, and `throw` statements (depending on lexical context).
+These are called **abrupt completions**, because they abruptly transfer control out of the block
+without finishing the evaluation of it.
+Specifically, `break` or `continue` statements will break out of the containing loop,
+and `return`/`throw` statements will apply to the containing function.
+```cpl
+function f(var i: int): str {
+	while true do {
+		set i += 1;
+		let is_threeven: bool = mod.(i, 3) == 0 && {
+			continue; % restarts the `while` loop, not this block-expression
+		}; % no type error
+		let is_divisble_by_7: bool = mod.(i, 7) == 0 && {
+			return "exit"; % returns from the function, not this block-expression
+		}; % no type error
+	};
+	return "done";
+}
+```
+Because these statements are abrupt, the end of the block-expression is unreachable via control flow analysis;
+therefore the block-expression is of type `nothing`, the bottom type (a subtype of every type).
+That’s why these block-expressions are assignable to `bool` variables, and we don’t get type errors as we did in the examples above.
+The difference is that the compiler can determine that a *void* block-expression will finish evaluation but will not produce a value;
+whereas it knows that block-expressions with abrupt statements will never even finish evaluation.
+
+This table highlights some exceptional cases.
+
+| Case  | Block Type | Runtime Behavior | Is Assignable |
+| ----- | ---------- | ---------------- | ------------- |
+| last statement is an expression-statement with type `T` | `T` | completes execution | yes, to type `T` or wider |
+| last statement is a void expression-statement | void | completes execution | no |
+| last statement is not an expression-statement | void | completes execution | no |
+| contains an expression of type `nothing` | `nothing` | fails to complete execution | yes, to any type |
+| contains an abrupt statement | `nothing` | fails to complete execution | yes, to any type |
+| contains an infinite loop or infinite recursive call | `T` | fails to complete execution | yes, to type `T` or wider |
 
 
 ### Property Access
@@ -315,7 +405,7 @@ For static types (e.g., tuples and records),
 either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
 When the maybe access operator is used for an optional entry, the entry type is unioned with `null`.
 ```
-claim record: [required: bool, optional?: int];
+claim record: (required: bool, optional?: int);
 record.required;  %: bool
 record?.required; %> TypeErrorInvalidOperation
 record.optional;  %> TypeErrorInvalidOperation
@@ -352,16 +442,16 @@ The **emptiness operator**, `?`, determines whether a value is considered “emp
 A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`),
 or if it’s an empty string or empty collection (such as an array or set).
 
-| “Falsy” Values | “Empty” Values | “Truthy” Values |
-| -------------- | -------------- | --------------- |
-| `null`         | `null`         |                 |
-| `false`        | `false`        | `true`          |
-|                |                | all symbols     |
-|                | `0`            | all integers    |
-|                | `0.0`, `-0.0`  | all floats      |
-|                | `""`           | all strings     |
-|                | `[]`, `{}`     | all collections |
-|                |                | any other value |
+| “Falsy” Values | “Empty” Values   | “Truthy” Values |
+| -------------- | ---------------- | --------------- |
+| `null`         | `null`           |                 |
+| `false`        | `false`          | `true`          |
+|                |                  | all symbols     |
+|                | `0`              | all integers    |
+|                | `0.0`, `-0.0`    | all floats      |
+|                | `""`             | all strings     |
+|                | `()`, `[]`, `{}` | all collections |
+|                |                  | any other value |
 
 
 ### Mathematical Affirmation, Mathematical Negation
@@ -453,7 +543,7 @@ We can use a claim to tell the compiler, “I know what I’m doing and the type
 Type claims are a general form of [non-null assertions] (link pending).
 For example, we could use non-null assertion to say that an optional entry exists on an object:
 ```
-let var item: [str, ?: int] = ["apples", 42];
+let var item: (str, ?: int) = ("apples", 42);
 let quantity: int = item?.1~?;
 ```
 Since `item.1` is optional, `item?.1` is of type `int | null`.
@@ -461,7 +551,7 @@ By using the non-null assertion `~?`, we can subtract type null.
 
 The more general form of this is simply claiming that `item?.1` is of type `int`:
 ```
-let var item: [str, ?: int] = ["apples", 42];
+let var item: (str, ?: int) = ("apples", 42);
 let quantity: int = item?.1 as <int>;
 ```
 
@@ -469,7 +559,7 @@ Type claims can be used in situations where non-null assertion cannot.
 Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
-let var item: [str, int | str] = ["apples", 42];
+let var item: (str, int | str) = ("apples", 42);
 let ingredient: anything   = item.0 as <anything>;   % widening
 let quantity:   int        = item.1 as <int>;        % narrowing
 let in_stock:   int | bool = item.1 as <int | bool>; % shifting
@@ -507,7 +597,6 @@ let dog_r: Result.<Dog> = animal as! Dog; %== Fail
 dog_r?.woof.();                           %== Fail
 ```
 
-
 A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
 but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
 That means that if it’s *not* such an instance, an error could be thrown down the line,
@@ -531,7 +620,6 @@ Using type claims to “just get your code to compile” is never recommended,
 because it won’t prevent runtime errors and it will most likely cause more problems down the road.
 But there are cases in which human reasoning about type safety outsmarts the compiler,
 so in those cases we may use type claims to write good code.
-
 
 
 ### Exponentiation
@@ -916,7 +1004,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Type Property Access
@@ -929,12 +1017,12 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
 ```
-type T = [bool, int, str];
+type T = (bool, int, str);
 type T1 = T.1;             %== int
 type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
 
-type R = [a: bool, b?: int, c: str];
+type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
 type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
@@ -952,7 +1040,7 @@ type T = int?; % equivalent to `type T = int | null;`
 This operator is useful for describing values that might be null.
 ```
 let var hello: str? = null;
-hello = "world";
+set hello = "world";
 ```
 
 
@@ -961,28 +1049,6 @@ hello = "world";
 <Type> `!`
 ```
 To be announced.
-
-
-### List
-```
-<Type> `[]`
-```
-The **List** operator `T[]` is shorthand for `List.<T>`.
-
-
-### Tuple
-```
-<Type> `[` <Integer> `]`
-```
-The **Tuple** operator `T[‹n›]` (where `‹n›` is 0 or greater) is shorthand for a tuple type with repeated entries of `T`.
-E.g., `int[3]` is shorthand for `[int, int, int]`.
-
-
-### Set
-```
-<Type> `{}`
-```
-The **Set** operator `T{}` is shorthand for `Set.<T>`.
 
 
 ### Mutable
@@ -1008,26 +1074,26 @@ then attempting to modify it would result in a [Mutability Error](./errors.md#mu
 ```
 The **intersection** operator creates a strict combination of the operands.
 ```
-type T = [foo: bool] & [bar: int];
-let v: T = [
+type T = (foo: bool) & (bar: int);
+let v: T = (
 	foo= false,
 	bar= 42,
-];
+);
 ```
 
 When accessing an *intersection* of record types, we can access the *union* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
+);
 claim alice: Employee & Volunteer;
 alice.name;        %: str
 alice.id;          %: int
@@ -1040,14 +1106,14 @@ so we’re guaranteed it will have the properties that are present in *either* t
 
 Overlapping properties in an intersection are themselves intersected.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
+);
 claim data: A & B;
 data.key;    %: 2 | 3 % gotten by `(1 | 2 | 3) & (2 | 3 | 4)`
 data.valueA; %: int
@@ -1065,22 +1131,22 @@ The **union** operator creates a type that is either one operand, or the other, 
 ```
 type T = bool | int;
 let var v: T = false;
-v = 42;
+set v = 42;
 ```
 
 When accessing a *union* of record types, we can only access the *intersection* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
+);
 claim bob: Employee | Volunteer;
 bob.name;        %: str
 bob.hoursWorked; %: float
@@ -1103,14 +1169,14 @@ bob?.agency;   %: str | null
 
 Overlapping properties in a union are themselves unioned.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
+);
 claim data: A | B;
 data.key; %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ```

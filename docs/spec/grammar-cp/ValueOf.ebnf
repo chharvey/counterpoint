@@ -42,6 +42,20 @@ Record! ValueOf(SemanticRecord record) :=
 
 
 
+Set! ValueOf(SemanticList list) :=
+	1. *Let* `data` be a mapping of `list` for each `it` to *Unwrap:* `ValueOf(it)`.
+	2. *Return:* a new List containing the items in `data`.
+;
+
+
+
+Set! ValueOf(SemanticDict dict) :=
+	1. *Let* `data` be a mapping of `dict` for each `prop` to *Unwrap:* `ValueOf(prop.children.1)`.
+	2. *Return:* a new List containing the items in `data`.
+;
+
+
+
 Set! ValueOf(SemanticSet set) :=
 	1. *Let* `data` be a mapping of `set` for each `el` to *Unwrap:* `ValueOf(el)`.
 	2. *Return:* a new Set containing the items in `data`.
@@ -61,8 +75,25 @@ Map! ValueOf(SemanticMap map) :=
 
 
 
+Value! ValueOf(SemanticExpressionBlock block) :=
+	1. *Assert:* `block.children.count` is greater than 0.
+	2. *For each* `stmt` in `block.children`:
+		1. *If* `stmt` is not a SemanticStatementExpression:
+			1. *Throw:* *none*.
+		2. *If* `stmt.children.count` is 1:
+		3. *Perform:* *Unwrap:* `ValueOf(stmt.children.0)`.
+	3. *Let* `last_stmt` be `block.children.-1`.
+	4. *Assert:* `last_stmt` is a SemanticStatementExpression.
+	5. *Assert:* `last_stmt.children.count` is greater than 0.
+	6. *Let* `expr` be `last_stmt.children.0`.
+	7. *Assert:* `expr` is a SemanticExpression.
+	8. *Return:* `ValueOf(expr)`.
+;
+
+
+
 Object! ValueOf(SemanticAccess[kind: RESULT] access) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
@@ -153,22 +184,23 @@ Object! ValueOf(SemanticCall call) :=
 		3. *Note:* The call looks like "Set.<T>(arg)".
 		4. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.2)`.
 		5. *Return:* a new Set containing the items in `tuple`.
-	7. *Assert:* `base.source` is "Map".
-	8. *Assert:* `call.children.count` is 2 or 3 or 4.
-	9. *If* `call.children.count` is 2:
-		1. *Note:* The call looks like "Map.<K>()".
-		2. *Return:* a new empty Map.
-	10. *Else If* `call.children.count` is 3:
-		1. *If* `call.children.2` is a SemanticType:
-			1. *Note:* The call looks like "Map.<K, V>()".
+	7. *Else:*
+		1. *Assert:* `base.source` is "Map".
+		2. *Assert:* `call.children.count` is 2 or 3 or 4.
+		3. *If* `call.children.count` is 2:
+			1. *Note:* The call looks like "Map.<K>()".
 			2. *Return:* a new empty Map.
-		2. *Else:*
-			1. *Note:* The call looks like "Map.<K>(arg)".
-			2. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.2)`.
-			3. *Return:* a new Map containing the pairs in `tuple`.
-	11. *Note:* The call looks like "Map.<K, V>(arg)".
-	12. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.3)`.
-	13. *Return:* a new Map containing the pairs in `tuple`.
+		4. *Else If* `call.children.count` is 3:
+			1. *If* `call.children.2` is a SemanticType:
+				1. *Note:* The call looks like "Map.<K, V>()".
+				2. *Return:* a new empty Map.
+			2. *Else:*
+				1. *Note:* The call looks like "Map.<K>(arg)".
+				2. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.2)`.
+				3. *Return:* a new Map containing the pairs in `tuple`.
+		5. *Note:* The call looks like "Map.<K, V>(arg)".
+		6. *Let* `tuple` be *Unwrap:* `ValueOf(call.children.3)`.
+		7. *Return:* a new Map containing the pairs in `tuple`.
 ;
 
 
@@ -252,7 +284,7 @@ Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=
-	1. *Throw:* a new TypeError "Operator not yet supported.".
+	// TODO: implement
 ;
 
 Boolean! ValueOf(SemanticOperation[operator: ID] expr) :=

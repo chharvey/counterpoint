@@ -78,7 +78,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 
 1.  2200                                             — A general assignment error not covered by one of the following cases.
 1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
-1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record key.
+1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict key.
 1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a fixed variable was attempted.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
@@ -93,11 +93,12 @@ type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
 #### 2202: AssignmentErrorDuplicateKey
-Cause: A duplicate key in a record literal or type literal was encountered.
+Cause: A duplicate key in a record type, record literal, or dict literal was encountered.
 ```
-[foo= "a", foo= "b"]; % AssignmentError: Duplicate record key `foo`.
+type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate record/dict key `bar`.
 
-type MyType = [bar: int, bar: str]; % AssignmentError: Duplicate record key `bar`.
+(foo= "a", foo= "b"); % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
+[foo= "a", foo= "b"]; % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
 ```
 Solution(s): Remove or rename the duplicate key.
 
@@ -105,7 +106,7 @@ Solution(s): Remove or rename the duplicate key.
 Cause: A fixed variable was reassigned.
 ```
 let my_var: int = 42;
-my_var = 24;          % AssignmentError: Reassignment of fixed variable `my_var`.
+set my_var = 24;      % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or declare the variable with `var`.
 
@@ -119,7 +120,7 @@ A type error is raised when the compiler recognizes a type mismatch.
 1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
 1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
 1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
-1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments is passed to a callable object.
+1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments was passed to a callable object.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -138,16 +139,16 @@ Solution(s): Ensure the assigned type is a subtype of the assignee.
 #### 2303: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
 ```
-let x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
-((x: int): int => x + 1).(4.2); % TypeError: Expression of type `4.2` is not assignable to type `int`.
+let x: int = true;               % TypeError: Expression `true` is not assignable to type `int`.
+(\(x: int): int => x + 1).(4.2); % TypeError: Expression `4.2` is not assignable to type `int`.
 ```
 Solution(s): Ensure the expression has an assignable type.
 
 #### 2304: TypeErrorNoEntry
 Cause: A non-existent index, key, or parameter name was accessed.
 ```
-[42, 420].2;                      % TypeError: Index `2` does not exist on type `[42, 420]`.
-[a= 42, b= 420].c;                % TypeError: Property `c` does not exist on type `[a: 42, b: 420]`.
+(42, 420).2;                      % TypeError: Index `2` does not exist on type `(42, 420)`.
+(a= 42, b= 420).c;                % TypeError: Property `c` does not exist on type `(a: 42, b: 420)`.
 ((x: int): int => x + 1).(y= 42); % TypeError: Parameter `y` does not exist on type `(x: int) => int`.
 ```
 Solution(s): Ensure the index/property/parameter access has the correct index or name.
@@ -184,8 +185,8 @@ A mutability error is raised when the compiler recognizes an attempt to mutate a
 #### 2401: MutabilityError01
 Cause: An immutable object was mutated.
 ```
-let x: [a: int] = [a= 42];
-x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `[a: int]`.
+let x: (a: int) = (a= 42);
+set x.a = 43;              % MutabilityError: Mutation of an object of immutable type `(a: int)`.
 ```
 Solution(s): Do not mutate the object’s entries, or else give it a `mut` type.
 
@@ -206,13 +207,13 @@ A void error is raised when an operation cannot produce a value when it is expec
 Cause: A list was accessed at an index greater than or equal to its length,
 or a dict or map was accessed at a key that it does not have.
 ```
-List.<str>(["earth", "wind", "fire"]).[4]; % VoidErrorOutOfBounds
+["earth", "wind", "fire"].[4]; % VoidErrorOutOfBounds
 
-Dict.<str>([
+[
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
-]).[@pythagoras]; % VoidErrorOutOfBounds
+].[@pythagoras]; % VoidErrorOutOfBounds
 ```
 Solution(s): Access collections only at existing indices/keys,
 iterate over them dynamically using loops or list iteration methods,

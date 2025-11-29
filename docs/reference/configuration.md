@@ -13,16 +13,16 @@ Your JSON file should be a single object, with two optional properties: `languag
 [Counterpoint API coming soon]
 
 - Without a config file, the Counterpoint compiler will use the configuration default values, listed in the next section.
-- To use a config file during compilation, you must specify it on the command line. Run `npx cpc --help` for details.
-- Even with a config file, you may override it with per-option CLI arguments. Run `npx cpc --config` for details.
+- To use a config file during compilation, you must specify it on the command line. Run `npx cplc --help` for details.
+- Even with a config file, you may override it with per-option CLI arguments. Run `npx cplc --config` for details.
 
-For example, the default value of [`comments`](#comments) is `true`.
-If in your `counterpoint-config.json` you have `{"languageFeatures": {"comments": false}}`,
+For example, the default value of an option `‹foo›` might be `true`.
+If in your `counterpoint-config.json` you have `{"languageFeatures": {"foo": false}}`,
 that would override the default. However, if you run
 ```shell
-$ npx cpc c ./my-program.cp -p=./counterpoint-config.json --comments
+$ npx cplc c ./my-program.cpls -p=./counterpoint-config.json --foo
 ```
-the `--comments` option would override your config file and turn comments back on again.
+the `--foo` option would override your config file.
 
 
 
@@ -31,59 +31,6 @@ the `--comments` option would override your config file and turn comments back o
 
 ### `languageFeatures`
 Language features are aspects of the Counterpoint Programming Language that may be enabled and disabled at will.
-
-#### `comments`
-```
-@version v0.2.0
-@type    boolean
-@default true
-```
-Allows lexing of comments in source code.
-With this disabled, the compiler will not recognize comments:
-```
-% line comments
-
-%% multiline
-comments %%
-
-%%% inline doc comments %%
-
-%%%
-block doc comments
-%%%
-```
-
-#### `integerRadices`
-```
-@version v0.2.0
-@type    boolean
-@default false
-```
-Allows integers with a non-decimal radices.
-
-With this feature enabled, integers can be written in five other bases in addition to the default base 10.
-To write an integer in base 2, 4, 8, 16, or 36, prefix it with `\b`, `\q`, `\o`, `\x`, or `\z`, respectively.
-(Integers can also be prefixed with `\d` for base 10.)
-
-For example, `\xff` in hexadecimal (base 16) is `255` decimal (base 10), also written `\d255`.
-
-Disabling this feature requires all integers to be written in base 10, in their non-prefixed form.
-
-#### `numericSeparators`
-```
-@version v0.2.0
-@type    boolean
-@default false
-```
-Allows numeric separator symbols within number tokens.
-
-If enabled, number tokens may contain underscore characters `_` to help visually group and separate the digits.
-The numeric separator can only appear between digits, cannot appear at the beginning or end of a token,
-and cannot appear consecutively (two or more in a row).
-
-For example, `1_000_000` represents *1,000,000* and `\b1011_0100` represents *180*.
-
-With this disabled, number tokens cannot contain the numeric separator character.
 
 
 ### `compilerOptions`

@@ -67,7 +67,7 @@ class TypeTuple extends ValueType {
 	}
 
 	public override toString(): string {
-		return `[${ this.typeargs.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
+		return `(${ this.typeargs.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }${ this.typeargs.length === 1 ? ',' : '' })`;
 	}
 
 	@instanceOf(() => VALUE.Tuple)
@@ -95,13 +95,17 @@ class TypeTuple extends ValueType {
 	}
 
 	public get(index: bigint, accessor: AST.ASTNodeIndex): EntryType {
-		const n: number = this.typeargs.length;
+		return this.typeargs.at(Number(index)) ?? assert.fail(new TypeErrorNoEntry('index', this, accessor));
+	}
+
+	public set(index: bigint, typ: Type, accessor: AST.ASTNodeIndex): void {
 		const i: number = Number(index);
-		return (
-			(-n <= i && i < 0) ? this.typeargs[i + n] :
-			(0  <= i && i < n) ? this.typeargs[i] :
-			assert.fail(new TypeErrorNoEntry('index', this, accessor))
-		);
+		const entrytype: EntryType | undefined = this.typeargs.at(i);
+		if (entrytype) {
+			(this.typeargs as EntryType[])[i] = {...entrytype, type: typ};
+		} else {
+			throw new TypeErrorNoEntry('index', this, accessor);
+		}
 	}
 
 	public itemTypes(): Type {
@@ -149,7 +153,7 @@ class TypeTuple extends ValueType {
 			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
 				return builder.module.tuple.make(builtIndex.map((n) => builder.module.tuple.extract(base_build, n)));
 			}
-			const local: Local = builder.addLocal(base_build)[1];
+			const local: Local = builder.addLocal(base_build);
 			return builder.module.tuple.make([
 				                                  builder.module.tuple.extract(local.tee(), builtIndex[0]), // eslint-disable-line @stylistic/indent
 				...builtIndex.slice(1).map((n) => builder.module.tuple.extract(local.get(), n)),

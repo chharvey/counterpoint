@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.4.2-beta.0",
+  "version": "0.4.3-beta.0",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -11,29 +11,31 @@
   "main": "build/main.js",
   "type": "module",
   "bin": {
-    "cpc": "bin/cpc.js"
+    "cplc": "bin/cplc.js"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/chharvey/counterpoint.git"
   },
   "scripts": {
-    "cpc": "cpc",
-    "cpc-h": "cpc -h",
-    "cpc-v": "cpc -v",
-    "cpc:c": "cpc c ./sample/test-v0.4.cp",
-    "cpc:c-o": "cpc c ./sample/test-v0.4.cp -o ./sample/testout.wasm",
-    "cpc:c-p": "cpc c ./sample/test-v0.4.cp -p ./sample/counterpoint-config.json",
-    "cpc:d": "cpc d ./sample/test-v0.4.cp",
-    "cpc:d-o": "cpc d ./sample/test-v0.4.cp -o ./sample/testout.wat",
-    "cpc:d-p": "cpc d ./sample/test-v0.4.cp -p ./sample/counterpoint-config.json",
-    "cpc:r": "cpc r ./sample/test-v0.4.wasm",
+    "cplc": "npx cplc",
+    "cplc-h": "npx cplc -h",
+    "cplc-v": "npx cplc -v",
+    "cplc:c": "npx cplc c ./sample/test-v0.5.cpls",
+    "cplc:c-o": "npx cplc c ./sample/test-v0.5.cpls -o ./sample/testout.wasm",
+    "cplc:c-p": "npx cplc c ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
+    "cplc:d": "npx cplc d ./sample/test-v0.5.cpls",
+    "cplc:d-o": "npx cplc d ./sample/test-v0.5.cpls -o ./sample/testout.wat",
+    "cplc:d-p": "npx cplc d ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
+    "cplc:r": "npx cplc r ./sample/test-v0.5.wasm",
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
     "dist": "tsc",
-    "postdist": "eslint .",
+    "postdist": "eslint",
     "pretest": "tsc --project ./test/tsconfig.json",
-    "test": "mocha -r tsx src/index.ts --timeout 10000 './test/**/*.test.ts'",
-    "prebuild": "npm run build -w tree-sitter-counterpoint && npm rebuild",
+    "test": "npx tsx --test --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
+    "test:only": "npx tsx --test --test-only --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
+    "justbuild": "npm run postbuild -w ./tree-sitter-counterpoint/ && npm rebuild",
+    "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
   },
   "dependencies": {
@@ -46,17 +48,16 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
+    "@reporters/mocha": "^1.1.1",
     "@stylistic/eslint-plugin": "^5.2.0",
     "@types/minimist": "^1.2.0",
-    "@types/mocha": "^10.0.0",
     "@types/node": "^24.0.14",
     "@types/utf8": "^3.0.0",
     "eslint": "^9.16.0",
     "eslint-plugin-import": "^2.31.0",
     "globals": "^16.0.0",
-    "mocha": "^11.7.1",
     "tsx": "^4.19.3",
-    "typescript": "~5.8.0",
+    "typescript": "~5.9.0",
     "typescript-eslint": "^8.18.0"
   },
   "engines": {

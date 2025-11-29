@@ -28,11 +28,23 @@ export enum Keyword {
 	// storage
 	TYPE  = 'type',
 	LET   = 'let',
+	CLAIM = 'claim',
+	SET   = 'set',
 	BLANK = '_',
 
 	// modifier
 	NOMINAL = 'nominal',
 	UNFIXED = 'var',
+
+	// control
+	UNLESS   = 'unless',
+	WHILE    = 'while',
+	UNTIL    = 'until',
+	FOR      = 'for',
+	OF       = 'of',
+	DO       = 'do',
+	BREAK    = 'break',
+	CONTINUE = 'continue',
 }
 
 

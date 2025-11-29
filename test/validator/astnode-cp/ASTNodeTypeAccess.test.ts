@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
@@ -16,8 +17,8 @@ import {
 
 
 
-describe('ASTNodeTypeAccess', () => {
-	describe('#eval', () => {
+test.suite('ASTNodeTypeAccess', () => {
+	test.suite('#eval', () => {
 		/**
 		 * Takes a program source text and compares it to the array of expected types.
 		 * The format of the program source text must be 0 or more type declarations.
@@ -29,14 +30,14 @@ describe('ASTNodeTypeAccess', () => {
 		 * @param expecteds the expected evaluations of the type-expressions
 		 */
 		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-			const program:    AST.ASTNodeGoal                       = AST.ASTNodeGoal.fromSource(source);
-			const statements: readonly AST.ASTNodeDeclarationType[] = program.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
-			program.varCheck();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+			goal.varCheck();
 			try {
-				program.typeCheck();
+				goal.typeCheck();
 			} catch {
 				// if type-checking fails, proceed to `assert.throws` below
 			}
+			const statements: readonly AST.ASTNodeDeclarationType[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
 			return expecteds.some((it) => it instanceof Function)
 				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
@@ -51,14 +52,14 @@ describe('ASTNodeTypeAccess', () => {
 		}
 
 
-		context('access kind: normal access (`a.‹b›`).', () => {
-			it('returns individual entry types.', () => {
-				testTypeEvals(`
-					type TupC = [1,   2.0,   "three"];
-					type TupV = [int, float, str];
+		test.suite('access kind: normal access (`a.‹b›`).', () => {
+			test.test('returns individual entry types.', () => {
+				testTypeEvals(`{
+					type TupC = (1,   2.0,   "three");
+					type TupV = (int, float, str);
 
-					type RecC = [a: 1,   b: 2.0,   _: "three"];
-					type RecV = [a: int, b: float, _: str];
+					type RecC = (a: 1,   b: 2.0,   _: "three");
+					type RecV = (a: int, b: float, _: str);
 
 					type A1 = TupC.0;  % type \`1\`
 					type A2 = TupC.1;  % type \`2.0\`
@@ -79,7 +80,7 @@ describe('ASTNodeTypeAccess', () => {
 					type C4 = RecV.a; % type \`int\`
 					type C5 = RecV.b; % type \`float\`
 					type C6 = RecV._; % type \`str\`
-				`, 4, [
+				}`, 4, [
 					typeUnit(1n),
 					typeUnit(2.0),
 					typeUnit('three'),
@@ -101,52 +102,52 @@ describe('ASTNodeTypeAccess', () => {
 					TYPE.STR,
 				]);
 			});
-			it('throws when entry is optional.', () => {
-				testTypeEvals(`
-					type TupoC = [1,   2.0,   ?: "three"];
-					type TupoV = [int, float, ?: str];
+			test.test('throws when entry is optional.', () => {
+				testTypeEvals(`{
+					type TupoC = (1,   2.0,   ?: "three");
+					type TupoV = (int, float, ?: str);
 
-					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
-					type RecoV = [a: int, b?: float, c: str];
+					type RecoC = (a: 1,   b?: 2.0,   c: "three");
+					type RecoV = (a: int, b?: float, c: str);
 
 					type D1 = TupoC.2;
 					type D2 = TupoV.2;
 
 					type E1 = RecoC.b;
 					type E2 = RecoV.b;
-				`, 4, repeat(TypeErrorInvalidOperation, 4));
+				}`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
-			it('throws when base object is of incorrect type.', () => {
+			test.test('throws when base object is of incorrect type.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					List.<int>.1
 					Dict.<int>.b
 				`, (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry, src));
 			});
-			it('throws when index is out of bounds / when key is out of range.', () => {
+			test.test('throws when index is out of bounds / when key is out of range.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
-					[1, 2.0, "three"].3
-					[1, 2.0, "three"].-4
-					[a: 1, b: 2.0, c: "three"].d
+					(1, 2.0, "three").3
+					(1, 2.0, "three").-4
+					(a: 1, b: 2.0, c: "three").d
 				`, (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
 			});
 		});
 
 
-		context('access kind: maybe access (`a?.‹b›`).', () => {
-			it('unions with null if entry is optional.', () => {
-				testTypeEvals(`
-					type TupoC = [1,   2.0,   ?: "three"];
-					type TupoV = [int, float, ?: str];
+		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
+			test.test('unions with null if entry is optional.', () => {
+				testTypeEvals(`{
+					type TupoC = (1,   2.0,   ?: "three");
+					type TupoV = (int, float, ?: str);
 
-					type RecoC = [a: 1,   b?: 2.0,   c: "three"];
-					type RecoV = [a: int, b?: float, c: str];
+					type RecoC = (a: 1,   b?: 2.0,   c: "three");
+					type RecoV = (a: int, b?: float, c: str);
 
 					type D1 = TupoC?.2; % type \`"three" | null\`
 					type D2 = TupoV?.2; % type \`str | null\`
 
 					type E1 = RecoC?.b; % type \`2.0 | null\`
 					type E2 = RecoV?.b; % type \`float | null\`
-				`, 4, [
+				}`, 4, [
 					typeUnit('three').union(TYPE.NULL),
 					TYPE.STR.union(TYPE.NULL),
 
@@ -154,20 +155,20 @@ describe('ASTNodeTypeAccess', () => {
 					TYPE.FLOAT.union(TYPE.NULL),
 				]);
 			});
-			it('throws when entry is not optional.', () => {
-				testTypeEvals(`
-					type TupoC = [1,   2.0,   "three"];
-					type TupoV = [int, float, str];
+			test.test('throws when entry is not optional.', () => {
+				testTypeEvals(`{
+					type TupoC = (1,   2.0,   "three");
+					type TupoV = (int, float, str);
 
-					type RecoC = [a: 1,   b: 2.0,   c: "three"];
-					type RecoV = [a: int, b: float, c: str];
+					type RecoC = (a: 1,   b: 2.0,   c: "three");
+					type RecoV = (a: int, b: float, c: str);
 
 					type D1 = TupoC?.2;
 					type D2 = TupoV?.2;
 
 					type E1 = RecoC?.b; % type \`2.0 | null\`
 					type E2 = RecoV?.b; % type \`float | null\`
-				`, 4, repeat(TypeErrorInvalidOperation, 4));
+				}`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
 		});
 	});

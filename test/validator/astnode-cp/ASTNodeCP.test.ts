@@ -1,36 +1,38 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
-	TYPE,
+	drop_then,
+	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
-	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
-	MutabilityError01,
 } from '../../../src/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
 } from '../../assert-helpers.ts';
-import {typeUnit} from '../../helpers.ts';
+import {setupScript} from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
-describe('ASTNodeCP', () => {
-	describe('ASTNodeIndex', () => {
-		describe('#index', () => {
-			it('returns the cooked value of the integer token.', () => {
+test.suite('ASTNodeCP', () => {
+	test.suite('ASTNodeIndex', () => {
+		test.suite('#index', () => {
+			test.test('returns the cooked value of the integer token.', () => {
 				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
 					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
 					assert_instanceof(type_accessor, AST.ASTNodeIndex);
 					assert.strictEqual(type_accessor.index, index);
 
-					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index };`).accessor;
+					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index }`).accessor;
 					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
 					assert.strictEqual(expr_accessor.index, index);
 				});
@@ -40,30 +42,26 @@ describe('ASTNodeCP', () => {
 
 
 
-	describe('ASTNodeStatementExpression', () => {
-		describe('#build', () => {
-			it('returns `(nop)` for empty statement expression.', () => {
+	test.suite('ASTNodeStatementExpression', () => {
+		test.suite('#build', () => {
+			test.test('returns `(nop)` for empty statement expression.', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
-			it('returns `(nop)` for nonempty foldable statement expression.', () => {
+			test.test('returns `(nop)` for nonempty foldable statement expression.', () => {
 				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
-			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			test.test('returns `(drop)` for nonempty non-foldable statement expression.', () => {
+				const {stmts, mod} = setupScript(`{
 					let var x: int = 42;
 					x * 10;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const stmt: AST.ASTNodeStatement = goal.children[1];
-				assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-				assert.ok(stmt.expr);
+				}`);
+				assert_instanceof(stmts[1], AST.ASTNodeStatementExpression);
+				assert.ok(stmts[1].expr);
 				return assertEqualBins(
-					stmt.build(),
-					goal.builder.module.drop(stmt.expr.build()),
+					stmts[1].build(),
+					mod.drop(stmts[1].expr.build()),
 				);
 			});
 		});
@@ -71,199 +69,185 @@ describe('ASTNodeCP', () => {
 
 
 
-	describe('ASTNodeAssignment', () => {
-		describe('#varCheck', () => {
-			it('throws if the variable is not unfixed.', () => {
-				AST.ASTNodeGoal.fromSource(`
-					let var i: int = 42;
-					i = 43;
-				`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					let i: int = 42;
-					i = 43;
-				`).varCheck(), AssignmentErrorReassignment);
+	test.suite('ASTNodeStatementConditional', () => {
+		test.suite('#typeCheck', () => {
+			const NON_BOOLS: readonly string[] = extract_lines`
+				let var cond: int         = 42;
+				let var cond: int | false = 42;
+				let var cond: int | true  = 42;
+				let var cond: int | bool  = 42;
+			`;
+			const BOOLS: readonly string[] = extract_lines`
+				let var cond: false = false;
+				let var cond: true  = true;
+				let var cond: bool  = false;
+			`;
+			test.test('passes when condition is subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
+					setupScript(`{
+						${ decl }
+						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
+						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
+					}`, null, {build: false}); // assert does not throw
+				}));
 			});
-			it('always throws for type alias reassignment.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					type T = 42;
-					T = 43;
-				`).varCheck(), ReferenceErrorKind);
-			});
-		});
-
-
-		describe('#typeCheck', () => {
-			context('for variable reassignment.', () => {
-				it('throws when variable assignee type is not supertype.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var i: int = 42;
-						i = 4.3;
-					`);
-					goal.varCheck();
-					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
-				});
-				it('allows reassignment when uninitialized.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var x?: int;
-						x = 42;
-					`);
-					goal.varCheck();
-					goal.typeCheck();
-					return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
-						isUnfixed:       true,
-						isUninitialized: true,
-						type:            TYPE.INT,
-						value:           null,
-					});
-				});
-				it('does not allow reassignment of `null` when uninitialized.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var x?: int;
-						x = null;
-					`);
-					goal.varCheck();
-					assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
-						isUnfixed:       true,
-						isUninitialized: true,
-					});
-					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
-				});
-			});
-
-			context('for property reassignment.', () => {
-				it('allows assignment directly on objects.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						List.<int>([42]).[0]                 = 42;
-						Dict.<int>([i= 42]).[@i]             = 42;
-						Set.<int>([42]).[43]                 = false;
-						Map.<bool, int>([[true, 42]]).[true] = 42;
-					`);
-					goal.varCheck();
-					return goal.typeCheck(); // assert does not throw
-				});
-				it('throws when property assignee type is not supertype.', () => {
-					[
-						`
-							let l: mut int[] = List.<int>([42]);
-							l.[0] = 4.2;
-						`,
-						`
-							let d: mut [:int] = Dict.<int>([i= 42]);
-							d.[@i] = 4.2;
-						`,
-						`
-							let s: mut int{} = Set.<int>([42]);
-							s.[42] = 4.2;
-						`,
-						`
-							let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 4.2;
-						`,
-					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
-					});
-				});
-				it('throws when Set/Map accessor expression is not a valid type.', () => {
-					xjs.Array.forEachAggregated([`
-						let s: mut int{} = Set.<int>([42]);
-						s.[4.3] = true;
-					`, `
-						let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
-						m.["true"] = 43;
-					`], (src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
-					});
-				});
-				it('throws when assignee’s base type is not mutable.', () => {
-					[
-						`
-							let t: [int] = [42];
-							t.0 = 43;
-						`,
-						`
-							let r: [i: int] = [i= 42];
-							r.i = 43;
-						`,
-						`
-							let l: int[] = List.<int>([42]);
-							l.[0] = 43;
-						`,
-						`
-							let d: [:int] = Dict.<int>([i= 42]);
-							d.[@i] = 43;
-						`,
-						`
-							let s: int{} = Set.<int>([42]);
-							s.[43] = true;
-						`,
-						`
-							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
-							m.[true] = 43;
-						`,
-					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-						goal.varCheck();
-						assert.throws(() => goal.typeCheck(), MutabilityError01);
-					});
+			test.test('throws when condition is not subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
+					const {stmts} = setupScript(`{
+						${ decl }
+						if     cond then { "consequent"; } else { "alternative"; };
+						unless cond then { "consequent"; };
+					}`, null, {typeCheck: false});
+					stmts[0].typeCheck(); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
 			});
 		});
 
 
-		describe('#build', () => {
-			it('always returns `(local.set)`.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var y: float = 4.2;
-					y = y * 10.0;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				return assertEqualBins(
-					goal.children[1].build(),
-					goal.builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build()),
-				);
+		test.suite('#build', () => {
+			test.test('produces `(nop)` for alternative if there is none.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond: bool = false;
+					if cond then {
+						42;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				return assertEqualBins(stmt.build(), mod.if(
+					new BinVect(mod, stmt.condition.build()).isSpecial(true),
+					stmt.consequent.build(),
+					mod.nop(),
+				));
 			});
-			it('allows switching between union members.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: float | int = 4.2;
-					let var y: int | float = 4.2;
-					x = 8.4;
-					x = 16;
-					x = x;
-					x = y;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
-					goal.children.slice(2).map((stmt) => goal.builder.module.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build())),
-				);
+			test.test('produces a simple block if the condition is definitely truthy/falsy.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var TRUE:  true  = true;
+					let var FALSE: false = false;
+					if TRUE then {
+						42;
+					};
+					if TRUE then {
+						42;
+					} else {
+						69;
+					};
+					if FALSE then {
+						42;
+					};
+					if FALSE then {
+						42;
+					} else {
+						69;
+					};
+				}`);
+				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
+					drop_then(
+						mod,
+						[(stmts[2] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[2] as AST.ASTNodeStatementConditional).consequent.build(),
+					),
+					drop_then(
+						mod,
+						[(stmts[3] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[3] as AST.ASTNodeStatementConditional).consequent.build(),
+					),
+					drop_then(
+						mod,
+						[(stmts[4] as AST.ASTNodeStatementConditional).condition.build()],
+						mod.nop(),
+					),
+					drop_then(
+						mod,
+						[(stmts[5] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[5] as AST.ASTNodeStatementConditional).alternative!.build(),
+					),
+				]);
+			});
+			test.test('negates the condition for `unless` statements.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond: bool = false;
+					unless cond then {
+						42;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				return assertEqualBins(stmt.build(), mod.if(
+					new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(true),
+					stmt.consequent.build(),
+					mod.nop(),
+				));
+			});
+			test.test('nested if–else.', () => {
+				const {stmts, mod} = setupScript(`{
+					let var cond1: bool = false;
+					let var cond2: bool = true;
+					if cond1 then {
+						42;
+					} else if cond2 then {
+						4.2;
+					} else {
+						null;
+					};
+				}`);
+				const stmt1 = stmts[2] as AST.ASTNodeStatementConditional;
+				const stmt2 = stmt1.alternative as AST.ASTNodeStatementConditional;
+				assertEqualBins(stmt1.build(), mod.if(
+					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
+					stmt1.consequent.build(),
+					stmt2.build(),
+				));
+				assertEqualBins(stmt2.build(), mod.if(
+					new BinVect(mod, stmt2.condition.build()).isSpecial(true),
+					stmt2.consequent.build(),
+					stmt2.alternative!.build(),
+				));
 			});
 		});
 	});
 
 
 
-	describe('ASTNodeGoal', () => {
-		describe('#varCheck', () => {
-			it('aggregates multiple errors.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`
+	test.suite('ASTNodeBlock', () => {
+		test.suite('#build', () => {
+			test.test('always retuns `(block)`.', () => {
+				const {goal, stmts, mod} = setupScript(`{
+					let var x: int = 42;
+					x;
+				}`);
+				assertEqualBins(goal.block!.build(), mod.block(null, stmts.map((stmt) => stmt.build())));
+			});
+			test.test('nesting scopes.', () => {
+				setupScript(`{
+					let var x: int = 42;
+					x;
+					if true then {
+						x;
+						let var y: float = 4.2;
+						y;
+					};
+					x;
+				}`); // assert does not throw
+			});
+		});
+	});
+
+
+
+	test.suite('ASTNodeGoal', () => {
+		test.suite('#varCheck', () => {
+			test.test('aggregates multiple errors.', () => {
+				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					a + b || c * d;
 					let y: V & W | X & Y = null;
 					let x: int = 42;
 					let x: int = 420;
-					x = 4200;
+					set x = 4200;
 					type T = int;
 					type T = float;
 					let z: x = null;
 					let z: int = T;
-				`).varCheck(), (err) => {
+				}`).varCheck(), (err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
@@ -319,9 +303,9 @@ describe('ASTNodeCP', () => {
 		});
 
 
-		describe('#typeCheck', () => {
-			it('aggregates multiple errors.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+		test.suite('#typeCheck', () => {
+			test.test('aggregates multiple errors.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
 					let a: null = null;
 					let b: null = null;
 					let c: null = null;
@@ -334,7 +318,7 @@ describe('ASTNodeCP', () => {
 					e * f + g * h;
 					if null then 42 else 4.2;
 					let x: int = 4.2;
-				`);
+				}`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
 					assert_instanceof(err, AggregateError);
@@ -356,7 +340,7 @@ describe('ASTNodeCP', () => {
 								],
 							},
 							{cons: TypeErrorInvalidOperation, message: 'Invalid operation: `if null then 42 else 4.2` at line 12 col 6.'},
-							{cons: TypeErrorNotAssignable,    message: `Expression of type \`${ typeUnit(4.2) }\` is not assignable to type \`${ TYPE.INT }\`.`},
+							{cons: TypeErrorNotAssignable,    message: 'Expression `4.2` is not assignable to type `int`.'},
 						],
 					});
 					return true;
@@ -365,21 +349,31 @@ describe('ASTNodeCP', () => {
 		});
 
 
-		describe('#build', () => {
-			it('always returns `(nop)`.', () => {
+		test.suite('#build', () => {
+			test.test('always returns `(nop)`.', () => {
+				// empty
+				const empty: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('');
+				empty.varCheck();
+				empty.typeCheck();
+				assertEqualBins(empty.build(), empty.builder.module.nop());
+
+				// scripts
 				xjs.Array.forEachAggregated([
-					'',
-					'42;',
-					`
+					'{;}',
+					`{
+						42;
+					}`,
+					`{
 						let x: int = 42;
 						x;
-					`,
+					}`,
 				], (src) => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-					goal.varCheck();
-					goal.typeCheck();
-					return assertEqualBins(goal.build(), goal.builder.module.nop());
+					const {goal, mod} = setupScript(src, null, {build: false});
+					return assertEqualBins(goal.build(), mod.nop());
 				});
+
+				// modules
+				return;
 			});
 		});
 	});

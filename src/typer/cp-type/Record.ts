@@ -67,7 +67,7 @@ class TypeRecord extends ValueType {
 	}
 
 	public override toString(): string {
-		return `[${ [...this.typeargs].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
+		return `(${ [...this.typeargs].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') })`;
 	}
 
 	@instanceOf(() => VALUE.Record)
@@ -100,6 +100,15 @@ class TypeRecord extends ValueType {
 		return this.typeargs.has(key)
 			? this.typeargs.get(key)!
 			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
+	}
+
+	public set(key: bigint, typ: Type, accessor: AST.ASTNodeKey): void {
+		const entrytype: EntryType | undefined = this.typeargs.get(key);
+		if (entrytype) {
+			(this.typeargs as Map<bigint, EntryType>).set(key, {...entrytype, type: typ});
+		} else {
+			throw new TypeErrorNoEntry('key', this, accessor);
+		}
 	}
 
 	public valueTypes(): Type {
@@ -148,7 +157,7 @@ class TypeRecord extends ValueType {
 			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
 				return builder.module.tuple.make(builtIndex.map((n) => builder.module.tuple.extract(base_build, n)));
 			}
-			const local: Local = builder.addLocal(base_build)[1];
+			const local: Local = builder.addLocal(base_build);
 			return builder.module.tuple.make([
 				                                  builder.module.tuple.extract(local.tee(), builtIndex[0]), // eslint-disable-line @stylistic/indent
 				...builtIndex.slice(1).map((n) => builder.module.tuple.extract(local.get(), n)),

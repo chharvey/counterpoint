@@ -5,6 +5,7 @@ import {
 	Builder,
 	ParseError01,
 } from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -15,11 +16,11 @@ import {
 	to_serializable,
 } from '../../parser/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {DECORATOR} from '../Decorator.ts';
+import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeStatement} from './ASTNodeStatement.ts';
+import type {Buildable} from './Buildable.ts';
+import type {ASTNodeBlock} from './ASTNodeBlock.ts';
 
 
 
@@ -54,7 +55,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
 		report_syntax_errors(root_node);
-		return DECORATOR.decorateTS(root_node, config);
+		return new Decorator(config).decorateTS(root_node);
 	}
 
 
@@ -64,10 +65,10 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 
 	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
-		public override readonly children: readonly ASTNodeStatement[],
+		public readonly block: ASTNodeBlock | null,
 		config: CPConfig,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, (block) ? [block] : []);
 		this.#validator = new Validator(config);
 		this.#builder   = new Builder();
 	}
@@ -81,21 +82,22 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	}
 
 	/** @implements Buildable */
+	@memoizeMethod
 	public build(): binaryen.ExpressionRef {
-		const validate_module: () => void = this.builder.setupModule();
-		if (this.children.length) {
-			const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
-			const fn_name:    string                   = 'fn0';
-			this.builder.module.addFunction(
-				fn_name,
-				binaryen.none,
-				binaryen.none,
-				this.builder.getLocals().map((var_) => var_.type),
-				this.builder.module.block(null, statements),
-			);
-			this.builder.module.addFunctionExport(fn_name, fn_name);
+		if (this.block) {
+			const block_build: binaryen.ExpressionRef = this.block.build(); // must build before calling `.getLocals()`
+			this.builder.setupModule((mod) => {
+				const fn_name: string = 'fn0';
+				mod.addFunction(
+					fn_name,
+					binaryen.none,
+					binaryen.none,
+					this.builder.getAllLocals().map((var_) => var_.type),
+					block_build,
+				);
+				mod.addFunctionExport(fn_name, fn_name);
+			});
 		}
-		validate_module();
 		return this.builder.module.nop();
 	}
 }

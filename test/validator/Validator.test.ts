@@ -1,18 +1,16 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	type CodeUnit,
-	type CPConfig,
-	CONFIG_DEFAULT,
 	KEYWORDS,
 	Validator,
 } from '../../src/index.ts';
-import {CONFIG_RADICES_SEPARATORS_ON} from '../helpers.ts';
 
 
 
-describe('Validator', () => {
+test.suite('Validator', () => {
 	/**
 	 * Decode a stream of numeric UTF-8 code units into a string.
 	 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
@@ -23,8 +21,8 @@ describe('Validator', () => {
 	}
 
 
-	describe('.cookTokenKeyword', () => {
-		it('assigns values 0x80n–0x100n to reserved keywords.', () => {
+	test.suite('.cookTokenKeyword', () => {
+		test.test('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
 			const expected: bigint[] = [...new Array<undefined>(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
@@ -35,7 +33,7 @@ describe('Validator', () => {
 		});
 	});
 
-	describe('.cookTokenNumber', () => {
+	test.suite('.cookTokenNumber', () => {
 		new Map<string, [string, readonly bigint[] | readonly number[]]>([
 			/* eslint-disable @stylistic/array-element-newline */
 			['implicit radix integers', [
@@ -112,9 +110,9 @@ describe('Validator', () => {
 			]],
 			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
-			it(description, () => {
+			test.test(description, () => {
 				assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number, CONFIG_RADICES_SEPARATORS_ON)),
+					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number)),
 					values,
 				);
 			});
@@ -122,11 +120,11 @@ describe('Validator', () => {
 	});
 
 
-	describe('.cookTokenString', () => {
-		function decodeCooked(source: string, config: CPConfig): string {
-			return utf8Decode(Validator.cookTokenString(source, config));
+	test.suite('.cookTokenString', () => {
+		function decodeCooked(source: string): string {
+			return utf8Decode(Validator.cookTokenString(source));
 		}
-		it('produces the cooked string value.', () => {
+		test.test('produces the cooked string value.', () => {
 			assert.deepStrictEqual([
 				'""',
 				'"hello"',
@@ -139,7 +137,7 @@ describe('Validator', () => {
 				'"\u{10001}"',
 				'"\\\u{10001}"',
 				'"\\u{10001}"',
-			].map((src) => decodeCooked(src, CONFIG_DEFAULT)), [
+			].map((src) => decodeCooked(src)), [
 				'',
 				'hello',
 				'0 " 1 \\ 2 \u0020 3 \t 4 \n 5 \r 6',
@@ -151,14 +149,14 @@ describe('Validator', () => {
 				'\u{10001}',
 			]);
 		});
-		it('may contain an escaped `u` anywhere.', () => {
+		test.test('may contain an escaped `u` anywhere.', () => {
 			assert.strictEqual(
-				decodeCooked('"abc\\udef\\u"', CONFIG_DEFAULT),
+				decodeCooked('"abc\\udef\\u"'),
 				'abcudefu',
 			);
 		});
-		context('In-String Comments', () => {
-			function cook(config: CPConfig): string[] {
+		test.suite('In-String Comments', () => {
+			function cook(): string[] {
 				return [
 					xjs.String.dedent`"The five boxing wizards % jump quickly."`,
 
@@ -186,9 +184,9 @@ describe('Validator', () => {
 					xjs.String.dedent`"The five boxing
 					wizards %% jump
 					quickly."`,
-				].map((src) => decodeCooked(src, config));
+				].map((src) => decodeCooked(src));
 			}
-			context('with comments enabled.', () => {
+			test.suite('with comments enabled.', () => {
 				const data: Array<{description: string, expected: string}> = [
 					{description: 'removes a line comment not ending in a LF.',   expected: 'The five boxing wizards '},
 					{description: 'preserves a LF when line comment ends in LF.', expected: 'The five \njump quickly.'},
@@ -200,47 +198,25 @@ describe('Validator', () => {
 					{description: 'removes last multiline comment.',              expected: 'The five boxing\nwizards '},
 					{description: 'removes multiline comment without end delim.', expected: 'The five boxing\nwizards '},
 				];
-				cook(CONFIG_DEFAULT).forEach((actual, i) => {
-					it(data[i].description, () => {
+				cook().forEach((actual, i) => {
+					test.test(data[i].description, () => {
 						assert.strictEqual(actual, data[i].expected);
 					});
 				});
 			});
-			it('with comments disabled.', () => {
-				assert.deepStrictEqual(cook({
-					...CONFIG_DEFAULT,
-					languageFeatures: {
-						...CONFIG_DEFAULT.languageFeatures,
-						comments: false,
-					},
-				}), [
-					'The five boxing wizards % jump quickly.',
-					'The five % boxing wizards\njump quickly.',
-					'The five boxing wizards %\njump quickly.',
-					'The five boxing wizards jump quickly.%\n',
-					'The five %% boxing wizards %% jump quickly.',
-					'The five boxing wizards %%%% jump quickly.',
-					'The five %% boxing\nwizards %% jump\nquickly.',
-					'The five boxing\nwizards %% jump\nquickly.%%',
-					'The five boxing\nwizards %% jump\nquickly.',
-				]);
-			});
-			it('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
+			test.test('`String.fromCodePoint` throws when UTF-8 encoding input is out of range.', () => {
 				const out_of_range = 'a00061'; // NOTE: the valid range of input may change as Unicode evolves
-				assert.throws(() => Validator.cookTokenString(
-					`'a string literal with a unicode \\u{${ out_of_range }} escape sequence out of range'`,
-					CONFIG_DEFAULT,
-				), RangeError);
+				assert.throws(() => Validator.cookTokenString(`'a string literal with a unicode \\u{${ out_of_range }} escape sequence out of range'`), RangeError);
 			});
 		});
 	});
 
 
-	describe('.cookTokenTemplate', () => {
+	test.suite('.cookTokenTemplate', () => {
 		function decodeCooked(source: string): string {
 			return utf8Decode(Validator.cookTokenTemplate(source));
 		}
-		it('produces the cooked template value.', () => {
+		test.test('produces the cooked template value.', () => {
 			assert.deepStrictEqual(
 				[
 					'""""""',
@@ -271,7 +247,7 @@ describe('Validator', () => {
 	});
 
 
-	describe('#cookTokenIdentifier', () => {
+	test.suite('#cookTokenIdentifier', () => {
 		type Data = {
 			readonly src: string,
 			readonly raw: string[],
@@ -314,25 +290,25 @@ describe('Validator', () => {
 				},
 			]],
 		]).forEach((datas, cxt) => {
-			context(cxt, () => {
+			test.suite(cxt, () => {
 				datas.forEach((data, i) => {
 					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
 					const validator = new Validator();
 					let cooked: bigint[] = [];
-					before(() => {
+					test.test.before(() => {
 						assert.deepStrictEqual(actual_raw, data.raw);
 						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
 					});
 					if (i === 0) {
-						it('assigns ids starting from 0x100n.', () => {
+						test.test('assigns ids starting from 0x100n.', () => {
 							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
 						});
-						return it('assigns unique ids 0x100n or greater.', () => {
+						test.test('assigns unique ids 0x100n or greater.', () => {
 							cooked.forEach((value) => assert.ok(value >= 0x100n));
 						});
 					} else {
 						assert.strictEqual(i, 1);
-						return it('assigns the same value to identical identifier names.', () => {
+						test.test('assigns the same value to identical identifier names.', () => {
 							assert.deepStrictEqual(
 								cooked.slice(0, 5),
 								cooked.slice(5).reverse(),

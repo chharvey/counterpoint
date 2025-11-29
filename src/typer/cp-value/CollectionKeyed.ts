@@ -48,15 +48,13 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	}
 
 	public override toString(): string {
-		return `[${ [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ') }]`;
+		return [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ');
 	}
 
 	/** @final */
 	public get(key: bigint, is_access_maybe: boolean, accessor: AST.ASTNodeKey | AST.ASTNodeExpression): T | Null {
-		return (
-			this.properties.has(key) ? this.properties.get(key)! :
-			is_access_maybe          ? NULL :
-			assert.fail(new VoidErrorOutOfBounds('key', this, key, accessor))
-		);
+		return this.properties.has(key)
+			? this.properties.get(key)!
+			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('key', this, key, accessor));
 	}
 }
