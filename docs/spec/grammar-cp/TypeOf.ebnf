@@ -305,7 +305,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | FLOAT] expr) :=
 	5. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
+Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.

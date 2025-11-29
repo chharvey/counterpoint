@@ -421,7 +421,11 @@ Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 		1. *Let* `result` be the sum, `operand0 + operand1`,
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
 		2. *Return:* `result`.
-	5. *Throw:* a new TypeErrorInvalidOperation.
+	5. *Else If* `op` is `SUB`:
+		1. *Let* `result` be the difference, `operand0 - operand1`,
+			obtained by subtracting `operand1` (the subtrahend) from `operand0` (the minuend).
+		2. *Return:* `result`.
+	6. *Throw:* a new TypeErrorInvalidOperation.
 ```
 
 

@@ -509,9 +509,9 @@ Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break>
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=ADD]
+	:= (SemanticOperation[operator=SUB]
 		Decorate(ExpressionAdditive<?Block><?Break>)
-		(SemanticOperation[operator=NEG] Decorate(ExpressionMultiplicative<?Block><?Break>))
+		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 
 

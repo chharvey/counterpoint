@@ -106,6 +106,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			[Operator.MUL, 'vmul'],
 			[Operator.DIV, 'vdiv'],
 			[Operator.ADD, 'vadd'],
+			[Operator.SUB, 'vsub'],
 		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
@@ -152,7 +153,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.MUL, (x, y) => x.times(y)],
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
-				// [Operator.SUB, (x, y) => x.minus(y)],
+				[Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(v0, v1);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;

@@ -76,6 +76,7 @@ test.suite('ASTNodeOperation', () => {
 		vmul: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul', [arg0, arg1], binaryen.v128),
 		vdiv: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv', [arg0, arg1], binaryen.v128),
 		vadd: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd', [arg0, arg1], binaryen.v128),
+		vsub: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vsub', [arg0, arg1], binaryen.v128),
 		vlt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',  [arg0, arg1], binaryen.v128),
 		vgt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',  [arg0, arg1], binaryen.v128),
 		vle:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',  [arg0, arg1], binaryen.v128),
@@ -820,8 +821,8 @@ test.suite('ASTNodeOperation', () => {
 					['-200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
 					['-200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-					['42  - 420',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
-					['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
+					['42  - 420',  (builder) => CALL.vsub(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+					['4.2 - 42.0', (builder) => CALL.vsub(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
 				]));
 			});
 			test.test('does not compile the first operand if it is foldable and an identity element.', () => {

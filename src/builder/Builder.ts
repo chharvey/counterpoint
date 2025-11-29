@@ -248,6 +248,7 @@ export class Builder {
 		this.#binOpArithmetic('vmul', (i0, i1) => mod.i64.mul   (i0, i1), (f0, f1) => mod.f64.mul(f0, f1));
 		this.#binOpArithmetic('vdiv', (i0, i1) => mod.i64.div_s (i0, i1), (f0, f1) => mod.f64.div(f0, f1));
 		this.#binOpArithmetic('vadd', (i0, i1) => mod.i64.add   (i0, i1), (f0, f1) => mod.f64.add(f0, f1));
+		this.#binOpArithmetic('vsub', (i0, i1) => mod.i64.sub   (i0, i1), (f0, f1) => mod.f64.sub(f0, f1));
 
 		this.#binOpComparative('vlt', (i0, i1) => mod.i64.lt_s(i0, i1), (f0, f1) => mod.f64.lt(f0, f1));
 		this.#binOpComparative('vgt', (i0, i1) => mod.i64.gt_s(i0, i1), (f0, f1) => mod.f64.gt(f0, f1));

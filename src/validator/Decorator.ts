@@ -432,34 +432,11 @@ export class Decorator {
 				this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			['expression_additive', (node) => ((
-				n:        SyntaxNodeType<'expression_additive'>,
-				operator: Operator,
-				operands: readonly [AST.ASTNodeExpression, AST.ASTNodeExpression],
-			) => (
-				// `a - b` is syntax sugar for `a + -(b)`
-				(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(
-					n,
-					Operator.ADD,
-					operands[0],
-					new AST.ASTNodeOperationUnary(
-						n.children[2] as SyntaxNodeSupertype<'expression'>,
-						Operator.NEG,
-						operands[1],
-					),
-				) :
-				new AST.ASTNodeOperationBinaryArithmetic(
-					n,
-					operator as ValidOperatorArithmetic,
-					...operands,
-				)
-			))(
+			['expression_additive', (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_additive'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
-				[
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
-				],
+				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
+				this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
+				this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_comparative', (node) => ((

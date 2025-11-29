@@ -76,6 +76,7 @@ export type ValidOperatorArithmetic = (
 	| Operator.MUL
 	| Operator.DIV
 	| Operator.ADD
+	| Operator.SUB
 );
 
 export type ValidOperatorComparative = (

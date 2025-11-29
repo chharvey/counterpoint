@@ -261,7 +261,7 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
 	// TODO: implement
 ;
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | DIV | ADD | SUB | LT | GT | LE | GE | ID | EQ] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,
