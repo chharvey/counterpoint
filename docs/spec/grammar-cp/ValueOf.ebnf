@@ -103,11 +103,14 @@ Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	4. *Let* `base_value` be *Unwrap:* `ValueOf(base)`.
 	5. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_value` is an instance of `Tuple`:
-			1. *If* `accessor.index` is an index in `base_value`:
-				1. *Return:* the item accessed at index `accessor.index` in `base_value`.
-			2. *Else If* `access.kind` is `MAYBE`:
+			1. *Let* `index` be `accessor.index`.
+			2. *If* `index` is less than *0*:
+				1. *Set* `index` to `index + base_value.count`.
+			3. *If* `index` is an index in `base_value`:
+				1. *Return:* the item accessed at index `index` in `base_value`.
+			4. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
-			3. *Else:*
+			5. *Else:*
 				1. *Throw:* a new VoidError.
 		2. *Else:*
 			1. *Assert:* `access.kind` is `MAYBE`.
@@ -127,15 +130,18 @@ Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor)`.
 		3. *If* `base_value` is an instance of `List`:
-			1. *If* `accessor_value` is an index in `base_value`:
+			1. *Let* `index` be `accessor_value`.
+			2. *If* `index` is less than *0*:
+				1. *Set* `index` to `index + base_value.count`.
+			3. *If* `index` is an index in `base_value`:
 				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
-			2. *Else If* `access.kind` is `MAYBE`:
+			4. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
-			3. *Else:*
+			5. *Else:*
 				1. *Throw:* a new VoidError.
 		4. *Else If* `base_value` is an instance of `Dict`:
 			1. *If* `accessor_value` is a key in `base_value`:
-				1. *Return:* the item accessed at key `accessor_value` in `base_value`.
+				1. *Return:* the value accessed at key `accessor_value` in `base_value`.
 			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
 			3. *Else:*

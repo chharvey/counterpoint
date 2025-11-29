@@ -499,15 +499,16 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 					optional= `any_optional`,
 				].
 	5. *If* `accessor` is a SemanticIndex:
-		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
-			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
-			2. *Return:* `entry`.
-		2. *Else:*
-			1. *Throw:* a new TypeErrorNoEntry.
+		1. *If* `base_type` is a Tuple type:
+			1. *Let* `index` be `accessor.index`.
+			2. *If* `index` is less than *0*:
+				1. *Set* `index` to `index + base_type.count`.
+			3. *If* `index` is an index in `base_type`:
+				1. *Return:* the item accessed at index `index` in `base_type`.
+		2. *Throw:* a new TypeErrorNoEntry.
 	6. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
-			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
-			2. *Return:* `entry`.
+			1. *Return:* the value accessed at key `accessor.id` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	7. *Else:*
