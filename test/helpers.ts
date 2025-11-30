@@ -12,6 +12,7 @@ import {
 
 
 const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
+const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
 
 
 
@@ -66,7 +67,18 @@ export function typeUnit(value: symbol): TYPE.Unit<VALUE.Symbol>;
 export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
 export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
 export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
-export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String> {
+export function typeUnit(value: bigint, t: 'nat'): TYPE.Unit<VALUE.Natural>;
+export function typeUnit(value: symbol | bigint | number | string, t?: 'nat'): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
+	if (t === 'nat') {
+		value = value as bigint;
+		TYPE_UNIT_MEMO_NAT.has(value) || TYPE_UNIT_MEMO_NAT.set(value, (
+			value === 0n              ? VALUE.NAT_0 :
+			value === 1n              ? VALUE.NAT_1 :
+			typeof value === 'bigint' ? new VALUE.Natural(value) :
+			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		).toType());
+		return TYPE_UNIT_MEMO_NAT.get(value)!;
+	}
 	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :

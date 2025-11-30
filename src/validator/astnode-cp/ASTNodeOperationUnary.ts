@@ -112,7 +112,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
 			}
 			case Operator.NEG: {
-				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+				return this.foldNumeric(v as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>);
 			}
 			case Operator.INT: {
 				return (v as VALUE.Number).toInt();

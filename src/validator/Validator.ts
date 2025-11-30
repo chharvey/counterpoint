@@ -183,7 +183,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the numeric value, cooked
 	 */
-	public static cookTokenNumber(source: string): bigint | number {
+	public static cookTokenNumber(source: string): {type: 'int' | 'nat', value: bigint} | {type: 'float', value: number} {
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
 		const multiplier: number    = (has_unary && source.startsWith(Punctuator.NEG)) ? -1 : 1;
 		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source.startsWith(ESCAPER);
@@ -196,13 +196,16 @@ export class Validator {
 			['x', 16n],
 			['z', 36n],
 		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
+
+		const typ: 'int' | 'nat' | 'float' = source.includes(POINT) ? 'float' : has_unary && multiplier === 1 ? 'nat' : 'int';
+
 		/* eslint-disable curly */
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any
 		/* eslint-enable curly */
-		return source.indexOf(POINT) > 0
-			?        multiplier  * tokenWorthFloat (source)
-			: BigInt(multiplier) * tokenWorthInt   (source, radix);
+		return typ === 'float'
+			? {type: typ, value:        multiplier  * tokenWorthFloat(source)}
+			: {type: typ, value: BigInt(multiplier) * tokenWorthInt  (source, radix)};
 	}
 
 	/**

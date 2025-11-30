@@ -10,6 +10,7 @@ import type {
  * A numeric Counterpoint Language Value.
  * Known subclasses:
  * - Integer
+ * - Natural
  * - Float
  */
 abstract class ValueNumber<T = unknown> extends Primitive {

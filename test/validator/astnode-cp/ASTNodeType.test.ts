@@ -91,7 +91,7 @@ test.suite('ASTNodeType', () => {
 					new VALUE.Symbol(0x89n,  'false').toType(),
 					new VALUE.Symbol(0x100n, 'foobar').toType(),
 					typeUnit(42n),
-					typeUnit(42n),
+					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
 				]);

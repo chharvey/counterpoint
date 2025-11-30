@@ -94,7 +94,7 @@ test.suite('ASTNodeExpression', () => {
 				`).map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
 					55, 33, 0,
 					parseInt('55', 8), parseInt('33', 4),
-				].map((v) => new VALUE.Integer(BigInt(v))));
+				].map((v) => new VALUE.Natural(BigInt(v))));
 			});
 			test.test('computes float values.', () => {
 				assert.deepStrictEqual(extract_tokens(`

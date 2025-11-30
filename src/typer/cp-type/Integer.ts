@@ -18,8 +18,10 @@ export class Integer extends UnenumeratedPrimitiveType {
 		return Keyword.INT;
 	}
 
-	@instanceOf(() => VALUE.Integer)
-	public override includes(_: VALUE.Value): boolean {
-		return true;
+	// @instanceOf(() => VALUE.Integer)
+	public override includes(value: VALUE.Value): boolean {
+		instanceOf; // TODO: add TYPE.Natural, put back the decorator.
+		return value instanceof VALUE.Integer || value instanceof VALUE.Natural;
+		// return true;
 	}
 }

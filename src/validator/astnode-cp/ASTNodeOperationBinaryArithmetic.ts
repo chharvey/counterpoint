@@ -141,8 +141,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			throw new NanErrorDivZero(this.operand1);
 		}
 		return this.foldNumeric(
-			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
-			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
 		);
 	}
 

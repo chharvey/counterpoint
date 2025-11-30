@@ -212,9 +212,13 @@ export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
 
 
 
-export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Float {
-	const cooked: bigint | number = Validator.cookTokenNumber(source);
-	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
+export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Natural | VALUE.Float {
+	const {type: typ, value: cooked} = Validator.cookTokenNumber(source);
+	switch (typ) {
+		case 'int':   return new VALUE.Integer(cooked);
+		case 'nat':   return new VALUE.Natural(cooked);
+		case 'float': return new VALUE.Float(cooked);
+	}
 }
 
 
