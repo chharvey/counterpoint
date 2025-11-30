@@ -525,12 +525,13 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			1. *Set* `accessor_maybe` to `true`.
 		5. *If* `base_type` is a List type:
 			1. *Let* `t` be the type argument over `base_type`.
-			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
+			2. *Let* `integral` be *UnwrapAffirm:* `Union(Integer, Natural)`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, integral)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
 					optional= `accessor_maybe`,
 				].
-			3. *Else:*
+			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		6. *Else If* `base_type` is a Dict type:
 			1. *Let* `t` be the type argument over `base_type`.

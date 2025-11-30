@@ -297,7 +297,8 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | FLOAT] expr) :=
 		1. *Return:* `Nothing`.
 	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true`:
 		1. *If* `operator` is `NEG`:
-			1. *Return:* `t0`.
+			1. *If* *UnwrapAffirm:* `Intersection(t0, Natural)` is `never`:
+				1. *Return:* `t0`.
 		2. *Else If* `operator` is `INT`:
 			1. *Return:* `Integer`.
 		3. *Else If* `operator` is `FLOAT`:
@@ -311,11 +312,13 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] ex
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
+	5. *If* *UnwrapAffirm:* `Subtype(t0, Natural)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Natural)` is `true`:
+		1. *Return:* `Natural`.
+	6. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
 		1. *Return:* `Integer`.
-	6. *Else If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
+	7. *Else If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
 		1. *Return:* `Float`.
-	7. *Throw:* a new TypeErrorInvalidOperation.
+	8. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=

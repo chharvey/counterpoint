@@ -257,7 +257,7 @@ test.suite('ASTNodeOperation', () => {
 					]));
 				});
 				test.test('[operator=NEG] throws for Natural number literals (foldable).', () => {
-					assert.throws(() => AST.ASTNodeOperation.fromSource('-+42').type(), RangeError);
+					assert.throws(() => AST.ASTNodeOperation.fromSource('-+42').type(), TypeErrorInvalidOperation);
 				});
 			});
 
@@ -339,11 +339,13 @@ test.suite('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(6), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 				});
-				test.test('[operator=NEG] does not throw for `nat` type (for now, a subtype of `int`).', () => {
-					setupScript(`{
-						let var n: int = +42;
+				test.test('[operator=NEG] throws for `nat` type.', () => {
+					const {stmts} = setupScript(`{
+						let var n: nat = +42;
 						-n;
-					}`, null, {build: false}); // assert does not throw
+					}`, null, {typeCheck: false});
+					stmts[0].typeCheck(); // assert does not throw
+					assert.throws(() => ((stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).type(), TypeErrorInvalidOperation);
 				});
 			});
 			test.suite('[operator=INT | FLOAT]', () => {
@@ -717,7 +719,9 @@ test.suite('ASTNodeOperation', () => {
 				test.test('[operator=SUB] caps at `+0` for subtraction of naturals.', () => {
 					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').type(), typeUnit(0n, 'nat'));
 				});
-				test.test('throws for any operation of mix of integers and floats.', () => {
+				test.test('throws for any operation of mix of numeric types.', () => {
+					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('+3 * 2')      .type(), TypeErrorInvalidOperation);
+					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('+3 * 2.7')    .type(), TypeErrorInvalidOperation);
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2') .type(), TypeErrorInvalidOperation);
 				});
@@ -729,6 +733,14 @@ test.suite('ASTNodeOperation', () => {
 					assertEqualTypes(
 						[node.operand0.type(), node.operand1.type()],
 						[TYPE.INT,             typeUnit(2n)],
+					);
+				});
+				test.test('returns Natural for natural arithmetic.', () => {
+					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource('(+7 + +3) * +2', CONFIG_FOLDING_OFF);
+					assert.strictEqual(node.type(), TYPE.NAT);
+					assertEqualTypes(
+						[node.operand0.type(), node.operand1.type()],
+						[TYPE.NAT,             typeUnit(2n, 'nat')],
 					);
 				});
 				test.test('returns Float for float arithmetic.', () => {

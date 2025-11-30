@@ -209,7 +209,7 @@ test.suite('ASTNodeDeclaration', () => {
 			}
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				setupScript(`{
-					let the_answer: int = +42;
+					let the_answer: nat = +42;
 				}`, null, {build: false}); // assert does not throw
 				const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  int | float =  21  *  2;

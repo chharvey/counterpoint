@@ -26,6 +26,7 @@ import {
 } from '../Operator.ts';
 import {
 	bothInts,
+	bothNats,
 	bothFloats,
 } from './utils-private.ts';
 import {
@@ -116,6 +117,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		return (
 			bothInts  (t0, t1) ? TYPE.INT :
+			bothNats  (t0, t1) ? TYPE.NAT :
 			bothFloats(t0, t1) ? TYPE.FLOAT :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);

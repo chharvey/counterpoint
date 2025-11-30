@@ -39,7 +39,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			[Keyword.FALSE,    TYPE.FALSE],
 			[Keyword.TRUE,     TYPE.TRUE],
 			[Keyword.INT,      TYPE.INT],
-			[Keyword.NAT,      TYPE.INT],
+			[Keyword.NAT,      TYPE.NAT],
 			[Keyword.FLOAT,    TYPE.FLOAT],
 			[Keyword.STR,      TYPE.STR],
 			[Keyword.ANYTHING, TYPE.ANYTHING],

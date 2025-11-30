@@ -1,11 +1,13 @@
 import * as VALUE from '../cp-value/index.ts';
 import type {Type} from './Type.ts';
+import {Union} from './Union.ts';
 import type {Unit} from './Unit.ts';
 import {Nothing} from './Nothing.ts';
 import {Anything} from './Anything.ts';
 import {Boolean as TypeBoolean} from './Boolean.ts';
 import {Symbol as TypeSymbol} from './Symbol.ts';
 import {Integer} from './Integer.ts';
+import {Natural} from './Natural.ts';
 import {Float} from './Float.ts';
 import {String as TypeString} from './String.ts';
 import {Object as TypeObject} from './Object.ts';
@@ -18,6 +20,7 @@ import {Object as TypeObject} from './Object.ts';
 /** The Counterpoint Language Boolean  Type `bool`.     */ export const BOOL:     TypeBoolean      = new TypeBoolean();
 /** The Counterpoint Language Symbol   Type `sym`.      */ export const SYM:      TypeSymbol       = new TypeSymbol();
 /** The Counterpoint Language Integer  Type `int`.      */ export const INT:      Integer          = new Integer();
+/** The Counterpoint Language Natural  Type `nat`.      */ export const NAT:      Natural          = new Natural();
 /** The Counterpoint Language Float    Type `float`.    */ export const FLOAT:    Float            = new Float();
 /** The Counterpoint Language String   Type `str`.      */ export const STR:      TypeString       = new TypeString();
 /** The Counterpoint Language Object   Type `Object`.   */ export const OBJ:      TypeObject       = new TypeObject();
@@ -44,6 +47,7 @@ export const TYPE_CONSTANTS = [
 	BOOL,
 	SYM,
 	INT,
+	NAT,
 	FLOAT,
 	STR,
 	OBJ,
@@ -51,3 +55,7 @@ export const TYPE_CONSTANTS = [
 	TRUE,
 	SYM_NOTHING,
 ] as const;
+
+
+
+export const NUMBER: Type = Union.all(INT, NAT, FLOAT); // needs to be defined after `TYPE_CONSTANTS` because `Type#union` has a decorator that relies on it

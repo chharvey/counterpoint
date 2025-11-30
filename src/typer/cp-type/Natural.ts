@@ -6,19 +6,19 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
 
 
 /**
- * Class for constructing the `int` type.
+ * Class for constructing the `nat` type.
  * @final
  */
-export class Integer extends UnenumeratedPrimitiveType {
+export class Natural extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(false, new Set([VALUE.INT_0, VALUE.INT_1]));
+		super(false, new Set([VALUE.NAT_0, VALUE.NAT_1]));
 	}
 
 	public override toString(): string {
-		return Keyword.INT;
+		return Keyword.NAT;
 	}
 
-	@instanceOf(() => VALUE.Integer)
+	@instanceOf(() => VALUE.Natural)
 	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}

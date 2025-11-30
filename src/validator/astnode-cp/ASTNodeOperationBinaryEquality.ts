@@ -78,7 +78,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 				 * 	*or* both `a` and `b` intersect with the Number type (they both might contain numbers),
 				 * 	then `a == b` could evaluate to true.
 				 */
-				return DISJOINT_TYPES && [t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ? TYPE.FALSE : TYPE.BOOL;
+				return DISJOINT_TYPES && [t0, t1].some((t) => t.intersect(TYPE.NUMBER).isBottomType) ? TYPE.FALSE : TYPE.BOOL;
 			}
 			default: {
 				return TYPE.BOOL;
