@@ -248,7 +248,7 @@ Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
 
 
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG | INT | FLOAT] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG | INT | NAT | FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be *UnwrapAffirm:* `Build(expr.children.0)`.
 	3. *Return:* [

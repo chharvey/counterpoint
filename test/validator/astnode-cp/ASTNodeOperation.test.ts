@@ -598,24 +598,35 @@ test.suite('ASTNodeOperation', () => {
 					].map((expected) => mod.drop(expected)),
 				);
 			});
-			test.test('[operator=INT | FLOAT]: returns a numeric conversion.', () => {
+			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var my_int: int   = 7;
+					let var my_int: int   = -7;
+					let var my_nat: nat   = +42;
 					let var my_flt: float = -3.5;
 
 					int   my_int;
+					int   my_nat;
 					int   my_flt;
+					nat   my_int;
+					nat   my_nat;
+					nat   my_flt;
 					float my_int;
+					float my_nat;
 					float my_flt;
 				}`);
-				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
+				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(3).map((stmt) => (
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
 				));
-				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
+				return assertEqualBins(stmts.slice(3).map((stmt) => stmt.build()), [
 					mod.drop(CALL.vtoi(mod, extracts[0])),
 					mod.drop(CALL.vtoi(mod, extracts[1])),
-					mod.drop(CALL.vtof(mod, extracts[2])),
-					mod.drop(CALL.vtof(mod, extracts[3])),
+					mod.drop(CALL.vtoi(mod, extracts[2])),
+					mod.drop(CALL.vtoi(mod, extracts[3])),
+					mod.drop(CALL.vtoi(mod, extracts[4])),
+					mod.drop(CALL.vtoi(mod, extracts[5])),
+					mod.drop(CALL.vtof(mod, extracts[6])),
+					mod.drop(CALL.vtof(mod, extracts[7])),
+					mod.drop(CALL.vtof(mod, extracts[8])),
 				]);
 			});
 		});
