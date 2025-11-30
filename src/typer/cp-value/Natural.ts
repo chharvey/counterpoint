@@ -43,7 +43,7 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	public override toString(): string {
-		return `${ this.toNumber() }`;
+		return `+${ this.data }`;
 	}
 
 	@strictEqual
@@ -81,7 +81,7 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	public override toFloat(): Float {
-		return new Float(this.toNumber());
+		return new Float(Number(this.data));
 	}
 
 	/**
@@ -90,15 +90,6 @@ export class Natural extends ValueNumber<Natural> {
 	 */
 	public toBigInt(): bigint {
 		return this.data;
-	}
-
-	/**
-	 * Return the unsigned interpretation of this Natural as a number.
-	 * Note: Some precision may be lost, especially for integers larger than 2^53.
-	 * @return   the numeric value as a number
-	 */
-	public toNumber(): number {
-		return Number(this.toBigInt());
 	}
 
 	public override plus(addend: Natural): Natural {

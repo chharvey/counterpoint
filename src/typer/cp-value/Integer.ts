@@ -45,7 +45,7 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	public override toString(): string {
-		return `${ this.toNumber() }`;
+		return `${ this.data }`;
 	}
 
 	@strictEqual
@@ -83,7 +83,7 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	public override toFloat(): Float {
-		return new Float(this.toNumber());
+		return new Float(Number(this.data));
 	}
 
 	/**
@@ -92,15 +92,6 @@ export class Integer extends ValueNumber<Integer> {
 	 */
 	public toBigInt(): bigint {
 		return this.data;
-	}
-
-	/**
-	 * Return the signed interpretation of this Integer as a number.
-	 * Note: Some precision may be lost, especially for integers larger than 2^53.
-	 * @return   the numeric value as a number
-	 */
-	public toNumber(): number {
-		return Number(this.toBigInt());
 	}
 
 	public override plus(addend: Integer): Integer {
