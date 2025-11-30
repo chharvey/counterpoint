@@ -9,9 +9,22 @@ _KEYWORD_OTHER =:=
 	// storage
 		| "type"
 		| "let"
+		| "claim"
+		| "set"
 		| "_"
+		| "void"
 	// modifier
+		| "nominal"
 		| "var"
+	// control
+		| "unless"
+		| "while"
+		| "until"
+		| "for"
+		| "of"
+		| "do"
+		| "break"
+		| "continue"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
@@ -852,6 +865,7 @@ TokenId(KeywordType  ::= "nothing")  -> TokenWorth("nothing");
 TokenId(KeywordType  ::= "bool")     -> TokenWorth("bool");
 TokenId(KeywordType  ::= "sym")      -> TokenWorth("sym");
 TokenId(KeywordType  ::= "int")      -> TokenWorth("int");
+TokenId(KeywordType  ::= "nat")      -> TokenWorth("nat");
 TokenId(KeywordType  ::= "float")    -> TokenWorth("float");
 TokenId(KeywordType  ::= "str")      -> TokenWorth("str");
 TokenId(KeywordType  ::= "anything") -> TokenWorth("anything");
@@ -865,6 +879,7 @@ KeywordType(KeywordType ::= "nothing")  -> Type := Nothing;
 KeywordType(KeywordType ::= "bool")     -> Type := Boolean;
 KeywordType(KeywordType ::= "sym")      -> Type := Symbol;
 KeywordType(KeywordType ::= "int")      -> Type := Integer;
+KeywordType(KeywordType ::= "nat")      -> Type := Natural;
 KeywordType(KeywordType ::= "float")    -> Type := Float;
 KeywordType(KeywordType ::= "str")      -> Type := String;
 KeywordType(KeywordType ::= "anything") -> Type := Anything;

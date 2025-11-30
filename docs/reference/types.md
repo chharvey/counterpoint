@@ -179,6 +179,24 @@ In all operations on integers, bases can be mixed.
 ```
 
 
+### `nat`
+Type `nat` contains whole numbers and zero.
+
+Naturals are written as a series of digits following a `+` sign, such as `+0123`.
+As with the Integers, Naturals may also be written in six other bases:
+2, 4, 6, 8, 16, and 36, and may contain underscores usd as separators.
+
+Naturals can be added and multiplied like normal numbers.
+Division of naturals behaves the same way as with Integers, rounding towards zero. Dividing by zero is an error.
+When subtracting naturals, if getting a negative value, the result is always zero.
+In all operations on naturals, bases can be mixed.
+```cpl
++3 / +2;        %== +1
++5 - +8;        %== +0
++\b110 * +\q12; %== +36
+```
+
+
 ### `float`
 Type `float` contains decimals, which offer finer precision for numerical data than integers do.
 (In computers, there are no irrational (non-fractional) numbers, but we approximate them well.)
@@ -843,7 +861,7 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 
 #### List Access
 List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
-The bracketed expression must be an Integer value (of type `int`).
+The bracketed expression must be an Integer or Natural value (of type `int` or `nat`).
 ```
 let elements: [str] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"

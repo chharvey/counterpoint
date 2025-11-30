@@ -173,12 +173,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = bool;
 					type T = sym;
 					type T = int;
+					type T = nat;
 					type T = float;
 					type T = str;
 					type T = anything;
 				}
 			`,
 			sourceTypes(
+				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),

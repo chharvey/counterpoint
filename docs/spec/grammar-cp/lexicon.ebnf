@@ -48,6 +48,7 @@ KeywordType :::=
 	| "bool"
 	| "sym"
 	| "int"
+	| "nat"
 	| "float"
 	| "str"
 	| "anything"

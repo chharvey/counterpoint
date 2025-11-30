@@ -5,6 +5,7 @@ export enum Keyword {
 	BOOL     = 'bool',
 	SYM      = 'sym',
 	INT      = 'int',
+	NAT      = 'nat',
 	FLOAT    = 'float',
 	STR      = 'str',
 	ANYTHING = 'anything',

@@ -72,9 +72,9 @@ test.suite('ASTNodeExpression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x92n,  'then'),
-					new VALUE.Symbol(0x86n,  'str'),
-					new VALUE.Symbol(0x89n,  'false'),
+					new VALUE.Symbol(0x93n,  'then'),
+					new VALUE.Symbol(0x87n,  'str'),
+					new VALUE.Symbol(0x8an,  'false'),
 					new VALUE.Symbol(0x100n, 'foobar'),
 				]);
 			});
