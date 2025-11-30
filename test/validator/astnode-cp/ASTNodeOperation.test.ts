@@ -256,6 +256,9 @@ test.suite('ASTNodeOperation', () => {
 						['?{41 -> 42}', VALUE.FALSE],
 					]));
 				});
+				test.test('[operator=NEG] throws for Natural number literals (foldable).', () => {
+					assert.throws(() => AST.ASTNodeOperation.fromSource('-+42').type(), RangeError);
+				});
 			});
 
 			test.suite('with constant folding off.', () => {
@@ -335,6 +338,12 @@ test.suite('ASTNodeOperation', () => {
 							?g;
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(6), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
+				});
+				test.test('[operator=NEG] does not throw for `nat` type (for now, a subtype of `int`).', () => {
+					setupScript(`{
+						let var n: int = +42;
+						-n;
+					}`, null, {build: false}); // assert does not throw
 				});
 			});
 			test.suite('[operator=INT | FLOAT]', () => {
@@ -699,8 +708,14 @@ test.suite('ASTNodeOperation', () => {
 				test.test('returns a constant Integer type for any operation of integers.', () => {
 					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2').type(), typeUnit(7n * 3n * 2n));
 				});
+				test.test('returns a constant Natural type for any operation of naturals.', () => {
+					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+7 * +3 * +2').type(), typeUnit(7n * 3n * 2n, 'nat'));
+				});
 				test.test('returns a constant Float type for any operation of floats.', () => {
 					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7.1 * 3.1 * 2.1').type(), typeUnit(7.1 * 3.1 * 2.1));
+				});
+				test.test('[operator=SUB] caps at `+0` for subtraction of naturals.', () => {
+					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').type(), typeUnit(0n, 'nat'));
 				});
 				test.test('throws for any operation of mix of integers and floats.', () => {
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
@@ -745,7 +760,7 @@ test.suite('ASTNodeOperation', () => {
 
 		test.suite('#fold', () => {
 			test.test('computes the value of an integer operation of constants.', () => {
-				foldOperations(new Map([
+				foldOperations(new Map<string, VALUE.Value>([
 					['42 + 420',        new VALUE.Integer(42n + 420n)],
 					['42 - 420',        new VALUE.Integer(42n + -420n)],
 					[' 126 /  3',       new VALUE.Integer( 126n /  3n)],
@@ -757,6 +772,7 @@ test.suite('ASTNodeOperation', () => {
 					['-200 /  3',       new VALUE.Integer(-200n /  3n)],
 					['-200 / -3',       new VALUE.Integer(-200n / -3n)],
 					['-(5) ^ +(2 * 3)', new VALUE.Integer((-5n) ** (2n * 3n))],
+					['+5 ^ (+2 * +3)',  new VALUE.Natural(5n ** (2n * 3n))],
 				]));
 			});
 			test.test('overflows integers properly.', () => {
@@ -769,6 +785,15 @@ test.suite('ASTNodeOperation', () => {
 					new VALUE.Integer(2n ** 62n),
 					new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
 				]);
+			});
+			test.test('overflows naturals properly.', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeOperationBinaryArithmetic.fromSource('+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63').fold(),
+					new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n),
+				);
+			});
+			test.test('does not underflow naturals.', () => {
+				assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').fold(), VALUE.NAT_0);
 			});
 			test.test('computes the value of a float operation of constants.', () => {
 				foldOperations(new Map<string, VALUE.Value>([

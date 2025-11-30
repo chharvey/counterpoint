@@ -233,13 +233,15 @@ Boolean! ValueOf(SemanticOperation[operator: EMP] expr) :=
 		1. *Return:* `true`.
 	4. *If* `v0` is an instance of `Integer` *and* `v0` is `0`:
 		1. *Return:* `true`.
-	5. *If* `v0` is an instance of `Float` *and* `v0` is `0.0` or `-0.0`:
+	5. *If* `v0` is an instance of `Natural` *and* `v0` is `+0`:
 		1. *Return:* `true`.
-	6. *If* `v0` is an instance of `String` *and* `v0` contains 0 codepoints:
+	6. *If* `v0` is an instance of `Float` *and* `v0` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	7. *If* `v0` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v0.count` is 0:
+	7. *If* `v0` is an instance of `String` *and* `v0` contains 0 codepoints:
 		1. *Return:* `true`.
-	8. *Return:* `false`.
+	8. *If* `v0` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v0.count` is 0:
+		1. *Return:* `true`.
+	9. *Return:* `false`.
 ;
 
 Number! ValueOf(SemanticOperation[operator: NEG] expr) :=

@@ -448,6 +448,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 | `false`        | `false`          | `true`          |
 |                |                  | all symbols     |
 |                | `0`              | all integers    |
+|                | `+0`             | all naturals    |
 |                | `0.0`, `-0.0`    | all floats      |
 |                | `""`             | all strings     |
 |                | `()`, `[]`, `{}` | all collections |
@@ -456,8 +457,8 @@ or if it’s an empty string or empty collection (such as an array or set).
 
 ### Mathematical Affirmation, Mathematical Negation
 ```
-`+` <int | float>
-`-` <int | float>
+`+` <Number>
+`-` <Number>
 ```
 The **mathematical affirmation** operator, `+`, and
 the **mathematical negation** operator, `-`,
@@ -482,11 +483,12 @@ let int_n = -\x200;
 
 Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**,
 even if they’re prefixed with a radix.
-For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`.
-The same is true for `+\x200`.
-Even though these tokens’ values are the same as the computed values of
-the expressions `-(\x200)` and `+(\x200)`,
-this is important to mention because it could affect how we write
+For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`,
+even though its value is equivalent to the result of the operation `-(\x200)`.
+The same is true for `+\x200`, but instead this is lexed as a natural number literal,
+which is a completely different type than the result of applying `+` to `\x200`.
+For that, we’d need to insert either parentheses or whitespace (`+(\x200)` or `+ \x200`).
+This is important to mention because it could also affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
@@ -624,7 +626,7 @@ so in those cases we may use type claims to write good code.
 
 ### Exponentiation
 ```
-<int | float> `^` <int | float>
+<Number> `^` <Number>
 ```
 The **exponentiation** operator is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
@@ -676,8 +678,8 @@ and then negate, the expression should be written `-(3 ^ 2)` or `-1 * 3 ^ 2`.
 
 ### Multiplicative
 ```
-<int | float> `*` <int | float>
-<int | float> `/` <int | float>
+<Number> `*` <Number>
+<Number> `/` <Number>
 ```
 The **multiplication** operator, `*`, and
 the **division** operator, `/`,
@@ -694,19 +696,19 @@ for any numbers `‹a›`, `‹b›`, and `‹c›`:
 ```
 
 Multiplication and division perform the standard arithmetic operations,
-keeping in mind that the result of division `/` on integers are truncated,
+keeping in mind that the result of division `/` on integers or naturals is truncated,
 and division by `0` will result in an error.
-```
-\o12 / \q11; % produces `2`
-3 / 2;       % produces `1`, since 1.5 gets truncated
-4 / 0;       % runtime error
+```cpl
++\o12 / +\q11; % produces `+2`
+3 / 2;         % produces `1`, since 1.5 gets truncated
+4 / 0;         % runtime error
 ```
 
 
 ### Additive
 ```
-<int | float> `+` <int | float>
-<int | float> `-` <int | float>
+<Number> `+` <Number>
+<Number> `-` <Number>
 ```
 The **addition** operator, `+`, and
 the **subtraction** operator, `-`,
@@ -725,6 +727,11 @@ for any numbers `‹a›`, `‹b›`, and `‹c›`:
 Addition and subtraction perform the standard arithmetic operations,
 keeping in mind that integer overflow is possible
 when going beyond the maximum/minimum integer values.
+Subtraction of naturals bounds to zero.
+```cpl
++\o12 - +\q11; % produces `+5`
++5 - +10;      % produces `+0`, since -5 gets bound from below
+```
 
 #### Parsing Additive Expressions
 [Previously in this chapter](#mathematical-affirmation-mathematical-negation)
@@ -741,7 +748,7 @@ since it thinks `+1` is a single token.
 This will lead the parser to fail, since a number token cannot follow another number token
 in the formal grammar.
 
-To fix the error, we must use whitespace indicate token boundaries.
+To fix the error, we can use whitespace indicate token boundaries.
 ```
 3 + 1
 ```
@@ -752,12 +759,12 @@ The parser receives these tokens and produces the correct expression.
 
 ### Comparative
 ```
-<int | float> `<`  <int | float>
-<int | float> `>`  <int | float>
-<int | float> `<=` <int | float>
-<int | float> `>=` <int | float>
-<int | float> `!<` <int | float>
-<int | float> `!>` <int | float>
+<Number> `<`  <Number>
+<Number> `>`  <Number>
+<Number> `<=` <Number>
+<Number> `>=` <Number>
+<Number> `!<` <Number>
+<Number> `!>` <Number>
 
 <Object> `is`  <Class>
 <Object> `!is` <Class>

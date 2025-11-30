@@ -169,7 +169,7 @@ The numeric separator cannot appear at the beginning or end of an integer,
 nor can it appear consecutively.
 
 Integers can be added, subtracted, and multiplied like normal numbers.
-However, when dividing integers, if getting a non-integer value, we will truncate the decimal
+However, when dividing integers, if getting a non-integer value, the fractional part is truncated
 (round towards zero). Dividing by zero is an error.
 In all operations on integers, bases can be mixed.
 ```

@@ -298,6 +298,14 @@ They are instances of [`Natural`](./intrinsics.md#integer).
 The maximum possible value of a Natural is *18,446,744,073,709,551,615* (*FFFF,FFFF,FFFF,FFFF<sub>16</sub>* = *2<sup>64</sup> &minus; 1*)
 and the minimum value is *0*.
 
+When performing arithmetic operations such as addition and multiplication,
+computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>64</sup>*.
+For example, the sum represented by *18,446,744,073,709,551,615 + 1* will overflow and produce the value *0*.
+The behavior of performing arithmetic operations that are invalid in the naturals
+(such as subtracting a larger number, dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
+The result of division is rounded towards zero. Dividing by zero results in an error.
+The result of subtracting a larger number from a smaller number is zero; no underflow occurs.
+
 ##### Float
 The **Float** type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.

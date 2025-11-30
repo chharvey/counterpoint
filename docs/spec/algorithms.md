@@ -216,6 +216,9 @@ Boolean Identical(Object a, Object b) :=
 	4. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Integer`:
 		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
+	4. *If* `a` is an instance of `Natural` *and* `b` is an instance of `Natural`:
+		1. *If* `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
 	5. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
 		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
@@ -262,9 +265,8 @@ Compares two objects and returns whether they are considered “equal” by some
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
 		1. *Return:* `true`.
-	2. *If* `a` is an instance of `Integer` *or* `b` is an instance of `Integer`:
-		1. *If* `a` is an instance of `Float` *or* `b` is an instance of `Float`:
-			1. *Return:* `Equal(Float(a), Float(b))`.
+	2. *If* `a` is an instance of `Number` *and* `b` is an instance of `Number`:
+		1. *Return:* `Equal(Float(a), Float(b))`.
 	3. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
 		1. *If* `a` is `0.0` *and* `b` is `-0.0`:
 			1. *Return:* `true`.
