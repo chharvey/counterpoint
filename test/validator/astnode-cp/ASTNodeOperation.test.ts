@@ -348,19 +348,30 @@ test.suite('ASTNodeOperation', () => {
 					assert.throws(() => ((stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).type(), TypeErrorInvalidOperation);
 				});
 			});
-			test.suite('[operator=INT | FLOAT]', () => {
+			test.suite('[operator=INT | NAT | FLOAT]', () => {
 				test.test('returns the respective type for numeric operands.', () => {
 					assert.deepStrictEqual(setupScript(`{
 						let var my_int: int   = 7;
+						let var my_nat: nat   = +42;
 						let var my_flt: float = -3.5;
 
 						int   my_int;
+						int   my_nat;
 						int   my_flt;
+						nat   my_int;
+						nat   my_nat;
+						nat   my_flt;
 						float my_int;
+						float my_nat;
 						float my_flt;
-					}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+					}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 						TYPE.INT,
 						TYPE.INT,
+						TYPE.INT,
+						TYPE.NAT,
+						TYPE.NAT,
+						TYPE.NAT,
+						TYPE.FLOAT,
 						TYPE.FLOAT,
 						TYPE.FLOAT,
 					]);
@@ -372,6 +383,11 @@ test.suite('ASTNodeOperation', () => {
 						int   "string"
 						int   ["string tuple"]
 						int   [record= "string"]
+						nat   null
+						nat   @symb
+						nat   "string"
+						nat   ["string tuple"]
+						nat   [record= "string"]
 						float null
 						float @symb
 						float "string"

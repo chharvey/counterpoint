@@ -302,7 +302,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | NAT | FLOAT] expr) 
 		2. *Else If* `operator` is `INT`:
 			1. *Return:* `Integer`.
 		3. *Else If* `operator` is `NAT`:
-			// TODO
+			1. *Return:* `Natural`.
 		4. *Else If* `operator` is `FLOAT`:
 			1. *Return:* `Float`.
 	5. *Throw:* a new TypeErrorInvalidOperation.
