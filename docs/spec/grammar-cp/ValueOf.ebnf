@@ -264,6 +264,10 @@ Number! ValueOf(SemanticOperation[operator: INT] expr) :=
 	6. *Return:* `v0`.
 ;
 
+Number! ValueOf(SemanticOperation[operator: NAT] expr) :=
+	// TODO
+;
+
 Number! ValueOf(SemanticOperation[operator: FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.

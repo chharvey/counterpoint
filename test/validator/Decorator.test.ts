@@ -509,6 +509,12 @@ test.suite('Decorator', () => {
 				}
 				% (expression_unary_keyword)
 			`]],
+			['skip: Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
+				{
+					nat v;
+				}
+				% (expression_unary_keyword)
+			`]],
 			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					float v;
@@ -843,6 +849,15 @@ test.suite('Decorator', () => {
 						`, '(expression_compound)')), /not yet supported/);
 					});
 				});
+			});
+		});
+		test.suite('Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', () => {
+			test.test('operator `nat` is not yet supported.', () => {
+				assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+					{
+						nat v;
+					}
+				`, '(expression_unary_keyword)')), /not yet supported/);
 			});
 		});
 		['is', '!is'].forEach((op) => {

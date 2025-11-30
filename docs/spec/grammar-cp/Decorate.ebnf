@@ -457,6 +457,10 @@ Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?
 	:= (SemanticOperation[operator=INT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
+	:= (SemanticOperation[operator=NAT]
+		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
+	);
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
 	:= (SemanticOperation[operator=FLOAT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)

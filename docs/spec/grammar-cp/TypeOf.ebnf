@@ -290,7 +290,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
 	5. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | FLOAT] expr) :=
+Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | NAT | FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
@@ -301,7 +301,9 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | FLOAT] expr) :=
 				1. *Return:* `t0`.
 		2. *Else If* `operator` is `INT`:
 			1. *Return:* `Integer`.
-		3. *Else If* `operator` is `FLOAT`:
+		3. *Else If* `operator` is `NAT`:
+			// TODO
+		4. *Else If* `operator` is `FLOAT`:
 			1. *Return:* `Float`.
 	5. *Throw:* a new TypeErrorInvalidOperation.
 ;

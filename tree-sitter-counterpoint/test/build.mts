@@ -1030,18 +1030,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					int   value;
+					nat   value;
 					float value;
 				}
 			`,
 			sourceExpressions(
-				s(
-					'expression_unary_keyword',
-					s('identifier'),
-				),
-				s(
-					'expression_unary_keyword',
-					s('identifier'),
-				),
+				s('expression_unary_keyword', s('identifier')),
+				s('expression_unary_keyword', s('identifier')),
+				s('expression_unary_keyword', s('identifier')),
 			),
 		],
 

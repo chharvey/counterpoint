@@ -57,6 +57,7 @@ export class Decorator {
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
 		[Keyword.INT,    Operator.INT],
+		[Keyword.NAT,    Operator.NAT],
 		[Keyword.FLOAT,  Operator.FLOAT],
 	]);
 

@@ -44,6 +44,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		public  readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
+		if ([Operator.NAT].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 	}
 
 	@memoizeMethod
@@ -90,6 +93,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
 				return TYPE.INT;
 			}
+			case Operator.NAT: {
+				return assert.fail(`Operator ${ this.operator } not yet supported.`);
+			}
 			case Operator.FLOAT: {
 				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
 				return TYPE.FLOAT;
@@ -115,6 +121,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			}
 			case Operator.INT: {
 				return (v as VALUE.Number).toInt();
+			}
+			case Operator.NAT: {
+				return assert.fail(`Operator ${ this.operator } not yet supported.`);
 			}
 			case Operator.FLOAT: {
 				return (v as VALUE.Number).toFloat();
