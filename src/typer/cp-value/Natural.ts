@@ -36,9 +36,9 @@ export class Natural extends ValueNumber<Natural> {
 	 * @returns the value represented as a 64-bit unsigned integer
 	 */
 	public constructor(data: bigint = 0n) {
+		super();
 		const internal = new BigUint64Array(1);
 		internal[0] = data; // need to store in BigUint64Array first to ensure 64-bit and unsigned
-		super();
 		this.data = internal[0];
 	}
 
@@ -62,6 +62,9 @@ export class Natural extends ValueNumber<Natural> {
 			// non-identical Naturals will never be equal
 			return false;
 		}
+		if (value instanceof Integer) {
+			return this.data === value.toBigInt();
+		}
 		return this.toFloat().equal(value);
 	}
 
@@ -71,6 +74,10 @@ export class Natural extends ValueNumber<Natural> {
 
 	public override toInt(): Integer {
 		return new Integer(this.data);
+	}
+
+	public override toNat(): Natural {
+		return this;
 	}
 
 	public override toFloat(): Float {

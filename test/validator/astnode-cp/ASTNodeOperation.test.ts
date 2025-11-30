@@ -446,24 +446,36 @@ test.suite('ASTNodeOperation', () => {
 					['?{41 -> 42}', VALUE.FALSE],
 				]));
 			});
-			test.test('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
+			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion only if needed.', () => {
 				const exprs: readonly AST.ASTNodeOperationUnary[] = setupScript(`{
-					let my_int: int   = 7;
+					let my_int: int   = -7;
+					let my_nat: nat   = +42;
 					let my_flt: float = -3.5;
 
 					int   my_int;
+					int   my_nat;
 					int   my_flt;
+					nat   my_int;
+					nat   my_nat;
+					nat   my_flt;
 					float my_int;
+					float my_nat;
 					float my_flt;
-				}`, null, {build: false}).stmts.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
+				}`, null, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
 				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
 				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
 				assert.strictEqual(values[0], operands[0]);
-				assert.strictEqual(values[3], operands[3]);
+				assert.strictEqual(values[4], operands[4]);
+				assert.strictEqual(values[8], operands[8]);
 				return assert.deepStrictEqual(values, [
-					new VALUE.Integer(7n),
+					new VALUE.Integer(-7n),
+					new VALUE.Integer(42n),
 					new VALUE.Integer(-3n),
-					new VALUE.Float(7.0),
+					new VALUE.Natural(-7n),
+					new VALUE.Natural(42n),
+					new VALUE.Natural(0n),
+					new VALUE.Float(-7.0),
+					new VALUE.Float(42.0),
 					new VALUE.Float(-3.5),
 				]);
 			});

@@ -121,7 +121,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return (v as VALUE.Number).toInt();
 			}
 			case Operator.NAT: {
-				return assert.fail(`Operator ${ this.operator } not yet supported.`);
+				return (v as VALUE.Number).toNat();
 			}
 			case Operator.FLOAT: {
 				return (v as VALUE.Number).toFloat();

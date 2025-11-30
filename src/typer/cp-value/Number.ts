@@ -1,6 +1,7 @@
 import {Primitive} from './Primitive.ts';
 import type {
 	Integer,
+	Natural,
 	Float,
 } from './index.ts';
 
@@ -27,6 +28,12 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	 * @returns the equivalent signed integer value
 	 */
 	public abstract toInt(): Integer;
+
+	/**
+	 * Type-coerce this number into a nat.
+	 * @returns the equivalent unsigned integer value
+	 */
+	public abstract toNat(): Natural;
 
 	/**
 	 * Type-coerce this number into a float.

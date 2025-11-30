@@ -9,7 +9,10 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import {Float} from './index.ts';
+import {
+	Natural,
+	Float,
+} from './index.ts';
 import {
 	identical,
 	type Value,
@@ -35,9 +38,9 @@ export class Integer extends ValueNumber<Integer> {
 	 * @returns the value represented as a 64-bit signed integer
 	 */
 	public constructor(data: bigint = 0n) {
+		super();
 		const internal = new BigInt64Array(1);
 		internal[0] = data; // need to store in BigInt64Array first to ensure 64-bit and signed
-		super();
 		this.data = internal[0];
 	}
 
@@ -61,6 +64,9 @@ export class Integer extends ValueNumber<Integer> {
 			// non-identical Integers will never be equal
 			return false;
 		}
+		if (value instanceof Natural) {
+			return this.data === value.toBigInt();
+		}
 		return this.toFloat().equal(value);
 	}
 
@@ -70,6 +76,10 @@ export class Integer extends ValueNumber<Integer> {
 
 	public override toInt(): Integer {
 		return this;
+	}
+
+	public override toNat(): Natural {
+		return new Natural(this.data);
 	}
 
 	public override toFloat(): Float {

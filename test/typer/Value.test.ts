@@ -649,20 +649,42 @@ test.suite('Value', () => {
 		test.suite('#toInt', () => {
 			test.test('Integer', () => {
 				const i = new VALUE.Integer(42n);
-				assert.strictEqual(i.toInt(), i, '`Integer#toInt` should return self.');
+				assert.strictEqual(i.toInt(), i, 'should return self.');
+			});
+			test.test('Natural', () => {
+				assert.deepStrictEqual(new VALUE.Natural(42n).toInt(), new VALUE.Integer(42n), 'for values less than *2 ^ 63 - 1*, should return equal value.');
+				assert.deepStrictEqual(new VALUE.Natural(2n ** 63n + 1n).toInt(), new VALUE.Integer(-(2n ** 63n) + 1n), 'for values *2 ^ 63* or greater, should overflow.');
 			});
 			test.test('Float', () => {
-				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), '`Float#toInt` should truncate (round-to-zero).');
+				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), 'should truncate (round-to-zero).');
+			});
+		});
+
+		test.suite('#toNat', () => {
+			test.test('Integer', () => {
+				assert.deepStrictEqual(new VALUE.Integer(42n).toNat(), new VALUE.Natural(42n), 'for positive values, should return equal value.');
+				assert.deepStrictEqual(new VALUE.Integer(-69n).toNat(), new VALUE.Natural(-69n + 2n ** 64n), 'for negative values, should underflow.');
+			});
+			test.test('Natural', () => {
+				const n = new VALUE.Natural(42n);
+				assert.strictEqual(n.toNat(), n, 'should return self.');
+			});
+			test.test('Float', () => {
+				assert.deepStrictEqual(new VALUE.Float(42.69).toNat(), new VALUE.Natural(42n), 'for positive values, should truncate (round-to-zero).');
+				assert.deepStrictEqual(new VALUE.Float(-42.69).toNat(), new VALUE.Natural(0n), 'for negative values, should return zero.');
 			});
 		});
 
 		test.suite('#toFloat', () => {
 			test.test('Integer', () => {
-				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), '`Integer#toFloat` should return an equivalent value.');
+				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), 'should return an equal value.');
+			});
+			test.test('Natural', () => {
+				assert.deepStrictEqual(new VALUE.Natural(42n).toFloat(), new VALUE.Float(42), 'should return an equal value.');
 			});
 			test.test('Float', () => {
 				const f = new VALUE.Float(42.69);
-				assert.strictEqual(f.toFloat(), f, '`Float#toFloat` should return self.');
+				assert.strictEqual(f.toFloat(), f, 'should return self.');
 			});
 		});
 	});
