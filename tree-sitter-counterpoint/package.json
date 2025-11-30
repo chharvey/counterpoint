@@ -28,11 +28,12 @@
     "url": "git+https://github.com/chharvey/counterpoint.git"
   },
   "scripts": {
-    "dist": "tsc",
-    "postdist": "tree-sitter generate",
-    "pretest": "tsc --project ./test/tsconfig.json && tsx ./test/build.mts",
+    "compile": "tsc && tsc --project ./test/tsconfig.json",
+    "generate": "tree-sitter generate",
+    "dev": "tsc && npm run generate",
+    "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
-    "build": "npm run dist && npm run test",
+    "build": "npm run compile && npm run generate && npm run test",
     "postbuild": "npm run prebuildify",
     "install": "node-gyp-build",
     "prebuildify": "prebuildify --napi --strip"
