@@ -102,10 +102,22 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			return arg1;
 		}
 
+		if (this.operator === Operator.DIV) {
+			const types = [
+				this.operand0.type(),
+				this.operand1.type(),
+			] as const;
+			switch (true) {
+				case bothInts  (...types): { return mod.call('idiv_s', [arg0, arg1], binaryen.v128); }
+				case bothNats  (...types): { return mod.call('idiv_u', [arg0, arg1], binaryen.v128); }
+				case bothFloats(...types): { return mod.call('fdiv',   [arg0, arg1], binaryen.v128); }
+				default:                   { return mod.unreachable(); }
+			}
+		}
+
 		return this.builder.module.call(new Map<Operator, string>([
 			[Operator.EXP, 'vexp'],
 			[Operator.MUL, 'vmul'],
-			[Operator.DIV, 'vdiv'],
 			[Operator.ADD, 'vadd'],
 			[Operator.SUB, 'vsub'],
 		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
