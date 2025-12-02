@@ -72,13 +72,16 @@ test.suite('ASTNodeOperation', () => {
 		vtoi: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], binaryen.v128),
 		vtof: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], binaryen.v128),
 
-		vexp:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp',   [arg0, arg1], binaryen.v128),
-		vmul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul',   [arg0, arg1], binaryen.v128),
+		iexp:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iexp',   [arg0, arg1], binaryen.v128),
+		imul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('imul',   [arg0, arg1], binaryen.v128),
+		fmul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fmul',   [arg0, arg1], binaryen.v128),
 		idiv_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('idiv_s', [arg0, arg1], binaryen.v128),
 		idiv_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('idiv_u', [arg0, arg1], binaryen.v128),
 		fdiv:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fdiv',   [arg0, arg1], binaryen.v128),
-		vadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd',   [arg0, arg1], binaryen.v128),
-		vsub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vsub',   [arg0, arg1], binaryen.v128),
+		iadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iadd',   [arg0, arg1], binaryen.v128),
+		fadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fadd',   [arg0, arg1], binaryen.v128),
+		isub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub',   [arg0, arg1], binaryen.v128),
+		fsub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fsub',   [arg0, arg1], binaryen.v128),
 		vlt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',    [arg0, arg1], binaryen.v128),
 		vgt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',    [arg0, arg1], binaryen.v128),
 		vle:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',    [arg0, arg1], binaryen.v128),
@@ -89,23 +92,29 @@ test.suite('ASTNodeOperation', () => {
 
 	/**
 	 * The type of a helper for creating outputs for short-circuited operations.
-	 * @param mod  the module to perform the operation
-	 * @param tee  parameters for teeing the first (left-hand) operand; either a 3-tuple:
-	 *             ```
-	 *             [
-	 *             	value, // the operand value
-	 *             	index, // the local index to tee the value (default `0`)
-	 *             	type,  // the value’s type (default `binaryen.v128`)
-	 *             ]
-	 *             ```
-	 *             or a plain value, which is converted to a tuple with the above defaults.
-	 * @param arg1 the second (right-hand) operand
-	 * @return     the new binaryen expression
+	 * @param mod   the module to perform the operation
+	 * @param tee   parameters for teeing the first (left-hand) operand; either a 3-tuple:
+	 *              ```
+	 *              [
+	 *              	value, // the operand value
+	 *              	index, // the local index to tee the value (default `0`)
+	 *              	type,  // the value’s type (default `binaryen.v128`)
+	 *              ]
+	 *              ```
+	 *              or a plain value, which is converted to a tuple with the above defaults.
+	 * @param arg1  the second (right-hand) operand
+	 * @param fnref the helper function to call
+	 * @return      the new binaryen expression
 	 */
-	type OperationHelper = (
-		mod: binaryen.Module,
-		tee: binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type],
-		arg1: binaryen.ExpressionRef,
+	type OperationHelper<FnRef extends boolean = false> = FnRef extends true ? (
+		mod:   binaryen.Module,
+		tee:   binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type],
+		arg1:  binaryen.ExpressionRef,
+		fnref: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+	) => binaryen.ExpressionRef : (
+		mod:   binaryen.Module,
+		tee:   binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type],
+		arg1:  binaryen.ExpressionRef,
 	) => binaryen.ExpressionRef;
 
 	function normalizeTee(tee: binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type]): {readonly value: binaryen.ExpressionRef, readonly index: number, readonly type: binaryen.Type} {
@@ -117,7 +126,7 @@ test.suite('ASTNodeOperation', () => {
 	}
 
 	const BINOP = {
-		mul: ((mod, tee, op1) => {
+		mul: ((mod, tee, op1, fnref) => {
 			const {value, index, type} = normalizeTee(tee);
 
 			const local_tee: binaryen.ExpressionRef = mod.local.tee(index, value, type);
@@ -136,12 +145,12 @@ test.suite('ASTNodeOperation', () => {
 						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
 					),
 					op1,
-					CALL.vmul(mod, local_get, op1),
+					fnref.call(null, mod, local_get, op1),
 				),
 			);
-		}) as OperationHelper,
+		}) as OperationHelper<true>,
 
-		add: ((mod, tee, op1) => {
+		add: ((mod, tee, op1, fnref) => {
 			const {value, index, type} = normalizeTee(tee);
 
 			const local_tee: binaryen.ExpressionRef = mod.local.tee(index, value, type);
@@ -154,9 +163,9 @@ test.suite('ASTNodeOperation', () => {
 					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				op1,
-				CALL.vadd(mod, local_get, op1),
+				fnref.call(null, mod, local_get, op1),
 			);
-		}) as OperationHelper,
+		}) as OperationHelper<true>,
 
 		and: ((mod, tee, op1) => {
 			const {value, index, type} = normalizeTee(tee);
@@ -195,14 +204,14 @@ test.suite('ASTNodeOperation', () => {
 	test.suite('#build', () => {
 		test.test('compound expression.', () => {
 			buildOperations(new Map([
-				['42 ^ 2 * 420', (builder) => CALL.vmul(
+				['42 ^ 2 * 420', (builder) => CALL.imul(
 					builder.module,
-					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
+					CALL.iexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
 					buildConst(builder, 420n),
 				)],
-				['2.1 * 3.1 + 5.1', (builder) => CALL.vadd(
+				['2.1 * 3.1 + 5.1', (builder) => CALL.fadd(
 					builder.module,
-					CALL.vmul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
+					CALL.fmul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
 					buildConst(builder, 5.1),
 				)],
 			]));
@@ -220,6 +229,7 @@ test.suite('ASTNodeOperation', () => {
 					mod.drop(mod.local.get(0, binaryen.v128)),
 					mod.local.get(1, binaryen.v128),
 				], binaryen.v128),
+				CALL.iadd,
 			));
 		});
 	});
@@ -669,11 +679,11 @@ test.suite('ASTNodeOperation', () => {
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						BINOP.mul(mod, [extracts[0], 2], const_['2']),
-						BINOP.mul(mod, [extracts[1], 3], const_['2.4']),
+						BINOP.mul(mod, [extracts[0], 2], const_['2'],   CALL.imul),
+						BINOP.mul(mod, [extracts[1], 3], const_['2.4'], CALL.fmul),
 
-						BINOP.add(mod, [extracts[2], 4], const_['2']),
-						BINOP.add(mod, [extracts[3], 5], const_['2.4']),
+						BINOP.add(mod, [extracts[2], 4], const_['2'],   CALL.iadd),
+						BINOP.add(mod, [extracts[3], 5], const_['2.4'], CALL.fadd),
 
 						CALL.vlt(mod, extracts[4], const_['2']),
 						CALL.vlt(mod, extracts[5], const_['2.4']),
@@ -723,8 +733,8 @@ test.suite('ASTNodeOperation', () => {
 					'3.0': buildConst(goal.builder, 3.0),
 				} as const;
 				const inners: readonly binaryen.ExpressionRef[] = [
-					BINOP.add(mod, [extracts[0], 2], const_['2']),
-					CALL.vadd(mod, const_['2.0'],    extracts[1]),
+					BINOP.add(mod, [extracts[0], 2], const_['2'], CALL.iadd),
+					CALL.fadd(mod, const_['2.0'],    extracts[1]),
 				];
 				assertEqualBins(
 					stmts.slice(2).map((stmt) => (
@@ -735,8 +745,8 @@ test.suite('ASTNodeOperation', () => {
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
 					inners.map((inner, i) => mod.drop([
-						BINOP.add(mod, [inner, 3], const_['3']),
-						BINOP.add(mod, [inner, 4], const_['3.0']),
+						BINOP.add(mod, [inner, 3], const_['3'],   CALL.iadd),
+						BINOP.add(mod, [inner, 4], const_['3.0'], CALL.fadd),
 					][i])),
 				);
 			});
@@ -888,7 +898,7 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#build', () => {
 			test.test('calls the correct WASM function.', () => {
 				buildOperations(new Map([
-					['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+					['42 + 420', (builder) => CALL.iadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
 
 					[' 126 /  3', (builder) => CALL.idiv_s(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
 					['-126 /  3', (builder) => CALL.idiv_s(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
@@ -911,9 +921,9 @@ test.suite('ASTNodeOperation', () => {
 					['-200.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -200.1), buildConst(builder,  3.1))],
 					['-200.1 / -3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -200.1), buildConst(builder, -3.1))],
 
-					['42  - 420',  (builder) => CALL.vsub(builder.module, buildConst(builder, 42n),        buildConst(builder, 420n))],
-					['+42 - +420', (builder) => CALL.vsub(builder.module, buildConst(builder, 42n, 'nat'), buildConst(builder, 420n, 'nat'))],
-					['4.2 - 42.0', (builder) => CALL.vsub(builder.module, buildConst(builder, 4.2),        buildConst(builder, 42.0))],
+					['42  - 420',  (builder) => CALL.isub(builder.module, buildConst(builder, 42n),        buildConst(builder, 420n))],
+					['+42 - +420', (builder) => CALL.isub(builder.module, buildConst(builder, 42n, 'nat'), buildConst(builder, 420n, 'nat'))],
+					['4.2 - 42.0', (builder) => CALL.fsub(builder.module, buildConst(builder, 4.2),        buildConst(builder, 42.0))],
 				]));
 			});
 			test.test('does not compile the first operand if it is foldable and an identity element.', () => {

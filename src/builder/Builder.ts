@@ -135,27 +135,17 @@ export class Builder {
 	}
 
 	#binOpArithmetic(
-		name:       string,
-		method_i64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		method_f64: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		name:    string,
+		method:  (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		typekey: 'intValue' | 'floatValue',
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
-		const int_int:     binaryen.ExpressionRef = new BinVect(mod, method_i64.call(null, local_vects[0].intValue,   local_vects[1].intValue))   .vect;
-		const float_float: binaryen.ExpressionRef = new BinVect(mod, method_f64.call(null, local_vects[0].floatValue, local_vects[1].floatValue)) .vect;
 		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-				int_int,
-				mod.if(
-					mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-					float_float,
-					mod.unreachable(),
-				),
-			),
+			new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect,
 		], binaryen.v128));
 	}
 
@@ -237,27 +227,17 @@ export class Builder {
 				),
 			),
 		], binaryen.v128));
-		mod.addFunction('vexp', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			mod.if(
-				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-				new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i64)).vect,
-				mod.unreachable(),
-			),
-		], binaryen.v128));
 
-		this.#binOpArithmetic('vmul', (i0, i1) => mod.i64.mul(i0, i1), (f0, f1) => mod.f64.mul(f0, f1));
-		this.#binOpArithmetic('vadd', (i0, i1) => mod.i64.add(i0, i1), (f0, f1) => mod.f64.add(f0, f1));
-		this.#binOpArithmetic('vsub', (i0, i1) => mod.i64.sub(i0, i1), (f0, f1) => mod.f64.sub(f0, f1));
-
-		mod.addFunction('idiv_s', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			new BinVect(mod, mod.i64.div_s(local_vects[0].intValue, local_vects[1].intValue)).vect,
-		], binaryen.v128));
-		mod.addFunction('idiv_u', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			new BinVect(mod, mod.i64.div_u(local_vects[0].intValue, local_vects[1].intValue)).vect,
-		], binaryen.v128));
-		mod.addFunction('fdiv', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
-			new BinVect(mod, mod.f64.div(local_vects[0].floatValue, local_vects[1].floatValue)).vect,
-		], binaryen.v128));
+		this.#binOpArithmetic('iexp',   (i0, i1) => mod.call('exp', [i0, i1], binaryen.i64), 'intValue');
+		this.#binOpArithmetic('imul',   (i0, i1) => mod.i64.mul  (i0, i1), 'intValue');
+		this.#binOpArithmetic('fmul',   (f0, f1) => mod.f64.mul  (f0, f1), 'floatValue');
+		this.#binOpArithmetic('idiv_s', (i0, i1) => mod.i64.div_s(i0, i1), 'intValue');
+		this.#binOpArithmetic('idiv_u', (i0, i1) => mod.i64.div_u(i0, i1), 'intValue');
+		this.#binOpArithmetic('fdiv',   (f0, f1) => mod.f64.div  (f0, f1), 'floatValue');
+		this.#binOpArithmetic('iadd',   (i0, i1) => mod.i64.add  (i0, i1), 'intValue');
+		this.#binOpArithmetic('fadd',   (f0, f1) => mod.f64.add  (f0, f1), 'floatValue');
+		this.#binOpArithmetic('isub',   (i0, i1) => mod.i64.sub  (i0, i1), 'intValue');
+		this.#binOpArithmetic('fsub',   (f0, f1) => mod.f64.sub  (f0, f1), 'floatValue');
 
 		this.#binOpComparative('vlt', (i0, i1) => mod.i64.lt_s(i0, i1), (f0, f1) => mod.f64.lt(f0, f1));
 		this.#binOpComparative('vgt', (i0, i1) => mod.i64.gt_s(i0, i1), (f0, f1) => mod.f64.gt(f0, f1));

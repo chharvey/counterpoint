@@ -57,10 +57,16 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const mod:          binaryen.Module          = this.builder.module;
+		const [t0, t1]:     TYPE.Type[]              = this.children.map((operand) => operand.type());
 		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
 		const v0:           VALUE.Value | null       = this.operand0.fold();
 
-		// if operand0 is not foldable, short-circuit by using identity laws
+		// short-circuit by using identity laws
+		// if operand0 is foldable and using identity laws, just return operand1
+		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
+			return arg1;
+		}
+		// if operand0 is not foldable, try short-circuiting at runtime
 		if (!v0) {
 			const local0: Local = this.builder.addLocal(arg0);
 			const teeer         = new BinVect(mod, local0.tee());
@@ -80,8 +86,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
 						),
 						arg1,
-						// else return a `vmul` call
-						mod.call('vmul', [local0.get(), arg1], binaryen.v128),
+						// else return a wasm call
+						mod.call(
+							bothInts(t0, t1) || bothNats(t0, t1) ? 'imul' : (assert.ok(bothFloats(t0, t1)), 'fmul'),
+							[local0.get(), arg1],
+							binaryen.v128,
+						),
 					),
 				);
 			} else if (this.operator === Operator.ADD) {
@@ -92,35 +102,51 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
 					),
 					arg1,
-					// else return a `vadd` call
-					mod.call('vadd', [local0.get(), arg1], binaryen.v128),
+					// else return a wasm call
+					mod.call(
+						bothInts(t0, t1) || bothNats(t0, t1) ? 'iadd' : (assert.ok(bothFloats(t0, t1)), 'fadd'),
+						[local0.get(), arg1],
+						binaryen.v128,
+					),
 				);
 			}
 		}
 
-		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
-			return arg1;
-		}
-
-		if (this.operator === Operator.DIV) {
-			const types = [
-				this.operand0.type(),
-				this.operand1.type(),
-			] as const;
-			switch (true) {
-				case bothInts  (...types): { return mod.call('idiv_s', [arg0, arg1], binaryen.v128); }
-				case bothNats  (...types): { return mod.call('idiv_u', [arg0, arg1], binaryen.v128); }
-				case bothFloats(...types): { return mod.call('fdiv',   [arg0, arg1], binaryen.v128); }
-				default:                   { return mod.unreachable(); }
+		// if operand0 is foldable and not using identity laws, don’t try short-circuiting; return wasm call
+		switch (true) {
+			case bothInts(t0, t1): {
+				return mod.call(new Map<Operator, string>([
+					[Operator.EXP, 'iexp'],
+					[Operator.MUL, 'imul'],
+					[Operator.DIV, 'idiv_s'],
+					[Operator.ADD, 'iadd'],
+					[Operator.SUB, 'isub'],
+				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
+			}
+			case bothNats(t0, t1): {
+				return mod.call(new Map<Operator, string>([
+					[Operator.EXP, 'iexp'],
+					[Operator.MUL, 'imul'],
+					[Operator.DIV, 'idiv_u'],
+					[Operator.ADD, 'iadd'],
+					[Operator.SUB, 'isub'],
+				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
+			}
+			case bothFloats(t0, t1): {
+				if (this.operator === Operator.EXP) {
+					return mod.unreachable();
+				}
+				return mod.call(new Map<Operator, string>([
+					[Operator.MUL, 'fmul'],
+					[Operator.DIV, 'fdiv'],
+					[Operator.ADD, 'fadd'],
+					[Operator.SUB, 'fsub'],
+				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
+			}
+			default: {
+				return mod.unreachable();
 			}
 		}
-
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.EXP, 'vexp'],
-			[Operator.MUL, 'vmul'],
-			[Operator.ADD, 'vadd'],
-			[Operator.SUB, 'vsub'],
-		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
