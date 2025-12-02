@@ -5,6 +5,7 @@ import type {
 	AST,
 	SymbolSchemaVar,
 } from '../validator/index.ts';
+import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 
@@ -236,8 +237,14 @@ export class Builder {
 		this.#binOpArithmetic('fdiv',   (f0, f1) => mod.f64.div  (f0, f1), 'floatValue');
 		this.#binOpArithmetic('iadd',   (i0, i1) => mod.i64.add  (i0, i1), 'intValue');
 		this.#binOpArithmetic('fadd',   (f0, f1) => mod.f64.add  (f0, f1), 'floatValue');
-		this.#binOpArithmetic('isub',   (i0, i1) => mod.i64.sub  (i0, i1), 'intValue');
+		this.#binOpArithmetic('isub_s', (i0, i1) => mod.i64.sub  (i0, i1), 'intValue');
 		this.#binOpArithmetic('fsub',   (f0, f1) => mod.f64.sub  (f0, f1), 'floatValue');
+
+		this.#binOpArithmetic('isub_u', (i0, i1) => mod.if(
+			mod.i64.lt_u(i0, i1),
+			bigint_to_i64(mod, 0n, true),
+			mod.i64.sub(i0, i1),
+		), 'intValue');
 
 		this.#binOpComparative('vlt', (i0, i1) => mod.i64.lt_s(i0, i1), (f0, f1) => mod.f64.lt(f0, f1));
 		this.#binOpComparative('vgt', (i0, i1) => mod.i64.gt_s(i0, i1), (f0, f1) => mod.f64.gt(f0, f1));

@@ -120,7 +120,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 					[Operator.MUL, 'imul'],
 					[Operator.DIV, 'idiv_s'],
 					[Operator.ADD, 'iadd'],
-					[Operator.SUB, 'isub'],
+					[Operator.SUB, 'isub_s'],
 				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 			}
 			case bothNats(t0, t1): {
@@ -129,7 +129,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 					[Operator.MUL, 'imul'],
 					[Operator.DIV, 'idiv_u'],
 					[Operator.ADD, 'iadd'],
-					[Operator.SUB, 'isub'],
+					[Operator.SUB, 'isub_u'],
 				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 			}
 			case bothFloats(t0, t1): {

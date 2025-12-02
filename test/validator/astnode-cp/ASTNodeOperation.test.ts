@@ -80,7 +80,8 @@ test.suite('ASTNodeOperation', () => {
 		fdiv:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fdiv',   [arg0, arg1], binaryen.v128),
 		iadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iadd',   [arg0, arg1], binaryen.v128),
 		fadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fadd',   [arg0, arg1], binaryen.v128),
-		isub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub',   [arg0, arg1], binaryen.v128),
+		isub_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub_s', [arg0, arg1], binaryen.v128),
+		isub_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub_u', [arg0, arg1], binaryen.v128),
 		fsub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fsub',   [arg0, arg1], binaryen.v128),
 		vlt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',    [arg0, arg1], binaryen.v128),
 		vgt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',    [arg0, arg1], binaryen.v128),
@@ -921,9 +922,9 @@ test.suite('ASTNodeOperation', () => {
 					['-200.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -200.1), buildConst(builder,  3.1))],
 					['-200.1 / -3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -200.1), buildConst(builder, -3.1))],
 
-					['42  - 420',  (builder) => CALL.isub(builder.module, buildConst(builder, 42n),        buildConst(builder, 420n))],
-					['+42 - +420', (builder) => CALL.isub(builder.module, buildConst(builder, 42n, 'nat'), buildConst(builder, 420n, 'nat'))],
-					['4.2 - 42.0', (builder) => CALL.fsub(builder.module, buildConst(builder, 4.2),        buildConst(builder, 42.0))],
+					['42  - 420',  (builder) => CALL.isub_s(builder.module, buildConst(builder, 42n),        buildConst(builder, 420n))],
+					['+42 - +420', (builder) => CALL.isub_u(builder.module, buildConst(builder, 42n, 'nat'), buildConst(builder, 420n, 'nat'))],
+					['4.2 - 42.0', (builder) => CALL.fsub  (builder.module, buildConst(builder, 4.2),        buildConst(builder, 42.0))],
 				]));
 			});
 			test.test('does not compile the first operand if it is foldable and an identity element.', () => {
