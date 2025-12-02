@@ -26,7 +26,7 @@ export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = 
 		MAX_I64 = (1n << 64n) - 1n; // more performant than `(2n ** 64n) - 1n`
 	}
 	if (value < MIN_I64 || value > MAX_I64) {
-		throw new RangeError(`bigint value out of ${ u ? 'un' : '' }signed 64-bit range.`);
+		throw new RangeError(`bigint value ${ value } is out of ${ u ? 'un' : '' }signed 64-bit range.`);
 	}
 
 	const MASK32 = 0xffff_ffffn;

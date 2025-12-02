@@ -7,7 +7,7 @@ import {bigint_to_i64} from './utils-public.ts';
 /**
  * A Binaryen vector (`v128`) representing one of the following:
  * - one of three primitive special constants, the Counterpoint values `null`, `false`, or `true`, as a value on the stack
- * - a numeric value of Counterpoint type `int` or `float`, as a value on the stack
+ * - a numeric value of Counterpoint type `int`, `nat`, or `float`, as a value on the stack
  * - an address of a Counterpoint reference type, as a pointer to an object in the heap
  *
  * # Layout
@@ -44,13 +44,13 @@ import {bigint_to_i64} from './utils-public.ts';
  * When the Header is `\x0012`, `\x0014`, or `\x0018`, it represents an `i16`, `i32`, or `i64` value respectively.
  * The value may be interpreted as signed or unsigned.
  * Currently, only `i64` values are used.
- * Lanes 4–7 together form the `i64` representing a Counterpoint `int` value.
+ * Lanes 4–7 together form the `i64` value.
  * Header values of `\x0012` and `\x0014` reserved for future use. Data is always right-aligned.
  *
  * ## Float Values
  * When the Header is `\x0022`, `\x0024`, or `\x0028`, it represents an `f16`, `f32`, or `f64` value respectively.
  * Currently, only `f64` values are used.
- * Lanes 4–7 together form the `f64` representing a Counterpoint `float` value.
+ * Lanes 4–7 together form the `f64` value.
  * Header values of `\x0022` and `\x0024` reserved for future use. Data is always right-aligned.
  *
  * ## Address Values
@@ -131,9 +131,9 @@ export class BinVect {
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
-			 * If the arg represents an `int`, set Lane 3 to `\x0018` and set Lane 4–7 (joined) to its `i64` value;
-			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value;
-			 * else, if the arg is any other `v128`, set all lanes to those lanes.
+			 * If the arg is an `i64`, set Lane 3 to `\x0018` and set Lane 4–7 (joined) to its `i64` value;
+			 * else, if the arg is an `f64`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value;
+			 * else, if the arg is a `v128`, set all lanes to those lanes.
 			 */
 			switch (binaryen.getExpressionType(arg)) {
 				case binaryen.i64: {
@@ -203,7 +203,7 @@ export class BinVect {
 		);
 	}
 
-	/** Whether the value is intended to be interpreted as an int. */
+	/** Whether the value is intended to be interpreted as an integer (signed/unsigned). */
 	public get isInt(): binaryen.ExpressionRef {
 		return this.#checkTypeRange(0x0010n, 0x001fn);
 	}
@@ -223,7 +223,7 @@ export class BinVect {
 		return this.#type;
 	}
 
-	/** The value as interpreted as an int. */
+	/** The value as interpreted as an integer (signed/unsigned). */
 	public get intValue(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}

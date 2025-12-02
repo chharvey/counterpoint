@@ -897,8 +897,9 @@ test.suite('ASTNodeOperation', () => {
 					['-200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
 					['-200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-					['42  - 420',  (builder) => CALL.vsub(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
-					['4.2 - 42.0', (builder) => CALL.vsub(builder.module, buildConst(builder, 4.2), buildConst(builder, 42.0))],
+					['42  - 420',  (builder) => CALL.vsub(builder.module, buildConst(builder, 42n),        buildConst(builder, 420n))],
+					['+42 - +420', (builder) => CALL.vsub(builder.module, buildConst(builder, 42n, 'nat'), buildConst(builder, 420n, 'nat'))],
+					['4.2 - 42.0', (builder) => CALL.vsub(builder.module, buildConst(builder, 4.2),        buildConst(builder, 42.0))],
 				]));
 			});
 			test.test('does not compile the first operand if it is foldable and an identity element.', () => {

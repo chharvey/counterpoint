@@ -69,7 +69,7 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, bigint_to_i64(builder.module, this.data)).vect;
+		return new BinVect(builder.module, bigint_to_i64(builder.module, this.data, true)).vect;
 	}
 
 	public override toInt(): Integer {

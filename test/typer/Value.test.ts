@@ -255,13 +255,30 @@ test.suite('Value', () => {
 						-200 /  3,
 						-200 / -3,
 					].map((x) => BigInt(Math.trunc(x))),
-					(42n ** 2n * 420n) % (2n ** 16n),
+					(42n ** 2n * 420n) % (2n ** 63n),
 					(-5n) ** (2n * 3n),
 				];
 				const builder = new Builder();
 				return assertEqualBins(
 					data.map((x) => new VALUE.Integer(x).build(builder)),
 					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x)).vect),
+				);
+			});
+		});
+
+		test.suite('Natural', () => {
+			test.test('generates `(i64.const)`.', () => {
+				const data: bigint[] = [
+					...[
+						+126 / +3,
+						+200 / +3,
+					].map((x) => BigInt(Math.trunc(x))),
+					(42n ** 2n * 420n) % (2n ** 64n),
+				];
+				const builder = new Builder();
+				return assertEqualBins(
+					data.map((x) => new VALUE.Natural(x).build(builder)),
+					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x, true)).vect),
 				);
 			});
 		});
@@ -685,6 +702,15 @@ test.suite('Value', () => {
 			test.test('Float', () => {
 				const f = new VALUE.Float(42.69);
 				assert.strictEqual(f.toFloat(), f, 'should return self.');
+			});
+		});
+	});
+
+
+	test.suite('Natural', () => {
+		test.suite('.constructor', () => {
+			test.test('underflows when argument is negative.', () => {
+				assert.strictEqual(new VALUE.Natural(-3n).toBigInt(), 2n ** 64n - 3n);
 			});
 		});
 	});

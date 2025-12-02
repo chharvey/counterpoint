@@ -96,7 +96,17 @@ export function typeUnit(value: symbol | bigint | number | string, t?: 'nat'): T
 
 
 
-export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string | [] = null): binaryen.ExpressionRef {
+export function buildConst(builder: Builder, value?: null | boolean | symbol | number | string | []): binaryen.ExpressionRef;
+export function buildConst(builder: Builder, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
+export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string | [] = null, t?: 'nat'): binaryen.ExpressionRef {
+	if (t === 'nat') {
+		return (
+			value === 0n              ? VALUE.NAT_0 :
+			value === 1n              ? VALUE.NAT_1 :
+			typeof value === 'bigint' ? new VALUE.Natural(value) :
+			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		).build(builder);
+	}
 	return (
 		value === null            ? VALUE.NULL :
 		value === false           ? VALUE.FALSE :
