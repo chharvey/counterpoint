@@ -646,7 +646,7 @@ so in those cases we may use type claims to write good code.
 ```
 The **exponentiation** operator is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 ```
 3 ^ 2;    %== 9
@@ -701,7 +701,7 @@ The **multiplication** operator, `*`, and
 the **division** operator, `/`,
 are valid only on number types.
 They produce the respective mathematical product and quotient of the operands.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 Multiplication is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -730,7 +730,7 @@ The **addition** operator, `+`, and
 the **subtraction** operator, `-`,
 are valid only on number types.
 They produce the respective mathematical sum and difference of the operands.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 Addition is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -795,13 +795,24 @@ The numerical comparative operators,
 - **not greater than** `!>`
 
 compare number types in the usual sense. The result is a boolean value.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices as well as different numeric types can be mixed.
 
 In numerical uses, `!<` is equivalent to `>=`, and `!>` is equivalent to `<=`.
 In general, however, this might not hold for future operator overloads.
 For instance, if the relational operators were overloaded to mean “subset” for sets,
 then `a !< b` (“`a` is not a strict subset of `b`”) does not necessarily mean
 that `a >= b` (“`a` is a superset of ”).
+
+When comparing mixed types in the numeric comparison operations,
+values are “promoted” to the type that encompasses the greater number of values.
+Specifically, when mixing `int` and `nat`, the `int` is converted to `nat`,
+and when mixing `int` and `float` or `nat` and `float`, the non-float value is converted to `float`.
+The order of promotion precedence:
+```
+int --> nat --> float
+```
+Conversions are made only for determining mathematical inequality; the value of the operand does not change.
+Note that conversions may be lossy; see [Numeric Conversions](#numeric-conversions) for details.
 
 The object comparative operators `is` and `!is` are not currently available,
 but they are reserved for future semantics.
@@ -832,9 +843,12 @@ Floating-point values and integer values are never identical, so the expression 
 
 The **equality** operator `==` determines whether two operands are considered “equal” by some definition,
 based on the type of the operands.
-For `null`, boolean, and string values, equality is one in the same with identity.
+For `null`, boolean, symbol, and string values, equality is one in the same with identity.
 For number values, equality is determined by mathematical quantity, thus `0.0 == -0.0` is `true`.
 Mixed number types of the same quantity are equal, so `42 == 42.0` is also `true`.
+Mixed-type values are converted to a common type using the “promotion” rules explained above.
+Conversions are made only for determining mathematical equality; the value of the operand does not change.
+Note that conversions may be lossy; see [Numeric Conversions](#numeric-conversions) for details.
 
 The non-identity operator `!==` is simply the logical negation of `===`, and
 the non-equality operator `!=` is simply the logical negation of `==`.
@@ -863,7 +877,7 @@ If it can’t, it’ll just return true instead of diving down an infinitely lon
 
 Of course, the identity operator (`===`) *always* compares reference objects by reference,
 but compound data values are still compared compositionally, and the same principle applies —
-assume equal until determined otherwise.
+assume identical until determined otherwise.
 
 
 ### Conjunctive

@@ -136,6 +136,9 @@ export class Integer extends ValueNumber<Integer> {
 		if (y instanceof Integer) {
 			return this.data < y.data;
 		}
+		if (y instanceof Natural) {
+			return this.toNat().lt(y);
+		}
 		return this.toFloat().lt(y);
 	}
 }

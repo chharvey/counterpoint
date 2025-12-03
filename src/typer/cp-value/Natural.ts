@@ -233,8 +233,8 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	public override lt(y: ValueNumber): boolean {
-		if (y instanceof Natural) {
-			return this.data < y.data;
+		if (y instanceof Integer || y instanceof Natural) {
+			return this.data < y.toNat().data;
 		}
 		return this.toFloat().lt(y);
 	}

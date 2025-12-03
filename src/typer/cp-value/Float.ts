@@ -108,6 +108,6 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	public override lt(y: ValueNumber): boolean {
-		return this.data < (y instanceof Float ? y.data : y.toFloat().data);
+		return this.data < y.toFloat().data;
 	}
 }
