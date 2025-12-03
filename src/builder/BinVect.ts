@@ -261,4 +261,24 @@ export class BinVect {
 	public get addrValue(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
+
+	/** Conversion. Assuming `this.isInt`, return a new value representing a `float`. */
+	public i_to_f(): binaryen.ExpressionRef {
+		return this.mod.f64.convert_s.i64(this.intValue);
+	}
+
+	/** Conversion. Assuming `this.isNat`, return a new value representing a `float`. */
+	public n_to_f(): binaryen.ExpressionRef {
+		return this.mod.f64.convert_u.i64(this.natValue);
+	}
+
+	/** Truncation. Assuming `this.isFloat`, return a new value representing an `int`. */
+	public f_to_i(): binaryen.ExpressionRef {
+		return this.mod.i64.trunc_s_sat.f64(this.floatValue);
+	}
+
+	/** Truncation. Assuming `this.isFloat`, return a new value representing a `nat`. */
+	public f_to_n(): binaryen.ExpressionRef {
+		return this.mod.i64.trunc_u_sat.f64(this.floatValue);
+	}
 }
