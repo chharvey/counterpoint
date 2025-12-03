@@ -278,7 +278,7 @@ test.suite('Value', () => {
 				const builder = new Builder();
 				return assertEqualBins(
 					data.map((x) => new VALUE.Natural(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x, true)).vect),
+					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x, true), {unsigned: true}).vect),
 				);
 			});
 		});
@@ -325,6 +325,7 @@ test.suite('Value', () => {
 
 			test.suite('Tuple', () => {
 				let builder: Builder = new Builder();
+				const addr = bigint_to_i64(builder.module, 0n, true);
 				test.test.beforeEach(() => {
 					builder = new Builder();
 				});
@@ -338,7 +339,7 @@ test.suite('Value', () => {
 				test.test('empty tuple returns unique BinVect representation.', () => {
 					assertEqualBins(
 						new VALUE.Tuple().build(builder),
-						new BinVect(builder.module, [0n]).vect,
+						new BinVect(builder.module, addr, {address: true}).vect,
 						'()',
 					);
 				});
@@ -352,14 +353,14 @@ test.suite('Value', () => {
 				test.test('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
-						singletonTuple(builder, new BinVect(builder.module, [0n]).vect),
+						singletonTuple(builder, new BinVect(builder.module, addr, {address: true}).vect),
 						'((),)',
 					);
 				});
 				test.test('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Tuple()])]).build(builder),
-						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, [0n]).vect), 0)),
+						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, addr, {address: true}).vect), 0)),
 						'(((),),)',
 					);
 				});

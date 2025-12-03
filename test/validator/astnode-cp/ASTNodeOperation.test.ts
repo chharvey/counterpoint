@@ -910,8 +910,8 @@ test.suite('ASTNodeOperation', () => {
 					['-200 /  3', (builder) => CALL.idiv_s(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
 					['-200 / -3', (builder) => CALL.idiv_s(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-					['+126 / +3', (builder) => CALL.idiv_u(builder.module, buildConst(builder, 126n), buildConst(builder, 3n))],
-					['+200 / +3', (builder) => CALL.idiv_u(builder.module, buildConst(builder, 200n), buildConst(builder, 3n))],
+					['+126 / +3', (builder) => CALL.idiv_u(builder.module, buildConst(builder, 126n, 'nat'), buildConst(builder, 3n, 'nat'))],
+					['+200 / +3', (builder) => CALL.idiv_u(builder.module, buildConst(builder, 200n, 'nat'), buildConst(builder, 3n, 'nat'))],
 
 					[' 126.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder,  126.1), buildConst(builder,  3.1))],
 					['-126.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -126.1), buildConst(builder,  3.1))],

@@ -76,7 +76,7 @@ export function build_tuple_like<T>(
 	 * so we use a dummy address of \x0000_0000 instead.
 	 */
 	if (!items.length) {
-		return new BinVect(builder.module, [0n]).vect;
+		return new BinVect(builder.module, bigint_to_i64(builder.module, 0n, true), {address: true}).vect;
 	}
 
 	/**
