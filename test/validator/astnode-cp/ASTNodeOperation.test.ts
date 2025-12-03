@@ -1383,10 +1383,10 @@ test.suite('ASTNodeOperation', () => {
 						['true === 1',   (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
 						['true === 1.0', (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 
-						['@a === null',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
-						['@a === false', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
-						['@a === 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: use \x100
-						['@a === @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
+						['@a === null',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
+						['@a === false',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
+						['@a === \\x100', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))],
+						['@a === @b',     (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x101)))],
 					]));
 				});
 				test.test('calls `vid` when operands are same numeric type.', () => {
@@ -1430,10 +1430,10 @@ test.suite('ASTNodeOperation', () => {
 						['true == 1',   (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
 						['true == 1.0', (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 
-						['@a == null',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
-						['@a == false', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
-						['@a == 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: use \x100
-						['@a == @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
+						['@a == null',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
+						['@a == false',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
+						['@a == \\x100', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))],
+						['@a == @b',     (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x101)))],
 					]));
 				});
 				test.test('calls `veq` when operands are same numeric type or when int coercion is allowed.', () => {

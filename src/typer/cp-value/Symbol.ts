@@ -54,7 +54,7 @@ class ValueSymbol extends Primitive {
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, bigint_to_i64(builder.module, this.id)).vect;
+		return new BinVect(builder.module, bigint_to_i64(builder.module, this.id, true), {unsigned: true}).vect;
 	}
 }
 export {ValueSymbol as Symbol};

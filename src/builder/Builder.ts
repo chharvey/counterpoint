@@ -339,9 +339,13 @@ export class Builder {
 					mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
 					BinVect.asBool(mod, mod.i64.eq(local_vects[0].intValue, local_vects[1].intValue)), // `i64.eq` for ints gives the same result as `ID` operator
 					mod.if(
-						mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-						BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
-						new BinVect(mod, false).vect,
+						mod.i32.and(local_vects[0].isNat, local_vects[1].isNat),
+						BinVect.asBool(mod, mod.i64.eq(local_vects[0].natValue, local_vects[1].natValue)),
+						mod.if(
+							mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
+							BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
+							new BinVect(mod, false).vect,
+						),
 					),
 				),
 			),

@@ -187,7 +187,7 @@ export class BinVect {
 			}
 		}
 
-		this.#type = this.mod.i16x8.extract_lane_s(this.#internal, 3);
+		this.#type = this.mod.i16x8.extract_lane_u(this.#internal, 3);
 	}
 
 	/** The `v128` implementation. */
@@ -199,7 +199,7 @@ export class BinVect {
 	#checkTypeRange(min: bigint, max: bigint): binaryen.ExpressionRef {
 		const lower: binaryen.ExpressionRef = this.mod.i32.const(Number(min));
 		const upper: binaryen.ExpressionRef = this.mod.i32.const(Number(max));
-		return this.mod.i32.and(this.mod.i32.le_s(lower, this.#type), this.mod.i32.le_s(this.#type, upper));
+		return this.mod.i32.and(this.mod.i32.le_u(lower, this.#type), this.mod.i32.le_u(this.#type, upper));
 	}
 
 	/** Whether the value does not exist. */
