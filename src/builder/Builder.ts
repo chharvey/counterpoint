@@ -191,9 +191,13 @@ export class Builder {
 					local_vects[0].isInt,
 					BinVect.asBool(mod, mod.i64.eqz(local_vects[0].intValue)),
 					mod.if(
-						local_vects[0].isFloat,
-						BinVect.asBool(mod, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of -0.0
-						BinVect.asBool(mod, mod.i32.and(local_vects[0].isAddr, mod.i64.eqz(local_vects[0].addrValue))),
+						local_vects[0].isNat,
+						BinVect.asBool(mod, mod.i64.eqz(local_vects[0].natValue)),
+						mod.if(
+							local_vects[0].isFloat,
+							BinVect.asBool(mod, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+							BinVect.asBool(mod, mod.i32.and(local_vects[0].isAddr, mod.i64.eqz(local_vects[0].addrValue))),
+						),
 					),
 				),
 			),
@@ -203,7 +207,11 @@ export class Builder {
 				local_vects[0].isInt,
 				// `-n` in two’s complement is `(n xor -1) + 1`
 				new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].intValue, mod.i64.const(-1, 0)), mod.i64.const(1, 0))).vect,
-				new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
+				mod.if(
+					local_vects[0].isFloat,
+					new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
+					mod.unreachable(),
+				),
 			),
 		], binaryen.v128));
 		mod.addFunction('vtoi', binaryen.v128, binaryen.v128, [], mod.block(null, [
@@ -211,20 +219,43 @@ export class Builder {
 				local_vects[0].isInt,
 				local_vects[0].vect,
 				mod.if(
-					local_vects[0].isFloat,
-					new BinVect(mod, mod.i64.trunc_s.f64(local_vects[0].floatValue)).vect,
-					mod.unreachable(),
+					local_vects[0].isNat,
+					new BinVect(mod, local_vects[0].natValue, {unsigned: false}).vect,
+					mod.if(
+						local_vects[0].isFloat,
+						new BinVect(mod, mod.i64.trunc_s_sat.f64(local_vects[0].floatValue)).vect,
+						mod.unreachable(),
+					),
+				),
+			),
+		], binaryen.v128));
+		mod.addFunction('vton', binaryen.v128, binaryen.v128, [], mod.block(null, [
+			mod.if(
+				local_vects[0].isInt,
+				new BinVect(mod, local_vects[0].intValue, {unsigned: true}).vect,
+				mod.if(
+					local_vects[0].isNat,
+					local_vects[0].vect,
+					mod.if(
+						local_vects[0].isFloat,
+						new BinVect(mod, mod.i64.trunc_u_sat.f64(local_vects[0].floatValue)).vect,
+						mod.unreachable(),
+					),
 				),
 			),
 		], binaryen.v128));
 		mod.addFunction('vtof', binaryen.v128, binaryen.v128, [], mod.block(null, [
 			mod.if(
-				local_vects[0].isFloat,
-				local_vects[0].vect,
+				local_vects[0].isInt,
+				new BinVect(mod, mod.f64.convert_s.i64(local_vects[0].intValue)).vect,
 				mod.if(
-					local_vects[0].isInt,
-					new BinVect(mod, mod.f64.convert_s.i64(local_vects[0].intValue)).vect,
-					mod.unreachable(),
+					local_vects[0].isNat,
+					new BinVect(mod, mod.f64.convert_u.i64(local_vects[0].natValue)).vect,
+					mod.if(
+						local_vects[0].isFloat,
+						local_vects[0].vect,
+						mod.unreachable(),
+					),
 				),
 			),
 		], binaryen.v128));
@@ -277,6 +308,7 @@ export class Builder {
 	public setupModule(main?: (mod: binaryen.Module) => void): void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
 			/* eslint-disable @stylistic/operator-linebreak */
+			binaryen.Features.NontrappingFPToInt |
 			binaryen.Features.SIMD128 |
 			binaryen.Features.ReferenceTypes |
 			binaryen.Features.Multivalue

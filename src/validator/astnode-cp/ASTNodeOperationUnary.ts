@@ -60,7 +60,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			[Operator.EMP,   'vemp'],
 			[Operator.NEG,   'vneg'],
 			[Operator.INT,   'vtoi'],
-			[Operator.NAT,   'vtoi'],
+			[Operator.NAT,   'vton'],
 			[Operator.FLOAT, 'vtof'],
 		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
