@@ -38,7 +38,7 @@ class ValueSymbol extends Primitive {
 	}
 
 	public override toString(): string {
-		return this.name;
+		return `@${ this.name }`;
 	}
 
 	public override get isTruthy(): boolean {

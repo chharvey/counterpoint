@@ -169,25 +169,25 @@ describe('ASTNodeCall', () => {
 		specify('`List.(‹…›)`', () => {
 			assertEqualTypes(
 				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.List(TYPE.INT, true), 11),
+				repeat(new TYPE.List(TYPE.INT, true), LIST_CONS.length),
 			);
 		});
 		specify('`Dict.(‹…›)`', () => {
 			assertEqualTypes(
 				DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Dict(TYPE.INT, true), 18),
+				repeat(new TYPE.Dict(TYPE.INT, true), DICT_CONS.length),
 			);
 		});
 		specify('`Set.(‹…›)`', () => {
 			assertEqualTypes(
 				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Set(TYPE.INT, true), 11),
+				repeat(new TYPE.Set(TYPE.INT, true), SET_CONS.length),
 			);
 		});
 		specify('`Map.(‹…›)`', () => {
 			assertEqualTypes(
 				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 14),
+				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
 			);
 		});
 		it('bypasses invariance for generic arguments.', () => {
@@ -227,7 +227,7 @@ describe('ASTNodeCall', () => {
 		});
 		it('throws when providing incorrect type of arguments.', () => {
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
-				['List.<int>(42);', ['42', ['List.<int>', 'Set.<int>']]],
+				['List.<int>(42);', ['42', ['Set.<int>', 'List.<int>']]],
 				['Dict.<int>(42);', ['42', ['List.<(sym, int)>', 'Set.<(sym, int)>', 'Map.<sym, int>', 'Dict.<int>']]],
 				['Set.<int>(42);',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42);',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],

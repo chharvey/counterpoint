@@ -101,8 +101,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 				const itemtype:         TYPE.Type            = this.typeargs[0].eval();
 				const returntype                             = new TYPE.List(itemtype);
 				const allowed_argtypes: readonly TYPE.Type[] = [
-					returntype,
 					new TYPE.Set(itemtype),
+					returntype,
 				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
@@ -285,8 +285,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				const arg: VALUE.Value = args[0]!;
 				return new VALUE.List((
-					arg instanceof VALUE.CollectionIndexed ? arg.items :
-					(assert_instanceof(arg, VALUE.Set),      [...arg.elements])
+					arg instanceof VALUE.Set                        ? [...arg.elements] :
+					(assert_instanceof(arg, VALUE.CollectionIndexed), arg.items)
 				));
 			}
 			case ValidFunctionName.DICT: {
@@ -317,9 +317,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				const arg: VALUE.Value = args[0]!;
 				return new VALUE.Map((
-					arg instanceof VALUE.CollectionIndexed || arg instanceof VALUE.Set
-						? new Map<VALUE.Value, VALUE.Value>((arg instanceof VALUE.CollectionIndexed ? arg.items : [...arg.elements]).map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value]))
-						: (assert_instanceof(arg, VALUE.Map), arg.cases)
+					arg instanceof VALUE.CollectionIndexed ? new Map<VALUE.Value, VALUE.Value>((arg.items       as VALUE.Tuple[])   .map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
+					arg instanceof VALUE.Set               ? new Map<VALUE.Value, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>].map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
+					(assert_instanceof(arg, VALUE.Map),      arg.cases)
 				));
 			}
 			default: {
