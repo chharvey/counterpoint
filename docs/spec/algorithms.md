@@ -112,7 +112,7 @@ RealNumber Multiply(Sequence<RealNumber> ns) :=
 None! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
 		1. *If* `i` is 0:
-			1. *Continue.*
+			1. *Skip.*
 		2. *If* `units[i]` is less than \x80 or greater than or equal to \xc0:
 			1. *Note:* The bits of `units[i]` are either "0_______" or "11______".
 			2. *Throw:* `i`.

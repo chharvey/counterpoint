@@ -747,9 +747,9 @@ Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block
 
 
 Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=false]);
+	:= (SemanticStatementBreak[skip=false]);
 Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=true]);
+	:= (SemanticStatementBreak[skip=true]);
 
 
 
