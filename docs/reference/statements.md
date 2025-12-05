@@ -179,35 +179,39 @@ A `skip;` statement stops the current repetition, but then proceeds to the next 
 let var i: int = 0;
 while i < 10 do {
 	if i == 3 then {
+		print.("skipped");
+		set i = 4;
 		skip;
 	};
 	print.(i);
 	set i += 1;
-}; % prints 0, 1, 2, 4, 5, 6, 7, 8, and 9 (notice missing 3)
+}; % prints 0, 1, 2, "skipped", 4, 5, 6, 7, 8, and 9
 ```
-Notice the difference in how `skip;` behaves in a `while–do` versus a `do–while` loop.
-In a `while–do` loop, `skip;` will jump to the start of the loop and re-evaluate the condition;
-in a `do–while` loop, `skip;` will jump to the start of the loop *without* re-evaluating the condition.
+`skip;` behaves differently in a `while–do` versus a `do–while` loop.
+In a `while–do` loop, `skip;` jumps to the start of the loop and re-evaluates the condition before beginning the next repetition;
+in a `do–while` loop, `skip;` jumps to the start of the loop *without* re-evaluating the condition.
 ```cpl
 let var i: int = 0;
 while i < 10 do {
 	if i == 3 then {
+		print.("skipped");
 		set i = 20;
 		skip;
 	};
 	print.(i);
 	set i += 1;
-}; % prints 0, 1, and 2
+}; % prints 0, 1, 2, "skipped"
 
 set i = 0;
 do {
 	if i == 3 then {
+		print.("skipped");
 		set i = 20;
 		skip;
 	};
 	print.(i);
 	set i += 1;
-} while i < 10; % prints 0, 1, 2, and 20
+} while i < 10; % prints 0, 1, 2, "skipped", 20
 ```
 
 

@@ -300,7 +300,7 @@ While this program compiles successfully, it’ll crash when run.
 Block-expressions may contain `break`, `skip`, `return`, and `throw` statements (depending on lexical context).
 These are called **abrupt completions**, because they abruptly transfer control out of the block
 without finishing the evaluation of it.
-Specifically, `break` or `skip` statements will break out of the containing loop,
+Specifically, `break` or `skip` statements will apply to the containing loop,
 and `return`/`throw` statements will apply to the containing function.
 ```cpl
 function f(var i: int): str {
