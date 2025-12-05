@@ -720,9 +720,9 @@ test.suite('Decorator', () => {
 				}
 				% (statement_break)
 			`]],
-			['Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
+			['Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
 				{
-					while condition do { continue; };
+					while condition do { skip; };
 				}
 				% (statement_break)
 			`]],

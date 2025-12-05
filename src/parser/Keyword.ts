@@ -37,14 +37,14 @@ export enum Keyword {
 	UNFIXED = 'var',
 
 	// control
-	UNLESS   = 'unless',
-	WHILE    = 'while',
-	UNTIL    = 'until',
-	FOR      = 'for',
-	IN       = 'in',
-	DO       = 'do',
-	BREAK    = 'break',
-	CONTINUE = 'continue',
+	UNLESS = 'unless',
+	WHILE  = 'while',
+	UNTIL  = 'until',
+	FOR    = 'for',
+	IN     = 'in',
+	DO     = 'do',
+	BREAK  = 'break',
+	SKIP   = 'skip',
 }
 
 

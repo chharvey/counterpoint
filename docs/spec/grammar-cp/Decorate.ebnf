@@ -20,7 +20,7 @@ _KEYWORD_OTHER =:=
 		| "in"
 		| "do"
 		| "break"
-		| "continue"
+		| "skip"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
@@ -748,7 +748,7 @@ Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block
 
 Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
 	:= (SemanticStatementBreak[continue=false]);
-Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak
+Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak
 	:= (SemanticStatementBreak[continue=true]);
 
 

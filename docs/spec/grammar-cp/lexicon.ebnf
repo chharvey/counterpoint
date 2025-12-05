@@ -88,7 +88,7 @@ KeywordOther :::=
 		| "in"
 		| "do"
 		| "break"
-		| "continue"
+		| "skip"
 ;
 
 

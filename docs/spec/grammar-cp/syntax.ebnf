@@ -53,7 +53,7 @@ Word ::=
 		| "in"
 		| "do"
 		| "break"
-		| "continue"
+		| "skip"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -233,7 +233,7 @@ StatementIteration
 	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";";
 
 StatementBreak
-	::= ("break" | "continue") ";";
+	::= ("break" | "skip") ";";
 
 Statement<Break> ::=
 	| Declaration                     <?Break>

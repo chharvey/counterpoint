@@ -773,7 +773,7 @@ test.suite('ASTNodeStatement', () => {
 				const {stmts, mod} = setupScript(`{
 					while true do {
 						break;
-						continue;
+						skip;
 					};
 				}`);
 				const while_block: AST.ASTNodeBlock = (stmts[0] as AST.ASTNodeStatementLoop).block;
@@ -791,7 +791,7 @@ test.suite('ASTNodeStatement', () => {
 						break;
 						if true then {
 							while true do {
-								continue;
+								skip;
 							};
 						};
 					};
@@ -810,7 +810,7 @@ test.suite('ASTNodeStatement', () => {
 				const while_block: AST.ASTNodeBlock = (setupScript(`{
 					while true do {
 						break;
-						continue;
+						skip;
 					};
 				}`, null, {build: false}).stmts[0] as AST.ASTNodeStatementLoop).block;
 				assert.throws(() => while_block.children[0].build(), /Expected builder to store/);

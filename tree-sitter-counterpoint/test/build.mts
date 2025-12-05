@@ -1551,7 +1551,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					while condition do {
 						break;
-						continue;
+						skip;
 					};
 				}
 			`,

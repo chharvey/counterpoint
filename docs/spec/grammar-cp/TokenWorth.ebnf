@@ -73,7 +73,7 @@ TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x9e;
 TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x9f;
 TokenWorth(KeywordOther :::= "do")       -> RealNumber := \xa0;
 TokenWorth(KeywordOther :::= "break")    -> RealNumber := \xa1;
-TokenWorth(KeywordOther :::= "continue") -> RealNumber := \xa2;
+TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \xa2;
 
 
 

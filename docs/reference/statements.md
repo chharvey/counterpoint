@@ -174,26 +174,26 @@ while i < 10 do {
 	set i += 1;
 }; % only prints 0, 1, and 2, then stops
 ```
-A `continue;` statement stops the current repetition, but then proceeds to the next one.
+A `skip;` statement stops the current repetition, but then proceeds to the next one.
 ```cpl
 let var i: int = 0;
 while i < 10 do {
 	if i == 3 then {
-		continue;
+		skip;
 	};
 	print.(i);
 	set i += 1;
 }; % prints 0, 1, 2, 4, 5, 6, 7, 8, and 9 (notice missing 3)
 ```
-Notice the difference in how `continue;` behaves in a `while–do` versus a `do–while` loop.
-In a `while–do` loop, `continue;` will jump to the start of the loop and re-evaluate the condition;
-in a `do–while` loop, `continue;` will jump to the start of the loop *without* re-evaluating the condition.
+Notice the difference in how `skip;` behaves in a `while–do` versus a `do–while` loop.
+In a `while–do` loop, `skip;` will jump to the start of the loop and re-evaluate the condition;
+in a `do–while` loop, `skip;` will jump to the start of the loop *without* re-evaluating the condition.
 ```cpl
 let var i: int = 0;
 while i < 10 do {
 	if i == 3 then {
 		set i = 20;
-		continue;
+		skip;
 	};
 	print.(i);
 	set i += 1;
@@ -203,7 +203,7 @@ set i = 0;
 do {
 	if i == 3 then {
 		set i = 20;
-		continue;
+		skip;
 	};
 	print.(i);
 	set i += 1;
@@ -248,7 +248,7 @@ Even though it looks like the loop should have run three times,
 the iterable’s mutation, dropping the last element, caused it to end ahead of schedule.
 As a general rule, it’s best not to mutate lists while iterating over them.
 
-Break statements (`break;` and `continue;`) may be used in `for` loops as well.
+Break statements (`break;` and `skip;`) may be used in `for` loops as well.
 They can be useful when we need to short-circuit a loop, for example if we have what we need before the iterable is exhausted.
 Here’s a simple implementation of `List#find` using `break;`.
 ```cpl
@@ -261,13 +261,13 @@ for person: Person in list do {
 	};
 };
 ```
-In a `for` loop, `continue;` works the same as it does in `while`/`until` loops,
+In a `for` loop, `skip;` works the same as it does in `while`/`until` loops,
 stopping the current iteration and sending control back to the top of the loop.
 The iteration variable is still incremented.
 ```cpl
 for person: Person in list do {
 	if ?person.middleName then {
-		continue; % stops iteration here, proceeds to the next item
+		skip; % stops iteration here, proceeds to the next item
 	};
 	print.(person.middleName);
 };
