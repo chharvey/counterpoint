@@ -321,7 +321,7 @@ module.exports = grammar({
 			'while',
 			'until',
 			'for',
-			'of',
+			'in',
 			'do',
 			'break',
 			'continue',
@@ -505,7 +505,7 @@ module.exports = grammar({
 
 		statement_loop: $ => seq(uSeq(seq(choice('while', 'until'), call($, '_expression', 'block')), seq('do', call($, 'block', 'break'))), ';'),
 
-		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'of', call($, '_expression', 'block'), 'do', call($, 'block', 'break'), ';'),
+		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'in', call($, '_expression', 'block'), 'do', call($, 'block', 'break'), ';'),
 
 		statement_break: _$ => seq(choice('break', 'continue'), ';'),
 
@@ -591,7 +591,7 @@ module.exports = grammar({
 			'while',
 			'until',
 			'for',
-			'of',
+			'in',
 			'do',
 			'break',
 			'continue',

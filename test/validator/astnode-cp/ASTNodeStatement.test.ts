@@ -48,7 +48,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('disallows manual reassignment of the iteration variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					for it: int of [11, 22, 33] do {
+					for it: int in [11, 22, 33] do {
 						set it = 44;
 					};
 				}`).varCheck(), AssignmentErrorReassignment);
@@ -58,7 +58,7 @@ test.suite('ASTNodeStatement', () => {
 		test.suite('ASTNodeStatementIteration', () => {
 			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-					for it: float of [1.1, 2.2, 3.3] do {
+					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 				}`);
@@ -77,7 +77,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('for blank identifiers, does not add to symbol table.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-					for _: float of [1.1, 2.2, 3.3] do {
+					for _: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 				}`);
@@ -88,41 +88,41 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('allows duplicate declaration of iteration variable.', () => {
 				AST.ASTNodeGoal.fromSource(`{
-					for it: float of [1.1, 2.2, 3.3] do {
+					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
-					for it: float of [1.1, 2.2, 3.3] do {
+					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 				}`).varCheck(); // assert does not throw
 			});
 			test.test('allows duplicate declaration in nested scopes (not technically shadowing).', () => {
 				AST.ASTNodeGoal.fromSource(`{
-					for it: int of [11, 22, 33] do {
+					for it: int in [11, 22, 33] do {
 						42;
 					};
 					if true then {
-						for it: float of [1.1, 2.2, 3.3] do {
+						for it: float in [1.1, 2.2, 3.3] do {
 							42;
 						};
 					};
 				}`).varCheck(); // assert does not throw
 				AST.ASTNodeGoal.fromSource(`{
-					for it: int of [11, 22, 33] do {
+					for it: int in [11, 22, 33] do {
 						42;
 					};
 					while false do {
-						for it: float of [1.1, 2.2, 3.3] do {
+						for it: float in [1.1, 2.2, 3.3] do {
 							42;
 						};
 					};
 				}`).varCheck(); // assert does not throw
 				AST.ASTNodeGoal.fromSource(`{
-					for it: int of [11, 22, 33] do {
+					for it: int in [11, 22, 33] do {
 						42;
 					};
-					for b: bool of [false, true] do {
-						for it: float of [1.1, 2.2, 3.3] do {
+					for b: bool in [false, true] do {
+						for it: float in [1.1, 2.2, 3.3] do {
 							42;
 						};
 					};
@@ -131,19 +131,19 @@ test.suite('ASTNodeStatement', () => {
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let i: int = 42;
-					for i: bool of [false, true] do {
+					for i: bool in [false, true] do {
 						null;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type FOO = float;
-					for FOO: bool of [false, true] do {
+					for FOO: bool in [false, true] do {
 						null;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					for it: float of [1.1, 2.2, 3.3] do {
-						for it: bool of [false, true] do {
+					for it: float in [1.1, 2.2, 3.3] do {
+						for it: bool in [false, true] do {
 							null;
 						};
 					};
@@ -151,7 +151,7 @@ test.suite('ASTNodeStatement', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let var x: int = 42;
 					if true then {
-						for x: bool of [false, true] do {
+						for x: bool in [false, true] do {
 							null;
 						};
 					};
@@ -159,15 +159,15 @@ test.suite('ASTNodeStatement', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let var x: int = 42;
 					while false do {
-						for x: bool of [false, true] do {
+						for x: bool in [false, true] do {
 							null;
 						};
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let var x: int = 42;
-					for it: float of [1.1, 2.2, 3.3] do {
-						for x: bool of [false, true] do {
+					for it: float in [1.1, 2.2, 3.3] do {
+						for x: bool in [false, true] do {
 							null;
 						};
 					};
@@ -516,7 +516,7 @@ test.suite('ASTNodeStatement', () => {
 					anything
 				`, (vartype) => {
 					setupScript(`{
-						for it: ${ vartype } of ["hello", "world"] do {
+						for it: ${ vartype } in ["hello", "world"] do {
 							let greeting: ${ vartype } = it;
 						};
 					}`, null, {build: false}); // assert does not throw
@@ -532,7 +532,7 @@ test.suite('ASTNodeStatement', () => {
 					{"a" -> "hello", "b" -> "world"}
 				`, (collection) => {
 					const {stmts} = setupScript(`{
-						for it: str of ${ collection } do {
+						for it: str in ${ collection } do {
 							;
 						};
 					}`, null, {typeCheck: false});
@@ -550,7 +550,7 @@ test.suite('ASTNodeStatement', () => {
 					nothing
 				`, (vartype) => {
 					const {stmts} = setupScript(`{
-						for it: ${ vartype } of ["hello", "world"] do {
+						for it: ${ vartype } in ["hello", "world"] do {
 							;
 						};
 					}`, null, {typeCheck: false});
@@ -559,7 +559,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('throws when block type-checking fails.', () => {
 				const {stmts} = setupScript(`{
-					for it: str of ["hello", "world"] do {
+					for it: str in ["hello", "world"] do {
 						42 + it; %> TypeErrorInvalidOperation
 					};
 				}`, null, {typeCheck: false});
@@ -750,7 +750,7 @@ test.suite('ASTNodeStatement', () => {
 		test.suite('ASTNodeStatementIteration', () => {
 			test.test('produces `(nop)` if entire statement is foldable.', () => {
 				const {stmts, mod} = setupScript(`{
-					for it: int of [10, 20, 30, 40] do {
+					for it: int in [10, 20, 30, 40] do {
 						42;
 					};
 				}`);
@@ -759,7 +759,7 @@ test.suite('ASTNodeStatement', () => {
 			test.test('if not foldable, is not yet supported.', () => {
 				const {stmts} = setupScript(`{
 					let var i: int = 42;
-					for it: int of [10, 20, 30, 40] do {
+					for it: int in [10, 20, 30, 40] do {
 						set i = it;
 					};
 				}`, null, {build: false});

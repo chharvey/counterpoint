@@ -1536,8 +1536,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		StatementIteration: [
 			xjs.String.dedent`
 				{
-					for _:  T of iterable do { iterate; };
-					for it: T of iterable do { iterate; };
+					for _:  T in iterable do { iterate; };
+					for it: T in iterable do { iterate; };
 				}
 			`,
 			sourceStatements(
@@ -1578,7 +1578,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					};
 					if condition then { consequent; };
 					while condition do { loop; };
-					for it: T of iterable do { iterate; };
+					for it: T in iterable do { iterate; };
 				}
 			`,
 			sourceStatements(

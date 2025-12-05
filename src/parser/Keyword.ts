@@ -41,7 +41,7 @@ export enum Keyword {
 	WHILE    = 'while',
 	UNTIL    = 'until',
 	FOR      = 'for',
-	OF       = 'of',
+	IN       = 'in',
 	DO       = 'do',
 	BREAK    = 'break',
 	CONTINUE = 'continue',

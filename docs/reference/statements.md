@@ -219,14 +219,14 @@ and which can be referenced in the loop body.
 For each iteration of the loop, the iteration variable is reassigned to each of the iterable’s items, one by one.
 The loop ends when the list has been exhausted.
 ```cpl
-for n: int of [10, 20, 30] do {
+for n: int in [10, 20, 30] do {
 	print.(n + 5);
 }; % prints 15, 25, 35
 ```
 The iteration variable must be typed to match the iterable’s item types.
 Though it’s implicitly reassigned to a new item on each iteration, it can’t be explicitly reassigned by the programmer.
 ```cpl
-for n: int of [10, 20, 30] {
+for n: int in [10, 20, 30] {
 	set n += 10; %> AssignmentError: Reassignment of a fixed variable: `n`.
 };
 ```
@@ -236,7 +236,7 @@ The iterable is *only evaluated once*, before the loop begins, and that same ite
 This means that if the iterable is ever *mutated* by the loop, that mutation will affect the loop!
 ```cpl
 let list_of_tens: mut [int] = [10, 20, 30];
-for n: int of list_of_tens do {
+for n: int in list_of_tens do {
 	print.(n);
 	if n == 20 then {
 		list_of_tens.drop.(); % drops the 30 from the list
@@ -254,7 +254,7 @@ Here’s a simple implementation of `List#find` using `break;`.
 ```cpl
 % Find just one person with no middle name. There may be more, but we only need one.
 let var found?: Person;
-for person: Person of list do {
+for person: Person in list do {
 	if ?person.middleName then {
 		set found = person;
 		break; % stops iteration here, skips the rest of the list
@@ -265,7 +265,7 @@ In a `for` loop, `continue;` works the same as it does in `while`/`until` loops,
 stopping the current iteration and sending control back to the top of the loop.
 The iteration variable is still incremented.
 ```cpl
-for person: Person of list do {
+for person: Person in list do {
 	if ?person.middleName then {
 		continue; % stops iteration here, proceeds to the next item
 	};
