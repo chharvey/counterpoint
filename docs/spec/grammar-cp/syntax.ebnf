@@ -50,10 +50,10 @@ Word ::=
 		| "while"
 		| "until"
 		| "for"
-		| "of"
+		| "in"
 		| "do"
 		| "break"
-		| "continue"
+		| "skip"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue
@@ -230,10 +230,10 @@ StatementLoop
 	::= (("while" | "until") Expression<+Block><-Break> && "do" Block<+Break>) ";";
 
 StatementIteration
-	::= "for" ("_" | IDENTIFIER) ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";";
+	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";";
 
 StatementBreak
-	::= ("break" | "continue") ";";
+	::= ("break" | "skip") ";";
 
 Statement<Break> ::=
 	| Declaration                     <?Break>

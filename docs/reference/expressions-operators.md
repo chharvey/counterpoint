@@ -297,17 +297,17 @@ In this example, static control flow analysis can reach the determinant and dete
 At runtime however, the [`while` loop](./statements.md#loops) runs indefinitely, so the variable never actually gets assigned.
 While this program compiles successfully, it’ll crash when run.
 
-Block-expressions may contain `break`, `continue`, `return`, and `throw` statements (depending on lexical context).
+Block-expressions may contain `break`, `skip`, `return`, and `throw` statements (depending on lexical context).
 These are called **abrupt completions**, because they abruptly transfer control out of the block
 without finishing the evaluation of it.
-Specifically, `break` or `continue` statements will break out of the containing loop,
+Specifically, `break` or `skip` statements will apply to the containing loop,
 and `return`/`throw` statements will apply to the containing function.
 ```cpl
 function f(var i: int): str {
 	while true do {
 		set i += 1;
 		let is_threeven: bool = mod.(i, 3) == 0 && {
-			continue; % restarts the `while` loop, not this block-expression
+			skip; % restarts the `while` loop, not this block-expression
 		}; % no type error
 		let is_divisble_by_7: bool = mod.(i, 7) == 0 && {
 			return "exit"; % returns from the function, not this block-expression
