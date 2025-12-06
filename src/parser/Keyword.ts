@@ -20,7 +20,7 @@ export enum Keyword {
 	AS_MAY  = 'as?',
 	AS_RES  = 'as!',
 	IS      = 'is',
-	ISNT    = 'isnt',
+	ISNT    = '!is',
 	IF      = 'if',
 	THEN    = 'then',
 	ELSE    = 'else',
@@ -37,14 +37,14 @@ export enum Keyword {
 	UNFIXED = 'var',
 
 	// control
-	UNLESS   = 'unless',
-	WHILE    = 'while',
-	UNTIL    = 'until',
-	FOR      = 'for',
-	OF       = 'of',
-	DO       = 'do',
-	BREAK    = 'break',
-	CONTINUE = 'continue',
+	UNLESS = 'unless',
+	WHILE  = 'while',
+	UNTIL  = 'until',
+	FOR    = 'for',
+	IN     = 'in',
+	DO     = 'do',
+	BREAK  = 'break',
+	SKIP   = 'skip',
 }
 
 

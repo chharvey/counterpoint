@@ -556,7 +556,7 @@ test.suite('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'].map((op) => [`${ ['is', 'isnt'].includes(op) ? 'todo: ' : '' }Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${ op }" ExpressionAdditive<?Block><?Break>) -> SemanticOperation`, [AST.ASTNodeOperation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', '!is'].map((op) => [`${ ['is', '!is'].includes(op) ? 'todo: ' : '' }Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${ op }" ExpressionAdditive<?Block><?Break>) -> SemanticOperation`, [AST.ASTNodeOperation, `
 				{
 					a ${ op } b;
 				}
@@ -604,11 +604,51 @@ test.suite('Decorator', () => {
 			`]],
 
 			/* ## Statements */
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
+				{
+					claim v: int;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
+				{
+					set v = 42;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					claim v.1: int;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
+				{
+					set v.1 = 42;
+				}
+				% (assignee)
+			`]],
+
+
 			['Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
 				}
 				% (statement_expression)
+			`]],
+
+			['Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticStatementClaim', [AST.ASTNodeStatementClaim, `
+				{
+					claim a: T;
+				}
+				% (statement_claim)
+			`]],
+
+			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.ASTNodeStatementReassignment, `
+				{
+					set a = b;
+				}
+				% (statement_reassignment)
 			`]],
 
 			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.ASTNodeStatementConditional, `
@@ -661,15 +701,15 @@ test.suite('Decorator', () => {
 				% (statement_loop)
 			`]],
 
-			['Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+			['Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
 				{
-					for _: T of iterable do { iterate; };
+					for _: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
-			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
 				{
-					for it: T of iterable do { iterate; };
+					for it: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
@@ -680,9 +720,9 @@ test.suite('Decorator', () => {
 				}
 				% (statement_break)
 			`]],
-			['Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
+			['Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
 				{
-					while condition do { continue; };
+					while condition do { skip; };
 				}
 				% (statement_break)
 			`]],
@@ -699,22 +739,9 @@ test.suite('Decorator', () => {
 					};
 					if condition then { consequent; };
 					while condition do { loop; };
-					for it: T of iterable do { iterate; };
+					for it: T in iterable do { iterate; };
 				}
 				% (block)
-			`]],
-
-			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.ASTNodeVariable, `
-				{
-					set v = 42;
-				}
-				% (assignee)
-			`]],
-			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.ASTNodeAccess, `
-				{
-					set v.1 = 42;
-				}
-				% (assignee)
 			`]],
 
 			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.ASTNodeDeclarationType, `
@@ -766,20 +793,6 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_variable)
 			`]],
-
-			['Decorate(DeclarationClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticDeclarationClaim', [AST.ASTNodeDeclarationClaim, `
-				{
-					claim a: T;
-				}
-				% (declaration_claim)
-			`]],
-
-			['Decorate(DeclarationReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticDeclarationReassignment', [AST.ASTNodeDeclarationReassignment, `
-				{
-					set a = b;
-				}
-				% (declaration_reassignment)
-			`]],
 		]).forEach(([klass, text], description) => {
 			test.test(description, {
 				skip: description.startsWith('skip:'),
@@ -814,7 +827,7 @@ test.suite('Decorator', () => {
 				});
 			});
 		});
-		['is', 'isnt'].forEach((op) => {
+		['is', '!is'].forEach((op) => {
 			test.suite(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 				test.test(`operator \`${ op }\` is not yet supported.`, () => {
 					assert.throws(() => new Decorator().decorateTS(captureParseNode(`

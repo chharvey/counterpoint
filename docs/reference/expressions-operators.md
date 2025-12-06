@@ -169,7 +169,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<td>TBA</td>
-			<td><code>… isnt …</code></td>
+			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
 			<th rowspan="4">10</th>
@@ -297,17 +297,17 @@ In this example, static control flow analysis can reach the determinant and dete
 At runtime however, the [`while` loop](./statements.md#loops) runs indefinitely, so the variable never actually gets assigned.
 While this program compiles successfully, it’ll crash when run.
 
-Block-expressions may contain `break`, `continue`, `return`, and `throw` statements (depending on lexical context).
+Block-expressions may contain `break`, `skip`, `return`, and `throw` statements (depending on lexical context).
 These are called **abrupt completions**, because they abruptly transfer control out of the block
 without finishing the evaluation of it.
-Specifically, `break` or `continue` statements will break out of the containing loop,
+Specifically, `break` or `skip` statements will apply to the containing loop,
 and `return`/`throw` statements will apply to the containing function.
 ```cpl
 function f(var i: int): str {
 	while true do {
 		set i += 1;
 		let is_threeven: bool = mod.(i, 3) == 0 && {
-			continue; % restarts the `while` loop, not this block-expression
+			skip; % restarts the `while` loop, not this block-expression
 		}; % no type error
 		let is_divisble_by_7: bool = mod.(i, 7) == 0 && {
 			return "exit"; % returns from the function, not this block-expression
@@ -759,8 +759,8 @@ The parser receives these tokens and produces the correct expression.
 <int | float> `!<` <int | float>
 <int | float> `!>` <int | float>
 
-<Object> `is`   <Class>
-<Object> `isnt` <Class>
+<Object> `is`  <Class>
+<Object> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -780,7 +780,7 @@ For instance, if the relational operators were overloaded to mean “subset” f
 then `a !< b` (“`a` is not a strict subset of `b`”) does not necessarily mean
 that `a >= b` (“`a` is a superset of ”).
 
-The object comparative operators `is` and `isnt` are not currently available,
+The object comparative operators `is` and `!is` are not currently available,
 but they are reserved for future semantics.
 
 

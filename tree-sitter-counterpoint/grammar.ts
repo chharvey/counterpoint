@@ -303,7 +303,6 @@ module.exports = grammar({
 			'mut',
 			'as',
 			'is',
-			'isnt',
 			'if',
 			'then',
 			'else',
@@ -322,10 +321,10 @@ module.exports = grammar({
 			'while',
 			'until',
 			'for',
-			'of',
+			'in',
 			'do',
 			'break',
-			'continue',
+			'skip',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -450,14 +449,14 @@ module.exports = grammar({
 		...parameterize('expression_unary_symbol',  ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 		...parameterize('expression_unary_keyword', ({block, break: brk}) => $ => prec( 9, seq(choice('int', 'float'),     call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
-		...parameterize('expression_cast',           ({block, break: brk}) => $ => choice(prec.left (8, seq(call($, '_expression', {block}, {break: brk}), choice('as', 'as?', 'as!'),                             call($, '_expression', {block}, {break: brk}))), prec(8, seq(call($, '_expression', {block}, {break: brk}), 'as', '<', $._type, '>'))), 'block', 'break'),
-		...parameterize('expression_exponential',    ({block, break: brk}) => $ =>        prec.right(7, seq(call($, '_expression', {block}, {break: brk}), '^',                                                    call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
-		...parameterize('expression_multiplicative', ({block, break: brk}) => $ =>        prec.left (6, seq(call($, '_expression', {block}, {break: brk}), choice('*', '/'),                                       call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
-		...parameterize('expression_additive',       ({block, break: brk}) => $ =>        prec.left (5, seq(call($, '_expression', {block}, {break: brk}), choice('+', '-'),                                       call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
-		...parameterize('expression_comparative',    ({block, break: brk}) => $ =>        prec.left (4, seq(call($, '_expression', {block}, {break: brk}), choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
-		...parameterize('expression_equality',       ({block, break: brk}) => $ =>        prec.left (3, seq(call($, '_expression', {block}, {break: brk}), choice('===', '!==', '==', '!='),                       call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
-		...parameterize('expression_conjunctive',    ({block, break: brk}) => $ =>        prec.left (2, seq(call($, '_expression', {block}, {break: brk}), choice('&&', '!&'),                                     call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
-		...parameterize('expression_disjunctive',    ({block, break: brk}) => $ =>        prec.left (1, seq(call($, '_expression', {block}, {break: brk}), choice('||', '!|'),                                     call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
+		...parameterize('expression_cast',           ({block, break: brk}) => $ => choice(prec.left (8, seq(call($, '_expression', {block}, {break: brk}), choice('as', 'as?', 'as!'),                            call($, '_expression', {block}, {break: brk}))), prec(8, seq(call($, '_expression', {block}, {break: brk}), 'as', '<', $._type, '>'))), 'block', 'break'),
+		...parameterize('expression_exponential',    ({block, break: brk}) => $ =>        prec.right(7, seq(call($, '_expression', {block}, {break: brk}), '^',                                                   call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
+		...parameterize('expression_multiplicative', ({block, break: brk}) => $ =>        prec.left (6, seq(call($, '_expression', {block}, {break: brk}), choice('*', '/'),                                      call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
+		...parameterize('expression_additive',       ({block, break: brk}) => $ =>        prec.left (5, seq(call($, '_expression', {block}, {break: brk}), choice('+', '-'),                                      call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
+		...parameterize('expression_comparative',    ({block, break: brk}) => $ =>        prec.left (4, seq(call($, '_expression', {block}, {break: brk}), choice('<', '>', '<=', '>=', '!<', '!>', 'is', '!is'), call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
+		...parameterize('expression_equality',       ({block, break: brk}) => $ =>        prec.left (3, seq(call($, '_expression', {block}, {break: brk}), choice('===', '!==', '==', '!='),                      call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
+		...parameterize('expression_conjunctive',    ({block, break: brk}) => $ =>        prec.left (2, seq(call($, '_expression', {block}, {break: brk}), choice('&&', '!&'),                                    call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
+		...parameterize('expression_disjunctive',    ({block, break: brk}) => $ =>        prec.left (1, seq(call($, '_expression', {block}, {break: brk}), choice('||', '!|'),                                    call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
 
 		...parameterize('expression_conditional', ({break: brk}) => $ => seq('if', call($, '_expression', 'block', {break: brk}), 'then', call($, '_expression', {break: brk}), 'else', call($, '_expression', {break: brk})), 'break'),
 
@@ -481,7 +480,15 @@ module.exports = grammar({
 
 
 		/* ## Statements */
+		...parameterize('assignee', ({break: brk}) => $ => choice(
+			$.identifier,
+			seq(call($, '_expression', 'block', {break: brk}), '.', call($, 'property_accessor', {break: brk})),
+		), 'break'),
+
 		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
+
+		...parameterize('statement_claim',        ({break: brk}) => $ => seq('claim', call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
+		...parameterize('statement_reassignment', ({break: brk}) => $ => seq('set',   call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
 
 		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
 			!unless ? 'if' : 'unless',
@@ -498,25 +505,22 @@ module.exports = grammar({
 
 		statement_loop: $ => seq(uSeq(seq(choice('while', 'until'), call($, '_expression', 'block')), seq('do', call($, 'block', 'break'))), ';'),
 
-		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'of', call($, '_expression', 'block'), 'do', call($, 'block', 'break'), ';'),
+		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'in', call($, '_expression', 'block'), 'do', call($, 'block', 'break'), ';'),
 
-		statement_break: _$ => seq(choice('break', 'continue'), ';'),
+		statement_break: _$ => seq(choice('break', 'skip'), ';'),
 
 		...parameterize('_statement', ({break: brk}) => $ => choice(
-			call($, 'statement_expression', {break: brk}),
-			call($, 'statement_conditional', ['', 'unless'], {break: brk}),
+			call($, '_declaration',                             {break: brk}),
+			call($, 'statement_expression',                     {break: brk}),
+			call($, 'statement_claim',                          {break: brk}),
+			call($, 'statement_reassignment',                   {break: brk}),
+			call($, 'statement_conditional',    ['', 'unless'], {break: brk}),
 			$.statement_loop,
 			$.statement_iteration,
 			...iff(brk, $.statement_break),
-			call($, '_declaration', {break: brk}),
 		), 'break'),
 
 		...parameterize('block', ({break: brk}) => $ => seq('{', repeat1(call($, '_statement', {break: brk})), '}'), 'break'),
-
-		...parameterize('assignee', ({break: brk}) => $ => choice(
-			$.identifier,
-			seq(call($, '_expression', 'block', {break: brk}), '.', call($, 'property_accessor', {break: brk})),
-		), 'break'),
 
 		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
@@ -525,14 +529,9 @@ module.exports = grammar({
 			seq('let',          'var',  choice('_', $.identifier), '?:', $._type,                                                     ';'),
 		), 'break'),
 
-		...parameterize('declaration_claim',        ({break: brk}) => $ => seq('claim', call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
-		...parameterize('declaration_reassignment', ({break: brk}) => $ => seq('set',   call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
-
 		...parameterize('_declaration', ({break: brk}) => $ => choice(
 			$.declaration_type,
-			call($, 'declaration_variable',     {break: brk}),
-			call($, 'declaration_claim',        {break: brk}),
-			call($, 'declaration_reassignment', {break: brk}),
+			call($, 'declaration_variable', {break: brk}),
 		), 'break'),
 	},
 
@@ -574,7 +573,6 @@ module.exports = grammar({
 			'mut',
 			'as',
 			'is',
-			'isnt',
 			'if',
 			'then',
 			'else',
@@ -593,10 +591,10 @@ module.exports = grammar({
 			'while',
 			'until',
 			'for',
-			'of',
+			'in',
 			'do',
 			'break',
-			'continue',
+			'skip',
 			// type keyword
 			'nothing',
 			'bool',
