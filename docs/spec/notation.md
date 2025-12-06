@@ -1222,7 +1222,8 @@ Such a step says «*Break.*».
 #### Skip
 A step within the substeps of a loop may direct the algorithm to **skip**,
 which is to say the rest of the substeps within the current iteration should be skipped,
-and the algorithm should proceed to the next iteration in the loop.
+and the algorithm should proceed to the next iteration in the loop, assuming the loop’s condition still holds.
+(If it does not, this step is equivalent to [Break](#break).)
 Such a step says «*Skip.*».
 
 #### Return

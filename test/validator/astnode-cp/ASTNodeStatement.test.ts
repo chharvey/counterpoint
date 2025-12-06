@@ -670,8 +670,18 @@ test.suite('ASTNodeStatement', () => {
 		});
 
 		test.suite('ASTNodeStatementLoop', () => {
-			function makeLoop(mod: binaryen.Module, label_block: string, label_loop: string, instrs: readonly binaryen.ExpressionRef[], branch_depth: number): binaryen.ExpressionRef {
-				return mod.block(label_block, [mod.loop(label_loop, mod.block(null, [...instrs, mod.br([label_loop, label_block][branch_depth])]))]);
+			function makeLoop(
+				mod:          binaryen.Module,
+				label_exit:   string,
+				label_repeat: string,
+				label_body:   string,
+				instrs:       (build_body: (block_build: binaryen.ExpressionRef) => binaryen.ExpressionRef) => binaryen.ExpressionRef[],
+				while_false:  boolean = false,
+			): binaryen.ExpressionRef {
+				return mod.block(label_exit, [mod.loop(label_repeat, mod.block(null, [
+					...instrs.call(null, (block_build) => mod.block(label_body, [block_build])),
+					mod.br(while_false ? label_exit : label_repeat),
+				]))]);
 			}
 			test.test('produces `(nop)` if entire statement is foldable.', () => {
 				const {stmts, mod} = setupScript(`{
@@ -691,10 +701,10 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
-				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', [
+				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
 					mod.br_if('exit0', new BinVect(mod, stmt.condition.build()).isSpecial(false)),
-					stmt.block.build(),
-				], 0));
+					build_body(stmt.block.build()),
+				]));
 			});
 			test.test('skips condition check if condition is definitely truthy/falsy.', () => {
 				const {stmts, mod} = setupScript(`{
@@ -714,22 +724,22 @@ test.suite('ASTNodeStatement', () => {
 					} while FALSE;
 				}`);
 				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
-					makeLoop(mod, 'exit0', 'repeat0', [
+					makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
 						mod.drop((stmts[2] as AST.ASTNodeStatementLoop).condition.build()),
-						(stmts[2] as AST.ASTNodeStatementLoop).block.build(),
-					], 0),
-					makeLoop(mod, 'exit1', 'repeat1', [
-						(stmts[3] as AST.ASTNodeStatementLoop).block.build(),
+						build_body((stmts[2] as AST.ASTNodeStatementLoop).block.build()),
+					]),
+					makeLoop(mod, 'exit1', 'repeat1', 'body1', (build_body) => [
+						build_body((stmts[3] as AST.ASTNodeStatementLoop).block.build()),
 						mod.drop((stmts[3] as AST.ASTNodeStatementLoop).condition.build()),
-					], 0),
-					makeLoop(mod, 'exit2', 'repeat2', [
+					]),
+					makeLoop(mod, 'exit2', 'repeat2', 'body2', (build_body) => [
 						mod.drop((stmts[4] as AST.ASTNodeStatementLoop).condition.build()),
-						(stmts[4] as AST.ASTNodeStatementLoop).block.build(),
-					], 1),
-					makeLoop(mod, 'exit3', 'repeat3', [
-						(stmts[5] as AST.ASTNodeStatementLoop).block.build(),
+						build_body((stmts[4] as AST.ASTNodeStatementLoop).block.build()),
+					], true),
+					makeLoop(mod, 'exit3', 'repeat3', 'body3', (build_body) => [
+						build_body((stmts[5] as AST.ASTNodeStatementLoop).block.build()),
 						mod.drop((stmts[5] as AST.ASTNodeStatementLoop).condition.build()),
-					], 1),
+					], true),
 				]);
 			});
 			test.test('negates the condition for `until` statements.', () => {
@@ -740,10 +750,10 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`);
 				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
-				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', [
+				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
 					mod.br_if('exit0', new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(false)),
-					stmt.block.build(),
-				], 0));
+					build_body(stmt.block.build()),
+				]));
 			});
 		});
 
@@ -782,7 +792,7 @@ test.suite('ASTNodeStatement', () => {
 					while_block.children[1].build(),
 				], [
 					mod.br('exit0'),
-					mod.br('repeat0'),
+					mod.br('body0'),
 				]);
 			});
 			test.test('nested loops.', () => {
@@ -803,7 +813,7 @@ test.suite('ASTNodeStatement', () => {
 					inner_block.children[0].build(),
 				], [
 					mod.br('exit0'),
-					mod.br('repeat1'),
+					mod.br('body1'),
 				]);
 			});
 			test.test('throws if the parent block has not been built yet.', () => {

@@ -187,9 +187,8 @@ while i < 10 do {
 	set i += 1;
 }; % prints 0, 1, 2, "skipped", 4, 5, 6, 7, 8, and 9
 ```
-`skip;` behaves differently in a `while–do` versus a `do–while` loop.
-In a `while–do` loop, `skip;` jumps to the start of the loop and re-evaluates the condition before beginning the next repetition;
-in a `do–while` loop, `skip;` jumps to the start of the loop *without* re-evaluating the condition.
+`skip;` behaves the same in `while–do` and `do–while` loops:
+In both cases, control skips to the end of the loop body and re-evaluates the condition before starting the next repetition.
 ```cpl
 let var i: int = 0;
 while i < 10 do {
@@ -211,7 +210,7 @@ do {
 	};
 	print.(i);
 	set i += 1;
-} while i < 10; % prints 0, 1, 2, "skipped", 20
+} while i < 10; % prints 0, 1, 2, "skipped"
 ```
 
 

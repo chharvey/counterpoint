@@ -55,6 +55,6 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		}
 		// we should already have an index by the time we reach the root node
 		assert.ok(typeof block_index === 'number', 'Expected builder to store the containing loop/iteration block of this statement.'); // better type guard than `assert.strictEqual`
-		return this.builder.module.br(this.skip ? `repeat${ block_index }` : `exit${ block_index }`);
+		return this.builder.module.br(this.skip ? `body${ block_index }` : `exit${ block_index }`);
 	}
 }
