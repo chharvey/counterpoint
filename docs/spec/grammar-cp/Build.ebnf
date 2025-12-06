@@ -126,7 +126,7 @@ Sequence<Instruction> Build(SemanticStatementIteration stmt) :=
 
 
 Sequence<Instruction> Build(SemanticStatementBreak stmt) :=
-	1. *If* `stmt.continue` is `true`:
+	1. *If* `stmt.skip` is `true`:
 		1. *Return:* ["BRANCH"(0)].
 	2. *Else:*
 		1. *Return:* ["BRANCH"(1)].

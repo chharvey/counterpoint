@@ -47,12 +47,54 @@ test.suite('ASTNodeCall', () => {
 	] as const;
 	const DICT_CONS = [
 		'Dict.<int>()',
+		'Dict.<int>(())',
 		// 'Dict.<int>((=))', // empty record is impossible
+		'Dict.<int>(List.<(sym, int)>())',
+		'Dict.<int>([])',
 		'Dict.<int>(Dict.<int>())',
 		// 'Dict.<int>([=])', // empty dict literal is impossible
+		'Dict.<int>(Set.<(sym, int)>())',
+		'Dict.<int>({})',
+		'Dict.<int>(Map.<sym, int>())',
+		// 'Dict.<int>({->})', // empty map literal is impossible
+		`Dict.<int>((
+			(@a, 1),
+			(@b, 2),
+			(@c, 3),
+		))`,
 		'Dict.<int>((a= 1, b= 2, c= 3))',
+		`Dict.<int>(List.<(sym, int)>((
+			(@a, 1),
+			(@b, 2),
+			(@c, 3),
+		)))`,
+		`Dict.<int>([
+			(@a, 1),
+			(@b, 2),
+			(@c, 3),
+		])`,
 		'Dict.<int>(Dict.<int>((a= 1, b= 2, c= 3)))',
 		'Dict.<int>([a= 1, b= 2, c= 3])',
+		`Dict.<int>(Set.<(sym, int)>((
+			(@a, 1),
+			(@b, 2),
+			(@c, 3),
+		)))`,
+		`Dict.<int>({
+			(@a, 1),
+			(@b, 2),
+			(@c, 3),
+		})`,
+		`Dict.<int>(Map.<sym, int>((
+			(@a, 1),
+			(@b, 2),
+			(@c, 3),
+		)))`,
+		`Dict.<int>({
+			@a -> 1,
+			@b -> 2,
+			@c -> 3,
+		})`,
 	] as const;
 	const SET_CONS = [
 		'Set.<int>()',
@@ -139,25 +181,25 @@ test.suite('ASTNodeCall', () => {
 		test.test('`List.(‹…›)`', () => {
 			assertEqualTypes(
 				LIST_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.List(TYPE.INT, true), 11),
+				repeat(new TYPE.List(TYPE.INT, true), LIST_CONS.length),
 			);
 		});
 		test.test('`Dict.(‹…›)`', () => {
 			assertEqualTypes(
 				DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Dict(TYPE.INT, true), 5),
+				repeat(new TYPE.Dict(TYPE.INT, true), DICT_CONS.length),
 			);
 		});
 		test.test('`Set.(‹…›)`', () => {
 			assertEqualTypes(
 				SET_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Set(TYPE.INT, true), 11),
+				repeat(new TYPE.Set(TYPE.INT, true), SET_CONS.length),
 			);
 		});
 		test.test('`Map.(‹…›)`', () => {
 			assertEqualTypes(
 				MAP_CONS.map((src) => AST.ASTNodeCall.fromSource(src).type()),
-				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), 14),
+				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
 			);
 		});
 		test.test('bypasses invariance for generic arguments.', () => {
@@ -193,7 +235,7 @@ test.suite('ASTNodeCall', () => {
 			// API overload checks
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
 				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
-				['Dict.<int>(42)', ['42', ['Dict.<int>']]],
+				['Dict.<int>(42)', ['42', ['List.<(sym, int)>', 'Dict.<int>', 'Set.<(sym, int)>', 'Map.<sym, int>']]],
 				['Set.<int>(42)',  ['42', ['List.<int>', 'Set.<int>']]],
 				['Map.<int>(42)',  ['42', ['List.<(int, int)>', 'Set.<(int, int)>', 'Map.<int, int>']]],
 			]), ([argexpr, allowed_types], src) => assert.throws(
@@ -257,12 +299,12 @@ test.suite('ASTNodeCall', () => {
 		});
 		test.test('`Dict.(‹…›)`', () => {
 			assert.deepStrictEqual(DICT_CONS.map((src) => AST.ASTNodeCall.fromSource(src).fold()), [
-				...repeat(new VALUE.Dict<never>(), 2),
+				...repeat(new VALUE.Dict<never>(), 8),
 				...repeat(new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
 					[0x100n, TEST_VALUES[0]],
 					[0x101n, TEST_VALUES[1]],
 					[0x102n, TEST_VALUES[2]],
-				])), 3),
+				])), 10),
 			]);
 		});
 		test.test('`Set.(‹…›)`', () => {

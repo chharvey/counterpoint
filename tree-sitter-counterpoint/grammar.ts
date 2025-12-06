@@ -323,10 +323,10 @@ module.exports = grammar({
 			'while',
 			'until',
 			'for',
-			'of',
+			'in',
 			'do',
 			'break',
-			'continue',
+			'skip',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -508,9 +508,9 @@ module.exports = grammar({
 
 		statement_loop: $ => seq(uSeq(seq(choice('while', 'until'), call($, '_expression', 'block')), seq('do', call($, 'block', 'break'))), ';'),
 
-		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'of', call($, '_expression', 'block'), 'do', call($, 'block', 'break'), ';'),
+		statement_iteration: $ => seq('for', choice('_', $.identifier), ':', $._type, 'in', call($, '_expression', 'block'), 'do', call($, 'block', 'break'), ';'),
 
-		statement_break: _$ => seq(choice('break', 'continue'), ';'),
+		statement_break: _$ => seq(choice('break', 'skip'), ';'),
 
 		...parameterize('_statement', ({break: brk}) => $ => choice(
 			call($, '_declaration',                             {break: brk}),
@@ -594,10 +594,10 @@ module.exports = grammar({
 			'while',
 			'until',
 			'for',
-			'of',
+			'in',
 			'do',
 			'break',
-			'continue',
+			'skip',
 			// type keyword
 			'nothing',
 			'bool',

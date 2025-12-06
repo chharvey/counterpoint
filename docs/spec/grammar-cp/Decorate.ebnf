@@ -21,10 +21,10 @@ _KEYWORD_OTHER =:=
 		| "while"
 		| "until"
 		| "for"
-		| "of"
+		| "in"
 		| "do"
 		| "break"
-		| "continue"
+		| "skip"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
@@ -744,13 +744,13 @@ Decorate(StatementLoop ::= "do" Block<+Break> "until" Expression<+Block><-Break>
 
 
 
-Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
+Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
 		(SemanticType     Decorate(Type))
 		(SemanticIterable Decorate(Expression<+Block><-Break>))
 		Decorate(Block<+Break>)
 	);
-Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
+Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		(SemanticType     Decorate(Type))
@@ -761,9 +761,9 @@ Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block
 
 
 Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=false]);
-Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=true]);
+	:= (SemanticStatementBreak[skip=false]);
+Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak
+	:= (SemanticStatementBreak[skip=true]);
 
 
 

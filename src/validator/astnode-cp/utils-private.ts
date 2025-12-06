@@ -130,10 +130,17 @@ export type ConstructorSchema = {
  * }
  * declare class Dict<T> {
  * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  ((sym, T),));
+ * 	new (tup2:  ((sym, T), (sym, T)));
+ * 	new (tup:   anything); % any tuple type with items of type `(sym, T)`
  * 	new (recA:  (a: T));
  * 	new (recAB: (a: T, b: T));
  * 	new (rec:   anything); % any record type with values of type `T`
+ * 	new (list:  List.<(sym, T)>);
  * 	new (dict:  Dict.<T>);
+ * 	new ('set': Set.<(sym, T)>);
+ * 	new (map:   Map.<sym, T>);
  * }
  * declare class Set<T> {
  * 	new ();
@@ -170,7 +177,10 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		genericParams: [{positional: true}],
 		overloads:     [
 			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
 			[{positional: true, type: (generic_params) => new TYPE.Dict(generic_params[0])}],
+			[{positional: true, type: (generic_params) => new TYPE.Set(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
+			[{positional: true, type: (generic_params) => new TYPE.Map(TYPE.SYM, generic_params[0])}],
 		],
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],

@@ -151,7 +151,7 @@ test.suite('ASTNodeType', () => {
 					type _ = FOO | float;
 				}`).varCheck(), ReferenceErrorKind);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					for FOO: int of [42] do {
+					for FOO: int in [42] do {
 						type _ = FOO | float;
 					};
 				}`).varCheck(), ReferenceErrorKind);

@@ -86,10 +86,10 @@ KeywordOther :::=
 		| "while"
 		| "until"
 		| "for"
-		| "of"
+		| "in"
 		| "do"
 		| "break"
-		| "continue"
+		| "skip"
 ;
 
 

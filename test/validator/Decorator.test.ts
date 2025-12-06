@@ -725,15 +725,15 @@ test.suite('Decorator', () => {
 				% (statement_loop)
 			`]],
 
-			['Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+			['Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
 				{
-					for _: T of iterable do { iterate; };
+					for _: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
-			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
+			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.ASTNodeStatementIteration, `
 				{
-					for it: T of iterable do { iterate; };
+					for it: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
@@ -744,9 +744,9 @@ test.suite('Decorator', () => {
 				}
 				% (statement_break)
 			`]],
-			['Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
+			['Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak', [AST.ASTNodeStatementBreak, `
 				{
-					while condition do { continue; };
+					while condition do { skip; };
 				}
 				% (statement_break)
 			`]],
@@ -763,7 +763,7 @@ test.suite('Decorator', () => {
 					};
 					if condition then { consequent; };
 					while condition do { loop; };
-					for it: T of iterable do { iterate; };
+					for it: T in iterable do { iterate; };
 				}
 				% (block)
 			`]],

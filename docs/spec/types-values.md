@@ -99,7 +99,7 @@ A name–value pair of a Schema is called a **property**.
 A **CompletionSchema** is a specific subtype of [Schema](#schema) with
 a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-words) specification values
-*normal*, *break*, *continue*, *return*, or *throw*, which are described below.
+*normal*, *break*, *skip*, *return*, or *throw*, which are described below.
 The value of the \`value\` property must be
 a [Counterpoint Specification Value](#counterpoint-specification-types) or
 a [Counterpoint Language Value](#counterpoint-language-types).
@@ -114,13 +114,13 @@ unless explicitly stated otherwise.
 
 This table summarizes the enumerated values of a CompletionSchema’s \`type\` property.
 
-Type       | Meaning
----------- | -------
-*normal*   | TODO
-*break*    | TODO
-*continue* | TODO
-*return*   | TODO
-*throw*    | TODO
+Type     | Meaning
+-------- | -------
+*normal* | TODO
+*break*  | TODO
+*skip*   | TODO
+*return* | TODO
+*throw*  | TODO
 
 The term “normal completion” refers to any CompletionSchema with a \`kind\` of *normal*, and
 the term “abrupt completion” refers to any CompletionSchema with a \`kind\` other than *normal*.

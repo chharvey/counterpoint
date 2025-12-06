@@ -56,7 +56,7 @@ test.suite('ASTNodeDeclaration', () => {
 					type FOO = float;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					for it: float of [1.1, 2.2, 3.3] do {
+					for it: float in [1.1, 2.2, 3.3] do {
 						type it = int;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
@@ -76,7 +76,7 @@ test.suite('ASTNodeDeclaration', () => {
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					type T = int;
-					for it: float of [1.1, 2.2, 3.3] do {
+					for it: float in [1.1, 2.2, 3.3] do {
 						type T = float;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
@@ -146,7 +146,7 @@ test.suite('ASTNodeDeclaration', () => {
 					let FOO: int = 42;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					for it: float of [1.1, 2.2, 3.3] do {
+					for it: float in [1.1, 2.2, 3.3] do {
 						let it: int = 42;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
@@ -166,7 +166,7 @@ test.suite('ASTNodeDeclaration', () => {
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					let var x: int = 42;
-					for it: float of [1.1, 2.2, 3.3] do {
+					for it: float in [1.1, 2.2, 3.3] do {
 						let var x: float = 4.2;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);

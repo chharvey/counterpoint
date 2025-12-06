@@ -168,7 +168,7 @@ SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 SemanticStatementIteration
 	::= SemanticVariable? SemanticType SemanticExpression SemanticBlock;
 
-SemanticStatementBreak[continue: Boolean]
+SemanticStatementBreak[skip: Boolean]
 	::= ();
 
 
