@@ -601,7 +601,6 @@ that is, by the formula \`Or< Minus<‹T›, ‹U›>, Minus<‹U›, ‹T›> >
 The symmetric difference is equal to to the disjunctive union.
 
 
-
 ### Subtype
 A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
 
@@ -734,6 +733,12 @@ Boolean Equal(Type a, Type b) :=
 A type \`‹T›\` is **disjoint** with type \`‹U›\` iff \`‹T›\` and \`‹U›\` have no values in common.
 That is, their intersection is empty, or equal to the [Bottom Type](#nothing).
 
+```
+Boolean AreDisjoint(Type a, Type b) :=
+	1. *Let* `intersection` be *UnwrapAffirm:* `Intersection(a, b)`.
+	2. *Return:* `IsBottomType(intersection)`.
+;
+```
 
 
 ## Type Laws
