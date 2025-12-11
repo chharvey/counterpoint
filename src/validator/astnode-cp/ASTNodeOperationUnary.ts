@@ -60,6 +60,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 			[Operator.EMP,   'vemp'],
 			[Operator.NEG,   'vneg'],
 			[Operator.INT,   'vtoi'],
+			[Operator.NAT,   'vton'],
 			[Operator.FLOAT, 'vtof'],
 		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
@@ -67,7 +68,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		const TYPE_NUMBER = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		const t: TYPE.Type = this.operand.type();
 		if (t.isBottomType) {
 			return TYPE.NOTHING;
@@ -84,15 +84,19 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
-				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
 				return t;
 			}
 			case Operator.INT: {
-				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
 				return TYPE.INT;
 			}
+			case Operator.NAT: {
+				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.NAT;
+			}
 			case Operator.FLOAT: {
-				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
 				return TYPE.FLOAT;
 			}
 		}
@@ -112,10 +116,13 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
 			}
 			case Operator.NEG: {
-				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+				return this.foldNumeric(v as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>);
 			}
 			case Operator.INT: {
 				return (v as VALUE.Number).toInt();
+			}
+			case Operator.NAT: {
+				return (v as VALUE.Number).toNat();
 			}
 			case Operator.FLOAT: {
 				return (v as VALUE.Number).toFloat();

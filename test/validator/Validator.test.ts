@@ -66,18 +66,6 @@ test.suite('Validator', () => {
 				].map((n) => BigInt(n)),
 				/* eslint-enable @stylistic/indent */
 			]],
-			['floats', [
-				`
-					2.007  -2.007
-					91.27e4  -91.27e4  91.27e-4  -91.27e-4
-					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`,
-				[
-					2.007, -2.007,
-					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
-					-0.0, 6.8, 6.8, 0.0, -0.0,
-				],
-			]],
 			['implicit radix integers with separators', [
 				`
 					12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
@@ -108,14 +96,44 @@ test.suite('Validator', () => {
 				].map((n) => BigInt(n)),
 				/* eslint-enable @stylistic/indent */
 			]],
+			['floats', [
+				`
+					2.007  -2.007
+					91.27e4  -91.27e4  91.27e-4  -91.27e-4
+					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
+				`,
+				[
+					2.007, -2.007,
+					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
+					-0.0, 6.8, 6.8, 0.0, -0.0,
+				],
+			]],
 			/* eslint-enable @stylistic/array-element-newline */
 		]).forEach(([source, values], description) => {
-			test.test(description, () => {
+			test.test(`numerical value: ${ description }.`, () => {
 				assert.deepStrictEqual(
-					source.trim().split(/\s+/).map((number) => Validator.cookTokenNumber(number)),
+					source.trim().split(/\s+/).map((nsrc) => Validator.cookTokenNumber(nsrc).value),
 					values,
 				);
 			});
+		});
+		test.test('types.', () => {
+			assert.deepStrictEqual(
+				`
+					370  037  +9037  -9037  +06  -06
+					\\b100  \\b001  +\\b1000  -\\b1000  +\\b01  -\\b01
+					12_345  +12_345  -12_345  0123_4567  +0123_4567  -0123_4567  012_345_678  +012_345_678  -012_345_678
+					\\b1_00  \\b0_01  +\\b1_000  -\\b1_000  +\\b0_1  -\\b0_1
+					91.27e4  -91.27e4  +91.27e-4  -91.27e-4
+				`.trim().split(/\s+/).map((nsrc) => Validator.cookTokenNumber(nsrc).type),
+				`
+					int int nat int nat int
+					int int nat int nat int
+					int nat int int nat int int nat int
+					int int nat int nat int
+					float float float float
+				`.trim().split(/\s+/),
+			);
 		});
 	});
 

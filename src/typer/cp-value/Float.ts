@@ -8,12 +8,13 @@ import {
 	strictEqual,
 	instanceOf,
 } from '../utils-private.ts';
-import {Integer} from './index.ts';
 import {
 	identical,
 	type Value,
 } from './Value.ts';
 import {Number as ValueNumber} from './Number.ts';
+import {Integer} from './Integer.ts';
+import {Natural} from './Natural.ts';
 
 
 
@@ -23,8 +24,8 @@ import {Number as ValueNumber} from './Number.ts';
  */
 export class Float extends ValueNumber<Float> {
 	public constructor(private readonly data: number = 0.0) {
+		xjs.Number.assertType(data, xjs.NumericType.FINITE);
 		super();
-		xjs.Number.assertType(this.data, xjs.NumericType.FINITE);
 	}
 
 	public override toString(): string {
@@ -57,6 +58,11 @@ export class Float extends ValueNumber<Float> {
 
 	public override toInt(): Integer {
 		return new Integer(BigInt(Math.trunc(this.data)));
+	}
+
+	public override toNat(): Natural {
+		const trunc = BigInt(Math.trunc(this.data));
+		return new Natural(trunc < 0n ? 0n : trunc);
 	}
 
 	public override toFloat(): this {
@@ -102,6 +108,6 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	public override lt(y: ValueNumber): boolean {
-		return this.data < (y instanceof Float ? y.data : y.toFloat().data);
+		return this.data < y.toFloat().data;
 	}
 }

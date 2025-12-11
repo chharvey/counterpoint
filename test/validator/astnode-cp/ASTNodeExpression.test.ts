@@ -48,7 +48,7 @@ test.suite('ASTNodeExpression', () => {
 				const constants: AST.ASTNodeConstant[] = extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
-					55  -55  033  -033  0  -0
+					55  -55  +033  -033  0  -0
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
@@ -72,9 +72,9 @@ test.suite('ASTNodeExpression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x92n,  'then'),
-					new VALUE.Symbol(0x86n,  'str'),
-					new VALUE.Symbol(0x89n,  'false'),
+					new VALUE.Symbol(0x93n,  'then'),
+					new VALUE.Symbol(0x87n,  'str'),
+					new VALUE.Symbol(0x8an,  'false'),
 					new VALUE.Symbol(0x100n, 'foobar'),
 				]);
 			});
@@ -86,6 +86,15 @@ test.suite('ASTNodeExpression', () => {
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));
+			});
+			test.test('computes nat values.', () => {
+				assert.deepStrictEqual(extract_tokens(`
+					+55  +033  +0
+					+\\o55  +\\q033
+				`).map((src) => AST.ASTNodeConstant.fromSource(src).fold()), [
+					55, 33, 0,
+					parseInt('55', 8), parseInt('33', 4),
+				].map((v) => new VALUE.Natural(BigInt(v))));
 			});
 			test.test('computes float values.', () => {
 				assert.deepStrictEqual(extract_tokens(`
@@ -116,11 +125,11 @@ test.suite('ASTNodeExpression', () => {
 				['@nothing', (builder) => buildConst(builder, Symbol(0x80))],
 				['@hello',   (builder) => buildConst(builder, Symbol(0x100))],
 				['0',        (builder) => buildConst(builder, 0n)],
-				['+0',       (builder) => buildConst(builder, 0n)],
 				['-0',       (builder) => buildConst(builder, 0n)],
+				['+0',       (builder) => buildConst(builder, 0n, 'nat')],
 				['42',       (builder) => buildConst(builder, 42n)],
-				['+42',      (builder) => buildConst(builder, 42n)],
 				['-42',      (builder) => buildConst(builder, -42n)],
+				['+42',      (builder) => buildConst(builder, 42n, 'nat')],
 				['0.0',      (builder) => buildConst(builder, 0)],
 				['+0.0',     (builder) => buildConst(builder, 0)],
 				['-0.0',     (builder) => buildConst(builder, -0)],

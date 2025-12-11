@@ -36,6 +36,7 @@ import {ValueType} from './ValueType.ts';
  * Known subclasses:
  * - TypeSymbol
  * - Integer
+ * - Natural
  * - Float
  * - TypeString
  */

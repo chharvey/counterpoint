@@ -58,7 +58,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		const DISJOINT_TYPES = t0.intersect(t1).isBottomType;
+		const DISJOINT_TYPES = t0.isDisjointWith(t1);
 		switch (this.operator) {
 			case Operator.ID: {
 				/*
@@ -78,7 +78,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 				 * 	*or* both `a` and `b` intersect with the Number type (they both might contain numbers),
 				 * 	then `a == b` could evaluate to true.
 				 */
-				return DISJOINT_TYPES && [t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ? TYPE.FALSE : TYPE.BOOL;
+				return DISJOINT_TYPES && [t0, t1].some((t) => t.isDisjointWith(TYPE.NUMBER)) ? TYPE.FALSE : TYPE.BOOL;
 			}
 			default: {
 				return TYPE.BOOL;

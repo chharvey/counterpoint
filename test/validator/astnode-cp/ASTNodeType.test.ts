@@ -80,17 +80,18 @@ test.suite('ASTNodeType', () => {
 				assertEqualTypes(extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
-					42  4.2e+3
+					42  +42  4.2e+3
 					"hi"
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
-					new VALUE.Symbol(0x92n,  'then').toType(),
-					new VALUE.Symbol(0x86n,  'str').toType(),
-					new VALUE.Symbol(0x89n,  'false').toType(),
+					new VALUE.Symbol(0x93n,  'then').toType(),
+					new VALUE.Symbol(0x87n,  'str').toType(),
+					new VALUE.Symbol(0x8an,  'false').toType(),
 					new VALUE.Symbol(0x100n, 'foobar').toType(),
 					typeUnit(42n),
+					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
 				]);

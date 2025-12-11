@@ -116,7 +116,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				/* eslint-disable @typescript-eslint/no-unsafe-return --- type guard inference is not very good here */
 				switch (true) {
 					case base_value instanceof VALUE.List: {
-						return base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), KIND_MAYBE, this.accessor);
+						return base_value.get((accessor_value as VALUE.Integer | VALUE.Natural).toBigInt(), KIND_MAYBE, this.accessor);
 					}
 					case base_value instanceof VALUE.Dict: {
 						return base_value.get((accessor_value as VALUE.Symbol).id, KIND_MAYBE, this.accessor);
