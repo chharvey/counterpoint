@@ -101,85 +101,10 @@ export class Natural extends ValueNumber<Natural> {
 		return new Natural(data < 0n ? 0n : data);
 	}
 
-	/**
-	 * ```ts
-	 * function mulSlow(multiplicand: number, multiplier: number): number {
-	 * 	return (
-	 * 		(multiplicand === 0) ? 0 :
-	 * 		(multiplicand === 1) ? multiplier :
-	 * 		(multiplicand === 2) ? multiplier << 1 :
-	 * 		(multiplier <   0) ? -mulSlow(multiplicand, -multiplier) :
-	 * 		(multiplier === 0) ? 0 :
-	 * 		(multiplier === 1) ? multiplicand :
-	 * 		(multiplier === 2) ? multiplicand << 1 :
-	 * 		multiplicand + mulSlow(multiplicand, multiplier - 1)
-	 * 	)
-	 * }
-	 * function mulFast(multiplicand: number, multiplier: number): number {
-	 * 	return (
-	 * 		(multiplicand === 0) ? 0 :
-	 * 		(multiplicand === 1) ? multiplier :
-	 * 		(multiplicand === 2) ? multiplier << 1 :
-	 * 		(multiplier <   0) ? -mulFast(multiplicand, -multiplier) :
-	 * 		(multiplier === 0) ? 0 :
-	 * 		(multiplier === 1) ? multiplicand :
-	 * 		(multiplier === 2) ? multiplicand << 1 :
-	 * 		(multiplier % 2 === 0)
-	 * 			?                mulFast(multiplicand * 2,  multiplier      / 2)
-	 * 			: multiplicand + mulFast(multiplicand * 2, (multiplier - 1) / 2)
-	 * 	)
-	 * }
-	 * ```
-	 */
 	public override times(multiplier: Natural): Natural {
 		return new Natural(this.data * multiplier.data);
 	}
 
-	/**
-	 * ```ts
-	 * function divSlow(dividend: number, divisor: number): number {
-	 * 	return (
-	 * 		(divisor  === 0) ? throw new NanError('Division by zero.') :
-	 * 		(dividend === 0) ? 0                                       :
-	 * 		(divisor  <   0) ? -divSlow(dividend, -divisor)            :
-	 * 		(dividend <   0) ? -divSlow(-dividend, divisor)            :
-	 * 		(divisor === 1) ? dividend      :
-	 * 		(divisor === 2) ? dividend >> 1 :
-	 * 		((): int => {
-	 * 			let quotient: int = 0;
-	 * 			while (dividend  = divisor) {
-	 * 				dividend -= divisor;
-	 * 				++quotient;
-	 * 			}
-	 * 			return quotient;
-	 * 		})()
-	 * 	);
-	 * }
-	 * function divFast(dividend: number, divisor: number): number {
-	 * 	return (
-	 * 		(divisor  === 0) ? throw new NanError('Division by zero.') :
-	 * 		(dividend === 0) ? 0                                       :
-	 * 		(divisor  <   0) ? -divFast( dividend, -divisor)           :
-	 * 		(dividend <   0) ? -divFast(-dividend,  divisor)           :
-	 * 		(divisor === 1) ? dividend      :
-	 * 		(divisor === 2) ? dividend >> 1 :
-	 * 		((): int => {
-	 * 			let quotient:  int = 0;
-	 * 			let remainder: int = 0;
-	 * 			for (let i = 0; i < BITCOUNT; i++) {
-	 * 				remainder = remainder << 1;
-	 * 				remainder[BITCOUNT - 1] = dividend[i];
-	 * 				if (remainder >= divisor) {
-	 * 					remainder = remainder - divisor;
-	 * 					quotient[i] = true;
-	 * 				}
-	 * 			}
-	 * 			return quotient;
-	 * 		})()
-	 * 	);
-	 * }
-	 * ```
-	 */
 	public override divide(divisor: Natural): Natural {
 		if (divisor.eq0()) {
 			throw new RangeError('Division by zero.');
@@ -187,35 +112,6 @@ export class Natural extends ValueNumber<Natural> {
 		return new Natural(this.data / divisor.data);
 	}
 
-	/**
-	 * ```ts
-	 * function expSlow(base: number, exponent: number): number {
-	 * 	return (
-	 * 		(exponent <   0) ? 0           :
-	 * 		(exponent === 0) ? 1           :
-	 * 		(exponent === 1) ? base        :
-	 * 		(exponent === 2) ? base * base :
-	 * 		base * expSlow(base, exponent - 1)
-	 * 	);
-	 * }
-	 * function expFast(base: number, exponent: number): number {
-	 * 	return (
-	 * 		(exponent <   0) ? 0           :
-	 * 		(exponent === 0) ? 1           :
-	 * 		(exponent === 1) ? base        :
-	 * 		(exponent === 2) ? base * base :
-	 * 		(base === 0)     ? 0           :
-	 * 		(base === 1)     ? 1           :
-	 * 		(base === 2 && exponent < 64) ? 1 << exponent : // `1 << x` (when `x` is less than bit width) is a more performant way to do `2 ** x`
-	 * 		(exponent % 2 === 0)
-	 * 			// `x >> 1` is a more performant way to do `x / 2`
-	 * 			?        expFast(base ** 2,  exponent      >> 1)
-	 * 			: base * expFast(base ** 2, (exponent - 1) >> 1)
-	 * 	);
-	 * }
-	 * ```
-	 * @see https://stackoverflow.com/a/101613/877703
-	 */
 	public override exp(exponent: Natural): Natural {
 		return new Natural(this.data ** exponent.data);
 	}
