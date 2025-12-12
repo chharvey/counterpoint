@@ -1,20 +1,22 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
-import {bigint_to_i64} from './utils-public.ts';
 
 
 
 /**
  * A Binaryen vector (`v128`) representing one of the following:
  * - one of three primitive special constants, the Counterpoint values `null`, `false`, or `true`, as a value on the stack
- * - a numeric value of Counterpoint type `int` or `float`, as a value on the stack
+ * - a numeric value of Counterpoint type `int`, `nat`, `dec`, or `float`, as a value on the stack
  * - an address of a Counterpoint reference type, as a pointer to an object in the heap
  *
  * # Layout
- * The 128-bit vector has 8 lanes (indexed 0–7), 16 bits each.
- * - Lanes 0–2 are always zero (reserved for future use).
+ * The 128-bit vector has 8 lanes (indexed 0–7, left-to-right), 16 bits each.
+ * - Lanes 0–1 are always zero (reserved for future use).
+ * - Lane 2 stores the **scaling factor** for `dec` values, which are not yet supported.
  * - Lane 3, the **header lane**, indicates the vector’s representation.
  * - Lanes 4–7, the **data lanes** hold the vector’s data.
+ * 	Data is always left-aligned, stored in little-endian format (by byte).
+ * 	(E.g., an `i32` of value `\x05060708` would be stored as `\x0807 \x0605` in Lanes 4–5.)
  *
  * # Header Lane
  * Lane 3 must be one of the following values:
@@ -25,13 +27,19 @@ import {bigint_to_i64} from './utils-public.ts';
  * `\x0001` | The vector represents the `null`  primitive constant.
  * `\x0002` | The vector represents the `false` primitive constant.
  * `\x0003` | The vector represents the `true`  primitive constant.
- * `\x0012` | The vector holds an `i16` value.
- * `\x0014` | The vector holds an `i32` value.
- * `\x0018` | The vector holds an `i64` value.
- * `\x0022` | The vector holds an `f16` value.
- * `\x0024` | The vector holds an `f32` value.
- * `\x0028` | The vector holds an `f64` value.
- * `\x0038` | The vector holds an address (represented by an `i64`).
+ * `\x0012` | The vector holds an `i16` value, representing a signed integer.
+ * `\x0014` | The vector holds an `i32` value, representing a signed integer.
+ * `\x0018` | The vector holds an `i64` value, representing a signed integer.
+ * `\x0022` | The vector holds an `i16` value, representing an unsigned integer.
+ * `\x0024` | The vector holds an `i32` value, representing an unsigned integer.
+ * `\x0028` | The vector holds an `i64` value, representing an unsigned integer.
+ * `\x0032` | The vector holds an `i16` value, representing a fixed-precision decimal value (with a scaling factor).
+ * `\x0034` | The vector holds an `i32` value, representing a fixed-precision decimal value (with a scaling factor).
+ * `\x0038` | The vector holds an `i64` value, representing a fixed-precision decimal value (with a scaling factor).
+ * `\x0042` | The vector holds an `f16` value, representing a floating-point binary value.
+ * `\x0044` | The vector holds an `f32` value, representing a floating-point binary value.
+ * `\x0048` | The vector holds an `f64` value, representing a floating-point binary value.
+ * `\x0058` | The vector holds an `i64` value, representing an address.
  *
  * # Value Types
  * ## Special Constants
@@ -40,21 +48,32 @@ import {bigint_to_i64} from './utils-public.ts';
  * For no value (header `\x0000`), behavior is undefined.
  * Lanes 4–7 are ignored.
  *
- * ## Integer Values
- * When the Header is `\x0012`, `\x0014`, or `\x0018`, it represents an `i16`, `i32`, or `i64` value respectively.
- * The value may be interpreted as signed or unsigned.
+ * ## Signed Integer Values
+ * When the Header is `\x0012`, `\x0014`, or `\x0018`, it represents an `i16`, `i32`, or `i64` value respectively,
+ * which must be interpreted as signed.
  * Currently, only `i64` values are used.
- * Lanes 4–7 together form the `i64` representing a Counterpoint `int` value.
- * Header values of `\x0012` and `\x0014` reserved for future use. Data is always right-aligned.
+ * Lanes 4–7 together form the `i64` value, stored in little-endian format.
+ * Header values of `\x0012` and `\x0014` reserved for future use.
+ * Lane 2, the scaling factor, will be applicable for this type. Currently it is unused.
+ *
+ * ## Unsigned Integer Values
+ * When the Header is `\x0022`, `\x0024`, or `\x0028`, it represents an `i16`, `i32`, or `i64` value respectively,
+ * which must be interpreted as unsigned.
+ * Currently, only `i64` values are used.
+ * Lanes 4–7 together form the `i64` value, stored in little-endian format.
+ * Header values of `\x0022` and `\x0024` reserved for future use.
+
+ * ## Decimal Values
+ * Header values `\x0030`–`\x003f` are reserved. Decimal values are not yet supported.
  *
  * ## Float Values
- * When the Header is `\x0022`, `\x0024`, or `\x0028`, it represents an `f16`, `f32`, or `f64` value respectively.
+ * When the Header is `\x0042`, `\x0044`, or `\x0048`, it represents an `f16`, `f32`, or `f64` value respectively.
  * Currently, only `f64` values are used.
- * Lanes 4–7 together form the `f64` representing a Counterpoint `float` value.
- * Header values of `\x0022` and `\x0024` reserved for future use. Data is always right-aligned.
+ * Lanes 4–7 together form the `f64` value, stored in little-endian format.
+ * Header values of `\x0042` and `\x0044` reserved for future use.
  *
  * ## Address Values
- * When the Header is `\x0038`, it represents an address of an object in the heap, indexed by an `i64`, held in Lanes 4–7.
+ * When the Header is `\x0058`, it represents an address of an object in the heap, indexed by an `i64`, held in Lanes 4–7.
  *
  * The following diagram may prove useful:
  * ```
@@ -64,13 +83,19 @@ import {bigint_to_i64} from './utils-public.ts';
  * null:               \x0000 \x0000 \x0000 \x0001 | \x0000 \x0000 \x0000 \x0000
  * false:              \x0000 \x0000 \x0000 \x0002 | \x0000 \x0000 \x0000 \x0000
  * true:               \x0000 \x0000 \x0000 \x0003 | \x0000 \x0000 \x0000 \x0000
- * i16:                \x0000 \x0000 \x0000 \x0012 | \x0000 \x0000 \x0000 \x????
- * i32:                \x0000 \x0000 \x0000 \x0014 | \x0000 \x0000 \x???? \x????
- * i64:                \x0000 \x0000 \x0000 \x0018 | \x???? \x???? \x???? \x????
- * f16:                \x0000 \x0000 \x0000 \x0022 | \x0000 \x0000 \x0000 \x????
- * f32:                \x0000 \x0000 \x0000 \x0024 | \x0000 \x0000 \x???? \x????
- * f64:                \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
- * address:            \x0000 \x0000 \x0000 \x0038 | \x???? \x???? \x???? \x????
+ * signed i16:         \x0000 \x0000 \x0000 \x0012 | \x???? \x0000 \x0000 \x0000
+ * signed i32:         \x0000 \x0000 \x0000 \x0014 | \x???? \x???? \x0000 \x0000
+ * signed i64:         \x0000 \x0000 \x0000 \x0018 | \x???? \x???? \x???? \x????
+ * unsigned i16:       \x0000 \x0000 \x0000 \x0022 | \x???? \x0000 \x0000 \x0000
+ * unsigned i32:       \x0000 \x0000 \x0000 \x0024 | \x???? \x???? \x0000 \x0000
+ * unsigned i64:       \x0000 \x0000 \x0000 \x0028 | \x???? \x???? \x???? \x????
+ * reserved:           \x0000 \x0000 \x???? \x0032 | \x???? \x0000 \x0000 \x0000
+ * reserved:           \x0000 \x0000 \x???? \x0034 | \x???? \x???? \x0000 \x0000
+ * reserved:           \x0000 \x0000 \x???? \x0038 | \x???? \x???? \x???? \x????
+ * f16:                \x0000 \x0000 \x0000 \x0042 | \x???? \x0000 \x0000 \x0000
+ * f32:                \x0000 \x0000 \x0000 \x0044 | \x???? \x???? \x0000 \x0000
+ * f64:                \x0000 \x0000 \x0000 \x0048 | \x???? \x???? \x???? \x????
+ * address:            \x0000 \x0000 \x0000 \x0058 | \x???? \x???? \x???? \x????
  * ```
  */
 export class BinVect {
@@ -107,15 +132,15 @@ export class BinVect {
 	 * @param  arg one of the following:
 	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
 	 *             - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
-	 *             - an address, either hard-coded (native bigint) or dynamic (of type `i64`)
+	 * @param opts an object:
+	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
+	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
+	 * 	@property `address`  - if `arg` is an `i64`, should it be interpreted as an address? (default `false`)
 	 */
 	public constructor(
 		private readonly mod: binaryen.Module,
-		arg: (
-			| null | boolean
-			| binaryen.ExpressionRef
-			| readonly [bigint] | readonly [binaryen.ExpressionRef]
-		) = null,
+		arg:  null | boolean | binaryen.ExpressionRef = null,
+		opts: {unsigned?: boolean, scale?: bigint, address?: boolean} = {},
 	) {
 		this.#internal = this.mod.v128.const(new Uint8Array(16)); // HACK: TypeScript bug where native-private fields are not emitted in constructor when `useDefineForClassFields` compiler option is off
 
@@ -130,22 +155,28 @@ export class BinVect {
 			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0003));
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
-			/*
-			 * If the arg represents an `int`, set Lane 3 to `\x0018` and set Lane 4–7 (joined) to its `i64` value;
-			 * else, if the arg represents a `float`, set Lane 3 to `\x0028` and set Lanes 4–7 (joined) to its `f64` value;
-			 * else, if the arg is any other `v128`, set all lanes to those lanes.
-			 */
 			switch (binaryen.getExpressionType(arg)) {
+				/*
+				 * If the arg is an `i64`:
+				 * - Set Lane 3 to `\x0018` if signed (Counterpoint type `int`), `\x0028` if unsigned (Counterpoint type `nat`), `\x0058` if address (heap offset).
+				 * - Set Lane 4–7 (joined) to its `i64` value.
+				 */
 				case binaryen.i64: {
-					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0018));
+					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(opts.unsigned ? 0x0028 : opts.address ? 0x0058 : 0x0018));
 					this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, arg);
 					break;
 				}
+				/*
+				 * If the arg is an `f64` (Counterpoint type `float`), set Lane 3 to `\x0048` and set Lanes 4–7 (joined) to its `f64` value.
+				 */
 				case binaryen.f64: {
-					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0028));
+					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0048));
 					this.#internal = this.mod.f64x2.replace_lane(this.#internal, 1, arg);
 					break;
 				}
+				/*
+				 * If the arg is a `v128` (unspecified type), set all lanes to those lanes.
+				 */
 				case binaryen.v128: {
 					this.#internal = arg;
 					break;
@@ -154,26 +185,9 @@ export class BinVect {
 					throw new TypeError('Expected either `i64`, `f64`, or `v128`.');
 				}
 			}
-		} else if (typeof arg[0] === 'bigint') {
-			// the arg represents a hard-coded address
-			const address: bigint = arg[0];
-			return new BinVect(mod, [bigint_to_i64(mod, address, true)]); // HACK: `this()`
-		} else {
-			// the arg represents a dynamic address
-			const address: binaryen.ExpressionRef = arg[0];
-			assert.strictEqual(
-				binaryen.getExpressionType(address),
-				binaryen.i64,
-				new TypeError('Expected address value to be an `i64`.'),
-			);
-			/*
-			 * Set Lane 3 to `\x0038` and set Lanes 4–7 (joined) to its `i64` value.
-			 */
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0038));
-			this.#internal = this.mod.i64x2.replace_lane(this.#internal, 1, address);
 		}
 
-		this.#type = this.mod.i16x8.extract_lane_s(this.#internal, 3);
+		this.#type = this.mod.i16x8.extract_lane_u(this.#internal, 3);
 	}
 
 	/** The `v128` implementation. */
@@ -185,7 +199,7 @@ export class BinVect {
 	#checkTypeRange(min: bigint, max: bigint): binaryen.ExpressionRef {
 		const lower: binaryen.ExpressionRef = this.mod.i32.const(Number(min));
 		const upper: binaryen.ExpressionRef = this.mod.i32.const(Number(max));
-		return this.mod.i32.and(this.mod.i32.le_s(lower, this.#type), this.mod.i32.le_s(this.#type, upper));
+		return this.mod.i32.and(this.mod.i32.le_u(lower, this.#type), this.mod.i32.le_u(this.#type, upper));
 	}
 
 	/** Whether the value does not exist. */
@@ -203,19 +217,24 @@ export class BinVect {
 		);
 	}
 
-	/** Whether the value is intended to be interpreted as an int. */
+	/** Whether the value is intended to be interpreted as a signed integer. */
 	public get isInt(): binaryen.ExpressionRef {
 		return this.#checkTypeRange(0x0010n, 0x001fn);
 	}
 
+	/** Whether the value is intended to be interpreted as an unsigned integer. */
+	public get isNat(): binaryen.ExpressionRef {
+		return this.#checkTypeRange(0x0020n, 0x002fn);
+	}
+
 	/** Whether the value is intended to be interpreted as a float. */
 	public get isFloat(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0020n, 0x002fn);
+		return this.#checkTypeRange(0x0040n, 0x004fn);
 	}
 
 	/** Whether the value is intended to be interpreted as an address. */
 	public get isAddr(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0030n, 0x003fn);
+		return this.#checkTypeRange(0x0050n, 0x005fn);
 	}
 
 	/** The value as interpreted as a special value: null, false, or true. */
@@ -223,8 +242,13 @@ export class BinVect {
 		return this.#type;
 	}
 
-	/** The value as interpreted as an int. */
+	/** The value as interpreted as a signed integer. */
 	public get intValue(): binaryen.ExpressionRef {
+		return this.mod.i64x2.extract_lane(this.#internal, 1);
+	}
+
+	/** The value as interpreted as an unsigned integer. */
+	public get natValue(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.#internal, 1);
 	}
 
@@ -236,5 +260,25 @@ export class BinVect {
 	/** The value as interpreted as an address. */
 	public get addrValue(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.#internal, 1);
+	}
+
+	/** Conversion. Assuming `this.isInt`, return a new value representing a `float`. */
+	public i_to_f(): binaryen.ExpressionRef {
+		return this.mod.f64.convert_s.i64(this.intValue);
+	}
+
+	/** Conversion. Assuming `this.isNat`, return a new value representing a `float`. */
+	public n_to_f(): binaryen.ExpressionRef {
+		return this.mod.f64.convert_u.i64(this.natValue);
+	}
+
+	/** Truncation. Assuming `this.isFloat`, return a new value representing an `int`. */
+	public f_to_i(): binaryen.ExpressionRef {
+		return this.mod.i64.trunc_s_sat.f64(this.floatValue);
+	}
+
+	/** Truncation. Assuming `this.isFloat`, return a new value representing a `nat`. */
+	public f_to_n(): binaryen.ExpressionRef {
+		return this.mod.i64.trunc_u_sat.f64(this.floatValue);
 	}
 }

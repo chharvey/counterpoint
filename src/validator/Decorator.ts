@@ -57,6 +57,7 @@ export class Decorator {
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
 		[Keyword.INT,    Operator.INT],
+		[Keyword.NAT,    Operator.NAT],
 		[Keyword.FLOAT,  Operator.FLOAT],
 	]);
 
@@ -207,7 +208,7 @@ export class Decorator {
 			)],
 
 			['property_accessor_type', (node) => (
-				(isSyntaxNodeType(node.children[0], 'integer')) ? new AST.ASTNodeIndex(node.children[0]) :
+				isSyntaxNodeType(node.children[0], /integer|natural/) ? new AST.ASTNodeIndex(node.children[0] as SyntaxNodeType<'integer' | 'natural'>) :
 				(assert.ok(
 					isSyntaxNodeType(node.children[0], 'word'),
 					`Expected ${ node.children[0] } to be a \`SyntaxNodeType<'word'>\`.`,
@@ -317,7 +318,7 @@ export class Decorator {
 			)],
 
 			[/^property_accessor(__break)?$/, (node) => (
-				(isSyntaxNodeType(node.children[0], 'integer')) ? new AST.ASTNodeIndex(node.children[0]) :
+				isSyntaxNodeType(node.children[0], /integer|natural/) ? new AST.ASTNodeIndex(node.children[0] as SyntaxNodeType<'integer' | 'natural'>) :
 				(isSyntaxNodeType(node.children[0], 'word'))    ? this.decorateTS(node.children[0]) :
 				(assert.ok(isSyntaxNodeSupertype(node.children[1], 'expression'), `Expected ${ node.children[1] } to be an expression node.`), this.decorateExprNode(node.children[1]))
 			)],
@@ -432,34 +433,11 @@ export class Decorator {
 				this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			['expression_additive', (node) => ((
-				n:        SyntaxNodeType<'expression_additive'>,
-				operator: Operator,
-				operands: readonly [AST.ASTNodeExpression, AST.ASTNodeExpression],
-			) => (
-				// `a - b` is syntax sugar for `a + -(b)`
-				(operator === Operator.SUB) ? new AST.ASTNodeOperationBinaryArithmetic(
-					n,
-					Operator.ADD,
-					operands[0],
-					new AST.ASTNodeOperationUnary(
-						n.children[2] as SyntaxNodeSupertype<'expression'>,
-						Operator.NEG,
-						operands[1],
-					),
-				) :
-				new AST.ASTNodeOperationBinaryArithmetic(
-					n,
-					operator as ValidOperatorArithmetic,
-					...operands,
-				)
-			))(
+			['expression_additive', (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_additive'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
-				[
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
-				],
+				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
+				this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
+				this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_comparative', (node) => ((

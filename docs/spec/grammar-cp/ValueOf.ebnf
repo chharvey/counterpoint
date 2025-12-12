@@ -103,11 +103,14 @@ Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	4. *Let* `base_value` be *Unwrap:* `ValueOf(base)`.
 	5. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_value` is an instance of `Tuple`:
-			1. *If* `accessor.index` is an index in `base_value`:
-				1. *Return:* the item accessed at index `accessor.index` in `base_value`.
-			2. *Else If* `access.kind` is `MAYBE`:
+			1. *Let* `index` be `accessor.index`.
+			2. *If* `index` is less than *0*:
+				1. *Set* `index` to `index + base_value.count`.
+			3. *If* `index` is an index in `base_value`:
+				1. *Return:* the item accessed at index `index` in `base_value`.
+			4. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
-			3. *Else:*
+			5. *Else:*
 				1. *Throw:* a new VoidError.
 		2. *Else:*
 			1. *Assert:* `access.kind` is `MAYBE`.
@@ -127,15 +130,18 @@ Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_value` be *Unwrap:* `ValueOf(accessor)`.
 		3. *If* `base_value` is an instance of `List`:
-			1. *If* `accessor_value` is an index in `base_value`:
+			1. *Let* `index` be `accessor_value`.
+			2. *If* `index` is less than *0*:
+				1. *Set* `index` to `index + base_value.count`.
+			3. *If* `index` is an index in `base_value`:
 				1. *Return:* the item accessed at index `accessor_value` in `base_value`.
-			2. *Else If* `access.kind` is `MAYBE`:
+			4. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
-			3. *Else:*
+			5. *Else:*
 				1. *Throw:* a new VoidError.
 		4. *Else If* `base_value` is an instance of `Dict`:
 			1. *If* `accessor_value` is a key in `base_value`:
-				1. *Return:* the item accessed at key `accessor_value` in `base_value`.
+				1. *Return:* the value accessed at key `accessor_value` in `base_value`.
 			2. *Else If* `access.kind` is `MAYBE`:
 				1. *Return:* `null`.
 			3. *Else:*
@@ -227,13 +233,15 @@ Boolean! ValueOf(SemanticOperation[operator: EMP] expr) :=
 		1. *Return:* `true`.
 	4. *If* `v0` is an instance of `Integer` *and* `v0` is `0`:
 		1. *Return:* `true`.
-	5. *If* `v0` is an instance of `Float` *and* `v0` is `0.0` or `-0.0`:
+	5. *If* `v0` is an instance of `Natural` *and* `v0` is `+0`:
 		1. *Return:* `true`.
-	6. *If* `v0` is an instance of `String` *and* `v0` contains 0 codepoints:
+	6. *If* `v0` is an instance of `Float` *and* `v0` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	7. *If* `v0` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v0.count` is 0:
+	7. *If* `v0` is an instance of `String` *and* `v0` contains 0 codepoints:
 		1. *Return:* `true`.
-	8. *Return:* `false`.
+	8. *If* `v0` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v0.count` is 0:
+		1. *Return:* `true`.
+	9. *Return:* `false`.
 ;
 
 Number! ValueOf(SemanticOperation[operator: NEG] expr) :=
@@ -249,25 +257,42 @@ Number! ValueOf(SemanticOperation[operator: INT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Assert:* `v0` is an instance of `Number`.
-	4. *If* `v0` is an instance of `Float`:
+	4. *If* `v0` is an instance of `Natural`:
+		1. *Let* `as_int` be the reinterpretation of `v0` as a 64-bit signed integer value.
+		2. *Return:* `as_int`.
+	5. *If* `v0` is an instance of `Float`:
 		1. *Let* `as_int` be the conversion of `v0` to a 64-bit signed integer value.
 		2. *Return:* `as_int`.
-	5. *Assert:* `v0` is an instance of `Integer`.
-	6. *Return:* `v0`.
+	6. *Assert:* `v0` is an instance of `Integer`.
+	7. *Return:* `v0`.
+;
+
+Number! ValueOf(SemanticOperation[operator: NAT] expr) :=
+	1. *Assert:* `expr.children.count` is 1.
+	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
+	3. *Assert:* `v0` is an instance of `Number`.
+	4. *If* `v0` is an instance of `Integer`:
+		1. *Let* `as_nat` be the reinterpretation of `v0` to a 64-bit unsigned integer value.
+		2. *Return:* `as_nat`.
+	5. *If* `v0` is an instance of `Float`:
+		1. *Let* `as_nat` be the conversion of `v0` to a 64-bit unsigned integer value.
+		2. *Return:* `as_nat`.
+	6. *Assert:* `v0` is an instance of `Natural`.
+	7. *Return:* `v0`.
 ;
 
 Number! ValueOf(SemanticOperation[operator: FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Assert:* `v0` is an instance of `Number`.
-	4. *If* `v0` is an instance of `Integer`:
+	4. *If* `v0` is an instance of `Integer` *or* `v0` is an instance of `Natural`:
 		1. *Let* `as_float` be the conversion of `v0` to a 64-bit binary floating-point value.
 		2. *Return:* `as_float`.
 	5. *Assert:* `v0` is an instance of `Float`.
 	6. *Return:* `v0`.
 ;
 
-Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
+Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.

@@ -9,8 +9,12 @@ _KEYWORD_OTHER =:=
 	// storage
 		| "type"
 		| "let"
+		| "claim"
+		| "set"
 		| "_"
+		| "void"
 	// modifier
+		| "nominal"
 		| "var"
 	// control
 		| "unless"
@@ -36,6 +40,8 @@ Decorate(Word ::= KeywordValue) -> SemanticKey
 
 Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
 	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
+Decorate(PrimitiveLiteral ::= NATURAL) -> SemanticConstant
+	:= (SemanticConstant[value=Natural(TokenWorth(NATURAL))]);
 Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
@@ -103,6 +109,8 @@ Decorate(PropertiesType ::= ","? EntryType<+Named><+Optional># ","?) -> Sequence
 
 Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
 Decorate(PropertyAccessorType ::= Word) -> SemanticKey
 	:= Decorate(Word);
 
@@ -315,6 +323,8 @@ Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Bre
 
 Decorate(PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessor<Break> ::= NATURAL) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
 Decorate(PropertyAccessor<Break> ::= Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression
@@ -447,6 +457,10 @@ Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?
 	:= (SemanticOperation[operator=INT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
+	:= (SemanticOperation[operator=NAT]
+		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
+	);
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
 	:= (SemanticOperation[operator=FLOAT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
@@ -512,9 +526,9 @@ Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break>
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=ADD]
+	:= (SemanticOperation[operator=SUB]
 		Decorate(ExpressionAdditive<?Block><?Break>)
-		(SemanticOperation[operator=NEG] Decorate(ExpressionMultiplicative<?Block><?Break>))
+		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 
 
@@ -855,6 +869,7 @@ TokenId(KeywordType  ::= "nothing")  -> TokenWorth("nothing");
 TokenId(KeywordType  ::= "bool")     -> TokenWorth("bool");
 TokenId(KeywordType  ::= "sym")      -> TokenWorth("sym");
 TokenId(KeywordType  ::= "int")      -> TokenWorth("int");
+TokenId(KeywordType  ::= "nat")      -> TokenWorth("nat");
 TokenId(KeywordType  ::= "float")    -> TokenWorth("float");
 TokenId(KeywordType  ::= "str")      -> TokenWorth("str");
 TokenId(KeywordType  ::= "anything") -> TokenWorth("anything");
@@ -868,6 +883,7 @@ KeywordType(KeywordType ::= "nothing")  -> Type := Nothing;
 KeywordType(KeywordType ::= "bool")     -> Type := Boolean;
 KeywordType(KeywordType ::= "sym")      -> Type := Symbol;
 KeywordType(KeywordType ::= "int")      -> Type := Integer;
+KeywordType(KeywordType ::= "nat")      -> Type := Natural;
 KeywordType(KeywordType ::= "float")    -> Type := Float;
 KeywordType(KeywordType ::= "str")      -> Type := String;
 KeywordType(KeywordType ::= "anything") -> Type := Anything;

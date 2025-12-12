@@ -39,6 +39,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			[Keyword.FALSE,    TYPE.FALSE],
 			[Keyword.TRUE,     TYPE.TRUE],
 			[Keyword.INT,      TYPE.INT],
+			[Keyword.NAT,      TYPE.NAT],
 			[Keyword.FLOAT,    TYPE.FLOAT],
 			[Keyword.STR,      TYPE.STR],
 			[Keyword.ANYTHING, TYPE.ANYTHING],
@@ -63,10 +64,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
 				const children: readonly SyntaxNode[] = this.start_node.children;
 				switch (true) {
-					case isSyntaxNodeType(children[0], 'integer'): {
-						return valueOfTokenNumber(children[0].text).toType();
-					}
-					case isSyntaxNodeType(children[0], 'float'): {
+					case isSyntaxNodeType(children[0], /^(integer|natural|float)$/): {
 						return valueOfTokenNumber(children[0].text).toType();
 					}
 					case isSyntaxNodeType(children[0], 'string'): {

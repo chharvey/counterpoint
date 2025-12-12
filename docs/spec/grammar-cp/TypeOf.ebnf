@@ -3,7 +3,7 @@ Type! TypeOf(SemanticExpression expr) :=
 	2. *Let* `folded` be `ValueOf(expr)`.
 	3. *If* `folded` is an abrupt completion:
 		1. *Return:* `t`.
-	4. *If* `folded.value` is an instance of `Null`, `Boolean`, `Symbol`, `Integer`, `Float`, or `String`:
+	4. *If* `folded.value` is an instance of `Null`, `Boolean`, `Symbol`, `Integer`, `Natural`, `Float`, or `String`:
 		1. *Return:* `ToType(folded.value)`.
 	5. *Return:* `t`.
 ;
@@ -259,10 +259,9 @@ Type! TypeOf(SemanticClaim claim) :=
 	2. *Assert:* `claim.children.count` is 2.
 	3. *Let* `computed_type` be *Unwrap:* `TypeOf(claim.children.0)`.
 	4. *Let* `claimed_type` be *Unwrap:* `TypeValueOf(claim.children.1)`.
-	5. *Let* `intersection` be *UnwrapAffirm:* `Intersection(computed_type, claimed_type)`.
-	6. *If* *UnwrapAffirm:* `IsBottomType(intersection)` is `true` *and* *UnwrapAffirm:* `IsBottomType(computed_type)` is `false` *and* *UnwrapAffirm:* `IsBottomType(claimed_type)` is `false`:
+	5. *If* *UnwrapAffirm:* `AreDisjoint(computed_type, claimed_type)` is `true` *and* *UnwrapAffirm:* `IsBottomType(computed_type)` is `false` *and* *UnwrapAffirm:* `IsBottomType(claimed_type)` is `false`:
 		1. *Throw:* a new TypeErrorNotAssignable.
-	7. *Return:* `claimed_type`.
+	6. *Return:* `claimed_type`.
 ;
 
 
@@ -290,32 +289,37 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
 	5. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | FLOAT] expr) :=
+Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | NAT | FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true`:
 		1. *If* `operator` is `NEG`:
-			1. *Return:* `t0`.
+			1. *If* *UnwrapAffirm:* `AreDisjoint(t0, Natural)` is `true`:
+				1. *Return:* `t0`.
 		2. *Else If* `operator` is `INT`:
 			1. *Return:* `Integer`.
-		3. *Else If* `operator` is `FLOAT`:
+		3. *Else If* `operator` is `NAT`:
+			1. *Return:* `Natural`.
+		4. *Else If* `operator` is `FLOAT`:
 			1. *Return:* `Float`.
 	5. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD] expr) :=
+Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
+	5. *If* *UnwrapAffirm:* `Subtype(t0, Natural)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Natural)` is `true`:
+		1. *Return:* `Natural`.
+	6. *If* *UnwrapAffirm:* `Subtype(t0, Integer)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Integer)` is `true`:
 		1. *Return:* `Integer`.
-	6. *Else If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
+	7. *Else If* *UnwrapAffirm:* `Subtype(t0, Float)` is `true` *and* *UnwrapAffirm:* `Subtype(t1, Float)` is `true`:
 		1. *Return:* `Float`.
-	7. *Throw:* a new TypeErrorInvalidOperation.
+	8. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
 Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
@@ -339,10 +343,10 @@ Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true` *or* *UnwrapAffirm:* `IsBottomType(t1)` is `true`:
 		1. *Return:* `Nothing`.
-	5. *If* `t0` and `t1` are disjoint:
+	5. *If* *UnwrapAffirm:* `AreDisjoint(t0, t1)` is `true`:
 		1. *If* `operator` is `ID`:
 			1. *Return:* `ToType(false)`.
-		2. *If* `t0` and `Number` are disjoint *or* `t1` and `Number` are disjoint:
+		2. *If* *UnwrapAffirm:* `AreDisjoint(t0, Number)` is `true` *or* *UnwrapAffirm:* `AreDisjoint(t1, Number)` is `true`:
 			1. *Return:* `ToType(false)`.
 	6. *Return:* `Boolean`.
 ;

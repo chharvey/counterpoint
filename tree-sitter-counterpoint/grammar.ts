@@ -259,7 +259,8 @@ module.exports = grammar({
 			WORD_UNICODE,
 		)),
 
-		integer: _$ => token(rs(/[+-]?/, WHOLE_DIGITS)),
+		integer: _$ => token(rs(/-?/, WHOLE_DIGITS)),
+		natural: _$ => token(rs('+',  WHOLE_DIGITS)),
 
 		float: _$ => token(rs(
 			SIGNED_DIGIT_SEQ_DEC,
@@ -288,6 +289,7 @@ module.exports = grammar({
 			'bool',
 			'sym',
 			'int',
+			'nat',
 			'float',
 			'str',
 			'anything',
@@ -332,6 +334,7 @@ module.exports = grammar({
 
 		primitive_literal: $ => choice(
 			$.integer,
+			$.natural,
 			$.float,
 			$.string,
 			$.keyword_value,
@@ -355,7 +358,7 @@ module.exports = grammar({
 
 		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
 
-		property_accessor_type: $ => choice($.integer, $.word),
+		property_accessor_type: $ => choice($.integer, $.natural, $.word),
 
 		type_grouped:        $ => seq('(', $._type,                            ')'),
 		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
@@ -416,7 +419,7 @@ module.exports = grammar({
 		...parameterize('property', ({break: brk}) => $ => seq($.word,                                        '=',  call($, '_expression', 'block', {break: brk})), 'break'),
 		...parameterize('case',     ({break: brk}) => $ => seq(call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
 
-		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
+		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
 
 		...parameterize('expression_grouped', ({break: brk}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}),             ')'), 'break'),
 		...parameterize('tuple_literal',      ({break: brk}) => $ => seq('(', optional(                     call($, '_items',   {break: brk})                       ), ')'), 'break'),
@@ -446,8 +449,8 @@ module.exports = grammar({
 			seq('.',                     optional($.generic_arguments), call($, 'function_arguments', {break: brk})),
 		))), 'block', 'break'),
 
-		...parameterize('expression_unary_symbol',  ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_unary_keyword', ({block, break: brk}) => $ => prec( 9, seq(choice('int', 'float'),     call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_symbol',  ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'),    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_keyword', ({block, break: brk}) => $ => prec( 9, seq(choice('int', 'nat', 'float'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
 		...parameterize('expression_cast',           ({block, break: brk}) => $ => choice(prec.left (8, seq(call($, '_expression', {block}, {break: brk}), choice('as', 'as?', 'as!'),                            call($, '_expression', {block}, {break: brk}))), prec(8, seq(call($, '_expression', {block}, {break: brk}), 'as', '<', $._type, '>'))), 'block', 'break'),
 		...parameterize('expression_exponential',    ({block, break: brk}) => $ =>        prec.right(7, seq(call($, '_expression', {block}, {break: brk}), '^',                                                   call($, '_expression', {block}, {break: brk}))),                                                                                        'block', 'break'),
@@ -600,6 +603,7 @@ module.exports = grammar({
 			'bool',
 			'sym',
 			'int',
+			'nat',
 			'float',
 			'str',
 			'anything',

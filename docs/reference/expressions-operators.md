@@ -80,11 +80,15 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">4</th>
+			<th rowspan="3">4</th>
 			<td>Integer Conversion</td>
-			<td rowspan="2">unary prefix</td>
-			<td rowspan="2">right-to-left</td>
+			<td rowspan="3">unary prefix</td>
+			<td rowspan="3">right-to-left</td>
 			<td><code>int …</code></td>
+		</tr>
+		<tr>
+			<td>Natural Conversion</td>
+			<td><code>nat …</code></td>
 		</tr>
 		<tr>
 			<td>Float Conversion</td>
@@ -448,6 +452,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 | `false`        | `false`          | `true`          |
 |                |                  | all symbols     |
 |                | `0`              | all integers    |
+|                | `+0`             | all naturals    |
 |                | `0.0`, `-0.0`    | all floats      |
 |                | `""`             | all strings     |
 |                | `()`, `[]`, `{}` | all collections |
@@ -456,8 +461,8 @@ or if it’s an empty string or empty collection (such as an array or set).
 
 ### Mathematical Affirmation, Mathematical Negation
 ```
-`+` <int | float>
-`-` <int | float>
+`+` <Number>
+`-` <Number>
 ```
 The **mathematical affirmation** operator, `+`, and
 the **mathematical negation** operator, `-`,
@@ -482,35 +487,48 @@ let int_n = -\x200;
 
 Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**,
 even if they’re prefixed with a radix.
-For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`.
-The same is true for `+\x200`.
-Even though these tokens’ values are the same as the computed values of
-the expressions `-(\x200)` and `+(\x200)`,
-this is important to mention because it could affect how we write
+For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`,
+even though its value is equivalent to the result of the operation `-(\x200)`.
+The same is true for `+\x200`, but instead this is lexed as a natural number literal,
+which is a completely different type than the result of applying `+` to `\x200`.
+For that, we’d need to insert either parentheses or whitespace (`+(\x200)` or `+ \x200`).
+This is important to mention because it could also affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
 ### Numeric Conversions
 ```
 int   <Number>
+nat   <Number>
 float <Number>
 ```
-The keywords `int` and `float` can also be used as unary prefix operators.
+The keywords `int`, `nat`, and `float` can also be used as unary prefix operators.
 They convert their numeric operand into their respective type. If the operand is not numeric, a type error is raised.
-```
+```cpl
 let my_int: int   = 7;
+let my_nat: nat   = +4;
 let my_flt: float = -3.5;
 
 2 * int my_flt;     % converts -3.5 to -3; result is same as `2 * -3`
 float my_int / 3.5; % converts 7 to 7.0; result is same as `7.0 / 3.5`
+2 - int my_nat;     % converts +4 to 4; result is same as `2 - 4`
+nat my_flt;         % negative floats are converted to `+0`
 ```
-When converting floats to integers, the “round-toward-zero” (truncation) method is used.
-Both `-0.0` and `0.0` convert to `0`.
-If the floating-point number is greater than the maximal integer *2^63 &minus; 1*, the maximal integer is returned;
+When converting floats to integers/naturals, the “round-toward-zero” (truncation) method is used.
+Both `-0.0` and `0.0` convert to `0`/`+0`.
+When converting to integers, if the floating-point number is greater than the maximal integer *2^63 &minus; 1*, the maximal integer is returned;
 likewise for less than the minimal integer *&minus;2^63*.
+When converting to naturals, if the floating-point number is greater than the maximal natural *2^64 &minus; 1*, the maximal natural is returned;
+if the float is negative, the natural number `+0` is returned.
 For NaN and other unrepresentable values, an error is raised.
 
-When converting integers to floats, some precision will be lost for integers greater than *2^53*, as per the *IEEE 754* specification.
+When converting integers/naturals to floats, some precision will be lost for numbers greater than *2^53*
+and for numbers less than *&minus;2^53*, as per the *IEEE 754* specification.
+
+Integer conversion to and from natural numbers does not change bitwise representation, just reinterpretation.
+Any (signed) integer value between *-(2^63)* and *-1* is just added mathematically to *2^64* to get its (unsigned) natural interpretation
+(that is, underflow occurs).
+Conversely, natural numbers *2^63* or larger are reinterpreted as negative integers by subtracting *2^64* from their value (overflow occurs).
 
 
 ### Type Cast/Claim
@@ -624,11 +642,11 @@ so in those cases we may use type claims to write good code.
 
 ### Exponentiation
 ```
-<int | float> `^` <int | float>
+<Number> `^` <Number>
 ```
 The **exponentiation** operator is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 ```
 3 ^ 2;    %== 9
@@ -676,14 +694,14 @@ and then negate, the expression should be written `-(3 ^ 2)` or `-1 * 3 ^ 2`.
 
 ### Multiplicative
 ```
-<int | float> `*` <int | float>
-<int | float> `/` <int | float>
+<Number> `*` <Number>
+<Number> `/` <Number>
 ```
 The **multiplication** operator, `*`, and
 the **division** operator, `/`,
 are valid only on number types.
 They produce the respective mathematical product and quotient of the operands.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 Multiplication is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -694,25 +712,25 @@ for any numbers `‹a›`, `‹b›`, and `‹c›`:
 ```
 
 Multiplication and division perform the standard arithmetic operations,
-keeping in mind that the result of division `/` on integers are truncated,
+keeping in mind that the result of division `/` on integers or naturals is truncated,
 and division by `0` will result in an error.
-```
-\o12 / \q11; % produces `2`
-3 / 2;       % produces `1`, since 1.5 gets truncated
-4 / 0;       % runtime error
+```cpl
++\o12 / +\q11; % produces `+2`
+3 / 2;         % produces `1`, since 1.5 gets truncated
+4 / 0;         % runtime error
 ```
 
 
 ### Additive
 ```
-<int | float> `+` <int | float>
-<int | float> `-` <int | float>
+<Number> `+` <Number>
+<Number> `-` <Number>
 ```
 The **addition** operator, `+`, and
 the **subtraction** operator, `-`,
 are valid only on number types.
 They produce the respective mathematical sum and difference of the operands.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 Addition is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -725,6 +743,11 @@ for any numbers `‹a›`, `‹b›`, and `‹c›`:
 Addition and subtraction perform the standard arithmetic operations,
 keeping in mind that integer overflow is possible
 when going beyond the maximum/minimum integer values.
+Subtraction of naturals bounds to zero.
+```cpl
++\o12 - +\q11; % produces `+5`
++5 - +10;      % produces `+0`, since -5 gets bound from below
+```
 
 #### Parsing Additive Expressions
 [Previously in this chapter](#mathematical-affirmation-mathematical-negation)
@@ -741,7 +764,7 @@ since it thinks `+1` is a single token.
 This will lead the parser to fail, since a number token cannot follow another number token
 in the formal grammar.
 
-To fix the error, we must use whitespace indicate token boundaries.
+To fix the error, we can use whitespace indicate token boundaries.
 ```
 3 + 1
 ```
@@ -752,12 +775,12 @@ The parser receives these tokens and produces the correct expression.
 
 ### Comparative
 ```
-<int | float> `<`  <int | float>
-<int | float> `>`  <int | float>
-<int | float> `<=` <int | float>
-<int | float> `>=` <int | float>
-<int | float> `!<` <int | float>
-<int | float> `!>` <int | float>
+<Number> `<`  <Number>
+<Number> `>`  <Number>
+<Number> `<=` <Number>
+<Number> `>=` <Number>
+<Number> `!<` <Number>
+<Number> `!>` <Number>
 
 <Object> `is`  <Class>
 <Object> `!is` <Class>
@@ -772,13 +795,24 @@ The numerical comparative operators,
 - **not greater than** `!>`
 
 compare number types in the usual sense. The result is a boolean value.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices as well as different numeric types can be mixed.
 
 In numerical uses, `!<` is equivalent to `>=`, and `!>` is equivalent to `<=`.
 In general, however, this might not hold for future operator overloads.
 For instance, if the relational operators were overloaded to mean “subset” for sets,
 then `a !< b` (“`a` is not a strict subset of `b`”) does not necessarily mean
 that `a >= b` (“`a` is a superset of ”).
+
+When comparing mixed types in the numeric comparison operations,
+values are “promoted” to the type that encompasses the greater number of values.
+Specifically, when mixing `int` and `nat`, the `int` is converted to `nat`,
+and when mixing `int` and `float` or `nat` and `float`, the non-float value is converted to `float`.
+The order of promotion precedence:
+```
+int --> nat --> float
+```
+Conversions are made only for determining mathematical inequality; the value of the operand does not change.
+Note that conversions may be lossy; see [Numeric Conversions](#numeric-conversions) for details.
 
 The object comparative operators `is` and `!is` are not currently available,
 but they are reserved for future semantics.
@@ -809,9 +843,12 @@ Floating-point values and integer values are never identical, so the expression 
 
 The **equality** operator `==` determines whether two operands are considered “equal” by some definition,
 based on the type of the operands.
-For `null`, boolean, and string values, equality is one in the same with identity.
+For `null`, boolean, symbol, and string values, equality is one in the same with identity.
 For number values, equality is determined by mathematical quantity, thus `0.0 == -0.0` is `true`.
 Mixed number types of the same quantity are equal, so `42 == 42.0` is also `true`.
+Mixed-type values are converted to a common type using the “promotion” rules explained above.
+Conversions are made only for determining mathematical equality; the value of the operand does not change.
+Note that conversions may be lossy; see [Numeric Conversions](#numeric-conversions) for details.
 
 The non-identity operator `!==` is simply the logical negation of `===`, and
 the non-equality operator `!=` is simply the logical negation of `==`.
@@ -840,7 +877,7 @@ If it can’t, it’ll just return true instead of diving down an infinitely lon
 
 Of course, the identity operator (`===`) *always* compares reference objects by reference,
 but compound data values are still compared compositionally, and the same principle applies —
-assume equal until determined otherwise.
+assume identical until determined otherwise.
 
 
 ### Conjunctive

@@ -70,39 +70,53 @@ test.suite('ASTNodeOperation', () => {
 		vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.v128),
 		vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
 		vtoi: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], binaryen.v128),
+		vton: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], binaryen.v128),
 		vtof: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], binaryen.v128),
 
-		vexp: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp', [arg0, arg1], binaryen.v128),
-		vmul: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul', [arg0, arg1], binaryen.v128),
-		vdiv: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv', [arg0, arg1], binaryen.v128),
-		vadd: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd', [arg0, arg1], binaryen.v128),
-		vlt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',  [arg0, arg1], binaryen.v128),
-		vgt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',  [arg0, arg1], binaryen.v128),
-		vle:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',  [arg0, arg1], binaryen.v128),
-		vge:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',  [arg0, arg1], binaryen.v128),
-		vid:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',  [arg0, arg1], binaryen.v128),
-		veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
+		iexp:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iexp',   [arg0, arg1], binaryen.v128),
+		imul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('imul',   [arg0, arg1], binaryen.v128),
+		fmul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fmul',   [arg0, arg1], binaryen.v128),
+		idiv_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('idiv_s', [arg0, arg1], binaryen.v128),
+		idiv_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('idiv_u', [arg0, arg1], binaryen.v128),
+		fdiv:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fdiv',   [arg0, arg1], binaryen.v128),
+		iadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iadd',   [arg0, arg1], binaryen.v128),
+		fadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fadd',   [arg0, arg1], binaryen.v128),
+		isub_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub_s', [arg0, arg1], binaryen.v128),
+		isub_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub_u', [arg0, arg1], binaryen.v128),
+		fsub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fsub',   [arg0, arg1], binaryen.v128),
+		vlt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',    [arg0, arg1], binaryen.v128),
+		vgt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',    [arg0, arg1], binaryen.v128),
+		vle:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',    [arg0, arg1], binaryen.v128),
+		vge:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',    [arg0, arg1], binaryen.v128),
+		vid:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',    [arg0, arg1], binaryen.v128),
+		veq:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',    [arg0, arg1], binaryen.v128),
 	} as const;
 
 	/**
 	 * The type of a helper for creating outputs for short-circuited operations.
-	 * @param mod  the module to perform the operation
-	 * @param tee  parameters for teeing the first (left-hand) operand; either a 3-tuple:
-	 *             ```
-	 *             [
-	 *             	value, // the operand value
-	 *             	index, // the local index to tee the value (default `0`)
-	 *             	type,  // the value’s type (default `binaryen.v128`)
-	 *             ]
-	 *             ```
-	 *             or a plain value, which is converted to a tuple with the above defaults.
-	 * @param arg1 the second (right-hand) operand
-	 * @return     the new binaryen expression
+	 * @param mod   the module to perform the operation
+	 * @param tee   parameters for teeing the first (left-hand) operand; either a 3-tuple:
+	 *              ```
+	 *              [
+	 *              	value, // the operand value
+	 *              	index, // the local index to tee the value (default `0`)
+	 *              	type,  // the value’s type (default `binaryen.v128`)
+	 *              ]
+	 *              ```
+	 *              or a plain value, which is converted to a tuple with the above defaults.
+	 * @param arg1  the second (right-hand) operand
+	 * @param fnref the helper function to call
+	 * @return      the new binaryen expression
 	 */
-	type OperationHelper = (
-		mod: binaryen.Module,
-		tee: binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type],
-		arg1: binaryen.ExpressionRef,
+	type OperationHelper<FnRef extends boolean = false> = FnRef extends true ? (
+		mod:   binaryen.Module,
+		tee:   binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type],
+		arg1:  binaryen.ExpressionRef,
+		fnref: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+	) => binaryen.ExpressionRef : (
+		mod:   binaryen.Module,
+		tee:   binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type],
+		arg1:  binaryen.ExpressionRef,
 	) => binaryen.ExpressionRef;
 
 	function normalizeTee(tee: binaryen.ExpressionRef | [value: binaryen.ExpressionRef, index?: number, type?: binaryen.Type]): {readonly value: binaryen.ExpressionRef, readonly index: number, readonly type: binaryen.Type} {
@@ -114,7 +128,7 @@ test.suite('ASTNodeOperation', () => {
 	}
 
 	const BINOP = {
-		mul: ((mod, tee, op1) => {
+		mul: ((mod, tee, op1, fnref) => {
 			const {value, index, type} = normalizeTee(tee);
 
 			const local_tee: binaryen.ExpressionRef = mod.local.tee(index, value, type);
@@ -133,12 +147,12 @@ test.suite('ASTNodeOperation', () => {
 						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
 					),
 					op1,
-					CALL.vmul(mod, local_get, op1),
+					fnref.call(null, mod, local_get, op1),
 				),
 			);
-		}) as OperationHelper,
+		}) as OperationHelper<true>,
 
-		add: ((mod, tee, op1) => {
+		add: ((mod, tee, op1, fnref) => {
 			const {value, index, type} = normalizeTee(tee);
 
 			const local_tee: binaryen.ExpressionRef = mod.local.tee(index, value, type);
@@ -151,9 +165,9 @@ test.suite('ASTNodeOperation', () => {
 					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				op1,
-				CALL.vadd(mod, local_get, op1),
+				fnref.call(null, mod, local_get, op1),
 			);
-		}) as OperationHelper,
+		}) as OperationHelper<true>,
 
 		and: ((mod, tee, op1) => {
 			const {value, index, type} = normalizeTee(tee);
@@ -192,14 +206,14 @@ test.suite('ASTNodeOperation', () => {
 	test.suite('#build', () => {
 		test.test('compound expression.', () => {
 			buildOperations(new Map([
-				['42 ^ 2 * 420', (builder) => CALL.vmul(
+				['42 ^ 2 * 420', (builder) => CALL.imul(
 					builder.module,
-					CALL.vexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
+					CALL.iexp(builder.module, buildConst(builder, 42n), buildConst(builder, 2n)),
 					buildConst(builder, 420n),
 				)],
-				['2.1 * 3.1 + 5.1', (builder) => CALL.vadd(
+				['2.1 * 3.1 + 5.1', (builder) => CALL.fadd(
 					builder.module,
-					CALL.vmul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
+					CALL.fmul(builder.module, buildConst(builder, 2.1), buildConst(builder, 3.1)),
 					buildConst(builder, 5.1),
 				)],
 			]));
@@ -217,6 +231,7 @@ test.suite('ASTNodeOperation', () => {
 					mod.drop(mod.local.get(0, binaryen.v128)),
 					mod.local.get(1, binaryen.v128),
 				], binaryen.v128),
+				CALL.iadd,
 			));
 		});
 	});
@@ -254,6 +269,9 @@ test.suite('ASTNodeOperation', () => {
 						['?{42}',       VALUE.FALSE],
 						['?{41 -> 42}', VALUE.FALSE],
 					]));
+				});
+				test.test('[operator=NEG] throws for Natural number literals (foldable).', () => {
+					assert.throws(() => AST.ASTNodeOperation.fromSource('-+42').type(), TypeErrorInvalidOperation);
 				});
 			});
 
@@ -335,20 +353,39 @@ test.suite('ASTNodeOperation', () => {
 						}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(6), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 				});
+				test.test('[operator=NEG] throws for `nat` type.', () => {
+					const {stmts} = setupScript(`{
+						let var n: nat = +42;
+						-n;
+					}`, null, {typeCheck: false});
+					stmts[0].typeCheck(); // assert does not throw
+					assert.throws(() => ((stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).type(), TypeErrorInvalidOperation);
+				});
 			});
-			test.suite('[operator=INT | FLOAT]', () => {
+			test.suite('[operator=INT | NAT | FLOAT]', () => {
 				test.test('returns the respective type for numeric operands.', () => {
 					assert.deepStrictEqual(setupScript(`{
 						let var my_int: int   = 7;
+						let var my_nat: nat   = +42;
 						let var my_flt: float = -3.5;
 
 						int   my_int;
+						int   my_nat;
 						int   my_flt;
+						nat   my_int;
+						nat   my_nat;
+						nat   my_flt;
 						float my_int;
+						float my_nat;
 						float my_flt;
-					}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+					}`, CONFIG_FOLDING_OFF, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 						TYPE.INT,
 						TYPE.INT,
+						TYPE.INT,
+						TYPE.NAT,
+						TYPE.NAT,
+						TYPE.NAT,
+						TYPE.FLOAT,
 						TYPE.FLOAT,
 						TYPE.FLOAT,
 					]);
@@ -360,6 +397,11 @@ test.suite('ASTNodeOperation', () => {
 						int   "string"
 						int   ["string tuple"]
 						int   [record= "string"]
+						nat   null
+						nat   @symb
+						nat   "string"
+						nat   ["string tuple"]
+						nat   [record= "string"]
 						float null
 						float @symb
 						float "string"
@@ -418,24 +460,36 @@ test.suite('ASTNodeOperation', () => {
 					['?{41 -> 42}', VALUE.FALSE],
 				]));
 			});
-			test.test('[operator=INT | FLOAT]: returns a numeric conversion only if needed.', () => {
+			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion only if needed.', () => {
 				const exprs: readonly AST.ASTNodeOperationUnary[] = setupScript(`{
-					let my_int: int   = 7;
+					let my_int: int   = -7;
+					let my_nat: nat   = +42;
 					let my_flt: float = -3.5;
 
 					int   my_int;
+					int   my_nat;
 					int   my_flt;
+					nat   my_int;
+					nat   my_nat;
+					nat   my_flt;
 					float my_int;
+					float my_nat;
 					float my_flt;
-				}`, null, {build: false}).stmts.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
+				}`, null, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
 				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
 				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
 				assert.strictEqual(values[0], operands[0]);
-				assert.strictEqual(values[3], operands[3]);
+				assert.strictEqual(values[4], operands[4]);
+				assert.strictEqual(values[8], operands[8]);
 				return assert.deepStrictEqual(values, [
-					new VALUE.Integer(7n),
+					new VALUE.Integer(-7n),
+					new VALUE.Integer(42n),
 					new VALUE.Integer(-3n),
-					new VALUE.Float(7.0),
+					new VALUE.Natural(-7n),
+					new VALUE.Natural(42n),
+					new VALUE.Natural(0n),
+					new VALUE.Float(-7.0),
+					new VALUE.Float(42.0),
 					new VALUE.Float(-3.5),
 				]);
 			});
@@ -558,24 +612,35 @@ test.suite('ASTNodeOperation', () => {
 					].map((expected) => mod.drop(expected)),
 				);
 			});
-			test.test('[operator=INT | FLOAT]: returns a numeric conversion.', () => {
+			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var my_int: int   = 7;
+					let var my_int: int   = -7;
+					let var my_nat: nat   = +42;
 					let var my_flt: float = -3.5;
 
 					int   my_int;
+					int   my_nat;
 					int   my_flt;
+					nat   my_int;
+					nat   my_nat;
+					nat   my_flt;
 					float my_int;
+					float my_nat;
 					float my_flt;
 				}`);
-				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
+				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(3).map((stmt) => (
 					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
 				));
-				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
+				return assertEqualBins(stmts.slice(3).map((stmt) => stmt.build()), [
 					mod.drop(CALL.vtoi(mod, extracts[0])),
 					mod.drop(CALL.vtoi(mod, extracts[1])),
-					mod.drop(CALL.vtof(mod, extracts[2])),
-					mod.drop(CALL.vtof(mod, extracts[3])),
+					mod.drop(CALL.vtoi(mod, extracts[2])),
+					mod.drop(CALL.vton(mod, extracts[3])),
+					mod.drop(CALL.vton(mod, extracts[4])),
+					mod.drop(CALL.vton(mod, extracts[5])),
+					mod.drop(CALL.vtof(mod, extracts[6])),
+					mod.drop(CALL.vtof(mod, extracts[7])),
+					mod.drop(CALL.vtof(mod, extracts[8])),
 				]);
 			});
 		});
@@ -616,11 +681,11 @@ test.suite('ASTNodeOperation', () => {
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						BINOP.mul(mod, [extracts[0], 2], const_['2']),
-						BINOP.mul(mod, [extracts[1], 3], const_['2.4']),
+						BINOP.mul(mod, [extracts[0], 2], const_['2'],   CALL.imul),
+						BINOP.mul(mod, [extracts[1], 3], const_['2.4'], CALL.fmul),
 
-						BINOP.add(mod, [extracts[2], 4], const_['2']),
-						BINOP.add(mod, [extracts[3], 5], const_['2.4']),
+						BINOP.add(mod, [extracts[2], 4], const_['2'],   CALL.iadd),
+						BINOP.add(mod, [extracts[3], 5], const_['2.4'], CALL.fadd),
 
 						CALL.vlt(mod, extracts[4], const_['2']),
 						CALL.vlt(mod, extracts[5], const_['2.4']),
@@ -670,8 +735,8 @@ test.suite('ASTNodeOperation', () => {
 					'3.0': buildConst(goal.builder, 3.0),
 				} as const;
 				const inners: readonly binaryen.ExpressionRef[] = [
-					BINOP.add(mod, [extracts[0], 2], const_['2']),
-					CALL.vadd(mod, const_['2.0'],    extracts[1]),
+					BINOP.add(mod, [extracts[0], 2], const_['2'], CALL.iadd),
+					CALL.fadd(mod, const_['2.0'],    extracts[1]),
 				];
 				assertEqualBins(
 					stmts.slice(2).map((stmt) => (
@@ -682,8 +747,8 @@ test.suite('ASTNodeOperation', () => {
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
 					inners.map((inner, i) => mod.drop([
-						BINOP.add(mod, [inner, 3], const_['3']),
-						BINOP.add(mod, [inner, 4], const_['3.0']),
+						BINOP.add(mod, [inner, 3], const_['3'],   CALL.iadd),
+						BINOP.add(mod, [inner, 4], const_['3.0'], CALL.fadd),
 					][i])),
 				);
 			});
@@ -698,10 +763,18 @@ test.suite('ASTNodeOperation', () => {
 				test.test('returns a constant Integer type for any operation of integers.', () => {
 					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2').type(), typeUnit(7n * 3n * 2n));
 				});
+				test.test('returns a constant Natural type for any operation of naturals.', () => {
+					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+7 * +3 * +2').type(), typeUnit(7n * 3n * 2n, 'nat'));
+				});
 				test.test('returns a constant Float type for any operation of floats.', () => {
 					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7.1 * 3.1 * 2.1').type(), typeUnit(7.1 * 3.1 * 2.1));
 				});
-				test.test('throws for any operation of mix of integers and floats.', () => {
+				test.test('[operator=SUB] caps at `+0` for subtraction of naturals.', () => {
+					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').type(), typeUnit(0n, 'nat'));
+				});
+				test.test('throws for any operation of mix of numeric types.', () => {
+					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('+3 * 2')      .type(), TypeErrorInvalidOperation);
+					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('+3 * 2.7')    .type(), TypeErrorInvalidOperation);
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
 					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2') .type(), TypeErrorInvalidOperation);
 				});
@@ -713,6 +786,14 @@ test.suite('ASTNodeOperation', () => {
 					assertEqualTypes(
 						[node.operand0.type(), node.operand1.type()],
 						[TYPE.INT,             typeUnit(2n)],
+					);
+				});
+				test.test('returns Natural for natural arithmetic.', () => {
+					const node: AST.ASTNodeOperationBinaryArithmetic = AST.ASTNodeOperationBinaryArithmetic.fromSource('(+7 + +3) * +2', CONFIG_FOLDING_OFF);
+					assert.strictEqual(node.type(), TYPE.NAT);
+					assertEqualTypes(
+						[node.operand0.type(), node.operand1.type()],
+						[TYPE.NAT,             typeUnit(2n, 'nat')],
 					);
 				});
 				test.test('returns Float for float arithmetic.', () => {
@@ -744,7 +825,7 @@ test.suite('ASTNodeOperation', () => {
 
 		test.suite('#fold', () => {
 			test.test('computes the value of an integer operation of constants.', () => {
-				foldOperations(new Map([
+				foldOperations(new Map<string, VALUE.Value>([
 					['42 + 420',        new VALUE.Integer(42n + 420n)],
 					['42 - 420',        new VALUE.Integer(42n + -420n)],
 					[' 126 /  3',       new VALUE.Integer( 126n /  3n)],
@@ -756,6 +837,7 @@ test.suite('ASTNodeOperation', () => {
 					['-200 /  3',       new VALUE.Integer(-200n /  3n)],
 					['-200 / -3',       new VALUE.Integer(-200n / -3n)],
 					['-(5) ^ +(2 * 3)', new VALUE.Integer((-5n) ** (2n * 3n))],
+					['+5 ^ (+2 * +3)',  new VALUE.Natural(5n ** (2n * 3n))],
 				]));
 			});
 			test.test('overflows integers properly.', () => {
@@ -768,6 +850,15 @@ test.suite('ASTNodeOperation', () => {
 					new VALUE.Integer(2n ** 62n),
 					new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
 				]);
+			});
+			test.test('overflows naturals properly.', () => {
+				assert.deepStrictEqual(
+					AST.ASTNodeOperationBinaryArithmetic.fromSource('+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63').fold(),
+					new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n),
+				);
+			});
+			test.test('does not underflow naturals.', () => {
+				assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').fold(), VALUE.NAT_0);
 			});
 			test.test('computes the value of a float operation of constants.', () => {
 				foldOperations(new Map<string, VALUE.Value>([
@@ -809,19 +900,32 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#build', () => {
 			test.test('calls the correct WASM function.', () => {
 				buildOperations(new Map([
-					['42 + 420', (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
+					['42 + 420', (builder) => CALL.iadd(builder.module, buildConst(builder, 42n), buildConst(builder, 420n))],
 
-					[' 126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
-					['-126 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
-					[' 126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
-					['-126 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
-					[' 200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
-					[' 200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
-					['-200 /  3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
-					['-200 / -3', (builder) => CALL.vdiv(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
+					[' 126 /  3', (builder) => CALL.idiv_s(builder.module, buildConst(builder,  126n), buildConst(builder,  3n))],
+					['-126 /  3', (builder) => CALL.idiv_s(builder.module, buildConst(builder, -126n), buildConst(builder,  3n))],
+					[' 126 / -3', (builder) => CALL.idiv_s(builder.module, buildConst(builder,  126n), buildConst(builder, -3n))],
+					['-126 / -3', (builder) => CALL.idiv_s(builder.module, buildConst(builder, -126n), buildConst(builder, -3n))],
+					[' 200 /  3', (builder) => CALL.idiv_s(builder.module, buildConst(builder,  200n), buildConst(builder,  3n))],
+					[' 200 / -3', (builder) => CALL.idiv_s(builder.module, buildConst(builder,  200n), buildConst(builder, -3n))],
+					['-200 /  3', (builder) => CALL.idiv_s(builder.module, buildConst(builder, -200n), buildConst(builder,  3n))],
+					['-200 / -3', (builder) => CALL.idiv_s(builder.module, buildConst(builder, -200n), buildConst(builder, -3n))],
 
-					['42  - 420',  (builder) => CALL.vadd(builder.module, buildConst(builder, 42n), CALL.vneg(builder.module, buildConst(builder, 420n)))],
-					['4.2 - 42.0', (builder) => CALL.vadd(builder.module, buildConst(builder, 4.2), CALL.vneg(builder.module, buildConst(builder, 42.0)))],
+					['+126 / +3', (builder) => CALL.idiv_u(builder.module, buildConst(builder, 126n, 'nat'), buildConst(builder, 3n, 'nat'))],
+					['+200 / +3', (builder) => CALL.idiv_u(builder.module, buildConst(builder, 200n, 'nat'), buildConst(builder, 3n, 'nat'))],
+
+					[' 126.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder,  126.1), buildConst(builder,  3.1))],
+					['-126.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -126.1), buildConst(builder,  3.1))],
+					[' 126.1 / -3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder,  126.1), buildConst(builder, -3.1))],
+					['-126.1 / -3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -126.1), buildConst(builder, -3.1))],
+					[' 200.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder,  200.1), buildConst(builder,  3.1))],
+					[' 200.1 / -3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder,  200.1), buildConst(builder, -3.1))],
+					['-200.1 /  3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -200.1), buildConst(builder,  3.1))],
+					['-200.1 / -3.1', (builder) => CALL.fdiv(builder.module, buildConst(builder, -200.1), buildConst(builder, -3.1))],
+
+					['42  - 420',  (builder) => CALL.isub_s(builder.module, buildConst(builder, 42n),        buildConst(builder, 420n))],
+					['+42 - +420', (builder) => CALL.isub_u(builder.module, buildConst(builder, 42n, 'nat'), buildConst(builder, 420n, 'nat'))],
+					['4.2 - 42.0', (builder) => CALL.fsub  (builder.module, buildConst(builder, 4.2),        buildConst(builder, 42.0))],
 				]));
 			});
 			test.test('does not compile the first operand if it is foldable and an identity element.', () => {
@@ -903,10 +1007,22 @@ test.suite('ASTNodeOperation', () => {
 				['3   >  3',   VALUE.FALSE],
 				['3   <= 3',   VALUE.TRUE],
 				['3   >= 3',   VALUE.TRUE],
+				['+3  <  +3',  VALUE.FALSE],
+				['+3  >  +3',  VALUE.FALSE],
+				['+3  <= +3',  VALUE.TRUE],
+				['+3  >= +3',  VALUE.TRUE],
 				['5.2 <  7.0', VALUE.TRUE],
 				['5.2 >  7.0', VALUE.FALSE],
 				['5.2 <= 7.0', VALUE.TRUE],
 				['5.2 >= 7.0', VALUE.FALSE],
+				['5   <  +9',  VALUE.TRUE],
+				['5   >  +9',  VALUE.FALSE],
+				['5   <= +9',  VALUE.TRUE],
+				['5   >= +9',  VALUE.FALSE],
+				['+5  <  9',   VALUE.TRUE],
+				['+5  >  9',   VALUE.FALSE],
+				['+5  <= 9',   VALUE.TRUE],
+				['+5  >= 9',   VALUE.FALSE],
 				['5.2 <  9',   VALUE.TRUE],
 				['5.2 >  9',   VALUE.FALSE],
 				['5.2 <= 9',   VALUE.TRUE],
@@ -915,6 +1031,30 @@ test.suite('ASTNodeOperation', () => {
 				['5   >  9.2', VALUE.FALSE],
 				['5   <= 9.2', VALUE.TRUE],
 				['5   >= 9.2', VALUE.FALSE],
+				['5.2 <  +9',  VALUE.TRUE],
+				['5.2 >  +9',  VALUE.FALSE],
+				['5.2 <= +9',  VALUE.TRUE],
+				['5.2 >= +9',  VALUE.FALSE],
+				['+5  <  9.2', VALUE.TRUE],
+				['+5  >  9.2', VALUE.FALSE],
+				['+5  <= 9.2', VALUE.TRUE],
+				['+5  >= 9.2', VALUE.FALSE],
+				['+3  <  3',   VALUE.FALSE],
+				['+3  >  3',   VALUE.FALSE],
+				['+3  <= 3',   VALUE.TRUE],
+				['+3  >= 3',   VALUE.TRUE],
+				['3   <  +3',  VALUE.FALSE],
+				['3   >  +3',  VALUE.FALSE],
+				['3   <= +3',  VALUE.TRUE],
+				['3   >= +3',  VALUE.TRUE],
+				['3.0 <  +3',  VALUE.FALSE],
+				['3.0 >  +3',  VALUE.FALSE],
+				['3.0 <= +3',  VALUE.TRUE],
+				['3.0 >= +3',  VALUE.TRUE],
+				['+3  <  3.0', VALUE.FALSE],
+				['+3  >  3.0', VALUE.FALSE],
+				['+3  <= 3.0', VALUE.TRUE],
+				['+3  >= 3.0', VALUE.TRUE],
 				['3.0 <  3',   VALUE.FALSE],
 				['3.0 >  3',   VALUE.FALSE],
 				['3.0 <= 3',   VALUE.TRUE],
@@ -923,6 +1063,8 @@ test.suite('ASTNodeOperation', () => {
 				['3   >  3.0', VALUE.FALSE],
 				['3   <= 3.0', VALUE.TRUE],
 				['3   >= 3.0', VALUE.TRUE],
+
+				['-2 > (+2 ^ +64 - +3)', VALUE.TRUE],
 			]));
 		});
 
@@ -930,22 +1072,42 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#build', () => {
 			test.test('returns the correct operation.', () => {
 				buildOperations(new Map([
-					['3   <  3',   (builder) => CALL.vlt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
-					['3   >  3',   (builder) => CALL.vgt(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
-					['3   <= 3',   (builder) => CALL.vle(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
-					['3   >= 3',   (builder) => CALL.vge(builder.module, buildConst(builder, 3n),  buildConst(builder, 3n))],
-					['5   <  9.2', (builder) => CALL.vlt(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
-					['5   >  9.2', (builder) => CALL.vgt(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
-					['5   <= 9.2', (builder) => CALL.vle(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
-					['5   >= 9.2', (builder) => CALL.vge(builder.module, buildConst(builder, 5n),  buildConst(builder, 9.2))],
-					['5.2 <  3',   (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
-					['5.2 >  3',   (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
-					['5.2 <= 3',   (builder) => CALL.vle(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
-					['5.2 >= 3',   (builder) => CALL.vge(builder.module, buildConst(builder, 5.2), buildConst(builder, 3n))],
-					['5.2 <  9.2', (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
-					['5.2 >  9.2', (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
-					['5.2 <= 9.2', (builder) => CALL.vle(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
-					['5.2 >= 9.2', (builder) => CALL.vge(builder.module, buildConst(builder, 5.2), buildConst(builder, 9.2))],
+					['3   <  3',   (builder) => CALL.vlt(builder.module, buildConst(builder, 3n),        buildConst(builder, 3n))],
+					['3   >  3',   (builder) => CALL.vgt(builder.module, buildConst(builder, 3n),        buildConst(builder, 3n))],
+					['3   <= 3',   (builder) => CALL.vle(builder.module, buildConst(builder, 3n),        buildConst(builder, 3n))],
+					['3   >= 3',   (builder) => CALL.vge(builder.module, buildConst(builder, 3n),        buildConst(builder, 3n))],
+					['+3  <  +3',  (builder) => CALL.vlt(builder.module, buildConst(builder, 3n, 'nat'), buildConst(builder, 3n, 'nat'))],
+					['+3  >  +3',  (builder) => CALL.vgt(builder.module, buildConst(builder, 3n, 'nat'), buildConst(builder, 3n, 'nat'))],
+					['+3  <= +3',  (builder) => CALL.vle(builder.module, buildConst(builder, 3n, 'nat'), buildConst(builder, 3n, 'nat'))],
+					['+3  >= +3',  (builder) => CALL.vge(builder.module, buildConst(builder, 3n, 'nat'), buildConst(builder, 3n, 'nat'))],
+					['5.2 <  9.2', (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9.2))],
+					['5.2 >  9.2', (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9.2))],
+					['5.2 <= 9.2', (builder) => CALL.vle(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9.2))],
+					['5.2 >= 9.2', (builder) => CALL.vge(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9.2))],
+					['5   <  +9',  (builder) => CALL.vlt(builder.module, buildConst(builder, 5n),        buildConst(builder, 9n, 'nat'))],
+					['5   >  +9',  (builder) => CALL.vgt(builder.module, buildConst(builder, 5n),        buildConst(builder, 9n, 'nat'))],
+					['5   <= +9',  (builder) => CALL.vle(builder.module, buildConst(builder, 5n),        buildConst(builder, 9n, 'nat'))],
+					['5   >= +9',  (builder) => CALL.vge(builder.module, buildConst(builder, 5n),        buildConst(builder, 9n, 'nat'))],
+					['+5  <  9',   (builder) => CALL.vlt(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9n))],
+					['+5  >  9',   (builder) => CALL.vgt(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9n))],
+					['+5  <= 9',   (builder) => CALL.vle(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9n))],
+					['+5  >= 9',   (builder) => CALL.vge(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9n))],
+					['5   <  9.2', (builder) => CALL.vlt(builder.module, buildConst(builder, 5n),        buildConst(builder, 9.2))],
+					['5   >  9.2', (builder) => CALL.vgt(builder.module, buildConst(builder, 5n),        buildConst(builder, 9.2))],
+					['5   <= 9.2', (builder) => CALL.vle(builder.module, buildConst(builder, 5n),        buildConst(builder, 9.2))],
+					['5   >= 9.2', (builder) => CALL.vge(builder.module, buildConst(builder, 5n),        buildConst(builder, 9.2))],
+					['5.2 <  3',   (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2),       buildConst(builder, 3n))],
+					['5.2 >  3',   (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2),       buildConst(builder, 3n))],
+					['5.2 <= 3',   (builder) => CALL.vle(builder.module, buildConst(builder, 5.2),       buildConst(builder, 3n))],
+					['5.2 >= 3',   (builder) => CALL.vge(builder.module, buildConst(builder, 5.2),       buildConst(builder, 3n))],
+					['5.2 <  +9',  (builder) => CALL.vlt(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9n, 'nat'))],
+					['5.2 >  +9',  (builder) => CALL.vgt(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9n, 'nat'))],
+					['5.2 <= +9',  (builder) => CALL.vle(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9n, 'nat'))],
+					['5.2 >= +9',  (builder) => CALL.vge(builder.module, buildConst(builder, 5.2),       buildConst(builder, 9n, 'nat'))],
+					['+5  <  9.2', (builder) => CALL.vlt(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9.2))],
+					['+5  >  9.2', (builder) => CALL.vgt(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9.2))],
+					['+5  <= 9.2', (builder) => CALL.vle(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9.2))],
+					['+5  >= 9.2', (builder) => CALL.vge(builder.module, buildConst(builder, 5n, 'nat'), buildConst(builder, 9.2))],
 				]));
 			});
 		});
@@ -1221,10 +1383,10 @@ test.suite('ASTNodeOperation', () => {
 						['true === 1',   (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
 						['true === 1.0', (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 
-						['@a === null',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
-						['@a === false', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
-						['@a === 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: use \x100
-						['@a === @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
+						['@a === null',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
+						['@a === false',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
+						['@a === \\x100', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))],
+						['@a === @b',     (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x101)))],
 					]));
 				});
 				test.test('calls `vid` when operands are same numeric type.', () => {
@@ -1268,10 +1430,10 @@ test.suite('ASTNodeOperation', () => {
 						['true == 1',   (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1n))],
 						['true == 1.0', (builder) => drop_then_false(builder.module, buildConst(builder, true), buildConst(builder, 1.0))],
 
-						['@a == null',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
-						['@a == false', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
-						['@a == 256',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))], // TODO: use \x100
-						['@a == @b',    (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x101n))],
+						['@a == null',   (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder))],
+						['@a == false',  (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, false))],
+						['@a == \\x100', (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, 0x100n))],
+						['@a == @b',     (builder) => drop_then_false(builder.module, buildConst(builder, Symbol(0x100)), buildConst(builder, Symbol(0x101)))],
 					]));
 				});
 				test.test('calls `veq` when operands are same numeric type or when int coercion is allowed.', () => {

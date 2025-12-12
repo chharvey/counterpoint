@@ -124,11 +124,11 @@ SemanticClaim
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-SemanticOperation[operator: NEG | INT | FLOAT]
+SemanticOperation[operator: NEG | INT | NAT | FLOAT]
 	::= SemanticExpression[type: Number];
 SemanticOperation[operator: CAST | MAYBE | RESULT | IS]
 	::= SemanticExpression SemanticExpression[type: Class];
-SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
+SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
 SemanticOperation[operator: ID | EQ | AND | OR]
 	::= SemanticExpression SemanticExpression;

@@ -211,20 +211,27 @@ export function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
 }
 
+export function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
+}
+
 export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
 }
 
 export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
-	return t0.isSubtypeOf(NUMBER) && t1.isSubtypeOf(NUMBER);
+	return t0.isSubtypeOf(TYPE.NUMBER) && t1.isSubtypeOf(TYPE.NUMBER);
 }
 
 
 
-export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Float {
-	const cooked: bigint | number = Validator.cookTokenNumber(source);
-	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
+export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Natural | VALUE.Float {
+	const {type: typ, value: cooked} = Validator.cookTokenNumber(source);
+	switch (typ) {
+		case 'int':   return new VALUE.Integer(cooked);
+		case 'nat':   return new VALUE.Natural(cooked);
+		case 'float': return new VALUE.Float(cooked);
+	}
 }
 
 
@@ -306,9 +313,10 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 					return {type: TYPE.NULL, optional: true};
 				}
 				case base_type instanceof TYPE.List: {
-					return accessor_type.isSubtypeOf(TYPE.INT)
+					const INTEGRAL: TYPE.Type = TYPE.INT.union(TYPE.NAT);
+					return accessor_type.isSubtypeOf(INTEGRAL)
 						? {type: base_type.typearg, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, TYPE.INT);
+						: throwWrongSubtypeError(access.accessor, INTEGRAL);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)

@@ -169,13 +169,31 @@ The numeric separator cannot appear at the beginning or end of an integer,
 nor can it appear consecutively.
 
 Integers can be added, subtracted, and multiplied like normal numbers.
-However, when dividing integers, if getting a non-integer value, we will truncate the decimal
+However, when dividing integers, if getting a non-integer value, the fractional part is truncated
 (round towards zero). Dividing by zero is an error.
 In all operations on integers, bases can be mixed.
 ```
 3 / 2;        %== 1
 -3 / 2;       %== -1
 \b110 * \q12; %== 36
+```
+
+
+### `nat`
+Type `nat` contains whole numbers and zero.
+
+Naturals are written as a series of digits following a `+` sign, such as `+0123`.
+As with the Integers, Naturals may also be written in six other bases:
+2, 4, 6, 8, 16, and 36, and may contain underscores usd as separators.
+
+Naturals can be added and multiplied like normal numbers.
+Division of naturals behaves the same way as with Integers, rounding towards zero. Dividing by zero is an error.
+When subtracting naturals, if getting a negative value, the result is always zero.
+In all operations on naturals, bases can be mixed.
+```cpl
++3 / +2;        %== +1
++5 - +8;        %== +0
++\b110 * +\q12; %== +36
 ```
 
 
@@ -548,14 +566,14 @@ let GREETING: """Hello World!""" = "Hello World!"; %> ParseError
 ## Compound Types
 Compound types are composed of other types.
 
-Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
------------------- | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
-[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
-[Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `[str]`                              | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
-[Dict](#dicts)     | Variable | symbols       | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
-[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `{str}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
-[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
+Type               | Size     | Indices/Keys        | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
+------------------ | -------- | ------------        | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
+[Tuple](#tuples)   | Fixed    | integers & naturals | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
+[Record](#records) | Fixed    | symbols             | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
+[List](#lists)     | Variable | integers & naturals | `List.<str>`        | `[str]`                              | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
+[Dict](#dicts)     | Variable | symbols             | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Set](#sets)       | Variable | *(none)*            | `Set.<str>`         | `{str}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
+[Map](#maps)       | Variable | objects             | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
 
 ### Tuples
@@ -608,7 +626,7 @@ elements.1; %== "wind"
 elements.2; %== "fire"
 ```
 
-Since tuples have integer indices, we can use other bases:
+Since tuples have integral indices, we can use other bases:
 ```
 elements.\b01; %== "wind"
 elements.\b10; %== "fire"
@@ -619,6 +637,12 @@ Index `-1` represents the last item, index `-2` represents the penultimate item,
 ```
 elements.-1;    %== "fire"
 elements.-\b10; %== "wind"
+```
+
+We can also access by natural number index.
+```cpl
+elements.+\b01; %== "wind"
+elements.+\b10; %== "fire"
 ```
 
 Tuple size is known at compile-time,
@@ -837,11 +861,11 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 
 #### List Access
 List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
-The bracketed expression must be an Integer value (of type `int`).
+The bracketed expression must be an Integer or Natural value (of type `int` or `nat`).
 ```
 let elements: [str] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"
-elements.[3 - 2];   %== "wind"
+elements.[+3 - +2]; %== "wind"
 elements.[-3 + 2];  %== "fire"
 elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```
