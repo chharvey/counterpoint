@@ -184,7 +184,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
+					}`, {build: false}).goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -207,7 +207,7 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				setupScript(`{
 					let the_answer: nat = +42;
-				}`, null, {build: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 				const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  int | float =  21  *  2;
 				`);
@@ -224,13 +224,13 @@ test.suite('ASTNodeDeclaration', () => {
 					setupScript(`{
 						type Name = str;
 						${ stmt }
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 			});
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					let var the_answer?: int | float;
-				}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
+				}`, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
 					isUnfixed:       true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
@@ -252,7 +252,7 @@ test.suite('ASTNodeDeclaration', () => {
 					let immut:  (int, int, int)                   = (42, 420, 4200);
 					let 'mut':  mut [int]                         = [42, 420, 4200];
 					let mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
-				}`, null, {build: false});
+				}`, {build: false});
 				const [immut, mut, mutmut] = [
 					goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
 					goal.block!.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
@@ -602,7 +602,7 @@ test.suite('ASTNodeDeclaration', () => {
 					let var tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));
 					let var rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));
 				`, (src) => {
-					const {goal} = setupScript(`{ ${ src } }`, null, {build: false});
+					const {goal} = setupScript(`{ ${ src } }`, {build: false});
 					return assert.throws(() => goal.build(), /not yet supported/);
 				});
 			});

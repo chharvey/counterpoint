@@ -188,7 +188,7 @@ test.suite('ASTNodeStatement', () => {
 						setupScript(`{
 							let var x: int | float = 4.2;
 							${ stmt }
-						}`, null, {build: false}); // assert does not throw
+						}`, {build: false}); // assert does not throw
 					});
 				});
 				test.test('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
@@ -211,7 +211,7 @@ test.suite('ASTNodeStatement', () => {
 						let x: int | float = 42;
 						claim x: anything; % supertype
 					}`], (src) => {
-						const {stmts} = setupScript(src, null, {typeCheck: false});
+						const {stmts} = setupScript(src, {typeCheck: false});
 						stmts[0].typeCheck(); // assert does not throw
 						return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
 					});
@@ -222,7 +222,7 @@ test.suite('ASTNodeStatement', () => {
 						x;            % type \`int | float\`
 						claim x: int;
 						x;            % type \`int\`
-					}`, null, {build: false});
+					}`, {build: false});
 					return assert.deepStrictEqual(
 						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
@@ -233,21 +233,21 @@ test.suite('ASTNodeStatement', () => {
 						let var x: bool | null = false;
 						set x = true;
 						claim x: null;
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('allows reassigning correct type after claim.', () => {
 					setupScript(`{
 						let var x: bool | null = false;
 						claim x: bool;
 						set x = true;
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('disallows reassigning incorrect type after claim.', () => {
 					const {stmts} = setupScript(`{
 						let var x: bool | null = false;
 						claim x: bool;
 						set x = null;
-					}`, null, {typeCheck: false});
+					}`, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
 					stmts[1].typeCheck(); // assert does not throw
 					return assert.throws(() => stmts[2].typeCheck(), TypeErrorNotAssignable);
@@ -277,7 +277,7 @@ test.suite('ASTNodeStatement', () => {
 						claim map.["e"]:   float;
 						claim map.["tau"]: float;
 						%%
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
@@ -288,7 +288,7 @@ test.suite('ASTNodeStatement', () => {
 						claim record.tuple.0: int;
 						record.value;               % type \`null\`
 						record.tuple.0;             % type \`int\`
-					}`, null, {build: false});
+					}`, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
 					return assert.deepStrictEqual(
 						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
@@ -306,8 +306,8 @@ test.suite('ASTNodeStatement', () => {
 						set list.[0] = 1.618;
 						claim list.[0]: int;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, null, {build: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, null, {build: false}), /not yet supported/);
+						i === 0 && setupScript(src, {build: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
 					});
 				});
 				test.test('allows mutating correct type after claim.', () => {
@@ -321,8 +321,8 @@ test.suite('ASTNodeStatement', () => {
 						claim list.[0]: float;
 						set list.[0] = 1.618;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, null, {build: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, null, {build: false}), /not yet supported/);
+						i === 0 && setupScript(src, {build: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
 					});
 				});
 				test.test('disallows mutating incorrect type after claim.', () => {
@@ -336,7 +336,7 @@ test.suite('ASTNodeStatement', () => {
 						claim list.[0]: float;
 						set list.[0] = 42;
 					}`], (src, i) => {
-						const {stmts} = setupScript(src, null, {typeCheck: false});
+						const {stmts} = setupScript(src, {typeCheck: false});
 						if (i === 0) {
 							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
 							return assert.throws(() => stmts.at(-1)!.typeCheck(), (err) => {
@@ -373,7 +373,7 @@ test.suite('ASTNodeStatement', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						let var x?: int;
 						set x = 42;
-					}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
+					}`, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
 						isUnfixed:       true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -400,7 +400,7 @@ test.suite('ASTNodeStatement', () => {
 						set Dict.<int>((i= 42)).[@i]              = 42;
 						set Set.<int>((42,)).[43]                 = false;
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('throws when property assignee type is not supertype.', () => {
 					[
@@ -492,7 +492,7 @@ test.suite('ASTNodeStatement', () => {
 						${ decl }
 						while ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
 						until ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -501,7 +501,7 @@ test.suite('ASTNodeStatement', () => {
 						${ decl }
 						while cond do { "consequent"; };
 						until cond do { "consequent"; };
-					}`, null, {typeCheck: false});
+					}`, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
 					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
@@ -519,7 +519,7 @@ test.suite('ASTNodeStatement', () => {
 						for it: ${ vartype } in ["hello", "world"] do {
 							let greeting: ${ vartype } = it;
 						};
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 			});
 			test.test('throws when iterable is not subtype of List.', () => {
@@ -535,7 +535,7 @@ test.suite('ASTNodeStatement', () => {
 						for it: str in ${ collection } do {
 							;
 						};
-					}`, null, {typeCheck: false});
+					}`, {typeCheck: false});
 					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotAssignable);
 				});
 			});
@@ -553,7 +553,7 @@ test.suite('ASTNodeStatement', () => {
 						for it: ${ vartype } in ["hello", "world"] do {
 							;
 						};
-					}`, null, {typeCheck: false});
+					}`, {typeCheck: false});
 					return assert.throws(() => stmts[0].typeCheck(), TypeErrorNotNarrow);
 				});
 			});
@@ -562,7 +562,7 @@ test.suite('ASTNodeStatement', () => {
 					for it: str in ["hello", "world"] do {
 						42 + it; %> TypeErrorInvalidOperation
 					};
-				}`, null, {typeCheck: false});
+				}`, {typeCheck: false});
 				assert.throws(() => (stmts[0] as AST.ASTNodeStatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
 				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
 			});
@@ -772,7 +772,7 @@ test.suite('ASTNodeStatement', () => {
 					for it: int in [10, 20, 30, 40] do {
 						set i = it;
 					};
-				}`, null, {build: false});
+				}`, {build: false});
 				stmts[0].build(); // assert does not throw
 				return assert.throws(() => stmts[1].build(), /not yet supported/);
 			});
@@ -822,7 +822,7 @@ test.suite('ASTNodeStatement', () => {
 						break;
 						skip;
 					};
-				}`, null, {build: false}).stmts[0] as AST.ASTNodeStatementLoop).block;
+				}`, {build: false}).stmts[0] as AST.ASTNodeStatementLoop).block;
 				assert.throws(() => while_block.children[0].build(), /Expected builder to store/);
 				assert.throws(() => while_block.children[1].build(), /Expected builder to store/);
 			});

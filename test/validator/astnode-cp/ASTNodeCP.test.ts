@@ -88,7 +88,7 @@ test.suite('ASTNodeCP', () => {
 						${ decl }
 						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
 						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -97,7 +97,7 @@ test.suite('ASTNodeCP', () => {
 						${ decl }
 						if     cond then { "consequent"; } else { "alternative"; };
 						unless cond then { "consequent"; };
-					}`, null, {typeCheck: false});
+					}`, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
 					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
@@ -368,7 +368,7 @@ test.suite('ASTNodeCP', () => {
 						x;
 					}`,
 				], (src) => {
-					const {goal, mod} = setupScript(src, null, {build: false});
+					const {goal, mod} = setupScript(src, {build: false});
 					return assertEqualBins(goal.build(), mod.nop());
 				});
 

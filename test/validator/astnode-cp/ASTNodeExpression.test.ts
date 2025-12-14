@@ -200,7 +200,7 @@ test.suite('ASTNodeExpression', () => {
 					let var x?: int;
 					w;
 					x;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok( (stmts[0] as AST.ASTNodeDeclarationVariable).assigned);
 				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).assigned);
 				return assertEqualTypes(
@@ -219,7 +219,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					let x: int = 21 * 2;
 					x;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok(!(stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -230,7 +230,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					let var x: int = 21 * 2;
 					x;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -241,7 +241,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					let fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).typenode.eval().hasMutable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -256,7 +256,7 @@ test.suite('ASTNodeExpression', () => {
 					let z: mut {int} = {11, 22, 33};
 					let w: bool = z.[22];
 					w;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.ok(!(stmts[4] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
@@ -323,7 +323,7 @@ test.suite('ASTNodeExpression', () => {
 				(setupScript(`{
 					let var x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
-				}`, null, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
+				}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
 			];
 		}
 		test.suite('#type', () => {
@@ -458,7 +458,7 @@ test.suite('ASTNodeExpression', () => {
 				setupScript(`{
 					(   1,    [2.2],    "three");
 					(a= 1, b= [2.2], c= "three");
-				}`, null, {build: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 		});
 
@@ -537,7 +537,7 @@ test.suite('ASTNodeExpression', () => {
 						21 + 21   -> 2.0,
 						3.0 * 1.0 -> z,
 					};
-				}`, null, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
+				}`, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
 			});
 		});
 
@@ -994,7 +994,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {typeCheck: false});
+				}`, {typeCheck: false});
 				assert.throws(() => goal.typeCheck(), /The last statement of a block-expression must be an expression-statement/);
 			});
 			test.test('throws when the determinant is empty.', () => {
@@ -1007,7 +1007,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {typeCheck: false});
+				}`, {typeCheck: false});
 				assert.throws(() => goal.typeCheck(), /The determining expression-statement of a block-expression must be nonempty/);
 			});
 			test.test('returns the type of the determinant.', () => {
@@ -1020,7 +1020,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {build: false});
+				}`, {build: false});
 				assertEqualTypes((stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.type(), TYPE.INT);
 			});
 		});
@@ -1037,7 +1037,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {build: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
+				}`, {build: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
 			});
 			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
@@ -1052,7 +1052,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {build: false});
+				}`, {build: false});
 				const block_expression = (stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock;
 				assert.strictEqual(
 					block_expression.fold(),
@@ -1068,7 +1068,7 @@ test.suite('ASTNodeExpression', () => {
 					(setupScript(`{
 						let x: int = 42 - { 42; 69; };
 						x;
-					}`, null, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new VALUE.Integer(42n - 69n),
 				);
 			});
