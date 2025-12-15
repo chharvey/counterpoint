@@ -20,10 +20,8 @@ import {
 	assertAssignable,
 } from '../../assert-helpers.ts';
 import {
-	CONFIG_FOLDING_OFF,
 	setupScript,
 	typeUnit,
-	buildConst,
 	singletonTuple,
 } from '../../helpers.ts';
 import {
@@ -979,54 +977,52 @@ test.suite('ASTNodeAccess', () => {
 		const bintype6: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
 
 		test.test('tuple access.', () => {
-			const BASE_SRC = '((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)))';
-
 			function make_tuple(builder: Builder): binaryen.ExpressionRef {
 				const inner01: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 2.2),
-					buildConst(builder, 3.3),
+					builder.module.local.get(1, binaryen.v128),
+					builder.module.local.get(2, binaryen.v128),
 				]);
 				const inner11: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 5.5),
-					buildConst(builder, 6.6),
+					builder.module.local.get(4, binaryen.v128),
+					builder.module.local.get(5, binaryen.v128),
 				]);
 				const inner0: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 1.1),
-					builder.module.tuple.extract(builder.module.local.tee(0, inner01, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(0, bintype2), 1),
+					builder.module.local.get(0, binaryen.v128),
+					builder.module.tuple.extract(builder.module.local.tee(6, inner01, bintype2), 0),
+					builder.module.tuple.extract(builder.module.local.get(6, bintype2), 1),
 				]);
 				const inner1: binaryen.ExpressionRef = builder.module.tuple.make([
-					builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 4.4)), 0),
-					builder.module.tuple.extract(builder.module.local.tee(2, inner11, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(2, bintype2), 1),
+					builder.module.tuple.extract(singletonTuple(builder, builder.module.local.get(3, binaryen.v128)), 0),
+					builder.module.tuple.extract(builder.module.local.tee(8, inner11, bintype2), 0),
+					builder.module.tuple.extract(builder.module.local.get(8, bintype2), 1),
 				]);
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(1, inner0, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 2),
-					builder.module.tuple.extract(builder.module.local.tee(3, inner1, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(7, inner0, bintype3), 0),
+					builder.module.tuple.extract(builder.module.local.get(7, bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(7, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(9, inner1, bintype3), 0),
+					builder.module.tuple.extract(builder.module.local.get(9, bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(9, bintype3), 2),
 				]);
 			}
 			function make_tuple_0(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 0),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 1),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 2),
+					builder.module.tuple.extract(builder.module.local.tee(10, make_tuple(builder), bintype6), 0),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 1),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 2),
 				]);
 			}
 			function make_tuple_1(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 3),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 4),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 5),
+					builder.module.tuple.extract(builder.module.local.tee(10, make_tuple(builder), bintype6), 3),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 4),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 5),
 				]);
 			}
 			function make_tuple_0_1(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_0(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(11, make_tuple_0(builder), bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(11, bintype3), 2),
 				]);
 			}
 			function make_tuple_1_0(builder: Builder): binaryen.ExpressionRef {
@@ -1034,8 +1030,8 @@ test.suite('ASTNodeAccess', () => {
 			}
 			function make_tuple_1_1(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_1(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(11, make_tuple_1(builder), bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(11, bintype3), 2),
 				]);
 			}
 
@@ -1052,7 +1048,16 @@ test.suite('ASTNodeAccess', () => {
 				['.1.1.0', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 0)],
 				['.1.1.1', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 1)],
 			]), (expected_fn, access_src) => {
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`${ BASE_SRC }${ access_src }`, CONFIG_FOLDING_OFF);
+				const {stmts} = setupScript(`{
+					let var a: float = 1.1;
+					let var b: float = 2.2;
+					let var c: float = 3.3;
+					let var d: float = 4.4;
+					let var e: float = 5.5;
+					let var f: float = 6.6;
+					((a, (b, c)), ((d,), (e, f)))${ access_src };
+				}`);
+				const access = (stmts[6] as AST.ASTNodeStatementExpression).expr! as AST.ASTNodeAccess;
 				return assertEqualBins(
 					access.build(),
 					expected_fn.call(null, access.builder),
@@ -1062,7 +1067,7 @@ test.suite('ASTNodeAccess', () => {
 
 		test.test('accessing tuple pointers.', () => {
 			const {goal, stmts, mod} = setupScript(`{
-				let tuple: ((float, (float, float)), ((float,), (float, float))) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
+				let var tuple: ((float, (float, float)), ((float,), (float, float))) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
 				tuple.0;
 				tuple.1;
 				tuple.0.0;
@@ -1074,7 +1079,7 @@ test.suite('ASTNodeAccess', () => {
 				tuple.1.0.0;
 				tuple.1.1.0;
 				tuple.1.1.1;
-			}`, CONFIG_FOLDING_OFF);
+			}`);
 			let tee_idx: number = 5;
 			const inner0: binaryen.ExpressionRef = mod.tuple.make([
 				mod.tuple.extract(mod.local.get(4, bintype6), 0),

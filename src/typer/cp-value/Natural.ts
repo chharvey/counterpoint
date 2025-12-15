@@ -63,7 +63,7 @@ export class Natural extends ValueNumber<Natural> {
 			return false;
 		}
 		if (value instanceof Integer) {
-			return this.data === value.toBigInt();
+			return this.data === value.toNat().data;
 		}
 		return this.toFloat().equal(value);
 	}

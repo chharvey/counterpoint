@@ -28,7 +28,7 @@ export function buildDeco(
 ): typeof method {
 	assert_context_name(context, 'build');
 	return function (this: ASTNodeExpression) {
-		return (this.validator.config.compilerOptions.constantFolding ? this.fold() : null)?.build(this.builder) ?? method.call(this);
+		return this.fold()?.build(this.builder) ?? method.call(this);
 	};
 }
 
@@ -48,21 +48,19 @@ export function typeDeco(
 	assert_context_name(context, 'type');
 	return function (this: ASTNodeExpression) {
 		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
-		if (this.validator.config.compilerOptions.constantFolding) {
-			let value: VALUE.Value | null = null;
-			try {
-				value = this.fold();
-			} catch (err) {
-				if (err instanceof ErrorCode) {
-					// ignore evaluation errors such as VoidError, NanError, etc.
-					return TYPE.NOTHING;
-				} else {
-					throw err;
-				}
+		let value: VALUE.Value | null = null;
+		try {
+			value = this.fold();
+		} catch (err) {
+			if (err instanceof ErrorCode) {
+				// ignore evaluation errors such as VoidError, NanError, etc.
+				return TYPE.NOTHING;
+			} else {
+				throw err;
 			}
-			if (!!value && value instanceof VALUE.Primitive) {
-				return value.toType();
-			}
+		}
+		if (!!value && value instanceof VALUE.Primitive) {
+			return value.toType();
 		}
 		return type;
 	};
@@ -119,7 +117,6 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.
-	 * If {@link CPConfig|constant folding} is off, this should not be called.
 	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
 	 */
 	public abstract fold(): VALUE.Value | null;

@@ -1,8 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	type CPConfig,
-	CONFIG_DEFAULT,
 	AST,
 	VALUE,
 	type TYPE,
@@ -13,16 +11,6 @@ import {
 
 const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
 const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
-
-
-
-export const CONFIG_FOLDING_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-	},
-};
 
 
 
@@ -39,14 +27,13 @@ export const CONFIG_FOLDING_OFF: CPConfig = {
  */
 export function setupScript(
 	source: string,
-	config: CPConfig | null = CONFIG_DEFAULT,
 	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean} = {},
 ): {
 	goal:  AST.ASTNodeGoal,
 	stmts: NonNullable<typeof goal.block>['children'],
 	mod:   typeof goal.builder.module,
 } {
-	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source, config ?? CONFIG_DEFAULT);
+	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
 	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;

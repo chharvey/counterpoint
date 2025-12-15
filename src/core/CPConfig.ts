@@ -11,15 +11,9 @@ export type CPConfig = {
 	 * Disabling features can improve compiler speed.
 	 */
 	readonly languageFeatures: {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
+
 	/**
 	 * Options for the compiler.
 	 */
-	readonly compilerOptions: {
-		/**
-		 * Compute constant expressions at compile-time.
-		 * @version v0.1.0
-		 * @default true
-		 */
-		readonly constantFolding: boolean,
-	},
+	readonly compilerOptions: {}, // eslint-disable-line @typescript-eslint/no-empty-object-type
 };

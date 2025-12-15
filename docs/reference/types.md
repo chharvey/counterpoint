@@ -520,7 +520,7 @@ set CAR_WHEELS = CAT_FEET;
 ```
 
 The assigned value doesn’t need to be a literal; it may be an expression,
-as long as it’s computable by the compiler’s [constant folding](./configuration.md#constantFolding) mechanism.
+as long as it’s computable by the compiler’s constant folding mechanism.
 ```
 let TAU: true = !false;
 let CAR_WHEELS: \b100 = \o10 / 2;

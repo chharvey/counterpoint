@@ -13,10 +13,7 @@ import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeGoal} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import {
-	if_constant_folding,
-	type Foldable,
-} from './Foldable.ts';
+import type {Foldable} from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
 import type {ASTNodeExpressionBlock} from './ASTNodeExpressionBlock.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
@@ -57,7 +54,6 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 
 	/** @implements Foldable */
 	@memoizeGetter
-	@if_constant_folding
 	public get isFoldable(): boolean {
 		return this.children.every((stmt) => stmt.isFoldable);
 	}

@@ -68,51 +68,57 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		}
 		// if operand0 is not foldable, try short-circuiting at runtime
 		if (!v0) {
-			const local0: Local = this.builder.addLocal(arg0);
-			const teeer         = new BinVect(mod, local0.tee());
-			const getter        = new BinVect(mod, local0.get());
-			if (this.operator === Operator.MUL) {
-				// if arg0 is mathematically 0, return it
-				return mod.if(
-					mod.i32.or(
-						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
-						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-					),
-					local0.get(),
-					// else if arg0 is mathematically 1, return arg1
-					mod.if(
+			switch (this.operator) {
+				case Operator.MUL: {
+					const local0: Local = this.builder.addLocal(arg0);
+					const teeer         = new BinVect(mod, local0.tee());
+					const getter        = new BinVect(mod, local0.get());
+					// if arg0 is mathematically 0, return it
+					return mod.if(
 						mod.i32.or(
-							mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
-							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
+							mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+						),
+						local0.get(),
+						// else if arg0 is mathematically 1, return arg1
+						mod.if(
+							mod.i32.or(
+								mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
+								mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
+							),
+							arg1,
+							// else return a wasm call
+							mod.call(
+								bothInts(t0, t1) || bothNats(t0, t1) ? 'imul' : (assert.ok(bothFloats(t0, t1)), 'fmul'),
+								[local0.get(), arg1],
+								binaryen.v128,
+							),
+						),
+					);
+				}
+				case Operator.ADD: {
+					const local0: Local = this.builder.addLocal(arg0);
+					const teeer         = new BinVect(mod, local0.tee());
+					const getter        = new BinVect(mod, local0.get());
+					// if arg0 is mathematically 0, return arg1
+					return mod.if(
+						mod.i32.or(
+							mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
 						),
 						arg1,
 						// else return a wasm call
 						mod.call(
-							bothInts(t0, t1) || bothNats(t0, t1) ? 'imul' : (assert.ok(bothFloats(t0, t1)), 'fmul'),
+							bothInts(t0, t1) || bothNats(t0, t1) ? 'iadd' : (assert.ok(bothFloats(t0, t1)), 'fadd'),
 							[local0.get(), arg1],
 							binaryen.v128,
 						),
-					),
-				);
-			} else if (this.operator === Operator.ADD) {
-				// if arg0 is mathematically 0, return arg1
-				return mod.if(
-					mod.i32.or(
-						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
-						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-					),
-					arg1,
-					// else return a wasm call
-					mod.call(
-						bothInts(t0, t1) || bothNats(t0, t1) ? 'iadd' : (assert.ok(bothFloats(t0, t1)), 'fadd'),
-						[local0.get(), arg1],
-						binaryen.v128,
-					),
-				);
+					);
+				}
 			}
 		}
 
-		// if operand0 is foldable and not using identity laws, don’t try short-circuiting; return wasm call
+		// if operand0 is foldable and not using identity laws, or if operand0 is not foldable and operation is not short-circuitable, return wasm call
 		switch (true) {
 			case bothInts(t0, t1): {
 				return mod.call(new Map<Operator, string>([

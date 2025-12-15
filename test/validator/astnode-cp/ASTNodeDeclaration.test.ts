@@ -16,10 +16,7 @@ import {
 	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.js';
-import {
-	CONFIG_FOLDING_OFF,
-	setupScript,
-} from '../../helpers.js';
+import {setupScript} from '../../helpers.js';
 import {extract_lines} from '../../utils.ts';
 
 
@@ -187,7 +184,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
+					}`, {build: false}).goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -210,7 +207,7 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				setupScript(`{
 					let the_answer: nat = +42;
-				}`, null, {build: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 				const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 					let  the_answer:  int | float =  21  *  2;
 				`);
@@ -227,13 +224,13 @@ test.suite('ASTNodeDeclaration', () => {
 					setupScript(`{
 						type Name = str;
 						${ stmt }
-					}`, null, {build: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 			});
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					let var the_answer?: int | float;
-				}`, null, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
+				}`, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
 					isUnfixed:       true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
@@ -255,7 +252,7 @@ test.suite('ASTNodeDeclaration', () => {
 					let immut:  (int, int, int)                   = (42, 420, 4200);
 					let 'mut':  mut [int]                         = [42, 420, 4200];
 					let mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
-				}`, null, {build: false});
+				}`, {build: false});
 				const [immut, mut, mutmut] = [
 					goal.block!.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
 					goal.block!.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
@@ -540,31 +537,27 @@ test.suite('ASTNodeDeclaration', () => {
 		});
 
 		test.suite('ASTNodeDeclarationVariable', () => {
-			const SRC = `{
-				%                                      % constant folding on | constant folding off
-				%                                      % ------------------- | --------------------
-
-				% Foldable cases:
-				let var _?:         int;               % \`(nop)\`           | \`(drop)\`
-				let     _:          int = 42;          % \`(nop)\`           | \`(drop)\`
-				let var _:          int = 42;          % \`(nop)\`           | \`(drop)\`
-				let     assignee_a: int = 42;          % \`(nop)\`           | \`(local.set)\`
-
-				% Non-Foldable cases:
-				let var assignee_b?: int;              % \`(local.set)\`     | same as when constant folding on
-				let var assignee_c:  int = 42;         % \`(local.set)\`     | same as when constant folding on
-				let     _:           int = assignee_c; % \`(drop)\`          | same as when constant folding on
-				let var _:           int = assignee_c; % \`(drop)\`          | same as when constant folding on
-				let     assignee_d:  int = assignee_c; % \`(local.set)\`     | same as when constant folding on
-				let var assignee_e:  int = assignee_c; % \`(local.set)\`     | same as when constant folding on
-
-				%% Syntactically impossible cases (for completion):
-				let _?:         int;
-				let assignee6?: int;
-				%%
-			}`;
 			test.test('with constant folding on.', () => {
-				const {goal, stmts, mod} = setupScript(SRC);
+				const {goal, stmts, mod} = setupScript(`{
+					% Foldable cases:
+					let var _?:         int;               % \`(nop)\`
+					let     _:          int = 42;          % \`(nop)\`
+					let var _:          int = 42;          % \`(nop)\`
+					let     assignee_a: int = 42;          % \`(nop)\`
+
+					% Non-Foldable cases:
+					let var assignee_b?: int;              % \`(local.set)\`
+					let var assignee_c:  int = 42;         % \`(local.set)\`
+					let     _:           int = assignee_c; % \`(drop)\`
+					let var _:           int = assignee_c; % \`(drop)\`
+					let     assignee_d:  int = assignee_c; % \`(local.set)\`
+					let var assignee_e:  int = assignee_c; % \`(local.set)\`
+
+					%% Syntactically impossible cases (for completion):
+					let _?:         int;
+					let assignee6?: int;
+					%%
+				}`);
 				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
 					mod.nop(),
 					mod.nop(),
@@ -579,31 +572,16 @@ test.suite('ASTNodeDeclaration', () => {
 					mod.local.set(3, (stmts[9] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 				]);
 			});
-			test.test('with constant folding off, never returns `(nop)`.', () => {
-				const {goal, stmts, mod} = setupScript(SRC, CONFIG_FOLDING_OFF);
-				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
-					mod.drop(        VALUE.NULL.build(goal.builder)),
-					mod.drop(        (stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(0, (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-
-					mod.local.set(1, VALUE.NULL.build(goal.builder)),
-					mod.local.set(2, (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[6] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[7] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(3, (stmts[8] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(4, (stmts[9] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-				]);
-			});
 			test.test('tuples and records.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    true)));
-					let rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= true)));
-				}`, CONFIG_FOLDING_OFF);
-				const [tup, rec] = stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
+					let var tr: bool = true;
+					let tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    tr)));
+					let rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= tr)));
+				}`);
+				const [tup, rec] = stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				assert.deepStrictEqual(goal.builder.getLocals().map((local) => local.value), [
+				assert.deepStrictEqual(goal.builder.getLocals().slice(1).map((local) => local.value), [
 					tup_2_1.build(),
 					tup_2.build(),
 					tup.build(),
@@ -612,19 +590,19 @@ test.suite('ASTNodeDeclaration', () => {
 					rec.build(),
 				]);
 				return assertEqualBins(
-					stmts.map((stmt) => stmt.build()),
+					stmts.slice(1).map((stmt) => stmt.build()),
 					[
-						mod.local.set(2, tup.build()),
-						mod.local.set(5, rec.build()),
+						mod.local.set(3, tup.build()),
+						mod.local.set(6, rec.build()),
 					],
 				);
 			});
 			test.test('throws when tuples and records contain each other.', () => {
-				[
-					'let tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));',
-					'let rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));',
-				].forEach((src) => {
-					const {goal} = setupScript(`{ ${ src } }`, CONFIG_FOLDING_OFF, {build: false});
+				xjs.Array.forEachAggregated(extract_lines`
+					let var tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));
+					let var rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));
+				`, (src) => {
+					const {goal} = setupScript(`{ ${ src } }`, {build: false});
 					return assert.throws(() => goal.build(), /not yet supported/);
 				});
 			});

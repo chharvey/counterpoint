@@ -43,7 +43,7 @@ test.suite('ASTNodeTypeOperation', () => {
 					type D = mut (A | B);
 
 					type E = mut Object; % equivalent to \`Object\`
-				}`, null, {build: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 
 			test.test('throws if operating on any value type.', () => {
