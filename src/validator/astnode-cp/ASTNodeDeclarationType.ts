@@ -11,7 +11,6 @@ import {
 } from '../../core/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
 import {
@@ -37,7 +36,6 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	}
 
 	// @memoizeGetter // memoizing takes longer than returning a constant
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return true;
 	}

@@ -4,8 +4,6 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
-	type CPConfig,
-	CONFIG_DEFAULT,
 	AST,
 	SymbolSchemaType,
 	SymbolSchemaVar,
@@ -24,7 +22,6 @@ import {
 	assertAssignable,
 } from '../../assert-helpers.ts';
 import {
-	CONFIG_FOLDING_OFF,
 	setupScript,
 	typeUnit,
 	buildConst,
@@ -135,7 +132,7 @@ test.suite('ASTNodeExpression', () => {
 				['-0.0',     (builder) => buildConst(builder, -0)],
 				['-4.2e-2',  (builder) => buildConst(builder, -0.042)],
 			]), (expected_fn, src) => {
-				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF);
+				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src);
 				return assertEqualBins(
 					constant.build(),
 					expected_fn.call(null, constant.builder),
@@ -203,7 +200,7 @@ test.suite('ASTNodeExpression', () => {
 					let var x?: int;
 					w;
 					x;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok( (stmts[0] as AST.ASTNodeDeclarationVariable).assigned);
 				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).assigned);
 				return assertEqualTypes(
@@ -222,7 +219,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					let x: int = 21 * 2;
 					x;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok(!(stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -233,7 +230,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					let var x: int = 21 * 2;
 					x;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -244,7 +241,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					let fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).typenode.eval().hasMutable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -259,7 +256,7 @@ test.suite('ASTNodeExpression', () => {
 					let z: mut {int} = {11, 22, 33};
 					let w: bool = z.[22];
 					w;
-				}`, null, {build: false});
+				}`, {build: false});
 				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.ok(!(stmts[4] as AST.ASTNodeDeclarationVariable).unfixed);
 				assert.deepStrictEqual(
@@ -268,19 +265,6 @@ test.suite('ASTNodeExpression', () => {
 						(stmts[5] as AST.ASTNodeStatementExpression).expr!.fold(),
 					],
 					[null, null],
-				);
-			});
-			test.test('with constant folding off, returns null even for a fixed variable.', () => {
-				const block: AST.ASTNodeBlock = AST.ASTNodeBlock.fromSource(`{
-					let x: int = 21 * 2;
-					x;
-				}`, CONFIG_FOLDING_OFF);
-				block.varCheck();
-				block.typeCheck();
-				assert.ok(!(block.children[0] as AST.ASTNodeDeclarationVariable).unfixed);
-				assert.deepStrictEqual(
-					(block.children[1] as AST.ASTNodeStatementExpression).expr!.fold(),
-					null,
 				);
 			});
 		});
@@ -326,41 +310,20 @@ test.suite('ASTNodeExpression', () => {
 					],
 				);
 			});
-			test.test('with constant folding off, always returns `(local.get)`.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					let x: int = 42;
-					let var y: float = 4.2;
-					x;
-					y;
-				}`, CONFIG_FOLDING_OFF);
-				const var0 = (stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const var1 = (stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map((local) => local.type);
-				assertEqualBins(
-					[
-						var0.build(),
-						var1.build(),
-					],
-					[
-						mod.local.get(0, types[0]),
-						mod.local.get(1, types[1]),
-					],
-				);
-			});
 		});
 	});
 
 
 
 	test.suite('ASTNodeTemplate', () => {
-		function initTemplates(config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate[] {
+		function initTemplates(): AST.ASTNodeTemplate[] {
 			return [
-				AST.ASTNodeTemplate.fromSource('"""42😀"""', config),
-				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?"""', config),
+				AST.ASTNodeTemplate.fromSource('"""42😀"""'),
+				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?"""'),
 				(setupScript(`{
 					let var x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
-				}`, config, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
+				}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
 			];
 		}
 		test.suite('#type', () => {
@@ -379,12 +342,6 @@ test.suite('ASTNodeExpression', () => {
 				});
 				test.test('for non-foldable interpolations, returns `String`.', () => {
 					assert.strictEqual(types[2], TYPE.STR);
-				});
-			});
-			test.suite('with constant folding off.', () => {
-				test.test('always returns `String`.', () => {
-					templates = initTemplates(CONFIG_FOLDING_OFF);
-					return templates.forEach((t) => assert.strictEqual(t.type(), TYPE.STR));
 				});
 			});
 		});
@@ -461,52 +418,47 @@ test.suite('ASTNodeExpression', () => {
 
 
 		test.suite('#type', () => {
-			([
-				['with constant folding on.',  CONFIG_DEFAULT,     TYPE.Union.all([typeUnit('a'), typeUnit(42n), typeUnit(3.0)])],
-				['with constant folding off.', CONFIG_FOLDING_OFF, TYPE.Union.all([typeUnit('a'), TYPE.INT,      TYPE.FLOAT])],
-			] as const).forEach(([description, config, map_ant_type]) => {
-				test.test(description, () => {
-					const expected: readonly TYPE.Unit[] = [typeUnit(1n), typeUnit(2.0), typeUnit('three')];
-					const collections: readonly [
-						AST.ASTNodeTuple,
-						AST.ASTNodeRecord,
-						AST.ASTNodeSet,
-						AST.ASTNodeMap,
-					] = [
-						AST.ASTNodeTuple  .fromSource('(   1,    2.0,    "three")', config),
-						AST.ASTNodeRecord .fromSource('(a= 1, b= 2.0, _= "three")', config),
-						AST.ASTNodeSet    .fromSource('{   1,    2.0,    "three"}', config),
-						AST.ASTNodeMap.fromSource(`
-							{
-								"a" || "" -> 1,
-								21 + 21   -> 2.0,
-								3.0 * 1.0 -> "three",
-							}
-						`, config),
-					];
-					return assertEqualTypes(
-						collections.map((node) => node.type()),
-						[
-							TYPE.Tuple.fromTypes(expected),
-							TYPE.Record.fromTypes(new Map(collections[1].children.map((c, i) => [
-								c.key.id,
-								expected[i],
-							]))),
-							new TYPE.Set(TYPE.Union.all(expected), true),
-							new TYPE.Map(
-								map_ant_type,
-								TYPE.Union.all(expected),
-								true,
-							),
-						],
-					);
-				});
+			test.test('with constant folding on.', () => {
+				const expected: readonly TYPE.Unit[] = [typeUnit(1n), typeUnit(2.0), typeUnit('three')];
+				const collections: readonly [
+					AST.ASTNodeTuple,
+					AST.ASTNodeRecord,
+					AST.ASTNodeSet,
+					AST.ASTNodeMap,
+				] = [
+					AST.ASTNodeTuple  .fromSource('(   1,    2.0,    "three")'),
+					AST.ASTNodeRecord .fromSource('(a= 1, b= 2.0, _= "three")'),
+					AST.ASTNodeSet    .fromSource('{   1,    2.0,    "three"}'),
+					AST.ASTNodeMap.fromSource(`
+						{
+							"a" || "" -> 1,
+							21 + 21   -> 2.0,
+							3.0 * 1.0 -> "three",
+						}
+					`),
+				];
+				return assertEqualTypes(
+					collections.map((node) => node.type()),
+					[
+						TYPE.Tuple.fromTypes(expected),
+						TYPE.Record.fromTypes(new Map(collections[1].children.map((c, i) => [
+							c.key.id,
+							expected[i],
+						]))),
+						new TYPE.Set(TYPE.Union.all(expected), true),
+						new TYPE.Map(
+							TYPE.Union.all([typeUnit('a'), typeUnit(42n), typeUnit(3.0)]),
+							TYPE.Union.all(expected),
+							true,
+						),
+					],
+				);
 			});
 			test.test('does not throw if value type contains reference type.', () => {
 				setupScript(`{
 					(   1,    [2.2],    "three");
 					(a= 1, b= [2.2], c= "three");
-				}`, null, {build: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 		});
 
@@ -585,7 +537,7 @@ test.suite('ASTNodeExpression', () => {
 						21 + 21   -> 2.0,
 						3.0 * 1.0 -> z,
 					};
-				}`, null, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
+				}`, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
 			});
 		});
 
@@ -595,12 +547,12 @@ test.suite('ASTNodeExpression', () => {
 			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
 
 			function testModuleValidation(expr_src: string): void {
-				setupScript(`{ ${ expr_src }; }`, CONFIG_FOLDING_OFF); // assert does not throw
+				setupScript(`{ ${ expr_src }; }`); // assert does not throw
 			}
 
 			test.suite('ASTNodeTuple', () => {
 				test.test('returns `(tuple.make)`.', () => {
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('(1, 2.0)', CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource('(1, 2.0)');
 					return assertEqualBins(
 						tuple.build(),
 						tuple.builder.module.tuple.make([buildConst(tuple.builder, 1n), buildConst(tuple.builder, 2.0)]),
@@ -609,7 +561,7 @@ test.suite('ASTNodeExpression', () => {
 				test.test('empty tuple returns unique BinVect representation.', () => {
 					const src = '()';
 					testModuleValidation(src);
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src);
 					return assertEqualBins(
 						tuple.build(),
 						buildConst(tuple.builder, []),
@@ -618,7 +570,7 @@ test.suite('ASTNodeExpression', () => {
 				test.test('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
 					const src = '(3.4,)';
 					testModuleValidation(src);
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src);
 					return assertEqualBins(
 						tuple.build(),
 						singletonTuple(tuple.builder, buildConst(tuple.builder, 3.4)),
@@ -627,7 +579,7 @@ test.suite('ASTNodeExpression', () => {
 				test.test('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					const src = '((),)';
 					testModuleValidation(src);
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src);
 					return assertEqualBins(
 						tuple.build(),
 						singletonTuple(tuple.builder, buildConst(tuple.builder, [])),
@@ -636,7 +588,7 @@ test.suite('ASTNodeExpression', () => {
 				test.test('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
 					const src = '(((),),)';
 					testModuleValidation(src);
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src);
 					return assertEqualBins(
 						tuple.build(),
 						singletonTuple(tuple.builder, tuple.builder.module.tuple.extract(singletonTuple(tuple.builder, buildConst(tuple.builder, [])), 0)),
@@ -645,14 +597,14 @@ test.suite('ASTNodeExpression', () => {
 				test.test('boxed tuple with 1 item.', () => {
 					const src = '((3.4,),)';
 					testModuleValidation(src);
-					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src, CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple = AST.ASTNodeTuple.fromSource(src);
 					return assertEqualBins(
 						tuple.build(),
 						singletonTuple(tuple.builder, tuple.builder.module.tuple.extract(singletonTuple(tuple.builder, buildConst(tuple.builder, 3.4)), 0)),
 					);
 				});
 				test.test('boxed tuple with many items.', () => {
-					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, 2.0, true),)', CONFIG_FOLDING_OFF);
+					const tuple: AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, 2.0, true),)');
 					const mod:   binaryen.Module        = tuple.builder.module;
 					const inner: binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(tuple.builder, 1n),
@@ -669,7 +621,7 @@ test.suite('ASTNodeExpression', () => {
 					);
 				});
 				test.test('nested tuples.', () => {
-					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('(1, (2.0,), (3, (4.0,)))', CONFIG_FOLDING_OFF);
+					const tuple:  AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('(1, (2.0,), (3, (4.0,)))');
 					const bldr:   Builder                = tuple.builder;
 					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
@@ -687,7 +639,7 @@ test.suite('ASTNodeExpression', () => {
 					);
 				});
 				test.test('multiple entries.', () => {
-					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, (2.0, 3)), (4.0, (5, 6.0)), (7, ()))', CONFIG_FOLDING_OFF);
+					const tuple:   AST.ASTNodeTuple       = AST.ASTNodeTuple.fromSource('((1, (2.0, 3)), (4.0, (5, 6.0)), (7, ()))');
 					const bldr:    Builder                = tuple.builder;
 					const mod:     binaryen.Module        = bldr.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
@@ -728,15 +680,15 @@ test.suite('ASTNodeExpression', () => {
 				});
 				test.test('pointer entries.', () => {
 					const {goal, stmts, mod} = setupScript(`{
-						let inner01: (float, int)   = (2.0, 3);
-						let inner11: (int,   float) = (5,   6.0);
-						let inner2:  (int,   ())    = (7,   ());
+						let var inner01: (float, int)   = (2.0, 3);
+						let var inner11: (int,   float) = (5,   6.0);
+						let var inner2:  (int,   ())    = (7,   ());
 
-						let inner0: (int,   (float, int))   = (1,   inner01);
-						let inner1: (float, (int,   float)) = (4.0, inner11);
+						let var inner0: (int,   (float, int))   = (1,   inner01);
+						let var inner1: (float, (int,   float)) = (4.0, inner11);
 
 						let tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = (inner0, inner1, inner2);
-					}`, CONFIG_FOLDING_OFF);
+					}`);
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned!.build()),
 						[
@@ -770,7 +722,7 @@ test.suite('ASTNodeExpression', () => {
 
 			test.suite('ASTNodeRecord', () => {
 				test.test('returns `(tuple.make)`.', () => {
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('(a= 1, b= 2.0)', CONFIG_FOLDING_OFF);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource('(a= 1, b= 2.0)');
 					return assertEqualBins(
 						record.build(),
 						record.builder.module.tuple.make([buildConst(record.builder, 1n), buildConst(record.builder, 2.0)]),
@@ -780,9 +732,9 @@ test.suite('ASTNodeExpression', () => {
 					const {goal, stmts, mod} = setupScript(`{
 						(a= 1, b= 2.0);
 						(b= 2.0, a= 1);
-					}`, CONFIG_FOLDING_OFF);
+					}`);
 					return assertEqualBins(
-						stmts.map((stmt) => stmt.build()),
+						stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 						[
 							mod.tuple.make([
 								buildConst(goal.builder, 1n),
@@ -796,13 +748,13 @@ test.suite('ASTNodeExpression', () => {
 									mod.local.get(0, binaryen.v128),
 								]),
 							], bintype2),
-						].map((expected) => mod.drop(expected)),
+						],
 					);
 				});
 				test.test('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
 					const src = '(a= 3.4)';
 					testModuleValidation(src);
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src);
 					return assertEqualBins(
 						record.build(),
 						singletonTuple(record.builder, buildConst(record.builder, 3.4)),
@@ -811,14 +763,14 @@ test.suite('ASTNodeExpression', () => {
 				test.test('boxed record with 1 prop.', () => {
 					const src = '(a= (a= 3.4))';
 					testModuleValidation(src);
-					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src, CONFIG_FOLDING_OFF);
+					const record: AST.ASTNodeRecord = AST.ASTNodeRecord.fromSource(src);
 					return assertEqualBins(
 						record.build(),
 						singletonTuple(record.builder, record.builder.module.tuple.extract(singletonTuple(record.builder, buildConst(record.builder, 3.4)), 0)),
 					);
 				});
 				test.test('boxed record with many props.', () => {
-					const record: AST.ASTNodeRecord      = AST.ASTNodeRecord.fromSource('(a= (a= 1, b= 2.0, c= true))', CONFIG_FOLDING_OFF);
+					const record: AST.ASTNodeRecord      = AST.ASTNodeRecord.fromSource('(a= (a= 1, b= 2.0, c= true))');
 					const mod:    binaryen.Module        = record.builder.module;
 					const inner:  binaryen.ExpressionRef = mod.tuple.make([
 						buildConst(record.builder, 1n),
@@ -839,7 +791,7 @@ test.suite('ASTNodeExpression', () => {
 						a= 1,
 						b= (a= 2.0),
 						c= (a= 3, b= (a= 4.0)),
-					)`, CONFIG_FOLDING_OFF);
+					)`);
 					const bldr:   Builder                = record.builder;
 					const mod:    binaryen.Module        = bldr.module;
 					const inner2: binaryen.ExpressionRef = mod.tuple.make([
@@ -861,7 +813,7 @@ test.suite('ASTNodeExpression', () => {
 						a= (a= 1,   b= (a= 2.0, b= 3)),
 						b= (a= 4.0, b= (a= 5, b= 6.0)),
 						c= (b= 7,   a= true),
-					)`, CONFIG_FOLDING_OFF);
+					)`);
 					const bldr:    Builder                = record.builder;
 					const mod:     binaryen.Module        = bldr.module;
 					const inner01: binaryen.ExpressionRef = mod.tuple.make([
@@ -906,19 +858,19 @@ test.suite('ASTNodeExpression', () => {
 				});
 				test.test('pointer entries.', () => {
 					const {goal, stmts, mod} = setupScript(`{
-						let inner_ab: (a: float, b: int)   = (a= 2.0, b= 3);
-						let inner_bb: (a: int,   b: float) = (a= 5,   b= 6.0);
-						let inner_c:  (b: int,   a: bool)  = (b= 7,   a= true);
+						let var inner_ab: (a: float, b: int)   = (a= 2.0, b= 3);
+						let var inner_bb: (a: int,   b: float) = (a= 5,   b= 6.0);
+						let var inner_c:  (b: int,   a: bool)  = (b= 7,   a= true);
 
-						let inner_a: (a: int,   b: (a: float, b: int))   = (a= 1,   b= inner_ab);
-						let inner_b: (a: float, b: (a: int,   b: float)) = (a= 4.0, b= inner_bb);
+						let var inner_a: (a: int,   b: (a: float, b: int))   = (a= 1,   b= inner_ab);
+						let var inner_b: (a: float, b: (a: int,   b: float)) = (a= 4.0, b= inner_bb);
 
 						let record: (
 							a: (a: int,   b: (a: float, b: int)),
 							b: (a: float, b: (a: int,   b: float)),
 							c: (b: int,   a: bool),
 						) = (a= inner_a, b= inner_b, c= inner_c);
-					}`, CONFIG_FOLDING_OFF);
+					}`);
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned!.build()),
 						[
@@ -1042,7 +994,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {typeCheck: false});
+				}`, {typeCheck: false});
 				assert.throws(() => goal.typeCheck(), /The last statement of a block-expression must be an expression-statement/);
 			});
 			test.test('throws when the determinant is empty.', () => {
@@ -1055,7 +1007,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {typeCheck: false});
+				}`, {typeCheck: false});
 				assert.throws(() => goal.typeCheck(), /The determining expression-statement of a block-expression must be nonempty/);
 			});
 			test.test('returns the type of the determinant.', () => {
@@ -1068,7 +1020,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {build: false});
+				}`, {build: false});
 				assertEqualTypes((stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.type(), TYPE.INT);
 			});
 		});
@@ -1085,7 +1037,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {build: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
+				}`, {build: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
 			});
 			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
@@ -1100,7 +1052,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, null, {build: false});
+				}`, {build: false});
 				const block_expression = (stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock;
 				assert.strictEqual(
 					block_expression.fold(),
@@ -1116,7 +1068,7 @@ test.suite('ASTNodeExpression', () => {
 					(setupScript(`{
 						let x: int = 42 - { 42; 69; };
 						x;
-					}`, null, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new VALUE.Integer(42n - 69n),
 				);
 			});

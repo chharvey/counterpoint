@@ -10,6 +10,19 @@ import {
 
 
 /**
+ * Asserts that two arrays have the same item (by `assert.strictEqual`) at each index.
+ */
+export function assert_shallowStrictEqual<T>(actual: unknown[], expected: T[], message?: Parameters<typeof assert.strictEqual>[2]): asserts actual is T[] {
+	if (actual === expected) {
+		return;
+	}
+	assert.strictEqual(actual.length, expected.length, message);
+	return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i], message));
+}
+
+
+
+/**
  * Assert equal types. First compares by `assert.deepStrictEqual`,
  * but if that fails, compares by `Type#equals`.
  * @param actual   the actual type

@@ -16,7 +16,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	buildDeco,
@@ -43,7 +42,6 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		const condition_type:   TYPE.Type = this.condition.type();
 		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);

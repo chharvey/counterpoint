@@ -67,7 +67,7 @@ test.suite('ASTNodeType', () => {
 					type A = (int, [float], str);
 					type C = (a: int, b: [float], c: str);
 					type E = ({float}, {float}, {float});
-				}`, null, {build: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 		});
 	});
