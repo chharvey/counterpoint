@@ -9,7 +9,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {
 	buildDeco,
@@ -34,7 +33,6 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 	}
 
 	// @memoizeGetter // memoizing takes longer than returning a constant
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return false; // break statements will always have side-effects
 	}

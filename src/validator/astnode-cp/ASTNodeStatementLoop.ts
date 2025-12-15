@@ -16,7 +16,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	buildDeco,
@@ -49,7 +48,6 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 
 
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !!this.condition.fold() && this.block.isFoldable;
 	}

@@ -18,7 +18,6 @@ import {
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
@@ -55,7 +54,6 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		/*
 		 * Foldable cases:
@@ -110,7 +108,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
-			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
+			if (!symbol.type.hasMutable && !this.unfixed) {
 				assert.ok(!symbol.isUnfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
 				symbol.value = value;
 			}
