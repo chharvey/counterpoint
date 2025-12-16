@@ -38,7 +38,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly unfixed:  boolean,
-		private readonly assignee: ASTNodeVariable | null,
+		public  readonly assignee: ASTNodeVariable | null,
 		public  readonly typenode: ASTNodeType,
 		public  readonly assigned: ASTNodeExpression | null,
 	) {

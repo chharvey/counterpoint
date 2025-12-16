@@ -80,6 +80,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
 1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict key.
 1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a fixed variable was attempted.
+1. [2220](#2220-assignmenterrormissingtype)          — A symbol was declared without a type annotation and initialized to a value ineligible for type inference.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
 Cause: A duplicate declaration was encountered.
@@ -109,6 +110,17 @@ let my_var: int = 42;
 set my_var = 24;      % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or declare the variable with `var`.
+
+#### 2220: AssignmentErrorMissingType
+Cause: A variable, parameter, or field was declared without a type annotation when it is not eligible for type inference.
+```cpl
+let a = 42 + 1;                     % AssignmentErrorMissingType: Variable `a` is missing a type annotation.
+function f(b ?= 42 + 1): int => -b; % AssignmentErrorMissingType: Parameter `b` is missing a type annotation.
+class Foo {
+	public c = 42 + 1; % AssignmentErrorMissingType: Field `c` is missing a type annotation.
+}
+```
+Solution(s): Add an explicit type annotation, update the symbol’s initializer to be eligible for type inference, or remove the declaration.
 
 
 ### Type Errors (23xx)
