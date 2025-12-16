@@ -1034,6 +1034,7 @@ test.suite('Type', () => {
 					[TYPE.TRUE,               TYPE.BOOL],
 					[typeUnit(Symbol(0x100)), TYPE.SYM],
 					[typeUnit(42n),           TYPE.INT],
+					[typeUnit(42n, 'nat'),    TYPE.NAT],
 					[typeUnit(6.28),          TYPE.FLOAT],
 					[typeUnit('hello'),       TYPE.STR],
 				]).forEach((expected, actual) => assert.strictEqual(actual.primitiveType(), expected));
