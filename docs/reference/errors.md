@@ -49,14 +49,14 @@ A reference error is raised when the compiler fails to dereference an identifier
 #### 2101: ReferenceErrorUndeclared
 Cause: A variable was referenced but was not declared.
 ```
-my_var; % ReferenceError: `my_var` is never declared.
+my_var; % ReferenceErrorUndeclared: `my_var` is never declared.
 ```
 Solution(s): Ensure the variable, type, or parameter is declared before referencing it.
 
 #### 2102: ReferenceErrorDeadZone
 Cause: A variable was referenced before it was declared.
 ```
-my_var;               % ReferenceError: `my_var` is used before it is declared.
+my_var;               % ReferenceErrorDeadZone: `my_var` is used before it is declared.
 let my_var: int = 42;
 ```
 Solution(s): Ensure the variable or type is declared before referencing it.
@@ -65,10 +65,10 @@ Solution(s): Ensure the variable or type is declared before referencing it.
 Cause: A variable was used as a type, or a type was used as a variable.
 ```
 let FOO: int = 42;
-type T = FOO | float; % ReferenceError: `FOO` refers to a value, but is used as a type.
+type T = FOO | float; % ReferenceErrorKind: `FOO` refers to a value, but is used as a type.
 
 type BAR = int;
-42 || BAR;      % ReferenceError: `BAR` refers to a type, but is used as a value.
+42 || BAR;      % ReferenceErrorKind: `BAR` refers to a type, but is used as a value.
 ```
 Solution(s): Keep types and variables separate.
 
@@ -86,10 +86,10 @@ An assignment error is raised when the compiler detects an illegal declaration o
 Cause: A duplicate declaration was encountered.
 ```
 let my_var: int = 42;
-let my_var: int = 24; % AssignmentError: Duplicate declaration of `my_var`.
+let my_var: int = 24; % AssignmentErrorDuplicateDeclaration: Duplicate declaration of `my_var`.
 
 type MyType = int;
-type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
+type MyType = float; % AssignmentErrorDuplicateDeclaration: Duplicate declaration of `MyType`.
 ```
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
@@ -107,7 +107,7 @@ Solution(s): Remove or rename the duplicate key.
 Cause: A fixed variable was reassigned.
 ```
 let my_var: int = 42;
-set my_var = 24;      % AssignmentError: Reassignment of fixed variable `my_var`.
+set my_var = 24;      % AssignmentErrorReassignment: Reassignment of fixed variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or declare the variable with `var`.
 
