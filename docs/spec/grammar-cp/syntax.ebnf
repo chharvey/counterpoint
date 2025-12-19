@@ -260,8 +260,8 @@ DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
 DeclarationVariable<Break> ::=
-	| "let" "var"? ("_" | IDENTIFIER) ":"  Type "=" Expression<+Block><?Break> ";"
-	| "let" "var"  ("_" | IDENTIFIER) "?:" Type                                ";"
+	| "let" "var"? ("_" | IDENTIFIER)     ":" Type "=" Expression<+Block><?Break> ";"
+	| "let" "var"  ("_" | IDENTIFIER) "?" ":" Type                                ";"
 ;
 
 Declaration<Break> ::=

@@ -9,6 +9,7 @@ export enum Punctuator {
 	BRAC_CLS = '}',
 	COMMA    = ',',
 	MAPTO    = '->',
+	OPT      = '?:',
 
 	// compound
 	DOT     = '.',
@@ -49,6 +50,5 @@ export enum Punctuator {
 	// statement
 	ENDSTAT = ';',
 	ISTYPE  = ':',
-	OPT     = '?:',
 	ASSIGN  = '=',
 }

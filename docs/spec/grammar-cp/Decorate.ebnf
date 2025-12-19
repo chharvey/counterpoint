@@ -827,11 +827,11 @@ Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER ":" Type "=" Expr
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		Decorate(Type)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)

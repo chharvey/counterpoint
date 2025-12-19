@@ -805,13 +805,13 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let var _?: T;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					let var a?: T;
 				}
