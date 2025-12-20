@@ -23,7 +23,7 @@ export enum Keyword {
 
 	// storage
 	TYPE  = 'type',
-	LET   = 'let',
+	LET   = 'val',
 	BLANK = '_',
 
 	// modifier

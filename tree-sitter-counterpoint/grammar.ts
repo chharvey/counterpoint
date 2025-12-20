@@ -344,7 +344,7 @@ module.exports = grammar({
 			'else',
 			// storage
 			'type',
-			'let',
+			'val',
 			'_',
 			// modifier
 			$.keyword_type,
@@ -511,7 +511,7 @@ module.exports = grammar({
 
 		/* ## Statements */
 		declaration_type:     $ => seq('type', choice('_',                      $.identifier ), '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  choice('_', seq(optional('mut'), $.identifier)), ':', $._type, '=', $._expression, ';'),
+		declaration_variable: $ => seq('val',  choice('_', seq(optional('mut'), $.identifier)), ':', $._type, '=', $._expression, ';'),
 
 		_declaration: $ => choice(
 			$.declaration_type,

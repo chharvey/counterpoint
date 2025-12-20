@@ -378,16 +378,16 @@ describe('Decorator', () => {
 				% (declaration_type)
 			`]],
 
-			['Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let _: T = b;
+			['Decorate(DeclarationVariable ::= "val" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				val _: T = b;
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let a: T = b;
+			['Decorate(DeclarationVariable ::= "val" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				val a: T = b;
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "mut" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let mut a: T = b;
+			['Decorate(DeclarationVariable ::= "val" "mut" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				val mut a: T = b;
 				% (declaration_variable)
 			`]],
 

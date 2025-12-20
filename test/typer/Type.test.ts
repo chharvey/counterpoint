@@ -1036,10 +1036,10 @@ describe('Type', () => {
 						const v = new VALUE.Tuple<VALUE.Boolean | VALUE.Integer>([VALUE.TRUE, VALUE.INT_1]);
 
 						assert.ok(combined.includes(v), `
-							let x: [true, int] = [true, 1]; % ok
+							val x: [true, int] = [true, 1]; % ok
 						`);
 						assert.ok(intersection.includes(v), `
-							let x: [bool, int] & [true] = [true, 1]; % ok
+							val x: [bool, int] & [true] = [true, 1]; % ok
 						`);
 					});
 				});
@@ -1121,10 +1121,10 @@ describe('Type', () => {
 						]));
 
 						assert.ok(combined.includes(v), `
-							let x: [a: false, b: 42, c: str, d: str] = [a= false, b= 42, c= "hello", d= "world"]; % ok
+							val x: [a: false, b: 42, c: str, d: str] = [a= false, b= 42, c= "hello", d= "world"]; % ok
 						`);
 						assert.ok(intersection.includes(v), `
-							let x: [a: bool, b: 42, c: str] & [d: str, a: false, b: int] = [a= false, b= 42, c= "hello", d= "world"]; % ok
+							val x: [a: bool, b: 42, c: str] & [d: str, a: false, b: int] = [a= false, b= 42, c= "hello", d= "world"]; % ok
 						`);
 					});
 				});
@@ -1191,10 +1191,10 @@ describe('Type', () => {
 						const v = new VALUE.Tuple<VALUE.Boolean>([VALUE.TRUE, VALUE.TRUE]);
 
 						assert.ok(combined.includes(v), `
-							let x: [bool | int, int | bool] = [true, true]; % ok
+							val x: [bool | int, int | bool] = [true, true]; % ok
 						`);
 						assert.ok(!union.includes(v), `
-							let x: [bool, int] | [int, bool] = [true, true]; %> TypeError
+							val x: [bool, int] | [int, bool] = [true, true]; %> TypeError
 						`);
 					});
 				});
@@ -1268,10 +1268,10 @@ describe('Type', () => {
 						]));
 
 						assert.ok(combined.includes(v), `
-							let x: [a: bool | int, b: int | bool] = [a= true, b= true]; % ok
+							val x: [a: bool | int, b: int | bool] = [a= true, b= true]; % ok
 						`);
 						assert.ok(!union.includes(v), `
-							let x: [a: bool, b: int, c: str] | [d: str, a: int, b: bool] = [a= true, b= true]; %> TypeError
+							val x: [a: bool, b: int, c: str] | [d: str, a: int, b: bool] = [a= true, b= true]; %> TypeError
 						`);
 					});
 				});

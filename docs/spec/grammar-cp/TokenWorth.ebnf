@@ -56,7 +56,7 @@ TokenWorth(KeywordOther :::= "if")      -> RealNumber := \x8d;
 TokenWorth(KeywordOther :::= "then")    -> RealNumber := \x8e;
 TokenWorth(KeywordOther :::= "else")    -> RealNumber := \x8f;
 TokenWorth(KeywordOther :::= "type")    -> RealNumber := \x90;
-TokenWorth(KeywordOther :::= "let")     -> RealNumber := \x91;
+TokenWorth(KeywordOther :::= "val")     -> RealNumber := \x91;
 TokenWorth(KeywordOther :::= "_")       -> RealNumber := \x92;
 
 

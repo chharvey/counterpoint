@@ -138,7 +138,7 @@ describe('ASTNodeType', () => {
 			it('does not throw when referencing intrinsic identifiers.', () => {
 				AST.ASTNodeGoal.fromSource(`
 					type T = Object;
-					let obj: Object = 42;
+					val obj: Object = 42;
 				`).varCheck(); // assert does not throw
 			});
 			it('throws if the validator does not contain a record for the identifier.', () => {
@@ -158,7 +158,7 @@ describe('ASTNodeType', () => {
 			});
 			it('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					let FOO: int = 42;
+					val FOO: int = 42;
 					type T = FOO | float;
 				`).varCheck(), ReferenceErrorKind);
 			});
