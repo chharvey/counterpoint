@@ -77,8 +77,8 @@ describe('Value', () => {
 			});
 			it.skip('Lists may contain circular references.', () => {
 				`
-					let a: mut List.<List.<Object>> = List.<List.<Object>>([]);
-					let b: mut List.<List.<Object>> = List.<List.<Object>>([]);
+					val a: mut List.<List.<Object>> = List.<List.<Object>>([]);
+					val b: mut List.<List.<Object>> = List.<List.<Object>>([]);
 					a.append.(b);
 					b.append.(a);
 					assert.equal.(a, b);
@@ -87,8 +87,8 @@ describe('Value', () => {
 			});
 			it.skip('Dicts may contain circular references.', () => {
 				`
-					let a: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
-					let b: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
+					val a: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
+					val b: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
 					a.set.(.y, b);
 					b.set.(.y, a);
 					set a.[.y] = b;

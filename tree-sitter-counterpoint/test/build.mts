@@ -970,11 +970,11 @@ function buildTest(title: string, source: string, expected: string): string {
 
 		DeclarationVariable: [
 			xjs.String.dedent`
-				let v: T = a + b * c;
-				let var u: A | B & C = v;
-				let 'å': A = a;
-				let var 'é': E = e;
-				let _: T = v;
+				val v: T = a + b * c;
+				val mut u: A | B & C = v;
+				val 'å': A = a;
+				val mut 'é': E = e;
+				val _: T = v;
 			`,
 			s(
 				'source_file',

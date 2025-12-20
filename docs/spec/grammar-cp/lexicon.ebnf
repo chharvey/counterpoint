@@ -69,10 +69,9 @@ KeywordOther :::=
 		| "else"
 	// storage
 		| "type"
-		| "let"
+		| "val"
 		| "_"
 	// modifier
-		| "var"
 ;
 
 

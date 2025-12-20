@@ -23,11 +23,11 @@ export enum Keyword {
 
 	// storage
 	TYPE  = 'type',
-	LET   = 'let',
+	LET   = 'val',
 	BLANK = '_',
 
 	// modifier
-	UNFIXED = 'var',
+	UNFIXED = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 }
 
 

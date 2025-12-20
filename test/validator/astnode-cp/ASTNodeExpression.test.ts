@@ -135,7 +135,7 @@ describe('ASTNodeExpression', () => {
 		describe('#varCheck', () => {
 			it('throws if the validator does not contain a record for the identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let var i: int = 42;
+					val mut i: int = 42;
 					i;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource('i;').varCheck(), ReferenceErrorUndeclared);
@@ -143,7 +143,7 @@ describe('ASTNodeExpression', () => {
 			it.skip('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					i;
-					let var i: int = 42;
+					val mut i: int = 42;
 				`).varCheck(), ReferenceErrorDeadZone);
 			});
 			it('throws if it was declared as a type alias.', () => {
@@ -158,7 +158,7 @@ describe('ASTNodeExpression', () => {
 		describe('#fold', () => {
 			it('assesses the value of a fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let x: int = 21 * 2;
+					val x: int = 21 * 2;
 					x;
 				`);
 				goal.varCheck();
@@ -171,7 +171,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an unfixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int = 21 * 2;
+					val mut x: int = 21 * 2;
 					x;
 				`);
 				goal.varCheck();
@@ -184,7 +184,7 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for a fixed variable of mutable type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let fixed_mutable: mut int{} = {1, 2, 3};
+					val fixed_mutable: mut int{} = {1, 2, 3};
 					fixed_mutable;
 				`);
 				goal.varCheck();
@@ -197,11 +197,11 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for an uncomputable fixed variable.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int = 21 * 2;
-					let y: int = x / 2;
+					val mut x: int = 21 * 2;
+					val y: int = x / 2;
 					y;
-					let z: mut int{} = {11, 22, 33};
-					let w: bool = z.[22];
+					val z: mut int{} = {11, 22, 33};
+					val w: bool = z.[22];
 					w;
 				`);
 				goal.varCheck();
@@ -222,8 +222,8 @@ describe('ASTNodeExpression', () => {
 		describe('#build', () => {
 			it('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let x: int = 42;
-					let y: float = 4.2 * 10;
+					val x: int = 42;
+					val y: float = 4.2 * 10;
 					x;
 					y;
 				`);
@@ -243,8 +243,8 @@ describe('ASTNodeExpression', () => {
 			});
 			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int = 42;
-					let y: int = x + 10;
+					val mut x: int = 42;
+					val y: int = x + 10;
 					x;
 					y;
 				`);
@@ -271,8 +271,8 @@ describe('ASTNodeExpression', () => {
 			});
 			it('with constant folding off, always returns `(local.get)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let x: int = 42;
-					let var y: float = 4.2;
+					val x: int = 42;
+					val mut y: float = 4.2;
 					x;
 					y;
 				`, CONFIG_FOLDING_OFF);
@@ -305,7 +305,7 @@ describe('ASTNodeExpression', () => {
 	describe('ASTNodeTemplate', () => {
 		function initTemplates(config: CPConfig = CONFIG_DEFAULT): AST.ASTNodeTemplate[] {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				let var x: int = 21;
+				val mut x: int = 21;
 				"""the answer is {{ x * 2 }} but what is the question?""";
 			`, config);
 			goal.varCheck();
@@ -510,9 +510,9 @@ describe('ASTNodeExpression', () => {
 			});
 			it('returns null for non-foldable entries.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int   = 1;
-					let var y: float = 2.0;
-					let var z: str   = "three";
+					val mut x: int   = 1;
+					val mut y: float = 2.0;
+					val mut z: str   = "three";
 					[x, 2.0, "three"];
 					[a= 1, b= y, c= "three"];
 					{1, 2.0, z};
@@ -678,14 +678,14 @@ describe('ASTNodeExpression', () => {
 				});
 				it('pointer entries.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let inner01: [float, int]   = [2.0, 3];
-						let inner11: [int,   float] = [5,   6.0];
-						let inner2:  [int,   []]    = [7,   []];
+						val inner01: [float, int]   = [2.0, 3];
+						val inner11: [int,   float] = [5,   6.0];
+						val inner2:  [int,   []]    = [7,   []];
 
-						let inner0: [int,   [float, int]]   = [1,   inner01];
-						let inner1: [float, [int,   float]] = [4.0, inner11];
+						val inner0: [int,   [float, int]]   = [1,   inner01];
+						val inner1: [float, [int,   float]] = [4.0, inner11];
 
-						let tuple: [[int, [float, int]], [float, [int, float]], [int, []]] = [inner0, inner1, inner2];
+						val tuple: [[int, [float, int]], [float, [int, float]], [int, []]] = [inner0, inner1, inner2];
 					`, CONFIG_FOLDING_OFF);
 					goal.varCheck();
 					goal.typeCheck();
@@ -866,14 +866,14 @@ describe('ASTNodeExpression', () => {
 				});
 				it('pointer entries.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let inner_ab: [a: float, b: int]   = [a= 2.0, b= 3];
-						let inner_bb: [a: int,   b: float] = [a= 5,   b= 6.0];
-						let inner_c:  [b: int,   a: bool]  = [b= 7,   a= true];
+						val inner_ab: [a: float, b: int]   = [a= 2.0, b= 3];
+						val inner_bb: [a: int,   b: float] = [a= 5,   b= 6.0];
+						val inner_c:  [b: int,   a: bool]  = [b= 7,   a= true];
 
-						let inner_a: [a: int,   b: [a: float, b: int]]   = [a= 1,   b= inner_ab];
-						let inner_b: [a: float, b: [a: int,   b: float]] = [a= 4.0, b= inner_bb];
+						val inner_a: [a: int,   b: [a: float, b: int]]   = [a= 1,   b= inner_ab];
+						val inner_b: [a: float, b: [a: int,   b: float]] = [a= 4.0, b= inner_bb];
 
-						let record: [
+						val record: [
 							a: [a: int,   b: [a: float, b: int]],
 							b: [a: float, b: [a: int,   b: float]],
 							c: [b: int,   a: bool],

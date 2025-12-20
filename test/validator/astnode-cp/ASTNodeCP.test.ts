@@ -33,7 +33,7 @@ describe('ASTNodeCP', () => {
 			});
 			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int = 42;
+					val mut x: int = 42;
 					x * 10;
 				`);
 				goal.varCheck();
@@ -56,11 +56,11 @@ describe('ASTNodeCP', () => {
 		describe('#varCheck', () => {
 			it('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let var i: int = 42;
+					val mut i: int = 42;
 					i = 43;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
-					let i: int = 42;
+					val i: int = 42;
 					i = 43;
 				`).varCheck(), AssignmentErrorReassignment);
 			});
@@ -77,7 +77,7 @@ describe('ASTNodeCP', () => {
 			context('for variable reassignment.', () => {
 				it('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var i: int = 42;
+						val mut i: int = 42;
 						i = 4.3;
 					`);
 					goal.varCheck();
@@ -99,19 +99,19 @@ describe('ASTNodeCP', () => {
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
-							let l: mut int[] = List.<int>([42]);
+							val l: mut int[] = List.<int>([42]);
 							l.0 = 4.2;
 						`,
 						`
-							let d: mut [:int] = Dict.<int>([i= 42]);
+							val d: mut [:int] = Dict.<int>([i= 42]);
 							d.i = 4.2;
 						`,
 						`
-							let s: mut int{} = Set.<int>([42]);
+							val s: mut int{} = Set.<int>([42]);
 							s.[42] = 4.2;
 						`,
 						`
-							let m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
+							val m: mut {bool -> int} = Map.<bool, int>([[true, 42]]);
 							m.[true] = 4.2;
 						`,
 					].forEach((src) => {
@@ -123,27 +123,27 @@ describe('ASTNodeCP', () => {
 				it('throws when assignee’s base type is not mutable.', () => {
 					[
 						`
-							let t: [int] = [42];
+							val t: [int] = [42];
 							t.0 = 43;
 						`,
 						`
-							let r: [i: int] = [i= 42];
+							val r: [i: int] = [i= 42];
 							r.i = 43;
 						`,
 						`
-							let l: int[] = List.<int>([42]);
+							val l: int[] = List.<int>([42]);
 							l.0 = 43;
 						`,
 						`
-							let d: [:int] = Dict.<int>([i= 42]);
+							val d: [:int] = Dict.<int>([i= 42]);
 							d.i = 43;
 						`,
 						`
-							let s: int{} = Set.<int>([42]);
+							val s: int{} = Set.<int>([42]);
 							s.[43] = true;
 						`,
 						`
-							let m: {bool -> int} = Map.<bool, int>([[true, 42]]);
+							val m: {bool -> int} = Map.<bool, int>([[true, 42]]);
 							m.[true] = 43;
 						`,
 					].forEach((src) => {
@@ -159,7 +159,7 @@ describe('ASTNodeCP', () => {
 		describe('#build', () => {
 			it('always returns `(local.set)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var y: float = 4.2;
+					val mut y: float = 4.2;
 					y = y * 10;
 				`);
 				goal.varCheck();
@@ -172,8 +172,8 @@ describe('ASTNodeCP', () => {
 			});
 			it('coerces as necessary.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: float | int = 4.2;
-					let var y: int | float = 4.2;
+					val mut x: float | int = 4.2;
+					val mut y: int | float = 4.2;
 					x = 8.4;
 					x = 16;
 					x = x;
@@ -199,14 +199,14 @@ describe('ASTNodeCP', () => {
 			it('aggregates multiple errors.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
 					a + b || c * d;
-					let y: V & W | X & Y = null;
-					let x: int = 42;
-					let x: int = 420;
+					val y: V & W | X & Y = null;
+					val x: int = 42;
+					val x: int = 420;
 					x = 4200;
 					type T = int;
 					type T = float;
-					let z: x = null;
-					let z: int = T;
+					val z: x = null;
+					val z: int = T;
 				`).varCheck(), (err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
@@ -266,18 +266,18 @@ describe('ASTNodeCP', () => {
 		describe('#typeCheck', () => {
 			it('aggregates multiple errors.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: null = null;
-					let b: null = null;
-					let c: null = null;
-					let d: null = null;
+					val a: null = null;
+					val b: null = null;
+					val c: null = null;
+					val d: null = null;
 					a * b + c * d;
-					let e: null = null;
-					let f: null = null;
-					let g: null = null;
-					let h: null = null;
+					val e: null = null;
+					val f: null = null;
+					val g: null = null;
+					val h: null = null;
 					e * f + g * h;
 					if null then 42 else 4.2;
-					let x: int = 4.2;
+					val x: int = 4.2;
 				`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
@@ -315,7 +315,7 @@ describe('ASTNodeCP', () => {
 					'',
 					'42;',
 					`
-						let x: int = 42;
+						val x: int = 42;
 						x;
 					`,
 				], (src) => {
