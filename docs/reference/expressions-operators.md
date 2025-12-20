@@ -352,8 +352,8 @@ These operators can be chained, and when done so, are grouped right-to-left.
 For example, `-+-8` is equivalent to `-(+(-8))`.
 
 ```
-let int_p = 512;
-let int_n = -\x200;
+val int_p = 512;
+val int_n = -\x200;
 
 +int_p; %== 512
 +int_n; %== -512
@@ -789,7 +789,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let mut hello: str? = null;
+val mut hello: str? = null;
 hello = "world";
 ```
 
@@ -809,7 +809,7 @@ The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mut str{} = {"water", "earth", "fire", "wind"};
+val elements: mut str{} = {"water", "earth", "fire", "wind"};
 elements.["wind"] = false;
 elements.["air"]  = true;
 elements; %== {"water", "earth", "fire", "air"}
@@ -825,7 +825,7 @@ then attempting to modify it would result in a [Mutability Error](./errors.md#mu
 The **intersection** operator creates a strict combination of the operands.
 ```
 type T = (foo: bool) & (bar: int);
-let v: T = (
+val v: T = (
 	foo= false,
 	bar= 42,
 );
@@ -880,7 +880,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let mut v: T = false;
+val mut v: T = false;
 v = 42;
 ```
 

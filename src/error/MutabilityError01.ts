@@ -7,7 +7,7 @@ import {MutabilityError} from './MutabilityError.ts';
 /**
  * A MutabilityError01 is thrown when the an item or property of an immutable object is reassigned.
  * @example
- * let x: (a: int) = (a= 42);
+ * val x: (a: int) = (a= 42);
  * set x.a = 43;              % MutabilityError01: Mutation of an object of immutable type `(a: int)`.
  */
 export class MutabilityError01 extends MutabilityError {

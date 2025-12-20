@@ -9,7 +9,7 @@ import {TypeError} from './TypeError.ts';
  * @example
  * type U = int;
  * type T = U.<V>;  % TypeErrorNotCallable: Type `U` is not callable.
- * let x: int = 42;
+ * val x: int = 42;
  * x.(24);          % TypeErrorNotCallable: Type `int` is not callable.
  */
 export class TypeErrorNotCallable extends TypeError {
