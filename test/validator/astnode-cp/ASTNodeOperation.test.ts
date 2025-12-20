@@ -163,8 +163,8 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=NOT]', () => {
 					it('returns type `true` for a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							!a;
 							!b;
 						`, CONFIG_FOLDING_OFF);
@@ -174,10 +174,10 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns type `bool` for a supertype of `T narrows null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null | int = null;
-							let var b: null | int = 42;
-							let var c: bool = false;
-							let var d: bool | float = 4.2;
+							val mut a: null | int = null;
+							val mut b: null | int = 42;
+							val mut c: bool = false;
+							val mut d: bool | float = 4.2;
 							!a;
 							!b;
 							!c;
@@ -189,9 +189,9 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns type `false` for any type not a supertype of `null` or `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: int = 42;
-							let var b: float = 4.2;
-							let var c: sym = @hello;
+							val mut a: int = 42;
+							val mut b: float = 4.2;
+							val mut c: sym = @hello;
 							!a;
 							!b;
 							!c;
@@ -215,8 +215,8 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=EMP]', () => {
 					it('returns type `true` for a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							?a;
 							?b;
 						`, CONFIG_FOLDING_OFF);
@@ -237,12 +237,12 @@ describe('ASTNodeOperation', () => {
 							'?{41 -> 42};',
 						].map((src) => AST.ASTNodeOperation.fromSource(src, CONFIG_FOLDING_OFF).type()).forEach((typ) => assert.strictEqual(typ, TYPE.BOOL));
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null | int = null;
-							let var b: null | int = 42;
-							let var c: bool = false;
-							let var d: bool | float = 4.2;
-							let var f: int = 42;
-							let var g: float = 4.2;
+							val mut a: null | int = null;
+							val mut b: null | int = 42;
+							val mut c: bool = false;
+							val mut d: bool | float = 4.2;
+							val mut f: int = 42;
+							val mut g: float = 4.2;
 							?a;
 							?b;
 							?c;
@@ -344,8 +344,8 @@ describe('ASTNodeOperation', () => {
 					['?(4.2,);', (builder) => CALL.vemp(builder.module, new VALUE.Tuple([new VALUE.Float(4.2)]).build(builder))],
 				]));
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var f: bool = false;
-					let var t: bool = true;
+					val mut f: bool = false;
+					val mut t: bool = true;
 					!f;
 					!t;
 					?f;
@@ -366,8 +366,8 @@ describe('ASTNodeOperation', () => {
 			});
 			it('works with vects.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 
 					!x;
 					!y;
@@ -398,8 +398,8 @@ describe('ASTNodeOperation', () => {
 			});
 			it('multiple operations.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 
 					!!x;
 					??y;
@@ -443,8 +443,8 @@ describe('ASTNodeOperation', () => {
 		describe('#build', () => {
 			it('works with vects.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 
 					x * 2;
 					y * 2;
@@ -495,8 +495,8 @@ describe('ASTNodeOperation', () => {
 			});
 			it('multiple unions.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 					x * y;
 					x > y;
 					x == y;
@@ -522,8 +522,8 @@ describe('ASTNodeOperation', () => {
 			});
 			it('multiple operations.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 					x + 2 + 3;
 					2 + y + 3;
 				`);
@@ -792,10 +792,10 @@ describe('ASTNodeOperation', () => {
 				});
 				it('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let a: unknown = ();
-						let b: unknown = (42,);
-						let c: unknown = (x= 42);
-						let d: Object  = {41 -> 42};
+						val a: unknown = ();
+						val b: unknown = (42,);
+						val c: unknown = (x= 42);
+						val d: Object  = {41 -> 42};
 						a !== ();
 						b !== (42,);
 						c !== (x= 42);
@@ -947,20 +947,20 @@ describe('ASTNodeOperation', () => {
 			});
 			it('compound types.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = ();
-					let b: unknown = (42,);
-					let c: unknown = (x= 42);
-					let d: Object  = [];
-					let e: Object  = [42];
-					let f: Object  = [x= 42];
-					let g: Object  = {};
-					let h: Object  = {42};
-					let i: Object  = {41 -> 42};
+					val a: unknown = ();
+					val b: unknown = (42,);
+					val c: unknown = (x= 42);
+					val d: Object  = [];
+					val e: Object  = [42];
+					val f: Object  = [x= 42];
+					val g: Object  = {};
+					val h: Object  = {42};
+					val i: Object  = {41 -> 42};
 
-					let bb: unknown = ((42,),);
-					let cc: unknown = (x= (42,));
-					let hh: Object  = {(42,)};
-					let ii: Object  = {(41,) -> (42,)};
+					val bb: unknown = ((42,),);
+					val cc: unknown = (x= (42,));
+					val hh: Object  = {(42,)};
+					val ii: Object  = {(41,) -> (42,)};
 
 					a === ();
 					b === (42,);
@@ -1065,10 +1065,10 @@ describe('ASTNodeOperation', () => {
 				});
 				it('calls `vid` when operands are same numeric type.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var i1: int   = 42;
-						let var i2: int   = 420;
-						let var f1: float = 4.2;
-						let var f2: float = 42.0;
+						val mut i1: int   = 42;
+						val mut i2: int   = 420;
+						val mut f1: float = 4.2;
+						val mut f2: float = 42.0;
 						i1 === i2;
 						f1 === f2;
 					`);
@@ -1152,10 +1152,10 @@ describe('ASTNodeOperation', () => {
 					});
 					it('calls `veq` when operands are same numeric type.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var i1: int   = 42;
-							let var i2: int   = 420;
-							let var f1: float = 4.2;
-							let var f2: float = 42.0;
+							val mut i1: int   = 42;
+							val mut i2: int   = 420;
+							val mut f1: float = 4.2;
+							val mut f2: float = 42.0;
 							i1 == i2;
 							f1 == f2;
 						`);
@@ -1209,8 +1209,8 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=AND]', () => {
 					it('returns `left` if it’s a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							a && 42;
 							b && 42;
 						`, CONFIG_FOLDING_OFF);
@@ -1224,10 +1224,10 @@ describe('ASTNodeOperation', () => {
 					it('returns `T | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null | int = null;
-							let var b: null | int = 42;
-							let var c: bool = false;
-							let var d: bool | float = 4.2;
+							val mut a: null | int = null;
+							val mut b: null | int = 42;
+							val mut c: bool = false;
+							val mut d: bool | float = 4.2;
 							a && "hello";
 							b && "hello";
 							c && "hello";
@@ -1244,8 +1244,8 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `right` if left does not contain `null` nor `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: int = 42;
-							let var b: float = 4.2;
+							val mut a: int = 42;
+							val mut b: float = 4.2;
 							a && true;
 							b && null;
 						`, CONFIG_FOLDING_OFF);
@@ -1260,8 +1260,8 @@ describe('ASTNodeOperation', () => {
 				describe('[operator=OR]', () => {
 					it('returns `right` if left is a subtype of `null | false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							a || false;
 							b || 42;
 						`, CONFIG_FOLDING_OFF);
@@ -1275,10 +1275,10 @@ describe('ASTNodeOperation', () => {
 					it('returns `(left - T) | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: null | int = null;
-							let var b: null | int = 42;
-							let var c: bool = false;
-							let var d: bool | float = 4.2;
+							val mut a: null | int = null;
+							val mut b: null | int = 42;
+							val mut c: bool = false;
+							val mut d: bool | float = 4.2;
 							a || "hello";
 							b || "hello";
 							c || "hello";
@@ -1295,8 +1295,8 @@ describe('ASTNodeOperation', () => {
 					});
 					it('returns `left` if it does not contain `null` nor `false`.', () => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-							let var a: int = 42;
-							let var b: float = 4.2;
+							val mut a: int = 42;
+							val mut b: float = 4.2;
 							a || true;
 							b || null;
 						`, CONFIG_FOLDING_OFF);
@@ -1405,11 +1405,11 @@ describe('ASTNodeOperation', () => {
 
 			it('returns a special case of `(if)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = 42;
-					let b: unknown = 4.2;
-					let c: unknown = null;
-					let d: unknown = false;
-					let e: unknown = true;
+					val a: unknown = 42;
+					val b: unknown = 4.2;
+					val c: unknown = null;
+					val d: unknown = false;
+					val e: unknown = true;
 
 					a && 420;
 					b || -420;
@@ -1461,10 +1461,10 @@ describe('ASTNodeOperation', () => {
 
 			it('counts internal variables correctly.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: unknown = 1;
-					let b: unknown = 2;
-					let c: unknown = 3;
-					let d: unknown = 4;
+					val a: unknown = 1;
+					val b: unknown = 2;
+					val c: unknown = 3;
+					val d: unknown = 4;
 
 					a && b || c && d;
 					(a || b) && (c || d);
@@ -1556,8 +1556,8 @@ describe('ASTNodeOperation', () => {
 			});
 			it('returns `(if)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let a: bool = true;
-					let b: bool = false;
+					val a: bool = true;
+					val b: bool = false;
 
 					if a then 1 else 2;
 					if b then 3 else 4;

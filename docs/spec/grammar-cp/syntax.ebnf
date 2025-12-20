@@ -21,11 +21,10 @@ Word ::=
 		| "else"
 	// storage
 		| "type"
-		| "let"
+		| "val"
 		| "_"
 		| "void"
 	// modifier
-		| "var"
 	| KEYWORD_TYPE
 	| KEYWORD_VALUE
 	| IDENTIFIER
@@ -187,8 +186,8 @@ DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
 DeclarationVariable ::=
-	| "let" "var"? ("_" | IDENTIFIER)     ":" Type "=" Expression ";"
-	| "let" "var"  ("_" | IDENTIFIER) "?" ":" Type                ";"
+	| "val" "mut"? ("_" | IDENTIFIER)     ":" Type "=" Expression ";"
+	| "val" "mut"  ("_" | IDENTIFIER) "?" ":" Type                ";"
 ;
 
 Declaration ::=

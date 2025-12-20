@@ -77,10 +77,10 @@ In some programming disciplines this pattern is generally encouraged, because
 variables holding different values at different points in runtime could lead to unpredictability.
 However, changing a variable’s value is useful in some cases, such as in loops or for storing state.
 
-Therefore, we can declare unfixed variables with the keywords `let var`,
+Therefore, we can declare unfixed variables with the keywords `let mut`,
 which allows us to assign it a new value later.
 ```
-let var my_var = "Hello, world!";
+let mut my_var = "Hello, world!";
 my_var;                           %== "Hello, world!"
 my_var = "¡Hola, mundo!";
 my_var;                           %== "¡Hola, mundo!"
@@ -107,8 +107,8 @@ b;               % also `42`
 If that first variable is ever reassigned, the second variable will keep its pointer
 to the original value, until it itself is reassigned.
 ```
-let var a: int = 42;
-let var b: int = a;
+let mut a: int = 42;
+let mut b: int = a;
 a;                   %== 42
 b;                   % also `42`
 a = 420;
@@ -294,5 +294,5 @@ However, these use cases are less practical.
 type _ = int | float;
 type _ = [str, bool]; % no duplicate declaration error!
 
-let unfixed _: float = 4.2;
+let mut _: float = 4.2;
 ```

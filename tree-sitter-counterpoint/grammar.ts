@@ -345,11 +345,10 @@ module.exports = grammar({
 			'else',
 			// storage
 			'type',
-			'let',
+			'val',
 			'_',
 			'void',
 			// modifier
-			'var',
 			$.keyword_type,
 			$.keyword_value,
 			$.identifier,
@@ -532,8 +531,8 @@ module.exports = grammar({
 		declaration_type: $ => seq('type', choice('_', $.identifier ), '=', $._type, ';'),
 
 		declaration_variable: $ => choice(
-			seq('let', optional('var'), choice('_', $.identifier),      ':', $._type, '=', $._expression, ';'),
-			seq('let',          'var',  choice('_', $.identifier), '?', ':', $._type,                     ';'),
+			seq('val', optional('mut'), choice('_', $.identifier),      ':', $._type, '=', $._expression, ';'),
+			seq('val',          'mut',  choice('_', $.identifier), '?', ':', $._type,                     ';'),
 		),
 
 		_declaration: $ => choice(
@@ -595,11 +594,10 @@ module.exports = grammar({
 			'else',
 			// storage
 			'type',
-			'let',
+			'val',
 			'_',
 			'void',
 			// modifier
-			'var',
 			$.keyword_type,
 			$.keyword_value,
 		],

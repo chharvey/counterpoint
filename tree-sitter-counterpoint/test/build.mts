@@ -173,7 +173,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				null;
 				false;
 				true;
-				@let;
+				@type;
 				@bool;
 				@true;
 				@hello;
@@ -1072,14 +1072,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		DeclarationVariable: [
 			xjs.String.dedent`
-				let v: T = a + b * c;
-				let var u: A | B & C = v;
-				let 'å': A = a;
-				let var 'é': E = e;
-				let _: T = v;
-				let var _: T = v;
-				let var uninit?: T;
-				let var _?: T;
+				val v: T = a + b * c;
+				val mut u: A | B & C = v;
+				val 'å': A = a;
+				val mut 'é': E = e;
+				val _: T = v;
+				val mut _: T = v;
+				val mut uninit?: T;
+				val mut _?: T;
 			`,
 			s(
 				'source_file',

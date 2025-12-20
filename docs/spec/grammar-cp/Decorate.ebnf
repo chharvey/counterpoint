@@ -8,10 +8,9 @@ _KEYWORD_OTHER =:=
 		| "else"
 	// storage
 		| "type"
-		| "let"
+		| "val"
 		| "_"
 	// modifier
-		| "var"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
@@ -622,33 +621,33 @@ Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarat
 
 
 
-Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "val" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		Decorate(Type)
 		Decorate(Expression)
 	);
-Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "val" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
 	);
-Decorate(DeclarationVariable ::= "let" "var" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "val" "mut" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		Decorate(Type)
 		Decorate(Expression)
 	);
-Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "val" "mut" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression)
 	);
-Decorate(DeclarationVariable ::= "let" "var" "_" "?" ":" Type ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "val" "mut" "_" "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		Decorate(Type)
 	);
-Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)

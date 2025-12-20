@@ -41,7 +41,7 @@ describe('ASTNodeDeclarationType', () => {
 				type T = float;
 			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			assert.throws(() => AST.ASTNodeGoal.fromSource(`
-				let FOO: int = 42;
+				val FOO: int = 42;
 				type FOO = float;
 			`).varCheck(), AssignmentErrorDuplicateDeclaration);
 		});
