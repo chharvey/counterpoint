@@ -436,7 +436,7 @@ test.suite('Decorator', () => {
 			['Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBlock', [AST.ASTNodeExpressionBlock, `
 				{
 					type T = U;
-					let a: T = b;
+					val a: T = b;
 					claim a: U;
 					set a = b;
 					a;
@@ -753,7 +753,7 @@ test.suite('Decorator', () => {
 			['Decorate(Block<Break> ::= "{" Statement<?Break>+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
 				{
 					type T = U;
-					let a: T = b;
+					val a: T = b;
 					claim a: U;
 					set a = b;
 					a;

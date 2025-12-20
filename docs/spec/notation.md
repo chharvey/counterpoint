@@ -15,7 +15,7 @@ Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (
 
 Snippets of program code (be it a Counterpoint program or another kind of program such as a context-free grammar)
 are written in `monospace font`.
-> The Counterpoint code `let x: int = X.value;` is a statement
+> The Counterpoint code `val x: int = X.value;` is a statement
 > that assigns the `value` property of `X` to the newly declared variable `x`.
 >
 > The grammar production `N ::= A B` defines the nonterminal `N` as a concatenation of nonterminals `A` and `B`.
@@ -60,7 +60,7 @@ then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which
 [Counterpoint Language Values](./types-values.md#counterpoint-language-types) are displayed with a `monospace typeface`.
 Examples include `true`, `42.0`, and `"hello"`.
 There is no notational distinction between Counterpoint Language Values and longer code snippets
-such as `let n: int = 42;`; however, the semantics will be apparent in context.
+such as `val n: int = 42;`; however, the semantics will be apparent in context.
 
 
 

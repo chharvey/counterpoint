@@ -254,7 +254,7 @@ Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.
 Block-expressions are blocks of statements that produce expressions.
 A block-expression *is* an expression — its value has a type and can be passed around and operated on like any other expression.
 ```cpl
-let blex: int = {
+val blex: int = {
 	print.("evaluates to 42");
 	42;
 };
@@ -267,9 +267,9 @@ In the example above, the determinant is `42;`.
 
 If the last statement of a block-expression is not an expression-statement, then the expression has no value, and it has a void type.
 ```cpl
-let blex: int = {
+val blex: int = {
 	print.("evaluates, but does not have a value");
-	let value: int = 42;
+	val value: int = 42;
 }; %> TypeError
 ```
 An expression with a void type is like a void function call. These types of expressions cannot be passed around or operated on.
@@ -277,9 +277,9 @@ An expression with a void type is like a void function call. These types of expr
 
 We run into a similar situation when block-expression *has* a determinant, but that determinant itself is void.
 ```cpl
-let blex: int = {
+val blex: int = {
 	print.("evaluates, but does not have a value");
-	let value: int = 42;
+	val value: int = 42;
 	print.(value); % <-- determinant
 }; %> TypeError
 ```
@@ -289,8 +289,8 @@ See the [Functions](./functions.md) chapter for details.)
 
 A block-expression might never finish execution!
 ```cpl
-let var count: int = 0;
-let blex: int = {
+val mut count: int = 0;
+val blex: int = {
 	while count >= 0 do {
 		set count += 1;
 	};
@@ -310,10 +310,10 @@ and `return`/`throw` statements will apply to the containing function.
 function f(var i: int): str {
 	while true do {
 		set i += 1;
-		let is_threeven: bool = mod.(i, 3) == 0 && {
+		val is_threeven: bool = mod.(i, 3) == 0 && {
 			skip; % restarts the `while` loop, not this block-expression
 		}; % no type error
-		let is_divisble_by_7: bool = mod.(i, 7) == 0 && {
+		val is_divisble_by_7: bool = mod.(i, 7) == 0 && {
 			return "exit"; % returns from the function, not this block-expression
 		}; % no type error
 	};
@@ -475,8 +475,8 @@ These operators can be chained, and when done so, are grouped right-to-left.
 For example, `-+-8` is equivalent to `-(+(-8))`.
 
 ```
-let int_p = 512;
-let int_n = -\x200;
+val int_p = 512;
+val int_n = -\x200;
 
 +int_p; %== 512
 +int_n; %== -512
@@ -505,9 +505,9 @@ float <Number>
 The keywords `int`, `nat`, and `float` can also be used as unary prefix operators.
 They convert their numeric operand into their respective type. If the operand is not numeric, a type error is raised.
 ```cpl
-let my_int: int   = 7;
-let my_nat: nat   = +4;
-let my_flt: float = -3.5;
+val my_int: int   = 7;
+val my_nat: nat   = +4;
+val my_flt: float = -3.5;
 
 2 * int my_flt;     % converts -3.5 to -3; result is same as `2 * -3`
 float my_int / 3.5; % converts 7 to 7.0; result is same as `7.0 / 3.5`
@@ -561,26 +561,26 @@ We can use a claim to tell the compiler, “I know what I’m doing and the type
 Type claims are a general form of [non-null assertions] (link pending).
 For example, we could use non-null assertion to say that an optional entry exists on an object:
 ```
-let var item: (str, ?: int) = ("apples", 42);
-let quantity: int = item?.1~?;
+val mut item: (str, ?: int) = ("apples", 42);
+val quantity: int = item?.1~?;
 ```
 Since `item.1` is optional, `item?.1` is of type `int | null`.
 By using the non-null assertion `~?`, we can subtract type null.
 
 The more general form of this is simply claiming that `item?.1` is of type `int`:
 ```
-let var item: (str, ?: int) = ("apples", 42);
-let quantity: int = item?.1 as <int>;
+val mut item: (str, ?: int) = ("apples", 42);
+val quantity: int = item?.1 as <int>;
 ```
 
 Type claims can be used in situations where non-null assertion cannot.
 Whereas non-null assertions can only tell the compiler that a property *exists*,
 type claims can widen, narrow, or shift the type of an expression.
 ```
-let var item: (str, int | str) = ("apples", 42);
-let ingredient: anything   = item.0 as <anything>;   % widening
-let quantity:   int        = item.1 as <int>;        % narrowing
-let in_stock:   int | bool = item.1 as <int | bool>; % shifting
+val mut item: (str, int | str) = ("apples", 42);
+val ingredient: anything   = item.0 as <anything>;   % widening
+val quantity:   int        = item.1 as <int>;        % narrowing
+val in_stock:   int | bool = item.1 as <int | bool>; % shifting
 ```
 
 The compiler will throw an error when encountering a type claim if its operand’s computed type
@@ -593,25 +593,25 @@ and its claimed type are disjoint (i.e. if there’s no overlap).
 A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
 if not, then the program throws. This operator is preferred in such circumstances.
 ```
-let animal: Animal = Cat.();
-let cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
+val animal: Animal = Cat.();
+val cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
 cat.meow.();                  % calls `meow` on the `Cat` instance
 
-let dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
+val dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
 dog.woof.();                  % unreachable
 ```
 The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
 ```
-let cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
+val cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
 cat_m?.meow.();                          % calls `meow`
 
-let dog_m: Maybe.<Dog> = animal as? Dog; %== None
+val dog_m: Maybe.<Dog> = animal as? Dog; %== None
 dog_m?.woof.();                          %== None
 
-let cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
+val cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
 cat_r!.meow.();                           % calls `meow`
 
-let dog_r: Result.<Dog> = animal as! Dog; %== Fail
+val dog_r: Result.<Dog> = animal as! Dog; %== Fail
 dog_r?.woof.();                           %== Fail
 ```
 
@@ -620,11 +620,11 @@ but no double-check is performed at runtime. The program will proceed as usual, 
 That means that if it’s *not* such an instance, an error could be thrown down the line,
 for example, when attempting to access a nonexistent method.
 ```
-let animal: Animal = Cat.();
-let cat: Cat = animal as <Cat>; % claim is allowed (`Animal` and `Cat` overlap)
+val animal: Animal = Cat.();
+val cat: Cat = animal as <Cat>; % claim is allowed (`Animal` and `Cat` overlap)
 cat.meow.();                    % calls `meow` on the `Cat` instance
 
-let dog: Dog = animal as <Dog>; % claim is allowed (`Animal` and `Dog` overlap)
+val dog: Dog = animal as <Dog>; % claim is allowed (`Animal` and `Dog` overlap)
 dog.woof.();                    % throws error: method `woof` not found on `Cat` instance
 ```
 
@@ -1096,7 +1096,7 @@ The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mut str{} = {"water", "earth", "fire", "wind"};
+val elements: mut str{} = {"water", "earth", "fire", "wind"};
 elements.["wind"] = false;
 elements.["air"]  = true;
 elements; %== {"water", "earth", "fire", "air"}
@@ -1112,7 +1112,7 @@ then attempting to modify it would result in a [Mutability Error](./errors.md#mu
 The **intersection** operator creates a strict combination of the operands.
 ```
 type T = (foo: bool) & (bar: int);
-let v: T = (
+val v: T = (
 	foo= false,
 	bar= 42,
 );
