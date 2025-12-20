@@ -57,14 +57,14 @@ Solution(s): Ensure the variable, type, or parameter is declared before referenc
 Cause: A variable was referenced before it was declared.
 ```
 my_var;               % ReferenceError: `my_var` is used before it is declared.
-let my_var: int = 42;
+val my_var: int = 42;
 ```
 Solution(s): Ensure the variable or type is declared before referencing it.
 
 #### 2103: ReferenceErrorKind
 Cause: A variable was used as a type, or a type was used as a variable.
 ```
-let FOO: int = 42;
+val FOO: int = 42;
 type T = FOO | float; % ReferenceError: `FOO` refers to a value, but is used as a type.
 
 type BAR = int;
@@ -84,8 +84,8 @@ An assignment error is raised when the compiler detects an illegal declaration o
 #### 2201: AssignmentErrorDuplicateDeclaration
 Cause: A duplicate declaration was encountered.
 ```
-let my_var: int = 42;
-let my_var: int = 24; % AssignmentError: Duplicate declaration of `my_var`.
+val my_var: int = 42;
+val my_var: int = 24; % AssignmentError: Duplicate declaration of `my_var`.
 
 type MyType = int;
 type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
@@ -104,7 +104,7 @@ Solution(s): Remove or rename the duplicate key.
 #### 2210: AssignmentErrorReassignment
 Cause: A fixed variable was reassigned.
 ```
-let my_var: int = 42;
+val my_var: int = 42;
 my_var = 24;          % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or make the variable `mut`.
@@ -138,7 +138,7 @@ Solution(s): Ensure the assigned type is a subtype of the assignee.
 #### 2303: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
 ```
-let x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
+val x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
 ((x: int): int => x + 1).(4.2); % TypeError: Expression of type `4.2` is not assignable to type `int`.
 ```
 Solution(s): Ensure the expression has an assignable type.
@@ -158,7 +158,7 @@ Cause: A non-callable object was called.
 type U = int;
 type T = U.<V>;  % TypeError: Type `U` is not callable.
 
-let x: int = 42;
+val x: int = 42;
 x.(24);          % TypeError: Type `int` is not callable.
 ```
 Solution(s): Callable objects are limited to functions, generic type aliases, and generic type functions.
@@ -184,7 +184,7 @@ A mutability error is raised when the compiler recognizes an attempt to mutate a
 #### 2401: MutabilityError01
 Cause: An immutable object was mutated.
 ```
-let x: [a: int] = [a= 42];
+val x: [a: int] = [a= 42];
 x.a = 43;                  % MutabilityError: Mutation of an object of immutable type `[a: int]`.
 ```
 Solution(s): Do not mutate the object’s entries, or else give it a `mutable` type.
@@ -205,7 +205,7 @@ A void error is raised when an expression that has no value is used in some way.
 #### 3101: VoidError01
 Cause: An expression without a value is used as a value.
 ```
-let v: void = returnVoid.(); % VoidError: Value is undefined.
+val v: void = returnVoid.(); % VoidError: Value is undefined.
 ```
 Solution(s): Void expressions may be evaluated, but do not operate on them,
 assign them to variables/properties/parameters, or return them from non-void functions.

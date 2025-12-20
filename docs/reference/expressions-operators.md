@@ -283,7 +283,7 @@ If the property is optional,
 the regular access operator unions the property type with `void` and
 the optional access operator unions the property type with `null`.
 ```
-let record: [required: bool, optional?: int] = my_record;
+val record: [required: bool, optional?: int] = my_record;
 record.required;  %: bool
 record?.required; %: bool
 record.optional;  %: int | void
@@ -293,7 +293,7 @@ For dynamic types (e.g., lists and dicts),
 the regular access operator treats all properties as required (does not modify the declared type), but
 the optional access operator treats all properties as optional (unions the property type with `null`).
 ```
-let dict: [: float] = my_dict;
+val dict: [: float] = my_dict;
 dict.prop;  %: float
 dict?.prop; %: float | null
 ```
@@ -307,16 +307,16 @@ Claim access has the same runtime behavior of regular property access.
 Its purpose is to tell the type-checker,
 “I know what I’m doing; This property exists and its type is not type `void`.”
 ```
-let item: [str, ?: int] = ["apples", 42];
-let quantity: int = item!.1;
+val item: [str, ?: int] = ["apples", 42];
+val quantity: int = item!.1;
 ```
 The expression `item!.1` has type `int`, despite being an optional entry.
 It will produce the value `42` at runtime.
 Note that bypassing the compiler’s type-checking process should be done carefully.
 If not used correctly, it could lead to runtime errors.
 ```
-let item: [str, ?: int] = ["apples"];
-let quantity: int = item!.1; % runtime error!
+val item: [str, ?: int] = ["apples"];
+val quantity: int = item!.1; % runtime error!
 ```
 An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
 
@@ -365,8 +365,8 @@ These operators can be chained, and when done so, are grouped right-to-left.
 For example, `-+-8` is equivalent to `-(+(-8))`.
 
 ```
-let int_p = 512;
-let int_n = -\x200;
+val int_p = 512;
+val int_n = -\x200;
 
 +int_p; %== 512
 +int_n; %== -512
@@ -800,7 +800,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let mut hello: str? = null;
+val mut hello: str? = null;
 hello = "world";
 ```
 
@@ -842,7 +842,7 @@ The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mut str{} = {"water", "earth", "fire", "wind"};
+val elements: mut str{} = {"water", "earth", "fire", "wind"};
 elements.["wind"] = false;
 elements.["air"]  = true;
 elements; %== {"water", "earth", "fire", "air"}
@@ -858,7 +858,7 @@ then attempting to modify it would result in a [Mutability Error](./errors.md#mu
 The **intersection** operator creates a strict combination of the operands.
 ```
 type T = [foo: bool] & [bar: int];
-let v: T = [
+val v: T = [
 	foo= false,
 	bar= 42,
 ];
@@ -913,7 +913,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let mut v: T = false;
+val mut v: T = false;
 v = 42;
 ```
 

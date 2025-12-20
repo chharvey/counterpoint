@@ -66,8 +66,8 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * We want to be able to assign mutable collection literals to wider mutable types
 	 * so that we can mutate them with different values:
 	 * ```
-	 * let my_ints: mut int{} = {42}; % <-- assignment should not fail
-	 * set my_ints[43] = true;
+	 * val my_ints: mut int{} = {42}; % <-- assignment should not fail
+	 * set my_ints.[43] = true;
 	 * ```
 	 *
 	 * Normally, mutable Set types are invariant — that is, if `A` is a subtype of `B`,

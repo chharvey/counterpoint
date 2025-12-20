@@ -8,7 +8,7 @@ import {TypeError} from './TypeError.ts';
  * A TypeErrorNotAssignable is thrown when an expression is assigned to a type to which it is not assignable,
  * or when an argument is assigned to a parameter to which it is not assignable.
  * @example
- * let x: int = true;              % TypeErrorNotAssignable: Expression of type `true` is not assignable to type `int`.
+ * val x: int = true;              % TypeErrorNotAssignable: Expression of type `true` is not assignable to type `int`.
  * ((x: int): int => x + 1).(4.2); % TypeErrorNotAssignable: Expression of type `4.2` is not assignable to type `int`.
  */
 export class TypeErrorNotAssignable extends TypeError {

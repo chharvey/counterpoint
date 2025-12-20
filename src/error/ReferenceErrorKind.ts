@@ -9,7 +9,7 @@ import {ReferenceError} from './ReferenceError.ts';
 /**
  * A ReferenceErrorKind is thrown when a symbol of the wrong kind is used.
  * @example
- * let FOO: int = 42;
+ * val FOO: int = 42;
  * type T = FOO | float; % ReferenceErrorKind: `FOO` refers to a value, but is used as a type.
  * @example
  * type BAR = int;
