@@ -27,7 +27,7 @@ export enum Keyword {
 	BLANK = '_',
 
 	// modifier
-	UNFIXED = 'var',
+	UNFIXED = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 }
 
 

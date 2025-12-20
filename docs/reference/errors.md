@@ -107,7 +107,7 @@ Cause: A fixed variable was reassigned.
 let my_var: int = 42;
 my_var = 24;          % AssignmentError: Reassignment of fixed variable `my_var`.
 ```
-Solution(s): Remove the reassignment, or make the variable `unfixed`.
+Solution(s): Remove the reassignment, or make the variable `mut`.
 
 
 ### Type Errors (23xx)

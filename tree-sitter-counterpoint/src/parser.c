@@ -15067,7 +15067,7 @@ static const uint16_t ts_small_parse_table[] = {
       aux_sym_string_template_repeat1,
   [13610] = 2,
     ACTIONS(757), 1,
-      anon_sym_var,
+      anon_sym_mut,
     ACTIONS(755), 2,
       sym_identifier,
       anon_sym__,

@@ -72,7 +72,6 @@ KeywordOther :::=
 		| "let"
 		| "_"
 	// modifier
-		| "var"
 ;
 
 

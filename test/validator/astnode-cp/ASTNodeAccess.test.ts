@@ -26,9 +26,9 @@ describe('ASTNodeAccess', () => {
 	const INDEX_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
 		let     tup_fixed:    [int, float, str]     = [1, 2.0, "three"];
-		let var tup_unfixed:  [int, float, str]     = [1, 2.0, "three"];
+		let mut tup_unfixed:  [int, float, str]     = [1, 2.0, "three"];
 		let     list_fixed:   (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
-		let var list_unfixed: (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
+		let mut list_unfixed: (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
 
 		%% statements 4 – 10 %%
 		tup_fixed.0;   % type \`1\`       % value \`1\`
@@ -67,10 +67,10 @@ describe('ASTNodeAccess', () => {
 		let     tupo2_f: [int, float, ?: str] = [1, 2.0];
 		let     tupo3_f: [int, float]         = [1, 2.0, true];
 		let     tupo4_f: [int, float]         = [1, 2.0];
-		let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
-		let var tupo2_u: [int, float, ?: str] = [1, 2.0];
-		let var tupo3_u: [int, float]         = [1, 2.0, true];
-		let var tupo4_u: [int, float]         = [1, 2.0];
+		let mut tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
+		let mut tupo2_u: [int, float, ?: str] = [1, 2.0];
+		let mut tupo3_u: [int, float]         = [1, 2.0, true];
+		let mut tupo4_u: [int, float]         = [1, 2.0];
 
 		%% statements 36 – 38 %%
 		tupo1_u.2; % type \`str | void\` % non-computable value
@@ -91,15 +91,15 @@ describe('ASTNodeAccess', () => {
 		tupo2_u!.2; % type \`str\`     % non-computable value
 
 		%% statements 46 – 48 %%
-		let var tupvoid: [int | void] = [42];
+		let mut tupvoid: [int | void] = [42];
 		tupvoid!.0; % type \`int\` % non-computable value
 	`;
 	const KEY_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
 		let     rec_fixed:    [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
-		let var rec_unfixed:  [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
+		let mut rec_unfixed:  [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
 		let     dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= "three"]);
-		let var dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= "three"]);
+		let mut dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= "three"]);
 
 		%% statements 4 – 10 %%
 		rec_fixed.a;   % type \`1\`       % value \`1\`
@@ -122,10 +122,10 @@ describe('ASTNodeAccess', () => {
 		let     reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
 		let     reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
 		let     reco4_f: [a: int, c: float]          = [a= 1, c= 2.0];
-		let var reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
-		let var reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
-		let var reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
-		let var reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
+		let mut reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
+		let mut reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+		let mut reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
+		let mut reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
 
 		%% statements 24 – 26 %%
 		reco1_u.b; % type \`str | void\` % non-computable value
@@ -146,7 +146,7 @@ describe('ASTNodeAccess', () => {
 		reco2_u!.b; % type \`str\`     % non-computable value
 
 		%% statements 34 – 36 %%
-		let var recvoid: [c: int | void] = [c= 42];
+		let mut recvoid: [c: int | void] = [c= 42];
 		recvoid!.c; % type \`int\` % non-computable value
 	`;
 	const EXPR_ACCESS_SRC: string = `
@@ -154,17 +154,17 @@ describe('ASTNodeAccess', () => {
 		let a: [str] = ["a"];
 		let b: [str] = ["b"];
 		let c: [str] = ["c"];
-		let var three: str = "three";
+		let mut three: str = "three";
 
 		%% statements 4 – 10 %%
 		let     tup_fixed:    [int, float, str]              = [1, 2.0, "three"];
-		let var tup_unfixed:  [int, float, str]              = [1, 2.0, "three"];
+		let mut tup_unfixed:  [int, float, str]              = [1, 2.0, "three"];
 		let     list_fixed:   (int | float | str)[]          = List.<int | float | str>([1, 2.0, "three"]);
-		let var list_unfixed: List.<int | float | str>       = List.<int | float | str>([1, 2.0, "three"]);
+		let mut list_unfixed: List.<int | float | str>       = List.<int | float | str>([1, 2.0, "three"]);
 		let     set_fixed:    (int | float | str){}          = {1, 2.0, "three"};
-		let var set_unfixed:  Set.<int | float | str>        = {1, 2.0, three};
+		let mut set_unfixed:  Set.<int | float | str>        = {1, 2.0, three};
 		let     map_fixed:    {[str] -> int | float | str}   = {a -> 1, b -> 2.0, c -> "three"};
-		let var map_unfixed:  Map.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
+		let mut map_unfixed:  Map.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
 
 		%% statements 12 – 18 %%
 		tup_fixed  .[0 + 0]; % type \`1\`       % value \`1\`
@@ -203,10 +203,10 @@ describe('ASTNodeAccess', () => {
 		let     tupo2_f: [int, float, ?: str] = [1, 2.0];
 		let     tupo3_f: [int, float]         = [1, 2.0, true];
 		let     tupo4_f: [int, float]         = [1, 2.0];
-		let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
-		let var tupo2_u: [int, float, ?: str] = [1, 2.0];
-		let var tupo3_u: [int, float]         = [1, 2.0, true];
-		let var tupo4_u: [int, float]         = [1, 2.0];
+		let mut tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
+		let mut tupo2_u: [int, float, ?: str] = [1, 2.0];
+		let mut tupo3_u: [int, float]         = [1, 2.0, true];
+		let mut tupo4_u: [int, float]         = [1, 2.0];
 
 		%% statements 44 – 46 %%
 		tupo1_u.[0 + 2]; % type \`str | void\` % non-computable value
@@ -287,8 +287,8 @@ describe('ASTNodeAccess', () => {
 			});
 			it('chained optional access.', () => {
 				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var bound1: [prop?: [bool]] = [prop= [true]];
-					let var bound2: [prop?: [?: bool]] = [prop= []];
+					let mut bound1: [prop?: [bool]] = [prop= [true]];
+					let mut bound2: [prop?: [?: bool]] = [prop= []];
 
 					bound1;          % type \`[prop?: [bool]]\`
 					bound1?.prop;    % type \`[bool] | null\`
@@ -397,7 +397,7 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
+					let mut list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
 					list.3;
 					list.-4;
 				`);
@@ -476,7 +476,7 @@ describe('ASTNodeAccess', () => {
 			});
 			it('returns the dict item type when key is out of bounds for dicts.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= "three"]);
+					let mut dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= "three"]);
 					dict.d;
 				`);
 				goal.varCheck();
@@ -590,7 +590,7 @@ describe('ASTNodeAccess', () => {
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
+						let mut list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
 						list.[3];
 						list.[-4];
 					`);

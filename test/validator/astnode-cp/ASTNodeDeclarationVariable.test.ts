@@ -109,12 +109,12 @@ describe('ASTNodeDeclarationVariable', () => {
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let immut:  int[3]         = [42, 420, 4200];
-				let mut:    mut int[]      = List.<int>([42, 420, 4200]);
+				let ismut:  mut int[]      = List.<int>([42, 420, 4200]);
 				let mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
 			`);
 			goal.varCheck();
 			goal.typeCheck();
-			const [immut, mut, mutmut] = [
+			const [immut, ismut, mutmut] = [
 				goal.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
 				goal.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
 				goal.validator.getSymbolInfo(0x102n) as SymbolSchemaVar,
@@ -128,8 +128,8 @@ describe('ASTNodeDeclarationVariable', () => {
 				])],
 			);
 			assert.deepStrictEqual(
-				[mut.source, mut.value],
-				['mut',      null],
+				[ismut.source, ismut.value],
+				['ismut',      null],
 			);
 			return assert.deepStrictEqual(
 				[mutmut.source, mutmut.value],
@@ -362,7 +362,7 @@ describe('ASTNodeDeclarationVariable', () => {
 				let b: float = 4.2 * a; % fixed, foldable: \`(nop)\`
 				let _: bool  = true;    % blank, foldable: \`(nop)\`
 
-				let var c: int = 42;     % unfixed, foldable: \`(local.set)\`
+				let mut c: int = 42;     % unfixed, foldable: \`(local.set)\`
 				let d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
 				let _:     int = c + 10; % blank, unfoldable: \`(drop)\`
 			`);
@@ -391,7 +391,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				let a:     int   = 42;   % fixed, foldable:   \`(local.set)\` instead of \`(nop)\`
 				let _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
-				let var b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
+				let mut b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
 				let _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();

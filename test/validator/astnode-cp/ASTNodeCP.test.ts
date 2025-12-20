@@ -33,7 +33,7 @@ describe('ASTNodeCP', () => {
 			});
 			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: int = 42;
+					let mut x: int = 42;
 					x * 10;
 				`);
 				goal.varCheck();
@@ -56,7 +56,7 @@ describe('ASTNodeCP', () => {
 		describe('#varCheck', () => {
 			it('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`
-					let var i: int = 42;
+					let mut i: int = 42;
 					i = 43;
 				`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`
@@ -77,7 +77,7 @@ describe('ASTNodeCP', () => {
 			context('for variable reassignment.', () => {
 				it('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var i: int = 42;
+						let mut i: int = 42;
 						i = 4.3;
 					`);
 					goal.varCheck();
@@ -159,7 +159,7 @@ describe('ASTNodeCP', () => {
 		describe('#build', () => {
 			it('always returns `(local.set)`.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var y: float = 4.2;
+					let mut y: float = 4.2;
 					y = y * 10;
 				`);
 				goal.varCheck();
@@ -172,8 +172,8 @@ describe('ASTNodeCP', () => {
 			});
 			it('coerces as necessary.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var x: float | int = 4.2;
-					let var y: int | float = 4.2;
+					let mut x: float | int = 4.2;
+					let mut y: int | float = 4.2;
 					x = 8.4;
 					x = 16;
 					x = x;
