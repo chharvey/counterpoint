@@ -540,10 +540,10 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('with constant folding on.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					% Foldable cases:
-					val mut _?:         int;               % \`(nop)\`
-					val     _:          int = 42;          % \`(nop)\`
-					val mut _:          int = 42;          % \`(nop)\`
-					val     assignee_a: int = 42;          % \`(nop)\`
+					val mut _?:         int;      % \`(nop)\`
+					val     _:          int = 42; % \`(nop)\`
+					val mut _:          int = 42; % \`(nop)\`
+					val     assignee_a: int = 42; % \`(nop)\`
 
 					% Non-Foldable cases:
 					val mut assignee_b?: int;              % \`(local.set)\`
@@ -554,8 +554,8 @@ test.suite('ASTNodeDeclaration', () => {
 					val mut assignee_e:  int = assignee_c; % \`(local.set)\`
 
 					%% Syntactically impossible cases (for completion):
-					val _?:         int;
-					val assignee6?: int;
+					val _?:          int;
+					val assignee_f?: int;
 					%%
 				}`);
 				return assertEqualBins(stmts.map((stmt) => stmt.build()), [

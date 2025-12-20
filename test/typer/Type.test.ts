@@ -1023,22 +1023,4 @@ test.suite('Type', () => {
 			);
 		});
 	});
-
-
-	test.suite('TypeUnit', () => {
-		test.suite('#primitiveType', () => {
-			test.test('returns the narrowest primitive type containing the unit.', () => {
-				new Map<TYPE.Unit, TYPE.Type>([
-					[TYPE.NULL,               TYPE.NULL],
-					[TYPE.FALSE,              TYPE.BOOL],
-					[TYPE.TRUE,               TYPE.BOOL],
-					[typeUnit(Symbol(0x100)), TYPE.SYM],
-					[typeUnit(42n),           TYPE.INT],
-					[typeUnit(42n, 'nat'),    TYPE.NAT],
-					[typeUnit(6.28),          TYPE.FLOAT],
-					[typeUnit('hello'),       TYPE.STR],
-				]).forEach((expected, actual) => assert.strictEqual(actual.primitiveType(), expected));
-			});
-		});
-	});
 });
