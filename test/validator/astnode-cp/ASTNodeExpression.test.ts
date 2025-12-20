@@ -69,9 +69,9 @@ test.suite('ASTNodeExpression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x93n,  'then'),
-					new VALUE.Symbol(0x87n,  'str'),
-					new VALUE.Symbol(0x8an,  'false'),
+					new VALUE.Symbol(0x92n,  'then'),
+					new VALUE.Symbol(0x86n,  'str'),
+					new VALUE.Symbol(0x89n,  'false'),
 					new VALUE.Symbol(0x100n, 'foobar'),
 				]);
 			});
@@ -147,7 +147,7 @@ test.suite('ASTNodeExpression', () => {
 		test.suite('#varCheck', () => {
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
 				AST.ASTNodeGoal.fromSource(`{
-					let var i: int = 42;
+					val mut i: int = 42;
 					i;
 				}`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeVariable.fromSource('i').varCheck(), ReferenceErrorUndeclared);
@@ -155,7 +155,7 @@ test.suite('ASTNodeExpression', () => {
 			test.test('throws when declared in an inner scope.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					if true then {
-						let var i: int = 42;
+						val mut i: int = 42;
 					};
 					i;
 				}`).varCheck(), ReferenceErrorUndeclared);
@@ -163,7 +163,7 @@ test.suite('ASTNodeExpression', () => {
 			test.test.todo('throws when there is a temporal dead zone.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					i;
-					let var i: int = 42;
+					val mut i: int = 42;
 				}`).varCheck(), ReferenceErrorDeadZone);
 			});
 			test.test('throws if it was declared as a type alias.', () => {
@@ -196,8 +196,8 @@ test.suite('ASTNodeExpression', () => {
 		test.suite('#type', () => {
 			test.test('unions with `null` when accessed variable is uninitialized.', () => {
 				const {stmts} = setupScript(`{
-					let var w:  int = 42;
-					let var x?: int;
+					val mut w:  int = 42;
+					val mut x?: int;
 					w;
 					x;
 				}`, {build: false});
@@ -217,7 +217,7 @@ test.suite('ASTNodeExpression', () => {
 		test.suite('#fold', () => {
 			test.test('assesses the value of a fixed variable.', () => {
 				const {stmts} = setupScript(`{
-					let x: int = 21 * 2;
+					val x: int = 21 * 2;
 					x;
 				}`, {build: false});
 				assert.ok(!(stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
@@ -228,7 +228,7 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('returns null for an unfixed variable.', () => {
 				const {stmts} = setupScript(`{
-					let var x: int = 21 * 2;
+					val mut x: int = 21 * 2;
 					x;
 				}`, {build: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
@@ -239,7 +239,7 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('returns null for a fixed variable of mutable type.', () => {
 				const {stmts} = setupScript(`{
-					let fixed_mutable: mut {int} = {1, 2, 3};
+					val fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
 				}`, {build: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).typenode.eval().hasMutable);
@@ -250,11 +250,11 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('returns null for an uncomputable fixed variable.', () => {
 				const {stmts} = setupScript(`{
-					let var x: int = 21 * 2;
-					let y: int = x / 2;
+					val mut x: int = 21 * 2;
+					val y: int = x / 2;
 					y;
-					let z: mut {int} = {11, 22, 33};
-					let w: bool = z.[22];
+					val z: mut {int} = {11, 22, 33};
+					val w: bool = z.[22];
 					w;
 				}`, {build: false});
 				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).unfixed);
@@ -273,8 +273,8 @@ test.suite('ASTNodeExpression', () => {
 		test.suite('#build', () => {
 			test.test('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
 				const {goal, stmts} = setupScript(`{
-					let x: int = 42;
-					let y: float = 4.2 * 10.0;
+					val x: int = 42;
+					val y: float = 4.2 * 10.0;
 					x;
 					y;
 				}`);
@@ -291,8 +291,8 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let var x: int = 42;
-					let y: int = x + 10;
+					val mut x: int = 42;
+					val y: int = x + 10;
 					x;
 					y;
 				}`);
@@ -321,7 +321,7 @@ test.suite('ASTNodeExpression', () => {
 				AST.ASTNodeTemplate.fromSource('"""42😀"""'),
 				AST.ASTNodeTemplate.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?"""'),
 				(setupScript(`{
-					let var x: int = 21;
+					val mut x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
 				}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
 			];
@@ -524,9 +524,9 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('returns null for non-foldable entries.', () => {
 				xjs.Array.forEachAggregated(setupScript(`{
-					let var x: int   = 1;
-					let var y: float = 2.0;
-					let var z: str   = "three";
+					val mut x: int   = 1;
+					val mut y: float = 2.0;
+					val mut z: str   = "three";
 					(x, 2.0, "three");
 					(a= 1, b= y, c= "three");
 					[x, 2.0, "three"];
@@ -680,14 +680,14 @@ test.suite('ASTNodeExpression', () => {
 				});
 				test.test('pointer entries.', () => {
 					const {goal, stmts, mod} = setupScript(`{
-						let var inner01: (float, int)   = (2.0, 3);
-						let var inner11: (int,   float) = (5,   6.0);
-						let var inner2:  (int,   ())    = (7,   ());
+						val mut inner01: (float, int)   = (2.0, 3);
+						val mut inner11: (int,   float) = (5,   6.0);
+						val mut inner2:  (int,   ())    = (7,   ());
 
-						let var inner0: (int,   (float, int))   = (1,   inner01);
-						let var inner1: (float, (int,   float)) = (4.0, inner11);
+						val mut inner0: (int,   (float, int))   = (1,   inner01);
+						val mut inner1: (float, (int,   float)) = (4.0, inner11);
 
-						let tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = (inner0, inner1, inner2);
+						val tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = (inner0, inner1, inner2);
 					}`);
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned!.build()),
@@ -858,14 +858,14 @@ test.suite('ASTNodeExpression', () => {
 				});
 				test.test('pointer entries.', () => {
 					const {goal, stmts, mod} = setupScript(`{
-						let var inner_ab: (a: float, b: int)   = (a= 2.0, b= 3);
-						let var inner_bb: (a: int,   b: float) = (a= 5,   b= 6.0);
-						let var inner_c:  (b: int,   a: bool)  = (b= 7,   a= true);
+						val mut inner_ab: (a: float, b: int)   = (a= 2.0, b= 3);
+						val mut inner_bb: (a: int,   b: float) = (a= 5,   b= 6.0);
+						val mut inner_c:  (b: int,   a: bool)  = (b= 7,   a= true);
 
-						let var inner_a: (a: int,   b: (a: float, b: int))   = (a= 1,   b= inner_ab);
-						let var inner_b: (a: float, b: (a: int,   b: float)) = (a= 4.0, b= inner_bb);
+						val mut inner_a: (a: int,   b: (a: float, b: int))   = (a= 1,   b= inner_ab);
+						val mut inner_b: (a: float, b: (a: int,   b: float)) = (a= 4.0, b= inner_bb);
 
-						let record: (
+						val record: (
 							a: (a: int,   b: (a: float, b: int)),
 							b: (a: float, b: (a: int,   b: float)),
 							c: (b: int,   a: bool),
@@ -986,10 +986,10 @@ test.suite('ASTNodeExpression', () => {
 		test.suite('#type', () => {
 			test.test('throws when the last statement is not an expression-statement.', () => {
 				const {goal} = setupScript(`{
-					let var x: int = 42;
-					let var y: int | null = {
+					val mut x: int = 42;
+					val mut y: int | null = {
 						x;
-						let var z: int = 69;
+						val mut z: int = 69;
 						%> Error!
 					};
 					x;
@@ -999,10 +999,10 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('throws when the determinant is empty.', () => {
 				const {goal} = setupScript(`{
-					let var x: int = 42;
-					let var y: int | null = {
+					val mut x: int = 42;
+					val mut y: int | null = {
 						x;
-						let var z: int = 69;
+						val mut z: int = 69;
 						; %> Error!
 					};
 					x;
@@ -1012,10 +1012,10 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('returns the type of the determinant.', () => {
 				const {stmts} = setupScript(`{
-					let var x: int = 42;
-					let var y: int | null = {
+					val mut x: int = 42;
+					val mut y: int | null = {
 						x;
-						let var z: int = 69;
+						val mut z: int = 69;
 						z; % type \`int\`
 					};
 					x;
@@ -1029,9 +1029,9 @@ test.suite('ASTNodeExpression', () => {
 		test.suite('#fold', () => {
 			test.test('returns null if the block is not foldable.', () => {
 				assert.strictEqual(((setupScript(`{
-					let var x: int = 42;
-					let z: int = 69;
-					let var y: int | null = {
+					val mut x: int = 42;
+					val z: int = 69;
+					val mut y: int | null = {
 						x;
 						z;
 					};
@@ -1041,11 +1041,11 @@ test.suite('ASTNodeExpression', () => {
 			});
 			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
-					let x: int = 42;
-					let z: int = 69;
-					let y: int | null = {
+					val x: int = 42;
+					val z: int = 69;
+					val y: int | null = {
 						x;
-						let w: int = x;
+						val w: int = x;
 						w;
 						;
 						z;
@@ -1066,7 +1066,7 @@ test.suite('ASTNodeExpression', () => {
 			test.test('sanity check.', () => {
 				assert.deepStrictEqual(
 					(setupScript(`{
-						let x: int = 42 - { 42; 69; };
+						val x: int = 42 - { 42; 69; };
 						x;
 					}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new VALUE.Integer(42n - 69n),
@@ -1078,10 +1078,10 @@ test.suite('ASTNodeExpression', () => {
 		test.suite('#build', () => {
 			test.test('builds each statement except last as usual, then outputs last expression-statement build.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let var x: int = 42;
-					let var y: int | null = {
+					val mut x: int = 42;
+					val mut y: int | null = {
 						x;
-						let var z: int = 69;
+						val mut z: int = 69;
 						z;
 					};
 					x;

@@ -310,14 +310,13 @@ module.exports = grammar({
 			'else',
 			// storage
 			'type',
-			'let',
+			'val',
 			'claim',
 			'set',
 			'_',
 			'void',
 			// modifier
 			'nominal',
-			'var',
 			// control
 			'unless',
 			'while',
@@ -528,8 +527,8 @@ module.exports = grammar({
 		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
 
 		...parameterize('declaration_variable', ({break: brk}) => $ => choice(
-			seq('let', optional('var'), choice('_', $.identifier),      ':', $._type, '=', call($, '_expression', 'block', {break: brk}), ';'),
-			seq('let',          'var',  choice('_', $.identifier), '?', ':', $._type,                                                     ';'),
+			seq('val', optional('mut'), choice('_', $.identifier),      ':', $._type, '=', call($, '_expression', 'block', {break: brk}), ';'),
+			seq('val',          'mut',  choice('_', $.identifier), '?', ':', $._type,                                                     ';'),
 		), 'break'),
 
 		...parameterize('_declaration', ({break: brk}) => $ => choice(
@@ -581,14 +580,13 @@ module.exports = grammar({
 			'else',
 			// storage
 			'type',
-			'let',
+			'val',
 			'claim',
 			'set',
 			'_',
 			'void',
 			// modifier
 			'nominal',
-			'var',
 			// control
 			'unless',
 			'while',

@@ -86,9 +86,9 @@ test.suite('ASTNodeType', () => {
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
-					new VALUE.Symbol(0x93n,  'then').toType(),
-					new VALUE.Symbol(0x87n,  'str').toType(),
-					new VALUE.Symbol(0x8an,  'false').toType(),
+					new VALUE.Symbol(0x92n,  'then').toType(),
+					new VALUE.Symbol(0x86n,  'str').toType(),
+					new VALUE.Symbol(0x89n,  'false').toType(),
 					new VALUE.Symbol(0x100n, 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(42n, 'nat'),
@@ -119,7 +119,7 @@ test.suite('ASTNodeType', () => {
 			test.test('does not throw when referencing intrinsic identifiers.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					type T = Object;
-					let obj: Object = 42;
+					val obj: Object = 42;
 				}`).varCheck(); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
@@ -147,7 +147,7 @@ test.suite('ASTNodeType', () => {
 			});
 			test.test('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let FOO: int = 42;
+					val FOO: int = 42;
 					type _ = FOO | float;
 				}`).varCheck(), ReferenceErrorKind);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{

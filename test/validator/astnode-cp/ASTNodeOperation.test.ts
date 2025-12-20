@@ -56,7 +56,7 @@ function buildOperations(tests: ReadonlyMap<string, (builder: Builder, get_op0: 
 			case 2: {
 				// unary prefix operator
 				({goal, stmts} = setupScript(`{
-					let var a: ${ AST.ASTNodeConstant.fromSource(splits[1]) .type().toString() } = ${ splits[1] };
+					val mut a: ${ AST.ASTNodeConstant.fromSource(splits[1]) .type().toString() } = ${ splits[1] };
 					${ splits[0] } a;
 				}`));
 				break;
@@ -64,7 +64,7 @@ function buildOperations(tests: ReadonlyMap<string, (builder: Builder, get_op0: 
 			default: {
 				// any operator where operand comes first
 				({goal, stmts} = setupScript(`{
-					let var a: ${ AST.ASTNodeConstant.fromSource(splits[0]) .type().toString() } = ${ splits[0] };
+					val mut a: ${ AST.ASTNodeConstant.fromSource(splits[0]) .type().toString() } = ${ splits[0] };
 					a ${ splits.slice(1).join('') };
 				}`));
 				break;
@@ -226,17 +226,17 @@ test.suite('ASTNodeOperation', () => {
 				test.test('without constant folding: returns type `bool` for anything else.', () => {
 					assert_shallowStrictEqual(
 						setupScript(`{
-							let var a: null | int   = null;
-							let var b: null | int   = 42;
-							let var c: bool         = false;
-							let var d: bool | float = 4.2;
-							let var f: int          = 42;
-							let var g: float        = 4.2e+1;
-							let var h: sym          = @hello;
-							let var i: anything     = ();
-							let var j: anything     = (42,);
-							let var k: anything     = (a= 42);
-							let var l: anything     = {41 -> 42};
+							val mut a: null | int   = null;
+							val mut b: null | int   = 42;
+							val mut c: bool         = false;
+							val mut d: bool | float = 4.2;
+							val mut f: int          = 42;
+							val mut g: float        = 4.2e+1;
+							val mut h: sym          = @hello;
+							val mut i: anything     = ();
+							val mut j: anything     = (42,);
+							val mut k: anything     = (a= 42);
+							val mut l: anything     = {41 -> 42};
 							?a;
 							?b;
 							?c;
@@ -260,15 +260,15 @@ test.suite('ASTNodeOperation', () => {
 			test.test('without constant folding: returns Integer/Natural/Float respectively for valid ops.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
-						let var i1: int   = 7;
-						let var i2: int   = 3;
-						let var i3: int   = 2;
-						let var n1: nat   = +7;
-						let var n2: nat   = +3;
-						let var n3: nat   = +2;
-						let var f1: float = 7.1;
-						let var f2: float = 3.1;
-						let var f3: float = 2.1;
+						val mut i1: int   = 7;
+						val mut i2: int   = 3;
+						val mut i3: int   = 2;
+						val mut n1: nat   = +7;
+						val mut n2: nat   = +3;
+						val mut n3: nat   = +2;
+						val mut f1: float = 7.1;
+						val mut f2: float = 3.1;
+						val mut f3: float = 2.1;
 
 						(i1 + i2) * i3;
 						(n1 + n2) * n3;
@@ -284,12 +284,12 @@ test.suite('ASTNodeOperation', () => {
 			test.test('without constant folding: returns `bool` for numeric operands.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
-						let var i1: int   = 7;
-						let var i2: int   = 3;
-						let var n1: nat   = +7;
-						let var n2: nat   = +3;
-						let var f1: float = 7.1;
-						let var f2: float = 3.1;
+						val mut i1: int   = 7;
+						val mut i2: int   = 3;
+						val mut n1: nat   = +7;
+						val mut n2: nat   = +3;
+						val mut f1: float = 7.1;
+						val mut f2: float = 3.1;
 
 						${ ['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${ left } ${ op } ${ right };`))).join('\n') }
 					}`).stmts.slice(6).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
@@ -315,12 +315,12 @@ test.suite('ASTNodeOperation', () => {
 			test.test('without constant folding: returns `bool` for operands of same numeric type.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
-						let var i1: int   = 7;
-						let var i2: int   = 3;
-						let var n1: nat   = +7;
-						let var n2: nat   = +3;
-						let var f1: float = 7.1;
-						let var f2: float = 3.1;
+						val mut i1: int   = 7;
+						val mut i2: int   = 3;
+						val mut n1: nat   = +7;
+						val mut n2: nat   = +3;
+						val mut f1: float = 7.1;
+						val mut f2: float = 3.1;
 
 						i1 === i2;
 						n1 === n2;
@@ -337,9 +337,9 @@ test.suite('ASTNodeOperation', () => {
 				test.test('without constant folding: returns `false` for operands of different numeric types.', () => {
 					assert_shallowStrictEqual(
 						setupScript(`{
-							let var i1: int   = 7;
-							let var n1: nat   = +7;
-							let var f1: float = 7.1;
+							val mut i1: int   = 7;
+							val mut n1: nat   = +7;
+							val mut f1: float = 7.1;
 
 							i1 === n1;
 							i1 === f1;
@@ -354,9 +354,9 @@ test.suite('ASTNodeOperation', () => {
 				test.test('without constant folding: coerces numeric types when mixed, returns `bool`.', () => {
 					assert_shallowStrictEqual(
 						setupScript(`{
-							let var i1: int   = 7;
-							let var n1: nat   = +7;
-							let var f1: float = 7.1;
+							val mut i1: int   = 7;
+							val mut n1: nat   = +7;
+							val mut f1: float = 7.1;
 
 							i1 == n1;
 							i1 == f1;
@@ -374,8 +374,8 @@ test.suite('ASTNodeOperation', () => {
 	test.suite('#build', () => {
 		test.test('compound expression.', () => {
 			const {goal, stmts, mod} = setupScript(`{
-				let var a: int   = 42;
-				let var b: float = 2.1;
+				val mut a: int   = 42;
+				val mut b: float = 2.1;
 				a ^ 2 / 420;
 				b / 3.1 - 5.1;
 			}`);
@@ -394,8 +394,8 @@ test.suite('ASTNodeOperation', () => {
 		});
 		test.test('with block-expressions.', () => {
 			const {stmts, mod} = setupScript(`{
-				let var x: int = 42;
-				let var y: int = 69;
+				val mut x: int = 42;
+				val mut y: int = 69;
 				x + { x; y; };
 			}`);
 			return assertEqualBins((stmts[2] as AST.ASTNodeStatementExpression).expr!.build(), BINOP.add(
@@ -453,18 +453,18 @@ test.suite('ASTNodeOperation', () => {
 				test.suite('[operator=NOT]', () => {
 					test.test('returns type `true` for a subtype of `null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							!a;
 							!b;
 						}`, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					test.test('returns type `bool` for a supertype of `T narrows null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
-							let var a: null | int = null;
-							let var b: null | int = 42;
-							let var c: bool = false;
-							let var d: bool | float = 4.2;
+							val mut a: null | int = null;
+							val mut b: null | int = 42;
+							val mut c: bool = false;
+							val mut d: bool | float = 4.2;
 							!a;
 							!b;
 							!c;
@@ -473,9 +473,9 @@ test.suite('ASTNodeOperation', () => {
 					});
 					test.test('returns type `false` for any literal type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
-							let var a: int = 42;
-							let var b: float = 4.2;
-							let var c: sym = @hello;
+							val mut a: int = 42;
+							val mut b: float = 4.2;
+							val mut c: sym = @hello;
 							!a;
 							!b;
 							!c;
@@ -493,8 +493,8 @@ test.suite('ASTNodeOperation', () => {
 				test.suite('[operator=EMP]', () => {
 					test.test('returns type `true` for a subtype of `null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							?a;
 							?b;
 						}`, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
@@ -502,7 +502,7 @@ test.suite('ASTNodeOperation', () => {
 				});
 				test.test('[operator=NEG] throws for `nat` type.', () => {
 					const {stmts} = setupScript(`{
-						let var n: nat = +42;
+						val mut n: nat = +42;
 						-n;
 					}`, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
@@ -512,9 +512,9 @@ test.suite('ASTNodeOperation', () => {
 			test.suite('[operator=INT | NAT | FLOAT]', () => {
 				test.test('returns the respective type for numeric operands.', () => {
 					assert.deepStrictEqual(setupScript(`{
-						let var my_int: int   = 7;
-						let var my_nat: nat   = +42;
-						let var my_flt: float = -3.5;
+						val mut my_int: int   = 7;
+						val mut my_nat: nat   = +42;
+						val mut my_flt: float = -3.5;
 
 						int   my_int;
 						int   my_nat;
@@ -609,9 +609,9 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion only if needed.', () => {
 				const exprs: readonly AST.ASTNodeOperationUnary[] = setupScript(`{
-					let my_int: int   = -7;
-					let my_nat: nat   = +42;
-					let my_flt: float = -3.5;
+					val my_int: int   = -7;
+					val my_nat: nat   = +42;
+					val my_flt: float = -3.5;
 
 					int   my_int;
 					int   my_nat;
@@ -678,8 +678,8 @@ test.suite('ASTNodeOperation', () => {
 					['? (4.2,)', (builder, get_op0) => CALL.vemp(builder.module, get_op0)],
 				]));
 				const {stmts, mod} = setupScript(`{
-					let var f: bool = false;
-					let var t: bool = true;
+					val mut f: bool = false;
+					val mut t: bool = true;
 					!f;
 					!t;
 					?f;
@@ -697,8 +697,8 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('works with vects.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 
 					!x;
 					!y;
@@ -726,8 +726,8 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('multiple operations.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 
 					!!x;
 					??y;
@@ -761,9 +761,9 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var my_int: int   = -7;
-					let var my_nat: nat   = +42;
-					let var my_flt: float = -3.5;
+					val mut my_int: int   = -7;
+					val mut my_nat: nat   = +42;
+					val mut my_flt: float = -3.5;
 
 					int   my_int;
 					int   my_nat;
@@ -799,8 +799,8 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#build', () => {
 			test.test('works with vects.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let var x: int   = 42;
-					let var y: float = 4.2;
+					val mut x: int   = 42;
+					val mut y: float = 4.2;
 
 					x * 2;
 					y * 2.4;
@@ -846,8 +846,8 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('multiple unions.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var x: int | float = 42;
-					let var y: int | float = 4.2;
+					val mut x: int | float = 42;
+					val mut y: int | float = 4.2;
 					x == y;
 				}`);
 				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = stmts.slice(2).map((stmt) => {
@@ -866,8 +866,8 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('multiple operations.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let var x: int   = 42;
-					let var y: float = 4.2;
+					val mut x: int   = 42;
+					val mut y: float = 4.2;
 					x + 2 + 3;
 					2.0 + y + 3.0;
 				}`);
@@ -986,8 +986,8 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('short-circuits when multiplicand is zero.', () => {
 				const {stmts} = setupScript(`{
-					let var i: int   = 42;
-					let var f: float = 4.2;
+					val mut i: int   = 42;
+					val mut f: float = 4.2;
 
 					0 * i;    % value \`0\`
 					0.0 * f;  % value \`0.0\`
@@ -1048,8 +1048,8 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('does not compile the first operand if it is foldable and an identity element.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var x: int   = 42;
-					let var y: float = 4.2;
+					val mut x: int   = 42;
+					val mut y: float = 4.2;
 
 					1 * x;
 					0.0 + y;
@@ -1235,10 +1235,10 @@ test.suite('ASTNodeOperation', () => {
 				});
 				test.test('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
 					setupScript(`{
-						let a: anything = ();
-						let b: anything = (42,);
-						let c: anything = (x= 42);
-						let d: Object   = {41 -> 42};
+						val a: anything = ();
+						val b: anything = (42,);
+						val c: anything = (x= 42);
+						val d: Object   = {41 -> 42};
 						a !== ();
 						b !== (42,);
 						c !== (x= 42);
@@ -1334,20 +1334,20 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('compound types.', () => {
 				setupScript(`{
-					let a: anything = ();
-					let b: anything = (42,);
-					let c: anything = (x= 42);
-					let d: Object   = [];
-					let e: Object   = [42];
-					let f: Object   = [x= 42];
-					let g: Object   = {};
-					let h: Object   = {42};
-					let i: Object   = {41 -> 42};
+					val a: anything = ();
+					val b: anything = (42,);
+					val c: anything = (x= 42);
+					val d: Object   = [];
+					val e: Object   = [42];
+					val f: Object   = [x= 42];
+					val g: Object   = {};
+					val h: Object   = {42};
+					val i: Object   = {41 -> 42};
 
-					let bb: anything = ((42,),);
-					let cc: anything = (x= (42,));
-					let hh: Object   = {(42,)};
-					let ii: Object   = {(41,) -> (42,)};
+					val bb: anything = ((42,),);
+					val cc: anything = (x= (42,));
+					val hh: Object   = {(42,)};
+					val ii: Object   = {(41,) -> (42,)};
 
 					a === ();
 					b === (42,);
@@ -1449,10 +1449,10 @@ test.suite('ASTNodeOperation', () => {
 				});
 				test.test('calls `vid` when operands are same numeric type.', () => {
 					const {stmts, mod} = setupScript(`{
-						let var i1: int   = 42;
-						let var i2: int   = 420;
-						let var f1: float = 4.2;
-						let var f2: float = 42.0;
+						val mut i1: int   = 42;
+						val mut i2: int   = 420;
+						val mut f1: float = 4.2;
+						val mut f2: float = 42.0;
 						i1 === i2;
 						f1 === f2;
 					}`);
@@ -1502,10 +1502,10 @@ test.suite('ASTNodeOperation', () => {
 						['4.2 == 42.0', (builder, get_op0) => CALL.veq(builder.module, get_op0, buildConst(builder, 42.0))],
 					]));
 					const {stmts, mod} = setupScript(`{
-						let var i1: int   = 42;
-						let var i2: int   = 420;
-						let var f1: float = 4.2;
-						let var f2: float = 42.0;
+						val mut i1: int   = 42;
+						val mut i2: int   = 420;
+						val mut f1: float = 4.2;
+						val mut f2: float = 42.0;
 						i1 == i2;
 						f1 == f2;
 					}`);
@@ -1555,8 +1555,8 @@ test.suite('ASTNodeOperation', () => {
 				test.suite('[operator=AND]', () => {
 					test.test('returns `left` if it’s a subtype of `null | false`.', () => {
 						assertEqualTypes(setupScript(`{
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							a && 42;
 							b && 42;
 						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -1567,10 +1567,10 @@ test.suite('ASTNodeOperation', () => {
 					test.test('returns `T | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						return assertEqualTypes(setupScript(`{
-							let var a: null | int = null;
-							let var b: null | int = 42;
-							let var c: bool = false;
-							let var d: bool | float = 4.2;
+							val mut a: null | int = null;
+							val mut b: null | int = 42;
+							val mut c: bool = false;
+							val mut d: bool | float = 4.2;
 							a && "hello";
 							b && "hello";
 							c && "hello";
@@ -1584,8 +1584,8 @@ test.suite('ASTNodeOperation', () => {
 					});
 					test.test('returns `right` if left does not contain `null` nor `false`.', () => {
 						assertEqualTypes(setupScript(`{
-							let var a: int = 42;
-							let var b: float = 4.2;
+							val mut a: int = 42;
+							val mut b: float = 4.2;
 							a && true;
 							b && null;
 						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -1597,8 +1597,8 @@ test.suite('ASTNodeOperation', () => {
 				test.suite('[operator=OR]', () => {
 					test.test('returns `right` if left is a subtype of `null | false`.', () => {
 						assertEqualTypes(setupScript(`{
-							let var a: null = null;
-							let var b: null | false = null;
+							val mut a: null = null;
+							val mut b: null | false = null;
 							a || false;
 							b || 42;
 						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -1609,10 +1609,10 @@ test.suite('ASTNodeOperation', () => {
 					test.test('returns `(left - T) | right` if left is a supertype of `T narrows null | false`.', () => {
 						const hello: TYPE.Unit<VALUE.String> = typeUnit('hello');
 						assertEqualTypes(setupScript(`{
-							let var a: null | int = null;
-							let var b: null | int = 42;
-							let var c: bool = false;
-							let var d: bool | float = 4.2;
+							val mut a: null | int = null;
+							val mut b: null | int = 42;
+							val mut c: bool = false;
+							val mut d: bool | float = 4.2;
 							a || "hello";
 							b || "hello";
 							c || "hello";
@@ -1626,8 +1626,8 @@ test.suite('ASTNodeOperation', () => {
 					});
 					test.test('returns `left` if it does not contain `null` nor `false`.', () => {
 						assertEqualTypes(setupScript(`{
-							let var a: int = 42;
-							let var b: float = 4.2;
+							val mut a: int = 42;
+							val mut b: float = 4.2;
 							a || true;
 							b || null;
 						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
@@ -1672,9 +1672,9 @@ test.suite('ASTNodeOperation', () => {
 					['true && 201.0e-1', (builder, get_op0) => drop_then(builder.module, [get_op0], buildConst(builder, 20.1))],
 				]));
 				const {goal, stmts, mod} = setupScript(`{
-					let var a: int  = 1;
-					let var c: int  = 3;
-					let var n: null = null;
+					val mut a: int  = 1;
+					val mut c: int  = 3;
+					val mut n: null = null;
 
 					a && 2 || 3 && 4;
 					n && 2 || c && null;
@@ -1719,11 +1719,11 @@ test.suite('ASTNodeOperation', () => {
 
 			test.test('returns a special case of `(if)`.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var a: anything = 42;
-					let var b: anything = 4.2;
-					let var c: anything = null;
-					let var d: anything = false;
-					let var e: anything = true;
+					val mut a: anything = 42;
+					val mut b: anything = 4.2;
+					val mut c: anything = null;
+					val mut d: anything = false;
+					val mut e: anything = true;
 
 					a && 420;
 					b || -420;
@@ -1772,10 +1772,10 @@ test.suite('ASTNodeOperation', () => {
 
 			test.test('counts internal variables correctly.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var a: anything = 1;
-					let var b: anything = 2;
-					let var c: anything = 3;
-					let var d: anything = 4;
+					val mut a: anything = 1;
+					val mut b: anything = 2;
+					val mut c: anything = 3;
+					val mut d: anything = 4;
 
 					a && b || c && d;
 					(a || b) && (c || d);
@@ -1862,8 +1862,8 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#build', () => {
 			test.test('optimizes by evaluating condition operand type.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let var tr: true  = true;
-					let var fa: false = false;
+					val mut tr: true  = true;
+					val mut fa: false = false;
 
 					if tr then false else 2;
 					if tr then 2     else 3.0;
@@ -1880,8 +1880,8 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('returns `(if)`.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var a: bool = true;
-					let var b: bool = false;
+					val mut a: bool = true;
+					val mut b: bool = false;
 
 					if a then 1 else 2;
 					if b then 3 else 4;

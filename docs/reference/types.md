@@ -62,7 +62,7 @@ Type `sym` contains symbols, which are values defined by the programmer.
 Symbol values can only be referenced by name, as their implementations are unexposed.
 Syntactically, symbol names are identifier names, preceeded by an `@`-sign (**U+0040 COMMERCIAL AT**).
 ```
-let greeting: sym = @hello;
+val greeting: sym = @hello;
 ```
 
 The only operations available to symbols are identity/equality
@@ -91,7 +91,7 @@ Internally, symbols are represented as integers at runtime,
 but we are never exposed to their values.
 We cannot operate and compute with symbols the same way we do with strings or integers.
 ```
-let var el: sym = @fire;
+val mut el: sym = @fire;
 % Unfixed variables of type `sym` may be reassigned,
 set el = @air;
 set el = @aether;
@@ -105,7 +105,7 @@ set el = @my_symbol; % ok
 @water.toUpperCase.(); %> TypeError
 
 % One may wish to use a union type (more narrow than `sym`) to enumerate allowed symbol values.
-let var element: @water | @earth | @fire | @air = @water;
+val mut element: @water | @earth | @fire | @air = @water;
 set element = @aether; %> TypeError
 set element = @fire;   % ok
 ```
@@ -121,11 +121,11 @@ However, this is not recommended as it greatly decreases code readability.
 Like Unicode identifiers, symbol names are *not* cooked, meaning escape sequences do not exist.
 Stringifying a symbol produces its name.
 ```
-let greeting1: sym = @'¡héllö wôrld!';
+val greeting1: sym = @'¡héllö wôrld!';
 
 @'$5.99' != @'\u{24}5\u{2e}99'; %== true
 
-let greeting2: sym = @hello_world;
+val greeting2: sym = @hello_world;
 greeting2 !== @'hello_world';      %== true
 
 """{{ greeting2 }}"""          == "hello_world";           %== true
@@ -241,12 +241,12 @@ There are two kinds of strings: string literals and string templates.
 String literals are static and known at compile-time.
 They’re delimited with double-quotes (`"` **U+0022 QUOTATION MARK**).
 ```
-let greeting: str = "Hello, world!";
+val greeting: str = "Hello, world!";
 ```
 
 String literals may contain line breaks, which are preserved during “cooking”.
 ```
-let pangram: str = "The quick brown fox
+val pangram: str = "The quick brown fox
 jumps over the lazy dog.";
 ```
 > "The quick brown fox\
@@ -258,7 +258,7 @@ in source code, without rendering the line breaks in the strings’ cooked value
 When we escape the line break with a backslash (`\` **U+005C REVERSE SOLIDUS**),
 the line break is converted into a space.
 ```
-let pangram: str = "The quick brown fox\
+val pangram: str = "The quick brown fox\
 jumps over the lazy dog.";
 ```
 > "The quick brown fox jumps over the lazy dog."
@@ -301,7 +301,7 @@ The code `\u{‹codepoint›}` escapes unicode characters,
 where ‹codepoint› is the code point of the character in hexadecimal.
 For example, `\u{24}` escapes the dollar sign symbol, since its code point is **U+0024**.
 ```
-let price: str = "\u{24}3.99";
+val price: str = "\u{24}3.99";
 ```
 > "$3.99"
 
@@ -370,8 +370,8 @@ Multiline comments cannot be nested.
 String templates are dynamic and may contain interpolated expressions.
 They’re delimited with three double-quotes (`"""`).
 ```
-let years: int = 10;
-let greeting: str = """I’ve been coding for {{ years }} years.
+val years: int = 10;
+val greeting: str = """I’ve been coding for {{ years }} years.
 That’s about {{ 365 * years }} days.""";
 ```
 
@@ -379,7 +379,7 @@ That’s about {{ 365 * years }} days.""";
 String templates may contain interpolated expressions, which are enclosed within double-braces `{{ … }}`.
 An interpolated expression is an expression that computes to a string.
 ```
-let twelve: str = "12";
+val twelve: str = "12";
 """3 times 4 is {{ twelve }}""";
 ```
 > "3 times 4 is 12"
@@ -427,7 +427,7 @@ judge        \%\% and this isn’t either \%\%    my vow.
 ##### No Escapes
 String templates may contain line breaks, but line continuations are not possible.
 ```
-let pangram: str = """Watch “Jeopardy!”,\
+val pangram: str = """Watch “Jeopardy!”,\
 Alex Trebek’s fun TV quiz game.""";
 ```
 > "Watch “Jeopardy!”,\\\
@@ -439,7 +439,7 @@ The cooked value of a string template matches its raw code.
 Probably one of the most common uses of string templates is that they can contain DSLs,
 “domain-specific languages”. For example, we might want to encode a CSS snippet in a string template:
 ```
-let css_code: str = """
+val css_code: str = """
 	h1, h2, h3 {
 		font-weight: bold;
 	}
@@ -450,14 +450,14 @@ let css_code: str = """
 ```
 Because there are no character escapes, DSLs very easy to read and write in string templates.
 ```
-let latex_code: str = """
+val latex_code: str = """
 	\paragraph{The following equations explain how \emph{matter} and \emph{energy} are related.}
 	\begin{align}
 		E_0 &= mc^2 \\
 		E   &= \frac{mc^2}{\sqrt{1-\frac{v^2}{c^2}}}
 	\end{align}
 """;
-let javascript_code: str = """
+val javascript_code: str = """
 	var nonempty_string = "Look, ma, no escaping (the quotes)!"
 	var empty_string = ""
 """;
@@ -510,20 +510,20 @@ and any value assignable to it must compute to that value. Variables with a unit
 but they can only be reassigned to the same value, so having an unfixed variable with a unit type is kind of pointless.
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
-let var TAU: true = true;
+val mut TAU: true = true;
 set TAU = true;
 set TAU = false; %> TypeError
 
-let var CAR_WHEELS: 4 = 4;
-let CAT_FEET: \b100 = \o4;
+val mut CAR_WHEELS: 4 = 4;
+val CAT_FEET: \b100 = \o4;
 set CAR_WHEELS = CAT_FEET;
 ```
 
 The assigned value doesn’t need to be a literal; it may be an expression,
 as long as it’s computable by the compiler’s constant folding mechanism.
 ```
-let TAU: true = !false;
-let CAR_WHEELS: \b100 = \o10 / 2;
+val TAU: true = !false;
+val CAR_WHEELS: \b100 = \o10 / 2;
 ```
 
 #### String Unit Types
@@ -533,32 +533,32 @@ String unit types are compared by **string value**.
 This means both the type and the value are computed before the assignment takes place.
 String unit types can also contain escape sequences and special characters.
 ```
-let GREETING: "H\u{e9}llo\sW\u{f6}rld!" = "Héllo Wörld!";
-let COUNT: "1
+val GREETING: "H\u{e9}llo\sW\u{f6}rld!" = "Héllo Wörld!";
+val COUNT: "1
 2\
 3	4" = "1\n2 3\t4";
 ```
 
 If the compiler can compute the value of a string template, then it may also be assigned to a string unit type.
 ```
-let hello: str = "Hello";
-let world: str = "World";
-let GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
+val hello: str = "Hello";
+val world: str = "World";
+val GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
 ```
 Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
 the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
 However, if they were unfixed, that wouldn’t be possible.
 ```
-let var hello: str = "Hello";
-let var world: str = "World";
-let GREETING: "Hello World!" = """{{ hello }} {{ world }}!"""; %> TypeError
+val mut hello: str = "Hello";
+val mut world: str = "World";
+val GREETING: "Hello World!" = """{{ hello }} {{ world }}!"""; %> TypeError
 ```
 This is because the type of the template can only be inferred as `str`,
 which is wider than the unit type it’s being assigned to.
 
 String templates *cannot* be used as unit types (even if they’re templates without interpolation).
 ```
-let GREETING: """Hello World!""" = "Hello World!"; %> ParseError
+val GREETING: """Hello World!""" = "Hello World!"; %> ParseError
 ```
 
 
@@ -592,35 +592,35 @@ Tuple literals are comma-separated expressions within parentheses.
 Tuple types use the same syntax, but instead of value expressions
 they contain type expressions (a.k.a. types).
 ```
-let elements: (str, str, str) = ("earth", "wind", "fire");
+val elements: (str, str, str) = ("earth", "wind", "fire");
 ```
 <sup>&lowast;</sup>Note: A tuple type or expression with exactly 1 entry must have either a leading or trailing comma,
 so as not to be confused with a grouped expression/type.
 I.e., `(T)` is just a parenthesized type, whereas `(T,)` is a 1-tuple type.
 
 ```
-let element:   (str)  = "air";
-let singleton: (str,) = ("air",);
+val element:   (str)  = "air";
+val singleton: (str,) = ("air",);
 ```
 
 Larger tuples are always assignable to smaller tuples,
 but assigning a smaller tuple to a larger tuple results in a TypeError.
 ```
-let elements: (str, str, str) = ("earth", "wind", "fire", true, 42);
-let elements_and_more: (str, str, str, bool, int) = ("earth", "wind", "fire"); %> TypeError
+val elements: (str, str, str) = ("earth", "wind", "fire", true, 42);
+val elements_and_more: (str, str, str, bool, int) = ("earth", "wind", "fire"); %> TypeError
 ```
 The first declaration is allowed because the last two items are simply dropped off.
 
 Because tuples are read-only, the `mut` operator is invalid on tuple types.
 ```
-let elements: mut (str, str, str) = ("earth", "wind", "fire"); %> TypeError
+val elements: mut (str, str, str) = ("earth", "wind", "fire"); %> TypeError
 ```
 
 #### Tuple Access
 Items of a tuple can be accessed via 0-based **dot-accessor notation**
 (index `0` represents the first item).
 ```
-let elements: (str, str, str) = ("earth", "wind", "fire");
+val elements: (str, str, str) = ("earth", "wind", "fire");
 elements.0; %== "earth"
 elements.1; %== "wind"
 elements.2; %== "fire"
@@ -656,7 +656,7 @@ elements.-4; %> TypeErrorNoEntry
 
 A tuple’s items, type, and size are all fixed.
 ```
-let tuple: (bool, int, str) = (true, 4, "hello");
+val tuple: (bool, int, str) = (true, 4, "hello");
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
 set tuple.2 = "world"; %> MutabilityError
@@ -666,7 +666,7 @@ tuple; %== (true, 4, "hello");
 #### Optional Items
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
-let var x: (str, int, ?: bool) = ("hello", 42);
+val mut x: (str, int, ?: bool) = ("hello", 42);
 set x = ("hello", 42, true);
 ```
 The symbol `?:` in the type signature indicates that the item is optional.
@@ -674,7 +674,7 @@ In a tuple type, all optional items *must* come after all required items.
 
 Use the [maybe access operator](./expressions-operators.md#maybe-access) `?.` to access optional tuple entries.
 ```
-let x2: bool? = x?.2;
+val x2: bool? = x?.2;
 ```
 If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`.
 
@@ -705,7 +705,7 @@ This is because the record key will always be lexically bound to the record —
 it will never stand alone, so there’s no risk of syntax error.
 ```
 (
-	let=   "to initialize a variable",
+	type=  "to initialize a variable",
 	is=    "referential identity",
 	int=   "the Integer type",
 	false= "the negative boolean value",
@@ -733,7 +733,7 @@ type StyleMap = (
 	fontSize:   float,
 	fontFamily: str,
 );
-let my_styles: StyleMap = (
+val my_styles: StyleMap = (
 	fontFamily= "sans-serif",
 	fontSize=   1.25;
 	fontStyle=  "oblique",
@@ -749,7 +749,7 @@ cause any side-effects, those side-effects will be observed in the order the ent
 Larger records are always assignable to smaller records,
 but assigning a smaller record to a larger record results in a TypeError.
 ```
-let elements: (
+val elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
@@ -761,7 +761,7 @@ let elements: (
 	aristotle=  "fire",
 );
 
-let elements_and_more: (
+val elements_and_more: (
 	socrates:   str,
 	plato:      str,
 	aristotle:  str,
@@ -777,13 +777,13 @@ The first declaration is allowed because the unused properties are simply droppe
 
 Because records are read-only, the `mut` operator is invalid on record types.
 ```
-let elements: mut (x: str, y: str, z: str) = (x= "earth", y= "wind", z= "fire"); %> TypeError
+val elements: mut (x: str, y: str, z: str) = (x= "earth", y= "wind", z= "fire"); %> TypeError
 ```
 
 #### Record Access
 Values of a record can be accessed via **dot-accessor notation**.
 ```
-let elements: (
+val elements: (
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
@@ -805,7 +805,7 @@ elements.pythagoras; %> TypeErrorNoEntry
 
 A record’s properties, type, and size are all fixed.
 ```
-let record: (a: bool, b: int, c: str) = (a= true, b= 4, c= "hello");
+val record: (a: bool, b: int, c: str) = (a= true, b= 4, c= "hello");
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError
 set record.c = "world"; %> MutabilityError
@@ -815,7 +815,7 @@ record; %== (a= true, b= 4, c= "hello");
 #### Optional Properties
 Record types may have optional properties, indicating that a record of that type might or might not have that property.
 ```
-let var y: (firstname: str, middlename?: str, lastname: str) = (
+val mut y: (firstname: str, middlename?: str, lastname: str) = (
 	firstname= "Martha",
 	lastname=  "Dandridge",
 );
@@ -830,7 +830,7 @@ In a record type, required and optional properties may be intermixed (order isn�
 
 Use the [maybe access operator](./expressions-operators.md#maybe-access) `?.` to access optional record entries.
 ```
-let ym: str? = y?.middlename;
+val ym: str? = y?.middlename;
 ```
 If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`.
 
@@ -847,13 +847,13 @@ where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object.
 ```
-let elements: List.<str> = List.<str>(("earth", "wind", "fire"));
+val elements: List.<str> = List.<str>(("earth", "wind", "fire"));
 ```
 A shorthand for the generic syntax `List.<T>` is `[T]`,
 and the list literal shorthand syntax is a sequence of comma-separated expressions within square brackets.
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: [str | bool | int] = ["earth", "wind", "fire", true, 42];
+val elements: [str | bool | int] = ["earth", "wind", "fire", true, 42];
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -863,7 +863,7 @@ and if the list were mutable, we could reassign that entry to an integer or bool
 List items are accessed by **bracket-accessor notation**, where the expression in brackets computes the index.
 The bracketed expression must be an Integer or Natural value (of type `int` or `nat`).
 ```
-let elements: [str] = ["earth", "wind", "fire"];
+val elements: [str] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"
 elements.[+3 - +2]; %== "wind"
 elements.[-3 + 2];  %== "fire"
@@ -874,14 +874,14 @@ When the the compiler can determine if the index is out-of-bounds (for example i
 then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a tuple, where a TypeErrorNoEntry would be reported.)
 ```
-let i: int = 4;
+val i: int = 4;
 elements.[i];   %> VoidErrorOutOfBounds
 ```
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
 In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
 ```
-let var i: int = 4;           % unfixed variables are not folded
-let elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
+val mut i: int = 4;           % unfixed variables are not folded
+val elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
 ```
 
 The [maybe access operator](./expressions-operators.md#maybe-access) will “catch” the exception and return `null` instead.
@@ -902,7 +902,7 @@ where `T` indicates the type of values in the dict.
 Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#records) object.
 ```
-let my_styles: Dict.<int | float | str> = Dict.<int | float | str>((
+val my_styles: Dict.<int | float | str> = Dict.<int | float | str>((
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontStyle=  "oblique",
@@ -927,14 +927,14 @@ Dict literals cannot contain the same key more than once.
 Dict properties are accessed by **bracket-accessor notation**, where the expression in brackets computes the key.
 The bracketed expression should be a Symbol value (of type `sym`).
 ```
-let elements: [: str] = [
+val elements: [: str] = [
 	socrates=  "earth",
 	plato=     "wind",
 	aristotle= "fire",
 ];
 elements.[@socrates]; %== "earth"
 
-let key: sym = if user.hasPermissions then @plato else @aristotle;
+val key: sym = if user.hasPermissions then @plato else @aristotle;
 elements.[key]; % either "wind" or "fire" depending on `user.hasPermissions`
 elements.[2];   %> TypeError % expected sym | str but found int
 ```
@@ -952,13 +952,13 @@ When the the compiler can determine if the key is out-of-range (for example if t
 then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a record, where a TypeErrorNoEntry would be reported.)
 ```
-let s: sym = @pythagoras;
+val s: sym = @pythagoras;
 elements.[s];             %> VoidErrorOutOfBounds
 ```
 Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
 In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
 ```
-let var s: sym = @pythagoras; % unfixed variables are not folded
+val mut s: sym = @pythagoras; % unfixed variables are not folded
 elements.[s];                 % no compile-time error, but results in ExceptionKeyOutOfRange
 json_data.["pythagoras"];     % no compile-time error, but results in ExceptionKeyOutOfRange
 ```
@@ -978,7 +978,7 @@ where `T` indicates the type of elements in the set.
 Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object of elements.
 ```
-let elements: Set.<str> = Set.<str>(("earth", "wind", "fire"));
+val elements: Set.<str> = Set.<str>(("earth", "wind", "fire"));
 ```
 The set above has elements of one type.
 Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
@@ -986,7 +986,7 @@ Typically this will be the case, but it’s possible for a set to contain a mix 
 A shorthand for the generic syntax `Set.<T>` is `{T}`,
 and the set literal shorthand syntax is a sequence of comma-separated expressions within curly braces.
 ```
-let elements: {str} = {"earth", "wind", "fire"};
+val elements: {str} = {"earth", "wind", "fire"};
 ```
 
 The size of sets is not known at compile-time, and could change during run-time.
@@ -998,9 +998,9 @@ If a set is declared with duplicates, they are collapsed:
 The set `{"water", "water"}` only conains 1 element.
 Sets may have several elements that are un-identical but “equal”.
 ```
-let x: [str] = ["water"];
-let y: [str] = ["water"];
-let elements: {float | [str]} = {0.0, -0.0, x, y};
+val x: [str] = ["water"];
+val y: [str] = ["water"];
+val elements: {float | [str]} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
@@ -1012,7 +1012,7 @@ Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
 The value is `true` if the element is in the set, and `false` if not.
 ```
-let bases: {anything} = {
+val bases: {anything} = {
 	"who",
 	["what"],
 	{ "i" -> {"don’t" -> "know"} },
@@ -1024,7 +1024,7 @@ bases.["idk"];                             %== false
 
 A TypeError is produced when the expression is not assignable to the set’s type argument.
 ```
-let a: int = 3;
+val a: int = 3;
 bases.[a];      %> TypeError
 ```
 
@@ -1040,7 +1040,7 @@ where `K` indicates the type of antecedents and `V` indicates the type of conseq
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
 where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
-let bases: Map.<int | str, anything> = Map.<int | str, anything>((
+val bases: Map.<int | str, anything> = Map.<int | str, anything>((
 	(1,     "who"),
 	("2nd", ("what",)),
 	(1 + 2, { "i" -> {"don’t" -> "know"} }),
@@ -1053,7 +1053,7 @@ but this isn’t a requirement.
 A shorthand for the generic syntax `Map.<K, V>` is `{K -> V}`,
 and the map literal shorthand syntax is a sequence of comma-separated `key -> value` pairs within curly braces.
 ```
-let bases: {int | str -> anything} = {
+val bases: {int | str -> anything} = {
 	1     -> "who",
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -1067,7 +1067,7 @@ Like records, the order of entries in a map is not necessarily significant.
 Antecedents have unique consequents in that latter declarations take precedence.
 In the case of maps, antecedents that are identical are considered “the same object”.
 ```
-let bases: {int | str -> anything} = {
+val bases: {int | str -> anything} = {
 	1     -> "who",
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -1078,9 +1078,9 @@ The consequent corresponding to the antecedent `3` will be `` (i= ('don’t'= "k
 
 Maps may have several antecedents that are un-identical but “equal”.
 ```
-let x: {int} = {3};
-let y: {int} = {3};
-let bases: {float | {int} -> anything} = {
+val x: {int} = {3};
+val y: {int} = {3};
+val bases: {float | {int} -> anything} = {
 	0.0  -> "who",
 	-0.0 -> ("what",),
 	x    -> { "i" -> {"don’t" -> "know"} },
@@ -1097,7 +1097,7 @@ Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 Consequents of a map can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
-let bases: {int | str -> anything} = {
+val bases: {int | str -> anything} = {
 	1     -> "who",
 	"2nd" -> ("what",),
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -1109,13 +1109,13 @@ bases.[3].["i"];         %== {"don’t" -> "know"}
 
 A VoidErrorOutOfBounds is produced when the compiler can determine if the antecedent does not exist.
 ```
-let a: str = "3rd";
+val a: str = "3rd";
 bases.[a];          %> VoidErrorOutOfBounds
 ```
 If the compiler can’t compute the antecedent, it won’t error at all,
 but this means an Exception could be thrown at runtime.
 ```
-let var a: str = "3rd";
+val mut a: str = "3rd";
 bases.[a];              % no compile-time error, but runtime exception
 ```
 We can avoid the potential crash using the

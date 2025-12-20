@@ -57,22 +57,22 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override get isFoldable(): boolean {
 		/*
 		 * Foldable cases:
-		 * - `let var _?:       T;`
-		 * - `let     _:        T = assigned_foldable;`
-		 * - `let var _:        T = assigned_foldable;`
-		 * - `let     assignee: T = assigned_foldable;`
+		 * - `val mut _?:       T;`
+		 * - `val     _:        T = assigned_foldable;`
+		 * - `val mut _:        T = assigned_foldable;`
+		 * - `val     assignee: T = assigned_foldable;`
 		 *
 		 * Non-Foldable cases:
-		 * - `let var assignee?: T;`
-		 * - `let var assignee:  T = assigned_foldable;`
-		 * - `let     _:         T = assigned_non_foldable;`
-		 * - `let var _:         T = assigned_non_foldable;`
-		 * - `let     assignee:  T = assigned_non_foldable;`
-		 * - `let var assignee:  T = assigned_non_foldable;`
+		 * - `val mut assignee?: T;`
+		 * - `val mut assignee:  T = assigned_foldable;`
+		 * - `val     _:         T = assigned_non_foldable;`
+		 * - `val mut _:         T = assigned_non_foldable;`
+		 * - `val     assignee:  T = assigned_non_foldable;`
+		 * - `val mut assignee:  T = assigned_non_foldable;`
 		 *
 		 * Syntactically impossible cases (for completion):
-		 * - `let _?:        T;`
-		 * - `let assignee?: T;`
+		 * - `val _?:        T;`
+		 * - `val assignee?: T;`
 		 */
 		return (
 			!this.assigned          && !this.assignee ||

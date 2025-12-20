@@ -225,7 +225,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					null;
 					false;
 					true;
-					@let;
+					@type;
 					@bool;
 					@true;
 					@hello;
@@ -351,7 +351,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						a: V.0,
 						b: W.<float>,
 					);
-					type V = (let: str, bool: str, true: str, foo: str);
+					type V = (type: str, bool: str, true: str, foo: str);
 				}
 			`,
 			sourceTypes(
@@ -459,7 +459,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = RecordType?.prop;
 					type T = RecordType?._;
 					type T = Set.<T>;
-					type T = SomeType.let;
+					type T = SomeType.type;
 					type T = SomeType.bool;
 					type T = SomeType.true;
 					type T = SomeType.foo;
@@ -695,7 +695,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		RecordLiteral: [
 			xjs.String.dedent`
 				{
-					(a= 1, b= (x= 2), _= (y= (k= 3)), let= 4, bool= 5, true= 6);
+					(a= 1, b= (x= 2), _= (y= (k= 3)), type= 4, bool= 5, true= 6);
 				}
 			`,
 			sourceExpressions(s(
@@ -771,7 +771,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		DictLiteral: [
 			xjs.String.dedent`
 				{
-					[a= 1, b= [x= 2], _= [y= [k= 3]], let= 4, bool= 5, true= 6];
+					[a= 1, b= [x= 2], _= [y= [k= 3]], type= 4, bool= 5, true= 6];
 				}
 			`,
 			sourceExpressions(s(
@@ -897,7 +897,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					List.();
 					Dict.(record);
 					Set.<T>();
-					record.let;
+					record.type;
 					record.bool;
 					record.true;
 				}
@@ -1345,7 +1345,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					claim record.prop:  V;
 					claim record._:     X;
 					claim list.[index]: W;
-					claim record.let:   Y;
+					claim record.type:  Y;
 					claim record.bool:  Z;
 					claim record.true:  S;
 				}
@@ -1433,7 +1433,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					set record.prop  = c;
 					set record._     = c;
 					set list.[index] = d;
-					set record.let   = 1;
+					set record.type  = 1;
 					set record.bool  = 2;
 					set record.true  = 3;
 				}
@@ -1622,7 +1622,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					type T = U;
-					let a: T = b;
+					val a: T = b;
 					claim a: U;
 					set a = b;
 					a;
@@ -1713,14 +1713,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		DeclarationVariable: [
 			xjs.String.dedent`
 				{
-					let v: T = a + b * c;
-					let var u: A | B & C = v;
-					let 'å': A = a;
-					let var 'é': E = e;
-					let _: T = v;
-					let var _: T = v;
-					let var uninit?: T;
-					let var _?: T;
+					val v: T = a + b * c;
+					val mut u: A | B & C = v;
+					val 'å': A = a;
+					val mut 'é': E = e;
+					val _: T = v;
+					val mut _: T = v;
+					val mut uninit?: T;
+					val mut _?: T;
 				}
 			`,
 			sourceStatements(

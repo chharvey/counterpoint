@@ -74,14 +74,13 @@ KeywordOther :::=
 		| "else"
 	// storage
 		| "type"
-		| "let"
+		| "val"
 		| "claim"
 		| "set"
 		| "_"
 		| "void"
 	// modifier
 		| "nominal"
-		| "var"
 	// control
 		| "unless"
 		| "while"

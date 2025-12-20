@@ -54,7 +54,7 @@ test.suite('ASTNodeCP', () => {
 			});
 			test.test('returns `(drop)` for nonempty non-foldable statement expression.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var x: int = 42;
+					val mut x: int = 42;
 					x * 10;
 				}`);
 				assert_instanceof(stmts[1], AST.ASTNodeStatementExpression);
@@ -72,15 +72,15 @@ test.suite('ASTNodeCP', () => {
 	test.suite('ASTNodeStatementConditional', () => {
 		test.suite('#typeCheck', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
-				let var cond: int         = 42;
-				let var cond: int | false = 42;
-				let var cond: int | true  = 42;
-				let var cond: int | bool  = 42;
+				val mut cond: int         = 42;
+				val mut cond: int | false = 42;
+				val mut cond: int | true  = 42;
+				val mut cond: int | bool  = 42;
 			`;
 			const BOOLS: readonly string[] = extract_lines`
-				let var cond: false = false;
-				let var cond: true  = true;
-				let var cond: bool  = false;
+				val mut cond: false = false;
+				val mut cond: true  = true;
+				val mut cond: bool  = false;
 			`;
 			test.test('passes when condition is subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
@@ -108,7 +108,7 @@ test.suite('ASTNodeCP', () => {
 		test.suite('#build', () => {
 			test.test('produces `(nop)` for alternative if there is none.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var cond: bool = false;
+					val mut cond: bool = false;
 					if cond then {
 						42;
 					};
@@ -122,8 +122,8 @@ test.suite('ASTNodeCP', () => {
 			});
 			test.test('produces a simple block if the condition is definitely truthy/falsy.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var TRUE:  true  = true;
-					let var FALSE: false = false;
+					val mut TRUE:  true  = true;
+					val mut FALSE: false = false;
 					if TRUE then {
 						42;
 					};
@@ -166,7 +166,7 @@ test.suite('ASTNodeCP', () => {
 			});
 			test.test('negates the condition for `unless` statements.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var cond: bool = false;
+					val mut cond: bool = false;
 					unless cond then {
 						42;
 					};
@@ -180,8 +180,8 @@ test.suite('ASTNodeCP', () => {
 			});
 			test.test('nested if–else.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var cond1: bool = false;
-					let var cond2: bool = true;
+					val mut cond1: bool = false;
+					val mut cond2: bool = true;
 					if cond1 then {
 						42;
 					} else if cond2 then {
@@ -212,18 +212,18 @@ test.suite('ASTNodeCP', () => {
 		test.suite('#build', () => {
 			test.test('always retuns `(block)`.', () => {
 				const {goal, stmts, mod} = setupScript(`{
-					let var x: int = 42;
+					val mut x: int = 42;
 					x;
 				}`);
 				assertEqualBins(goal.block!.build(), mod.block(null, stmts.map((stmt) => stmt.build())));
 			});
 			test.test('nesting scopes.', () => {
 				setupScript(`{
-					let var x: int = 42;
+					val mut x: int = 42;
 					x;
 					if true then {
 						x;
-						let var y: float = 4.2;
+						val mut y: float = 4.2;
 						y;
 					};
 					x;
@@ -239,14 +239,14 @@ test.suite('ASTNodeCP', () => {
 			test.test('aggregates multiple errors.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
 					a + b || c * d;
-					let y: V & W | X & Y = null;
-					let x: int = 42;
-					let x: int = 420;
+					val y: V & W | X & Y = null;
+					val x: int = 42;
+					val x: int = 420;
 					set x = 4200;
 					type T = int;
 					type T = float;
-					let z: x = null;
-					let z: int = T;
+					val z: x = null;
+					val z: int = T;
 				}`).varCheck(), (err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
@@ -306,18 +306,18 @@ test.suite('ASTNodeCP', () => {
 		test.suite('#typeCheck', () => {
 			test.test('aggregates multiple errors.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-					let a: null = null;
-					let b: null = null;
-					let c: null = null;
-					let d: null = null;
+					val a: null = null;
+					val b: null = null;
+					val c: null = null;
+					val d: null = null;
 					a * b + c * d;
-					let e: null = null;
-					let f: null = null;
-					let g: null = null;
-					let h: null = null;
+					val e: null = null;
+					val f: null = null;
+					val g: null = null;
+					val h: null = null;
 					e * f + g * h;
 					if null then 42 else 4.2;
-					let x: int = 4.2;
+					val x: int = 4.2;
 				}`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
@@ -364,7 +364,7 @@ test.suite('ASTNodeCP', () => {
 						42;
 					}`,
 					`{
-						let x: int = 42;
+						val x: int = 42;
 						x;
 					}`,
 				], (src) => {

@@ -8,14 +8,13 @@ _KEYWORD_OTHER =:=
 		| "else"
 	// storage
 		| "type"
-		| "let"
+		| "val"
 		| "claim"
 		| "set"
 		| "_"
 		| "void"
 	// modifier
 		| "nominal"
-		| "var"
 	// control
 		| "unless"
 		| "while"
@@ -805,33 +804,33 @@ Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarat
 
 
 
-Decorate(DeclarationVariable<Break> ::= "let" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?" ":" Type ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		Decorate(Type)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)

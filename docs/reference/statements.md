@@ -46,7 +46,7 @@ Conditional statements are similar to [conditional expressions](./expressions-op
 Given a boolean condition, exactly one of two branches will execute.
 The difference is that the branches are blocks rather than expressions.
 ```cpl
-let n: int = 42;
+val n: int = 42;
 
 if n < 0 then {
 	print.("n is negative");
@@ -126,7 +126,7 @@ For `unless` statements, including an `else` branch is a syntax error. Just make
 The condition is re-evaluated on every repetition. `while–do` loops are “top-tested”, and `do–while` loops are “bottom-tested”.
 
 ```cpl
-let var unread_messages: int = 5;
+val mut unread_messages: int = 5;
 while unread_messages > 0 do {
 	print.("""You have {{ unread_messages }} unread messages…""");
 	set unread_messages -= 1;
@@ -138,7 +138,7 @@ It then re-evaluates the condition, re-executes the block if passing, and repeat
 
 A `do–while` loop inverts the order. First it executes the block, then tests the condition, and then repeats.
 ```cpl
-let var unread_messages: int = 5;
+val mut unread_messages: int = 5;
 do {
 	print.("""You have {{ unread_messages }} unread messages …""");
 	set unread_messages -= 1;
@@ -149,7 +149,7 @@ The difference is that a `do–while` loop is guaranteed to execute at least onc
 
 The keyword `until` simply negates the condition. It executes the block if the condition fails.
 ```cpl
-let var progress: float = 0.0;
+val mut progress: float = 0.0;
 until progress >= 1.0 do {
 	print.("""Download at {{ progress * 100.0 }}% …""");
 	set progress += 0.02718281828;
@@ -165,7 +165,7 @@ print.("Download complete!");
 ### Break Statements
 Inside a `while` or `until` loop, a `break;` statement directs control flow to stop execution mid-loop, and then exit the loop completely.
 ```cpl
-let var i: int = 0;
+val mut i: int = 0;
 while i < 10 do {
 	if i == 3 then {
 		break;
@@ -176,7 +176,7 @@ while i < 10 do {
 ```
 A `skip;` statement stops the current repetition, but then proceeds to the next one.
 ```cpl
-let var i: int = 0;
+val mut i: int = 0;
 while i < 10 do {
 	if i == 3 then {
 		print.("skipped");
@@ -190,7 +190,7 @@ while i < 10 do {
 `skip;` behaves the same in `while–do` and `do–while` loops:
 In both cases, control skips to the end of the loop body and re-evaluates the condition before starting the next repetition.
 ```cpl
-let var i: int = 0;
+val mut i: int = 0;
 while i < 10 do {
 	if i == 3 then {
 		print.("skipped");
@@ -238,7 +238,7 @@ The iterable doesn’t need to be a list literal; it can be any expression, such
 The iterable is *only evaluated once*, before the loop begins, and that same iterable value is used for the entire loop.
 This means that if the iterable is ever *mutated* by the loop, that mutation will affect the loop!
 ```cpl
-let list_of_tens: mut [int] = [10, 20, 30];
+val list_of_tens: mut [int] = [10, 20, 30];
 for n: int in list_of_tens do {
 	print.(n);
 	if n == 20 then {
@@ -256,7 +256,7 @@ They can be useful when we need to short-circuit a loop, for example if we have 
 Here’s a simple implementation of `List#find` using `break;`.
 ```cpl
 % Find just one person with no middle name. There may be more, but we only need one.
-let var found?: Person;
+val mut found?: Person;
 for person: Person in list do {
 	if ?person.middleName then {
 		set found = person;
