@@ -32,11 +32,11 @@ test.suite('ASTNodeStatement', () => {
 		test.suite('ASTNodeStatementReassignment', () => {
 			test.test('throws if the variable is not unfixed.', () => {
 				AST.ASTNodeGoal.fromSource(`{
-					let var i: int = 42;
+					val mut i: int = 42;
 					set i = 43;
 				}`).varCheck(); // assert does not throw
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let i: int = 42;
+					val i: int = 42;
 					set i = 43;
 				}`).varCheck(), AssignmentErrorReassignment);
 			});
@@ -130,7 +130,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let i: int = 42;
+					val i: int = 42;
 					for i: bool in [false, true] do {
 						null;
 					};
@@ -149,7 +149,7 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let var x: int = 42;
+					val mut x: int = 42;
 					if true then {
 						for x: bool in [false, true] do {
 							null;
@@ -157,7 +157,7 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let var x: int = 42;
+					val mut x: int = 42;
 					while false do {
 						for x: bool in [false, true] do {
 							null;
@@ -165,7 +165,7 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let var x: int = 42;
+					val mut x: int = 42;
 					for it: float in [1.1, 2.2, 3.3] do {
 						for x: bool in [false, true] do {
 							null;
@@ -186,29 +186,29 @@ test.suite('ASTNodeStatement', () => {
 						claim x: float;
 					`, (stmt) => {
 						setupScript(`{
-							let var x: int | float = 4.2;
+							val mut x: int | float = 4.2;
 							${ stmt }
 						}`, {build: false}); // assert does not throw
 					});
 				});
 				test.test('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
 					xjs.Array.forEachAggregated([`{
-						let x: int = 3;
+						val x: int = 3;
 						claim x: str; % disjoint
 					}`, `{
-						let x: int = 3;
+						val x: int = 3;
 						claim x: float; % disjoint
 					}`, `{
-						let x: float = 3.0;
+						val x: float = 3.0;
 						claim x: int; % disjoint
 					}`, `{
-						let x: 42 | 43 | 44 = 42;
+						val x: 42 | 43 | 44 = 42;
 						claim x: 43 | 44 | 45; % overlapping
 					}`, `{
-						let x: int | float = 42;
+						val x: int | float = 42;
 						claim x: int | float | str; % supertype
 					}`, `{
-						let x: int | float = 42;
+						val x: int | float = 42;
 						claim x: anything; % supertype
 					}`], (src) => {
 						const {stmts} = setupScript(src, {typeCheck: false});
@@ -218,7 +218,7 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('accessing variable after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
-						let var x: int | float = 4.2;
+						val mut x: int | float = 4.2;
 						x;            % type \`int | float\`
 						claim x: int;
 						x;            % type \`int\`
@@ -230,21 +230,21 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('allows claim after reassignment.', () => {
 					setupScript(`{
-						let var x: bool | null = false;
+						val mut x: bool | null = false;
 						set x = true;
 						claim x: null;
 					}`, {build: false}); // assert does not throw
 				});
 				test.test('allows reassigning correct type after claim.', () => {
 					setupScript(`{
-						let var x: bool | null = false;
+						val mut x: bool | null = false;
 						claim x: bool;
 						set x = true;
 					}`, {build: false}); // assert does not throw
 				});
 				test.test('disallows reassigning incorrect type after claim.', () => {
 					const {stmts} = setupScript(`{
-						let var x: bool | null = false;
+						val mut x: bool | null = false;
 						claim x: bool;
 						set x = null;
 					}`, {typeCheck: false});
@@ -256,24 +256,24 @@ test.suite('ASTNodeStatement', () => {
 			test.suite('for accesses.', () => {
 				test.test('allows claiming access of compound types.', () => {
 					setupScript(`{
-						let var tuple: (int | null, (value: int | null)) = (null, (value= 42));
+						val mut tuple: (int | null, (value: int | null)) = (null, (value= 42));
 						claim tuple.0:       int;
 						claim tuple.1.value: null;
 
 						%% TODO: uncomment these
-						let var list: [int | float] = [2.718, 6.283];
+						val mut list: [int | float] = [2.718, 6.283];
 						claim list.[0]: float;
 						claim list.[1]: float;
 
-						let var dict: [: int | float] = [e= 2.718, tau= 6.283];
+						val mut dict: [: int | float] = [e= 2.718, tau= 6.283];
 						claim dict.[@e]:   float;
 						claim dict.[@tau]: float;
 
-						let var 'set': {int | float} = {2.718, 6.283};
+						val mut 'set': {int | float} = {2.718, 6.283};
 						claim 'set'.[2.718]: true;
 						claim 'set'.[6.283]: true;
 
-						let var map: {str -> int | float} = {"e" -> 2.718, "tau" -> 6.283};
+						val mut map: {str -> int | float} = {"e" -> 2.718, "tau" -> 6.283};
 						claim map.["e"]:   float;
 						claim map.["tau"]: float;
 						%%
@@ -281,7 +281,7 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
-						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
+						val mut record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						record.value;               % type \`int | null\`
 						record.tuple.0;             % type \`int | null\`
 						claim record.value:   null;
@@ -297,12 +297,12 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('allows claim after mutation.', () => {
 					xjs.Array.forEachAggregated([`{
-						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
+						val mut record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						set record = (value= 43, tuple= (null,));
 						claim record.value:   null;
 						claim record.tuple.0: int;
 					}`, `{
-						let var list: mut [int | float] = [2.718, 6.283];
+						val mut list: mut [int | float] = [2.718, 6.283];
 						set list.[0] = 1.618;
 						claim list.[0]: int;
 					}`], (src, i) => {
@@ -312,12 +312,12 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('allows mutating correct type after claim.', () => {
 					xjs.Array.forEachAggregated([`{
-						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
+						val mut record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						claim record.value:   int;
 						claim record.tuple.0: null;
 						set record = (value= 43, tuple= (null,));
 					}`, `{
-						let var list: mut [int | float] = [2.718, 6.283];
+						val mut list: mut [int | float] = [2.718, 6.283];
 						claim list.[0]: float;
 						set list.[0] = 1.618;
 					}`], (src, i) => {
@@ -327,12 +327,12 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('disallows mutating incorrect type after claim.', () => {
 					xjs.Array.forEachAggregated([`{
-						let var record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
+						val mut record: (value: int | null, tuple: (int | null,)) = (value= null, tuple= (42,));
 						claim record.value:   int;
 						claim record.tuple.0: null;
 						set record = (value= null, tuple= (42,));
 					}`, `{
-						let var list: mut [int | float] = [2.718, 6.283];
+						val mut list: mut [int | float] = [2.718, 6.283];
 						claim list.[0]: float;
 						set list.[0] = 42;
 					}`], (src, i) => {
@@ -363,7 +363,7 @@ test.suite('ASTNodeStatement', () => {
 			test.suite('for variable reassignment.', () => {
 				test.test('throws when variable assignee type is not supertype.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-						let var i: int = 42;
+						val mut i: int = 42;
 						set i = 4.3;
 					}`);
 					goal.varCheck();
@@ -371,7 +371,7 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('allows reassignment when uninitialized.', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
-						let var x?: int;
+						val mut x?: int;
 						set x = 42;
 					}`, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
 						isUnfixed:       true,
@@ -382,7 +382,7 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('does not allow reassignment of `null` when uninitialized.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-						let var x?: int;
+						val mut x?: int;
 						set x = null;
 					}`);
 					goal.varCheck();
@@ -405,19 +405,19 @@ test.suite('ASTNodeStatement', () => {
 				test.test('throws when property assignee type is not supertype.', () => {
 					[
 						`{
-							let l: mut [int] = [42];
+							val l: mut [int] = [42];
 							set l.[0] = 4.2;
 						}`,
 						`{
-							let d: mut [:int] = [i= 42];
+							val d: mut [:int] = [i= 42];
 							set d.[@i] = 4.2;
 						}`,
 						`{
-							let s: mut {int} = {42};
+							val s: mut {int} = {42};
 							set s.[42] = 4.2;
 						}`,
 						`{
-							let m: mut {bool -> int} = {true -> 42};
+							val m: mut {bool -> int} = {true -> 42};
 							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
@@ -428,10 +428,10 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('throws when Set/Map accessor expression is not a valid type.', () => {
 					xjs.Array.forEachAggregated([`{
-						let s: mut {int} = {42};
+						val s: mut {int} = {42};
 						set s.[4.3] = true;
 					}`, `{
-						let m: mut {bool -> int} = {true -> 42};
+						val m: mut {bool -> int} = {true -> 42};
 						set m.["true"] = 43;
 					}`], (src) => {
 						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
@@ -442,27 +442,27 @@ test.suite('ASTNodeStatement', () => {
 				test.test('throws when assignee’s base type is not mutable.', () => {
 					[
 						`{
-							let t: (int,) = (42,);
+							val t: (int,) = (42,);
 							set t.0 = 43;
 						}`,
 						`{
-							let r: (i: int) = (i= 42);
+							val r: (i: int) = (i= 42);
 							set r.i = 43;
 						}`,
 						`{
-							let l: [int] = [42];
+							val l: [int] = [42];
 							set l.[0] = 43;
 						}`,
 						`{
-							let d: [:int] = [i= 42];
+							val d: [:int] = [i= 42];
 							set d.[@i] = 43;
 						}`,
 						`{
-							let s: {int} = {42};
+							val s: {int} = {42};
 							set s.[43] = true;
 						}`,
 						`{
-							let m: {bool -> int} = {true -> 42};
+							val m: {bool -> int} = {true -> 42};
 							set m.[true] = 43;
 						}`,
 					].forEach((src) => {
@@ -476,15 +476,15 @@ test.suite('ASTNodeStatement', () => {
 
 		test.suite('ASTNodeStatementLoop', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
-				let var cond: int         = 42;
-				let var cond: int | false = 42;
-				let var cond: int | true  = 42;
-				let var cond: int | bool  = 42;
+				val mut cond: int         = 42;
+				val mut cond: int | false = 42;
+				val mut cond: int | true  = 42;
+				val mut cond: int | bool  = 42;
 			`;
 			const BOOLS: readonly string[] = extract_lines`
-				let var cond: false = false;
-				let var cond: true  = true;
-				let var cond: bool  = false;
+				val mut cond: false = false;
+				val mut cond: true  = true;
+				val mut cond: bool  = false;
 			`;
 			test.test('passes when condition is subtype of Boolean.', () => {
 				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
@@ -517,7 +517,7 @@ test.suite('ASTNodeStatement', () => {
 				`, (vartype) => {
 					setupScript(`{
 						for it: ${ vartype } in ["hello", "world"] do {
-							let greeting: ${ vartype } = it;
+							val greeting: ${ vartype } = it;
 						};
 					}`, {build: false}); // assert does not throw
 				});
@@ -575,7 +575,7 @@ test.suite('ASTNodeStatement', () => {
 			test.test('always returns `(nop)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					type T = int;
-					let var x: int = 42;
+					val mut x: int = 42;
 					claim x: T;
 				}`);
 				return assertEqualBins(stmts[2].build(), mod.nop());
@@ -585,7 +585,7 @@ test.suite('ASTNodeStatement', () => {
 		test.suite('ASTNodeStatementReassignment', () => {
 			test.test('always returns `(local.set)`.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var y: float = 4.2;
+					val mut y: float = 4.2;
 					set y = y * 10.0;
 				}`);
 				return assertEqualBins(
@@ -595,8 +595,8 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('allows switching between union members.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var x: float | int = 4.2;
-					let var y: int | float = 4.2;
+					val mut x: float | int = 4.2;
+					val mut y: int | float = 4.2;
 					set x = 8.4;
 					set x = 16;
 					set x = x;
@@ -613,8 +613,8 @@ test.suite('ASTNodeStatement', () => {
 			test.suite('produces `(nop)` for entire statement when …', () => {
 				test.test('… condition is foldable and truthy (or falsy for `unless`), and consequent is foldable.', () => {
 					const {stmts, mod} = setupScript(`{
-						let var value: float = 4.2;
-						let truthy_cond: bool = true;
+						val mut value: float = 4.2;
+						val truthy_cond: bool = true;
 						if truthy_cond then {
 							42;
 						} else {
@@ -631,8 +631,8 @@ test.suite('ASTNodeStatement', () => {
 				});
 				test.test('… condition is foldable and falsy (or truthy for `unless`), and alternative is foldable (or doesn’t exist).', () => {
 					const {stmts, mod} = setupScript(`{
-						let var value: float = 4.2;
-						let falsy_cond: bool = !"hello";
+						val mut value: float = 4.2;
+						val falsy_cond: bool = !"hello";
 						if falsy_cond then {
 							set value = 6.9;
 						} else {
@@ -653,7 +653,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('if not foldable, retuns `(if)`.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var unknown_cond: bool = false;
+					val mut unknown_cond: bool = false;
 					if unknown_cond then {
 						42;
 					} else {
@@ -685,7 +685,7 @@ test.suite('ASTNodeStatement', () => {
 			}
 			test.test('produces `(nop)` if entire statement is foldable.', () => {
 				const {stmts, mod} = setupScript(`{
-					let cond: bool = true;
+					val cond: bool = true;
 					while cond do {
 						42;
 					};
@@ -694,7 +694,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('if not foldable, retuns `(block (loop (block)))`.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var cond: bool = false;
+					val mut cond: bool = false;
 					while cond do {
 						42;
 						4.2;
@@ -708,8 +708,8 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('skips condition check if condition is definitely truthy/falsy.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var TRUE:  true  = true;
-					let var FALSE: false = false;
+					val mut TRUE:  true  = true;
+					val mut FALSE: false = false;
 					while TRUE do {
 						42;
 					};
@@ -744,7 +744,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('negates the condition for `until` statements.', () => {
 				const {stmts, mod} = setupScript(`{
-					let var cond: bool = false;
+					val mut cond: bool = false;
 					until cond do {
 						42;
 					};
@@ -768,7 +768,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 			test.test('if not foldable, is not yet supported.', () => {
 				const {stmts} = setupScript(`{
-					let var i: int = 42;
+					val mut i: int = 42;
 					for it: int in [10, 20, 30, 40] do {
 						set i = it;
 					};

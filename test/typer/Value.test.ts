@@ -151,8 +151,8 @@ test.suite('Value', () => {
 			});
 			test.test.todo('Lists may contain circular references.', () => {
 				`
-					let a: mut List.<List.<Object>> = List.<List.<Object>>(());
-					let b: mut List.<List.<Object>> = List.<List.<Object>>(());
+					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
+					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
 					a.append.(b);
 					b.append.(a);
 					assert.equal.(a, b);
@@ -175,8 +175,8 @@ test.suite('Value', () => {
 			});
 			test.test.todo('Dicts may contain circular references.', () => {
 				`
-					let a: mut Dict.<anything> = [x= null];
-					let b: mut Dict.<anything> = [x= null];
+					val a: mut Dict.<anything> = [x= null];
+					val b: mut Dict.<anything> = [x= null];
 					a.set.(@x, b);
 					b.set.(@x, a);
 					assert.equal.(a, b);

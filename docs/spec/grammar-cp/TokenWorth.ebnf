@@ -60,21 +60,20 @@ TokenWorth(KeywordOther :::= "if")       -> RealNumber := \x91;
 TokenWorth(KeywordOther :::= "then")     -> RealNumber := \x92;
 TokenWorth(KeywordOther :::= "else")     -> RealNumber := \x93;
 TokenWorth(KeywordOther :::= "type")     -> RealNumber := \x94;
-TokenWorth(KeywordOther :::= "let")      -> RealNumber := \x95;
+TokenWorth(KeywordOther :::= "val")      -> RealNumber := \x95;
 TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x96;
 TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x97;
 TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x98;
 TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x99;
 TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x9a;
-TokenWorth(KeywordOther :::= "var")      -> RealNumber := \x9b;
-TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x9c;
-TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x9d;
-TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x9e;
-TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x9f;
-TokenWorth(KeywordOther :::= "in")       -> RealNumber := \xa0;
-TokenWorth(KeywordOther :::= "do")       -> RealNumber := \xa1;
-TokenWorth(KeywordOther :::= "break")    -> RealNumber := \xa2;
-TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \xa3;
+TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x9b;
+TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x9c;
+TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x9d;
+TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x9e;
+TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x9f;
+TokenWorth(KeywordOther :::= "do")       -> RealNumber := \xa0;
+TokenWorth(KeywordOther :::= "break")    -> RealNumber := \xa1;
+TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \xa2;
 
 
 

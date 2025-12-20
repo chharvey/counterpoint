@@ -1076,7 +1076,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let var hello: str? = null;
+val mut hello: str? = null;
 set hello = "world";
 ```
 
@@ -1167,7 +1167,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let var v: T = false;
+val mut v: T = false;
 set v = 42;
 ```
 

@@ -653,7 +653,6 @@ test.suite('Decorator', () => {
 				% (assignee)
 			`]],
 
-
 			['Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
@@ -781,39 +780,39 @@ test.suite('Decorator', () => {
 				% (declaration_type)
 			`]],
 
-			['Decorate(DeclarationVariable<Break> ::= "let" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let _: T = b;
+					val _: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let a: T = b;
+					val a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var _: T = b;
+					val mut _: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var a: T = b;
+					val mut a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var _?: T;
+					val mut _?: T;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var a?: T;
+					val mut a?: T;
 				}
 				% (declaration_variable)
 			`]],
