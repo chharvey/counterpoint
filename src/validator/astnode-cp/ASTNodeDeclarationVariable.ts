@@ -24,6 +24,8 @@ import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeConstant} from './ASTNodeConstant.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeTemplate} from './ASTNodeTemplate.ts';
+import {ASTNodeTuple} from './ASTNodeTuple.ts';
+import {ASTNodeRecord} from './ASTNodeRecord.ts';
 import {ASTNodeCall} from './ASTNodeCall.ts';
 import {
 	buildDeco,
@@ -32,8 +34,22 @@ import {
 
 
 
-function primitive_type(node: ASTNodeExpression): TYPE.Type {
-	assert_instanceof(node, ASTNodeConstant);
+function is_inferrable(node?: ASTNodeExpression): boolean {
+	return (
+		[
+			ASTNodeConstant,
+			ASTNodeTemplate,
+			ASTNodeCall, // TODO: distinguish between constructor calls and function calls
+		].some((klass) => (node instanceof klass)) ? true :
+		node instanceof ASTNodeTuple  ? node.children.every((expr) => is_inferrable(expr)) :
+		node instanceof ASTNodeRecord ? node.children.every((prop) => is_inferrable(prop.val)) :
+		false
+	);
+}
+
+
+
+function unfixed_inferred_type(node: ASTNodeExpression): TYPE.Type {
 	if (node instanceof ASTNodeConstant) {
 		const value: VALUE.Primitive = node.fold();
 		return (
@@ -46,8 +62,14 @@ function primitive_type(node: ASTNodeExpression): TYPE.Type {
 			value instanceof VALUE.String  ? TYPE.STR :
 			assert.fail(`Expected ${ value } to be a primitive value.`)
 		);
+	} else if (node instanceof ASTNodeTuple) {
+		return TYPE.Tuple.fromTypes(node.children.map((expr) => unfixed_inferred_type(expr)));
+	} else if (node instanceof ASTNodeRecord) {
+		return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, unfixed_inferred_type(prop.val)])));
+	} else if (node instanceof ASTNodeCall) { // TODO: distinguish between constructor calls and function calls
+		return node.type();
 	} else {
-		assert.fail(`${ node } should be an instance of ${ ASTNodeConstant.name }.`);
+		assert.fail(`${ node.source } should be an instance of ${ ASTNodeConstant.name }, ${ ASTNodeTuple.name }, ${ ASTNodeRecord.name }, or ${ ASTNodeCall.name }.`);
 	}
 }
 
@@ -122,20 +144,17 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	public override typeCheck(): void {
-		if (
-			!this.typenode &&
-			![
-				ASTNodeConstant,
-				ASTNodeTemplate,
-				ASTNodeCall, // TODO: distinguish between constructor calls and function calls
-			].some((klass) => (this.assigned instanceof klass))
-		) {
+		if (!this.typenode && !is_inferrable(this.assigned ?? undefined)) {
 			throw new AssignmentErrorMissingType(this);
 		}
 		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
-			this.assigned instanceof ASTNodeConstant && this.unfixed ? primitive_type(this.assigned) :
-			this.assigned instanceof ASTNodeTemplate                 ? TYPE.STR :
+			this.unfixed && ([
+				ASTNodeConstant,
+				ASTNodeTuple,
+				ASTNodeRecord,
+			].some((klass) => (this.assigned instanceof klass))) ? unfixed_inferred_type(this.assigned!) :
+			this.assigned instanceof ASTNodeTemplate ? TYPE.STR :
 			this.assigned!.type()
 		);
 		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);

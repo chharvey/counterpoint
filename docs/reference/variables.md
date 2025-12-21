@@ -81,6 +81,11 @@ val mut tpl_untyped_unfixed = """world"""; % type `str`
 val     list_untyped         = List.<int>((11, 22));                 % type `mut List.<int>`
 val mut dict_untyped_unfixed = Dict.<str>((a= "hello", b= "world")); % type `mut Dict.<str>`
 ```
+Type inference is applied recursively for tuple and record literals.
+```cpl
+val tup_untyped             = (   42,    (x= "hello"),    Dict.<bool>((x= false, y= true))); % type `(   42,    (x= "hello"),    mut Dict.<bool>)`
+val mut rec_untyped_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type `(a= int, b= (str,),      c= mut List.<bool>)`
+```
 
 
 

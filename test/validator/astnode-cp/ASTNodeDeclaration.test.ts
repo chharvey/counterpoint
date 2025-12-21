@@ -290,12 +290,33 @@ test.suite('ASTNodeDeclaration', () => {
 						new TYPE.Dict(TYPE.STR, true),
 					]);
 				});
-				test.test('throws when assigned expression is not a primitive literal, string template, or constructor call.', () => {
+				test.test('applies recursively to tuple/record literals.', () => {
+					const {goal} = setupScript(`{
+						val     tup_fixed   = (   42,    (x= "hello"),    Dict.<bool>((x= false, y= true))); % type \`(   42,     (x= "hello"),    Dict.<bool>)\`
+						val mut rec_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type \`(a= int, b= (str,),       c= List.<bool>)\`
+					}`, {build: false});
+					return assertEqualTypes([
+						(goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(0x106n) as SymbolSchemaVar).type,
+					], [
+						TYPE.Tuple.fromTypes([
+							typeUnit(42n),
+							TYPE.Record.fromTypes(new Map([[0x100n, typeUnit('hello')]])),
+							new TYPE.Dict(TYPE.BOOL, true),
+						]),
+						TYPE.Record.fromTypes(new Map([
+							[0x103n, TYPE.INT],
+							[0x104n, TYPE.Tuple.fromTypes([TYPE.STR])],
+							[0x105n, new TYPE.List(TYPE.BOOL, true)],
+						])),
+					]);
+				});
+				test.test('throws when assigned expression is not a primitive literal, string template, constructor call, or inferrable tuple/record literal.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						val operation = 21 * 2;
 						val block_expr = { 42; };
-						val tup_literal = (42, "hello");
-						val rec_literal = (a= 69, b= "world");
+						val tup_literal = (42, "hello", operation);
+						val rec_literal = (a= 69, b= "world", c= operation);
 						val list_literal = [42, 69];
 						val dict_literal = [a= "hello", b= "world"];
 					`, (src) => assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(src).typeCheck(), AssignmentErrorMissingType));
