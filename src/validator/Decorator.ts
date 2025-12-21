@@ -691,21 +691,21 @@ export class Decorator {
 					this.decorateTypeNode(node.children[5] as SyntaxNodeSupertype<'type'>),
 					null,
 				) :
-				// "val" ("_" | IDENTIFIER) ":" Type "=" Expression<+Block><?Break> ";"
-				node.children.length === 7 ? new AST.ASTNodeDeclarationVariable(
+				// "val" ("_" | IDENTIFIER) (":" Type)? "=" Expression<+Block><?Break> ";"
+				[5, 7].includes(node.children.length) ? new AST.ASTNodeDeclarationVariable(
 					node as SyntaxNodeFamily<'declaration_variable', ['break']>,
 					false,
 					isSyntaxNodeType(node.children[1], 'identifier') ? new AST.ASTNodeVariable(node.children[1]) : null,
-					this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
-					this.decorateExprNode(node.children[5] as SyntaxNodeSupertype<'expression'>),
+					node.children.length === 7 ? this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>) : null,
+					this.decorateExprNode(node.children[node.children.length - 2] as SyntaxNodeSupertype<'expression'>),
 				) :
-				// "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";"
-				(assert.strictEqual(node.children.length, 8), new AST.ASTNodeDeclarationVariable(
+				// "val" "mut" IDENTIFIER (":" Type)? "=" Expression<+Block><?Break> ";"
+				(assert.ok([6, 8].includes(node.children.length)), new AST.ASTNodeDeclarationVariable(
 					node as SyntaxNodeFamily<'declaration_variable', ['break']>,
 					true,
 					new AST.ASTNodeVariable(node.children[2] as SyntaxNodeType<'identifier'>),
-					this.decorateTypeNode(node.children[4] as SyntaxNodeSupertype<'type'>),
-					this.decorateExprNode(node.children[6] as SyntaxNodeSupertype<'expression'>),
+					node.children.length === 8 ? this.decorateTypeNode(node.children[4] as SyntaxNodeSupertype<'type'>) : null,
+					this.decorateExprNode(node.children[node.children.length - 2] as SyntaxNodeSupertype<'expression'>),
 				))
 			)],
 		]);

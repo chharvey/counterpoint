@@ -39,7 +39,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly unfixed:  boolean,
 		public  readonly assignee: ASTNodeVariable | null,
-		public  readonly typenode: ASTNodeType,
+		public  readonly typenode: ASTNodeType | null,
 		public  readonly assigned: ASTNodeExpression | null,
 	) {
 		super(
@@ -47,7 +47,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			{unfixed},
 			[
 				...(assignee ? [assignee] : []),
-				typenode,
+				...(typenode ? [typenode] : []),
 				...(assigned ? [assigned] : []),
 			],
 		);

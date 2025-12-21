@@ -258,7 +258,7 @@ test.suite('ASTNodeExpression', () => {
 					val fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
 				}`, {build: false});
-				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).typenode.eval().hasMutable);
+				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).typenode!.eval().hasMutable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
