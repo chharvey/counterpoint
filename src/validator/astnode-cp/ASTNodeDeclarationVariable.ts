@@ -3,8 +3,9 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
-	type TYPE,
+	TYPE,
 	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorMissingType,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -20,7 +21,10 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeConstant} from './ASTNodeConstant.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeTemplate} from './ASTNodeTemplate.ts';
+import {ASTNodeCall} from './ASTNodeCall.ts';
 import {
 	buildDeco,
 	ASTNodeStatement,
@@ -97,8 +101,22 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	public override typeCheck(): void {
+		if (
+			!this.typenode &&
+			![
+				ASTNodeConstant,
+				ASTNodeTemplate,
+				ASTNodeCall, // TODO: distinguish between constructor calls and function calls
+			].some((klass) => (this.assigned instanceof klass))
+		) {
+			throw new AssignmentErrorMissingType(this);
+		}
 		this.assigned?.typeCheck();
-		const assignee_type: TYPE.Type = this.typenode.eval();
+		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
+			this.assigned instanceof ASTNodeConstant && this.unfixed ? this.assigned.primitiveType() :
+			this.assigned instanceof ASTNodeTemplate                 ? TYPE.STR :
+			this.assigned!.type()
+		);
 		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors

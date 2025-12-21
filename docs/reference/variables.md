@@ -64,6 +64,25 @@ val my_other_var: str = "Hello, programmer!";
 > ReferenceError: `my_other_var` is used before it is declared.
 
 
+### Type Inference
+When assigning a variable a primitive literal, string template, or constructor call (with no operations),
+we can omit the type annotation.
+For fixed variables, the type is inferred as a unit type containing that primitive value.
+For unfixed variables, the inferred type is the narrowest primitive type corresponding to that value.
+For string template values (with or without interpolation), the inferred type is always `str`.
+Constructor calls always imply their exact type (made mutable if applicable).
+```cpl
+val     untyped         = 11; % type `11`
+val mut untyped_unfixed = 22; % type `int`
+
+val     tpl_untyped         = """hello"""; % type `str`
+val mut tpl_untyped_unfixed = """world"""; % type `str`
+
+val     list_untyped         = List.<int>((11, 22));                 % type `mut List.<int>`
+val mut dict_untyped_unfixed = Dict.<str>((a= "hello", b= "world")); % type `mut Dict.<str>`
+```
+
+
 
 ## Variable Reassignment
 By default, variables are **fixed** in that they cannot be reassigned.

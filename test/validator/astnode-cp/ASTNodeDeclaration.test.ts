@@ -9,15 +9,24 @@ import {
 	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
 } from '../../../src/index.js';
 import {assert_instanceof} from '../../../src/lib/index.js';
 import {
+	assert_shallowStrictEqual,
+	assertEqualTypes,
 	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.js';
-import {setupScript} from '../../helpers.js';
-import {extract_lines} from '../../utils.ts';
+import {
+	setupScript,
+	typeUnit,
+} from '../../helpers.js';
+import {
+	extract_lines,
+	repeat,
+} from '../../utils.ts';
 
 
 
@@ -235,6 +244,51 @@ test.suite('ASTNodeDeclaration', () => {
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
 					value:           null,
+				});
+			});
+			test.suite('type inference.', () => {
+				test.test('for fixed variables, infers the unit type.', () => {
+					assertEqualTypes((setupScript(`{
+						val fixed = 42; % type \`42\`
+					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, typeUnit(42n));
+				});
+				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
+					assert.strictEqual((setupScript(`{
+						val mut unfixed = 42; % type \`int\`
+					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, TYPE.INT);
+				});
+				test.test('always infers `str` for string templates.', () => {
+					const {goal} = setupScript(`{
+						val     str_tpl_fixed   = """hello"""; % type \`str\`
+						val mut str_tpl_unfixed = """hello"""; % type \`str\`
+					}`, {build: false});
+					return assert_shallowStrictEqual([
+						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar).type,
+					], repeat(TYPE.STR, 2));
+				});
+				test.test('infers the constructor type, mutable.', () => {
+					const {goal} = setupScript(`{
+						val     list_fixed   = List.<int>((42, 69));                 % type \`mut List.<int>\`
+						val mut dict_unfixed = Dict.<str>((a= "hello", b= "world")); % type \`mut Dict.<str>\`
+					}`, {build: false});
+					return assertEqualTypes([
+						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(0x103n) as SymbolSchemaVar).type,
+					], [
+						new TYPE.List(TYPE.INT, true),
+						new TYPE.Dict(TYPE.STR, true),
+					]);
+				});
+				test.test('throws when assigned expression is not a primitive literal, string template, or constructor call.', () => {
+					xjs.Array.forEachAggregated(extract_lines`
+						val operation = 21 * 2;
+						val block_expr = { 42; };
+						val tup_literal = (42, "hello");
+						val rec_literal = (a= 69, b= "world");
+						val list_literal = [42, 69];
+						val dict_literal = [a= "hello", b= "world"];
+					`, (src) => assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(src).typeCheck(), AssignmentErrorMissingType));
 				});
 			});
 			test.test('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
