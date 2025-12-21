@@ -247,15 +247,25 @@ test.suite('ASTNodeDeclaration', () => {
 				});
 			});
 			test.suite('type inference.', () => {
+				const PRIMS = new Map<string, [TYPE.Unit, TYPE.Type]>([
+					['null',    [TYPE.NULL,                        TYPE.NULL]],
+					['false',   [TYPE.FALSE,                       TYPE.BOOL]],
+					['true',    [TYPE.TRUE,                        TYPE.BOOL]],
+					['@hello',  [typeUnit(Symbol(0x101), 'hello'), TYPE.SYM]],
+					['-42',     [typeUnit(-42n),                   TYPE.INT]],
+					['+42',     [typeUnit(42n, 'nat'),             TYPE.NAT]],
+					['6.28',    [typeUnit(6.28),                   TYPE.FLOAT]],
+					['"hello"', [typeUnit('hello'),                TYPE.STR]],
+				]);
 				test.test('for fixed variables, infers the unit type.', () => {
-					assertEqualTypes((setupScript(`{
-						val fixed = 42; % type \`42\`
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, typeUnit(42n));
+					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
+						val fixed = ${ src };
+					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
-					assert.strictEqual((setupScript(`{
-						val mut unfixed = 42; % type \`int\`
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, TYPE.INT);
+					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
+						val mut unfixed = ${ src };
+					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
 					const {goal} = setupScript(`{

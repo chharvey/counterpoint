@@ -32,6 +32,27 @@ import {
 
 
 
+function primitive_type(node: ASTNodeExpression): TYPE.Type {
+	assert_instanceof(node, ASTNodeConstant);
+	if (node instanceof ASTNodeConstant) {
+		const value: VALUE.Primitive = node.fold();
+		return (
+			value instanceof VALUE.Null    ? TYPE.NULL :
+			value instanceof VALUE.Boolean ? TYPE.BOOL :
+			value instanceof VALUE.Symbol  ? TYPE.SYM :
+			value instanceof VALUE.Integer ? TYPE.INT :
+			value instanceof VALUE.Natural ? TYPE.NAT :
+			value instanceof VALUE.Float   ? TYPE.FLOAT :
+			value instanceof VALUE.String  ? TYPE.STR :
+			assert.fail(`Expected ${ value } to be a primitive value.`)
+		);
+	} else {
+		assert.fail(`${ node } should be an instance of ${ ASTNodeConstant.name }.`);
+	}
+}
+
+
+
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
@@ -113,7 +134,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
-			this.assigned instanceof ASTNodeConstant && this.unfixed ? this.assigned.primitiveType() :
+			this.assigned instanceof ASTNodeConstant && this.unfixed ? primitive_type(this.assigned) :
 			this.assigned instanceof ASTNodeTemplate                 ? TYPE.STR :
 			this.assigned!.type()
 		);

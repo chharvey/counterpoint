@@ -139,22 +139,6 @@ test.suite('ASTNodeExpression', () => {
 				);
 			});
 		});
-
-
-		test.suite('#primitiveType', () => {
-			test.test('returns the narrowest primitive type containing the constant expression.', () => {
-				new Map<string, TYPE.Type>([
-					['null',    TYPE.NULL],
-					['false',   TYPE.BOOL],
-					['true',    TYPE.BOOL],
-					['@hello',  TYPE.SYM],
-					['-42',     TYPE.INT],
-					['+42',     TYPE.NAT],
-					['6.28',    TYPE.FLOAT],
-					['"hello"', TYPE.STR],
-				]).forEach((expected, src) => assert.strictEqual(AST.ASTNodeConstant.fromSource(src).primitiveType(), expected));
-			});
-		});
 	});
 
 

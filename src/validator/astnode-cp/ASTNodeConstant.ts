@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
-	TYPE,
+	type TYPE,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -88,23 +88,5 @@ export class ASTNodeConstant extends ASTNodeExpression {
 				}
 			}
 		}
-	}
-
-	/**
-	 * Return the narrowest primitive type representing this constant.
-	 * @return a Counterpoint type `null`, `bool`, `sym`, `int`, `nat`, `float`, or `str`
-	 */
-	public primitiveType(): TYPE.Type {
-		const value: VALUE.Primitive = this.fold();
-		return (
-			value instanceof VALUE.Null    ? TYPE.NULL :
-			value instanceof VALUE.Boolean ? TYPE.BOOL :
-			value instanceof VALUE.Symbol  ? TYPE.SYM :
-			value instanceof VALUE.Integer ? TYPE.INT :
-			value instanceof VALUE.Natural ? TYPE.NAT :
-			value instanceof VALUE.Float   ? TYPE.FLOAT :
-			value instanceof VALUE.String  ? TYPE.STR :
-			assert.fail(`Expected ${ value } to be a primitive value.`)
-		);
 	}
 }
