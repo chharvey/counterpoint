@@ -324,7 +324,7 @@ type MyNextType = my_next_var | int;  %> ReferenceError [2]
 ## The Blank Identifier
 The token `_` (a single underscore) is called the “blank identifier”, and it behaves differently from normal variables.
 It may *only* be assigned, and *never* be referenced. It’s actually a syntax error to treat it as an expression.
-```
+```cpl
 val _: int = 42;    % ok
 val x: int = _ + 1; %> ParseError
 ```
@@ -337,23 +337,20 @@ The same goes for destructuring — we might not need all the entries in the obj
 Instead of declaring a regular variable that ends up never being referenced,
 we can use the blank identifier `_` as a placeholder.
 We can even declare it more than once!
-```
+```cpl
 val _: int = 42;
 val _: str = "the answer"; % no duplicate declaration error!
 
-val (_, b, c): str[3] = ["a", "b", "c"];
-val (_, _, f): str[3] = ["d", "e", "f"]; % no duplicate declaration error!
+val (_, b, c): (str, str, str) = ("a", "b", "c");
+val (_, _, f): (str, str, str) = ("d", "e", "f"); % no duplicate declaration error!
 
-type Binop = (float, float) => float;
-val square: Binop = (_: float, x: float): float => x * x;
+type Binop = \(float, float) => float;
+val square: Binop = \(_: float, x: float): float => x * x;
 func trinop(_: float, _: float, y: float): float => y + y + y; % no duplicate declaration error!
 ```
 
-It’s also possible to assign the blank identifier as a type alias, and in an unfixed variable assignment.
-However, these use cases are less practical.
-```
+It’s also possible to assign the blank identifier as a type alias.
+```cpl
 type _ = int | float;
-type _ = [str, bool]; % no duplicate declaration error!
-
-val mut _: float = 4.2;
+type _ = (str, bool); % no duplicate declaration error!
 ```

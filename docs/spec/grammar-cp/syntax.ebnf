@@ -259,8 +259,8 @@ DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
 DeclarationVariable<Break> ::=
-	| "val" "mut"? ("_" | IDENTIFIER)     ":" Type "=" Expression<+Block><?Break> ";"
-	| "val" "mut"  ("_" | IDENTIFIER) "?" ":" Type                                ";"
+	| "val" ("_" | "mut"? IDENTIFIER)     ":" Type "=" Expression<+Block><?Break> ";"
+	| "val"        "mut"  IDENTIFIER  "?" ":" Type                                ";"
 ;
 
 Declaration<Break> ::=

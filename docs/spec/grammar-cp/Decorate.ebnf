@@ -815,20 +815,11 @@ Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
-	:= (SemanticDeclarationVariable[unfixed=true]
-		Decorate(Type)
-		Decorate(Expression<+Block><?Break>)
-	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
-	);
-Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" "?" ":" Type ";") -> SemanticDeclarationVariable
-	:= (SemanticDeclarationVariable[unfixed=true]
-		Decorate(Type)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]

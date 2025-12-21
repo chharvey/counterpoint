@@ -792,21 +792,9 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				{
-					val mut _: T = b;
-				}
-				% (declaration_variable)
-			`]],
 			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
 					val mut a: T = b;
-				}
-				% (declaration_variable)
-			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" "mut" "_" "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				{
-					val mut _?: T;
 				}
 				% (declaration_variable)
 			`]],

@@ -540,36 +540,33 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('with constant folding on.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					% Foldable cases:
-					val mut _?:         int;      % \`(nop)\`
-					val     _:          int = 42; % \`(nop)\`
-					val mut _:          int = 42; % \`(nop)\`
-					val     assignee_a: int = 42; % \`(nop)\`
+					val _:          int = 42; % \`(nop)\`
+					val assignee_a: int = 42; % \`(nop)\`
 
 					% Non-Foldable cases:
 					val mut assignee_b?: int;              % \`(local.set)\`
 					val mut assignee_c:  int = 42;         % \`(local.set)\`
 					val     _:           int = assignee_c; % \`(drop)\`
-					val mut _:           int = assignee_c; % \`(drop)\`
 					val     assignee_d:  int = assignee_c; % \`(local.set)\`
 					val mut assignee_e:  int = assignee_c; % \`(local.set)\`
 
 					%% Syntactically impossible cases (for completion):
 					val _?:          int;
 					val assignee_f?: int;
+					val mut _?:      int;
+					val mut _:       int = 42;
+					val mut _:       int = assignee_c;
 					%%
 				}`);
 				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
 					mod.nop(),
 					mod.nop(),
-					mod.nop(),
-					mod.nop(),
 
 					mod.local.set(0, VALUE.NULL.build(goal.builder)),
-					mod.local.set(1, (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[6] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[7] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(2, (stmts[8] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(3, (stmts[9] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(1, (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(2, (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(3, (stmts[6] as AST.ASTNodeDeclarationVariable).assigned!.build()),
 				]);
 			});
 			test.test('tuples and records.', () => {
