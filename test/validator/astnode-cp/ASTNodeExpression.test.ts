@@ -378,6 +378,48 @@ test.suite('ASTNodeExpression', () => {
 	test.suite('ASTNodeCollectionLiteral', () => {
 		test.suite('#varCheck', () => {
 			test.suite('ASTNode{{Type}Record,Dict}', () => {
+				test.test('var-checks all keys before all values.', () => {
+					const {goal, stmts} = setupScript(`{
+						type T = str;
+						type U = (a: bool, b: (z: int), c: T, d: (y: float));
+						val f: null = null;
+						(e= [x= 42, w= 4.2], f= f);
+						[g= (w= 42, x= 4.2), f= f];
+					}`, {build: false});
+					assert.partialDeepStrictEqual(
+						goal.block!.validator.getAllSymbols(),
+						new Map([
+							[0x100n, {source: 'T'}],
+							[0x107n, {source: 'U'}],
+							[0x108n, {source: 'f'}],
+						]),
+					);
+					assertEqualTypes(
+						(stmts[1] as AST.ASTNodeDeclarationType).assigned.eval(),
+						TYPE.Record.fromTypes(new Map([
+							[0x101n, TYPE.BOOL],
+							[0x102n, TYPE.Record.fromTypes(new Map([[0x105n, TYPE.INT]]))],
+							[0x103n, TYPE.STR],
+							[0x104n, TYPE.Record.fromTypes(new Map([[0x106n, TYPE.FLOAT]]))],
+						])),
+					);
+					return assert.deepStrictEqual(stmts.slice(3, 5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.fold()), [
+						new VALUE.Record(new Map<bigint, VALUE.Value>([
+							[0x109n, new VALUE.Dict(new Map<bigint, VALUE.Value>([
+								[0x10an, new VALUE.Integer(42n)],
+								[0x10bn, new VALUE.Float(4.2)],
+							]))],
+							[0x108n, VALUE.NULL],
+						])),
+						new VALUE.Dict(new Map<bigint, VALUE.Value>([
+							[0x10cn, new VALUE.Record(new Map<bigint, VALUE.Value>([
+								[0x10bn, new VALUE.Integer(42n)],
+								[0x10an, new VALUE.Float(4.2)],
+							]))],
+							[0x108n, VALUE.NULL],
+						])),
+					]);
+				});
 				test.test('throws if containing duplicate keys.', () => {
 					[
 						AST.ASTNodeTypeRecord .fromSource('(a: int, b: float, c: str)'),

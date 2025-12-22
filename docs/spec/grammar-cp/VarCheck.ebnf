@@ -16,6 +16,19 @@ None! VarCheck(Or<
 
 
 
+None! VarCheck(Or<SemanticTypeRecord, SemanticRecord, SemanticDict> assoc) :=
+	1. *Note:* In keyed collection literals, all keys are var-checked before all values.
+	2. *For each* `prop` in `assoc.children`:
+		1. *Let* `key` be `prop.children.0`.
+		2. *Perform:* *Unwrap:* `VarCheck(key)`.
+		3. *If* `assoc.children` already contains a property `prop_dupe` such that `prop_dupe.children.0.id` is `key.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+	3. *For each* `prop` in `assoc.children`:
+		1. *Peform:* *Unwrap:* `VarCheck(prop.children.1)`.
+;
+
+
+
 None! VarCheck(SemanticTypeAlias var) :=
 	1. *Note:* Skip var-checking of `var` for now if source is "Object", as semantics is determined by syntax.
 	2. *If* `var.source` is "Object":
