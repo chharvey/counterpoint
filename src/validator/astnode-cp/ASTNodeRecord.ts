@@ -48,13 +48,14 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	public override varCheck(): void {
-		super.varCheck();
 		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
-		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
-			if (ids.slice(0, i).includes(id)) {
-				throw new AssignmentErrorDuplicateKey(keys[i]);
+		xjs.Array.forEachAggregated(keys, (key, i) => {
+			key.varCheck();
+			if (keys.slice(0, i).find((k) => k.id === key.id)) {
+				throw new AssignmentErrorDuplicateKey(key);
 			}
 		});
+		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
 	}
 
 	@memoizeMethod
