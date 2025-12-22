@@ -50,14 +50,13 @@ export function setupScript(
 
 
 
-export function typeUnit(value: symbol): TYPE.Unit<VALUE.Symbol>;
+export function typeUnit(value: symbol, name?: string): TYPE.Unit<VALUE.Symbol>;
 export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
+export function typeUnit(value: bigint, t: 'nat'): TYPE.Unit<VALUE.Natural>;
 export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
 export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
-export function typeUnit(value: bigint, t: 'nat'): TYPE.Unit<VALUE.Natural>;
-export function typeUnit(value: symbol | bigint | number | string, t?: 'nat'): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
-	if (t === 'nat') {
-		value = value as bigint;
+export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
+	if (typeof value === 'bigint' && tag === 'nat') {
 		TYPE_UNIT_MEMO_NAT.has(value) || TYPE_UNIT_MEMO_NAT.set(value, (
 			value === 0n              ? VALUE.NAT_0 :
 			value === 1n              ? VALUE.NAT_1 :
@@ -72,7 +71,7 @@ export function typeUnit(value: symbol | bigint | number | string, t?: 'nat'): T
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
 		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
 		value === ''              ? VALUE.STR_EMPTY :
-		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :
@@ -102,7 +101,7 @@ export function buildConst(builder: Builder, value: null | boolean | symbol | bi
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
 		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
-		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') : // no need for `name` arg since it’s not used in build
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? assert.fail('String argument to `buildConst` is not yet supported.') :

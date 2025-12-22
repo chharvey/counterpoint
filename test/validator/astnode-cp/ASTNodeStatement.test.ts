@@ -66,7 +66,7 @@ test.suite('ASTNodeStatement', () => {
 				assert.ok(!validator.hasSymbol(0x100n));
 				goal.varCheck();
 				assert.ok(validator.hasSymbol(0x100n));
-				const info_it: SymbolSchema | null = validator.getSymbolInfo(0x100n);
+				const info_it: SymbolSchema | undefined = validator.getSymbol(0x100n);
 				assert_instanceof(info_it, SymbolSchemaVar);
 				return assert.partialDeepStrictEqual(info_it, {
 					isUnfixed:       false,
@@ -373,7 +373,7 @@ test.suite('ASTNodeStatement', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						val mut x?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbolInfo(0x100n), {
+					}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
 						isUnfixed:       true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -386,7 +386,7 @@ test.suite('ASTNodeStatement', () => {
 						set x = null;
 					}`);
 					goal.varCheck();
-					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolInfo(0x100n), {
+					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
 						isUnfixed:       true,
 						isUninitialized: true,
 					});

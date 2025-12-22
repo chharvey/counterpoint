@@ -64,6 +64,30 @@ val my_other_var: str = "Hello, programmer!";
 > ReferenceError: `my_other_var` is used before it is declared.
 
 
+### Type Inference
+When assigning a variable a primitive literal, string template, or constructor call (with no operations),
+we can omit the type annotation.
+For fixed variables, the type is inferred as a unit type containing that primitive value.
+For unfixed variables, the inferred type is the narrowest primitive type corresponding to that value.
+For string template values (with or without interpolation), the inferred type is always `str`.
+Constructor calls always imply their exact type (made mutable if applicable).
+```cpl
+val     untyped         = 11; % type `11`
+val mut untyped_unfixed = 22; % type `int`
+
+val     tpl_untyped         = """hello"""; % type `str`
+val mut tpl_untyped_unfixed = """world"""; % type `str`
+
+val     list_untyped         = List.<int>((11, 22));                 % type `mut List.<int>`
+val mut dict_untyped_unfixed = Dict.<str>((a= "hello", b= "world")); % type `mut Dict.<str>`
+```
+Type inference is applied recursively for tuple and record literals.
+```cpl
+val tup_untyped             = (   42,    (x= "hello"),    Dict.<bool>((x= false, y= true))); % type `(   42,    (x= "hello"),    mut Dict.<bool>)`
+val mut rec_untyped_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type `(a= int, b= (str,),      c= mut List.<bool>)`
+```
+
+
 
 ## Variable Reassignment
 By default, variables are **fixed** in that they cannot be reassigned.
@@ -301,7 +325,7 @@ val my_next_var:  MyNextType  = "Hello, programmer!"; %> ReferenceError [2]
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%
-type MyType = str;
+type MyNextType = str;
 ```
 > 1. ReferenceError: `MyFirstType` is never declared.
 > 2. ReferenceError: `MyNextType` is used before it is declared.
@@ -324,7 +348,7 @@ type MyNextType = my_next_var | int;  %> ReferenceError [2]
 ## The Blank Identifier
 The token `_` (a single underscore) is called the “blank identifier”, and it behaves differently from normal variables.
 It may *only* be assigned, and *never* be referenced. It’s actually a syntax error to treat it as an expression.
-```
+```cpl
 val _: int = 42;    % ok
 val x: int = _ + 1; %> ParseError
 ```
@@ -337,23 +361,20 @@ The same goes for destructuring — we might not need all the entries in the obj
 Instead of declaring a regular variable that ends up never being referenced,
 we can use the blank identifier `_` as a placeholder.
 We can even declare it more than once!
-```
+```cpl
 val _: int = 42;
 val _: str = "the answer"; % no duplicate declaration error!
 
-val (_, b, c): str[3] = ["a", "b", "c"];
-val (_, _, f): str[3] = ["d", "e", "f"]; % no duplicate declaration error!
+val (_, b, c): (str, str, str) = ("a", "b", "c");
+val (_, _, f): (str, str, str) = ("d", "e", "f"); % no duplicate declaration error!
 
-type Binop = (float, float) => float;
-val square: Binop = (_: float, x: float): float => x * x;
+type Binop = \(float, float) => float;
+val square: Binop = \(_: float, x: float): float => x * x;
 func trinop(_: float, _: float, y: float): float => y + y + y; % no duplicate declaration error!
 ```
 
-It’s also possible to assign the blank identifier as a type alias, and in an unfixed variable assignment.
-However, these use cases are less practical.
-```
+It’s also possible to assign the blank identifier as a type alias.
+```cpl
 type _ = int | float;
-type _ = [str, bool]; % no duplicate declaration error!
-
-val mut _: float = 4.2;
+type _ = (str, bool); % no duplicate declaration error!
 ```

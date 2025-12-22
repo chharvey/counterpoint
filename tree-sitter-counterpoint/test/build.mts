@@ -1718,9 +1718,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					val 'å': A = a;
 					val mut 'é': E = e;
 					val _: T = v;
-					val mut _: T = v;
 					val mut uninit?: T;
-					val mut _?: T;
+					val v = f;
+					val mut v = g;
 				}
 			`,
 			sourceStatements(
@@ -1781,6 +1781,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'declaration_variable',
+					s('identifier'),
 					s('identifier'),
 				),
 			),

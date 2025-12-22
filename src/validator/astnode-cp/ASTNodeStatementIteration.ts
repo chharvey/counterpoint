@@ -84,7 +84,7 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 		}
 		if (this.assignee) {
 			assert.ok(this.block.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			(this.block.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar).type = assignee_type;
+			(this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).type = assignee_type;
 		}
 		this.block.typeCheck();
 	}

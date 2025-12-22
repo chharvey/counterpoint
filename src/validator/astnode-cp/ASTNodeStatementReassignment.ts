@@ -54,7 +54,7 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 
 	public override varCheck(): void {
 		super.varCheck();
-		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar).isUnfixed) {
+		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isUnfixed) {
 			throw new AssignmentErrorReassignment(this.assignee);
 		}
 	}
@@ -74,6 +74,6 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, '`ASTNodeStatementReassignment[assignee: ASTNodeAccess]#build` not yet supported.');
-		return this.builder.getLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
+		return this.builder.getLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }

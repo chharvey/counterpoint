@@ -60,7 +60,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaType;
+			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}
 	}
