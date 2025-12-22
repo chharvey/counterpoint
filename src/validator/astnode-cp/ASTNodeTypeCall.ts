@@ -17,7 +17,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
-	type ArgCount,
 	type ValidFunctionName,
 	check_valid_function_name,
 	type ConstructorSchema,
@@ -103,28 +102,5 @@ export class ASTNodeTypeCall extends ASTNodeType {
 		}
 		const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
 		return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
-	}
-
-	/**
-	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
-	 * and throw if the number is incorrect.
-	 * The given argument may be a single value or a 2-tuple of values representing a range.
-	 * If a 2-tuple, the first item represents the minimum (inclusive),
-	 * and the second item represents the maximum (exclusive).
-	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
-	 * @param expected - the number of expected arguments, or a half-open range
-	 * @throws if this call’s number of actual arguments does not satisfy the expected number
-	 */
-	private countArgs(expected: ArgCount): void {
-		const actual: bigint = BigInt(this.args.length);
-		if (typeof expected === 'bigint') {
-			expected = [expected, expected + 1n];
-		}
-		if (actual < expected[0]) {
-			throw new TypeErrorArgCount(actual, expected[0], true, this);
-		}
-		if (expected[1] <= actual) {
-			throw new TypeErrorArgCount(actual, expected[1] - 1n, true, this);
-		}
 	}
 }

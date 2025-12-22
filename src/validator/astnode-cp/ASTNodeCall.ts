@@ -19,7 +19,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
-	type ArgCount,
 	ValidFunctionName,
 	check_valid_function_name,
 	type ConstructorSchema,
@@ -270,40 +269,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 					(assert_instanceof(arg, VALUE.Map),      arg.cases)
 				));
 			}
-		}
-	}
-
-	/**
-	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
-	 * and throw if the number is incorrect.
-	 * Each given argument may be a single value or a 2-tuple of values representing a range.
-	 * If a 2-tuple, the first item represents the minimum (inclusive),
-	 * and the second item represents the maximum (exclusive).
-	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
-	 * @param expected_generic  - the number of expected generic arguments, or a half-open range
-	 * @param expected_function - the number of expected function arguments, or a half-open range
-	 * @throws if this call’s number of actual arguments does not satisfy the expected number
-	 */
-	private countArgs(expected_generic: ArgCount, expected_function: ArgCount): void {
-		const actual_generic:  bigint = BigInt(this.typeargs.length);
-		const actual_function: bigint = BigInt(this.exprargs.length);
-		if (typeof expected_generic === 'bigint') {
-			expected_generic = [expected_generic, expected_generic + 1n];
-		}
-		if (typeof expected_function === 'bigint') {
-			expected_function = [expected_function, expected_function + 1n];
-		}
-		if (actual_generic < expected_generic[0]) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic[0], true, this);
-		}
-		if (expected_generic[1] <= actual_generic) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic[1] - 1n, true, this);
-		}
-		if (actual_function < expected_function[0]) {
-			throw new TypeErrorArgCount(actual_function, expected_function[0], false, this);
-		}
-		if (expected_function[1] <= actual_function) {
-			throw new TypeErrorArgCount(actual_function, expected_function[1] - 1n, false, this);
 		}
 	}
 
