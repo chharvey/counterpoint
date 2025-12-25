@@ -45,6 +45,24 @@ Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 
 
 
+Sequence<Instruction> Build(SemanticStatementClaim claim) :=
+	1. *Return:* [].
+;
+
+
+
+Sequence<Instruction> Build(SemanticStatementReassignment assign) :=
+	1. *Assert:* `assign.children.count` is 2.
+	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
+	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
+	4. *Return:* [
+		...instrs,
+		"SET the global variable `name`.",
+	].
+;
+
+
+
 Sequence<Instruction> Build(SemanticStatementConditional stmt) :=
 	1. *Assert:* `stmt.children.count` is greater than 1.
 	2. *Let* `instrs0` be *UnwrapAffirm:* `Build(stmt.children.0)`.
@@ -108,7 +126,7 @@ Sequence<Instruction> Build(SemanticStatementIteration stmt) :=
 
 
 Sequence<Instruction> Build(SemanticStatementBreak stmt) :=
-	1. *If* `stmt.continue` is `true`:
+	1. *If* `stmt.skip` is `true`:
 		1. *Return:* ["BRANCH"(0)].
 	2. *Else:*
 		1. *Return:* ["BRANCH"(1)].
@@ -125,6 +143,8 @@ Sequence<Instruction> Build(SemanticBlock block) :=
 Sequence<Instruction> Build(SemanticDeclarationType decl) :=
 	1. *Return:* [].
 ;
+
+
 
 Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
@@ -152,20 +172,6 @@ Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 			...instrs,
 			"DECL the global variable `name`.",
 		].
-;
-
-Sequence<Instruction> Build(SemanticDeclarationClaim decl) :=
-	1. *Return:* [].
-;
-
-Sequence<Instruction> Build(SemanticDeclarationReassignment assign) :=
-	1. *Assert:* `assign.children.count` is 2.
-	2. *Let* `name` be the string-concatenation of "glb" and `assign.children.0.id`.
-	3. *Let* `instrs` be *UnwrapAffirm:* `Build(assign.childen.1)`.
-	4. *Return:* [
-		...instrs,
-		"SET the global variable `name`.",
-	].
 ;
 
 
@@ -242,7 +248,7 @@ Sequence<Instruction> BuildExpression(SemanticClaim claim) :=
 
 
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG | INT | FLOAT] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: NOT | EMP | NEG | INT | NAT | FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `instrs` be *UnwrapAffirm:* `Build(expr.children.0)`.
 	3. *Return:* [
@@ -255,7 +261,7 @@ Sequence<Instruction> BuildExpression(SemanticOperation[operator: IS] expr) :=
 	// TODO: implement
 ;
 
-Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | DIV | ADD | LT | GT | LE | GE | ID | EQ] expr) :=
+Sequence<Instruction> BuildExpression(SemanticOperation[operator: EXP | DIV | ADD | SUB | LT | GT | LE | GE | ID | EQ] expr) :=
 	1. *Let* `builds` be *UnwrapAffirm:* `PrebuildSemanticOperationBinary(expr)`.
 	2. *Return:* [
 		...builds.0,

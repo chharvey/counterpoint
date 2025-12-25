@@ -36,17 +36,6 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 
 
-/**
- * Either a bigint, or a half-closed range of integers from min (inclusive) to max (exclusive).
- * @example
- * const r: ArgCount = [3n, 7n]; % a range of integers including 3, 4, 5, and 6, but not 7.
- * @index 0 the minimum, inclusive
- * @index 1 the maximum, exclusive
- */
-export type ArgCount = bigint | readonly [bigint, bigint];
-
-
-
 export enum ValidIntrinsicName {
 	OBJECT = 'Object',
 }
@@ -130,10 +119,17 @@ export type ConstructorSchema = {
  * }
  * declare class Dict<T> {
  * 	new ();
+ * 	new (tup0:  ());
+ * 	new (tup1:  ((sym, T),));
+ * 	new (tup2:  ((sym, T), (sym, T)));
+ * 	new (tup:   anything); % any tuple type with items of type `(sym, T)`
  * 	new (recA:  (a: T));
  * 	new (recAB: (a: T, b: T));
  * 	new (rec:   anything); % any record type with values of type `T`
+ * 	new (list:  List.<(sym, T)>);
  * 	new (dict:  Dict.<T>);
+ * 	new ('set': Set.<(sym, T)>);
+ * 	new (map:   Map.<sym, T>);
  * }
  * declare class Set<T> {
  * 	new ();
@@ -170,7 +166,10 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		genericParams: [{positional: true}],
 		overloads:     [
 			[],
+			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
 			[{positional: true, type: (generic_params) => new TYPE.Dict(generic_params[0])}],
+			[{positional: true, type: (generic_params) => new TYPE.Set(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
+			[{positional: true, type: (generic_params) => new TYPE.Map(TYPE.SYM, generic_params[0])}],
 		],
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
@@ -201,20 +200,27 @@ export function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
 }
 
+export function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
+}
+
 export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
 }
 
 export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
-	return t0.isSubtypeOf(NUMBER) && t1.isSubtypeOf(NUMBER);
+	return t0.isSubtypeOf(TYPE.NUMBER) && t1.isSubtypeOf(TYPE.NUMBER);
 }
 
 
 
-export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Float {
-	const cooked: bigint | number = Validator.cookTokenNumber(source);
-	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
+export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Natural | VALUE.Float {
+	const {type: typ, value: cooked} = Validator.cookTokenNumber(source);
+	switch (typ) {
+		case 'int':   return new VALUE.Integer(cooked);
+		case 'nat':   return new VALUE.Natural(cooked);
+		case 'float': return new VALUE.Float(cooked);
+	}
 }
 
 
@@ -296,9 +302,10 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 					return {type: TYPE.NULL, optional: true};
 				}
 				case base_type instanceof TYPE.List: {
-					return accessor_type.isSubtypeOf(TYPE.INT)
+					const INTEGRAL: TYPE.Type = TYPE.INT.union(TYPE.NAT);
+					return accessor_type.isSubtypeOf(INTEGRAL)
 						? {type: base_type.typearg, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, TYPE.INT);
+						: throwWrongSubtypeError(access.accessor, INTEGRAL);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)

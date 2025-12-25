@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.4.3-beta.0",
+  "version": "0.4.3-beta.1",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -29,14 +29,13 @@
     "cplc:d-p": "npx cplc d ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
     "cplc:r": "npx cplc r ./sample/test-v0.5.wasm",
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
-    "dist": "tsc",
-    "postdist": "eslint",
-    "pretest": "tsc --project ./test/tsconfig.json",
-    "test": "npx tsx --test --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
-    "test:only": "npx tsx --test --test-only --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
+    "compile": "tsc && tsc --project ./test/tsconfig.json",
+    "lint": "eslint",
+    "test": "tsx --test --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
+    "test:only": "tsx --test --test-only -- './test/**/*.test.ts'",
     "justbuild": "npm run postbuild -w ./tree-sitter-counterpoint/ && npm rebuild",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
-    "build": "rm -rf ./build/ && npm run dist && npm run test"
+    "build": "rm -rf ./build/ && npm run compile && npm run lint && npm run test"
   },
   "dependencies": {
     "binaryen": "^124.0.0",

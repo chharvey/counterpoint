@@ -151,8 +151,8 @@ test.suite('Value', () => {
 			});
 			test.test.todo('Lists may contain circular references.', () => {
 				`
-					let a: mut List.<List.<Object>> = List.<List.<Object>>(());
-					let b: mut List.<List.<Object>> = List.<List.<Object>>(());
+					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
+					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
 					a.append.(b);
 					b.append.(a);
 					assert.equal.(a, b);
@@ -175,8 +175,8 @@ test.suite('Value', () => {
 			});
 			test.test.todo('Dicts may contain circular references.', () => {
 				`
-					let a: mut Dict.<anything> = [x= null];
-					let b: mut Dict.<anything> = [x= null];
+					val a: mut Dict.<anything> = [x= null];
+					val b: mut Dict.<anything> = [x= null];
 					a.set.(@x, b);
 					b.set.(@x, a);
 					assert.equal.(a, b);
@@ -236,8 +236,8 @@ test.suite('Value', () => {
 			const builder = new Builder();
 			const mod: binaryen.Module = builder.module;
 			return assertEqualBins(
-				[VALUE.SYM_NOTHING.build(builder),              new VALUE.Symbol(0x100n, 'hello').build(builder)],
-				[new BinVect(mod, mod.i64.const(0x80, 0)).vect, new BinVect(mod, mod.i64.const(0x100, 0)).vect],
+				[VALUE.SYM_NOTHING.build(builder),                                new VALUE.Symbol(0x100n, 'hello').build(builder)],
+				[new BinVect(mod, mod.i64.const(0x80, 0), {unsigned: true}).vect, new BinVect(mod, mod.i64.const(0x100, 0), {unsigned: true}).vect],
 			);
 		});
 
@@ -255,13 +255,30 @@ test.suite('Value', () => {
 						-200 /  3,
 						-200 / -3,
 					].map((x) => BigInt(Math.trunc(x))),
-					(42n ** 2n * 420n) % (2n ** 16n),
+					(42n ** 2n * 420n) % (2n ** 63n),
 					(-5n) ** (2n * 3n),
 				];
 				const builder = new Builder();
 				return assertEqualBins(
 					data.map((x) => new VALUE.Integer(x).build(builder)),
 					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x)).vect),
+				);
+			});
+		});
+
+		test.suite('Natural', () => {
+			test.test('generates `(i64.const)`.', () => {
+				const data: bigint[] = [
+					...[
+						+126 / +3,
+						+200 / +3,
+					].map((x) => BigInt(Math.trunc(x))),
+					(42n ** 2n * 420n) % (2n ** 64n),
+				];
+				const builder = new Builder();
+				return assertEqualBins(
+					data.map((x) => new VALUE.Natural(x).build(builder)),
+					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x, true), {unsigned: true}).vect),
 				);
 			});
 		});
@@ -308,6 +325,7 @@ test.suite('Value', () => {
 
 			test.suite('Tuple', () => {
 				let builder: Builder = new Builder();
+				const addr = bigint_to_i64(builder.module, 0n, true);
 				test.test.beforeEach(() => {
 					builder = new Builder();
 				});
@@ -321,7 +339,7 @@ test.suite('Value', () => {
 				test.test('empty tuple returns unique BinVect representation.', () => {
 					assertEqualBins(
 						new VALUE.Tuple().build(builder),
-						new BinVect(builder.module, [0n]).vect,
+						new BinVect(builder.module, addr, {address: true}).vect,
 						'()',
 					);
 				});
@@ -335,14 +353,14 @@ test.suite('Value', () => {
 				test.test('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
-						singletonTuple(builder, new BinVect(builder.module, [0n]).vect),
+						singletonTuple(builder, new BinVect(builder.module, addr, {address: true}).vect),
 						'((),)',
 					);
 				});
 				test.test('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
 					assertEqualBins(
 						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Tuple()])]).build(builder),
-						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, [0n]).vect), 0)),
+						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, addr, {address: true}).vect), 0)),
 						'(((),),)',
 					);
 				});
@@ -649,20 +667,51 @@ test.suite('Value', () => {
 		test.suite('#toInt', () => {
 			test.test('Integer', () => {
 				const i = new VALUE.Integer(42n);
-				assert.strictEqual(i.toInt(), i, '`Integer#toInt` should return self.');
+				assert.strictEqual(i.toInt(), i, 'should return self.');
+			});
+			test.test('Natural', () => {
+				assert.deepStrictEqual(new VALUE.Natural(42n).toInt(), new VALUE.Integer(42n), 'for values less than *2 ^ 63 - 1*, should return equal value.');
+				assert.deepStrictEqual(new VALUE.Natural(2n ** 63n + 1n).toInt(), new VALUE.Integer(-(2n ** 63n) + 1n), 'for values *2 ^ 63* or greater, should overflow.');
 			});
 			test.test('Float', () => {
-				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), '`Float#toInt` should truncate (round-to-zero).');
+				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), 'should truncate (round-to-zero).');
+			});
+		});
+
+		test.suite('#toNat', () => {
+			test.test('Integer', () => {
+				assert.deepStrictEqual(new VALUE.Integer(42n).toNat(), new VALUE.Natural(42n), 'for positive values, should return equal value.');
+				assert.deepStrictEqual(new VALUE.Integer(-69n).toNat(), new VALUE.Natural(-69n + 2n ** 64n), 'for negative values, should underflow.');
+			});
+			test.test('Natural', () => {
+				const n = new VALUE.Natural(42n);
+				assert.strictEqual(n.toNat(), n, 'should return self.');
+			});
+			test.test('Float', () => {
+				assert.deepStrictEqual(new VALUE.Float(42.69).toNat(), new VALUE.Natural(42n), 'for positive values, should truncate (round-to-zero).');
+				assert.deepStrictEqual(new VALUE.Float(-42.69).toNat(), new VALUE.Natural(0n), 'for negative values, should return zero.');
 			});
 		});
 
 		test.suite('#toFloat', () => {
 			test.test('Integer', () => {
-				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), '`Integer#toFloat` should return an equivalent value.');
+				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), 'should return an equal value.');
+			});
+			test.test('Natural', () => {
+				assert.deepStrictEqual(new VALUE.Natural(42n).toFloat(), new VALUE.Float(42), 'should return an equal value.');
 			});
 			test.test('Float', () => {
 				const f = new VALUE.Float(42.69);
-				assert.strictEqual(f.toFloat(), f, '`Float#toFloat` should return self.');
+				assert.strictEqual(f.toFloat(), f, 'should return self.');
+			});
+		});
+	});
+
+
+	test.suite('Natural', () => {
+		test.suite('.constructor', () => {
+			test.test('underflows when argument is negative.', () => {
+				assert.strictEqual(new VALUE.Natural(-3n).toBigInt(), 2n ** 64n - 3n);
 			});
 		});
 	});

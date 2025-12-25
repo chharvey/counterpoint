@@ -11,7 +11,6 @@ import {
 } from '../../core/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
 import {
@@ -37,7 +36,6 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	}
 
 	// @memoizeGetter // memoizing takes longer than returning a constant
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return true;
 	}
@@ -62,7 +60,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaType;
+			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}
 	}

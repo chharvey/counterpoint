@@ -124,11 +124,11 @@ SemanticClaim
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-SemanticOperation[operator: NEG | INT | FLOAT]
+SemanticOperation[operator: NEG | INT | NAT | FLOAT]
 	::= SemanticExpression[type: Number];
 SemanticOperation[operator: CAST | MAYBE | RESULT | IS]
 	::= SemanticExpression SemanticExpression[type: Class];
-SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
+SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
 SemanticOperation[operator: ID | EQ | AND | OR]
 	::= SemanticExpression SemanticExpression;
@@ -138,12 +138,14 @@ SemanticOperation[operator: COND]
 
 
 SemanticStatement =:=
+	| SemanticDeclaration
 	| SemanticStatementExpression
+	| SemanticStatementClaim
+	| SemanticStatementReassignment
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration
 	| SemanticStatementBreak
-	| SemanticDeclaration
 ;
 
 
@@ -151,24 +153,22 @@ SemanticStatement =:=
 SemanticStatementExpression
 	::= SemanticExpression?;
 
+SemanticStatementClaim
+	::= (SemanticVariable | SemanticAccess) SemanticType;
 
+SemanticStatementReassignment
+	::= (SemanticVariable | SemanticAccess) SemanticExpression;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
 
-
-
 SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 	::= SemanticExpression SemanticBlock;
-
-
 
 SemanticStatementIteration
 	::= SemanticVariable? SemanticType SemanticExpression SemanticBlock;
 
-
-
-SemanticStatementBreak[continue: Boolean]
+SemanticStatementBreak[skip: Boolean]
 	::= ();
 
 
@@ -181,21 +181,13 @@ SemanticBlock
 SemanticDeclaration =:=
 	| SemanticDeclarationType
 	| SemanticDeclarationVariable
-	| SemanticDeclarationClaim
-	| SemanticDeclarationReassignment
 ;
 
 SemanticDeclarationType
 	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable? SemanticType SemanticExpression?;
-
-SemanticDeclarationClaim
-	::= (SemanticVariable | SemanticAccess) SemanticType;
-
-SemanticDeclarationReassignment
-	::= (SemanticVariable | SemanticAccess) SemanticExpression;
+	::= SemanticVariable? SemanticType? SemanticExpression?;
 
 
 

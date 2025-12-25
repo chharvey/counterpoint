@@ -16,7 +16,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	buildDeco,
@@ -32,6 +31,11 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		return statement;
 	}
 
+
+	#labelExit:   string = '';
+	#labelRepeat: string = '';
+	#labelBody:   string = '';
+
 	public constructor(
 		start_node: SyntaxNodeType<'statement_loop'>,
 		private readonly doFirst:   boolean,
@@ -42,8 +46,8 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		super(start_node, {doFirst, until}, [condition, block]);
 	}
 
+
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !!this.condition.fold() && this.block.isFoldable;
 	}
@@ -68,25 +72,26 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		const block       = this.builder.teeBlock(this);
-		const LABEL_BLOCK = `exit${ block.index }`;
-		const LABEL_LOOP  = `repeat${ block.index }`;
+		const builder_block = this.builder.teeBlock(this);
+		this.#labelExit   = `exit${   builder_block.index }`;
+		this.#labelRepeat = `repeat${ builder_block.index }`;
+		this.#labelBody   = `body${   builder_block.index }`;
 
 		/*
 			;; if `doFirst`:
 			(block $exit
 				(loop $repeat
-					‹body›
+					(block $body ‹body›) ;; `break;` --> `(br $exit)`, `skip;` --> `(br $body)`
 					(br_if $exit (not ‹cond›))
-					br $repeat
+					(br $repeat)
 				)
 			)
 			;; else:
 			(block $exit
 				(loop $repeat
 					(br_if $exit (not ‹cond›))
-					‹body›
-					br $repeat
+					(block $body ‹body›) ;; `break;` --> `(br $exit)`, `skip;` --> `(br $body)`
+					(br $repeat)
 				)
 			)
 		*/
@@ -99,28 +104,27 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 
 		if (!this.until && condition_truthy || this.until && condition_falsy) {
 			// `while true…` or `until false…` -> replace condition check with just condition; always repeat
-			return this.#buildBlock(LABEL_BLOCK, LABEL_LOOP, this.builder.module.drop(condition_build), block_build, 0);
+			return this.#buildBlock(this.builder.module.drop(condition_build), block_build);
 		} else if (!this.until && condition_falsy || this.until && condition_truthy) {
 			// `while false…` or `until true…` -> replace condition check with just condition; always exit
-			return this.#buildBlock(LABEL_BLOCK, LABEL_LOOP, this.builder.module.drop(condition_build), block_build, 1);
+			return this.#buildBlock(this.builder.module.drop(condition_build), block_build, true);
 		}
 
 		return this.#buildBlock(
-			LABEL_BLOCK,
-			LABEL_LOOP,
-			this.builder.module.br_if(LABEL_BLOCK, new BinVect(
+			this.builder.module.br_if(this.#labelExit, new BinVect(
 				this.builder.module,
 				this.until ? this.builder.module.call('vnot', [condition_build], binaryen.v128) : condition_build,
 			).isSpecial(false)),
 			block_build,
-			0,
 		);
 	}
 
-	#buildBlock(label_block: string, label_loop: string, condition_build: binaryen.ExpressionRef, block_build: binaryen.ExpressionRef, branch_depth: number): binaryen.ExpressionRef {
-		return this.builder.module.block(label_block, [this.builder.module.loop(label_loop, this.builder.module.block(null, (this.doFirst
-			? [block_build, condition_build, this.builder.module.br([label_loop, label_block][branch_depth])]
-			: [condition_build, block_build, this.builder.module.br([label_loop, label_block][branch_depth])]
+	#buildBlock(build_test: binaryen.ExpressionRef, build_block: binaryen.ExpressionRef, while_false: boolean = false): binaryen.ExpressionRef {
+		const mod: binaryen.Module = this.builder.module;
+		const body: binaryen.ExpressionRef = mod.block(this.#labelBody, [build_block]);
+		return mod.block(this.#labelExit, [mod.loop(this.#labelRepeat, mod.block(null, (this.doFirst
+			? [body, build_test, mod.br(while_false ? this.#labelExit : this.#labelRepeat)]
+			: [build_test, body, mod.br(while_false ? this.#labelExit : this.#labelRepeat)]
 		)))]);
 	}
 }

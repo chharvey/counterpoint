@@ -19,7 +19,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
-	type ArgCount,
 	ValidFunctionName,
 	check_valid_function_name,
 	type ConstructorSchema,
@@ -129,14 +128,22 @@ export class ASTNodeCall extends ASTNodeExpression {
 						// FIXME: should report whole AggregateError
 						throw err.errors[0];
 					}
-					// If function overload checking failed, `arg` is either a record literal or an expression with a record type.
+					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type         = this.typeargs[0].eval();
+					const entrytype: TYPE.Tuple        = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       ASTNodeExpression = this.exprargs[0];
-					if (arg instanceof ASTNodeRecord) {
+					if (arg instanceof ASTNodeTuple) {
+						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
+					} else if (arg instanceof ASTNodeRecord) {
 						xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, valuetype, prop.val));
 					} else {
 						const argtype: TYPE.Type = arg.type();
-						if (argtype instanceof TYPE.Record) {
+						if (argtype instanceof TYPE.Tuple) {
+							const tupleitemtypes: TYPE.Type = argtype.itemTypes();
+							if (!tupleitemtypes.isSubtypeOf(entrytype)) {
+								throw new TypeErrorNotNarrow(tupleitemtypes, entrytype, this.line_index, this.col_index);
+							}
+						} else if (argtype instanceof TYPE.Record) {
 							const recordvaluetypes: TYPE.Type = argtype.valueTypes();
 							if (!recordvaluetypes.isSubtypeOf(valuetype)) {
 								throw new TypeErrorNotNarrow(recordvaluetypes, valuetype, this.line_index, this.col_index);
@@ -225,8 +232,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				const arg: VALUE.Value = args[0]!;
 				return new VALUE.List((
-					arg instanceof VALUE.CollectionIndexed ? arg.items :
-					(assert_instanceof(arg, VALUE.Set),      [...arg.elements])
+					arg instanceof VALUE.Set                        ? [...arg.elements] :
+					(assert_instanceof(arg, VALUE.CollectionIndexed), arg.items)
 				));
 			}
 			case ValidFunctionName.DICT: {
@@ -235,8 +242,10 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				const arg: VALUE.Value = args[0]!;
 				return new VALUE.Dict((
+					arg instanceof VALUE.CollectionIndexed        ? new Map<bigint, VALUE.Value>((arg.items       as VALUE.Tuple[])                .map((tup) => [(tup.items[0] as VALUE.Symbol).id, tup.items[1]])) :
+					arg instanceof VALUE.Set                      ? new Map<bigint, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>]             .map((tup) => [(tup.items[0] as VALUE.Symbol).id, tup.items[1]])) :
+					arg instanceof VALUE.Map                      ? new Map<bigint, VALUE.Value>([...arg.cases    as Map<VALUE.Value, VALUE.Value>].map((ent) => [(ent[0]       as VALUE.Symbol).id, ent[1]])) :
 					(assert_instanceof(arg, VALUE.CollectionKeyed), arg.properties)
-					// maybe more
 				));
 			}
 			case ValidFunctionName.SET: {
@@ -255,45 +264,11 @@ export class ASTNodeCall extends ASTNodeExpression {
 				}
 				const arg: VALUE.Value = args[0]!;
 				return new VALUE.Map((
-					arg instanceof VALUE.CollectionIndexed || arg instanceof VALUE.Set
-						? new Map<VALUE.Value, VALUE.Value>((arg instanceof VALUE.CollectionIndexed ? arg.items : [...arg.elements]).map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value]))
-						: (assert_instanceof(arg, VALUE.Map), arg.cases)
+					arg instanceof VALUE.CollectionIndexed ? new Map<VALUE.Value, VALUE.Value>((arg.items       as VALUE.Tuple[])   .map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
+					arg instanceof VALUE.Set               ? new Map<VALUE.Value, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>].map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
+					(assert_instanceof(arg, VALUE.Map),      arg.cases)
 				));
 			}
-		}
-	}
-
-	/**
-	 * Count this call’s number of actual arguments and compare it to the number of expected arguments,
-	 * and throw if the number is incorrect.
-	 * Each given argument may be a single value or a 2-tuple of values representing a range.
-	 * If a 2-tuple, the first item represents the minimum (inclusive),
-	 * and the second item represents the maximum (exclusive).
-	 * E.g., `countArgs([2n, 5n])` expects 2, 3, or 4 arguments, but not 5.
-	 * @param expected_generic  - the number of expected generic arguments, or a half-open range
-	 * @param expected_function - the number of expected function arguments, or a half-open range
-	 * @throws if this call’s number of actual arguments does not satisfy the expected number
-	 */
-	private countArgs(expected_generic: ArgCount, expected_function: ArgCount): void {
-		const actual_generic:  bigint = BigInt(this.typeargs.length);
-		const actual_function: bigint = BigInt(this.exprargs.length);
-		if (typeof expected_generic === 'bigint') {
-			expected_generic = [expected_generic, expected_generic + 1n];
-		}
-		if (typeof expected_function === 'bigint') {
-			expected_function = [expected_function, expected_function + 1n];
-		}
-		if (actual_generic < expected_generic[0]) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic[0], true, this);
-		}
-		if (expected_generic[1] <= actual_generic) {
-			throw new TypeErrorArgCount(actual_generic, expected_generic[1] - 1n, true, this);
-		}
-		if (actual_function < expected_function[0]) {
-			throw new TypeErrorArgCount(actual_function, expected_function[0], false, this);
-		}
-		if (expected_function[1] <= actual_function) {
-			throw new TypeErrorArgCount(actual_function, expected_function[1] - 1n, false, this);
 		}
 	}
 

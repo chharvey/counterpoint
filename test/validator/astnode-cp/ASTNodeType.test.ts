@@ -67,7 +67,7 @@ test.suite('ASTNodeType', () => {
 					type A = (int, [float], str);
 					type C = (a: int, b: [float], c: str);
 					type E = ({float}, {float}, {float});
-				}`, null, {build: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 		});
 	});
@@ -80,7 +80,7 @@ test.suite('ASTNodeType', () => {
 				assertEqualTypes(extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
-					42  4.2e+3
+					42  +42  4.2e+3
 					"hi"
 				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
@@ -91,6 +91,7 @@ test.suite('ASTNodeType', () => {
 					new VALUE.Symbol(0x89n,  'false').toType(),
 					new VALUE.Symbol(0x100n, 'foobar').toType(),
 					typeUnit(42n),
+					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
 				]);
@@ -118,7 +119,7 @@ test.suite('ASTNodeType', () => {
 			test.test('does not throw when referencing intrinsic identifiers.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					type T = Object;
-					let obj: Object = 42;
+					val obj: Object = 42;
 				}`).varCheck(); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
@@ -146,11 +147,11 @@ test.suite('ASTNodeType', () => {
 			});
 			test.test('throws if was declared as a value variable.', () => {
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					let FOO: int = 42;
+					val FOO: int = 42;
 					type _ = FOO | float;
 				}`).varCheck(), ReferenceErrorKind);
 				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
-					for FOO: int of [42] do {
+					for FOO: int in [42] do {
 						type _ = FOO | float;
 					};
 				}`).varCheck(), ReferenceErrorKind);

@@ -19,7 +19,6 @@ import {
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
@@ -48,7 +47,6 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	}
 
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !!this.iterable.fold() && this.block.isFoldable;
 	}
@@ -86,7 +84,7 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 		}
 		if (this.assignee) {
 			assert.ok(this.block.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			(this.block.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar).type = assignee_type;
+			(this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).type = assignee_type;
 		}
 		this.block.typeCheck();
 	}

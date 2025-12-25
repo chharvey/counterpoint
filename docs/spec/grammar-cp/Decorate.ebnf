@@ -3,16 +3,27 @@ _KEYWORD_OTHER =:=
 		| "mut"
 		| "as"
 		| "is"
-		| "isnt"
 		| "if"
 		| "then"
 		| "else"
 	// storage
 		| "type"
-		| "let"
+		| "val"
+		| "claim"
+		| "set"
 		| "_"
+		| "void"
 	// modifier
-		| "var"
+		| "nominal"
+	// control
+		| "unless"
+		| "while"
+		| "until"
+		| "for"
+		| "in"
+		| "do"
+		| "break"
+		| "skip"
 ;
 
 Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey
@@ -28,6 +39,8 @@ Decorate(Word ::= KeywordValue) -> SemanticKey
 
 Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
 	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
+Decorate(PrimitiveLiteral ::= NATURAL) -> SemanticConstant
+	:= (SemanticConstant[value=Natural(TokenWorth(NATURAL))]);
 Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
 	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
 Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
@@ -95,6 +108,8 @@ Decorate(PropertiesType ::= ","? EntryType<+Named><+Optional># ","?) -> Sequence
 
 Decorate(PropertyAccessorType ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
 Decorate(PropertyAccessorType ::= Word) -> SemanticKey
 	:= Decorate(Word);
 
@@ -307,6 +322,8 @@ Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Bre
 
 Decorate(PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
+Decorate(PropertyAccessor<Break> ::= NATURAL) -> SemanticIndex
+	:= (SemanticIndex[index=TokenWorth(NATURAL)]);
 Decorate(PropertyAccessor<Break> ::= Word) -> SemanticKey
 	:= Decorate(Word);
 Decorate(PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression
@@ -439,6 +456,10 @@ Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?
 	:= (SemanticOperation[operator=INT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
+	:= (SemanticOperation[operator=NAT]
+		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
+	);
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
 	:= (SemanticOperation[operator=FLOAT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
@@ -504,9 +525,9 @@ Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break>
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=ADD]
+	:= (SemanticOperation[operator=SUB]
 		Decorate(ExpressionAdditive<?Block><?Break>)
-		(SemanticOperation[operator=NEG] Decorate(ExpressionMultiplicative<?Block><?Break>))
+		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 
 
@@ -552,7 +573,7 @@ Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "isnt" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!is" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
 	:= (SemanticOperation[operator=NOT]
 		(SemanticOperation[operator=IS]
 			Decorate(ExpressionComparative<?Block><?Break>)
@@ -641,10 +662,36 @@ Decorate(Expression<Block, Break> ::= ExpressionConditional) -> SemanticExpressi
 
 
 
+Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable
+	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
+Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
+	:= (SemanticAccess[kind=NORMAL]
+		Decorate(ExpressionCompound<+Block><?Break>)
+		Decorate(PropertyAccessor<?Break>)
+	);
+
+
+
 Decorate(StatementExpression<Break> ::= ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression);
 Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression
 	:= (SemanticStatementExpression Decorate(Expression<+Block><?Break>));
+
+
+
+Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticStatementClaim
+	:= (SemanticStatementClaim
+		Decorate(Assignee<?Break>)
+		Decorate(Type)
+	);
+
+
+
+Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment
+	:= (SemanticStatementReassignment
+		Decorate(Assignee<?Break>)
+		Decorate(Expression<+Block><?Break>)
+	);
 
 
 
@@ -696,13 +743,13 @@ Decorate(StatementLoop ::= "do" Block<+Break> "until" Expression<+Block><-Break>
 
 
 
-Decorate(StatementIteration ::= "for" "_" ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
+Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
 		(SemanticType     Decorate(Type))
 		(SemanticIterable Decorate(Expression<+Block><-Break>))
 		Decorate(Block<+Break>)
 	);
-Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
+Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		(SemanticType     Decorate(Type))
@@ -713,12 +760,20 @@ Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "of" Expression<+Block
 
 
 Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=false]);
-Decorate(StatementBreak ::= "continue" ";") -> SemanticStatementBreak
-	:= (SemanticStatementBreak[continue=true]);
+	:= (SemanticStatementBreak[skip=false]);
+Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak
+	:= (SemanticStatementBreak[skip=true]);
 
+
+
+Decorate(Statement<Break> ::= Declaration<?Break>) -> SemanticDeclaration
+	:= Decorate(Declaration<?Break>);
 Decorate(Statement<Break> ::= StatementExpression<?Break>) -> SemanticStatementExpression
 	:= Decorate(StatementExpression<?Break>);
+Decorate(Statement<Break> ::= StatementClaim<?Break>) -> SemanticStatementClaim
+	:= Decorate(StatementClaim<?Break>);
+Decorate(Statement<Break> ::= StatementReassignment<?Break>) -> SemanticStatementReassignment
+	:= Decorate(StatementReassignment<?Break>);
 Decorate(Statement<Break> ::= StatementConditional<∓Unless><?Break>) -> SemanticStatementConditional
 	:= Decorate(StatementConditional<∓Unless><?Break>);
 Decorate(Statement<Break> ::= StatementLoop) -> SemanticStatementLoop
@@ -727,24 +782,12 @@ Decorate(Statement<Break> ::= StatementIteration) -> SemanticStatementIteration
 	:= Decorate(StatementIteration);
 Decorate(Statement<Break> ::= StatementBreak) -> SemanticStatementBreak
 	:= Decorate(StatementBreak);
-Decorate(Statement<Break> ::= Declaration<?Break>) -> SemanticDeclaration
-	:= Decorate(Declaration<?Break>);
 
 
 
 Decorate(Block<Break> ::= "{" Statement<?Break>+ "}") -> SemanticBlock
 	:= (SemanticBlock
 		...ParseList(Statement<?Break>, SemanticStatement)
-	);
-
-
-
-Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable
-	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
-Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=NORMAL]
-		Decorate(ExpressionCompound<+Block><?Break>)
-		Decorate(PropertyAccessor<?Break>)
 	);
 
 
@@ -761,52 +804,41 @@ Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarat
 
 
 
-Decorate(DeclarationVariable<Break> ::= "let" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "_" "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=false]
+		Decorate(Expression<+Block><?Break>)
+	);
+Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+	:= (SemanticDeclarationVariable[unfixed=false]
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		Decorate(Expression<+Block><?Break>)
+	);
+Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=false]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
-		Decorate(Type)
+		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable
-	:= (SemanticDeclarationVariable[unfixed=true]
-		Decorate(Type)
-	);
-Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable
+Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[unfixed=true]
 		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
-	);
-
-
-
-Decorate(DeclarationClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticDeclarationClaim
-	:= (SemanticDeclarationClaim
-		Decorate(Assignee<?Break>)
-		Decorate(Type)
-	);
-
-
-
-Decorate(DeclarationReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticDeclarationReassignment
-	:= (SemanticDeclarationReassignment
-		Decorate(Assignee<?Break>)
-		Decorate(Expression<+Block><?Break>)
 	);
 
 
@@ -815,10 +847,6 @@ Decorate(Declaration<Break> ::= DeclarationType) -> SemanticDeclarationType
 	:= Decorate(DeclarationType);
 Decorate(Declaration<Break> ::= DeclarationVariable<?Break>) -> SemanticDeclarationVariable
 	:= Decorate(DeclarationVariable<?Break>);
-Decorate(Declaration<Break> ::= DeclarationClaim<?Break>) -> SemanticDeclarationClaim
-	:= Decorate(DeclarationClaim<?Break>);
-Decorate(Declaration<Break> ::= DeclarationReassignment<?Break>) -> SemanticDeclarationReassignment
-	:= Decorate(DeclarationReassignment<?Break>);
 
 
 
@@ -845,6 +873,7 @@ TokenId(KeywordType  ::= "nothing")  -> TokenWorth("nothing");
 TokenId(KeywordType  ::= "bool")     -> TokenWorth("bool");
 TokenId(KeywordType  ::= "sym")      -> TokenWorth("sym");
 TokenId(KeywordType  ::= "int")      -> TokenWorth("int");
+TokenId(KeywordType  ::= "nat")      -> TokenWorth("nat");
 TokenId(KeywordType  ::= "float")    -> TokenWorth("float");
 TokenId(KeywordType  ::= "str")      -> TokenWorth("str");
 TokenId(KeywordType  ::= "anything") -> TokenWorth("anything");
@@ -858,6 +887,7 @@ KeywordType(KeywordType ::= "nothing")  -> Type := Nothing;
 KeywordType(KeywordType ::= "bool")     -> Type := Boolean;
 KeywordType(KeywordType ::= "sym")      -> Type := Symbol;
 KeywordType(KeywordType ::= "int")      -> Type := Integer;
+KeywordType(KeywordType ::= "nat")      -> Type := Natural;
 KeywordType(KeywordType ::= "float")    -> Type := Float;
 KeywordType(KeywordType ::= "str")      -> Type := String;
 KeywordType(KeywordType ::= "anything") -> Type := Anything;

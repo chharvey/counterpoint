@@ -46,7 +46,7 @@ Conditional statements are similar to [conditional expressions](./expressions-op
 Given a boolean condition, exactly one of two branches will execute.
 The difference is that the branches are blocks rather than expressions.
 ```cpl
-let n: int = 42;
+val n: int = 42;
 
 if n < 0 then {
 	print.("n is negative");
@@ -126,7 +126,7 @@ For `unless` statements, including an `else` branch is a syntax error. Just make
 The condition is re-evaluated on every repetition. `while–do` loops are “top-tested”, and `do–while` loops are “bottom-tested”.
 
 ```cpl
-let var unread_messages: int = 5;
+val mut unread_messages: int = 5;
 while unread_messages > 0 do {
 	print.("""You have {{ unread_messages }} unread messages…""");
 	set unread_messages -= 1;
@@ -138,7 +138,7 @@ It then re-evaluates the condition, re-executes the block if passing, and repeat
 
 A `do–while` loop inverts the order. First it executes the block, then tests the condition, and then repeats.
 ```cpl
-let var unread_messages: int = 5;
+val mut unread_messages: int = 5;
 do {
 	print.("""You have {{ unread_messages }} unread messages …""");
 	set unread_messages -= 1;
@@ -149,7 +149,7 @@ The difference is that a `do–while` loop is guaranteed to execute at least onc
 
 The keyword `until` simply negates the condition. It executes the block if the condition fails.
 ```cpl
-let var progress: float = 0.0;
+val mut progress: float = 0.0;
 until progress >= 1.0 do {
 	print.("""Download at {{ progress * 100.0 }}% …""");
 	set progress += 0.02718281828;
@@ -165,7 +165,7 @@ print.("Download complete!");
 ### Break Statements
 Inside a `while` or `until` loop, a `break;` statement directs control flow to stop execution mid-loop, and then exit the loop completely.
 ```cpl
-let var i: int = 0;
+val mut i: int = 0;
 while i < 10 do {
 	if i == 3 then {
 		break;
@@ -174,40 +174,43 @@ while i < 10 do {
 	set i += 1;
 }; % only prints 0, 1, and 2, then stops
 ```
-A `continue;` statement stops the current repetition, but then proceeds to the next one.
+A `skip;` statement stops the current repetition, but then proceeds to the next one.
 ```cpl
-let var i: int = 0;
+val mut i: int = 0;
 while i < 10 do {
 	if i == 3 then {
-		continue;
+		print.("skipped");
+		set i = 4;
+		skip;
 	};
 	print.(i);
 	set i += 1;
-}; % prints 0, 1, 2, 4, 5, 6, 7, 8, and 9 (notice missing 3)
+}; % prints 0, 1, 2, "skipped", 4, 5, 6, 7, 8, and 9
 ```
-Notice the difference in how `continue;` behaves in a `while–do` versus a `do–while` loop.
-In a `while–do` loop, `continue;` will jump to the start of the loop and re-evaluate the condition;
-in a `do–while` loop, `continue;` will jump to the start of the loop *without* re-evaluating the condition.
+`skip;` behaves the same in `while–do` and `do–while` loops:
+In both cases, control skips to the end of the loop body and re-evaluates the condition before starting the next repetition.
 ```cpl
-let var i: int = 0;
+val mut i: int = 0;
 while i < 10 do {
 	if i == 3 then {
+		print.("skipped");
 		set i = 20;
-		continue;
+		skip;
 	};
 	print.(i);
 	set i += 1;
-}; % prints 0, 1, and 2
+}; % prints 0, 1, 2, "skipped"
 
 set i = 0;
 do {
 	if i == 3 then {
+		print.("skipped");
 		set i = 20;
-		continue;
+		skip;
 	};
 	print.(i);
 	set i += 1;
-} while i < 10; % prints 0, 1, 2, and 20
+} while i < 10; % prints 0, 1, 2, "skipped"
 ```
 
 
@@ -219,14 +222,14 @@ and which can be referenced in the loop body.
 For each iteration of the loop, the iteration variable is reassigned to each of the iterable’s items, one by one.
 The loop ends when the list has been exhausted.
 ```cpl
-for n: int of [10, 20, 30] do {
+for n: int in [10, 20, 30] do {
 	print.(n + 5);
 }; % prints 15, 25, 35
 ```
 The iteration variable must be typed to match the iterable’s item types.
 Though it’s implicitly reassigned to a new item on each iteration, it can’t be explicitly reassigned by the programmer.
 ```cpl
-for n: int of [10, 20, 30] {
+for n: int in [10, 20, 30] {
 	set n += 10; %> AssignmentError: Reassignment of a fixed variable: `n`.
 };
 ```
@@ -235,8 +238,8 @@ The iterable doesn’t need to be a list literal; it can be any expression, such
 The iterable is *only evaluated once*, before the loop begins, and that same iterable value is used for the entire loop.
 This means that if the iterable is ever *mutated* by the loop, that mutation will affect the loop!
 ```cpl
-let list_of_tens: mut [int] = [10, 20, 30];
-for n: int of list_of_tens do {
+val list_of_tens: mut [int] = [10, 20, 30];
+for n: int in list_of_tens do {
 	print.(n);
 	if n == 20 then {
 		list_of_tens.drop.(); % drops the 30 from the list
@@ -248,26 +251,26 @@ Even though it looks like the loop should have run three times,
 the iterable’s mutation, dropping the last element, caused it to end ahead of schedule.
 As a general rule, it’s best not to mutate lists while iterating over them.
 
-Break statements (`break;` and `continue;`) may be used in `for` loops as well.
+Break statements (`break;` and `skip;`) may be used in `for` loops as well.
 They can be useful when we need to short-circuit a loop, for example if we have what we need before the iterable is exhausted.
 Here’s a simple implementation of `List#find` using `break;`.
 ```cpl
 % Find just one person with no middle name. There may be more, but we only need one.
-let var found?: Person;
-for person: Person of list do {
+val mut found?: Person;
+for person: Person in list do {
 	if ?person.middleName then {
 		set found = person;
 		break; % stops iteration here, skips the rest of the list
 	};
 };
 ```
-In a `for` loop, `continue;` works the same as it does in `while`/`until` loops,
+In a `for` loop, `skip;` works the same as it does in `while`/`until` loops,
 stopping the current iteration and sending control back to the top of the loop.
 The iteration variable is still incremented.
 ```cpl
-for person: Person of list do {
+for person: Person in list do {
 	if ?person.middleName then {
-		continue; % stops iteration here, proceeds to the next item
+		skip; % stops iteration here, proceeds to the next item
 	};
 	print.(person.middleName);
 };

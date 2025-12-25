@@ -3,21 +3,20 @@ import type binaryen from 'binaryen';
 import {
 	TYPE,
 	TypeErrorNotNarrow,
-} from '../../index.js';
+} from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SymbolSchemaVar} from '../index.js';
-import type {SyntaxNodeFamily} from '../utils-private.js';
-import {if_constant_folding} from './Foldable.ts';
-import {ASTNodeIndex} from './ASTNodeIndex.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeVariable} from './ASTNodeVariable.js';
-import {ASTNodeAccess} from './ASTNodeAccess.js';
+} from '../../core/index.ts';
+import type {SymbolSchemaVar} from '../index.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
+import {ASTNodeIndex} from './ASTNodeIndex.ts';
+import {ASTNodeKey} from './ASTNodeKey.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeVariable} from './ASTNodeVariable.ts';
+import {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {
 	buildDeco,
 	ASTNodeStatement,
@@ -25,15 +24,15 @@ import {
 
 
 
-export class ASTNodeDeclarationClaim extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationClaim {
+export class ASTNodeStatementClaim extends ASTNodeStatement {
+	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementClaim {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeDeclarationClaim);
+		assert_instanceof(statement, ASTNodeStatementClaim);
 		return statement;
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'declaration_claim', ['break']>,
+		start_node: SyntaxNodeFamily<'statement_claim', ['break']>,
 		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
 		private readonly claimed_type: ASTNodeType,
 	) {
@@ -41,7 +40,6 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 	}
 
 	// @memoizeGetter // memoizing takes longer than returning a constant
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return true;
 	}
@@ -60,7 +58,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 			throw new TypeErrorNotNarrow(claimed_type, computed_type, this.line_index, this.col_index);
 		}
 		if (this.assignee instanceof ASTNodeVariable) {
-			const symbol: SymbolSchemaVar | null = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar | null;
+			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar | undefined;
 			if (symbol) {
 				symbol.type = claimed_type;
 			}
@@ -79,7 +77,7 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 				}
 				default: {
 					assert_instanceof(accessor, ASTNodeExpression);
-					throw new Error('`ASTNodeDeclarationClaim[assignee: ASTNodeAccess[accessor: ASTNodeExpression]]#typeCheck` not yet supported.');
+					throw new Error('`ASTNodeStatementClaim[assignee: ASTNodeAccess[accessor: ASTNodeExpression]]#typeCheck` not yet supported.');
 				}
 			}
 		}
@@ -87,6 +85,6 @@ export class ASTNodeDeclarationClaim extends ASTNodeStatement {
 
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeDeclarationClaim#isFoldable` to be true.');
+		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
 	}
 }

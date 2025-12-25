@@ -35,4 +35,4 @@ This chapter defines the syntax, semantics, and behavior of statements in the Co
 
 
 
-## Break & Continue
+## Break & Skip

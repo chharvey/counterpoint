@@ -15,7 +15,7 @@ Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (
 
 Snippets of program code (be it a Counterpoint program or another kind of program such as a context-free grammar)
 are written in `monospace font`.
-> The Counterpoint code `let x: int = X.value;` is a statement
+> The Counterpoint code `val x: int = X.value;` is a statement
 > that assigns the `value` property of `X` to the newly declared variable `x`.
 >
 > The grammar production `N ::= A B` defines the nonterminal `N` as a concatenation of nonterminals `A` and `B`.
@@ -60,7 +60,7 @@ then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which
 [Counterpoint Language Values](./types-values.md#counterpoint-language-types) are displayed with a `monospace typeface`.
 Examples include `true`, `42.0`, and `"hello"`.
 There is no notational distinction between Counterpoint Language Values and longer code snippets
-such as `let n: int = 42;`; however, the semantics will be apparent in context.
+such as `val n: int = 42;`; however, the semantics will be apparent in context.
 
 
 
@@ -1212,12 +1212,6 @@ each containing the substeps respective to that branch.
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
 A loop step begins with «*While* …:».
 
-#### Continue
-A step within the substeps of a loop may direct the algorithm to **continue**,
-which is to say the rest of the substeps within the current iteration should be skipped,
-and the loop should proceed to the next iteration.
-Such a step says «*Continue.*».
-
 #### Break
 A step within the substeps of a loop may direct the algorithm to **break**,
 which is to say the rest of the loop should be skipped,
@@ -1225,11 +1219,12 @@ and the algorithm should proceed to the next step after the loop, if that step e
 If that next step does not exist, the algorithm should complete.
 Such a step says «*Break.*».
 
-A step that begins with «*Break:* …» may contain a positive integer, which indicates
-the number of nested loops to terminate. For example, if such a step is nested within 2 loops,
-then «*Break:* 1.» would indicate that only the inner loop be terminated, but that the algorithm
-continue with the outer loop. «*Break:* 2.» would indicate both loops terminate.
-A step that says «*Break.*» (with no number) implies «*Break:* 1.».
+#### Skip
+A step within the substeps of a loop may direct the algorithm to **skip**,
+which is to say the rest of the substeps within the current iteration should be skipped,
+and the algorithm should proceed to the next iteration in the loop, assuming the loop’s condition still holds.
+(If it does not, this step is equivalent to [Break](#break).)
+Such a step says «*Skip.*».
 
 #### Return
 An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)

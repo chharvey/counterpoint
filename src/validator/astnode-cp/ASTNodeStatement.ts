@@ -32,12 +32,14 @@ export function buildDeco(
 /**
  * A sematic node representing a statement.
  * Known subclasses:
+ * - ASTNodeDeclaration
  * - ASTNodeStatementExpression
+ * - ASTNodeStatementClaim
+ * - ASTNodeStatementReassignment
  * - ASTNodeStatementConditional
  * - ASTNodeStatementLoop
  * - ASTNodeStatementIteration
  * - ASTNodeStatementBreak
- * - ASTNodeDeclaration
  */
 export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {
 	/**

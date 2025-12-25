@@ -83,14 +83,6 @@ export class Intersection extends Combinable {
 	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
 
-	public override get isReference(): boolean {
-		return this.operands.some((s) => s.isReference);
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.operands.some((s) => s.hasMutable);
-	}
-
 	@botOrTopString
 	public override toString(): string {
 		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' & ');
@@ -172,7 +164,7 @@ export class Intersection extends Combinable {
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     | `(B \| C)  & A == (B  & A) \| (C  & A)`
 		 */
-		const union: Union | null = this.operands.find((s): s is Union => s instanceof Union) ?? null;
+		const union: Union | undefined = this.operands.find((s): s is Union => s instanceof Union);
 		if (union) {
 			const not_union: readonly Type[] = this.operands.filter((s) => s !== union);
 			const right: Type = not_union.length >= 2

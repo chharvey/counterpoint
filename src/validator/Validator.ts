@@ -183,7 +183,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the numeric value, cooked
 	 */
-	public static cookTokenNumber(source: string): bigint | number {
+	public static cookTokenNumber(source: string): {type: 'int' | 'nat', value: bigint} | {type: 'float', value: number} {
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
 		const multiplier: number    = (has_unary && source.startsWith(Punctuator.NEG)) ? -1 : 1;
 		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source.startsWith(ESCAPER);
@@ -196,13 +196,16 @@ export class Validator {
 			['x', 16n],
 			['z', 36n],
 		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
+
+		const typ: 'int' | 'nat' | 'float' = source.includes(POINT) ? 'float' : has_unary && multiplier === 1 ? 'nat' : 'int';
+
 		/* eslint-disable curly */
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any
 		/* eslint-enable curly */
-		return source.indexOf(POINT) > 0
-			?        multiplier  * tokenWorthFloat (source)
-			: BigInt(multiplier) * tokenWorthInt   (source, radix);
+		return typ === 'float'
+			? {type: typ, value:        multiplier  * tokenWorthFloat(source)}
+			: {type: typ, value: BigInt(multiplier) * tokenWorthInt  (source, radix)};
 	}
 
 	/**
@@ -283,17 +286,17 @@ export class Validator {
 	/**
 	 * Return the information of a symbol in this Validator’s symbol table.
 	 * @param id the symbol id to check
-	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
+	 * @returns the symbol information of `id`, or `undefined` if there is no corresponding entry
 	 */
-	public getSymbolInfo(id: bigint): SymbolSchema | null {
-		return this.symbol_table.get(id) ?? this.parent?.getSymbolInfo(id) ?? null;
+	public getSymbol(id: bigint): SymbolSchema | undefined {
+		return this.symbol_table.get(id) ?? this.parent?.getSymbol(id);
 	}
 
 	/**
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
-	public getSymbols(): Map<bigint, SymbolSchema> {
+	public getAllSymbols(): Map<bigint, SymbolSchema> {
 		return new Map([...(this.parent?.symbol_table ?? []), ...this.symbol_table]);
 	}
 

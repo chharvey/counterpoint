@@ -112,7 +112,7 @@ RealNumber Multiply(Sequence<RealNumber> ns) :=
 None! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
 		1. *If* `i` is 0:
-			1. *Continue.*
+			1. *Skip.*
 		2. *If* `units[i]` is less than \x80 or greater than or equal to \xc0:
 			1. *Note:* The bits of `units[i]` are either "0_______" or "11______".
 			2. *Throw:* `i`.
@@ -216,6 +216,9 @@ Boolean Identical(Object a, Object b) :=
 	4. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Integer`:
 		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
+	4. *If* `a` is an instance of `Natural` *and* `b` is an instance of `Natural`:
+		1. *If* `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
 	5. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
 		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
@@ -262,9 +265,8 @@ Compares two objects and returns whether they are considered “equal” by some
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
 		1. *Return:* `true`.
-	2. *If* `a` is an instance of `Integer` *or* `b` is an instance of `Integer`:
-		1. *If* `a` is an instance of `Float` *or* `b` is an instance of `Float`:
-			1. *Return:* `Equal(Float(a), Float(b))`.
+	2. *If* `a` is an instance of `Number` *and* `b` is an instance of `Number`:
+		1. *Return:* `Equal(Float(a), Float(b))`.
 	3. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
 		1. *If* `a` is `0.0` *and* `b` is `-0.0`:
 			1. *Return:* `true`.
@@ -421,7 +423,11 @@ Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 		1. *Let* `result` be the sum, `operand0 + operand1`,
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
 		2. *Return:* `result`.
-	5. *Throw:* a new TypeErrorInvalidOperation.
+	5. *Else If* `op` is `SUB`:
+		1. *Let* `result` be the difference, `operand0 - operand1`,
+			obtained by subtracting `operand1` (the subtrahend) from `operand0` (the minuend).
+		2. *Return:* `result`.
+	6. *Throw:* a new TypeErrorInvalidOperation.
 ```
 
 
@@ -499,15 +505,16 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 					optional= `any_optional`,
 				].
 	5. *If* `accessor` is a SemanticIndex:
-		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
-			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
-			2. *Return:* `entry`.
-		2. *Else:*
-			1. *Throw:* a new TypeErrorNoEntry.
+		1. *If* `base_type` is a Tuple type:
+			1. *Let* `index` be `accessor.index`.
+			2. *If* `index` is less than *0*:
+				1. *Set* `index` to `index + base_type.count`.
+			3. *If* `index` is an index in `base_type`:
+				1. *Return:* the item accessed at index `index` in `base_type`.
+		2. *Throw:* a new TypeErrorNoEntry.
 	6. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
-			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
-			2. *Return:* `entry`.
+			1. *Return:* the value accessed at key `accessor.id` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	7. *Else:*
@@ -518,12 +525,13 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			1. *Set* `accessor_maybe` to `true`.
 		5. *If* `base_type` is a List type:
 			1. *Let* `t` be the type argument over `base_type`.
-			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
+			2. *Let* `integral` be *UnwrapAffirm:* `Union(Integer, Natural)`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, integral)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
 					optional= `accessor_maybe`,
 				].
-			3. *Else:*
+			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		6. *Else If* `base_type` is a Dict type:
 			1. *Let* `t` be the type argument over `base_type`.

@@ -20,10 +20,8 @@ import {
 	assertAssignable,
 } from '../../assert-helpers.ts';
 import {
-	CONFIG_FOLDING_OFF,
 	setupScript,
 	typeUnit,
-	buildConst,
 	singletonTuple,
 } from '../../helpers.ts';
 import {
@@ -126,18 +124,18 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: by index / by key', () => {
 			const SRC = `{
-				let     tup_fixed:   (int, float, str) = (1, 2.0, "three");
-				let var tup_unfixed: (int, float, str) = (1, 2.0, "three");
+				val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
+				val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
-				let     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
-				let var rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+				val     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+				val mut rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
 
-				tup_fixed.0;   % type \`1\`       % value \`1\`
-				tup_fixed.1;   % type \`2.0\`     % value \`2.0\`
-				tup_fixed.2;   % type \`"three"\` % value \`"three"\`
-				tup_unfixed.0; % type \`int\`     % non-foldable value
-				tup_unfixed.1; % type \`float\`   % non-foldable value
-				tup_unfixed.2; % type \`str\`     % non-foldable value
+				tup_fixed.0;    % type \`1\`       % value \`1\`
+				tup_fixed.1;    % type \`2.0\`     % value \`2.0\`
+				tup_fixed.+2;   % type \`"three"\` % value \`"three"\`
+				tup_unfixed.0;  % type \`int\`     % non-foldable value
+				tup_unfixed.1;  % type \`float\`   % non-foldable value
+				tup_unfixed.+2; % type \`str\`     % non-foldable value
 				tup_fixed.-3;   % type \`1\`       % value \`1\`
 				tup_fixed.-2;   % type \`2.0\`     % value \`2.0\`
 				tup_fixed.-1;   % type \`"three"\` % value \`"three"\`
@@ -183,10 +181,10 @@ test.suite('ASTNodeAccess', () => {
 				});
 				test.test('throws when base object is of type `anything`.', () => {
 					testExprTypes(`{
-						let var a:                    anything = (   10,    20);
-						let var b: (int, int)       | anything = (   10,    20);
-						let var c:                    anything = (x= 10, y= 20);
-						let var d: (x: int, y: int) | anything = (x= 10, y= 20);
+						val mut a:                    anything = (   10,    20);
+						val mut b: (int, int)       | anything = (   10,    20);
+						val mut c:                    anything = (x= 10, y= 20);
+						val mut d: (x: int, y: int) | anything = (x= 10, y= 20);
 
 						a.0;
 						b.1;
@@ -208,11 +206,11 @@ test.suite('ASTNodeAccess', () => {
 				});
 				test.test('throws when entry is optional.', () => {
 					testExprTypes(`{
-						let tup_a: (int, int, ?: int) = (10, 20);
-						let tup_b: (int, int, ?: int) = (10, 20, 30);
+						val tup_a: (int, int, ?: int) = (10, 20);
+						val tup_b: (int, int, ?: int) = (10, 20, 30);
 
-						let rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
-						let rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
+						val rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
+						val rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
 
 						tup_a.2;
 						tup_b.2;
@@ -227,8 +225,8 @@ test.suite('ASTNodeAccess', () => {
 						type B = (b: str);
 						type C = (c: str);
 						type D = (d: str);
-						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
-						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
+						val mut tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
+						val mut rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
 					`;
 					const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
 					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
@@ -258,20 +256,20 @@ test.suite('ASTNodeAccess', () => {
 					});
 					test.test('an intersection with union constituents.', () => {
 						testExprTypes(`{
-							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
+							val mut collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
 							collection.bravo; % type \`3 | 4\`
 						}`, [typeUnit(3n).union(typeUnit(4n))]);
 					});
 				});
 				test.suite('if base is a union type.', () => {
 					const DECLS = `
-						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
+						val mut tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
+						val mut rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
 					`;
 					test.test('throws when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`{
-							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
+							val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
+							val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
 
 							mixed_tup.a;
 							mixed_rec.0;
@@ -329,7 +327,7 @@ test.suite('ASTNodeAccess', () => {
 					});
 					test.test('a union with intersection constituents.', () => {
 						testExprTypes(`{
-							let var collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
+							val mut collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
 							collection.bravo;
 						}`, [TypeErrorInvalidOperation]);
 					});
@@ -367,21 +365,21 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: access by expression.', () => {
 			const DECLS = `
-				let     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
-				let     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
-				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
-				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				let var list_unfixed: List.<     int | float | str> = list_fixed;
-				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
-				let var set_unfixed:  Set .<     int | float | str> = set_fixed;
-				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
+				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
+				val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				val mut list_unfixed: List.<     int | float | str> = list_fixed;
+				val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				val mut set_unfixed:  Set .<     int | float | str> = set_fixed;
+				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
 			const SRC = `{
 				${ DECLS }
 
 				list_fixed.[0];      % type \`1\`       % value \`1\`
 				list_fixed.[1];      % type \`2.0\`     % value \`2.0\`
-				list_fixed.[2];      % type \`"three"\` % value \`"three"\`
+				list_fixed.[+2];     % type \`"three"\` % value \`"three"\`
 				dict_fixed.[@a];     % type \`1\`       % value \`1\`
 				dict_fixed.[@b];     % type \`2.0\`     % value \`2.0\`
 				dict_fixed.[@c];     % type \`"three"\` % value \`"three"\`
@@ -394,7 +392,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_unfixed.[0];      % type \`int | float | str\` % non-foldable value
 				list_unfixed.[1];      % type \`int | float | str\` % non-foldable value
-				list_unfixed.[2];      % type \`int | float | str\` % non-foldable value
+				list_unfixed.[+2];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@a];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@b];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@c];     % type \`int | float | str\` % non-foldable value
@@ -417,10 +415,10 @@ test.suite('ASTNodeAccess', () => {
 			}`;
 			const ALLOWS = `{
 				${ DECLS }
-				let     set_mut_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
-				let     map_mut_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				let var set_mut_unfixed:  Set .<     int | float | str> = set_fixed;
-				let var map_mut_unfixed:  Map .<str, int | float | str> = map_fixed;
+				val     set_mut_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				val     map_mut_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				val mut set_mut_unfixed:  Set .<     int | float | str> = set_fixed;
+				val mut map_mut_unfixed:  Map .<str, int | float | str> = map_fixed;
 
 				% correct type, but out of range
 				set_fixed      .[42.0]; % type \`false\`             % value \`false\`
@@ -445,10 +443,10 @@ test.suite('ASTNodeAccess', () => {
 			test.suite('#type', () => {
 				test.test('throws when one but not all constituents are of incorrect type.', () => {
 					testExprTypes(`{
-						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
+						val mut mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
+						val mut mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
 
-						let var nullish_map: {int -> bool} | null = {42 -> false};
+						val mut nullish_map: {int -> bool} | null = {42 -> false};
 
 						mixed_list.[@a];
 						mixed_dict.[0];
@@ -554,8 +552,8 @@ test.suite('ASTNodeAccess', () => {
 					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
 					const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
 					return testExprTypes(`{
-						let var bound1: (prop?: (bool,)) = (prop= (true,));
-						let var bound2: (prop?: (?: bool)) = (prop= ());
+						val mut bound1: (prop?: (bool,)) = (prop= (true,));
+						val mut bound2: (prop?: (?: bool)) = (prop= ());
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -580,8 +578,8 @@ test.suite('ASTNodeAccess', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // (true,)
 					const prop2 = new VALUE.Tuple();             // ()
 					return testExprValues(`{
-						let bound1: (prop?: (bool,)) = (prop= (true,));
-						let bound2: (prop?: (?: bool)) = (prop= ());
+						val bound1: (prop?: (bool,)) = (prop= (true,));
+						val bound2: (prop?: (?: bool)) = (prop= ());
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -606,17 +604,17 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: access by index / by key.', () => {
 			const SRC = `{
-				let     tupo1_f: (int, float, ?: str) = (1, 2.0, "three");
-				let var tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
-				let var tupo2_u: (int, float, ?: str) = (1, 2.0);
+				val     tupo1_f: (int, float, ?: str) = (1, 2.0, "three");
+				val mut tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
+				val mut tupo2_u: (int, float, ?: str) = (1, 2.0);
 
-				let     reco1_f: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
-				let var reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
-				let var reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
+				val     reco1_f: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+				val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+				val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-				tupo1_f?.2; % type \`"three"\` % value \`"three"\`
-				tupo1_u?.2; % type \`str?\`    % non-foldable value
-				tupo2_u?.2; % type \`str?\`    % non-foldable value
+				tupo1_f?.+2; % type \`"three"\` % value \`"three"\`
+				tupo1_u?.+2; % type \`str?\`    % non-foldable value
+				tupo2_u?.2;  % type \`str?\`    % non-foldable value
 
 				reco1_f?.b; % type \`"three"\` % value \`"three"\`
 				reco1_u?.b; % type \`str?\`    % non-foldable value
@@ -639,10 +637,10 @@ test.suite('ASTNodeAccess', () => {
 				});
 				test.test('returns `anything` when base object is of type `anything`.', () => {
 					testExprTypes(`{
-						let var a:                    anything = (   10,    20);
-						let var b: (int, int)       | anything = (   10,    20);
-						let var c:                    anything = (x= 10, y= 20);
-						let var d: (x: int, y: int) | anything = (x= 10, y= 20);
+						val mut a:                    anything = (   10,    20);
+						val mut b: (int, int)       | anything = (   10,    20);
+						val mut c:                    anything = (x= 10, y= 20);
+						val mut d: (x: int, y: int) | anything = (x= 10, y= 20);
 
 						a?.0;
 						b?.1;
@@ -664,11 +662,11 @@ test.suite('ASTNodeAccess', () => {
 				});
 				test.test('throws when entry is not optional and base is not nullish.', () => {
 					testExprTypes(`{
-						let tup_a: (int, int, ?: int) = (10, 20);
-						let tup_b: (int, int, ?: int) = (10, 20, 30);
+						val tup_a: (int, int, ?: int) = (10, 20);
+						val tup_b: (int, int, ?: int) = (10, 20, 30);
 
-						let rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
-						let rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
+						val rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
+						val rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
 
 						tup_a?.1;
 						tup_b?.1;
@@ -683,8 +681,8 @@ test.suite('ASTNodeAccess', () => {
 						type B = (b: str);
 						type C = (c: str);
 						type D = (d: str);
-						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
-						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
+						val mut tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
+						val mut rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
 					`;
 					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
 					const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
@@ -711,20 +709,20 @@ test.suite('ASTNodeAccess', () => {
 					});
 					test.test('an intersection with union constituents.', () => {
 						testExprTypes(`{
-							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
+							val mut collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
 							collection?.bravo;
 						}`, [TypeErrorInvalidOperation]);
 					});
 				});
 				test.suite('if base is a union type.', () => {
 					const DECLS = `
-						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
+						val mut tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
+						val mut rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
 					`;
 					test.test('unions with null when one but not all constituents are of incorrect type.', () => {
 						testExprTypes(`{
-							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
+							val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
+							val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
 
 							mixed_tup?.a; % type \`null | str\`
 							mixed_rec?.0; % type \`int  | null\`
@@ -790,7 +788,7 @@ test.suite('ASTNodeAccess', () => {
 					});
 					test.test('a union with intersection constituents.', () => {
 						testExprTypes(`{
-							let var collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
+							val mut collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
 							collection?.bravo; % type \`3 | 4 | null\`
 						}`, [typeUnit(3n).union(typeUnit(4n)).union(TYPE.NULL)]);
 					});
@@ -820,19 +818,19 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: access by expression.', () => {
 			const DECLS = `
-				let     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
-				let     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
-				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				let var list_unfixed: List.<     int | float | str> = list_fixed;
-				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
-				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
+				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
+				val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				val mut list_unfixed: List.<     int | float | str> = list_fixed;
+				val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
 			const SRC = `{
 				${ DECLS }
 
 				list_fixed?.[0];  % type \`1\`       % value \`1\`
 				list_fixed?.[1];  % type \`2.0\`     % value \`2.0\`
-				list_fixed?.[2];  % type \`"three"\` % value \`"three"\`
+				list_fixed?.[+2]; % type \`"three"\` % value \`"three"\`
 				dict_fixed?.[@a]; % type \`1\`       % value \`1\`
 				dict_fixed?.[@b]; % type \`2.0\`     % value \`2.0\`
 				dict_fixed?.[@c]; % type \`"three"\` % value \`"three"\`
@@ -842,7 +840,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_unfixed?.[0];  % type \`int | float | str | null\` % non-foldable value
 				list_unfixed?.[1];  % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[2];  % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[+2]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@a]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@b]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@c]; % type \`int | float | str | null\` % non-foldable value
@@ -866,10 +864,10 @@ test.suite('ASTNodeAccess', () => {
 			test.suite('#type', () => {
 				test.test('unions with null when one but not all constituents are of incorrect type.', () => {
 					testExprTypes(`{
-						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
+						val mut mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
+						val mut mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
 
-						let var nullish_map: {int -> bool} | null = {42 -> false};
+						val mut nullish_map: {int -> bool} | null = {42 -> false};
 
 						mixed_list?.[@a]; % type \`null | (str | bool | sym)\`
 						mixed_dict?.[0];  % type \`(int | float) | null\`
@@ -905,8 +903,8 @@ test.suite('ASTNodeAccess', () => {
 						{10, 20, 30}?.[20]
 					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
 					return testExprTypes(`{
-						let     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
-						let var set_unfixed: Set.<int | float | str> = set_fixed;
+						val     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
+						val mut set_unfixed: Set.<int | float | str> = set_fixed;
 
 						set_fixed?.[1];
 						set_fixed?.[2.0];
@@ -936,11 +934,11 @@ test.suite('ASTNodeAccess', () => {
 			test.suite('#fold', () => {
 				test.test('short-circuits evaluation of accessor expression when base is null.', () => {
 					testExprValues(`{
-						let list: List.<int> | null = null;
-						let dict: Dict.<int> | null = [a= 42];
+						val list: List.<int> | null = null;
+						val dict: Dict.<int> | null = [a= 42];
 
-						let var index: int = 0;
-						let var key:   sym = @a;
+						val mut index: int = 0;
+						val mut key:   sym = @a;
 
 						list?.[index]; % value \`null\`     (\`index\` is never attempted to be folded because \`list\` is null)
 						dict?.[key];   % non-foldable value (\`key\` is attempted to be folded because \`dict\` is not null)
@@ -979,54 +977,52 @@ test.suite('ASTNodeAccess', () => {
 		const bintype6: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
 
 		test.test('tuple access.', () => {
-			const BASE_SRC = '((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)))';
-
 			function make_tuple(builder: Builder): binaryen.ExpressionRef {
 				const inner01: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 2.2),
-					buildConst(builder, 3.3),
+					builder.module.local.get(1, binaryen.v128),
+					builder.module.local.get(2, binaryen.v128),
 				]);
 				const inner11: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 5.5),
-					buildConst(builder, 6.6),
+					builder.module.local.get(4, binaryen.v128),
+					builder.module.local.get(5, binaryen.v128),
 				]);
 				const inner0: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 1.1),
-					builder.module.tuple.extract(builder.module.local.tee(0, inner01, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(0, bintype2), 1),
+					builder.module.local.get(0, binaryen.v128),
+					builder.module.tuple.extract(builder.module.local.tee(6, inner01, bintype2), 0),
+					builder.module.tuple.extract(builder.module.local.get(6, bintype2), 1),
 				]);
 				const inner1: binaryen.ExpressionRef = builder.module.tuple.make([
-					builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 4.4)), 0),
-					builder.module.tuple.extract(builder.module.local.tee(2, inner11, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(2, bintype2), 1),
+					builder.module.tuple.extract(singletonTuple(builder, builder.module.local.get(3, binaryen.v128)), 0),
+					builder.module.tuple.extract(builder.module.local.tee(8, inner11, bintype2), 0),
+					builder.module.tuple.extract(builder.module.local.get(8, bintype2), 1),
 				]);
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(1, inner0, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 2),
-					builder.module.tuple.extract(builder.module.local.tee(3, inner1, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(7, inner0, bintype3), 0),
+					builder.module.tuple.extract(builder.module.local.get(7, bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(7, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(9, inner1, bintype3), 0),
+					builder.module.tuple.extract(builder.module.local.get(9, bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(9, bintype3), 2),
 				]);
 			}
 			function make_tuple_0(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 0),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 1),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 2),
+					builder.module.tuple.extract(builder.module.local.tee(10, make_tuple(builder), bintype6), 0),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 1),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 2),
 				]);
 			}
 			function make_tuple_1(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 3),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 4),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 5),
+					builder.module.tuple.extract(builder.module.local.tee(10, make_tuple(builder), bintype6), 3),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 4),
+					builder.module.tuple.extract(builder.module.local.get(10, bintype6), 5),
 				]);
 			}
 			function make_tuple_0_1(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_0(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(11, make_tuple_0(builder), bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(11, bintype3), 2),
 				]);
 			}
 			function make_tuple_1_0(builder: Builder): binaryen.ExpressionRef {
@@ -1034,8 +1030,8 @@ test.suite('ASTNodeAccess', () => {
 			}
 			function make_tuple_1_1(builder: Builder): binaryen.ExpressionRef {
 				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_1(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
+					builder.module.tuple.extract(builder.module.local.tee(11, make_tuple_1(builder), bintype3), 1),
+					builder.module.tuple.extract(builder.module.local.get(11, bintype3), 2),
 				]);
 			}
 
@@ -1052,7 +1048,16 @@ test.suite('ASTNodeAccess', () => {
 				['.1.1.0', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 0)],
 				['.1.1.1', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 1)],
 			]), (expected_fn, access_src) => {
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`${ BASE_SRC }${ access_src }`, CONFIG_FOLDING_OFF);
+				const {stmts} = setupScript(`{
+					val mut a: float = 1.1;
+					val mut b: float = 2.2;
+					val mut c: float = 3.3;
+					val mut d: float = 4.4;
+					val mut e: float = 5.5;
+					val mut f: float = 6.6;
+					((a, (b, c)), ((d,), (e, f)))${ access_src };
+				}`);
+				const access = (stmts[6] as AST.ASTNodeStatementExpression).expr! as AST.ASTNodeAccess;
 				return assertEqualBins(
 					access.build(),
 					expected_fn.call(null, access.builder),
@@ -1062,7 +1067,7 @@ test.suite('ASTNodeAccess', () => {
 
 		test.test('accessing tuple pointers.', () => {
 			const {goal, stmts, mod} = setupScript(`{
-				let tuple: ((float, (float, float)), ((float,), (float, float))) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
+				val mut tuple: ((float, (float, float)), ((float,), (float, float))) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
 				tuple.0;
 				tuple.1;
 				tuple.0.0;
@@ -1074,7 +1079,7 @@ test.suite('ASTNodeAccess', () => {
 				tuple.1.0.0;
 				tuple.1.1.0;
 				tuple.1.1.1;
-			}`, CONFIG_FOLDING_OFF);
+			}`);
 			let tee_idx: number = 5;
 			const inner0: binaryen.ExpressionRef = mod.tuple.make([
 				mod.tuple.extract(mod.local.get(4, bintype6), 0),

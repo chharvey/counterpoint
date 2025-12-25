@@ -92,7 +92,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 					fn_name,
 					binaryen.none,
 					binaryen.none,
-					this.builder.getLocals().map((var_) => var_.type),
+					this.builder.getAllLocals().map((var_) => var_.type),
 					block_build,
 				);
 				mod.addFunctionExport(fn_name, fn_name);

@@ -99,7 +99,7 @@ A name–value pair of a Schema is called a **property**.
 A **CompletionSchema** is a specific subtype of [Schema](#schema) with
 a mandatory property \`type\` and an optional property \`value\`.
 The value of the \`type\` property must be one of the [enumerated](#enumerated-words) specification values
-*normal*, *break*, *continue*, *return*, or *throw*, which are described below.
+*normal*, *break*, *skip*, *return*, or *throw*, which are described below.
 The value of the \`value\` property must be
 a [Counterpoint Specification Value](#counterpoint-specification-types) or
 a [Counterpoint Language Value](#counterpoint-language-types).
@@ -114,13 +114,13 @@ unless explicitly stated otherwise.
 
 This table summarizes the enumerated values of a CompletionSchema’s \`type\` property.
 
-Type       | Meaning
----------- | -------
-*normal*   | TODO
-*break*    | TODO
-*continue* | TODO
-*return*   | TODO
-*throw*    | TODO
+Type     | Meaning
+-------- | -------
+*normal* | TODO
+*break*  | TODO
+*skip*   | TODO
+*return* | TODO
+*throw*  | TODO
 
 The term “normal completion” refers to any CompletionSchema with a \`kind\` of *normal*, and
 the term “abrupt completion” refers to any CompletionSchema with a \`kind\` other than *normal*.
@@ -204,6 +204,7 @@ Simple types do not comprise other types.
 - [Boolean](#boolean)
 - [Symbol](#symbol)
 - [Integer](#integer)
+- [Natural](#natural)
 - [Float](#float)
 - [String](#string)
 - [Object](#object)
@@ -243,12 +244,12 @@ The meaning of each Symbol value may be specified by the programmer.
 
 #### Number
 The **Number** type represents numerical values.
-The Number type is partitioned into two disjoint subtypes: Integer and Float,
-instances of [`Integer`](./intrinsics.md#integer) and [`Float`](./intrinsics.md#float), respectively.
+The Number type is partitioned into disjoint subtypes, described in the subsections below.
 
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
 The Counterpoint compiler represents Integers as 64-bit signed two’s complement values.
+They are instances of [`Integer`](./intrinsics.md#integer).
 
 The Integers `0` and `-0` represent the same mathematical value, *0*.
 The maximum possible value of an Integer is *9,223,372,036,854,775,807* and the minimum value is *&minus;9,223,372,036,854,775,808*.
@@ -289,12 +290,29 @@ The behavior of performing arithmetic operations that are invalid in the integer
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 The result of division is rounded towards zero. Dividing by zero results in an error.
 
+##### Natural
+The **Natural** type represents [non-negative mathematical integers](#real-integer-numbers), also known as “natural numbers”.
+The Counterpoint compiler represents Naturals as 64-bit unsigned binary values.
+They are instances of [`Natural`](./intrinsics.md#integer).
+
+The maximum possible value of a Natural is *18,446,744,073,709,551,615* (*FFFF,FFFF,FFFF,FFFF<sub>16</sub>* = *2<sup>64</sup> &minus; 1*)
+and the minimum value is *0*.
+
+When performing arithmetic operations such as addition and multiplication,
+computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>64</sup>*.
+For example, the sum represented by *18,446,744,073,709,551,615 + 1* will overflow and produce the value *0*.
+The behavior of performing arithmetic operations that are invalid in the naturals
+(such as subtracting a larger number, dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
+The result of division is rounded towards zero. Dividing by zero results in an error.
+The result of subtracting a larger number from a smaller number is zero; no underflow occurs.
+
 ##### Float
 The **Float** type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
+They are instances of [`Float`](./intrinsics.md#float).
 
 #### String
 The **String** type represents textual data and is stored as an immutable sequence of bytes.
@@ -340,7 +358,7 @@ A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is 
 a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items, called *type arguments*.
 The objects that any given Tuple type describes are `Tuple` objects whose
 items’ types match up with the type arguments in the Sequence in order.
-Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
+Tuples have a static size, are ordered, and are 0-origin indexable by real integer numbers.
 
 #### Record Types
 A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
@@ -354,7 +372,7 @@ A **List** type describes instances of [`List`](./intrinsics.md#list) and is par
 called a *type argument*, representing items.
 The objects that any given List type describes are `List` objects whose
 items are assignable to the type argument of the List type.
-Lists have a dynamic size, are ordered, and are 0-origin indexable by Integers.
+Lists have a dynamic size, are ordered, and are 0-origin indexable by real integer numbers.
 
 #### Dict Types
 A **Dict** type describes instances of [`Dict`](./intrinsics.md#dict) and is parameterized by a single type,
@@ -596,7 +614,6 @@ that is, by the formula \`Or< Minus<‹T›, ‹U›>, Minus<‹U›, ‹T›> >
 The symmetric difference is equal to to the disjunctive union.
 
 
-
 ### Subtype
 A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
 
@@ -729,6 +746,12 @@ Boolean Equal(Type a, Type b) :=
 A type \`‹T›\` is **disjoint** with type \`‹U›\` iff \`‹T›\` and \`‹U›\` have no values in common.
 That is, their intersection is empty, or equal to the [Bottom Type](#nothing).
 
+```
+Boolean AreDisjoint(Type a, Type b) :=
+	1. *Let* `intersection` be *UnwrapAffirm:* `Intersection(a, b)`.
+	2. *Return:* `IsBottomType(intersection)`.
+;
+```
 
 
 ## Type Laws
