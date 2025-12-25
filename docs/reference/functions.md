@@ -20,9 +20,9 @@ and it must be called by name.
 The following statement is a function declaration.
 ```
 func compute_hypotenuse(a: float, b: float): float {
-	let aa: float = a ^ 2;
-	let bb: float = b ^ 2;
-	let cc: float = aa + bb;
+	val aa: float = a ^ 2;
+	val bb: float = b ^ 2;
+	val cc: float = aa + bb;
 	return cc ^ 0.5;
 }
 ```
@@ -35,7 +35,7 @@ The **return statement** declares the return value, or “output”, which is pr
 To execute the function, we have to **call** it. Calling a function involves sending in **arguments**,
 which are values used as its inputs. When the function returns, it usually returns a result.
 ```
-let result: float = compute_hypotenuse.(3.0, 4.0); %=> 5.0
+val result: float = compute_hypotenuse.(3.0, 4.0); %=> 5.0
 ```
 Named functions must be called by name. It’s a compile-time error to reference a named function without calling it.
 ```
@@ -67,9 +67,9 @@ In the example above, `message` is a parameter, and `"Hello world!"` is an argum
 The caller of a function may supply different arguments every time the function is called.
 If that function is not void, then it’s most likely going to return different outputs.
 ```
-let x: float = compute_hypotenuse.( 3.0,  4.0); %=>  5.0
-let y: float = compute_hypotenuse.( 6.0,  8.0); %=> 10.0
-let z: float = compute_hypotenuse.(12.0, 16.0); %=> 20.0
+val x: float = compute_hypotenuse.( 3.0,  4.0); %=>  5.0
+val y: float = compute_hypotenuse.( 6.0,  8.0); %=> 10.0
+val z: float = compute_hypotenuse.(12.0, 16.0); %=> 20.0
 ```
 
 One of the most confusing things to understand about functions
@@ -108,7 +108,7 @@ The following is a function expression.
 This isn’t particularly helpful — Once the function above is defined, it cannot be used.
 However, we can assign it to a variable.
 ```
-let add: \(a: int, b: int) => int = \(a: int, b: int): int { return a + b; };
+val add: \(a: int, b: int) => int = \(a: int, b: int): int { return a + b; };
 add.(2, 3); %== 5
 ```
 
@@ -117,7 +117,7 @@ especially if all we’re going to do with the function object is call it.
 This can actually do harm if the variable is unfixed,
 since it could be reassigned later and could lead to unpredictable behavior.
 ```
-let var add: \(a: int, b: int) => int = \(a: int, b: int): int { return a + b; }; % allowed, but bad programming
+val mut add: \(a: int, b: int) => int = \(a: int, b: int): int { return a + b; }; % allowed, but bad programming
 % calling the function here will return one result...
 set add = \(a: int, b: int): int { return a - b; }; % reassign the function (not recommended) --- notice the mistake
 % calling the function here will return a different result.
@@ -126,8 +126,8 @@ Calling a function at different points at runtime should not produce different r
 Furthermore, assigning a lambda to a variable requires a lot of upkeep, e.g.,
 updating the parameters in both the function and the variable type declaration.
 ```diff
--let add: \(a: int, b: int) => int = \(a: int, b: int): int => { return a + b; };
-+let add: \(a: int, b: int) => int = \(a: float, b: float): float => { return a + b; };
+-val add: \(a: int, b: int) => int = \(a: int, b: int): int => { return a + b; };
++val add: \(a: int, b: int) => int = \(a: float, b: float): float => { return a + b; };
 +%         ^ oops, forgot to update
 ```
 
@@ -144,12 +144,12 @@ func adder(augend: int): \(int) => int {
 	return [augend](addend: int): int { return augend + addend; };
 	%      ^ this is called ‘capturing’ --- don’t worry about it for now
 }
-let closure: \(int) => int = adder.(3);
+val closure: \(int) => int = adder.(3);
 closure.(5); %== 8
 ```
 and we can even [define and call](#iifes) them within the same expression:
 ```
-let value: int = (\(augend: int): int { return augend + 3; }).(5);
+val value: int = (\(augend: int): int { return augend + 3; }).(5);
 value; %== 8
 ```
 
@@ -158,7 +158,7 @@ value; %== 8
 An immediately-invoked function expression (“IIFE”) is a lambda called immediately after it’s defined.
 The IIFE is called only once and then discarded.
 ```
-let eight: int = (\(a: int, b: int): int {
+val eight: int = (\(a: int, b: int): int {
 	return a + b;
 }).(3, 5);
 ```
@@ -168,8 +168,8 @@ with the arguments `3` and `5`. After this statement, the lambda can never be ac
 IIFEs are powerful in that they allow us to encapsulate code and hide it from the surrounding scope.
 For example, inside an IIFE we can perform prerequisite computations before returning the final result.
 ```
-let message: str = (\(): str {
-	let var m: str = "";
+val message: str = (\(): str {
+	val mut m: str = "";
 	set m = """{{ m }}Hello """;
 	set m = """{{ m }}world!""";
 	return m;
@@ -188,7 +188,7 @@ The returned expression follows a fat arrow `=>`. We call this an **implicit ret
 func add(a: int, b: int): int
 	=> a + b;
 
-let mult: \(a: int, b: int) => int =
+val mult: \(a: int, b: int) => int =
 	\(a: int, b: int): int => a * b;
 ```
 
@@ -206,9 +206,9 @@ they be **positonal** (unnamed and ordered) or **named** (and unordered).
 
 ```
 func compute_hypotenuse($a: float, $b: float): float {
-	let aa: float = a ^ 2;
-	let bb: float = b ^ 2;
-	let cc: float = aa + bb;
+	val aa: float = a ^ 2;
+	val bb: float = b ^ 2;
+	val cc: float = aa + bb;
 	return cc ^ 0.5;
 }
 ```
@@ -300,9 +300,9 @@ must be a subtype of the *assignee* (target) function’s return type.
 type Stringify = \(int | float) => str;
 
 claim f: Stringify;
-let result: str = f.(42); % expected to return type `str`
+val result: str = f.(42); % expected to return type `str`
 
-let g: Stringify = \(n: int | float): str | null {...}; %> TypeError % return type `str | null` is not assignable to return type `str`
+val g: Stringify = \(n: int | float): str | null {...}; %> TypeError % return type `str | null` is not assignable to return type `str`
 ```
 Conversely, function parameter types are **contravariant**, meaning that the *assignee* (target) function’s parameters
 must be assignable to the *assigned* (source) function’s parameters.
@@ -312,7 +312,7 @@ type Stringify = \(int | float) => str;
 claim f: Stringify;
 f.(4.2); % expected to accept type `float`
 
-let g: Stringify = \(n: int): str {...}; %> TypeError % parameter type `int | float` is not assignable to parameter type `int`
+val g: Stringify = \(n: int): str {...}; %> TypeError % parameter type `int | float` is not assignable to parameter type `int`
 ```
 
 Aside from the parameter *types* being compatible, the parameter positions and names are also taken into account.
@@ -321,7 +321,7 @@ For positional parameters, the rules of tuple type assignment apply; for named p
 Like tuple assignment, positional parameters are matched in the same order.
 ```cpl
 type BinaryOperator = \(int, float) => void;
-let add: BinaryOperator = \(x: float, y: int): void { float y + x; return; }; %> TypeError
+val add: BinaryOperator = \(x: float, y: int): void { float y + x; return; }; %> TypeError
 ```
 > TypeError: Type `\(float, int) => void` is not assignable to type `\(int, float) => void`.
 
@@ -331,7 +331,7 @@ providing the arguments in a different order would fail. The `add` function must
 Like record assignment, named parameters are matched up by key.
 ```cpl
 type BinaryOperator = \(first: float, second: float) => void;
-let subtract: BinaryOperator = \($x: float, $y: float): void { x - y; return; }; %> TypeError
+val subtract: BinaryOperator = \($x: float, $y: float): void { x - y; return; }; %> TypeError
 ```
 > TypeError: Type `\(x: float, y: float) => void` is not assignable to type `\(first: float, second: float) => void`.
 
@@ -434,8 +434,8 @@ To emulate lazy evaluation, we can use lambdas.
 func say_all(message1: \() => str, message2: \() => str): void {
 	print.("printing...");
 	% call in any order you like
-	let w: str = message2.();
-	let h: str = message1.();
+	val w: str = message2.();
+	val h: str = message1.();
 	return print.("""{{ h }} {{ w }}""");
 }
 func say_hello(): str {
@@ -463,7 +463,7 @@ What this means firstly is that if the parameter is reassigned,
 that reassignment is only observed *within the function’s scope*.
 Outside the function, the argument sent (if it was a variable) will still point to its original value.
 ```
-let arg: int = 42;
+val arg: int = 42;
 func reassign(var param: int): void {
 	set param = 43;
 }
@@ -490,7 +490,7 @@ Call-by-sharing also means that any mutations made to the object inside the func
 observable *outside the function’s scope* (assuming the object is of a mutable type),
 since those mutations apply to the shared object.
 ```
-let arg: mut [int] = [42];
+val arg: mut [int] = [42];
 func mutate(param: mut [int]): void {
 	set param.[0] = 43;
 	return;
