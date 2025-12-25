@@ -19,7 +19,7 @@ The new function object is called a **named function** because it’s given an i
 and it must be called by name.
 The following statement is a function declaration.
 ```
-function compute_hypotenuse(a: float, b: float): float {
+func compute_hypotenuse(a: float, b: float): float {
 	let aa: float = a ^ 2;
 	let bb: float = b ^ 2;
 	let cc: float = aa + bb;
@@ -51,7 +51,7 @@ whether it be an empty `return;` statement or a statement that returns another v
 The function below does nothing but evaluate a string when called.
 Typically, void functions will have observable side-effects, such as modifying non-local variables.
 ```
-function myVoidFunction(message: str): void {
+func myVoidFunction(message: str): void {
 	"""Here is the message: {{ message }}""";
 	%                          ^ parameter
 	return;
@@ -81,7 +81,7 @@ much farther away in our code, and it could even happen more than once.
 
 The arguments sent into the function call must match the function’s [type signature](#type-signatures).
 ```
-function distance(ax: float, ay: float, bx: float, 'by': float): float {
+func distance(ax: float, ay: float, bx: float, 'by': float): float {
 	return ((bx - ax) ^ 2 + ('by' - ay) ^ 2) ^ 0.5;
 }
 % typeof distance: \(ax: float, ay: float, bx: float, 'by': float) => float
@@ -140,7 +140,7 @@ fold.([1, 2, 3], \(a: int, b: int): int { return a + b; }); %== 6
 ```
 we can return them as [closures](#closures),
 ```
-function adder(augend: int): \(int) => int {
+func adder(augend: int): \(int) => int {
 	return [augend](addend: int): int { return augend + addend; };
 	%      ^ this is called ‘capturing’ --- don’t worry about it for now
 }
@@ -185,7 +185,7 @@ When the body of any function (declaration or expression) contains a singular re
 we can use a shorthand syntax that omits the curly braces.
 The returned expression follows a fat arrow `=>`. We call this an **implicit return**.
 ```
-function add(a: int, b: int): int
+func add(a: int, b: int): int
 	=> a + b;
 
 let mult: \(a: int, b: int) => int =
@@ -205,7 +205,7 @@ This includes not only the *types* required of the arguments, but also whether
 they be **positonal** (unnamed and ordered) or **named** (and unordered).
 
 ```
-function compute_hypotenuse($a: float, $b: float): float {
+func compute_hypotenuse($a: float, $b: float): float {
 	let aa: float = a ^ 2;
 	let bb: float = b ^ 2;
 	let cc: float = aa + bb;
@@ -234,7 +234,7 @@ while maintaining internal parameter names of `ax`, `ay`, `bx`, and `'by'`.
 %%%
 Gives the distance between two points (x1, x2) and (y1, y2).
 %%%
-function distance(x1= ax: float, x2= ay: float, y1= bx: float, y2= 'by': float): float {
+func distance(x1= ax: float, x2= ay: float, y1= bx: float, y2= 'by': float): float {
 	return ((bx - ax) ^ 2 + ('by' - ay) ^ 2) ^ 0.5;
 }
 % typeof distance: \(x1: float, x2: float, y1: float, y2: float) => float
@@ -250,7 +250,7 @@ Accordingly, all named arguments *must* be given after all positional arguments.
 However, within the named parameters, punned and un-punned parameters may be intermixed;
 and the named arguments may be given in any order.
 ```
-function foo(a: int, b: int, $c: int, delta= d: int, $e: int): void { return; }
+func foo(a: int, b: int, $c: int, delta= d: int, $e: int): void { return; }
 foo.(1, 2, delta= 4, c= 3, e= 5);
 ```
 
@@ -259,10 +259,10 @@ foo.(1, 2, delta= 4, c= 3, e= 5);
 ## Type Signatures
 Every function has a static **type signature**, which describes its input and output types as well as its calling contract.
 ```
-function add(a: int, b: int): int {
+func add(a: int, b: int): int {
 	return a + b;
 }
-function subtract($a: int, subtrahend= b: int): int {
+func subtract($a: int, subtrahend= b: int): int {
 	return a - b;
 }
 
@@ -287,7 +287,7 @@ Divide two numbers.
 @param  divisor  the number to divide *by* (the denominator)
 @return `dividend / divisor`, assuming `divisor != 0.0`
 %%%
-function divide(a: float, b: float): float { ... }
+func divide(a: float, b: float): float { ... }
 
 % typeof divide: \(float, float) => float
 ```
@@ -357,7 +357,7 @@ type IteratorFn = \(list: [float], callback: \(item: float) => void) => void;
 ```
 We might implement it as so:
 ```
-function iterate(list: [float], callback: \(item: float) => void): void {
+func iterate(list: [float], callback: \(item: float) => void): void {
 	for val: float of list do {
 		callback.(item= val);
 	};
@@ -385,7 +385,7 @@ That way, implementations will be less awkward.
 ```
 type IteratorFn = \(list: [float], callback: \(float) => void) => void;
 
-function iterate(list: [float], callback: \(float) => void): void {
+func iterate(list: [float], callback: \(float) => void): void {
 	for val: float of list do {
 		% now we just can’t call `callback` with named arguments
 		callback.(val);
@@ -409,15 +409,15 @@ iterate.([2.0, 4.0, 8.0, 16.0], \(n: float): void {
 In a function call, arguments are evaluated *before* being sent.
 This might be counter-intuitive for some programmers who are used to evaluation being deferred to inside the function call.
 ```
-function say_all(message1: str, message2: str): void {
+func say_all(message1: str, message2: str): void {
 	print.("printing...");
 	return print.("""{{ message1 }} {{ message2 }}""");
 }
-function say_hello(): str {
+func say_hello(): str {
 	print.("hello");
 	return "hello";
 }
-function say_world(): str {
+func say_world(): str {
 	print.("world");
 	return "world";
 }
@@ -431,18 +431,18 @@ In this example, the order of prints is:
 
 To emulate lazy evaluation, we can use lambdas.
 ```
-function say_all(message1: \() => str, message2: \() => str): void {
+func say_all(message1: \() => str, message2: \() => str): void {
 	print.("printing...");
 	% call in any order you like
 	let w: str = message2.();
 	let h: str = message1.();
 	return print.("""{{ h }} {{ w }}""");
 }
-function say_hello(): str {
+func say_hello(): str {
 	print.("hello");
 	return "hello";
 }
-function say_world(): str {
+func say_world(): str {
 	print.("world");
 	return "world";
 }
@@ -464,7 +464,7 @@ that reassignment is only observed *within the function’s scope*.
 Outside the function, the argument sent (if it was a variable) will still point to its original value.
 ```
 let arg: int = 42;
-function reassign(var param: int): void {
+func reassign(var param: int): void {
 	set param = 43;
 }
 reassign.(arg);
@@ -476,7 +476,7 @@ not the object, is sent into the function and thus may be reassigned by it.
 Notice that a parameter must be declared `var` in order for it to be reassigned.
 (When an unfixed parameter is “punned”, it uses the syntax `var $param`.)
 ```
-function reassign_demo(var a: int, b: int, var $c: int, delta= var d: int): void {
+func reassign_demo(var a: int, b: int, var $c: int, delta= var d: int): void {
 	set a += 1; % ok
 	set b -= 1; %> AssignmentError
 	set c += 1; % ok
@@ -491,7 +491,7 @@ observable *outside the function’s scope* (assuming the object is of a mutable
 since those mutations apply to the shared object.
 ```
 let arg: mut [int] = [42];
-function mutate(param: mut [int]): void {
+func mutate(param: mut [int]): void {
 	set param.[0] = 43;
 	return;
 }
