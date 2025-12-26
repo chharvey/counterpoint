@@ -1,5 +1,5 @@
 import type {AST} from '../validator/index.ts';
-import {TypeError} from './TypeError.ts';
+import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 
@@ -8,7 +8,7 @@ import {TypeError} from './TypeError.ts';
  * @example
  * true + false; % TypeErrorInvalidOperation: Invalid operation.
  */
-export class TypeErrorInvalidOperation extends TypeError {
+export class TypeErrorInvalidOperation extends CplTypeError {
 	/**
 	 * Construct a new TypeErrorInvalidOperation object.
 	 * @param expression - the invalid operation expression
@@ -16,7 +16,7 @@ export class TypeErrorInvalidOperation extends TypeError {
 	public constructor(expression: AST.TypeAccess | AST.TypeOperation | AST.Access | AST.Operation) {
 		super(
 			`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`,
-			TypeError.CODES.get(TypeErrorInvalidOperation),
+			CplTypeError.CODES.get(TypeErrorInvalidOperation),
 			expression.line_index,
 			expression.col_index,
 		);

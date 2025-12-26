@@ -1,5 +1,5 @@
 import type {AST} from '../validator/index.ts';
-import {ReferenceError} from './ReferenceError.ts';
+import {ReferenceError as CplReferenceError} from './ReferenceError.ts';
 
 
 
@@ -8,7 +8,7 @@ import {ReferenceError} from './ReferenceError.ts';
  * @example
  * my_var; % ReferenceErrorUndeclared: `my_var` is never declared.
  */
-export class ReferenceErrorUndeclared extends ReferenceError {
+export class ReferenceErrorUndeclared extends CplReferenceError {
 	/**
 	 * Construct a new ReferenceErrorUndeclared object.
 	 * @param variable the undeclared variable
@@ -16,7 +16,7 @@ export class ReferenceErrorUndeclared extends ReferenceError {
 	public constructor(variable: AST.TypeAlias | AST.Variable) {
 		super(
 			`\`${ variable.source }\` is never declared.`,
-			ReferenceError.CODES.get(ReferenceErrorUndeclared),
+			CplReferenceError.CODES.get(ReferenceErrorUndeclared),
 			variable.line_index,
 			variable.col_index,
 		);
