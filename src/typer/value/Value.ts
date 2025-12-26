@@ -76,11 +76,11 @@ export abstract class Value {
 	}
 
 	/**
-	 * Return a Counterpoint string representation of this Object.
-	 * (Not a native String — see {@link #toString}.)
-	 * @returns a string representation of this Object
+	 * Return a Counterpoint String representation of this Object.
+	 * (Not a native string — see {@link #toString}.)
+	 * @returns a {@link ValueString} representation of this Object
 	 */
-	public toCPString(): ValueString {
+	public toCplString(): ValueString {
 		return new ValueString(this.toString());
 	}
 

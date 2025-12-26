@@ -48,7 +48,7 @@ class ValueString extends Primitive {
 		return xjs.Array.is<CodeUnit>(this.codeunits, (value as ValueString).codeunits);
 	}
 
-	public override toCPString(): ValueString {
+	public override toCplString(): ValueString {
 		return this;
 	}
 

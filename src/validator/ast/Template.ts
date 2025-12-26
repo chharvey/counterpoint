@@ -59,7 +59,7 @@ export class Template extends Expression {
 		return (values.includes(null))
 			? null
 			: (values as readonly VALUE.Value[])
-				.map((value) => value.toCPString())
+				.map((value) => value.toCplString())
 				.reduce((a, b) => a.concatenate(b));
 	}
 }
