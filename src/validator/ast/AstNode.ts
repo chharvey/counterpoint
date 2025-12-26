@@ -1,7 +1,7 @@
 import {
 	stringifyAttributes,
 	type Serializable,
-} from '../parser/index.ts';
+} from '../../parser/index.ts';
 
 
 

@@ -1,3 +1,4 @@
+export * from './AstNode.ts';
 export * from './ASTNodeCP.ts';
 
 export * from './Index-.ts';

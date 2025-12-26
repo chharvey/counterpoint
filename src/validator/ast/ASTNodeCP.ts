@@ -8,11 +8,11 @@ import {
 import {memoizeGetter} from '../../lib/index.ts';
 import {to_serializable} from '../../parser/index.ts';
 import type {Validator} from '../Validator.ts';
-import {AstNode} from '../ASTNode.ts';
 import {
 	type Expression,
 	CollectionLiteral,
 } from './index.ts';
+import {AstNode} from './AstNode.ts';
 
 
 
