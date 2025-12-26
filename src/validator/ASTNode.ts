@@ -1,5 +1,7 @@
-import {stringifyAttributes} from '../core/index.ts';
-import type {Serializable} from '../parser/index.ts';
+import {
+	stringifyAttributes,
+	type Serializable,
+} from '../parser/index.ts';
 
 
 
