@@ -13,7 +13,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import * as VALUE from '../cp-value/index.ts';
+import * as VALUE from '../value/index.ts';
 import {
 	subtypeRules,
 	type Type,

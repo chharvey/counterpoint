@@ -1,5 +1,5 @@
 import {assert_context_name} from '../../lib/index.ts';
-import type * as VALUE from '../cp-value/index.ts';
+import type * as VALUE from '../value/index.ts';
 import {
 	NOTHING,
 	ANYTHING,

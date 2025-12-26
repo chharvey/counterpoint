@@ -1,26 +1,25 @@
 import {Keyword} from '../../parser/index.ts';
 import {instanceOf} from '../utils-private.ts';
-import * as VALUE from '../cp-value/index.ts';
+import * as VALUE from '../value/index.ts';
 import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
 
 
 
 /**
- * Class for constructing the `str` type.
+ * Class for constructing the `nat` type.
  * @final
  */
-class TypeString extends UnenumeratedPrimitiveType {
+export class Natural extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(false, new Set([VALUE.STR_EMPTY]));
+		super(false, new Set([VALUE.NAT_0, VALUE.NAT_1]));
 	}
 
 	public override toString(): string {
-		return Keyword.STR;
+		return Keyword.NAT;
 	}
 
-	@instanceOf(() => VALUE.String)
+	@instanceOf(() => VALUE.Natural)
 	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}
 }
-export {TypeString as String};

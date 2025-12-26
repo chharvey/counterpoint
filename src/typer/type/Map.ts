@@ -3,7 +3,7 @@ import {
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import * as VALUE from '../cp-value/index.ts';
+import * as VALUE from '../value/index.ts';
 import {MUT_OPERATOR} from './utils-private.ts';
 import {
 	subtypeRules,

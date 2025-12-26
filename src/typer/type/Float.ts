@@ -1,24 +1,24 @@
 import {Keyword} from '../../parser/index.ts';
 import {instanceOf} from '../utils-private.ts';
-import * as VALUE from '../cp-value/index.ts';
+import * as VALUE from '../value/index.ts';
 import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
 
 
 
 /**
- * Class for constructing the `int` type.
+ * Class for constructing the `float` type.
  * @final
  */
-export class Integer extends UnenumeratedPrimitiveType {
+export class Float extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(false, new Set([VALUE.INT_0, VALUE.INT_1]));
+		super(false, new Set([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
 	}
 
 	public override toString(): string {
-		return Keyword.INT;
+		return Keyword.FLOAT;
 	}
 
-	@instanceOf(() => VALUE.Integer)
+	@instanceOf(() => VALUE.Float)
 	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}

@@ -3,7 +3,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import * as VALUE from '../cp-value/index.ts';
+import * as VALUE from '../value/index.ts';
 import type {Type} from './Type.ts';
 import {ReferenceType} from './ReferenceType.ts';
 
