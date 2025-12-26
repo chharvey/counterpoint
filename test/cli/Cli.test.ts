@@ -3,7 +3,7 @@ import * as test from 'node:test';
 import {
 	CLI,
 	Command,
-} from '../src/CLI.class.ts';
+} from '../../src/index.ts';
 
 
 

@@ -1,8 +1,8 @@
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-	AST,
-} from './index.ts';
+} from '../core/index.ts';
+import {AST} from '../validator/index.ts';
 
 
 

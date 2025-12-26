@@ -5,3 +5,4 @@ export * from './validator/index.ts';
 export * from './typer/index.ts';
 export * from './builder/index.ts';
 export * from './error/index.ts';
+export * from './cli/index.ts';
