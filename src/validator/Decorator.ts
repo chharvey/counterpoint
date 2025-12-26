@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
 import type {NonemptyArray} from '../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {
@@ -89,7 +89,7 @@ export class Decorator {
 	]);
 
 
-	public constructor(private readonly config: CPConfig = CONFIG_DEFAULT) {
+	public constructor(private readonly config: CplConfig = CONFIG_DEFAULT) {
 	}
 
 	/* eslint-disable @typescript-eslint/unified-signatures */

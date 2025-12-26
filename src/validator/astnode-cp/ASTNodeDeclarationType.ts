@@ -6,7 +6,7 @@ import {
 } from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {SymbolSchemaType} from '../index.ts';
@@ -21,7 +21,7 @@ import {
 
 
 export class ASTNodeDeclarationType extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeDeclarationType);
 		return statement;

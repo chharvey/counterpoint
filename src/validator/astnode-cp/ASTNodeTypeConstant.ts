@@ -9,7 +9,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {Keyword} from '../../parser/index.ts';
@@ -24,7 +24,7 @@ import {ASTNodeType} from './ASTNodeType.ts';
 
 
 export class ASTNodeTypeConstant extends ASTNodeType {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert_instanceof(typ, ASTNodeTypeConstant);
 		return typ;

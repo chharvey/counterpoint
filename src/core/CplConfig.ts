@@ -5,7 +5,7 @@ export {default as CONFIG_DEFAULT} from './counterpoint-config.default.json' wit
 /**
  * Interface for compiler configurations.
  */
-export type CPConfig = {
+export type CplConfig = {
 	/**
 	 * Options for which language features to enable/disable.
 	 * Disabling features can improve compiler speed.

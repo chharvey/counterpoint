@@ -7,7 +7,7 @@ import {
 } from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {
@@ -52,7 +52,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeGoal representing the given source
 	 */
-	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
 		report_syntax_errors(root_node);
 		return new Decorator(config).decorateTS(root_node);
@@ -66,7 +66,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
 		public readonly block: ASTNodeBlock | null,
-		config: CPConfig,
+		config: CplConfig,
 	) {
 		super(start_node, {}, (block) ? [block] : []);
 		this.#validator = new Validator(config);

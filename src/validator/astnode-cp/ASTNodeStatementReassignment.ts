@@ -11,7 +11,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
@@ -28,7 +28,7 @@ import {
 
 
 export class ASTNodeStatementReassignment extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementReassignment {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementReassignment);
 		return statement;

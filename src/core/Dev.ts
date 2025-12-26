@@ -16,14 +16,14 @@ export class Dev {
 	 * A map of development features to their version numbers.
 	 *
 	 * These are toggles for enabling development of certain features in pre-production;
-	 * they are *not* {@link CPConfig|language feature options} for production
+	 * they are *not* {@link CplConfig|language feature options} for production
 	 * (which are used by consumers).
 	 * These development toggles are given here in the codebase, whereas
 	 * language feature options are not given until a consumer provides them per each compile.
 	 *
 	 * Before each release, the development toggles for that release should be removed
 	 * and those features should become fully enabled.
-	 * Released features may have an optional language feature option defined in {@link CPConfig}.
+	 * Released features may have an optional language feature option defined in {@link CplConfig}.
 	 */
 	private static readonly TOGGLES: Record<DevToggleKey, DevToggleVal> = {
 		'stringConstant-build': [false],

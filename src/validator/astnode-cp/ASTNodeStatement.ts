@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {assert_context_name} from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeBlock} from './index.ts';
@@ -49,7 +49,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Bu
 	 * @param config the configuration
 	 * @returns      a new ASTNodeStatement representing the given source
 	 */
-	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatement {
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatement {
 		const block: ASTNodeBlock = ASTNodeBlock.fromSource(`{ ${ src } }`, config);
 		assert.strictEqual(block.children.length, 1, 'semantic block should have 1 child');
 		return block.children[0];

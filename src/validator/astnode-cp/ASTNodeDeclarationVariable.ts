@@ -13,7 +13,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
@@ -76,7 +76,7 @@ function unfixed_inferred_type(node: ASTNodeExpression): TYPE.Type {
 
 
 export class ASTNodeDeclarationVariable extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeDeclarationVariable);
 		return statement;

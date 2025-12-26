@@ -4,7 +4,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 	AST,
 	SymbolSchemaVar,
@@ -35,13 +35,13 @@ import {
 
 
 
-function typeOperations(tests: ReadonlyMap<string, VALUE.Primitive>, config: CPConfig = CONFIG_DEFAULT): void {
+function typeOperations(tests: ReadonlyMap<string, VALUE.Primitive>, config: CplConfig = CONFIG_DEFAULT): void {
 	return assertEqualTypes(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
 		[...tests.values()].map((expected) => new TYPE.Unit(expected)),
 	);
 }
-function foldOperations(tests: Map<string, VALUE.Value>, config: CPConfig = CONFIG_DEFAULT): void {
+function foldOperations(tests: Map<string, VALUE.Value>, config: CplConfig = CONFIG_DEFAULT): void {
 	return assert.deepStrictEqual(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).fold()),
 		[...tests.values()],

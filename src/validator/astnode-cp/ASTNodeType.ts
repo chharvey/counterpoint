@@ -1,6 +1,6 @@
 import type {TYPE} from '../../index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeDeclarationType} from './index.ts';
@@ -26,7 +26,7 @@ export abstract class ASTNodeType extends ASTNodeCP {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeType representing the given source
 	 */
-	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeType {
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeType {
 		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.assigned;
 	}

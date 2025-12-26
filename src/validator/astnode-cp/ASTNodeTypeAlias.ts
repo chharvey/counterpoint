@@ -10,7 +10,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {
@@ -29,7 +29,7 @@ import {ASTNodeType} from './ASTNodeType.ts';
 
 
 export class ASTNodeTypeAlias extends ASTNodeType {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert_instanceof(typ, ASTNodeTypeAlias);
 		return typ;

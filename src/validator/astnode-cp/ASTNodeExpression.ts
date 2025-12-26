@@ -7,7 +7,7 @@ import {
 } from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeStatementExpression} from './index.ts';
@@ -89,7 +89,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeExpression representing the given source
 	 */
-	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeExpression {
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeExpression {
 		const statement_expr: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(`${ src };`, config);
 		assert.ok(statement_expr.expr, 'semantic statement expression should have 1 child');
 		return statement_expr.expr;

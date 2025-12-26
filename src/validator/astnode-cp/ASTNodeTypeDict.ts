@@ -4,7 +4,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
@@ -14,7 +14,7 @@ import {ASTNodeTypeCollectionLiteral} from './ASTNodeTypeCollectionLiteral.ts';
 
 
 export class ASTNodeTypeDict extends ASTNodeTypeCollectionLiteral {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeDict {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeDict {
 		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
 		assert_instanceof(typ, ASTNodeTypeDict);
 		return typ;

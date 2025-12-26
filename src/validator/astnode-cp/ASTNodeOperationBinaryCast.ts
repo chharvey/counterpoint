@@ -8,7 +8,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
@@ -25,7 +25,7 @@ import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
 export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryCast {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryCast {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeOperationBinaryCast);
 		return expression;

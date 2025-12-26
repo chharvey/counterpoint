@@ -6,7 +6,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {Validator} from '../Validator.ts';
@@ -29,7 +29,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	 * @param config the configuration
 	 * @returns      a new ASTNodeBlock representing the given source
 	 */
-	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeBlock {
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeBlock {
 		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
 		assert.ok(goal.block, 'semantic goal should have 1 child');
 		return goal.block;
@@ -41,7 +41,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	public constructor(
 		start_node: SyntaxNodeFamily<'block', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeStatement>>,
-		private readonly config:           CPConfig,
+		private readonly config:           CplConfig,
 	) {
 		super(start_node, {}, children);
 		assert.ok(this.children.length, 'Expected ASTNodeBlock to contain at least 1 statement.');

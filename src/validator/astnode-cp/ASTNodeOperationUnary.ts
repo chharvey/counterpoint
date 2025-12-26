@@ -13,7 +13,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
@@ -31,7 +31,7 @@ import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 export class ASTNodeOperationUnary extends ASTNodeOperation {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeOperationUnary);
 		return expression;

@@ -10,7 +10,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {
@@ -38,7 +38,7 @@ import type {Reassignable} from './Reassignable.ts';
 
 
 export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAccess {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeAccess {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeAccess);
 		return expression;

@@ -11,7 +11,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
@@ -25,7 +25,7 @@ import {
 
 
 export class ASTNodeStatementLoop extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementLoop {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementLoop {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementLoop);
 		return statement;

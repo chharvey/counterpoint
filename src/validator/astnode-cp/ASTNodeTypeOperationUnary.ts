@@ -8,7 +8,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
@@ -22,7 +22,7 @@ import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.ts';
 
 
 export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
 		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
 		assert_instanceof(typ, ASTNodeTypeOperationUnary);
 		return typ;

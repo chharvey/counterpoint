@@ -12,7 +12,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
@@ -32,7 +32,7 @@ import {
 
 
 export class ASTNodeDict extends ASTNodeCollectionLiteral {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDict {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeDict {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeDict);
 		return expression;

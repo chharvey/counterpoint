@@ -1,5 +1,5 @@
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
@@ -18,7 +18,7 @@ export class Program {
 	 * @param source - the source text
 	 * @param config - The configuration settings for an instance program.
 	 */
-	public constructor(source: string, config: CPConfig = CONFIG_DEFAULT) {
+	public constructor(source: string, config: CplConfig = CONFIG_DEFAULT) {
 		this.#astGoal = AST.ASTNodeGoal.fromSource(source, config);
 	}
 

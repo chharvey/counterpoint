@@ -14,7 +14,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
@@ -39,7 +39,7 @@ import {ASTNodeRecord} from './ASTNodeRecord.ts';
 
 
 export class ASTNodeCall extends ASTNodeExpression {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeCall {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeCall {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeCall);
 		return expression;

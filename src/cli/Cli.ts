@@ -3,7 +3,7 @@ import * as path from 'node:path';
 import * as xjs from 'extrajs';
 import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {Program} from './Program.ts';
@@ -14,9 +14,9 @@ type Mutable<T> = { // NB https://github.com/microsoft/TypeScript/issues/24509
 	-readonly [P in keyof T]: Mutable<T[P]>
 };
 
-type PartialCPConfig = Partial<{
-	readonly languageFeatures: Partial<CPConfig['languageFeatures']>,
-	readonly compilerOptions:  Partial<CPConfig['compilerOptions']>,
+type PartialCplConfig = Partial<{
+	readonly languageFeatures: Partial<CplConfig['languageFeatures']>,
+	readonly compilerOptions:  Partial<CplConfig['compilerOptions']>,
 }>;
 
 export enum Command {
@@ -189,12 +189,12 @@ export class Cli {
 	 * @param cwd the current working directory, `process.cwd()`
 	 * @return the computed configuration object
 	 */
-	private async computeConfig(cwd: string): Promise<CPConfig> {
-		const config: PartialCPConfig = this.argv.project
-			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8')) as PartialCPConfig
+	private async computeConfig(cwd: string): Promise<CplConfig> {
+		const config: PartialCplConfig = this.argv.project
+			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8')) as PartialCplConfig
 			: {};
 
-		const returned: Mutable<CPConfig> = {
+		const returned: Mutable<CplConfig> = {
 			...CONFIG_DEFAULT,
 			...config,
 			languageFeatures: {

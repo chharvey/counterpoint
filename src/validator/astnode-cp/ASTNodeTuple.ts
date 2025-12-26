@@ -12,7 +12,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {EntryType} from '../../typer/index.ts';
@@ -31,7 +31,7 @@ import {
 
 
 export class ASTNodeTuple extends ASTNodeCollectionLiteral {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeTuple {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTuple {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeTuple);
 		return expression;

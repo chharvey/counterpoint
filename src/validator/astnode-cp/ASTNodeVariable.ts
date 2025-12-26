@@ -12,7 +12,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {
@@ -32,7 +32,7 @@ import type {Reassignable} from './Reassignable.ts';
 
 
 export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
-	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeVariable);
 		return expression;
