@@ -2,7 +2,7 @@ import {
 	type VALUE,
 	TYPE,
 } from '../index.ts';
-import type * as AST from './astnode-cp/index.ts';
+import type * as AST from './ast/index.ts';
 
 
 
