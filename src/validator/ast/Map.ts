@@ -15,7 +15,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {typecheck_assign} from './AstNode.ts';
 import type {Case} from './Case.ts';
 import {
 	Expression,
@@ -79,7 +79,7 @@ class AstMap extends CollectionLiteral {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
 				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (
-					ASTNodeCP.typeCheckAssign(expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
+					typecheck_assign(expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
 				))
 			));
 		}

@@ -18,7 +18,7 @@ import {
 } from '../../core/index.ts';
 import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {typecheck_assign} from './AstNode.ts';
 import type {Key} from './Key.ts';
 import type {Property} from './Property.ts';
 import {
@@ -109,7 +109,7 @@ class AstRecord extends CollectionLiteral {
 			return xjs.Array.forEachAggregated(this.children, (prop) => {
 				const thattype: EntryType | undefined = assignee.typeargs.get(prop.key.id);
 				if (thattype) {
-					return ASTNodeCP.typeCheckAssign(prop.val, thattype.type, prop);
+					return typecheck_assign(prop.val, thattype.type, prop);
 				}
 			});
 		}

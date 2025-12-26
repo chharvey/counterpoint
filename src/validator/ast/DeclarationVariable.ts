@@ -18,7 +18,7 @@ import {
 } from '../../core/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {typecheck_assign} from './AstNode.ts';
 import type {Type} from './Type.ts';
 import type {Expression} from './Expression.ts';
 import {Constant} from './Constant.ts';
@@ -157,7 +157,7 @@ export class DeclarationVariable extends Statement {
 			this.assigned instanceof Template ? TYPE.STR :
 			this.assigned!.type()
 		);
-		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
+		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);

@@ -16,7 +16,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {typecheck_assign} from './AstNode.ts';
 import type {Key} from './Key.ts';
 import type {Property} from './Property.ts';
 import {
@@ -89,7 +89,7 @@ export class Dict extends CollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Dict) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
-			return xjs.Array.forEachAggregated(this.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, assignee.typearg, prop));
+			return xjs.Array.forEachAggregated(this.children, (prop) => typecheck_assign(prop.val, assignee.typearg, prop));
 		}
 		throw new TypeErrorNotAssignable(this, assignee);
 	}

@@ -16,7 +16,7 @@ import {
 } from '../../core/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {typecheck_assign} from './AstNode.ts';
 import type {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Access} from './Access.ts';
@@ -67,7 +67,7 @@ export class StatementReassignment extends Statement {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
-		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
+		typecheck_assign(this.assigned, this.assignee.writeType(), this);
 	}
 
 	@memoizeMethod

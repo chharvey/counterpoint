@@ -24,7 +24,7 @@ import {
 	type ConstructorSchema,
 	CLASS_API,
 } from './utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {typecheck_assign} from './AstNode.ts';
 import type {Type} from './Type.ts';
 import {TypeCall} from './TypeCall.ts';
 import {
@@ -103,7 +103,7 @@ export class Call extends Expression {
 					const itemtype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:      Expression = this.exprargs[0];
 					if (arg instanceof AstTuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, itemtype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, itemtype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
 						if (argtype instanceof TYPE.Tuple) {
@@ -133,9 +133,9 @@ export class Call extends Expression {
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       Expression = this.exprargs[0];
 					if (arg instanceof AstTuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
 					} else if (arg instanceof AstRecord) {
-						xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, valuetype, prop.val));
+						xjs.Array.forEachAggregated(arg.children, (prop) => typecheck_assign(prop.val, valuetype, prop.val));
 					} else {
 						const argtype: TYPE.Type = arg.type();
 						if (argtype instanceof TYPE.Tuple) {
@@ -169,7 +169,7 @@ export class Call extends Expression {
 					const eltype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:    Expression = this.exprargs[0];
 					if (arg instanceof AstTuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, eltype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, eltype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
 						if (argtype instanceof TYPE.Tuple) {
@@ -200,7 +200,7 @@ export class Call extends Expression {
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
 					const arg:       Expression = this.exprargs[0];
 					if (arg instanceof AstTuple) {
-						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
+						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
 						if (argtype instanceof TYPE.Tuple) {
@@ -300,7 +300,7 @@ export class Call extends Expression {
 				}
 				const argnode: Expression | undefined = this.exprargs.at(i);
 				if (argnode) {
-					ASTNodeCP.typeCheckAssign(argnode, param.type.call(null, resolved_generic_args), this);
+					typecheck_assign(argnode, param.type.call(null, resolved_generic_args), this);
 				}
 			});
 		});

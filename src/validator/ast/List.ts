@@ -14,7 +14,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {typecheck_assign} from './AstNode.ts';
 import {
 	Expression,
 	buildDeco,
@@ -71,7 +71,7 @@ export class List extends CollectionLiteral {
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.List) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
-			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.typearg, expr));
+			return xjs.Array.forEachAggregated(this.children, (expr) => typecheck_assign(expr, assignee.typearg, expr));
 		}
 		throw new TypeErrorNotAssignable(this, assignee);
 	}
