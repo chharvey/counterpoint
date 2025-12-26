@@ -1,19 +1,19 @@
 #!/usr/bin/env node
 import PACKAGE from '../package.json' with {type: 'json'};
 import {
-	CLI,
+	Cli,
 	Command,
 } from '../build/index.js';
 
 
 
 (async () => {
-	const cli = new CLI(process.argv);
+	const cli = new Cli(process.argv);
 	switch (cli.command) {
 		case Command.HELP: {
-			console.log(CLI.HELPTEXT);
+			console.log(Cli.HELPTEXT);
 			if (cli.argv.config) {
-				console.log(`\n${ CLI.CONFIGTEXT }`);
+				console.log(`\n${ Cli.CONFIGTEXT }`);
 			}
 			break;
 		}

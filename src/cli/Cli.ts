@@ -54,9 +54,9 @@ type CustomArgsType = {
 
 /**
  * Code for the command line interface.
- * A CLI object is a single instance of a CLI run.
+ * A Cli object is a single instance of a CLI run.
  */
-export class CLI {
+export class Cli {
 	/** Text to print on --help. */
 	public static readonly HELPTEXT: string = xjs.String.dedent`
 		Usage: cplc <command> <filepath> [<options>]
@@ -142,7 +142,7 @@ export class CLI {
 			if (arg.startsWith('-')) { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
 				throw new Error(xjs.String.dedent`
 					Unknown CLI option: ${ arg }
-					${ CLI.HELPTEXT }
+					${ Cli.HELPTEXT }
 				`.trimStart());
 			}
 			return true;
@@ -157,7 +157,7 @@ export class CLI {
 	 * @param process_argv the arguments sent to NodeJS.Process.argv
 	 */
 	public constructor(process_argv: readonly string[]) {
-		this.argv = minimist<CustomArgsType>(process_argv.slice(2), CLI.MINIMIST_OPTS);
+		this.argv = minimist<CustomArgsType>(process_argv.slice(2), Cli.MINIMIST_OPTS);
 		this.command = (
 			(this.argv.help || this.argv.config) ? Command.HELP :
 			(this.argv.version) ? Command.VERSION :
@@ -175,13 +175,13 @@ export class CLI {
 		if (this.argv.out === '' || this.argv.project === '') {
 			throw new Error(`
 				Invalid CLI arguments!
-				${ CLI.HELPTEXT }
+				${ Cli.HELPTEXT }
 			`);
 		}
 	}
 
 	/**
-	 * Compute the cascading configuration for this CLI.
+	 * Compute the cascading configuration for this Cli.
 	 * Cascade in order of precedence (1 is lowest):
 	 * 1. The Counterpoint Default Configuration file.
 	 * 2. A configuration file specified via `--project` CLI option.
@@ -219,7 +219,7 @@ export class CLI {
 		if (!this.argv._[1]) {
 			throw new Error(`
 				No path specified!
-				${ CLI.HELPTEXT }
+				${ Cli.HELPTEXT }
 			`);
 		}
 		return path.join(cwd, path.normalize(this.argv._[1]));
