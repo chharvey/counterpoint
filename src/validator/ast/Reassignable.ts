@@ -1,5 +1,5 @@
 import type {TYPE} from '../../index.ts';
-import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import type {ASTNodeExpression} from './Expression.ts';
 
 
 
