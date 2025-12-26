@@ -28,7 +28,7 @@ test.suite('drop_then', () => {
 		const block: binaryen.ExpressionRef = builder.module.block(null, [
 			builder.module.drop(buildConst(builder, 2n)),
 			builder.module.drop(buildConst(builder, 3n)),
-		]); // result of building ASTNodeBlock
+		]); // result of building Block
 		assert.strictEqual(binaryen.getExpressionType(block), binaryen.none);
 		return assertEqualBins(
 			drop_then(builder.module, [expr1], block),

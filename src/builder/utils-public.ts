@@ -59,7 +59,7 @@ export function drop_then(
 
 /**
  * Build a thing that looks like a tuple.
- * @typeparam T -  the type of items in the tuple-like. Could be `ASTNodeExpression`s, `Value`s, `Type`s, etc.
+ * @typeparam T -  the type of items in the tuple-like. Could be `Expression`s, `Value`s, `Type`s, etc.
  * @param items    the tuple-like, an array of items
  * @param builder  the builder to use to build the expression
  * @param type_fn  the lambda to call on each item that gives its type
@@ -130,7 +130,7 @@ export function build_tuple_like<T>(
 
 /**
  * Build a thing that looks like a record.
- * @typeparam T -    the type of items in the record-like. Could be `ASTNodeExpression`s, `Value`s, `Type`s, etc.
+ * @typeparam T -    the type of items in the record-like. Could be `Expression`s, `Value`s, `Type`s, etc.
  * @param properties the record-like, a map of key–value pairs
  * @param builder    the builder to use to build the expression
  * @param type_fn    the lambda to call on each value that gives its type

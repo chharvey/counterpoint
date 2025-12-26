@@ -1,4 +1,4 @@
 export * from './utils-public.ts';
 
-export * as VALUE from './cp-value/index.ts';
-export * as TYPE from './cp-type/index.ts';
+export * as VALUE from './value/index.ts';
+export * as TYPE from './type/index.ts';

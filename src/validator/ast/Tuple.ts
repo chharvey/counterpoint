@@ -1,0 +1,97 @@
+import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
+import {
+	VALUE,
+	TYPE,
+	build_tuple_like,
+	TypeErrorNotAssignable,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
+	type CplConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.ts';
+import type {EntryType} from '../../typer/index.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
+import {typecheck_assign} from './AstNode.ts';
+import {
+	buildDeco,
+	typeDeco,
+	Expression,
+} from './Expression.ts';
+import {
+	assignToDeco,
+	CollectionLiteral,
+} from './CollectionLiteral.ts';
+
+
+
+class AstTuple extends CollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstTuple {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, AstTuple);
+		return expression;
+	}
+
+	public constructor(
+		start_node: SyntaxNodeFamily<'tuple_literal', ['break']>,
+		public override readonly children: readonly Expression[],
+	) {
+		super(start_node, children);
+	}
+
+	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return build_tuple_like<Expression>(
+			this.children,
+			this.builder,
+			(expr) => expr.type(),
+			(expr) => expr.build(),
+		);
+	}
+
+	@memoizeMethod
+	@typeDeco
+	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
+		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
+	}
+
+	@memoizeMethod
+	public override fold(): VALUE.Value | null {
+		const items: readonly (VALUE.Value | null)[] = this.children.map((c) => c.fold());
+		return (items.includes(null))
+			? null
+			: new VALUE.Tuple(items as VALUE.Value[]);
+	}
+
+	@assignToDeco
+	public override assignTo(assignee: TYPE.Type): void {
+		const err = new TypeErrorNotAssignable(this, assignee);
+		if (assignee instanceof TYPE.Tuple) {
+			if (this.children.length < assignee.minCount) {
+				throw err;
+			}
+			assignee.typeargs.forEach((entry, i) => { // using `Array#forEach` instead of `xjs.Array.forEach` to short-circuit
+				/* NOTE: We can assert the item exists because of item ordering.
+					We cannot do so with records since properties are not ordered. */
+				entry.optional || assert.ok(this.children[i], err);
+			});
+			return xjs.Array.forEachAggregated(this.children, (expr, i) => {
+				const thattype: EntryType | undefined = assignee.typeargs.at(i);
+				if (thattype) {
+					return typecheck_assign(expr, thattype.type, expr);
+				}
+			});
+		}
+		throw err;
+	}
+}
+export {AstTuple as Tuple};
