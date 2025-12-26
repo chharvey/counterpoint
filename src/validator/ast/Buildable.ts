@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {ASTNodeCP} from './ASTNodeCP.ts';
+import type {AstNode} from './AstNode.ts';
 
 
 
@@ -10,7 +10,7 @@ import type {ASTNodeCP} from './ASTNodeCP.ts';
  * - Block
  * - Goal
  */
-export interface Buildable extends ASTNodeCP {
+export interface Buildable extends AstNode {
 	/**
 	 * Give directions to the runtime code builder.
 	 * @return the directions to print

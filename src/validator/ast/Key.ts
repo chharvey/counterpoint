@@ -1,10 +1,10 @@
 import {memoizeGetter} from '../../lib/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {AstNode} from './AstNode.ts';
 
 
 
-export class Key extends ASTNodeCP {
+export class Key extends AstNode {
 	public constructor(start_node: SyntaxNodeType<'word'>) {
 		super(start_node);
 	}

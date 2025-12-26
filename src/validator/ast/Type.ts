@@ -4,7 +4,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {DeclarationType} from './index.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {AstNode} from './AstNode.ts';
 
 
 
@@ -18,7 +18,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
  * - TypeCall
  * - TypeOperation
  */
-export abstract class Type extends ASTNodeCP {
+export abstract class Type extends AstNode {
 	/**
 	 * Construct a new Type from a source text and optionally a configuration.
 	 * The source text must parse successfully.

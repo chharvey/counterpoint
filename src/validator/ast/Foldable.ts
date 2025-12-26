@@ -1,4 +1,4 @@
-import type {ASTNodeCP} from './ASTNodeCP.ts';
+import type {AstNode} from './AstNode.ts';
 
 
 
@@ -9,7 +9,7 @@ import type {ASTNodeCP} from './ASTNodeCP.ts';
  *
  * Note: For `Expression` objects, just use the result of `Expression#fold()`.
  */
-export interface Foldable extends ASTNodeCP {
+export interface Foldable extends AstNode {
 	/** Return whether this node may be omitted from the compiled output when built. */
 	get isFoldable(): boolean;
 

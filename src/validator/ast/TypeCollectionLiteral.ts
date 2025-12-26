@@ -1,5 +1,5 @@
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeCP} from './ASTNodeCP.ts';
+import type {AstNode} from './AstNode.ts';
 import {Type} from './Type.ts';
 
 
@@ -24,7 +24,7 @@ export abstract class TypeCollectionLiteral extends Type {
 			| SyntaxNodeType<'type_map_literal'>
 		),
 
-		public override readonly children: readonly ASTNodeCP[],
+		children: readonly AstNode[],
 	) {
 		super(start_node, {}, children);
 	}

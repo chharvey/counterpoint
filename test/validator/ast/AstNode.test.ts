@@ -23,7 +23,7 @@ import {extract_lines} from '../../utils.ts';
 
 
 
-test.suite('ASTNodeCP', () => {
+test.suite('AstNode', () => {
 	test.suite('Index', () => {
 		test.suite('#index', () => {
 			test.test('returns the cooked value of the integer token.', () => {

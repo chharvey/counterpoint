@@ -1,36 +1,17 @@
-import * as xjs from 'extrajs';
-import type {SyntaxNode} from 'tree-sitter';
 import {
 	type TYPE,
-	type Builder,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
-import {memoizeGetter} from '../../lib/index.ts';
-import {to_serializable} from '../../parser/index.ts';
-import type {Validator} from '../Validator.ts';
 import {
 	type Expression,
 	CollectionLiteral,
 } from './index.ts';
-import {AstNode} from './AstNode.ts';
+import type {AstNode} from './AstNode.ts';
 
 
 
-/**
- * Known subclasses:
- * - Index
- * - Key
- * - ItemType
- * - PropertyType
- * - Property
- * - Case
- * - Type
- * - Expression
- * - Statement
- * - Block
- * - Goal
- */
-export abstract class ASTNodeCP extends AstNode {
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export abstract class ASTNodeCP {
 	/**
 	 * Type-check an expression to an assignee type.
 	 * Attempts to check subtyping rules first, but if failing, attempts to assign entry-by-entry
@@ -62,7 +43,7 @@ export abstract class ASTNodeCP extends AstNode {
 	public static typeCheckAssign(
 		assigned:      Expression,
 		assignee_type: TYPE.Type,
-		node:          ASTNodeCP,
+		node:          AstNode,
 	): void {
 		if (!assigned.type().isSubtypeOf(assignee_type)) {
 			if (assigned instanceof CollectionLiteral) {
@@ -70,48 +51,5 @@ export abstract class ASTNodeCP extends AstNode {
 			}
 			throw new TypeErrorNotAssignable(assigned, assignee_type, node);
 		}
-	}
-
-
-	/**
-	 * Construct a new ASTNodeCP object.
-	 *
-	 * @param start_node - The initial node in the parse tree to which this ASTNodeCP corresponds.
-	 * @param children   - The set of child inputs that creates this ASTNodeCP.
-	 * @param attributes - Any other attributes to attach.
-	 */
-	public constructor(
-		protected readonly start_node: SyntaxNode,
-		attributes: Record<string, unknown> = {},
-		public override readonly children: readonly ASTNodeCP[] = [],
-	) {
-		super(to_serializable(start_node), attributes, children);
-	}
-
-	@memoizeGetter
-	public get validator(): Validator {
-		return (this.parent as ASTNodeCP).validator;
-	}
-
-	@memoizeGetter
-	public get builder(): Builder {
-		return (this.parent as ASTNodeCP).builder;
-	}
-
-	/**
-	 * Perform definite assignment phase of semantic analysis:
-	 * - Check that all variables have been assigned before being used.
-	 * - Check that no varaible is declared more than once.
-	 * - Check that fixed variables are not reassigned.
-	 */
-	public varCheck(): void {
-		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());
-	}
-
-	/**
-	 * Type-check the node as part of semantic analysis.
-	 */
-	public typeCheck(): void {
-		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck());
 	}
 }

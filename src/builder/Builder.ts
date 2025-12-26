@@ -16,7 +16,7 @@ import {BinVect} from './BinVect.ts';
  */
 type Block = {
 	readonly index: number,
-	readonly node:  AST.ASTNodeCP,
+	readonly node:  AST.AstNode,
 };
 
 
@@ -102,11 +102,11 @@ export class Builder {
 	}
 
 	/**
-	 * Set a new block, given an ASTNodeCP.
+	 * Set a new block, given an AstNode.
 	 * @param node node that builds the block
 	 * @return     Was the operation performed?
 	 */
-	public setBlock(node: AST.ASTNodeCP): boolean {
+	public setBlock(node: AST.AstNode): boolean {
 		let did: boolean = false;
 		if (!this.getBlock(node)) {
 			this.blocks.add({node, index: this.blocks.size});
@@ -120,7 +120,7 @@ export class Builder {
 	 * @param  node the node of the block to get
 	 * @return      the block or `undefined`
 	 */
-	public getBlock(node: AST.ASTNodeCP): Block | undefined {
+	public getBlock(node: AST.AstNode): Block | undefined {
 		return [...this.blocks].find((block) => block.node === node);
 	}
 
@@ -130,7 +130,7 @@ export class Builder {
 	 * @param node the node of the block to set
 	 * @return     the block set (or retreived)
 	 */
-	public teeBlock(node: AST.ASTNodeCP): Block {
+	public teeBlock(node: AST.AstNode): Block {
 		this.setBlock(node);
 		return this.getBlock(node)!;
 	}

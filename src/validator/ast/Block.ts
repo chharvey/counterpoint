@@ -12,7 +12,7 @@ import {
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Goal} from './index.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
 import type {ExpressionBlock} from './ExpressionBlock.ts';
@@ -21,7 +21,7 @@ import type {StatementConditional} from './StatementConditional.ts';
 
 
 
-export class Block extends ASTNodeCP implements Foldable, Buildable {
+export class Block extends AstNode implements Foldable, Buildable {
 	/**
 	 * Construct a new Block from a source text and optionally a configuration.
 	 * The source text must parse successfully.

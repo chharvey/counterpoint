@@ -6,7 +6,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {Block} from './index.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
 
@@ -41,7 +41,7 @@ export function buildDeco(
  * - StatementIteration
  * - StatementBreak
  */
-export abstract class Statement extends ASTNodeCP implements Foldable, Buildable {
+export abstract class Statement extends AstNode implements Foldable, Buildable {
 	/**
 	 * Construct a new Statement from a source text and optionally a configuration.
 	 * The source text must parse successfully.

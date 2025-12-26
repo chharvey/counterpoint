@@ -9,7 +9,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {
 	buildDeco,
 	Statement,
@@ -46,10 +45,10 @@ export class StatementBreak extends Statement {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		let block_index: number | undefined = undefined;
-		let node = this.parent as ASTNodeCP | undefined;
+		let node = this.parent;
 		while (node && block_index === undefined) {
 			block_index = this.builder.getBlock(node)?.index;
-			node = node.parent as ASTNodeCP | undefined;
+			node = node.parent;
 		}
 		// we should already have an index by the time we reach the root node
 		assert.ok(typeof block_index === 'number', 'Expected builder to store the containing loop/iteration block of this statement.'); // better type guard than `assert.strictEqual`

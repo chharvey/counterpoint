@@ -5,7 +5,7 @@ import {
 	forEither,
 } from '../../lib/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {ASTNodeCP} from './ASTNodeCP.ts';
+import type {AstNode} from './AstNode.ts';
 import {Expression} from './Expression.ts';
 
 
@@ -56,7 +56,7 @@ export abstract class CollectionLiteral extends Expression {
 			| SyntaxNodeFamily<'set_literal',    ['break']>
 			| SyntaxNodeFamily<'map_literal',    ['break']>,
 
-		children: readonly ASTNodeCP[],
+		children: readonly AstNode[],
 	) {
 		super(start_node, {}, children);
 	}

@@ -1,7 +1,13 @@
+import * as xjs from 'extrajs';
+import type {SyntaxNode} from 'tree-sitter';
+import type {Builder} from '../../index.ts';
+import {memoizeGetter} from '../../lib/index.ts';
 import {
 	stringifyAttributes,
 	type Serializable,
+	to_serializable,
 } from '../../parser/index.ts';
+import type {Validator} from '../Validator.ts';
 
 
 
@@ -20,6 +26,23 @@ import {
  * 	</Operation>
  * </Operation>
  * ```
+ *
+ * Known subclasses:
+ * - Index
+ * - Key
+ * - ItemType
+ * - PropertyType
+ * - Property
+ * - Case
+ * - Type
+ * - Expression
+ * - Statement
+ * - Block
+ * - Goal
+ *
+ * Known subinterfaces:
+ * - Foldable
+ * - Buildable
  */
 export class AstNode implements Serializable {
 	/** @implements Serializable */
@@ -43,14 +66,17 @@ export class AstNode implements Serializable {
 	 * @param children   The set of child inputs that creates this AstNode.
 	 */
 	public constructor(
-		private readonly start: Serializable,
-		private readonly attributes: Record<string, unknown> = {},
-		public readonly children: readonly AstNode[] = [],
+		protected readonly start_node: SyntaxNode,
+		private   readonly attributes: Record<string, unknown> = {},
+		public    readonly children:   readonly AstNode[] = [],
 	) {
-		this.source       = this.start.source;
-		this.source_index = this.start.source_index;
-		this.line_index   = this.start.line_index;
-		this.col_index    = this.start.col_index;
+		const start: Serializable = to_serializable(start_node);
+
+		this.source       = start.source;
+		this.source_index = start.source_index;
+		this.line_index   = start.line_index;
+		this.col_index    = start.col_index;
+
 		children.forEach((c) => {
 			c.#parent = this;
 		});
@@ -59,6 +85,16 @@ export class AstNode implements Serializable {
 	/** The unique parent node containing this node. */
 	public get parent(): AstNode | undefined {
 		return this.#parent;
+	}
+
+	@memoizeGetter
+	public get validator(): Validator {
+		return this.parent!.validator;
+	}
+
+	@memoizeGetter
+	public get builder(): Builder {
+		return this.parent!.builder;
 	}
 
 	/** @implements Serializable */
@@ -73,5 +109,22 @@ export class AstNode implements Serializable {
 		});
 		const contents: string = this.children.map((child) => child.serialize()).join('');
 		return `<${ this.tagname } ${ stringifyAttributes(attributes) }${ (contents) ? `>${ contents }</${ this.tagname }>` : '/>' }`;
+	}
+
+	/**
+	 * Perform definite assignment phase of semantic analysis:
+	 * - Check that all variables have been assigned before being used.
+	 * - Check that no varaible is declared more than once.
+	 * - Check that fixed variables are not reassigned.
+	 */
+	public varCheck(): void {
+		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());
+	}
+
+	/**
+	 * Type-check the node as part of semantic analysis.
+	 */
+	public typeCheck(): void {
+		return xjs.Array.forEachAggregated(this.children, (c) => c.typeCheck());
 	}
 }

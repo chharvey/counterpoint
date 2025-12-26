@@ -436,7 +436,7 @@ test.suite('Expression', () => {
 						AST.Dict       .fromSource('[_= 1, b= 2.0, _= "three"]'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
-					new Map<AST.ASTNodeCP, string[]>([
+					new Map<AST.AstNode, string[]>([
 						[AST.TypeRecord .fromSource('(c: int, d: float, c: str, d: bool)'),  ['c', 'd']],
 						[AST.TypeRecord .fromSource('(e: int, f: float, e: str, e: bool)'),  ['e', 'e']],
 						[AST.Record     .fromSource('(c= 1, d= 2.0, c= "three", d= false)'), ['c', 'd']],

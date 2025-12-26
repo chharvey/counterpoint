@@ -152,10 +152,10 @@ export class Decorator {
 	public decorateTS(syntaxnode: SyntaxNodeFamily<'declaration_variable', ['break']>):             AST.DeclarationVariable;
 	public decorateTS(syntaxnode: SyntaxNodeSupertype<'declaration'>):                              AST.Declaration;
 	public decorateTS(syntaxnode: SyntaxNodeType<'source_file'>):                                   AST.Goal;
-	public decorateTS(syntaxnode: SyntaxNode):                                                      AST.ASTNodeCP;
+	public decorateTS(syntaxnode: SyntaxNode):                                                      AST.AstNode;
 	/* eslint-enable @typescript-eslint/unified-signatures */
-	public decorateTS(syntaxnode: SyntaxNode): AST.ASTNodeCP {
-		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.ASTNodeCP>([
+	public decorateTS(syntaxnode: SyntaxNode): AST.AstNode {
+		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.AstNode>([
 			['source_file', (node) => new AST.Goal(
 				node as SyntaxNodeType<'source_file'>,
 				node.children.length ? this.decorateTS(node.children[0] as SyntaxNodeType<'block'>) : null,

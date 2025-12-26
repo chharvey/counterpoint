@@ -11,7 +11,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {StatementExpression} from './index.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {AstNode} from './AstNode.ts';
 import type {Buildable} from './Buildable.ts';
 
 
@@ -81,7 +81,7 @@ export function typeDeco(
  * - Claim
  * - Operation
  */
-export abstract class Expression extends ASTNodeCP implements Buildable {
+export abstract class Expression extends AstNode implements Buildable {
 	/**
 	 * Construct a new Expression from a source text and optionally a configuration.
 	 * The source text must parse successfully.

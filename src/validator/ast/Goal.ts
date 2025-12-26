@@ -18,7 +18,7 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {AstNode} from './AstNode.ts';
 import type {Buildable} from './Buildable.ts';
 import type {Block} from './Block.ts';
 
@@ -44,7 +44,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class Goal extends ASTNodeCP implements Buildable {
+export class Goal extends AstNode implements Buildable {
 	/**
 	 * Construct a new Goal from a source text and optionally a configuration.
 	 * The source text must parse successfully.

@@ -1,11 +1,11 @@
 import * as assert from 'node:assert';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
-import {ASTNodeCP} from './ASTNodeCP.ts';
+import {AstNode} from './AstNode.ts';
 
 
 
-export class Index extends ASTNodeCP {
+export class Index extends AstNode {
 	public readonly index: bigint;
 
 	public constructor(start_node: SyntaxNodeType<'integer'> | SyntaxNodeType<'natural'>) {

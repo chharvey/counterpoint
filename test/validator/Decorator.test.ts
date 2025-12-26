@@ -23,7 +23,7 @@ test.suite('Decorator', () => {
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
-		new Map<string, readonly [ConstructorType<AST.ASTNodeCP>, string]>([
+		new Map<string, readonly [ConstructorType<AST.AstNode>, string]>([
 			['Decorate(Word ::= _KEYWORD_OTHER) -> SemanticKey', [AST.Key, `
 				{
 					(mut= 42);
