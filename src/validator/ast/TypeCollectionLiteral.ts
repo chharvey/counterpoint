@@ -1,19 +1,19 @@
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
-import {ASTNodeType} from './Type.ts';
+import {Type} from './Type.ts';
 
 
 
 /**
  * Known subclasses:
- * - ASTNodeTypeTuple
- * - ASTNodeTypeRecord
- * - ASTNodeTypeList
- * - ASTNodeTypeDict
- * - ASTNodeTypeSet
- * - ASTNodeTypeMap
+ * - TypeTuple
+ * - TypeRecord
+ * - TypeList
+ * - TypeDict
+ * - TypeSet
+ * - TypeMap
  */
-export abstract class ASTNodeTypeCollectionLiteral extends ASTNodeType {
+export abstract class TypeCollectionLiteral extends Type {
 	protected constructor(
 		start_node: (
 			| SyntaxNodeType<'type_tuple_literal'>

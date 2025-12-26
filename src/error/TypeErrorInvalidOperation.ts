@@ -13,7 +13,7 @@ export class TypeErrorInvalidOperation extends TypeError {
 	 * Construct a new TypeErrorInvalidOperation object.
 	 * @param expression - the invalid operation expression
 	 */
-	public constructor(expression: AST.ASTNodeTypeAccess | AST.ASTNodeTypeOperation | AST.ASTNodeAccess | AST.ASTNodeOperation) {
+	public constructor(expression: AST.TypeAccess | AST.TypeOperation | AST.Access | AST.Operation) {
 		super(
 			`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`,
 			TypeError.CODES.get(TypeErrorInvalidOperation),

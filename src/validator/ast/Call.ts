@@ -25,31 +25,31 @@ import {
 	CLASS_API,
 } from './utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeCall} from './TypeCall.ts';
+import type {Type} from './Type.ts';
+import {TypeCall} from './TypeCall.ts';
 import {
 	buildDeco,
 	typeDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
-import {ASTNodeVariable} from './Variable.ts';
-import {ASTNodeTuple} from './Tuple.ts';
-import {ASTNodeRecord} from './Record.ts';
+import {Variable} from './Variable.ts';
+import {Tuple as AstTuple} from './Tuple.ts';
+import {Record as AstRecord} from './Record.ts';
 
 
 
-export class ASTNodeCall extends ASTNodeExpression {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeCall {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeCall);
+export class Call extends Expression {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Call {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, Call);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
-		private readonly base: ASTNodeExpression,
-		private readonly typeargs: readonly ASTNodeType[],
-		private readonly exprargs: readonly ASTNodeExpression[],
+		private readonly base:     Expression,
+		private readonly typeargs: readonly Type[],
+		private readonly exprargs: readonly Expression[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
 	}
@@ -77,17 +77,17 @@ export class ASTNodeCall extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeCall#build` not yet supported.');
+		throw new Error('`Call#build` not yet supported.');
 	}
 
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
-		if (!(this.base instanceof ASTNodeVariable)) {
+		if (!(this.base instanceof Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-		const resolved_generic_args: TYPE.Type[]       = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
+		const resolved_generic_args: TYPE.Type[]       = TypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
 		switch (this.base.source as ValidFunctionName) {
 			case ValidFunctionName.LIST: {
 				try {
@@ -100,9 +100,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 						throw err.errors[0];
 					}
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const itemtype: TYPE.Type         = this.typeargs[0].eval();
-					const arg:      ASTNodeExpression = this.exprargs[0];
-					if (arg instanceof ASTNodeTuple) {
+					const itemtype: TYPE.Type  = this.typeargs[0].eval();
+					const arg:      Expression = this.exprargs[0];
+					if (arg instanceof AstTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, itemtype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
@@ -129,12 +129,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 						throw err.errors[0];
 					}
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
-					const valuetype: TYPE.Type         = this.typeargs[0].eval();
-					const entrytype: TYPE.Tuple        = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
-					const arg:       ASTNodeExpression = this.exprargs[0];
-					if (arg instanceof ASTNodeTuple) {
+					const valuetype: TYPE.Type  = this.typeargs[0].eval();
+					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
+					const arg:       Expression = this.exprargs[0];
+					if (arg instanceof AstTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
-					} else if (arg instanceof ASTNodeRecord) {
+					} else if (arg instanceof AstRecord) {
 						xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, valuetype, prop.val));
 					} else {
 						const argtype: TYPE.Type = arg.type();
@@ -166,9 +166,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 						throw err.errors[0];
 					}
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const eltype: TYPE.Type         = this.typeargs[0].eval();
-					const arg:    ASTNodeExpression = this.exprargs[0];
-					if (arg instanceof ASTNodeTuple) {
+					const eltype: TYPE.Type  = this.typeargs[0].eval();
+					const arg:    Expression = this.exprargs[0];
+					if (arg instanceof AstTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, eltype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
@@ -195,11 +195,11 @@ export class ASTNodeCall extends ASTNodeExpression {
 						throw err.errors[0];
 					}
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
-					const anttype:   TYPE.Type         = this.typeargs[0].eval();
-					const contype:   TYPE.Type         = this.typeargs[1]?.eval() ?? anttype;
-					const entrytype: TYPE.Tuple        = TYPE.Tuple.fromTypes([anttype, contype]);
-					const arg:       ASTNodeExpression = this.exprargs[0];
-					if (arg instanceof ASTNodeTuple) {
+					const anttype:   TYPE.Type  = this.typeargs[0].eval();
+					const contype:   TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
+					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
+					const arg:       Expression = this.exprargs[0];
+					if (arg instanceof AstTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
@@ -275,7 +275,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	/**
 	 * Type-checks assignment of function arguments to a constructor call.
 	 * @param constructor_schema    the name of the class constructor’s schema
-	 * @param resolved_generic_args the resolved type arguments, returned by {@link ASTNodeTypeCall.checkGenericArgs}
+	 * @param resolved_generic_args the resolved type arguments, returned by {@link TypeCall.checkGenericArgs}
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		forEither(constructor_schema.overloads, (func_params) => {
@@ -298,7 +298,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 				if (!this.exprargs.at(i)) {
 					assert.ok(param.optional); // we can assert this due to argument counting above
 				}
-				const argnode: ASTNodeExpression | undefined = this.exprargs.at(i);
+				const argnode: Expression | undefined = this.exprargs.at(i);
 				if (argnode) {
 					ASTNodeCP.typeCheckAssign(argnode, param.type.call(null, resolved_generic_args), this);
 				}

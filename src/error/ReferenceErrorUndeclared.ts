@@ -13,7 +13,7 @@ export class ReferenceErrorUndeclared extends ReferenceError {
 	 * Construct a new ReferenceErrorUndeclared object.
 	 * @param variable the undeclared variable
 	 */
-	public constructor(variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+	public constructor(variable: AST.TypeAlias | AST.Variable) {
 		super(
 			`\`${ variable.source }\` is never declared.`,
 			ReferenceError.CODES.get(ReferenceErrorUndeclared),

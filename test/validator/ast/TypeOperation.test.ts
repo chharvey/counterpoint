@@ -13,25 +13,25 @@ import {
 
 
 
-test.suite('ASTNodeTypeOperation', () => {
+test.suite('TypeOperation', () => {
 	test.suite('#eval', () => {
-		test.test('ASTNodeTypeOperationUnary[operator=ORNULL]', () => {
+		test.test('TypeOperationUnary[operator=ORNULL]', () => {
 			assertEqualTypes(
-				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
+				AST.TypeOperationUnary.fromSource('int?').eval(),
 				TYPE.INT.union(TYPE.NULL),
 			);
 		});
 
 
-		test.test.todo('ASTNodeTypeOperationUnary[operator=OREXCP]', () => {
+		test.test.todo('TypeOperationUnary[operator=OREXCP]', () => {
 			assert.ok('TODO:');
 		});
 
 
-		test.suite('ASTNodeTypeOperationUnary[operator=MUTABLE]', () => {
+		test.suite('TypeOperationUnary[operator=MUTABLE]', () => {
 			test.test('does not throw if operating on a reference type.', () => {
 				assertEqualTypes(
-					AST.ASTNodeTypeOperationUnary.fromSource('mut [int]').eval(),
+					AST.TypeOperationUnary.fromSource('mut [int]').eval(),
 					new TYPE.List(TYPE.INT, true),
 				);
 				setupScript(`{
@@ -57,22 +57,22 @@ test.suite('ASTNodeTypeOperation', () => {
 					'mut int',
 					'mut float',
 					'mut str',
-				].forEach((src) => assert.throws(() => AST.ASTNodeTypeOperation.fromSource(src).eval(), TypeErrorInvalidOperation));
+				].forEach((src) => assert.throws(() => AST.TypeOperation.fromSource(src).eval(), TypeErrorInvalidOperation));
 				[
 					'mut anything',
 					'mut Object',
-				].map((src) => AST.ASTNodeTypeOperation.fromSource(src).eval()); // assert does not throw if `[isRef=false]`
+				].map((src) => AST.TypeOperation.fromSource(src).eval()); // assert does not throw if `[isRef=false]`
 			});
 		});
 
 
-		test.test('ASTNodeTypeOperationBinary[operator=AND|OR]', () => {
+		test.test('TypeOperationBinary[operator=AND|OR]', () => {
 			assertEqualTypes(
-				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
+				AST.TypeOperationBinary.fromSource('Object & 3').eval(),
 				TYPE.OBJ.intersect(typeUnit(3n)),
 			);
 			assertEqualTypes(
-				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
+				AST.TypeOperationBinary.fromSource('4.2 | int').eval(),
 				typeUnit(4.2).union(TYPE.INT),
 			);
 		});

@@ -16,27 +16,27 @@ import {
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
-	ASTNodeExpression,
+	Expression,
 	buildDeco,
 	typeDeco,
 } from './Expression.ts';
 import {
 	assignToDeco,
-	ASTNodeCollectionLiteral,
+	CollectionLiteral,
 } from './CollectionLiteral.ts';
 
 
 
-export class ASTNodeList extends ASTNodeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeList {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeList);
+export class List extends CollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): List {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, List);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'list_literal', ['break']>,
-		public override readonly children: readonly ASTNodeExpression[],
+		public override readonly children: readonly Expression[],
 	) {
 		super(start_node, children);
 	}
@@ -44,7 +44,7 @@ export class ASTNodeList extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeList#build` not yet supported.');
+		throw new Error('`List#build` not yet supported.');
 	}
 
 	@memoizeMethod

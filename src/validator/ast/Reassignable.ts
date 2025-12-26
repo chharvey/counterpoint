@@ -1,14 +1,14 @@
 import type {TYPE} from '../../index.ts';
-import type {ASTNodeExpression} from './Expression.ts';
+import type {Expression} from './Expression.ts';
 
 
 
 /**
  * Known implementers:
- * - ASTNodeVariable
- * - ASTNodeAccess
+ * - Variable
+ * - Access
  */
-export interface Reassignable extends ASTNodeExpression {
+export interface Reassignable extends Expression {
 	/**
 	 * Give the write-type of the symbol being reassigned (assuming that is allowed).
 	 * @return the write-type

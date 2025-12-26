@@ -24,16 +24,16 @@ import {
 import {
 	buildDeco,
 	typeDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
-import {ASTNodeOperation} from './Operation.ts';
+import {Operation} from './Operation.ts';
 
 
 
-export class ASTNodeOperationUnary extends ASTNodeOperation {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationUnary {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeOperationUnary);
+export class OperationUnary extends Operation {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationUnary {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, OperationUnary);
 		return expression;
 	}
 
@@ -41,7 +41,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		private readonly operator: ValidOperatorUnary,
-		public  readonly operand:  ASTNodeExpression,
+		public  readonly operand:  Expression,
 	) {
 		super(start_node, operator, [operand]);
 	}

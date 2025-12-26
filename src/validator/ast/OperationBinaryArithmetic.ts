@@ -31,24 +31,24 @@ import {
 } from './utils-private.ts';
 import {
 	buildDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
-import {ASTNodeOperationBinary} from './OperationBinary.ts';
+import {OperationBinary} from './OperationBinary.ts';
 
 
 
-export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryArithmetic {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeOperationBinaryArithmetic);
+export class OperationBinaryArithmetic extends OperationBinary {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationBinaryArithmetic {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, OperationBinaryArithmetic);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		protected override readonly operator: ValidOperatorArithmetic,
-		operand0: ASTNodeExpression,
-		operand1: ASTNodeExpression,
+		operand0: Expression,
+		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
 	}

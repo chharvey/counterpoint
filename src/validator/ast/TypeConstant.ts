@@ -19,14 +19,14 @@ import {
 } from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
 import {valueOfTokenNumber} from './utils-private.ts';
-import {ASTNodeType} from './Type.ts';
+import {Type} from './Type.ts';
 
 
 
-export class ASTNodeTypeConstant extends ASTNodeType {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeConstant {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeConstant);
+export class TypeConstant extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeConstant {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeConstant);
 		return typ;
 	}
 
@@ -43,7 +43,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 			[Keyword.FLOAT,    TYPE.FLOAT],
 			[Keyword.STR,      TYPE.STR],
 			[Keyword.ANYTHING, TYPE.ANYTHING],
-		]).get(source) ?? assert.fail(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`);
+		]).get(source) ?? assert.fail(`TypeConstant.keywordType did not expect the keyword \`${ source }\`.`);
 	}
 
 
@@ -58,7 +58,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 	public override eval(): TYPE.Type {
 		switch (true) {
 			case isSyntaxNodeType(this.start_node, 'keyword_type'): {
-				return ASTNodeTypeConstant.keywordType(this.start_node.children[0].text);
+				return TypeConstant.keywordType(this.start_node.children[0].text);
 			}
 			default: {
 				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
@@ -71,7 +71,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 						return new VALUE.String(Validator.cookTokenString(children[0].text)).toType();
 					}
 					case isSyntaxNodeType(children[0], 'keyword_value'): {
-						return ASTNodeTypeConstant.keywordType(children[0].children[0].text);
+						return TypeConstant.keywordType(children[0].children[0].text);
 					}
 					default: {
 						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);

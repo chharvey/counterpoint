@@ -31,7 +31,7 @@ import {
 
 
 
-test.suite('ASTNodeAccess', () => {
+test.suite('Access', () => {
 	const TEST_VALUES = [
 		VALUE.INT_1,
 		new VALUE.Float(2.0),
@@ -49,14 +49,14 @@ test.suite('ASTNodeAccess', () => {
 	 * @param expecteds the expected types of the expressions
 	 */
 	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-		const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+		const goal: AST.Goal = AST.Goal.fromSource(source);
 		goal.varCheck();
 		try {
 			goal.typeCheck();
 		} catch {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
-		const statements: readonly AST.ASTNodeStatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
+		const statements: readonly AST.StatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.StatementExpression);
 		return expecteds.some((it) => it instanceof Function)
 			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
@@ -82,14 +82,14 @@ test.suite('ASTNodeAccess', () => {
 	 * @param expecteds the expected folded values (or null) of the expressions
 	 */
 	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ConstructorType<Error>)[]): void {
-		const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+		const goal: AST.Goal = AST.Goal.fromSource(source);
 		goal.varCheck();
 		try {
 			goal.typeCheck();
 		} catch {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
-		const statements: readonly AST.ASTNodeStatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeStatementExpression);
+		const statements: readonly AST.StatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.StatementExpression);
 		return expecteds.some((it) => it instanceof Function)
 			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: VALUE.Value | null | ConstructorType<Error> = expecteds[i];
@@ -112,13 +112,13 @@ test.suite('ASTNodeAccess', () => {
 				null.[((((),),),)]
 			`;
 			test.test('#type: throws when base is a subtype of null.', () => {
-				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
+				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.Access.fromSource(src).type(), [
 					...repeat(TypeErrorNoEntry, 2),
 					TypeErrorInvalidOperation,
 				][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 			test.test('#fold: throws when base is null.', () => {
-				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), Error, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
+				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.Access.fromSource(src).fold(), Error, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 		});
 
@@ -199,10 +199,10 @@ test.suite('ASTNodeAccess', () => {
 
 						(4).c
 						[a= 10, b= 20, c= 30].b
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				test.test('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorNoEntry));
 				});
 				test.test('throws when entry is optional.', () => {
 					testExprTypes(`{
@@ -276,7 +276,7 @@ test.suite('ASTNodeAccess', () => {
 						}`, repeat(TypeErrorInvalidOperation, 2));
 					});
 					test.test('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const goal: AST.Goal = AST.Goal.fromSource(`{
 							${ DECLS }
 
 							tup.3;
@@ -355,10 +355,10 @@ test.suite('ASTNodeAccess', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(null, true, @hello).a
 						(a= 42).0
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).fold(), assert.AssertionError));
 				});
 				test.test('throws when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), VoidErrorOutOfBounds));
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.Access.fromSource(src).fold(), VoidErrorOutOfBounds));
 				});
 			});
 		});
@@ -473,14 +473,14 @@ test.suite('ASTNodeAccess', () => {
 					]);
 				});
 				test.test('unsupported: throws for string access of dict.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
+					assert.throws(() => AST.Access.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
 				});
 				test.test('throws when base object is of incorrect type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(4).[2]
 						(10, 20, 30).[1]
 						(a= 10, b= 20, c= 30).[@b]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorInvalidOperation, src));
 				});
 				test.test('for Lists/Dicts: when accessor expression is correct type but out of bounds/range, returns `nothing` for folded objects, returns union type for unfolded objects.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
@@ -493,7 +493,7 @@ test.suite('ASTNodeAccess', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						[1, 2.0, "three"].["3"]
 						[a= 1, b= 2.0, c= "three"].[3]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 				test.test('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns entry type.', () => {
 					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
@@ -595,7 +595,7 @@ test.suite('ASTNodeAccess', () => {
 				});
 				test.test('maybe access of non-existent value returns null (bypassing type-checking).', () => {
 					assert.strictEqual(
-						AST.ASTNodeAccess.fromSource('(prop= ()).prop?.0').fold(),
+						AST.Access.fromSource('(prop= ()).prop?.0').fold(),
 						VALUE.NULL,
 					);
 				});
@@ -655,10 +655,10 @@ test.suite('ASTNodeAccess', () => {
 
 						(4)?.c
 						[a= 10, b= 20, c= 30]?.b
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorNoEntry, src));
 				});
 				test.test('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorNoEntry));
 				});
 				test.test('throws when entry is not optional and base is not nullish.', () => {
 					testExprTypes(`{
@@ -732,7 +732,7 @@ test.suite('ASTNodeAccess', () => {
 						]);
 					});
 					test.test('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+						const goal: AST.Goal = AST.Goal.fromSource(`{
 							${ DECLS }
 
 							tup?.3;
@@ -808,10 +808,10 @@ test.suite('ASTNodeAccess', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(null, true, @hello)?.a
 						(a= 42)?.0
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), assert.AssertionError));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).fold(), assert.AssertionError));
 				});
 				test.test('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.ASTNodeAccess.fromSource(src).fold(), VALUE.NULL));
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.Access.fromSource(src).fold(), VALUE.NULL));
 				});
 			});
 		});
@@ -901,7 +901,7 @@ test.suite('ASTNodeAccess', () => {
 						(a= 10, b= 20, c= 30)?.[@b]
 						Set.<int>((10, 20, 30))?.[20]
 						{10, 20, 30}?.[20]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorInvalidOperation, src));
 					return testExprTypes(`{
 						val     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
 						val mut set_unfixed: Set.<int | float | str> = set_fixed;
@@ -928,7 +928,7 @@ test.suite('ASTNodeAccess', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						[1, 2.0, "three"]?.["3"]
 						[a= 1, b= 2.0, c= "three"]?.[3]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
+					`, (src) => assert.throws(() => AST.Access.fromSource(src).type(), TypeErrorNotNarrow, src));
 				});
 			});
 			test.suite('#fold', () => {
@@ -1057,7 +1057,7 @@ test.suite('ASTNodeAccess', () => {
 					val mut f: float = 6.6;
 					((a, (b, c)), ((d,), (e, f)))${ access_src };
 				}`);
-				const access = (stmts[6] as AST.ASTNodeStatementExpression).expr! as AST.ASTNodeAccess;
+				const access = (stmts[6] as AST.StatementExpression).expr! as AST.Access;
 				return assertEqualBins(
 					access.build(),
 					expected_fn.call(null, access.builder),
@@ -1107,7 +1107,7 @@ test.suite('ASTNodeAccess', () => {
 				]);
 			}
 			return assertEqualBins(
-				stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+				stmts.slice(1).map((stmt) => (stmt as AST.StatementExpression).expr!.build()),
 				[
 					inner0,
 					inner1,

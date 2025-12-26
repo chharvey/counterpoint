@@ -3,7 +3,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {ASTNodeDeclarationType} from './index.ts';
+import {DeclarationType} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
@@ -11,23 +11,23 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 /**
  * A sematic node representing a type.
  * Known subclasses:
- * - ASTNodeTypeConstant
- * - ASTNodeTypeAlias
- * - ASTNodeTypeCollectionLiteral
- * - ASTNodeTypeAccess
- * - ASTNodeTypeCall
- * - ASTNodeTypeOperation
+ * - TypeConstant
+ * - TypeAlias
+ * - TypeCollectionLiteral
+ * - TypeAccess
+ * - TypeCall
+ * - TypeOperation
  */
-export abstract class ASTNodeType extends ASTNodeCP {
+export abstract class Type extends ASTNodeCP {
 	/**
-	 * Construct a new ASTNodeType from a source text and optionally a configuration.
+	 * Construct a new Type from a source text and optionally a configuration.
 	 * The source text must parse successfully.
 	 * @param src    the source text
 	 * @param config the configuration
-	 * @returns      a new ASTNodeType representing the given source
+	 * @returns      a new Type representing the given source
 	 */
-	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeType {
-		const statement: ASTNodeDeclarationType = ASTNodeDeclarationType.fromSource(`type T = ${ src };`, config);
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Type {
+		const statement: DeclarationType = DeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.assigned;
 	}
 

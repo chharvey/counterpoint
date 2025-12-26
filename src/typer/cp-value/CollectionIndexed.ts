@@ -52,7 +52,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	/** @final */
-	public get(index: bigint, is_access_maybe: boolean, accessor: AST.ASTNodeIndex | AST.ASTNodeExpression): T | Null {
+	public get(index: bigint, is_access_maybe: boolean, accessor: AST.Index | AST.Expression): T | Null {
 		return this.items.at(Number(index)) ?? (is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor)));
 	}
 }

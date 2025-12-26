@@ -14,29 +14,29 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeKey} from './Key.ts';
-import type {ASTNodePropertyType} from './PropertyType.ts';
-import {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeCollectionLiteral} from './TypeCollectionLiteral.ts';
+import type {Key} from './Key.ts';
+import type {PropertyType} from './PropertyType.ts';
+import {Type} from './Type.ts';
+import {TypeCollectionLiteral} from './TypeCollectionLiteral.ts';
 
 
 
-export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeRecord {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeRecord);
+export class TypeRecord extends TypeCollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeRecord {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeRecord);
 		return typ;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_record_literal'>,
-		public override readonly children: Readonly<NonemptyArray<ASTNodePropertyType>>,
+		public override readonly children: Readonly<NonemptyArray<PropertyType>>,
 	) {
 		super(start_node, children);
 	}
 
 	public override varCheck(): void {
-		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
+		const keys: Key[] = this.children.map((prop) => prop.key);
 		xjs.Array.forEachAggregated(keys, (key, i) => {
 			key.varCheck();
 			if (keys.slice(0, i).find((k) => k.id === key.id)) {

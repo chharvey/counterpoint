@@ -19,36 +19,36 @@ import {
 import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeKey} from './Key.ts';
-import type {ASTNodeProperty} from './Property.ts';
+import type {Key} from './Key.ts';
+import type {Property} from './Property.ts';
 import {
-	ASTNodeExpression,
+	Expression,
 	buildDeco,
 	typeDeco,
 } from './Expression.ts';
 import {
 	assignToDeco,
-	ASTNodeCollectionLiteral,
+	CollectionLiteral,
 } from './CollectionLiteral.ts';
 
 
 
-export class ASTNodeRecord extends ASTNodeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeRecord {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeRecord);
+class AstRecord extends CollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstRecord {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, AstRecord);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'record_literal', ['break']>,
-		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
+		public override readonly children: Readonly<NonemptyArray<Property>>,
 	) {
 		super(start_node, children);
 	}
 
 	public override varCheck(): void {
-		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
+		const keys: Key[] = this.children.map((prop) => prop.key);
 		xjs.Array.forEachAggregated(keys, (key, i) => {
 			key.varCheck();
 			if (keys.slice(0, i).find((k) => k.id === key.id)) {
@@ -61,8 +61,8 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return build_record_like<ASTNodeExpression>(
-			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
+		return build_record_like<Expression>(
+			new Map<bigint, Expression>(this.children.map((child) => [child.key.id, child.val])),
 			this.builder,
 			(expr) => expr.type(),
 			(expr) => expr.build(),
@@ -116,3 +116,4 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		throw err;
 	}
 }
+export {AstRecord as Record};

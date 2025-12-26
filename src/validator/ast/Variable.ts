@@ -25,16 +25,16 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	buildDeco,
 	typeDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
 import type {Reassignable} from './Reassignable.ts';
 
 
 
-export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeVariable {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeVariable);
+export class Variable extends Expression implements Reassignable {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Variable {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, Variable);
 		return expression;
 	}
 

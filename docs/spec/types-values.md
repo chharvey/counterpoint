@@ -174,10 +174,10 @@ A ParseNode is the resulting output of a **reduction** step in syntactic analysi
 ParseNodes are repesented by [syntactic grammar](./notation.md#the-syntactic-grammar) productions
 such as `ExpressionUnit ::= IDENTIFIER | "(" Expression ")";`.
 
-#### ASTNode
-An ASTNode is the resulting output of a **decoration** step in semantic analysis,
+#### AstNode
+An AstNode is the resulting output of a **decoration** step in semantic analysis,
 which is described by the [Decoration attribute grammar](./notation.md#decoration).
-ASTNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
+AstNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
 such as `SemanticOperation ::= SemanticExpression+;`.
 
 

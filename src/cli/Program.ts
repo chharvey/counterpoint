@@ -8,7 +8,7 @@ import {AST} from '../validator/index.ts';
 
 export class Program {
 	/** An AST goal produced by a Decorator. */
-	readonly #astGoal: AST.ASTNodeGoal;
+	readonly #astGoal: AST.Goal;
 
 	#prebuilt = false;
 
@@ -19,7 +19,7 @@ export class Program {
 	 * @param config - The configuration settings for an instance program.
 	 */
 	public constructor(source: string, config: CplConfig = CONFIG_DEFAULT) {
-		this.#astGoal = AST.ASTNodeGoal.fromSource(source, config);
+		this.#astGoal = AST.Goal.fromSource(source, config);
 	}
 
 

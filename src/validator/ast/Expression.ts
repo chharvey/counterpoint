@@ -10,24 +10,24 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {ASTNodeStatementExpression} from './index.ts';
+import {StatementExpression} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {Buildable} from './Buildable.ts';
 
 
 
 /**
- * Decorator for {@link ASTNodeExpression#build} method and any overrides.
+ * Decorator for {@link Expression#build} method and any overrides.
  * First tries to compute the assessed value, and if successful, builds the assessed value.
  * Otherwise builds this node.
- * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['build']>
+ * @implements MethodDecorator<Expression, Expression['build']>
  */
 export function buildDeco(
-	method:  ASTNodeExpression['build'],
-	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+	method:  Expression['build'],
+	context: ClassMethodDecoratorContext<Expression, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'build');
-	return function (this: ASTNodeExpression) {
+	return function (this: Expression) {
 		return this.fold()?.build(this.builder) ?? method.call(this);
 	};
 }
@@ -35,18 +35,18 @@ export function buildDeco(
 
 
 /**
- * Decorator for {@link ASTNodeExpression#type} method and any overrides.
+ * Decorator for {@link Expression#type} method and any overrides.
  * Type-checks and re-throws any type errors first,
  * then computes assessed value (if applicable), and if successful,
  * returns a constant type equal to that assessed value.
- * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['type']>
+ * @implements MethodDecorator<Expression, Expression['type']>
  */
 export function typeDeco(
-	method:  ASTNodeExpression['type'],
-	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+	method:  Expression['type'],
+	context: ClassMethodDecoratorContext<Expression, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'type');
-	return function (this: ASTNodeExpression) {
+	return function (this: Expression) {
 		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
 		let value: VALUE.Value | null = null;
 		try {
@@ -71,26 +71,26 @@ export function typeDeco(
 /**
  * A sematic node representing an expression.
  * Known subclasses:
- * - ASTNodeConstant
- * - ASTNodeVariable
- * - ASTNodeTemplate
- * - ASTNodeCollectionLiteral
- * - ASTNodeExpressionBlock
- * - ASTNodeAccess
- * - ASTNodeCall
- * - ASTNodeClaim
- * - ASTNodeOperation
+ * - Constant
+ * - Variable
+ * - Template
+ * - CollectionLiteral
+ * - ExpressionBlock
+ * - Access
+ * - Call
+ * - Claim
+ * - Operation
  */
-export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
+export abstract class Expression extends ASTNodeCP implements Buildable {
 	/**
-	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
+	 * Construct a new Expression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
 	 * @param src    the source text
 	 * @param config the configuration
-	 * @returns      a new ASTNodeExpression representing the given source
+	 * @returns      a new Expression representing the given source
 	 */
-	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeExpression {
-		const statement_expr: ASTNodeStatementExpression = ASTNodeStatementExpression.fromSource(`${ src };`, config);
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Expression {
+		const statement_expr: StatementExpression = StatementExpression.fromSource(`${ src };`, config);
 		assert.ok(statement_expr.expr, 'semantic statement expression should have 1 child');
 		return statement_expr.expr;
 	}

@@ -8,19 +8,19 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ValidTypeOperator} from '../Operator.ts';
-import {ASTNodeType} from './Type.ts';
+import {Type} from './Type.ts';
 
 
 
 /**
  * Known subclasses:
- * - ASTNodeTypeOperationUnary
- * - ASTNodeTypeOperationBinary
+ * - TypeOperationUnary
+ * - TypeOperationBinary
  */
-export abstract class ASTNodeTypeOperation extends ASTNodeType {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeOperation {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeOperation);
+export abstract class TypeOperation extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeOperation {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeOperation);
 		return typ;
 	}
 
@@ -32,7 +32,7 @@ export abstract class ASTNodeTypeOperation extends ASTNodeType {
 			| SyntaxNodeType<'type_union'>,
 
 		protected readonly operator: ValidTypeOperator,
-		public override readonly children: Readonly<NonemptyArray<ASTNodeType>>,
+		public override readonly children: Readonly<NonemptyArray<Type>>,
 	) {
 		super(start_node, {operator}, children);
 	}

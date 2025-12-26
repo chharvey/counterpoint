@@ -96,13 +96,13 @@ class TypeRecord extends ValueType {
 		);
 	}
 
-	public get(key: bigint, accessor: AST.ASTNodeKey): EntryType {
+	public get(key: bigint, accessor: AST.Key): EntryType {
 		return this.typeargs.has(key)
 			? this.typeargs.get(key)!
 			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
 
-	public set(key: bigint, typ: Type, accessor: AST.ASTNodeKey): void {
+	public set(key: bigint, typ: Type, accessor: AST.Key): void {
 		const entrytype: EntryType | undefined = this.typeargs.get(key);
 		if (entrytype) {
 			(this.typeargs as Map<bigint, EntryType>).set(key, {...entrytype, type: typ});

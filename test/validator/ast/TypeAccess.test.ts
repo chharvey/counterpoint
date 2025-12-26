@@ -17,7 +17,7 @@ import {
 
 
 
-test.suite('ASTNodeTypeAccess', () => {
+test.suite('TypeAccess', () => {
 	test.suite('#eval', () => {
 		/**
 		 * Takes a program source text and compares it to the array of expected types.
@@ -30,14 +30,14 @@ test.suite('ASTNodeTypeAccess', () => {
 		 * @param expecteds the expected evaluations of the type-expressions
 		 */
 		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+			const goal: AST.Goal = AST.Goal.fromSource(source);
 			goal.varCheck();
 			try {
 				goal.typeCheck();
 			} catch {
 				// if type-checking fails, proceed to `assert.throws` below
 			}
-			const statements: readonly AST.ASTNodeDeclarationType[] = goal.block!.children.filter((stmt) => stmt instanceof AST.ASTNodeDeclarationType).slice(start);
+			const statements: readonly AST.DeclarationType[] = goal.block!.children.filter((stmt) => stmt instanceof AST.DeclarationType).slice(start);
 			return expecteds.some((it) => it instanceof Function)
 				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
@@ -121,14 +121,14 @@ test.suite('ASTNodeTypeAccess', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					List.<int>.1
 					Dict.<int>.b
-				`, (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry, src));
+				`, (src) => assert.throws(() => AST.TypeAccess.fromSource(src).eval(), TypeErrorNoEntry, src));
 			});
 			test.test('throws when index is out of bounds / when key is out of range.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					(1, 2.0, "three").3
 					(1, 2.0, "three").-4
 					(a: 1, b: 2.0, c: "three").d
-				`, (src) => assert.throws(() => AST.ASTNodeTypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
+				`, (src) => assert.throws(() => AST.TypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
 			});
 		});
 

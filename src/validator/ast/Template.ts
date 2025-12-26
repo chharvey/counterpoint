@@ -15,28 +15,28 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	buildDeco,
 	typeDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
-import type {ASTNodeConstant} from './Constant.ts';
+import type {Constant} from './Constant.ts';
 
 
 
-export class ASTNodeTemplate extends ASTNodeExpression {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTemplate {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeTemplate);
+export class Template extends Expression {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Template {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, Template);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'string_template', ['break']>,
 		public override readonly children: // FIXME spread types
-			| readonly [ASTNodeConstant]
-			| readonly [ASTNodeConstant,                                                           ASTNodeConstant]
-			| readonly [ASTNodeConstant, ASTNodeExpression,                                        ASTNodeConstant]
-			// | readonly [ASTNodeConstant,                    ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
-			// | readonly [ASTNodeConstant, ASTNodeExpression, ...ASTNodeTemplatePartialChildrenType, ASTNodeConstant]
-			| readonly ASTNodeExpression[],
+			| readonly [Constant]
+			| readonly [Constant,                                             Constant]
+			| readonly [Constant, Expression,                                 Constant]
+			// | readonly [Constant,             ...TemplatePartialChildrenType, Constant]
+			// | readonly [Constant, Expression, ...TemplatePartialChildrenType, Constant]
+			| readonly Expression[],
 	) {
 		super(start_node, {}, children);
 	}
@@ -44,7 +44,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeTemplate#build` not yet supported.');
+		throw new Error('`Template#build` not yet supported.');
 	}
 
 	@memoizeMethod

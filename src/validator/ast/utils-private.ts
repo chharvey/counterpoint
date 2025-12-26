@@ -21,7 +21,7 @@ import {
 
 
 
-function throwWrongSubtypeError(accessor: AST.ASTNodeExpression, supertype: TYPE.Type): never {
+function throwWrongSubtypeError(accessor: AST.Expression, supertype: TYPE.Type): never {
 	throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 }
 
@@ -225,7 +225,7 @@ export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Natura
 
 
 
-export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess, is_writing: boolean = false): EntryType {
+export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AST.Access, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
 	if (base_type.isTopType && accessor_maybe) {
 		return {type: TYPE.ANYTHING, optional: true};
@@ -279,14 +279,14 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 		}
 	}
 	switch (true) {
-		case access.accessor instanceof AST.ASTNodeIndex: {
+		case access.accessor instanceof AST.Index: {
 			if (base_type instanceof TYPE.Tuple) {
 				return base_type.get(access.accessor.index, access.accessor);
 			} else {
 				throw new TypeErrorNoEntry('index', base_type, access.accessor);
 			}
 		}
-		case access.accessor instanceof AST.ASTNodeKey: {
+		case access.accessor instanceof AST.Key: {
 			if (base_type instanceof TYPE.Record) {
 				return base_type.get(access.accessor.id, access.accessor);
 			} else {
@@ -294,8 +294,8 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			}
 		}
 		default: {
-			assert_instanceof(access, AST.ASTNodeAccess);
-			assert_instanceof(access.accessor, AST.ASTNodeExpression);
+			assert_instanceof(access, AST.Access);
+			assert_instanceof(access.accessor, AST.Expression);
 			const accessor_type: TYPE.Type = access.accessor.type();
 			switch (true) {
 				case base_type === TYPE.NULL: {
@@ -334,7 +334,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 
 
 
-export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess): void {
+export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.TypeAccess | AST.Access): void {
 	if (
 		access_kind === Operator.DOT     &&  is_entry_optional ||
 		access_kind === Operator.DOT_MAY && !is_entry_optional

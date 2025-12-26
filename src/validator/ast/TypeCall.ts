@@ -22,16 +22,16 @@ import {
 	type ConstructorSchema,
 	CLASS_API,
 } from './utils-private.ts';
-import type {ASTNodeCall} from './index.ts';
-import {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeAlias} from './TypeAlias.ts';
+import type {Call} from './index.ts';
+import {Type} from './Type.ts';
+import {TypeAlias} from './TypeAlias.ts';
 
 
 
-export class ASTNodeTypeCall extends ASTNodeType {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeCall {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeCall);
+export class TypeCall extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeCall {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeCall);
 		return typ;
 	}
 
@@ -42,7 +42,7 @@ export class ASTNodeTypeCall extends ASTNodeType {
 	 * @param call_node          the type/function call
 	 * @return                   a list of resolved generic parameter assignments
 	 */
-	public static checkGenericArgs(constructor_schema: ConstructorSchema, args: readonly ASTNodeType[], call_node: ASTNodeTypeCall | ASTNodeCall): TYPE.Type[] {
+	public static checkGenericArgs(constructor_schema: ConstructorSchema, args: readonly Type[], call_node: TypeCall | Call): TYPE.Type[] {
 		const {genericParams: generic_params}: ConstructorSchema = constructor_schema;
 
 		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
@@ -82,8 +82,8 @@ export class ASTNodeTypeCall extends ASTNodeType {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
-		private readonly base: ASTNodeType,
-		private readonly args: Readonly<NonemptyArray<ASTNodeType>>,
+		private readonly base: Type,
+		private readonly args: Readonly<NonemptyArray<Type>>,
 	) {
 		super(start_node, {}, [base, ...args]);
 	}
@@ -97,10 +97,10 @@ export class ASTNodeTypeCall extends ASTNodeType {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		if (!(this.base instanceof ASTNodeTypeAlias)) {
+		if (!(this.base instanceof TypeAlias)) {
 			throw new TypeErrorNotCallable(this.base.eval(), this.base);
 		}
 		const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-		return constructor_schema.returnType(ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.args, this));
+		return constructor_schema.returnType(TypeCall.checkGenericArgs(constructor_schema, this.args, this));
 	}
 }

@@ -13,15 +13,15 @@ import {
 	Operator,
 	type ValidTypeOperator,
 } from '../Operator.ts';
-import type {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeOperation} from './TypeOperation.ts';
+import type {Type} from './Type.ts';
+import {TypeOperation} from './TypeOperation.ts';
 
 
 
-export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeOperationBinary {
-		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeOperationBinary);
+export class TypeOperationBinary extends TypeOperation {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeOperationBinary {
+		const typ: TypeOperation = TypeOperation.fromSource(src, config);
+		assert_instanceof(typ, TypeOperationBinary);
 		return typ;
 	}
 
@@ -31,8 +31,8 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 			| SyntaxNodeType<'type_union'>,
 
 		operator: ValidTypeOperator,
-		private readonly operand0: ASTNodeType,
-		private readonly operand1: ASTNodeType,
+		private readonly operand0: Type,
+		private readonly operand1: Type,
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}
@@ -44,7 +44,7 @@ export class ASTNodeTypeOperationBinary extends ASTNodeTypeOperation {
 		return (
 			(this.operator === Operator.AND) ? t0.intersect(t1) :
 			(this.operator === Operator.OR)  ? t0.union    (t1) :
-			assert.fail(`ASTNodeTypeOperationBinary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
+			assert.fail(`TypeOperationBinary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
 }

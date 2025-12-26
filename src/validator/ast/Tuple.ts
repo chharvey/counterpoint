@@ -21,25 +21,25 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
 	buildDeco,
 	typeDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
 import {
 	assignToDeco,
-	ASTNodeCollectionLiteral,
+	CollectionLiteral,
 } from './CollectionLiteral.ts';
 
 
 
-export class ASTNodeTuple extends ASTNodeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTuple {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeTuple);
+class AstTuple extends CollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstTuple {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, AstTuple);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'tuple_literal', ['break']>,
-		public override readonly children: readonly ASTNodeExpression[],
+		public override readonly children: readonly Expression[],
 	) {
 		super(start_node, children);
 	}
@@ -47,7 +47,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return build_tuple_like<ASTNodeExpression>(
+		return build_tuple_like<Expression>(
 			this.children,
 			this.builder,
 			(expr) => expr.type(),
@@ -94,3 +94,4 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		throw err;
 	}
 }
+export {AstTuple as Tuple};

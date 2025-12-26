@@ -24,14 +24,14 @@ import {
 	ValidIntrinsicName,
 	is_valid_intrinsic_name,
 } from './utils-private.ts';
-import {ASTNodeType} from './Type.ts';
+import {Type} from './Type.ts';
 
 
 
-export class ASTNodeTypeAlias extends ASTNodeType {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeAlias {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeAlias);
+export class TypeAlias extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeAlias {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeAlias);
 		return typ;
 	}
 

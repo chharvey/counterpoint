@@ -15,28 +15,28 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {ASTNodeBlock} from './index.ts';
-import type {ASTNodeExpression} from './Expression.ts';
+import type {Block} from './index.ts';
+import type {Expression} from './Expression.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-export class ASTNodeStatementConditional extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementConditional {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeStatementConditional);
+export class StatementConditional extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): StatementConditional {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, StatementConditional);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>,
 		private readonly unless:       boolean,
-		public  readonly condition:    ASTNodeExpression,
-		public  readonly consequent:   ASTNodeBlock,
-		public  readonly alternative?: ASTNodeBlock | ASTNodeStatementConditional,
+		public  readonly condition:    Expression,
+		public  readonly consequent:   Block,
+		public  readonly alternative?: Block | StatementConditional,
 	) {
 		super(start_node, {unless}, alternative ? [condition, consequent, alternative] : [condition, consequent]);
 	}

@@ -8,22 +8,22 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeItemType} from './ItemType.ts';
-import {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeCollectionLiteral} from './TypeCollectionLiteral.ts';
+import type {ItemType} from './ItemType.ts';
+import {Type} from './Type.ts';
+import {TypeCollectionLiteral} from './TypeCollectionLiteral.ts';
 
 
 
-export class ASTNodeTypeTuple extends ASTNodeTypeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeTuple {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeTuple);
+export class TypeTuple extends TypeCollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeTuple {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeTuple);
 		return typ;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_tuple_literal'>,
-		public override readonly children: readonly ASTNodeItemType[],
+		public override readonly children: readonly ItemType[],
 	) {
 		super(start_node, children);
 	}

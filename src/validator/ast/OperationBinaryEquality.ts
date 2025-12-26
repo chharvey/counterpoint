@@ -19,24 +19,24 @@ import {
 } from '../Operator.ts';
 import {
 	buildDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
-import {ASTNodeOperationBinary} from './OperationBinary.ts';
+import {OperationBinary} from './OperationBinary.ts';
 
 
 
-export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryEquality {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeOperationBinaryEquality);
+export class OperationBinaryEquality extends OperationBinary {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationBinaryEquality {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, OperationBinaryEquality);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		protected override readonly operator: ValidOperatorEquality,
-		operand0: ASTNodeExpression,
-		operand1: ASTNodeExpression,
+		operand0: Expression,
+		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
 	}

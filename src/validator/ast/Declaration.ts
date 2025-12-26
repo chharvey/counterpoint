@@ -1,6 +1,6 @@
 import type {
-	ASTNodeDeclarationType,
-	ASTNodeDeclarationVariable,
+	DeclarationType,
+	DeclarationVariable,
 } from './index.ts';
 
 
@@ -8,10 +8,10 @@ import type {
 /**
  * A sematic node representing a declaration.
  * Known subclasses:
- * - ASTNodeDeclarationType
- * - ASTNodeDeclarationVariable
+ * - DeclarationType
+ * - DeclarationVariable
  */
-export type ASTNodeDeclaration = (
-	| ASTNodeDeclarationType
-	| ASTNodeDeclarationVariable
+export type Declaration = (
+	| DeclarationType
+	| DeclarationVariable
 );

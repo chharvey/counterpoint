@@ -16,29 +16,29 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeCase} from './Case.ts';
+import type {Case} from './Case.ts';
 import {
-	ASTNodeExpression,
+	Expression,
 	buildDeco,
 	typeDeco,
 } from './Expression.ts';
 import {
 	assignToDeco,
-	ASTNodeCollectionLiteral,
+	CollectionLiteral,
 } from './CollectionLiteral.ts';
 
 
 
-export class ASTNodeMap extends ASTNodeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeMap {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeMap);
+class AstMap extends CollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstMap {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, AstMap);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'map_literal', ['break']>,
-		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
+		public override readonly children: Readonly<NonemptyArray<Case>>,
 	) {
 		super(start_node, children);
 	}
@@ -46,7 +46,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeMap#build` not yet supported.');
+		throw new Error('`AstMap#build` not yet supported.');
 	}
 
 	@memoizeMethod
@@ -86,3 +86,4 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }
+export {AstMap as Map};

@@ -5,7 +5,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {ASTNodeBlock} from './index.ts';
+import {Block} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {Foldable} from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
@@ -13,16 +13,16 @@ import type {Buildable} from './Buildable.ts';
 
 
 /**
- * Decorator for {@link ASTNodeStatement#build} method and any overrides.
+ * Decorator for {@link Statement#build} method and any overrides.
  * Returns `(nop)` if this node is foldable, else calls the `build()` method.
- * @implements MethodDecorator<ASTNodeStatement, ASTNodeStatement['build']>
+ * @implements MethodDecorator<Statement, Statement['build']>
  */
 export function buildDeco(
-	method:  ASTNodeStatement['build'],
-	context: ClassMethodDecoratorContext<ASTNodeStatement, typeof method>,
+	method:  Statement['build'],
+	context: ClassMethodDecoratorContext<Statement, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'build');
-	return function (this: ASTNodeStatement) {
+	return function (this: Statement) {
 		return this.isFoldable ? this.builder.module.nop() : method.call(this);
 	};
 }
@@ -32,25 +32,25 @@ export function buildDeco(
 /**
  * A sematic node representing a statement.
  * Known subclasses:
- * - ASTNodeDeclaration
- * - ASTNodeStatementExpression
- * - ASTNodeStatementClaim
- * - ASTNodeStatementReassignment
- * - ASTNodeStatementConditional
- * - ASTNodeStatementLoop
- * - ASTNodeStatementIteration
- * - ASTNodeStatementBreak
+ * - Declaration
+ * - StatementExpression
+ * - StatementClaim
+ * - StatementReassignment
+ * - StatementConditional
+ * - StatementLoop
+ * - StatementIteration
+ * - StatementBreak
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {
+export abstract class Statement extends ASTNodeCP implements Foldable, Buildable {
 	/**
-	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
+	 * Construct a new Statement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
 	 * @param src    the source text
 	 * @param config the configuration
-	 * @returns      a new ASTNodeStatement representing the given source
+	 * @returns      a new Statement representing the given source
 	 */
-	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatement {
-		const block: ASTNodeBlock = ASTNodeBlock.fromSource(`{ ${ src } }`, config);
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Statement {
+		const block: Block = Block.fromSource(`{ ${ src } }`, config);
 		assert.strictEqual(block.children.length, 1, 'semantic block should have 1 child');
 		return block.children[0];
 	}

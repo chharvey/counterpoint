@@ -859,9 +859,9 @@ Decorate(Goal ::= #x02 Block #x03) -> SemanticGoal
 
 
 
-ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode) -> Sequence<ASTNode>
+ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode) -> Sequence<AstNode>
 	:= [Decorate(ParseNode)];
-ParseList(ParseNode, ASTNode)(ParseNode__List ::= ParseNode__List ","? ParseNode) -> Sequence<ASTNode>
+ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode__List ","? ParseNode) -> Sequence<AstNode>
 	:= [
 		...Decorate(ParseNode__List),
 		Decorate(ParseNode),

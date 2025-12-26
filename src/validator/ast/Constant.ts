@@ -20,14 +20,14 @@ import {
 } from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
 import {valueOfTokenNumber} from './utils-private.ts';
-import {ASTNodeExpression} from './Expression.ts';
+import {Expression} from './Expression.ts';
 
 
 
-export class ASTNodeConstant extends ASTNodeExpression {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeConstant {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeConstant);
+export class Constant extends Expression {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Constant {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, Constant);
 		return expression;
 	}
 
@@ -36,7 +36,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 			[Keyword.NULL,  VALUE.NULL],
 			[Keyword.FALSE, VALUE.FALSE],
 			[Keyword.TRUE,  VALUE.TRUE],
-		]).get(source) ?? assert.fail(`ASTNodeConstant.keywordValue did not expect the keyword \`${ source }\`.`);
+		]).get(source) ?? assert.fail(`Constant.keywordValue did not expect the keyword \`${ source }\`.`);
 	}
 
 
@@ -79,7 +79,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 						return new VALUE.String(Validator.cookTokenString(children[0].text));
 					}
 					case isSyntaxNodeType(children[0], 'keyword_value'): {
-						return ASTNodeConstant.keywordValue(children[0].children[0].text);
+						return Constant.keywordValue(children[0].children[0].text);
 					}
 					default: {
 						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);

@@ -8,21 +8,21 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeCollectionLiteral} from './TypeCollectionLiteral.ts';
+import {Type} from './Type.ts';
+import {TypeCollectionLiteral} from './TypeCollectionLiteral.ts';
 
 
 
-export class ASTNodeTypeList extends ASTNodeTypeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeList {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeList);
+export class TypeList extends TypeCollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeList {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeList);
 		return typ;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_list_literal'>,
-		private readonly type:  ASTNodeType,
+		private readonly type: Type,
 	) {
 		super(start_node, [type]);
 	}

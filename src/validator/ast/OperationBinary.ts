@@ -10,25 +10,25 @@ import {
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {ValidOperatorBinary} from '../Operator.ts';
 import {
-	ASTNodeExpression,
+	Expression,
 	typeDeco,
 } from './Expression.ts';
-import {ASTNodeOperation} from './Operation.ts';
+import {Operation} from './Operation.ts';
 
 
 
 /**
  * Known subclasses:
- * - ASTNodeOperationBinaryCast
- * - ASTNodeOperationBinaryArithmetic
- * - ASTNodeOperationBinaryComparative
- * - ASTNodeOperationBinaryEquality
- * - ASTNodeOperationBinaryLogical
+ * - OperationBinaryCast
+ * - OperationBinaryArithmetic
+ * - OperationBinaryComparative
+ * - OperationBinaryEquality
+ * - OperationBinaryLogical
  */
-export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationBinary {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeOperationBinary);
+export abstract class OperationBinary extends Operation {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationBinary {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, OperationBinary);
 		return expression;
 	}
 
@@ -36,8 +36,8 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		protected readonly operator: ValidOperatorBinary,
-		public    readonly operand0: ASTNodeExpression,
-		public    readonly operand1: ASTNodeExpression,
+		public    readonly operand0: Expression,
+		public    readonly operand1: Expression,
 	) {
 		super(start_node, operator, [operand0, operand1]);
 	}

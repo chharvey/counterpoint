@@ -26,21 +26,21 @@ import {
 	validate_access_kind,
 	update_accessed_type,
 } from './utils-private.ts';
-import {ASTNodeIndex} from './Index-.ts';
-import {ASTNodeKey} from './Key.ts';
+import {Index} from './Index-.ts';
+import {Key} from './Key.ts';
 import {
 	buildDeco,
 	typeDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
 import type {Reassignable} from './Reassignable.ts';
 
 
 
-export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeAccess {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeAccess);
+export class Access extends Expression implements Reassignable {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Access {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, Access);
 		return expression;
 	}
 
@@ -50,8 +50,8 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 			| SyntaxNodeFamily<'assignee', ['break']>,
 
 		public readonly kind:     ValidAccessOperator,
-		public readonly base:     ASTNodeExpression,
-		public readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
+		public readonly base:     Expression,
+		public readonly accessor: Index | Key | Expression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
 		if ([Operator.DOT_RES].includes(this.kind)) {
@@ -64,20 +64,20 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	public override build(): binaryen.ExpressionRef {
 		const base_type: TYPE.Type = this.base.type();
 		const base_build: binaryen.ExpressionRef = this.base.build();
-		if (this.accessor instanceof ASTNodeIndex) {
+		if (this.accessor instanceof Index) {
 			if (base_type instanceof TYPE.Tuple) {
 				return base_type.buildAccess(this.builder, base_build, Number(this.accessor.index));
 			}
-			throw new Error('`ASTNodeAccess#build` of a list is not yet supported.');
-		} else if (this.accessor instanceof ASTNodeKey) {
+			throw new Error('`Access#build` of a list is not yet supported.');
+		} else if (this.accessor instanceof Key) {
 			if (base_type instanceof TYPE.Record) {
-				throw new Error('`ASTNodeAccess#build` of a record is not yet supported.');
+				throw new Error('`Access#build` of a record is not yet supported.');
 			}
-			throw new Error('`ASTNodeAccess#build` of a dict is not yet supported.');
+			throw new Error('`Access#build` of a dict is not yet supported.');
 		} else {
-			assert_instanceof(this.accessor, ASTNodeExpression);
+			assert_instanceof(this.accessor, Expression);
 			this.accessor.build();
-			throw new Error('`ASTNodeAccess#build` of a list/dict/set/map is not yet supported.');
+			throw new Error('`Access#build` of a list/dict/set/map is not yet supported.');
 		}
 	}
 
@@ -100,11 +100,11 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 			return VALUE.NULL;
 		}
 		switch (true) {
-			case this.accessor instanceof ASTNodeIndex: {
+			case this.accessor instanceof Index: {
 				assert_instanceof(base_value, VALUE.Tuple);
 				return base_value.get(this.accessor.index, KIND_MAYBE, this.accessor);
 			}
-			case this.accessor instanceof ASTNodeKey: {
+			case this.accessor instanceof Key: {
 				assert_instanceof(base_value, VALUE.Record);
 				return base_value.get(this.accessor.id, KIND_MAYBE, this.accessor);
 			}

@@ -4,10 +4,10 @@ import type {ASTNodeCP} from './ASTNodeCP.ts';
 
 /**
  * Known implementers:
- * - ASTNodeStatement
- * - ASTNodeBlock
+ * - Statement
+ * - Block
  *
- * Note: For `ASTNodeExpression` objects, just use the result of `ASTNodeExpression#fold()`.
+ * Note: For `Expression` objects, just use the result of `Expression#fold()`.
  */
 export interface Foldable extends ASTNodeCP {
 	/** Return whether this node may be omitted from the compiled output when built. */

@@ -24,16 +24,16 @@ import {extract_lines} from '../../utils.ts';
 
 
 test.suite('ASTNodeCP', () => {
-	test.suite('ASTNodeIndex', () => {
+	test.suite('Index', () => {
 		test.suite('#index', () => {
 			test.test('returns the cooked value of the integer token.', () => {
 				[0n, 1n, 2n, 4n, 8n, 16n].forEach((index) => {
-					const type_accessor: AST.ASTNodeIndex | AST.ASTNodeKey = AST.ASTNodeTypeAccess.fromSource(`MyTuple.${ index }`).accessor;
-					assert_instanceof(type_accessor, AST.ASTNodeIndex);
+					const type_accessor: AST.Index | AST.Key = AST.TypeAccess.fromSource(`MyTuple.${ index }`).accessor;
+					assert_instanceof(type_accessor, AST.Index);
 					assert.strictEqual(type_accessor.index, index);
 
-					const expr_accessor: AST.ASTNodeIndex | AST.ASTNodeKey | AST.ASTNodeExpression = AST.ASTNodeAccess.fromSource(`my_tuple.${ index }`).accessor;
-					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
+					const expr_accessor: AST.Index | AST.Key | AST.Expression = AST.Access.fromSource(`my_tuple.${ index }`).accessor;
+					assert_instanceof(expr_accessor, AST.Index);
 					assert.strictEqual(expr_accessor.index, index);
 				});
 			});
@@ -42,14 +42,14 @@ test.suite('ASTNodeCP', () => {
 
 
 
-	test.suite('ASTNodeStatementExpression', () => {
+	test.suite('StatementExpression', () => {
 		test.suite('#build', () => {
 			test.test('returns `(nop)` for empty statement expression.', () => {
-				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
+				const stmt: AST.StatementExpression = AST.StatementExpression.fromSource(';');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
 			test.test('returns `(nop)` for nonempty foldable statement expression.', () => {
-				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
+				const stmt: AST.StatementExpression = AST.StatementExpression.fromSource('42 + 420;');
 				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
 			});
 			test.test('returns `(drop)` for nonempty non-foldable statement expression.', () => {
@@ -57,7 +57,7 @@ test.suite('ASTNodeCP', () => {
 					val mut x: int = 42;
 					x * 10;
 				}`);
-				assert_instanceof(stmts[1], AST.ASTNodeStatementExpression);
+				assert_instanceof(stmts[1], AST.StatementExpression);
 				assert.ok(stmts[1].expr);
 				return assertEqualBins(
 					stmts[1].build(),
@@ -69,7 +69,7 @@ test.suite('ASTNodeCP', () => {
 
 
 
-	test.suite('ASTNodeStatementConditional', () => {
+	test.suite('StatementConditional', () => {
 		test.suite('#typeCheck', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
 				val mut cond: int         = 42;
@@ -113,7 +113,7 @@ test.suite('ASTNodeCP', () => {
 						42;
 					};
 				}`);
-				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				const stmt = stmts[1] as AST.StatementConditional;
 				return assertEqualBins(stmt.build(), mod.if(
 					new BinVect(mod, stmt.condition.build()).isSpecial(true),
 					stmt.consequent.build(),
@@ -144,23 +144,23 @@ test.suite('ASTNodeCP', () => {
 				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
 					drop_then(
 						mod,
-						[(stmts[2] as AST.ASTNodeStatementConditional).condition.build()],
-						(stmts[2] as AST.ASTNodeStatementConditional).consequent.build(),
+						[(stmts[2] as AST.StatementConditional).condition.build()],
+						(stmts[2] as AST.StatementConditional).consequent.build(),
 					),
 					drop_then(
 						mod,
-						[(stmts[3] as AST.ASTNodeStatementConditional).condition.build()],
-						(stmts[3] as AST.ASTNodeStatementConditional).consequent.build(),
+						[(stmts[3] as AST.StatementConditional).condition.build()],
+						(stmts[3] as AST.StatementConditional).consequent.build(),
 					),
 					drop_then(
 						mod,
-						[(stmts[4] as AST.ASTNodeStatementConditional).condition.build()],
+						[(stmts[4] as AST.StatementConditional).condition.build()],
 						mod.nop(),
 					),
 					drop_then(
 						mod,
-						[(stmts[5] as AST.ASTNodeStatementConditional).condition.build()],
-						(stmts[5] as AST.ASTNodeStatementConditional).alternative!.build(),
+						[(stmts[5] as AST.StatementConditional).condition.build()],
+						(stmts[5] as AST.StatementConditional).alternative!.build(),
 					),
 				]);
 			});
@@ -171,7 +171,7 @@ test.suite('ASTNodeCP', () => {
 						42;
 					};
 				}`);
-				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				const stmt = stmts[1] as AST.StatementConditional;
 				return assertEqualBins(stmt.build(), mod.if(
 					new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(true),
 					stmt.consequent.build(),
@@ -190,8 +190,8 @@ test.suite('ASTNodeCP', () => {
 						null;
 					};
 				}`);
-				const stmt1 = stmts[2] as AST.ASTNodeStatementConditional;
-				const stmt2 = stmt1.alternative as AST.ASTNodeStatementConditional;
+				const stmt1 = stmts[2] as AST.StatementConditional;
+				const stmt2 = stmt1.alternative as AST.StatementConditional;
 				assertEqualBins(stmt1.build(), mod.if(
 					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
 					stmt1.consequent.build(),
@@ -208,7 +208,7 @@ test.suite('ASTNodeCP', () => {
 
 
 
-	test.suite('ASTNodeBlock', () => {
+	test.suite('Block', () => {
 		test.suite('#build', () => {
 			test.test('always retuns `(block)`.', () => {
 				const {goal, stmts, mod} = setupScript(`{
@@ -234,10 +234,10 @@ test.suite('ASTNodeCP', () => {
 
 
 
-	test.suite('ASTNodeGoal', () => {
+	test.suite('Goal', () => {
 		test.suite('#varCheck', () => {
 			test.test('aggregates multiple errors.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					a + b || c * d;
 					val y: V & W | X & Y = null;
 					val x: int = 42;
@@ -305,7 +305,7 @@ test.suite('ASTNodeCP', () => {
 
 		test.suite('#typeCheck', () => {
 			test.test('aggregates multiple errors.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const goal: AST.Goal = AST.Goal.fromSource(`{
 					val a: null = null;
 					val b: null = null;
 					val c: null = null;
@@ -352,7 +352,7 @@ test.suite('ASTNodeCP', () => {
 		test.suite('#build', () => {
 			test.test('always returns `(nop)`.', () => {
 				// empty
-				const empty: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('');
+				const empty: AST.Goal = AST.Goal.fromSource('');
 				empty.varCheck();
 				empty.typeCheck();
 				assertEqualBins(empty.build(), empty.builder.module.nop());

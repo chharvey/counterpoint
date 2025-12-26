@@ -18,7 +18,7 @@ export class TypeErrorNotCallable extends TypeError {
 	 * @param typ  - the type trying to be called
 	 * @param base - the object expression being called
 	 */
-	public constructor(typ: TYPE.Type, base: AST.ASTNodeType | AST.ASTNodeExpression) {
+	public constructor(typ: TYPE.Type, base: AST.Type | AST.Expression) {
 		super(
 			`Type \`${ typ }\` is not callable.`,
 			TypeError.CODES.get(TypeErrorNotCallable),

@@ -12,15 +12,15 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-export class ASTNodeStatementBreak extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementBreak {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeStatementBreak);
+export class StatementBreak extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): StatementBreak {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, StatementBreak);
 		return statement;
 	}
 

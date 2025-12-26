@@ -11,26 +11,26 @@ import {
 } from '../../core/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeType} from './Type.ts';
-import type {ASTNodeTypeAlias} from './TypeAlias.ts';
+import type {Type} from './Type.ts';
+import type {TypeAlias} from './TypeAlias.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-export class ASTNodeDeclarationType extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeDeclarationType {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeDeclarationType);
+export class DeclarationType extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): DeclarationType {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, DeclarationType);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		private readonly assignee: ASTNodeTypeAlias | null,
-		public  readonly assigned: ASTNodeType,
+		private readonly assignee: TypeAlias | null,
+		public  readonly assigned: Type,
 	) {
 		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
 	}
@@ -67,6 +67,6 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');
+		assert.fail('Expected `DeclarationType#isFoldable` to be true.');
 	}
 }

@@ -19,25 +19,25 @@ import type {Operator} from '../Operator.ts';
 import {
 	buildDeco,
 	typeDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
-import {ASTNodeOperation} from './Operation.ts';
+import {Operation} from './Operation.ts';
 
 
 
-export class ASTNodeOperationTernary extends ASTNodeOperation {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationTernary {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeOperationTernary);
+export class OperationTernary extends Operation {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationTernary {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, OperationTernary);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'expression_conditional', ['break']>,
 		operator: Operator.COND,
-		public readonly operand0: ASTNodeExpression,
-		public readonly operand1: ASTNodeExpression,
-		public readonly operand2: ASTNodeExpression,
+		public readonly operand0: Expression,
+		public readonly operand1: Expression,
+		public readonly operand2: Expression,
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
 	}

@@ -19,7 +19,7 @@ export class TypeErrorArgCount extends TypeError {
 	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
 	 * @param call     - the function call
 	 */
-	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.ASTNodeTypeCall | AST.ASTNodeCall) {
+	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.TypeCall | AST.Call) {
 		super(
 			`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`,
 			TypeError.CODES.get(TypeErrorArgCount),

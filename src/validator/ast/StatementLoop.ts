@@ -15,19 +15,19 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeBlock} from './index.ts';
-import type {ASTNodeExpression} from './Expression.ts';
+import type {Block} from './index.ts';
+import type {Expression} from './Expression.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-export class ASTNodeStatementLoop extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementLoop {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeStatementLoop);
+export class StatementLoop extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): StatementLoop {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, StatementLoop);
 		return statement;
 	}
 
@@ -40,8 +40,8 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		start_node: SyntaxNodeType<'statement_loop'>,
 		private readonly doFirst:   boolean,
 		private readonly until:     boolean,
-		public  readonly condition: ASTNodeExpression,
-		public  readonly block:     ASTNodeBlock,
+		public  readonly condition: Expression,
+		public  readonly block:     Block,
 	) {
 		super(start_node, {doFirst, until}, [condition, block]);
 	}

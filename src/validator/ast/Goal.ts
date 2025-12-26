@@ -20,7 +20,7 @@ import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {Buildable} from './Buildable.ts';
-import type {ASTNodeBlock} from './Block.ts';
+import type {Block} from './Block.ts';
 
 
 
@@ -44,15 +44,15 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class ASTNodeGoal extends ASTNodeCP implements Buildable {
+export class Goal extends ASTNodeCP implements Buildable {
 	/**
-	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
+	 * Construct a new Goal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
 	 * @param src    the source text
 	 * @param config the configuration
-	 * @returns      a new ASTNodeGoal representing the given source
+	 * @returns      a new Goal representing the given source
 	 */
-	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeGoal {
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Goal {
 		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
 		report_syntax_errors(root_node);
 		return new Decorator(config).decorateTS(root_node);
@@ -65,7 +65,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 
 	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
-		public readonly block: ASTNodeBlock | null,
+		public readonly block: Block | null,
 		config: CplConfig,
 	) {
 		super(start_node, {}, (block) ? [block] : []);

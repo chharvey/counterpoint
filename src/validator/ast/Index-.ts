@@ -5,7 +5,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 
-export class ASTNodeIndex extends ASTNodeCP {
+export class Index extends ASTNodeCP {
 	public readonly index: bigint;
 
 	public constructor(start_node: SyntaxNodeType<'integer'> | SyntaxNodeType<'natural'>) {

@@ -11,30 +11,30 @@ import {
 } from '../../core/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {ASTNodeIndex} from './Index-.ts';
-import {ASTNodeKey} from './Key.ts';
-import type {ASTNodeType} from './Type.ts';
-import {ASTNodeExpression} from './Expression.ts';
-import {ASTNodeVariable} from './Variable.ts';
-import {ASTNodeAccess} from './Access.ts';
+import {Index} from './Index-.ts';
+import {Key} from './Key.ts';
+import type {Type} from './Type.ts';
+import {Expression} from './Expression.ts';
+import {Variable} from './Variable.ts';
+import {Access} from './Access.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-export class ASTNodeStatementClaim extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementClaim {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeStatementClaim);
+export class StatementClaim extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): StatementClaim {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, StatementClaim);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_claim', ['break']>,
-		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		private readonly claimed_type: ASTNodeType,
+		private readonly assignee: Variable | Access,
+		private readonly claimed_type: Type,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
@@ -57,27 +57,27 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		if (!claimed_type.isSubtypeOf(computed_type)) {
 			throw new TypeErrorNotNarrow(claimed_type, computed_type, this.line_index, this.col_index);
 		}
-		if (this.assignee instanceof ASTNodeVariable) {
+		if (this.assignee instanceof Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar | undefined;
 			if (symbol) {
 				symbol.type = claimed_type;
 			}
 		} else {
-			assert_instanceof(this.assignee, ASTNodeAccess);
+			assert_instanceof(this.assignee, Access);
 			const base_type: TYPE.Type = this.assignee.base.type();
 			const {accessor} = this.assignee;
 			switch (true) {
 				case base_type instanceof TYPE.Tuple: {
-					assert_instanceof(accessor, ASTNodeIndex);
+					assert_instanceof(accessor, Index);
 					return base_type.set(accessor.index, claimed_type, accessor);
 				}
 				case base_type instanceof TYPE.Record: {
-					assert_instanceof(accessor, ASTNodeKey);
+					assert_instanceof(accessor, Key);
 					return base_type.set(accessor.id, claimed_type, accessor);
 				}
 				default: {
-					assert_instanceof(accessor, ASTNodeExpression);
-					throw new Error('`ASTNodeStatementClaim[assignee: ASTNodeAccess[accessor: ASTNodeExpression]]#typeCheck` not yet supported.');
+					assert_instanceof(accessor, Expression);
+					throw new Error('`StatementClaim[assignee: Access[accessor: Expression]]#typeCheck` not yet supported.');
 				}
 			}
 		}
@@ -85,6 +85,6 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
+		assert.fail('Expected `StatementClaim#isFoldable` to be true.');
 	}
 }

@@ -18,30 +18,30 @@ import {
 } from '../../core/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ASTNodeBlock} from './index.ts';
-import type {ASTNodeType} from './Type.ts';
-import type {ASTNodeExpression} from './Expression.ts';
-import type {ASTNodeVariable} from './Variable.ts';
+import type {Block} from './index.ts';
+import type {Type} from './Type.ts';
+import type {Expression} from './Expression.ts';
+import type {Variable} from './Variable.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-export class ASTNodeStatementIteration extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementIteration {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeStatementIteration);
+export class StatementIteration extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): StatementIteration {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, StatementIteration);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_iteration'>,
-		private readonly assignee: ASTNodeVariable | null,
-		private readonly typenode: ASTNodeType,
-		public  readonly iterable: ASTNodeExpression,
-		public  readonly block:    ASTNodeBlock,
+		private readonly assignee: Variable | null,
+		private readonly typenode: Type,
+		public  readonly iterable: Expression,
+		public  readonly block:    Block,
 	) {
 		super(start_node, {}, assignee ? [assignee, typenode, iterable, block] : [typenode, iterable, block]);
 	}
@@ -92,6 +92,6 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeStatementIteration#build` not yet supported.');
+		throw new Error('`StatementIteration#build` not yet supported.');
 	}
 }

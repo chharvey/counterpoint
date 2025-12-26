@@ -17,24 +17,24 @@ import {
 	validate_access_kind,
 	update_accessed_type,
 } from './utils-private.ts';
-import type {ASTNodeIndex} from './Index-.ts';
-import type {ASTNodeKey} from './Key.ts';
-import {ASTNodeType} from './Type.ts';
+import type {Index} from './Index-.ts';
+import type {Key} from './Key.ts';
+import {Type} from './Type.ts';
 
 
 
-export class ASTNodeTypeAccess extends ASTNodeType {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeAccess {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeAccess);
+export class TypeAccess extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeAccess {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeAccess);
 		return typ;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_compound'>,
 		public  readonly kind:     ValidTypeAccessOperator,
-		private readonly base:     ASTNodeType,
-		public  readonly accessor: ASTNodeIndex | ASTNodeKey,
+		private readonly base:     Type,
+		public  readonly accessor: Index | Key,
 	) {
 		super(start_node, {kind}, [base, accessor]);
 	}

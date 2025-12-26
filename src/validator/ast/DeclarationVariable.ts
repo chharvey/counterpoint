@@ -19,38 +19,38 @@ import {
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeType} from './Type.ts';
-import type {ASTNodeExpression} from './Expression.ts';
-import {ASTNodeConstant} from './Constant.ts';
-import type {ASTNodeVariable} from './Variable.ts';
-import {ASTNodeTemplate} from './Template.ts';
-import {ASTNodeTuple} from './Tuple.ts';
-import {ASTNodeRecord} from './Record.ts';
-import {ASTNodeCall} from './Call.ts';
+import type {Type} from './Type.ts';
+import type {Expression} from './Expression.ts';
+import {Constant} from './Constant.ts';
+import type {Variable} from './Variable.ts';
+import {Template} from './Template.ts';
+import {Tuple as AstTuple} from './Tuple.ts';
+import {Record as AstRecord} from './Record.ts';
+import {Call} from './Call.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-function is_inferrable(node?: ASTNodeExpression): boolean {
+function is_inferrable(node?: Expression): boolean {
 	return (
 		[
-			ASTNodeConstant,
-			ASTNodeTemplate,
-			ASTNodeCall, // TODO: distinguish between constructor calls and function calls
+			Constant,
+			Template,
+			Call, // TODO: distinguish between constructor calls and function calls
 		].some((klass) => (node instanceof klass)) ? true :
-		node instanceof ASTNodeTuple  ? node.children.every((expr) => is_inferrable(expr)) :
-		node instanceof ASTNodeRecord ? node.children.every((prop) => is_inferrable(prop.val)) :
+		node instanceof AstTuple  ? node.children.every((expr) => is_inferrable(expr)) :
+		node instanceof AstRecord ? node.children.every((prop) => is_inferrable(prop.val)) :
 		false
 	);
 }
 
 
 
-function unfixed_inferred_type(node: ASTNodeExpression): TYPE.Type {
-	if (node instanceof ASTNodeConstant) {
+function unfixed_inferred_type(node: Expression): TYPE.Type {
+	if (node instanceof Constant) {
 		const value: VALUE.Primitive = node.fold();
 		return (
 			value instanceof VALUE.Null    ? TYPE.NULL :
@@ -62,32 +62,32 @@ function unfixed_inferred_type(node: ASTNodeExpression): TYPE.Type {
 			value instanceof VALUE.String  ? TYPE.STR :
 			assert.fail(`Expected ${ value } to be a primitive value.`)
 		);
-	} else if (node instanceof ASTNodeTuple) {
+	} else if (node instanceof AstTuple) {
 		return TYPE.Tuple.fromTypes(node.children.map((expr) => unfixed_inferred_type(expr)));
-	} else if (node instanceof ASTNodeRecord) {
+	} else if (node instanceof AstRecord) {
 		return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, unfixed_inferred_type(prop.val)])));
-	} else if (node instanceof ASTNodeCall) { // TODO: distinguish between constructor calls and function calls
+	} else if (node instanceof Call) { // TODO: distinguish between constructor calls and function calls
 		return node.type();
 	} else {
-		assert.fail(`${ node.source } should be an instance of ${ ASTNodeConstant.name }, ${ ASTNodeTuple.name }, ${ ASTNodeRecord.name }, or ${ ASTNodeCall.name }.`);
+		assert.fail(`${ node.source } should be an instance of ${ Constant.name }, ${ AstTuple.name }, ${ AstRecord.name }, or ${ Call.name }.`);
 	}
 }
 
 
 
-export class ASTNodeDeclarationVariable extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeDeclarationVariable);
+export class DeclarationVariable extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): DeclarationVariable {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, DeclarationVariable);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly unfixed:  boolean,
-		public  readonly assignee: ASTNodeVariable | null,
-		public  readonly typenode: ASTNodeType | null,
-		public  readonly assigned: ASTNodeExpression | null,
+		public  readonly assignee: Variable | null,
+		public  readonly typenode: Type | null,
+		public  readonly assigned: Expression | null,
 	) {
 		super(
 			start_node,
@@ -150,11 +150,11 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
 			this.unfixed && ([
-				ASTNodeConstant,
-				ASTNodeTuple,
-				ASTNodeRecord,
+				Constant,
+				AstTuple,
+				AstRecord,
 			].some((klass) => (this.assigned instanceof klass))) ? unfixed_inferred_type(this.assigned!) :
-			this.assigned instanceof ASTNodeTemplate ? TYPE.STR :
+			this.assigned instanceof Template ? TYPE.STR :
 			this.assigned!.type()
 		);
 		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);

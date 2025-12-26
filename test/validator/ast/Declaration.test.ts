@@ -30,11 +30,11 @@ import {
 
 
 
-test.suite('ASTNodeDeclaration', () => {
+test.suite('Declaration', () => {
 	test.suite('#varCheck', () => {
-		test.suite('ASTNodeDeclarationType', () => {
+		test.suite('DeclarationType', () => {
 			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const goal: AST.Goal = AST.Goal.fromSource(`{
 					type T = int;
 				}`);
 				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
@@ -45,7 +45,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 			});
 			test.test('for blank identifiers, does not add to symbol table.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const goal: AST.Goal = AST.Goal.fromSource(`{
 					type _ = str;
 				}`);
 				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
@@ -53,34 +53,34 @@ test.suite('ASTNodeDeclaration', () => {
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the symbol.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type T = int;
 					type T = float;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val FOO: int = 42;
 					type FOO = float;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						type it = int;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type T = int;
 					if true then {
 						type T = float;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type T = int;
 					while false do {
 						type T = float;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type T = int;
 					for it: float in [1.1, 2.2, 3.3] do {
 						type T = float;
@@ -88,16 +88,16 @@ test.suite('ASTNodeDeclaration', () => {
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 			test.test('allows duplicate declaration of blank identifier.', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					type _ = int | float;
 					type _ = (str, bool);
 				}`).varCheck(); // assert does not throw
 			});
 		});
 
-		test.suite('ASTNodeDeclarationVariable', () => {
+		test.suite('DeclarationVariable', () => {
 			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const goal: AST.Goal = AST.Goal.fromSource(`{
 					val     a:  int = 42;
 					val mut b:  int = 42;
 					val mut c?: int;
@@ -135,7 +135,7 @@ test.suite('ASTNodeDeclaration', () => {
 				});
 			});
 			test.test('for blank identifiers, does not add to symbol table.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const goal: AST.Goal = AST.Goal.fromSource(`{
 					val _: float = 4.2;
 				}`);
 				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
@@ -143,34 +143,34 @@ test.suite('ASTNodeDeclaration', () => {
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the variable.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val i: int = 42;
 					val i: int = 43;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type FOO = float;
 					val FOO: int = 42;
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						val it: int = 42;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val mut x: int = 42;
 					if true then {
 						val mut x: float = 4.2;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val mut x: int = 42;
 					while false do {
 						val mut x: float = 4.2;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val mut x: int = 42;
 					for it: float in [1.1, 2.2, 3.3] do {
 						val mut x: float = 4.2;
@@ -178,7 +178,7 @@ test.suite('ASTNodeDeclaration', () => {
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 			test.test('allows duplicate declaration of blank identifier.', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					val _: int = 42;
 					val _: str = "the answer";
 				}`).varCheck(); // assert does not throw
@@ -188,7 +188,7 @@ test.suite('ASTNodeDeclaration', () => {
 
 
 	test.suite('#typeCheck', () => {
-		test.suite('ASTNodeDeclarationType', () => {
+		test.suite('DeclarationType', () => {
 			test.test('sets `SymbolSchemaType#typevalue`.', () => {
 				assert.strictEqual(
 					(setupScript(`{
@@ -199,7 +199,7 @@ test.suite('ASTNodeDeclaration', () => {
 			});
 		});
 
-		test.suite('ASTNodeDeclarationVariable', () => {
+		test.suite('DeclarationVariable', () => {
 			function typeCheckGoal(src: string | string[], expect_thrown?: Parameters<typeof assert.throws>[1]): void {
 				if (src instanceof Array) {
 					return src
@@ -207,7 +207,7 @@ test.suite('ASTNodeDeclaration', () => {
 						.filter((s) => !!s)
 						.forEach((s) => typeCheckGoal(`{${ s }}`, expect_thrown));
 				}
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+				const goal: AST.Goal = AST.Goal.fromSource(src);
 				goal.varCheck();
 				return (expect_thrown)
 					? assert.throws(() => goal.typeCheck(), expect_thrown)
@@ -217,7 +217,7 @@ test.suite('ASTNodeDeclaration', () => {
 				setupScript(`{
 					val the_answer: nat = +42;
 				}`, {build: false}); // assert does not throw
-				const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
+				const var_: AST.DeclarationVariable = AST.DeclarationVariable.fromSource(`
 					val  the_answer:  int | float =  21  *  2;
 				`);
 				var_.varCheck();
@@ -319,16 +319,16 @@ test.suite('ASTNodeDeclaration', () => {
 						val rec_literal = (a= 69, b= "world", c= operation);
 						val list_literal = [42, 69];
 						val dict_literal = [a= "hello", b= "world"];
-					`, (src) => assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(src).typeCheck(), AssignmentErrorMissingType));
+					`, (src) => assert.throws(() => AST.DeclarationVariable.fromSource(src).typeCheck(), AssignmentErrorMissingType));
 				});
 			});
 			test.test('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
-				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
+				assert.throws(() => AST.DeclarationVariable.fromSource(`
 					val  the_answer:  null =  21  *  2;
 				`).typeCheck(), TypeErrorNotAssignable);
 			});
 			test.test('throws when assigning int to float.', () => {
-				assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
+				assert.throws(() => AST.DeclarationVariable.fromSource(`
 					val x: float = 42;
 				`).typeCheck(), TypeErrorNotAssignable);
 			});
@@ -611,7 +611,7 @@ test.suite('ASTNodeDeclaration', () => {
 
 
 	test.suite('#build', () => {
-		test.suite('ASTNodeDeclarationType', () => {
+		test.suite('DeclarationType', () => {
 			test.test('always returns `(nop)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					type T = int;
@@ -621,7 +621,7 @@ test.suite('ASTNodeDeclaration', () => {
 			});
 		});
 
-		test.suite('ASTNodeDeclarationVariable', () => {
+		test.suite('DeclarationVariable', () => {
 			test.test('with constant folding on.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					% Foldable cases:
@@ -648,10 +648,10 @@ test.suite('ASTNodeDeclaration', () => {
 					mod.nop(),
 
 					mod.local.set(0, VALUE.NULL.build(goal.builder)),
-					mod.local.set(1, (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(2, (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(3, (stmts[6] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					mod.local.set(1, (stmts[3] as AST.DeclarationVariable).assigned!.build()),
+					mod.drop(        (stmts[4] as AST.DeclarationVariable).assigned!.build()),
+					mod.local.set(2, (stmts[5] as AST.DeclarationVariable).assigned!.build()),
+					mod.local.set(3, (stmts[6] as AST.DeclarationVariable).assigned!.build()),
 				]);
 			});
 			test.test('tuples and records.', () => {
@@ -660,9 +660,9 @@ test.suite('ASTNodeDeclaration', () => {
 					val tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    tr)));
 					val rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= tr)));
 				}`);
-				const [tup, rec] = stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
+				const [tup, rec] = stmts.slice(1).map((stmt) => (stmt as AST.DeclarationVariable).assigned) as [AST.Tuple, AST.Record];
+				const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.Tuple, AST.Record];
+				const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.Tuple, AST.Record];
 				assert.deepStrictEqual(goal.builder.getAllLocals().slice(1).map((local) => local.value), [
 					tup_2_1.build(),
 					tup_2.build(),

@@ -8,29 +8,29 @@ import {
 import {memoizeGetter} from '../../lib/index.ts';
 import {to_serializable} from '../../parser/index.ts';
 import type {Validator} from '../Validator.ts';
-import {ASTNode} from '../ASTNode.ts';
+import {AstNode} from '../ASTNode.ts';
 import {
-	type ASTNodeExpression,
-	ASTNodeCollectionLiteral,
+	type Expression,
+	CollectionLiteral,
 } from './index.ts';
 
 
 
 /**
  * Known subclasses:
- * - ASTNodeIndex
- * - ASTNodeKey
- * - ASTNodeItemType
- * - ASTNodePropertyType
- * - ASTNodeProperty
- * - ASTNodeCase
- * - ASTNodeType
- * - ASTNodeExpression
- * - ASTNodeStatement
- * - ASTNodeBlock
- * - ASTNodeGoal
+ * - Index
+ * - Key
+ * - ItemType
+ * - PropertyType
+ * - Property
+ * - Case
+ * - Type
+ * - Expression
+ * - Statement
+ * - Block
+ * - Goal
  */
-export abstract class ASTNodeCP extends ASTNode {
+export abstract class ASTNodeCP extends AstNode {
 	/**
 	 * Type-check an expression to an assignee type.
 	 * Attempts to check subtyping rules first, but if failing, attempts to assign entry-by-entry
@@ -60,12 +60,12 @@ export abstract class ASTNodeCP extends ASTNode {
 	 *                       or is not entry-wise assignable
 	 */
 	public static typeCheckAssign(
-		assigned:      ASTNodeExpression,
+		assigned:      Expression,
 		assignee_type: TYPE.Type,
 		node:          ASTNodeCP,
 	): void {
 		if (!assigned.type().isSubtypeOf(assignee_type)) {
-			if (assigned instanceof ASTNodeCollectionLiteral) {
+			if (assigned instanceof CollectionLiteral) {
 				return assigned.assignTo(assignee_type);
 			}
 			throw new TypeErrorNotAssignable(assigned, assignee_type, node);
@@ -76,8 +76,8 @@ export abstract class ASTNodeCP extends ASTNode {
 	/**
 	 * Construct a new ASTNodeCP object.
 	 *
-	 * @param start_node - The initial node in the parse tree to which this ASTNode corresponds.
-	 * @param children   - The set of child inputs that creates this ASTNode.
+	 * @param start_node - The initial node in the parse tree to which this ASTNodeCP corresponds.
+	 * @param children   - The set of child inputs that creates this ASTNodeCP.
 	 * @param attributes - Any other attributes to attach.
 	 */
 	public constructor(

@@ -18,24 +18,24 @@ import {
 } from '../Operator.ts';
 import {
 	buildDeco,
-	ASTNodeExpression,
+	Expression,
 } from './Expression.ts';
-import {ASTNodeOperationBinary} from './OperationBinary.ts';
+import {OperationBinary} from './OperationBinary.ts';
 
 
 
-export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperationBinaryCast {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeOperationBinaryCast);
+export class OperationBinaryCast extends OperationBinary {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationBinaryCast {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, OperationBinaryCast);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		protected override readonly operator: ValidOperatorCast,
-		operand0: ASTNodeExpression,
-		operand1: ASTNodeExpression,
+		operand0: Expression,
+		operand1: Expression,
 	) {
 		super(start_node, Operator.CAST, operand0, operand1);
 	}
@@ -43,11 +43,11 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('ASTNodeOperationBinaryCast#build not yet supported.');
+		throw new Error('OperationBinaryCast#build not yet supported.');
 	}
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
-		throw new Error('ASTNodeOperationBinaryCast#type not yet supported.');
+		throw new Error('OperationBinaryCast#type not yet supported.');
 	}
 
 	@memoizeMethod
@@ -60,6 +60,6 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 		if (!v1) {
 			return v1;
 		}
-		throw new Error('ASTNodeOperationBinaryCast#fold not yet supported.');
+		throw new Error('OperationBinaryCast#fold not yet supported.');
 	}
 }

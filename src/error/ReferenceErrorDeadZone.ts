@@ -14,7 +14,7 @@ export class ReferenceErrorDeadZone extends ReferenceError {
 	 * Construct a new ReferenceErrorDeadZone object.
 	 * @param variable the not-yet-declared variable
 	 */
-	public constructor(variable: AST.ASTNodeTypeAlias | AST.ASTNodeVariable) {
+	public constructor(variable: AST.TypeAlias | AST.Variable) {
 		super(
 			`\`${ variable.source }\` is used before it is declared.`,
 			ReferenceError.CODES.get(ReferenceErrorDeadZone),

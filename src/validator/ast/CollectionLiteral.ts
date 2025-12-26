@@ -6,21 +6,21 @@ import {
 } from '../../lib/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
-import {ASTNodeExpression} from './Expression.ts';
+import {Expression} from './Expression.ts';
 
 
 
 /**
- * Decorator for {@link ASTNodeCollectionLiteral#assignTo} method and any overrides.
+ * Decorator for {@link CollectionLiteral#assignTo} method and any overrides.
  * Simplifies assignments by handling type operations.
- * @implements MethodDecorator<ASTNodeCollectionLiteral, ASTNodeCollectionLiteral['assignTo']>
+ * @implements MethodDecorator<CollectionLiteral, CollectionLiteral['assignTo']>
  */
 export function assignToDeco(
-	method:  ASTNodeCollectionLiteral['assignTo'],
-	context: ClassMethodDecoratorContext<ASTNodeCollectionLiteral, typeof method>,
+	method:  CollectionLiteral['assignTo'],
+	context: ClassMethodDecoratorContext<CollectionLiteral, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'assignTo');
-	return function (this: ASTNodeCollectionLiteral, assignee) {
+	return function (this: CollectionLiteral, assignee) {
 		if (assignee instanceof TYPE.Intersection) {
 			/* A value is assignable to a type intersection if and only if
 			it is assignable to all operands of that intersection. */
@@ -39,14 +39,14 @@ export function assignToDeco(
 
 /**
  * Known subclasses:
- * - ASTNodeTuple
- * - ASTNodeRecord
- * - ASTNodeList
- * - ASTNodeDict
- * - ASTNodeSet
- * - ASTNodeMap
+ * - Tuple
+ * - Record
+ * - List
+ * - Dict
+ * - Set
+ * - Map
  */
-export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
+export abstract class CollectionLiteral extends Expression {
 	protected constructor(
 		start_node:
 			| SyntaxNodeFamily<'tuple_literal',  ['break']>

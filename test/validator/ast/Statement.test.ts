@@ -27,27 +27,27 @@ import {extract_lines} from '../../utils.ts';
 
 
 
-test.suite('ASTNodeStatement', () => {
+test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
-		test.suite('ASTNodeStatementReassignment', () => {
+		test.suite('StatementReassignment', () => {
 			test.test('throws if the variable is not unfixed.', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					val mut i: int = 42;
 					set i = 43;
 				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val i: int = 42;
 					set i = 43;
 				}`).varCheck(), AssignmentErrorReassignment);
 			});
 			test.test('always throws for type alias reassignment.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type T = 42;
 					set T = 43;
 				}`).varCheck(), ReferenceErrorKind);
 			});
 			test.test('disallows manual reassignment of the iteration variable.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					for it: int in [11, 22, 33] do {
 						set it = 44;
 					};
@@ -55,14 +55,14 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementIteration', () => {
+		test.suite('StatementIteration', () => {
 			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const goal: AST.Goal = AST.Goal.fromSource(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 				}`);
-				const validator: Validator = (goal.block!.children[0] as AST.ASTNodeStatementIteration).block.validator;
+				const validator: Validator = (goal.block!.children[0] as AST.StatementIteration).block.validator;
 				assert.ok(!validator.hasSymbol(0x100n));
 				goal.varCheck();
 				assert.ok(validator.hasSymbol(0x100n));
@@ -76,18 +76,18 @@ test.suite('ASTNodeStatement', () => {
 				});
 			});
 			test.test('for blank identifiers, does not add to symbol table.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const goal: AST.Goal = AST.Goal.fromSource(`{
 					for _: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 				}`);
-				const validator: Validator = (goal.block!.children[0] as AST.ASTNodeStatementIteration).block.validator;
+				const validator: Validator = (goal.block!.children[0] as AST.StatementIteration).block.validator;
 				assert.ok(!validator.hasSymbol(0x100n));
 				goal.varCheck();
 				return assert.ok(!validator.hasSymbol(0x100n));
 			});
 			test.test('allows duplicate declaration of iteration variable.', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
@@ -97,7 +97,7 @@ test.suite('ASTNodeStatement', () => {
 				}`).varCheck(); // assert does not throw
 			});
 			test.test('allows duplicate declaration in nested scopes (not technically shadowing).', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					for it: int in [11, 22, 33] do {
 						42;
 					};
@@ -107,7 +107,7 @@ test.suite('ASTNodeStatement', () => {
 						};
 					};
 				}`).varCheck(); // assert does not throw
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					for it: int in [11, 22, 33] do {
 						42;
 					};
@@ -117,7 +117,7 @@ test.suite('ASTNodeStatement', () => {
 						};
 					};
 				}`).varCheck(); // assert does not throw
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					for it: int in [11, 22, 33] do {
 						42;
 					};
@@ -129,26 +129,26 @@ test.suite('ASTNodeStatement', () => {
 				}`).varCheck(); // assert does not throw
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val i: int = 42;
 					for i: bool in [false, true] do {
 						null;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type FOO = float;
 					for FOO: bool in [false, true] do {
 						null;
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						for it: bool in [false, true] do {
 							null;
 						};
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val mut x: int = 42;
 					if true then {
 						for x: bool in [false, true] do {
@@ -156,7 +156,7 @@ test.suite('ASTNodeStatement', () => {
 						};
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val mut x: int = 42;
 					while false do {
 						for x: bool in [false, true] do {
@@ -164,7 +164,7 @@ test.suite('ASTNodeStatement', () => {
 						};
 					};
 				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val mut x: int = 42;
 					for it: float in [1.1, 2.2, 3.3] do {
 						for x: bool in [false, true] do {
@@ -178,7 +178,7 @@ test.suite('ASTNodeStatement', () => {
 
 
 	test.suite('#typeCheck', () => {
-		test.suite('ASTNodeStatementClaim', () => {
+		test.suite('StatementClaim', () => {
 			test.suite('for variables.', () => {
 				test.test('allows claimed type to be a subtype of assignee type.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
@@ -224,7 +224,7 @@ test.suite('ASTNodeStatement', () => {
 						x;            % type \`int\`
 					}`, {build: false});
 					return assert.deepStrictEqual(
-						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
 					);
 				});
@@ -291,7 +291,7 @@ test.suite('ASTNodeStatement', () => {
 					}`, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
 					return assert.deepStrictEqual(
-						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						[INT_NULL, INT_NULL, TYPE.NULL, TYPE.INT],
 					);
 				});
@@ -359,10 +359,10 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementReassignment', () => {
+		test.suite('StatementReassignment', () => {
 			test.suite('for variable reassignment.', () => {
 				test.test('throws when variable assignee type is not supertype.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+					const goal: AST.Goal = AST.Goal.fromSource(`{
 						val mut i: int = 42;
 						set i = 4.3;
 					}`);
@@ -381,7 +381,7 @@ test.suite('ASTNodeStatement', () => {
 					});
 				});
 				test.test('does not allow reassignment of `null` when uninitialized.', () => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+					const goal: AST.Goal = AST.Goal.fromSource(`{
 						val mut x?: int;
 						set x = null;
 					}`);
@@ -421,7 +421,7 @@ test.suite('ASTNodeStatement', () => {
 							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						const goal: AST.Goal = AST.Goal.fromSource(src);
 						goal.varCheck();
 						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 					});
@@ -434,7 +434,7 @@ test.suite('ASTNodeStatement', () => {
 						val m: mut {bool -> int} = {true -> 42};
 						set m.["true"] = 43;
 					}`], (src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						const goal: AST.Goal = AST.Goal.fromSource(src);
 						goal.varCheck();
 						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
 					});
@@ -466,7 +466,7 @@ test.suite('ASTNodeStatement', () => {
 							set m.[true] = 43;
 						}`,
 					].forEach((src) => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
+						const goal: AST.Goal = AST.Goal.fromSource(src);
 						goal.varCheck();
 						assert.throws(() => goal.typeCheck(), MutabilityError01);
 					});
@@ -474,7 +474,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementLoop', () => {
+		test.suite('StatementLoop', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
 				val mut cond: int         = 42;
 				val mut cond: int | false = 42;
@@ -508,7 +508,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementIteration', () => {
+		test.suite('StatementIteration', () => {
 			test.test('passes when iterable is subtype of List and iteration variable is a supertype of List item type.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					str
@@ -563,7 +563,7 @@ test.suite('ASTNodeStatement', () => {
 						42 + it; %> TypeErrorInvalidOperation
 					};
 				}`, {typeCheck: false});
-				assert.throws(() => (stmts[0] as AST.ASTNodeStatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
+				assert.throws(() => (stmts[0] as AST.StatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
 				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
 			});
 		});
@@ -571,7 +571,7 @@ test.suite('ASTNodeStatement', () => {
 
 
 	test.suite('#build', () => {
-		test.suite('ASTNodeStatementClaim', () => {
+		test.suite('StatementClaim', () => {
 			test.test('always returns `(nop)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					type T = int;
@@ -582,7 +582,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementReassignment', () => {
+		test.suite('StatementReassignment', () => {
 			test.test('always returns `(local.set)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					val mut y: float = 4.2;
@@ -590,7 +590,7 @@ test.suite('ASTNodeStatement', () => {
 				}`);
 				return assertEqualBins(
 					stmts[1].build(),
-					mod.local.set(0, (stmts[1] as AST.ASTNodeStatementReassignment).assigned.build()),
+					mod.local.set(0, (stmts[1] as AST.StatementReassignment).assigned.build()),
 				);
 			});
 			test.test('allows switching between union members.', () => {
@@ -604,12 +604,12 @@ test.suite('ASTNodeStatement', () => {
 				}`);
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
-					stmts.slice(2).map((stmt) => mod.local.set(0, (stmt as AST.ASTNodeStatementReassignment).assigned.build())),
+					stmts.slice(2).map((stmt) => mod.local.set(0, (stmt as AST.StatementReassignment).assigned.build())),
 				);
 			});
 		});
 
-		test.suite('ASTNodeStatementConditional', () => {
+		test.suite('StatementConditional', () => {
 			test.suite('produces `(nop)` for entire statement when …', () => {
 				test.test('… condition is foldable and truthy (or falsy for `unless`), and consequent is foldable.', () => {
 					const {stmts, mod} = setupScript(`{
@@ -625,7 +625,7 @@ test.suite('ASTNodeStatement', () => {
 						};
 					}`);
 					return assertEqualBins(
-						stmts.slice(2, 4).map((stmt) => (stmt as AST.ASTNodeStatementConditional).build()),
+						stmts.slice(2, 4).map((stmt) => (stmt as AST.StatementConditional).build()),
 						[mod.nop(), mod.nop()],
 					);
 				});
@@ -646,7 +646,7 @@ test.suite('ASTNodeStatement', () => {
 						};
 					}`);
 					return assertEqualBins(
-						stmts.slice(2, 5).map((stmt) => (stmt as AST.ASTNodeStatementConditional).build()),
+						stmts.slice(2, 5).map((stmt) => (stmt as AST.StatementConditional).build()),
 						[mod.nop(), mod.nop(), mod.nop()],
 					);
 				});
@@ -660,7 +660,7 @@ test.suite('ASTNodeStatement', () => {
 						4.2;
 					};
 				}`);
-				const stmt1 = stmts[1] as AST.ASTNodeStatementConditional;
+				const stmt1 = stmts[1] as AST.StatementConditional;
 				return assertEqualBins(stmt1.build(), mod.if(
 					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
 					stmt1.consequent.build(),
@@ -669,7 +669,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementLoop', () => {
+		test.suite('StatementLoop', () => {
 			function makeLoop(
 				mod:          binaryen.Module,
 				label_exit:   string,
@@ -700,7 +700,7 @@ test.suite('ASTNodeStatement', () => {
 						4.2;
 					};
 				}`);
-				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
+				const stmt = stmts[1] as AST.StatementLoop;
 				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
 					mod.br_if('exit0', new BinVect(mod, stmt.condition.build()).isSpecial(false)),
 					build_body(stmt.block.build()),
@@ -725,20 +725,20 @@ test.suite('ASTNodeStatement', () => {
 				}`);
 				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
 					makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
-						mod.drop((stmts[2] as AST.ASTNodeStatementLoop).condition.build()),
-						build_body((stmts[2] as AST.ASTNodeStatementLoop).block.build()),
+						mod.drop((stmts[2] as AST.StatementLoop).condition.build()),
+						build_body((stmts[2] as AST.StatementLoop).block.build()),
 					]),
 					makeLoop(mod, 'exit1', 'repeat1', 'body1', (build_body) => [
-						build_body((stmts[3] as AST.ASTNodeStatementLoop).block.build()),
-						mod.drop((stmts[3] as AST.ASTNodeStatementLoop).condition.build()),
+						build_body((stmts[3] as AST.StatementLoop).block.build()),
+						mod.drop((stmts[3] as AST.StatementLoop).condition.build()),
 					]),
 					makeLoop(mod, 'exit2', 'repeat2', 'body2', (build_body) => [
-						mod.drop((stmts[4] as AST.ASTNodeStatementLoop).condition.build()),
-						build_body((stmts[4] as AST.ASTNodeStatementLoop).block.build()),
+						mod.drop((stmts[4] as AST.StatementLoop).condition.build()),
+						build_body((stmts[4] as AST.StatementLoop).block.build()),
 					], true),
 					makeLoop(mod, 'exit3', 'repeat3', 'body3', (build_body) => [
-						build_body((stmts[5] as AST.ASTNodeStatementLoop).block.build()),
-						mod.drop((stmts[5] as AST.ASTNodeStatementLoop).condition.build()),
+						build_body((stmts[5] as AST.StatementLoop).block.build()),
+						mod.drop((stmts[5] as AST.StatementLoop).condition.build()),
 					], true),
 				]);
 			});
@@ -749,7 +749,7 @@ test.suite('ASTNodeStatement', () => {
 						42;
 					};
 				}`);
-				const stmt = stmts[1] as AST.ASTNodeStatementLoop;
+				const stmt = stmts[1] as AST.StatementLoop;
 				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
 					mod.br_if('exit0', new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(false)),
 					build_body(stmt.block.build()),
@@ -757,7 +757,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementIteration', () => {
+		test.suite('StatementIteration', () => {
 			test.test('produces `(nop)` if entire statement is foldable.', () => {
 				const {stmts, mod} = setupScript(`{
 					for it: int in [10, 20, 30, 40] do {
@@ -778,7 +778,7 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
-		test.suite('ASTNodeStatementBreak', () => {
+		test.suite('StatementBreak', () => {
 			test.test('produces (br).', () => {
 				const {stmts, mod} = setupScript(`{
 					while true do {
@@ -786,7 +786,7 @@ test.suite('ASTNodeStatement', () => {
 						skip;
 					};
 				}`);
-				const while_block: AST.ASTNodeBlock = (stmts[0] as AST.ASTNodeStatementLoop).block;
+				const while_block: AST.Block = (stmts[0] as AST.StatementLoop).block;
 				return assertEqualBins([
 					while_block.children[0].build(),
 					while_block.children[1].build(),
@@ -806,8 +806,8 @@ test.suite('ASTNodeStatement', () => {
 						};
 					};
 				}`);
-				const outer_block: AST.ASTNodeBlock = (stmts[0] as AST.ASTNodeStatementLoop).block;
-				const inner_block: AST.ASTNodeBlock = ((outer_block.children[1] as AST.ASTNodeStatementConditional).consequent.children[0] as AST.ASTNodeStatementLoop).block;
+				const outer_block: AST.Block = (stmts[0] as AST.StatementLoop).block;
+				const inner_block: AST.Block = ((outer_block.children[1] as AST.StatementConditional).consequent.children[0] as AST.StatementLoop).block;
 				return assertEqualBins([
 					outer_block.children[0].build(),
 					inner_block.children[0].build(),
@@ -817,12 +817,12 @@ test.suite('ASTNodeStatement', () => {
 				]);
 			});
 			test.test('throws if the parent block has not been built yet.', () => {
-				const while_block: AST.ASTNodeBlock = (setupScript(`{
+				const while_block: AST.Block = (setupScript(`{
 					while true do {
 						break;
 						skip;
 					};
-				}`, {build: false}).stmts[0] as AST.ASTNodeStatementLoop).block;
+				}`, {build: false}).stmts[0] as AST.StatementLoop).block;
 				assert.throws(() => while_block.children[0].build(), /Expected builder to store/);
 				assert.throws(() => while_block.children[1].build(), /Expected builder to store/);
 			});

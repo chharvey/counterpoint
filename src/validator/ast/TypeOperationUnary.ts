@@ -16,15 +16,15 @@ import {
 	Operator,
 	type ValidTypeOperator,
 } from '../Operator.ts';
-import type {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeOperation} from './TypeOperation.ts';
+import type {Type} from './Type.ts';
+import {TypeOperation} from './TypeOperation.ts';
 
 
 
-export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeOperationUnary {
-		const typ: ASTNodeTypeOperation = ASTNodeTypeOperation.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeOperationUnary);
+export class TypeOperationUnary extends TypeOperation {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeOperationUnary {
+		const typ: TypeOperation = TypeOperation.fromSource(src, config);
+		assert_instanceof(typ, TypeOperationUnary);
 		return typ;
 	}
 
@@ -34,7 +34,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 			| SyntaxNodeType<'type_unary_keyword'>,
 
 		operator: ValidTypeOperator,
-		private readonly operand: ASTNodeType,
+		private readonly operand: Type,
 	) {
 		super(start_node, operator, [operand]);
 		if ([Operator.OREXCP].includes(this.operator)) {
@@ -51,7 +51,7 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		return (
 			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
 			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
-			assert.fail(`ASTNodeTypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
+			assert.fail(`TypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
 }

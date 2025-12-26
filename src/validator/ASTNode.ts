@@ -6,24 +6,24 @@ import {
 
 
 /**
- * An ASTNode is a node in the Abstract Syntax Tree
+ * An AstNode is a node in the Abstract Syntax Tree
  * and holds only the semantics of a parse node.
  *
- * An ASTNode is an abstraction of a ParseNode, without syntactic details.
+ * An AstNode is an abstraction of a ParseNode, without syntactic details.
  * For example, the expression `5 + 2 * 3` can be represented by the following abstract tree:
  * ```xml
- * <ASTNodeOperation operator="+">
- * 	<ASTNodeConstant value="5"/>
- * 	<ASTNodeOperation operator="*">
- * 		<ASTNodeConstant value="2"/>
- * 		<ASTNodeConstant value="3"/>
- * 	</ASTNodeOperation>
- * </ASTNodeOperation>
+ * <Operation operator="+">
+ * 	<Constant value="5"/>
+ * 	<Operation operator="*">
+ * 		<Constant value="2"/>
+ * 		<Constant value="3"/>
+ * 	</Operation>
+ * </Operation>
  * ```
  */
-export class ASTNode implements Serializable {
+export class AstNode implements Serializable {
 	/** @implements Serializable */
-	public readonly tagname:      string = this.constructor.name.slice('ASTNode'.length);
+	public readonly tagname:      string = this.constructor.name.slice('AstNode'.length);
 	/** @implements Serializable */
 	public readonly source:       string;
 	/** @implements Serializable */
@@ -33,19 +33,19 @@ export class ASTNode implements Serializable {
 	/** @implements Serializable */
 	public readonly col_index:    number;
 
-	#parent?: ASTNode;
+	#parent?: AstNode;
 
 	/**
-	 * Construct a new ASTNode object.
+	 * Construct a new AstNode object.
 	 *
-	 * @param start      The node in the parse tree to which this ASTNode corresponds.
+	 * @param start      The node in the parse tree to which this AstNode corresponds.
 	 * @param attributes Any other attributes to attach.
-	 * @param children   The set of child inputs that creates this ASTNode.
+	 * @param children   The set of child inputs that creates this AstNode.
 	 */
 	public constructor(
 		private readonly start: Serializable,
 		private readonly attributes: Record<string, unknown> = {},
-		public readonly children: readonly ASTNode[] = [],
+		public readonly children: readonly AstNode[] = [],
 	) {
 		this.source       = this.start.source;
 		this.source_index = this.start.source_index;
@@ -57,7 +57,7 @@ export class ASTNode implements Serializable {
 	}
 
 	/** The unique parent node containing this node. */
-	public get parent(): ASTNode | undefined {
+	public get parent(): AstNode | undefined {
 		return this.#parent;
 	}
 

@@ -8,20 +8,20 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
-import {ASTNodeExpression} from './Expression.ts';
+import {Expression} from './Expression.ts';
 
 
 
 /**
  * Known subclasses:
- * - ASTNodeOperationUnary
- * - ASTNodeOperationBinary
- * - ASTNodeOperationTernary
+ * - OperationUnary
+ * - OperationBinary
+ * - OperationTernary
  */
-export abstract class ASTNodeOperation extends ASTNodeExpression {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeOperation {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeOperation);
+export abstract class Operation extends Expression {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Operation {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, Operation);
 		return expression;
 	}
 
@@ -30,7 +30,7 @@ export abstract class ASTNodeOperation extends ASTNodeExpression {
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		operator: Operator,
-		public override readonly children: Readonly<NonemptyArray<ASTNodeExpression>>,
+		public override readonly children: Readonly<NonemptyArray<Expression>>,
 	) {
 		super(start_node, {operator}, children);
 	}

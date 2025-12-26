@@ -22,7 +22,7 @@ export class ReferenceErrorKind extends ReferenceError {
 	 * @param refers_to what the symbol was declared as
 	 * @param used_as   what the symbol is used as
 	 */
-	public constructor(symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
+	public constructor(symbol: AST.TypeAlias | AST.Variable, refers_to: SymbolKind, used_as: SymbolKind) {
 		super(
 			`\`${ symbol.source }\` refers to a ${ refers_to }, but is used as a ${ used_as }.`,
 			ReferenceError.CODES.get(ReferenceErrorKind),

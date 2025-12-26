@@ -9,24 +9,24 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {ASTNodeExpression} from './Expression.ts';
+import type {Expression} from './Expression.ts';
 import {
 	buildDeco,
-	ASTNodeStatement,
+	Statement,
 } from './Statement.ts';
 
 
 
-export class ASTNodeStatementExpression extends ASTNodeStatement {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
-		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
-		assert_instanceof(statement, ASTNodeStatementExpression);
+export class StatementExpression extends Statement {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): StatementExpression {
+		const statement: Statement = Statement.fromSource(src, config);
+		assert_instanceof(statement, StatementExpression);
 		return statement;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_expression', ['break']>,
-		public readonly expr?: ASTNodeExpression,
+		public readonly expr?: Expression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}

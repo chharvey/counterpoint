@@ -8,22 +8,22 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {ASTNodeType} from './Type.ts';
-import {ASTNodeTypeCollectionLiteral} from './TypeCollectionLiteral.ts';
+import {Type} from './Type.ts';
+import {TypeCollectionLiteral} from './TypeCollectionLiteral.ts';
 
 
 
-export class ASTNodeTypeMap extends ASTNodeTypeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeTypeMap {
-		const typ: ASTNodeType = ASTNodeType.fromSource(src, config);
-		assert_instanceof(typ, ASTNodeTypeMap);
+export class TypeMap extends TypeCollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeMap {
+		const typ: Type = Type.fromSource(src, config);
+		assert_instanceof(typ, TypeMap);
 		return typ;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_map_literal'>,
-		private readonly antecedenttype: ASTNodeType,
-		private readonly consequenttype: ASTNodeType,
+		private readonly antecedenttype: Type,
+		private readonly consequenttype: Type,
 	) {
 		super(start_node, [antecedenttype, consequenttype]);
 	}

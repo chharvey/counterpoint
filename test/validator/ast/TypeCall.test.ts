@@ -12,14 +12,14 @@ import {extract_lines} from '../../utils.ts';
 
 
 
-test.suite('ASTNodeTypeCall', () => {
+test.suite('TypeCall', () => {
 	test.suite('#varCheck', () => {
 		test.test('throws if base is not one of the allowed strings.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				SET.<str>
 				Mapping.<bool>
 			`, (src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).varCheck(), SyntaxError);
+				assert.throws(() => AST.TypeCall.fromSource(src).varCheck(), SyntaxError);
 			});
 		});
 	});
@@ -33,7 +33,7 @@ test.suite('ASTNodeTypeCall', () => {
 					'Dict.<bool>',
 					'Set.<str>',
 					'Map.<int, float>',
-				].map((src) => AST.ASTNodeTypeCall.fromSource(src).eval()),
+				].map((src) => AST.TypeCall.fromSource(src).eval()),
 				[
 					new TYPE.List(TYPE.NULL),
 					new TYPE.Dict(TYPE.BOOL),
@@ -44,15 +44,15 @@ test.suite('ASTNodeTypeCall', () => {
 		});
 		test.test('Map has a default type parameter.', () => {
 			assertEqualTypes(
-				AST.ASTNodeTypeCall.fromSource('Map.<int>').eval(),
+				AST.TypeCall.fromSource('Map.<int>').eval(),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);
 		});
-		test.test('throws if base is not an ASTNodeTypeAlias.', () => {
+		test.test('throws if base is not a TypeAlias.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				int.<str>
 				(int | float).<bool>
-			`, (src) => assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable));
+			`, (src) => assert.throws(() => AST.TypeCall.fromSource(src).eval(), TypeErrorNotCallable));
 		});
 		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
@@ -60,7 +60,7 @@ test.suite('ASTNodeTypeCall', () => {
 				Dict.<bool, bool, bool>
 				Set.<str, str, str, str>
 				Map.<int, int, int, int, int>
-			`, (src) => assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorArgCount));
+			`, (src) => assert.throws(() => AST.TypeCall.fromSource(src).eval(), TypeErrorArgCount));
 		});
 	});
 });

@@ -35,26 +35,26 @@ import {
 
 function typeOperations(tests: ReadonlyMap<string, VALUE.Primitive>): void {
 	return assertEqualTypes(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).type()),
+		[...tests.keys()].map((src) => AST.Operation.fromSource(src).type()),
 		[...tests.values()].map((expected) => new TYPE.Unit(expected)),
 	);
 }
 function foldOperations(tests: Map<string, VALUE.Value>): void {
 	return assert.deepStrictEqual(
-		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src).fold()),
+		[...tests.keys()].map((src) => AST.Operation.fromSource(src).fold()),
 		[...tests.values()],
 	);
 }
 function buildOperations(tests: ReadonlyMap<string, (builder: Builder, get_op0: binaryen.ExpressionRef) => binaryen.ExpressionRef>): void {
 	return xjs.Map.forEachAggregated(tests, (expected_fn, src) => {
 		const splits: readonly string[] = src.trim().split(/\s+/);
-		let goal:  AST.ASTNodeGoal; // eslint-disable-line @typescript-eslint/init-declarations
-		let stmts: readonly AST.ASTNodeStatement[] = [];
+		let goal:  AST.Goal; // eslint-disable-line @typescript-eslint/init-declarations
+		let stmts: readonly AST.Statement[] = [];
 		switch (splits.length) {
 			case 2: {
 				// unary prefix operator
 				({goal, stmts} = setupScript(`{
-					val mut a: ${ AST.ASTNodeConstant.fromSource(splits[1]) .type().toString() } = ${ splits[1] };
+					val mut a: ${ AST.Constant.fromSource(splits[1]) .type().toString() } = ${ splits[1] };
 					${ splits[0] } a;
 				}`));
 				break;
@@ -62,14 +62,14 @@ function buildOperations(tests: ReadonlyMap<string, (builder: Builder, get_op0: 
 			default: {
 				// any operator where operand comes first
 				({goal, stmts} = setupScript(`{
-					val mut a: ${ AST.ASTNodeConstant.fromSource(splits[0]) .type().toString() } = ${ splits[0] };
+					val mut a: ${ AST.Constant.fromSource(splits[0]) .type().toString() } = ${ splits[0] };
 					a ${ splits.slice(1).join('') };
 				}`));
 				break;
 			}
 		}
 		return assertEqualBins(
-			(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+			(stmts[1] as AST.StatementExpression).expr!.build(),
 			expected_fn.call(null, goal!.builder, goal!.builder.module.local.get(0, binaryen.v128)),
 		);
 	});
@@ -77,9 +77,9 @@ function buildOperations(tests: ReadonlyMap<string, (builder: Builder, get_op0: 
 
 
 
-test.suite('ASTNodeOperation', () => {
-	function typeOfStmtExpr(stmt: AST.ASTNodeStatement): TYPE.Type {
-		assert_instanceof(stmt, AST.ASTNodeStatementExpression);
+test.suite('Operation', () => {
+	function typeOfStmtExpr(stmt: AST.Statement): TYPE.Type {
+		assert_instanceof(stmt, AST.StatementExpression);
 		return stmt.expr!.type();
 	}
 
@@ -211,15 +211,15 @@ test.suite('ASTNodeOperation', () => {
 	test.suite('#type', () => {
 		test.test('returns `nothing` for NanErrors.', () => {
 			[
-				AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').type(),
-				AST.ASTNodeOperationBinaryArithmetic.fromSource('1.5 / 0.0').type(),
+				AST.OperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').type(),
+				AST.OperationBinaryArithmetic.fromSource('1.5 / 0.0').type(),
 			].forEach((typ) => {
 				assert.ok(typ.isBottomType);
 			});
 		});
 
 
-		test.suite('ASTNodeOperationUnary', () => {
+		test.suite('OperationUnary', () => {
 			test.suite('[operator=EMP]', () => {
 				test.test('without constant folding: returns type `bool` for anything else.', () => {
 					assert_shallowStrictEqual(
@@ -246,7 +246,7 @@ test.suite('ASTNodeOperation', () => {
 							?j;
 							?k;
 							?l;
-						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						repeat(TYPE.BOOL, 11),
 					);
 				});
@@ -254,7 +254,7 @@ test.suite('ASTNodeOperation', () => {
 		});
 
 
-		test.suite('ASTNodeOperationBinaryArithmetic', () => {
+		test.suite('OperationBinaryArithmetic', () => {
 			test.test('without constant folding: returns Integer/Natural/Float respectively for valid ops.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
@@ -271,14 +271,14 @@ test.suite('ASTNodeOperation', () => {
 						(i1 + i2) * i3;
 						(n1 + n2) * n3;
 						f1 * f2 ^ f3;
-					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 					[TYPE.INT, TYPE.NAT, TYPE.FLOAT],
 				);
 			});
 		});
 
 
-		test.suite('ASTNodeOperationBinaryComparative', () => {
+		test.suite('OperationBinaryComparative', () => {
 			test.test('without constant folding: returns `bool` for numeric operands.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
@@ -290,25 +290,25 @@ test.suite('ASTNodeOperation', () => {
 						val mut f2: float = 3.1;
 
 						${ ['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${ left } ${ op } ${ right };`))).join('\n') }
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 3 * 3 * 6),
 				);
 			});
 		});
 
 
-		test.suite('ASTNodeOperationBinaryEquality', () => {
+		test.suite('OperationBinaryEquality', () => {
 			test.test('returns `false` for operands of the same primitive unit type, even numeric, but have different values.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					@symb1  === @symb2
 					"hello" === "world"
 					@symb1  ==  @symb2
 					"hello" ==  "world"
-				`, (expr) => assert.strictEqual(AST.ASTNodeOperation.fromSource(expr).type(), TYPE.FALSE));
+				`, (expr) => assert.strictEqual(AST.Operation.fromSource(expr).type(), TYPE.FALSE));
 			});
 			test.test('returns `false` if operands are of disjoint types in general.', () => {
-				assert.strictEqual(AST.ASTNodeOperation.fromSource('7      == null').type(), TYPE.FALSE);
-				assert.strictEqual(AST.ASTNodeOperation.fromSource('@symb1 == 256').type(),  TYPE.FALSE);
+				assert.strictEqual(AST.Operation.fromSource('7      == null').type(), TYPE.FALSE);
+				assert.strictEqual(AST.Operation.fromSource('@symb1 == 256').type(),  TYPE.FALSE);
 			});
 			test.test('without constant folding: returns `bool` for operands of same numeric type.', () => {
 				assert_shallowStrictEqual(
@@ -326,7 +326,7 @@ test.suite('ASTNodeOperation', () => {
 						i1 == i2;
 						n1 == n2;
 						f1 == f2;
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 6),
 				);
 			});
@@ -342,7 +342,7 @@ test.suite('ASTNodeOperation', () => {
 							i1 === n1;
 							i1 === f1;
 							n1 === f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						repeat(TYPE.FALSE, 3),
 					);
 				});
@@ -359,7 +359,7 @@ test.suite('ASTNodeOperation', () => {
 							i1 == n1;
 							i1 == f1;
 							n1 == f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						repeat(TYPE.BOOL, 3),
 					);
 				});
@@ -378,7 +378,7 @@ test.suite('ASTNodeOperation', () => {
 				b / 3.1 - 5.1;
 			}`);
 			return assertEqualBins(
-				stmts.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+				stmts.slice(2).map((stmt) => (stmt as AST.StatementExpression).expr!.build()),
 				[CALL.idiv_s(
 					mod,
 					CALL.iexp(mod, mod.local.get(0, binaryen.v128), buildConst(goal.builder, 2n)),
@@ -396,7 +396,7 @@ test.suite('ASTNodeOperation', () => {
 				val mut y: int = 69;
 				x + { x; y; };
 			}`);
-			return assertEqualBins((stmts[2] as AST.ASTNodeStatementExpression).expr!.build(), BINOP.add(
+			return assertEqualBins((stmts[2] as AST.StatementExpression).expr!.build(), BINOP.add(
 				mod,
 				[mod.local.get(0, binaryen.v128), 2],
 				mod.block(null, [
@@ -410,7 +410,7 @@ test.suite('ASTNodeOperation', () => {
 
 
 
-	test.suite('ASTNodeOperationUnary', () => {
+	test.suite('OperationUnary', () => {
 		test.suite('#type', () => {
 			test.suite('with constant folding on.', () => {
 				test.test('returns a constant Boolean type for boolean unary operation of anything.', () => {
@@ -443,7 +443,7 @@ test.suite('ASTNodeOperation', () => {
 					]));
 				});
 				test.test('[operator=NEG] throws for Natural number literals (foldable).', () => {
-					assert.throws(() => AST.ASTNodeOperation.fromSource('-+42').type(), TypeErrorInvalidOperation);
+					assert.throws(() => AST.Operation.fromSource('-+42').type(), TypeErrorInvalidOperation);
 				});
 			});
 
@@ -504,7 +504,7 @@ test.suite('ASTNodeOperation', () => {
 						-n;
 					}`, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
-					assert.throws(() => ((stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).type(), TypeErrorInvalidOperation);
+					assert.throws(() => ((stmts[1] as AST.StatementExpression).expr as AST.OperationUnary).type(), TypeErrorInvalidOperation);
 				});
 			});
 			test.suite('[operator=INT | NAT | FLOAT]', () => {
@@ -552,7 +552,7 @@ test.suite('ASTNodeOperation', () => {
 						float "string"
 						float ["string tuple"]
 						float [record= "string"]
-					`, (src) => assert.throws(() => AST.ASTNodeOperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
+					`, (src) => assert.throws(() => AST.OperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
 				});
 			});
 		});
@@ -606,7 +606,7 @@ test.suite('ASTNodeOperation', () => {
 				]));
 			});
 			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion only if needed.', () => {
-				const exprs: readonly AST.ASTNodeOperationUnary[] = setupScript(`{
+				const exprs: readonly AST.OperationUnary[] = setupScript(`{
 					val my_int: int   = -7;
 					val my_nat: nat   = +42;
 					val my_flt: float = -3.5;
@@ -620,7 +620,7 @@ test.suite('ASTNodeOperation', () => {
 					float my_int;
 					float my_nat;
 					float my_flt;
-				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
+				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr as AST.OperationUnary);
 				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
 				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
 				assert.strictEqual(values[0], operands[0]);
@@ -684,7 +684,7 @@ test.suite('ASTNodeOperation', () => {
 					?t;
 				}`);
 				return assertEqualBins(
-					stmts.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					stmts.slice(2).map((stmt) => (stmt as AST.StatementExpression).expr!.build()),
 					[
 						CALL.vnot(mod, mod.local.get(0, binaryen.v128)),
 						CALL.vnot(mod, mod.local.get(1, binaryen.v128)),
@@ -708,7 +708,7 @@ test.suite('ASTNodeOperation', () => {
 					-y;
 				}`);
 				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
+					((stmt as AST.StatementExpression).expr as AST.OperationUnary).operand.build()
 				));
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
@@ -737,11 +737,11 @@ test.suite('ASTNodeOperation', () => {
 					--y;
 				}`);
 				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
-					(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand as AST.ASTNodeOperationUnary).operand.build()
+					(((stmt as AST.StatementExpression).expr as AST.OperationUnary).operand as AST.OperationUnary).operand.build()
 				));
 				assertEqualBins(
 					stmts.slice(4).map((stmt) => (
-						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
+						((stmt as AST.StatementExpression).expr as AST.OperationUnary).operand.build()
 					)),
 					extracts.slice(2).map((extract) => CALL.vneg(mod, extract)),
 				);
@@ -774,7 +774,7 @@ test.suite('ASTNodeOperation', () => {
 					float my_flt;
 				}`);
 				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(3).map((stmt) => (
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary).operand.build()
+					((stmt as AST.StatementExpression).expr as AST.OperationUnary).operand.build()
 				));
 				return assertEqualBins(stmts.slice(3).map((stmt) => stmt.build()), [
 					mod.drop(CALL.vtoi(mod, extracts[0])),
@@ -793,7 +793,7 @@ test.suite('ASTNodeOperation', () => {
 
 
 
-	test.suite('ASTNodeOperationBinary', () => {
+	test.suite('OperationBinary', () => {
 		test.suite('#build', () => {
 			test.test('works with vects.', () => {
 				const {goal, stmts, mod} = setupScript(`{
@@ -815,7 +815,7 @@ test.suite('ASTNodeOperation', () => {
 					y == 2.4;
 				}`);
 				const extracts: readonly binaryen.ExpressionRef[] = stmts.slice(2).map((stmt) => (
-					((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
+					((stmt as AST.StatementExpression).expr as AST.OperationBinary).operand0.build()
 				));
 				/* eslint-disable @stylistic/quote-props */
 				const const_ = {
@@ -849,7 +849,7 @@ test.suite('ASTNodeOperation', () => {
 					x == y;
 				}`);
 				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = stmts.slice(2).map((stmt) => {
-					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
+					const binexp = (stmt as AST.StatementExpression).expr as AST.OperationBinary;
 					return [
 						binexp.operand0.build(),
 						binexp.operand1.build(),
@@ -870,8 +870,8 @@ test.suite('ASTNodeOperation', () => {
 					2.0 + y + 3.0;
 				}`);
 				const extracts: readonly binaryen.ExpressionRef[] = [
-					(((stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand0.build(),
-					(((stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0 as AST.ASTNodeOperationBinary).operand1.build(),
+					(((stmts[2] as AST.StatementExpression).expr as AST.OperationBinary).operand0 as AST.OperationBinary).operand0.build(),
+					(((stmts[3] as AST.StatementExpression).expr as AST.OperationBinary).operand0 as AST.OperationBinary).operand1.build(),
 				];
 				const const_ = {
 					'2':   buildConst(goal.builder, 2n),
@@ -885,7 +885,7 @@ test.suite('ASTNodeOperation', () => {
 				];
 				assertEqualBins(
 					stmts.slice(2).map((stmt) => (
-						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand0.build()
+						((stmt as AST.StatementExpression).expr as AST.OperationBinary).operand0.build()
 					)),
 					inners,
 				);
@@ -902,27 +902,27 @@ test.suite('ASTNodeOperation', () => {
 
 
 
-	test.suite('ASTNodeOperationBinaryArithmetic', () => {
+	test.suite('OperationBinaryArithmetic', () => {
 		test.suite('#type', () => {
 			test.suite('with constant folding on.', () => {
 				test.test('returns a constant Integer type for any operation of integers.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2').type(), typeUnit(7n * 3n * 2n));
+					assertEqualTypes(AST.OperationBinaryArithmetic.fromSource('7 * 3 * 2').type(), typeUnit(7n * 3n * 2n));
 				});
 				test.test('returns a constant Natural type for any operation of naturals.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+7 * +3 * +2').type(), typeUnit(7n * 3n * 2n, 'nat'));
+					assertEqualTypes(AST.OperationBinaryArithmetic.fromSource('+7 * +3 * +2').type(), typeUnit(7n * 3n * 2n, 'nat'));
 				});
 				test.test('returns a constant Float type for any operation of floats.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7.1 * 3.1 * 2.1').type(), typeUnit(7.1 * 3.1 * 2.1));
+					assertEqualTypes(AST.OperationBinaryArithmetic.fromSource('7.1 * 3.1 * 2.1').type(), typeUnit(7.1 * 3.1 * 2.1));
 				});
 				test.test('[operator=SUB] caps at `+0` for subtraction of naturals.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').type(), typeUnit(0n, 'nat'));
+					assertEqualTypes(AST.OperationBinaryArithmetic.fromSource('+5 - +9').type(), typeUnit(0n, 'nat'));
 				});
 			});
 			test.test('throws for any operation of mix of numeric types.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('+3 * 2')      .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('+3 * 2.7')    .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3.0 * 2') .type(), TypeErrorInvalidOperation);
+				assert.throws(() => AST.OperationBinaryArithmetic.fromSource('+3 * 2')      .type(), TypeErrorInvalidOperation);
+				assert.throws(() => AST.OperationBinaryArithmetic.fromSource('+3 * 2.7')    .type(), TypeErrorInvalidOperation);
+				assert.throws(() => AST.OperationBinaryArithmetic.fromSource('3 * 2.7')     .type(), TypeErrorInvalidOperation);
+				assert.throws(() => AST.OperationBinaryArithmetic.fromSource('7 * 3.0 * 2') .type(), TypeErrorInvalidOperation);
 			});
 			test.test('throws for arithmetic operation of non-numbers.', () => {
 				[
@@ -933,7 +933,7 @@ test.suite('ASTNodeOperation', () => {
 					'null ^ false',
 					'"hello" + 5',
 				].forEach((src) => {
-					assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).type(), TypeErrorInvalidOperation);
+					assert.throws(() => AST.OperationBinaryArithmetic.fromSource(src).type(), TypeErrorInvalidOperation);
 				});
 			});
 		});
@@ -961,7 +961,7 @@ test.suite('ASTNodeOperation', () => {
 					'2 ^ 63 + 2 ^ 62',
 					'-(2 ^ 62) - 2 ^ 63',
 					'42 ^ 2 * 420',
-				].map((src) => AST.ASTNodeOperationBinaryArithmetic.fromSource(src).fold()), [
+				].map((src) => AST.OperationBinaryArithmetic.fromSource(src).fold()), [
 					new VALUE.Integer(-(2n ** 62n)),
 					new VALUE.Integer(2n ** 62n),
 					new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
@@ -969,12 +969,12 @@ test.suite('ASTNodeOperation', () => {
 			});
 			test.test('overflows naturals properly.', () => {
 				assert.deepStrictEqual(
-					AST.ASTNodeOperationBinaryArithmetic.fromSource('+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63').fold(),
+					AST.OperationBinaryArithmetic.fromSource('+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63').fold(),
 					new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n),
 				);
 			});
 			test.test('does not underflow naturals.', () => {
-				assert.deepStrictEqual(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').fold(), VALUE.NAT_0);
+				assert.deepStrictEqual(AST.OperationBinaryArithmetic.fromSource('+5 - +9').fold(), VALUE.NAT_0);
 			});
 			test.test('computes the value of a float operation of constants.', () => {
 				foldOperations(new Map<string, VALUE.Value>([
@@ -995,8 +995,8 @@ test.suite('ASTNodeOperation', () => {
 					1.0 * f;  % non-foldable value
 					-1.0 * f; % non-foldable value
 				}`);
-				const exprs:     readonly AST.ASTNodeExpression[] = stmts.slice(2).map((stmt) => ((stmt as AST.ASTNodeStatementExpression).expr!));
-				const expecteds: readonly (VALUE.Value | null)[]  = exprs.slice(0, 3).map((op) => (op as AST.ASTNodeOperationBinaryArithmetic).operand0.fold());
+				const exprs:     readonly AST.Expression[] = stmts.slice(2).map((stmt) => ((stmt as AST.StatementExpression).expr!));
+				const expecteds: readonly (VALUE.Value | null)[]  = exprs.slice(0, 3).map((op) => (op as AST.OperationBinaryArithmetic).operand0.fold());
 				assert.deepStrictEqual(
 					exprs.map((op) => op.fold()),
 					[...expecteds, null, null, null],
@@ -1007,8 +1007,8 @@ test.suite('ASTNodeOperation', () => {
 				);
 			});
 			test.test('throws when performing an operation that does not yield a valid number.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0')     .fold(), NanErrorDivZero);
-				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').fold(), NanErrorInvalid);
+				assert.throws(() => AST.OperationBinaryArithmetic.fromSource('42 / 0')     .fold(), NanErrorDivZero);
+				assert.throws(() => AST.OperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').fold(), NanErrorInvalid);
 			});
 		});
 
@@ -1054,7 +1054,7 @@ test.suite('ASTNodeOperation', () => {
 				}`);
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
-					stmts.slice(2).map((stmt) => (mod.drop(((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary).operand1.build()))),
+					stmts.slice(2).map((stmt) => (mod.drop(((stmt as AST.StatementExpression).expr as AST.OperationBinary).operand1.build()))),
 				);
 			});
 		});
@@ -1062,8 +1062,8 @@ test.suite('ASTNodeOperation', () => {
 
 
 
-	test.suite('ASTNodeOperationBinaryComparative', () => {
-		test.test.todo('ASTNodeOperationUnary[operator=IS]', () => {
+	test.suite('OperationBinaryComparative', () => {
+		test.test.todo('OperationUnary[operator=IS]', () => {
 			assert.ok('TODO:');
 		});
 		test.suite('#type', () => {
@@ -1090,7 +1090,7 @@ test.suite('ASTNodeOperation', () => {
 				]));
 			});
 			test.test('throws for comparative operation of non-numbers.', () => {
-				assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
+				assert.throws(() => AST.OperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
 			});
 		});
 
@@ -1209,7 +1209,7 @@ test.suite('ASTNodeOperation', () => {
 
 
 
-	test.suite('ASTNodeOperationBinaryEquality', () => {
+	test.suite('OperationBinaryEquality', () => {
 		test.suite('#type', () => {
 			test.suite('with folding on.', () => {
 				test.test('for numeric literals.', () => {
@@ -1255,7 +1255,7 @@ test.suite('ASTNodeOperation', () => {
 						d != {41 -> 43};
 						d != {43 -> 42};
 					}`, {build: false}).stmts.slice(4).forEach((stmt) => {
-						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
+						const expr: AST.OperationBinaryEquality = (stmt as AST.StatementExpression).expr as AST.OperationBinaryEquality;
 						const fold: VALUE.Value | null = expr.fold();
 						assert_instanceof(fold, VALUE.Boolean);
 						assertEqualTypes(
@@ -1394,7 +1394,7 @@ test.suite('ASTNodeOperation', () => {
 					i != {41 -> 43};
 					i != {43 -> 42};
 				}`, {build: false}).stmts.slice(13).forEach((stmt) => {
-					assert.strictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
+					assert.strictEqual((stmt as AST.StatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
 				});
 			});
 			test.test('compound value types’ constituents are compared using same operand.', () => {
@@ -1455,7 +1455,7 @@ test.suite('ASTNodeOperation', () => {
 						f1 === f2;
 					}`);
 					return assertEqualBins(new Map(stmts.slice(4).map((stmt, i) => [
-						(stmt as AST.ASTNodeStatementExpression).expr!.build(),
+						(stmt as AST.StatementExpression).expr!.build(),
 						CALL.vid(
 							mod,
 							mod.local.get(2 * i,     binaryen.v128),
@@ -1508,7 +1508,7 @@ test.suite('ASTNodeOperation', () => {
 						f1 == f2;
 					}`);
 					return assertEqualBins(new Map(stmts.slice(4).map((stmt, i) => [
-						(stmt as AST.ASTNodeStatementExpression).expr!.build(),
+						(stmt as AST.StatementExpression).expr!.build(),
 						CALL.veq(
 							mod,
 							mod.local.get(2 * i,     binaryen.v128),
@@ -1527,7 +1527,7 @@ test.suite('ASTNodeOperation', () => {
 
 
 
-	test.suite('ASTNodeOperationBinaryLogical', () => {
+	test.suite('OperationBinaryLogical', () => {
 		test.suite('#type', () => {
 			test.test('with constant folding on.', () => {
 				typeOperations(new Map<string, VALUE.Primitive>([
@@ -1681,7 +1681,7 @@ test.suite('ASTNodeOperation', () => {
 					(a || null) && (n || 4);
 				}`);
 				return assertEqualBins(
-					stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr!.build()),
 					[
 						drop_then(
 							mod,
@@ -1730,7 +1730,7 @@ test.suite('ASTNodeOperation', () => {
 					e && 201.0e-1;
 				}`);
 				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = stmts.slice(5).map((stmt) => {
-					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
+					const binexp = (stmt as AST.StatementExpression).expr as AST.OperationBinary;
 					return [
 						binexp.operand0.build(),
 						binexp.operand1.build(),
@@ -1779,9 +1779,9 @@ test.suite('ASTNodeOperation', () => {
 					(a || b) && (c || d);
 				}`);
 				const extracts: readonly (readonly (readonly binaryen.ExpressionRef[])[])[] = stmts.slice(4).map((stmt) => {
-					const binexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinary;
-					const outer0 = binexp.operand0 as AST.ASTNodeOperationBinary;
-					const outer1 = binexp.operand1 as AST.ASTNodeOperationBinary;
+					const binexp = (stmt as AST.StatementExpression).expr as AST.OperationBinary;
+					const outer0 = binexp.operand0 as AST.OperationBinary;
+					const outer1 = binexp.operand1 as AST.OperationBinary;
 					return [
 						[outer0.operand0.build(), outer0.operand1.build()],
 						[outer1.operand0.build(), outer1.operand1.build()],
@@ -1824,7 +1824,7 @@ test.suite('ASTNodeOperation', () => {
 
 
 
-	test.suite('ASTNodeOperationTernary', () => {
+	test.suite('OperationTernary', () => {
 		test.suite('#type', () => {
 			test.suite('with constant folding on.', () => {
 				test.test('computes type for for conditionals.', () => {
@@ -1837,12 +1837,12 @@ test.suite('ASTNodeOperation', () => {
 				});
 			});
 			test.test('returns `nothing` when condition is `nothing`.', () => {
-				const ternary: AST.ASTNodeOperationTernary = AST.ASTNodeOperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.ASTNodeClaim).operand as AST.ASTNodeVariable, false, false));
+				const ternary: AST.OperationTernary = AST.OperationTernary.fromSource('if n as <nothing> then true else false');
+				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.Claim).operand as AST.Variable, false, false));
 				return assert.ok(ternary.type().isBottomType);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {
-				assert.throws(() => AST.ASTNodeOperationTernary.fromSource('if 2 then true else false').type(), TypeErrorInvalidOperation);
+				assert.throws(() => AST.OperationTernary.fromSource('if 2 then true else false').type(), TypeErrorInvalidOperation);
 			});
 		});
 
@@ -1868,7 +1868,7 @@ test.suite('ASTNodeOperation', () => {
 					if fa then 3.0   else null;
 				}`);
 				return assertEqualBins(
-					stmts.slice(2).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					stmts.slice(2).map((stmt) => (stmt as AST.StatementExpression).expr!.build()),
 					[
 						drop_then(mod, [mod.local.get(0, binaryen.v128)], buildConst(goal.builder, false)),
 						drop_then(mod, [mod.local.get(0, binaryen.v128)], buildConst(goal.builder, 2n)),
@@ -1885,7 +1885,7 @@ test.suite('ASTNodeOperation', () => {
 					if b then 3 else 4;
 				}`);
 				const extracts: readonly (readonly binaryen.ExpressionRef[])[] = stmts.slice(2).map((stmt) => {
-					const terexp = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationTernary;
+					const terexp = (stmt as AST.StatementExpression).expr as AST.OperationTernary;
 					return [
 						terexp.operand0.build(),
 						terexp.operand1.build(),

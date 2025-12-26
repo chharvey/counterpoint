@@ -102,7 +102,7 @@ export class Builder {
 	}
 
 	/**
-	 * Set a new block, given an ASTNode.
+	 * Set a new block, given an ASTNodeCP.
 	 * @param node node that builds the block
 	 * @return     Was the operation performed?
 	 */

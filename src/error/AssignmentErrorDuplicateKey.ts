@@ -16,7 +16,7 @@ export class AssignmentErrorDuplicateKey extends AssignmentError {
 	 * Construct a new AssignmentErrorDuplicateKey object.
 	 * @param key the duplicate key
 	 */
-	public constructor(key: AST.ASTNodeKey) {
+	public constructor(key: AST.Key) {
 		super(
 			`Duplicate record/dict key \`${ key.source }\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateKey),

@@ -18,12 +18,12 @@ import {extract_tokens} from '../../utils.ts';
 
 
 
-test.suite('ASTNodeType', () => {
+test.suite('Type', () => {
 	test.suite('#eval', () => {
-		test.suite('ASTNodeTypeCollectionLiteral', () => {
-			test.test('ASTNodeTypeTuple', () => {
+		test.suite('TypeCollectionLiteral', () => {
+			test.test('TypeTuple', () => {
 				assertEqualTypes(
-					AST.ASTNodeTypeTuple.fromSource('(int, bool, ?:str)').eval(),
+					AST.TypeTuple.fromSource('(int, bool, ?:str)').eval(),
 					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -32,8 +32,8 @@ test.suite('ASTNodeType', () => {
 				);
 			});
 
-			test.test('ASTNodeTypeRecord', () => {
-				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('(x: int, y?: bool, _: str)');
+			test.test('TypeRecord', () => {
+				const rec: AST.TypeRecord = AST.TypeRecord.fromSource('(x: int, y?: bool, _: str)');
 				return assertEqualTypes(
 					rec.eval(),
 					new TYPE.Record(new Map<bigint, EntryType>(rec.children.map((c, i) => [c.key.id, [
@@ -44,14 +44,14 @@ test.suite('ASTNodeType', () => {
 				);
 			});
 
-			test.test('ASTNodeType{List,Dict,Set,Map}', () => {
+			test.test('Type{List,Dict,Set,Map}', () => {
 				const INT_BOOL: TYPE.Type = TYPE.INT.union(TYPE.BOOL);
 				assertEqualTypes(
 					[
-						AST.ASTNodeTypeList. fromSource('[int | bool]')  .eval(),
-						AST.ASTNodeTypeDict .fromSource('[:int | bool]') .eval(),
-						AST.ASTNodeTypeSet  .fromSource('{int | bool}')  .eval(),
-						AST.ASTNodeTypeMap  .fromSource('{int -> bool}') .eval(),
+						AST.TypeList. fromSource('[int | bool]')  .eval(),
+						AST.TypeDict .fromSource('[:int | bool]') .eval(),
+						AST.TypeSet  .fromSource('{int | bool}')  .eval(),
+						AST.TypeMap  .fromSource('{int -> bool}') .eval(),
 					],
 					[
 						new TYPE.List(INT_BOOL),
@@ -74,7 +74,7 @@ test.suite('ASTNodeType', () => {
 
 
 
-	test.suite('ASTNodeTypeConstant', () => {
+	test.suite('TypeConstant', () => {
 		test.suite('#eval', () => {
 			test.test('computes the value of constant null, boolean, symbol, number, and string types.', () => {
 				assertEqualTypes(extract_tokens(`
@@ -82,7 +82,7 @@ test.suite('ASTNodeType', () => {
 					@then  @str  @false  @foobar
 					42  +42  4.2e+3
 					"hi"
-				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
+				`).map((src) => AST.TypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
@@ -99,7 +99,7 @@ test.suite('ASTNodeType', () => {
 			test.test('computes the value of keyword type.', () => {
 				assertEqualTypes(extract_tokens(`
 					nothing  bool  sym  int  float  str  anything
-				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
+				`).map((src) => AST.TypeConstant.fromSource(src).eval()), [
 					TYPE.NOTHING,
 					TYPE.BOOL,
 					TYPE.SYM,
@@ -114,25 +114,25 @@ test.suite('ASTNodeType', () => {
 
 
 
-	test.suite('ASTNodeTypeAlias', () => {
+	test.suite('TypeAlias', () => {
 		test.suite('#varCheck', () => {
 			test.test('does not throw when referencing intrinsic identifiers.', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					type T = Object;
 					val obj: Object = 42;
 				}`).varCheck(); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
-				AST.ASTNodeGoal.fromSource(`{
+				AST.Goal.fromSource(`{
 					type T = int;
 					type U = float | T;
 				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					type U = float | T;
 				}`).varCheck(), ReferenceErrorUndeclared);
 			});
 			test.test('throws when declared in an inner scope.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					if true then {
 						type T = int;
 					};
@@ -140,17 +140,17 @@ test.suite('ASTNodeType', () => {
 				}`).varCheck(), ReferenceErrorUndeclared);
 			});
 			test.test.todo('throws when there is a temporal dead zone.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					T;
 					type T = int;
 				}`).varCheck(), ReferenceErrorDeadZone);
 			});
 			test.test('throws if was declared as a value variable.', () => {
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					val FOO: int = 42;
 					type _ = FOO | float;
 				}`).varCheck(), ReferenceErrorKind);
-				assert.throws(() => AST.ASTNodeGoal.fromSource(`{
+				assert.throws(() => AST.Goal.fromSource(`{
 					for FOO: int in [42] do {
 						type _ = FOO | float;
 					};
@@ -163,7 +163,7 @@ test.suite('ASTNodeType', () => {
 			test.test('computes the value of reserved types.', () => {
 				assertEqualTypes([
 					'Object',
-				].map((src) => AST.ASTNodeTypeAlias.fromSource(src).eval()), [
+				].map((src) => AST.TypeAlias.fromSource(src).eval()), [
 					TYPE.OBJ,
 				]);
 			});
@@ -172,7 +172,7 @@ test.suite('ASTNodeType', () => {
 					((setupScript(`{
 						type T = int;
 						type U = T;
-					}`).stmts[1] as AST.ASTNodeDeclarationType).assigned as AST.ASTNodeTypeAlias).eval(),
+					}`).stmts[1] as AST.DeclarationType).assigned as AST.TypeAlias).eval(),
 					TYPE.INT,
 				);
 			});

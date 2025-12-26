@@ -17,36 +17,36 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeKey} from './Key.ts';
-import type {ASTNodeProperty} from './Property.ts';
+import type {Key} from './Key.ts';
+import type {Property} from './Property.ts';
 import {
-	ASTNodeExpression,
+	Expression,
 	buildDeco,
 	typeDeco,
 } from './Expression.ts';
 import {
 	assignToDeco,
-	ASTNodeCollectionLiteral,
+	CollectionLiteral,
 } from './CollectionLiteral.ts';
 
 
 
-export class ASTNodeDict extends ASTNodeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ASTNodeDict {
-		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
-		assert_instanceof(expression, ASTNodeDict);
+export class Dict extends CollectionLiteral {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Dict {
+		const expression: Expression = Expression.fromSource(src, config);
+		assert_instanceof(expression, Dict);
 		return expression;
 	}
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'dict_literal', ['break']>,
-		public override readonly children: Readonly<NonemptyArray<ASTNodeProperty>>,
+		public override readonly children: Readonly<NonemptyArray<Property>>,
 	) {
 		super(start_node, children);
 	}
 
 	public override varCheck(): void {
-		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
+		const keys: Key[] = this.children.map((prop) => prop.key);
 		xjs.Array.forEachAggregated(keys, (key, i) => {
 			key.varCheck();
 			if (keys.slice(0, i).find((k) => k.id === key.id)) {
@@ -59,7 +59,7 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeDict#build` not yet supported.');
+		throw new Error('`Dict#build` not yet supported.');
 	}
 
 	@memoizeMethod

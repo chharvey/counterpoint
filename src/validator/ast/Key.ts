@@ -4,7 +4,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 
-export class ASTNodeKey extends ASTNodeCP {
+export class Key extends ASTNodeCP {
 	public constructor(start_node: SyntaxNodeType<'word'>) {
 		super(start_node);
 	}
