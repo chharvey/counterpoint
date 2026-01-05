@@ -63,7 +63,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 		return build_record_like<ASTNodeExpression>(
 			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
 			this.builder,
-			(expr) => expr.type(),
 			(expr) => expr.build(),
 		);
 	}
