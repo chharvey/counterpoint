@@ -10,7 +10,7 @@ import {buildConst} from '../helpers.ts';
 
 
 
-function setup(src: string): { // TODO: use `setupScript`
+export function setup(src: string): { // TODO: use `setupScript`
 	readonly builder: Builder,
 	readonly expr:    binaryen.ExpressionRef,
 } {

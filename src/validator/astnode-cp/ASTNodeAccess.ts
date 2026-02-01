@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
@@ -62,7 +62,7 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
 			if (base_type instanceof TYPE.Tuple) {
-				return base_type.buildAccess(this.builder, base_build, (this.accessor.val.fold() as VALUE.Integer).toNumber()); // TODO: v0.4.3: use `Number(this.accessor.index)`
+				return this.builder.module.struct.get((this.accessor.val.fold() as VALUE.Integer).toNumber(), base_build, binaryen.getExpressionType(base_build)); // TODO: v0.4.3: use `Number(this.accessor.index)`
 			}
 			throw new Error('`ASTNodeAccess#build` of a list is not yet supported.');
 		} else if (this.accessor instanceof ASTNodeKey) {

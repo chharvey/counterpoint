@@ -17,8 +17,8 @@ import {
 	CONFIG_FOLDING_OFF,
 	typeUnit,
 	buildConst,
-	singletonTuple,
 } from '../../helpers.ts';
+import {setup} from '../../builder/utils.test.ts';
 
 
 
@@ -954,95 +954,59 @@ describe('ASTNodeAccess', () => {
 	});
 
 	describe('#build', () => {
-		const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
-		const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
-		const bintype6: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
-
 		it('tuple access.', () => {
-			const BASE_SRC = '[[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]]';
-
-			function make_tuple(builder: Builder): binaryen.ExpressionRef {
-				const inner01: binaryen.ExpressionRef = builder.module.tuple.make([
+			function tuple(builder: Builder): binaryen.ExpressionRef {
+				const inner01: binaryen.ExpressionRef = builder.module.struct.new([
 					buildConst(builder, 2.2),
 					buildConst(builder, 3.3),
-				]);
-				const inner11: binaryen.ExpressionRef = builder.module.tuple.make([
+				], builder.typeBuilder.getTempHeapType(2));
+				const inner0: binaryen.ExpressionRef = builder.module.struct.new([
+					builder.module.local.get(0, binaryen.v128),
+					inner01,
+				], builder.typeBuilder.getTempHeapType(1));
+				const inner10: binaryen.ExpressionRef = builder.module.struct.new([
+					buildConst(builder, 4.4),
+				], builder.typeBuilder.getTempHeapType(4));
+				const inner11: binaryen.ExpressionRef = builder.module.struct.new([
 					buildConst(builder, 5.5),
 					buildConst(builder, 6.6),
-				]);
-				const inner0: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 1.1),
-					builder.module.tuple.extract(builder.module.local.tee(0, inner01, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(0, bintype2), 1),
-				]);
-				const inner1: binaryen.ExpressionRef = builder.module.tuple.make([
-					builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 4.4)), 0),
-					builder.module.tuple.extract(builder.module.local.tee(2, inner11, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(2, bintype2), 1),
-				]);
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(1, inner0, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 2),
-					builder.module.tuple.extract(builder.module.local.tee(3, inner1, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 2),
-				]);
+				], builder.typeBuilder.getTempHeapType(5));
+				const inner1: binaryen.ExpressionRef = builder.module.struct.new([
+					inner10,
+					inner11,
+				], builder.typeBuilder.getTempHeapType(3));
+				return builder.module.struct.new([
+					inner0,
+					inner1,
+				], builder.typeBuilder.getTempHeapType(0));
 			}
-			function make_tuple_0(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 0),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 1),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 2),
-				]);
-			}
-			function make_tuple_1(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 3),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 4),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 5),
-				]);
-			}
-			function make_tuple_0_1(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_0(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
-				]);
-			}
-			function make_tuple_1_0(builder: Builder): binaryen.ExpressionRef {
-				return singletonTuple(builder, builder.module.tuple.extract(make_tuple_1(builder), 0));
-			}
-			function make_tuple_1_1(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_1(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
-				]);
-			}
-
 			return xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
-				['.0',     (builder) => make_tuple_0(builder)],
-				['.1',     (builder) => make_tuple_1(builder)],
-				['.0.0',   (builder) => builder.module.tuple.extract(make_tuple_0(builder), 0)],
-				['.0.1',   (builder) => make_tuple_0_1(builder)],
-				['.1.0',   (builder) => make_tuple_1_0(builder)],
-				['.1.1',   (builder) => make_tuple_1_1(builder)],
-				['.0.1.0', (builder) => builder.module.tuple.extract(make_tuple_0_1(builder), 0)],
-				['.0.1.1', (builder) => builder.module.tuple.extract(make_tuple_0_1(builder), 1)],
-				['.1.0.0', (builder) => builder.module.tuple.extract(make_tuple_1_0(builder), 0)],
-				['.1.1.0', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 0)],
-				['.1.1.1', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 1)],
+				['.0',     (builder) => builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0))],
+				['.1',     (builder) => builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0))],
+				['.0.0',   (builder) => builder.module.struct.get(0, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1))],
+				['.0.1',   (builder) => builder.module.struct.get(1, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1))],
+				['.1.0',   (builder) => builder.module.struct.get(0, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3))],
+				['.1.1',   (builder) => builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3))],
+				['.0.1.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1)), builder.typeBuilder.getTempHeapType(2))],
+				['.0.1.1', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1)), builder.typeBuilder.getTempHeapType(2))],
+				['.1.0.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(0, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(4))],
+				['.1.1.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
+				['.1.1.1', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
 			]), (expected_fn, access_src) => {
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`${ BASE_SRC }${ access_src };`, CONFIG_FOLDING_OFF);
+				const {builder, expr} = setup(`
+					val mut x: float = 1.1;
+					[[x, [2.2, 3.3]], [[4.4], [5.5, 6.6]]]${ access_src };
+				`);
 				return assertEqualBins(
-					access.build(),
-					expected_fn.call(null, access.builder),
+					expr,
+					expected_fn.call(null, builder),
 				);
 			});
 		});
 
 		it('accessing tuple pointers.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val tuple: [[float, float[2]], [[float], float[2]]] = [[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]];
+				val mut tuple: [[float, float[2]], [[float], float[2]]] = [[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]];
 				tuple.0;
 				tuple.1;
 				tuple.0.0;
@@ -1054,51 +1018,27 @@ describe('ASTNodeAccess', () => {
 				tuple.1.0.0;
 				tuple.1.1.0;
 				tuple.1.1.1;
-			`, CONFIG_FOLDING_OFF);
+			`);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			const mod: binaryen.Module = goal.builder.module;
-			let tee_idx: number = 5;
-			const inner0: binaryen.ExpressionRef = mod.tuple.make([
-				mod.tuple.extract(mod.local.get(4, bintype6), 0),
-				mod.tuple.extract(mod.local.get(4, bintype6), 1),
-				mod.tuple.extract(mod.local.get(4, bintype6), 2),
-			]);
-			const inner1: binaryen.ExpressionRef = mod.tuple.make([
-				mod.tuple.extract(mod.local.get(4, bintype6), 3),
-				mod.tuple.extract(mod.local.get(4, bintype6), 4),
-				mod.tuple.extract(mod.local.get(4, bintype6), 5),
-			]);
-			function make_tuple_0_1(): binaryen.ExpressionRef {
-				const i = tee_idx++;
-				return mod.tuple.make([
-					mod.tuple.extract(mod.local.tee(i, inner0, bintype3), 1),
-					mod.tuple.extract(mod.local.get(i, bintype3), 2),
-				]);
-			}
-			const inner10: binaryen.ExpressionRef = singletonTuple(goal.builder, goal.builder.module.tuple.extract(inner1, 0));
-			function make_tuple_1_1(): binaryen.ExpressionRef {
-				const i = tee_idx++;
-				return mod.tuple.make([
-					mod.tuple.extract(mod.local.tee(i, inner1, bintype3), 1),
-					mod.tuple.extract(mod.local.get(i, bintype3), 2),
-				]);
-			}
+			const mod = goal.builder.module;
+			const tb  = goal.builder.typeBuilder;
+			const tuple: binaryen.ExpressionRef = mod.local.get(0, tb.getTempHeapType(0));
 			return assertEqualBins(
 				goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 				[
-					inner0,
-					inner1,
-					mod.tuple.extract(inner0, 0),
-					make_tuple_0_1(),
-					inner10,
-					make_tuple_1_1(),
-					mod.tuple.extract(make_tuple_0_1(), 0),
-					mod.tuple.extract(make_tuple_0_1(), 1),
-					mod.tuple.extract(inner10, 0),
-					mod.tuple.extract(make_tuple_1_1(), 0),
-					mod.tuple.extract(make_tuple_1_1(), 1),
+					mod.struct.get(0, tuple, tb.getTempHeapType(0)),
+					mod.struct.get(1, tuple, tb.getTempHeapType(0)),
+					mod.struct.get(0, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)),
+					mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)),
+					mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)),
+					mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)),
+					mod.struct.get(0, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)), tb.getTempHeapType(2)),
+					mod.struct.get(1, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)), tb.getTempHeapType(2)),
+					mod.struct.get(0, mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)), tb.getTempHeapType(4)),
+					mod.struct.get(0, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)), tb.getTempHeapType(5)),
+					mod.struct.get(1, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)), tb.getTempHeapType(5)),
 				],
 			);
 		});

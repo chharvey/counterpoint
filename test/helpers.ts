@@ -80,9 +80,3 @@ export function buildConst(builder: Builder, value: null | boolean | bigint | nu
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(builder);
 }
-
-
-
-export function singletonTuple(builder: Builder, item: binaryen.ExpressionRef): binaryen.ExpressionRef {
-	return builder.module.tuple.make([item, buildConst(builder)]);
-}

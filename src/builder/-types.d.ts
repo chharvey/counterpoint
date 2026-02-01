@@ -6,7 +6,7 @@ export type BinaryenModuleUpdates = binaryen.Module & {
 	readonly struct: {
 		readonly new: (operands: readonly binaryen.ExpressionRef[], type: binaryen.Type) => binaryen.ExpressionRef,
 		new_default(type: binaryen.Type): binaryen.ExpressionRef,
-		get(index: number, ref: binaryen.ExpressionRef, type: binaryen.Type, isSigned: boolean): binaryen.ExpressionRef,
+		get(index: number, ref: binaryen.ExpressionRef, type: binaryen.Type, isSigned?: boolean): binaryen.ExpressionRef,
 		set(index: number, ref: binaryen.ExpressionRef, value: binaryen.ExpressionRef): binaryen.ExpressionRef,
 	},
 	readonly array: {
@@ -15,8 +15,8 @@ export type BinaryenModuleUpdates = binaryen.Module & {
 		new_fixed(type: binaryen.Type, values: readonly binaryen.ExpressionRef[]): binaryen.ExpressionRef,
 		new_data(type: binaryen.Type, name: string, offset: number, size: number): binaryen.ExpressionRef,
 		new_elem(type: binaryen.Type, name: string, offset: number, size: number): binaryen.ExpressionRef,
-		get(ref: binaryen.ExpressionRef, index: number, type: binaryen.Type, isSigned: boolean): binaryen.ExpressionRef,
-		set(ref: binaryen.ExpressionRef, index: number, value: binaryen.ExpressionRef): binaryen.ExpressionRef,
+		get(ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, type: binaryen.Type, isSigned?: boolean): binaryen.ExpressionRef,
+		set(ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, value: binaryen.ExpressionRef): binaryen.ExpressionRef,
 		len(ref: binaryen.ExpressionRef): binaryen.ExpressionRef,
 		fill(ref: binaryen.ExpressionRef, index: number, value: binaryen.ExpressionRef, size: number): binaryen.ExpressionRef,
 		copy(destRef: binaryen.ExpressionRef, destIndex: number, srcRef: binaryen.ExpressionRef, srcIndex: number, length: number): binaryen.ExpressionRef,
