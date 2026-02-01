@@ -65,7 +65,7 @@ export function typeUnit(value: bigint | number | string): TYPE.Unit<VALUE.Integ
 
 
 
-export function buildConst(builder: Builder, value: null | boolean | bigint | number | [] = null): binaryen.ExpressionRef {
+export function buildConst(builder: Builder, value: null | boolean | bigint | number = null): binaryen.ExpressionRef {
 	return (
 		value === null            ? VALUE.NULL :
 		value === false           ? VALUE.FALSE :
@@ -76,7 +76,6 @@ export function buildConst(builder: Builder, value: null | boolean | bigint | nu
 		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
-		Array.isArray(value)      ? new VALUE.Tuple() :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(builder);
 }
