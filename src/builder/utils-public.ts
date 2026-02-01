@@ -18,16 +18,16 @@ export function build_tuple_like<T>(
 	builder:  Builder,
 	build_fn: (item: T) => binaryen.ExpressionRef,
 ): binaryen.ExpressionRef {
+	const builds: readonly (readonly [binaryen.ExpressionRef, binaryen.Type])[] = items.map((item) => {
+		const item_build: binaryen.ExpressionRef = build_fn.call(null, item);
+		return [item_build, binaryen.getExpressionType(item_build)];
+	});
 	builder.typeBuilder.grow(1);
 	const idx: number = Number(builder.nextTypeIndex());
 	if (!items.length) {
 		builder.typeBuilder.setStructType(idx, []);
 		return builder.module.struct.new_default(builder.typeBuilder.getTempHeapType(idx));
 	}
-	const builds: readonly (readonly [binaryen.ExpressionRef, binaryen.Type])[] = items.map((item) => {
-		const item_build: binaryen.ExpressionRef = build_fn.call(null, item);
-		return [item_build, binaryen.getExpressionType(item_build)];
-	});
 	builder.typeBuilder.setStructType(idx, builds.map(([_, bintype]) => ({
 		type:       bintype,
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
@@ -52,16 +52,16 @@ export function build_record_like<T>(
 	builder:    Builder,
 	build_fn:   (value: T) => binaryen.ExpressionRef,
 ): binaryen.ExpressionRef {
+	const builds: ReadonlyMap<bigint, readonly [binaryen.ExpressionRef, binaryen.Type]> = new Map([...properties.entries()].map(([key, item]) => {
+		const item_build: binaryen.ExpressionRef = build_fn.call(null, item);
+		return [key, [item_build, binaryen.getExpressionType(item_build)]];
+	}));
 	builder.typeBuilder.grow(1);
 	const idx: number = Number(builder.nextTypeIndex());
 	if (!properties.size) {
 		builder.typeBuilder.setStructType(idx, []);
 		return builder.module.struct.new_default(builder.typeBuilder.getTempHeapType(idx));
 	}
-	const builds: ReadonlyMap<bigint, readonly [binaryen.ExpressionRef, binaryen.Type]> = new Map([...properties.entries()].map(([key, item]) => {
-		const item_build: binaryen.ExpressionRef = build_fn.call(null, item);
-		return [key, [item_build, binaryen.getExpressionType(item_build)]];
-	}));
 	if (
 		properties.size <= 1 ||
 		[...builds.keys()].every((key, i, src) => key <= (src[i + 1] ?? Infinity)) // record keys are in order

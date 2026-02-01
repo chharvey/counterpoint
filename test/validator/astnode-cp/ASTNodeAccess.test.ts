@@ -959,26 +959,26 @@ describe('ASTNodeAccess', () => {
 				const inner01: binaryen.ExpressionRef = builder.module.struct.new([
 					buildConst(builder, 2.2),
 					buildConst(builder, 3.3),
-				], builder.typeBuilder.getTempHeapType(2));
+				], builder.typeBuilder.getTempHeapType(0));
 				const inner0: binaryen.ExpressionRef = builder.module.struct.new([
 					builder.module.local.get(0, binaryen.v128),
 					inner01,
 				], builder.typeBuilder.getTempHeapType(1));
 				const inner10: binaryen.ExpressionRef = builder.module.struct.new([
 					buildConst(builder, 4.4),
-				], builder.typeBuilder.getTempHeapType(4));
+				], builder.typeBuilder.getTempHeapType(2));
 				const inner11: binaryen.ExpressionRef = builder.module.struct.new([
 					buildConst(builder, 5.5),
 					buildConst(builder, 6.6),
-				], builder.typeBuilder.getTempHeapType(5));
+				], builder.typeBuilder.getTempHeapType(3));
 				const inner1: binaryen.ExpressionRef = builder.module.struct.new([
 					inner10,
 					inner11,
-				], builder.typeBuilder.getTempHeapType(3));
+				], builder.typeBuilder.getTempHeapType(4));
 				return builder.module.struct.new([
 					inner0,
 					inner1,
-				], builder.typeBuilder.getTempHeapType(0));
+				], builder.typeBuilder.getTempHeapType(5));
 			}
 			return xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
 				['.0',     (builder) => builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0))],
@@ -1024,21 +1024,21 @@ describe('ASTNodeAccess', () => {
 			goal.build();
 			const mod = goal.builder.module;
 			const tb  = goal.builder.typeBuilder;
-			const tuple: binaryen.ExpressionRef = mod.local.get(0, tb.getTempHeapType(0));
+			const tuple: binaryen.ExpressionRef = mod.local.get(0, tb.getTempHeapType(5));
 			return assertEqualBins(
 				goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 				[
-					mod.struct.get(0, tuple, tb.getTempHeapType(0)),
-					mod.struct.get(1, tuple, tb.getTempHeapType(0)),
-					mod.struct.get(0, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)),
-					mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)),
-					mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)),
-					mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)),
-					mod.struct.get(0, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)), tb.getTempHeapType(2)),
-					mod.struct.get(1, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(1)), tb.getTempHeapType(2)),
-					mod.struct.get(0, mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)), tb.getTempHeapType(4)),
-					mod.struct.get(0, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)), tb.getTempHeapType(5)),
-					mod.struct.get(1, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(0)), tb.getTempHeapType(3)), tb.getTempHeapType(5)),
+					mod.struct.get(0, tuple, tb.getTempHeapType(5)),
+					mod.struct.get(1, tuple, tb.getTempHeapType(5)),
+					mod.struct.get(0, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)),
+					mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)),
+					mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)),
+					mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)),
+					mod.struct.get(0, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)), tb.getTempHeapType(0)),
+					mod.struct.get(1, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)), tb.getTempHeapType(0)),
+					mod.struct.get(0, mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(2)),
+					mod.struct.get(0, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
+					mod.struct.get(1, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
 				],
 			);
 		});
