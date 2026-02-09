@@ -62,7 +62,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		if (this.accessor instanceof ASTNodeIndex) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
 			if (base_type instanceof TYPE.Tuple) {
-				return this.builder.module.struct.get((this.accessor.val.fold() as VALUE.Integer).toNumber(), base_build, binaryen.getExpressionType(base_build)); // TODO: v0.4.3: use `Number(this.accessor.index)`
+				const index: bigint | undefined = base_type.canonicalizeIndex(BigInt((this.accessor.val.fold() as VALUE.Integer).toNumber())); // TODO: v0.4.3: use `this.accessor.index`
+				return index || index === 0n
+					? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+					: this.builder.module.unreachable();
 			}
 			throw new Error('`ASTNodeAccess#build` of a list is not yet supported.');
 		} else if (this.accessor instanceof ASTNodeKey) {

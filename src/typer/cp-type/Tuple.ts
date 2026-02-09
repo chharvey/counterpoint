@@ -86,20 +86,24 @@ class TypeTuple extends ValueType {
 	}
 
 	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
-		const n: number = this.invariants.length;
-		const i: number = index.toNumber();
-		return updateAccessedStaticType(
-			(
-				(-n <= i && i < 0) ? this.invariants[i + n] :
-				(0  <= i && i < n) ? this.invariants[i]     :
-				assert.fail(new TypeErrorNoEntry('index', this, accessor))
-			),
-			access_kind,
-		);
+		const normalized: bigint | undefined = this.canonicalizeIndex(BigInt(index.toNumber())); // TODO: v0.5: use `index.toBigInt()`
+		if (normalized === undefined) {
+			throw new TypeErrorNoEntry('index', this, accessor);
+		}
+		return updateAccessedStaticType(this.invariants[Number(normalized)], access_kind);
 	}
 
 	public itemTypes(): Type {
 		return Union.all(this.invariants.map((t) => t.type));
+	}
+
+	public canonicalizeIndex(index: bigint): bigint | undefined {
+		const n: bigint = BigInt(this.invariants.length);
+		return (
+			(-n <= index && index < 0) ? index + n :
+			(0  <= index && index < n) ? index :
+			undefined
+		);
 	}
 }
 export {TypeTuple as Tuple};
