@@ -39,7 +39,7 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
 		return build_record_like<T>(
-			this.properties,
+			[...this.properties],
 			builder,
 			(value) => value.build(builder),
 		);

@@ -61,7 +61,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return build_record_like<ASTNodeExpression>(
-			new Map<bigint, ASTNodeExpression>(this.children.map((child) => [child.key.id, child.val])),
+			this.children.map((child) => [child.key.id, child.val]),
 			this.builder,
 			(expr) => expr.build(),
 		);
