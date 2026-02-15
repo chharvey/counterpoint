@@ -271,7 +271,10 @@ describe('build_record_like', () => {
 				builder.module.block(null, [
 					builder.module.local.set(1, buildConst(builder, 2.0)),
 					builder.module.local.set(2, builder.module.local.get(0, binaryen.v128)),
-					builder.module.struct.new([builder.module.local.get(2, binaryen.v128), builder.module.local.get(1, binaryen.v128)], builder.typeBuilder.getTempHeapType(0)),
+					builder.module.struct.new([
+						builder.module.local.get(2, binaryen.v128),
+						builder.module.local.get(1, binaryen.v128),
+					], builder.typeBuilder.getTempHeapType(0)),
 				], builder.typeBuilder.getTempHeapType(0)),
 			);
 		});
@@ -406,7 +409,10 @@ describe('build_record_like', () => {
 				builder.module.block(null, [
 					builder.module.local.set(0, buildConst(builder, 2.0)),
 					builder.module.local.set(1, buildConst(builder, 1n)),
-					builder.module.struct.new([builder.module.local.get(1, binaryen.v128), builder.module.local.get(0, binaryen.v128)], builder.typeBuilder.getTempHeapType(0)),
+					builder.module.struct.new([
+						builder.module.local.get(1, binaryen.v128),
+						builder.module.local.get(0, binaryen.v128),
+					], builder.typeBuilder.getTempHeapType(0)),
 				], builder.typeBuilder.getTempHeapType(0)),
 			);
 		});

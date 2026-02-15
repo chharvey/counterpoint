@@ -71,7 +71,10 @@ export class ASTNodeAccess extends ASTNodeExpression {
 		} else if (this.accessor instanceof ASTNodeKey) {
 			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeRecord);`
 			if (base_type instanceof TYPE.Record) {
-				throw new Error('`ASTNodeAccess#build` of a record is not yet supported.');
+				const index: bigint | undefined = base_type.canonicalizeKey(this.accessor.id);
+				return index || index === 0n
+					? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+					: this.builder.module.unreachable();
 			}
 			throw new Error('`ASTNodeAccess#build` of a dict is not yet supported.');
 		} else {
