@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	build_record_like,
 	type Builder,
@@ -38,11 +38,10 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return build_record_like<T>(
-			[...this.properties],
-			builder,
-			(value) => value.build(builder),
-		);
+		return build_record_like(builder, [...this.properties].map(([key, value]) => {
+			const value_build: binaryen.ExpressionRef = value.build(builder);
+			return {key, pair: [value_build, binaryen.getExpressionType(value_build)]};
+		}));
 	}
 }
 export {ValueRecord as Record};
