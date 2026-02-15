@@ -72,7 +72,7 @@ export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VA
 
 
 
-export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string | [] = null): binaryen.ExpressionRef {
+export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string = null): binaryen.ExpressionRef {
 	return (
 		value === null            ? VALUE.NULL :
 		value === false           ? VALUE.FALSE :
@@ -85,13 +85,6 @@ export function buildConst(builder: Builder, value: null | boolean | symbol | bi
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? assert.fail('String argument to `buildConst` is not yet supported.') :
-		Array.isArray(value)      ? new VALUE.Tuple() :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(builder);
-}
-
-
-
-export function singletonTuple(builder: Builder, item: binaryen.ExpressionRef): binaryen.ExpressionRef {
-	return builder.module.tuple.make([item, buildConst(builder)]);
 }

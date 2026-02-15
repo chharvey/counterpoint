@@ -50,7 +50,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		return build_tuple_like<ASTNodeExpression>(
 			this.children,
 			this.builder,
-			(expr) => expr.type(),
 			(expr) => expr.build(),
 		);
 	}

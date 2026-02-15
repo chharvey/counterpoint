@@ -55,7 +55,6 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 		return build_record_like<T>(
 			this.properties,
 			builder,
-			(value) => value.toType(),
 			(value) => value.build(builder),
 		);
 	}

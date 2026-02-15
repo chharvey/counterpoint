@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	type EntryType,
 	VALUE,
@@ -63,7 +63,10 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		const base_build: binaryen.ExpressionRef = this.base.build();
 		if (this.accessor instanceof ASTNodeIndex) {
 			assert_instanceof(base_type, TYPE.Tuple);
-			return base_type.buildAccess(this.builder, base_build, Number(this.accessor.index));
+			const index: bigint | undefined = base_type.canonicalizeIndex(this.accessor.index);
+			return index || index === 0n
+				? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+				: this.builder.module.unreachable();
 		} else if (this.accessor instanceof ASTNodeKey) {
 			assert_instanceof(base_type, TYPE.Record);
 			throw new Error('`ASTNodeAccess#build` of a record is not yet supported.');
