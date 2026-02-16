@@ -271,7 +271,10 @@ describe('build_record_like', () => {
 				builder.module.block(null, [
 					builder.module.local.set(1, buildConst(builder, 2.0)),
 					builder.module.local.set(2, builder.module.local.get(0, binaryen.v128)),
-					builder.module.struct.new([builder.module.local.get(2, binaryen.v128), builder.module.local.get(1, binaryen.v128)], builder.typeBuilder.getTempHeapType(0)),
+					builder.module.struct.new([
+						builder.module.local.get(2, binaryen.v128),
+						builder.module.local.get(1, binaryen.v128),
+					], builder.typeBuilder.getTempHeapType(0)),
 				], builder.typeBuilder.getTempHeapType(0)),
 			);
 		});
@@ -394,6 +397,23 @@ describe('build_record_like', () => {
 					[0x101n, new VALUE.Float(2.0)],
 				])).build(builder),
 				builder.module.struct.new([buildConst(builder, 1n), buildConst(builder, 2.0)], builder.typeBuilder.getTempHeapType(0)),
+			);
+		});
+
+		it('if keys are out of order, returns a `(block)` with `(set)`s followed by a `(struct.new)` with `(get)`s.', () => {
+			assertEqualBins(
+				new VALUE.Record(new Map<bigint, VALUE.Value>([
+					[0x101n, new VALUE.Float(2.0)],
+					[0x100n, VALUE.INT_1],
+				])).build(builder),
+				builder.module.block(null, [
+					builder.module.local.set(0, buildConst(builder, 2.0)),
+					builder.module.local.set(1, buildConst(builder, 1n)),
+					builder.module.struct.new([
+						builder.module.local.get(1, binaryen.v128),
+						builder.module.local.get(0, binaryen.v128),
+					], builder.typeBuilder.getTempHeapType(0)),
+				], builder.typeBuilder.getTempHeapType(0)),
 			);
 		});
 

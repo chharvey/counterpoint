@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {TYPE} from '../index.ts';
 import {
 	build_tuple_like,
@@ -52,11 +52,10 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return build_tuple_like<T>(
-			this.items,
-			builder,
-			(value) => value.build(builder),
-		);
+		return build_tuple_like(builder, this.items.map((item) => {
+			const item_build: binaryen.ExpressionRef = item.build(builder);
+			return [item_build, binaryen.getExpressionType(item_build)];
+		}));
 	}
 }
 export {ValueTuple as Tuple};

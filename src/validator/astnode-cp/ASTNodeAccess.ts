@@ -69,7 +69,10 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				: this.builder.module.unreachable();
 		} else if (this.accessor instanceof ASTNodeKey) {
 			assert_instanceof(base_type, TYPE.Record);
-			throw new Error('`ASTNodeAccess#build` of a record is not yet supported.');
+			const index: bigint | undefined = base_type.canonicalizeKey(this.accessor.id);
+			return index || index === 0n
+				? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+				: this.builder.module.unreachable();
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
 			this.accessor.build();
