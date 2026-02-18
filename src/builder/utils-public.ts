@@ -48,7 +48,7 @@ export function build_record_like(builder: Builder, builds: readonly {readonly k
 	}
 	if (
 		builds.length <= 1 ||
-		builds.every(({key}, i) => key <= (builds[i + 1]?.key ?? Infinity)) // record keys are in order
+		builds.slice(0, -1).every(({key}, i) => key <= (builds[i + 1].key)) // record keys are in order
 	) {
 		builder.typeBuilder.setStructType(idx, builds.map(({pair: [_, bintype]}) => ({
 			type:       bintype,
