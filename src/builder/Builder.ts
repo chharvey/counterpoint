@@ -3,6 +3,10 @@ import * as path from 'node:path';
 import binaryen from 'binaryen';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
+import type {
+	BinaryenModuleUpdates,
+	TypeBuilder,
+} from './-types.d.ts';
 
 
 
@@ -23,16 +27,26 @@ export class Builder {
 	 */
 	#varCount: bigint = -0x40n;
 
+	#typeCount: bigint = 0n;
+
 	/** A setlist containing ids of local variables. */
 	private readonly locals: Local[] = [];
 
 	/** The Binaryen module to build upon building. */
-	public readonly module: binaryen.Module = binaryen.parseText(`
+	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
 		(module
 			${ Builder.IMPORTS.join('') }
 		)
-	`);
+	`) as BinaryenModuleUpdates;
 
+	// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+	// eslint-disable-next-line
+	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
+
+
+	public nextTypeIndex(): bigint {
+		return this.#typeCount++;
+	}
 
 	/**
 	 * Add a new local variable.
@@ -262,7 +276,8 @@ export class Builder {
 			/* eslint-disable @stylistic/operator-linebreak */
 			binaryen.Features.SIMD128 |
 			binaryen.Features.ReferenceTypes |
-			binaryen.Features.Multivalue
+			binaryen.Features.Multivalue |
+			binaryen.Features.GC
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
 		this.#setupFunctions();
