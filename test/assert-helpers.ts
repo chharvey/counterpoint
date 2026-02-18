@@ -72,7 +72,7 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Gl
 export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.GlobalRef | binaryen.FunctionRef | binaryen.Module>(actual: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, expected?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
 	if (actual instanceof Map) {
 		return assertEqualBins([...actual.keys()], [...actual.values()]);
-	} if (Array.isArray(actual)) {
+	} else if (Array.isArray(actual)) {
 		try {
 			return assert.deepStrictEqual(actual, expected);
 		} catch {
@@ -81,7 +81,7 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Gl
 		}
 	} else {
 		try {
-			return assert.deepStrictEqual(actual, expected, message);
+			return assert.strictEqual(actual, expected, message);
 		} catch {
 			return assert.strictEqual(binaryen.emitText(actual as Ref), binaryen.emitText(expected as Ref), message);
 		}

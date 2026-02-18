@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -61,12 +61,10 @@ class AstRecord extends CollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return build_record_like<Expression>(
-			new Map<bigint, Expression>(this.children.map((child) => [child.key.id, child.val])),
-			this.builder,
-			(expr) => expr.type(),
-			(expr) => expr.build(),
-		);
+		return build_record_like(this.builder, this.children.map((prop) => {
+			const value_build: binaryen.ExpressionRef = prop.val.build();
+			return {key: prop.key.id, pair: [value_build, binaryen.getExpressionType(value_build)]};
+		}));
 	}
 
 	@memoizeMethod

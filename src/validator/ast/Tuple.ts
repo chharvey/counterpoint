@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -47,12 +47,10 @@ class AstTuple extends CollectionLiteral {
 	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		return build_tuple_like<Expression>(
-			this.children,
-			this.builder,
-			(expr) => expr.type(),
-			(expr) => expr.build(),
-		);
+		return build_tuple_like(this.builder, this.children.map((item) => {
+			const item_build: binaryen.ExpressionRef = item.build();
+			return [item_build, binaryen.getExpressionType(item_build)];
+		}));
 	}
 
 	@memoizeMethod

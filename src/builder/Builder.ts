@@ -8,6 +8,10 @@ import type {
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
+import type {
+	BinaryenModuleUpdates,
+	TypeBuilder,
+} from './-types.d.ts';
 
 
 
@@ -31,6 +35,8 @@ export class Builder {
 	];
 
 
+	#typeCount: bigint = 0n;
+
 	/** A set containing local variables. */
 	private readonly locals = new Set<Local>();
 
@@ -38,12 +44,20 @@ export class Builder {
 	private readonly blocks = new Set<Block>();
 
 	/** The Binaryen module to build upon building. */
-	public readonly module: binaryen.Module = binaryen.parseText(`
+	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
 		(module
 			${ Builder.IMPORTS.join('') }
 		)
-	`);
+	`) as BinaryenModuleUpdates;
 
+	// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+	// eslint-disable-next-line
+	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
+
+
+	public nextTypeIndex(): bigint {
+		return this.#typeCount++;
+	}
 
 	/**
 	 * Add a new local variable.
@@ -364,7 +378,8 @@ export class Builder {
 			binaryen.Features.NontrappingFPToInt |
 			binaryen.Features.SIMD128 |
 			binaryen.Features.ReferenceTypes |
-			binaryen.Features.Multivalue
+			binaryen.Features.Multivalue |
+			binaryen.Features.GC
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
 		this.#setupFunctions();
