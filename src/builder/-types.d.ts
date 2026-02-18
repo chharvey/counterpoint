@@ -2,28 +2,28 @@ import type binaryen from 'binaryen';
 
 
 
-export type BinaryenModuleUpdates = binaryen.Module & {
+export interface BinaryenModuleUpdates extends binaryen.Module {
 	readonly struct: {
 		readonly new: (operands: readonly binaryen.ExpressionRef[], type: binaryen.Type) => binaryen.ExpressionRef,
 		new_default(type: binaryen.Type): binaryen.ExpressionRef,
 		get(index: number, ref: binaryen.ExpressionRef, type: binaryen.Type, isSigned?: boolean): binaryen.ExpressionRef,
 		set(index: number, ref: binaryen.ExpressionRef, value: binaryen.ExpressionRef): binaryen.ExpressionRef,
-	},
+	};
 	readonly array: {
-		readonly new: (type: binaryen.Type, size: number, init: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		new_default(type: binaryen.Type, size: number): binaryen.ExpressionRef,
+		readonly new: (type: binaryen.Type, size: binaryen.ExpressionRef, init: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		new_default(type: binaryen.Type, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
 		new_fixed(type: binaryen.Type, values: readonly binaryen.ExpressionRef[]): binaryen.ExpressionRef,
-		new_data(type: binaryen.Type, name: string, offset: number, size: number): binaryen.ExpressionRef,
-		new_elem(type: binaryen.Type, name: string, offset: number, size: number): binaryen.ExpressionRef,
+		new_data(type: binaryen.Type, name: string, offset: number, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
+		new_elem(type: binaryen.Type, name: string, offset: number, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
 		get(ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, type: binaryen.Type, isSigned?: boolean): binaryen.ExpressionRef,
 		set(ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, value: binaryen.ExpressionRef): binaryen.ExpressionRef,
 		len(ref: binaryen.ExpressionRef): binaryen.ExpressionRef,
-		fill(ref: binaryen.ExpressionRef, index: number, value: binaryen.ExpressionRef, size: number): binaryen.ExpressionRef,
-		copy(destRef: binaryen.ExpressionRef, destIndex: number, srcRef: binaryen.ExpressionRef, srcIndex: number, length: number): binaryen.ExpressionRef,
-		init_data(name: string, ref: binaryen.ExpressionRef, index: number, offset: number, size: number): binaryen.ExpressionRef,
-		init_elem(name: string, ref: binaryen.ExpressionRef, index: number, offset: number, size: number): binaryen.ExpressionRef,
-	},
-};
+		fill(ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, value: binaryen.ExpressionRef, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
+		copy(destRef: binaryen.ExpressionRef, destIndex: binaryen.ExpressionRef, srcRef: binaryen.ExpressionRef, srcIndex: binaryen.ExpressionRef, length: binaryen.ExpressionRef): binaryen.ExpressionRef,
+		init_data(name: string, ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, offset: binaryen.ExpressionRef, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
+		init_elem(name: string, ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, offset: binaryen.ExpressionRef, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
+	};
+}
 type Field = {
 	type:       binaryen.Type,
 	packedType: binaryen.Type,
