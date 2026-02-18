@@ -297,8 +297,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: null, 258?: bool, 259?: sym)`.'},
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: int, 259?: str)`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(258: null, 259?: bool, 260?: sym)`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(258: int, 260?: str)`.'},
 										],
 									},
 								],
@@ -753,8 +753,8 @@ describe('ASTNodeAccess', () => {
 									{
 										cons:   AggregateError,
 										errors: [
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: null, 258?: bool, 259?: sym)`.'},
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: int, 259?: str)`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(258: null, 259?: bool, 260?: sym)`.'},
+											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(258: int, 260?: str)`.'},
 										],
 									},
 								],
