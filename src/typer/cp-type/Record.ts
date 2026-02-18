@@ -1,11 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
-import {
-	type Local,
-	type Builder,
-	BinVect,
-	TypeErrorNoEntry,
-} from '../../index.ts';
+import {TypeErrorNoEntry} from '../../index.ts';
 import type {
 	ValidAccessOperator,
 	AST,
@@ -45,13 +39,8 @@ class TypeRecord extends ValueType {
 	}
 
 
-	/**
-	 * An index or list of indices corresponding to the tree structure of this type.
-	 * @example
-	 * [x= A, y= [w= B], z= [u= C, v= [t= D]]]                             => [A, B, C, D]                 => [x= 0, y= [1], z= [2, 3]]
-	 * [p= A, r= [j= B, i= Bb], q= [k= C, l= [o= D, n= Dd], m= Cc], s= Aa] => [A, C, Dd, D, CC, Bb, B, Aa] => [p= 0, r= [5, 6], q= [1, 2, 3, 4], s= 7]
-	 */
-	#builtIndices?: ReadonlyMap<bigint, number | readonly number[]>;
+	/** This Record’s keys, sorted in canonical order. */
+	readonly #canonicalizedKeys: readonly bigint[];
 
 	/**
 	 * Construct a new TypeRecord object.
@@ -59,6 +48,7 @@ class TypeRecord extends ValueType {
 	 */
 	public constructor(public readonly invariants: ReadonlyMap<bigint, EntryType> = new Map()) {
 		super(false, new Set([new VALUE.Record()]));
+		this.#canonicalizedKeys = [...this.invariants.keys()].sort();
 	}
 
 	public override get hasMutable(): boolean {
@@ -114,62 +104,8 @@ class TypeRecord extends ValueType {
 		return Union.all([...this.invariants.values()].map((t) => t.type));
 	}
 
-	#getBuiltIndices(key: bigint): number | readonly number[] {
-		if (!this.#builtIndices) {
-			let counter: number = 0;
-			function walk(entries: ReadonlyMap<bigint, EntryType>): typeof indices {
-				const indices = new Map<bigint, number | readonly number[]>();
-				entries.forEach((entry, k) => {
-					if (entry.type instanceof TypeRecord) {
-						indices.set(k, [...walk(entry.type.invariants)].map(([_, val]) => val).flat()); // only need to flatten once, due to recursion
-						// throw new Error('Nested record access not yet supported.');
-					} else {
-						indices.set(k, counter);
-						counter += 1;
-					}
-				});
-				return indices;
-			}
-			this.#builtIndices = walk(this.invariants);
-		}
-		return this.#builtIndices.get(key)!;
-	}
-
-	public buildAccess(builder: Builder, base_build: binaryen.ExpressionRef, accessor_key: bigint): binaryen.ExpressionRef {
-		const builtIndex: number | readonly number[] = this.#getBuiltIndices(accessor_key);
-		/*
-		 * If the built index is a single number, return an extract of the build at that index.
-		 * If the built index array has length 1, return a singleton tuple containing that extract.
-		 * If the built index array length is > 1, return a tuple of extracts whose first entry is a `tee` and the rest are `get`s.
-		 */
-		if (typeof builtIndex === 'number') {
-			return builder.module.tuple.extract(base_build, builtIndex);
-		} else if (builtIndex.length === 1) {
-			// Binaryen does not allow `module.tuple.make` to be called with only 1 argument,
-			// so if there is only 1 item then we add an additional unused item.
-			return builder.module.tuple.make([
-				builder.module.tuple.extract(base_build, builtIndex[0]),
-				new BinVect(builder.module).vect,
-			]);
-		} else {
-			const expr_info = binaryen.getExpressionInfo(base_build);
-			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
-				return builder.module.tuple.make(builtIndex.map((n) => builder.module.tuple.extract(base_build, n)));
-			}
-			const local: Local = builder.addLocal(base_build)[1];
-			return builder.module.tuple.make([
-				                                  builder.module.tuple.extract(local.tee(), builtIndex[0]), // eslint-disable-line @stylistic/indent
-				...builtIndex.slice(1).map((n) => builder.module.tuple.extract(local.get(), n)),
-			]);
-		}
-	}
-
-	public test_getBuiltIndices(expected: readonly (number | readonly number[])[], message?: string | Error): void {
-		return assert.deepStrictEqual(
-			[...this.invariants.keys()].map((key) => this.#getBuiltIndices(key)),
-			expected,
-			message,
-		);
+	public canonicalizeKey(key: bigint): bigint | undefined {
+		return this.#canonicalizedKeys.includes(key) ? BigInt(this.#canonicalizedKeys.indexOf(key)) : undefined;
 	}
 }
 export {TypeRecord as Record};

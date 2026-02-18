@@ -1279,40 +1279,4 @@ describe('Type', () => {
 		});
 	});
 	/* eslint-enable no-useless-escape */
-
-
-	describe('Tuple', () => {
-		specify('#test_getBuiltIndices', () => {
-			TYPE.Tuple.fromTypes([
-				typeUnit('a'),
-				TYPE.Tuple.fromTypes([typeUnit('b')]),
-				TYPE.Tuple.fromTypes([
-					typeUnit('c'),
-					TYPE.Tuple.fromTypes([typeUnit('d')]),
-				]),
-			]).test_getBuiltIndices(
-				[0, [1], [2, 3]],
-				'[A, [B], [C, [D]]] => [0, [1], [2, 3]]',
-			);
-			return TYPE.Tuple.fromTypes([
-				typeUnit('a'),
-				TYPE.Tuple.fromTypes([
-					typeUnit('b'),
-					typeUnit('bb'),
-				]),
-				TYPE.Tuple.fromTypes([
-					typeUnit('c'),
-					TYPE.Tuple.fromTypes([
-						typeUnit('d'),
-						typeUnit('dd'),
-					]),
-					typeUnit('cc'),
-				]),
-				typeUnit('aa'),
-			]).test_getBuiltIndices(
-				[0, [1, 2], [3, 4, 5, 6], 7],
-				'[A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]',
-			);
-		});
-	});
 });
