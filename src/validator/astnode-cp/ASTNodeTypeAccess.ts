@@ -1,20 +1,20 @@
 import {
-	type OBJ,
+	type VALUE,
 	TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import {Operator} from '../Operator.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeIndexType} from './ASTNodeIndexType.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import {Operator} from '../Operator.ts';
+import {ASTNodeKey} from './ASTNodeKey.ts';
+import {ASTNodeIndexType} from './ASTNodeIndexType.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
@@ -36,16 +36,16 @@ export class ASTNodeTypeAccess extends ASTNodeType {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.eval();
-		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
+		if (base_type instanceof TYPE.Combinable) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		if (this.accessor instanceof ASTNodeIndexType) {
-			const accessor_type = this.accessor.val.eval() as TYPE.TypeUnit<OBJ.Integer>;
-			assert_instanceof(base_type, TYPE.TypeTuple);
+			const accessor_type = this.accessor.val.eval() as TYPE.Unit<VALUE.Integer>;
+			assert_instanceof(base_type, TYPE.Tuple);
 			return base_type.get(accessor_type.value, Operator.DOT, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeKey);
-			assert_instanceof(base_type, TYPE.TypeRecord);
+			assert_instanceof(base_type, TYPE.Record);
 			return base_type.get(this.accessor.id, Operator.DOT, this.accessor);
 		}
 	}

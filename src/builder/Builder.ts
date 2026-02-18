@@ -1,14 +1,14 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import binaryen from 'binaryen';
-import * as fs from 'fs';
-import * as path from 'path';
-import {BinVect} from './BinVect.js';
+import {Local} from './Local.ts';
+import {BinVect} from './BinVect.ts';
+import type {
+	BinaryenModuleUpdates,
+	TypeBuilder,
+} from './-types.d.ts';
 
 
-
-type Local = {
-	readonly id:   bigint,
-	readonly type: binaryen.Type,
-};
 
 /**
  * The Builder generates assembly code.
@@ -25,36 +25,51 @@ export class Builder {
 	 * Used for optimizing short-circuited expressions.
 	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
 	 */
-	private _varCount:       bigint = -0x40n;
+	#varCount: bigint = -0x40n;
+
+	#typeCount: bigint = 0n;
+
 	/** A setlist containing ids of local variables. */
 	private readonly locals: Local[] = [];
+
 	/** The Binaryen module to build upon building. */
-	public readonly module: binaryen.Module = binaryen.parseText(`
+	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
 		(module
 			${ Builder.IMPORTS.join('') }
 		)
-	`);
+	`) as BinaryenModuleUpdates;
+
+	// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+	// eslint-disable-next-line
+	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
 
 
-	/**
-	 * Return this Builder’s short-circuit variable count, and then increment it.
-	 * @return this Builder’s current variable counter
-	 */
-	public get varCount(): bigint {
-		return this._varCount++;
+	public nextTypeIndex(): bigint {
+		return this.#typeCount++;
 	}
 
 	/**
-	 * Add a local variable.
-	 * If the variable has already been added, do nothing.
-	 * If the variable is added, return the new index.
-	 * @param id the id of the variable to add
-	 * @return : [`this`, Was the operation performed?]
+	 * Add a new local variable.
+	 * @param value the binaryen value of the variable to add
+	 * @return      [`this`, the new local variable]
 	 */
-	public addLocal(id: bigint, type: binaryen.Type): [this, boolean] {
+	public addLocal(value: binaryen.ExpressionRef): [this, Local] {
+		const local = new Local(this.module, this.#varCount++, this.locals.length, value);
+		this.locals.push(local);
+		return [this, local];
+	}
+
+	/**
+	 * Set a local variable, given a variable id.
+	 * If a variable with that id has already been added, do nothing.
+	 * @param id    the id of the variable to set
+	 * @param value the binaryen value of the variable to set
+	 * @return      [`this`, Was the operation performed?]
+	 */
+	public setLocal(id: bigint, value: binaryen.ExpressionRef): [this, boolean] {
 		let did: boolean = false;
-		if (!this.locals.find((var_) => var_.id === id)) {
-			this.locals.push({id, type});
+		if (!this.hasLocal(id)) {
+			this.locals.push(new Local(this.module, id, this.locals.length, value));
 			did = true;
 		}
 		return [this, did];
@@ -68,7 +83,7 @@ export class Builder {
 	 */
 	public removeLocal(id: bigint): [this, boolean] {
 		let did = false;
-		const found = this.locals.find((var_) => var_.id === id);
+		const found = this.getLocal(id);
 		if (found) {
 			this.locals.splice(this.locals.indexOf(found), 1);
 			did = true;
@@ -82,22 +97,27 @@ export class Builder {
 	 * @return Does the setlist of locals include the id?
 	 */
 	public hasLocal(id: bigint): boolean {
-		return !!this.locals.find((var_) => var_.id === id);
+		return !!this.getLocal(id);
 	}
 
 	/**
-	 * Get the index of the given local in this Builder’s list, if it’s been added; else, return `null`.
-	 * @param id the local whose index to get
-	 * @return the index or `null`
+	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `null`.
+	 * @param  id the id of the local to get
+	 * @return    the local or `null`
 	 */
-	public getLocalInfo(id: bigint): {index: number, type: binaryen.Type} | null {
-		const found = this.locals.find((var_) => var_.id === id);
-		return (found)
-			? {
-				index: this.locals.indexOf(found),
-				type:  found.type,
-			}
-			: null;
+	public getLocal(id: bigint): Local | null {
+		return this.locals.find((var_) => var_.id === id) ?? null;
+	}
+
+	/**
+	 * Set a local variable to the given id and return it.
+	 * If a variable with that id has already been added, this Builder’s state is not changed.
+	 * @param id    the id of the variable to set
+	 * @param value the binaryen value of the variable to set
+	 * @return      the local variable set (or retreived)
+	 */
+	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local {
+		return this.setLocal(id, value)[0].getLocal(id)!;
 	}
 
 	/**
@@ -143,7 +163,11 @@ export class Builder {
 				mod.if(
 					vect.isInt,
 					BinVect.asBool(mod, mod.i32.eqz(vect.intValue)),
-					BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+					mod.if(
+						vect.isFloat,
+						BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+						BinVect.asBool(mod, mod.i32.and(vect.isAddr, mod.i32.eqz(vect.addrValue))),
+					),
 				),
 			);
 		})(this.module)], binaryen.v128));
@@ -244,20 +268,22 @@ export class Builder {
 	}
 
 	/**
-	 * Prepare this builder’s module and return an action to validate it.
-	 * @return a callback that validates the module, to be performed after any further modifications to the module are made
+	 * Prepare this builder’s module, with optional additional actions/modifications.
+	 * @param main a callback to run after setup but before validation
 	 */
-	public setupModule(): () => void {
+	public setupModule(main?: (mod: binaryen.Module) => void): void {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
-			binaryen.Features.ReferenceTypes |
+			/* eslint-disable @stylistic/operator-linebreak */
 			binaryen.Features.SIMD128 |
-			binaryen.Features.Multivalue
+			binaryen.Features.ReferenceTypes |
+			binaryen.Features.Multivalue |
+			binaryen.Features.GC
+			/* eslint-enable @stylistic/operator-linebreak */
 		));
 		this.#setupFunctions();
-		return () => {
-			if (!this.module.validate()) {
-				throw new Error('Invalid WebAssembly module.');
-			}
-		};
+		main?.call(null, this.module);
+		if (!this.module.validate()) {
+			throw new Error('Invalid WebAssembly module.');
+		}
 	}
 }

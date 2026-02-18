@@ -1,26 +1,25 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
-} from '../../index.js';
+} from '../../index.ts';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {Keyword} from '../../parser/index.js';
-import {Validator} from '../index.js';
+} from '../../core/index.ts';
+import {Keyword} from '../../parser/index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-} from '../utils-private.js';
-import {valueOfTokenNumber} from './utils-private.js';
-import {ASTNodeType} from './ASTNodeType.js';
+} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
+import {valueOfTokenNumber} from './utils-private.ts';
+import {ASTNodeType} from './ASTNodeType.ts';
 
 
 
@@ -33,16 +32,17 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 
 	private static keywordType(source: string): TYPE.Type {
 		return (
-			(source === Keyword.VOID)  ? TYPE.VOID             :
-			(source === Keyword.NULL)  ? TYPE.NULL             :
-			(source === Keyword.BOOL)  ? TYPE.BOOL             :
-			(source === Keyword.FALSE) ? OBJ.Boolean.FALSETYPE :
-			(source === Keyword.TRUE)  ? OBJ.Boolean.TRUETYPE  :
-			(source === Keyword.INT)   ? TYPE.INT              :
-			(source === Keyword.FLOAT) ? TYPE.FLOAT            :
-			(source === Keyword.STR)   ? TYPE.STR              :
-			(source === Keyword.OBJ)   ? TYPE.OBJ              :
-			throw_expression(new Error(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`))
+			source === Keyword.NEVER   ? TYPE.NEVER :
+			source === Keyword.VOID    ? TYPE.VOID :
+			source === Keyword.NULL    ? TYPE.NULL :
+			source === Keyword.BOOL    ? TYPE.BOOL :
+			source === Keyword.FALSE   ? TYPE.FALSE :
+			source === Keyword.TRUE    ? TYPE.TRUE :
+			source === Keyword.INT     ? TYPE.INT :
+			source === Keyword.FLOAT   ? TYPE.FLOAT :
+			source === Keyword.STR     ? TYPE.STR :
+			source === Keyword.UNKNOWN ? TYPE.UNKNOWN :
+			assert.fail(`ASTNodeTypeConstant.keywordType did not expect the keyword \`${ source }\`.`)
 		);
 	}
 
@@ -70,7 +70,7 @@ export class ASTNodeTypeConstant extends ASTNodeType {
 				(assert.ok(
 					isSyntaxNodeType(token, /^string(__comment)?(__separator)?$/),
 					`Expected ${ token } to be a string.`,
-				), new OBJ.String(Validator.cookTokenString(token.text, this.validator.config)).toType())
+				), new VALUE.String(Validator.cookTokenString(token.text, this.validator.config)).toType())
 			))(this.start_node.children[0]))
 		);
 	}

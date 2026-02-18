@@ -1,21 +1,19 @@
+import * as assert from 'node:assert';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import {LexError01} from '../index.js';
-import {
-	type CodeUnit,
-	throw_expression,
-} from '../lib/index.js';
+import {LexError01} from '../index.ts';
+import type {CodeUnit} from '../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../core/index.js';
+} from '../core/index.ts';
 import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
 	type Serializable,
-} from '../parser/index.js';
-import type {SymbolStructure} from './index.js';
-import {utf8Encode} from './utils-private.js';
+} from '../parser/index.ts';
+import type {SymbolSchema} from './index.ts';
+import {utf8Encode} from './utils-private.ts';
 
 
 
@@ -115,7 +113,7 @@ function tokenWorthString(
 			];
 		} else if (`${ text[1] }${ text[2] }` === 'u{') {
 			/* an escape sequence */
-			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/) !;
+			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/)!;
 			return [
 				...utf8Encode(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
 				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
@@ -181,7 +179,7 @@ export class Validator {
 		const index: number = KEYWORDS.indexOf(source);
 		return (0 <= index && index < KEYWORDS.length)
 			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
-			: throw_expression(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
+			: assert.fail(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
 	}
 
 	/**
@@ -259,7 +257,7 @@ export class Validator {
 
 
 	/** A symbol table, which keeps tracks of variables. */
-	private readonly symbol_table = new Map<bigint, SymbolStructure>();
+	private readonly symbol_table = new Map<bigint, SymbolSchema>();
 
 	/**
 	 * A bank of unique identifier names.
@@ -279,7 +277,7 @@ export class Validator {
 	 * @param symbol the object encoding data of the symbol
 	 * @returns this
 	 */
-	public addSymbol(symbol: SymbolStructure): this {
+	public addSymbol(symbol: SymbolSchema): this {
 		this.symbol_table.set(symbol.id, symbol);
 		return this;
 	}
@@ -308,7 +306,7 @@ export class Validator {
 	 * @param id the symbol id to check
 	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
 	 */
-	public getSymbolInfo(id: bigint): SymbolStructure | null {
+	public getSymbolInfo(id: bigint): SymbolSchema | null {
 		return this.symbol_table.get(id) ?? null;
 	}
 
@@ -316,7 +314,7 @@ export class Validator {
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
-	public getSymbols(): Map<bigint, SymbolStructure> {
+	public getSymbols(): Map<bigint, SymbolSchema> {
 		return new Map([...this.symbol_table]);
 	}
 

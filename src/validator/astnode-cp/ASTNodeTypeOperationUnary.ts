@@ -1,20 +1,23 @@
-import {TYPE} from '../../index.js';
+import * as assert from 'node:assert';
 import {
-	throw_expression,
+	TYPE,
+	TypeErrorInvalidOperation,
+} from '../../index.ts';
+import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidTypeOperator,
-} from '../Operator.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.js';
+} from '../Operator.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import {ASTNodeTypeOperation} from './ASTNodeTypeOperation.ts';
 
 
 
@@ -28,8 +31,8 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'type_unary_symbol'>
-			| SyntaxNodeType<'type_unary_keyword'>
-		,
+			| SyntaxNodeType<'type_unary_keyword'>,
+
 		operator: ValidTypeOperator,
 		private readonly operand: ASTNodeType,
 	) {
@@ -41,10 +44,14 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
+		const t: TYPE.Type = this.operand.eval();
+		if (this.operator === Operator.MUTABLE && !t.isReference) {
+			throw new TypeErrorInvalidOperation(this);
+		}
 		return (
-			(this.operator === Operator.ORNULL)  ? this.operand.eval().union(TYPE.NULL) :
-			(this.operator === Operator.MUTABLE) ? this.operand.eval().mutableOf()      :
-			throw_expression(new Error(`Operator ${ Operator[this.operator] } not found.`))
+			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
+			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
+			assert.fail(`ASTNodeTypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
 }

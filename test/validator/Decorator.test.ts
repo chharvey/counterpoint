@@ -1,4 +1,5 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import type Parser from 'tree-sitter';
 import {
 	Query,
 	type QueryCapture,
@@ -9,14 +10,14 @@ import {
 	TS_PARSER,
 	AST,
 	DECORATOR,
-} from '../../src/index.js';
+} from '../../src/index.ts';
 
 
 
 describe('Decorator', () => {
 	describe('#decorateTS', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint as Parser.Language, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
@@ -99,16 +100,20 @@ describe('Decorator', () => {
 			`]],
 
 			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.ASTNodeType, `
-				type T = (int | float);
+				type T = (3 | float);
 				% (type_grouped)
 			`]],
 
+			['Decorate(TypeTupleLiteral ::= "[" "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
+				type T = [];
+				% (type_tuple_literal)
+			`]],
 			['Decorate(TypeTupleLiteral ::= "[" ","? ItemsType "]") -> SemanticTypeTuple', [AST.ASTNodeTypeTuple, `
 				type T = [int, ?: float];
 				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
+			['Decorate(TypeRecordLiteral ::= "[" ","? PropertiesType ","? "]") -> SemanticTypeRecord', [AST.ASTNodeTypeRecord, `
 				type T = [a?: int, b: float];
 				% (type_record_literal)
 			`]],
@@ -214,6 +219,10 @@ describe('Decorator', () => {
 				% (expression_grouped)
 			`]],
 
+			['Decorate(TupleLiteral ::= "[" "]") -> SemanticTuple', [AST.ASTNodeTuple, `
+				[];
+				% (tuple_literal)
+			`]],
 			['Decorate(TupleLiteral ::= "[" ","? Expression# ","? "]") -> SemanticTuple', [AST.ASTNodeTuple, `
 				[42, 6.9];
 				% (tuple_literal)
@@ -369,16 +378,16 @@ describe('Decorator', () => {
 				% (declaration_type)
 			`]],
 
-			['Decorate(DeclarationVariable ::= "let" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let _: T = b;
+			['Decorate(DeclarationVariable ::= "val" "_" ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				val _: T = b;
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let a: T = b;
+			['Decorate(DeclarationVariable ::= "val" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				val a: T = b;
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable ::= "let" "var" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
-				let var a: T = b;
+			['Decorate(DeclarationVariable ::= "val" "mut" IDENTIFIER ":" Type "=" Expression ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				val mut a: T = b;
 				% (declaration_variable)
 			`]],
 

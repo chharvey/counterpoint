@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
     "tree-sitter",
@@ -47,10 +47,10 @@
     }
   },
   "devDependencies": {
-    "extrajs": "^0.25.0",
+    "extrajs": "^0.26.0",
     "prebuildify": "^6.0.0",
     "tree-sitter-cli": "~0.24.5",
-    "tsx": "^4.14.1",
-    "typescript": "~5.7.0"
+    "tsx": "^4.19.3",
+    "typescript": "~5.8.0"
   }
 }

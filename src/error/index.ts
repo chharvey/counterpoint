@@ -1,27 +1,24 @@
-export * from './ErrorCode.js';
+export * from './ErrorCode.ts';
 
-export * from './LexError01.js';
-export * from './LexError02.js';
-export * from './LexError03.js';
-export * from './LexError04.js';
-export * from './LexError05.js';
-export * from './ParseError.js';
-export * from './ReferenceError01.js';
-export * from './ReferenceError02.js';
-export * from './ReferenceError03.js';
-export * from './AssignmentError01.js';
-export * from './AssignmentError02.js';
-export * from './AssignmentError10.js';
-export * from './TypeError.js';
-export * from './TypeError01.js';
-export * from './TypeError02.js';
-export * from './TypeError03.js';
-export * from './TypeError04.js';
-export * from './TypeError05.js';
-export * from './TypeError06.js';
-export * from './MutabilityError01.js';
-export {VoidError01} from './VoidError.js';
-export {
-	NanError01,
-	NanError02,
-} from './NanError.js';
+export * from './LexError01.ts';
+export * from './LexError02.ts';
+export * from './LexError03.ts';
+export * from './LexError04.ts';
+export * from './LexError05.ts';
+export * from './ParseError.ts';
+export * from './ReferenceErrorUndeclared.ts';
+export * from './ReferenceErrorDeadZone.ts';
+export * from './ReferenceErrorKind.ts';
+export * from './AssignmentErrorDuplicateDeclaration.ts';
+export * from './AssignmentErrorDuplicateKey.ts';
+export * from './AssignmentErrorReassignment.ts';
+export * from './TypeError.ts';
+export * from './TypeErrorInvalidOperation.ts';
+export * from './TypeErrorNotNarrow.ts';
+export * from './TypeErrorNotAssignable.ts';
+export * from './TypeErrorNoEntry.ts';
+export * from './TypeErrorNotCallable.ts';
+export * from './TypeErrorArgCount.ts';
+export * from './MutabilityError01.ts';
+export {VoidError01} from './VoidError.ts';
+export * from './NanError.ts';

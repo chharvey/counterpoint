@@ -1,7 +1,7 @@
 import type {
 	ASTNodeDeclarationType,
 	ASTNodeDeclarationVariable,
-} from './index.js';
+} from './index.ts';
 
 
 

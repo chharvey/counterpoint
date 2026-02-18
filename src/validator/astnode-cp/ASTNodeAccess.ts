@@ -1,28 +1,32 @@
-import type binaryen from 'binaryen';
+import * as assert from 'node:assert';
+import binaryen from 'binaryen';
 import {
-	OBJ,
+	VALUE,
 	TYPE,
-	TypeError01,
-	TypeError02,
-	TypeError04,
-} from '../../index.js';
+	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
+	TypeErrorNoEntry,
+} from '../../index.ts';
 import {
-	throw_expression,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
-} from '../Operator.js';
-import {ASTNodeKey} from './ASTNodeKey.js';
-import {ASTNodeIndex} from './ASTNodeIndex.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
+} from '../Operator.ts';
+import {ASTNodeKey} from './ASTNodeKey.ts';
+import {ASTNodeIndex} from './ASTNodeIndex.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
 
 
 
@@ -37,8 +41,8 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
-			| SyntaxNodeType<'assignee'>
-		,
+			| SyntaxNodeType<'assignee'>,
+
 		private readonly kind:     ValidAccessOperator,
 		public  readonly base:     ASTNodeExpression,
 		private readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
@@ -48,16 +52,43 @@ export class ASTNodeAccess extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
-		throw '`ASTNodeAccess#build_do` not yet supported.';
+		let base_type: TYPE.Type = this.base.type();
+		if (base_type instanceof TYPE.Combinable) {
+			base_type = base_type.combineTuplesOrRecords();
+		}
+		const base_build: binaryen.ExpressionRef = this.base.build();
+		if (this.accessor instanceof ASTNodeIndex) {
+			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeTuple);`
+			if (base_type instanceof TYPE.Tuple) {
+				const index: bigint | undefined = base_type.canonicalizeIndex(BigInt((this.accessor.val.fold() as VALUE.Integer).toNumber())); // TODO: v0.4.3: use `this.accessor.index`
+				return index || index === 0n
+					? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+					: this.builder.module.unreachable();
+			}
+			throw new Error('`ASTNodeAccess#build` of a list is not yet supported.');
+		} else if (this.accessor instanceof ASTNodeKey) {
+			// TODO: v0.4.3: `assert_instanceof(base_type, TYPE.TypeRecord);`
+			if (base_type instanceof TYPE.Record) {
+				const index: bigint | undefined = base_type.canonicalizeKey(this.accessor.id);
+				return index || index === 0n
+					? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+					: this.builder.module.unreachable();
+			}
+			throw new Error('`ASTNodeAccess#build` of a dict is not yet supported.');
+		} else {
+			assert_instanceof(this.accessor, ASTNodeExpression);
+			this.accessor.build();
+			throw new Error('`ASTNodeAccess#build` of a list/dict/set/map is not yet supported.');
+		}
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.typeDeco
+	@typeDeco
 	public override type(): TYPE.Type {
 		let base_type: TYPE.Type = this.base.type();
-		if (base_type instanceof TYPE.TypeIntersection || base_type instanceof TYPE.TypeUnion) {
+		if (base_type instanceof TYPE.Combinable) {
 			base_type = base_type.combineTuplesOrRecords();
 		}
 		return (
@@ -76,75 +107,76 @@ export class ASTNodeAccess extends ASTNodeExpression {
 			);
 		}
 		function throwWrongSubtypeError(accessor: ASTNodeExpression, supertype: TYPE.Type): never {
-			throw new TypeError02(accessor.type(), supertype, accessor.line_index, accessor.col_index);
+			throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? base_type.get((this.accessor.val.type() as TYPE.TypeUnit<OBJ.Integer>).value, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeList)  ? updateAccessedDynamicType(base_type.invariant, this.kind)                                               :
-				throw_expression(new TypeError04('index', base_type, this.accessor))
+				(base_type instanceof TYPE.Tuple) ? base_type.get((this.accessor.val.type() as TYPE.Unit<VALUE.Integer>).value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.List)  ? updateAccessedDynamicType(base_type.invariant, this.kind) :
+				assert.fail(new TypeErrorNoEntry('index', base_type, this.accessor))
 			);
 		} else if (this.accessor instanceof ASTNodeKey) {
 			return (
-				(base_type instanceof TYPE.TypeRecord) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
-				(base_type instanceof TYPE.TypeDict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
-				throw_expression(new TypeError04('property', base_type, this.accessor))
+				(base_type instanceof TYPE.Record) ? base_type.get(this.accessor.id, this.kind, this.accessor) :
+				(base_type instanceof TYPE.Dict)   ? updateAccessedDynamicType(base_type.invariant, this.kind) :
+				assert.fail(new TypeErrorNoEntry('property', base_type, this.accessor))
 			);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
 			const accessor_type: TYPE.Type = this.accessor.type();
 			/* eslint-disable @stylistic/indent */
 			return (
-				(base_type instanceof TYPE.TypeTuple) ? (
-					(accessor_type instanceof TYPE.TypeUnit && accessor_type.value instanceof OBJ.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
+				(base_type instanceof TYPE.Tuple) ? (
+					(accessor_type instanceof TYPE.Unit && accessor_type.value instanceof VALUE.Integer) ? base_type.get(accessor_type.value, this.kind, this.accessor) :
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.itemTypes(), this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
 				) :
-				(base_type instanceof TYPE.TypeList) ? (
+				(base_type instanceof TYPE.List) ? (
 					(accessor_type.isSubtypeOf(TYPE.INT))
 						? updateAccessedDynamicType(base_type.invariant, this.kind)
 						: throwWrongSubtypeError(this.accessor, TYPE.INT)
 				) :
-				(base_type instanceof TYPE.TypeSet) ? (
+				(base_type instanceof TYPE.Set) ? (
 					(accessor_type.isSubtypeOf(base_type.invariant))
 						? TYPE.BOOL
 						: throwWrongSubtypeError(this.accessor, base_type.invariant)
 				) :
-				(base_type instanceof TYPE.TypeMap) ? (
+				(base_type instanceof TYPE.Map) ? (
 					(accessor_type.isSubtypeOf(base_type.invariant_ant))
 						? updateAccessedDynamicType(base_type.invariant_con, this.kind)
 						: throwWrongSubtypeError(this.accessor, base_type.invariant_ant)
 				) :
-				throw_expression(new TypeError01(this))
+				assert.fail(new TypeErrorInvalidOperation(this))
 			);
 			/* eslint-enable @stylistic/indent */
 		}
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const base_value: OBJ.Object | null = this.base.fold();
+	public override fold(): VALUE.Value | null {
+		const base_value: VALUE.Value | null = this.base.fold();
 		if (base_value === null) {
 			return null;
 		}
-		if (this.optional && base_value.identical(OBJ.Null.NULL)) {
+		if (this.optional && base_value.identical(VALUE.NULL)) {
 			return base_value;
 		}
 		if (this.accessor instanceof ASTNodeIndex) {
-			return (base_value as OBJ.CollectionIndexed).get(this.accessor.val.fold() as OBJ.Integer, this.optional, this.accessor);
+			return (base_value as VALUE.CollectionIndexed).get(this.accessor.val.fold() as VALUE.Integer, this.optional, this.accessor);
 		} else if (this.accessor instanceof ASTNodeKey) {
-			return (base_value as OBJ.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
+			return (base_value as VALUE.CollectionKeyed).get(this.accessor.id, this.optional, this.accessor);
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
-			const accessor_value: OBJ.Object | null = this.accessor.fold();
+			const accessor_value: VALUE.Value | null = this.accessor.fold();
 			if (accessor_value === null) {
 				return null;
 			}
+			// eslint-disable-next-line @typescript-eslint/no-unsafe-return --- type guard inference is not very good here
 			return (
-				base_value instanceof OBJ.CollectionIndexed ? base_value.get(accessor_value as OBJ.Integer, this.optional, this.accessor) :
-				base_value instanceof OBJ.Set               ? base_value.get(accessor_value                                             ) :
-				(assert_instanceof(base_value, OBJ.Map),      base_value.get(accessor_value,                this.optional, this.accessor))
+				base_value instanceof VALUE.CollectionIndexed ? base_value.get(accessor_value as VALUE.Integer, this.optional, this.accessor) :
+				base_value instanceof VALUE.Set               ? base_value.get(accessor_value                                               ) :
+				(assert_instanceof(base_value, VALUE.Map),      base_value.get(accessor_value,                  this.optional, this.accessor))
 			);
 		}
 	}

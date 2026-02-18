@@ -4,8 +4,23 @@ This chapter describes types of values in the Counterpoint Programming Language.
 Counterpoint is a strongly-typed language, meaning that types of values are determined at compile-time.
 A strong type system can help prevent many runtime errors.
 
-Counterpoint Language Types are described in the [formal specification](../spec/data-types.md#counterpoint-language-types).
+Counterpoint Language Types are described in the [formal specification](../spec/types-values.md#counterpoint-language-types).
 This reference takes a more informative approach.
+
+
+
+## Value Types and Reference Types
+Value types describe data that have no identity and are identifiable only by their value;
+they are identical when they have the “same value”.
+When a data value is assigned to a variable or parameter, a copy of it is assigned;
+all value types are immutable.
+An instance of a value type is called a “data value”.
+
+Reference types describe objects that have an identity and are identifiable by reference;
+they are identical when they have the same reference.
+When a reference object is assigned to a variable or parameter, a new reference to the object is assigned,
+and any change to the object is observable in every reference.
+An instance of a reference type is called a “reference object” or simply an “object”.
 
 
 
@@ -33,6 +48,13 @@ such as a record’s optional property.
 There are no values assignble to `void`, but some expressions may have type `void`,
 for example, property access and function calls.
 
+
+### `unknown`
+Type  `unknown` is at the top of the type hierarchy —
+it contains every value and expression, and is a supertype of every other type.
+
+Type `unknown` is used to describe a value or expression about which nothing is known.
+Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 ### `null`
 Type `null` has exactly one value, also called `null`.
@@ -140,12 +162,12 @@ There are two kinds of strings: string literals and string templates.
 String literals are static and known at compile-time.
 They’re delimited with double-quotes (`"` **U+0022 QUOTATION MARK**).
 ```
-let greeting: str = "Hello, world!";
+val greeting: str = "Hello, world!";
 ```
 
 String literals may contain line breaks, which are preserved during “cooking”.
 ```
-let pangram: str = "The quick brown fox
+val pangram: str = "The quick brown fox
 jumps over the lazy dog.";
 ```
 > "The quick brown fox\
@@ -157,7 +179,7 @@ in source code, without rendering the line breaks in the strings’ cooked value
 When we escape the line break with a backslash (`\` **U+005C REVERSE SOLIDUS**),
 the line break is converted into a space.
 ```
-let pangram: str = "The quick brown fox\
+val pangram: str = "The quick brown fox\
 jumps over the lazy dog.";
 ```
 > "The quick brown fox jumps over the lazy dog."
@@ -200,7 +222,7 @@ The code `\u{‹codepoint›}` escapes unicode characters,
 where ‹codepoint› is the code point of the character in hexadecimal.
 For example, `\u{24}` escapes the dollar sign symbol, since its code point is **U+0024**.
 ```
-let price: str = "\u{24}3.99";
+val price: str = "\u{24}3.99";
 ```
 > "$3.99"
 
@@ -269,8 +291,8 @@ Multiline comments cannot be nested.
 String templates are dynamic and may contain interpolated expressions.
 They’re delimited with three double-quotes (`"""`).
 ```
-let years: int = 10;
-let greeting: str = """I’ve been coding for {{ years }} years.
+val years: int = 10;
+val greeting: str = """I’ve been coding for {{ years }} years.
 That’s about {{ 365 * years }} days.""";
 ```
 
@@ -278,7 +300,7 @@ That’s about {{ 365 * years }} days.""";
 String templates may contain interpolated expressions, which are enclosed within double-braces `{{ … }}`.
 An interpolated expression is an expression that computes to a string.
 ```
-let twelve: str = "12";
+val twelve: str = "12";
 """3 times 4 is {{ twelve }}""";
 ```
 > "3 times 4 is 12"
@@ -326,7 +348,7 @@ judge        \%\% and this isn’t either \%\%    my vow.
 ##### No Escapes
 String templates may contain line breaks, but line continuations are not possible.
 ```
-let pangram: str = """Watch “Jeopardy!”,\
+val pangram: str = """Watch “Jeopardy!”,\
 Alex Trebek’s fun TV quiz game.""";
 ```
 > "Watch “Jeopardy!”,\\\
@@ -338,7 +360,7 @@ The cooked value of a string template matches its raw code.
 Probably one of the most common uses of string templates is that they can contain DSLs,
 “domain-specific languages”. For example, we might want to encode a CSS snippet in a string template:
 ```
-let css_code: str = """
+val css_code: str = """
 	h1, h2, h3 {
 		font-weight: bold;
 	}
@@ -349,14 +371,14 @@ let css_code: str = """
 ```
 Because there are no character escapes, DSLs very easy to read and write in string templates.
 ```
-let latex_code: str = """
+val latex_code: str = """
 	\paragraph{The following equations explain how \emph{matter} and \emph{energy} are related.}
 	\begin{align}
 		E_0 &= mc^2 \\
 		E   &= \frac{mc^2}{\sqrt{1-\frac{v^2}{c^2}}}
 	\end{align}
 """;
-let javascript_code: str = """
+val javascript_code: str = """
 	var nonempty_string = "Look, ma, no escaping (the quotes)!"
 	var empty_string = ""
 """;
@@ -392,17 +414,11 @@ I {{ "\u{2764}" }} Unicode!
 > "
 
 
-### `obj`
-Type `obj` is the type of all values, that is, every value is assignable to `obj`.
-Expressions of type `void` cannot hold values, so they are not assignable to `obj`.
+### `Object`
+Type `Object` is the type of all references, that is, every reference type is assignable to `Object`.
+This is because all reference objects are ultimately instances of the `Object` class.
+Expressions of type `void` cannot hold values, so they are not assignable to `Object`.
 
-
-### `unknown`
-Type  `unknown` is at the top of the type hierarchy —
-it contains every value and expression, and is a supertype of every other type.
-
-Type `unknown` is used to describe a value or expression about which nothing is known.
-Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 
 ### Unit Types
@@ -416,20 +432,20 @@ and any value assignable to it must compute to that value. Variables with a unit
 but they can only be reassigned to the same value, so having an unfixed variable with a unit type is kind of pointless.
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
-let var TAU: true = true;
+val mut TAU: true = true;
 TAU = true;
 TAU = false; %> TypeError
 
-let var CAR_WHEELS: 4 = 4;
-let CAT_FEET: \b100 = \o4;
+val mut CAR_WHEELS: 4 = 4;
+val CAT_FEET: \b100 = \o4;
 CAR_WHEELS = CAT_FEET;
 ```
 
 The assigned value doesn’t need to be a literal; it may be an expression,
 as long as it’s computable by the compiler’s [constant folding](./configuration.md#constantFolding) mechanism.
 ```
-let TAU: true = !false;
-let CAR_WHEELS: \b100 = \o10 / 2;
+val TAU: true = !false;
+val CAR_WHEELS: \b100 = \o10 / 2;
 ```
 
 #### String Unit Types
@@ -439,32 +455,32 @@ String unit types are compared by **string value**.
 This means both the type and the value are computed before the assignment takes place.
 String unit types can also contain escape sequences and special characters.
 ```
-let GREETING: "H\u{e9}llo\sW\u{f6}rld!" = "Héllo Wörld!";
-let COUNT: "1
+val GREETING: "H\u{e9}llo\sW\u{f6}rld!" = "Héllo Wörld!";
+val COUNT: "1
 2\
 3	4" = "1\n2 3\t4";
 ```
 
 If the compiler can compute the value of a string template, then it may also be assigned to a string unit type.
 ```
-let hello: str = "Hello";
-let world: str = "World";
-let GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
+val hello: str = "Hello";
+val world: str = "World";
+val GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
 ```
 Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
 the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
 However, if they were unfixed, that wouldn’t be possible.
 ```
-let var hello: str = "Hello";
-let var world: str = "World";
-let GREETING: "Hello World!" = """{{ hello }} {{ world }}!"""; %> TypeError
+val mut hello: str = "Hello";
+val mut world: str = "World";
+val GREETING: "Hello World!" = """{{ hello }} {{ world }}!"""; %> TypeError
 ```
 This is because the type of the template can only be inferred as `str`,
 which is wider than the unit type it’s being assigned to.
 
 String templates *cannot* be used as unit types (even if they’re templates without interpolation).
 ```
-let GREETING: """Hello World!""" = "Hello World!"; %> ParseError
+val GREETING: """Hello World!""" = "Hello World!"; %> ParseError
 ```
 
 
@@ -484,39 +500,40 @@ Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit T
 
 ### Tuples
 Tuples are fixed-size ordered lists of indexed values, with indices starting at `0`.
-The values in a tuple are called **items** (the actual values) or **entries** (the slots the values are stored in).
+The values in a tuple are called **items** (the actual values) or **entries** (the “slots” where values are stored).
 The number of entries in a tuple is called its **count**.
-The count of a tuple is fixed and known at compile-time, as is the type of each entry in the tuple.
+The count of a tuple is fixed and known at compile-time, as is the type of each entry in it.
 The order of entries is significant: looping and iteration are performed in index order.
 Tuples are heterogeneous, meaning they can be declared with different entry types.
-If a tuple is mutable, the entries of the tuple may be reassigned, but only to values of the correct type.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
 For example, the tuple `[3, 4.0, "seven"]` has an integer in the first position at index `0`,
 followed by a float at index `1`, followed by a string at index `2`. Its count is 3.
-Entries cannot be added or removed — the count of the tuple cannot change — but entries can be reassigned:
-We could set the last entry to the string `"twelve"`.
 
 Tuple literals are comma-separated expressions within square brackets.
 Tuple types use the same syntax, but instead of value expressions
 they contain type expressions (a.k.a. types).
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire"];
+val elements: [str, str, str] = ["earth", "wind", "fire"];
 ```
-Larger tuples are always assignable to smaller tuples, as long as the types match.
-```
-let elements: [str, str, str] = ["earth", "wind", "fire", true, 42];
-```
-The above declaration is allowed because the last two items are simply dropped off.
 
-However, assigning a smaller tuple to a larger tuple results in a TypeError.
+Larger tuples are always assignable to smaller tuples,
+but assigning a smaller tuple to a larger tuple results in a TypeError.
 ```
-let elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %> TypeError
+val elements: [str, str, str] = ["earth", "wind", "fire", true, 42];
+val elements_and_more: [str, str, str, bool, int] = ["earth", "wind", "fire"]; %> TypeError
+```
+The first declaration is allowed because the last two items are simply dropped off.
+
+Because tuples are read-only, the `mutable` operator is invalid on tuple types.
+```
+val elements: mutable [str, str, str] = ["earth", "wind", "fire"]; %> TypeError
 ```
 
 Note: If a tuple is homogeneous (its items are all of the same type),
 then we can use shorthand notation to annotate it:
 ```
-let elements: str[3] = ["earth", "wind", "fire"];
+val elements: str[3] = ["earth", "wind", "fire"];
 %             ^ shorthand for `[str, str, str]`
 ```
 
@@ -524,7 +541,7 @@ let elements: str[3] = ["earth", "wind", "fire"];
 Items of a tuple can be accessed via 0-based **dot-accessor notation**
 (index `0` represents the first item).
 ```
-let elements: [str, str, str] = ["earth", "wind", "fire"];
+val elements: [str, str, str] = ["earth", "wind", "fire"];
 elements.0; %== "earth"
 elements.1; %== "wind"
 elements.2; %== "fire"
@@ -563,26 +580,19 @@ elements.[0.5 * 2]; %> TypeError % expected int but found float
 
 A TypeError is produced when the compiler can determine if the index is out-of-bounds.
 ```
-let i: int = 4;
+val i: int = 4;
 elements.[i];   %> TypeError % index `4` does not exist on type `str[3]`
 ```
 If the compiler can’t compute the index, it won’t error at all,
 but this means the program could crash at runtime.
 ```
-let var i: int = 4;
+val mut i: int = 4;
 elements.[i];       % no compile-time error, but value at runtime will be undefined
 ```
 
-If a variable is declared as a mutable tuple, its indices may be reassigned, but its type or size cannot change.
-A non-mutable tuple’s items, type, and size are all fixed.
+A tuple’s items, type, and size are all fixed.
 ```
-let mut_tuple: mutable [bool, int, str] = [true, 4, "hello"];
-set mut_tuple.0 = false;
-set mut_tuple.1 = 2;
-set mut_tuple.2 = "world";
-mut_tuple; %== [false, 2, "world"];
-
-let tuple: [bool, int, str] = [true, 4, "hello"];
+val tuple: [bool, int, str] = [true, 4, "hello"];
 set tuple.0 = false;   %> MutabilityError
 set tuple.1 = 2;       %> MutabilityError
 set tuple.2 = "world"; %> MutabilityError
@@ -592,7 +602,7 @@ tuple; %== [true, 4, "hello"];
 #### Optional Items
 Tuple types may have optional items, indicating that a tuple of that type might or might not have that item.
 ```
-let var x: [str, int, ?: bool] = ["hello", 42];
+val mut x: [str, int, ?: bool] = ["hello", 42];
 x = ["hello", 42, true];
 ```
 The symbol `?:` in the type signature indicates that the item is optional.
@@ -602,12 +612,12 @@ When we access an optional item, its type is unioned with `void`,
 because the compiler doesn’t know if there’s an actual value there.
 Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
 ```
-let x2: bool | void = x.2; % potential runtime error
+val x2: bool | void = x.2; % potential runtime error
 ```
 However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
 can anticipate this error and return `null` whenever the value doesn’t exist.
 ```
-let x2: bool? = x?.2;
+val x2: bool? = x?.2;
 ```
 If `x.2` exists, the expression `x?.2` produces that value; otherwise it produces `null`,
 avoiding the runtime error.
@@ -616,7 +626,7 @@ We can use the [claim access operator](./expressions-operators.md#claim-access) 
 to tell the type-checker that the property definitely exists and is not type `void`.
 It should only be used if we are certain the property exists.
 ```
-let x2: bool = x!.2;
+val x2: bool = x!.2;
 ```
 The expression `x!.2` behaves just like `x.2`, except that it bypasses the compiler’s TypeError.
 
@@ -629,9 +639,9 @@ The count and types of record **entries** (the “slots” where values are stor
 The order of entries is *not* significant: though records can be iterated over, the order in which this is done is
 implementation-dependent; thus authors should not rely on any particular iteration order.
 Records are heterogeneous, meaning they can be declared with different entry types.
-Record entries cannot be added or deleted, but if the record is mutable, they can be reassigned.
+They are also read-only, which means their entries cannot be added, deleted, or reassigned.
 
-For example, given the record
+For example, the record
 ```
 [
 	fontFamily= "sans-serif",
@@ -640,7 +650,7 @@ For example, given the record
 	fontWeight= 400,
 ];
 ```
-we could reassign the `fontWeight` property a value of `700`. Its count is 4.
+has a count of 4.
 
 Keys may be reserved keywords, not just restricted to identifiers.
 This is because the record key will always be lexically bound to the record —
@@ -675,7 +685,7 @@ type StyleMap = [
 	fontSize:   float,
 	fontFamily: str,
 ];
-let my_styles: StyleMap = [
+val my_styles: StyleMap = [
 	fontFamily= "sans-serif",
 	fontSize=   1.25;
 	fontStyle=  "oblique",
@@ -688,24 +698,10 @@ However, *code evaluation* is always left-to-right and top-to-bottom, which mean
 cause any side-effects, those side-effects will be observed in the order the entries are written.
 (This is significant if any values are function calls for example.)
 
-Record keys point to unique values. Latter properties take precedence.
+Larger records are always assignable to smaller records,
+but assigning a smaller record to a larger record results in a TypeError.
 ```
-let elements: [
-	socrates:  str,
-	plato:     str,
-	aristotle: str,
-] = [
-	socrates=  "earth",
-	plato=     "wind",
-	aristotle= "fire",
-	plato=     "water",
-];
-```
-The value of the `plato` key will be `"water"`.
-
-Larger records are always assignable to smaller records, as long as the types match.
-```
-let elements: [
+val elements: [
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
@@ -716,12 +712,8 @@ let elements: [
 	pythagoras= 42,
 	aristotle=  "fire",
 ];
-```
-The above declaration is allowed because the unused properties are simply dropped off.
 
-However, assigning a smaller record to a larger record results in a TypeError.
-```
-let elements_and_more: [
+val elements_and_more: [
 	socrates:   str,
 	plato:      str,
 	aristotle:  str,
@@ -733,11 +725,17 @@ let elements_and_more: [
 	aristotle= "fire",
 ]; %> TypeError
 ```
+The first declaration is allowed because the unused properties are simply dropped off.
+
+Because records are read-only, the `mutable` operator is invalid on record types.
+```
+val elements: mutable [x: str, y: str, z: str] = [x= "earth", y= "wind", z= "fire"]; %> TypeError
+```
 
 #### Record Access
 Values of a record can be accessed via **dot-accessor notation**.
 ```
-let elements: [
+val elements: [
 	socrates:  str,
 	plato:     str,
 	aristotle: str,
@@ -757,16 +755,9 @@ so attempting to retrieve an non-existent key results in a compile-time error.
 elements.pythagoras; %> TypeError
 ```
 
-If a variable is declared as a mutable record, its keys may be reassigned, but its type or size cannot change.
-A non-mutable record’s values, type, and size are all fixed.
+A record’s properties, type, and size are all fixed.
 ```
-let mut_record: mutable [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
-set mut_record.a = false;
-set mut_record.b = 2;
-set mut_record.c = "world";
-mut_record; %== [a= false, b= 2, c= "world"];
-
-let record: [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
+val record: [a: bool, b: int, c: str] = [a= true, b= 4, c= "hello"];
 set record.a = false;   %> MutabilityError
 set record.b = 2;       %> MutabilityError
 set record.c = "world"; %> MutabilityError
@@ -776,7 +767,7 @@ record; %== [a= true, b= 4, c= "hello"];
 #### Optional Properties
 Record types may have optional properties, indicating that a record of that type might or might not have that property.
 ```
-let var y: [firstname: str, middlename?: str, lastname: str] = [
+val mut y: [firstname: str, middlename?: str, lastname: str] = [
 	firstname= "Martha",
 	lastname=  "Dandridge",
 ];
@@ -793,12 +784,12 @@ When we access an optional property, its type is unioned with `void`,
 because the compiler doesn’t know if there’s an actual value there.
 Evaluating such an expression could result in a runtime error, since void expressions have no actual value.
 ```
-let ym: str | void = y.middlename; % potential runtime error
+val ym: str | void = y.middlename; % potential runtime error
 ```
 However, the [optional access operator](./expressions-operators.md#optional-access) `?.`
 can anticipate this error and return `null` whenever the value doesn’t exist.
 ```
-let ym: str? = y?.middlename;
+val ym: str? = y?.middlename;
 ```
 If `y.middlename` exists, the expression `y?.middlename` produces that value; otherwise it produces `null`,
 avoiding the runtime error.
@@ -807,7 +798,7 @@ We can use the [claim access operator](./expressions-operators.md#claim-access) 
 to tell the type-checker that the property definitely exists and is not type `void`.
 It should only be used if we are certain the property exists.
 ```
-let ym: str = y!.middlename;
+val ym: str = y!.middlename;
 ```
 The expression `y!.middlename` behaves just like `y.middlename`, except that it bypasses the compiler’s TypeError.
 
@@ -824,12 +815,12 @@ where `T` indicates the type of items in the list.
 Lists are constructed via the constructor syntax `List.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object.
 ```
-let elements: List.<str> = List.<str>(["earth", "wind", "fire"]);
+val elements: List.<str> = List.<str>(["earth", "wind", "fire"]);
 ```
 A shorthand for the generic syntax `List.<T>` is `T[]`.
 We can mix item types, but the list type must be homogeneous.
 ```
-let elements: (str | bool | int)[] = List.<str | bool | int>(["earth", "wind", "fire", true, 42]);
+val elements: (str | bool | int)[] = List.<str | bool | int>(["earth", "wind", "fire", true, 42]);
 ```
 The compiler considers all items in the list as having the same type.
 For example, the expression `elements.[0]` is of type `str | bool | int`,
@@ -851,7 +842,7 @@ where `T` indicates the type of values in the dict.
 Dicts are constructed via the constructor syntax `Dict.<T>(arg)`,
 where `arg` is a [Record](#records) object.
 ```
-let my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
+val my_styles: Dict.<int | float | str> = Dict.<int | float | str>([
 	fontFamily= "sans-serif",
 	fontSize=   1.25,
 	fontStyle=  "oblique",
@@ -874,7 +865,7 @@ where `T` indicates the type of elements in the set.
 Sets may be constructed via the constructor syntax `Set.<T>(arg)`,
 where `arg` is a [Tuple](#tuples) object of elements.
 ```
-let elements: Set.<str> = Set.<str>(["earth", "wind", "fire"]);
+val elements: Set.<str> = Set.<str>(["earth", "wind", "fire"]);
 ```
 The set above has elements of one type.
 Typically this will be the case, but it’s possible for a set to contain a mix of different element types.
@@ -882,7 +873,7 @@ Typically this will be the case, but it’s possible for a set to contain a mix 
 A shorthand for the generic syntax `Set.<T>` is `T{}`,
 and the set literal shorthand syntax is a sequence of comma-separated expressions within curly braces.
 ```
-let elements: str{} = {"earth", "wind", "fire"};
+val elements: str{} = {"earth", "wind", "fire"};
 ```
 
 The size of sets is not known at compile-time, and could change during run-time.
@@ -894,13 +885,13 @@ If a set is declared with duplicates, they are collapsed:
 The set `{"water", "water"}` only conains 1 element.
 Sets may have several elements that are un-identical but “equal”.
 ```
-let x: [str] = ["water"];
-let y: [str] = ["water"];
-let elements: (float | [str]){} = {0.0, -0.0, x, y};
+val x: str[] = List.<str>(["water"]);
+val y: str[] = List.<str>(["water"]);
+val elements: (float | [str]){} = {0.0, -0.0, x, y};
 ```
 In this example, the elements `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
-Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
+Similarly, `x` and `y` are not identical, but they are equal by list composition.
 Even though `0.0 == -0.0` and `x == y`, this set has four elements.
 
 #### Set Access
@@ -908,19 +899,19 @@ Elements of a set can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the element to get.
 The value is `true` if the element is in the set, and `false` if not.
 ```
-let bases: obj{} = {
+val bases: Object{} = {
 	"who",
-	["what"],
+	List.<str>(["what"]),
 	{ "i" -> {"don’t" -> "know"} },
 };
 bases.["""{{ "w" }}{{ "h" }}{{ "o" }}"""]; %== true
-bases.[["what"]];                          %== false
+bases.[List.<str>(["what"])];              %== false
 bases.["idk"];                             %== false
 ```
 
 A TypeError is produced when the expression is not assignable to the set’s invariant.
 ```
-let a: int = 3;
+val a: int = 3;
 bases.[a];      %> TypeError
 ```
 
@@ -934,9 +925,9 @@ The number of cases in a map is called its **count**.
 Map types are declared via the **generic map type syntax**: `Map.<K, V>`
 where `K` indicates the type of antecedents and `V` indicates the type of consequents in the map.
 Maps may be constructed via the constructor syntax `Map.<K, V>(arg)`,
-where `arg` is a [Tuple](#tuples) object of key-value pairs (also tuples).
+where `arg` is a [Tuple](#tuples) object of key-value pairs (also Tuples).
 ```
-let bases: Map.<int | str, obj> = Map.<int | str, obj>([
+val bases: Map.<int | str, Object> = Map.<int | str, Object>([
 	[1,     "who"],
 	["2nd", ["what"]],
 	[1 + 2, { "i" -> {"don’t" -> "know"} }],
@@ -949,7 +940,7 @@ but this isn’t a requirement.
 A shorthand for the generic syntax `Map.<K, V>` is `{K -> V}`,
 and the map literal shorthand syntax is a sequence of comma-separated `key -> value` pairs within curly braces.
 ```
-let bases: {int | str -> obj} = {
+val bases: {int | str -> Object} = {
 	1     -> "who",
 	"2nd" -> ["what"],
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -963,7 +954,7 @@ Like records, the order of entries in a map is not necessarily significant.
 Antecedents have unique consequents in that latter declarations take precedence.
 In the case of maps, antecedents that are identical are considered “the same object”.
 ```
-let bases: {int | str -> obj} = {
+val bases: {int | str -> Object} = {
 	1     -> "who",
 	"2nd" -> ["what"],
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -974,9 +965,9 @@ The consequent corresponding to the antecedent `3` will be `` [i= [`don’t`= "k
 
 Maps may have several antecedents that are un-identical but “equal”.
 ```
-let x: [int] = [3];
-let y: [int] = [3];
-let bases: {float | [int] -> obj} = {
+val x: int{} = {3};
+val y: int{} = {3};
+val bases: {float | [int] -> Object} = {
 	0.0  -> "who",
 	-0.0 -> ["what"],
 	x    -> { "i" -> {"don’t" -> "know"} },
@@ -986,14 +977,14 @@ let bases: {float | [int] -> obj} = {
 In this example, the antecedents `0.0` and `-0.0` are not identical
 (even if they are equal by the floating-point definition of equality).
 Thus we are able to retrieve the different consequents at each of those antecedents.
-Similarly, `x` and `y` are not identical, but they are equal by tuple composition.
+Similarly, `x` and `y` are not identical, but they are equal by Set composition.
 Even though `0.0 == -0.0` and `x == y`, this map has four entries.
 
 #### Map Access
 Consequents of a map can be accessed via **bracket-accessor notation**,
 where the expression in the brackets is the antecedent to get.
 ```
-let bases: {int | str -> obj} = {
+val bases: {int | str -> Object} = {
 	1     -> "who",
 	"2nd" -> ["what"],
 	1 + 2 -> { "i" -> {"don’t" -> "know"} },
@@ -1005,13 +996,13 @@ bases.[3].["i"];         %== {"don’t" -> "know"}
 
 A VoidError is produced when the compiler can determine if the antecedent does not exist.
 ```
-let a: str = "3rd";
+val a: str = "3rd";
 bases.[a];          %> VoidError
 ```
 If the compiler can’t compute the antecedent, it won’t error at all,
 but this means the program could crash at runtime.
 ```
-let var a: str = "3rd";
+val mut a: str = "3rd";
 bases.[a];              % no compile-time error, but value at runtime will be undefined
 ```
 We can avoid the potential crash using the

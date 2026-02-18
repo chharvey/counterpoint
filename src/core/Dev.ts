@@ -1,8 +1,8 @@
-type DevToggleKey =
+type DevToggleKey = (
 	// v0.5.0
-		| 'stringConstant-build'
-		| 'stringTemplate-build'
-;
+	| 'stringConstant-build'
+	| 'stringTemplate-build'
+);
 type DevToggleVal = [boolean, DevToggleKey[]?];
 
 
@@ -10,6 +10,7 @@ type DevToggleVal = [boolean, DevToggleKey[]?];
 /**
  * Development utilities. Not for production.
  */
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class --- TODO: this is dead code; delete it
 export class Dev {
 	/**
 	 * A map of development features to their version numbers.

@@ -1,19 +1,19 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
-	AssignmentError01,
-} from '../../index.js';
-import {assert_instanceof} from '../../lib/index.js';
+	AssignmentErrorDuplicateDeclaration,
+} from '../../index.ts';
+import {assert_instanceof} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import {SymbolStructureType} from '../index.js';
-import type {SyntaxNodeType} from '../utils-private.js';
-import type {ASTNodeType} from './ASTNodeType.js';
-import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.js';
-import {ASTNodeStatement} from './ASTNodeStatement.js';
+} from '../../core/index.ts';
+import {SymbolSchemaType} from '../index.ts';
+import type {SyntaxNodeType} from '../utils-private.ts';
+import type {ASTNodeType} from './ASTNodeType.ts';
+import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -40,9 +40,9 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		this.assigned.varCheck();
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {
-				throw new AssignmentError01(this.assignee);
+				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolStructureType(this.assignee));
+			this.validator.addSymbol(new SymbolSchemaType(this.assignee));
 		}
 	}
 
@@ -50,7 +50,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolStructureType;
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}
 	}

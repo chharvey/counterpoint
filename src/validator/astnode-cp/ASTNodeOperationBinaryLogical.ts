@@ -1,24 +1,28 @@
 import binaryen from 'binaryen';
 import {
-	type OBJ,
-	type TYPE,
+	type VALUE,
+	TYPE,
+	type Local,
 	BinVect,
-} from '../../index.js';
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.js';
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.js';
-import type {SyntaxNodeSupertype} from '../utils-private.js';
+} from '../../core/index.ts';
+import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorLogical,
-} from '../Operator.js';
-import {ASTNodeExpression} from './ASTNodeExpression.js';
-import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.js';
+} from '../Operator.ts';
+import {
+	buildDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
+import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
 
@@ -39,7 +43,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@ASTNodeExpression.buildDeco
+	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		// eslint-disable-next-line prefer-const --- one of them is reassigned
 		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
@@ -49,47 +53,50 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 			this.builder.module.drop(arg0),
 			arg1,
 		], binaryen.v128);
-		if (t0.isDefinitelyFalsy()) {
+		if (t0.isDefinitelyFalsy) {
 			return this.operator === Operator.AND ? arg0 : block1;
-		} else if (t0.isDefinitelyTruthy()) {
+		} else if (t0.isDefinitelyTruthy) {
 			return this.operator === Operator.AND ? block1 : arg0;
 		}
 
-		/** A temporary variable id used for optimizing short-circuited operations. */
-		const temp_id: bigint = this.builder.varCount;
-		const local           = this.builder.addLocal(temp_id, binaryen.getExpressionType(arg0))[0].getLocalInfo(temp_id)!;
+		const local: Local = this.builder.addLocal(arg0)[1];
 
 		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
 			'vnot',
-			[this.builder.module.local.tee(local.index, arg0, local.type)],
+			[local.tee()],
 			binaryen.v128,
 		)).isSpecial(false);
-		arg0 = this.builder.module.local.get(local.index, local.type);
+		arg0 = local.get();
 
 		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
 		return this.builder.module.if(condition, if_true, if_false);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, _int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
+		if (t0.isBottomType) {
+			return TYPE.NEVER;
+		}
 		switch (this.operator) {
 			case Operator.AND: {
-				return t0.isDefinitelyFalsy()
-					? t0
-					: t0.falsySide().union(t1); // also the case for if `t0.isDefinitelyTruthy()`
+				return (
+					t0.isDefinitelyFalsy  ? t0 :
+					t0.isDefinitelyTruthy ? t1 :
+					t0.falsySide.union(t1)
+				);
 			}
 			case Operator.OR: {
-				return t0.isDefinitelyFalsy()
-					? t1
-					: t0.isDefinitelyTruthy()
-						? t0
-						: t0.truthySide().union(t1);
+				return (
+					t0.isDefinitelyFalsy  ? t1 :
+					t0.isDefinitelyTruthy ? t0 :
+					t0.truthySide.union(t1)
+				);
 			}
 		}
 	}
 
 	@memoizeMethod
-	public override fold(): OBJ.Object | null {
-		const v0: OBJ.Object | null = this.operand0.fold();
+	public override fold(): VALUE.Value | null {
+		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
 			return v0;
 		}

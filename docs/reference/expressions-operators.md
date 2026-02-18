@@ -218,17 +218,17 @@ Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
 
 ### Property Access
 ```
-<obj> `.` int-literal
-<obj> `.` word
-<obj> `.` `[` <obj> `]`
+<Tuple  | List> `.` int-literal
+<Record | Dict> `.` word
+<Object>        `.` `[` <Object> `]`
 
-<obj> `?.` int-literal
-<obj> `?.` word
-<obj> `?.` `[` <obj> `]`
+<Tuple  | List> `?.` int-literal
+<Record | Dict> `?.` word
+<Object>        `?.` `[` <Object> `]`
 
-<obj> `!.` int-literal
-<obj> `!.` word
-<obj> `!.` `[` <obj> `]`
+<Tuple  | List> `!.` int-literal
+<Record | Dict> `!.` word
+<Object>        `!.` `[` <Object> `]`
 ```
 The **property accesss** syntax is a unary operator on an object.
 The object it operates on is called the **binding object** and
@@ -275,6 +275,29 @@ then the whole expression also results in `null`.
 However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
 and will result in a runtime error if `x?.y` is `null`.
 
+**Type-Checking Note:**
+
+For static types (e.g., tuples and records),
+if the property is required, both regular and optional access operators do not modify the property’s declared type.
+If the property is optional,
+the regular access operator unions the property type with `void` and
+the optional access operator unions the property type with `null`.
+```
+val record: [required: bool, optional?: int] = my_record;
+record.required;  %: bool
+record?.required; %: bool
+record.optional;  %: int | void
+record?.optional; %: int | null
+```
+For dynamic types (e.g., lists and dicts),
+the regular access operator treats all properties as required (does not modify the declared type), but
+the optional access operator treats all properties as optional (unions the property type with `null`).
+```
+val dict: [: float] = my_dict;
+dict.prop;  %: float
+dict?.prop; %: float | null
+```
+
 #### Claim Access
 The **claim access** syntax is just like regular property access, except that
 it makes a **claim** (a compile-time type assertion) that the accessed property
@@ -284,16 +307,16 @@ Claim access has the same runtime behavior of regular property access.
 Its purpose is to tell the type-checker,
 “I know what I’m doing; This property exists and its type is not type `void`.”
 ```
-let item: [str, ?: int] = ["apples", 42];
-let quantity: int = item!.1;
+val item: [str, ?: int] = ["apples", 42];
+val quantity: int = item!.1;
 ```
 The expression `item!.1` has type `int`, despite being an optional entry.
 It will produce the value `42` at runtime.
 Note that bypassing the compiler’s type-checking process should be done carefully.
 If not used correctly, it could lead to runtime errors.
 ```
-let item: [str, ?: int] = ["apples"];
-let quantity: int = item!.1; % runtime error!
+val item: [str, ?: int] = ["apples"];
+val quantity: int = item!.1; % runtime error!
 ```
 An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
 
@@ -342,8 +365,8 @@ These operators can be chained, and when done so, are grouped right-to-left.
 For example, `-+-8` is equivalent to `-(+(-8))`.
 
 ```
-let int_p = 512;
-let int_n = -\x200;
+val int_p = 512;
+val int_n = -\x200;
 
 +int_p; %== 512
 +int_n; %== -512
@@ -499,8 +522,8 @@ The parser receives these tokens and produces the correct expression.
 <int | float> `!<` <int | float>
 <int | float> `!>` <int | float>
 
-<obj> `is`   <obj>
-<obj> `isnt` <obj>
+<Object> `is`   <Object>
+<Object> `isnt` <Object>
 ```
 The numerical comparative operators,
 
@@ -535,12 +558,12 @@ These operators compare two values.
 Any type of operands are valid. The result is a boolean value.
 Integer bases as well as integers and floats can be mixed.
 
-The **identity** operator `===` determines whether two operands are the exactly same object.
-It produces `true` if both operands are references to (point to) the same object in memory,
-or if they are indistinguishable at run-time.
-Primitive values such as `null`, boolean values, number values, and string values
-are compared by value, so any two of “the same” values will be identical.
-For other types, identity and equality might not necessarily be the same:
+The **identity** operator `===` determines whether two operands are exactly “the same”.
+This means different things for value types and reference types.
+For primitive types, which are value types, the operator produces `true` when the two operands
+are indistinguishable at run-time. Non-primitive value types are compared by their constituent parts.
+For reference types, this operator produces `true` when both operands point to the same object in memory.
+For some types, identity and equality might not necessarily return the same result:
 objects that are considered equal might not be identical.
 
 Per the [IEEE-754-2019] specification, the floating-point values `0.0` and `-0.0` do not have
@@ -579,7 +602,7 @@ the compiler will assume they’re equal until it can find a property that misma
 If it can’t, it’ll just return true instead of diving down an infinitely long rabbit hole.
 
 Of course, the identity operator (`===`) *always* compares reference objects by reference,
-but compound value objects are still compared compositionally, and the same principle applies —
+but compound data values are still compared compositionally, and the same principle applies —
 assume equal until determined otherwise.
 
 
@@ -777,7 +800,7 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let var hello: str? = null;
+val mut hello: str? = null;
 hello = "world";
 ```
 
@@ -816,16 +839,16 @@ The **Set** operator `T{}` is shorthand for `Set.<T>`.
 `mut` <Type>
 ```
 The `mut` type operator allows properties in a complex type to be reassigned.
-It allows us to reassign tuple indices and record keys, as well as modify sets and maps
-by adding, removing, and changing entries.
+It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mut str[4] = ["water", "earth", "fire", "wind"];
-elements.3 = "air";
-elements; %== ["water", "earth", "fire", "air"]
+val elements: mut str{} = {"water", "earth", "fire", "wind"};
+elements.["wind"] = false;
+elements.["air"]  = true;
+elements; %== {"water", "earth", "fire", "air"}
 ```
-If `elements` were just of type `str[4]` (without `mut`),
-then attempting to modify it would result in a Mutability Error.
+If `elements` were just of type `str{}` (without `mut`),
+then attempting to modify it would result in a [Mutability Error](./errors.md#mutability-errors-24xx).
 
 
 ### Intersection
@@ -835,7 +858,7 @@ then attempting to modify it would result in a Mutability Error.
 The **intersection** operator creates a strict combination of the operands.
 ```
 type T = [foo: bool] & [bar: int];
-let v: T = [
+val v: T = [
 	foo= false,
 	bar= 42,
 ];
@@ -890,7 +913,7 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let var v: T = false;
+val mut v: T = false;
 v = 42;
 ```
 

@@ -1,32 +1,18 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import type {CodeUnit} from '../lib/index.js';
+import type {
+	NonemptyArray,
+	CodeUnit,
+} from '../lib/index.ts';
 
 
 
-export type SyntaxNodeType<T extends string> = SyntaxNode & {readonly type: T} & {readonly isNamed: true};
-
-
-
-/**
- * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
- * the index of a character in the Unicode Universal Character Set.
- */
-type CodePoint = number;
-
-
-
-/**
- * An encoded character is a sequence of code units
- * that corresponds to a single code point in the UTF-8 encoding.
- */
-type EncodedChar =
-	| [CodeUnit]
-	| [CodeUnit, CodeUnit]
-	| [CodeUnit, CodeUnit, CodeUnit]
-	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-;
+export type SyntaxNodeType<T extends string> = (
+	& SyntaxNode
+	& {readonly isNamed: true}
+	& {readonly type: T}
+);
 
 
 
@@ -40,12 +26,48 @@ export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_reg
 
 
 
-type Category =
+type Join<Strings extends Readonly<NonemptyArray<string>>> = Strings extends [infer S0, ...infer SRest]
+	? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : '' }`
+	: '';
+
+
+
+export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> = SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
+
+
+
+// NOTE: copied from `../../tree-sitter-counterpoint/grammar.ts`
+function argsArr(nth: number, params: readonly string[]): readonly string[] {
+	// e.g. `['await', 'static', 'instance', 'method']`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
+		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
+		.map(([param, _to_include]) => param);                   // `['static', 'method']`
+}
+function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
+	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
+}
+function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+}
+
+
+
+export function isSyntaxNodeFamily<
+	Name extends string,
+	const Suffices extends Readonly<NonemptyArray<string>>, // `const ‹TypeParam›` prevents the need to pass in `‹expr› as const` every time
+>(node: SyntaxNode, name: Name, suffices: Suffices): node is SyntaxNodeFamily<Name, Suffices> {
+	return familyNameAll(name, suffices).some((familyname) => isSyntaxNodeType(node, familyname));
+}
+
+
+
+type Category = (
 	| 'type'
 	| 'expression'
 	| 'declaration'
 	| 'statement'
-;
+);
 
 
 
@@ -95,12 +117,33 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 
 export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
 	return new Map<Category, (node: SyntaxNode) => boolean>([
-		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped|type_tuple_literal|type_record_literal|type_dict_literal|type_map_literal|type_compound|type_unary_symbol|type_unary_keyword|type_intersection|type_union$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|tuple_literal|record_literal|set_literal|map_literal|expression_compound|expression_unary_symbol|expression_exponential|expression_multiplicative|expression_additive|expression_comparative|expression_equality|expression_conjunctive|expression_disjunctive|expression_conditional$/)],
+		['type',        (node) => isSyntaxNodeType(node, /^keyword_type|identifier|primitive_literal|type_grouped|type_(tuple|record|dict|map)_literal|type_(compound|unary_symbol|unary_keyword|intersection|union)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template|expression_grouped|(tuple|record|set|map)_literal|expression_(compound|unary_symbol|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional)$/)],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_type|declaration_variable$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^statement_expression|statement_assignment$/) || isSyntaxNodeSupertype(node, 'declaration')],
 	]).get(category)!(syntaxnode);
 }
+
+
+
+/**
+ * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
+ * the index of a character in the Unicode Universal Character Set.
+ */
+type CodePoint = number;
+
+
+
+/**
+ * An encoded character is a sequence of code units
+ * that corresponds to a single code point in the UTF-8 encoding.
+ */
+type EncodedChar = (
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+);
 
 
 

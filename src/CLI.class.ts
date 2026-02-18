@@ -1,12 +1,12 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
 import * as xjs from 'extrajs';
-import * as fs from 'fs';
-import * as path from 'path';
 import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from './core/index.js';
-import {Program} from './Program.js';
+} from './core/index.ts';
+import {Program} from './Program.ts';
 
 
 
@@ -211,7 +211,7 @@ export class CLI {
 	 */
 	private async computeConfig(cwd: string): Promise<CPConfig> {
 		const config: PartialCPConfig = this.argv.project
-			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8'))
+			? JSON.parse(await fs.promises.readFile(path.join(cwd, path.normalize(this.argv.project)), 'utf8')) as PartialCPConfig
 			: {};
 
 		const returned: Mutable<CPConfig> = {
@@ -257,7 +257,7 @@ export class CLI {
 	 * Run the command `compile` or `dev`.
 	 * @param cwd the current working directory, `process.cwd()`
 	 */
-	public async compileOrDev(cwd: string): Promise<[string, void]> {
+	public async compileOrDev(cwd: string): Promise<[string, undefined]> {
 		const inputfilepath: string = this.inputPath(cwd);
 		const outputfilepath: string = this.argv.out ? path.join(cwd, path.normalize(this.argv.out)) : path.format({
 			...path.parse(inputfilepath),
@@ -269,12 +269,13 @@ export class CLI {
 			this.computeConfig(cwd),
 		]));
 		return Promise.all([
+			// eslint-disable-next-line @typescript-eslint/await-thenable --- we want to return the string and promise together while it’s resolving
 			xjs.String.dedent`
 				Compiling………
 				Source file: ${ inputfilepath }
 				${ (this.command === Command.DEV) ? 'Intermediate text file (for debugging):' : 'Destination binary file:' } ${ outputfilepath }
 			`.trimStart(),
-			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()),
+			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()) as Promise<undefined>,
 		]);
 	}
 

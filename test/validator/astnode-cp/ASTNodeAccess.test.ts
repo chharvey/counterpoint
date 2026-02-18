@@ -1,28 +1,34 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	AST,
-	OBJ,
+	VALUE,
 	TYPE,
-	TypeError01,
-	TypeError02,
-	TypeError04,
+	type Builder,
+	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
+	TypeErrorNoEntry,
 	VoidError01,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
+import {assertEqualBins} from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
 	typeUnit,
-} from '../../helpers.js';
+	buildConst,
+} from '../../helpers.ts';
+import {setup} from '../../builder/utils.test.ts';
 
 
 
 describe('ASTNodeAccess', () => {
 	const INDEX_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
-		let     tup_fixed:    [int, float, str]     = [1, 2.0, "three"];
-		let var tup_unfixed:  [int, float, str]     = [1, 2.0, "three"];
-		let     list_fixed:   (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
-		let var list_unfixed: (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
+		val     tup_fixed:    [int, float, str]     = [1, 2.0, "three"];
+		val mut tup_unfixed:  [int, float, str]     = [1, 2.0, "three"];
+		val     list_fixed:   (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
+		val mut list_unfixed: (int | float | str)[] = List.<int | float | str>([1, 2.0, "three"]);
 
 		%% statements 4 – 10 %%
 		tup_fixed.0;   % type \`1\`       % value \`1\`
@@ -57,14 +63,14 @@ describe('ASTNodeAccess', () => {
 		list_unfixed.-1; % type \`int | float | str\` % non-computable value
 
 		%% statements 28 – 36 %%
-		let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
-		let     tupo2_f: [int, float, ?: str] = [1, 2.0];
-		let     tupo3_f: [int, float]         = [1, 2.0, true];
-		let     tupo4_f: [int, float]         = [1, 2.0];
-		let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
-		let var tupo2_u: [int, float, ?: str] = [1, 2.0];
-		let var tupo3_u: [int, float]         = [1, 2.0, true];
-		let var tupo4_u: [int, float]         = [1, 2.0];
+		val     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
+		val     tupo2_f: [int, float, ?: str] = [1, 2.0];
+		val     tupo3_f: [int, float]         = [1, 2.0, true];
+		val     tupo4_f: [int, float]         = [1, 2.0];
+		val mut tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
+		val mut tupo2_u: [int, float, ?: str] = [1, 2.0];
+		val mut tupo3_u: [int, float]         = [1, 2.0, true];
+		val mut tupo4_u: [int, float]         = [1, 2.0];
 
 		%% statements 36 – 38 %%
 		tupo1_u.2; % type \`str | void\` % non-computable value
@@ -85,15 +91,15 @@ describe('ASTNodeAccess', () => {
 		tupo2_u!.2; % type \`str\`     % non-computable value
 
 		%% statements 46 – 48 %%
-		let var tupvoid: [int | void] = [42];
+		val mut tupvoid: [int | void] = [42];
 		tupvoid!.0; % type \`int\` % non-computable value
 	`;
 	const KEY_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
-		let     rec_fixed:    [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
-		let var rec_unfixed:  [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
-		let     dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= "three"]);
-		let var dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= "three"]);
+		val     rec_fixed:    [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
+		val mut rec_unfixed:  [a: int, b: float, _: str] = [a= 1, b= 2.0, _= "three"];
+		val     dict_fixed:   [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= "three"]);
+		val mut dict_unfixed: [: int | float | str]      = Dict.<int | float | str>([a= 1, b= 2.0, _= "three"]);
 
 		%% statements 4 – 10 %%
 		rec_fixed.a;   % type \`1\`       % value \`1\`
@@ -112,14 +118,14 @@ describe('ASTNodeAccess', () => {
 		dict_unfixed._; % type \`int | float | str\` % non-computable value
 
 		%% statements 16 – 24 %%
-		let     reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
-		let     reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
-		let     reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
-		let     reco4_f: [a: int, c: float]          = [a= 1, c= 2.0];
-		let var reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
-		let var reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
-		let var reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
-		let var reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
+		val     reco1_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
+		val     reco2_f: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+		val     reco3_f: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
+		val     reco4_f: [a: int, c: float]          = [a= 1, c= 2.0];
+		val mut reco1_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0, b= "three"];
+		val mut reco2_u: [a: int, c: float, b?: str] = [a= 1, c= 2.0];
+		val mut reco3_u: [a: int, c: float]          = [a= 1, c= 2.0, b= true];
+		val mut reco4_u: [a: int, c: float]          = [a= 1, c= 2.0];
 
 		%% statements 24 – 26 %%
 		reco1_u.b; % type \`str | void\` % non-computable value
@@ -140,25 +146,25 @@ describe('ASTNodeAccess', () => {
 		reco2_u!.b; % type \`str\`     % non-computable value
 
 		%% statements 34 – 36 %%
-		let var recvoid: [c: int | void] = [c= 42];
+		val mut recvoid: [c: int | void] = [c= 42];
 		recvoid!.c; % type \`int\` % non-computable value
 	`;
 	const EXPR_ACCESS_SRC: string = `
 		%% statements 0 – 4 %%
-		let a: [str] = ["a"];
-		let b: [str] = ["b"];
-		let c: [str] = ["c"];
-		let var three: str = "three";
+		val a: [str] = ["a"];
+		val b: [str] = ["b"];
+		val c: [str] = ["c"];
+		val mut three: str = "three";
 
 		%% statements 4 – 10 %%
-		let     tup_fixed:    [int, float, str]              = [1, 2.0, "three"];
-		let var tup_unfixed:  [int, float, str]              = [1, 2.0, "three"];
-		let     list_fixed:   (int | float | str)[]          = List.<int | float | str>([1, 2.0, "three"]);
-		let var list_unfixed: List.<int | float | str>       = List.<int | float | str>([1, 2.0, "three"]);
-		let     set_fixed:    (int | float | str){}          = {1, 2.0, "three"};
-		let var set_unfixed:  Set.<int | float | str>        = {1, 2.0, three};
-		let     map_fixed:    {[str] -> int | float | str}   = {a -> 1, b -> 2.0, c -> "three"};
-		let var map_unfixed:  Map.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
+		val     tup_fixed:    [int, float, str]              = [1, 2.0, "three"];
+		val mut tup_unfixed:  [int, float, str]              = [1, 2.0, "three"];
+		val     list_fixed:   (int | float | str)[]          = List.<int | float | str>([1, 2.0, "three"]);
+		val mut list_unfixed: List.<int | float | str>       = List.<int | float | str>([1, 2.0, "three"]);
+		val     set_fixed:    (int | float | str){}          = {1, 2.0, "three"};
+		val mut set_unfixed:  Set.<int | float | str>        = {1, 2.0, three};
+		val     map_fixed:    {[str] -> int | float | str}   = {a -> 1, b -> 2.0, c -> "three"};
+		val mut map_unfixed:  Map.<[str], int | float | str> = {a -> 1, b -> 2.0, c -> three};
 
 		%% statements 12 – 18 %%
 		tup_fixed  .[0 + 0]; % type \`1\`       % value \`1\`
@@ -193,14 +199,14 @@ describe('ASTNodeAccess', () => {
 		map_unfixed.[c]; % type \`1 | 2.0 | str\` % non-computable value
 
 		%% statements 36 – 44 %%
-		let     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
-		let     tupo2_f: [int, float, ?: str] = [1, 2.0];
-		let     tupo3_f: [int, float]         = [1, 2.0, true];
-		let     tupo4_f: [int, float]         = [1, 2.0];
-		let var tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
-		let var tupo2_u: [int, float, ?: str] = [1, 2.0];
-		let var tupo3_u: [int, float]         = [1, 2.0, true];
-		let var tupo4_u: [int, float]         = [1, 2.0];
+		val     tupo1_f: [int, float, ?: str] = [1, 2.0, "three"];
+		val     tupo2_f: [int, float, ?: str] = [1, 2.0];
+		val     tupo3_f: [int, float]         = [1, 2.0, true];
+		val     tupo4_f: [int, float]         = [1, 2.0];
+		val mut tupo1_u: [int, float, ?: str] = [1, 2.0, "three"];
+		val mut tupo2_u: [int, float, ?: str] = [1, 2.0];
+		val mut tupo3_u: [int, float]         = [1, 2.0, true];
+		val mut tupo4_u: [int, float]         = [1, 2.0];
 
 		%% statements 44 – 46 %%
 		tupo1_u.[0 + 2]; % type \`str | void\` % non-computable value
@@ -232,21 +238,21 @@ describe('ASTNodeAccess', () => {
 			return stmt.expr!.type();
 		}
 		const COMMON_TYPES = {
-			int_float: TYPE.Type.unionAll([
+			int_float: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
-			]),
-			int_float_str: TYPE.Type.unionAll([
+			),
+			int_float_str: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
-			]),
-			int_float_str_null: TYPE.Type.unionAll([
+			),
+			int_float_str_null: TYPE.Union.all(
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
 				TYPE.NULL,
-			]),
+			),
 		};
 		const expected: TYPE.Type[] = [
 			typeUnit(1n),
@@ -268,9 +274,9 @@ describe('ASTNodeAccess', () => {
 		];
 		context('when base is nullish.', () => {
 			it('optional access returns type of base when it is a subtype of null.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.4;')          .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.four;')       .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('null.[[[[[]]]]];') .type(), TypeError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.4;')          .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.four;')       .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('null.[[[[[]]]]];') .type(), TypeErrorInvalidOperation);
 				[
 					AST.ASTNodeAccess.fromSource('null?.3;')          .type(),
 					AST.ASTNodeAccess.fromSource('null?.four;')       .type(),
@@ -281,8 +287,8 @@ describe('ASTNodeAccess', () => {
 			});
 			it('chained optional access.', () => {
 				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var bound1: [prop?: [bool]] = [prop= [true]];
-					let var bound2: [prop?: [?: bool]] = [prop= []];
+					val mut bound1: [prop?: [bool]] = [prop= [true]];
+					val mut bound2: [prop?: [?: bool]] = [prop= []];
 
 					bound1;          % type \`[prop?: [bool]]\`
 					bound1?.prop;    % type \`[bool] | null\`
@@ -294,15 +300,15 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1: TYPE.TypeTuple = TYPE.TypeTuple.fromTypes([TYPE.BOOL]);
-				const prop2                 = new TYPE.TypeTuple([{type: TYPE.BOOL, optional: true}]);
+				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);
+				const prop2             = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]);
 				assert.deepStrictEqual(
 					program.children.slice(2, 8).map((c) => typeOfStmtExpr(c)),
 					[
-						new TYPE.TypeRecord(new Map([[0x100n, {type: prop1, optional: true}]])),
+						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])),
 						prop1.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
-						new TYPE.TypeRecord(new Map([[0x100n, {type: prop2, optional: true}]])),
+						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])),
 						prop2.union(TYPE.NULL),
 						TYPE.BOOL.union(TYPE.NULL),
 					],
@@ -384,14 +390,14 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when index is out of bounds for tuples.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].3;')   .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].-4;')  .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].3;')   .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].-4;')  .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .type(), TypeErrorNoEntry);
 			});
 			it('returns the list item type when index is out of bounds for lists.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
+					val mut list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
 					list.3;
 					list.-4;
 				`);
@@ -465,12 +471,12 @@ describe('ASTNodeAccess', () => {
 				);
 			});
 			it('throws when key is out of bounds for records.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"].d;')  .type(), TypeError04);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;') .type(), TypeError04);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"].d;')  .type(), TypeErrorNoEntry);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;') .type(), TypeErrorNoEntry);
 			});
 			it('returns the dict item type when key is out of bounds for dicts.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let var dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= "three"]);
+					val mut dict: [: int | float | str] = Dict.<int | float| str>([a= 1, b= 2.0, c= "three"]);
 					dict.d;
 				`);
 				goal.varCheck();
@@ -511,7 +517,7 @@ describe('ASTNodeAccess', () => {
 					program.children.slice(24, 27).forEach((c) => (
 						assert.deepStrictEqual(
 							typeOfStmtExpr(c),
-							OBJ.Boolean.TRUETYPE,
+							TYPE.TRUE,
 						)
 					));
 					return program.children.slice(27, 30).forEach((c) => (
@@ -565,7 +571,7 @@ describe('ASTNodeAccess', () => {
 					assert.deepStrictEqual(
 						program.children.slice(51, 53).map((c) => typeOfStmtExpr(c)),
 						[
-							OBJ.Boolean.TRUETYPE,
+							TYPE.TRUE,
 							TYPE.BOOL,
 						],
 					);
@@ -577,14 +583,14 @@ describe('ASTNodeAccess', () => {
 					);
 				});
 				it('throws when accessor expression is correct type but out of bounds for tuples.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3];')   .type(), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[-4];')  .type(), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')  .type(), TypeError04);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[-4];') .type(), TypeError04);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3];')   .type(), TypeErrorNoEntry);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[-4];')  .type(), TypeErrorNoEntry);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')  .type(), TypeErrorNoEntry);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[-4];') .type(), TypeErrorNoEntry);
 				});
 				it('returns the list item type when accessor expression is correct type but out of bounds for lists.', () => {
 					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-						let var list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
+						val mut list: (int | float | str)[] = List.<int | float| str>([1, 2.0, "three"]);
 						list.[3];
 						list.[-4];
 					`);
@@ -598,9 +604,9 @@ describe('ASTNodeAccess', () => {
 					});
 				});
 				it('throws when accessor expression is of incorrect type.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].["3"];')                            .type(), TypeError02);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}.[true];')                           .type(), TypeError02);
-					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];') .type(), TypeError02);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].["3"];')                            .type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{1, 2.0, "three"}.[true];')                           .type(), TypeErrorNotNarrow);
+					assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.["a"];') .type(), TypeErrorNotNarrow);
 				});
 			});
 			context('with constant folding off.', () => {
@@ -687,27 +693,27 @@ describe('ASTNodeAccess', () => {
 				});
 			});
 			it('throws when base object is of incorrect type.', () => {
-				assert.throws(() => AST.ASTNodeAccess.fromSource('(4).[2];').type(), TypeError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('(4).[2];').type(), TypeErrorInvalidOperation);
 			});
 		});
 	});
 
 
 	describe('#fold', () => {
-		function foldStmtExpr(stmt: AST.ASTNodeStatement): OBJ.Object | null {
+		function foldStmtExpr(stmt: AST.ASTNodeStatement): VALUE.Value | null {
 			assert_instanceof(stmt, AST.ASTNodeStatementExpression);
 			return stmt.expr!.fold();
 		}
-		const expected: Array<OBJ.Object | null> = [
-			new OBJ.Integer(1n),
-			new OBJ.Float(2.0),
-			new OBJ.String('three'),
+		const expected: Array<VALUE.Value | null> = [
+			new VALUE.Integer(1n),
+			new VALUE.Float(2.0),
+			new VALUE.String('three'),
 			null,
 			null,
 			null,
 		];
-		const expected_o: Array<OBJ.Object | null> = [
-			new OBJ.String('three'),
+		const expected_o: Array<VALUE.Value | null> = [
+			new VALUE.String('three'),
 			null,
 			null,
 		];
@@ -722,13 +728,13 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('null?.four;')       .fold(),
 					AST.ASTNodeAccess.fromSource('null?.[[[[[]]]]];') .fold(),
 				].forEach((t) => {
-					assert.strictEqual(t, OBJ.Null.NULL);
+					assert.strictEqual(t, VALUE.NULL);
 				});
 			});
 			it('chained optional access.', () => {
 				const program: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					let bound1: [prop?: [bool]] = [prop= [true]];
-					let bound2: [prop?: [?: bool]] = [prop= []];
+					val bound1: [prop?: [bool]] = [prop= [true]];
+					val bound2: [prop?: [?: bool]] = [prop= []];
 
 					bound1;          % value \`[prop= [true]]\`
 					bound1?.prop;    % value \`[true]\`
@@ -739,22 +745,22 @@ describe('ASTNodeAccess', () => {
 				`);
 				program.varCheck();
 				program.typeCheck();
-				const prop1 = new OBJ.Tuple([OBJ.Boolean.TRUE]);
-				const prop2 = new OBJ.Tuple();
+				const prop1 = new VALUE.Tuple([VALUE.TRUE]);
+				const prop2 = new VALUE.Tuple();
 				assert.deepStrictEqual(
 					program.children.slice(2, 7).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.Record(new Map([[0x100n, prop1]])),
+						new VALUE.Record(new Map([[0x100n, prop1]])),
 						prop1,
-						OBJ.Boolean.TRUE,
-						new OBJ.Record(new Map([[0x100n, prop2]])),
+						VALUE.TRUE,
+						new VALUE.Record(new Map([[0x100n, prop2]])),
 						prop2,
 					],
 				);
 				// must bypass type-checker:
 				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[prop= []]?.prop?.0;').fold(),
-					OBJ.Null.NULL,
+					VALUE.NULL,
 				);
 			});
 		});
@@ -805,7 +811,7 @@ describe('ASTNodeAccess', () => {
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.3;')  .fold(),
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.-4;') .fold(),
 				].forEach((v) => {
-					assert.strictEqual(v, OBJ.Null.NULL);
+					assert.strictEqual(v, VALUE.NULL);
 				});
 			});
 		});
@@ -851,7 +857,7 @@ describe('ASTNodeAccess', () => {
 			it('returns null when optionally accessing key out of bounds.', () => {
 				assert.strictEqual(
 					AST.ASTNodeAccess.fromSource('[a= 1, b= 2.0, c= "three"]?.d;').fold(),
-					OBJ.Null.NULL,
+					VALUE.NULL,
 				);
 			});
 		});
@@ -885,7 +891,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(49, 51).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.String('three'),
+						new VALUE.String('three'),
 						null,
 					],
 				);
@@ -894,9 +900,9 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(24, 30).map((c) => foldStmtExpr(c)),
 					[
-						OBJ.Boolean.TRUE,
-						OBJ.Boolean.TRUE,
-						OBJ.Boolean.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
 						null,
 						null,
 						null,
@@ -905,7 +911,7 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(51, 53).map((c) => foldStmtExpr(c)),
 					[
-						OBJ.Boolean.TRUE,
+						VALUE.TRUE,
 						null,
 					],
 				);
@@ -918,14 +924,14 @@ describe('ASTNodeAccess', () => {
 				assert.deepStrictEqual(
 					program.children.slice(53, 55).map((c) => foldStmtExpr(c)),
 					[
-						new OBJ.String('three'),
+						new VALUE.String('three'),
 						null,
 					],
 				);
 			});
 			it('throws when accessor expression is out of bounds.', () => {
 				assert.throws(() => AST.ASTNodeAccess.fromSource('[1, 2.0, "three"].[3];')                                .fold(), VoidError01);
-				assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.[["a"]];') .fold(), VoidError01);
+				assert.throws(() => AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}.[["d"]];') .fold(), VoidError01);
 			});
 			it('returns false when (optionally) accessing element not in set.', () => {
 				[
@@ -933,16 +939,295 @@ describe('ASTNodeAccess', () => {
 					'{1, 2.0, "three"}?.[3];',
 				].forEach((src) => assert.deepStrictEqual(
 					AST.ASTNodeAccess.fromSource(src).fold(),
-					OBJ.Boolean.FALSE,
+					VALUE.FALSE,
 				));
 			});
 			it('returns null when optionally accessing index/antecedent out of bounds.', () => {
 				[
 					AST.ASTNodeAccess.fromSource('[1, 2.0, "three"]?.[3];')                                .fold(),
-					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["a"]];') .fold(),
+					AST.ASTNodeAccess.fromSource('{["a"] -> 1, ["b"] -> 2.0, ["c"] -> "three"}?.[["d"]];') .fold(),
 				].forEach((v) => {
-					assert.strictEqual(v, OBJ.Null.NULL);
+					assert.strictEqual(v, VALUE.NULL);
 				});
+			});
+		});
+	});
+
+	describe('#build', () => {
+		describe('tuple access & nesting.', () => {
+			it('direct access.', () => {
+				function tuple(builder: Builder): binaryen.ExpressionRef {
+					const inner01: binaryen.ExpressionRef = builder.module.struct.new([
+						buildConst(builder, 2.2),
+						buildConst(builder, 3.3),
+					], builder.typeBuilder.getTempHeapType(0));
+					const inner0: binaryen.ExpressionRef = builder.module.struct.new([
+						builder.module.local.get(0, binaryen.v128),
+						inner01,
+					], builder.typeBuilder.getTempHeapType(1));
+					const inner10: binaryen.ExpressionRef = builder.module.struct.new([
+						buildConst(builder, 4.4),
+					], builder.typeBuilder.getTempHeapType(2));
+					const inner11: binaryen.ExpressionRef = builder.module.struct.new([
+						buildConst(builder, 5.5),
+						buildConst(builder, 6.6),
+					], builder.typeBuilder.getTempHeapType(3));
+					const inner1: binaryen.ExpressionRef = builder.module.struct.new([
+						inner10,
+						inner11,
+					], builder.typeBuilder.getTempHeapType(4));
+					return builder.module.struct.new([
+						inner0,
+						inner1,
+					], builder.typeBuilder.getTempHeapType(5));
+				}
+				return xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['.0',     (builder) => builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0))],
+					['.1',     (builder) => builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0))],
+					['.0.0',   (builder) => builder.module.struct.get(0, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1))],
+					['.0.1',   (builder) => builder.module.struct.get(1, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1))],
+					['.1.0',   (builder) => builder.module.struct.get(0, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3))],
+					['.1.1',   (builder) => builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3))],
+					['.0.1.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1)), builder.typeBuilder.getTempHeapType(2))],
+					['.0.1.1', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(0, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1)), builder.typeBuilder.getTempHeapType(2))],
+					['.1.0.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(0, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(4))],
+					['.1.1.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
+					['.1.1.1', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
+				]), (expected_fn, access_src) => {
+					const {builder, expr} = setup(`
+						val mut x: float = 1.1;
+						[[x, [2.2, 3.3]], [[4.4], [5.5, 6.6]]]${ access_src };
+					`);
+					return assertEqualBins(
+						expr,
+						expected_fn.call(null, builder),
+					);
+				});
+			});
+			it('pointer access.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut tuple: [[float, float[2]], [[float], float[2]]] = [[1.1, [2.2, 3.3]], [[4.4], [5.5, 6.6]]];
+					tuple.0;
+					tuple.1;
+					tuple.0.0;
+					tuple.0.1;
+					tuple.1.0;
+					tuple.1.1;
+					tuple.0.1.0;
+					tuple.0.1.1;
+					tuple.1.0.0;
+					tuple.1.1.0;
+					tuple.1.1.1;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const mod = goal.builder.module;
+				const tb  = goal.builder.typeBuilder;
+				const tuple: binaryen.ExpressionRef = mod.local.get(0, tb.getTempHeapType(5));
+				return assertEqualBins(
+					goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					[
+						mod.struct.get(0, tuple, tb.getTempHeapType(5)),
+						mod.struct.get(1, tuple, tb.getTempHeapType(5)),
+						mod.struct.get(0, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)),
+						mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)),
+						mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)),
+						mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)),
+						mod.struct.get(0, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)), tb.getTempHeapType(0)),
+						mod.struct.get(1, mod.struct.get(1, mod.struct.get(0, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(1)), tb.getTempHeapType(0)),
+						mod.struct.get(0, mod.struct.get(0, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(2)),
+						mod.struct.get(0, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
+						mod.struct.get(1, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
+					],
+				);
+			});
+		});
+
+		describe('tuple negative index access.', () => {
+			it('direct access.', () => {
+				const {builder, expr} = setup(`
+					val mut x: float = 1.1;
+					[x, 2.2, 3.3].-2;
+				`);
+				return assertEqualBins(
+					expr,
+					builder.module.struct.get(1, builder.module.struct.new([
+						builder.module.local.get(0, binaryen.v128),
+						buildConst(builder, 2.2),
+						buildConst(builder, 3.3),
+					], builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(0)),
+				);
+			});
+			it('pointer access.', () => {
+				const {builder, expr} = setup(`
+					val mut tuple: [float, float, float] = [4.4, 5.5, 6.6];
+					tuple.-1;
+				`);
+				return assertEqualBins(
+					expr,
+					builder.module.struct.get(2, builder.module.local.get(0, builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(0)),
+				);
+			});
+		});
+
+		describe('record access & nesting.', () => {
+			it('direct access.', () => {
+				function record(builder: Builder): binaryen.ExpressionRef {
+					const inner_ab: binaryen.ExpressionRef = builder.module.block(null, [
+						builder.module.local.set(1, buildConst(builder, 2.2)),
+						builder.module.local.set(2, buildConst(builder, 3.3)),
+						builder.module.struct.new([
+							builder.module.local.get(2, binaryen.v128),
+							builder.module.local.get(1, binaryen.v128),
+						], builder.typeBuilder.getTempHeapType(0)),
+					], builder.typeBuilder.getTempHeapType(0));
+					const inner_a: binaryen.ExpressionRef = builder.module.struct.new([
+						builder.module.local.get(0, binaryen.v128),
+						inner_ab,
+					], builder.typeBuilder.getTempHeapType(1));
+					const inner_ba: binaryen.ExpressionRef = builder.module.struct.new([
+						buildConst(builder, 4.4),
+					], builder.typeBuilder.getTempHeapType(2));
+					const inner_bb: binaryen.ExpressionRef = builder.module.block(null, [
+						builder.module.local.set(3, buildConst(builder, 5.5)),
+						builder.module.local.set(4, buildConst(builder, 6.6)),
+						builder.module.struct.new([
+							builder.module.local.get(4, binaryen.v128),
+							builder.module.local.get(3, binaryen.v128),
+						], builder.typeBuilder.getTempHeapType(3)),
+					], builder.typeBuilder.getTempHeapType(3));
+					const inner_b: binaryen.ExpressionRef = builder.module.struct.new([
+						inner_ba,
+						inner_bb,
+					], builder.typeBuilder.getTempHeapType(4));
+					return builder.module.struct.new([
+						inner_a,
+						inner_b,
+					], builder.typeBuilder.getTempHeapType(5));
+				}
+				return xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
+					['.a',     (builder) => builder.module.struct.get(0, record(builder), builder.typeBuilder.getTempHeapType(0))],
+					['.b',     (builder) => builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0))],
+					['.a.a',   (builder) => builder.module.struct.get(0, builder.module.struct.get(0, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1))],
+					['.a.b',   (builder) => builder.module.struct.get(1, builder.module.struct.get(0, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1))],
+					['.b.a',   (builder) => builder.module.struct.get(0, builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3))],
+					['.b.b',   (builder) => builder.module.struct.get(1, builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3))],
+					['.a.b.b', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(0, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1)), builder.typeBuilder.getTempHeapType(2))],
+					['.a.b.a', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(0, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(1)), builder.typeBuilder.getTempHeapType(2))],
+					['.b.a.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(0, builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(4))],
+					['.b.b.b', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
+					['.b.b.a', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
+				]), (expected_fn, access_src) => {
+					const {builder, expr} = setup(`
+						val mut x: float = 1.1;
+						[a= [a= x, b= [b= 2.2, a= 3.3]], b= [a= [4.4], b= [b= 5.5, a= 6.6]]]${ access_src };
+					`);
+					return assertEqualBins(
+						expr,
+						expected_fn.call(null, builder),
+					);
+				});
+			});
+			it('pointer access.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut record: [
+						a: [a: float,   b: [b: float, a: float]],
+						b: [a: [float], b: [b: float, a: float]],
+					] = [
+						a= [a= 1.1,   b= [b= 2.2, a= 3.3]],
+						b= [a= [4.4], b= [b= 5.5, a= 6.6]],
+					];
+					record.a;
+					record.b;
+					record.a.a;
+					record.a.b;
+					record.b.a;
+					record.b.b;
+					record.a.b.b;
+					record.a.b.a;
+					record.b.a.0;
+					record.b.b.b;
+					record.b.b.a;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const mod = goal.builder.module;
+				const tb  = goal.builder.typeBuilder;
+				const record: binaryen.ExpressionRef = mod.local.get(4, tb.getTempHeapType(5));
+				return assertEqualBins(
+					goal.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					[
+						mod.struct.get(0, record, tb.getTempHeapType(5)),
+						mod.struct.get(1, record, tb.getTempHeapType(5)),
+						mod.struct.get(0, mod.struct.get(0, record, tb.getTempHeapType(5)), tb.getTempHeapType(1)),
+						mod.struct.get(1, mod.struct.get(0, record, tb.getTempHeapType(5)), tb.getTempHeapType(1)),
+						mod.struct.get(0, mod.struct.get(1, record, tb.getTempHeapType(5)), tb.getTempHeapType(4)),
+						mod.struct.get(1, mod.struct.get(1, record, tb.getTempHeapType(5)), tb.getTempHeapType(4)),
+						mod.struct.get(1, mod.struct.get(1, mod.struct.get(0, record, tb.getTempHeapType(5)), tb.getTempHeapType(1)), tb.getTempHeapType(0)),
+						mod.struct.get(0, mod.struct.get(1, mod.struct.get(0, record, tb.getTempHeapType(5)), tb.getTempHeapType(1)), tb.getTempHeapType(0)),
+						mod.struct.get(0, mod.struct.get(0, mod.struct.get(1, record, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(2)),
+						mod.struct.get(1, mod.struct.get(1, mod.struct.get(1, record, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
+						mod.struct.get(0, mod.struct.get(1, mod.struct.get(1, record, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
+					],
+				);
+			});
+			it('skipped key ids.', () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut x: bool = false;
+					val mut a: int = 1;
+					val mut b: int = 2;
+					val mut c: int = 3;
+					val mut d: int = 4;
+					val mut record1: [a: bool, b: int,   d: float] = [a= x,  b= 42,  d= 4.2]; % validator indices [1, 2, 4]
+					val mut record2: [a: int,  c: float, d: bool]  = [a= 42, c= 4.2, d= x];   % validator indices [1, 3, 4]
+					val mut record3: [c: float, b: int]            = [c= 4.2, b= 42];         % validator indices [3, 2]
+					[a= x,  b= 42,  d= 4.2] .b; % canonicalized index \`1\`
+					[a= 42, c= 4.2, d= x]   .c; % canonicalized index \`1\`
+					[c= record1, b= record2].c; % canonicalized index \`1\`
+					record1.b; % canonicalized index \`1\`
+					record2.c; % canonicalized index \`1\`
+					record3.c; % canonicalized index \`1\`
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.build();
+				const mod = goal.builder.module;
+				const tb  = goal.builder.typeBuilder;
+				const x:       binaryen.ExpressionRef = mod.local.get(0, binaryen.v128);
+				const record1: binaryen.ExpressionRef = mod.local.get(5, tb.getTempHeapType(0));
+				const record2: binaryen.ExpressionRef = mod.local.get(6, tb.getTempHeapType(1));
+				const record3: binaryen.ExpressionRef = mod.local.get(9, tb.getTempHeapType(2));
+				const adhoc1:  binaryen.ExpressionRef = mod.struct.new([
+					x,
+					buildConst(goal.builder, 42n),
+					buildConst(goal.builder, 4.2),
+				], goal.builder.typeBuilder.getTempHeapType(3));
+				const adhoc2: binaryen.ExpressionRef = mod.struct.new([
+					buildConst(goal.builder, 42n),
+					buildConst(goal.builder, 4.2),
+					x,
+				], goal.builder.typeBuilder.getTempHeapType(4));
+				const adhoc3: binaryen.ExpressionRef = mod.block(null, [
+					mod.local.set(10, record1),
+					mod.local.set(11, record2),
+					mod.struct.new([
+						mod.local.get(11, tb.getTempHeapType(1)),
+						mod.local.get(10, tb.getTempHeapType(0)),
+					], goal.builder.typeBuilder.getTempHeapType(5)),
+				], goal.builder.typeBuilder.getTempHeapType(5));
+				return assertEqualBins(
+					goal.children.slice(8).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					[
+						mod.struct.get(1, adhoc1,  tb.getTempHeapType(3)),
+						mod.struct.get(1, adhoc2,  tb.getTempHeapType(4)),
+						mod.struct.get(1, adhoc3,  tb.getTempHeapType(5)),
+						mod.struct.get(1, record1, tb.getTempHeapType(0)),
+						mod.struct.get(1, record2, tb.getTempHeapType(1)),
+						mod.struct.get(1, record3, tb.getTempHeapType(2)),
+					],
+				);
 			});
 		});
 	});

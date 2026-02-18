@@ -1,8 +1,8 @@
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from './index.js';
-import {Program} from './Program.js';
+} from './index.ts';
+import {Program} from './Program.ts';
 
 
 /**
