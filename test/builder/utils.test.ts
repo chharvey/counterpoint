@@ -2,30 +2,16 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import binaryen from 'binaryen';
 import {
-	AST,
+	type AST,
 	VALUE,
 	drop_then,
 	Builder,
 } from '../../src/index.ts';
-import type {BinaryenModuleUpdates} from '../../src/builder/-types.d.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
 import {
 	setupScript,
 	buildConst,
 } from '../helpers.ts';
-
-
-
-export function setup(src: string): { // TODO: use `setupScript`
-	readonly builder: Builder,
-	readonly expr:    binaryen.ExpressionRef,
-} {
-	const {goal, stmts} = setupScript(`{ ${ src } }`);
-	return {
-		builder: goal.builder,
-		expr:    (stmts.at(-1) as AST.ASTNodeStatementExpression).expr!.build(),
-	} as const;
-}
 
 
 
@@ -61,85 +47,85 @@ test.suite('drop_then', () => {
 test.suite('build_tuple_like', () => {
 	test.suite('<AST.ASTNodeExpression>', () => {
 		test.test('returns `(struct.new)`.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				(x, 2.0);
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([builder.module.local.get(0, binaryen.v128), buildConst(builder, 2.0)], builder.typeBuilder.getTempHeapType(0)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([mod.local.get(0, binaryen.v128), buildConst(goal.builder, 2.0)], tb.getTempHeapType(0)),
 			);
 		});
 
 		test.test('empty tuple returns `(struct.new_default)`.', () => {
-			const {builder, expr} = setup(`
+			const {stmts, mod, tb} = setupScript(`{
 				();
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new_default(builder.typeBuilder.getTempHeapType(0)),
+				(stmts[0] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new_default(tb.getTempHeapType(0)),
 			);
 		});
 
 		test.test('boxed tuple with many items.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				((x, 2.0, true),);
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([builder.module.struct.new([
-					builder.module.local.get(0, binaryen.v128),
-					buildConst(builder, 2.0),
-					buildConst(builder, true),
-				], builder.typeBuilder.getTempHeapType(0))], builder.typeBuilder.getTempHeapType(1)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([mod.struct.new([
+					mod.local.get(0, binaryen.v128),
+					buildConst(goal.builder, 2.0),
+					buildConst(goal.builder, true),
+				], tb.getTempHeapType(0))], tb.getTempHeapType(1)),
 			);
 		});
 
 		test.test('nested tuples.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				(x, (2.0,), (3, (4.0,)));
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([
-					builder.module.local.get(0, binaryen.v128),
-					builder.module.struct.new([buildConst(builder, 2.0)], builder.typeBuilder.getTempHeapType(0)),
-					builder.module.struct.new([
-						buildConst(builder, 3n),
-						builder.module.struct.new([buildConst(builder, 4.0)], builder.typeBuilder.getTempHeapType(1)),
-					], builder.typeBuilder.getTempHeapType(2)),
-				], builder.typeBuilder.getTempHeapType(3)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([
+					mod.local.get(0, binaryen.v128),
+					mod.struct.new([buildConst(goal.builder, 2.0)], tb.getTempHeapType(0)),
+					mod.struct.new([
+						buildConst(goal.builder, 3n),
+						mod.struct.new([buildConst(goal.builder, 4.0)], tb.getTempHeapType(1)),
+					], tb.getTempHeapType(2)),
+				], tb.getTempHeapType(3)),
 			);
 		});
 
 		test.test('multiple entries.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				((x, (2.0, 3)), (4.0, (5, 6.0)), (7, ()));
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([
-					builder.module.struct.new([
-						builder.module.local.get(0, binaryen.v128),
-						builder.module.struct.new([buildConst(builder, 2.0), buildConst(builder, 3n)], builder.typeBuilder.getTempHeapType(0)),
-					], builder.typeBuilder.getTempHeapType(1)),
-					builder.module.struct.new([
-						buildConst(builder, 4.0),
-						builder.module.struct.new([buildConst(builder, 5n), buildConst(builder, 6.0)], builder.typeBuilder.getTempHeapType(2)),
-					], builder.typeBuilder.getTempHeapType(3)),
-					builder.module.struct.new([
-						buildConst(builder, 7n),
-						builder.module.struct.new_default(builder.typeBuilder.getTempHeapType(4)),
-					], builder.typeBuilder.getTempHeapType(5)),
-				], builder.typeBuilder.getTempHeapType(6)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([
+					mod.struct.new([
+						mod.local.get(0, binaryen.v128),
+						mod.struct.new([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)], tb.getTempHeapType(0)),
+					], tb.getTempHeapType(1)),
+					mod.struct.new([
+						buildConst(goal.builder, 4.0),
+						mod.struct.new([buildConst(goal.builder, 5n), buildConst(goal.builder, 6.0)], tb.getTempHeapType(2)),
+					], tb.getTempHeapType(3)),
+					mod.struct.new([
+						buildConst(goal.builder, 7n),
+						mod.struct.new_default(tb.getTempHeapType(4)),
+					], tb.getTempHeapType(5)),
+				], tb.getTempHeapType(6)),
 			);
 		});
 
 		test.test('pointer entries.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut inner01: (float, int)   = (2.0, 3);
 				val mut inner11: (int,   float) = (5,   6.0);
 				val mut inner2:  (int,   ())    = (7,   ());
@@ -149,30 +135,24 @@ test.suite('build_tuple_like', () => {
 
 				val tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = (inner0, inner1, inner2);
 			}`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-
-			const bldr: Builder               = goal.builder;
-			const mod:  BinaryenModuleUpdates = bldr.module;
 			return assertEqualBins(
-				goal.block!.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned!.build()),
+				stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned!.build()),
 				[
-					mod.struct.new([buildConst(bldr, 2.0), buildConst(bldr, 3n)],  bldr.typeBuilder.getTempHeapType(0)),
-					mod.struct.new([buildConst(bldr, 5n),  buildConst(bldr, 6.0)], bldr.typeBuilder.getTempHeapType(1)),
+					mod.struct.new([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)],  tb.getTempHeapType(0)),
+					mod.struct.new([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)], tb.getTempHeapType(1)),
 					mod.struct.new([
-						buildConst(bldr, 7n),
-						mod.struct.new_default(bldr.typeBuilder.getTempHeapType(2)),
-					], bldr.typeBuilder.getTempHeapType(3)),
+						buildConst(goal.builder, 7n),
+						mod.struct.new_default(tb.getTempHeapType(2)),
+					], tb.getTempHeapType(3)),
 
-					mod.struct.new([buildConst(bldr, 1n),  mod.local.get(0, bldr.typeBuilder.getTempHeapType(0))], bldr.typeBuilder.getTempHeapType(4)),
-					mod.struct.new([buildConst(bldr, 4.0), mod.local.get(1, bldr.typeBuilder.getTempHeapType(1))], bldr.typeBuilder.getTempHeapType(5)),
+					mod.struct.new([buildConst(goal.builder, 1n),  mod.local.get(0, tb.getTempHeapType(0))], tb.getTempHeapType(4)),
+					mod.struct.new([buildConst(goal.builder, 4.0), mod.local.get(1, tb.getTempHeapType(1))], tb.getTempHeapType(5)),
 
 					mod.struct.new([
-						mod.local.get(3, bldr.typeBuilder.getTempHeapType(4)),
-						mod.local.get(4, bldr.typeBuilder.getTempHeapType(5)),
-						mod.local.get(2, bldr.typeBuilder.getTempHeapType(3)),
-					], bldr.typeBuilder.getTempHeapType(6)),
+						mod.local.get(3, tb.getTempHeapType(4)),
+						mod.local.get(4, tb.getTempHeapType(5)),
+						mod.local.get(2, tb.getTempHeapType(3)),
+					], tb.getTempHeapType(6)),
 				],
 			);
 		});
@@ -282,95 +262,95 @@ test.suite('build_tuple_like', () => {
 test.suite('build_record_like', () => {
 	test.suite('<AST.ASTNodeExpression>', () => {
 		test.test('returns `(struct.new)`.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				(a= x, b= 2.0);
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([builder.module.local.get(0, binaryen.v128), buildConst(builder, 2.0)], builder.typeBuilder.getTempHeapType(0)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([mod.local.get(0, binaryen.v128), buildConst(goal.builder, 2.0)], tb.getTempHeapType(0)),
 			);
 		});
 
 		test.test('if source order differs from key order, returns a `(block)` with `(set)`s followed by a `(struct.new)` with `(get)`s.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				(a= x, b= 2.0); % establishes key order
 				(b= 2.0, a= x);
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.block(null, [
-					builder.module.local.set(1, buildConst(builder, 2.0)),
-					builder.module.local.set(2, builder.module.local.get(0, binaryen.v128)),
-					builder.module.struct.new([
-						builder.module.local.get(2, binaryen.v128),
-						builder.module.local.get(1, binaryen.v128),
-					], builder.typeBuilder.getTempHeapType(0)),
-				], builder.typeBuilder.getTempHeapType(0)),
+				(stmts[2] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.block(null, [
+					mod.local.set(1, buildConst(goal.builder, 2.0)),
+					mod.local.set(2, mod.local.get(0, binaryen.v128)),
+					mod.struct.new([
+						mod.local.get(2, binaryen.v128),
+						mod.local.get(1, binaryen.v128),
+					], tb.getTempHeapType(0)),
+				], tb.getTempHeapType(0)),
 			);
 		});
 
 		test.test('boxed record with many props.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				(a= (a= x, b= 2.0, c= true));
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([builder.module.struct.new([
-					builder.module.local.get(0, binaryen.v128),
-					buildConst(builder, 2.0),
-					buildConst(builder, true),
-				], builder.typeBuilder.getTempHeapType(0))], builder.typeBuilder.getTempHeapType(1)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([mod.struct.new([
+					mod.local.get(0, binaryen.v128),
+					buildConst(goal.builder, 2.0),
+					buildConst(goal.builder, true),
+				], tb.getTempHeapType(0))], tb.getTempHeapType(1)),
 			);
 		});
 
 		test.test('nested records.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				(a= x, b= (a= 2.0), c= (a= 3, b= (a= 4.0)));
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([
-					builder.module.local.get(0, binaryen.v128),
-					builder.module.struct.new([buildConst(builder, 2.0)], builder.typeBuilder.getTempHeapType(0)),
-					builder.module.struct.new([
-						buildConst(builder, 3n),
-						builder.module.struct.new([buildConst(builder, 4.0)], builder.typeBuilder.getTempHeapType(1)),
-					], builder.typeBuilder.getTempHeapType(2)),
-				], builder.typeBuilder.getTempHeapType(3)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([
+					mod.local.get(0, binaryen.v128),
+					mod.struct.new([buildConst(goal.builder, 2.0)], tb.getTempHeapType(0)),
+					mod.struct.new([
+						buildConst(goal.builder, 3n),
+						mod.struct.new([buildConst(goal.builder, 4.0)], tb.getTempHeapType(1)),
+					], tb.getTempHeapType(2)),
+				], tb.getTempHeapType(3)),
 			);
 		});
 
 		test.test('multiple entries.', () => {
-			const {builder, expr} = setup(`
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut x: int = 1;
 				(a= (a= x, b= (a= 2.0, b= 3)), b= (a= 4.0, b= (a= 5, b= 6.0)), c= (b= 7, a= true));
-			`);
+			}`);
 			return assertEqualBins(
-				expr,
-				builder.module.struct.new([
-					builder.module.struct.new([
-						builder.module.local.get(0, binaryen.v128),
-						builder.module.struct.new([buildConst(builder, 2.0), buildConst(builder, 3n)], builder.typeBuilder.getTempHeapType(0)),
-					], builder.typeBuilder.getTempHeapType(1)),
-					builder.module.struct.new([
-						buildConst(builder, 4.0),
-						builder.module.struct.new([buildConst(builder, 5n), buildConst(builder, 6.0)], builder.typeBuilder.getTempHeapType(2)),
-					], builder.typeBuilder.getTempHeapType(3)),
-					builder.module.block(null, [
-						builder.module.local.set(1, buildConst(builder, 7n)),
-						builder.module.local.set(2, buildConst(builder, true)),
-						builder.module.struct.new([builder.module.local.get(2, binaryen.v128), builder.module.local.get(1, binaryen.v128)], builder.typeBuilder.getTempHeapType(4)),
-					], builder.typeBuilder.getTempHeapType(4)),
-				], builder.typeBuilder.getTempHeapType(5)),
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+				mod.struct.new([
+					mod.struct.new([
+						mod.local.get(0, binaryen.v128),
+						mod.struct.new([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)], tb.getTempHeapType(0)),
+					], tb.getTempHeapType(1)),
+					mod.struct.new([
+						buildConst(goal.builder, 4.0),
+						mod.struct.new([buildConst(goal.builder, 5n), buildConst(goal.builder, 6.0)], tb.getTempHeapType(2)),
+					], tb.getTempHeapType(3)),
+					mod.block(null, [
+						mod.local.set(1, buildConst(goal.builder, 7n)),
+						mod.local.set(2, buildConst(goal.builder, true)),
+						mod.struct.new([mod.local.get(2, binaryen.v128), mod.local.get(1, binaryen.v128)], tb.getTempHeapType(4)),
+					], tb.getTempHeapType(4)),
+				], tb.getTempHeapType(5)),
 			);
 		});
 
 		test.test('pointer entries.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+			const {goal, stmts, mod, tb} = setupScript(`{
 				val mut inner_ab: (a: float, b: int)   = (a= 2.0, b= 3);
 				val mut inner_bb: (a: int,   b: float) = (a= 5,   b= 6.0);
 				val mut inner_c:  (b: int,   a: bool)  = (b= 7,   a= true);
@@ -384,31 +364,25 @@ test.suite('build_record_like', () => {
 					c: (b: int,   a: bool),
 				) = (a= inner_a, b= inner_b, c= inner_c);
 			}`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-
-			const bldr: Builder               = goal.builder;
-			const mod:  BinaryenModuleUpdates = bldr.module;
 			return assertEqualBins(
-				goal.block!.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned!.build()),
+				stmts.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned!.build()),
 				[
-					mod.struct.new([buildConst(bldr, 2.0), buildConst(bldr, 3n)],  bldr.typeBuilder.getTempHeapType(0)),
-					mod.struct.new([buildConst(bldr, 5n),  buildConst(bldr, 6.0)], bldr.typeBuilder.getTempHeapType(1)),
+					mod.struct.new([buildConst(goal.builder, 2.0), buildConst(goal.builder, 3n)],  tb.getTempHeapType(0)),
+					mod.struct.new([buildConst(goal.builder, 5n),  buildConst(goal.builder, 6.0)], tb.getTempHeapType(1)),
 					mod.block(null, [
-						mod.local.set(2, buildConst(bldr, 7n)),
-						mod.local.set(3, buildConst(bldr, true)),
-						mod.struct.new([mod.local.get(3, binaryen.v128), mod.local.get(2, binaryen.v128)], bldr.typeBuilder.getTempHeapType(2)),
-					], bldr.typeBuilder.getTempHeapType(2)),
+						mod.local.set(2, buildConst(goal.builder, 7n)),
+						mod.local.set(3, buildConst(goal.builder, true)),
+						mod.struct.new([mod.local.get(3, binaryen.v128), mod.local.get(2, binaryen.v128)], tb.getTempHeapType(2)),
+					], tb.getTempHeapType(2)),
 
-					mod.struct.new([buildConst(bldr, 1n),  mod.local.get(0, bldr.typeBuilder.getTempHeapType(0))], bldr.typeBuilder.getTempHeapType(3)),
-					mod.struct.new([buildConst(bldr, 4.0), mod.local.get(1, bldr.typeBuilder.getTempHeapType(1))], bldr.typeBuilder.getTempHeapType(4)),
+					mod.struct.new([buildConst(goal.builder, 1n),  mod.local.get(0, tb.getTempHeapType(0))], tb.getTempHeapType(3)),
+					mod.struct.new([buildConst(goal.builder, 4.0), mod.local.get(1, tb.getTempHeapType(1))], tb.getTempHeapType(4)),
 
 					mod.struct.new([
-						mod.local.get(5, bldr.typeBuilder.getTempHeapType(3)),
-						mod.local.get(6, bldr.typeBuilder.getTempHeapType(4)),
-						mod.local.get(4, bldr.typeBuilder.getTempHeapType(2)),
-					], bldr.typeBuilder.getTempHeapType(5)),
+						mod.local.get(5, tb.getTempHeapType(3)),
+						mod.local.get(6, tb.getTempHeapType(4)),
+						mod.local.get(4, tb.getTempHeapType(2)),
+					], tb.getTempHeapType(5)),
 				],
 			);
 		});

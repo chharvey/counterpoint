@@ -20,6 +20,7 @@ import {
 	assertAssignable,
 } from '../../assert-helpers.ts';
 import {
+	setupScript,
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
@@ -27,7 +28,6 @@ import {
 	extract_lines,
 	repeat,
 } from '../../utils.ts';
-import {setup} from '../../builder/utils.test.ts';
 
 
 
@@ -1012,18 +1012,18 @@ test.suite('ASTNodeAccess', () => {
 					['.1.1.0', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
 					['.1.1.1', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(1, tuple(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
 				]), (expected_fn, access_src) => {
-					const {builder, expr} = setup(`
+					const {goal, stmts} = setupScript(`{
 						val mut x: float = 1.1;
 						((x, (2.2, 3.3)), ((4.4,), (5.5, 6.6)))${ access_src };
-					`);
+					}`);
 					return assertEqualBins(
-						expr,
-						expected_fn.call(null, builder),
+						(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+						expected_fn.call(null, goal.builder),
 					);
 				});
 			});
 			test.test('pointer access.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const {stmts, mod, tb} = setupScript(`{
 					val mut tuple: ((float, (float, float)), ((float,), (float, float))) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
 					tuple.0;
 					tuple.1;
@@ -1037,14 +1037,9 @@ test.suite('ASTNodeAccess', () => {
 					tuple.1.1.0;
 					tuple.1.1.1;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const mod = goal.builder.module;
-				const tb  = goal.builder.typeBuilder;
 				const tuple: binaryen.ExpressionRef = mod.local.get(0, tb.getTempHeapType(5));
 				return assertEqualBins(
-					goal.block!.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 					[
 						mod.struct.get(0, tuple, tb.getTempHeapType(5)),
 						mod.struct.get(1, tuple, tb.getTempHeapType(5)),
@@ -1064,27 +1059,27 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('tuple negative index access.', () => {
 			test.test('direct access.', () => {
-				const {builder, expr} = setup(`
+				const {goal, stmts, mod, tb} = setupScript(`{
 					val mut x: float = 1.1;
 					(x, 2.2, 3.3).-2;
-				`);
+				}`);
 				return assertEqualBins(
-					expr,
-					builder.module.struct.get(1, builder.module.struct.new([
-						builder.module.local.get(0, binaryen.v128),
-						buildConst(builder, 2.2),
-						buildConst(builder, 3.3),
-					], builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(0)),
+					(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+					mod.struct.get(1, mod.struct.new([
+						mod.local.get(0, binaryen.v128),
+						buildConst(goal.builder, 2.2),
+						buildConst(goal.builder, 3.3),
+					], tb.getTempHeapType(0)), tb.getTempHeapType(0)),
 				);
 			});
 			test.test('pointer access.', () => {
-				const {builder, expr} = setup(`
+				const {stmts, mod, tb} = setupScript(`{
 					val mut tuple: (float, float, float) = (4.4, 5.5, 6.6);
 					tuple.-1;
-				`);
+				}`);
 				return assertEqualBins(
-					expr,
-					builder.module.struct.get(2, builder.module.local.get(0, builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(0)),
+					(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+					mod.struct.get(2, mod.local.get(0, tb.getTempHeapType(0)), tb.getTempHeapType(0)),
 				);
 			});
 		});
@@ -1137,18 +1132,18 @@ test.suite('ASTNodeAccess', () => {
 					['.b.b.b', (builder) => builder.module.struct.get(1, builder.module.struct.get(1, builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
 					['.b.b.a', (builder) => builder.module.struct.get(0, builder.module.struct.get(1, builder.module.struct.get(1, record(builder), builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(3)), builder.typeBuilder.getTempHeapType(5))],
 				]), (expected_fn, access_src) => {
-					const {builder, expr} = setup(`
+					const {goal, stmts} = setupScript(`{
 						val mut x: float = 1.1;
 						(a= (a= x, b= (b= 2.2, a= 3.3)), b= (a= (4.4,), b= (b= 5.5, a= 6.6)))${ access_src };
-					`);
+					}`);
 					return assertEqualBins(
-						expr,
-						expected_fn.call(null, builder),
+						(stmts[1] as AST.ASTNodeStatementExpression).expr!.build(),
+						expected_fn.call(null, goal.builder),
 					);
 				});
 			});
 			test.test('pointer access.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const {stmts, mod, tb} = setupScript(`{
 					val mut record: (
 						a: (a: float,    b: (b: float, a: float)),
 						b: (a: (float,), b: (b: float, a: float)),
@@ -1168,14 +1163,9 @@ test.suite('ASTNodeAccess', () => {
 					record.b.b.b;
 					record.b.b.a;
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const mod = goal.builder.module;
-				const tb  = goal.builder.typeBuilder;
 				const record: binaryen.ExpressionRef = mod.local.get(4, tb.getTempHeapType(5));
 				return assertEqualBins(
-					goal.block!.children.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 					[
 						mod.struct.get(0, record, tb.getTempHeapType(5)),
 						mod.struct.get(1, record, tb.getTempHeapType(5)),
@@ -1192,7 +1182,7 @@ test.suite('ASTNodeAccess', () => {
 				);
 			});
 			test.test('skipped key ids.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				const {goal, stmts, mod, tb} = setupScript(`{
 					val mut x: bool = false;
 					val mut a: int = 1;
 					val mut b: int = 2;
@@ -1208,11 +1198,6 @@ test.suite('ASTNodeAccess', () => {
 					record2.c; % canonicalized index \`1\`
 					record3.c; % canonicalized index \`1\`
 				}`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const mod = goal.builder.module;
-				const tb  = goal.builder.typeBuilder;
 				const x:       binaryen.ExpressionRef = mod.local.get(0, binaryen.v128);
 				const record1: binaryen.ExpressionRef = mod.local.get(5, tb.getTempHeapType(0));
 				const record2: binaryen.ExpressionRef = mod.local.get(6, tb.getTempHeapType(1));
@@ -1236,7 +1221,7 @@ test.suite('ASTNodeAccess', () => {
 					], goal.builder.typeBuilder.getTempHeapType(5)),
 				], goal.builder.typeBuilder.getTempHeapType(5));
 				return assertEqualBins(
-					goal.block!.children.slice(8).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
+					stmts.slice(8).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
 					[
 						mod.struct.get(1, adhoc1,  tb.getTempHeapType(3)),
 						mod.struct.get(1, adhoc2,  tb.getTempHeapType(4)),

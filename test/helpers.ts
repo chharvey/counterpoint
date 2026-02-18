@@ -32,6 +32,7 @@ export function setupScript(
 	goal:  AST.ASTNodeGoal,
 	stmts: NonNullable<typeof goal.block>['children'],
 	mod:   typeof goal.builder.module,
+	tb:    typeof goal.builder.typeBuilder,
 } {
 	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
 	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
@@ -45,6 +46,7 @@ export function setupScript(
 		goal,
 		stmts: goal.block.children,
 		mod:   goal.builder.module,
+		tb:    goal.builder.typeBuilder,
 	};
 }
 
