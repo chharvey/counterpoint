@@ -82,9 +82,9 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 
 
 
-export function buildConst(builder: Builder, value?: null | boolean | symbol | number | string | []): binaryen.ExpressionRef;
+export function buildConst(builder: Builder, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
 export function buildConst(builder: Builder, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
-export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string | [] = null, t?: 'nat'): binaryen.ExpressionRef {
+export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
 	if (t === 'nat') {
 		return (
 			value === 0n              ? VALUE.NAT_0 :
@@ -105,13 +105,6 @@ export function buildConst(builder: Builder, value: null | boolean | symbol | bi
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? assert.fail('String argument to `buildConst` is not yet supported.') :
-		Array.isArray(value)      ? new VALUE.Tuple() :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).build(builder);
-}
-
-
-
-export function singletonTuple(builder: Builder, item: binaryen.ExpressionRef): binaryen.ExpressionRef {
-	return builder.module.tuple.make([item, buildConst(builder)]);
 }

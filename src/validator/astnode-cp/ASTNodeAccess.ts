@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {
 	type EntryType,
 	VALUE,
@@ -65,15 +65,17 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		const base_type: TYPE.Type = this.base.type();
 		const base_build: binaryen.ExpressionRef = this.base.build();
 		if (this.accessor instanceof ASTNodeIndex) {
-			if (base_type instanceof TYPE.Tuple) {
-				return base_type.buildAccess(this.builder, base_build, Number(this.accessor.index));
-			}
-			throw new Error('`ASTNodeAccess#build` of a list is not yet supported.');
+			assert_instanceof(base_type, TYPE.Tuple);
+			const index: bigint | undefined = base_type.canonicalizeIndex(this.accessor.index);
+			return index || index === 0n
+				? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+				: this.builder.module.unreachable();
 		} else if (this.accessor instanceof ASTNodeKey) {
-			if (base_type instanceof TYPE.Record) {
-				throw new Error('`ASTNodeAccess#build` of a record is not yet supported.');
-			}
-			throw new Error('`ASTNodeAccess#build` of a dict is not yet supported.');
+			assert_instanceof(base_type, TYPE.Record);
+			const index: bigint | undefined = base_type.canonicalizeKey(this.accessor.id);
+			return index || index === 0n
+				? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
+				: this.builder.module.unreachable();
 		} else {
 			assert_instanceof(this.accessor, ASTNodeExpression);
 			this.accessor.build();

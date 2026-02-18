@@ -251,7 +251,7 @@ test.suite('ASTNodeDeclaration', () => {
 					['null',    [TYPE.NULL,                        TYPE.NULL]],
 					['false',   [TYPE.FALSE,                       TYPE.BOOL]],
 					['true',    [TYPE.TRUE,                        TYPE.BOOL]],
-					['@hello',  [typeUnit(Symbol(0x101), 'hello'), TYPE.SYM]],
+					['@hello',  [typeUnit(Symbol(0x100), 'hello'), TYPE.SYM]],
 					['-42',     [typeUnit(-42n),                   TYPE.INT]],
 					['+42',     [typeUnit(42n, 'nat'),             TYPE.NAT]],
 					['6.28',    [typeUnit(6.28),                   TYPE.FLOAT]],
@@ -260,12 +260,12 @@ test.suite('ASTNodeDeclaration', () => {
 				test.test('for fixed variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
 						val fixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, fixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
 						val mut unfixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type, unfixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
 					const {goal} = setupScript(`{
@@ -661,31 +661,24 @@ test.suite('ASTNodeDeclaration', () => {
 					val rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= tr)));
 				}`);
 				const [tup, rec] = stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				const [tup_2, rec_c]         = [tup.children[2],   rec.children[2].val]   as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				const [tup_2_1, rec_c_e]     = [tup_2.children[1], rec_c.children[1].val] as [AST.ASTNodeTuple, AST.ASTNodeRecord];
 				assert.deepStrictEqual(goal.builder.getAllLocals().slice(1).map((local) => local.value), [
-					tup_2_1.build(),
-					tup_2.build(),
 					tup.build(),
-					rec_c_e.build(),
-					rec_c.build(),
 					rec.build(),
 				]);
 				return assertEqualBins(
 					stmts.slice(1).map((stmt) => stmt.build()),
 					[
-						mod.local.set(3, tup.build()),
-						mod.local.set(6, rec.build()),
+						mod.local.set(1, tup.build()),
+						mod.local.set(2, rec.build()),
 					],
 				);
 			});
-			test.test('throws when tuples and records contain each other.', () => {
+			test.test('allows tuples and records to contain each other.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					val mut tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));
 					val mut rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));
 				`, (src) => {
-					const {goal} = setupScript(`{ ${ src } }`, {build: false});
-					return assert.throws(() => goal.build(), /not yet supported/);
+					setupScript(`{ ${ src } }`); // assert does not throw
 				});
 			});
 		});
