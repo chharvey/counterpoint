@@ -4,6 +4,7 @@ import {
 	TYPE,
 	TypeErrorInvalidOperation,
 } from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 
 
@@ -11,23 +12,28 @@ import {typeUnit} from '../../helpers.ts';
 describe('ASTNodeTypeOperation', () => {
 	describe('#eval', () => {
 		specify('ASTNodeTypeOperationUnary[operator=ORNULL]', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
 				TYPE.INT.union(TYPE.NULL),
 			);
 		});
 
 
+		specify('ASTNodeTypeOperationUnary[operator=OREXCP]', () => {
+			assert.throws(() => AST.ASTNodeTypeOperationUnary.fromSource('int!').eval(), /not yet supported/);
+		});
+
+
 		describe('ASTNodeTypeOperationUnary[operator=MUTABLE]', () => {
 			it('does not throw if operating on a reference type.', () => {
-				assert.deepStrictEqual(
-					AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
+				assertEqualTypes(
+					AST.ASTNodeTypeOperationUnary.fromSource('mut [int]').eval(),
 					new TYPE.List(TYPE.INT, true),
 				);
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A = mut int[][];
-					type B = int[3];
-					type F = Object[];
+					type A = mut [[int]];
+					type B = (int, int, int);
+					type F = [Object];
 
 					type C = mut (A & F);
 					type D = mut (A | B);
@@ -40,11 +46,10 @@ describe('ASTNodeTypeOperation', () => {
 
 			it('throws if operating on any value type.', () => {
 				[
-					'mut [int, float, str]',
-					'mut [a: int, b: float, c: str]',
-					'mut int[3]',
+					'mut (int, float, str)',
+					'mut (a: int, b: float, c: str)',
+					'mut (int, int, int)',
 					'mut never',
-					'mut void',
 					'mut null',
 					'mut bool',
 					'mut int',
@@ -60,11 +65,11 @@ describe('ASTNodeTypeOperation', () => {
 
 
 		specify('ASTNodeTypeOperationBinary[operator=AND|OR]', () => {
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
 				TYPE.OBJ.intersect(typeUnit(3n)),
 			);
-			assert.deepStrictEqual(
+			assertEqualTypes(
 				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
 				typeUnit(4.2).union(TYPE.INT),
 			);

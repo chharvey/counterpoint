@@ -73,10 +73,10 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Map) {
-			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
+			// better error reporting to check entry-by-entry instead of checking `this.type().typearg_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
 				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (
-					ASTNodeCP.typeCheckAssign(expr, [assignee.invariant_ant, assignee.invariant_con][i], expr)
+					ASTNodeCP.typeCheckAssign(expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
 				))
 			));
 		}

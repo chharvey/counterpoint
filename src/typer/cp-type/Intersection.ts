@@ -1,22 +1,17 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {EntryType} from '../utils-public.ts';
 import {
-	languageValuesIdentical,
+	language_types_equal,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
 import {
 	Union,
-	Tuple as TypeTuple,
-	Record as TypeRecord,
 	NEVER,
 } from './index.ts';
-import {
-	type ReadonlyArrayOfAtLeast2,
-	language_types_equal,
-} from './utils-private.ts';
+import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
 	intersectionRules,
@@ -50,38 +45,6 @@ export class Intersection extends Combinable {
 				: NEVER;
 	}
 
-	/**
-	 * When accessing the *intersection* of tuple types `S` and `T`,
-	 * the set of items available is the *union* of the set of items on `S` with the set of items on `T`.
-	 * For any overlapping items, their type intersection is taken, as well as the conjunction of their optionality.
-	 */
-	private static intersectTuples(s: TypeTuple, t: TypeTuple): TypeTuple {
-		const items: EntryType[] = [...s.invariants];
-		t.invariants.forEach((typ, i) => {
-			items[i] = s.invariants[i] ? {
-				type:     s.invariants[i].type.intersect(typ.type),
-				optional: s.invariants[i].optional && typ.optional,
-			} : typ;
-		});
-		return new TypeTuple(items);
-	}
-
-	/**
-	 * When accessing the *intersection* of record types `S` and `T`,
-	 * the set of properties available is the *union* of the set of properties on `S` with the set of properties on `T`.
-	 * For any overlapping properties, their type intersection is taken, as well as the conjunction of their optionality.
-	 */
-	private static intersectRecords(s: TypeRecord, t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, EntryType>([...s.invariants]);
-		[...t.invariants].forEach(([id, typ]) => {
-			props.set(id, s.invariants.has(id) ? {
-				type:     s.invariants.get(id)!.type.intersect(typ.type),
-				optional: s.invariants.get(id)!.optional && typ.optional,
-			} : typ);
-		});
-		return new TypeRecord(props);
-	}
-
 
 	/**
 	 * Construct a new Intersection object.
@@ -95,8 +58,8 @@ export class Intersection extends Combinable {
 	) {
 		super(
 			operands.reduce(
-				(accum, next) => xjs.Set.intersection(accum, next.values, languageValuesIdentical),
-				xjs.Set.intersection(operand0.values, operand1.values, languageValuesIdentical),
+				(accum, next) => xjs.Set.intersection(accum, next.values, language_values_identical),
+				xjs.Set.intersection(operand0.values, operand1.values, language_values_identical),
 			),
 			[
 				...(operand0 instanceof Intersection ? operand0.operands : [operand0] as const),
@@ -217,13 +180,5 @@ export class Intersection extends Combinable {
 		} else {
 			return this;
 		}
-	}
-
-	public override combineTuplesOrRecords(): Type {
-		return (
-			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as ReadonlyArrayOfAtLeast2<TypeTuple>) .reduce((a, b) => Intersection.intersectTuples (a, b)) :
-			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as ReadonlyArrayOfAtLeast2<TypeRecord>).reduce((a, b) => Intersection.intersectRecords(a, b)) :
-			this
-		);
 	}
 }

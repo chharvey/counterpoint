@@ -1,3 +1,4 @@
+export * from './lib/index.ts';
 export * from './core/index.ts';
 export * from './parser/index.ts';
 export * from './validator/index.ts';

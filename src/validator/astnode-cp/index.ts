@@ -1,10 +1,9 @@
 export * from './ASTNodeCP.ts';
 
+export * from './ASTNodeIndex.ts';
 export * from './ASTNodeKey.ts';
-export * from './ASTNodeIndexType.ts';
 export * from './ASTNodeItemType.ts';
 export * from './ASTNodePropertyType.ts';
-export * from './ASTNodeIndex.ts';
 export * from './ASTNodeProperty.ts';
 export * from './ASTNodeCase.ts';
 export * from './ASTNodeType.ts';
@@ -28,6 +27,8 @@ export * from './ASTNodeTemplate.ts';
 export * from './ASTNodeCollectionLiteral.ts';
 export * from './ASTNodeTuple.ts';
 export * from './ASTNodeRecord.ts';
+export * from './ASTNodeList.ts';
+export * from './ASTNodeDict.ts';
 export * from './ASTNodeSet.ts';
 export * from './ASTNodeMap.ts';
 export * from './ASTNodeAccess.ts';

@@ -3,6 +3,7 @@ export * from './Value.ts';
 export * from './Primitive.ts';
 export * from './Null.ts';
 export * from './Boolean.ts';
+export * from './Symbol.ts';
 export * from './Number.ts';
 export * from './Integer.ts';
 export * from './Float.ts';

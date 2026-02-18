@@ -13,6 +13,7 @@ function argsArr(nth: number, params: readonly string[]): readonly string[] {
 function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
 	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
 }
@@ -280,8 +281,8 @@ module.exports = grammar({
 		/* # LEXICON */
 		keyword_type: _$ => token(choice(
 			'never',
-			'void',
 			'bool',
+			'sym',
 			'int',
 			'float',
 			'str',
@@ -346,6 +347,7 @@ module.exports = grammar({
 			'type',
 			'val',
 			'_',
+			'void',
 			// modifier
 			$.keyword_type,
 			$.keyword_value,
@@ -364,6 +366,7 @@ module.exports = grammar({
 			$.string__comment,
 			$.string__separator,
 			$.string__comment__separator,
+			seq('@', $.word),
 		),
 
 
@@ -372,19 +375,25 @@ module.exports = grammar({
 			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $._type)
 		), 'named', 'optional'),
 
-		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM), // eslint-disable-line @stylistic/indent
-			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($[call('entry_type', 'optional')]), OPT_COM),
-		),
+		_items_type: $ => {
+			const LIST_ENT_OPT: SeqRule = repCom1($[call('entry_type', 'optional')]);
+			return choice(
+				seq(                                                                 OPT_COM,              LIST_ENT_OPT,   OPT_COM),
+				seq(         $.entry_type,                                           ',',     optional(seq(LIST_ENT_OPT,   OPT_COM))),
+				seq(optional($.entry_type), ',', repCom1($.entry_type), optional(seq(',',                  LIST_ENT_OPT)), OPT_COM),
+			);
+		},
 
-		_properties_type: $ => seq(repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
+		_properties_type: $ => seq(OPT_COM, repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
 
-		type_grouped:        $ => seq('(',                       $._type,            ')'),
-		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
-		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
-		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
-		type_map_literal:    $ => seq('{', $._type, '->', $._type,                   '}'),
-		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
+		type_grouped:        $ => seq('(', $._type,                            ')'),
+		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
+		type_record_literal: $ => seq('(', $._properties_type,                 ')'),
+		type_list_literal:   $ => seq('[', $._type,                            ']'),
+		type_dict_literal:   $ => seq('[', ':', $._type,                       ']'),
+		type_set_literal:    $ => seq('{', $._type,                            '}'),
+		type_map_literal:    $ => seq('{', $._type, '->', $._type,             '}'),
+		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM, '>'),
 
 		_type_unit: $ => choice(
 			$.keyword_type,
@@ -393,29 +402,28 @@ module.exports = grammar({
 			$.type_grouped,
 			$.type_tuple_literal,
 			$.type_record_literal,
+			$.type_list_literal,
 			$.type_dict_literal,
+			$.type_set_literal,
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq('.', choice($.integer, $.word)),
-		generic_call:         $ => seq('.', $.generic_arguments),
+		property_accessor_type: $ => choice($.integer, $.word),
 
 		_type_compound: $ => choice(
 			$._type_unit,
 			alias($.type_compound_dfn, $.type_compound),
 		),
-		type_compound_dfn: $ => seq($._type_compound, choice($.property_access_type, $.generic_call)),
+		type_compound_dfn: $ => seq($._type_compound, choice(
+			seq(choice('.', '?.'), $.property_accessor_type),
+			seq('.',               $.generic_arguments),
+		)),
 
 		_type_unary_symbol: $ => choice(
 			$._type_compound,
 			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
 		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice(
-			'?',
-			'!',
-			seq('[', optional($.integer), ']'),
-			seq('{', '}'),
-		)),
+		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice('?', '!')),
 
 		_type_unary_keyword: $ => choice(
 			$._type_unary_symbol,
@@ -442,12 +450,19 @@ module.exports = grammar({
 			seq($.template_head, optional($._expression), repeat(seq($.template_middle, optional($._expression))), $.template_tail),
 		),
 
+		_items: $ => choice(
+			seq(         $._expression,  ','),
+			seq(optional($._expression), ',', repCom1($._expression), OPT_COM),
+		),
+
 		property: $ => seq($.word,        '=',  $._expression),
 		case:     $ => seq($._expression, '->', $._expression),
 
-		expression_grouped: $ => seq('(',                               $._expression,             ')'),
-		tuple_literal:      $ => seq('[', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ']'),
-		record_literal:     $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
+		expression_grouped: $ => seq('(',                       $._expression,                     ')'),
+		tuple_literal:      $ => seq('(', optional(             $._items                        ), ')'),
+		record_literal:     $ => seq('(',              OPT_COM, repCom1($.property),    OPT_COM,   ')'),
+		list_literal:       $ => seq('[', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ']'),
+		dict_literal:       $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
 		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), '}'),
 		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),        OPT_COM,   '}'),
 		function_arguments: $ => seq('(', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ')'),
@@ -459,23 +474,26 @@ module.exports = grammar({
 			$.expression_grouped,
 			$.tuple_literal,
 			$.record_literal,
+			$.list_literal,
+			$.dict_literal,
 			$.set_literal,
 			$.map_literal,
 		),
 
-		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression, ']'))),
-		property_assign: $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression, ']'))),
-		function_call:   $ => seq('.',                     optional($.generic_arguments), $.function_arguments),
+		property_accessor: $ => choice($.integer, $.word, seq('[', $._expression, ']')),
 
 		_expression_compound: $ => choice(
 			$._expression_unit,
 			alias($.expression_compound_dfn, $.expression_compound),
 		),
-		expression_compound_dfn: $ => seq($._expression_compound, choice($.property_access, $.function_call)),
+		expression_compound_dfn: $ => seq($._expression_compound, choice(
+			seq(choice('.', '?.', '!.'), $.property_accessor),
+			seq('.',                     optional($.generic_arguments), $.function_arguments),
+		)),
 
 		assignee: $ => choice(
 			$.identifier,
-			seq($._expression_compound, $.property_assign),
+			seq($._expression_compound, '.', $.property_accessor),
 		),
 
 		_expression_unary_symbol: $ => choice(
@@ -510,8 +528,12 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type', choice('_',                      $.identifier ), '=', $._type,                     ';'),
-		declaration_variable: $ => seq('val',  choice('_', seq(optional('mut'), $.identifier)), ':', $._type, '=', $._expression, ';'),
+		declaration_type: $ => seq('type', choice('_', $.identifier ), '=', $._type, ';'),
+
+		declaration_variable: $ => choice(
+			seq('val', optional('mut'), choice('_', $.identifier),      ':', $._type, '=', $._expression, ';'),
+			seq('val',          'mut',  choice('_', $.identifier), '?', ':', $._type,                     ';'),
+		),
 
 		_declaration: $ => choice(
 			$.declaration_type,
@@ -538,16 +560,19 @@ module.exports = grammar({
 	],
 
 	/**
+	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
+	 */
+	conflicts: _$ => [
+		// example:
+		// familyNameAll('integer', ['radix', 'separator']).map((rulename) => _$[rulename]),
+	],
+
+	/**
 	 * Tries to match `$.identifier` first before matching any keyword literals in the grammar.
-	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers#keyword-extraction
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/3-writing-the-grammar.html#keyword-extraction
 	 */
 	word: $ => $.identifier,
-
-	conflicts: $ => [
-		familyNameAll('integer', ['radix', 'separator']),
-		familyNameAll('float',   ['separator']),
-		familyNameAll('string',  ['comment', 'separator']),
-	].map((familyname) => familyname.map((rulename) => $[rulename])),
 
 	supertypes: $ => [
 		$._type_unit,
@@ -557,5 +582,25 @@ module.exports = grammar({
 		$._declaration,
 		$._statement,
 	],
+
+	reserved: {
+		global: $ => [
+			// operator
+			'mut',
+			'is',
+			'isnt',
+			'if',
+			'then',
+			'else',
+			// storage
+			'type',
+			'val',
+			'_',
+			'void',
+			// modifier
+			$.keyword_type,
+			$.keyword_value,
+		],
+	},
 });
 /* eslint-enable @stylistic/arrow-parens */

@@ -31,7 +31,7 @@ describe('build_tuple_like', () => {
 		it('returns `(struct.new)`.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[x, 2.0];
+				(x, 2.0);
 			`);
 			return assertEqualBins(
 				expr,
@@ -41,7 +41,7 @@ describe('build_tuple_like', () => {
 
 		it('empty tuple returns `(struct.new_default)`.', () => {
 			const {builder, expr} = setup(`
-				[];
+				();
 			`);
 			return assertEqualBins(
 				expr,
@@ -52,7 +52,7 @@ describe('build_tuple_like', () => {
 		it('boxed tuple with many items.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[[x, 2.0, true]];
+				((x, 2.0, true),);
 			`);
 			return assertEqualBins(
 				expr,
@@ -67,7 +67,7 @@ describe('build_tuple_like', () => {
 		it('nested tuples.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[x, [2.0], [3, [4.0]]];
+				(x, (2.0,), (3, (4.0,)));
 			`);
 			return assertEqualBins(
 				expr,
@@ -85,7 +85,7 @@ describe('build_tuple_like', () => {
 		it('multiple entries.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[[x, [2.0, 3]], [4.0, [5, 6.0]], [7, []]];
+				((x, (2.0, 3)), (4.0, (5, 6.0)), (7, ()));
 			`);
 			return assertEqualBins(
 				expr,
@@ -108,14 +108,14 @@ describe('build_tuple_like', () => {
 
 		it('pointer entries.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val mut inner01: [float, int]   = [2.0, 3];
-				val mut inner11: [int,   float] = [5,   6.0];
-				val mut inner2:  [int,   []]    = [7,   []];
+				val mut inner01: (float, int)   = (2.0, 3);
+				val mut inner11: (int,   float) = (5,   6.0);
+				val mut inner2:  (int,   ())    = (7,   ());
 
-				val mut inner0: [int,   [float, int]]   = [1,   inner01];
-				val mut inner1: [float, [int,   float]] = [4.0, inner11];
+				val mut inner0: (int,   (float, int))   = (1,   inner01);
+				val mut inner1: (float, (int,   float)) = (4.0, inner11);
 
-				val tuple: [[int, [float, int]], [float, [int, float]], [int, []]] = [inner0, inner1, inner2];
+				val tuple: ((int, (float, int)), (float, (int, float)), (int, ())) = (inner0, inner1, inner2);
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -124,7 +124,7 @@ describe('build_tuple_like', () => {
 			const bldr: Builder               = goal.builder;
 			const mod:  BinaryenModuleUpdates = bldr.module;
 			return assertEqualBins(
-				(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+				(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned!.build()),
 				[
 					mod.struct.new([buildConst(bldr, 2.0), buildConst(bldr, 3n)],  bldr.typeBuilder.getTempHeapType(0)),
 					mod.struct.new([buildConst(bldr, 5n),  buildConst(bldr, 6.0)], bldr.typeBuilder.getTempHeapType(1)),
@@ -252,7 +252,7 @@ describe('build_record_like', () => {
 		it('returns `(struct.new)`.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[a= x, b= 2.0];
+				(a= x, b= 2.0);
 			`);
 			return assertEqualBins(
 				expr,
@@ -263,8 +263,8 @@ describe('build_record_like', () => {
 		it('if source order differs from key order, returns a `(block)` with `(set)`s followed by a `(struct.new)` with `(get)`s.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[a= x, b= 2.0]; % establishes key order
-				[b= 2.0, a= x];
+				(a= x, b= 2.0); % establishes key order
+				(b= 2.0, a= x);
 			`);
 			return assertEqualBins(
 				expr,
@@ -282,7 +282,7 @@ describe('build_record_like', () => {
 		it('boxed record with many props.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[a= [a= x, b= 2.0, c= true]];
+				(a= (a= x, b= 2.0, c= true));
 			`);
 			return assertEqualBins(
 				expr,
@@ -297,7 +297,7 @@ describe('build_record_like', () => {
 		it('nested records.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[a= x, b= [a= 2.0], c= [a= 3, b= [a= 4.0]]];
+				(a= x, b= (a= 2.0), c= (a= 3, b= (a= 4.0)));
 			`);
 			return assertEqualBins(
 				expr,
@@ -315,7 +315,7 @@ describe('build_record_like', () => {
 		it('multiple entries.', () => {
 			const {builder, expr} = setup(`
 				val mut x: int = 1;
-				[a= [a= x, b= [a= 2.0, b= 3]], b= [a= 4.0, b= [a= 5, b= 6.0]], c= [b= 7, a= true]];
+				(a= (a= x, b= (a= 2.0, b= 3)), b= (a= 4.0, b= (a= 5, b= 6.0)), c= (b= 7, a= true));
 			`);
 			return assertEqualBins(
 				expr,
@@ -339,18 +339,18 @@ describe('build_record_like', () => {
 
 		it('pointer entries.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val mut inner_ab: [a: float, b: int]   = [a= 2.0, b= 3];
-				val mut inner_bb: [a: int,   b: float] = [a= 5,   b= 6.0];
-				val mut inner_c:  [b: int,   a: bool]  = [b= 7,   a= true];
+				val mut inner_ab: (a: float, b: int)   = (a= 2.0, b= 3);
+				val mut inner_bb: (a: int,   b: float) = (a= 5,   b= 6.0);
+				val mut inner_c:  (b: int,   a: bool)  = (b= 7,   a= true);
 
-				val mut inner_a: [a: int,   b: [a: float, b: int]]   = [a= 1,   b= inner_ab];
-				val mut inner_b: [a: float, b: [a: int,   b: float]] = [a= 4.0, b= inner_bb];
+				val mut inner_a: (a: int,   b: (a: float, b: int))   = (a= 1,   b= inner_ab);
+				val mut inner_b: (a: float, b: (a: int,   b: float)) = (a= 4.0, b= inner_bb);
 
-				val record: [
-					a: [a: int,   b: [a: float, b: int]],
-					b: [a: float, b: [a: int,   b: float]],
-					c: [b: int,   a: bool],
-				] = [a= inner_a, b= inner_b, c= inner_c];
+				val record: (
+					a: (a: int,   b: (a: float, b: int)),
+					b: (a: float, b: (a: int,   b: float)),
+					c: (b: int,   a: bool),
+				) = (a= inner_a, b= inner_b, c= inner_c);
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -359,7 +359,7 @@ describe('build_record_like', () => {
 			const bldr: Builder               = goal.builder;
 			const mod:  BinaryenModuleUpdates = bldr.module;
 			return assertEqualBins(
-				(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned.build()),
+				(goal.children as AST.ASTNodeDeclarationVariable[]).map((stmt) => stmt.assigned!.build()),
 				[
 					mod.struct.new([buildConst(bldr, 2.0), buildConst(bldr, 3n)],  bldr.typeBuilder.getTempHeapType(0)),
 					mod.struct.new([buildConst(bldr, 5n),  buildConst(bldr, 6.0)], bldr.typeBuilder.getTempHeapType(1)),

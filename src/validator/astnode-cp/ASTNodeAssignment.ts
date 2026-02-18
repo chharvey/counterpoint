@@ -29,8 +29,8 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_assignment'>,
-		private readonly assignee: ASTNodeVariable | ASTNodeAccess,
-		public readonly assigned:  ASTNodeExpression,
+		public readonly assignee: ASTNodeVariable | ASTNodeAccess,
+		public readonly assigned: ASTNodeExpression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -51,17 +51,17 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 				throw new MutabilityError01(base_type, this);
 			}
 		}
-		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.type(), this);
+		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
 	public override build(): binaryen.ExpressionRef {
-		const id: bigint = (this.assignee as ASTNodeVariable).id;
-		return this.builder.getLocal(id)?.set(ASTNodeStatement.coerceAssignment(
+		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
+		return this.builder.getLocal(this.assignee.id)?.set(ASTNodeStatement.coerceAssignment(
 			this.builder.module,
-			this.assignee.type(),
+			this.assignee.writeType(),
 			this.assigned.type(),
 			this.assigned.build(),
 			this.validator.config.compilerOptions.intCoercion,
-		)) ?? assert.fail(new ReferenceError(`Variable with id ${ id } not found.`));
+		)) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }

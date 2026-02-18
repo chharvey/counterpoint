@@ -5,7 +5,7 @@ import minimist from 'minimist'; // need `tsconfig.json#compilerOptions.allowSyn
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
-} from './core/index.ts';
+} from './index.ts';
 import {Program} from './Program.ts';
 
 

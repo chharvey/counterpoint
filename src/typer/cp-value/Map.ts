@@ -1,14 +1,9 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	VoidError01,
-} from '../../index.ts';
-import type {AST} from '../../validator/index.ts';
+import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	language_values_equal,
 	strictEqual,
 	instanceOf,
@@ -29,11 +24,11 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
-	public constructor(private readonly cases: ReadonlyMap<K, V> = new Map()) {
+	public constructor(public readonly cases: ReadonlyMap<K, V> = new Map()) {
 		super();
 		const uniques = new Map<K, V>();
 		[...cases].forEach(([ant, con]) => {
-			xjs.Map.set(uniques, ant, con, languageValuesIdentical);
+			xjs.Map.set(uniques, ant, con, language_values_identical);
 		});
 		this.cases = uniques;
 	}
@@ -56,10 +51,9 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 
-	/** @final */
 	@strictEqual
-	@instanceOf(() => ValueMap)
 	@identical
+	@instanceOf(() => ValueMap)
 	@memoizeBinOp(true, true)
 	public override equal(value: Value): boolean {
 		return (
@@ -70,7 +64,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	/**
 	 * @inheritdoc
-	 * Returns a TYPE.Map whose invariants are the respective unions of the types of this ValueMap’s antecedents and consequents.
+	 * Returns a TYPE.Map whose type arguments are the respective unions of the types of this ValueMap’s antecedents and consequents.
 	 */
 	public override toType(): TYPE.Map {
 		return new TYPE.Map(
@@ -83,12 +77,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		throw new Error('`ValueMap#build` not yet supported.');
 	}
 
-	public get(ant: K, access_optional: boolean, accessor: AST.ASTNodeExpression): V | Null {
-		return (
-			xjs.Map.has(this.cases, ant, languageValuesIdentical) ? xjs.Map.get(this.cases, ant, languageValuesIdentical)! :
-			access_optional                                       ? NULL :
-			assert.fail(new VoidError01(accessor))
-		);
+	public get(ant: Value): V | Null {
+		return xjs.Map.has<Value, V>(this.cases, ant, language_values_identical) ? xjs.Map.get<Value, V>(this.cases, ant, language_values_identical)! : NULL;
 	}
 }
 export {ValueMap as Map};

@@ -3,12 +3,14 @@ import {
 	AST,
 	type EntryType,
 	TYPE,
-	TypeError,
+	VALUE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 } from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
+import {extract_tokens} from '../../utils.ts';
 
 
 
@@ -16,8 +18,8 @@ describe('ASTNodeType', () => {
 	describe('#eval', () => {
 		describe('ASTNodeTypeCollectionLiteral', () => {
 			specify('ASTNodeTypeTuple', () => {
-				assert.deepStrictEqual(
-					AST.ASTNodeTypeTuple.fromSource('[int, bool, ?:str]').eval(),
+				assertEqualTypes(
+					AST.ASTNodeTypeTuple.fromSource('(int, bool, ?:str)').eval(),
 					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -27,8 +29,8 @@ describe('ASTNodeType', () => {
 			});
 
 			specify('ASTNodeTypeRecord', () => {
-				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('[x: int, y?: bool, _: str]');
-				return assert.deepStrictEqual(
+				const rec: AST.ASTNodeTypeRecord = AST.ASTNodeTypeRecord.fromSource('(x: int, y?: bool, _: str)');
+				return assertEqualTypes(
 					rec.eval(),
 					new TYPE.Record(new Map<bigint, EntryType>(rec.children.map((c, i) => [c.key.id, [
 						{type: TYPE.INT,  optional: false},
@@ -38,49 +40,29 @@ describe('ASTNodeType', () => {
 				);
 			});
 
-			describe('ASTNodeTypeList', () => {
-				it('returns a TYPE.List if there is no count.', () => {
-					assert.deepStrictEqual(
-						AST.ASTNodeTypeList.fromSource('(int | bool)[]').eval(),
-						new TYPE.List(TYPE.INT.union(TYPE.BOOL)),
-					);
-				});
-				it('returns a TYPE.Tuple if there is a count.', () => {
-					const expected = [
-						TYPE.INT.union(TYPE.BOOL),
-						TYPE.INT.union(TYPE.BOOL),
-						TYPE.INT.union(TYPE.BOOL),
-					] as const;
-					return assert.deepStrictEqual(
-						AST.ASTNodeTypeList.fromSource('(int | bool)[3]').eval(),
-						TYPE.Tuple.fromTypes(expected),
-					);
-				});
-				it('throws if count is negative.', () => {
-					assert.throws(() => AST.ASTNodeTypeList.fromSource('(int | bool)[-3]').eval(), TypeError);
-				});
-			});
-
-			specify('ASTNodeType{Dict,Set,Map}', () => {
-				assert.deepStrictEqual(
+			specify('ASTNodeType{List,Dict,Set,Map}', () => {
+				const INT_BOOL: TYPE.Type = TYPE.INT.union(TYPE.BOOL);
+				assertEqualTypes(
 					[
-						AST.ASTNodeTypeDict .fromSource('[:int | bool]')  .eval(),
-						AST.ASTNodeTypeSet  .fromSource('(int | bool){}') .eval(),
-						AST.ASTNodeTypeMap  .fromSource('{int -> bool}')  .eval(),
+						AST.ASTNodeTypeList. fromSource('[int | bool]')  .eval(),
+						AST.ASTNodeTypeDict .fromSource('[:int | bool]') .eval(),
+						AST.ASTNodeTypeSet  .fromSource('{int | bool}')  .eval(),
+						AST.ASTNodeTypeMap  .fromSource('{int -> bool}') .eval(),
 					],
 					[
-						new TYPE.Dict(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.Set(TYPE.INT.union(TYPE.BOOL)),
-						new TYPE.Map(TYPE.INT, TYPE.BOOL),
+						new TYPE.List(INT_BOOL),
+						new TYPE.Dict(INT_BOOL),
+						new TYPE.Set (INT_BOOL),
+						new TYPE.Map (TYPE.INT, TYPE.BOOL),
 					],
 				);
 			});
 
 			it('does not throw if value type contains reference type.', () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					type A =   [int, List.<float>, str];
-					type C =   [a: int, b: List.<float>, c: str];
-					type E = Set.<float>  [3];
+					type A = (int, [float], str);
+					type C = (a: int, b: [float], c: str);
+					type E = ({float}, {float}, {float});
 				`);
 				goal.varCheck();
 				goal.typeCheck(); // assert does not throw
@@ -92,36 +74,32 @@ describe('ASTNodeType', () => {
 
 	describe('ASTNodeTypeConstant', () => {
 		describe('#eval', () => {
-			it('computes the value of constant null, boolean, or number types.', () => {
-				assert.deepStrictEqual([
-					'null',
-					'false',
-					'true',
-					'42',
-					'4.2e+3',
-					'"hi"',
-				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
+			it('computes the value of constant null, boolean, symbol, number, and string types.', () => {
+				assertEqualTypes(extract_tokens(`
+					null  false  true
+					@then  @str  @false  @foobar
+					42  4.2e+3
+					"hi"
+				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
+					new VALUE.Symbol(0x8en,  'then').toType(),
+					new VALUE.Symbol(0x85n,  'str').toType(),
+					new VALUE.Symbol(0x88n,  'false').toType(),
+					new VALUE.Symbol(0x100n, 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(4.2e+3),
 					typeUnit('hi'),
 				]);
 			});
 			it('computes the value of keyword type.', () => {
-				assert.deepStrictEqual([
-					'never',
-					'void',
-					'bool',
-					'int',
-					'float',
-					'str',
-					'unknown',
-				].map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
+				assertEqualTypes(extract_tokens(`
+					never  bool  sym  int  float  str  unknown
+				`).map((src) => AST.ASTNodeTypeConstant.fromSource(src).eval()), [
 					TYPE.NEVER,
-					TYPE.VOID,
 					TYPE.BOOL,
+					TYPE.SYM,
 					TYPE.INT,
 					TYPE.FLOAT,
 					TYPE.STR,
@@ -167,7 +145,7 @@ describe('ASTNodeType', () => {
 
 		describe('#eval', () => {
 			it('computes the value of reserved types.', () => {
-				assert.deepStrictEqual([
+				assertEqualTypes([
 					'Object',
 				].map((src) => AST.ASTNodeTypeAlias.fromSource(src).eval()), [
 					TYPE.OBJ,
@@ -180,7 +158,7 @@ describe('ASTNodeType', () => {
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				assert.deepStrictEqual(
+				return assert.strictEqual(
 					((goal
 						.children[1] as AST.ASTNodeDeclarationType)
 						.assigned as AST.ASTNodeTypeAlias)
@@ -188,29 +166,6 @@ describe('ASTNodeType', () => {
 					TYPE.INT,
 				);
 			});
-		});
-	});
-
-
-
-	describe('ASTNodeTypeOperation', () => {
-		specify('#eval', () => {
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationUnary.fromSource('int?').eval(),
-				TYPE.INT.union(TYPE.NULL),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationUnary.fromSource('mut int[]').eval(),
-				new TYPE.List(TYPE.INT, true),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationBinary.fromSource('Object & 3').eval(),
-				TYPE.OBJ.intersect(typeUnit(3n)),
-			);
-			assert.deepStrictEqual(
-				AST.ASTNodeTypeOperationBinary.fromSource('4.2 | int').eval(),
-				typeUnit(4.2).union(TYPE.INT),
-			);
 		});
 	});
 });

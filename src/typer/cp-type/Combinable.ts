@@ -12,6 +12,4 @@ export abstract class Combinable extends TypeOperation {
 	public abstract normalize(): Type;
 
 	public abstract denormalize(): Type;
-
-	public abstract combineTuplesOrRecords(): Type;
 }

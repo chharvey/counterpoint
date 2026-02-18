@@ -8,6 +8,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	forEither,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
@@ -80,149 +81,195 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
-		return (new Map<ValidFunctionName, () => TYPE.Type>([
+		switch (this.base.source) {
 			/*
 			 * API:
 			 * ```cp
 			 * declare class List<T> {
 			 * 	new ();
-			 * 	new (tup0:  []);
-			 * 	new (tup1:  [T]);
-			 * 	new (tup2:  [T, T]);
-			 * 	new (tup:   unknown); % any tuple type with items of type T
+			 * 	new (tup0:  ());
+			 * 	new (tup1:  (T,));
+			 * 	new (tup2:  (T, T));
+			 * 	new (tup:   unknown); % any tuple type with items of type `T`
 			 * 	new (list:  List.<T>);
+			 * 	new ('set': Set.<T>);
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.LIST, () => {
+			case ValidFunctionName.LIST: {
 				this.countArgs(1n, [0n, 2n]);
-				const itemtype:   TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.List(itemtype);
+				const itemtype:         TYPE.Type            = this.typeargs[0].eval();
+				const returntype                             = new TYPE.List(itemtype);
+				const allowed_argtypes: readonly TYPE.Type[] = [
+					new TYPE.Set(itemtype),
+					returntype,
+				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, returntype, this);
+						forEither(allowed_argtypes, (allowed_type) => ASTNodeCP.typeCheckAssign(arg, allowed_type, this));
 					} catch (err) {
+						// If `arg` is not an allowed type, it’s either a tuple literal or an expression with a tuple type.
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, itemtype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Tuple)) {
+							if (argtype instanceof TYPE.Tuple) {
+								ASTNodeCP.checkSubtype(argtype.itemTypes(), itemtype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.itemTypes(), itemtype, this);
 						}
 					}
 				}
 				return returntype.mutableOf();
-			}],
+			}
 			/*
 			 * API:
 			 * ```cp
 			 * declare class Dict<T> {
 			 * 	new ();
-			 * 	new (recA:  [a: T]);
-			 * 	new (recAB: [a: T, b: T]);
-			 * 	new (rec:   unknown); % any record type with values of type T
+			 * 	new (tup0:  ());
+			 * 	new (tup1:  ((sym, T),));
+			 * 	new (tup2:  ((sym, T), (sym, T)));
+			 * 	new (tup:   unknown); % any tuple type with items of type `(sym, T)`
+			 * 	new (recA:  (a: T));
+			 * 	new (recAB: (a: T, b: T));
+			 * 	new (rec:   unknown); % any record type with values of type `T`
+			 * 	new (list:  List.<(sym, T)>);
 			 * 	new (dict:  Dict.<T>);
+			 * 	new ('set': Set.<(sym, T)>);
+			 * 	new (map:   Map.<sym, T>);
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.DICT, () => {
+			case ValidFunctionName.DICT: {
 				this.countArgs(1n, [0n, 2n]);
-				const valuetype:  TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.Dict(valuetype);
+				const valuetype:        TYPE.Type            = this.typeargs[0].eval();
+				const returntype                             = new TYPE.Dict(valuetype);
+				const entrytype:        TYPE.Tuple           = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
+				const allowed_argtypes: readonly TYPE.Type[] = [
+					new TYPE.List(entrytype),
+					new TYPE.Set(entrytype),
+					new TYPE.Map(TYPE.SYM, valuetype),
+					returntype,
+				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, returntype, this);
+						forEither(allowed_argtypes, (allowed_type) => ASTNodeCP.typeCheckAssign(arg, allowed_type, this));
 					} catch (err) {
-						if (arg instanceof ASTNodeRecord) {
+						// If `arg` is not an allowed type, it’s either a tuple/record literal or an expression with a tuple/record type.
+						if (arg instanceof ASTNodeTuple) {
+							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
+						} else if (arg instanceof ASTNodeRecord) {
 							xjs.Array.forEachAggregated(arg.children, (prop) => ASTNodeCP.typeCheckAssign(prop.val, valuetype, prop.val));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Record)) {
+							if (argtype instanceof TYPE.Tuple) {
+								ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);
+							} else if (argtype instanceof TYPE.Record) {
+								ASTNodeCP.checkSubtype(argtype.valueTypes(), valuetype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.valueTypes(), valuetype, this);
 						}
 					}
 				}
 				return returntype.mutableOf();
-			}],
+			}
 			/*
 			 * API:
 			 * ```cp
 			 * declare class Set<T> {
 			 * 	new ();
-			 * 	new (tup0:  []);
-			 * 	new (tup1:  [T]);
-			 * 	new (tup2:  [T, T]);
-			 * 	new (tup:   unknown); % any tuple type with items of type T
+			 * 	new (tup0:  ());
+			 * 	new (tup1:  (T,));
+			 * 	new (tup2:  (T, T));
+			 * 	new (tup:   unknown); % any tuple type with items of type `T`
 			 * 	new (list:  List.<T>);
+			 * 	new ('set': Set.<T>);
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.SET, () => {
+			case ValidFunctionName.SET: {
 				this.countArgs(1n, [0n, 2n]);
-				const eltype:     TYPE.Type = this.typeargs[0].eval();
-				const returntype            = new TYPE.Set(eltype);
+				const eltype:           TYPE.Type            = this.typeargs[0].eval();
+				const returntype                             = new TYPE.Set(eltype);
+				const allowed_argtypes: readonly TYPE.Type[] = [
+					new TYPE.List(eltype),
+					returntype,
+				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, new TYPE.List(eltype), this);
+						forEither(allowed_argtypes, (allowed_type) => ASTNodeCP.typeCheckAssign(arg, allowed_type, this));
 					} catch (err) {
+						// If `arg` is not an allowed type, it’s either a tuple literal or an expression with a tuple type.
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, eltype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Tuple)) {
+							if (argtype instanceof TYPE.Tuple) {
+								ASTNodeCP.checkSubtype(argtype.itemTypes(), eltype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.itemTypes(), eltype, this);
 						}
 					}
 				}
 				return returntype.mutableOf();
-			}],
+			}
 			/*
 			 * API:
 			 * ```cp
 			 * declare class Map<K, V> {
 			 * 	new ();
-			 * 	new (tup0:  []);
-			 * 	new (tup1:  [[K, V]]);
-			 * 	new (tup2:  [[K, V], [K, V]]);
-			 * 	new (tup:   unknown); % any tuple type with items of type [K, V]
-			 * 	new (list:  List.<[K, V]>);
+			 * 	new (tup0:  ());
+			 * 	new (tup1:  ((K, V),));
+			 * 	new (tup2:  ((K, V), (K, V)));
+			 * 	new (tup:   unknown); % any tuple type with items of type `(K, V)`
+			 * 	new (list:  List.<(K, V)>);
+			 * 	new ('set': Set.<(K, V)>);
+			 * 	new (map:   Map.<K, V>);
 			 * }
 			 * ```
 			 */
-			[ValidFunctionName.MAP, () => {
+			case ValidFunctionName.MAP: {
 				this.countArgs([1n, 3n], [0n, 2n]);
-				const anttype:    TYPE.Type  = this.typeargs[0].eval();
-				const contype:    TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
-				const returntype             = new TYPE.Map(anttype, contype);
-				const entrytype:  TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
+				const anttype:          TYPE.Type            = this.typeargs[0].eval();
+				const contype:          TYPE.Type            = this.typeargs[1]?.eval() ?? anttype;
+				const returntype                             = new TYPE.Map(anttype, contype);
+				const entrytype:        TYPE.Tuple           = TYPE.Tuple.fromTypes([anttype, contype]);
+				const allowed_argtypes: readonly TYPE.Type[] = [
+					new TYPE.List(entrytype),
+					new TYPE.Set(entrytype),
+					returntype,
+				];
 				if (this.exprargs.length) {
 					const arg: ASTNodeExpression = this.exprargs[0];
 					try {
-						ASTNodeCP.typeCheckAssign(arg, new TYPE.List(entrytype), this);
+						forEither(allowed_argtypes, (allowed_type) => ASTNodeCP.typeCheckAssign(arg, allowed_type, this));
 					} catch (err) {
+						// If `arg` is not an allowed type, it’s either a tuple literal or an expression with a tuple type.
 						if (arg instanceof ASTNodeTuple) {
 							xjs.Array.forEachAggregated(arg.children, (item) => ASTNodeCP.typeCheckAssign(item, entrytype, item));
 						} else {
 							const argtype: TYPE.Type = arg.type();
-							if (!(argtype instanceof TYPE.Tuple)) {
+							if (argtype instanceof TYPE.Tuple) {
+								ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);
+							} else {
 								throw err;
 							}
-							ASTNodeCP.checkSubtype(argtype.itemTypes(), entrytype, this);
 						}
 					}
 				}
 				return returntype.mutableOf();
-			}],
-		]).get(this.base.source as ValidFunctionName) ?? invalid_function_name(this.base.source))();
+			}
+			default: {
+				invalid_function_name(this.base.source);
+			}
+		}
 	}
 
 	@memoizeMethod
@@ -231,12 +278,54 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (args.includes(null)) {
 			return null;
 		}
-		return new Map<ValidFunctionName, (argument: VALUE.Value | undefined) => VALUE.Value | null>([
-			[ValidFunctionName.LIST, (tuple)  => (tuple  === undefined) ? new VALUE.List() : new VALUE.List((tuple as VALUE.CollectionIndexed).items)],
-			[ValidFunctionName.DICT, (record) => (record === undefined) ? new VALUE.Dict() : new VALUE.Dict((record as VALUE.CollectionKeyed).properties)],
-			[ValidFunctionName.SET,  (tuple)  => (tuple  === undefined) ? new VALUE.Set()  : new VALUE.Set(new Set<VALUE.Value>((tuple as VALUE.CollectionIndexed).items))],
-			[ValidFunctionName.MAP,  (tuple)  => (tuple  === undefined) ? new VALUE.Map()  : new VALUE.Map(new Map<VALUE.Value, VALUE.Value>((tuple as VALUE.CollectionIndexed).items.map((pair) => (pair as VALUE.CollectionIndexed).items as [VALUE.Value, VALUE.Value])))],
-		]).get(this.base.source as ValidFunctionName)!(args[0] ?? undefined);
+		switch (this.base.source) {
+			case ValidFunctionName.LIST: {
+				if (!args.length) {
+					return new VALUE.List();
+				}
+				const arg: VALUE.Value = args[0]!;
+				return new VALUE.List((
+					arg instanceof VALUE.Set                        ? [...arg.elements] :
+					(assert_instanceof(arg, VALUE.CollectionIndexed), arg.items)
+				));
+			}
+			case ValidFunctionName.DICT: {
+				if (!args.length) {
+					return new VALUE.Dict();
+				}
+				const arg: VALUE.Value = args[0]!;
+				return new VALUE.Dict((
+					arg instanceof VALUE.CollectionIndexed        ? new Map<bigint, VALUE.Value>((arg.items       as VALUE.Tuple[])                .map((tup) => [(tup.items[0] as VALUE.Symbol).id, tup.items[1]])) :
+					arg instanceof VALUE.Set                      ? new Map<bigint, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>]             .map((tup) => [(tup.items[0] as VALUE.Symbol).id, tup.items[1]])) :
+					arg instanceof VALUE.Map                      ? new Map<bigint, VALUE.Value>([...arg.cases    as Map<VALUE.Value, VALUE.Value>].map((ent) => [(ent[0]       as VALUE.Symbol).id, ent[1]])) :
+					(assert_instanceof(arg, VALUE.CollectionKeyed), arg.properties)
+				));
+			}
+			case ValidFunctionName.SET: {
+				if (!args.length) {
+					return new VALUE.Set();
+				}
+				const arg: VALUE.Value = args[0]!;
+				return new VALUE.Set((
+					arg instanceof VALUE.CollectionIndexed ? new Set<VALUE.Value>(arg.items) :
+					(assert_instanceof(arg, VALUE.Set),      arg.elements)
+				));
+			}
+			case ValidFunctionName.MAP: {
+				if (!args.length) {
+					return new VALUE.Map();
+				}
+				const arg: VALUE.Value = args[0]!;
+				return new VALUE.Map((
+					arg instanceof VALUE.CollectionIndexed ? new Map<VALUE.Value, VALUE.Value>((arg.items       as VALUE.Tuple[])   .map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
+					arg instanceof VALUE.Set               ? new Map<VALUE.Value, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>].map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
+					(assert_instanceof(arg, VALUE.Map),      arg.cases)
+				));
+			}
+			default: {
+				invalid_function_name(this.base.source);
+			}
+		}
 	}
 
 	/**

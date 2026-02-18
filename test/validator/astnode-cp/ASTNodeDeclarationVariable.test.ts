@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
+	assert_instanceof,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -9,7 +10,6 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assertAssignable,
 	assertEqualBins,
@@ -18,6 +18,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 } from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -25,15 +26,41 @@ describe('ASTNodeDeclarationVariable', () => {
 	describe('#varCheck', () => {
 		it('adds a SymbolSchema to the symbol table with a preset `type` value of `unknown` and a preset null `value` value.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val x: int = 42;
+				val     a:  int = 42;
+				val mut b:  int = 42;
+				val mut c?: int;
 			`);
 			assert.ok(!goal.validator.hasSymbol(0x100n));
+			assert.ok(!goal.validator.hasSymbol(0x101n));
+			assert.ok(!goal.validator.hasSymbol(0x102n));
 			goal.varCheck();
 			assert.ok(goal.validator.hasSymbol(0x100n));
-			const info: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
-			assert_instanceof(info, SymbolSchemaVar);
-			assert.strictEqual(info.type, TYPE.UNKNOWN);
-			assert.strictEqual(info.value, null);
+			assert.ok(goal.validator.hasSymbol(0x101n));
+			assert.ok(goal.validator.hasSymbol(0x102n));
+			const info_a: SymbolSchema | null = goal.validator.getSymbolInfo(0x100n);
+			const info_b: SymbolSchema | null = goal.validator.getSymbolInfo(0x101n);
+			const info_c: SymbolSchema | null = goal.validator.getSymbolInfo(0x102n);
+			assert_instanceof(info_a, SymbolSchemaVar);
+			assert_instanceof(info_b, SymbolSchemaVar);
+			assert_instanceof(info_c, SymbolSchemaVar);
+			assert.partialDeepStrictEqual(info_a, {
+				unfixed:       false,
+				uninitialized: false,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
+			assert.partialDeepStrictEqual(info_b, {
+				unfixed:       true,
+				uninitialized: false,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
+			assert.partialDeepStrictEqual(info_c, {
+				unfixed:       true,
+				uninitialized: true,
+				type:          TYPE.UNKNOWN,
+				value:         null,
+			});
 		});
 
 		it('for blank identifiers, does not add to symbol table.', () => {
@@ -87,6 +114,20 @@ describe('ASTNodeDeclarationVariable', () => {
 			return var_.typeCheck();
 		});
 
+		it('passes typechecking when uninitialized.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut the_answer?: int | float;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			return assert.partialDeepStrictEqual(goal.validator.getSymbolInfo(0x100n), {
+				unfixed:       true,
+				uninitialized: true,
+				type:          TYPE.INT.union(TYPE.FLOAT),
+				value:         null,
+			});
+		});
+
 		it('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
 			assert.throws(() => AST.ASTNodeDeclarationVariable.fromSource(`
 				val  the_answer:  null =  21  *  2;
@@ -108,13 +149,13 @@ describe('ASTNodeDeclarationVariable', () => {
 		});
 		it('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val immut:  int[3]         = [42, 420, 4200];
-				val ismut:  mut int[]      = List.<int>([42, 420, 4200]);
-				val mutmut: (mut int[])[3] = [List.<int>([42]), List.<int>([420]), List.<int>([4200])];
+				val immut:  (int, int, int)                   = (42, 420, 4200);
+				val 'mut':  mut [int]                         = [42, 420, 4200];
+				val mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
 			`);
 			goal.varCheck();
 			goal.typeCheck();
-			const [immut, ismut, mutmut] = [
+			const [immut, mut, mutmut] = [
 				goal.validator.getSymbolInfo(0x100n) as SymbolSchemaVar,
 				goal.validator.getSymbolInfo(0x101n) as SymbolSchemaVar,
 				goal.validator.getSymbolInfo(0x102n) as SymbolSchemaVar,
@@ -128,85 +169,112 @@ describe('ASTNodeDeclarationVariable', () => {
 				])],
 			);
 			assert.deepStrictEqual(
-				[ismut.source, ismut.value],
-				['ismut',      null],
+				[mut.source, mut.value],
+				['\'mut\'',  null],
 			);
 			return assert.deepStrictEqual(
 				[mutmut.source, mutmut.value],
 				['mutmut',      null],
 			);
 		});
-		it('immutable sets/maps should not be covariant due to bracket access.', () => {
-			typeCheckGoal([
-				'val s: Set.<int | str>       = Set.<int>([42, 43]);',
-				'val m: Map.<int | str, bool> = Map.<int, bool>([[42, false], [43, true]]);',
-				// otherwise one would access `s.["hello"]` or `m.["hello"]`
-			], TypeErrorNotAssignable);
+		it('immutable lists/dicts/sets/maps should be covariant.', () => {
+			typeCheckGoal(extract_lines`
+				val l: List.<int | str> = List.<int>((42, 43));
+				val d: Dict.<int | str> = Dict.<int>((a= 42, b= 43));
+				val s: Set.<int | str>  = Set.<int>((42, 43));
+
+				val mk: Map.<int | str, bool>       = Map.<int, bool>(((42, false), (43, true)));
+				val mv: Map.<int,       bool | str> = Map.<int, bool>(((42, false), (43, true)));
+				val m:  Map.<int | str, bool | str> = Map.<int, bool>(((42, false), (43, true)));
+			`);
+		});
+		it('mutable lists/dicts/sets/maps should not be covariant.', () => {
+			typeCheckGoal(extract_lines`
+				val l: mut List.<int | str> = List.<int>((42, 43));
+				val d: mut Dict.<int | str> = Dict.<int>((a= 42, b= 43));
+				val s: mut Set.<int | str>  = Set.<int>((42, 43));
+
+				val mk: mut Map.<int | str, bool>       = Map.<int, bool>(((42, false), (43, true)));
+				val mv: mut Map.<int,       bool | str> = Map.<int, bool>(((42, false), (43, true)));
+				val m:  mut Map.<int | str, bool | str> = Map.<int, bool>(((42, false), (43, true)));
+			`, TypeErrorNotAssignable);
 		});
 		it('assigning collection literals.', () => {
 			typeCheckGoal(`
-				val c: int[3] = [42, 420, 4200];
-				val d: [n42: int, n420: int] = [
+				val c: (int, int, int) = (42, 420, 4200);
+				val d: (n42: int, n420: int) = (
 					n42=  42,
 					n420= 420,
-				];
-				val v: [   int,    str] = [   42,    "hello"];
-				val s: [a: int, b: str] = [a= 42, b= "hello"];
+				);
+				val v: (   int,    str) = (   42,    "hello");
+				val s: (a: int, b: str) = (a= 42, b= "hello");
 			`);
 		});
 		it('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
 			typeCheckGoal(`
-				val v: unknown = [   42,    "hello"];
-				val s: unknown = [a= 42, b= "hello"];
+				val v: unknown = (   42,    "hello");
+				val s: unknown = (a= 42, b= "hello");
 			`);
 			typeCheckGoal(`
-				val v: mut unknown = [   42,    "hello"];
-				val s: mut unknown = [a= 42, b= "hello"];
+				val v: mut unknown = (   42,    "hello");
+				val s: mut unknown = (a= 42, b= "hello");
 			`); // mut unknown == unknown
 		});
 		context('assigning a collection literal to a wider mutable type.', () => {
 			it('disallows assigning Tuples/Records to Lists/Dicts', () => {
 				typeCheckGoal(`
-					val t1_1: List.<42 | 4.3> = [42];
-					val t2_1: List.<int>      = [42];
+					val t1_1: List.<42 | 4.3> = (42);
+					val t2_1: List.<int>      = (42);
 
-					val t1_2: mut List.<42 | 4.3> = [43];
-					val t2_2: mut List.<int>      = [43];
+					val t1_2: mut List.<42 | 4.3> = (43);
+					val t2_2: mut List.<int>      = (43);
 
-					val r1_1: Dict.<42 | 4.3> = [a= 42];
-					val r2_1: Dict.<int>      = [a= 42];
+					val r1_1: Dict.<42 | 4.3> = (a= 42);
+					val r2_1: Dict.<int>      = (a= 42);
 
-					val r1_2: mut Dict.<42 | 4.3> = [a= 43];
-					val r2_2: mut Dict.<int>      = [a= 43];
+					val r1_2: mut Dict.<42 | 4.3> = (a= 43);
+					val r2_2: mut Dict.<int>      = (a= 43);
 
-					val t3_1: [           List.<float>] = [       [4.3]];
-					val t3_2: [       mut List.<float>] = [       [4.3]];
-					val r3_1: [inner:     List.<float>] = [inner= [4.3]];
-					val r3_2: [inner: mut List.<float>] = [inner= [4.3]];
+					val t3_1: (           List.<float>,) = (       (4.3,),);
+					val t3_2: (       mut List.<float>,) = (       (4.3,),);
+					val r3_1: (inner:     List.<float>)  = (inner= (4.3,));
+					val r3_2: (inner: mut List.<float>)  = (inner= (4.3,));
 				`.split('\n'), TypeErrorNotAssignable);
 			});
-			it('allows assigning Sets and Maps.', () => {
+			it('allows assigning Lists, Dicts, Sets, and Maps.', () => {
 				typeCheckGoal(`
-					val s: mut (int | str){} = {42,   "43"};
-					val m: mut {int -> str}  = {42 -> "43"};
+					val l: mut [int | str]   = [   42,      "43"];
+					val d: mut [: int | str] = [a= 42,   b= "43"];
+					val s: mut {int | str}   = {   42,      "43"};
+					val m: mut {int -> str}  = {   42 ->    "43"};
+					l.[1]    = "44";
+					d.[@a]   = "44";
 					s.["44"] = true;
 					m.[44]   = "45";
 				`);
 				return typeCheckGoal(`
-					val tuple_of_set:  [   mut int{}]        = [   {42}];
-					val tuple_of_map:  [   mut {int -> str}] = [   {42 -> "hello"}];
-					val record_of_set: [k: mut int{}]        = [k= {42}];
-					val record_of_map: [k: mut {int -> str}] = [k= {42 -> "hello"}];
-					tuple_of_set.0.[43]  = true;
-					tuple_of_map.0.[43]  = "world";
-					record_of_set.k.[43] = true;
-					record_of_map.k.[43] = "world";
+					val tuple_of_list:  (   mut [int],)        = (   [42],);
+					val tuple_of_dict:  (   mut [:int],)       = (   [a= 42],);
+					val tuple_of_set:   (   mut {int},)        = (   {42},);
+					val tuple_of_map:   (   mut {int -> str},) = (   {42 -> "hello"},);
+					val record_of_list: (k: mut [int])         = (k= [42]);
+					val record_of_dict: (k: mut [:int])        = (k= [b= 42]);
+					val record_of_set:  (k: mut {int})         = (k= {42});
+					val record_of_map:  (k: mut {int -> str})  = (k= {42 -> "hello"});
+					tuple_of_list.0.[0]  = 43;
+					tuple_of_dict.0.[@a]  = 43;
+					tuple_of_set.0.[43]   = true;
+					tuple_of_map.0.[43]   = "world";
+					record_of_list.k.[0]  = 43;
+					record_of_dict.k.[@b] = 43;
+					record_of_set.k.[43]  = true;
+					record_of_map.k.[43]  = "world";
 				`);
 			});
 			it('should throw when assigning combo type to union.', () => {
 				typeCheckGoal(`
-					val x: [   bool,    int] | [   int,    bool] = [   true,    false];
-					val x: [a: bool, b: int] | [a: int, b: bool] = [a= true, b= false];
+					val x: (   bool,    int) | (   int,    bool) = (   true,    false);
+					val x: (a: bool, b: int) | (a: int, b: bool) = (a= true, b= false);
 				`.split('\n'), (err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
@@ -219,28 +287,28 @@ describe('ASTNodeDeclarationVariable', () => {
 					return true;
 				});
 				return typeCheckGoal(`
-					type Employee = [
+					type Employee = (
 						name:         str,
 						id:           int,
 						job_title:    str,
 						hours_worked: float,
-					];
-					type Volunteer = [
+					);
+					type Volunteer = (
 						name:         str,
 						agency:       str,
 						hours_worked: float,
-					];
-					val bob: Employee | Volunteer = [
+					);
+					val bob: Employee | Volunteer = (
 						name=         "Bob", %: str
 						hours_worked= 80.0,  %: float
-					];
+					);
 				`, (err) => {
 					assert_instanceof(err, AggregateError);
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 257: int, 258: str, 259: float]`.'},
-							{cons: TypeErrorNotAssignable, message: 'Expression of type `[256: "Bob", 259: 80.0]` is not assignable to type `[256: str, 261: str, 259: float]`.'},
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 257: int, 258: str, 259: float)`.'},
+							{cons: TypeErrorNotAssignable, message: 'Expression of type `(256: "Bob", 259: 80.0)` is not assignable to type `(256: str, 261: str, 259: float)`.'},
 						],
 					});
 					return true;
@@ -248,39 +316,39 @@ describe('ASTNodeDeclarationVariable', () => {
 			});
 			it('throws when not assigned to correct type.', () => {
 				typeCheckGoal(`
-					val s: mut {int -> str}  = {42,   "43"};
-					val s: mut (int | str){} = {42 -> "43"};
+					val s: mut {int -> str} = {42,   "43"};
+					val s: mut {int | str}  = {42 -> "43"};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					val t1: mut unknown               = [42, "43"];
-					val t4: mut ([int, str] | Object) = [42, "43"];
+					val t1: mut unknown               = (42, "43");
+					val t4: mut ((int, str) | Object) = (42, "43");
 
-					val r1: mut unknown                     = [a= 42, b= "43"];
-					val r4: mut ([a: int, b: str] | Object) = [a= 42, b= "43"];
+					val r1: mut unknown                     = (a= 42, b= "43");
+					val r4: mut ((a: int, b: str) | Object) = (a= 42, b= "43");
 
-					val s1: mut (42 | 4.3){}            = {42};
-					val s2: mut (int | float){}         = {42};
+					val s1: mut {42 | 4.3}              = {42};
+					val s2: mut {int | float}           = {42};
 					val s3: mut Object                  = {42};
-					val s4: mut (int{} | {str -> bool}) = {42};
-					val s5: mut (int{} | Object)        = {42};
+					val s4: mut ({int} | {str -> bool}) = {42};
+					val s5: mut ({int} | Object)        = {42};
 
 					val m1: mut {int -> float}            = {42 -> 4.3};
 					val m2: mut {int? -> float?}          = {42 -> 4.3};
 					val m3: mut Object                    = {42 -> 4.3};
-					val m4: mut ({int -> float} | str{})  = {42 -> 4.3};
+					val m4: mut ({int -> float} | {str})  = {42 -> 4.3};
 					val m5: mut ({int -> float} | Object) = {42 -> 4.3};
 				`);
 			});
 			it('throws when entries mismatch.', () => {
 				typeCheckGoal(`
-					val s1: mut int{} = {"42"};
-					val s2: mut int{} = {42, "43"};
+					val s1: mut {int} = {"42"};
+					val s2: mut {int} = {42, "43"};
 
 					val m1: mut {int -> str} = {4.2 -> "43"};
 					val m2: mut {int -> str} = {42  -> 4.3};
 				`.split('\n'), TypeErrorNotAssignable);
 				typeCheckGoal(`
-					val s3: mut (bool | str){} = {46, 47};
+					val s3: mut {bool | str} = {46, 47};
 
 					val m3_1: mut {str -> bool} = {1 -> false, 2.0 -> true};
 					val m3_2: mut {str -> bool} = {"a" -> 3,   "b" -> 4.0};
@@ -365,6 +433,9 @@ describe('ASTNodeDeclarationVariable', () => {
 				val mut c: int = 42;     % unfixed, foldable: \`(local.set)\`
 				val d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
 				val _:     int = c + 10; % blank, unfoldable: \`(drop)\`
+
+				val mut e?: bool; % assignee, uninitialized: \`(local.set)\`
+				val mut _?: bool; % blank, uninitialized:    \`(nop)\`
 			`);
 			goal.varCheck();
 			goal.typeCheck();
@@ -372,6 +443,7 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x102n, type: binaryen.v128},
 				{id: 0x103n, type: binaryen.v128},
+				{id: 0x104n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
@@ -380,9 +452,12 @@ describe('ASTNodeDeclarationVariable', () => {
 					goal.builder.module.nop(),
 					goal.builder.module.nop(),
 
-					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+
+					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
+					goal.builder.module.nop(),
 				],
 			);
 		});
@@ -393,6 +468,9 @@ describe('ASTNodeDeclarationVariable', () => {
 				val _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
 				val mut b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
 				val _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
+
+				val mut c?: bool; % assignee, uninitialized: \`(local.set)\` (same behavior)
+				val mut _?: bool; % blank, uninitialized:    \`(nop)\`       (same behavior)
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
@@ -400,22 +478,26 @@ describe('ASTNodeDeclarationVariable', () => {
 			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
 				{id: 0x100n, type: binaryen.v128},
 				{id: 0x101n, type: binaryen.v128},
+				{id: 0x102n, type: binaryen.v128},
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
 				[
-					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned.build()),
-					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned.build()),
+					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
+
+					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
+					goal.builder.module.nop(),
 				],
 			);
 		});
 
 		it('tuples and records.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val tup: [   int,    float,    [   null,    [   null,    bool]]] = [   42,    4.2,    [   null,    [   null,    true]]];
-				val rec: [a: int, b: float, c: [d: null, e: [f: null, g: bool]]] = [a= 42, b= 4.2, c= [d= null, e= [f= null, g= true]]];
+				val tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    true)));
+				val rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= true)));
 			`, CONFIG_FOLDING_OFF);
 			goal.varCheck();
 			goal.typeCheck();
@@ -436,8 +518,8 @@ describe('ASTNodeDeclarationVariable', () => {
 
 		it('allows tuples and records to contain each other.', () => {
 			[
-				'val tup: [   int,    float,    [   null,    bool],    [g: bool, h: int],    [[j: float]]] = [   42,    4.2,    [   null,    true],    [g= false, h= 42],    [[j= 4.2]]];',
-				'val rec: [a: int, b: float, c: [d: null, e: bool], f: [   bool,    int], i: [k: [float]]] = [a= 42, b= 4.2, c= [d= null, e= true], f= [   false,    42], i= [k= [4.2]]];',
+				'val tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));',
+				'val rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));',
 			].forEach((src) => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
 				goal.varCheck();

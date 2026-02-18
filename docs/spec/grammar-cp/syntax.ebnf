@@ -23,6 +23,7 @@ Word ::=
 		| "type"
 		| "val"
 		| "_"
+		| "void"
 	// modifier
 	| KEYWORD_TYPE
 	| KEYWORD_VALUE
@@ -36,6 +37,7 @@ PrimitiveLiteral ::=
 	| INTEGER
 	| FLOAT
 	| STRING
+	| "@" Word
 ;
 
 
@@ -44,19 +46,22 @@ EntryType<Named, Optional>
 	::= <Named+>(Word . <Optional->":") <Optional+>"?:" Type;
 
 ItemsType ::=
-	|  EntryType<-Named><-Optional># ","?
-	| (EntryType<-Named><-Optional># ",")? EntryType<-Named><+Optional># ","?
+	|                                                                  ","?  EntryType<-Named><+Optional>#   ","?
+	| EntryType<-Named><-Optional>                                     ","  (EntryType<-Named><+Optional>#   ","?)?
+	| EntryType<-Named><-Optional>? "," EntryType<-Named><-Optional># (","   EntryType<-Named><+Optional>#)? ","?
 ;
 
 PropertiesType
-	::= EntryType<+Named><-Optional, +Optional># ","?;
+	::= ","? EntryType<+Named><-Optional, +Optional># ","?;
 
-TypeGrouped       ::= "(" Type                 ")";
-TypeTupleLiteral  ::= "[" (","? ItemsType)?    "]";
-TypeRecordLiteral ::= "["  ","? PropertiesType "]";
-TypeDictLiteral   ::= "[" ":" Type             "]";
-TypeMapLiteral    ::= "{" Type "->" Type       "}";
-GenericArguments  ::= "<"  ","? Type# ","?     ">";
+TypeGrouped       ::= "(" Type             ")";
+TypeTupleLiteral  ::= "(" ItemsType?       ")";
+TypeRecordLiteral ::= "(" PropertiesType   ")";
+TypeListLiteral   ::= "[" Type             "]";
+TypeDictLiteral   ::= "[" ":" Type         "]";
+TypeSetLiteral    ::= "{" Type             "}";
+TypeMapLiteral    ::= "{" Type "->" Type   "}";
+GenericArguments  ::= "<"  ","? Type# ","? ">";
 
 TypeUnit ::=
 	| KEYWORD_TYPE
@@ -64,27 +69,27 @@ TypeUnit ::=
 	| PrimitiveLiteral
 	| TypeGrouped
 	| TypeTupleLiteral
+	| TypeListLiteral
 	| TypeRecordLiteral
 	| TypeDictLiteral
+	| TypeSetLiteral
 	| TypeMapLiteral
 ;
 
-PropertyAccessType ::= "." (INTEGER | Word);
-GenericCall        ::= "." GenericArguments;
+PropertyAccessorType
+	::= INTEGER | Word;
 
 TypeCompound ::=
 	| TypeUnit
-	| TypeCompound (PropertyAccessType | GenericCall)
+	| TypeCompound (
+		| ("." | "?.") PropertyAccessorType
+		|  "."         GenericArguments
+	)
 ;
 
 TypeUnarySymbol ::=
 	| TypeCompound
-	| TypeUnarySymbol (
-		| "?"
-		| "!"
-		| "[" INTEGER? "]"
-		| "{" "}"
-	)
+	| TypeUnarySymbol ("?" | "!")
 ;
 
 TypeUnaryKeyword ::=
@@ -106,12 +111,19 @@ StringTemplate ::=
 	| TEMPLATE_HEAD Expression? (TEMPLATE_MIDDLE Expression?)* TEMPLATE_TAIL
 ;
 
+Items ::=
+	| Expression  ","
+	| Expression? "," Expression# ","?
+;
+
 Property ::= Word       "="  Expression;
 Case     ::= Expression "->" Expression;
 
 ExpressionGrouped ::= "("        Expression          ")";
-TupleLiteral      ::= "[" ( ","? Expression# ","? )? "]";
-RecordLiteral     ::= "["   ","? Property#   ","?    "]";
+TupleLiteral      ::= "("        Items?              ")";
+RecordLiteral     ::= "("   ","? Property#   ","?    ")";
+ListLiteral       ::= "[" ( ","? Expression# ","? )? "]";
+DictLiteral       ::= "["   ","? Property#   ","?    "]";
 SetLiteral        ::= "{" ( ","? Expression# ","? )? "}";
 MapLiteral        ::= "{"   ","? Case #      ","?    "}";
 FunctionArguments ::= "(" ( ","? Expression# ","? )? ")";
@@ -123,22 +135,26 @@ ExpressionUnit ::=
 	| ExpressionGrouped
 	| TupleLiteral
 	| RecordLiteral
+	| ListLiteral
+	| DictLiteral
 	| SetLiteral
 	| MapLiteral
 ;
 
-PropertyAccess ::= ("." | "?." | "!.") (INTEGER | Word | "[" Expression "]");
-PropertyAssign ::=  "."                (INTEGER | Word | "[" Expression "]");
-FunctionCall   ::=  "."                GenericArguments? FunctionArguments;
+PropertyAccessor
+	::= INTEGER | Word | "[" Expression "]";
 
 ExpressionCompound ::=
 	| ExpressionUnit
-	| ExpressionCompound (PropertyAccess | FunctionCall)
+	| ExpressionCompound (
+		| ("." | "?." | "!.") PropertyAccessor
+		|  "."                GenericArguments? FunctionArguments
+	)
 ;
 
 Assignee ::=
 	| IDENTIFIER
-	| ExpressionCompound PropertyAssign
+	| ExpressionCompound "." PropertyAccessor
 ;
 
 ExpressionUnarySymbol ::=
@@ -166,8 +182,13 @@ Expression ::=
 
 
 
-DeclarationType     ::= "type" ("_" |        IDENTIFIER) "=" Type                ";";
-DeclarationVariable ::= "val"  ("_" | "mut"? IDENTIFIER) ":" Type "=" Expression ";";
+DeclarationType
+	::= "type" ("_" | IDENTIFIER) "=" Type ";";
+
+DeclarationVariable ::=
+	| "val" "mut"? ("_" | IDENTIFIER)     ":" Type "=" Expression ";"
+	| "val" "mut"  ("_" | IDENTIFIER) "?" ":" Type                ";"
+;
 
 Declaration ::=
 	| DeclarationType

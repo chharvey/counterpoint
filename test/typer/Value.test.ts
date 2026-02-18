@@ -22,12 +22,12 @@ describe('Value', () => {
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])), '["earth", "wind", "fire"] === ["earth", "wind", "fire"]');
+				])), '("earth", "wind", "fire") === ("earth", "wind", "fire")');
 			});
 		});
 
 		describe('Record', () => {
-			it('Records with the same itesm are identical.', () => {
+			it('Records with the same items are identical.', () => {
 				assert.ok(new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -36,7 +36,35 @@ describe('Value', () => {
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
 					[0x102n, new VALUE.String('fire')],
-				]))), '[a= "earth", b= "wind", c= "fire"] === [a= "earth", b= "wind", c= "fire"]');
+				]))), '(a= "earth", b= "wind", c= "fire") === (a= "earth", b= "wind", c= "fire")');
+			});
+		});
+
+		describe('List', () => {
+			it('Lists with the same items are not identical.', () => {
+				assert.ok(!new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]).identical(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])), '["earth", "wind", "fire"] !== ["earth", "wind", "fire"]');
+			});
+		});
+
+		describe('Dict', () => {
+			it('Dicts with the same items are not identical.', () => {
+				assert.ok(!new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				])).identical(new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				]))), '[a= "earth", b= "wind", c= "fire"] !== [a= "earth", b= "wind", c= "fire"]');
 			});
 		});
 	});
@@ -44,8 +72,8 @@ describe('Value', () => {
 
 	describe('#equal', () => {
 		describe('CollectionIndexed', () => {
-			it('Tuples and Lists are equal if they have the same items.', () => {
-				const tuple = new VALUE.Tuple([
+			it('Tuples and Lists are not equal even if they have the same items.', () => {
+				const tuple = new VALUE.Tuple<VALUE.String>([
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
@@ -55,10 +83,12 @@ describe('Value', () => {
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
 				]);
-				assert.ok(tuple.equal(list), '["earth", "wind", "fire"] == List.<str>(["earth", "wind", "fire"])');
-				assert.ok(list.equal(tuple), 'List.<str>(["earth", "wind", "fire"]) == ["earth", "wind", "fire"]');
+				assert.ok(!tuple.equal(list), '("earth", "wind", "fire") != ["earth", "wind", "fire"]');
+				assert.ok(!list.equal(tuple), '["earth", "wind", "fire"] != ("earth", "wind", "fire")');
 			});
-			it('Records and Dicts are equal if they have the same properties.', () => {
+		});
+		describe('CollectionKeyed', () => {
+			it('Records and Dicts are not equal even if they have the same properties.', () => {
 				const record = new VALUE.Record<VALUE.String>(new Map<bigint, VALUE.String>([
 					[0x100n, new VALUE.String('earth')],
 					[0x101n, new VALUE.String('wind')],
@@ -69,32 +99,11 @@ describe('Value', () => {
 					[0x102n, new VALUE.String('fire')],
 					[0x101n, new VALUE.String('wind')],
 				]));
-				assert.ok(record.equal(dict), '[a= "earth", b= "wind", c= "fire"] == Dict.<str>([a= "earth", c= "fire", b= "wind"])');
-				assert.ok(dict.equal(record), 'Dict.<str>([a= "earth", c= "fire", b= "wind"]) == [a= "earth", b= "wind", c= "fire"]');
-			});
-			it.skip('Lists may contain circular references.', () => {
-				`
-					val a: mut List.<List.<Object>> = List.<List.<Object>>([]);
-					val b: mut List.<List.<Object>> = List.<List.<Object>>([]);
-					a.append.(b);
-					b.append.(a);
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
-			});
-			it.skip('Dicts may contain circular references.', () => {
-				`
-					val a: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
-					val b: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>([x= null]);
-					a.set.(.y, b);
-					b.set.(.y, a);
-					set a.[.y] = b;
-					set b.[.y] = a;
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
+				assert.ok(!record.equal(dict), '(a= "earth", b= "wind", c= "fire") != [a= "earth", c= "fire", b= "wind"]');
+				assert.ok(!dict.equal(record), '[a= "earth", c= "fire", b= "wind"] != (a= "earth", b= "wind", c= "fire")');
 			});
 		});
+
 		describe('Tuple', () => {
 			it('Tuples are equal if they have the same items.', () => {
 				assert.ok(new VALUE.Tuple<VALUE.String>([
@@ -105,7 +114,7 @@ describe('Value', () => {
 					new VALUE.String('earth'),
 					new VALUE.String('wind'),
 					new VALUE.String('fire'),
-				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
+				])), '("earth", "wind", "fire") == ("earth", "wind", "fire")');
 			});
 		});
 
@@ -119,7 +128,55 @@ describe('Value', () => {
 					[0x100n, new VALUE.String('earth')],
 					[0x102n, new VALUE.String('fire')],
 					[0x101n, new VALUE.String('wind')],
+				]))), '(a= "earth", b= "wind", c= "fire") == (a= "earth", c= "fire", b= "wind")');
+			});
+		});
+
+		describe('List', () => {
+			it('Lists are equal if they have the same items.', () => {
+				assert.ok(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]).equal(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
+			});
+			it.skip('Lists may contain circular references.', () => {
+				`
+					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
+					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
+					a.append.(b);
+					b.append.(a);
+					assert.equal.(a, b);
+					assert.equal.(b, a);
+				`;
+			});
+		});
+
+		describe('Dict', () => {
+			it('Dicts are equal if they have the same properties.', () => {
+				assert.ok(new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x101n, new VALUE.String('wind')],
+					[0x102n, new VALUE.String('fire')],
+				])).equal(new VALUE.Dict<VALUE.String>(new Map<bigint, VALUE.String>([
+					[0x100n, new VALUE.String('earth')],
+					[0x102n, new VALUE.String('fire')],
+					[0x101n, new VALUE.String('wind')],
 				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
+			});
+			it.skip('Dicts may contain circular references.', () => {
+				`
+					val a: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>((x= null));
+					val b: mut Dict.<Dict.<unknown>> = Dict.<Dict.<unknown>>((x= null));
+					a.set.(@y, b);
+					b.set.(@y, a);
+					assert.equal.(a, b);
+					assert.equal.(b, a);
+				`;
 			});
 		});
 
@@ -167,6 +224,15 @@ describe('Value', () => {
 			return assertEqualBins(
 				[VALUE.FALSE.build(builder),              VALUE.TRUE.build(builder)],
 				[new BinVect(builder.module, false).vect, new BinVect(builder.module, true).vect],
+			);
+		});
+
+		specify('Symbol', () => {
+			const builder = new Builder();
+			const mod: binaryen.Module = builder.module;
+			return assertEqualBins(
+				[VALUE.SYM_NEVER.build(builder),             new VALUE.Symbol(0x100n, 'hello').build(builder)],
+				[new BinVect(mod, mod.i32.const(0x80)).vect, new BinVect(mod, mod.i32.const(0x100)).vect],
 			);
 		});
 

@@ -37,13 +37,13 @@ export class ASTNodeTypeOperationUnary extends ASTNodeTypeOperation {
 		private readonly operand: ASTNodeType,
 	) {
 		super(start_node, operator, [operand]);
-		if ([Operator.OREXCP].includes(this.operator)) {
-			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
-		}
 	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
+		if ([Operator.OREXCP].includes(this.operator)) {
+			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+		}
 		const t: TYPE.Type = this.operand.eval();
 		if (this.operator === Operator.MUTABLE && !t.isReference) {
 			throw new TypeErrorInvalidOperation(this);

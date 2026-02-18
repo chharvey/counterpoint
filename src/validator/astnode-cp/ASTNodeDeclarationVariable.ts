@@ -2,8 +2,8 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	type VALUE,
-	type TYPE,
+	VALUE,
+	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
 import {assert_instanceof} from '../../lib/index.ts';
@@ -32,32 +32,40 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		start_node: SyntaxNodeType<'declaration_variable'>,
 		public  readonly unfixed:  boolean,
 		private readonly assignee: ASTNodeVariable | null,
-		public readonly typenode: ASTNodeType,
-		public readonly assigned: ASTNodeExpression,
+		public  readonly typenode: ASTNodeType,
+		public  readonly assigned: ASTNodeExpression | null,
 	) {
 		super(
 			start_node,
 			{unfixed},
-			(assignee) ? [assignee, typenode, assigned] : [typenode, assigned],
+			[
+				...(assignee ? [assignee] : []),
+				typenode,
+				...(assigned ? [assigned] : []),
+			],
 		);
 	}
 
 	public override varCheck(): void {
-		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c.varCheck());
+		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
+		if (!this.unfixed) {
+			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
+		}
+		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
 		if (this.assignee) {
 			if (this.validator.hasSymbol(this.assignee.id)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaVar(this.assignee, this.unfixed));
+			this.validator.addSymbol(new SymbolSchemaVar(this.assignee, this.unfixed, !this.assigned));
 		}
 	}
 
 	public override typeCheck(): void {
-		this.assigned.typeCheck();
+		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode.eval();
-		ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
+		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			const value: VALUE.Value | null = this.assigned.fold(); // fold first before checking, to rethrow any errors
+			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
@@ -70,17 +78,18 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 
 	public override build(): binaryen.ExpressionRef {
 		if (
-			this.validator.config.compilerOptions.constantFolding && this.assigned.fold() &&
-			(!this.unfixed || !this.assignee)
+			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&
+			(!this.unfixed || !this.assignee) ||
+			!this.assignee && !this.assigned
 		) {
 			return this.builder.module.nop();
 		}
-		const value: binaryen.ExpressionRef = this.assigned.build();
+		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		if (this.assignee) {
 			return this.builder.teeLocal(this.assignee.id, value).set(ASTNodeStatement.coerceAssignment(
 				this.builder.module,
 				this.typenode.eval(),
-				this.assigned.type(),
+				this.assigned?.type() ?? TYPE.NULL,
 				value,
 				this.validator.config.compilerOptions.intCoercion,
 			));

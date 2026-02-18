@@ -1,8 +1,8 @@
 export enum Keyword {
 	// type literal
 	NEVER   = 'never',
-	VOID    = 'void',
 	BOOL    = 'bool',
+	SYM     = 'sym',
 	INT     = 'int',
 	FLOAT   = 'float',
 	STR     = 'str',
@@ -25,6 +25,7 @@ export enum Keyword {
 	TYPE  = 'type',
 	LET   = 'val',
 	BLANK = '_',
+	VOID  = 'void',
 
 	// modifier
 	UNFIXED = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values

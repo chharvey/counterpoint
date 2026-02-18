@@ -1,10 +1,10 @@
 import * as assert from 'node:assert';
 import {
+	assert_instanceof,
 	type EntryType,
 	VALUE,
 	TYPE,
 } from '../../src/index.ts';
-import {assert_instanceof} from '../../src/lib/index.ts';
 import {typeUnit} from '../helpers.ts';
 
 
@@ -29,10 +29,10 @@ describe('Type', () => {
 	}
 	const builtin_types: readonly TYPE.Type[] = [
 		TYPE.NEVER,
-		TYPE.VOID,
 		TYPE.UNKNOWN,
 		TYPE.NULL,
 		TYPE.BOOL,
+		TYPE.SYM,
 		TYPE.INT,
 		TYPE.FLOAT,
 		TYPE.STR,
@@ -55,10 +55,10 @@ describe('Type', () => {
 			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.INT]);
 			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.STR]);
 			const tests = new Map<TYPE.Type, string>([
-				[a.intersect(b).union(c), '[bool] & [int] | [str]'],
-				[a.intersect(b.union(c)), '[bool] & ([int] | [str])'],
-				[a.union(b).intersect(c), '([bool] | [int]) & [str]'],
-				[a.union(b.intersect(c)), '[bool] | [int] & [str]'],
+				[a.intersect(b).union(c), '(bool,) & (int,) | (str,)'],
+				[a.intersect(b.union(c)), '(bool,) & ((int,) | (str,))'],
+				[a.union(b).intersect(c), '((bool,) | (int,)) & (str,)'],
+				[a.union(b.intersect(c)), '(bool,) | (int,) & (str,)'],
 			]);
 			return assert.deepStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
 		});
@@ -66,16 +66,12 @@ describe('Type', () => {
 
 
 	describe('#isDefinitelyFalsy', () => {
-		it('only a combination of `never`, `void`, `null`, and `false` are definitely falsy.', () => {
+		it('only a combination of `never`, `null`, and `false` are definitely falsy.', () => {
 			[
 				TYPE.NEVER,
-				TYPE.Union.all([                      TYPE.FALSE]),
-				TYPE.Union.all([           TYPE.NULL            ]),
-				TYPE.Union.all([           TYPE.NULL, TYPE.FALSE]),
-				TYPE.Union.all([TYPE.VOID                       ]),
-				TYPE.Union.all([TYPE.VOID,            TYPE.FALSE]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL            ]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL, TYPE.FALSE]),
+				TYPE.Union.all([           TYPE.FALSE]),
+				TYPE.Union.all([TYPE.NULL            ]),
+				TYPE.Union.all([TYPE.NULL, TYPE.FALSE]),
 			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${ t }\` to be definitely falsy.`));
 		});
 		it('any other types are not definitely falsy.', () => {
@@ -83,10 +79,10 @@ describe('Type', () => {
 				TYPE.UNKNOWN,
 				TYPE.TRUE,
 				TYPE.BOOL,
+				TYPE.SYM,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
-				TYPE.VOID.union(TYPE.INT),
 				TYPE.NULL.union(TYPE.FLOAT),
 				TYPE.FALSE.union(TYPE.STR),
 				TYPE.OBJ,
@@ -99,27 +95,23 @@ describe('Type', () => {
 		it('all definitely falsy types are not definitely truthy.', () => {
 			[
 				TYPE.NEVER,
-				TYPE.Union.all([                      TYPE.FALSE]),
-				TYPE.Union.all([           TYPE.NULL            ]),
-				TYPE.Union.all([           TYPE.NULL, TYPE.FALSE]),
-				TYPE.Union.all([TYPE.VOID                       ]),
-				TYPE.Union.all([TYPE.VOID,            TYPE.FALSE]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL            ]),
-				TYPE.Union.all([TYPE.VOID, TYPE.NULL, TYPE.FALSE]),
+				TYPE.Union.all([           TYPE.FALSE]),
+				TYPE.Union.all([TYPE.NULL            ]),
+				TYPE.Union.all([TYPE.NULL, TYPE.FALSE]),
 			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
 		it('unions of falsy types are not definitely truthy.', () => {
 			[
 				TYPE.UNKNOWN,
 				TYPE.BOOL,
-				TYPE.VOID.union(TYPE.INT),
 				TYPE.NULL.union(TYPE.FLOAT),
 				TYPE.FALSE.union(TYPE.STR),
 			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
-		it('“valuable” primitive types are definitely truthy.', () => {
+		it('primitive value types are definitely truthy.', () => {
 			[
 				TYPE.TRUE,
+				TYPE.SYM,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -146,11 +138,11 @@ describe('Type', () => {
 	specify('#falsySide', () => {
 		new Map<TYPE.Type, TYPE.Type>([
 			[TYPE.NEVER,   TYPE.NEVER],
-			[TYPE.UNKNOWN, TYPE.VOID.union(TYPE.NULL).union(TYPE.FALSE)],
-			[TYPE.VOID,    TYPE.VOID],
+			[TYPE.UNKNOWN, TYPE.NULL.union(TYPE.FALSE)],
 			[TYPE.OBJ,     TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NULL],
 			[TYPE.BOOL,    TYPE.FALSE],
+			[TYPE.SYM,     TYPE.NEVER],
 			[TYPE.INT,     TYPE.NEVER],
 			[TYPE.FLOAT,   TYPE.NEVER],
 			[TYPE.STR,     TYPE.NEVER],
@@ -161,9 +153,9 @@ describe('Type', () => {
 	specify('#truthySide', () => {
 		new Map<TYPE.Type, TYPE.Type>([
 			[TYPE.NEVER,   TYPE.NEVER],
-			[TYPE.VOID,    TYPE.NEVER],
 			[TYPE.NULL,    TYPE.NEVER],
 			[TYPE.BOOL,    TYPE.TRUE],
+			[TYPE.SYM,     TYPE.SYM],
 			[TYPE.INT,     TYPE.INT],
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
@@ -237,7 +229,7 @@ describe('Type', () => {
 			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.FALSE, typeUnit(42n)]);
 			const actual:   TYPE.Type = a.intersect(b).intersect(c);
 			const expected: TYPE.Type = b.intersect(c);
-			assert.ok(actual.equals(expected), '([bool, int] & [true]) & [false, 42] == [true] & [false, 42]');
+			assert.ok(actual.equals(expected), '((bool, int) & (true,)) & (false, 42) == (true,) & (false, 42)');
 			assert.deepStrictEqual(actual, expected);
 		});
 		describe('Intersection', () => {
@@ -512,9 +504,9 @@ describe('Type', () => {
 
 		it('discrete types.', () => {
 			[
-				TYPE.VOID,
 				TYPE.NULL,
 				TYPE.BOOL,
+				TYPE.SYM,
 				TYPE.INT,
 				TYPE.FLOAT,
 				TYPE.STR,
@@ -563,8 +555,8 @@ describe('Type', () => {
 					TYPE.BOOL,
 					TYPE.STR,
 				]);
-				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '[int, bool, str] <: unknown;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'unknown !<: [int, bool, str]');
+				assert.ok(tuple.isSubtypeOf(TYPE.UNKNOWN), '(int, bool, str) <: unknown;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(tuple), 'unknown !<: (int, bool, str)');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const tuple: TYPE.Tuple = TYPE.Tuple.fromTypes([
@@ -572,8 +564,8 @@ describe('Type', () => {
 					TYPE.BOOL,
 					TYPE.STR,
 				]);
-				assert.ok(!tuple.isSubtypeOf(TYPE.OBJ), '[int, bool, str] !<: Object;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(tuple), 'Object !<: [int, bool, str]');
+				assert.ok(!tuple.isSubtypeOf(TYPE.OBJ), '(int, bool, str) !<: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(tuple), 'Object !<: (int, bool, str)');
 			});
 			it('matches per index.', () => {
 				assert.ok(TYPE.Tuple.fromTypes([
@@ -584,7 +576,7 @@ describe('Type', () => {
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
 					TYPE.UNKNOWN,
-				])), '[int, bool, str] <: [int | float, bool?, unknown];');
+				])), '(int, bool, str) <: (int | float, bool?, unknown);');
 				assert.ok(!TYPE.Tuple.fromTypes([
 					TYPE.INT,
 					TYPE.BOOL,
@@ -593,7 +585,7 @@ describe('Type', () => {
 					TYPE.BOOL.union(TYPE.NULL),
 					TYPE.OBJ,
 					TYPE.INT.union(TYPE.FLOAT),
-				])), '[int, bool, str] !<: [bool?, Object, int | float];');
+				])), '(int, bool, str) !<: (bool?, Object, int | float);');
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
 				assert.ok(!TYPE.Tuple.fromTypes([
@@ -603,7 +595,7 @@ describe('Type', () => {
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
 					TYPE.OBJ,
-				])), '[int, bool] !<: [int | float, bool?, Object];');
+				])), '(int, bool) !<: (int | float, bool?, Object);');
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
 				assert.ok(TYPE.Tuple.fromTypes([
@@ -613,7 +605,7 @@ describe('Type', () => {
 				]).isSubtypeOf(TYPE.Tuple.fromTypes([
 					TYPE.INT.union(TYPE.FLOAT),
 					TYPE.BOOL.union(TYPE.NULL),
-				])), '[int, bool, str] <: [int | float, bool?];');
+				])), '(int, bool, str) <: (int | float, bool?);');
 			});
 			it('with optional entries, checks minimum count only.', () => {
 				assert.ok(new TYPE.Tuple([
@@ -627,7 +619,7 @@ describe('Type', () => {
 					{type: TYPE.INT, optional: true},
 					{type: TYPE.INT, optional: true},
 					{type: TYPE.INT, optional: true},
-				])), '[int, int, ?:int, ?:int] <: [int, ?:int, ?:int, ?:int, ?:int]');
+				])), '(int, int, ?:int, ?:int) <: (int, ?:int, ?:int, ?:int, ?:int)');
 				assert.ok(!new TYPE.Tuple([
 					{type: TYPE.INT, optional: false},
 					{type: TYPE.INT, optional: true},
@@ -639,13 +631,13 @@ describe('Type', () => {
 					{type: TYPE.INT, optional: false},
 					{type: TYPE.INT, optional: true},
 					{type: TYPE.INT, optional: true},
-				])), '[int, ?:int, ?:int, ?:int, ?:int] !<: [int, int, ?:int, ?:int]');
+				])), '(int, ?:int, ?:int, ?:int, ?:int) !<: (int, int, ?:int, ?:int)');
 			});
 			it('Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.', () => {
 				assert.ok(TYPE.Tuple.fromTypes([TYPE.INT, TYPE.FLOAT]).isSubtypeOf(TYPE.Tuple.fromTypes([TYPE.INT.union(TYPE.NULL), TYPE.FLOAT.union(TYPE.NULL)])), '[int, float] <: [int?, float?]');
 			});
 			it('Tuple is never a subtype of List.', () => {
-				assert.ok(!TYPE.Tuple.fromTypes([TYPE.INT]).isSubtypeOf(new TYPE.List(TYPE.INT, false)), '[int] !<: int[]');
+				assert.ok(!TYPE.Tuple.fromTypes([TYPE.INT]).isSubtypeOf(new TYPE.List(TYPE.INT, false)), '(int,) !<: int[]');
 			});
 		});
 
@@ -656,8 +648,8 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
 				]));
-				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '[x: int, y: bool, z: str] <: unknown;');
-				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'unknown !<: [x: int, y: bool, z: str]');
+				assert.ok(record.isSubtypeOf(TYPE.UNKNOWN), '(x: int, y: bool, z: str) <: unknown;');
+				assert.ok(!TYPE.UNKNOWN.isSubtypeOf(record), 'unknown !<: (x: int, y: bool, z: str)');
 			});
 			it('is neither a subtype nor a supertype of `Object`.', () => {
 				const record: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -665,8 +657,8 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL],
 					[0x102n, TYPE.STR],
 				]));
-				assert.ok(!record.isSubtypeOf(TYPE.OBJ), '[x: int, y: bool, z: str] !<: Object;');
-				assert.ok(!TYPE.OBJ.isSubtypeOf(record), 'Object !<: [x: int, y: bool, z: str]');
+				assert.ok(!record.isSubtypeOf(TYPE.OBJ), '(x: int, y: bool, z: str) !<: Object;');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(record), 'Object !<: (x: int, y: bool, z: str)');
 			});
 			it('matches per key.', () => {
 				assert.ok(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -677,7 +669,7 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x102n, TYPE.UNKNOWN],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, z: unknown, x: int | float];');
+				]))), '(x: int, y: bool, z: str) <: (y: bool!, z: unknown, x: int | float);');
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT],
 					[0x101n, TYPE.BOOL],
@@ -686,7 +678,7 @@ describe('Type', () => {
 					[0x100n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x101n, TYPE.OBJ],
 					[0x102n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] !<: [x: bool!, y: Object, z: int | float];');
+				]))), '(x: int, y: bool, z: str) !<: (x: bool!, y: Object, z: int | float);');
 			});
 			it('returns false if assigned is smaller than assignee.', () => {
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -696,7 +688,7 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x102n, TYPE.OBJ],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool] !<: [y: bool!, z: Object, x: int | float];');
+				]))), '(x: int, y: bool) !<: (y: bool!, z: Object, x: int | float);');
 			});
 			it('skips rest if assigned is larger than assignee.', () => {
 				assert.ok(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -706,7 +698,7 @@ describe('Type', () => {
 				])).isSubtypeOf(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x100n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] <: [y: bool!, x: int | float];');
+				]))), '(x: int, y: bool, z: str) <: (y: bool!, x: int | float);');
 			});
 			it('returns false if assignee contains keys that assigned does not.', () => {
 				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -717,7 +709,7 @@ describe('Type', () => {
 					[0x101n, TYPE.BOOL.union(TYPE.NULL)],
 					[0x102n, TYPE.OBJ],
 					[0x103n, TYPE.INT.union(TYPE.FLOAT)],
-				]))), '[x: int, y: bool, z: str] !<: [y: bool!, z: Object, w: int | float]');
+				]))), '(x: int, y: bool, z: str) !<: (y: bool!, z: Object, w: int | float)');
 			});
 			it('optional entries are not assignable to required entries.', () => {
 				assert.ok(new TYPE.Record(new Map<bigint, EntryType>([
@@ -728,7 +720,7 @@ describe('Type', () => {
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				]))), '[a: str, b?: int, c: bool] <: [a?: str, b?: int, c: bool]');
+				]))), '(a: str, b?: int, c: bool) <: (a?: str, b?: int, c: bool)');
 				assert.ok(!new TYPE.Record(new Map<bigint, EntryType>([
 					[0x100n, {type: TYPE.STR,  optional: false}],
 					[0x101n, {type: TYPE.INT,  optional: true}],
@@ -737,7 +729,7 @@ describe('Type', () => {
 					[0x100n, {type: TYPE.STR,  optional: true}],
 					[0x101n, {type: TYPE.INT,  optional: false}],
 					[0x102n, {type: TYPE.BOOL, optional: false}],
-				]))), '[a: str, b?: int, c: bool] !<: [a?: str, b: int, c: bool]');
+				]))), '(a: str, b?: int, c: bool) !<: (a?: str, b: int, c: bool)');
 			});
 			it('Covariance for records: `A <: B --> Record.<A> <: Record.<B>`.', () => {
 				assert.ok(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
@@ -746,10 +738,10 @@ describe('Type', () => {
 				])).isSubtypeOf(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
 					[0x100n, TYPE.INT.union(TYPE.NULL)],
 					[0x101n, TYPE.FLOAT.union(TYPE.NULL)],
-				]))), '[a: int, b: float] <: [a: int?, b: float?]');
+				]))), '(a: int, b: float) <: (a: int?, b: float?)');
 			});
 			it('Record is never a subtype of Dict.', () => {
-				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]])).isSubtypeOf(new TYPE.Dict(TYPE.INT, false)), '[a: int] !<: [: int]');
+				assert.ok(!TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]])).isSubtypeOf(new TYPE.Dict(TYPE.INT, false)), '(a: int) !<: [: int]');
 			});
 		});
 
@@ -758,11 +750,11 @@ describe('Type', () => {
 				assert.ok(new TYPE.List(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'List.<int | bool> <: Object;');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.List(TYPE.INT.union(TYPE.BOOL))), 'Object !<: List.<int | bool>');
 			});
-			it('Covariance for immutable lists: `A <: B --> List.<A> <: List.<B>`.', () => {
+			it('Covariance for immutable lists: `A <: B -->     List.<A> <:     List.<B>`.', () => {
 				assert.ok(new TYPE.List(TYPE.INT).isSubtypeOf(new TYPE.List(TYPE.INT.union(TYPE.FLOAT))), 'List.<int> <: List.<int | float>');
 				assert.ok(!new TYPE.List(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.List(TYPE.INT)), 'List.<int | float> !<: List.<int>');
 			});
-			it('Invariance for mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.', () => {
+			it('Invariance for   mutable lists: `A == B --> mut List.<A> <: mut List.<B>`.', () => {
 				assert.ok(!new TYPE.List(TYPE.INT, true).isSubtypeOf(new TYPE.List(TYPE.INT.union(TYPE.FLOAT), true)), 'mut List.<int> !<: mut List.<int | float>');
 			});
 		});
@@ -772,11 +764,11 @@ describe('Type', () => {
 				assert.ok(new TYPE.Dict(TYPE.INT.union(TYPE.BOOL)).isSubtypeOf(TYPE.OBJ), 'Dict.<int | bool> <: Object;');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.Dict(TYPE.INT.union(TYPE.BOOL))), 'Object !<: Dict.<int | bool>');
 			});
-			it('Covariance for immutable dicts: `A <: B --> Dict.<A> <: Dict.<B>`.', () => {
+			it('Covariance for immutable dicts: `A <: B -->     Dict.<A> <:     Dict.<B>`.', () => {
 				assert.ok(new TYPE.Dict(TYPE.INT).isSubtypeOf(new TYPE.Dict(TYPE.INT.union(TYPE.FLOAT))), 'Dict.<int> <: Dict.<int | float>');
 				assert.ok(!new TYPE.Dict(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.Dict(TYPE.INT)), 'Dict.<int | float> !<: Dict.<int>');
 			});
-			it('Invariance for mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.', () => {
+			it('Invariance for   mutable dicts: `A == B --> mut Dict.<A> <: mut Dict.<B>`.', () => {
 				assert.ok(!new TYPE.Dict(TYPE.INT, true).isSubtypeOf(new TYPE.Dict(TYPE.INT.union(TYPE.FLOAT), true)), 'mut Dict.<int> !<: mut Dict.<int | float>');
 			});
 		});
@@ -786,11 +778,11 @@ describe('Type', () => {
 				assert.ok(new TYPE.Set(TYPE.INT).isSubtypeOf(TYPE.OBJ), 'Set.<int> <: Object');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.Set(TYPE.INT)), 'Object !<: Set.<int>');
 			});
-			it('Invariance for immutable sets: `A == B --> Set.<A> <: Set.<B>`.', () => {
-				assert.ok(!new TYPE.Set(TYPE.INT).isSubtypeOf(new TYPE.Set(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
+			it('Covariance for immutable sets: `A <: B -->     Set.<A> <:     Set.<B>`.', () => {
+				assert.ok(new TYPE.Set(TYPE.INT).isSubtypeOf(new TYPE.Set(TYPE.INT.union(TYPE.FLOAT))), 'Set.<int> !<: Set.<int | float>');
 				assert.ok(!new TYPE.Set(TYPE.INT.union(TYPE.FLOAT)).isSubtypeOf(new TYPE.Set(TYPE.INT)), 'Set.<int | float> !<: Set.<int>');
 			});
-			it('Invariance for mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.', () => {
+			it('Invariance for   mutable sets: `A == B --> mut Set.<A> <: mut Set.<B>`.', () => {
 				assert.ok(!new TYPE.Set(TYPE.INT, true).isSubtypeOf(new TYPE.Set(TYPE.INT.union(TYPE.FLOAT), true)), 'mut Set.<int> !<: mut Set.<int | float>');
 			});
 		});
@@ -800,15 +792,26 @@ describe('Type', () => {
 				assert.ok(new TYPE.Map(TYPE.INT, TYPE.BOOL).isSubtypeOf(TYPE.OBJ), 'Map.<int, bool> <: Object');
 				assert.ok(!TYPE.OBJ.isSubtypeOf(new TYPE.Map(TYPE.INT, TYPE.BOOL)), 'Object !<: Map.<int, bool>');
 			});
-			it('Invariance for immutable maps’ keys: `A == C && --> Map.<A, B> <: Map.<C, B>`.', () => {
-				assert.ok(!new TYPE.Map(TYPE.INT, TYPE.BOOL).isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL)), 'Map.<int, bool> !<: Map.<int | float, bool>');
+			it('Covariance for immutable maps: `A <: C && B <: D -->     Map.<A, B> <:     Map.<C, D>`.', () => {
+				const INT_BOOL       = new TYPE.Map(TYPE.INT,                 TYPE.BOOL);
+				const INTSTR_BOOL    = new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL);
+				const INT_BOOLSTR    = new TYPE.Map(TYPE.INT,                 TYPE.BOOL.union(TYPE.STR));
+				const INTSTR_BOOLSTR = new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL.union(TYPE.STR));
+
+				assert.ok(INT_BOOL.isSubtypeOf(INTSTR_BOOL),    'Map.<int, bool> <: Map.<int | str, bool>');
+				assert.ok(INT_BOOL.isSubtypeOf(INT_BOOLSTR),    'Map.<int, bool> <: Map.<int,       bool | str>');
+				assert.ok(INT_BOOL.isSubtypeOf(INTSTR_BOOLSTR), 'Map.<int, bool> <: Map.<int | str, bool | str>');
+
+				assert.ok(!INTSTR_BOOL   .isSubtypeOf(INT_BOOL), 'Map.<int | str, bool>       !<: Map.<int, bool>');
+				assert.ok(!INT_BOOLSTR   .isSubtypeOf(INT_BOOL), 'Map.<int,       bool | str> !<: Map.<int, bool>');
+				assert.ok(!INTSTR_BOOLSTR.isSubtypeOf(INT_BOOL), 'Map.<int | str, bool | str> !<: Map.<int, bool>');
 			});
-			it('Covariance for immutable maps’ values: `B <: D --> Map.<A, B> <: Map.<A, D>`.', () => {
-				assert.ok( new TYPE.Map(TYPE.INT, TYPE.BOOL)                 .isSubtypeOf(new TYPE.Map(TYPE.INT, TYPE.BOOL.union(TYPE.NULL))), 'Map.<int, bool>         <: Map.<int, bool | null>');
-				assert.ok(!new TYPE.Map(TYPE.INT, TYPE.BOOL.union(TYPE.NULL)).isSubtypeOf(new TYPE.Map(TYPE.INT, TYPE.BOOL)),                  'Map.<int, bool | null> !<: Map.<int, bool>');
-			});
-			it('Invariance for mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.', () => {
-				assert.ok(!new TYPE.Map(TYPE.INT, TYPE.BOOL, true).isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.FLOAT), TYPE.BOOL.union(TYPE.NULL), true)), 'mut Map.<int, bool> !<: mut Map.<int | float, bool | null>');
+			it('Invariance for   mutable maps: `A == C && B == D --> mut Map.<A, B> <: mut Map.<C, D>`.', () => {
+				const INT_BOOL = new TYPE.Map(TYPE.INT, TYPE.BOOL, true);
+
+				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL, true)),                 'mut Map.<int, bool> !<: mut Map.<int | str, bool>');
+				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT,                 TYPE.BOOL.union(TYPE.STR), true)), 'mut Map.<int, bool> !<: mut Map.<int,       bool | str>');
+				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL.union(TYPE.STR), true)), 'mut Map.<int, bool> !<: mut Map.<int | str, bool | str>');
 			});
 		});
 
@@ -846,12 +849,15 @@ describe('Type', () => {
 			assert.ok(VALUE.FLOAT_0.equal(VALUE.FLOAT_N0),      'the values 0.0 and -0.0 are equal (by value equality `==`)');
 			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
 		});
-		it.skip('built-in types do not equal unit types of their canonical values.', () => {
-			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),    'bool  != false');
-			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),     'bool  != true');
-			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),  'int   != 0');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)), 'float != 0.0');
-			assert.ok(!TYPE.STR   .equals(typeUnit('')),  'str   != ""');
+		it('built-in types do not equal unit types of their canonical values.', () => {
+			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),     'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),      'bool  != true');
+			assert.ok(!TYPE.SYM   .equals(TYPE.SYM_NEVER), 'sym   != @never');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),   'int   != 0');
+			assert.ok(!TYPE.INT   .equals(typeUnit(1n)),   'int   != 1');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),  'float != 0.0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(-0.0)), 'float != -0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),   'str   != ""');
 
 			assert.ok(!TYPE.INT  .equals(typeUnit(0n) .union(typeUnit(1n))),   'int   != 0   | 1');
 			assert.ok(!TYPE.FLOAT.equals(typeUnit(0.0).union(typeUnit(-0.0))), 'float != 0.0 | -0.0');
@@ -969,311 +975,6 @@ describe('Type', () => {
 					const expected                   = new TYPE.Intersection(b.union(a), c.union(a));
 					assert.ok(as_intersection.equals(expected), `${ b } & ${ c } | ${ a } == (${ b } | ${ a }) & (${ c } | ${ a })`);
 					return assert.deepStrictEqual(as_intersection, expected);
-				});
-			});
-		});
-
-
-		describe('#combineTuplesOrRecords', () => {
-			describe('Intersection', () => {
-				context('with tuple operands.', () => {
-					it('takes the union of indices of constituent types.', () => {
-						const actual: TYPE.Type = TYPE.Tuple.fromTypes([
-							TYPE.OBJ,
-							TYPE.NULL,
-							TYPE.BOOL,
-						]).intersect(TYPE.Tuple.fromTypes([
-							TYPE.OBJ,
-							TYPE.INT,
-						]));
-						assert_instanceof(actual, TYPE.Intersection);
-						assert.ok(actual.combineTuplesOrRecords().equals(TYPE.Tuple.fromTypes([
-							TYPE.OBJ,
-							TYPE.NULL.intersect(TYPE.INT),
-							TYPE.BOOL,
-						])), `
-							[Object, null, bool] & [Object, int]
-							==
-							[Object, null & int, bool]
-						`);
-					});
-					it('takes the conjunction of optionality.', () => {
-						const actual: TYPE.Type = new TYPE.Tuple([
-							{type: TYPE.OBJ,  optional: false},
-							{type: TYPE.NULL, optional: true},
-							{type: TYPE.BOOL, optional: true},
-						]).intersect(new TYPE.Tuple([
-							{type: TYPE.OBJ,   optional: false},
-							{type: TYPE.INT,   optional: false},
-							{type: TYPE.FLOAT, optional: true},
-						]));
-						assert_instanceof(actual, TYPE.Intersection);
-						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Tuple([
-							{type: TYPE.OBJ,                        optional: false},
-							{type: TYPE.NULL.intersect(TYPE.INT),   optional: false},
-							{type: TYPE.BOOL.intersect(TYPE.FLOAT), optional: true},
-						])), `
-							[Object, ?: null, ?: bool] & [Object, int, ?: float]
-							==
-							[Object, null & int, ?: bool & float]
-						`);
-					});
-					it('all values assignable to combo type are assignable to intersection.', () => {
-						const left: TYPE.Tuple = TYPE.Tuple.fromTypes([
-							TYPE.BOOL,
-							TYPE.INT,
-						]);
-						const right: TYPE.Tuple = TYPE.Tuple.fromTypes([
-							TYPE.TRUE,
-						]);
-
-						const intersection: TYPE.Type = left.intersect(right);
-						assert_instanceof(intersection, TYPE.Intersection);
-
-						const combined: TYPE.Type = intersection.combineTuplesOrRecords();
-						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([TYPE.TRUE, TYPE.INT]));
-
-						const v = new VALUE.Tuple<VALUE.Boolean | VALUE.Integer>([VALUE.TRUE, VALUE.INT_1]);
-
-						assert.ok(combined.includes(v), `
-							val x: [true, int] = [true, 1]; % ok
-						`);
-						assert.ok(intersection.includes(v), `
-							val x: [bool, int] & [true] = [true, 1]; % ok
-						`);
-					});
-				});
-				context('with record operands.', () => {
-					it('takes the union of properties of constituent types.', () => {
-						const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-						const actual: TYPE.Type = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[foo, TYPE.OBJ],
-							[bar, TYPE.NULL],
-							[qux, TYPE.BOOL],
-						])).intersect(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[foo, TYPE.OBJ],
-							[diz, TYPE.INT],
-							[qux, TYPE.STR],
-						])));
-						assert_instanceof(actual, TYPE.Intersection);
-						assert.ok(actual.combineTuplesOrRecords().equals(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[foo, TYPE.OBJ],
-							[bar, TYPE.NULL],
-							[qux, TYPE.BOOL.intersect(TYPE.STR)],
-							[diz, TYPE.INT],
-						]))), `
-							[foo: Object, bar: null, qux: bool] & [foo: Object, diz: int, qux: str]
-							==
-							[foo: Object, bar: null, qux: bool & str, diz: int]
-						`);
-					});
-					it('takes the conjunction of optionality.', () => {
-						const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-						const actual: TYPE.Type = new TYPE.Record(new Map<bigint, EntryType>([
-							[foo, {type: TYPE.OBJ,  optional: false}],
-							[bar, {type: TYPE.NULL, optional: true}],
-							[qux, {type: TYPE.BOOL, optional: true}],
-						])).intersect(new TYPE.Record(new Map<bigint, EntryType>([
-							[foo, {type: TYPE.OBJ, optional: false}],
-							[diz, {type: TYPE.INT, optional: true}],
-							[qux, {type: TYPE.STR, optional: false}],
-						])));
-						assert_instanceof(actual, TYPE.Intersection);
-						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Record(new Map<bigint, EntryType>([
-							[foo, {type: TYPE.OBJ,                      optional: false}],
-							[bar, {type: TYPE.NULL,                     optional: true}],
-							[qux, {type: TYPE.BOOL.intersect(TYPE.STR), optional: false}],
-							[diz, {type: TYPE.INT,                      optional: true}],
-						]))), `
-							[foo: Object, bar?: null, qux?: bool] & [foo: Object, diz?: int, qux: str]
-							==
-							[foo: Object, bar?: null, qux: bool & str, diz?: int]
-						`);
-					});
-					it('all values assignable to combo type are assignable to intersection.', () => {
-						const left: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x100n, TYPE.BOOL],
-							[0x101n, typeUnit(42n)],
-							[0x102n, TYPE.STR],
-						]));
-						const right: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x103n, TYPE.STR],
-							[0x100n, TYPE.FALSE],
-							[0x101n, TYPE.INT],
-						]));
-
-						const intersection: TYPE.Type = left.intersect(right);
-						assert_instanceof(intersection, TYPE.Intersection);
-
-						const combined: TYPE.Type = intersection.combineTuplesOrRecords();
-						assert.deepStrictEqual(combined, TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x100n, TYPE.FALSE],
-							[0x101n, typeUnit(42n)],
-							[0x102n, TYPE.STR],
-							[0x103n, TYPE.STR],
-						])));
-
-						const v = new VALUE.Record<VALUE.Boolean | VALUE.Integer | VALUE.String>(new Map<bigint, VALUE.Boolean | VALUE.Integer | VALUE.String>([
-							[0x100n, VALUE.FALSE],
-							[0x101n, new VALUE.Integer(42n)],
-							[0x102n, new VALUE.String('hello')],
-							[0x103n, new VALUE.String('world')],
-						]));
-
-						assert.ok(combined.includes(v), `
-							val x: [a: false, b: 42, c: str, d: str] = [a= false, b= 42, c= "hello", d= "world"]; % ok
-						`);
-						assert.ok(intersection.includes(v), `
-							val x: [a: bool, b: 42, c: str] & [d: str, a: false, b: int] = [a= false, b= 42, c= "hello", d= "world"]; % ok
-						`);
-					});
-				});
-			});
-
-			describe('Union', () => {
-				context('with tuple operands.', () => {
-					it('takes the intersection of indices of constituent types.', () => {
-						const actual: TYPE.Type = TYPE.Tuple.fromTypes([
-							TYPE.OBJ,
-							TYPE.NULL,
-							TYPE.BOOL,
-						]).union(TYPE.Tuple.fromTypes([
-							TYPE.OBJ,
-							TYPE.INT,
-						]));
-						assert_instanceof(actual, TYPE.Union);
-						assert.ok(actual.combineTuplesOrRecords().equals(TYPE.Tuple.fromTypes([
-							TYPE.OBJ,
-							TYPE.NULL.union(TYPE.INT),
-						])), `
-							[Object, null, bool] | [Object, int]
-							==
-							[Object, null | int]
-						`);
-					});
-					it('takes the disjunction of optionality.', () => {
-						const actual: TYPE.Type = new TYPE.Tuple([
-							{type: TYPE.OBJ,  optional: false},
-							{type: TYPE.NULL, optional: true},
-							{type: TYPE.BOOL, optional: true},
-						]).union(new TYPE.Tuple([
-							{type: TYPE.OBJ,   optional: false},
-							{type: TYPE.INT,   optional: false},
-							{type: TYPE.FLOAT, optional: true},
-						]));
-						assert_instanceof(actual, TYPE.Union);
-						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Tuple([
-							{type: TYPE.OBJ,                    optional: false},
-							{type: TYPE.NULL.union(TYPE.INT),   optional: true},
-							{type: TYPE.BOOL.union(TYPE.FLOAT), optional: true},
-						])), `
-							[Object, ?: null, ?: bool] | [Object, int, ?: float]
-							==
-							[Object, ?: null | int, ?: bool | float]
-						`);
-					});
-					it('some value assignable to combo type might not be assignable to union.', () => {
-						const left: TYPE.Tuple = TYPE.Tuple.fromTypes([
-							TYPE.BOOL,
-							TYPE.INT,
-						]);
-						const right: TYPE.Tuple = TYPE.Tuple.fromTypes([
-							TYPE.INT,
-							TYPE.BOOL,
-						]);
-
-						const union: TYPE.Type = left.union(right);
-						assert_instanceof(union, TYPE.Union);
-
-						const combined: TYPE.Type = union.combineTuplesOrRecords();
-						assert.deepStrictEqual(combined, TYPE.Tuple.fromTypes([TYPE.BOOL.union(TYPE.INT), TYPE.INT.union(TYPE.BOOL)]));
-
-						const v = new VALUE.Tuple<VALUE.Boolean>([VALUE.TRUE, VALUE.TRUE]);
-
-						assert.ok(combined.includes(v), `
-							val x: [bool | int, int | bool] = [true, true]; % ok
-						`);
-						assert.ok(!union.includes(v), `
-							val x: [bool, int] | [int, bool] = [true, true]; %> TypeError
-						`);
-					});
-				});
-				context('with record operands.', () => {
-					it('takes the intersection of properties of constituent types.', () => {
-						const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-						const actual: TYPE.Type = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[foo, TYPE.OBJ],
-							[bar, TYPE.NULL],
-							[qux, TYPE.BOOL],
-						])).union(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[foo, TYPE.OBJ],
-							[diz, TYPE.INT],
-							[qux, TYPE.STR],
-						])));
-						assert_instanceof(actual, TYPE.Union);
-						assert.ok(actual.combineTuplesOrRecords().equals(TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[foo, TYPE.OBJ],
-							[qux, TYPE.BOOL.union(TYPE.STR)],
-						]))), `
-							[foo: Object, bar: null, qux: bool] | [foo: Object, diz: int, qux: str]
-							==
-							[foo: Object, qux: bool | str]
-						`);
-					});
-					it('takes the disjunction of optionality.', () => {
-						const [foo, bar, qux, diz] = [0x100n, 0x101n, 0x102n, 0x103n];
-						const actual: TYPE.Type = new TYPE.Record(new Map<bigint, EntryType>([
-							[foo, {type: TYPE.OBJ,  optional: false}],
-							[bar, {type: TYPE.NULL, optional: true}],
-							[qux, {type: TYPE.BOOL, optional: true}],
-						])).union(new TYPE.Record(new Map<bigint, EntryType>([
-							[foo, {type: TYPE.OBJ, optional: false}],
-							[diz, {type: TYPE.INT, optional: true}],
-							[qux, {type: TYPE.STR, optional: false}],
-						])));
-						assert_instanceof(actual, TYPE.Union);
-						assert.ok(actual.combineTuplesOrRecords().equals(new TYPE.Record(new Map<bigint, EntryType>([
-							[foo, {type: TYPE.OBJ,                  optional: false}],
-							[qux, {type: TYPE.BOOL.union(TYPE.STR), optional: true}],
-						]))), `
-							[foo: Object, bar?: null, qux?: bool] | [foo: Object, diz?: int, qux: str]
-							==
-							[foo: Object, qux?: bool | str]
-						`);
-					});
-					it('some value assignable to combo type might not be assignable to union.', () => {
-						const left: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x100n, TYPE.BOOL],
-							[0x101n, TYPE.INT],
-							[0x102n, TYPE.STR],
-						]));
-						const right: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x103n, TYPE.STR],
-							[0x100n, TYPE.INT],
-							[0x101n, TYPE.BOOL],
-						]));
-
-						const union: TYPE.Type = left.union(right);
-						assert_instanceof(union, TYPE.Union);
-
-						const combined: TYPE.Type = union.combineTuplesOrRecords();
-						assert.deepStrictEqual(combined, TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-							[0x100n, TYPE.BOOL.union(TYPE.INT)],
-							[0x101n, TYPE.INT.union(TYPE.BOOL)],
-						])));
-
-						const v = new VALUE.Record<VALUE.Boolean>(new Map<bigint, VALUE.Boolean>([
-							[0x100n, VALUE.TRUE],
-							[0x101n, VALUE.TRUE],
-						]));
-
-						assert.ok(combined.includes(v), `
-							val x: [a: bool | int, b: int | bool] = [a= true, b= true]; % ok
-						`);
-						assert.ok(!union.includes(v), `
-							val x: [a: bool, b: int, c: str] | [d: str, a: int, b: bool] = [a= true, b= true]; %> TypeError
-						`);
-					});
 				});
 			});
 		});

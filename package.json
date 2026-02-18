@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -31,6 +31,7 @@
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
     "dist": "tsc",
     "postdist": "eslint .",
+    "pretest": "tsc --project ./test/tsconfig.json",
     "test": "mocha -r tsx src/index.ts --timeout 10000 './test/**/*.test.ts'",
     "prebuild": "npm run build -w tree-sitter-counterpoint && npm rebuild",
     "build": "rm -rf ./build/ && npm run dist && npm run test"
@@ -40,7 +41,7 @@
     "extrajs": "^0.26.0",
     "fast-deep-equal": "^3.1.3",
     "minimist": "^1.2.6",
-    "tree-sitter": "~0.22.1",
+    "tree-sitter": "^0.25.0",
     "utf8": "^3.0.0"
   },
   "devDependencies": {

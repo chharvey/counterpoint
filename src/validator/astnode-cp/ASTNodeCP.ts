@@ -18,11 +18,10 @@ import {
 
 /**
  * Known subclasses:
+ * - ASTNodeIndex
  * - ASTNodeKey
- * - ASTNodeIndexType
  * - ASTNodeItemType
  * - ASTNodePropertyType
- * - ASTNodeIndex
  * - ASTNodeProperty
  * - ASTNodeCase
  * - ASTNodeType
@@ -66,7 +65,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * We want to be able to assign mutable collection literals to wider mutable types
 	 * so that we can mutate them with different values:
 	 * ```
-	 * val my_ints: mut int{} = {42}; % <-- assignment should not fail
+	 * val my_ints: mut {int} = {42}; % <-- assignment should not fail
 	 * set my_ints.[43] = true;
 	 * ```
 	 *

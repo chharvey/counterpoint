@@ -1,13 +1,13 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaType,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 
 
@@ -49,7 +49,7 @@ describe('ASTNodeDeclarationType', () => {
 		it('allows duplicate declaration of blank identifier.', () => {
 			AST.ASTNodeGoal.fromSource(`
 				type _ = int | float;
-				type _ = [str, bool];
+				type _ = (str, bool);
 			`).varCheck(); // assert does not throw
 		});
 	});
@@ -62,7 +62,7 @@ describe('ASTNodeDeclarationType', () => {
 			`);
 			goal.varCheck();
 			goal.typeCheck();
-			assert.deepStrictEqual(
+			return assert.strictEqual(
 				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);

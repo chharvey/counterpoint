@@ -7,7 +7,7 @@ import {AssignmentError} from './AssignmentError.ts';
  * An AssignmentErrorReassignment is thrown when attempting to reassign a fixed variable.
  * @example
  * val my_var: int = 42;
- * my_var = 24;          % AssignmentErrorReassignment: Reassignment of fixed variable `my_var`.
+ * set my_var = 24;      % AssignmentErrorReassignment: Reassignment of fixed variable `my_var`.
  */
 export class AssignmentErrorReassignment extends AssignmentError {
 	/**

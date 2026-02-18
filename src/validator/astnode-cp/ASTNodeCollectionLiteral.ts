@@ -1,49 +1,12 @@
 import * as xjs from 'extrajs';
 import {TYPE} from '../../index.ts';
-import {assert_context_name} from '../../lib/index.ts';
+import {
+	assert_context_name,
+	forEither,
+} from '../../lib/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {ASTNodeExpression} from './ASTNodeExpression.ts';
-
-
-
-/**
- * Executes a callback on each item of an array until that callback returns.
- * If the callback throws, the error is saved, and execution proceeds to the next iteration.
- * If any iteration returns, this method returns and the errors are discarded.
- * If all iterations throw, the errors are collected into a single AggregateError, which is then thrown.
- *
- * The “dual” of {@link Array#forEach} — this method returns as soon as a callback call is successful; otherwise throws.
- *
- * Similar to {@link Promise.any}, but synchronous.
- *
- * @typeparam T                the type of items in the array
- * @param     array            the array of items
- * @param     callback         the function to call on each item
- * @throws    {AggregateError} if two or more iterations throws an error
- * @throws    {Error}          if one iteration throws an error
- */
-function forEither<T>(array: readonly T[], callback: (item: T, i: number, src: readonly T[]) => void): void {
-	const thrown: Error[] = [];
-	try {
-		array.forEach((it, i, src) => {
-			try {
-				callback.call(null, it, i, src);
-			} catch (e) {
-				thrown.push(e as Error);
-				return;
-			}
-			throw new Error('success');
-		});
-	} catch {
-		return;
-	}
-	throw (
-		thrown.length >= 2 ? new AggregateError(thrown) :
-		thrown.length      ? thrown[0] :
-		new Error('An unexpected error occurred.')
-	);
-}
 
 
 
@@ -78,6 +41,8 @@ export function assignToDeco(
  * Known subclasses:
  * - ASTNodeTuple
  * - ASTNodeRecord
+ * - ASTNodeList
+ * - ASTNodeDict
  * - ASTNodeSet
  * - ASTNodeMap
  */
@@ -86,6 +51,8 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 		start_node:
 			| SyntaxNodeType<'tuple_literal'>
 			| SyntaxNodeType<'record_literal'>
+			| SyntaxNodeType<'list_literal'>
+			| SyntaxNodeType<'dict_literal'>
 			| SyntaxNodeType<'set_literal'>
 			| SyntaxNodeType<'map_literal'>,
 
@@ -98,6 +65,9 @@ export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	 * Determine whether this node may be assigned to the given type.
 	 * Note that it’s not sufficient to check whether this node’s `.type()` is a subtype of the assignee:
 	 * When we assign collection literals, we want to check entry by entry if typechecking fails.
+	 *
+	 * Note that this method must be present for Tuple and Record nodes (even though they are immutable),
+	 * because we want to ensure it applies for any nested types.
 	 * @param  assignee                 the type to assign to
 	 * @throws {TypeErrorNotAssignable} if this node is not assignable to the assignee
 	 */

@@ -1,9 +1,6 @@
 import * as assert from 'node:assert';
 import {TypeErrorNoEntry} from '../../index.ts';
-import type {
-	ValidAccessOperator,
-	AST,
-} from '../../validator/index.ts';
+import type {AST} from '../../validator/index.ts';
 import type {EntryType} from '../utils-public.ts';
 import {
 	strictEqual,
@@ -11,7 +8,6 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {updateAccessedStaticType} from './utils-private.ts';
 import {
 	subtypeRules,
 	type Type,
@@ -44,24 +40,24 @@ class TypeRecord extends ValueType {
 
 	/**
 	 * Construct a new TypeRecord object.
-	 * @param invariants a map of this type’s property ids along with their associated types
+	 * @param typeargs a map of this type’s property ids along with their associated types
 	 */
-	public constructor(public readonly invariants: ReadonlyMap<bigint, EntryType> = new Map()) {
+	public constructor(public readonly typeargs: ReadonlyMap<bigint, EntryType> = new Map()) {
 		super(false, new Set([new VALUE.Record()]));
-		this.#canonicalizedKeys = [...this.invariants.keys()].sort();
+		this.#canonicalizedKeys = [...this.typeargs.keys()].sort();
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || [...this.invariants.values()].some((t) => t.type.hasMutable);
+		return super.hasMutable || [...this.typeargs.values()].some((t) => t.type.hasMutable);
 	}
 
 	/** The minimum possible number of properties in this record type. */
 	public get minCount(): bigint {
-		return BigInt([...this.invariants.values()].filter((val) => !val.optional).length);
+		return BigInt([...this.typeargs.values()].filter((val) => !val.optional).length);
 	}
 
 	public override toString(): string {
-		return `[${ [...this.invariants].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') }]`;
+		return `(${ [...this.typeargs].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') })`;
 	}
 
 	@instanceOf(() => VALUE.Record)
@@ -76,8 +72,8 @@ class TypeRecord extends ValueType {
 	public override isSubtypeOf(t: Type): boolean {
 		return (
 			this.minCount >= (t as TypeRecord).minCount &&
-			[...(t as TypeRecord).invariants].every(([id, thattype]) => {
-				const thistype: EntryType | undefined = this.invariants.get(id);
+			[...(t as TypeRecord).typeargs].every(([id, thattype]) => {
+				const thistype: EntryType | undefined = this.typeargs.get(id);
 				if (!thattype.optional) {
 					/* NOTE: We *cannot* assert `thistype` exists and is not optional since properties are not ordered.
 						We can however make the assertion in tuple types because of item ordering. */
@@ -90,18 +86,14 @@ class TypeRecord extends ValueType {
 		);
 	}
 
-	public get(key: bigint, access_kind: ValidAccessOperator, accessor: AST.ASTNodeKey): Type {
-		return updateAccessedStaticType(
-			((this.invariants.has(key))
-				? this.invariants.get(key)!
-				: assert.fail(new TypeErrorNoEntry('property', this, accessor))
-			),
-			access_kind,
-		);
+	public get(key: bigint, accessor: AST.ASTNodeKey): EntryType {
+		return this.typeargs.has(key)
+			? this.typeargs.get(key)!
+			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
 
 	public valueTypes(): Type {
-		return Union.all([...this.invariants.values()].map((t) => t.type));
+		return Union.all([...this.typeargs.values()].map((t) => t.type));
 	}
 
 	public canonicalizeKey(key: bigint): bigint | undefined {

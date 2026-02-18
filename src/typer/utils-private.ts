@@ -1,16 +1,34 @@
-import type {MethodDecorator} from '../lib/index.ts';
-import type {VALUE} from './index.ts';
+import type {
+	ConstructorType,
+	MethodDecorator,
+} from '../lib/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from './index.ts';
 
 
 
 /**
- * Comparator function for checking “sameness” of `Type#values` set elements.
- * Values should be “the same” iff they are identical per the Counterpoint specification.
+ * Comparator lambda for checking equality of Counterpoint Language Types.
+ * Takes two types `a` and `b` and returns the result of «*UnwrapAffirm:* \`Equal(a, b)\`» in the Counterpoint specification.
  */
-export const languageValuesIdentical = (a: VALUE.Value, b: VALUE.Value): boolean => a.identical(b);
+export const language_types_equal = (a: TYPE.Type, b: TYPE.Type): boolean => a.equals(b);
 
 
 
+/**
+ * Comparator lambda for checking identity of Counterpoint Language Values.
+ * Takes two values `a` and `b` and returns the result of `a === b` in the Counterpoint language.
+ */
+export const language_values_identical = (a: VALUE.Value, b: VALUE.Value): boolean => a.identical(b);
+
+
+
+/**
+ * Comparator lambda for checking equality of Counterpoint Language Values.
+ * Takes two values `a` and `b` and returns the result of `a == b` in the Counterpoint language.
+ */
 export const language_values_equal = (a: VALUE.Value, b: VALUE.Value): boolean => a.equal(b);
 
 
@@ -42,8 +60,8 @@ export function strictEqual<Proto extends object, Params extends unknown[]>(
  * @param     cons      a function returning a class/constructor to check instance of; offers potential to fail early
  * @returns             MethodDecorator<Proto, (this: Proto, that: Proto, ...args: Params) => boolean>
  */
-export function instanceOf<ProtoThis extends object, ProtoThat extends object, Params extends unknown[]>(cons: () => NewableFunction): MethodDecorator<ProtoThis, (this: ProtoThis, that: ProtoThat, ...args: Params) => boolean> {
-	let klass: NewableFunction | null = null;
+export function instanceOf<ProtoThis extends object, ProtoThat extends object, Params extends unknown[]>(cons: () => ConstructorType<object>): MethodDecorator<ProtoThis, (this: ProtoThis, that: ProtoThat, ...args: Params) => boolean> {
+	let klass: ConstructorType<object> | null = null;
 	return (method) => function (that, ...args) {
 		klass ??= cons.call(null);
 		return that instanceof klass && method.call(this, that, ...args);
