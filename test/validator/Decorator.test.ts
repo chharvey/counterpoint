@@ -17,7 +17,7 @@ import {
 
 
 test.suite('Decorator', () => {
-	test.suite('#decorateTS', () => {
+	test.suite('#decorate', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
 			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
@@ -829,13 +829,13 @@ test.suite('Decorator', () => {
 				only: description.startsWith('only:'),
 			}, () => {
 				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-				return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
+				return assert_instanceof(new Decorator().decorate(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 			});
 		});
 		['!'].forEach((op) => {
 			test.suite(`Decorate(TypeUnarySymbol ::= TypeUnarySymbol "${ op }") -> SemanticTypeOperation`, () => {
 				test.test(`operator \`${ op }\` is not yet supported.`, () => {
-					assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+					assert.throws(() => new Decorator().decorate(captureParseNode(`
 						{
 							type T = U${ op };
 						}
@@ -847,7 +847,7 @@ test.suite('Decorator', () => {
 			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
 				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccessor) -> SemanticAccess`, () => {
 					test.test(`operator \`${ op }\` is not yet supported.`, () => {
-						assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+						assert.throws(() => new Decorator().decorate(captureParseNode(`
 							{
 								v${ op }${ accessor };
 							}
@@ -859,7 +859,7 @@ test.suite('Decorator', () => {
 		['is', '!is'].forEach((op) => {
 			test.suite(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticOperation`, () => {
 				test.test(`operator \`${ op }\` is not yet supported.`, () => {
-					assert.throws(() => new Decorator().decorateTS(captureParseNode(`
+					assert.throws(() => new Decorator().decorate(captureParseNode(`
 						{
 							a ${ op } b;
 						}

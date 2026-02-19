@@ -55,7 +55,7 @@ export class Goal extends AstNode implements Buildable {
 	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Goal {
 		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
 		report_syntax_errors(root_node);
-		return new Decorator(config).decorateTS(root_node);
+		return new Decorator(config).decorate(root_node);
 	}
 
 
