@@ -158,7 +158,7 @@ export class Decorator {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.AstNode>([
 			['source_file', (node) => new AST.Goal(
 				node as SyntaxNodeType<'source_file'>,
-				node.children.length ? this.decorate(node.children[0] as SyntaxNodeType<'block'>) : null,
+				node.children.length ? this.decorateBlockNode(node.children[0] as SyntaxNodeType<'block'>) : null,
 				this.config,
 			)],
 
