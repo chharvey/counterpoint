@@ -230,7 +230,7 @@ The iteration variable must be typed to match the iterable’s item types.
 Though it’s implicitly reassigned to a new item on each iteration, it can’t be explicitly reassigned by the programmer.
 ```cpl
 for n: int in [10, 20, 30] {
-	set n += 10; %> AssignmentError: Reassignment of a fixed variable: `n`.
+	set n += 10; %> AssignmentError: Reassignment of a read-only variable: `n`.
 };
 ```
 

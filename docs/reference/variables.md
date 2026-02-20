@@ -67,8 +67,8 @@ val my_other_var: str = "Hello, programmer!";
 ### Type Inference
 When assigning a variable a primitive literal, string template, or constructor call (with no operations),
 we can omit the type annotation.
-For fixed variables, the type is inferred as a unit type containing that primitive value.
-For unfixed variables, the inferred type is the narrowest primitive type corresponding to that value.
+For read-only variables, the type is inferred as a unit type containing that primitive value.
+For writable variables, the inferred type is the narrowest primitive type corresponding to that value.
 For string template values (with or without interpolation), the inferred type is always `str`.
 Constructor calls always imply their exact type (made mutable if applicable).
 ```cpl
@@ -90,18 +90,18 @@ val mut rec_untyped_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,
 
 
 ## Variable Reassignment
-By default, variables are **fixed** in that they cannot be reassigned.
+By default, variables are **read-only** in that they cannot be reassigned.
 ```
 val my_var: str = "Hello, world!";
 set my_var = "¡Hola, mundo!";      %> AssignmentError
 ```
-> AssignmentError: Reassignment of a fixed variable: `my_var`.
+> AssignmentError: Reassignment of a read-only variable: `my_var`.
 
 In some programming disciplines this pattern is generally encouraged, because
 variables holding different values at different points in runtime could lead to unpredictability.
 However, changing a variable’s value is useful in some cases, such as in loops or for storing state.
 
-Therefore, we can declare unfixed variables with the keywords `val mut`,
+Therefore, we can declare writable variables with the keywords `val mut`,
 which allows us to assign it a new value later.
 The variable is reassigned with the keyword `set`.
 ```
@@ -111,7 +111,7 @@ set my_var = "¡Hola, mundo!";
 my_var;                           %== "¡Hola, mundo!"
 ```
 The statement `set my_var = "¡Hola, mundo!";` is called a **variable reassignment statement**.
-An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
+A writable variable can be reassigned anywhere in the scope in which it’s visible.
 
 
 ### Pointers
@@ -300,7 +300,7 @@ type MyType = int | float;
 ```
 By convention, type aliases are named in *PascalCase*.
 
-Type aliases are initialized when they’re declared, and they’re always fixed — they can never be reassigned.
+Type aliases are initialized when they’re declared, and they’re always read-only — they can never be reassigned.
 ```
 type MyType = int | float;
 set MyType = int;          % raises a ParseError or ReferenceError (depending on type expression)

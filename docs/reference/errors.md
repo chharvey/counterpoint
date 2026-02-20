@@ -79,7 +79,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 1.  2200                                             — A general assignment error not covered by one of the following cases.
 1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
 1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict key.
-1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a fixed variable was attempted.
+1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a read-only variable was attempted.
 1. [2220](#2220-assignmenterrormissingtype)          — A symbol was declared without a type annotation and initialized to a value ineligible for type inference.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
@@ -104,10 +104,10 @@ type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate rec
 Solution(s): Remove or rename the duplicate key.
 
 #### 2210: AssignmentErrorReassignment
-Cause: A fixed variable was reassigned.
+Cause: A read-only variable was reassigned.
 ```
 val my_var: int = 42;
-set my_var = 24;      % AssignmentErrorReassignment: Reassignment of fixed variable `my_var`.
+set my_var = 24;      % AssignmentErrorReassignment: Reassignment of read-only variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or declare the variable with `mut`.
 

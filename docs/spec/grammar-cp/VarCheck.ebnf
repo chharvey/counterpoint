@@ -80,7 +80,7 @@ None! VarCheck(SemanticStatementRessignment assign) :=
 	4. *If* `assignee` is a SemanticVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-		3. *If* `symbol.isUnfixed` is `false`:
+		3. *If* `symbol.isWritable` is `false`:
 			1. *Throw:* a new AssignmentErrorReassignment.
 ;
 
@@ -117,7 +117,7 @@ None! VarCheck(SemanticStatementIteration stmt) :=
 			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
 		3. *Let* `symbol` be a new SymbolSchemaVar [
 			id=              `assignee.id`,
-			isUnfixed=       `false`,
+			isWritable=      `false`,
 			isUninitialized= `false`,
 			type=            `Anything`,
 			value=           *none*,
@@ -151,7 +151,7 @@ None! VarCheck(SemanticDeclarationVariable decl) :=
 	2. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
 	3. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
 	4. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
-	5. *If* `decl.unfixed` is `false`:
+	5. *If* `decl.writable` is `false`:
 		1. *Assert:* `assigned` is not *none*.
 		2. *Note:* We can make this assertion due to the language syntax.
 	6. *Assert:* `typenode` is not *none*.
@@ -164,7 +164,7 @@ None! VarCheck(SemanticDeclarationVariable decl) :=
 			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
 		2. *Let* `symbol` be a new SymbolSchemaVar [
 			id=              `assignee.id`,
-			isUnfixed=       `decl.unfixed`,
+			isWritable=      `decl.writable`,
 			isUninitialized= `uninitialized`,
 			type=            `Anything`,
 			value=           *none*,

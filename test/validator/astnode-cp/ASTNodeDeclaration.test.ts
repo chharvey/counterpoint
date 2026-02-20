@@ -116,19 +116,19 @@ test.suite('ASTNodeDeclaration', () => {
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
 				assert.partialDeepStrictEqual(info_a, {
-					isUnfixed:       false,
+					isWritable:      false,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
 					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_b, {
-					isUnfixed:       true,
+					isWritable:      true,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
 					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_c, {
-					isUnfixed:       true,
+					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.ANYTHING,
 					value:           null,
@@ -240,7 +240,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					val mut the_answer?: int | float;
 				}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
-					isUnfixed:       true,
+					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
 					value:           null,
@@ -257,7 +257,7 @@ test.suite('ASTNodeDeclaration', () => {
 					['6.28',    [typeUnit(6.28),                   TYPE.FLOAT]],
 					['"hello"', [typeUnit('hello'),                TYPE.STR]],
 				]);
-				test.test('for fixed variables, infers the unit type.', () => {
+				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
 						val fixed = ${ src };
 					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));

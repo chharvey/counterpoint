@@ -92,7 +92,7 @@ but we are never exposed to their values.
 We cannot operate and compute with symbols the same way we do with strings or integers.
 ```
 val mut el: sym = @fire;
-% Unfixed variables of type `sym` may be reassigned,
+% Writable variables of type `sym` may be reassigned,
 set el = @air;
 set el = @aether;
 
@@ -507,7 +507,7 @@ although that term can be ambiguous in the context of generics, where types may 
 
 A unit type must be a single primitive literal, i.e., an Integer, Float, or String (and of course `null`),
 and any value assignable to it must compute to that value. Variables with a unit type may still be reassignable,
-but they can only be reassigned to the same value, so having an unfixed variable with a unit type is kind of pointless.
+but they can only be reassigned to the same value, so having a writable variable with a unit type is kind of pointless.
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
 val mut TAU: true = true;
@@ -547,7 +547,7 @@ val GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
 ```
 Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
 the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
-However, if they were unfixed, that wouldn’t be possible.
+However, if they were writable, that wouldn’t be possible.
 ```
 val mut hello: str = "Hello";
 val mut world: str = "World";
@@ -880,7 +880,7 @@ elements.[i];   %> VoidErrorOutOfBounds
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
 In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
 ```
-val mut i: int = 4;           % unfixed variables are not folded
+val mut i: int = 4;           % writable variables are not folded
 val elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
 ```
 
@@ -958,7 +958,7 @@ elements.[s];             %> VoidErrorOutOfBounds
 Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
 In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
 ```
-val mut s: sym = @pythagoras; % unfixed variables are not folded
+val mut s: sym = @pythagoras; % writable variables are not folded
 elements.[s];                 % no compile-time error, but results in ExceptionKeyOutOfRange
 json_data.["pythagoras"];     % no compile-time error, but results in ExceptionKeyOutOfRange
 ```

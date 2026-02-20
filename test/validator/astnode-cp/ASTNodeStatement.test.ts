@@ -30,7 +30,7 @@ import {extract_lines} from '../../utils.ts';
 test.suite('ASTNodeStatement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('ASTNodeStatementReassignment', () => {
-			test.test('throws if the variable is not unfixed.', () => {
+			test.test('throws if the variable is read-only.', () => {
 				AST.ASTNodeGoal.fromSource(`{
 					val mut i: int = 42;
 					set i = 43;
@@ -69,7 +69,7 @@ test.suite('ASTNodeStatement', () => {
 				const info_it: SymbolSchema | undefined = validator.getSymbol(0x100n);
 				assert_instanceof(info_it, SymbolSchemaVar);
 				return assert.partialDeepStrictEqual(info_it, {
-					isUnfixed:       false,
+					isWritable:      false,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
 					value:           null,
@@ -374,7 +374,7 @@ test.suite('ASTNodeStatement', () => {
 						val mut x?: int;
 						set x = 42;
 					}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
-						isUnfixed:       true,
+						isWritable:      true,
 						isUninitialized: true,
 						type:            TYPE.INT,
 						value:           null,
@@ -387,7 +387,7 @@ test.suite('ASTNodeStatement', () => {
 					}`);
 					goal.varCheck();
 					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
-						isUnfixed:       true,
+						isWritable:      true,
 						isUninitialized: true,
 					});
 					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);

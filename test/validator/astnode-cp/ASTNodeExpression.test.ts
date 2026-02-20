@@ -214,29 +214,29 @@ test.suite('ASTNodeExpression', () => {
 
 
 		test.suite('#fold', () => {
-			test.test('assesses the value of a fixed variable.', () => {
+			test.test('assesses the value of a read-only variable.', () => {
 				const {stmts} = setupScript(`{
 					val x: int = 21 * 2;
 					x;
 				}`, {build: false});
-				assert.ok(!(stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok(!(stmts[0] as AST.ASTNodeDeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new VALUE.Integer(42n),
 				);
 			});
-			test.test('returns null for an unfixed variable.', () => {
+			test.test('returns null for a writable variable.', () => {
 				const {stmts} = setupScript(`{
 					val mut x: int = 21 * 2;
 					x;
 				}`, {build: false});
-				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					null,
 				);
 			});
-			test.test('returns null for a fixed variable of mutable type.', () => {
+			test.test('returns null for a read-only variable of mutable type.', () => {
 				const {stmts} = setupScript(`{
 					val fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
@@ -247,7 +247,7 @@ test.suite('ASTNodeExpression', () => {
 					null,
 				);
 			});
-			test.test('returns null for an uncomputable fixed variable.', () => {
+			test.test('returns null for an uncomputable read-only variable.', () => {
 				const {stmts} = setupScript(`{
 					val mut x: int = 21 * 2;
 					val y: int = x / 2;
@@ -256,8 +256,8 @@ test.suite('ASTNodeExpression', () => {
 					val w: bool = z.[22];
 					w;
 				}`, {build: false});
-				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).unfixed);
-				assert.ok(!(stmts[4] as AST.ASTNodeDeclarationVariable).unfixed);
+				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).writable);
+				assert.ok(!(stmts[4] as AST.ASTNodeDeclarationVariable).writable);
 				assert.deepStrictEqual(
 					[
 						(stmts[2] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -270,7 +270,7 @@ test.suite('ASTNodeExpression', () => {
 
 
 		test.suite('#build', () => {
-			test.test('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
+			test.test('with constant folding on, returns `({i32,f64}.const)` for read-only & foldable variables.', () => {
 				const {goal, stmts} = setupScript(`{
 					val x: int = 42;
 					val y: float = 4.2 * 10.0;
@@ -288,7 +288,7 @@ test.suite('ASTNodeExpression', () => {
 					],
 				);
 			});
-			test.test('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
+			test.test('with constant folding on, returns `(local.get)` for writable / non-foldable variables.', () => {
 				const {goal, stmts, mod} = setupScript(`{
 					val mut x: int = 42;
 					val y: int = x + 10;

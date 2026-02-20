@@ -54,7 +54,7 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 
 	public override varCheck(): void {
 		super.varCheck();
-		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isUnfixed) {
+		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
 			throw new AssignmentErrorReassignment(this.assignee);
 		}
 	}

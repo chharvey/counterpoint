@@ -102,7 +102,7 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * Perform definite assignment phase of semantic analysis:
 	 * - Check that all variables have been assigned before being used.
 	 * - Check that no varaible is declared more than once.
-	 * - Check that fixed variables are not reassigned.
+	 * - Check that read-only variables are not reassigned.
 	 */
 	public varCheck(): void {
 		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());
