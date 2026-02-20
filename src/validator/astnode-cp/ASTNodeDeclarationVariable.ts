@@ -4,7 +4,9 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type Lowerable,
+	CFG,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
 import {
@@ -107,7 +109,16 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 	 * @implements Lowerable
 	 */
 	@memoizeMethod
-	public lower(): null {
-		throw new Error('`ASTNodeDeclarationVariable#lower` not yet supported.');
+	public lower(optimizer: Optimizer): null {
+		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.unfixed); // TODO: v0.5: use decorator
+		if (is_foldable) {
+			return null;
+		}
+		const value: CFG.Value = this.assigned?.lower() ?? VALUE.NULL.lower();
+		optimizer.pushInstruction((this.assignee
+			? new CFG.Set(new CFG.Variable(this.assignee), value)
+			: new CFG.Drop(value)
+		));
+		return null;
 	}
 }

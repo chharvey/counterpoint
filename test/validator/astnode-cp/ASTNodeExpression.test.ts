@@ -79,21 +79,38 @@ describe('ASTNodeExpression', () => {
 		});
 
 		// TODO: move these to ASTNodeStatement tests
-		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeStatement>, string>([
-			[AST.ASTNodeDeclarationVariable, 'val mut y: int = 43;'],
-			[AST.ASTNodeAssignment,          'x = x + 1;'],
-		]), (src, klass) => {
-			it(klass.name, () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: int = 42;
-					${ src }
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				const stmt = goal.children[1] as AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment;
-				assert_instanceof(stmt, klass);
-				return assert.throws(() => stmt.lower(), /not yet supported/);
-			});
+		it('AST.DeclarationVariable pushes SET/DROP instruction depending on presence of child nodes.', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				% Foldable cases:
+				val _:          int = 42; % no effect
+				val assignee_a: int = 42; % no effect
+
+				% Non-Foldable cases:
+				val mut assignee_b?: int;              % \`(SET assignee_b null)\`
+				val mut assignee_c:  int = 42;         % \`(SET assignee_c 42)\`
+				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
+				val     assignee_d:  int = assignee_c; % \`(SET assignee_d assignee_c)\`
+				val mut assignee_e:  int = assignee_c; % \`(SET assignee_e assignee_c)\`
+
+				%% Syntactically impossible cases (for completion):
+				val _?:          int;
+				val assignee_f?: int;
+				val mut _?:      int;
+				val mut _:       int = 42;
+				val mut _:       int = assignee_c;
+				%%
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.children.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
+			return assert.strictEqual(opt.print(), [
+				'(SET assignee_b null)',
+				'(SET assignee_c 42)',
+				'(DROP assignee_c)',
+				'(SET assignee_d assignee_c)',
+				'(SET assignee_e assignee_c)',
+			].join('\n'));
 		});
 		it('AST.StatementExpression pushes DROP instruction if expression exists and is non-foldable.', () => {
 			const opt = new Optimizer();
@@ -113,6 +130,23 @@ describe('ASTNodeExpression', () => {
 			(goal.children[3] as AST.ASTNodeStatementExpression).lower(opt);
 			assert.strictEqual(opt.instructions.length, 1);
 			return assert.strictEqual(opt.print(), '(DROP x)');
+		});
+		it('AST.StatementReassignment pushes SET instruction.', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut x: int = 42;
+				x = 43;
+				x = 44;
+				x = -42;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.children.slice(1).forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
+			return assert.strictEqual(opt.print(), [
+				'(SET x 43)',
+				'(SET x 44)',
+				'(SET x -42)',
+			].join('\n'));
 		});
 	});
 

@@ -2,7 +2,9 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
+	type Optimizer,
 	type Lowerable,
+	CFG,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
@@ -74,7 +76,9 @@ export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable {
 	 * @implements Lowerable
 	 */
 	@memoizeMethod
-	public lower(): null {
-		throw new Error('`ASTNodeAssignment#lower` not yet supported.');
+	public lower(optimizer: Optimizer): null {
+		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
+		optimizer.pushInstruction(new CFG.Set(new CFG.Variable(this.assignee), this.assigned.lower()));
+		return null;
 	}
 }
