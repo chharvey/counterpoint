@@ -323,18 +323,18 @@ export class Builder {
 			),
 		], binaryen.v128));
 
-		this.#binOpArithmetic('iexp',   (i0, i1) => mod.call('exp', [i0, i1], binaryen.i64), 'intValue');
-		this.#binOpArithmetic('imul',   mod.i64.mul  .bind(null), 'intValue');
-		this.#binOpArithmetic('fmul',   mod.f64.mul  .bind(null), 'floatValue');
-		this.#binOpArithmetic('idiv_s', mod.i64.div_s.bind(null), 'intValue');
-		this.#binOpArithmetic('idiv_u', mod.i64.div_u.bind(null), 'intValue');
-		this.#binOpArithmetic('fdiv',   mod.f64.div  .bind(null), 'floatValue');
-		this.#binOpArithmetic('iadd',   mod.i64.add  .bind(null), 'intValue');
-		this.#binOpArithmetic('fadd',   mod.f64.add  .bind(null), 'floatValue');
-		this.#binOpArithmetic('isub_s', mod.i64.sub  .bind(null), 'intValue');
-		this.#binOpArithmetic('fsub',   mod.f64.sub  .bind(null), 'floatValue');
+		this.#binOpArithmetic('viexp',   (i0, i1) => mod.call('iexp', [i0, i1], binaryen.i64), 'intValue');
+		this.#binOpArithmetic('vimul',   mod.i64.mul  .bind(null), 'intValue');
+		this.#binOpArithmetic('vfmul',   mod.f64.mul  .bind(null), 'floatValue');
+		this.#binOpArithmetic('vidiv_s', mod.i64.div_s.bind(null), 'intValue');
+		this.#binOpArithmetic('vidiv_u', mod.i64.div_u.bind(null), 'intValue');
+		this.#binOpArithmetic('vfdiv',   mod.f64.div  .bind(null), 'floatValue');
+		this.#binOpArithmetic('viadd',   mod.i64.add  .bind(null), 'intValue');
+		this.#binOpArithmetic('vfadd',   mod.f64.add  .bind(null), 'floatValue');
+		this.#binOpArithmetic('visub_s', mod.i64.sub  .bind(null), 'intValue');
+		this.#binOpArithmetic('vfsub',   mod.f64.sub  .bind(null), 'floatValue');
 
-		this.#binOpArithmetic('isub_u', (i0, i1) => mod.if(
+		this.#binOpArithmetic('visub_u', (i0, i1) => mod.if(
 			mod.i64.lt_u(i0, i1),
 			bigint_to_i64(mod, 0n, true),
 			mod.i64.sub(i0, i1),
