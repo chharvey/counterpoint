@@ -1,4 +1,7 @@
-import type {CFG} from './index.ts';
+import type {
+	Optimizer,
+	CFG,
+} from './index.ts';
 
 
 
@@ -18,7 +21,8 @@ import type {CFG} from './index.ts';
 export interface Lowerable {
 	/**
 	 * Lowers this AST node or folded value to a high-level IR instruction.
-	 * @return an optimized value if present
+	 * @param  optimizer the set of instructions to build the IR
+	 * @return           an optimized value if present
 	 */
-	lower(): CFG.Value | null;
+	lower(optimizer: Optimizer): CFG.Value | null;
 }

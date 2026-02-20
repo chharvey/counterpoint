@@ -9,6 +9,7 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	Optimizer,
 	CFG,
 	type Builder,
 	ReferenceErrorUndeclared,
@@ -80,7 +81,6 @@ describe('ASTNodeExpression', () => {
 		// TODO: move these to ASTNodeStatement tests
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeStatement>, string>([
 			[AST.ASTNodeDeclarationVariable, 'val mut y: int = 43;'],
-			[AST.ASTNodeStatementExpression, 'x;'],
 			[AST.ASTNodeAssignment,          'x = x + 1;'],
 		]), (src, klass) => {
 			it(klass.name, () => {
@@ -90,10 +90,29 @@ describe('ASTNodeExpression', () => {
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				const stmt = goal.children[1] as AST.ASTNodeDeclarationVariable | AST.ASTNodeStatementExpression | AST.ASTNodeAssignment;
+				const stmt = goal.children[1] as AST.ASTNodeDeclarationVariable | AST.ASTNodeAssignment;
 				assert_instanceof(stmt, klass);
 				return assert.throws(() => stmt.lower(), /not yet supported/);
 			});
+		});
+		it('AST.StatementExpression pushes DROP instruction if expression exists and is non-foldable.', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut x: int = 42;
+				x;
+				42;
+				;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			assert.strictEqual(opt.instructions.length, 0);
+			(goal.children[1] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 1);
+			(goal.children[2] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 1);
+			(goal.children[3] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 1);
+			return assert.strictEqual(opt.print(), '(DROP x)');
 		});
 	});
 

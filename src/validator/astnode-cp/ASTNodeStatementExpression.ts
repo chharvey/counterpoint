@@ -1,5 +1,9 @@
 import type binaryen from 'binaryen';
-import type {Lowerable} from '../../index.ts';
+import {
+	type Optimizer,
+	type Lowerable,
+	CFG,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -39,7 +43,10 @@ export class ASTNodeStatementExpression extends ASTNodeStatement implements Lowe
 	 * @implements Lowerable
 	 */
 	@memoizeMethod
-	public lower(): null {
-		throw new Error('`ASTNodeStatementExpression#lower` not yet supported.');
+	public lower(optimizer: Optimizer): null {
+		if (this.expr && !this.expr.fold()) {
+			optimizer.pushInstruction(new CFG.Drop(this.expr.lower()));
+		}
+		return null;
 	}
 }
