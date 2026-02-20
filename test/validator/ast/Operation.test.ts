@@ -91,23 +91,23 @@ test.suite('Operation', () => {
 		vton: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], binaryen.v128),
 		vtof: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], binaryen.v128),
 
-		iexp:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iexp',   [arg0, arg1], binaryen.v128),
-		imul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('imul',   [arg0, arg1], binaryen.v128),
-		fmul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fmul',   [arg0, arg1], binaryen.v128),
-		idiv_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('idiv_s', [arg0, arg1], binaryen.v128),
-		idiv_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('idiv_u', [arg0, arg1], binaryen.v128),
-		fdiv:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fdiv',   [arg0, arg1], binaryen.v128),
-		iadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('iadd',   [arg0, arg1], binaryen.v128),
-		fadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fadd',   [arg0, arg1], binaryen.v128),
-		isub_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub_s', [arg0, arg1], binaryen.v128),
-		isub_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('isub_u', [arg0, arg1], binaryen.v128),
-		fsub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('fsub',   [arg0, arg1], binaryen.v128),
-		vlt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',    [arg0, arg1], binaryen.v128),
-		vgt:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',    [arg0, arg1], binaryen.v128),
-		vle:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',    [arg0, arg1], binaryen.v128),
-		vge:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',    [arg0, arg1], binaryen.v128),
-		vid:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',    [arg0, arg1], binaryen.v128),
-		veq:    (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',    [arg0, arg1], binaryen.v128),
+		viexp:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viexp',   [arg0, arg1], binaryen.v128),
+		vimul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vimul',   [arg0, arg1], binaryen.v128),
+		vfmul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfmul',   [arg0, arg1], binaryen.v128),
+		vidiv_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_s', [arg0, arg1], binaryen.v128),
+		vidiv_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_u', [arg0, arg1], binaryen.v128),
+		vfdiv:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfdiv',   [arg0, arg1], binaryen.v128),
+		viadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viadd',   [arg0, arg1], binaryen.v128),
+		vfadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfadd',   [arg0, arg1], binaryen.v128),
+		visub_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_s', [arg0, arg1], binaryen.v128),
+		visub_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_u', [arg0, arg1], binaryen.v128),
+		vfsub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfsub',   [arg0, arg1], binaryen.v128),
+		vlt:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',     [arg0, arg1], binaryen.v128),
+		vgt:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',     [arg0, arg1], binaryen.v128),
+		vle:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',     [arg0, arg1], binaryen.v128),
+		vge:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',     [arg0, arg1], binaryen.v128),
+		vid:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',     [arg0, arg1], binaryen.v128),
+		veq:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',     [arg0, arg1], binaryen.v128),
 	} as const;
 
 	/**
@@ -379,13 +379,13 @@ test.suite('Operation', () => {
 			}`);
 			return assertEqualBins(
 				stmts.slice(2).map((stmt) => (stmt as AST.StatementExpression).expr!.build()),
-				[CALL.idiv_s(
+				[CALL.vidiv_s(
 					mod,
-					CALL.iexp(mod, mod.local.get(0, binaryen.v128), buildConst(goal.builder, 2n)),
+					CALL.viexp(mod, mod.local.get(0, binaryen.v128), buildConst(goal.builder, 2n)),
 					buildConst(goal.builder, 420n),
-				), CALL.fsub(
+				), CALL.vfsub(
 					mod,
-					CALL.fdiv(mod, mod.local.get(1, binaryen.v128), buildConst(goal.builder, 3.1)),
+					CALL.vfdiv(mod, mod.local.get(1, binaryen.v128), buildConst(goal.builder, 3.1)),
 					buildConst(goal.builder, 5.1),
 				)],
 			);
@@ -403,7 +403,7 @@ test.suite('Operation', () => {
 					mod.drop(mod.local.get(0, binaryen.v128)),
 					mod.local.get(1, binaryen.v128),
 				], binaryen.v128),
-				CALL.iadd,
+				CALL.viadd,
 			));
 		});
 	});
@@ -826,11 +826,11 @@ test.suite('Operation', () => {
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
 					[
-						BINOP.mul(mod, [extracts[0], 2], const_['2'],   CALL.imul),
-						BINOP.mul(mod, [extracts[1], 3], const_['2.4'], CALL.fmul),
+						BINOP.mul(mod, [extracts[0], 2], const_['2'],   CALL.vimul),
+						BINOP.mul(mod, [extracts[1], 3], const_['2.4'], CALL.vfmul),
 
-						BINOP.add(mod, [extracts[2], 4], const_['2'],   CALL.iadd),
-						BINOP.add(mod, [extracts[3], 5], const_['2.4'], CALL.fadd),
+						BINOP.add(mod, [extracts[2], 4], const_['2'],   CALL.viadd),
+						BINOP.add(mod, [extracts[3], 5], const_['2.4'], CALL.vfadd),
 
 						CALL.vlt(mod, extracts[4], const_['2']),
 						CALL.vlt(mod, extracts[5], const_['2.4']),
@@ -880,8 +880,8 @@ test.suite('Operation', () => {
 					'3.0': buildConst(goal.builder, 3.0),
 				} as const;
 				const inners: readonly binaryen.ExpressionRef[] = [
-					BINOP.add(mod, [extracts[0], 2], const_['2'], CALL.iadd),
-					CALL.fadd(mod, const_['2.0'],    extracts[1]),
+					BINOP.add(mod, [extracts[0], 2], const_['2'], CALL.viadd),
+					CALL.vfadd(mod, const_['2.0'],    extracts[1]),
 				];
 				assertEqualBins(
 					stmts.slice(2).map((stmt) => (
@@ -892,8 +892,8 @@ test.suite('Operation', () => {
 				return assertEqualBins(
 					stmts.slice(2).map((stmt) => stmt.build()),
 					inners.map((inner, i) => mod.drop([
-						BINOP.add(mod, [inner, 3], const_['3'],   CALL.iadd),
-						BINOP.add(mod, [inner, 4], const_['3.0'], CALL.fadd),
+						BINOP.add(mod, [inner, 3], const_['3'],   CALL.viadd),
+						BINOP.add(mod, [inner, 4], const_['3.0'], CALL.vfadd),
 					][i])),
 				);
 			});
@@ -1016,32 +1016,32 @@ test.suite('Operation', () => {
 		test.suite('#build', () => {
 			test.test('calls the correct WASM function.', () => {
 				buildOperations(new Map([
-					['42 + 420', (builder, get_op0) => BINOP.add(builder.module, [get_op0, 1], buildConst(builder, 420n), CALL.iadd)],
+					['42 + 420', (builder, get_op0) => BINOP.add(builder.module, [get_op0, 1], buildConst(builder, 420n), CALL.viadd)],
 
-					[' 126 /  3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder,  3n))],
-					['-126 /  3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder,  3n))],
-					[' 126 / -3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder, -3n))],
-					['-126 / -3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder, -3n))],
-					[' 200 /  3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder,  3n))],
-					[' 200 / -3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder, -3n))],
-					['-200 /  3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder,  3n))],
-					['-200 / -3', (builder, get_op0) => CALL.idiv_s(builder.module, get_op0, buildConst(builder, -3n))],
+					[' 126 /  3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder,  3n))],
+					['-126 /  3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder,  3n))],
+					[' 126 / -3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder, -3n))],
+					['-126 / -3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder, -3n))],
+					[' 200 /  3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder,  3n))],
+					[' 200 / -3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder, -3n))],
+					['-200 /  3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder,  3n))],
+					['-200 / -3', (builder, get_op0) => CALL.vidiv_s(builder.module, get_op0, buildConst(builder, -3n))],
 
-					['+126 / +3', (builder, get_op0) => CALL.idiv_u(builder.module, get_op0, buildConst(builder, 3n, 'nat'))],
-					['+200 / +3', (builder, get_op0) => CALL.idiv_u(builder.module, get_op0, buildConst(builder, 3n, 'nat'))],
+					['+126 / +3', (builder, get_op0) => CALL.vidiv_u(builder.module, get_op0, buildConst(builder, 3n, 'nat'))],
+					['+200 / +3', (builder, get_op0) => CALL.vidiv_u(builder.module, get_op0, buildConst(builder, 3n, 'nat'))],
 
-					[' 126.1 /  3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder,  3.1))],
-					['-126.1 /  3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder,  3.1))],
-					[' 126.1 / -3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder, -3.1))],
-					['-126.1 / -3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder, -3.1))],
-					[' 200.1 /  3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder,  3.1))],
-					[' 200.1 / -3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder, -3.1))],
-					['-200.1 /  3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder,  3.1))],
-					['-200.1 / -3.1', (builder, get_op0) => CALL.fdiv(builder.module, get_op0, buildConst(builder, -3.1))],
+					[' 126.1 /  3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder,  3.1))],
+					['-126.1 /  3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder,  3.1))],
+					[' 126.1 / -3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder, -3.1))],
+					['-126.1 / -3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder, -3.1))],
+					[' 200.1 /  3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder,  3.1))],
+					[' 200.1 / -3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder, -3.1))],
+					['-200.1 /  3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder,  3.1))],
+					['-200.1 / -3.1', (builder, get_op0) => CALL.vfdiv(builder.module, get_op0, buildConst(builder, -3.1))],
 
-					['42  - 420',  (builder, get_op0) => CALL.isub_s(builder.module, get_op0, buildConst(builder, 420n))],
-					['+42 - +420', (builder, get_op0) => CALL.isub_u(builder.module, get_op0, buildConst(builder, 420n, 'nat'))],
-					['4.2 - 42.0', (builder, get_op0) => CALL.fsub  (builder.module, get_op0, buildConst(builder, 42.0))],
+					['42  - 420',  (builder, get_op0) => CALL.visub_s(builder.module, get_op0, buildConst(builder, 420n))],
+					['+42 - +420', (builder, get_op0) => CALL.visub_u(builder.module, get_op0, buildConst(builder, 420n, 'nat'))],
+					['4.2 - 42.0', (builder, get_op0) => CALL.vfsub  (builder.module, get_op0, buildConst(builder, 42.0))],
 				]));
 			});
 			test.test('does not compile the first operand if it is foldable and an identity element.', () => {

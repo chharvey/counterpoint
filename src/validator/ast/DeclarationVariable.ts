@@ -49,7 +49,7 @@ function is_inferrable(node?: Expression): boolean {
 
 
 
-function unfixed_inferred_type(node: Expression): TYPE.Type {
+function writable_inferred_type(node: Expression): TYPE.Type {
 	if (node instanceof Constant) {
 		const value: VALUE.Primitive = node.fold();
 		return (
@@ -63,9 +63,9 @@ function unfixed_inferred_type(node: Expression): TYPE.Type {
 			assert.fail(`Expected ${ value } to be a primitive value.`)
 		);
 	} else if (node instanceof AstTuple) {
-		return TYPE.Tuple.fromTypes(node.children.map((expr) => unfixed_inferred_type(expr)));
+		return TYPE.Tuple.fromTypes(node.children.map((expr) => writable_inferred_type(expr)));
 	} else if (node instanceof AstRecord) {
-		return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, unfixed_inferred_type(prop.val)])));
+		return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, writable_inferred_type(prop.val)])));
 	} else if (node instanceof Call) { // TODO: distinguish between constructor calls and function calls
 		return node.type();
 	} else {
@@ -84,14 +84,14 @@ export class DeclarationVariable extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
-		public  readonly unfixed:  boolean,
+		public  readonly writable: boolean,
 		public  readonly assignee: Variable | null,
 		public  readonly typenode: Type | null,
 		public  readonly assigned: Expression | null,
 	) {
 		super(
 			start_node,
-			{unfixed},
+			{writable},
 			[
 				...(assignee ? [assignee] : []),
 				...(typenode ? [typenode] : []),
@@ -121,7 +121,7 @@ export class DeclarationVariable extends Statement {
 		 * - `val mut _:     T = assigned_foldable;`
 		 * - `val mut _:     T = assigned_non_foldable;`
 		 */
-		return !!this.assigned?.fold() && (!this.assignee || !this.unfixed);
+		return !!this.assigned?.fold() && (!this.assignee || !this.writable);
 	}
 
 	@memoizeGetter
@@ -130,7 +130,7 @@ export class DeclarationVariable extends Statement {
 	}
 
 	public override varCheck(): void {
-		if (!this.unfixed) {
+		if (!this.writable) {
 			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
 		}
 		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
@@ -139,7 +139,7 @@ export class DeclarationVariable extends Statement {
 			if (this.validator.hasSymbol(this.assignee.id)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaVar(this.assignee, this.unfixed, !this.assigned));
+			this.validator.addSymbol(new SymbolSchemaVar(this.assignee, this.writable, !this.assigned));
 		}
 	}
 
@@ -149,11 +149,11 @@ export class DeclarationVariable extends Statement {
 		}
 		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
-			this.unfixed && ([
+			this.writable && ([
 				Constant,
 				AstTuple,
 				AstRecord,
-			].some((klass) => (this.assigned instanceof klass))) ? unfixed_inferred_type(this.assigned!) :
+			].some((klass) => (this.assigned instanceof klass))) ? writable_inferred_type(this.assigned!) :
 			this.assigned instanceof Template ? TYPE.STR :
 			this.assigned!.type()
 		);
@@ -163,8 +163,8 @@ export class DeclarationVariable extends Statement {
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
-			if (!symbol.type.hasMutable && !this.unfixed) {
-				assert.ok(!symbol.isUnfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
+			if (!symbol.type.hasMutable && !this.writable) {
+				assert.ok(!symbol.isWritable, `Symbol \`${ symbol.source }\` should not be writable.`);
 				symbol.value = value;
 			}
 		}

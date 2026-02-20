@@ -54,7 +54,7 @@ export class StatementReassignment extends Statement {
 
 	public override varCheck(): void {
 		super.varCheck();
-		if (this.assignee instanceof Variable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isUnfixed) {
+		if (this.assignee instanceof Variable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
 			throw new AssignmentErrorReassignment(this.assignee);
 		}
 	}

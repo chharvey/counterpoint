@@ -45,12 +45,12 @@ export class SymbolSchemaType extends SymbolSchema {
 export class SymbolSchemaVar extends SymbolSchema {
 	/** The variable’s Type. */
 	public type:  TYPE.Type = TYPE.ANYTHING;
-	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
+	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is writable. */
 	public value: VALUE.Value | null = null;
 	public constructor(
 		node: AST.Variable,
 		/** May the symbol be reassigned? */
-		public readonly isUnfixed: boolean,
+		public readonly isWritable: boolean,
 		/** Was the symbol declared without an initial value? */
 		public readonly isUninitialized: boolean,
 	) {

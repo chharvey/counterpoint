@@ -156,10 +156,10 @@ A **SymbolSchemaVar** represents a variable referencing a Counterpoint Language 
 Property            | Read-Only? | Description
 ------------------- | ---------- | -----------
 \`id\`              | yes        | the unique identifier of the declared symbol
-\`isUnfixed\`       | yes        | a Boolean, whether the variable may be reassigned
+\`isWritable\`      | yes        | a Boolean, whether the variable may be reassigned
 \`isUninitialized\` | yes        | a Boolean, whether the variable was declared without an initial value
 \`type\`            | no         | the Counterpoint Language Type of the variable
-\`value\`           | no         | if \`isUnfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
+\`value\`           | no         | if \`isWritable\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes

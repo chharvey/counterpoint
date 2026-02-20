@@ -34,8 +34,8 @@ export enum Keyword {
 	VOID  = 'void',
 
 	// modifier
-	NOMINAL = 'nominal',
-	UNFIXED = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+	NOMINAL  = 'nominal',
+	WRITABLE = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 
 	// control
 	UNLESS = 'unless',

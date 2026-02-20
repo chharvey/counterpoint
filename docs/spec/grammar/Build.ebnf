@@ -157,7 +157,7 @@ Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
 	4. *Else:*
 		1. *Let* `value` be `ValueOf(assigned)`.
 		2. *If* `value` is a normal completion:
-			1. *If* `decl.unfixed` is `false` *or* `assignee` is *none*:
+			1. *If* `decl.writable` is `false` *or* `assignee` is *none*:
 				1. *Note:* references to the variable will be constant-propegated by its fixed value.
 				2. *Return:* [].
 		3. *Let* `instrs` be *UnwrapAffirm:* `Build(assigned)`.

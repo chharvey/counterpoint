@@ -291,7 +291,7 @@ test.suite('AstNode', () => {
 								],
 							},
 							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `x`.'},
-							{cons: AssignmentErrorReassignment,         message: 'Reassignment of fixed variable `x`.'},
+							{cons: AssignmentErrorReassignment,         message: 'Reassignment of read-only variable `x`.'},
 							{cons: AssignmentErrorDuplicateDeclaration, message: 'Duplicate declaration of `T`.'},
 							{cons: ReferenceErrorKind,                  message: '`x` refers to a value, but is used as a type.'},
 							{cons: ReferenceErrorKind,                  message: '`T` refers to a type, but is used as a value.'},

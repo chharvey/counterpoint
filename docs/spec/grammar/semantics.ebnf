@@ -186,7 +186,7 @@ SemanticDeclaration =:=
 SemanticDeclarationType
 	::= SemanticTypeAlias? SemanticType;
 
-SemanticDeclarationVariable[unfixed: Boolean]
+SemanticDeclarationVariable[writable: Boolean]
 	::= SemanticVariable? SemanticType? SemanticExpression?;
 
 

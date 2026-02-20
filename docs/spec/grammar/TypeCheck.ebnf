@@ -171,8 +171,8 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 		3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
 		4. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		5. *Set* `symbol.type` to `assignee_type`.
-		6. *If* `assignee_type` is not mutable and has no mutable parts *and* `decl.unfixed` is `false`:
-			1. *Assert:* `symbol.isUnfixed` is `false`.
+		6. *If* `assignee_type` is not mutable and has no mutable parts *and* `decl.writable` is `false`:
+			1. *Assert:* `symbol.isWritable` is `false`.
 			2. *Set* `symbol.value` to `value`.
 ;
 
