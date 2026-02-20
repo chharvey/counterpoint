@@ -89,7 +89,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 							arg1,
 							// else return a wasm call
 							mod.call(
-								bothInts(t0, t1) || bothNats(t0, t1) ? 'imul' : (assert.ok(bothFloats(t0, t1)), 'fmul'),
+								bothInts(t0, t1) || bothNats(t0, t1) ? 'vimul' : (assert.ok(bothFloats(t0, t1)), 'vfmul'),
 								[local0.get(), arg1],
 								binaryen.v128,
 							),
@@ -109,7 +109,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 						arg1,
 						// else return a wasm call
 						mod.call(
-							bothInts(t0, t1) || bothNats(t0, t1) ? 'iadd' : (assert.ok(bothFloats(t0, t1)), 'fadd'),
+							bothInts(t0, t1) || bothNats(t0, t1) ? 'viadd' : (assert.ok(bothFloats(t0, t1)), 'vfadd'),
 							[local0.get(), arg1],
 							binaryen.v128,
 						),
@@ -122,20 +122,20 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		switch (true) {
 			case bothInts(t0, t1): {
 				return mod.call(new Map<Operator, string>([
-					[Operator.EXP, 'iexp'],
-					[Operator.MUL, 'imul'],
-					[Operator.DIV, 'idiv_s'],
-					[Operator.ADD, 'iadd'],
-					[Operator.SUB, 'isub_s'],
+					[Operator.EXP, 'viexp'],
+					[Operator.MUL, 'vimul'],
+					[Operator.DIV, 'vidiv_s'],
+					[Operator.ADD, 'viadd'],
+					[Operator.SUB, 'visub_s'],
 				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 			}
 			case bothNats(t0, t1): {
 				return mod.call(new Map<Operator, string>([
-					[Operator.EXP, 'iexp'],
-					[Operator.MUL, 'imul'],
-					[Operator.DIV, 'idiv_u'],
-					[Operator.ADD, 'iadd'],
-					[Operator.SUB, 'isub_u'],
+					[Operator.EXP, 'viexp'],
+					[Operator.MUL, 'vimul'],
+					[Operator.DIV, 'vidiv_u'],
+					[Operator.ADD, 'viadd'],
+					[Operator.SUB, 'visub_u'],
 				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 			}
 			case bothFloats(t0, t1): {
@@ -143,10 +143,10 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 					return mod.unreachable();
 				}
 				return mod.call(new Map<Operator, string>([
-					[Operator.MUL, 'fmul'],
-					[Operator.DIV, 'fdiv'],
-					[Operator.ADD, 'fadd'],
-					[Operator.SUB, 'fsub'],
+					[Operator.MUL, 'vfmul'],
+					[Operator.DIV, 'vfdiv'],
+					[Operator.ADD, 'vfadd'],
+					[Operator.SUB, 'vfsub'],
 				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 			}
 			default: {

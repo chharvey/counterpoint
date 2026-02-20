@@ -5,7 +5,6 @@ import type {
 	AST,
 	SymbolSchemaVar,
 } from '../validator/index.ts';
-import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 import type {
@@ -30,7 +29,8 @@ type Block = {
  */
 export class Builder {
 	private static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/isub_u.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 	];
 
@@ -323,22 +323,17 @@ export class Builder {
 			),
 		], binaryen.v128));
 
-		this.#binOpArithmetic('iexp',   (i0, i1) => mod.call('exp', [i0, i1], binaryen.i64), 'intValue');
-		this.#binOpArithmetic('imul',   mod.i64.mul  .bind(null), 'intValue');
-		this.#binOpArithmetic('fmul',   mod.f64.mul  .bind(null), 'floatValue');
-		this.#binOpArithmetic('idiv_s', mod.i64.div_s.bind(null), 'intValue');
-		this.#binOpArithmetic('idiv_u', mod.i64.div_u.bind(null), 'intValue');
-		this.#binOpArithmetic('fdiv',   mod.f64.div  .bind(null), 'floatValue');
-		this.#binOpArithmetic('iadd',   mod.i64.add  .bind(null), 'intValue');
-		this.#binOpArithmetic('fadd',   mod.f64.add  .bind(null), 'floatValue');
-		this.#binOpArithmetic('isub_s', mod.i64.sub  .bind(null), 'intValue');
-		this.#binOpArithmetic('fsub',   mod.f64.sub  .bind(null), 'floatValue');
-
-		this.#binOpArithmetic('isub_u', (i0, i1) => mod.if(
-			mod.i64.lt_u(i0, i1),
-			bigint_to_i64(mod, 0n, true),
-			mod.i64.sub(i0, i1),
-		), 'intValue');
+		this.#binOpArithmetic('viexp',   (i0, i1) => mod.call('iexp', [i0, i1], binaryen.i64), 'intValue');
+		this.#binOpArithmetic('vimul',   mod.i64.mul  .bind(null), 'intValue');
+		this.#binOpArithmetic('vfmul',   mod.f64.mul  .bind(null), 'floatValue');
+		this.#binOpArithmetic('vidiv_s', mod.i64.div_s.bind(null), 'intValue');
+		this.#binOpArithmetic('vidiv_u', mod.i64.div_u.bind(null), 'intValue');
+		this.#binOpArithmetic('vfdiv',   mod.f64.div  .bind(null), 'floatValue');
+		this.#binOpArithmetic('viadd',   mod.i64.add  .bind(null), 'intValue');
+		this.#binOpArithmetic('vfadd',   mod.f64.add  .bind(null), 'floatValue');
+		this.#binOpArithmetic('visub_s', mod.i64.sub  .bind(null), 'intValue');
+		this.#binOpArithmetic('visub_u', (i0, i1) => mod.call('isub_u', [i0, i1], binaryen.i64), 'intValue');
+		this.#binOpArithmetic('vfsub',   mod.f64.sub  .bind(null), 'floatValue');
 
 		this.#binOpComparative('vlt', mod.i64.lt_s.bind(null), mod.i64.lt_u.bind(null), mod.f64.lt.bind(null));
 		this.#binOpComparative('vgt', mod.i64.gt_s.bind(null), mod.i64.gt_u.bind(null), mod.f64.gt.bind(null));
