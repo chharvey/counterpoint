@@ -4,9 +4,14 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Lowerable,
+	type CFG,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -21,7 +26,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeDeclarationVariable extends ASTNodeStatement {
+export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowerable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeDeclarationVariable);
@@ -96,5 +101,14 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		} else {
 			return this.builder.module.drop(value);
 		}
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@memoizeMethod
+	public lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeDeclarationVariable#lower` not yet supported.');
 	}
 }

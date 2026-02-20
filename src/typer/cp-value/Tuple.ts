@@ -1,9 +1,11 @@
 import binaryen from 'binaryen';
-import {TYPE} from '../index.ts';
 import {
+	type CFG,
 	build_tuple_like,
 	type Builder,
 } from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
+import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
 	language_values_equal,
@@ -24,6 +26,11 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
+	@memoizeMethod
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ValueTuple#lower` not yet supported.');
+	}
+
 	public override toString(): string {
 		return `(${ super.toString() }${ this.items.length === 1 ? ',' : '' })`;
 	}

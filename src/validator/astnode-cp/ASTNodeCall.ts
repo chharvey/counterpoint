@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type CFG,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../index.ts';
@@ -24,6 +25,7 @@ import {
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -67,6 +69,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.exprargs,
 		], (arg) => arg.typeCheck());
 		this.type(); // assert does not throw
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeCall#lower` not yet supported.');
 	}
 
 	@memoizeMethod

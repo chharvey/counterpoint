@@ -4,6 +4,7 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
 	type TYPE,
+	type CFG,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -59,6 +60,12 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		) {
 			this.validator.wordNodeID(this.start_node.children[1]);
 		}
+	}
+
+	@memoizeMethod
+	// @lowerDeco // explicitly leaving off for performance
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeConstant#lower` not yet supported.');
 	}
 
 	@memoizeMethod

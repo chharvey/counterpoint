@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	type ConstructorType,
 	assert_instanceof,
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -29,6 +30,61 @@ import {extract_tokens} from '../../utils.ts';
 
 
 describe('ASTNodeExpression', () => {
+	describe('#lower', () => {
+		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
+			[AST.ASTNodeConstant,                   '42'],
+			[AST.ASTNodeVariable,                   'x'],
+			[AST.ASTNodeTemplate,                   '"""hello {{ x }} world"""'],
+			[AST.ASTNodeTuple,                      '(41, x, 43)'],
+			[AST.ASTNodeRecord,                     '(a= 41, b= x, c= 43)'],
+			[AST.ASTNodeList,                       '[41, x, 43]'],
+			[AST.ASTNodeDict,                       '[a= 41, b= x, c= 43]'],
+			[AST.ASTNodeSet,                        '{41, x, 43}'],
+			[AST.ASTNodeMap,                        '{"a" -> 41, "b" -> x, "c" -> 43}'],
+			[AST.ASTNodeAccess,                     '(41, x, 43).1'],
+			[AST.ASTNodeCall,                       'List.<int>((41, x, 43))'],
+			[AST.ASTNodeOperationUnary,             '!x'],
+			[AST.ASTNodeOperationBinaryArithmetic,  'x / 2'],
+			[AST.ASTNodeOperationBinaryComparative, 'x <= 42'],
+			[AST.ASTNodeOperationBinaryEquality,    'x == 42'],
+			[AST.ASTNodeOperationBinaryLogical,     'x || 42'],
+			[AST.ASTNodeOperationTernary,           'if x < 100 then x * 2 else x / 2;'],
+		]), (src, klass) => {
+			it(klass.name, () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut x: int = 42;
+					${ src };
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				const expr: AST.ASTNodeExpression = (goal.children[1] as AST.ASTNodeStatementExpression).expr!;
+				assert_instanceof(expr, klass);
+				return assert.throws(() => expr.lower(), /not yet supported/);
+			});
+		});
+
+		// TODO: move these to ASTNodeStatement tests
+		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeStatement>, string>([
+			[AST.ASTNodeDeclarationVariable, 'val mut y: int = 43;'],
+			[AST.ASTNodeStatementExpression, 'x;'],
+			[AST.ASTNodeAssignment,          'x = x + 1;'],
+		]), (src, klass) => {
+			it(klass.name, () => {
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut x: int = 42;
+					${ src }
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				const stmt = goal.children[1] as AST.ASTNodeDeclarationVariable | AST.ASTNodeStatementExpression | AST.ASTNodeAssignment;
+				assert_instanceof(stmt, klass);
+				return assert.throws(() => stmt.lower(), /not yet supported/);
+			});
+		});
+	});
+
+
+
 	describe('ASTNodeConstant', () => {
 		describe('#varCheck', () => {
 			it('never throws.', () => {

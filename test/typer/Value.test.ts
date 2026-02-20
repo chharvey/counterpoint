@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
+import * as xjs from 'extrajs';
 import {
 	VALUE,
 	Builder,
@@ -11,6 +12,28 @@ import {buildConst} from '../helpers.ts';
 
 
 describe('Value', () => {
+	describe('#lower', () => {
+		xjs.Array.forEachAggregated<VALUE.Value>([
+			VALUE.NULL,
+			VALUE.FALSE,
+			VALUE.SYM_NEVER,
+			VALUE.INT_0,
+			VALUE.FLOAT_0,
+			VALUE.STR_EMPTY,
+			new VALUE.Tuple([VALUE.NULL]),
+			new VALUE.Record(new Map([[0x100n, VALUE.NULL]])),
+			new VALUE.List([VALUE.NULL]),
+			new VALUE.Dict(new Map([[0x100n, VALUE.NULL]])),
+			new VALUE.Set(new Set([VALUE.NULL])),
+			new VALUE.Map(new Map([[VALUE.FALSE, VALUE.TRUE]])),
+		], (value) => {
+			it(value.constructor.name, () => {
+				assert.throws(() => value.lower(), /not yet supported/);
+			});
+		});
+	});
+
+
 	describe('#identical', () => {
 		describe('Tuple', () => {
 			it('Tuples with the same items are identical.', () => {

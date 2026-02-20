@@ -1,5 +1,12 @@
 import type binaryen from 'binaryen';
-import {assert_instanceof} from '../../lib/index.ts';
+import type {
+	Lowerable,
+	CFG,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -10,7 +17,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeStatementExpression extends ASTNodeStatement {
+export class ASTNodeStatementExpression extends ASTNodeStatement implements Lowerable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementExpression);
@@ -28,5 +35,14 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
 			? this.builder.module.nop()
 			: this.builder.module.drop(this.expr.build());
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@memoizeMethod
+	public lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeStatementExpression#lower` not yet supported.');
 	}
 }

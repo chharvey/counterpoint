@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type CFG,
 	BinVect,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
@@ -17,6 +18,7 @@ import {
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -40,6 +42,12 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		public readonly operand2: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeOperationTernary#lower` not yet supported.');
 	}
 
 	@memoizeMethod

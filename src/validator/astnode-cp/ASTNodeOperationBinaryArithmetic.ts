@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type CFG,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -28,6 +29,7 @@ import {
 	bothFloats,
 } from './utils-private.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -49,6 +51,12 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeOperationBinaryArithmetic#lower` not yet supported.');
 	}
 
 	@memoizeMethod

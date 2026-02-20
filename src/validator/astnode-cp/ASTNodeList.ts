@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type CFG,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -16,9 +17,10 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
-	ASTNodeExpression,
+	lowerDeco,
 	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
@@ -39,6 +41,12 @@ export class ASTNodeList extends ASTNodeCollectionLiteral {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeList#lower` not yet supported.');
 	}
 
 	@memoizeMethod

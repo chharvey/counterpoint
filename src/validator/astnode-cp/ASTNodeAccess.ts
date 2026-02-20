@@ -4,6 +4,7 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
+	type CFG,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -27,6 +28,7 @@ import type {Reassignable} from './Reassignable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -54,6 +56,12 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		if (this.kind === Operator.DOT_RES) {
 			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
 		}
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}
 
 	@memoizeMethod

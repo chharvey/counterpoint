@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type CFG,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -20,9 +21,10 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	ASTNodeExpression,
+	lowerDeco,
 	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
@@ -54,6 +56,12 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			}
 		});
 		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeDict#lower` not yet supported.');
 	}
 
 	@memoizeMethod

@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type CFG,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -24,6 +25,7 @@ import {
 	neitherFloats,
 } from './utils-private.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -48,6 +50,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		if ([Operator.IS, Operator.ISNT].includes(this.operator)) {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeOperationBinaryComparative#lower` not yet supported.');
 	}
 
 	@memoizeMethod

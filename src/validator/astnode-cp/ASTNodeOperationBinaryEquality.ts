@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type CFG,
 	BinVect,
 } from '../../index.ts';
 import {
@@ -22,6 +23,7 @@ import {
 	oneFloats,
 } from './utils-private.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -43,6 +45,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeOperationBinaryEquality#lower` not yet supported.');
 	}
 
 	@memoizeMethod

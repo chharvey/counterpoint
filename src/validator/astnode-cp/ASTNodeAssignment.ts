@@ -2,10 +2,15 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
+	type Lowerable,
+	type CFG,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -20,7 +25,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeAssignment extends ASTNodeStatement {
+export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeAssignment);
@@ -63,5 +68,14 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 			this.assigned.build(),
 			this.validator.config.compilerOptions.intCoercion,
 		)) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@memoizeMethod
+	public lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeAssignment#lower` not yet supported.');
 	}
 }

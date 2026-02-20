@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type CFG,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -13,6 +14,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -39,6 +41,12 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 			| readonly ASTNodeExpression[],
 	) {
 		super(start_node, {}, children);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public lower(): CFG.CfgNode {
+		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
 	}
 
 	@memoizeMethod
