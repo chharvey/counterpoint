@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	type Lowerable,
-	type CFG,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
@@ -75,7 +74,7 @@ export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable {
 	 * @implements Lowerable
 	 */
 	@memoizeMethod
-	public lower(): CFG.CfgNode {
+	public lower(): null {
 		throw new Error('`ASTNodeAssignment#lower` not yet supported.');
 	}
 }

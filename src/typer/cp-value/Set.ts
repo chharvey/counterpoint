@@ -55,7 +55,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	}
 
 	@memoizeMethod
-	public override lower(): CFG.CfgNode {
+	public override lower(): CFG.Value {
 		throw new Error('`ValueSet#lower` not yet supported.');
 	}
 

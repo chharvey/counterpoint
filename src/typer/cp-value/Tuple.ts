@@ -27,7 +27,7 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@memoizeMethod
-	public override lower(): CFG.CfgNode {
+	public override lower(): CFG.Value {
 		throw new Error('`ValueTuple#lower` not yet supported.');
 	}
 

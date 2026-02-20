@@ -73,7 +73,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.CfgNode {
+	public override lower(): CFG.Value {
 		throw new Error('`ASTNodeCall#lower` not yet supported.');
 	}
 

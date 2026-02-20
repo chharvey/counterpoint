@@ -3,7 +3,6 @@ import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Lowerable,
-	type CFG,
 	Builder,
 	ParseError01,
 } from '../../index.ts';
@@ -88,7 +87,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	 * @implements Lowerable
 	 */
 	@memoizeMethod
-	public lower(): CFG.CfgNode {
+	public lower(): null {
 		throw new Error('`ASTNodeGoal#lower` not yet supported.');
 	}
 

@@ -64,8 +64,8 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	@memoizeMethod
 	// @lowerDeco // explicitly leaving off for performance
-	public override lower(): CFG.CfgNode {
-		throw new Error('`ASTNodeConstant#lower` not yet supported.');
+	public override lower(): CFG.Constant {
+		return this.fold().lower();
 	}
 
 	@memoizeMethod

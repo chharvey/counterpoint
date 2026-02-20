@@ -46,7 +46,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.CfgNode {
+	public override lower(): CFG.Value {
 		throw new Error('`ASTNodeOperationBinaryLogical#lower` not yet supported.');
 	}
 

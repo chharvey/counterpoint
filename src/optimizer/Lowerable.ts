@@ -18,7 +18,7 @@ import type {CFG} from './index.ts';
 export interface Lowerable {
 	/**
 	 * Lowers this AST node or folded value to a high-level IR instruction.
-	 * @return the instruction to IR
+	 * @return an optimized value if present
 	 */
-	lower(): CFG.CfgNode;
+	lower(): CFG.Value | null;
 }

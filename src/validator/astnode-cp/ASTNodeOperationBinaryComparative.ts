@@ -54,7 +54,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.CfgNode {
+	public override lower(): CFG.Value {
 		throw new Error('`ASTNodeOperationBinaryComparative#lower` not yet supported.');
 	}
 

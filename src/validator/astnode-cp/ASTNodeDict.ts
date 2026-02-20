@@ -60,7 +60,7 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): CFG.CfgNode {
+	public lower(): CFG.Value {
 		throw new Error('`ASTNodeDict#lower` not yet supported.');
 	}
 

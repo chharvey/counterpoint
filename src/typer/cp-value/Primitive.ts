@@ -1,4 +1,4 @@
-import type {CFG} from '../../index.ts';
+import {CFG} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {Value} from './Value.ts';
@@ -15,8 +15,8 @@ import {Value} from './Value.ts';
  */
 export abstract class Primitive extends Value {
 	@memoizeMethod
-	/** @final */ public override lower(): CFG.CfgNode {
-		throw new Error('`Primitive#lower` not yet supported.');
+	/** @final */ public override lower(): CFG.Constant {
+		return new CFG.Constant(this);
 	}
 
 	@memoizeMethod

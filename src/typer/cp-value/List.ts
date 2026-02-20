@@ -25,7 +25,7 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  */
 export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	@memoizeMethod
-	public override lower(): CFG.CfgNode {
+	public override lower(): CFG.Value {
 		throw new Error('`List#lower` not yet supported.');
 	}
 

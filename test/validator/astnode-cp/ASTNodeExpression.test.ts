@@ -9,6 +9,7 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	CFG,
 	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -32,8 +33,6 @@ import {extract_tokens} from '../../utils.ts';
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
-			[AST.ASTNodeConstant,                   '42'],
-			[AST.ASTNodeVariable,                   'x'],
 			[AST.ASTNodeTemplate,                   '"""hello {{ x }} world"""'],
 			[AST.ASTNodeTuple,                      '(41, x, 43)'],
 			[AST.ASTNodeRecord,                     '(a= 41, b= x, c= 43)'],
@@ -61,6 +60,21 @@ describe('ASTNodeExpression', () => {
 				assert_instanceof(expr, klass);
 				return assert.throws(() => expr.lower(), /not yet supported/);
 			});
+		});
+
+		it('AST.Constant returns a CFG.Constant.', () => {
+			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42;');
+			return assert.deepStrictEqual(value.lower(), new CFG.Constant(value.fold()));
+		});
+		it('AST.Variable returns a CFG.Variable.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut x: int = 42;
+				x;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+			return assert.deepStrictEqual(expr.lower(), new CFG.Variable(expr));
 		});
 
 		// TODO: move these to ASTNodeStatement tests

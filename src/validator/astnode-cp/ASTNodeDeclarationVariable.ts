@@ -5,7 +5,6 @@ import {
 	VALUE,
 	TYPE,
 	type Lowerable,
-	type CFG,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
 import {
@@ -108,7 +107,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 	 * @implements Lowerable
 	 */
 	@memoizeMethod
-	public lower(): CFG.CfgNode {
+	public lower(): null {
 		throw new Error('`ASTNodeDeclarationVariable#lower` not yet supported.');
 	}
 }
