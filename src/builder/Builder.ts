@@ -30,7 +30,7 @@ type Block = {
  */
 export class Builder {
 	private static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 	];
 
