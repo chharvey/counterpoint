@@ -1,4 +1,4 @@
-import type {Variable} from './Value.ts';
+import type {Variable} from './Variable.ts';
 import {Instruction} from './Instruction.ts';
 
 
