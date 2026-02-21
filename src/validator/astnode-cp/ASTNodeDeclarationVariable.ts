@@ -116,7 +116,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 		}
 		const value: IR.Instruction = this.assigned?.lower() ?? VALUE.NULL.lower();
 		optimizer.pushInstruction((this.assignee
-			? new IR.Set(new IR.Get(this.assignee), value)
+			? new IR.Set(this.assignee, value)
 			: new IR.Drop(value)
 		));
 		return null;

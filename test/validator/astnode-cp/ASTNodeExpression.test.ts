@@ -105,11 +105,11 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			goal.children.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), [
-				'(SET (GET assignee_b) (CONST null))',
-				'(SET (GET assignee_c) (CONST 42))',
+				'(SET assignee_b (CONST null))',
+				'(SET assignee_c (CONST 42))',
 				'(DROP (GET assignee_c))',
-				'(SET (GET assignee_d) (GET assignee_c))',
-				'(SET (GET assignee_e) (GET assignee_c))',
+				'(SET assignee_d (GET assignee_c))',
+				'(SET assignee_e (GET assignee_c))',
 			].join('\n'));
 		});
 		it('AST.StatementExpression pushes DROP instruction if expression exists and is non-foldable.', () => {
@@ -143,9 +143,9 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			goal.children.slice(1).forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), [
-				'(SET (GET x) (CONST 43))',
-				'(SET (GET x) (CONST 44))',
-				'(SET (GET x) (CONST -42))',
+				'(SET x (CONST 43))',
+				'(SET x (CONST 44))',
+				'(SET x (CONST -42))',
 			].join('\n'));
 		});
 		it('AST.Goal lowers each statement.', () => {

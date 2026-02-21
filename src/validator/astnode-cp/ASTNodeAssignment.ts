@@ -78,7 +78,7 @@ export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable {
 	@memoizeMethod
 	public lower(optimizer: Optimizer): null {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		optimizer.pushInstruction(new IR.Set(new IR.Get(this.assignee), this.assigned.lower()));
+		optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower()));
 		return null;
 	}
 }
