@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type Lowerable,
 	type IR,
 	ErrorCode,
@@ -35,8 +36,8 @@ export function lowerDeco(
 	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'lower');
-	return function (this: ASTNodeExpression) {
-		return this.fold()?.lower() ?? method.call(this);
+	return function (this: ASTNodeExpression, optimizer?: Optimizer) {
+		return this.fold()?.lower() ?? method.call(this, optimizer);
 	};
 }
 
@@ -135,7 +136,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable, 
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(): IR.Instruction;
+	public abstract lower(optimizer?: Optimizer): IR.Instruction;
 
 	/**
 	 * @inheritdoc

@@ -114,7 +114,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 		if (is_foldable) {
 			return null;
 		}
-		const value: IR.Instruction = this.assigned?.lower() ?? VALUE.NULL.lower();
+		const value: IR.Instruction = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
 		optimizer.pushInstruction((this.assignee
 			? new IR.Set(this.assignee, value)
 			: new IR.Drop(value)

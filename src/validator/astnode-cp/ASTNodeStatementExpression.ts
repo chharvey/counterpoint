@@ -45,7 +45,7 @@ export class ASTNodeStatementExpression extends ASTNodeStatement implements Lowe
 	@memoizeMethod
 	public lower(optimizer: Optimizer): null {
 		if (this.expr && !this.expr.fold()) {
-			optimizer.pushInstruction(new IR.Drop(this.expr.lower()));
+			optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
 		}
 		return null;
 	}
