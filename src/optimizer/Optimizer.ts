@@ -8,10 +8,16 @@ import type {IR} from './index.ts';
  * the CFG represents execution order. The CFG assumes the AST is already validated.
  */
 export class Optimizer {
+	#tempLocalCounter: bigint = 0n;
+
 	readonly #instructions: IR.Instruction[] = [];
 
 	public get instructions(): IR.Instruction[] {
 		return [...this.#instructions];
+	}
+
+	public newTempLocalName(): string {
+		return `$${ this.#tempLocalCounter++ }`;
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {

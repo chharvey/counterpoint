@@ -4,11 +4,11 @@ import {Instruction} from './Instruction.ts';
 
 
 export class Get extends Instruction {
-	public constructor(private readonly node: AST.ASTNodeVariable) {
+	public constructor(private readonly target: AST.ASTNodeVariable | string) {
 		super();
 	}
 
 	public override toString(): string {
-		return `(GET ${ this.node.source })`;
+		return `(GET ${ typeof this.target === 'string' ? this.target : this.target.source })`;
 	}
 }
