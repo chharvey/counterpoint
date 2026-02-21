@@ -9,6 +9,6 @@ export class Constant extends Instruction {
 	}
 
 	public override toString(): string {
-		return this.value.toString();
+		return `(CONST ${ this.value })`;
 	}
 }

@@ -8,6 +8,6 @@ export class Drop extends Instruction {
 	}
 
 	public override toString(): string {
-		return `(DROP ${ this.value.toString() })`;
+		return `(DROP ${ this.value })`;
 	}
 }

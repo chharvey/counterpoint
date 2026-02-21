@@ -63,7 +63,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	@lowerDeco
 	public override lower(): IR.Instruction {
-		return new IR.Variable(this);
+		return new IR.Get(this);
 	}
 
 	@memoizeMethod

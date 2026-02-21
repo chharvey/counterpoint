@@ -3,12 +3,12 @@ import {Instruction} from './Instruction.ts';
 
 
 
-export class Variable extends Instruction {
+export class Get extends Instruction {
 	public constructor(private readonly node: AST.ASTNodeVariable) {
 		super();
 	}
 
 	public override toString(): string {
-		return this.node.source;
+		return `(GET ${ this.node.source })`;
 	}
 }
