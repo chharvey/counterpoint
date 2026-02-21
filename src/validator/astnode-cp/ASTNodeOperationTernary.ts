@@ -3,7 +3,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	BinVect,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
@@ -46,7 +46,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`ASTNodeOperationTernary#lower` not yet supported.');
 	}
 

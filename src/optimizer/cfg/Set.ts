@@ -3,7 +3,7 @@ import {Instruction} from './Instruction.ts';
 
 
 
-class CfgSet extends Instruction {
+class IrSet extends Instruction {
 	public static string(target: Variable, value: Instruction | string): string {
 		return `(SET ${ target } ${ value })`;
 	}
@@ -16,7 +16,7 @@ class CfgSet extends Instruction {
 	}
 
 	public override toString(): string {
-		return CfgSet.string(this.target, this.value);
+		return IrSet.string(this.target, this.value);
 	}
 }
-export {CfgSet as Set};
+export {IrSet as Set};

@@ -1,6 +1,6 @@
 import binaryen from 'binaryen';
 import {
-	type CFG,
+	type IR,
 	build_tuple_like,
 	type Builder,
 } from '../../index.ts';
@@ -27,7 +27,7 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	@memoizeMethod
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`ValueTuple#lower` not yet supported.');
 	}
 

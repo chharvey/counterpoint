@@ -4,7 +4,7 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
 	type TYPE,
-	type CFG,
+	type IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -64,7 +64,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	@memoizeMethod
 	// @lowerDeco // explicitly leaving off for performance
-	public override lower(): CFG.Constant {
+	public override lower(): IR.Constant {
 		return this.fold().lower();
 	}
 

@@ -1,4 +1,4 @@
-import {CFG} from '../../index.ts';
+import {IR} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {Value} from './Value.ts';
@@ -15,8 +15,8 @@ import {Value} from './Value.ts';
  */
 export abstract class Primitive extends Value {
 	@memoizeMethod
-	/** @final */ public override lower(): CFG.Constant {
-		return new CFG.Constant(this);
+	/** @final */ public override lower(): IR.Constant {
+		return new IR.Constant(this);
 	}
 
 	@memoizeMethod

@@ -1,6 +1,6 @@
 import type binaryen from 'binaryen';
 import type {
-	CFG,
+	IR,
 	Builder,
 } from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
@@ -25,7 +25,7 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  */
 export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	@memoizeMethod
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`List#lower` not yet supported.');
 	}
 

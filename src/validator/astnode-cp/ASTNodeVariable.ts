@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
-	CFG,
+	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -62,8 +62,8 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Instruction {
-		return new CFG.Variable(this);
+	public override lower(): IR.Instruction {
+		return new IR.Variable(this);
 	}
 
 	@memoizeMethod

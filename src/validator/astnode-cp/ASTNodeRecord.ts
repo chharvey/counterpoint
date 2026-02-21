@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	build_record_like,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
@@ -62,7 +62,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): CFG.Instruction {
+	public lower(): IR.Instruction {
 		throw new Error('`ASTNodeRecord#lower` not yet supported.');
 	}
 

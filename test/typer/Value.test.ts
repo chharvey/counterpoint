@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
-	CFG,
+	IR,
 	Builder,
 	BinVect,
 } from '../../src/index.ts';
@@ -14,7 +14,7 @@ import {buildConst} from '../helpers.ts';
 
 describe('Value', () => {
 	describe('#lower', () => {
-		it('Primitive returns a CFG.Constant.', () => {
+		it('Primitive returns an IR.Constant.', () => {
 			xjs.Array.forEachAggregated<VALUE.Primitive>([
 				VALUE.NULL,
 				VALUE.FALSE,
@@ -22,7 +22,7 @@ describe('Value', () => {
 				VALUE.INT_0,
 				VALUE.FLOAT_0,
 				VALUE.STR_EMPTY,
-			], (value) => assert.deepStrictEqual(value.lower(), new CFG.Constant(value), value.constructor.name));
+			], (value) => assert.deepStrictEqual(value.lower(), new IR.Constant(value), value.constructor.name));
 		});
 
 		xjs.Array.forEachAggregated<VALUE.Value>([

@@ -10,7 +10,7 @@ import {
 	VALUE,
 	TYPE,
 	Optimizer,
-	CFG,
+	IR,
 	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -63,11 +63,11 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 
-		it('AST.Constant returns a CFG.Constant.', () => {
+		it('AST.Constant returns an IR.Constant.', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42;');
-			return assert.deepStrictEqual(value.lower(), new CFG.Constant(value.fold()));
+			return assert.deepStrictEqual(value.lower(), new IR.Constant(value.fold()));
 		});
-		it('AST.Variable returns a CFG.Variable.', () => {
+		it('AST.Variable returns an IR.Variable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				val mut x: int = 42;
 				x;
@@ -75,7 +75,7 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-			return assert.deepStrictEqual(expr.lower(), new CFG.Variable(expr));
+			return assert.deepStrictEqual(expr.lower(), new IR.Variable(expr));
 		});
 
 		// TODO: move these to ASTNodeStatement tests

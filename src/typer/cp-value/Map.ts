@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {
-	CFG,
+	IR,
 	Builder,
 } from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
@@ -52,7 +52,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	}
 
 	@memoizeMethod
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`ValueMap#lower` not yet supported.');
 	}
 

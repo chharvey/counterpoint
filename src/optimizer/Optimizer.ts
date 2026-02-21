@@ -1,4 +1,4 @@
-import type {CFG} from './index.ts';
+import type {IR} from './index.ts';
 
 
 
@@ -8,13 +8,13 @@ import type {CFG} from './index.ts';
  * the CFG represents execution order. The CFG assumes the AST is already validated.
  */
 export class Optimizer {
-	readonly #instructions: CFG.Instruction[] = [];
+	readonly #instructions: IR.Instruction[] = [];
 
-	public get instructions(): CFG.Instruction[] {
+	public get instructions(): IR.Instruction[] {
 		return [...this.#instructions];
 	}
 
-	public pushInstruction(instr: CFG.Instruction): void {
+	public pushInstruction(instr: IR.Instruction): void {
 		this.#instructions.push(instr);
 	}
 

@@ -2,7 +2,7 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	type Local,
 	BinVect,
 } from '../../index.ts';
@@ -46,7 +46,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`ASTNodeOperationBinaryLogical#lower` not yet supported.');
 	}
 

@@ -1,6 +1,6 @@
 import binaryen from 'binaryen';
 import {
-	type CFG,
+	type IR,
 	build_record_like,
 	type Builder,
 } from '../../index.ts';
@@ -27,7 +27,7 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	@memoizeMethod
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`ValueRecord#lower` not yet supported.');
 	}
 

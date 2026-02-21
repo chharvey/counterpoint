@@ -2,7 +2,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -45,7 +45,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): CFG.Instruction {
+	public lower(): IR.Instruction {
 		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
 	}
 

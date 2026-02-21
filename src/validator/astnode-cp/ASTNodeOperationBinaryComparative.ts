@@ -3,7 +3,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -54,7 +54,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`ASTNodeOperationBinaryComparative#lower` not yet supported.');
 	}
 

@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../index.ts';
@@ -73,7 +73,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Instruction {
+	public override lower(): IR.Instruction {
 		throw new Error('`ASTNodeCall#lower` not yet supported.');
 	}
 

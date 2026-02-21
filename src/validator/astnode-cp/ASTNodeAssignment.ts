@@ -4,7 +4,7 @@ import {
 	type TYPE,
 	type Optimizer,
 	type Lowerable,
-	CFG,
+	IR,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
@@ -78,7 +78,7 @@ export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable {
 	@memoizeMethod
 	public lower(optimizer: Optimizer): null {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		optimizer.pushInstruction(new CFG.Set(new CFG.Variable(this.assignee), this.assigned.lower()));
+		optimizer.pushInstruction(new IR.Set(new IR.Variable(this.assignee), this.assigned.lower()));
 		return null;
 	}
 }

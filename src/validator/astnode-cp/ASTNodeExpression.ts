@@ -4,7 +4,7 @@ import {
 	VALUE,
 	TYPE,
 	type Lowerable,
-	type CFG,
+	type IR,
 	ErrorCode,
 } from '../../index.ts';
 import {
@@ -135,7 +135,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable, 
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(): CFG.Instruction;
+	public abstract lower(): IR.Instruction;
 
 	/**
 	 * @inheritdoc
