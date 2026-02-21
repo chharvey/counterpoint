@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
+	type Optimizer,
 	type Lowerable,
 	Builder,
 	ParseError01,
@@ -87,8 +88,13 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	 * @implements Lowerable
 	 */
 	@memoizeMethod
-	public lower(): null {
-		throw new Error('`ASTNodeGoal#lower` not yet supported.');
+	public lower(optimizer: Optimizer): null {
+		this.children.forEach((stmt) => {
+			if ('lower' in stmt && typeof stmt.lower === 'function') {
+				(stmt as Lowerable).lower(optimizer);
+			}
+		});
+		return null;
 	}
 
 	/** @implements Buildable */

@@ -148,6 +148,29 @@ describe('ASTNodeExpression', () => {
 				'(SET x -42)',
 			].join('\n'));
 		});
+		it('AST.Goal lowers each statement.', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut assignee_b?: int;
+				val mut assignee_c:  int = 42;
+				val     _:           int = assignee_c;
+				val     assignee_d:  int = assignee_c;
+				val mut assignee_e:  int = assignee_c;
+
+				assignee_b;
+				assignee_c;
+				assignee_d;
+				assignee_e;
+
+				assignee_e = 43;
+				assignee_e = 44;
+				assignee_e = -42;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assert.strictEqual(opt.instructions.length, 12);
+		});
 	});
 
 
