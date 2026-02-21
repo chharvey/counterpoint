@@ -1,3 +1,3 @@
-export abstract class CfgNode {
+export abstract class Instruction {
 	public abstract toString(): string;
 }

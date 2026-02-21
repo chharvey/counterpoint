@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -50,7 +50,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Value {
+	public override lower(): IR.Instruction {
 		throw new Error('`ASTNodeOperationUnary#lower` not yet supported.');
 	}
 

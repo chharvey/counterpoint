@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -47,7 +47,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): CFG.Value {
+	public lower(): IR.Instruction {
 		throw new Error('`ASTNodeMap#lower` not yet supported.');
 	}
 

@@ -1,6 +1,6 @@
 import type binaryen from 'binaryen';
 import type {
-	CFG,
+	IR,
 	Builder,
 } from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
@@ -25,7 +25,7 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  */
 export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	@memoizeMethod
-	public override lower(): CFG.Value {
+	public override lower(): IR.Instruction {
 		throw new Error('`Dict#lower` not yet supported.');
 	}
 

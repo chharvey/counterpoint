@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {
-	CFG,
+	IR,
 	Builder,
 } from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
@@ -55,7 +55,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	}
 
 	@memoizeMethod
-	public override lower(): CFG.Value {
+	public override lower(): IR.Instruction {
 		throw new Error('`ValueSet#lower` not yet supported.');
 	}
 

@@ -1,14 +1,13 @@
-import type {Value} from './Value.ts';
 import {Instruction} from './Instruction.ts';
 
 
 
 export class Drop extends Instruction {
-	public constructor(private readonly value: Value) {
+	public constructor(private readonly value: Instruction) {
 		super();
 	}
 
 	public override toString(): string {
-		return `(DROP ${ this.value.toString() })`;
+		return `(DROP ${ this.value })`;
 	}
 }

@@ -1,6 +1,6 @@
 import type {
 	Optimizer,
-	CFG,
+	IR,
 } from './index.ts';
 
 
@@ -24,5 +24,5 @@ export interface Lowerable {
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value if present
 	 */
-	lower(optimizer: Optimizer): CFG.Value | null;
+	lower(optimizer: Optimizer): IR.Instruction | null;
 }

@@ -10,7 +10,7 @@ import {
 	VALUE,
 	TYPE,
 	Optimizer,
-	CFG,
+	IR,
 	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -63,11 +63,11 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 
-		it('AST.Constant returns a CFG.Constant.', () => {
+		it('AST.Constant returns an IR.Constant.', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42;');
-			return assert.deepStrictEqual(value.lower(), new CFG.Constant(value.fold()));
+			return assert.deepStrictEqual(value.lower(), new IR.Constant(value.fold()));
 		});
-		it('AST.Variable returns a CFG.Variable.', () => {
+		it('AST.Variable returns an IR.Variable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				val mut x: int = 42;
 				x;
@@ -75,7 +75,7 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-			return assert.deepStrictEqual(expr.lower(), new CFG.Variable(expr));
+			return assert.deepStrictEqual(expr.lower(), new IR.Get(expr));
 		});
 
 		// TODO: move these to ASTNodeStatement tests
@@ -105,11 +105,11 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			goal.children.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), [
-				'(SET assignee_b null)',
-				'(SET assignee_c 42)',
-				'(DROP assignee_c)',
-				'(SET assignee_d assignee_c)',
-				'(SET assignee_e assignee_c)',
+				'(SET assignee_b (CONST null))',
+				'(SET assignee_c (CONST 42))',
+				'(DROP (GET assignee_c))',
+				'(SET assignee_d (GET assignee_c))',
+				'(SET assignee_e (GET assignee_c))',
 			].join('\n'));
 		});
 		it('AST.StatementExpression pushes DROP instruction if expression exists and is non-foldable.', () => {
@@ -129,7 +129,7 @@ describe('ASTNodeExpression', () => {
 			assert.strictEqual(opt.instructions.length, 1);
 			(goal.children[3] as AST.ASTNodeStatementExpression).lower(opt);
 			assert.strictEqual(opt.instructions.length, 1);
-			return assert.strictEqual(opt.print(), '(DROP x)');
+			return assert.strictEqual(opt.print(), '(DROP (GET x))');
 		});
 		it('AST.StatementReassignment pushes SET instruction.', () => {
 			const opt = new Optimizer();
@@ -143,9 +143,9 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			goal.children.slice(1).forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), [
-				'(SET x 43)',
-				'(SET x 44)',
-				'(SET x -42)',
+				'(SET x (CONST 43))',
+				'(SET x (CONST 44))',
+				'(SET x (CONST -42))',
 			].join('\n'));
 		});
 		it('AST.Goal lowers each statement.', () => {

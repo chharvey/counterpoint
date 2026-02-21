@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -55,7 +55,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Value {
+	public override lower(): IR.Instruction {
 		throw new Error('`ASTNodeOperationBinaryArithmetic#lower` not yet supported.');
 	}
 

@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import type {
 	Lowerable,
-	CFG,
+	IR,
 	Builder,
 } from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
@@ -56,7 +56,7 @@ export abstract class Value implements Lowerable {
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(): CFG.Value;
+	public abstract lower(): IR.Instruction;
 
 	/**
 	 * @return a string representation of this type

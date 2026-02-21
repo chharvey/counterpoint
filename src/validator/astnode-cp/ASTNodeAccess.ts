@@ -4,7 +4,7 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
-	type CFG,
+	type IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -60,7 +60,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Value {
+	public override lower(): IR.Instruction {
 		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}
 

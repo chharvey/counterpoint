@@ -6,7 +6,7 @@ import {
 	TYPE,
 	type Optimizer,
 	type Lowerable,
-	CFG,
+	IR,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
 import {
@@ -114,10 +114,10 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 		if (is_foldable) {
 			return null;
 		}
-		const value: CFG.Value = this.assigned?.lower() ?? VALUE.NULL.lower();
+		const value: IR.Instruction = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
 		optimizer.pushInstruction((this.assignee
-			? new CFG.Set(new CFG.Variable(this.assignee), value)
-			: new CFG.Drop(value)
+			? new IR.Set(this.assignee, value)
+			: new IR.Drop(value)
 		));
 		return null;
 	}
