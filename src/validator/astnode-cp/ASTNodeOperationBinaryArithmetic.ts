@@ -4,7 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	type IR,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -55,8 +56,46 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
-		throw new Error('`ASTNodeOperationBinaryArithmetic#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Instruction {
+		const [t0, t1] = [this.operand0.type(),           this.operand1.type()];
+		const [l0, l1] = [this.operand0.lower(optimizer), this.operand1.lower(optimizer)];
+		const operation: IR.Instruction = (
+			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.BinOp>([
+				[Operator.EXP, IR.BinOp.INT_EXP],
+				[Operator.MUL, IR.BinOp.INT_MUL],
+				[Operator.DIV, IR.BinOp.INT_DIV],
+				[Operator.ADD, IR.BinOp.INT_ADD],
+				[Operator.SUB, IR.BinOp.INT_SUB],
+			]).get(this.operator)!, l0, l1) :
+			bothFloats(t0, t1) ? new IR.Binop(new Map<Operator, IR.BinOp>([
+				[Operator.EXP, IR.BinOp.FLOAT_EXP],
+				[Operator.MUL, IR.BinOp.FLOAT_MUL],
+				[Operator.DIV, IR.BinOp.FLOAT_DIV],
+				[Operator.ADD, IR.BinOp.FLOAT_ADD],
+				[Operator.SUB, IR.BinOp.FLOAT_SUB],
+			]).get(this.operator)!, l0, l1) :
+			new IR.Trap()
+		);
+
+		/*
+		 * Three-Address Code. See <https://en.wikipedia.org/wiki/Three-address_code>.
+		 * Every binary operation should take the form of `t1 := t2 + t3`.
+		 * Nested operations such as `5 + 3 * 2`, instead of a tree-like structure:
+		 * ```
+		 * (ADD 5 (MUL 3 2))
+		 * ```
+		 * become flattened with the use of temporary locals:
+		 * ```
+		 * (SET $0 (MUL 3 2))        ;; t0 := 3 * 2
+		 * (SET $1 (ADD 5 (GET $0))) ;; t1 := 5 + t0
+		 * (GET $1)                  ;; t1
+		 * ```
+		 * Rather than returning `operation` directly, we set it to a temporary variable
+		 * and then return that variable.
+		 */
+		const local_name: string = optimizer.newTempLocalName();
+		optimizer.pushInstruction(new IR.Set(local_name, operation));
+		return new IR.Get(local_name);
 	}
 
 	@memoizeMethod

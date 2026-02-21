@@ -27,7 +27,10 @@ import {
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
-import {extract_tokens} from '../../utils.ts';
+import {
+	extract_tokens,
+	extract_lines,
+} from '../../utils.ts';
 
 
 
@@ -44,7 +47,6 @@ describe('ASTNodeExpression', () => {
 			[AST.ASTNodeAccess,                     '(41, x, 43).1'],
 			[AST.ASTNodeCall,                       'List.<int>((41, x, 43))'],
 			[AST.ASTNodeOperationUnary,             '!x'],
-			[AST.ASTNodeOperationBinaryArithmetic,  'x / 2'],
 			[AST.ASTNodeOperationBinaryComparative, 'x <= 42'],
 			[AST.ASTNodeOperationBinaryEquality,    'x == 42'],
 			[AST.ASTNodeOperationBinaryLogical,     'x || 42'],
@@ -104,13 +106,13 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.children.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
-			return assert.strictEqual(opt.print(), [
-				'(SET assignee_b (CONST null))',
-				'(SET assignee_c (CONST 42))',
-				'(DROP (GET assignee_c))',
-				'(SET assignee_d (GET assignee_c))',
-				'(SET assignee_e (GET assignee_c))',
-			].join('\n'));
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET assignee_b (CONST null))
+				(SET assignee_c (CONST 42))
+				(DROP (GET assignee_c))
+				(SET assignee_d (GET assignee_c))
+				(SET assignee_e (GET assignee_c))
+			`.join('\n'));
 		});
 		it('AST.StatementExpression pushes DROP instruction if expression exists and is non-foldable.', () => {
 			const opt = new Optimizer();
@@ -142,11 +144,11 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.children.slice(1).forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
-			return assert.strictEqual(opt.print(), [
-				'(SET x (CONST 43))',
-				'(SET x (CONST 44))',
-				'(SET x (CONST -42))',
-			].join('\n'));
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET x (CONST 43))
+				(SET x (CONST 44))
+				(SET x (CONST -42))
+			`.join('\n'));
 		});
 		it('AST.Goal lowers each statement.', () => {
 			const opt = new Optimizer();

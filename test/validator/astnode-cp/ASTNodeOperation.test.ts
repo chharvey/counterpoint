@@ -8,6 +8,7 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	Optimizer,
 	type Builder,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -25,6 +26,7 @@ import {
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
@@ -652,6 +654,42 @@ describe('ASTNodeOperation', () => {
 			it('throws when performing an operation that does not yield a valid number.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0;')    .fold(), NanErrorDivZero);
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;') .fold(), NanErrorInvalid);
+			});
+		});
+
+
+		describe('#lower', () => {
+			it('returns the correct operation.', () => {
+				const opt = new Optimizer();
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut x: int = 42;
+					3 + x / 2;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.lower(opt);
+				return assert.strictEqual(opt.print(), extract_lines`
+					(SET x (CONST 42))
+					(SET $0 (INT_DIV (GET x) (CONST 2)))
+					(SET $1 (INT_ADD (CONST 3) (GET $0)))
+					(DROP (GET $1))
+				`.join('\n'));
+			});
+			it('emits `(TRAP)` when types mismatch.', () => {
+				const opt = new Optimizer();
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut x: float = 4.2;
+					3.5 + x / 2;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.lower(opt);
+				return assert.strictEqual(opt.print(), extract_lines`
+					(SET x (CONST 4.2))
+					(SET $0 (TRAP))
+					(SET $1 (FLOAT_ADD (CONST 3.5) (GET $0)))
+					(DROP (GET $1))
+				`.join('\n'));
 			});
 		});
 
