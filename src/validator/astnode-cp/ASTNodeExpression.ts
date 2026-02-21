@@ -135,7 +135,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable, 
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(): CFG.Value;
+	public abstract lower(): CFG.Instruction;
 
 	/**
 	 * @inheritdoc

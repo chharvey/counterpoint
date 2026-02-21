@@ -1,6 +1,3 @@
-import {CfgNode} from './CfgNode.ts';
-
-
-
-export abstract class Instruction extends CfgNode {
+export abstract class Instruction {
+	public abstract toString(): string;
 }

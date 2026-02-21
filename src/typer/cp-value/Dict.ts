@@ -25,7 +25,7 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  */
 export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	@memoizeMethod
-	public override lower(): CFG.Value {
+	public override lower(): CFG.Instruction {
 		throw new Error('`Dict#lower` not yet supported.');
 	}
 

@@ -1,19 +1,10 @@
 import type {AST} from '../../validator/index.ts';
 import type {VALUE} from '../../typer/index.ts';
-import {CfgNode} from './CfgNode.ts';
+import {Instruction} from './Instruction.ts';
 
 
 
-/**
- * Values are not sent as instructions to the Optimizer,
- * but are still needed for representation.
- */
-export abstract class Value extends CfgNode {
-}
-
-
-
-export class Constant extends Value {
+export class Constant extends Instruction {
 	public constructor(private readonly value: VALUE.Primitive) {
 		super();
 	}
@@ -25,7 +16,7 @@ export class Constant extends Value {
 
 
 
-export class Variable extends Value {
+export class Variable extends Instruction {
 	public constructor(private readonly node: AST.ASTNodeVariable) {
 		super();
 	}

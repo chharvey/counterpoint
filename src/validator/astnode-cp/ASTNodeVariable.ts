@@ -62,7 +62,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): CFG.Value {
+	public override lower(): CFG.Instruction {
 		return new CFG.Variable(this);
 	}
 

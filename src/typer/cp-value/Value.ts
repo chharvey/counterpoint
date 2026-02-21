@@ -56,7 +56,7 @@ export abstract class Value implements Lowerable {
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(): CFG.Value;
+	public abstract lower(): CFG.Instruction;
 
 	/**
 	 * @return a string representation of this type

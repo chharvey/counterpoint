@@ -45,7 +45,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): CFG.Value {
+	public lower(): CFG.Instruction {
 		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
 	}
 

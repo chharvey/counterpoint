@@ -45,7 +45,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): CFG.Value {
+	public lower(): CFG.Instruction {
 		throw new Error('`ASTNodeSet#lower` not yet supported.');
 	}
 

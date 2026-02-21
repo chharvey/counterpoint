@@ -1,10 +1,9 @@
-import type {Value} from './Value.ts';
 import {Instruction} from './Instruction.ts';
 
 
 
 export class Drop extends Instruction {
-	public constructor(private readonly value: Value) {
+	public constructor(private readonly value: Instruction) {
 		super();
 	}
 
