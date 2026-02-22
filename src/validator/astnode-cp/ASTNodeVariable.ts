@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -23,6 +24,7 @@ import {
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -56,6 +58,12 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Instruction {
+		return new IR.Get(this);
 	}
 
 	@memoizeMethod

@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type IR,
 	drop_then,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -22,6 +23,7 @@ import {
 	type ValidOperatorUnary,
 } from '../Operator.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -44,6 +46,12 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		public  readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Instruction {
+		throw new Error('`ASTNodeOperationUnary#lower` not yet supported.');
 	}
 
 	@memoizeMethod

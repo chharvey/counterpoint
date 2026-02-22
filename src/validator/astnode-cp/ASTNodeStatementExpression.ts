@@ -1,5 +1,10 @@
 import type binaryen from 'binaryen';
 import {
+	type Optimizer,
+	type Lowerable,
+	IR,
+} from '../../index.ts';
+import {
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
@@ -17,7 +22,7 @@ import {
 
 
 
-export class ASTNodeStatementExpression extends ASTNodeStatement {
+export class ASTNodeStatementExpression extends ASTNodeStatement implements Lowerable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementExpression);
@@ -45,5 +50,17 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.builder.module.drop(this.expr!.build());
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@memoizeMethod
+	public lower(optimizer: Optimizer): null {
+		if (this.expr && !this.expr.fold()) {
+			optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+		}
+		return null;
 	}
 }

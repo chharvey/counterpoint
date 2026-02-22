@@ -2,6 +2,9 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	type TYPE,
+	type Optimizer,
+	type Lowerable,
+	IR,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
@@ -27,7 +30,7 @@ import {
 
 
 
-export class ASTNodeStatementReassignment extends ASTNodeStatement {
+export class ASTNodeStatementReassignment extends ASTNodeStatement implements Lowerable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementReassignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementReassignment);
@@ -75,5 +78,16 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, '`ASTNodeStatementReassignment[assignee: ASTNodeAccess]#build` not yet supported.');
 		return this.builder.getLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@memoizeMethod
+	public lower(optimizer: Optimizer): null {
+		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
+		optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));
+		return null;
 	}
 }

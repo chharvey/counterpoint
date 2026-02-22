@@ -1,5 +1,9 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {
+	IR,
+	Builder,
+} from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_equal,
@@ -20,6 +24,11 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 export class List<T extends Value = Value> extends CollectionIndexed<T> {
+	@memoizeMethod
+	public override lower(): IR.Instruction {
+		throw new Error('`List#lower` not yet supported.');
+	}
+
 	public override toString(): string {
 		return `[${ super.toString() }]`;
 	}

@@ -2,6 +2,8 @@ import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
+	type Optimizer,
+	type Lowerable,
 	Builder,
 	ParseError01,
 } from '../../index.ts';
@@ -44,7 +46,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class ASTNodeGoal extends ASTNodeCP implements Buildable {
+export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -79,6 +81,20 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 
 	public override get builder(): Builder {
 		return this.#builder;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@memoizeMethod
+	public lower(optimizer: Optimizer): null {
+		this.block?.children.forEach((stmt) => {
+			if ('lower' in stmt && typeof stmt.lower === 'function') {
+				(stmt as Lowerable).lower(optimizer);
+			}
+		});
+		return null;
 	}
 
 	/** @implements Buildable */

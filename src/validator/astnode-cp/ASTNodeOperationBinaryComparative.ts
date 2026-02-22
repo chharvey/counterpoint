@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -20,6 +21,7 @@ import {
 } from '../Operator.ts';
 import {bothNumbers} from './utils-private.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -44,6 +46,12 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		if ([Operator.IS, Operator.ISNT].includes(this.operator)) {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Instruction {
+		throw new Error('`ASTNodeOperationBinaryComparative#lower` not yet supported.');
 	}
 
 	@memoizeMethod

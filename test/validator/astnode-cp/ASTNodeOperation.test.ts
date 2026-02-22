@@ -10,6 +10,7 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
+	Optimizer,
 	bigint_to_i64,
 	drop_then,
 	type Builder,
@@ -1011,6 +1012,24 @@ test.suite('ASTNodeOperation', () => {
 			test.test('throws when performing an operation that does not yield a valid number.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0')     .fold(), NanErrorDivZero);
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').fold(), NanErrorInvalid);
+			});
+		});
+
+
+		test.suite('#lower', () => {
+			test.test('returns the correct operation.', () => {
+				const opt = new Optimizer();
+				const {goal} = setupScript(`{
+					val mut x: int = 42;
+					3 + x / 2;
+				}`, {build: false});
+				goal.lower(opt);
+				return assert.strictEqual(opt.print(), extract_lines`
+					(SET x (CONST 42))
+					(SET $0 (INT_DIV (GET x) (CONST 2)))
+					(SET $1 (INT_ADD (CONST 3) (GET $0)))
+					(DROP (GET $1))
+				`.join('\n'));
 			});
 		});
 

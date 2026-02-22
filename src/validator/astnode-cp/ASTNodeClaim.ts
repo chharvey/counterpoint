@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
+	type IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -15,6 +16,7 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -35,6 +37,12 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		public readonly claimed_type: ASTNodeType,
 	) {
 		super(start_node, {}, [operand, claimed_type]);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Instruction {
+		throw new Error('`ASTNodeClaim#lower` not yet supported.');
 	}
 
 	@memoizeMethod

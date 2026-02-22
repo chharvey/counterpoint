@@ -1,0 +1,30 @@
+import type {IR} from './index.ts';
+
+
+
+/**
+ * The Optimizer is responsible for lowering the abstract syntax tree (AST) into a high-level internal representation (IR),
+ * taking the form of a control flow graph (CFG). Unlike the AST, which represents syntax structure,
+ * the CFG represents execution order. The CFG assumes the AST is already validated.
+ */
+export class Optimizer {
+	#tempLocalCounter: bigint = 0n;
+
+	readonly #instructions: IR.Instruction[] = [];
+
+	public get instructions(): IR.Instruction[] {
+		return [...this.#instructions];
+	}
+
+	public newTempLocalName(): string {
+		return `$${ this.#tempLocalCounter++ }`;
+	}
+
+	public pushInstruction(instr: IR.Instruction): void {
+		this.#instructions.push(instr);
+	}
+
+	public print(): string {
+		return this.#instructions.map((instr) => instr.toString()).join('\n');
+	}
+}

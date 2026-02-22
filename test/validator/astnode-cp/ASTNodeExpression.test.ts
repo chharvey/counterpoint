@@ -3,12 +3,15 @@ import * as test from 'node:test';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	type ConstructorType,
 	assert_instanceof,
 	AST,
 	SymbolSchemaType,
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
+	Optimizer,
+	IR,
 	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -26,11 +29,144 @@ import {
 	typeUnit,
 	buildConst,
 } from '../../helpers.ts';
-import {extract_tokens} from '../../utils.ts';
+import {
+	extract_tokens,
+	extract_lines,
+} from '../../utils.ts';
 
 
 
 test.suite('ASTNodeExpression', () => {
+	test.suite('#lower', () => {
+		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
+			[AST.ASTNodeTemplate,                   '"""hello {{ x }} world"""'],
+			[AST.ASTNodeTuple,                      '(41, x, 43)'],
+			[AST.ASTNodeRecord,                     '(a= 41, b= x, c= 43)'],
+			[AST.ASTNodeList,                       '[41, x, 43]'],
+			[AST.ASTNodeDict,                       '[a= 41, b= x, c= 43]'],
+			[AST.ASTNodeSet,                        '{41, x, 43}'],
+			[AST.ASTNodeMap,                        '{"a" -> 41, "b" -> x, "c" -> 43}'],
+			[AST.ASTNodeAccess,                     '(41, x, 43).1'],
+			[AST.ASTNodeCall,                       'List.<int>((41, x, 43))'],
+			[AST.ASTNodeOperationUnary,             '!x'],
+			[AST.ASTNodeOperationBinaryComparative, 'x <= 42'],
+			[AST.ASTNodeOperationBinaryEquality,    'x == 42'],
+			[AST.ASTNodeOperationBinaryLogical,     'x || 42'],
+			[AST.ASTNodeOperationTernary,           'if x < 100 then x * 2 else x / 2;'],
+		]), (src, klass) => {
+			test.test(klass.name, () => {
+				const {stmts} = setupScript(`{
+					val mut x: int = 42;
+					${ src };
+				}`, {build: false});
+				const expr: AST.ASTNodeExpression = (stmts[1] as AST.ASTNodeStatementExpression).expr!;
+				assert_instanceof(expr, klass);
+				return assert.throws(() => expr.lower(), /not yet supported/);
+			});
+		});
+
+		test.test('AST.Constant returns an IR.Constant.', () => {
+			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42');
+			return assert.deepStrictEqual(value.lower(), new IR.Constant(value.fold()));
+		});
+		test.test('AST.Variable returns an IR.Variable.', () => {
+			const {stmts} = setupScript(`{
+				val mut x: int = 42;
+				x;
+			}`, {build: false});
+			const expr = (stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
+			return assert.deepStrictEqual(expr.lower(), new IR.Get(expr));
+		});
+
+		// TODO: move these to ASTNodeStatement tests
+		test.test('AST.DeclarationVariable pushes SET/DROP instruction depending on presence of child nodes.', () => {
+			const opt = new Optimizer();
+			const {stmts} = setupScript(`{
+				% Foldable cases:
+				val _:          int = 42; % no effect
+				val assignee_a: int = 42; % no effect
+
+				% Non-Foldable cases:
+				val mut assignee_b?: int;              % \`(SET assignee_b null)\`
+				val mut assignee_c:  int = 42;         % \`(SET assignee_c 42)\`
+				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
+				val     assignee_d:  int = assignee_c; % \`(SET assignee_d assignee_c)\`
+				val mut assignee_e:  int = assignee_c; % \`(SET assignee_e assignee_c)\`
+
+				%% Syntactically impossible cases (for completion):
+				val _?:          int;
+				val assignee_f?: int;
+				val mut _?:      int;
+				val mut _:       int = 42;
+				val mut _:       int = assignee_c;
+				%%
+			}`, {build: false});
+			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET assignee_b (CONST null))
+				(SET assignee_c (CONST 42))
+				(DROP (GET assignee_c))
+				(SET assignee_d (GET assignee_c))
+				(SET assignee_e (GET assignee_c))
+			`.join('\n'));
+		});
+		test.test('AST.StatementExpression pushes DROP instruction if expression exists and is non-foldable.', () => {
+			const opt = new Optimizer();
+			const {stmts} = setupScript(`{
+				val mut x: int = 42;
+				x;
+				42;
+				;
+			}`, {build: false});
+			assert.strictEqual(opt.instructions.length, 0);
+			(stmts[1] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 1);
+			(stmts[2] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 1);
+			(stmts[3] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 1);
+			return assert.strictEqual(opt.print(), '(DROP (GET x))');
+		});
+		test.test('AST.StatementReassignment pushes SET instruction.', () => {
+			const opt = new Optimizer();
+			const {stmts} = setupScript(`{
+				val mut x: int = 42;
+				set x = 43;
+				set x = 44;
+				set x = -42;
+			}`, {build: false});
+			stmts.slice(1).forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET x (CONST 43))
+				(SET x (CONST 44))
+				(SET x (CONST -42))
+			`.join('\n'));
+		});
+		test.test('AST.Goal lowers each statement.', () => {
+			const opt = new Optimizer();
+			const {goal} = setupScript(`{
+				val mut assignee_b?: int;
+				val mut assignee_c:  int = 42;
+				val     _:           int = assignee_c;
+				val     assignee_d:  int = assignee_c;
+				val mut assignee_e:  int = assignee_c;
+
+				assignee_b;
+				assignee_c;
+				assignee_d;
+				assignee_e;
+
+				set assignee_e = 43;
+				set assignee_e = 44;
+				set assignee_e = -42;
+			}`, {build: false});
+			goal.lower(opt);
+			return assert.strictEqual(opt.instructions.length, 12);
+		});
+	});
+
+
+
 	test.suite('ASTNodeConstant', () => {
 		test.suite('#varCheck', () => {
 			test.test('never throws.', () => {

@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type IR,
 	build_tuple_like,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -19,6 +20,7 @@ import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -42,6 +44,12 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public lower(): IR.Instruction {
+		throw new Error('`ASTNodeTuple#lower` not yet supported.');
 	}
 
 	@memoizeMethod

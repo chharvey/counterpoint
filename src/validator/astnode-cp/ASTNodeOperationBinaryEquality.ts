@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type IR,
 	drop_then,
 } from '../../index.ts';
 import {
@@ -18,6 +19,7 @@ import {
 	type ValidOperatorEquality,
 } from '../Operator.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -39,6 +41,12 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Instruction {
+		throw new Error('`ASTNodeOperationBinaryEquality#lower` not yet supported.');
 	}
 
 	@memoizeMethod

@@ -3,6 +3,9 @@ import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	type Lowerable,
+	type IR,
 	ErrorCode,
 } from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
@@ -13,6 +16,24 @@ import {
 import {ASTNodeStatementExpression} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {Buildable} from './Buildable.ts';
+
+
+
+/**
+ * Decorator for {@link ASTNodeExpression#lower} method and any overrides.
+ * First tries to compute the assessed value, and if successful, lowers the assessed value.
+ * Otherwise lowers this node.
+ * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['lower']>
+ */
+export function lowerDeco(
+	method:  ASTNodeExpression['lower'],
+	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
+): typeof method {
+	assert_context_name(context, 'lower');
+	return function (this: ASTNodeExpression, optimizer?: Optimizer) {
+		return this.fold()?.lower() ?? method.call(this, optimizer);
+	};
+}
 
 
 
@@ -81,7 +102,7 @@ export function typeDeco(
  * - ASTNodeClaim
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable, Buildable {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -102,6 +123,12 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		super.typeCheck();
 		this.type(); // assert does not throw
 	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	public abstract lower(optimizer?: Optimizer): IR.Instruction;
 
 	/**
 	 * @inheritdoc

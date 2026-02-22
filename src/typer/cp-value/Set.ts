@@ -1,6 +1,10 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import type {
+	IR,
+	Builder,
+} from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -48,6 +52,11 @@ class ValueSet<T extends Value = Value> extends Collection {
 	 */
 	public override get count(): bigint {
 		return BigInt(this.elements.size);
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Instruction {
+		throw new Error('`ValueSet#lower` not yet supported.');
 	}
 
 	public override toString(): string {

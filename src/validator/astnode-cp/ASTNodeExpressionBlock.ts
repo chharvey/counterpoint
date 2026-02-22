@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -19,6 +20,7 @@ import {
 	type ASTNodeBlock,
 } from './index.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -39,6 +41,12 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 		public readonly block: ASTNodeBlock,
 	) {
 		super(start_node, {}, [block]);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Instruction {
+		throw new Error('`ASTNodeExpressionBlock#lower` not yet supported.');
 	}
 
 	@memoizeMethod

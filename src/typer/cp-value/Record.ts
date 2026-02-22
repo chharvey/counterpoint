@@ -1,8 +1,10 @@
 import binaryen from 'binaryen';
 import {
+	type IR,
 	build_record_like,
 	type Builder,
 } from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -24,6 +26,11 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
+	@memoizeMethod
+	public override lower(): IR.Instruction {
+		throw new Error('`ValueRecord#lower` not yet supported.');
+	}
+
 	public override toString(): string {
 		return `(${ super.toString() })`;
 	}
