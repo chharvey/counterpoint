@@ -232,6 +232,35 @@ describe('ASTNodeOperation', () => {
 				(DROP (NOT (GET $1)))
 			`.join('\n'));
 		});
+
+		it('AST.OperationBinaryEquality', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut a: null  = null;
+				val mut b: bool  = false;
+				val mut c: int   = 10;
+				val mut d: float = 0.1;
+				a === b;
+				c ==  d;
+				c !== a;
+				d !=  b;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET a (CONST null))
+				(SET b (CONST false))
+				(SET c (CONST 10))
+				(SET d (CONST 0.1))
+				(DROP (ID (GET a) (GET b)))
+				(DROP (EQ (GET c) (GET d)))
+				(SET $0 (ID (GET c) (GET a)))
+				(DROP (NOT (GET $0)))
+				(SET $1 (EQ (GET d) (GET b)))
+				(DROP (NOT (GET $1)))
+			`.join('\n'));
+		});
 	});
 
 

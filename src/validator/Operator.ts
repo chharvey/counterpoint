@@ -23,8 +23,8 @@ export enum Operator {
 	IS,
 	ISNT,
 	ID,
-	NID,
 	EQ,
+	NID,
 	NEQ,
 	AND,
 	NAND,
@@ -77,6 +77,8 @@ export type ValidOperatorComparative = (
 export type ValidOperatorEquality = (
 	| Operator.ID
 	| Operator.EQ
+	| Operator.NID
+	| Operator.NEQ
 );
 
 export type ValidOperatorLogical = (

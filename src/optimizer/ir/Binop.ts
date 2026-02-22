@@ -32,6 +32,11 @@ export enum BinOp {
 	GE,
 	NLT,
 	NGT,
+
+	ID,
+	EQ,
+	NID,
+	NEQ,
 }
 
 

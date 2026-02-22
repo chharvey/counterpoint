@@ -2,7 +2,8 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type IR,
+	type Optimizer,
+	IR,
 	BinVect,
 } from '../../index.ts';
 import {
@@ -49,8 +50,13 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
-		throw new Error('`ASTNodeOperationBinaryEquality#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Instruction {
+		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
+			[Operator.ID,  IR.BinOp.ID],
+			[Operator.EQ,  IR.BinOp.EQ],
+			[Operator.NID, IR.BinOp.NID],
+			[Operator.NEQ, IR.BinOp.NEQ],
+		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer));
 	}
 
 	@memoizeMethod
@@ -126,10 +132,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			return VALUE.FALSE;
 		}
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
-			[Operator.ID, (x, y) => x.identical(y)],
-			[Operator.EQ, (x, y) => x.equal(y)],
-			// [Operator.NID, (x, y) => !x.identical(y)],
-			// [Operator.NEQ, (x, y) => !x.equal(y)],
+			[Operator.ID,  (x, y) => x.identical(y)],
+			[Operator.EQ,  (x, y) => x.equal(y)],
+			[Operator.NID, (x, y) => !x.identical(y)],
+			[Operator.NEQ, (x, y) => !x.equal(y)],
 		]).get(this.operator)!(v0, v1));
 	}
 }
