@@ -15,8 +15,8 @@ import {Value} from './Value.ts';
  */
 export abstract class Primitive extends Value {
 	@memoizeMethod
-	/** @final */ public override lower(): IR.Constant {
-		return new IR.Constant(this);
+	/** @final */ public override lower(): IR.Const {
+		return new IR.Const(this);
 	}
 
 	@memoizeMethod

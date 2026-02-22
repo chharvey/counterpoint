@@ -64,7 +64,7 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	@memoizeMethod
 	// @lowerDeco // explicitly leaving off for performance
-	public override lower(): IR.Constant {
+	public override lower(): IR.Const {
 		return this.fold().lower();
 	}
 

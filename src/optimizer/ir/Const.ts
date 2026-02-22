@@ -3,7 +3,7 @@ import {Instruction} from './Instruction.ts';
 
 
 
-export class Constant extends Instruction {
+export class Const extends Instruction {
 	public constructor(private readonly value: VALUE.Primitive) {
 		super();
 	}

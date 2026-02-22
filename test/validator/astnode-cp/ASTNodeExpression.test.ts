@@ -65,9 +65,9 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 
-		it('AST.Constant returns an IR.Constant.', () => {
+		it('AST.Constant returns an IR.Const.', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42;');
-			return assert.deepStrictEqual(value.lower(), new IR.Constant(value.fold()));
+			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
 		});
 		it('AST.Variable returns an IR.Variable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
