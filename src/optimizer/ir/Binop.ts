@@ -25,6 +25,13 @@ export enum BinOp {
 	FLOAT_MUL,
 	FLOAT_DIV,
 	FLOAT_EXP,
+
+	LT,
+	GT,
+	LE,
+	GE,
+	NLT,
+	NGT,
 }
 
 

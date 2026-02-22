@@ -166,6 +166,38 @@ describe('ASTNodeOperation', () => {
 				(DROP (FLOAT_NEG (GET $0)))
 			`.join('\n'));
 		});
+		it('AST.OperationBinaryComparative', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut a: int = 10;
+				val mut b: int = 100;
+				val mut c: float = 0.1;
+				val mut d: float = 0.01;
+				a < b;
+				c > d;
+				a <= b;
+				c >= d;
+				a !< d;
+				b !> c;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET a (CONST 10))
+				(SET b (CONST 100))
+				(SET c (CONST 0.1))
+				(SET d (CONST 0.01))
+				(DROP (LT (GET a) (GET b)))
+				(DROP (GT (GET c) (GET d)))
+				(DROP (LE (GET a) (GET b)))
+				(DROP (GE (GET c) (GET d)))
+				(SET $0 (LT (GET a) (GET d)))
+				(DROP (NOT (GET $0)))
+				(SET $1 (GT (GET b) (GET c)))
+				(DROP (NOT (GET $1)))
+			`.join('\n'));
+		});
 	});
 
 

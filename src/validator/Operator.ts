@@ -67,10 +67,11 @@ export type ValidOperatorArithmetic = (
 
 export type ValidOperatorComparative = (
 	| Operator.LT
-	| Operator.LE
 	| Operator.GT
+	| Operator.LE
 	| Operator.GE
-	| Operator.IS
+	| Operator.NLT
+	| Operator.NGT
 );
 
 export type ValidOperatorEquality = (
