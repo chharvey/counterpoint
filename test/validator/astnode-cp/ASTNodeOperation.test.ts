@@ -663,16 +663,16 @@ describe('ASTNodeOperation', () => {
 				const opt = new Optimizer();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					val mut x: int = 42;
-					3 + x / 2;
+					3 + x^2 / 2^3;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.lower(opt);
 				return assert.strictEqual(opt.print(), extract_lines`
 					(SET x (CONST 42))
-					(SET $0 (INT_DIV (GET x) (CONST 2)))
-					(SET $1 (INT_ADD (CONST 3) (GET $0)))
-					(DROP (GET $1))
+					(SET $0 (INT_EXP (GET x) (CONST 2)))
+					(SET $1 (INT_DIV (GET $0) (CONST 8)))
+					(DROP (INT_ADD (CONST 3) (GET $1)))
 				`.join('\n'));
 			});
 			it('emits `(TRAP)` when types mismatch.', () => {
@@ -686,9 +686,7 @@ describe('ASTNodeOperation', () => {
 				goal.lower(opt);
 				return assert.strictEqual(opt.print(), extract_lines`
 					(SET x (CONST 4.2))
-					(SET $0 (TRAP))
-					(SET $1 (FLOAT_ADD (CONST 3.5) (GET $0)))
-					(DROP (GET $1))
+					(DROP (FLOAT_ADD (CONST 3.5) (TRAP)))
 				`.join('\n'));
 			});
 		});

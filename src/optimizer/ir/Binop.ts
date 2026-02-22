@@ -1,4 +1,8 @@
+import type {Optimizer} from '../Optimizer.ts';
+import {is_unit} from './utils-private.ts';
 import {Instruction} from './Instruction.ts';
+import {Get} from './Get.ts';
+import {Set as IrSet} from './Set.ts';
 
 
 
@@ -24,7 +28,52 @@ export enum BinOp {
 
 
 export class Binop extends Instruction {
-	public constructor(
+	/**
+	 * Construct a new Binop using the Three-Address Code technique.
+	 *
+	 * Every binary operation should take the form of `t1 := t2 + t3`.
+	 * Nested operations such as `5 + 3 * 2 - 7`, instead of a tree-like structure:
+	 * ```
+	 * (SUB (ADD 5 (MUL 3 2)) 7)
+	 * ```
+	 * become flattened with the use of temporary locals:
+	 * ```
+	 * (SET $0 (MUL 3 2))        ;; t0 := 3 * 2
+	 * (SET $1 (ADD 5 (GET $0))) ;; t1 := 5 + t0
+	 * (SET $2 (SUB (GET $1) 7)) ;; t2 := t1 - 7
+	 * (GET $2)                  ;; t2
+	 * ```
+	 * Rather than returning `operation` directly, we set it to a temporary variable
+	 * and then return that variable.
+	 *
+	 * @param optimizer
+	 * @param operator
+	 * @param operand0 left
+	 * @param operand1 right
+	 * @see https://en.wikipedia.org/wiki/Three-address_code
+	 */
+	public static new(optimizer: Optimizer, operator: BinOp, operand0: Instruction, operand1: Instruction): Binop {
+		if (is_unit(operand0) && is_unit(operand1)) {
+			return new Binop(operator, operand0, operand1);
+		} else if (is_unit(operand0)) {
+			const local_name: string = optimizer.newTempLocalName();
+			optimizer.pushInstruction(new IrSet(local_name, operand1));
+			return new Binop(operator, operand0, new Get(local_name));
+		} else if (is_unit(operand1)) {
+			const local_name: string = optimizer.newTempLocalName();
+			optimizer.pushInstruction(new IrSet(local_name, operand0));
+			return new Binop(operator, new Get(local_name), operand1);
+		} else {
+			const local_name0: string = optimizer.newTempLocalName();
+			const local_name1: string = optimizer.newTempLocalName();
+			optimizer.pushInstruction(new IrSet(local_name0, operand0));
+			optimizer.pushInstruction(new IrSet(local_name1, operand1));
+			return new Binop(operator, new Get(local_name0), new Get(local_name1));
+		}
+	}
+
+
+	private constructor(
 		private readonly operator: BinOp,
 		private readonly operand0: Instruction,
 		private readonly operand1: Instruction,
