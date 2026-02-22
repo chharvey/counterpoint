@@ -37,15 +37,15 @@ import {
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
-			[AST.ASTNodeTemplate,                   '"""hello {{ x }} world"""'],
-			[AST.ASTNodeTuple,                      '(41, x, 43)'],
-			[AST.ASTNodeRecord,                     '(a= 41, b= x, c= 43)'],
-			[AST.ASTNodeList,                       '[41, x, 43]'],
-			[AST.ASTNodeDict,                       '[a= 41, b= x, c= 43]'],
-			[AST.ASTNodeSet,                        '{41, x, 43}'],
-			[AST.ASTNodeMap,                        '{"a" -> 41, "b" -> x, "c" -> 43}'],
-			[AST.ASTNodeAccess,                     '(41, x, 43).1'],
-			[AST.ASTNodeCall,                       'List.<int>((41, x, 43))'],
+			[AST.ASTNodeTemplate, '"""hello {{ x }} world"""'],
+			[AST.ASTNodeTuple,    '(41, x, 43)'],
+			[AST.ASTNodeRecord,   '(a= 41, b= x, c= 43)'],
+			[AST.ASTNodeList,     '[41, x, 43]'],
+			[AST.ASTNodeDict,     '[a= 41, b= x, c= 43]'],
+			[AST.ASTNodeSet,      '{41, x, 43}'],
+			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> x, "c" -> 43}'],
+			[AST.ASTNodeAccess,   '(41, x, 43).1'],
+			[AST.ASTNodeCall,     'List.<int>((41, x, 43))'],
 		]), (src, klass) => {
 			it(klass.name, () => {
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
