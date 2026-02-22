@@ -147,6 +147,25 @@ describe('ASTNodeOperation', () => {
 				(DROP (EMP (GET $0)))
 			`.join('\n'));
 		});
+		it('AST.OperationUnary[operator=NEG]', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut x: int = 42;
+				-x;
+				val mut y: float = 42.0 / 7.0;
+				-(3.0 + y);
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET x (CONST 42))
+				(DROP (INT_NEG (GET x)))
+				(SET y (CONST 6.0))
+				(SET $0 (FLOAT_ADD (CONST 3.0) (GET y)))
+				(DROP (FLOAT_NEG (GET $0)))
+			`.join('\n'));
+		});
 	});
 
 

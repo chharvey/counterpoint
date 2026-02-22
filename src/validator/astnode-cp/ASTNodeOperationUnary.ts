@@ -52,14 +52,21 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	@lowerDeco
 	public override lower(optimizer: Optimizer): IR.Instruction {
+		const typ:   TYPE.Type      = this.operand.type();
 		const instr: IR.Instruction = this.operand.lower(optimizer);
-		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
-			return IR.Unop.new(optimizer, new Map<Operator, IR.UnOp>([
+		return (
+			[Operator.NOT, Operator.EMP].includes(this.operator) ? IR.Unop.new(optimizer, new Map<Operator, IR.UnOp>([
 				[Operator.NOT, IR.UnOp.NOT],
 				[Operator.EMP, IR.UnOp.EMP],
-			]).get(this.operator)!, instr);
-		}
-		throw new Error('`ASTNodeOperationUnary#lower` not yet supported.');
+			]).get(this.operator)!, instr) :
+			this.operator === Operator.NEG ? IR.Unop.new(
+				optimizer,
+				typ.isSubtypeOf(TYPE.INT) ? IR.UnOp.INT_NEG : (assert.ok(typ.isSubtypeOf(TYPE.FLOAT)), IR.UnOp.FLOAT_NEG),
+				instr,
+			) :
+			// TODO: v0.5+ operators int, nat, float
+			assert.fail(`Unexpected operator ${ Operator[this.operator] }`)
+		);
 	}
 
 	@memoizeMethod
