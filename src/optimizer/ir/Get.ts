@@ -1,6 +1,6 @@
 import {AST} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Local} from '../utils-private.ts';
+import type {Local} from '../utils-public.ts';
 import {Value} from './Value.ts';
 
 

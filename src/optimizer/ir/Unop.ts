@@ -1,4 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
+import type {Local} from '../utils-public.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
@@ -27,7 +28,7 @@ export class Unop extends Value {
 		if (is_unit(operand)) {
 			return new Unop(operator, operand, typ);
 		} else {
-			const local = optimizer.newTempLocal(typ);
+			const local: Local = optimizer.newTempLocal(typ);
 			optimizer.pushInstruction(new IrSet(local, operand));
 			return new Unop(operator, new Get(local), typ);
 		}

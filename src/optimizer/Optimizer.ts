@@ -1,6 +1,6 @@
 import {TYPE} from '../typer/index.ts';
 import {IR} from './index.ts';
-import type {Local} from './utils-private.ts';
+import type {Local} from './utils-public.ts';
 
 
 
