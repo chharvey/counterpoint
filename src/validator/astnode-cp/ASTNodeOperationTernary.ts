@@ -3,7 +3,9 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type IR,
+	type IrLocal,
+	type Optimizer,
+	IR,
 	BinVect,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
@@ -46,8 +48,35 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
-		throw new Error('`ASTNodeOperationTernary#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		/*
+		 * ```
+		 * if ‹v0› then ‹v1› else ‹v2›;
+		 * ```
+		 * IR Outline:
+		 * ```
+		 * (DECL result)
+		 * if_false (GET ‹v0›), goto "else".
+		 * (SET result ‹v1›) ;; evaluate consequent and set to result
+		 * goto "endif".
+		 * "else":
+		 * (SET result ‹v2›) ;; evaluate alternative and set to result
+		 * "endif":
+		 * return (GET result).
+		 * ```
+		 */
+		const result: IrLocal = optimizer.newTempLocal(this.type());
+
+		const block_else:  string = optimizer.newLabel();
+		const block_endif: string = optimizer.newLabel();
+
+		optimizer.pushInstruction(new IR.GotoIfFalse(this.operand0.lower(optimizer), block_else));
+		optimizer.pushInstruction(new IR.Set(result, this.operand1.lower(optimizer)));
+		optimizer.pushInstruction(new IR.Goto(block_endif));
+		optimizer.pushInstruction(new IR.Label(block_else));
+		optimizer.pushInstruction(new IR.Set(result, this.operand2.lower(optimizer)));
+		optimizer.pushInstruction(new IR.Label(block_endif));
+		return new IR.Get(result);
 	}
 
 	@memoizeMethod

@@ -109,6 +109,15 @@ describe('ASTNodeOperation', () => {
 
 
 	describe('#lower', () => {
+		function setupScript(src: string, _: object): {opt: Optimizer} {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return {opt};
+		}
+
 		it('AST.OperationUnary[operator=NOT]', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -288,14 +297,6 @@ describe('ASTNodeOperation', () => {
 		});
 
 		describe('AST.OperationBinaryLogical', () => {
-			function setupScript(src: string, _: object): {opt: Optimizer} {
-				const opt = new Optimizer();
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-				goal.varCheck();
-				goal.typeCheck();
-				goal.lower(opt);
-				return {opt};
-			}
 			it('[operator=AND]', () => {
 				assert.strictEqual(setupScript(`{
 					val mut a: null  = null;
@@ -410,6 +411,42 @@ describe('ASTNodeOperation', () => {
 					(DROP (NOT (GET $0)))
 				`.join('\n'));
 			});
+		});
+		it('AST.OperationTernary', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: bool  = false;
+				val mut y: float = 0.5;
+				val mut z: float = 0.2;
+				if x then y else z;
+				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL x)
+				(SET x (CONST false))
+				(DECL y)
+				(SET y (CONST 0.5))
+				(DECL z)
+				(SET z (CONST 0.2))
+				(DECL $0)
+				if_false (GET x), goto "block-0".
+				(SET $0 (GET y))
+				goto "block-1".
+				"block-0":
+				(SET $0 (GET z))
+				"block-1":
+				(DROP (GET $0))
+				(DECL $1)
+				if_false (LT (GET y) (GET z)), goto "block-2".
+				(DECL $2)
+				(SET $2 (FLOAT_MUL (GET y) (CONST 2.0)))
+				(SET $1 (FLOAT_ADD (CONST 0.03) (GET $2)))
+				goto "block-3".
+				"block-2":
+				(DECL $3)
+				(SET $3 (FLOAT_MUL (CONST 3.0) (GET z)))
+				(SET $1 (FLOAT_ADD (GET $3) (CONST 0.02)))
+				"block-3":
+				(DROP (GET $1))
+			`.join('\n'));
 		});
 	});
 
