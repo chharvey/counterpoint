@@ -1,8 +1,9 @@
 import type {Optimizer} from '../Optimizer.ts';
+import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
-import {Instruction} from './Instruction.ts';
+import type {Instruction} from './Instruction.ts';
+import {Value} from './Value.ts';
 import {Get} from './Get.ts';
-import {Set as IrSet} from './Set.ts';
 
 
 
@@ -41,7 +42,7 @@ export enum BinOp {
 
 
 
-export class Binop extends Instruction {
+export class Binop extends Value {
 	/**
 	 * Construct a new Binop using the Three-Address Code technique.
 	 *
@@ -66,7 +67,7 @@ export class Binop extends Instruction {
 	 * @param operand1 right
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
-	public static new(optimizer: Optimizer, operator: BinOp, operand0: Instruction, operand1: Instruction): Binop {
+	public static new(optimizer: Optimizer, operator: BinOp, operand0: Value, operand1: Value): Binop {
 		if (is_unit(operand0) && is_unit(operand1)) {
 			return new Binop(operator, operand0, operand1);
 		} else if (is_unit(operand0)) {

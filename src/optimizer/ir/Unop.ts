@@ -1,8 +1,9 @@
 import type {Optimizer} from '../Optimizer.ts';
+import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
-import {Instruction} from './Instruction.ts';
+import type {Instruction} from './Instruction.ts';
+import {Value} from './Value.ts';
 import {Get} from './Get.ts';
-import {Set as IrSet} from './Set.ts';
 
 
 
@@ -21,8 +22,8 @@ export enum UnOp {
 
 
 
-export class Unop extends Instruction {
-	public static new(optimizer: Optimizer, operator: UnOp, operand: Instruction): Unop {
+export class Unop extends Value {
+	public static new(optimizer: Optimizer, operator: UnOp, operand: Value): Unop {
 		if (is_unit(operand)) {
 			return new Unop(operator, operand);
 		} else {

@@ -1,5 +1,5 @@
 import {
-	type Instruction,
+	type Value,
 	Trap,
 	Get,
 	Const,
@@ -7,10 +7,10 @@ import {
 
 
 
-export function is_unit(instruction: Instruction): boolean {
+export function is_unit(value: Value): boolean {
 	return (
-		instruction instanceof Trap ||
-		instruction instanceof Get ||
-		instruction instanceof Const
+		value instanceof Trap ||
+		value instanceof Get ||
+		value instanceof Const
 	);
 }

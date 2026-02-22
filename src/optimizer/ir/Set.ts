@@ -1,12 +1,13 @@
 import type {AST} from '../../validator/index.ts';
 import {Instruction} from './Instruction.ts';
+import type {Value} from './Value.ts';
 
 
 
 class IrSet extends Instruction {
 	public constructor(
 		private readonly target: AST.ASTNodeVariable | string,
-		private readonly value:  Instruction,
+		private readonly value:  Value,
 	) {
 		super();
 	}

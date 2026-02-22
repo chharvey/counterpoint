@@ -1,9 +1,9 @@
 import type {AST} from '../../validator/index.ts';
-import {Instruction} from './Instruction.ts';
+import {Value} from './Value.ts';
 
 
 
-export class Get extends Instruction {
+export class Get extends Value {
 	public constructor(private readonly target: AST.ASTNodeVariable | string) {
 		super();
 	}
