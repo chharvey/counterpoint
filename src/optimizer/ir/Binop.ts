@@ -71,19 +71,19 @@ export class Binop extends Value {
 		if (is_unit(operand0) && is_unit(operand1)) {
 			return new Binop(operator, operand0, operand1, typ);
 		} else if (is_unit(operand0)) {
-			const local_name: string = optimizer.newTempLocalName();
-			optimizer.pushInstruction(new IrSet(local_name, operand1));
-			return new Binop(operator, operand0, new Get(local_name), typ);
+			const local = optimizer.newTempLocal();
+			optimizer.pushInstruction(new IrSet(local, operand1));
+			return new Binop(operator, operand0, new Get(local), typ);
 		} else if (is_unit(operand1)) {
-			const local_name: string = optimizer.newTempLocalName();
-			optimizer.pushInstruction(new IrSet(local_name, operand0));
-			return new Binop(operator, new Get(local_name), operand1, typ);
+			const local = optimizer.newTempLocal();
+			optimizer.pushInstruction(new IrSet(local, operand0));
+			return new Binop(operator, new Get(local), operand1, typ);
 		} else {
-			const local_name0: string = optimizer.newTempLocalName();
-			const local_name1: string = optimizer.newTempLocalName();
-			optimizer.pushInstruction(new IrSet(local_name0, operand0));
-			optimizer.pushInstruction(new IrSet(local_name1, operand1));
-			return new Binop(operator, new Get(local_name0), new Get(local_name1), typ);
+			const local0 = optimizer.newTempLocal();
+			const local1 = optimizer.newTempLocal();
+			optimizer.pushInstruction(new IrSet(local0, operand0));
+			optimizer.pushInstruction(new IrSet(local1, operand1));
+			return new Binop(operator, new Get(local0), new Get(local1), typ);
 		}
 	}
 
