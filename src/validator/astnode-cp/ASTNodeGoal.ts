@@ -89,12 +89,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	 */
 	@memoizeMethod
 	public lower(optimizer: Optimizer): null {
-		this.block?.children.forEach((stmt) => {
-			if ('lower' in stmt && typeof stmt.lower === 'function') {
-				(stmt as Lowerable).lower(optimizer);
-			}
-		});
-		return null;
+		return this.block?.lower(optimizer) ?? null; // eslint-disable-line @typescript-eslint/no-unnecessary-condition
 	}
 
 	/** @implements Buildable */
