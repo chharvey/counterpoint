@@ -108,6 +108,49 @@ describe('ASTNodeOperation', () => {
 
 
 
+	describe('#lower', () => {
+		it('AST.OperationUnary[operator=NOT]', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut x: int = 42;
+				!x;
+				val mut y: int = x / 7;
+				!(x + y);
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET x (CONST 42))
+				(DROP (NOT (GET x)))
+				(SET y (INT_DIV (GET x) (CONST 7)))
+				(SET $0 (INT_ADD (GET x) (GET y)))
+				(DROP (NOT (GET $0)))
+			`.join('\n'));
+		});
+		it('AST.OperationUnary[operator=EMP]', () => {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut x: int = 42;
+				?x;
+				val mut y: int = x / 7;
+				?(x + y);
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(SET x (CONST 42))
+				(DROP (EMP (GET x)))
+				(SET y (INT_DIV (GET x) (CONST 7)))
+				(SET $0 (INT_ADD (GET x) (GET y)))
+				(DROP (EMP (GET $0)))
+			`.join('\n'));
+		});
+	});
+
+
+
 	describe('#build', () => {
 		it('compound expression.', () => {
 			buildOperations(new Map([

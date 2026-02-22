@@ -46,7 +46,7 @@ describe('ASTNodeExpression', () => {
 			[AST.ASTNodeMap,                        '{"a" -> 41, "b" -> x, "c" -> 43}'],
 			[AST.ASTNodeAccess,                     '(41, x, 43).1'],
 			[AST.ASTNodeCall,                       'List.<int>((41, x, 43))'],
-			[AST.ASTNodeOperationUnary,             '!x'],
+			[AST.ASTNodeOperationUnary,             '-x'],
 			[AST.ASTNodeOperationBinaryComparative, 'x <= 42'],
 			[AST.ASTNodeOperationBinaryEquality,    'x == 42'],
 			[AST.ASTNodeOperationBinaryLogical,     'x || 42'],

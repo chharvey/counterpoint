@@ -4,7 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	type IR,
+	type Optimizer,
+	IR,
 	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -50,7 +51,14 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
+	public override lower(optimizer: Optimizer): IR.Instruction {
+		const instr: IR.Instruction = this.operand.lower(optimizer);
+		if ([Operator.NOT, Operator.EMP].includes(this.operator)) {
+			return IR.Unop.new(optimizer, new Map<Operator, IR.UnOp>([
+				[Operator.NOT, IR.UnOp.NOT],
+				[Operator.EMP, IR.UnOp.EMP],
+			]).get(this.operator)!, instr);
+		}
 		throw new Error('`ASTNodeOperationUnary#lower` not yet supported.');
 	}
 

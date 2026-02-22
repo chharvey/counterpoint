@@ -13,11 +13,13 @@ export enum BinOp {
 	INT_MUL,
 	INT_DIV,
 	INT_EXP,
+
 	NAT_ADD,
 	NAT_SUB,
 	NAT_MUL,
 	NAT_DIV,
 	NAT_EXP,
+
 	FLOAT_ADD,
 	FLOAT_SUB,
 	FLOAT_MUL,

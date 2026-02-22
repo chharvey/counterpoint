@@ -5,4 +5,5 @@ export * from './Drop.ts';
 export * from './Get.ts';
 export * from './Set.ts';
 export * from './Const.ts';
+export * from './Unop.ts';
 export * from './Binop.ts';
