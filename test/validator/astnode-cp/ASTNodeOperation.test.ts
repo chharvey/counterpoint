@@ -166,6 +166,40 @@ describe('ASTNodeOperation', () => {
 				(DROP (FLOAT_NEG (GET $0)))
 			`.join('\n'));
 		});
+
+		describe('AST.OperationBinaryArithmetic', () => {
+			it('returns the correct operation.', () => {
+				const opt = new Optimizer();
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut x: int = 42;
+					3 + x^2 / 2^3;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.lower(opt);
+				return assert.strictEqual(opt.print(), extract_lines`
+					(SET x (CONST 42))
+					(SET $0 (INT_EXP (GET x) (CONST 2)))
+					(SET $1 (INT_DIV (GET $0) (CONST 8)))
+					(DROP (INT_ADD (CONST 3) (GET $1)))
+				`.join('\n'));
+			});
+			it('emits `(TRAP)` when types mismatch.', () => {
+				const opt = new Optimizer();
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+					val mut x: float = 4.2;
+					3.5 + x / 2;
+				`);
+				goal.varCheck();
+				goal.typeCheck();
+				goal.lower(opt);
+				return assert.strictEqual(opt.print(), extract_lines`
+					(SET x (CONST 4.2))
+					(DROP (FLOAT_ADD (CONST 3.5) (TRAP)))
+				`.join('\n'));
+			});
+		});
+
 		it('AST.OperationBinaryComparative', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -748,40 +782,6 @@ describe('ASTNodeOperation', () => {
 			it('throws when performing an operation that does not yield a valid number.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('42 / 0;')    .fold(), NanErrorDivZero);
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('-4 ^ -0.5;') .fold(), NanErrorInvalid);
-			});
-		});
-
-
-		describe('#lower', () => {
-			it('returns the correct operation.', () => {
-				const opt = new Optimizer();
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: int = 42;
-					3 + x^2 / 2^3;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.lower(opt);
-				return assert.strictEqual(opt.print(), extract_lines`
-					(SET x (CONST 42))
-					(SET $0 (INT_EXP (GET x) (CONST 2)))
-					(SET $1 (INT_DIV (GET $0) (CONST 8)))
-					(DROP (INT_ADD (CONST 3) (GET $1)))
-				`.join('\n'));
-			});
-			it('emits `(TRAP)` when types mismatch.', () => {
-				const opt = new Optimizer();
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: float = 4.2;
-					3.5 + x / 2;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.lower(opt);
-				return assert.strictEqual(opt.print(), extract_lines`
-					(SET x (CONST 4.2))
-					(DROP (FLOAT_ADD (CONST 3.5) (TRAP)))
-				`.join('\n'));
 			});
 		});
 
