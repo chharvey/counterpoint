@@ -23,6 +23,7 @@ import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -90,6 +91,7 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@lowerDeco
 	public override lower(): null {
 		throw new Error('`ASTNodeStatementIteration#lower` not yet supported.');
 	}

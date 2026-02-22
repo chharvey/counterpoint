@@ -4,7 +4,10 @@ import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -14,6 +17,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -65,9 +69,10 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	// @memoizeMethod
+	@memoizeMethod
+	@lowerDeco
 	public override lower(): null {
-		return null;
+		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');
 	}
 
 	@buildDeco

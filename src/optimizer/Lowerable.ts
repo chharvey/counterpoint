@@ -8,13 +8,7 @@ import type {
 /**
  * Known implementers:
  * - ASTNodeExpression
- * - ASTNodeDeclarationVariable
- * - ASTNodeStatementExpression
- * - ASTNodeAssignment // TODO: Reassignment
- * - // TODO: Conditional
- * - // TODO: Loop
- * - // TODO: Iteration
- * - // TODO: Break
+ * - ASTNodeStatement
  * - ASTNodeGoal
  * - VALUE.Value
  */
@@ -24,5 +18,5 @@ export interface Lowerable<Return extends IR.Value | null> {
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value if present
 	 */
-	lower(optimizer: Optimizer): Return;
+	lower(optimizer?: Optimizer): Return;
 }

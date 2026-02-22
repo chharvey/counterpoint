@@ -23,6 +23,7 @@ import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -73,6 +74,7 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@lowerDeco
 	public override lower(optimizer: Optimizer): null {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
 		optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));

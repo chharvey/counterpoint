@@ -74,9 +74,11 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable<null>
 	 */
 	@memoizeMethod
 	public lower(optimizer: Optimizer): null {
-		this.children.forEach((stmt) => {
-			stmt.lower(optimizer);
-		});
+		if (!this.isFoldable) {
+			this.children.forEach((stmt) => {
+				stmt.lower(optimizer);
+			});
+		}
 		return null;
 	}
 

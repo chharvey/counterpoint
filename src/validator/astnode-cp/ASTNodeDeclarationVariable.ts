@@ -30,6 +30,7 @@ import {ASTNodeTuple} from './ASTNodeTuple.ts';
 import {ASTNodeRecord} from './ASTNodeRecord.ts';
 import {ASTNodeCall} from './ASTNodeCall.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -173,11 +174,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@lowerDeco
 	public override lower(optimizer: Optimizer): null {
-		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.writable); // TODO: v0.5: use decorator
-		if (is_foldable) {
-			return null;
-		}
 		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
 		if (this.assignee) {
 			optimizer.pushInstruction(new IR.Decl(this.assignee));

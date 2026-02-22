@@ -18,6 +18,7 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -70,6 +71,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@lowerDeco
 	public override lower(): null {
 		throw new Error('`ASTNodeStatementConditional#lower` not yet supported.');
 	}

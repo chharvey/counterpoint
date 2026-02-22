@@ -11,6 +11,7 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -43,6 +44,7 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@lowerDeco
 	public override lower(): null {
 		throw new Error('`ASTNodeStatementBreak#lower` not yet supported.');
 	}

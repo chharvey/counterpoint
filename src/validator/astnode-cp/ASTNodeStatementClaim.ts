@@ -4,7 +4,10 @@ import {
 	TYPE,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -18,6 +21,7 @@ import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -83,9 +87,10 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		}
 	}
 
-	// @memoizeMethod
+	@memoizeMethod
+	@lowerDeco
 	public override lower(): null {
-		return null;
+		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
 	}
 
 	@buildDeco

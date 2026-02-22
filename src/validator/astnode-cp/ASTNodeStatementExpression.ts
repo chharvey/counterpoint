@@ -15,6 +15,7 @@ import {
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
+	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -46,10 +47,9 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	@lowerDeco
 	public override lower(optimizer: Optimizer): null {
-		if (this.expr && !this.expr.fold()) {
-			optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
-		}
+		optimizer.pushInstruction(new IR.Drop(this.expr!.lower(optimizer)));
 		return null;
 	}
 
