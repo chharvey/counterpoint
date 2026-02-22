@@ -1,3 +1,4 @@
+import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
@@ -66,23 +67,23 @@ export class Binop extends Value {
 	 * @param operand1 right
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
-	public static new(optimizer: Optimizer, operator: BinOp, operand0: Value, operand1: Value): Binop {
+	public static new(optimizer: Optimizer, operator: BinOp, operand0: Value, operand1: Value, typ: TYPE.Type): Binop {
 		if (is_unit(operand0) && is_unit(operand1)) {
-			return new Binop(operator, operand0, operand1);
+			return new Binop(operator, operand0, operand1, typ);
 		} else if (is_unit(operand0)) {
 			const local_name: string = optimizer.newTempLocalName();
 			optimizer.pushInstruction(new IrSet(local_name, operand1));
-			return new Binop(operator, operand0, new Get(local_name));
+			return new Binop(operator, operand0, new Get(local_name), typ);
 		} else if (is_unit(operand1)) {
 			const local_name: string = optimizer.newTempLocalName();
 			optimizer.pushInstruction(new IrSet(local_name, operand0));
-			return new Binop(operator, new Get(local_name), operand1);
+			return new Binop(operator, new Get(local_name), operand1, typ);
 		} else {
 			const local_name0: string = optimizer.newTempLocalName();
 			const local_name1: string = optimizer.newTempLocalName();
 			optimizer.pushInstruction(new IrSet(local_name0, operand0));
 			optimizer.pushInstruction(new IrSet(local_name1, operand1));
-			return new Binop(operator, new Get(local_name0), new Get(local_name1));
+			return new Binop(operator, new Get(local_name0), new Get(local_name1), typ);
 		}
 	}
 
@@ -91,8 +92,13 @@ export class Binop extends Value {
 		private readonly operator: BinOp,
 		private readonly operand0: Value,
 		private readonly operand1: Value,
+		private readonly typ:      TYPE.Type,
 	) {
 		super();
+	}
+
+	public override get type(): TYPE.Type {
+		return this.typ;
 	}
 
 	public override toString(): string {

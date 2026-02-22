@@ -1,3 +1,4 @@
+import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
@@ -22,13 +23,13 @@ export enum UnOp {
 
 
 export class Unop extends Value {
-	public static new(optimizer: Optimizer, operator: UnOp, operand: Value): Unop {
+	public static new(optimizer: Optimizer, operator: UnOp, operand: Value, typ: TYPE.Type): Unop {
 		if (is_unit(operand)) {
-			return new Unop(operator, operand);
+			return new Unop(operator, operand, typ);
 		} else {
 			const local_name: string = optimizer.newTempLocalName();
 			optimizer.pushInstruction(new IrSet(local_name, operand));
-			return new Unop(operator, new Get(local_name));
+			return new Unop(operator, new Get(local_name), typ);
 		}
 	}
 
@@ -36,8 +37,13 @@ export class Unop extends Value {
 	private constructor(
 		private readonly operator: UnOp,
 		private readonly operand:  Value,
+		private readonly typ:      TYPE.Type,
 	) {
 		super();
+	}
+
+	public override get type(): TYPE.Type {
+		return this.typ;
 	}
 
 	public override toString(): string {

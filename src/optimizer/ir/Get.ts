@@ -1,4 +1,5 @@
 import type {AST} from '../../validator/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
 
@@ -6,6 +7,10 @@ import {Value} from './Value.ts';
 export class Get extends Value {
 	public constructor(private readonly target: AST.ASTNodeVariable | string) {
 		super();
+	}
+
+	public override get type(): TYPE.Type {
+		return typeof this.target === 'string' ? TYPE.UNKNOWN : this.target.type();
 	}
 
 	public override toString(): string {
