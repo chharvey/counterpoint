@@ -43,6 +43,11 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	public override lower(): null {
+		throw new Error('`ASTNodeStatementBreak#lower` not yet supported.');
+	}
+
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		let block_index: number | undefined = undefined;

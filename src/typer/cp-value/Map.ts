@@ -52,7 +52,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	}
 
 	@memoizeMethod
-	public override lower(): IR.Instruction {
+	public override lower(): IR.Value {
 		throw new Error('`ValueMap#lower` not yet supported.');
 	}
 

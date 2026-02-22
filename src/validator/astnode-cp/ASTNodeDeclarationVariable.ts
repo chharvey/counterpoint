@@ -5,7 +5,6 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type Lowerable,
 	IR,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
@@ -78,7 +77,7 @@ function writable_inferred_type(node: ASTNodeExpression): TYPE.Type {
 
 
 
-export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowerable {
+export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeDeclarationVariable);
@@ -174,29 +173,26 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 	}
 
 	@memoizeMethod
+	public override lower(optimizer: Optimizer): null {
+		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.writable); // TODO: v0.5: use decorator
+		if (is_foldable) {
+			return null;
+		}
+		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
+		if (this.assignee) {
+			optimizer.pushInstruction(new IR.Decl(this.assignee));
+			optimizer.pushInstruction(new IR.Set(this.assignee, value));
+		} else {
+			optimizer.pushInstruction(new IR.Drop(value));
+		}
+		return null;
+	}
+
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		return this.assignee
 			? this.builder.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
 			: this.builder.module.drop(value);
-	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Lowerable
-	 */
-	@memoizeMethod
-	public lower(optimizer: Optimizer): null {
-		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.writable); // TODO: v0.5: use decorator
-		if (is_foldable) {
-			return null;
-		}
-		const value: IR.Instruction = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
-		optimizer.pushInstruction((this.assignee
-			? new IR.Set(this.assignee, value)
-			: new IR.Drop(value)
-		));
-		return null;
 	}
 }

@@ -83,6 +83,11 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		}
 	}
 
+	// @memoizeMethod
+	public override lower(): null {
+		return null;
+	}
+
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');

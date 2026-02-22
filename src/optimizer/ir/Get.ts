@@ -1,14 +1,20 @@
-import type {AST} from '../../validator/index.ts';
-import {Instruction} from './Instruction.ts';
+import {AST} from '../../validator/index.ts';
+import type {TYPE} from '../../typer/index.ts';
+import type {Local} from '../utils-private.ts';
+import {Value} from './Value.ts';
 
 
 
-export class Get extends Instruction {
-	public constructor(private readonly target: AST.ASTNodeVariable | string) {
+export class Get extends Value {
+	public constructor(private readonly target: AST.ASTNodeVariable | Local) {
 		super();
 	}
 
+	public override get type(): TYPE.Type {
+		return this.target instanceof AST.ASTNodeVariable ? this.target.type() : this.target.type;
+	}
+
 	public override toString(): string {
-		return `(GET ${ typeof this.target === 'string' ? this.target : this.target.source })`;
+		return `(GET ${ this.target instanceof AST.ASTNodeVariable ? this.target.source : this.target.name })`;
 	}
 }

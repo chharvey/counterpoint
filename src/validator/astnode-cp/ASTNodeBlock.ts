@@ -25,7 +25,7 @@ import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts
 
 
 
-export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable, Buildable {
+export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable<null>, Buildable {
 	/**
 	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -75,9 +75,7 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable, Buil
 	@memoizeMethod
 	public lower(optimizer: Optimizer): null {
 		this.children.forEach((stmt) => {
-			if ('lower' in stmt && typeof stmt.lower === 'function') {
-				(stmt as Lowerable).lower(optimizer);
-			}
+			stmt.lower(optimizer);
 		});
 		return null;
 	}

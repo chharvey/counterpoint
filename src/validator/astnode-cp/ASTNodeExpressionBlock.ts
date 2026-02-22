@@ -45,7 +45,7 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
+	public override lower(): IR.Value {
 		throw new Error('`ASTNodeExpressionBlock#lower` not yet supported.');
 	}
 

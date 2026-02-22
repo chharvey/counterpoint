@@ -34,7 +34,7 @@ export function identical(
  * - Primitive
  * - Collection
  */
-export abstract class Value implements Lowerable {
+export abstract class Value implements Lowerable<IR.Value> {
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
@@ -56,7 +56,7 @@ export abstract class Value implements Lowerable {
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(): IR.Instruction;
+	public abstract lower(): IR.Value;
 
 	/**
 	 * @return a string representation of this type

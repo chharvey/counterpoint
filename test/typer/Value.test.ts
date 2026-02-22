@@ -16,7 +16,7 @@ import {buildConst} from '../helpers.ts';
 
 test.suite('Value', () => {
 	test.suite('#lower', () => {
-		test.test('Primitive returns an IR.Constant.', () => {
+		test.test('Primitive returns an IR.Const.', () => {
 			xjs.Array.forEachAggregated<VALUE.Primitive>([
 				VALUE.NULL,
 				VALUE.FALSE,
@@ -24,7 +24,7 @@ test.suite('Value', () => {
 				VALUE.INT_0,
 				VALUE.FLOAT_0,
 				VALUE.STR_EMPTY,
-			], (value) => assert.deepStrictEqual(value.lower(), new IR.Constant(value), value.constructor.name));
+			], (value) => assert.deepStrictEqual(value.lower(), new IR.Const(value), value.constructor.name));
 		});
 
 		xjs.Array.forEachAggregated<VALUE.Value>([

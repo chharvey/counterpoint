@@ -90,6 +90,11 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	public override lower(): null {
+		throw new Error('`ASTNodeStatementIteration#lower` not yet supported.');
+	}
+
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw new Error('`ASTNodeStatementIteration#build` not yet supported.');

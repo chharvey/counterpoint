@@ -1,5 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
+import type {
+	Optimizer,
+	Lowerable,
+} from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -41,7 +45,7 @@ export function buildDeco(
  * - ASTNodeStatementIteration
  * - ASTNodeStatementBreak
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lowerable<null>, Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -62,6 +66,15 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Bu
 	/** @implements Foldable */
 	public abstract get hasBottomType(): boolean;
 
-	/** @implements Buildable */
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	public abstract lower(optimizer: Optimizer): null;
+
+	/**
+	 * @inheritdoc
+	 * @implements Buildable
+	 */
 	public abstract build(): binaryen.ExpressionRef;
 }

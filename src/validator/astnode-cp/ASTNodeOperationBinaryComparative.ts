@@ -3,7 +3,8 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type IR,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -50,8 +51,16 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
-		throw new Error('`ASTNodeOperationBinaryComparative#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
+			[Operator.LT,  IR.BinOp.LT],
+			[Operator.GT,  IR.BinOp.GT],
+			[Operator.LE,  IR.BinOp.LE],
+			[Operator.GE,  IR.BinOp.GE],
+			[Operator.NLT, IR.BinOp.NLT],
+			[Operator.NGT, IR.BinOp.NGT],
+		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer), typ);
 	}
 
 	@memoizeMethod
@@ -97,8 +106,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],
 			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
-			// [Operator.NLT, (x, y) => !x.lt(y)],
-			// [Operator.NGT, (x, y) => !y.lt(x)],
+			[Operator.NLT, (x, y) => !x.lt(y)],
+			[Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(v0, v1));
 	}
 }

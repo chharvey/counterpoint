@@ -1,4 +1,6 @@
-import type {IR} from './index.ts';
+import {TYPE} from '../typer/index.ts';
+import {IR} from './index.ts';
+import type {Local} from './utils-private.ts';
 
 
 
@@ -16,8 +18,13 @@ export class Optimizer {
 		return [...this.#instructions];
 	}
 
-	public newTempLocalName(): string {
-		return `$${ this.#tempLocalCounter++ }`;
+	public newTempLocal(typ: TYPE.Type = TYPE.ANYTHING): Local {
+		const local: Local = {
+			name: `$${ this.#tempLocalCounter++ }`,
+			type: typ,
+		};
+		this.pushInstruction(new IR.Decl(local));
+		return local;
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {

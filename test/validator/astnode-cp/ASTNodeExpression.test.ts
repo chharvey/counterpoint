@@ -48,9 +48,6 @@ test.suite('ASTNodeExpression', () => {
 			[AST.ASTNodeMap,                        '{"a" -> 41, "b" -> x, "c" -> 43}'],
 			[AST.ASTNodeAccess,                     '(41, x, 43).1'],
 			[AST.ASTNodeCall,                       'List.<int>((41, x, 43))'],
-			[AST.ASTNodeOperationUnary,             '!x'],
-			[AST.ASTNodeOperationBinaryComparative, 'x <= 42'],
-			[AST.ASTNodeOperationBinaryEquality,    'x == 42'],
 			[AST.ASTNodeOperationBinaryLogical,     'x || 42'],
 			[AST.ASTNodeOperationTernary,           'if x < 100 then x * 2 else x / 2;'],
 		]), (src, klass) => {
@@ -65,9 +62,9 @@ test.suite('ASTNodeExpression', () => {
 			});
 		});
 
-		test.test('AST.Constant returns an IR.Constant.', () => {
+		test.test('AST.Constant returns an IR.Const.', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42');
-			return assert.deepStrictEqual(value.lower(), new IR.Constant(value.fold()));
+			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
 		});
 		test.test('AST.Variable returns an IR.Variable.', () => {
 			const {stmts} = setupScript(`{
@@ -79,7 +76,7 @@ test.suite('ASTNodeExpression', () => {
 		});
 
 		// TODO: move these to ASTNodeStatement tests
-		test.test('AST.DeclarationVariable pushes SET/DROP instruction depending on presence of child nodes.', () => {
+		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
 			const opt = new Optimizer();
 			const {stmts} = setupScript(`{
 				% Foldable cases:
@@ -103,10 +100,14 @@ test.suite('ASTNodeExpression', () => {
 			}`, {build: false});
 			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DECL assignee_b)
 				(SET assignee_b (CONST null))
+				(DECL assignee_c)
 				(SET assignee_c (CONST 42))
 				(DROP (GET assignee_c))
+				(DECL assignee_d)
 				(SET assignee_d (GET assignee_c))
+				(DECL assignee_e)
 				(SET assignee_e (GET assignee_c))
 			`.join('\n'));
 		});
@@ -158,7 +159,7 @@ test.suite('ASTNodeExpression', () => {
 				set assignee_e = 43;
 				set assignee_e = 44;
 				set assignee_e = -42;
-			}`, {lower: true, build: false}).opt.instructions.length, 12);
+			}`, {lower: true, build: false}).opt.instructions.length, 16);
 		});
 	});
 

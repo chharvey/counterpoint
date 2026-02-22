@@ -70,6 +70,11 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	public override lower(): null {
+		throw new Error('`ASTNodeStatementLoop#lower` not yet supported.');
+	}
+
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const builder_block = this.builder.teeBlock(this);

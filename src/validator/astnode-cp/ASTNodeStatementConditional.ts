@@ -70,6 +70,11 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
+	public override lower(): null {
+		throw new Error('`ASTNodeStatementConditional#lower` not yet supported.');
+	}
+
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const condition_build:   binaryen.ExpressionRef = this.condition.build();

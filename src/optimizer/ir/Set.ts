@@ -1,18 +1,20 @@
-import type {AST} from '../../validator/index.ts';
+import {AST} from '../../validator/index.ts';
+import type {Local} from '../utils-private.ts';
 import {Instruction} from './Instruction.ts';
+import type {Value} from './Value.ts';
 
 
 
 class IrSet extends Instruction {
 	public constructor(
-		private readonly target: AST.ASTNodeVariable | string,
-		private readonly value:  Instruction,
+		private readonly target: AST.ASTNodeVariable | Local,
+		private readonly value:  Value,
 	) {
 		super();
 	}
 
 	public override toString(): string {
-		return `(SET ${ typeof this.target === 'string' ? this.target : this.target.source } ${ this.value })`;
+		return `(SET ${ this.target instanceof AST.ASTNodeVariable ? this.target.source : this.target.name } ${ this.value })`;
 	}
 }
 export {IrSet as Set};

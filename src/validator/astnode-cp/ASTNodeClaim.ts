@@ -41,7 +41,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
+	public override lower(): IR.Value {
 		throw new Error('`ASTNodeClaim#lower` not yet supported.');
 	}
 

@@ -27,7 +27,7 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	@memoizeMethod
-	public override lower(): IR.Instruction {
+	public override lower(): IR.Value {
 		throw new Error('`ValueRecord#lower` not yet supported.');
 	}
 
