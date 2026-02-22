@@ -286,6 +286,131 @@ describe('ASTNodeOperation', () => {
 				(DROP (NOT (GET $1)))
 			`.join('\n'));
 		});
+
+		describe('AST.OperationBinaryLogical', () => {
+			function setupScript(src: string, _: object): {opt: Optimizer} {
+				const opt = new Optimizer();
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
+				goal.varCheck();
+				goal.typeCheck();
+				goal.lower(opt);
+				return {opt};
+			}
+			it('[operator=AND]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut a: null  = null;
+					val mut b: bool  = false;
+					a && b;
+					!a && !b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL a)
+					(SET a (CONST null))
+					(DECL b)
+					(SET b (CONST false))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET a))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET b))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET $1))
+					"block-1":
+					(DROP (GET $0))
+					(DECL $2)
+					(DECL $3)
+					(SET $3 (NOT (GET a)))
+					if_false (GET $3), goto "block-2".
+					(SET $2 (NOT (GET b)))
+					goto "block-3".
+					"block-2":
+					(SET $2 (GET $3))
+					"block-3":
+					(DROP (GET $2))
+				`.join('\n'));
+			});
+			it('[operator=OR]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut c: int   = 10;
+					val mut d: float = 0.1;
+					c || d;
+					-c + 1 || 1.0 - d;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL c)
+					(SET c (CONST 10))
+					(DECL d)
+					(SET d (CONST 0.1))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET c))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET $1))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET d))
+					"block-1":
+					(DROP (GET $0))
+					(DECL $2)
+					(DECL $3)
+					(DECL $4)
+					(SET $4 (INT_NEG (GET c)))
+					(SET $3 (INT_ADD (GET $4) (CONST 1)))
+					if_false (GET $3), goto "block-2".
+					(SET $2 (GET $3))
+					goto "block-3".
+					"block-2":
+					(DECL $5)
+					(SET $5 (FLOAT_NEG (GET d)))
+					(SET $2 (FLOAT_ADD (CONST 1.0) (GET $5)))
+					"block-3":
+					(DROP (GET $2))
+				`.join('\n'));
+			});
+			it('[operator=NAND]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut a: null  = null;
+					val mut b: bool  = false;
+					a !& b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL a)
+					(SET a (CONST null))
+					(DECL b)
+					(SET b (CONST false))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET a))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET b))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET $1))
+					"block-1":
+					(DROP (NOT (GET $0)))
+				`.join('\n'));
+			});
+			it('[operator=NOR]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut c: int   = 10;
+					val mut d: float = 0.1;
+					c !| d;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL c)
+					(SET c (CONST 10))
+					(DECL d)
+					(SET d (CONST 0.1))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET c))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET $1))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET d))
+					"block-1":
+					(DROP (NOT (GET $0)))
+				`.join('\n'));
+			});
+		});
 	});
 
 

@@ -2,7 +2,9 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
-	type IR,
+	type IrLocal,
+	type Optimizer,
+	IR,
 	type Local,
 	BinVect,
 } from '../../index.ts';
@@ -46,8 +48,69 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
-		throw new Error('`ASTNodeOperationBinaryLogical#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		/*
+		 * `‹v0› && ‹v1›` desugars to:
+		 * ```
+		 * val left = ‹v0›;
+		 * if left then ‹v1› else left;
+		 * ```
+		 * IR Outline:
+		 * ```
+		 * (DECL result)
+		 * (DECL left)
+		 * (SET left ‹v0›)
+		 * if_false (GET left), goto "else".
+		 * (SET result ‹v1›) ;; evaluate right-hand value and set to result
+		 * goto "endif".
+		 * "else":
+		 * (SET result (GET left)) ;; get left-hand variable and set to result
+		 * "endif":
+		 * return (GET result).
+		 * ```
+		 *
+		 * `‹v0› || ‹v1›` desugars to:
+		 * ```
+		 * val left = ‹v0›;
+		 * if left then left else ‹v1›;
+		 * ```
+		 * IR Outline:
+		 * ```
+		 * (DECL result)
+		 * (DECL left)
+		 * (SET left ‹v0›)
+		 * if_false (GET left), goto "else".
+		 * (SET result (GET left)) ;; get left-hand variable and set to result
+		 * goto "endif".
+		 * "else":
+		 * (SET result ‹v1›) ;; evaluate right-hand value and set to result
+		 * "endif":
+		 * return (GET result).
+		 * ```
+		 */
+
+		const result: IrLocal = optimizer.newTempLocal(this.type());
+		const left:   IrLocal = optimizer.newTempLocal(this.operand0.type());
+
+		// Assume `Operator.AND` first, then switch if `Operator.OR`.
+		// We’re using functions because we want them to be run in the correct order.
+		let branch_then = (): IR.Value => this.operand1.lower(optimizer);
+		let branch_else = (): IR.Value => new IR.Get(left);
+		if (this.operator === Operator.OR) {
+			[branch_then, branch_else] = [branch_else, branch_then];
+		}
+
+		const block_else:  string = optimizer.newLabel();
+		const block_endif: string = optimizer.newLabel();
+
+		optimizer.pushInstruction(new IR.Set(left, this.operand0.lower(optimizer)));
+		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Get(left), block_else));
+		optimizer.pushInstruction(new IR.Set(result, branch_then()));
+		optimizer.pushInstruction(new IR.Goto(block_endif));
+		optimizer.pushInstruction(new IR.Label(block_else));
+		optimizer.pushInstruction(new IR.Set(result, branch_else()));
+		optimizer.pushInstruction(new IR.Label(block_endif));
+		return new IR.Get(result);
 	}
 
 	@memoizeMethod

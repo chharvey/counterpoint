@@ -46,7 +46,6 @@ describe('ASTNodeExpression', () => {
 			[AST.ASTNodeMap,                        '{"a" -> 41, "b" -> x, "c" -> 43}'],
 			[AST.ASTNodeAccess,                     '(41, x, 43).1'],
 			[AST.ASTNodeCall,                       'List.<int>((41, x, 43))'],
-			[AST.ASTNodeOperationBinaryLogical,     'x || 42'],
 			[AST.ASTNodeOperationTernary,           'if x < 100 then x * 2 else x / 2;'],
 		]), (src, klass) => {
 			it(klass.name, () => {
