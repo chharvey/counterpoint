@@ -88,10 +88,12 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			return null;
 		}
 		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
-		optimizer.pushInstruction((this.assignee
-			? new IR.Set(this.assignee, value)
-			: new IR.Drop(value)
-		));
+		if (this.assignee) {
+			optimizer.pushInstruction(new IR.Decl(this.assignee));
+			optimizer.pushInstruction(new IR.Set(this.assignee, value));
+		} else {
+			optimizer.pushInstruction(new IR.Drop(value));
+		}
 		return null;
 	}
 

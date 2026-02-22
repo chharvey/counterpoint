@@ -121,9 +121,12 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DECL x)
 				(SET x (CONST 42))
 				(DROP (NOT (GET x)))
+				(DECL y)
 				(SET y (INT_DIV (GET x) (CONST 7)))
+				(DECL $0)
 				(SET $0 (INT_ADD (GET x) (GET y)))
 				(DROP (NOT (GET $0)))
 			`.join('\n'));
@@ -140,9 +143,12 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DECL x)
 				(SET x (CONST 42))
 				(DROP (EMP (GET x)))
+				(DECL y)
 				(SET y (INT_DIV (GET x) (CONST 7)))
+				(DECL $0)
 				(SET $0 (INT_ADD (GET x) (GET y)))
 				(DROP (EMP (GET $0)))
 			`.join('\n'));
@@ -159,9 +165,12 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DECL x)
 				(SET x (CONST 42))
 				(DROP (INT_NEG (GET x)))
+				(DECL y)
 				(SET y (CONST 6.0))
+				(DECL $0)
 				(SET $0 (FLOAT_ADD (CONST 3.0) (GET y)))
 				(DROP (FLOAT_NEG (GET $0)))
 			`.join('\n'));
@@ -178,8 +187,11 @@ describe('ASTNodeOperation', () => {
 				goal.typeCheck();
 				goal.lower(opt);
 				return assert.strictEqual(opt.print(), extract_lines`
+					(DECL x)
 					(SET x (CONST 42))
+					(DECL $0)
 					(SET $0 (INT_EXP (GET x) (CONST 2)))
+					(DECL $1)
 					(SET $1 (INT_DIV (GET $0) (CONST 8)))
 					(DROP (INT_ADD (CONST 3) (GET $1)))
 				`.join('\n'));
@@ -194,6 +206,7 @@ describe('ASTNodeOperation', () => {
 				goal.typeCheck();
 				goal.lower(opt);
 				return assert.strictEqual(opt.print(), extract_lines`
+					(DECL x)
 					(SET x (CONST 4.2))
 					(DROP (FLOAT_ADD (CONST 3.5) (TRAP)))
 				`.join('\n'));
@@ -218,16 +231,22 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DECL a)
 				(SET a (CONST 10))
+				(DECL b)
 				(SET b (CONST 100))
+				(DECL c)
 				(SET c (CONST 0.1))
+				(DECL d)
 				(SET d (CONST 0.01))
 				(DROP (LT (GET a) (GET b)))
 				(DROP (GT (GET c) (GET d)))
 				(DROP (LE (GET a) (GET b)))
 				(DROP (GE (GET c) (GET d)))
+				(DECL $0)
 				(SET $0 (LT (GET a) (GET d)))
 				(DROP (NOT (GET $0)))
+				(DECL $1)
 				(SET $1 (GT (GET b) (GET c)))
 				(DROP (NOT (GET $1)))
 			`.join('\n'));
@@ -249,14 +268,20 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DECL a)
 				(SET a (CONST null))
+				(DECL b)
 				(SET b (CONST false))
+				(DECL c)
 				(SET c (CONST 10))
+				(DECL d)
 				(SET d (CONST 0.1))
 				(DROP (ID (GET a) (GET b)))
 				(DROP (EQ (GET c) (GET d)))
+				(DECL $0)
 				(SET $0 (ID (GET c) (GET a)))
 				(DROP (NOT (GET $0)))
+				(DECL $1)
 				(SET $1 (EQ (GET d) (GET b)))
 				(DROP (NOT (GET $1)))
 			`.join('\n'));

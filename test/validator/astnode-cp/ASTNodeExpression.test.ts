@@ -78,7 +78,7 @@ describe('ASTNodeExpression', () => {
 		});
 
 		// TODO: move these to ASTNodeStatement tests
-		it('AST.DeclarationVariable pushes SET/DROP instruction depending on presence of child nodes.', () => {
+		it('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				% Foldable cases:
@@ -104,10 +104,14 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			goal.children.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DECL assignee_b)
 				(SET assignee_b (CONST null))
+				(DECL assignee_c)
 				(SET assignee_c (CONST 42))
 				(DROP (GET assignee_c))
+				(DECL assignee_d)
 				(SET assignee_d (GET assignee_c))
+				(DECL assignee_e)
 				(SET assignee_e (GET assignee_c))
 			`.join('\n'));
 		});
@@ -168,7 +172,7 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.lower(opt);
-			return assert.strictEqual(opt.instructions.length, 12);
+			return assert.strictEqual(opt.instructions.length, 16);
 		});
 	});
 

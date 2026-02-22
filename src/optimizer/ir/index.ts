@@ -8,4 +8,5 @@ export * from './Unop.ts';
 export * from './Binop.ts';
 
 export * from './Drop.ts';
+export * from './Decl.ts';
 export * from './Set.ts';
