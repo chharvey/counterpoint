@@ -143,8 +143,7 @@ test.suite('ASTNodeExpression', () => {
 			`.join('\n'));
 		});
 		test.test('AST.Goal lowers each statement.', () => {
-			const opt = new Optimizer();
-			const {goal} = setupScript(`{
+			assert.strictEqual(setupScript(`{
 				val mut assignee_b?: int;
 				val mut assignee_c:  int = 42;
 				val     _:           int = assignee_c;
@@ -159,9 +158,7 @@ test.suite('ASTNodeExpression', () => {
 				set assignee_e = 43;
 				set assignee_e = 44;
 				set assignee_e = -42;
-			}`, {build: false});
-			goal.lower(opt);
-			return assert.strictEqual(opt.instructions.length, 12);
+			}`, {lower: true, build: false}).opt.instructions.length, 12);
 		});
 	});
 

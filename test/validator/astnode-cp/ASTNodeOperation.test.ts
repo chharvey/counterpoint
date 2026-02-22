@@ -10,7 +10,6 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
-	Optimizer,
 	bigint_to_i64,
 	drop_then,
 	type Builder,
@@ -1018,13 +1017,10 @@ test.suite('ASTNodeOperation', () => {
 
 		test.suite('#lower', () => {
 			test.test('returns the correct operation.', () => {
-				const opt = new Optimizer();
-				const {goal} = setupScript(`{
+				assert.strictEqual(setupScript(`{
 					val mut x: int = 42;
 					3 + x / 2;
-				}`, {build: false});
-				goal.lower(opt);
-				return assert.strictEqual(opt.print(), extract_lines`
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(SET x (CONST 42))
 					(SET $0 (INT_DIV (GET x) (CONST 2)))
 					(SET $1 (INT_ADD (CONST 3) (GET $0)))
