@@ -56,7 +56,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(optimizer: Optimizer): IR.Instruction {
+	public override lower(optimizer: Optimizer): IR.Value {
 		const [t0, t1] = [this.operand0.type(),           this.operand1.type()];
 		const [l0, l1] = [this.operand0.lower(optimizer), this.operand1.lower(optimizer)];
 		return (

@@ -1,7 +1,6 @@
 import type {Optimizer} from '../Optimizer.ts';
 import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
-import type {Instruction} from './Instruction.ts';
 import {Value} from './Value.ts';
 import {Get} from './Get.ts';
 
@@ -36,7 +35,7 @@ export class Unop extends Value {
 
 	private constructor(
 		private readonly operator: UnOp,
-		private readonly operand:  Instruction,
+		private readonly operand:  Value,
 	) {
 		super();
 	}

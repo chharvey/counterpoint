@@ -46,7 +46,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
+	public override lower(): IR.Value {
 		throw new Error('`ASTNodeOperationTernary#lower` not yet supported.');
 	}
 

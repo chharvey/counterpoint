@@ -26,7 +26,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable {
+export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable<null> {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeAssignment);

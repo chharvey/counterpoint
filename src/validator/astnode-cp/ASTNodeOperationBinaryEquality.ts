@@ -50,7 +50,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(optimizer: Optimizer): IR.Instruction {
+	public override lower(optimizer: Optimizer): IR.Value {
 		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
 			[Operator.ID,  IR.BinOp.ID],
 			[Operator.EQ,  IR.BinOp.EQ],

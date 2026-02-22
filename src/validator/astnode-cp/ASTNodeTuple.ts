@@ -48,7 +48,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): IR.Instruction {
+	public lower(): IR.Value {
 		throw new Error('`ASTNodeTuple#lower` not yet supported.');
 	}
 

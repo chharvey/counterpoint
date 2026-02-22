@@ -60,7 +60,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Instruction {
+	public override lower(): IR.Value {
 		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}
 

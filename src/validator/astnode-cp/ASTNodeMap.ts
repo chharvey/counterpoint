@@ -47,7 +47,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public lower(): IR.Instruction {
+	public lower(): IR.Value {
 		throw new Error('`ASTNodeMap#lower` not yet supported.');
 	}
 

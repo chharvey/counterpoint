@@ -1,7 +1,6 @@
 import type {Optimizer} from '../Optimizer.ts';
 import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
-import type {Instruction} from './Instruction.ts';
 import {Value} from './Value.ts';
 import {Get} from './Get.ts';
 
@@ -90,8 +89,8 @@ export class Binop extends Value {
 
 	private constructor(
 		private readonly operator: BinOp,
-		private readonly operand0: Instruction,
-		private readonly operand1: Instruction,
+		private readonly operand0: Value,
+		private readonly operand1: Value,
 	) {
 		super();
 	}

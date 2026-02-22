@@ -55,7 +55,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	}
 
 	@memoizeMethod
-	public override lower(): IR.Instruction {
+	public override lower(): IR.Value {
 		throw new Error('`ValueSet#lower` not yet supported.');
 	}
 

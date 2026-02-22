@@ -109,7 +109,7 @@ export function typeDeco(
  * - ASTNodeClaim
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable, Buildable {
+export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable<IR.Value>, Buildable {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -136,7 +136,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable, 
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(optimizer?: Optimizer): IR.Instruction;
+	public abstract lower(optimizer?: Optimizer): IR.Value;
 
 	/**
 	 * @inheritdoc

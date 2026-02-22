@@ -46,7 +46,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
+export class ASTNodeGoal extends ASTNodeCP implements Lowerable<null>, Buildable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -91,7 +91,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	public lower(optimizer: Optimizer): null {
 		this.children.forEach((stmt) => {
 			if ('lower' in stmt && typeof stmt.lower === 'function') {
-				(stmt as Lowerable).lower(optimizer);
+				(stmt as Lowerable<null>).lower(optimizer);
 			}
 		});
 		return null;
