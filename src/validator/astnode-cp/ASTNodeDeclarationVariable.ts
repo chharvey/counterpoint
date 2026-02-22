@@ -5,7 +5,6 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type Lowerable,
 	IR,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
@@ -27,7 +26,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowerable<null> {
+export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeDeclarationVariable {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeDeclarationVariable);
@@ -82,6 +81,20 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 		}
 	}
 
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): null {
+		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.unfixed); // TODO: v0.5: use decorator
+		if (is_foldable) {
+			return null;
+		}
+		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
+		optimizer.pushInstruction((this.assignee
+			? new IR.Set(this.assignee, value)
+			: new IR.Drop(value)
+		));
+		return null;
+	}
+
 	public override build(): binaryen.ExpressionRef {
 		if (
 			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&
@@ -102,23 +115,5 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement implements Lowe
 		} else {
 			return this.builder.module.drop(value);
 		}
-	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Lowerable
-	 */
-	@memoizeMethod
-	public lower(optimizer: Optimizer): null {
-		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.unfixed); // TODO: v0.5: use decorator
-		if (is_foldable) {
-			return null;
-		}
-		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
-		optimizer.pushInstruction((this.assignee
-			? new IR.Set(this.assignee, value)
-			: new IR.Drop(value)
-		));
-		return null;
 	}
 }

@@ -1,7 +1,6 @@
 import type binaryen from 'binaryen';
 import {
 	type Optimizer,
-	type Lowerable,
 	IR,
 } from '../../index.ts';
 import {
@@ -18,7 +17,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeStatementExpression extends ASTNodeStatement implements Lowerable<null> {
+export class ASTNodeStatementExpression extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementExpression {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementExpression);
@@ -32,21 +31,17 @@ export class ASTNodeStatementExpression extends ASTNodeStatement implements Lowe
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	public override build(): binaryen.ExpressionRef {
-		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
-			? this.builder.module.nop()
-			: this.builder.module.drop(this.expr.build());
-	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Lowerable
-	 */
 	@memoizeMethod
-	public lower(optimizer: Optimizer): null {
+	public override lower(optimizer: Optimizer): null {
 		if (this.expr && !this.expr.fold()) {
 			optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
 		}
 		return null;
+	}
+
+	public override build(): binaryen.ExpressionRef {
+		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
+			? this.builder.module.nop()
+			: this.builder.module.drop(this.expr.build());
 	}
 }

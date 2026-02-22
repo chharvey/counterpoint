@@ -3,7 +3,6 @@ import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	type Optimizer,
-	type Lowerable,
 	IR,
 	AssignmentErrorReassignment,
 	MutabilityError01,
@@ -26,7 +25,7 @@ import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable<null> {
+export class ASTNodeAssignment extends ASTNodeStatement {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeAssignment {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeAssignment);
@@ -60,6 +59,13 @@ export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable<nul
 		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): null {
+		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
+		optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));
+		return null;
+	}
+
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
 		return this.builder.getLocal(this.assignee.id)?.set(ASTNodeStatement.coerceAssignment(
@@ -69,16 +75,5 @@ export class ASTNodeAssignment extends ASTNodeStatement implements Lowerable<nul
 			this.assigned.build(),
 			this.validator.config.compilerOptions.intCoercion,
 		)) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
-	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Lowerable
-	 */
-	@memoizeMethod
-	public lower(optimizer: Optimizer): null {
-		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));
-		return null;
 	}
 }
