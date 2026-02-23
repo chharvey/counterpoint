@@ -32,11 +32,10 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): null {
+	public override lower(optimizer: Optimizer): void {
 		if (this.expr && !this.expr.fold()) {
-			optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
 		}
-		return null;
 	}
 
 	public override build(): binaryen.ExpressionRef {

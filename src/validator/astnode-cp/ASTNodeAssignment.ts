@@ -60,10 +60,9 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): null {
+	public override lower(optimizer: Optimizer): void {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));
-		return null;
+		return optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));
 	}
 
 	public override build(): binaryen.ExpressionRef {

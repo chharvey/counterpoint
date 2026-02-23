@@ -23,7 +23,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
  * - ASTNodeStatementExpression
  * - ASTNodeAssignment
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Lowerable<null>, Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Lowerable, Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -59,7 +59,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Lowerable<nu
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(optimizer: Optimizer): null;
+	public abstract lower(optimizer: Optimizer): void;
 
 	/**
 	 * @inheritdoc
