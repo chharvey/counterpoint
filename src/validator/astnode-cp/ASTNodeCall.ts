@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -276,7 +277,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeCall#lower` not yet supported.');
 	}
 

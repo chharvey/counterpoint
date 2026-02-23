@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 } from '../../index.ts';
 import {
@@ -57,7 +58,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
 	}
 

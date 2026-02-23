@@ -89,7 +89,7 @@ export function lowerDeco(
 	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'lower');
-	return function (this: ASTNodeExpression, optimizer?: Optimizer) {
+	return function (this: ASTNodeExpression, optimizer: Optimizer) {
 		return this.fold()?.lower() ?? method.call(this, optimizer);
 	};
 }
@@ -148,7 +148,7 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value
 	 */
-	public abstract lower(optimizer?: Optimizer): IR.Value;
+	public abstract lower(optimizer: Optimizer): IR.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

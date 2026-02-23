@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
@@ -75,7 +76,7 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeDict#lower` not yet supported.');
 	}
 

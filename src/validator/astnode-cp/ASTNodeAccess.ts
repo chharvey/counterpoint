@@ -4,6 +4,7 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 } from '../../index.ts';
 import {
@@ -92,7 +93,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}
 

@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 	build_tuple_like,
 	TypeErrorNotAssignable,
@@ -63,7 +64,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeTuple#lower` not yet supported.');
 	}
 

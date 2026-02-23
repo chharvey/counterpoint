@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
 	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
@@ -77,7 +78,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		return new IR.Get(this);
 	}
 

@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -63,7 +64,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeMap#lower` not yet supported.');
 	}
 

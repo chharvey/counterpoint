@@ -48,6 +48,7 @@ describe('ASTNodeExpression', () => {
 			[AST.ASTNodeCall,     'List.<int>((41, x, 43))'],
 		]), (src, klass) => {
 			it(klass.name, () => {
+				const opt = new Optimizer();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					val mut x: int = 42;
 					${ src };
@@ -56,7 +57,7 @@ describe('ASTNodeExpression', () => {
 				goal.typeCheck();
 				const expr: AST.ASTNodeExpression = (goal.children[1] as AST.ASTNodeStatementExpression).expr!;
 				assert_instanceof(expr, klass);
-				return assert.throws(() => expr.lower(), /not yet supported/);
+				return assert.throws(() => expr.lower(opt), /not yet supported/);
 			});
 		});
 
@@ -65,6 +66,7 @@ describe('ASTNodeExpression', () => {
 			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
 		});
 		it('AST.Variable returns an IR.Variable.', () => {
+			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				val mut x: int = 42;
 				x;
@@ -72,7 +74,7 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-			return assert.deepStrictEqual(expr.lower(), new IR.Get(expr));
+			return assert.deepStrictEqual(expr.lower(opt), new IR.Get(expr));
 		});
 
 		// TODO: move these to ASTNodeStatement tests
