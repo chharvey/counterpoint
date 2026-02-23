@@ -4,6 +4,7 @@ import {Instruction} from './Instruction.ts';
 
 
 
+/** Declare a variable/local without initializing it. */
 export class Decl extends Instruction {
 	public constructor(private readonly target: AST.ASTNodeVariable | Local) {
 		super();

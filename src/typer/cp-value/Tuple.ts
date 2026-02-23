@@ -1,10 +1,8 @@
 import binaryen from 'binaryen';
 import {
-	type IR,
 	build_tuple_like,
 	type Builder,
 } from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -26,11 +24,6 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`ValueTuple#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `(${ super.toString() }${ this.items.length === 1 ? ',' : '' })`;
 	}

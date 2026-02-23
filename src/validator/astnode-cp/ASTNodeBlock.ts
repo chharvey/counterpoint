@@ -8,6 +8,7 @@ import {
 	type NonemptyArray,
 	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -25,7 +26,7 @@ import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts
 
 
 
-export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable<null>, Buildable {
+export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable, Buildable {
 	/**
 	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -72,14 +73,9 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable<null>
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	@memoizeMethod
-	public lower(optimizer: Optimizer): null {
-		if (!this.isFoldable) {
-			this.children.forEach((stmt) => {
-				stmt.lower(optimizer);
-			});
-		}
-		return null;
+	@runOnceMethod
+	public lower(optimizer: Optimizer): void {
+		return this.children.forEach((stmt) => stmt.lower(optimizer));
 	}
 
 	/** @implements Buildable */

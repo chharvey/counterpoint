@@ -1,8 +1,8 @@
 import {
 	type Value,
 	Trap,
-	Get,
 	Const,
+	Get,
 } from './index.ts';
 
 
@@ -10,7 +10,7 @@ import {
 export function is_unit(value: Value): boolean {
 	return (
 		value instanceof Trap ||
-		value instanceof Get ||
-		value instanceof Const
+		value instanceof Const ||
+		value instanceof Get
 	);
 }

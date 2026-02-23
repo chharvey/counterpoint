@@ -9,8 +9,8 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -23,7 +23,6 @@ import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -73,12 +72,10 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
-	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): null {
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));
-		return null;
+		return optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));
 	}
 
 	@buildDeco

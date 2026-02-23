@@ -1,6 +1,7 @@
 import binaryen from 'binaryen';
 import {
 	TYPE,
+	type Optimizer,
 	drop_then,
 	BinVect,
 	TypeErrorNotAssignable,
@@ -72,7 +73,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): null {
+	public override lower(_: Optimizer): void {
 		throw new Error('`ASTNodeStatementConditional#lower` not yet supported.');
 	}
 

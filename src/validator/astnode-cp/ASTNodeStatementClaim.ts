@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	TYPE,
+	type Optimizer,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
 import {
@@ -89,7 +90,7 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): null {
+	public override lower(_: Optimizer): void {
 		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
 	}
 

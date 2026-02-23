@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import type {
 	VALUE,
 	TYPE,
+	Optimizer,
 	IR,
 } from '../../index.ts';
 import {
@@ -18,7 +19,6 @@ import {
 	type ValidOperatorCast,
 } from '../Operator.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -43,8 +43,7 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public override lower(): IR.Value {
+	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeOperationBinaryCast#lower` not yet supported.');
 	}
 

@@ -3,6 +3,7 @@ import type {Value} from './Value.ts';
 
 
 
+/** Evaluate an expression but then drop it. */
 export class Drop extends Instruction {
 	public constructor(private readonly value: Value) {
 		super();

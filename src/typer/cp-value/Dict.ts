@@ -1,9 +1,5 @@
 import type binaryen from 'binaryen';
-import type {
-	IR,
-	Builder,
-} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_equal,
@@ -24,11 +20,6 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`Dict#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `[${ super.toString() }]`;
 	}

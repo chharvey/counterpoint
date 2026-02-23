@@ -26,7 +26,7 @@ export function lowerDeco(
 	context: ClassMethodDecoratorContext<ASTNodeStatement, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'lower');
-	return function (this: ASTNodeStatement, optimizer?: Optimizer) {
+	return function (this: ASTNodeStatement, optimizer: Optimizer) {
 		return this.isFoldable ? null : method.call(this, optimizer);
 	};
 }
@@ -62,7 +62,7 @@ export function buildDeco(
  * - ASTNodeStatementIteration
  * - ASTNodeStatementBreak
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lowerable<null>, Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lowerable, Buildable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -87,7 +87,7 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lo
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(optimizer?: Optimizer): null;
+	public abstract lower(optimizer: Optimizer): void;
 
 	/**
 	 * @inheritdoc

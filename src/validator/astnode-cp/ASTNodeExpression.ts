@@ -4,7 +4,6 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type Lowerable,
 	type IR,
 	ErrorCode,
 } from '../../index.ts';
@@ -16,24 +15,6 @@ import {
 import {ASTNodeStatementExpression} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {Buildable} from './Buildable.ts';
-
-
-
-/**
- * Decorator for {@link ASTNodeExpression#lower} method and any overrides.
- * First tries to compute the assessed value, and if successful, lowers the assessed value.
- * Otherwise lowers this node.
- * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['lower']>
- */
-export function lowerDeco(
-	method:  ASTNodeExpression['lower'],
-	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
-): typeof method {
-	assert_context_name(context, 'lower');
-	return function (this: ASTNodeExpression, optimizer?: Optimizer) {
-		return this.fold()?.lower() ?? method.call(this, optimizer);
-	};
-}
 
 
 
@@ -102,7 +83,7 @@ export function typeDeco(
  * - ASTNodeClaim
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable<IR.Value>, Buildable {
+export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -126,12 +107,6 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable<I
 
 	/**
 	 * @inheritdoc
-	 * @implements Lowerable
-	 */
-	public abstract lower(optimizer?: Optimizer): IR.Value;
-
-	/**
-	 * @inheritdoc
 	 * @implements Buildable
 	 */
 	public abstract build(): binaryen.ExpressionRef;
@@ -141,6 +116,13 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Lowerable<I
 	 * @return the compile-time type of this node
 	 */
 	public abstract type(): TYPE.Type;
+
+	/**
+	 * Lower this AST node to a high-level IR value.
+	 * @param  optimizer the set of instructions to build the IR
+	 * @return           an optimized value
+	 */
+	public abstract lower(optimizer: Optimizer): IR.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

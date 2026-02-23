@@ -20,7 +20,6 @@ import {
 	type ValidOperatorEquality,
 } from '../Operator.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -42,18 +41,6 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: TYPE.Type = this.type();
-		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
-			[Operator.ID,  IR.BinOp.ID],
-			[Operator.EQ,  IR.BinOp.EQ],
-			[Operator.NID, IR.BinOp.NID],
-			[Operator.NEQ, IR.BinOp.NEQ],
-		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer), typ);
 	}
 
 	@memoizeMethod
@@ -99,6 +86,17 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 				return TYPE.BOOL;
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
+			[Operator.ID,  IR.BinOp.ID],
+			[Operator.EQ,  IR.BinOp.EQ],
+			[Operator.NID, IR.BinOp.NID],
+			[Operator.NEQ, IR.BinOp.NEQ],
+		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer), typ);
 	}
 
 	@memoizeMethod

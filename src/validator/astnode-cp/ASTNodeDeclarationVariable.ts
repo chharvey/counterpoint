@@ -11,7 +11,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	runOnceMethod,
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
@@ -30,7 +30,6 @@ import {ASTNodeTuple} from './ASTNodeTuple.ts';
 import {ASTNodeRecord} from './ASTNodeRecord.ts';
 import {ASTNodeCall} from './ASTNodeCall.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -173,17 +172,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): null {
-		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
 			optimizer.pushInstruction(new IR.Decl(this.assignee));
 			optimizer.pushInstruction(new IR.Set(this.assignee, value));
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
 		}
-		return null;
 	}
 
 	@buildDeco

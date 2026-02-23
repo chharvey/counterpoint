@@ -7,6 +7,7 @@ import {
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -15,7 +16,6 @@ import {
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -46,11 +46,11 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		return this.expr?.type().isBottomType ?? false;
 	}
 
-	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): null {
-		optimizer.pushInstruction(new IR.Drop(this.expr!.lower(optimizer)));
-		return null;
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		if (this.expr) {
+			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+		}
 	}
 
 	@memoizeMethod

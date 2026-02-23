@@ -39,24 +39,21 @@ import {
 test.suite('ASTNodeExpression', () => {
 	test.suite('#lower', () => {
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
-			[AST.ASTNodeTemplate, '"""hello {{ x }} world"""'],
-			[AST.ASTNodeTuple,    '(41, x, 43)'],
-			[AST.ASTNodeRecord,   '(a= 41, b= x, c= 43)'],
-			[AST.ASTNodeList,     '[41, x, 43]'],
-			[AST.ASTNodeDict,     '[a= 41, b= x, c= 43]'],
-			[AST.ASTNodeSet,      '{41, x, 43}'],
-			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> x, "c" -> 43}'],
-			[AST.ASTNodeAccess,   '(41, x, 43).1'],
-			[AST.ASTNodeCall,     'List.<int>((41, x, 43))'],
+			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
+			[AST.ASTNodeTuple,    '(41, 42, 43)'],
+			[AST.ASTNodeRecord,   '(a= 41, b= 42, c= 43)'],
+			[AST.ASTNodeList,     '[41, 42, 43]'],
+			[AST.ASTNodeDict,     '[a= 41, b= 42, c= 43]'],
+			[AST.ASTNodeSet,      '{41, 42, 43}'],
+			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> 42, "c" -> 43}'],
+			[AST.ASTNodeAccess,   '(41, 42, 43).1'],
+			[AST.ASTNodeCall,     'List.<int>((41, 42, 43))'],
 		]), (src, klass) => {
 			test.test(klass.name, () => {
-				const {stmts} = setupScript(`{
-					val mut x: int = 42;
-					${ src };
-				}`, {build: false});
-				const expr: AST.ASTNodeExpression = (stmts[1] as AST.ASTNodeStatementExpression).expr!;
+				const {stmts, opt} = setupScript(`{ ${ src }; }`, {build: false});
+				const expr: AST.ASTNodeExpression = (stmts[0] as AST.ASTNodeStatementExpression).expr!;
 				assert_instanceof(expr, klass);
-				return assert.throws(() => expr.lower(), /not yet supported/);
+				return assert.throws(() => expr.lower(opt), /not yet supported/);
 			});
 		});
 
@@ -64,13 +61,13 @@ test.suite('ASTNodeExpression', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42');
 			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
 		});
-		test.test('AST.Variable returns an IR.Variable.', () => {
-			const {stmts} = setupScript(`{
+		test.test('AST.Variable returns an IR.Get.', () => {
+			const {stmts, opt} = setupScript(`{
 				val mut x: int = 42;
 				x;
 			}`, {build: false});
 			const expr = (stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-			return assert.deepStrictEqual(expr.lower(), new IR.Get(expr));
+			return assert.deepStrictEqual(expr.lower(opt), new IR.Get(expr));
 		});
 
 		// TODO: move these to ASTNodeStatement tests
@@ -78,15 +75,15 @@ test.suite('ASTNodeExpression', () => {
 			const opt = new Optimizer();
 			const {stmts} = setupScript(`{
 				% Foldable cases:
-				val _:          int = 42; % no effect
-				val assignee_a: int = 42; % no effect
+				val _:          int = 42; % \`(DROP (CONST 42))\`
+				val assignee_a: int = 42; % \`(DECL assignee_a) (SET assignee_a (CONST 42))\`
 
 				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(SET assignee_b null)\`
-				val mut assignee_c:  int = 42;         % \`(SET assignee_c 42)\`
+				val mut assignee_b?: int;              % \`(DECL assignee_b) (SET assignee_b null)\`
+				val mut assignee_c:  int = 42;         % \`(DECL assignee_c) (SET assignee_c 42)\`
 				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
-				val     assignee_d:  int = assignee_c; % \`(SET assignee_d assignee_c)\`
-				val mut assignee_e:  int = assignee_c; % \`(SET assignee_e assignee_c)\`
+				val     assignee_d:  int = assignee_c; % \`(DECL assignee_d) (SET assignee_d assignee_c)\`
+				val mut assignee_e:  int = assignee_c; % \`(DECL assignee_e) (SET assignee_e assignee_c)\`
 
 				%% Syntactically impossible cases (for completion):
 				val _?:          int;
@@ -98,6 +95,9 @@ test.suite('ASTNodeExpression', () => {
 			}`, {build: false});
 			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
+				(DROP (CONST 42))
+				(DECL assignee_a)
+				(SET assignee_a (CONST 42))
 				(DECL assignee_b)
 				(SET assignee_b (CONST null))
 				(DECL assignee_c)
@@ -121,10 +121,13 @@ test.suite('ASTNodeExpression', () => {
 			(stmts[1] as AST.ASTNodeStatementExpression).lower(opt);
 			assert.strictEqual(opt.instructions.length, 1);
 			(stmts[2] as AST.ASTNodeStatementExpression).lower(opt);
-			assert.strictEqual(opt.instructions.length, 1);
+			assert.strictEqual(opt.instructions.length, 2);
 			(stmts[3] as AST.ASTNodeStatementExpression).lower(opt);
-			assert.strictEqual(opt.instructions.length, 1);
-			return assert.strictEqual(opt.print(), '(DROP (GET x))');
+			assert.strictEqual(opt.instructions.length, 2);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(DROP (GET x))
+				(DROP (CONST 42))
+			`.join('\n'));
 		});
 		test.test('AST.StatementReassignment pushes SET instruction.', () => {
 			const opt = new Optimizer();

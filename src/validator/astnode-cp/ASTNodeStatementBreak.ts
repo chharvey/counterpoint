@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
+import type {Optimizer} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -45,7 +46,7 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): null {
+	public override lower(_: Optimizer): void {
 		throw new Error('`ASTNodeStatementBreak#lower` not yet supported.');
 	}
 

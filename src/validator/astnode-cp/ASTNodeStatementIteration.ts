@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
+	type Optimizer,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
@@ -92,7 +93,7 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 
 	@memoizeMethod
 	@lowerDeco
-	public override lower(): null {
+	public override lower(_: Optimizer): void {
 		throw new Error('`ASTNodeStatementIteration#lower` not yet supported.');
 	}
 

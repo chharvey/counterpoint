@@ -1,10 +1,8 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import type binaryen from 'binaryen';
-import * as xjs from 'extrajs';
 import {
 	VALUE,
-	IR,
 	bigint_to_i64,
 	Builder,
 	BinVect,
@@ -15,33 +13,6 @@ import {buildConst} from '../helpers.ts';
 
 
 test.suite('Value', () => {
-	test.suite('#lower', () => {
-		test.test('Primitive returns an IR.Const.', () => {
-			xjs.Array.forEachAggregated<VALUE.Primitive>([
-				VALUE.NULL,
-				VALUE.FALSE,
-				VALUE.SYM_NOTHING,
-				VALUE.INT_0,
-				VALUE.FLOAT_0,
-				VALUE.STR_EMPTY,
-			], (value) => assert.deepStrictEqual(value.lower(), new IR.Const(value), value.constructor.name));
-		});
-
-		xjs.Array.forEachAggregated<VALUE.Value>([
-			new VALUE.Tuple([VALUE.NULL]),
-			new VALUE.Record(new Map([[0x100n, VALUE.NULL]])),
-			new VALUE.List([VALUE.NULL]),
-			new VALUE.Dict(new Map([[0x100n, VALUE.NULL]])),
-			new VALUE.Set(new Set([VALUE.NULL])),
-			new VALUE.Map(new Map([[VALUE.FALSE, VALUE.TRUE]])),
-		], (value) => {
-			test.test(value.constructor.name, () => {
-				assert.throws(() => value.lower(), /not yet supported/);
-			});
-		});
-	});
-
-
 	test.suite('#identical', () => {
 		test.suite('Tuple', () => {
 			test.test('Tuples with the same items are identical.', () => {

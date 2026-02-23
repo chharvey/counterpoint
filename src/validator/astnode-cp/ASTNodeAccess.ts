@@ -4,6 +4,7 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 } from '../../index.ts';
 import {
@@ -30,7 +31,6 @@ import {
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -59,12 +59,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		if ([Operator.DOT_RES].includes(this.kind)) {
 			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
 		}
-	}
-
-	@memoizeMethod
-	@lowerDeco
-	public override lower(): IR.Value {
-		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}
 
 	@memoizeMethod
@@ -97,6 +91,11 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		const entry: EntryType = get_entry_info(this.base.type(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}
 
 	@memoizeMethod

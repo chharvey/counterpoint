@@ -6,6 +6,7 @@ import {Value} from './Value.ts';
 
 
 
+/** A constant primitive value. */
 export class Const extends Value {
 	public constructor(private readonly value: VALUE.Primitive) {
 		super();
