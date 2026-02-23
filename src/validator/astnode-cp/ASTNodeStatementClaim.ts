@@ -22,7 +22,6 @@ import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -89,7 +88,6 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(_: Optimizer): void {
 		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
 	}

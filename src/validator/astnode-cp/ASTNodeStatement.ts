@@ -17,23 +17,6 @@ import type {Buildable} from './Buildable.ts';
 
 
 /**
- * Decorator for {@link ASTNodeStatement#lower} method and any overrides.
- * Returns `null` if this node is foldable, else calls the `lower()` method.
- * @implements MethodDecorator<ASTNodeStatement, ASTNodeStatement['lower']>
- */
-export function lowerDeco(
-	method:  ASTNodeStatement['lower'],
-	context: ClassMethodDecoratorContext<ASTNodeStatement, typeof method>,
-): typeof method {
-	assert_context_name(context, 'lower');
-	return function (this: ASTNodeStatement, optimizer: Optimizer) {
-		return this.isFoldable ? null : method.call(this, optimizer);
-	};
-}
-
-
-
-/**
  * Decorator for {@link ASTNodeStatement#build} method and any overrides.
  * Returns `(nop)` if this node is foldable, else calls the `build()` method.
  * @implements MethodDecorator<ASTNodeStatement, ASTNodeStatement['build']>

@@ -19,7 +19,6 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
@@ -72,7 +71,6 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(_: Optimizer): void {
 		throw new Error('`ASTNodeStatementLoop#lower` not yet supported.');
 	}
