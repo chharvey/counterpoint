@@ -5,6 +5,7 @@ import type {Value} from './Value.ts';
 
 
 
+/** Assign a value to a variable/local. */
 class IrSet extends Instruction {
 	public constructor(
 		private readonly target: AST.ASTNodeVariable | Local,

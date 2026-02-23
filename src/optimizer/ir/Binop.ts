@@ -43,6 +43,7 @@ export enum BinOp {
 
 
 
+/** A binary operation of 2 values. */
 export class Binop extends Value {
 	/**
 	 * Construct a new Binop using the Three-Address Code technique.

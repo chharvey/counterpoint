@@ -1,0 +1,144 @@
+TRAP() -> Nothing;
+CONST(Primitive) -> Value;
+GET(SemanticVariable | String) -> Value;
+
+TOINT(Number)   -> Integer;
+TONAT(Number)   -> Natural;
+TOFLOAT(Number) -> Float;
+
+NOT(Value) -> Boolean;
+EMP(Value) -> Boolean;
+
+INT_NEG(Integer) -> Integer;
+FLOAT_NEG(Float) -> Float;
+
+INT_ADD(Integer, Integer) -> Integer;
+INT_SUB(Integer, Integer) -> Integer;
+INT_MUL(Integer, Integer) -> Integer;
+INT_DIV(Integer, Integer) -> Integer;
+INT_EXP(Integer, Integer) -> Integer;
+
+NAT_ADD(Natural, Natural) -> Natural;
+NAT_SUB(Natural, Natural) -> Natural;
+NAT_MUL(Natural, Natural) -> Natural;
+NAT_DIV(Natural, Natural) -> Natural;
+NAT_EXP(Natural, Natural) -> Natural;
+
+FLOAT_ADD(Float, Float) -> Float;
+FLOAT_SUB(Float, Float) -> Float;
+FLOAT_MUL(Float, Float) -> Float;
+FLOAT_DIV(Float, Float) -> Float;
+FLOAT_EXP(Float, Float) -> Float;
+
+LT (Number, Number) -> Boolean;
+GT (Number, Number) -> Boolean;
+LE (Number, Number) -> Boolean;
+GE (Number, Number) -> Boolean;
+NLT(Number, Number) -> Boolean;
+NGT(Number, Number) -> Boolean;
+
+ID (Value, Value) -> Boolean;
+EQ (Value, Value) -> Boolean;
+NID(Value, Value) -> Boolean;
+NEQ(Value, Value) -> Boolean;
+
+DROP(Value);
+DECL(SemanticVariable | String);
+SET(SemanticVariable | String, Value);
+
+
+
+
+
+
+Lower(Null n)    := (CONST n);
+Lower(Boolean b) := (CONST b);
+Lower(Symbol s)  := (CONST s);
+Lower(Number n)  := (CONST n);
+
+Lower(SemanticConstant const) := (CONST Lower(ValueOf(const)~!));
+Lower(SemanticVariable var)   := (GET var);
+
+// Lower(SemanticTemplate tpl);
+// Lower(SemanticTuple tup);
+// Lower(SemanticRecord rec);
+// Lower(SemanticList list);
+// Lower(SemanticDict dict);
+// Lower(SemanticSet set);
+// Lower(SemanticMap map);
+// Lower(SemanticAccess access);
+// Lower(SemanticCall call);
+// Lower(SemanticClaim claim);
+
+Lower(SemanticOperation[operator=NOT] op)             := (NOT op.0);
+Lower(SemanticOperation[operator=EMP] op)             := (EMP op.0);
+Lower(SemanticOperation[operator=NEG][0: Integer] op) := (INT_NEG   op.0);
+Lower(SemanticOperation[operator=NEG][0: Float]   op) := (FLOAT_NEG op.0);
+
+Lower(SemanticOperation[operator=ADD][0: Integer][1: Integer] op) := (INT_ADD op.0 op.1);
+Lower(SemanticOperation[operator=SUB][0: Integer][1: Integer] op) := (INT_SUB op.0 op.1);
+Lower(SemanticOperation[operator=MUL][0: Integer][1: Integer] op) := (INT_MUL op.0 op.1);
+Lower(SemanticOperation[operator=DIV][0: Integer][1: Integer] op) := (INT_DIV op.0 op.1);
+Lower(SemanticOperation[operator=EXP][0: Integer][1: Integer] op) := (INT_EXP op.0 op.1);
+
+Lower(SemanticOperation[operator=ADD][0: Natural][1: Natural] op) := (NAT_ADD op.0 op.1);
+Lower(SemanticOperation[operator=SUB][0: Natural][1: Natural] op) := (NAT_SUB op.0 op.1);
+Lower(SemanticOperation[operator=MUL][0: Natural][1: Natural] op) := (NAT_MUL op.0 op.1);
+Lower(SemanticOperation[operator=DIV][0: Natural][1: Natural] op) := (NAT_DIV op.0 op.1);
+Lower(SemanticOperation[operator=EXP][0: Natural][1: Natural] op) := (NAT_EXP op.0 op.1);
+
+Lower(SemanticOperation[operator=ADD][0: Float][1: Float] op) := (FLOAT_ADD op.0 op.1);
+Lower(SemanticOperation[operator=SUB][0: Float][1: Float] op) := (FLOAT_SUB op.0 op.1);
+Lower(SemanticOperation[operator=MUL][0: Float][1: Float] op) := (FLOAT_MUL op.0 op.1);
+Lower(SemanticOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT_DIV op.0 op.1);
+Lower(SemanticOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT_EXP op.0 op.1);
+
+Lower(SemanticOperation[operator=LT] [0: Number][1: Number] op) := (LT op.0 op.1);
+Lower(SemanticOperation[operator=GT] [0: Number][1: Number] op) := (GT op.0 op.1);
+Lower(SemanticOperation[operator=LE] [0: Number][1: Number] op) := (LE op.0 op.1);
+Lower(SemanticOperation[operator=GE] [0: Number][1: Number] op) := (GE op.0 op.1);
+Lower(SemanticOperation[operator=NLT][0: Number][1: Number] op) := (NLT op.0 op.1);
+Lower(SemanticOperation[operator=NGT][0: Number][1: Number] op) := (NGT op.0 op.1);
+
+Lower(SemanticOperation[operator=ID]  op) := (ID  op.0 op.1);
+Lower(SemanticOperation[operator=EQ]  op) := (EQ  op.0 op.1);
+Lower(SemanticOperation[operator=NID] op) := (NID op.0 op.1);
+Lower(SemanticOperation[operator=NEQ] op) := (NEQ op.0 op.1);
+
+
+Lower(SemanticOperation[operator=AND] op) := [
+	(DECL $result)
+	(DECL $left)
+	(SET $left `Lower(op.0)`)
+	if_false (GET $left), goto "else".
+	(SET $result `Lower(op.1)`)
+	goto "endif".
+	"else":
+	(SET $result (GET $left))
+	"endif":
+	return (GET $result).
+];
+
+Lower(SemanticOperation[operator=OR] op) := [
+	(DECL $result)
+	(DECL $left)
+	(SET $left `Lower(op.0)`)
+	if_false (GET $left), goto "else".
+	(SET $result (GET $left))
+	goto "endif".
+	"else":
+	(SET $result `Lower(op.1)`)
+	"endif":
+	return (GET $result).
+];
+
+Lower(SemanticOperation[operator=COND] op) := [
+	(DECL $result)
+	if_false `Lower(op.0)`, goto "else".
+	(SET $result `Lower(op.1)`)
+	goto "endif".
+	"else":
+	(SET $result `Lower(op.2)`)
+	"endif":
+	return (GET $result).
+];

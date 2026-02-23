@@ -5,6 +5,7 @@ import {Value} from './Value.ts';
 
 
 
+/** Read the value of a variable/local. */
 export class Get extends Value {
 	public constructor(private readonly target: AST.ASTNodeVariable | Local) {
 		super();
