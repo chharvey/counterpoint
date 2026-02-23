@@ -37,25 +37,22 @@ import {
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
-			[AST.ASTNodeTemplate, '"""hello {{ x }} world"""'],
-			[AST.ASTNodeTuple,    '(41, x, 43)'],
-			[AST.ASTNodeRecord,   '(a= 41, b= x, c= 43)'],
-			[AST.ASTNodeList,     '[41, x, 43]'],
-			[AST.ASTNodeDict,     '[a= 41, b= x, c= 43]'],
-			[AST.ASTNodeSet,      '{41, x, 43}'],
-			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> x, "c" -> 43}'],
-			[AST.ASTNodeAccess,   '(41, x, 43).1'],
-			[AST.ASTNodeCall,     'List.<int>((41, x, 43))'],
+			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
+			[AST.ASTNodeTuple,    '(41, 42, 43)'],
+			[AST.ASTNodeRecord,   '(a= 41, b= 42, c= 43)'],
+			[AST.ASTNodeList,     '[41, 42, 43]'],
+			[AST.ASTNodeDict,     '[a= 41, b= 42, c= 43]'],
+			[AST.ASTNodeSet,      '{41, 42, 43}'],
+			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> 42, "c" -> 43}'],
+			[AST.ASTNodeAccess,   '(41, 42, 43).1'],
+			[AST.ASTNodeCall,     'List.<int>((41, 42, 43))'],
 		]), (src, klass) => {
 			it(klass.name, () => {
 				const opt = new Optimizer();
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: int = 42;
-					${ src };
-				`);
+				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`${ src };`);
 				goal.varCheck();
 				goal.typeCheck();
-				const expr: AST.ASTNodeExpression = (goal.children[1] as AST.ASTNodeStatementExpression).expr!;
+				const expr: AST.ASTNodeExpression = (goal.children[0] as AST.ASTNodeStatementExpression).expr!;
 				assert_instanceof(expr, klass);
 				return assert.throws(() => expr.lower(opt), /not yet supported/);
 			});
