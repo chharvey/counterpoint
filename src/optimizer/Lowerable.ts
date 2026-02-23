@@ -1,7 +1,4 @@
-import type {
-	Optimizer,
-	IR,
-} from './index.ts';
+import type {Optimizer} from './index.ts';
 
 
 
@@ -15,9 +12,8 @@ import type {
  * - // TODO: Iteration
  * - // TODO: Break
  * - ASTNodeGoal
- * - VALUE.Value
  */
-export interface Lowerable<Return extends IR.Value | null> {
+export interface Lowerable<Return extends null> {
 	/**
 	 * Lowers this AST node or folded value to a high-level IR instruction.
 	 * @param  optimizer the set of instructions to build the IR

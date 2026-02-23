@@ -14,13 +14,19 @@ import {Value} from './Value.ts';
  * - ValueString
  */
 export abstract class Primitive extends Value {
+	/**
+	 * @final
+	 */
 	@memoizeMethod
-	/** @final */ public override lower(): IR.Const {
-		return new IR.Const(this);
+	public override toType(): TYPE.Unit<this> {
+		return new TYPE.Unit<this>(this);
 	}
 
+	/**
+	 * @final
+	 */
 	@memoizeMethod
-	/** @final */ public override toType(): TYPE.Unit<this> {
-		return new TYPE.Unit<this>(this);
+	public override lower(): IR.Const {
+		return new IR.Const(this);
 	}
 }

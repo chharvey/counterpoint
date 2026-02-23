@@ -24,11 +24,6 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`Dict#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `[${ super.toString() }]`;
 	}
@@ -47,6 +42,11 @@ export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	 */
 	public override toType(): TYPE.Dict {
 		return new TYPE.Dict(TYPE.Union.all([...this.properties.values()].map<TYPE.Type>((val) => val.toType())));
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Value {
+		throw new Error('`Dict#lower` not yet supported.');
 	}
 
 	public override build(_: Builder): binaryen.ExpressionRef {

@@ -26,11 +26,6 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`ValueRecord#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `(${ super.toString() })`;
 	}
@@ -56,6 +51,11 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	 */
 	public override toType(): TYPE.Record {
 		return TYPE.Record.fromTypes(new Map([...this.properties].map<[bigint, TYPE.Type]>(([key, val]) => [key, val.toType()])));
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Value {
+		throw new Error('`ValueRecord#lower` not yet supported.');
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

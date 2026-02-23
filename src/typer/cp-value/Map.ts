@@ -51,11 +51,6 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 		return BigInt(this.cases.size);
 	}
 
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`ValueMap#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
@@ -80,6 +75,11 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 			TYPE.Union.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
 			TYPE.Union.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Value {
+		throw new Error('`ValueMap#lower` not yet supported.');
 	}
 
 	public override build(_: Builder): binaryen.ExpressionRef {

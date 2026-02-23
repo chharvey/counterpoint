@@ -24,11 +24,6 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 export class List<T extends Value = Value> extends CollectionIndexed<T> {
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`List#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `[${ super.toString() }]`;
 	}
@@ -48,6 +43,12 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	public override toType(): TYPE.List {
 		return new TYPE.List(TYPE.Union.all(this.items.map<TYPE.Type>((it) => it.toType())));
 	}
+
+	@memoizeMethod
+	public override lower(): IR.Value {
+		throw new Error('`List#lower` not yet supported.');
+	}
+
 
 	public override build(_: Builder): binaryen.ExpressionRef {
 		throw new Error('`List#build` not yet supported.');

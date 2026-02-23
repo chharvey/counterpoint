@@ -26,11 +26,6 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`ValueTuple#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `(${ super.toString() }${ this.items.length === 1 ? ',' : '' })`;
 	}
@@ -56,6 +51,11 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	 */
 	public override toType(): TYPE.Tuple {
 		return TYPE.Tuple.fromTypes(this.items.map<TYPE.Type>((it) => it.toType()));
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Value {
+		throw new Error('`ValueTuple#lower` not yet supported.');
 	}
 
 	public override build(builder: Builder): binaryen.ExpressionRef {

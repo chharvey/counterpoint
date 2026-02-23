@@ -54,11 +54,6 @@ class ValueSet<T extends Value = Value> extends Collection {
 		return BigInt(this.elements.size);
 	}
 
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`ValueSet#lower` not yet supported.');
-	}
-
 	public override toString(): string {
 		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
 	}
@@ -77,6 +72,11 @@ class ValueSet<T extends Value = Value> extends Collection {
 	 */
 	public override toType(): TYPE.Set {
 		return new TYPE.Set(TYPE.Union.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Value {
+		throw new Error('`ValueSet#lower` not yet supported.');
 	}
 
 	public override build(_: Builder): binaryen.ExpressionRef {
