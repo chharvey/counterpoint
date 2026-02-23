@@ -9,7 +9,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -59,7 +59,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
-	@memoizeMethod
+	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
 		return optimizer.pushInstruction(new IR.Set(this.assignee, this.assigned.lower(optimizer)));

@@ -10,7 +10,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -81,7 +81,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	@memoizeMethod
+	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
 		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.unfixed); // TODO: v0.5: use decorator
 		if (is_foldable) {

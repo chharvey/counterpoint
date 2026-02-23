@@ -56,7 +56,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	// @memoizeMethod
+	// @runOnceMethod
 	public override lower(): void {
 		return;
 	}

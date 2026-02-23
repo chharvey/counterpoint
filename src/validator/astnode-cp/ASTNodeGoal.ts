@@ -7,7 +7,7 @@ import {
 	Builder,
 	ParseError01,
 } from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {runOnceMethod} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -87,7 +87,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	@memoizeMethod
+	@runOnceMethod
 	public lower(optimizer: Optimizer): void {
 		return this.children.forEach((stmt) => stmt.lower(optimizer));
 	}

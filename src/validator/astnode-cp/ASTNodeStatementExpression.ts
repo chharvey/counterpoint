@@ -5,7 +5,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -31,7 +31,7 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	@memoizeMethod
+	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
 		if (this.expr && !this.expr.fold()) {
 			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
