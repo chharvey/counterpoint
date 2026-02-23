@@ -502,6 +502,157 @@ test.suite('ASTNodeOperation', () => {
 				(DROP (NOT (GET $1)))
 			`.join('\n'));
 		});
+
+		test.suite('AST.OperationBinaryLogical', () => {
+			test.test('[operator=AND]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut a: null  = null;
+					val mut b: bool  = false;
+					a && b;
+					!a && !b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL a)
+					(SET a (CONST null))
+					(DECL b)
+					(SET b (CONST false))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET a))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET b))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET $1))
+					"block-1":
+					(DROP (GET $0))
+					(DECL $2)
+					(DECL $3)
+					(SET $3 (NOT (GET a)))
+					if_false (GET $3), goto "block-2".
+					(SET $2 (NOT (GET b)))
+					goto "block-3".
+					"block-2":
+					(SET $2 (GET $3))
+					"block-3":
+					(DROP (GET $2))
+				`.join('\n'));
+			});
+			test.test('[operator=OR]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut c: int   = 10;
+					val mut d: float = 0.1;
+					c || d;
+					-c + 1 || 1.0 - d;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL c)
+					(SET c (CONST 10))
+					(DECL d)
+					(SET d (CONST 0.1))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET c))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET $1))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET d))
+					"block-1":
+					(DROP (GET $0))
+					(DECL $2)
+					(DECL $3)
+					(DECL $4)
+					(SET $4 (INT_NEG (GET c)))
+					(SET $3 (INT_ADD (GET $4) (CONST 1)))
+					if_false (GET $3), goto "block-2".
+					(SET $2 (GET $3))
+					goto "block-3".
+					"block-2":
+					(SET $2 (FLOAT_SUB (CONST 1.0) (GET d)))
+					"block-3":
+					(DROP (GET $2))
+				`.join('\n'));
+			});
+			test.test('[operator=NAND]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut a: null  = null;
+					val mut b: bool  = false;
+					a !& b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL a)
+					(SET a (CONST null))
+					(DECL b)
+					(SET b (CONST false))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET a))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET b))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET $1))
+					"block-1":
+					(DROP (NOT (GET $0)))
+				`.join('\n'));
+			});
+			test.test('[operator=NOR]', () => {
+				assert.strictEqual(setupScript(`{
+					val mut c: int   = 10;
+					val mut d: float = 0.1;
+					c !| d;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL c)
+					(SET c (CONST 10))
+					(DECL d)
+					(SET d (CONST 0.1))
+					(DECL $0)
+					(DECL $1)
+					(SET $1 (GET c))
+					if_false (GET $1), goto "block-0".
+					(SET $0 (GET $1))
+					goto "block-1".
+					"block-0":
+					(SET $0 (GET d))
+					"block-1":
+					(DROP (NOT (GET $0)))
+				`.join('\n'));
+			});
+		});
+		test.test('AST.OperationTernary', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: bool  = false;
+				val mut y: float = 0.5;
+				val mut z: float = 0.2;
+				if x then y else z;
+				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL x)
+				(SET x (CONST false))
+				(DECL y)
+				(SET y (CONST 0.5))
+				(DECL z)
+				(SET z (CONST 0.2))
+				(DECL $0)
+				if_false (GET x), goto "block-0".
+				(SET $0 (GET y))
+				goto "block-1".
+				"block-0":
+				(SET $0 (GET z))
+				"block-1":
+				(DROP (GET $0))
+				(DECL $1)
+				if_false (LT (GET y) (GET z)), goto "block-2".
+				(DECL $2)
+				(SET $2 (FLOAT_MUL (GET y) (CONST 2.0)))
+				(SET $1 (FLOAT_ADD (CONST 0.03) (GET $2)))
+				goto "block-3".
+				"block-2":
+				(DECL $3)
+				(SET $3 (FLOAT_MUL (CONST 3.0) (GET z)))
+				(SET $1 (FLOAT_ADD (GET $3) (CONST 0.02)))
+				"block-3":
+				(DROP (GET $1))
+			`.join('\n'));
+		});
 	});
 
 

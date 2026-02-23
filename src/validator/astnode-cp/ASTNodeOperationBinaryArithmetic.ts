@@ -61,7 +61,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ: TYPE.Type = this.type();
 		const [t0, t1] = [this.operand0.type(),           this.operand1.type()];
-		const [l0, l1] = [this.operand0.lower(optimizer), this.operand1.lower(optimizer)];
+		const [v0, v1] = [this.operand0.lower(optimizer), this.operand1.lower(optimizer)];
 		return (
 			bothInts(t0, t1) ? IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
 				[Operator.EXP, IR.BinOp.INT_EXP],
@@ -69,14 +69,14 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.DIV, IR.BinOp.INT_DIV],
 				[Operator.ADD, IR.BinOp.INT_ADD],
 				[Operator.SUB, IR.BinOp.INT_SUB],
-			]).get(this.operator)!, l0, l1, typ) :
+			]).get(this.operator)!, v0, v1, typ) :
 			bothFloats(t0, t1) ? IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
 				[Operator.EXP, IR.BinOp.FLOAT_EXP],
 				[Operator.MUL, IR.BinOp.FLOAT_MUL],
 				[Operator.DIV, IR.BinOp.FLOAT_DIV],
 				[Operator.ADD, IR.BinOp.FLOAT_ADD],
 				[Operator.SUB, IR.BinOp.FLOAT_SUB],
-			]).get(this.operator)!, l0, l1, typ) :
+			]).get(this.operator)!, v0, v1, typ) :
 			new IR.Trap()
 		);
 	}

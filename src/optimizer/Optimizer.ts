@@ -1,6 +1,6 @@
 import {TYPE} from '../typer/index.ts';
 import {IR} from './index.ts';
-import type {Local} from './utils-private.ts';
+import type {Local} from './utils-public.ts';
 
 
 
@@ -11,6 +11,7 @@ import type {Local} from './utils-private.ts';
  */
 export class Optimizer {
 	#tempLocalCounter: bigint = 0n;
+	#labelCounter:     bigint = 0n;
 
 	readonly #instructions: IR.Instruction[] = [];
 
@@ -25,6 +26,10 @@ export class Optimizer {
 		};
 		this.pushInstruction(new IR.Decl(local));
 		return local;
+	}
+
+	public newLabel(): string {
+		return `block-${ this.#labelCounter++ }`;
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {

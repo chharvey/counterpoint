@@ -1,4 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
+import type {Local} from '../utils-public.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
@@ -71,16 +72,16 @@ export class Binop extends Value {
 		if (is_unit(operand0) && is_unit(operand1)) {
 			return new Binop(operator, operand0, operand1, typ);
 		} else if (is_unit(operand0)) {
-			const local = optimizer.newTempLocal();
+			const local: Local = optimizer.newTempLocal();
 			optimizer.pushInstruction(new IrSet(local, operand1));
 			return new Binop(operator, operand0, new Get(local), typ);
 		} else if (is_unit(operand1)) {
-			const local = optimizer.newTempLocal();
+			const local: Local = optimizer.newTempLocal();
 			optimizer.pushInstruction(new IrSet(local, operand0));
 			return new Binop(operator, new Get(local), operand1, typ);
 		} else {
-			const local0 = optimizer.newTempLocal();
-			const local1 = optimizer.newTempLocal();
+			const local0: Local = optimizer.newTempLocal();
+			const local1: Local = optimizer.newTempLocal();
 			optimizer.pushInstruction(new IrSet(local0, operand0));
 			optimizer.pushInstruction(new IrSet(local1, operand1));
 			return new Binop(operator, new Get(local0), new Get(local1), typ);
