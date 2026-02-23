@@ -51,7 +51,7 @@ export class Unop extends Value {
 		if (is_unit(operand)) {
 			return new Unop(operator, operand, typ);
 		} else {
-			const local: Local = optimizer.newTempLocal(typ);
+			const local: Local = optimizer.newTempLocal(operand.type);
 			optimizer.pushInstruction(new IrSet(local, operand));
 			return new Unop(operator, new Get(local), typ);
 		}
