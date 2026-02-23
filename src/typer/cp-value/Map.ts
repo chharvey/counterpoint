@@ -1,10 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {
-	IR,
-	Builder,
-} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -49,11 +45,6 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	 */
 	public override get count(): bigint {
 		return BigInt(this.cases.size);
-	}
-
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`ValueMap#lower` not yet supported.');
 	}
 
 	public override toString(): string {

@@ -1,9 +1,5 @@
 import type binaryen from 'binaryen';
-import type {
-	Lowerable,
-	IR,
-	Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
 import {strictEqual} from '../utils-private.ts';
 import type {TYPE} from '../index.ts';
@@ -34,7 +30,7 @@ export function identical(
  * - Primitive
  * - Collection
  */
-export abstract class Value implements Lowerable<IR.Value> {
+export abstract class Value {
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
@@ -51,12 +47,6 @@ export abstract class Value implements Lowerable<IR.Value> {
 	public get isEmpty(): boolean {
 		return !this.isTruthy;
 	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Lowerable
-	 */
-	public abstract lower(): IR.Value;
 
 	/**
 	 * @return a string representation of this type

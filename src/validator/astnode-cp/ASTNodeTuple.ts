@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 	build_tuple_like,
 	TypeErrorNotAssignable,
@@ -20,7 +21,6 @@ import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -47,12 +47,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeTuple#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return build_tuple_like(this.builder, this.children.map((item) => {
@@ -65,6 +59,11 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeTuple#lower` not yet supported.');
 	}
 
 	@memoizeMethod

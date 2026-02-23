@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 	build_record_like,
 	AssignmentErrorDuplicateKey,
@@ -23,7 +24,6 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -61,12 +61,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeRecord#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return build_record_like(this.builder, this.children.map((prop) => {
@@ -82,6 +76,11 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			c.key.id,
 			c.val.type(),
 		])));
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeRecord#lower` not yet supported.');
 	}
 
 	@memoizeMethod

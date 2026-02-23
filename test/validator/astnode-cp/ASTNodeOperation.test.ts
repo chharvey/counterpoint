@@ -121,31 +121,28 @@ describe('ASTNodeOperation', () => {
 		it('AST.OperationUnary[operator=NOT]', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val mut x: int = 42;
-				!x;
-				val mut y: int = x / 7;
-				!(x + y);
+				!42;
+				val y: int = 42 / 7;
+				!(42 + y);
 			`);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
-				(DECL x)
-				(SET x (CONST 42))
-				(DROP (NOT (GET x)))
+				(DROP (NOT (CONST 42)))
 				(DECL y)
-				(SET y (INT_DIV (GET x) (CONST 7)))
+				(SET y (INT_DIV (CONST 42) (CONST 7)))
 				(DECL $0)
-				(SET $0 (INT_ADD (GET x) (GET y)))
+				(SET $0 (INT_ADD (CONST 42) (GET y)))
 				(DROP (NOT (GET $0)))
 			`.join('\n'));
 		});
 		it('AST.OperationUnary[operator=EMP]', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val mut x: int = 42;
+				val x: int = 42;
 				?x;
-				val mut y: int = x / 7;
+				val y: int = x / 7;
 				?(x + y);
 			`);
 			goal.varCheck();
@@ -178,7 +175,7 @@ describe('ASTNodeOperation', () => {
 				(SET x (CONST 42))
 				(DROP (INT_NEG (GET x)))
 				(DECL y)
-				(SET y (CONST 6.0))
+				(SET y (FLOAT_DIV (CONST 42.0) (CONST 7.0)))
 				(DECL $0)
 				(SET $0 (FLOAT_ADD (CONST 3.0) (GET y)))
 				(DROP (FLOAT_NEG (GET $0)))
@@ -201,22 +198,21 @@ describe('ASTNodeOperation', () => {
 					(DECL $0)
 					(SET $0 (INT_EXP (GET x) (CONST 2)))
 					(DECL $1)
-					(SET $1 (INT_DIV (GET $0) (CONST 8)))
-					(DROP (INT_ADD (CONST 3) (GET $1)))
+					(SET $1 (INT_EXP (CONST 2) (CONST 3)))
+					(DECL $2)
+					(SET $2 (INT_DIV (GET $0) (GET $1)))
+					(DROP (INT_ADD (CONST 3) (GET $2)))
 				`.join('\n'));
 			});
 			it('emits `(TRAP)` when types mismatch.', () => {
 				const opt = new Optimizer();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: float = 4.2;
-					3.5 + x / 2;
+					3.5 + 4.2 / 2;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
 				goal.lower(opt);
 				return assert.strictEqual(opt.print(), extract_lines`
-					(DECL x)
-					(SET x (CONST 4.2))
 					(DROP (FLOAT_ADD (CONST 3.5) (TRAP)))
 				`.join('\n'));
 			});
@@ -353,11 +349,11 @@ describe('ASTNodeOperation', () => {
 					(DROP (GET $0))
 					(DECL $2)
 					(DECL $3)
+					(SET $3 (INT_NEG (GET c)))
 					(DECL $4)
-					(SET $4 (INT_NEG (GET c)))
-					(SET $3 (INT_ADD (GET $4) (CONST 1)))
-					if_false (GET $3), goto "block-2".
-					(SET $2 (GET $3))
+					(SET $4 (INT_ADD (GET $3) (CONST 1)))
+					if_false (GET $4), goto "block-2".
+					(SET $2 (GET $4))
 					goto "block-3".
 					"block-2":
 					(DECL $5)

@@ -1,28 +1,17 @@
-import type {
-	Optimizer,
-	IR,
-} from './index.ts';
+import type {Optimizer} from './index.ts';
 
 
 
 /**
  * Known implementers:
- * - ASTNodeExpression
- * - ASTNodeDeclarationVariable
- * - ASTNodeStatementExpression
- * - ASTNodeAssignment // TODO: Reassignment
- * - // TODO: Conditional
- * - // TODO: Loop
- * - // TODO: Iteration
- * - // TODO: Break
+ * - ASTNodeStatement
  * - ASTNodeGoal
- * - VALUE.Value
  */
-export interface Lowerable<Return extends IR.Value | null> {
+export interface Lowerable {
 	/**
-	 * Lowers this AST node or folded value to a high-level IR instruction.
+	 * Lowers this AST node to a high-level IR instruction.
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value if present
 	 */
-	lower(optimizer: Optimizer): Return;
+	lower(optimizer: Optimizer): void;
 }

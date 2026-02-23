@@ -56,9 +56,9 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	// @memoizeMethod
-	public override lower(): null {
-		return null;
+	// @runOnceMethod
+	public override lower(): void {
+		return;
 	}
 
 	public override build(): binaryen.ExpressionRef {

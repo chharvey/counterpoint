@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
 	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
@@ -25,7 +26,6 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Reassignable} from './Reassignable.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -61,12 +61,6 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public override lower(): IR.Value {
-		return new IR.Get(this);
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
@@ -79,6 +73,11 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
 		return symbol.uninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		return new IR.Get(this);
 	}
 
 	@memoizeMethod

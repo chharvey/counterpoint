@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 } from '../../index.ts';
 import {
@@ -14,7 +15,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -44,12 +44,6 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw new Error('`ASTNodeTemplate#build` not yet supported.');
@@ -59,6 +53,11 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.STR;
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
 	}
 
 	@memoizeMethod

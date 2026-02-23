@@ -24,7 +24,6 @@ import {
 	type ValidOperatorUnary,
 } from '../Operator.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -47,28 +46,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		public  readonly operand:  ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand]);
-	}
-
-	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: TYPE.Type = this.type();
-		const t0:  TYPE.Type = this.operand.type();
-		const v0:  IR.Value  = this.operand.lower(optimizer);
-		return (
-			[Operator.NOT, Operator.EMP].includes(this.operator) ? IR.Unop.new(optimizer, new Map<Operator, IR.UnOp>([
-				[Operator.NOT, IR.UnOp.NOT],
-				[Operator.EMP, IR.UnOp.EMP],
-			]).get(this.operator)!, v0, typ) :
-			this.operator === Operator.NEG ? IR.Unop.new(
-				optimizer,
-				t0.isSubtypeOf(TYPE.INT) ? IR.UnOp.INT_NEG : (assert.ok(t0.isSubtypeOf(TYPE.FLOAT)), IR.UnOp.FLOAT_NEG),
-				v0,
-				typ,
-			) :
-			// TODO: v0.5+ operators int, nat, float
-			assert.fail(`Unexpected operator ${ Operator[this.operator] }`)
-		);
 	}
 
 	@memoizeMethod
@@ -124,6 +101,27 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return t;
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		const t0:  TYPE.Type = this.operand.type();
+		const v0:  IR.Value  = this.operand.lower(optimizer);
+		return (
+			[Operator.NOT, Operator.EMP].includes(this.operator) ? IR.Unop.new(optimizer, new Map<Operator, IR.UnOp>([
+				[Operator.NOT, IR.UnOp.NOT],
+				[Operator.EMP, IR.UnOp.EMP],
+			]).get(this.operator)!, v0, typ) :
+			this.operator === Operator.NEG ? IR.Unop.new(
+				optimizer,
+				t0.isSubtypeOf(TYPE.INT) ? IR.UnOp.INT_NEG : (assert.ok(t0.isSubtypeOf(TYPE.FLOAT)), IR.UnOp.FLOAT_NEG),
+				v0,
+				typ,
+			) :
+			// TODO: v0.5+ operators int, nat, float
+			assert.fail(`Unexpected operator ${ Operator[this.operator] }`)
+		);
 	}
 
 	@memoizeMethod

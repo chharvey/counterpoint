@@ -7,7 +7,7 @@ import {
 	Builder,
 	ParseError01,
 } from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {runOnceMethod} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -46,7 +46,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class ASTNodeGoal extends ASTNodeCP implements Lowerable<null>, Buildable {
+export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -87,12 +87,9 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable<null>, Buildable
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	@memoizeMethod
-	public lower(optimizer: Optimizer): null {
-		this.children.forEach((stmt) => {
-			stmt.lower(optimizer);
-		});
-		return null;
+	@runOnceMethod
+	public lower(optimizer: Optimizer): void {
+		return this.children.forEach((stmt) => stmt.lower(optimizer));
 	}
 
 	/** @implements Buildable */

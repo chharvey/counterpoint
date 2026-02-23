@@ -19,12 +19,15 @@ export class Optimizer {
 		return [...this.#instructions];
 	}
 
-	public newTempLocal(typ: TYPE.Type): Local {
+	public newTempLocal(typ: TYPE.Type, value?: IR.Value): Local {
 		const local: Local = {
 			name: `$${ this.#tempLocalCounter++ }`,
 			type: typ,
 		};
 		this.pushInstruction(new IR.Decl(local));
+		if (value) {
+			this.pushInstruction(new IR.Set(local, value));
+		}
 		return local;
 	}
 

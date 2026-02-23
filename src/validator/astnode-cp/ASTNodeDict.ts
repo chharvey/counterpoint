@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
 	type IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
@@ -21,7 +22,6 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -59,12 +59,6 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeDict#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw new Error('`ASTNodeDict#build` not yet supported.');
@@ -77,6 +71,11 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			TYPE.Union.all(this.children.map((c) => c.val.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeDict#lower` not yet supported.');
 	}
 
 	@memoizeMethod
