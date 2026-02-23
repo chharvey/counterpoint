@@ -7,7 +7,6 @@ import type {
 
 /**
  * Known implementers:
- * - ASTNodeExpression
  * - ASTNodeDeclarationVariable
  * - ASTNodeStatementExpression
  * - ASTNodeAssignment // TODO: Reassignment

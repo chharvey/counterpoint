@@ -44,12 +44,6 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw new Error('`ASTNodeTemplate#build` not yet supported.');
@@ -59,6 +53,12 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.STR;
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Value {
+		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
 	}
 
 	@memoizeMethod

@@ -59,12 +59,6 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeDict#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw new Error('`ASTNodeDict#build` not yet supported.');
@@ -77,6 +71,12 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			TYPE.Union.all(this.children.map((c) => c.val.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Value {
+		throw new Error('`ASTNodeDict#lower` not yet supported.');
 	}
 
 	@memoizeMethod

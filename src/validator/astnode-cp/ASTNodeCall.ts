@@ -72,12 +72,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public override lower(): IR.Value {
-		throw new Error('`ASTNodeCall#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw new Error('`ASTNodeCall#build` not yet supported.');
@@ -278,6 +272,12 @@ export class ASTNodeCall extends ASTNodeExpression {
 				invalid_function_name(this.base.source);
 			}
 		}
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Value {
+		throw new Error('`ASTNodeCall#lower` not yet supported.');
 	}
 
 	@memoizeMethod

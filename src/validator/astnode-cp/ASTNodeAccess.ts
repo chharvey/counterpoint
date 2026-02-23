@@ -59,12 +59,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public override lower(): IR.Value {
-		throw new Error('`ASTNodeAccess#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const base_type: TYPE.Type = this.base.type();
@@ -94,6 +88,12 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		const entry: EntryType = get_entry_info(this.base.type(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Value {
+		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}
 
 	@memoizeMethod

@@ -61,12 +61,6 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeRecord#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return build_record_like(this.builder, this.children.map((prop) => {
@@ -82,6 +76,12 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			c.key.id,
 			c.val.type(),
 		])));
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Value {
+		throw new Error('`ASTNodeRecord#lower` not yet supported.');
 	}
 
 	@memoizeMethod

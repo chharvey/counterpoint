@@ -47,12 +47,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(): IR.Value {
-		throw new Error('`ASTNodeTuple#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return build_tuple_like(this.builder, this.children.map((item) => {
@@ -65,6 +59,12 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(): IR.Value {
+		throw new Error('`ASTNodeTuple#lower` not yet supported.');
 	}
 
 	@memoizeMethod

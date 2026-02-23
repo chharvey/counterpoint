@@ -54,20 +54,6 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: TYPE.Type = this.type();
-		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
-			[Operator.LT,  IR.BinOp.LT],
-			[Operator.GT,  IR.BinOp.GT],
-			[Operator.LE,  IR.BinOp.LE],
-			[Operator.GE,  IR.BinOp.GE],
-			[Operator.NLT, IR.BinOp.NLT],
-			[Operator.NGT, IR.BinOp.NGT],
-		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer), typ);
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.builder.module.call(new Map<Operator, string>([
@@ -87,6 +73,20 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			int_coercion || bothFloats(t0, t1) || neitherFloats(t0, t1) ? TYPE.BOOL :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);
+	}
+
+	@memoizeMethod
+	@lowerDeco
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
+			[Operator.LT,  IR.BinOp.LT],
+			[Operator.GT,  IR.BinOp.GT],
+			[Operator.LE,  IR.BinOp.LE],
+			[Operator.GE,  IR.BinOp.GE],
+			[Operator.NLT, IR.BinOp.NLT],
+			[Operator.NGT, IR.BinOp.NGT],
+		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer), typ);
 	}
 
 	@memoizeMethod

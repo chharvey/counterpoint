@@ -55,6 +55,30 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
+	@buildDeco
+	public override build(): binaryen.ExpressionRef {
+		return this.builder.module.call(new Map<Operator, string>([
+			[Operator.EXP, 'vexp'],
+			[Operator.MUL, 'vmul'],
+			[Operator.DIV, 'vdiv'],
+			[Operator.ADD, 'vadd'],
+		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
+	}
+
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+		if (t0.isBottomType || t1.isBottomType) {
+			return TYPE.NEVER;
+		}
+		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
+		return (
+			bothInts(t0, t1)   ? TYPE.INT :
+			bothFloats(t0, t1) ? TYPE.FLOAT :
+			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
+			assert.fail(new TypeErrorInvalidOperation(this))
+		);
+	}
+
+	@memoizeMethod
 	@lowerDeco
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ: TYPE.Type = this.type();
@@ -76,30 +100,6 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.SUB, IR.BinOp.FLOAT_SUB],
 			]).get(this.operator)!, v0, v1, typ) :
 			new IR.Trap()
-		);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.EXP, 'vexp'],
-			[Operator.MUL, 'vmul'],
-			[Operator.DIV, 'vdiv'],
-			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
-	}
-
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NEVER;
-		}
-		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
-		return (
-			bothInts(t0, t1)   ? TYPE.INT :
-			bothFloats(t0, t1) ? TYPE.FLOAT :
-			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
-			assert.fail(new TypeErrorInvalidOperation(this))
 		);
 	}
 

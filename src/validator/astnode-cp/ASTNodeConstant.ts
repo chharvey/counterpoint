@@ -63,12 +63,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	// @lowerDeco // explicitly leaving off for performance
-	public override lower(): IR.Const {
-		return this.fold().lower();
-	}
-
-	@memoizeMethod
 	// @buildDeco // explicitly leaving off for performance
 	public override build(): binaryen.ExpressionRef {
 		return this.fold().build(this.builder);
@@ -78,6 +72,12 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	// @typeDeco // explicitly leaving off for performance
 	public override type(): TYPE.Type {
 		return this.fold().toType();
+	}
+
+	@memoizeMethod
+	// @lowerDeco // explicitly leaving off for performance
+	public override lower(): IR.Const {
+		return this.fold().lower();
 	}
 
 	@memoizeMethod
