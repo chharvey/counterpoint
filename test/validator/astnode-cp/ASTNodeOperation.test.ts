@@ -199,8 +199,8 @@ describe('ASTNodeOperation', () => {
 					(DECL x)
 					(SET x (CONST 42))
 					(DECL $0)
-					(DECL $1)
 					(SET $0 (INT_EXP (GET x) (CONST 2)))
+					(DECL $1)
 					(SET $1 (INT_EXP (CONST 2) (CONST 3)))
 					(DECL $2)
 					(SET $2 (INT_DIV (GET $0) (GET $1)))
@@ -355,11 +355,11 @@ describe('ASTNodeOperation', () => {
 					(DROP (GET $0))
 					(DECL $2)
 					(DECL $3)
+					(SET $3 (INT_NEG (GET c)))
 					(DECL $4)
-					(SET $4 (INT_NEG (GET c)))
-					(SET $3 (INT_ADD (GET $4) (CONST 1)))
-					if_false (GET $3), goto "block-2".
-					(SET $2 (GET $3))
+					(SET $4 (INT_ADD (GET $3) (CONST 1)))
+					if_false (GET $4), goto "block-2".
+					(SET $2 (GET $4))
 					goto "block-3".
 					"block-2":
 					(DECL $5)

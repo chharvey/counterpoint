@@ -139,26 +139,25 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		 * ```
 		 */
 
-		const result: IrLocal = optimizer.newTempLocal(this.type());
-		const left:   IrLocal = optimizer.newTempLocal(this.operand0.type());
+		const block_else:  string = optimizer.newLabel();
+		const block_endif: string = optimizer.newLabel();
 
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
 		// We’re using functions because we want them to be run in the correct order.
-		let branch_then = (): IR.Value => this.operand1.lower(optimizer);
-		let branch_else = (): IR.Value => new IR.Get(left);
+		let branch_then = (_: IrLocal):          IR.Value => this.operand1.lower(optimizer);
+		let branch_else = (left_local: IrLocal): IR.Value => new IR.Get(left_local);
 		if (this.operator === Operator.OR) {
 			[branch_then, branch_else] = [branch_else, branch_then];
 		}
 
-		const block_else:  string = optimizer.newLabel();
-		const block_endif: string = optimizer.newLabel();
+		const result: IrLocal = optimizer.newTempLocal(this.type());
+		const left:   IrLocal = optimizer.newTempLocal(this.operand0.type(), this.operand0.lower(optimizer));
 
-		optimizer.pushInstruction(new IR.Set(left, this.operand0.lower(optimizer)));
 		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Get(left), block_else));
-		optimizer.pushInstruction(new IR.Set(result, branch_then()));
+		optimizer.pushInstruction(new IR.Set(result, branch_then(left)));
 		optimizer.pushInstruction(new IR.Goto(block_endif));
 		optimizer.pushInstruction(new IR.Label(block_else));
-		optimizer.pushInstruction(new IR.Set(result, branch_else()));
+		optimizer.pushInstruction(new IR.Set(result, branch_else(left)));
 		optimizer.pushInstruction(new IR.Label(block_endif));
 		return new IR.Get(result);
 	}
