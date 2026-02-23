@@ -1,9 +1,5 @@
 import type binaryen from 'binaryen';
-import type {
-	IR,
-	Builder,
-} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_equal,
@@ -42,11 +38,6 @@ export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	 */
 	public override toType(): TYPE.Dict {
 		return new TYPE.Dict(TYPE.Union.all([...this.properties.values()].map<TYPE.Type>((val) => val.toType())));
-	}
-
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`Dict#lower` not yet supported.');
 	}
 
 	public override build(_: Builder): binaryen.ExpressionRef {

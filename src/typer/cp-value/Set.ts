@@ -1,10 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {
-	IR,
-	Builder,
-} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -72,11 +68,6 @@ class ValueSet<T extends Value = Value> extends Collection {
 	 */
 	public override toType(): TYPE.Set {
 		return new TYPE.Set(TYPE.Union.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
-	}
-
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`ValueSet#lower` not yet supported.');
 	}
 
 	public override build(_: Builder): binaryen.ExpressionRef {

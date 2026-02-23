@@ -1,8 +1,5 @@
 import type binaryen from 'binaryen';
-import type {
-	IR,
-	Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
 import {strictEqual} from '../utils-private.ts';
 import type {TYPE} from '../index.ts';
@@ -93,13 +90,6 @@ export abstract class Value {
 	 * @return a Type that contains this Object
 	 */
 	public abstract toType(): TYPE.Type;
-
-	/**
-	 * Lower this folded value to a high-level IR value.
-	 * @return     an optimized value
-	 * @deprecated once we move the constant folding phase after building the IR, this method will no longer be needed
-	 */
-	public abstract lower(): IR.Value;
 
 	/**
 	 * Create an ExpressionRef that implements this object.

@@ -1,4 +1,3 @@
-import {IR} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {Value} from './Value.ts';
@@ -20,13 +19,5 @@ export abstract class Primitive extends Value {
 	@memoizeMethod
 	public override toType(): TYPE.Unit<this> {
 		return new TYPE.Unit<this>(this);
-	}
-
-	/**
-	 * @final
-	 */
-	@memoizeMethod
-	public override lower(): IR.Const {
-		return new IR.Const(this);
 	}
 }

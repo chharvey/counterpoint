@@ -1,9 +1,5 @@
 import type binaryen from 'binaryen';
-import type {
-	IR,
-	Builder,
-} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_equal,
@@ -43,12 +39,6 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	public override toType(): TYPE.List {
 		return new TYPE.List(TYPE.Union.all(this.items.map<TYPE.Type>((it) => it.toType())));
 	}
-
-	@memoizeMethod
-	public override lower(): IR.Value {
-		throw new Error('`List#lower` not yet supported.');
-	}
-
 
 	public override build(_: Builder): binaryen.ExpressionRef {
 		throw new Error('`List#build` not yet supported.');
