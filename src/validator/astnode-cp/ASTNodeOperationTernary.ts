@@ -20,7 +20,6 @@ import {
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -82,7 +81,6 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(optimizer: Optimizer): IR.Value {
 		/*
 		 * ```

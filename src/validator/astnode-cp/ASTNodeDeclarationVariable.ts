@@ -83,10 +83,6 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 
 	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
-		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.unfixed); // TODO: v0.5: use decorator
-		if (is_foldable) {
-			return;
-		}
 		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
 		if (this.assignee) {
 			optimizer.pushInstruction(new IR.Decl(this.assignee));

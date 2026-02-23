@@ -22,7 +22,6 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -75,7 +74,6 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeDict#lower` not yet supported.');
 	}

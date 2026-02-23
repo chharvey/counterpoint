@@ -21,7 +21,6 @@ import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -63,7 +62,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeTuple#lower` not yet supported.');
 	}

@@ -24,7 +24,6 @@ import {
 	oneFloats,
 } from './utils-private.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -104,7 +103,6 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ: TYPE.Type = this.type();
 		return IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([

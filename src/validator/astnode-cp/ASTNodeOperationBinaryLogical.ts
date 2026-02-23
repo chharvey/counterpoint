@@ -22,7 +22,6 @@ import {
 	type ValidOperatorLogical,
 } from '../Operator.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -99,7 +98,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(optimizer: Optimizer): IR.Value {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:

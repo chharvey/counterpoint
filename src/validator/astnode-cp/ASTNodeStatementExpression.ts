@@ -33,7 +33,7 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 
 	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
-		if (this.expr && !this.expr.fold()) {
+		if (this.expr) {
 			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
 		}
 	}

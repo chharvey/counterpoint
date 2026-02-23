@@ -79,24 +79,6 @@ export function typeDeco(
 
 
 /**
- * Decorator for {@link ASTNodeExpression#lower} method and any overrides.
- * First tries to compute the assessed value, and if successful, lowers the assessed value.
- * Otherwise lowers this node.
- * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['lower']>
- */
-export function lowerDeco(
-	method:  ASTNodeExpression['lower'],
-	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
-): typeof method {
-	assert_context_name(context, 'lower');
-	return function (this: ASTNodeExpression, optimizer: Optimizer) {
-		return this.fold()?.lower() ?? method.call(this, optimizer);
-	};
-}
-
-
-
-/**
  * A sematic node representing an expression.
  * Known subclasses:
  * - ASTNodeConstant

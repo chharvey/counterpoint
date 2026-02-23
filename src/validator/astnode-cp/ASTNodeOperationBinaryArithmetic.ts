@@ -30,7 +30,6 @@ import {
 	bothFloats,
 } from './utils-private.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -79,7 +78,6 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ: TYPE.Type = this.type();
 		const [t0, t1] = [this.operand0.type(),           this.operand1.type()];

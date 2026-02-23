@@ -29,7 +29,6 @@ import type {Reassignable} from './Reassignable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -92,7 +91,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(_: Optimizer): IR.Value {
 		throw new Error('`ASTNodeAccess#lower` not yet supported.');
 	}

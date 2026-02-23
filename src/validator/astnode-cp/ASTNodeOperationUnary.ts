@@ -24,7 +24,6 @@ import {
 	type ValidOperatorUnary,
 } from '../Operator.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -105,7 +104,6 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ: TYPE.Type = this.type();
 		const t0:  TYPE.Type = this.operand.type();

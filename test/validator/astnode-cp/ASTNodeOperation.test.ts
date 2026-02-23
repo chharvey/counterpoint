@@ -178,7 +178,7 @@ describe('ASTNodeOperation', () => {
 				(SET x (CONST 42))
 				(DROP (INT_NEG (GET x)))
 				(DECL y)
-				(SET y (CONST 6.0))
+				(SET y (FLOAT_DIV (CONST 42.0) (CONST 7.0)))
 				(DECL $0)
 				(SET $0 (FLOAT_ADD (CONST 3.0) (GET y)))
 				(DROP (FLOAT_NEG (GET $0)))
@@ -199,10 +199,12 @@ describe('ASTNodeOperation', () => {
 					(DECL x)
 					(SET x (CONST 42))
 					(DECL $0)
-					(SET $0 (INT_EXP (GET x) (CONST 2)))
 					(DECL $1)
-					(SET $1 (INT_DIV (GET $0) (CONST 8)))
-					(DROP (INT_ADD (CONST 3) (GET $1)))
+					(SET $0 (INT_EXP (GET x) (CONST 2)))
+					(SET $1 (INT_EXP (CONST 2) (CONST 3)))
+					(DECL $2)
+					(SET $2 (INT_DIV (GET $0) (GET $1)))
+					(DROP (INT_ADD (CONST 3) (GET $2)))
 				`.join('\n'));
 			});
 			it('emits `(TRAP)` when types mismatch.', () => {

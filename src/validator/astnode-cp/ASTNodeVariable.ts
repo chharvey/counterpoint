@@ -26,7 +26,6 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Reassignable} from './Reassignable.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -77,7 +76,6 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@lowerDeco
 	public override lower(_: Optimizer): IR.Value {
 		return new IR.Get(this);
 	}
