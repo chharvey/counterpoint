@@ -60,7 +60,9 @@ Lower(SemanticConstant const) := (CONST Lower(ValueOf(const)~!));
 Lower(SemanticVariable var)   := (GET var);
 
 // Lower(SemanticTemplate tpl);
-// Lower(SemanticTuple tup);
+
+Lower(SemanticTuple tup) := (TUPLE.NEW ...tup.children.map(Lower));
+
 // Lower(SemanticRecord rec);
 // Lower(SemanticList list);
 // Lower(SemanticDict dict);

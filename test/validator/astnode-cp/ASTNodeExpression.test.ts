@@ -36,6 +36,15 @@ import {
 
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
+		function setupScript(src: string, _: object): {opt: Optimizer} {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return {opt};
+		}
+
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
 			[AST.ASTNodeTemplate, '"""hello {{ x }} world"""'],
 			[AST.ASTNodeTuple,    '(41, x, 43)'],
@@ -73,6 +82,28 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 			return assert.deepStrictEqual(expr.lower(), new IR.Get(expr));
+		});
+		it('AST.Tuple returns an IR.TupleNew', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: bool  = false;
+				val mut y: int   = 5;
+				val mut z: float = 0.2;
+				(x, y + 2, 3.0 * z - 1.0);
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL x)
+				(SET x (CONST false))
+				(DECL y)
+				(SET y (CONST 5))
+				(DECL z)
+				(SET z (CONST 0.2))
+				(DECL $0)
+				(SET $0 (FLOAT_MUL (CONST 3.0) (GET z)))
+				(DECL $1)
+				(SET $1 (INT_ADD (GET y) (CONST 2)))
+				(DECL $2)
+				(SET $2 (FLOAT_ADD (GET $0) (CONST -1.0)))
+				(DROP (TUPLE.NEW (GET x) (GET $1) (GET $2)))
+			`.join('\n'));
 		});
 
 		// TODO: move these to ASTNodeStatement tests
