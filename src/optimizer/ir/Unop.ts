@@ -28,14 +28,10 @@ export class Unop extends Value {
 		optimizer: Optimizer,
 		private readonly operator: UnOp,
 		operand: Value,
-		private readonly typ: TYPE.Type,
+		typ: TYPE.Type,
 	) {
-		super();
+		super(typ);
 		this.operand = as_unit(optimizer, operand);
-	}
-
-	public override get type(): TYPE.Type {
-		return this.typ;
 	}
 
 	public override toString(): string {

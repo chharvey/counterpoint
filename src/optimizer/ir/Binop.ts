@@ -50,15 +50,11 @@ export class Binop extends Value {
 		private readonly operator: BinOp,
 		operand0: Value,
 		operand1: Value,
-		private readonly typ: TYPE.Type,
+		typ: TYPE.Type,
 	) {
-		super();
+		super(typ);
 		this.operand0 = as_unit(optimizer, operand0);
 		this.operand1 = as_unit(optimizer, operand1);
-	}
-
-	public override get type(): TYPE.Type {
-		return this.typ;
 	}
 
 	public override toString(): string {

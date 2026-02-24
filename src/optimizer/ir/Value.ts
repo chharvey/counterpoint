@@ -12,8 +12,13 @@ import {Instruction} from './Instruction.ts';
  * - Get
  * - Unop
  * - Binop
+ * - TupleNew
  */
 export abstract class Value extends Instruction {
-	/** The type of the expression. */
-	public abstract get type(): TYPE.Type;
+	/**
+	 * @param type The type of the expression.
+	 */
+	public constructor(public readonly type: TYPE.Type) {
+		super();
+	}
 }

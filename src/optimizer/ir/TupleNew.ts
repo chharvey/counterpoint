@@ -8,17 +8,9 @@ import {Value} from './Value.ts';
 export class TupleNew extends Value {
 	private readonly items: readonly Value[];
 
-	public constructor(
-		optimizer: Optimizer,
-		items: readonly Value[],
-		private readonly typ: TYPE.Type,
-	) {
-		super();
+	public constructor(optimizer: Optimizer, items: readonly Value[], typ: TYPE.Type) {
+		super(typ);
 		this.items = items.map((item) => as_unit(optimizer, item));
-	}
-
-	public override get type(): TYPE.Type {
-		return this.typ;
 	}
 
 	public override toString(): string {
