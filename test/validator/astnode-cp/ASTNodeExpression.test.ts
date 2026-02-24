@@ -63,7 +63,6 @@ describe('ASTNodeExpression', () => {
 			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
 		});
 		it('AST.Variable returns an IR.Variable.', () => {
-			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				val mut x: int = 42;
 				x;
@@ -71,7 +70,7 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-			return assert.deepStrictEqual(expr.lower(opt), new IR.Get(expr));
+			return assert.deepStrictEqual(expr.lower(), new IR.Get(expr));
 		});
 
 		// TODO: move these to ASTNodeStatement tests
