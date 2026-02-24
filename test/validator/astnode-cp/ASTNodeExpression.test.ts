@@ -47,7 +47,6 @@ describe('ASTNodeExpression', () => {
 
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
 			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
-			[AST.ASTNodeRecord,   '(a= 41, b= 42, c= 43)'],
 			[AST.ASTNodeList,     '[41, 42, 43]'],
 			[AST.ASTNodeDict,     '[a= 41, b= 42, c= 43]'],
 			[AST.ASTNodeSet,      '{41, 42, 43}'],
@@ -103,6 +102,30 @@ describe('ASTNodeExpression', () => {
 				(DECL $3)
 				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
 				(DROP (TUPLE.NEW (GET x) (GET $2) (GET $3)))
+			`.join('\n'));
+		});
+		it('AST.Record returns an IR.RecordNew', () => {
+			assert.strictEqual(setupScript(`{
+				val x: bool  = false;
+				val y: int   = 5;
+				val z: float = 0.2;
+				(a= x, b= y + 2, c= 3.0 * z - 1.0);
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL x)
+				(SET x (CONST false))
+				(DECL y)
+				(SET y (CONST 5))
+				(DECL z)
+				(SET z (CONST 0.2))
+				(DECL $0)
+				(SET $0 (FLOAT.MUL (CONST 3.0) (GET z)))
+				(DECL $1)
+				(SET $1 (FLOAT.NEG (CONST 1.0)))
+				(DECL $2)
+				(SET $2 (INT.ADD (GET y) (CONST 2)))
+				(DECL $3)
+				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
+				(DROP (RECORD.NEW (#x103 (GET x)) (#x104 (GET $2)) (#x105 (GET $3))))
 			`.join('\n'));
 		});
 

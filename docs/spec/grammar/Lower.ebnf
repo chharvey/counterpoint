@@ -56,14 +56,16 @@ Lower(Boolean b) := (CONST b);
 Lower(Symbol s)  := (CONST s);
 Lower(Number n)  := (CONST n);
 
+Lower(SemanticProperty prop) := (`#`prop.0.id `Lower(prop.1)`);
+
 Lower(SemanticConstant const) := (CONST Lower(ValueOf(const)~!));
 Lower(SemanticVariable var)   := (GET var);
 
 // Lower(SemanticTemplate tpl);
 
 Lower(SemanticTuple tup) := (TUPLE.NEW ...tup.children.map(Lower));
+Lower(SemanticRecord rec) := (RECORD.NEW ...rec.children.map(Lower));
 
-// Lower(SemanticRecord rec);
 // Lower(SemanticList list);
 // Lower(SemanticDict dict);
 // Lower(SemanticSet set);

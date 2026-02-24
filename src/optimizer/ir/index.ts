@@ -5,6 +5,7 @@ export * from './Trap.ts';
 export * from './Const.ts';
 export * from './Get.ts';
 export * from './TupleNew.ts';
+export * from './RecordNew.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
 

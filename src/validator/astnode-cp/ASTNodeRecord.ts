@@ -4,7 +4,7 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type IR,
+	IR,
 	build_record_like,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
@@ -79,8 +79,9 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeRecord#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		return new IR.RecordNew(optimizer, this.children.map((c) => [c.key.id, c.val.lower(optimizer)]), typ);
 	}
 
 	@memoizeMethod
