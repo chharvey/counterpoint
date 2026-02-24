@@ -142,3 +142,30 @@ Lower(SemanticOperation[operator=COND] op) := [
 	"endif":
 	return (GET $result).
 ];
+
+Lower(SemanticDeclarationType decl) := [];
+
+Lower(SemanticDeclarationVariable:has(SemanticVariable):has(SemanticExpression) decl) := [
+	(DECL decl.0)
+	(SET decl.0 `Lower(decl.2)`)
+];
+Lower(SemanticDeclarationVariable:has(SemanticVariable) decl) := [
+	(DECL decl.0)
+	(SET decl.0 (CONST null))
+];
+Lower(SemanticDeclarationVariable decl):has(SemanticVariable) := [
+	(DROP `Lower(decl.1)`)
+];
+
+Lower(SemanticStatementExpression:has(SemanticExpression) stmt) := [
+	(DROP `Lower(stmt.0)`)
+];
+Lower(SemanticStatementExpression stmt) := [];
+
+Lower(SemanticAssignment stmt) := [
+	(SET stmt.0 `Lower(stmt.1)`)
+];
+
+Lower(SemanticBlock block) := block.children.map(Lower);
+
+Lower(SemanticGoal goal) := Lower(goal.0);
