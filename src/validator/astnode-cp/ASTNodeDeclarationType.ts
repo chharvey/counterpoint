@@ -4,7 +4,12 @@ import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	noopGetter,
+	memoizeMethod,
+	memoizeGetter,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -35,12 +40,12 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return true;
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
 	}
@@ -65,6 +70,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');

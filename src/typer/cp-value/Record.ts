@@ -29,16 +29,16 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	}
 
 	@strictEqual
-	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueRecord)
 	public override identical(value: Value): boolean {
 		return CollectionKeyed.samenessDfn<T>(this, value as ValueRecord<T>, language_values_identical);
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueRecord)
 	public override equal(value: Value): boolean {
 		return CollectionKeyed.samenessDfn<T>(this, value as ValueRecord<T>, language_values_equal);
 	}

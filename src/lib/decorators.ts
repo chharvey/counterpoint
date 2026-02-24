@@ -16,7 +16,7 @@ export type MethodDecorator<
 > = (
 	method:  Value,
 	context: ClassMethodDecoratorContext<This, Value>,
-) => typeof method;
+) => (typeof method) | void; // eslint-disable-line @typescript-eslint/no-invalid-void-type --- TC39 allows a decorator function to return `void` — in that case it will preserve the original method
 
 
 
@@ -34,7 +34,7 @@ export type GetterDecorator<
 > = (
 	getter:  (this: This) => Value,
 	context: ClassGetterDecoratorContext<This, Value>,
-) => typeof getter;
+) => (typeof getter) | void; // eslint-disable-line @typescript-eslint/no-invalid-void-type --- TC39 allows a decorator function to return `void` — in that case it will preserve the original getter
 
 
 
@@ -54,6 +54,39 @@ export type SetterDecorator<
 	context: ClassSetterDecoratorContext<This, Value>,
 ) => typeof setter;
 /* eslint-enable @typescript-eslint/no-explicit-any */
+
+
+
+/**
+ * Cancels a method decorator.
+ *
+ * Apply this to a decorator function to cancel it out, equivalent to removing the decorator from the method.
+ * The decorator argument is not even applied to the method at class evaluation time.
+ *
+ * Why use this instead of just removing the decorator?
+ * Sometimes a family of methods all have a decorator applied.
+ * This is often the case for methods inherited from a superclass or methods that implement an interface.
+ * When we have an exception that doesn’t need the decorator, its absence might seem like a bug or an oversight.
+ * By explicitly applying `@noopMethod(decorator)` to the method, it tells programmers,
+ * “Normally we would use `@decorator` here, but for a specific reason we decided to leave it off.”
+ *
+ * @param _decorator a decorator to cancel
+ * @return           a new decorator that voids the argument
+ */
+export function noopMethod<ProtoThis extends object, Params extends unknown[], Return>(_decorator: MethodDecorator<ProtoThis, (this: ProtoThis, ...args: Params) => Return>): typeof _decorator {
+	return (_method, _context) => undefined;
+}
+
+
+
+/**
+ * Cancels a getter decorator. Similar to {@link noopMethod} but for getters.
+ * @param _decorator a decorator to cancel
+ * @return           a new decorator that voids the argument
+ */
+export function noopGetter<ProtoThis extends object, Return>(_decorator: GetterDecorator<ProtoThis, Return>): typeof _decorator {
+	return (_getter, _context) => undefined;
+}
 
 
 

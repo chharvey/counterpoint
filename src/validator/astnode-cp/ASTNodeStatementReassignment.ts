@@ -7,6 +7,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	noopGetter,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.ts';
@@ -42,7 +43,7 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 		super(start_node, {}, [assignee, assigned]);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return false;
 	}
