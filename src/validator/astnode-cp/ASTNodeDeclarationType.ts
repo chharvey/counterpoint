@@ -4,7 +4,10 @@ import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -65,6 +68,7 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');

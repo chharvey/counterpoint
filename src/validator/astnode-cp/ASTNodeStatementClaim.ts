@@ -4,7 +4,10 @@ import {
 	TYPE,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -83,6 +86,7 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		}
 	}
 
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
