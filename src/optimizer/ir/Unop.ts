@@ -1,8 +1,7 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {is_unit} from './utils-private.ts';
+import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
-import {Get} from './Get.ts';
 
 
 
@@ -46,10 +45,7 @@ export class Unop extends Value {
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
 	public static new(optimizer: Optimizer, operator: UnOp, operand: Value, typ: TYPE.Type): Unop {
-		return (
-			is_unit(operand) ? new Unop(operator, operand, typ) :
-			new Unop(operator, new Get(optimizer.newTempLocal(operand.type, operand)), typ)
-		);
+		return new Unop(operator, as_unit(optimizer, operand), typ);
 	}
 
 

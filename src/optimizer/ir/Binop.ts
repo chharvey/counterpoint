@@ -1,8 +1,7 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {is_unit} from './utils-private.ts';
+import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
-import {Get} from './Get.ts';
 
 
 
@@ -68,17 +67,7 @@ export class Binop extends Value {
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
 	public static new(optimizer: Optimizer, operator: BinOp, operand0: Value, operand1: Value, typ: TYPE.Type): Binop {
-		return (
-			is_unit(operand0) && is_unit(operand1) ? new Binop(operator, operand0, operand1, typ) :
-			is_unit(operand0)                      ? new Binop(operator, operand0, new Get(optimizer.newTempLocal(operand1.type, operand1)), typ) :
-			is_unit(operand1)                      ? new Binop(operator, new Get(optimizer.newTempLocal(operand0.type, operand0)), operand1, typ) :
-			new Binop(
-				operator,
-				new Get(optimizer.newTempLocal(operand0.type, operand0)),
-				new Get(optimizer.newTempLocal(operand1.type, operand1)),
-				typ,
-			)
-		);
+		return new Binop(operator, as_unit(optimizer, operand0), as_unit(optimizer, operand1), typ);
 	}
 
 
