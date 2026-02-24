@@ -3,9 +3,11 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
+import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../utils-private.ts';
 import {
 	FALSE,
@@ -49,7 +51,7 @@ class ValueBoolean extends Primitive {
 
 	@strictEqual
 	@instanceOf(() => ValueBoolean)
-	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	@noopMethod(memoizeBinOp(true, true))
 	public override identical(value: Value): boolean {
 		return this.data === (value as ValueBoolean).data;
 	}

@@ -4,9 +4,11 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
+import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../utils-private.ts';
 import type {Value} from './Value.ts';
 import {Primitive} from './Primitive.ts';
@@ -48,7 +50,7 @@ class ValueSymbol extends Primitive {
 
 	@strictEqual
 	@instanceOf(() => ValueSymbol)
-	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	@noopMethod(memoizeBinOp(true, true))
 	public override identical(value: Value): boolean {
 		return this.id === (value as ValueSymbol).id;
 	}

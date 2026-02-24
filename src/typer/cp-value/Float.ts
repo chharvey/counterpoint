@@ -4,9 +4,11 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
+import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../utils-private.ts';
 import {
 	identical,
@@ -34,7 +36,7 @@ export class Float extends ValueNumber<Float> {
 
 	@strictEqual
 	@instanceOf(() => Float)
-	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	@noopMethod(memoizeBinOp(true, true))
 	public override identical(value: Value): boolean {
 		return Object.is(this.data, (value as Float).data);
 	}
@@ -42,7 +44,7 @@ export class Float extends ValueNumber<Float> {
 	@strictEqual
 	@identical
 	@instanceOf(() => ValueNumber)
-	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
+	@noopMethod(memoizeBinOp(true, true))
 	public override equal(value: Value): boolean {
 		// non-identical Floats can be equal in exactly one case: `0.0` and `-0.0`
 		return this.data === (value as ValueNumber).toFloat().data;
