@@ -8,6 +8,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	noopMethod,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
@@ -17,6 +18,7 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {
+	typeDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -46,7 +48,7 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	// @typeDeco // explicitly leaving off to omit folding logic
+	@noopMethod(typeDeco) // don’t want folded type overriding this logic
 	public override type(): TYPE.Type {
 		const computed_type: TYPE.Type = this.operand.type();
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();

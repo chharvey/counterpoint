@@ -4,6 +4,7 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
+import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -49,16 +50,16 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	@strictEqual
+	@noopMethod(memoizeBinOp(true, true))
 	@instanceOf(() => Integer)
-	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override identical(value: Value): boolean {
 		return this.data === (value as Integer).data;
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueNumber)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueNumber)
 	public override equal(value: Value): boolean {
 		if (value instanceof Integer) {
 			// non-identical Integers will never be equal

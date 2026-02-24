@@ -26,8 +26,8 @@ export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 
 	@strictEqual
 	@identical
-	@instanceOf(() => Dict)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => Dict)
 	public override equal(value: Value): boolean {
 		return CollectionKeyed.samenessDfn<T>(this, value as Dict<T>, language_values_equal);
 	}

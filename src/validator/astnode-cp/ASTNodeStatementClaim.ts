@@ -8,6 +8,9 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	noopGetter,
+	memoizeMethod,
+	memoizeGetter,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {
@@ -44,12 +47,12 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return true;
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
 	}
@@ -93,6 +96,7 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		return optimizer.pushInstruction(new IR.Drop(this.assignee.lower(optimizer)));
 	}
 
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');

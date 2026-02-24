@@ -4,6 +4,7 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
+import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -47,16 +48,16 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	@strictEqual
+	@noopMethod(memoizeBinOp(true, true))
 	@instanceOf(() => Natural)
-	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override identical(value: Value): boolean {
 		return this.data === (value as Natural).data;
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueNumber)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueNumber)
 	public override equal(value: Value): boolean {
 		if (value instanceof Natural) {
 			// non-identical Naturals will never be equal

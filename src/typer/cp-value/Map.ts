@@ -53,8 +53,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueMap)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueMap)
 	public override equal(value: Value): boolean {
 		return (
 			this.cases.size === (value as ValueMap).cases.size &&
