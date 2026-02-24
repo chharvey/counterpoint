@@ -3,11 +3,12 @@ import type binaryen from 'binaryen';
 import {
 	TYPE,
 	type Optimizer,
+	IR,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -87,9 +88,9 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		}
 	}
 
-	@memoizeMethod
-	public override lower(_: Optimizer): void {
-		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		return optimizer.pushInstruction(new IR.Drop(this.assignee.lower(optimizer)));
 	}
 
 	@buildDeco

@@ -68,7 +68,8 @@ Lower(SemanticVariable var)   := (GET var);
 // Lower(SemanticMap map);
 // Lower(SemanticAccess access);
 // Lower(SemanticCall call);
-// Lower(SemanticClaim claim);
+
+Lower(SemanticClaim claim) := Lower(claim.0);
 
 Lower(SemanticOperation[operator=NOT] op)             := (NOT op.0);
 Lower(SemanticOperation[operator=EMP] op)             := (EMP op.0);
@@ -142,3 +143,5 @@ Lower(SemanticOperation[operator=COND] op) := [
 	"endif":
 	return (GET $result).
 ];
+
+Lower(SemanticStatementClaim stmt) := (DROP Lower(stmt.0));

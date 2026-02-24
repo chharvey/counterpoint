@@ -69,6 +69,26 @@ test.suite('ASTNodeExpression', () => {
 			const expr = (stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 			return assert.deepStrictEqual(expr.lower(opt), new IR.Get(expr));
 		});
+		test.suite('AST.Claim', () => {
+			test.test('returns the operand.', () => {
+				const {stmts, opt} = setupScript(`{
+					42 as <int>;
+				}`, {build: false});
+				const expr = (stmts[0] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeClaim;
+				return assert.deepStrictEqual(expr.lower(opt), expr.operand.lower(opt));
+			});
+			test.test('repeated calls are idempotent.', () => {
+				const {stmts, opt} = setupScript(`{
+					(42 + 42 + 42) as <int | float>;
+				}`, {build: false});
+				assert.strictEqual(opt.instructions.length, 0);
+				const expr = (stmts[0] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeClaim;
+				expr.operand.lower(opt);
+				assert.strictEqual(opt.instructions.length, 2);
+				expr.lower(opt);
+				assert.strictEqual(opt.instructions.length, 2);
+			});
+		});
 
 		// TODO: move these to ASTNodeStatement tests
 		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
@@ -127,6 +147,16 @@ test.suite('ASTNodeExpression', () => {
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (GET x))
 				(DROP (CONST 42))
+			`.join('\n'));
+		});
+		test.test('AST.StatementClaim pushes DROP.', () => {
+			const {stmts, opt} = setupScript(`{%
+				val mut x: int | float = 42;
+				claim x: int;
+			}`, {build: false});
+			(stmts[1] as AST.ASTNodeStatementClaim).lower(opt);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(DROP (GET x))
 			`.join('\n'));
 		});
 		test.test('AST.StatementReassignment pushes SET instruction.', () => {
