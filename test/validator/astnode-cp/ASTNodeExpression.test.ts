@@ -10,7 +10,6 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
-	Optimizer,
 	IR,
 	type Builder,
 	ReferenceErrorUndeclared,
@@ -92,8 +91,7 @@ test.suite('ASTNodeExpression', () => {
 
 		// TODO: move these to ASTNodeStatement tests
 		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
-			const opt = new Optimizer();
-			const {stmts} = setupScript(`{
+			const {stmts, opt} = setupScript(`{
 				% Foldable cases:
 				val _:          int = 42; % \`(DROP (CONST 42))\`
 				val assignee_a: int = 42; % \`(DECL assignee_a) (SET assignee_a (CONST 42))\`
@@ -129,9 +127,8 @@ test.suite('ASTNodeExpression', () => {
 				(SET assignee_e (GET assignee_c))
 			`.join('\n'));
 		});
-		test.test('AST.StatementExpression pushes DROP instruction if expression exists and is non-foldable.', () => {
-			const opt = new Optimizer();
-			const {stmts} = setupScript(`{
+		test.test('AST.StatementExpression pushes DROP instruction if expression exists.', () => {
+			const {stmts, opt} = setupScript(`{
 				val mut x: int = 42;
 				x;
 				42;
@@ -160,14 +157,13 @@ test.suite('ASTNodeExpression', () => {
 			`.join('\n'));
 		});
 		test.test('AST.StatementReassignment pushes SET instruction.', () => {
-			const opt = new Optimizer();
-			const {stmts} = setupScript(`{
+			const {stmts, opt} = setupScript(`{
 				val mut x: int = 42;
 				set x = 43;
 				set x = 44;
 				set x = -42;
 			}`, {build: false});
-			stmts.slice(1).forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
+			stmts.slice(1).forEach((stmt) => (stmt as AST.ASTNodeStatementReassignment).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
 				(SET x (CONST 43))
 				(SET x (CONST 44))

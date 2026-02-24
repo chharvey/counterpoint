@@ -44,11 +44,6 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeExpressionBlock#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const block_stmts: binaryen.ExpressionRef[] = [
@@ -77,6 +72,11 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 			throw new Error('The determining expression-statement of a block-expression must be nonempty.');
 		}
 		return expr.type();
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeExpressionBlock#lower` not yet supported.');
 	}
 
 	@memoizeMethod

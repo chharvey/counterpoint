@@ -43,11 +43,6 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeOperationBinaryCast#lower` not yet supported.');
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		throw new Error('ASTNodeOperationBinaryCast#build not yet supported.');
@@ -55,6 +50,11 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
 		throw new Error('ASTNodeOperationBinaryCast#type not yet supported.');
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeOperationBinaryCast#lower` not yet supported.');
 	}
 
 	@memoizeMethod
