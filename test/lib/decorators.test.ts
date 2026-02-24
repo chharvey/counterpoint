@@ -3,8 +3,10 @@ import * as test from 'node:test';
 import {
 	type MethodDecorator,
 	type GetterDecorator,
+	type SetterDecorator,
 	noopMethod,
 	noopGetter,
+	noopSetter,
 } from '../../src/index.ts';
 
 
@@ -234,3 +236,120 @@ test.suite('@noopGetter', () => {
 	});
 });
 /* eslint-enable @typescript-eslint/class-literal-property-style */
+
+
+
+test.suite('@noopSetter', () => {
+	test.test('does not apply nor call decorator.', () => {
+		let decorator_applications: bigint = 0n;
+		let decorated_calls:        bigint = 0n;
+
+		function decorator(setter: (this: Klass, arg: string) => void): typeof setter {
+			decorator_applications++;
+			return function (arg) {
+				decorated_calls++;
+				return setter.call(this, `${ arg }!!`);
+			};
+		}
+
+		class Klass {
+			public value: string = '';
+
+			public set notDecorated(arg: string) {
+				this.value = arg;
+			}
+
+			@decorator
+			public set decorated(arg: string) {
+				this.value = arg;
+			}
+
+			@noopSetter(decorator)
+			public set decoratorCancelled(arg: string) {
+				this.value = arg;
+			}
+		}
+
+		assert.strictEqual(decorator_applications, 1n, 'decorator should be applied on class declaration. decorator should not be applied when it’s an argument to `noop`.');
+		assert.strictEqual(decorated_calls,        0n);
+
+		const obj = new Klass();
+
+		obj.notDecorated = 'A';
+		obj.notDecorated = 'A';
+		assert.strictEqual(decorated_calls, 0n, 'decorator function should not be called since method is not decorated.');
+		assert.strictEqual(obj.value, 'A');
+
+		obj.decorated = 'B';
+		obj.decorated = 'B';
+		assert.strictEqual(decorated_calls, 2n, 'decorator function should be called on method call.');
+		assert.strictEqual(obj.value, 'B!!');
+
+		obj.decoratorCancelled = 'C';
+		obj.decoratorCancelled = 'C';
+		assert.strictEqual(decorated_calls, 2n, 'decorator function should not be called when it’s an argument to `noop`.');
+		assert.strictEqual(obj.value, 'C');
+
+		assert.strictEqual(decorator_applications, 1n);
+	});
+
+
+	test.test('does execute factory.', () => {
+		let factory_calls:          bigint = 0n;
+		let decorator_applications: bigint = 0n;
+		let decorated_calls:        bigint = 0n;
+
+		function decoratorFactory(): SetterDecorator<Klass, string> {
+			factory_calls++;
+			return (setter) => {
+				decorator_applications++;
+				return function (arg) {
+					decorated_calls++;
+					return setter.call(this, `${ arg }!!`);
+				};
+			};
+		}
+
+		class Klass {
+			public value: string = '';
+
+			public set notDecorated(arg: string) {
+				this.value = arg;
+			}
+
+			@decoratorFactory()
+			public set decorated(arg: string) {
+				this.value = arg;
+			}
+
+			@noopSetter(decoratorFactory())
+			public set decoratorCancelled(arg: string) {
+				this.value = arg;
+			}
+		}
+
+		assert.strictEqual(factory_calls,          2n, 'factories are called when decorators are applied, even when it’s an argument to `noop`.');
+		assert.strictEqual(decorator_applications, 1n);
+		assert.strictEqual(decorated_calls,        0n);
+
+		const obj = new Klass();
+
+		obj.notDecorated = 'A';
+		obj.notDecorated = 'A';
+		assert.strictEqual(decorated_calls, 0n);
+		assert.strictEqual(obj.value, 'A');
+
+		obj.decorated = 'B';
+		obj.decorated = 'B';
+		assert.strictEqual(decorated_calls, 2n);
+		assert.strictEqual(obj.value, 'B!!');
+
+		obj.decoratorCancelled = 'C';
+		obj.decoratorCancelled = 'C';
+		assert.strictEqual(decorated_calls, 2n);
+		assert.strictEqual(obj.value, 'C');
+
+		assert.strictEqual(factory_calls,          2n);
+		assert.strictEqual(decorator_applications, 1n);
+	});
+});
