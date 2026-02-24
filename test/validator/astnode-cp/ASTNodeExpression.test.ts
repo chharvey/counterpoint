@@ -47,7 +47,6 @@ describe('ASTNodeExpression', () => {
 
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
 			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
-			[AST.ASTNodeList,     '[41, 42, 43]'],
 			[AST.ASTNodeDict,     '[a= 41, b= 42, c= 43]'],
 			[AST.ASTNodeSet,      '{41, 42, 43}'],
 			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> 42, "c" -> 43}'],
@@ -126,6 +125,21 @@ describe('ASTNodeExpression', () => {
 				(DECL $3)
 				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
 				(DROP (RECORD.NEW (#x103 (GET x)) (#x104 (GET $2)) (#x105 (GET $3))))
+			`.join('\n'));
+		});
+		it('AST.List returns an IR.CollectionIndexedNew', () => {
+			assert.strictEqual(setupScript(`{
+				[false, 5 + 2, 3.0 * 0.2 - 1.0];
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL $0)
+				(SET $0 (FLOAT.MUL (CONST 3.0) (CONST 0.2)))
+				(DECL $1)
+				(SET $1 (FLOAT.NEG (CONST 1.0)))
+				(DECL $2)
+				(SET $2 (INT.ADD (CONST 5) (CONST 2)))
+				(DECL $3)
+				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
+				(DROP (LIST.NEW (CONST false) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
 

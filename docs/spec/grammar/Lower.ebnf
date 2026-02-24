@@ -66,10 +66,10 @@ Lower(SemanticVariable var)   := (GET var);
 
 // Lower(SemanticTemplate tpl);
 
-Lower(SemanticTuple tup) := (TUPLE.NEW ...tup.children.map(Lower));
+Lower(SemanticTuple tup)  := (TUPLE.NEW  ...tup.children.map(Lower));
 Lower(SemanticRecord rec) := (RECORD.NEW ...rec.children.map(Lower));
+Lower(SemanticList list)  := (LIST.NEW   ...list.children.map(Lower));
 
-// Lower(SemanticList list);
 // Lower(SemanticDict dict);
 // Lower(SemanticSet set);
 // Lower(SemanticMap map);

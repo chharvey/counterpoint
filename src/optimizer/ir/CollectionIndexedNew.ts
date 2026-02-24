@@ -7,6 +7,7 @@ import {Value} from './Value.ts';
 
 export enum CollectionIndexedName {
 	TUPLE,
+	LIST,
 }
 
 
