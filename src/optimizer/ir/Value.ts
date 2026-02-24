@@ -11,6 +11,7 @@ import {Instruction} from './Instruction.ts';
  * - Const
  * - Get
  * - CollectionIndexedNew
+ * - CollectionKeyedNew
  * - Unop
  * - Binop
  */

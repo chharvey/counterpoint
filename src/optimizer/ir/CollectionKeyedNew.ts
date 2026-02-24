@@ -9,15 +9,26 @@ type Prop = readonly [bigint, Value];
 
 
 
-export class RecordNew extends Value {
+export enum CollectionKeyedName {
+	RECORD,
+}
+
+
+
+export class CollectionKeyedNew extends Value {
 	private readonly props: readonly Prop[];
 
-	public constructor(optimizer: Optimizer, props: readonly Prop[], typ: TYPE.Type) {
+	public constructor(
+		private readonly name: CollectionKeyedName,
+		props:     readonly Prop[],
+		typ:       TYPE.Type,
+		optimizer: Optimizer,
+	) {
 		super(typ);
 		this.props = props.map(([keyid, value]) => [keyid, as_unit(optimizer, value)]);
 	}
 
 	public override toString(): string {
-		return `(RECORD.NEW ${ this.props.map(([keyid, value]) => `(#x${ keyid.toString(16) } ${ value })`).join(' ') })`;
+		return `(${ CollectionKeyedName[this.name] }.NEW ${ this.props.map(([keyid, value]) => `(#x${ keyid.toString(16) } ${ value })`).join(' ') })`;
 	}
 }

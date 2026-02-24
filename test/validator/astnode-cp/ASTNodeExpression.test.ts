@@ -103,7 +103,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (TUPLE.NEW (GET x) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
-		it('AST.Record returns an IR.RecordNew', () => {
+		it('AST.Record returns an IR.CollectionKeyedNew', () => {
 			assert.strictEqual(setupScript(`{
 				val x: bool  = false;
 				val y: int   = 5;
