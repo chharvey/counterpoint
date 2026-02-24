@@ -5,7 +5,7 @@ export * from './Trap.ts';
 export * from './Const.ts';
 export * from './Get.ts';
 export * from './CollectionIndexedNew.ts';
-export * from './RecordNew.ts';
+export * from './CollectionKeyedNew.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
 
