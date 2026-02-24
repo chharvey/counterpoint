@@ -96,6 +96,19 @@ export function noopGetter<ProtoThis extends object, Return>(_decorator: GetterD
 
 
 /**
+ * Cancels a getter decorator. Similar to {@link noopMethod} but for setters.
+ * @typeparam ProtoThis   the setter’s `this` type
+ * @typeparam Param       the setter’s parameter type
+ * @param _decorator a decorator to cancel
+ * @return           a new decorator that voids the argument
+ */
+export function noopSetter<ProtoThis extends object, Param>(_decorator: SetterDecorator<ProtoThis, Param>): typeof _decorator {
+	return (_getter, _context) => undefined;
+}
+
+
+
+/**
  * Decorator for memoizing properties.
  * When getting a property, check whether it exists in the “database”.
  * If it does, return that value.
