@@ -11,6 +11,7 @@ type Prop = readonly [bigint, Value];
 
 export enum CollectionKeyedName {
 	RECORD,
+	DICT,
 }
 
 

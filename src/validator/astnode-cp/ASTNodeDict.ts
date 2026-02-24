@@ -4,7 +4,7 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type IR,
+	IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -74,8 +74,9 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeDict#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		return new IR.CollectionKeyedNew(IR.CollectionKeyedName.DICT, this.children.map((c) => [c.key.id, c.val.lower(optimizer)]), typ, optimizer);
 	}
 
 	@memoizeMethod
