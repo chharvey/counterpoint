@@ -30,7 +30,6 @@ import {
 	bothFloats,
 } from './utils-private.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -55,31 +54,6 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: TYPE.Type = this.type();
-		const [t0, t1] = [this.operand0.type(),           this.operand1.type()];
-		const [v0, v1] = [this.operand0.lower(optimizer), this.operand1.lower(optimizer)];
-		return (
-			bothInts(t0, t1) ? IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
-				[Operator.EXP, IR.BinOp.INT_EXP],
-				[Operator.MUL, IR.BinOp.INT_MUL],
-				[Operator.DIV, IR.BinOp.INT_DIV],
-				[Operator.ADD, IR.BinOp.INT_ADD],
-				[Operator.SUB, IR.BinOp.INT_SUB],
-			]).get(this.operator)!, v0, v1, typ) :
-			bothFloats(t0, t1) ? IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
-				[Operator.EXP, IR.BinOp.FLOAT_EXP],
-				[Operator.MUL, IR.BinOp.FLOAT_MUL],
-				[Operator.DIV, IR.BinOp.FLOAT_DIV],
-				[Operator.ADD, IR.BinOp.FLOAT_ADD],
-				[Operator.SUB, IR.BinOp.FLOAT_SUB],
-			]).get(this.operator)!, v0, v1, typ) :
-			new IR.Trap()
-		);
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return this.builder.module.call(new Map<Operator, string>([
@@ -100,6 +74,30 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			bothFloats(t0, t1) ? TYPE.FLOAT :
 			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
 			assert.fail(new TypeErrorInvalidOperation(this))
+		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		const [t0, t1] = [this.operand0.type(),           this.operand1.type()];
+		const [v0, v1] = [this.operand0.lower(optimizer), this.operand1.lower(optimizer)];
+		return (
+			bothInts(t0, t1) ? IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
+				[Operator.EXP, IR.BinOp.INT_EXP],
+				[Operator.MUL, IR.BinOp.INT_MUL],
+				[Operator.DIV, IR.BinOp.INT_DIV],
+				[Operator.ADD, IR.BinOp.INT_ADD],
+				[Operator.SUB, IR.BinOp.INT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			bothFloats(t0, t1) ? IR.Binop.new(optimizer, new Map<Operator, IR.BinOp>([
+				[Operator.EXP, IR.BinOp.FLOAT_EXP],
+				[Operator.MUL, IR.BinOp.FLOAT_MUL],
+				[Operator.DIV, IR.BinOp.FLOAT_DIV],
+				[Operator.ADD, IR.BinOp.FLOAT_ADD],
+				[Operator.SUB, IR.BinOp.FLOAT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			new IR.Trap()
 		);
 	}
 

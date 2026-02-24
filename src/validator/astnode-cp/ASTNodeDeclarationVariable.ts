@@ -10,7 +10,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -81,20 +81,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	@memoizeMethod
-	public override lower(optimizer: Optimizer): null {
-		const is_foldable: boolean = !!this.assigned?.fold() && (!this.assignee || !this.unfixed); // TODO: v0.5: use decorator
-		if (is_foldable) {
-			return null;
-		}
-		const value: IR.Value = this.assigned?.lower(optimizer) ?? VALUE.NULL.lower();
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
 			optimizer.pushInstruction(new IR.Decl(this.assignee));
 			optimizer.pushInstruction(new IR.Set(this.assignee, value));
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
 		}
-		return null;
 	}
 
 	public override build(): binaryen.ExpressionRef {

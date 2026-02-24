@@ -20,7 +20,6 @@ import {
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -44,39 +43,6 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		public readonly operand2: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
-	}
-
-	@memoizeMethod
-	@lowerDeco
-	public override lower(optimizer: Optimizer): IR.Value {
-		/*
-		 * ```
-		 * if ‹v0› then ‹v1› else ‹v2›;
-		 * ```
-		 * IR Outline:
-		 * ```
-		 * (DECL result)
-		 * if_false (GET ‹v0›), goto "else".
-		 * (SET result ‹v1›) ;; evaluate consequent and set to result
-		 * goto "endif".
-		 * "else":
-		 * (SET result ‹v2›) ;; evaluate alternative and set to result
-		 * "endif":
-		 * return (GET result).
-		 * ```
-		 */
-		const result: IrLocal = optimizer.newTempLocal(this.type());
-
-		const block_else:  string = optimizer.newLabel();
-		const block_endif: string = optimizer.newLabel();
-
-		optimizer.pushInstruction(new IR.GotoIfFalse(this.operand0.lower(optimizer), block_else));
-		optimizer.pushInstruction(new IR.Set(result, this.operand1.lower(optimizer)));
-		optimizer.pushInstruction(new IR.Goto(block_endif));
-		optimizer.pushInstruction(new IR.Label(block_else));
-		optimizer.pushInstruction(new IR.Set(result, this.operand2.lower(optimizer)));
-		optimizer.pushInstruction(new IR.Label(block_endif));
-		return new IR.Get(result);
 	}
 
 	@memoizeMethod
@@ -112,6 +78,38 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		/*
+		 * ```
+		 * if ‹v0› then ‹v1› else ‹v2›;
+		 * ```
+		 * IR Outline:
+		 * ```
+		 * (DECL result)
+		 * if_false (GET ‹v0›), goto "else".
+		 * (SET result ‹v1›) ;; evaluate consequent and set to result
+		 * goto "endif".
+		 * "else":
+		 * (SET result ‹v2›) ;; evaluate alternative and set to result
+		 * "endif":
+		 * return (GET result).
+		 * ```
+		 */
+		const result: IrLocal = optimizer.newTempLocal(this.type());
+
+		const block_else:  string = optimizer.newLabel();
+		const block_endif: string = optimizer.newLabel();
+
+		optimizer.pushInstruction(new IR.GotoIfFalse(this.operand0.lower(optimizer), block_else));
+		optimizer.pushInstruction(new IR.Set(result, this.operand1.lower(optimizer)));
+		optimizer.pushInstruction(new IR.Goto(block_endif));
+		optimizer.pushInstruction(new IR.Label(block_else));
+		optimizer.pushInstruction(new IR.Set(result, this.operand2.lower(optimizer)));
+		optimizer.pushInstruction(new IR.Label(block_endif));
+		return new IR.Get(result);
 	}
 
 	@memoizeMethod

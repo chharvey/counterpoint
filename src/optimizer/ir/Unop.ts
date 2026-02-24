@@ -1,7 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
-import type {Local} from '../utils-public.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {Set as IrSet} from './index.ts';
 import {is_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
 import {Get} from './Get.ts';
@@ -48,13 +46,10 @@ export class Unop extends Value {
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
 	public static new(optimizer: Optimizer, operator: UnOp, operand: Value, typ: TYPE.Type): Unop {
-		if (is_unit(operand)) {
-			return new Unop(operator, operand, typ);
-		} else {
-			const local: Local = optimizer.newTempLocal(operand.type);
-			optimizer.pushInstruction(new IrSet(local, operand));
-			return new Unop(operator, new Get(local), typ);
-		}
+		return (
+			is_unit(operand) ? new Unop(operator, operand, typ) :
+			new Unop(operator, new Get(optimizer.newTempLocal(operand.type, operand)), typ)
+		);
 	}
 
 

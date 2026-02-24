@@ -21,7 +21,6 @@ import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
-	lowerDeco,
 	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
@@ -48,13 +47,6 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@lowerDeco
-	public lower(optimizer: Optimizer): IR.Value {
-		const typ: TYPE.Type = this.type();
-		return IR.TupleNew.new(optimizer, this.children.map((item) => item.lower(optimizer)), typ);
-	}
-
-	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		return build_tuple_like(this.builder, this.children.map((item) => {
@@ -67,6 +59,12 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
+	}
+
+	@memoizeMethod
+	public lower(optimizer: Optimizer): IR.Value {
+		const typ: TYPE.Type = this.type();
+		return IR.TupleNew.new(optimizer, this.children.map((item) => item.lower(optimizer)), typ);
 	}
 
 	@memoizeMethod
