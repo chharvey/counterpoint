@@ -35,16 +35,16 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	@strictEqual
-	@instanceOf(() => Float)
 	@noopMethod(memoizeBinOp(true, true))
+	@instanceOf(() => Float)
 	public override identical(value: Value): boolean {
 		return Object.is(this.data, (value as Float).data);
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueNumber)
 	@noopMethod(memoizeBinOp(true, true))
+	@instanceOf(() => ValueNumber)
 	public override equal(value: Value): boolean {
 		// non-identical Floats can be equal in exactly one case: `0.0` and `-0.0`
 		return this.data === (value as ValueNumber).toFloat().data;

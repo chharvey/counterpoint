@@ -49,8 +49,8 @@ class ValueSymbol extends Primitive {
 	}
 
 	@strictEqual
-	@instanceOf(() => ValueSymbol)
 	@noopMethod(memoizeBinOp(true, true))
+	@instanceOf(() => ValueSymbol)
 	public override identical(value: Value): boolean {
 		return this.id === (value as ValueSymbol).id;
 	}

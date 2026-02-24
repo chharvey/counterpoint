@@ -26,8 +26,8 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 
 	@strictEqual
 	@identical
-	@instanceOf(() => List)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => List)
 	public override equal(value: Value): boolean {
 		return CollectionIndexed.samenessDfn<T>(this, value as List<T>, language_values_equal);
 	}

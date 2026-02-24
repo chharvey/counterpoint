@@ -50,16 +50,16 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	@strictEqual
-	@instanceOf(() => Integer)
 	@noopMethod(memoizeBinOp(true, true))
+	@instanceOf(() => Integer)
 	public override identical(value: Value): boolean {
 		return this.data === (value as Integer).data;
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueNumber)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueNumber)
 	public override equal(value: Value): boolean {
 		if (value instanceof Integer) {
 			// non-identical Integers will never be equal

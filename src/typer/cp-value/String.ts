@@ -42,8 +42,8 @@ class ValueString extends Primitive {
 	}
 
 	@strictEqual
-	@instanceOf(() => ValueString)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueString)
 	public override identical(value: Value): boolean {
 		return xjs.Array.is<CodeUnit>(this.codeunits, (value as ValueString).codeunits);
 	}

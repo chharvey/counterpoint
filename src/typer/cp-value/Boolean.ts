@@ -50,8 +50,8 @@ class ValueBoolean extends Primitive {
 	}
 
 	@strictEqual
-	@instanceOf(() => ValueBoolean)
 	@noopMethod(memoizeBinOp(true, true))
+	@instanceOf(() => ValueBoolean)
 	public override identical(value: Value): boolean {
 		return this.data === (value as ValueBoolean).data;
 	}

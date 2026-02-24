@@ -48,16 +48,16 @@ export class Natural extends ValueNumber<Natural> {
 	}
 
 	@strictEqual
-	@instanceOf(() => Natural)
 	@noopMethod(memoizeBinOp(true, true))
+	@instanceOf(() => Natural)
 	public override identical(value: Value): boolean {
 		return this.data === (value as Natural).data;
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueNumber)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueNumber)
 	public override equal(value: Value): boolean {
 		if (value instanceof Natural) {
 			// non-identical Naturals will never be equal
