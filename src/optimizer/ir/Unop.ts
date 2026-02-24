@@ -25,10 +25,10 @@ export class Unop extends Value {
 	private readonly operand: Value;
 
 	public constructor(
-		optimizer: Optimizer,
 		private readonly operator: UnOp,
-		operand: Value,
-		typ: TYPE.Type,
+		operand:   Value,
+		typ:       TYPE.Type,
+		optimizer: Optimizer,
 	) {
 		super(typ);
 		this.operand = as_unit(optimizer, operand);

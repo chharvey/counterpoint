@@ -46,11 +46,11 @@ export class Binop extends Value {
 	private readonly operand1: Value;
 
 	public constructor(
-		optimizer: Optimizer,
 		private readonly operator: BinOp,
-		operand0: Value,
-		operand1: Value,
-		typ: TYPE.Type,
+		operand0:  Value,
+		operand1:  Value,
+		typ:       TYPE.Type,
+		optimizer: Optimizer,
 	) {
 		super(typ);
 		this.operand0 = as_unit(optimizer, operand0);
