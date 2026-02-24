@@ -95,13 +95,13 @@ describe('ASTNodeExpression', () => {
 				(DECL z)
 				(SET z (CONST 0.2))
 				(DECL $0)
-				(SET $0 (FLOAT_MUL (CONST 3.0) (GET z)))
+				(SET $0 (FLOAT.MUL (CONST 3.0) (GET z)))
 				(DECL $1)
-				(SET $1 (FLOAT_NEG (CONST 1.0)))
+				(SET $1 (FLOAT.NEG (CONST 1.0)))
 				(DECL $2)
-				(SET $2 (INT_ADD (GET y) (CONST 2)))
+				(SET $2 (INT.ADD (GET y) (CONST 2)))
 				(DECL $3)
-				(SET $3 (FLOAT_ADD (GET $0) (GET $1)))
+				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
 				(DROP (TUPLE.NEW (GET x) (GET $2) (GET $3)))
 			`.join('\n'));
 		});

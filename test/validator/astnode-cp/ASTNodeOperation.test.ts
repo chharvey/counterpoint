@@ -131,9 +131,9 @@ describe('ASTNodeOperation', () => {
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (NOT (CONST 42)))
 				(DECL y)
-				(SET y (INT_DIV (CONST 42) (CONST 7)))
+				(SET y (INT.DIV (CONST 42) (CONST 7)))
 				(DECL $0)
-				(SET $0 (INT_ADD (CONST 42) (GET y)))
+				(SET $0 (INT.ADD (CONST 42) (GET y)))
 				(DROP (NOT (GET $0)))
 			`.join('\n'));
 		});
@@ -153,9 +153,9 @@ describe('ASTNodeOperation', () => {
 				(SET x (CONST 42))
 				(DROP (EMP (GET x)))
 				(DECL y)
-				(SET y (INT_DIV (GET x) (CONST 7)))
+				(SET y (INT.DIV (GET x) (CONST 7)))
 				(DECL $0)
-				(SET $0 (INT_ADD (GET x) (GET y)))
+				(SET $0 (INT.ADD (GET x) (GET y)))
 				(DROP (EMP (GET $0)))
 			`.join('\n'));
 		});
@@ -173,12 +173,12 @@ describe('ASTNodeOperation', () => {
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DECL x)
 				(SET x (CONST 42))
-				(DROP (INT_NEG (GET x)))
+				(DROP (INT.NEG (GET x)))
 				(DECL y)
-				(SET y (FLOAT_DIV (CONST 42.0) (CONST 7.0)))
+				(SET y (FLOAT.DIV (CONST 42.0) (CONST 7.0)))
 				(DECL $0)
-				(SET $0 (FLOAT_ADD (CONST 3.0) (GET y)))
-				(DROP (FLOAT_NEG (GET $0)))
+				(SET $0 (FLOAT.ADD (CONST 3.0) (GET y)))
+				(DROP (FLOAT.NEG (GET $0)))
 			`.join('\n'));
 		});
 
@@ -196,12 +196,12 @@ describe('ASTNodeOperation', () => {
 					(DECL x)
 					(SET x (CONST 42))
 					(DECL $0)
-					(SET $0 (INT_EXP (GET x) (CONST 2)))
+					(SET $0 (INT.EXP (GET x) (CONST 2)))
 					(DECL $1)
-					(SET $1 (INT_EXP (CONST 2) (CONST 3)))
+					(SET $1 (INT.EXP (CONST 2) (CONST 3)))
 					(DECL $2)
-					(SET $2 (INT_DIV (GET $0) (GET $1)))
-					(DROP (INT_ADD (CONST 3) (GET $2)))
+					(SET $2 (INT.DIV (GET $0) (GET $1)))
+					(DROP (INT.ADD (CONST 3) (GET $2)))
 				`.join('\n'));
 			});
 			it('emits `(TRAP)` when types mismatch.', () => {
@@ -213,7 +213,7 @@ describe('ASTNodeOperation', () => {
 				goal.typeCheck();
 				goal.lower(opt);
 				return assert.strictEqual(opt.print(), extract_lines`
-					(DROP (FLOAT_ADD (CONST 3.5) (TRAP)))
+					(DROP (FLOAT.ADD (CONST 3.5) (TRAP)))
 				`.join('\n'));
 			});
 		});
@@ -349,16 +349,16 @@ describe('ASTNodeOperation', () => {
 					(DROP (GET $0))
 					(DECL $2)
 					(DECL $3)
-					(SET $3 (INT_NEG (GET c)))
+					(SET $3 (INT.NEG (GET c)))
 					(DECL $4)
-					(SET $4 (INT_ADD (GET $3) (CONST 1)))
+					(SET $4 (INT.ADD (GET $3) (CONST 1)))
 					if_false (GET $4), goto "block-2".
 					(SET $2 (GET $4))
 					goto "block-3".
 					"block-2":
 					(DECL $5)
-					(SET $5 (FLOAT_NEG (GET d)))
-					(SET $2 (FLOAT_ADD (CONST 1.0) (GET $5)))
+					(SET $5 (FLOAT.NEG (GET d)))
+					(SET $2 (FLOAT.ADD (CONST 1.0) (GET $5)))
 					"block-3":
 					(DROP (GET $2))
 				`.join('\n'));
@@ -433,13 +433,13 @@ describe('ASTNodeOperation', () => {
 				(DECL $1)
 				if_false (LT (GET y) (GET z)), goto "block-2".
 				(DECL $2)
-				(SET $2 (FLOAT_MUL (GET y) (CONST 2.0)))
-				(SET $1 (FLOAT_ADD (CONST 0.03) (GET $2)))
+				(SET $2 (FLOAT.MUL (GET y) (CONST 2.0)))
+				(SET $1 (FLOAT.ADD (CONST 0.03) (GET $2)))
 				goto "block-3".
 				"block-2":
 				(DECL $3)
-				(SET $3 (FLOAT_MUL (CONST 3.0) (GET z)))
-				(SET $1 (FLOAT_ADD (GET $3) (CONST 0.02)))
+				(SET $3 (FLOAT.MUL (CONST 3.0) (GET z)))
+				(SET $1 (FLOAT.ADD (GET $3) (CONST 0.02)))
 				"block-3":
 				(DROP (GET $1))
 			`.join('\n'));

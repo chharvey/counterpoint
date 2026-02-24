@@ -39,6 +39,6 @@ export class Unop extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ UnOp[this.operator] } ${ this.operand })`;
+		return `(${ UnOp[this.operator].replace(/_/, '.') } ${ this.operand })`;
 	}
 }

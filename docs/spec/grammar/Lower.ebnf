@@ -9,26 +9,26 @@ TOFLOAT(Number) -> Float;
 NOT(Value) -> Boolean;
 EMP(Value) -> Boolean;
 
-INT_NEG(Integer) -> Integer;
-FLOAT_NEG(Float) -> Float;
+INT.NEG(Integer) -> Integer;
+FLOAT.NEG(Float) -> Float;
 
-INT_ADD(Integer, Integer) -> Integer;
-INT_SUB(Integer, Integer) -> Integer;
-INT_MUL(Integer, Integer) -> Integer;
-INT_DIV(Integer, Integer) -> Integer;
-INT_EXP(Integer, Integer) -> Integer;
+INT.ADD(Integer, Integer) -> Integer;
+INT.SUB(Integer, Integer) -> Integer;
+INT.MUL(Integer, Integer) -> Integer;
+INT.DIV(Integer, Integer) -> Integer;
+INT.EXP(Integer, Integer) -> Integer;
 
-NAT_ADD(Natural, Natural) -> Natural;
-NAT_SUB(Natural, Natural) -> Natural;
-NAT_MUL(Natural, Natural) -> Natural;
-NAT_DIV(Natural, Natural) -> Natural;
-NAT_EXP(Natural, Natural) -> Natural;
+NAT.ADD(Natural, Natural) -> Natural;
+NAT.SUB(Natural, Natural) -> Natural;
+NAT.MUL(Natural, Natural) -> Natural;
+NAT.DIV(Natural, Natural) -> Natural;
+NAT.EXP(Natural, Natural) -> Natural;
 
-FLOAT_ADD(Float, Float) -> Float;
-FLOAT_SUB(Float, Float) -> Float;
-FLOAT_MUL(Float, Float) -> Float;
-FLOAT_DIV(Float, Float) -> Float;
-FLOAT_EXP(Float, Float) -> Float;
+FLOAT.ADD(Float, Float) -> Float;
+FLOAT.SUB(Float, Float) -> Float;
+FLOAT.MUL(Float, Float) -> Float;
+FLOAT.DIV(Float, Float) -> Float;
+FLOAT.EXP(Float, Float) -> Float;
 
 LT (Number, Number) -> Boolean;
 GT (Number, Number) -> Boolean;
@@ -74,26 +74,26 @@ Lower(SemanticTuple tup) := (TUPLE.NEW ...tup.children.map(Lower));
 
 Lower(SemanticOperation[operator=NOT] op)             := (NOT op.0);
 Lower(SemanticOperation[operator=EMP] op)             := (EMP op.0);
-Lower(SemanticOperation[operator=NEG][0: Integer] op) := (INT_NEG   op.0);
-Lower(SemanticOperation[operator=NEG][0: Float]   op) := (FLOAT_NEG op.0);
+Lower(SemanticOperation[operator=NEG][0: Integer] op) := (INT.NEG   op.0);
+Lower(SemanticOperation[operator=NEG][0: Float]   op) := (FLOAT.NEG op.0);
 
-Lower(SemanticOperation[operator=ADD][0: Integer][1: Integer] op) := (INT_ADD op.0 op.1);
-Lower(SemanticOperation[operator=SUB][0: Integer][1: Integer] op) := (INT_SUB op.0 op.1);
-Lower(SemanticOperation[operator=MUL][0: Integer][1: Integer] op) := (INT_MUL op.0 op.1);
-Lower(SemanticOperation[operator=DIV][0: Integer][1: Integer] op) := (INT_DIV op.0 op.1);
-Lower(SemanticOperation[operator=EXP][0: Integer][1: Integer] op) := (INT_EXP op.0 op.1);
+Lower(SemanticOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD op.0 op.1);
+Lower(SemanticOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB op.0 op.1);
+Lower(SemanticOperation[operator=MUL][0: Integer][1: Integer] op) := (INT.MUL op.0 op.1);
+Lower(SemanticOperation[operator=DIV][0: Integer][1: Integer] op) := (INT.DIV op.0 op.1);
+Lower(SemanticOperation[operator=EXP][0: Integer][1: Integer] op) := (INT.EXP op.0 op.1);
 
-Lower(SemanticOperation[operator=ADD][0: Natural][1: Natural] op) := (NAT_ADD op.0 op.1);
-Lower(SemanticOperation[operator=SUB][0: Natural][1: Natural] op) := (NAT_SUB op.0 op.1);
-Lower(SemanticOperation[operator=MUL][0: Natural][1: Natural] op) := (NAT_MUL op.0 op.1);
-Lower(SemanticOperation[operator=DIV][0: Natural][1: Natural] op) := (NAT_DIV op.0 op.1);
-Lower(SemanticOperation[operator=EXP][0: Natural][1: Natural] op) := (NAT_EXP op.0 op.1);
+Lower(SemanticOperation[operator=ADD][0: Natural][1: Natural] op) := (NAT.ADD op.0 op.1);
+Lower(SemanticOperation[operator=SUB][0: Natural][1: Natural] op) := (NAT.SUB op.0 op.1);
+Lower(SemanticOperation[operator=MUL][0: Natural][1: Natural] op) := (NAT.MUL op.0 op.1);
+Lower(SemanticOperation[operator=DIV][0: Natural][1: Natural] op) := (NAT.DIV op.0 op.1);
+Lower(SemanticOperation[operator=EXP][0: Natural][1: Natural] op) := (NAT.EXP op.0 op.1);
 
-Lower(SemanticOperation[operator=ADD][0: Float][1: Float] op) := (FLOAT_ADD op.0 op.1);
-Lower(SemanticOperation[operator=SUB][0: Float][1: Float] op) := (FLOAT_SUB op.0 op.1);
-Lower(SemanticOperation[operator=MUL][0: Float][1: Float] op) := (FLOAT_MUL op.0 op.1);
-Lower(SemanticOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT_DIV op.0 op.1);
-Lower(SemanticOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT_EXP op.0 op.1);
+Lower(SemanticOperation[operator=ADD][0: Float][1: Float] op) := (FLOAT.ADD op.0 op.1);
+Lower(SemanticOperation[operator=SUB][0: Float][1: Float] op) := (FLOAT.SUB op.0 op.1);
+Lower(SemanticOperation[operator=MUL][0: Float][1: Float] op) := (FLOAT.MUL op.0 op.1);
+Lower(SemanticOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT.DIV op.0 op.1);
+Lower(SemanticOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT.EXP op.0 op.1);
 
 Lower(SemanticOperation[operator=LT] [0: Number][1: Number] op) := (LT op.0 op.1);
 Lower(SemanticOperation[operator=GT] [0: Number][1: Number] op) := (GT op.0 op.1);

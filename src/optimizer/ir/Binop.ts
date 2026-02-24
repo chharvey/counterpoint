@@ -62,6 +62,6 @@ export class Binop extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ BinOp[this.operator] } ${ this.operand0 } ${ this.operand1 })`;
+		return `(${ BinOp[this.operator].replace(/_/, '.') } ${ this.operand0 } ${ this.operand1 })`;
 	}
 }
