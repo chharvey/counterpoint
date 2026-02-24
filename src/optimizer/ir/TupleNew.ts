@@ -6,16 +6,15 @@ import {Value} from './Value.ts';
 
 
 export class TupleNew extends Value {
-	public static new(optimizer: Optimizer, items: readonly Value[], typ: TYPE.Type): TupleNew {
-		return new TupleNew(items.map((item) => as_unit(optimizer, item)), typ);
-	}
+	private readonly items: readonly Value[];
 
-
-	private constructor(
-		private readonly items: readonly Value[],
-		private readonly typ:   TYPE.Type,
+	public constructor(
+		optimizer: Optimizer,
+		items: readonly Value[],
+		private readonly typ: TYPE.Type,
 	) {
 		super();
+		this.items = items.map((item) => as_unit(optimizer, item));
 	}
 
 	public override get type(): TYPE.Type {

@@ -42,42 +42,19 @@ export enum BinOp {
 
 /** A binary operation of 2 values. */
 export class Binop extends Value {
-	/**
-	 * Construct a new Binop using the Three-Address Code technique.
-	 *
-	 * Every binary operation should take the form of `t1 := t2 + t3`.
-	 * Nested operations such as `5 + 3 * 2 - 7`, instead of a tree-like structure:
-	 * ```
-	 * (SUB (ADD 5 (MUL 3 2)) 7)
-	 * ```
-	 * become flattened with the use of temporary locals:
-	 * ```
-	 * (SET $0 (MUL 3 2))        ;; t0 := 3 * 2
-	 * (SET $1 (ADD 5 (GET $0))) ;; t1 := 5 + t0
-	 * (SET $2 (SUB (GET $1) 7)) ;; t2 := t1 - 7
-	 * (GET $2)                  ;; t2
-	 * ```
-	 * Rather than returning `operation` directly, we set it to a temporary variable
-	 * and then return that variable.
-	 *
-	 * @param optimizer
-	 * @param operator
-	 * @param operand0 left
-	 * @param operand1 right
-	 * @see https://en.wikipedia.org/wiki/Three-address_code
-	 */
-	public static new(optimizer: Optimizer, operator: BinOp, operand0: Value, operand1: Value, typ: TYPE.Type): Binop {
-		return new Binop(operator, as_unit(optimizer, operand0), as_unit(optimizer, operand1), typ);
-	}
+	private readonly operand0: Value;
+	private readonly operand1: Value;
 
-
-	private constructor(
+	public constructor(
+		optimizer: Optimizer,
 		private readonly operator: BinOp,
-		private readonly operand0: Value,
-		private readonly operand1: Value,
-		private readonly typ:      TYPE.Type,
+		operand0: Value,
+		operand1: Value,
+		private readonly typ: TYPE.Type,
 	) {
 		super();
+		this.operand0 = as_unit(optimizer, operand0);
+		this.operand1 = as_unit(optimizer, operand1);
 	}
 
 	public override get type(): TYPE.Type {
