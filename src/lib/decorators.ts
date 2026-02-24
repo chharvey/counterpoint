@@ -16,7 +16,7 @@ export type MethodDecorator<
 > = (
 	method:  Value,
 	context: ClassMethodDecoratorContext<This, Value>,
-) => (typeof method) | void; // eslint-disable-line @typescript-eslint/no-invalid-void-type --- TC39 allows a decorator function to return `void` — in that case it will preserve the original method
+) => (typeof method) | void; // eslint-disable-line @typescript-eslint/no-invalid-void-type --- TC39 allows a method decorator function to return `void` — in that case it will preserve the original method
 
 
 
@@ -34,7 +34,7 @@ export type GetterDecorator<
 > = (
 	getter:  (this: This) => Value,
 	context: ClassGetterDecoratorContext<This, Value>,
-) => (typeof getter) | void; // eslint-disable-line @typescript-eslint/no-invalid-void-type --- TC39 allows a decorator function to return `void` — in that case it will preserve the original getter
+) => (typeof getter) | void; // eslint-disable-line @typescript-eslint/no-invalid-void-type --- TC39 allows a getter decorator function to return `void` — in that case it will preserve the original getter
 
 
 
@@ -52,7 +52,7 @@ export type SetterDecorator<
 > = (
 	setter:  (this: This, value: Value) => void,
 	context: ClassSetterDecoratorContext<This, Value>,
-) => typeof setter;
+) => (typeof setter) | void; // eslint-disable-line @typescript-eslint/no-invalid-void-type --- TC39 allows a setter decorator function to return `void` — in that case it will preserve the original setter
 /* eslint-enable @typescript-eslint/no-explicit-any */
 
 
@@ -70,6 +70,9 @@ export type SetterDecorator<
  * By explicitly applying `@noopMethod(decorator)` to the method, it tells programmers,
  * “Normally we would use `@decorator` here, but for a specific reason we decided to leave it off.”
  *
+ * @typeparam ProtoThis the method’s `this` type
+ * @typeparam Params    the method’s parameter types
+ * @typeparam Return    the method’s return type
  * @param _decorator a decorator to cancel
  * @return           a new decorator that voids the argument
  */
@@ -81,6 +84,8 @@ export function noopMethod<ProtoThis extends object, Params extends unknown[], R
 
 /**
  * Cancels a getter decorator. Similar to {@link noopMethod} but for getters.
+ * @typeparam ProtoThis   the getter’s `this` type
+ * @typeparam Return      the getter’s return type
  * @param _decorator a decorator to cancel
  * @return           a new decorator that voids the argument
  */
@@ -91,19 +96,33 @@ export function noopGetter<ProtoThis extends object, Return>(_decorator: GetterD
 
 
 /**
+ * Cancels a getter decorator. Similar to {@link noopMethod} but for setters.
+ * @typeparam ProtoThis   the setter’s `this` type
+ * @typeparam Param       the setter’s parameter type
+ * @param _decorator a decorator to cancel
+ * @return           a new decorator that voids the argument
+ */
+export function noopSetter<ProtoThis extends object, Param>(_decorator: SetterDecorator<ProtoThis, Param>): typeof _decorator {
+	return (_getter, _context) => undefined;
+}
+
+
+
+/**
  * Decorator for memoizing properties.
  * When getting a property, check whether it exists in the “database”.
  * If it does, return that value.
  * If it doen’t, compute the value, store it in the database, and then return it.
- * @implements MethodDecorator<object, (this: object, ...args: Params) => Return>
+ * @implements MethodDecorator<ProtoThis, (this: ProtoThis, ...args: Params) => Return>
+ * @typeparam ProtoThis   the method’s `this` type
  * @typeparam Params      the method’s parameter types
  * @typeparam Return      the method’s return type
  */
-export function memoizeMethod<Params extends unknown[], Return>(
-	method:   (this: object, ...args: Params) => Return,
-	_context: ClassMethodDecoratorContext<object, typeof method>,
+export function memoizeMethod<ProtoThis extends object, Params extends unknown[], Return>(
+	method:   (this: ProtoThis, ...args: Params) => Return,
+	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
 ): typeof method {
-	const memomap = new WeakMap<object, Return>();
+	const memomap = new WeakMap<ProtoThis, Return>();
 	return function (...args) {
 		memomap.has(this) || memomap.set(this, method.call(this, ...args));
 		return memomap.get(this)!;
@@ -114,14 +133,15 @@ export function memoizeMethod<Params extends unknown[], Return>(
 
 /**
  * Like {@link memoizeMethod} but for getters.
- * @implements GetterDecorator<object, Return>
+ * @implements GetterDecorator<ProtoThis, Return>
+ * @typeparam ProtoThis   the getter’s `this` type
  * @typeparam Return      the getter’s return type
  */
-export function memoizeGetter<Return>(
-	getter:   (this: object) => Return,
-	_context: ClassGetterDecoratorContext<object, Return>,
+export function memoizeGetter<ProtoThis extends object, Return>(
+	getter:   (this: ProtoThis) => Return,
+	_context: ClassGetterDecoratorContext<ProtoThis, Return>,
 ): typeof getter {
-	const memomap = new WeakMap<object, Return>();
+	const memomap = new WeakMap<ProtoThis, Return>();
 	return function () {
 		memomap.has(this) || memomap.set(this, getter.call(this));
 		return memomap.get(this)!;
@@ -134,14 +154,15 @@ export function memoizeGetter<Return>(
  * Decorator for run-once methods.
  * The first time the method is called, it should execute; any time after that, it should not.
  * Should only be used on methods that return `void`; for non-void methods, use {@link memoizeMethod}.
- * @implements MethodDecorator<object, (this: object, ...args: Params) => void>
+ * @implements MethodDecorator<ProtoThis, (this: ProtoThis, ...args: Params) => void>
+ * @typeparam ProtoThis   the method’s `this` type
  * @typeparam Params      the method’s parameter types
  */
-export function runOnceMethod<Params extends unknown[]>(
-	method:   (this: object, ...args: Params) => void,
-	_context: ClassMethodDecoratorContext<object, typeof method>,
+export function runOnceMethod<ProtoThis extends object, Params extends unknown[]>(
+	method:   (this: ProtoThis, ...args: Params) => void,
+	_context: ClassMethodDecoratorContext<ProtoThis, typeof method>,
 ): typeof method {
-	const memoset = new WeakSet();
+	const memoset = new WeakSet<ProtoThis>();
 	return function (...args) {
 		if (!memoset.has(this)) {
 			memoset.add(this);
@@ -154,14 +175,15 @@ export function runOnceMethod<Params extends unknown[]>(
 
 /**
  * Like {@link runOnceMethod} but for setters.
- * @implements SetterDecorator<object, Param>
+ * @implements SetterDecorator<ProtoThis, Param>
+ * @typeparam ProtoThis   the setter’s `this` type
  * @typeparam Param       the setter’s parameter type
  */
-export function runOnceSetter<Param>(
-	setter:   (this: object, value: Param) => void,
-	_context: ClassSetterDecoratorContext<object, Param>,
+export function runOnceSetter<ProtoThis extends object, Param>(
+	setter:   (this: ProtoThis, value: Param) => void,
+	_context: ClassSetterDecoratorContext<ProtoThis, Param>,
 ): typeof setter {
-	const memoset = new WeakSet();
+	const memoset = new WeakSet<ProtoThis>();
 	return function (arg) {
 		if (!memoset.has(this)) {
 			memoset.add(this);
