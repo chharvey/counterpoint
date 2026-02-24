@@ -6,6 +6,9 @@ TOINT(Number)   -> Integer;
 TONAT(Number)   -> Natural;
 TOFLOAT(Number) -> Float;
 
+TUPLE.NEW(...[Value])
+RECORD.NEW(...[(id Value)])
+
 NOT(Value) -> Boolean;
 EMP(Value) -> Boolean;
 

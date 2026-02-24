@@ -80,7 +80,7 @@ describe('ASTNodeExpression', () => {
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 			return assert.deepStrictEqual(expr.lower(opt), new IR.Get(expr));
 		});
-		it('AST.Tuple returns an IR.TupleNew', () => {
+		it('AST.Tuple returns an IR.CollectionIndexedNew', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: bool  = false;
 				val mut y: int   = 5;

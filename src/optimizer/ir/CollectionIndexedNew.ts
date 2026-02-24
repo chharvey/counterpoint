@@ -5,10 +5,17 @@ import {Value} from './Value.ts';
 
 
 
-export class TupleNew extends Value {
+export enum CollectionIndexedName {
+	TUPLE,
+}
+
+
+
+export class CollectionIndexedNew extends Value {
 	private readonly items: readonly Value[];
 
 	public constructor(
+		private readonly name: CollectionIndexedName,
 		items:     readonly Value[],
 		typ:       TYPE.Type,
 		optimizer: Optimizer,
@@ -18,6 +25,6 @@ export class TupleNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(TUPLE.NEW ${ this.items.map((item) => item.toString()).join(' ') })`;
+		return `(${ CollectionIndexedName[this.name] }.NEW ${ this.items.map((item) => item.toString()).join(' ') })`;
 	}
 }

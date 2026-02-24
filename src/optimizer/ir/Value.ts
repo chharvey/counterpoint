@@ -10,9 +10,9 @@ import {Instruction} from './Instruction.ts';
  * - Trap
  * - Const
  * - Get
+ * - CollectionIndexedNew
  * - Unop
  * - Binop
- * - TupleNew
  */
 export abstract class Value extends Instruction {
 	/**
