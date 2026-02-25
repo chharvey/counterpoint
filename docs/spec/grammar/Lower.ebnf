@@ -59,7 +59,8 @@ Lower(Boolean b) := (CONST b);
 Lower(Symbol s)  := (CONST s);
 Lower(Number n)  := (CONST n);
 
-Lower(SemanticProperty prop) := (`#`prop.0.id `Lower(prop.1)`);
+Lower(SemanticProperty prop) := (`#`prop.0.id       `Lower(prop.1)`);
+Lower(SemanticCase     case) := (`#``Lower(case.0)` `Lower(case.1)`);
 
 Lower(SemanticConstant const) := (CONST Lower(ValueOf(const)~!));
 Lower(SemanticVariable var)   := (GET var);
@@ -70,9 +71,9 @@ Lower(SemanticTuple tup)  := (TUPLE.NEW  ...tup.children.map(Lower));
 Lower(SemanticRecord rec) := (RECORD.NEW ...rec.children.map(Lower));
 Lower(SemanticList list)  := (LIST.NEW   ...list.children.map(Lower));
 Lower(SemanticDict dict)  := (DICT.NEW   ...dict.children.map(Lower));
+Lower(SemanticSet set)    := (SET.NEW    ...set.children.map(Lower));
+Lower(SemanticMap map)    := (MAP.NEW    ...map.children.map(Lower));
 
-// Lower(SemanticSet set);
-// Lower(SemanticMap map);
 // Lower(SemanticAccess access);
 // Lower(SemanticCall call);
 // Lower(SemanticClaim claim);

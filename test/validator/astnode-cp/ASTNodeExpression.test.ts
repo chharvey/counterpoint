@@ -47,8 +47,6 @@ describe('ASTNodeExpression', () => {
 
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
 			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
-			[AST.ASTNodeSet,      '{41, 42, 43}'],
-			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> 42, "c" -> 43}'],
 			[AST.ASTNodeAccess,   '(41, 42, 43).1'],
 			[AST.ASTNodeCall,     'List.<int>((41, 42, 43))'],
 		]), (src, klass) => {
@@ -155,6 +153,57 @@ describe('ASTNodeExpression', () => {
 				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
 				(DROP (DICT.NEW (#x100 (CONST false)) (#x101 (GET $2)) (#x102 (GET $3))))
 			`.join('\n'));
+		});
+		it('AST.Set returns an IR.SetNew.', () => {
+			assert.strictEqual(setupScript(`{
+				{false, 5 + 2, 3.0 * 0.2 - 1.0};
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL $0)
+				(SET $0 (FLOAT.MUL (CONST 3.0) (CONST 0.2)))
+				(DECL $1)
+				(SET $1 (FLOAT.NEG (CONST 1.0)))
+				(DECL $2)
+				(SET $2 (INT.ADD (CONST 5) (CONST 2)))
+				(DECL $3)
+				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
+				(DROP (SET.NEW (CONST false) (GET $2) (GET $3)))
+			`.join('\n'));
+		});
+		describe('AST.Map', () => {
+			it('returns an IR.MapNew.', () => {
+				assert.strictEqual(setupScript(`{
+					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (FLOAT.MUL (CONST 3.0) (CONST 0.2)))
+					(DECL $1)
+					(SET $1 (FLOAT.NEG (CONST 1.0)))
+					(DECL $2)
+					(SET $2 (INT.ADD (CONST 5) (CONST 2)))
+					(DECL $3)
+					(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
+					(DROP (MAP.NEW (#(CONST "a") (CONST false)) (#(CONST "b") (GET $2)) (#(CONST "c") (GET $3))))
+				`.join('\n'));
+			});
+			it('evaluates keys and values interchangeably in source order.', () => {
+				assert.strictEqual(setupScript(`{
+					{[10] -> [11], [12] -> [13], [14] -> [15]};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (LIST.NEW (CONST 10)))
+					(DECL $1)
+					(SET $1 (LIST.NEW (CONST 11)))
+					(DECL $2)
+					(SET $2 (LIST.NEW (CONST 12)))
+					(DECL $3)
+					(SET $3 (LIST.NEW (CONST 13)))
+					(DECL $4)
+					(SET $4 (LIST.NEW (CONST 14)))
+					(DECL $5)
+					(SET $5 (LIST.NEW (CONST 15)))
+					(DROP (MAP.NEW (#(GET $0) (GET $1)) (#(GET $2) (GET $3)) (#(GET $4) (GET $5))))
+				`.join('\n'));
+			});
 		});
 
 		// TODO: move these to ASTNodeStatement tests

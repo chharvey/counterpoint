@@ -6,6 +6,8 @@ export * from './Const.ts';
 export * from './Get.ts';
 export * from './CollectionIndexedNew.ts';
 export * from './CollectionKeyedNew.ts';
+export * from './SetNew.ts';
+export * from './MapNew.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
 
