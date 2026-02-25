@@ -6,9 +6,11 @@ import {Value} from './Value.ts';
 
 
 export class SetNew extends Value {
-	private readonly elems: readonly Value[];
-
-	public constructor(elems: readonly Value[], typ: TYPE.Type, optimizer: Optimizer) {
+	public constructor(
+		private readonly elems: readonly Value[],
+		typ:       TYPE.Type,
+		optimizer: Optimizer,
+	) {
 		super(typ);
 		this.elems = elems.map((elem) => as_unit(optimizer, elem));
 	}

@@ -13,11 +13,9 @@ export enum CollectionIndexedName {
 
 
 export class CollectionIndexedNew extends Value {
-	private readonly items: readonly Value[];
-
 	public constructor(
-		private readonly name: CollectionIndexedName,
-		items:     readonly Value[],
+		private readonly name:  CollectionIndexedName,
+		private readonly items: readonly Value[],
 		typ:       TYPE.Type,
 		optimizer: Optimizer,
 	) {

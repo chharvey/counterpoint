@@ -17,11 +17,9 @@ export enum CollectionKeyedName {
 
 
 export class CollectionKeyedNew extends Value {
-	private readonly props: readonly Prop[];
-
 	public constructor(
-		private readonly name: CollectionKeyedName,
-		props:     readonly Prop[],
+		private readonly name:  CollectionKeyedName,
+		private readonly props: readonly Prop[],
 		typ:       TYPE.Type,
 		optimizer: Optimizer,
 	) {
