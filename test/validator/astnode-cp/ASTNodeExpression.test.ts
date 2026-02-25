@@ -121,7 +121,7 @@ describe('ASTNodeExpression', () => {
 				(SET $2 (INT.ADD (GET y) (CONST 2)))
 				(DECL $3)
 				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
-				(DROP (RECORD.NEW (#x103 (GET x)) (#x104 (GET $2)) (#x105 (GET $3))))
+				(DROP (RECORD.NEW #x103 #x104 #x105 (GET x) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
 		it('AST.List returns an IR.CollectionIndexedNew.', () => {
@@ -151,7 +151,7 @@ describe('ASTNodeExpression', () => {
 				(SET $2 (INT.ADD (CONST 5) (CONST 2)))
 				(DECL $3)
 				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
-				(DROP (DICT.NEW (#x100 (CONST false)) (#x101 (GET $2)) (#x102 (GET $3))))
+				(DROP (DICT.NEW #x100 #x101 #x102 (CONST false) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
 		it('AST.Set returns an IR.SetNew.', () => {
@@ -179,10 +179,16 @@ describe('ASTNodeExpression', () => {
 					(DECL $1)
 					(SET $1 (FLOAT.NEG (CONST 1.0)))
 					(DECL $2)
-					(SET $2 (INT.ADD (CONST 5) (CONST 2)))
+					(SET $2 (TUPLE.NEW (CONST "a") (CONST false)))
 					(DECL $3)
-					(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
-					(DROP (MAP.NEW (#(CONST "a") (CONST false)) (#(CONST "b") (GET $2)) (#(CONST "c") (GET $3))))
+					(SET $3 (INT.ADD (CONST 5) (CONST 2)))
+					(DECL $4)
+					(SET $4 (TUPLE.NEW (CONST "b") (GET $3)))
+					(DECL $5)
+					(SET $5 (FLOAT.ADD (GET $0) (GET $1)))
+					(DECL $6)
+					(SET $6 (TUPLE.NEW (CONST "c") (GET $5)))
+					(DROP (MAP.NEW (GET $2) (GET $4) (GET $6)))
 				`.join('\n'));
 			});
 			it('evaluates keys and values interchangeably in source order.', () => {
@@ -194,14 +200,20 @@ describe('ASTNodeExpression', () => {
 					(DECL $1)
 					(SET $1 (LIST.NEW (CONST 11)))
 					(DECL $2)
-					(SET $2 (LIST.NEW (CONST 12)))
+					(SET $2 (TUPLE.NEW (GET $0) (GET $1)))
 					(DECL $3)
-					(SET $3 (LIST.NEW (CONST 13)))
+					(SET $3 (LIST.NEW (CONST 12)))
 					(DECL $4)
-					(SET $4 (LIST.NEW (CONST 14)))
+					(SET $4 (LIST.NEW (CONST 13)))
 					(DECL $5)
-					(SET $5 (LIST.NEW (CONST 15)))
-					(DROP (MAP.NEW (#(GET $0) (GET $1)) (#(GET $2) (GET $3)) (#(GET $4) (GET $5))))
+					(SET $5 (TUPLE.NEW (GET $3) (GET $4)))
+					(DECL $6)
+					(SET $6 (LIST.NEW (CONST 14)))
+					(DECL $7)
+					(SET $7 (LIST.NEW (CONST 15)))
+					(DECL $8)
+					(SET $8 (TUPLE.NEW (GET $6) (GET $7)))
+					(DROP (MAP.NEW (GET $2) (GET $5) (GET $8)))
 				`.join('\n'));
 			});
 		});

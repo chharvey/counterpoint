@@ -30,6 +30,8 @@ export class CollectionKeyedNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ CollectionKeyedName[this.name] }.NEW ${ this.props.map(([keyid, value]) => `(#x${ keyid.toString(16) } ${ value })`).join(' ') })`;
+		const keys:   readonly string[] = this.props.map(([keyid]) => `#x${ keyid.toString(16) }`);
+		const values: readonly Value[]  = this.props.map(([_, value]) => value);
+		return `(${ CollectionKeyedName[this.name] }.NEW ${ keys.join(' ') } ${ values.join(' ') })`;
 	}
 }
