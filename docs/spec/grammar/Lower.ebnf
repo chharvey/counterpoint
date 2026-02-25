@@ -40,6 +40,13 @@ DICT.NEW(native-bigint* [Value*]) -> Dict;
 SET.NEW([Value*]) -> Set;
 MAP.NEW([Value*]) -> Map;
 
+TUPLE.GET(native-bigint  [Value]) -> Value;
+RECORD.GET(native-bigint [Value]) -> Value;
+LIST.GET([Value Value])           -> Value;
+DICT.GET([Value Value])           -> Value;
+SET.GET([Value  Value])           -> Value;
+MAP.GET([Value  Value])           -> Value;
+
 NOT([Value]) -> Boolean;
 EMP([Value]) -> Boolean;
 
@@ -114,7 +121,13 @@ Lower(SemanticDict dict)  := (DICT.NEW   `...dict.children.map(prop.0.id)` [`...
 Lower(SemanticSet set)    := (SET.NEW    [`...set.children.map(Lower)`]);
 Lower(SemanticMap map)    := (MAP.NEW    [`...map.children.map(Lower)`]);
 
-// Lower(SemanticAccess access);
+Lower(SemanticAccess ::= SemanticExpression SemanticIndex) := (TUPLE.GET  SemanticIndex.index [`Lower(SemanticExpression)`]);
+Lower(SemanticAccess ::= SemanticExpression SemanticKey)   := (RECORD.GET SemanticKey.id      [`Lower(SemanticExpression)`]);
+Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+
 // Lower(SemanticCall call);
 // Lower(SemanticClaim claim);
 

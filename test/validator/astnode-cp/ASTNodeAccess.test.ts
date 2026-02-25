@@ -7,6 +7,7 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	Optimizer,
 	type Builder,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
@@ -968,6 +969,192 @@ describe('ASTNodeAccess', () => {
 
 	it('access kind: result access (`a!.‹b›`) is unsupported.', () => { // TODO: v0.5.0
 		assert.throws(() => AST.ASTNodeAccess.fromSource('(42,)!.0;'), TypeError);
+	});
+
+	describe('#lower', () => {
+		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
+			goal.varCheck();
+			goal.typeCheck();
+			'lower' in opts && opts.lower && goal.lower(opt);
+			return {goal, opt};
+		}
+		describe('access kind: normal access (`a.‹b›`).', () => {
+			it('tuple access returns an IR.CollectionStaticGet.', () => {
+				assert.strictEqual(setupScript(`{
+					(41 + 1, 42 / 2, 43 - 3).1;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.NEG (INT.CONST 3)))
+					(DECL $1)
+					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $2)
+					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL $3)
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(DECL $4)
+					(SET $4 (TUPLE.NEW (GET $1) (GET $2) (GET $3)))
+					(DROP (TUPLE.GET 1 (GET $4)))
+				`.join('\n'));
+			});
+			it('record access returns an IR.CollectionStaticGet.', () => {
+				assert.strictEqual(setupScript(`{
+					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.NEG (INT.CONST 3)))
+					(DECL $1)
+					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $2)
+					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL $3)
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(DECL $4)
+					(SET $4 (RECORD.NEW #x100 #x101 #x102 (GET $1) (GET $2) (GET $3)))
+					(DROP (RECORD.GET #x101 (GET $4)))
+				`.join('\n'));
+			});
+			it('List access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					[41 + 1, 42 / 2, 43 - 3].[1];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.NEG (INT.CONST 3)))
+					(DECL $1)
+					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $2)
+					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL $3)
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(DECL $4)
+					(SET $4 (LIST.NEW (GET $1) (GET $2) (GET $3)))
+					(DROP (LIST.GET (GET $4) (INT.CONST 1)))
+				`.join('\n'));
+			});
+			it('Dict access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.NEG (INT.CONST 3)))
+					(DECL $1)
+					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $2)
+					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL $3)
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(DECL $4)
+					(SET $4 (DICT.NEW #x100 #x101 #x102 (GET $1) (GET $2) (GET $3)))
+					(DROP (DICT.GET (GET $4) (SYM.CONST @b)))
+				`.join('\n'));
+			});
+			it('Set access returns an IR.CollectionHashedGet.', () => {
+				assert.strictEqual(setupScript(`{
+					{41 + 1, 42 / 2, 43 - 3}.[21];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.NEG (INT.CONST 3)))
+					(DECL $1)
+					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $2)
+					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL $3)
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(DECL $4)
+					(SET $4 (SET.NEW (GET $1) (GET $2) (GET $3)))
+					(DROP (SET.GET (GET $4) (INT.CONST 21)))
+				`.join('\n'));
+			});
+			it('Map access returns an IR.CollectionHashedGet.', () => {
+				assert.strictEqual(setupScript(`{
+					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.NEG (INT.CONST 3)))
+					(DECL $1)
+					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $2)
+					(SET $2 (TUPLE.NEW (INT.CONST 21) (GET $1)))
+					(DECL $3)
+					(SET $3 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL $4)
+					(SET $4 (TUPLE.NEW (INT.CONST 22) (GET $3)))
+					(DECL $5)
+					(SET $5 (INT.ADD (INT.CONST 43) (GET $0)))
+					(DECL $6)
+					(SET $6 (TUPLE.NEW (INT.CONST 23) (GET $5)))
+					(DECL $7)
+					(SET $7 (MAP.NEW (GET $2) (GET $4) (GET $6)))
+					(DROP (MAP.GET (GET $7) (INT.CONST 22)))
+				`.join('\n'));
+			});
+		});
+		describe('access kind: maybe access (`a?.‹b›`).', () => {
+			it('tuple access.', () => {
+				assert.strictEqual(setupScript(`{
+					val my_tuple: (int, int, ?:int) = (41 + 1, 42 / 2);
+					my_tuple?.2;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL my_tuple)
+					(SET my_tuple (TUPLE.NEW (GET $0) (GET $1)))
+					(DROP (TUPLE.GET 2 (GET my_tuple)))
+				`.join('\n'));
+			});
+			it('record access.', () => {
+				assert.strictEqual(setupScript(`{
+					val my_record: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
+					my_record?.b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL my_record)
+					(SET my_record (RECORD.NEW #x100 #x102 (GET $0) (GET $1)))
+					(DROP (RECORD.GET #x101 (GET my_record)))
+				`.join('\n'));
+			});
+			it('List access.', () => {
+				assert.strictEqual(setupScript(`{
+					val my_list: [int] = [41, 42];
+					my_list?.[2];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL my_list)
+					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+					(DROP (LIST.GET (GET my_list) (INT.CONST 2)))
+				`.join('\n'));
+			});
+			it('Dict access.', () => {
+				assert.strictEqual(setupScript(`{
+					val my_dict: [:int] = [a= 41, c= 42];
+					my_dict?.[@b];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL my_dict)
+					(SET my_dict (DICT.NEW #x100 #x101 (INT.CONST 41) (INT.CONST 42)))
+					(DROP (DICT.GET (GET my_dict) (SYM.CONST @b)))
+				`.join('\n'));
+			});
+			it('Map access.', () => {
+				assert.strictEqual(setupScript(`{
+					{21 -> 41, 22 -> 42, 23 -> 43}?.[22];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (TUPLE.NEW (INT.CONST 21) (INT.CONST 41)))
+					(DECL $1)
+					(SET $1 (TUPLE.NEW (INT.CONST 22) (INT.CONST 42)))
+					(DECL $2)
+					(SET $2 (TUPLE.NEW (INT.CONST 23) (INT.CONST 43)))
+					(DECL $3)
+					(SET $3 (MAP.NEW (GET $0) (GET $1) (GET $2)))
+					(DROP (MAP.GET (GET $3) (INT.CONST 22)))
+				`.join('\n'));
+			});
+		});
 	});
 
 	describe('#build', () => {
