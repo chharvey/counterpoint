@@ -26,6 +26,6 @@ export class CollectionIndexedNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ CollectionIndexedName[this.name] }.NEW ${ this.items.map((item) => item.toString()).join(' ') })`;
+		return `(${ CollectionIndexedName[this.name] }.NEW ${ this.items.join(' ') })`;
 	}
 }

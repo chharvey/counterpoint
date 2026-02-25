@@ -76,7 +76,7 @@ describe('ASTNodeExpression', () => {
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 			return assert.deepStrictEqual(expr.lower(opt), new IR.Get(expr));
 		});
-		it('AST.Tuple returns an IR.CollectionIndexedNew', () => {
+		it('AST.Tuple returns an IR.CollectionIndexedNew.', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: bool  = false;
 				val mut y: int   = 5;
@@ -100,7 +100,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (TUPLE.NEW (GET x) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
-		it('AST.Record returns an IR.CollectionKeyedNew', () => {
+		it('AST.Record returns an IR.CollectionKeyedNew.', () => {
 			assert.strictEqual(setupScript(`{
 				val x: bool  = false;
 				val y: int   = 5;
@@ -124,7 +124,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (RECORD.NEW (#x103 (GET x)) (#x104 (GET $2)) (#x105 (GET $3))))
 			`.join('\n'));
 		});
-		it('AST.List returns an IR.CollectionIndexedNew', () => {
+		it('AST.List returns an IR.CollectionIndexedNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
@@ -139,7 +139,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (LIST.NEW (CONST false) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
-		it('AST.Dict returns an IR.CollectionKeyedNew', () => {
+		it('AST.Dict returns an IR.CollectionKeyedNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
