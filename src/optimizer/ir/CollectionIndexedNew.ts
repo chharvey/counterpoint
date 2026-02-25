@@ -12,6 +12,7 @@ export enum CollectionIndexedName {
 
 
 
+/** Create an indexed collection (tuple/List). */
 export class CollectionIndexedNew extends Value {
 	public constructor(
 		private readonly name:  CollectionIndexedName,

@@ -98,10 +98,10 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		 * return (GET result).
 		 * ```
 		 */
-		const result: IrLocal = optimizer.newTempLocal(this.type());
-
 		const block_else:  string = optimizer.newLabel();
 		const block_endif: string = optimizer.newLabel();
+
+		const result: IrLocal = optimizer.newTempLocal(this.type());
 
 		optimizer.pushInstruction(new IR.GotoIfFalse(this.operand0.lower(optimizer), block_else));
 		optimizer.pushInstruction(new IR.Set(result, this.operand1.lower(optimizer)));

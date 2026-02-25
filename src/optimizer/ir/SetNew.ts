@@ -5,6 +5,7 @@ import {Value} from './Value.ts';
 
 
 
+/** Create a Set. */
 export class SetNew extends Value {
 	public constructor(
 		private readonly elems: readonly Value[],

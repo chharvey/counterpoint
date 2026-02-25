@@ -10,6 +10,7 @@ import {
 
 
 
+/** Create a Map. */
 export class MapNew extends Value {
 	/** An array of Get objects pointing to TupleNew objects. */
 	private readonly cases: readonly Value[];

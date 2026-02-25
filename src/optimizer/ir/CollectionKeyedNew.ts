@@ -16,6 +16,7 @@ export enum CollectionKeyedName {
 
 
 
+/** Create a keyed collection (record/Dict). */
 export class CollectionKeyedNew extends Value {
 	public constructor(
 		private readonly name:  CollectionKeyedName,
