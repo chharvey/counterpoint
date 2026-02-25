@@ -1012,7 +1012,7 @@ describe('ASTNodeAccess', () => {
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
 					(DECL $4)
 					(SET $4 (RECORD.NEW @a @b @c (GET $1) (GET $2) (GET $3)))
-					(DROP (RECORD.GET #x101 (GET $4)))
+					(DROP (RECORD.GET @b (GET $4)))
 				`.join('\n'));
 			});
 			it('List access returns an IR.CollectionDynamicGet.', () => {
@@ -1116,7 +1116,7 @@ describe('ASTNodeAccess', () => {
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL my_record)
 					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
-					(DROP (RECORD.GET #x101 (GET my_record)))
+					(DROP (RECORD.GET @b (GET my_record)))
 				`.join('\n'));
 			});
 			it('List access.', () => {

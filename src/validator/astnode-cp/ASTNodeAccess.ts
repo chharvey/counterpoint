@@ -99,11 +99,11 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				assert_instanceof(base_type, TYPE.Tuple);
-				return new IR.CollectionStaticGet(IR.CollectionStaticName.TUPLE, base_value, this.accessor.index, typ, optimizer);
+				return new IR.TupleGet(base_value, this.accessor.index, typ, optimizer);
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				assert_instanceof(base_type, TYPE.Record);
-				return new IR.CollectionStaticGet(IR.CollectionStaticName.RECORD, base_value, this.accessor.id, typ, optimizer);
+				return new IR.RecordGet(base_value, this.accessor, typ, optimizer);
 			}
 			default: {
 				assert_instanceof(this.accessor, ASTNodeExpression);

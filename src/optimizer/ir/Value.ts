@@ -15,7 +15,8 @@ import {Instruction} from './Instruction.ts';
  * - DictNew
  * - SetNew
  * - MapNew
- * - CollectionStaticGet
+ * - TupleGet
+ * - RecordGet
  * - CollectionDynamicGet
  * - CollectionHashedGet
  * - Unop
