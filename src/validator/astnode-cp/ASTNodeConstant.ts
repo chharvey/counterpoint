@@ -7,6 +7,7 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	noopMethod,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
@@ -20,7 +21,11 @@ import {
 } from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
 import {valueOfTokenNumber} from './utils-private.ts';
-import {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {
+	buildDeco,
+	typeDeco,
+	ASTNodeExpression,
+} from './ASTNodeExpression.ts';
 
 
 
@@ -62,13 +67,13 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	// @buildDeco // explicitly leaving off for performance
+	@noopMethod(buildDeco)
 	public override build(): binaryen.ExpressionRef {
 		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod
-	// @typeDeco // explicitly leaving off for performance
+	@noopMethod(typeDeco)
 	public override type(): TYPE.Type {
 		return this.fold().toType();
 	}
