@@ -11,7 +11,8 @@ import {Instruction} from './Instruction.ts';
  * - Const
  * - Get
  * - CollectionIndexedNew
- * - CollectionKeyedNew
+ * - RecordNew
+ * - DictNew
  * - SetNew
  * - MapNew
  * - CollectionStaticGet

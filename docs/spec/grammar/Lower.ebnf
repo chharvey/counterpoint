@@ -34,9 +34,9 @@ TONAT([Number])   -> Natural;
 TOFLOAT([Number]) -> Float;
 
 TUPLE.NEW([Value*]) -> Tuple;
-RECORD.NEW(native-bigint* [Value*]) -> Record;
+RECORD.NEW(SemanticKey* [Value*]) -> Record;
 LIST.NEW([Value*]) -> List;
-DICT.NEW(native-bigint* [Value*]) -> Dict;
+DICT.NEW([Value*]) -> Dict;
 SET.NEW([Value*]) -> Set;
 MAP.NEW([Value*]) -> Map;
 
@@ -100,7 +100,8 @@ Lower(Natural n) := (NAT.CONST   n);
 Lower(Float   f) := (FLOAT.CONST f);
 Lower(String  s) := (STR.CONST   s);
 
-Lower(SemanticCase case) := (TUPLE.NEW [`Lower(case.0)` `Lower(case.1)`]);
+Lower(SemanticCase     case) := (TUPLE.NEW [`Lower(case.0)` `Lower(case.1)`]);
+Lower(SemanticProperty prop) := Sequence [`prop.0`, `Lower(prop.1)`];
 
 Lower(SemanticConstant[type=TYPE.Null]    const) := (NULL.CONST  `Lower(ValueOf(const)~!)`);
 Lower(SemanticConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Lower(ValueOf(const)~!)`);
@@ -117,7 +118,7 @@ Lower(SemanticVariable var) := (GET var);
 Lower(SemanticTuple tup)  := (TUPLE.NEW  [`...tup.children.map(Lower)`]);
 Lower(SemanticRecord rec) := (RECORD.NEW `...rec.children.map(prop.0.id)` [`...rec.children.map(Lower(prop.1))`]);
 Lower(SemanticList list)  := (LIST.NEW   [`...list.children.map(Lower)`]);
-Lower(SemanticDict dict)  := (DICT.NEW   `...dict.children.map(prop.0.id)` [`...dict.children.map(Lower(prop.1))`]);
+Lower(SemanticDict dict)  := (DICT.NEW   [`...dict.children.flatMap(Lower)`]);
 Lower(SemanticSet set)    := (SET.NEW    [`...set.children.map(Lower)`]);
 Lower(SemanticMap map)    := (MAP.NEW    [`...map.children.map(Lower)`]);
 

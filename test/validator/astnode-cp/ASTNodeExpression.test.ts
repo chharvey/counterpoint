@@ -99,7 +99,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (TUPLE.NEW (GET x) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
-		it('AST.Record returns an IR.CollectionKeyedNew.', () => {
+		it('AST.Record returns an IR.RecordNew.', () => {
 			assert.strictEqual(setupScript(`{
 				val x: bool  = false;
 				val y: int   = 5;
@@ -120,7 +120,7 @@ describe('ASTNodeExpression', () => {
 				(SET $2 (INT.ADD (GET y) (INT.CONST 2)))
 				(DECL $3)
 				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
-				(DROP (RECORD.NEW #x103 #x104 #x105 (GET x) (GET $2) (GET $3)))
+				(DROP (RECORD.NEW @a @b @c (GET x) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
 		it('AST.List returns an IR.CollectionIndexedNew.', () => {
@@ -138,7 +138,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (LIST.NEW (BOOL.CONST false) (GET $2) (GET $3)))
 			`.join('\n'));
 		});
-		it('AST.Dict returns an IR.CollectionKeyedNew.', () => {
+		it('AST.Dict returns an IR.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
@@ -150,7 +150,7 @@ describe('ASTNodeExpression', () => {
 				(SET $2 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL $3)
 				(SET $3 (FLOAT.ADD (GET $0) (GET $1)))
-				(DROP (DICT.NEW #x100 #x101 #x102 (BOOL.CONST false) (GET $2) (GET $3)))
+				(DROP (DICT.NEW (SYM.CONST @a) (BOOL.CONST false) (SYM.CONST @b) (GET $2) (SYM.CONST @c) (GET $3)))
 			`.join('\n'));
 		});
 		it('AST.Set returns an IR.SetNew.', () => {

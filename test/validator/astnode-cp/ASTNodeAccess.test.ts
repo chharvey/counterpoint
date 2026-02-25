@@ -1011,7 +1011,7 @@ describe('ASTNodeAccess', () => {
 					(DECL $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
 					(DECL $4)
-					(SET $4 (RECORD.NEW #x100 #x101 #x102 (GET $1) (GET $2) (GET $3)))
+					(SET $4 (RECORD.NEW @a @b @c (GET $1) (GET $2) (GET $3)))
 					(DROP (RECORD.GET #x101 (GET $4)))
 				`.join('\n'));
 			});
@@ -1045,7 +1045,7 @@ describe('ASTNodeAccess', () => {
 					(DECL $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
 					(DECL $4)
-					(SET $4 (DICT.NEW #x100 #x101 #x102 (GET $1) (GET $2) (GET $3)))
+					(SET $4 (DICT.NEW (SYM.CONST @a) (GET $1) (SYM.CONST @b) (GET $2) (SYM.CONST @c) (GET $3)))
 					(DROP (DICT.GET (GET $4) (SYM.CONST @b)))
 				`.join('\n'));
 			});
@@ -1115,7 +1115,7 @@ describe('ASTNodeAccess', () => {
 					(DECL $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL my_record)
-					(SET my_record (RECORD.NEW #x100 #x102 (GET $0) (GET $1)))
+					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
 					(DROP (RECORD.GET #x101 (GET my_record)))
 				`.join('\n'));
 			});
@@ -1135,7 +1135,7 @@ describe('ASTNodeAccess', () => {
 					my_dict?.[@b];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL my_dict)
-					(SET my_dict (DICT.NEW #x100 #x101 (INT.CONST 41) (INT.CONST 42)))
+					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @c) (INT.CONST 42)))
 					(DROP (DICT.GET (GET my_dict) (SYM.CONST @b)))
 				`.join('\n'));
 			});
