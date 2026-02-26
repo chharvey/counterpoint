@@ -5,17 +5,18 @@ import {Value} from './Value.ts';
 
 
 
-export enum CollectionIndexedName {
+export enum CollectionLinearName {
 	TUPLE,
 	LIST,
+	SET,
 }
 
 
 
-/** Create an indexed collection (tuple/List). */
-export class CollectionIndexedNew extends Value {
+/** Create an indexed collection (tuple/List/Set). */
+export class CollectionLinearNew extends Value {
 	public constructor(
-		private readonly name:  CollectionIndexedName,
+		private readonly name:  CollectionLinearName,
 		private readonly items: readonly Value[],
 		typ:       TYPE.Type,
 		optimizer: Optimizer,
@@ -25,6 +26,6 @@ export class CollectionIndexedNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ CollectionIndexedName[this.name] }.NEW ${ this.items.join(' ') })`;
+		return `(${ CollectionLinearName[this.name] }.NEW ${ this.items.join(' ') })`;
 	}
 }

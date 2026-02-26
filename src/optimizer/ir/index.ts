@@ -7,7 +7,6 @@ export * from './Get.ts';
 export * from './CollectionIndexedNew.ts';
 export * from './RecordNew.ts';
 export * from './DictNew.ts';
-export * from './SetNew.ts';
 export * from './MapNew.ts';
 export * from './TupleGet.ts';
 export * from './RecordGet.ts';

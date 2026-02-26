@@ -61,7 +61,7 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ: TYPE.Type = this.type();
-		return new IR.SetNew(this.children.map((c) => c.lower(optimizer)), typ, optimizer);
+		return new IR.CollectionLinearNew(IR.CollectionLinearName.SET, this.children.map((c) => c.lower(optimizer)), typ, optimizer);
 	}
 
 	@memoizeMethod

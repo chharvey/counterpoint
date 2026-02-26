@@ -10,10 +10,9 @@ import {Instruction} from './Instruction.ts';
  * - Trap
  * - Const
  * - Get
- * - CollectionIndexedNew
+ * - CollectionLinearNew
  * - RecordNew
  * - DictNew
- * - SetNew
  * - MapNew
  * - TupleGet
  * - RecordGet
