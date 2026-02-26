@@ -20,6 +20,6 @@ export class DictNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(DICT.NEW ${ this.props.map(([key, value]) => [key, value].join(' ')).join(' ') })`;
+		return `(DICT.NEW ${ this.props.flat().join(' ') })`;
 	}
 }

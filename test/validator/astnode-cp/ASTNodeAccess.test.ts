@@ -1075,18 +1075,12 @@ describe('ASTNodeAccess', () => {
 					(DECL $1)
 					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL $2)
-					(SET $2 (TUPLE.NEW (INT.CONST 21) (GET $1)))
+					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL $3)
-					(SET $3 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
 					(DECL $4)
-					(SET $4 (TUPLE.NEW (INT.CONST 22) (GET $3)))
-					(DECL $5)
-					(SET $5 (INT.ADD (INT.CONST 43) (GET $0)))
-					(DECL $6)
-					(SET $6 (TUPLE.NEW (INT.CONST 23) (GET $5)))
-					(DECL $7)
-					(SET $7 (MAP.NEW (GET $2) (GET $4) (GET $6)))
-					(DROP (MAP.GET (GET $7) (INT.CONST 22)))
+					(SET $4 (MAP.NEW (INT.CONST 21) (GET $1) (INT.CONST 22) (GET $2) (INT.CONST 23) (GET $3)))
+					(DROP (MAP.GET (GET $4) (INT.CONST 22)))
 				`.join('\n'));
 			});
 		});
@@ -1144,14 +1138,8 @@ describe('ASTNodeAccess', () => {
 					{21 -> 41, 22 -> 42, 23 -> 43}?.[22];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (TUPLE.NEW (INT.CONST 21) (INT.CONST 41)))
-					(DECL $1)
-					(SET $1 (TUPLE.NEW (INT.CONST 22) (INT.CONST 42)))
-					(DECL $2)
-					(SET $2 (TUPLE.NEW (INT.CONST 23) (INT.CONST 43)))
-					(DECL $3)
-					(SET $3 (MAP.NEW (GET $0) (GET $1) (GET $2)))
-					(DROP (MAP.GET (GET $3) (INT.CONST 22)))
+					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
+					(DROP (MAP.GET (GET $0) (INT.CONST 22)))
 				`.join('\n'));
 			});
 		});
