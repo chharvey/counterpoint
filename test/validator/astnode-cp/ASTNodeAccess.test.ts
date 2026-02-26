@@ -1083,6 +1083,23 @@ describe('ASTNodeAccess', () => {
 					(DROP (MAP.GET (GET $4) (INT.CONST 22)))
 				`.join('\n'));
 			});
+			it('nested access.', () => {
+				assert.strictEqual(setupScript(`{
+					[("hello", {41, 42, 43})].[0].1.[42];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL $0)
+					(SET $0 (SET.NEW (INT.CONST 41) (INT.CONST 42) (INT.CONST 43)))
+					(DECL $1)
+					(SET $1 (TUPLE.NEW (STR.CONST "hello") (GET $0)))
+					(DECL $2)
+					(SET $2 (LIST.NEW (GET $1)))
+					(DECL $3)
+					(SET $3 (LIST.GET (GET $2) (INT.CONST 0)))
+					(DECL $4)
+					(SET $4 (TUPLE.GET 1 (GET $3)))
+					(DROP (SET.GET (GET $4) (INT.CONST 42)))
+				`.join('\n'));
+			});
 		});
 		describe('access kind: maybe access (`a?.‹b›`).', () => {
 			it('tuple access.', () => {
