@@ -147,7 +147,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 				const result: IrLocal = optimizer.newTempLocal(this.type());
 
-				optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Binop(IR.BinOp.EQ, base_value, new IR.Const(VALUE.NULL), TYPE.BOOL), block_else));
+				optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL), block_else));
 				optimizer.pushInstruction(new IR.Set(result, new IR.Const(VALUE.NULL)));
 				optimizer.pushInstruction(new IR.Goto(block_endif));
 				optimizer.pushInstruction(new IR.Label(block_else));

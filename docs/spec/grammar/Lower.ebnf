@@ -29,6 +29,8 @@ FLOAT.CONST(VALUE.Float)  -> Value;
 STR.CONST(VALUE.String)   -> Value;
 GET(SemanticVariable|native-string) -> Value;
 
+ISNULL([Value]) -> Boolean;
+
 TOINT([Number])   -> Integer;
 TONAT([Number])   -> Natural;
 TOFLOAT([Number]) -> Float;
@@ -133,7 +135,7 @@ Lower(SemanticAccess[kind=MAYBE] access) := [
 	(DECL $tuple)
 	(SET $tuple `Lower(access.0)`)
 	(DECL $result)
-	if_false (EQ (GET $tuple) (NULL.CONST null)), goto "block-0".
+	if_false (ISNULL (GET $tuple)), goto "block-0".
 	(SET $result (NULL.CONST null))
 	goto "block-1".
 	"block-0":

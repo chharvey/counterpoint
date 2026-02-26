@@ -1097,7 +1097,7 @@ describe('ASTNodeAccess', () => {
 					(DECL my_tuple)
 					(SET my_tuple (TUPLE.NEW (GET $0) (GET $1)))
 					(DECL $2)
-					if_false (EQ (GET my_tuple) (NULL.CONST null)), goto "block-0".
+					if_false (ISNULL (GET my_tuple)), goto "block-0".
 					(SET $2 (NULL.CONST null))
 					goto "block-1".
 					"block-0":
@@ -1118,7 +1118,7 @@ describe('ASTNodeAccess', () => {
 					(DECL my_record)
 					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
 					(DECL $2)
-					if_false (EQ (GET my_record) (NULL.CONST null)), goto "block-0".
+					if_false (ISNULL (GET my_record)), goto "block-0".
 					(SET $2 (NULL.CONST null))
 					goto "block-1".
 					"block-0":
@@ -1135,7 +1135,7 @@ describe('ASTNodeAccess', () => {
 					(DECL my_list)
 					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 					(DECL $0)
-					if_false (EQ (GET my_list) (NULL.CONST null)), goto "block-0".
+					if_false (ISNULL (GET my_list)), goto "block-0".
 					(SET $0 (NULL.CONST null))
 					goto "block-1".
 					"block-0":
@@ -1152,7 +1152,7 @@ describe('ASTNodeAccess', () => {
 					(DECL my_dict)
 					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @c) (INT.CONST 42)))
 					(DECL $0)
-					if_false (EQ (GET my_dict) (NULL.CONST null)), goto "block-0".
+					if_false (ISNULL (GET my_dict)), goto "block-0".
 					(SET $0 (NULL.CONST null))
 					goto "block-1".
 					"block-0":
@@ -1168,7 +1168,7 @@ describe('ASTNodeAccess', () => {
 					(DECL $0)
 					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
 					(DECL $1)
-					if_false (EQ (GET $0) (NULL.CONST null)), goto "block-0".
+					if_false (ISNULL (GET $0)), goto "block-0".
 					(SET $1 (NULL.CONST null))
 					goto "block-1".
 					"block-0":

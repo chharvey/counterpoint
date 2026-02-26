@@ -5,6 +5,8 @@ import {Value} from './Value.ts';
 
 /** An enum of unary operations. */
 export enum UnOp {
+	ISNULL,
+
 	TOINT,
 	TONAT,
 	TOFLOAT,
