@@ -184,23 +184,25 @@ describe('ASTNodeExpression', () => {
 					(DROP (MAP.NEW (STR.CONST "a") (BOOL.CONST false) (STR.CONST "b") (GET $2) (STR.CONST "c") (GET $3)))
 				`.join('\n'));
 			});
-			it('evaluates keys and values interchangeably in source order.', () => {
+			it('evaluates antecedents and consequents interchangeably in source order.', () => {
 				assert.strictEqual(setupScript(`{
-					{[10] -> [11], [12] -> [13], [14] -> [15]};
+					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (LIST.NEW (INT.CONST 10)))
+					(SET $0 (INT.MUL (INT.CONST 5) (INT.CONST 2)))
 					(DECL $1)
-					(SET $1 (LIST.NEW (INT.CONST 11)))
+					(SET $1 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
 					(DECL $2)
-					(SET $2 (LIST.NEW (INT.CONST 12)))
+					(SET $2 (LIST.NEW (INT.CONST 10)))
 					(DECL $3)
-					(SET $3 (LIST.NEW (INT.CONST 13)))
+					(SET $3 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
 					(DECL $4)
-					(SET $4 (LIST.NEW (INT.CONST 14)))
+					(SET $4 (LIST.NEW (INT.CONST 12)))
 					(DECL $5)
-					(SET $5 (LIST.NEW (INT.CONST 15)))
-					(DROP (MAP.NEW (GET $0) (GET $1) (GET $2) (GET $3) (GET $4) (GET $5)))
+					(SET $5 (INT.ADD (GET $0) (INT.CONST 3)))
+					(DECL $6)
+					(SET $6 (LIST.NEW (GET $1)))
+					(DROP (MAP.NEW (GET $2) (GET $3) (GET $4) (GET $5) (GET $6) (INT.CONST 15)))
 				`.join('\n'));
 			});
 		});
