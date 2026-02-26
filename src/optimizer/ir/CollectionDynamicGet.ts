@@ -1,6 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
 
 
@@ -22,8 +21,8 @@ export class CollectionDynamicGet extends Value {
 		optimizer:  Optimizer,
 	) {
 		super(entry_type);
-		this.collection = as_unit(optimizer, collection);
-		this.accessor   = as_unit(optimizer, accessor);
+		this.collection = collection.asTac(optimizer);
+		this.accessor   = accessor  .asTac(optimizer);
 	}
 
 	public override toString(): string {

@@ -13,4 +13,8 @@ export class Get extends Value {
 	public override toString(): string {
 		return `(GET ${ this.target instanceof AST.ASTNodeVariable ? this.target.source : this.target.name })`;
 	}
+
+	public override asTac(): Get {
+		return this;
+	}
 }

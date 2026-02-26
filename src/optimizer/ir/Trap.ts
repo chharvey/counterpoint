@@ -12,4 +12,8 @@ export class Trap extends Value {
 	public override toString(): string {
 		return '(TRAP)';
 	}
+
+	public override asTac(): Trap {
+		return this;
+	}
 }

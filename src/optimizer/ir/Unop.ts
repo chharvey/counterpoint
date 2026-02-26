@@ -1,6 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
 
 
@@ -31,7 +30,7 @@ export class Unop extends Value {
 		optimizer: Optimizer,
 	) {
 		super(typ);
-		this.operand = as_unit(optimizer, operand);
+		this.operand = operand.asTac(optimizer);
 	}
 
 	public override toString(): string {

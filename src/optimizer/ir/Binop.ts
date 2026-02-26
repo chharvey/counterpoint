@@ -1,6 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
 
 
@@ -53,8 +52,8 @@ export class Binop extends Value {
 		optimizer: Optimizer,
 	) {
 		super(typ);
-		this.operand0 = as_unit(optimizer, operand0);
-		this.operand1 = as_unit(optimizer, operand1);
+		this.operand0 = operand0.asTac(optimizer);
+		this.operand1 = operand1.asTac(optimizer);
 	}
 
 	public override toString(): string {

@@ -1,6 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
 
 
@@ -13,7 +12,10 @@ export class MapNew extends Value {
 		optimizer: Optimizer,
 	) {
 		super(typ);
-		this.cases = cases.map(([ant, con]) => [as_unit(optimizer, ant), as_unit(optimizer, con)]);
+		this.cases = cases.map(([ant, con]) => [
+			ant.asTac(optimizer),
+			con.asTac(optimizer),
+		]);
 	}
 
 	public override toString(): string {

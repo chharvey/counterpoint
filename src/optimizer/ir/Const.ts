@@ -26,4 +26,8 @@ export class Const extends Value {
 		);
 		return `(${ wide_type.toString().toUpperCase() }.CONST ${ this.value })`;
 	}
+
+	public override asTac(): Const {
+		return this;
+	}
 }

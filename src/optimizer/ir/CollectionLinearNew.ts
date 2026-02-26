@@ -1,6 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
 
 
@@ -22,7 +21,7 @@ export class CollectionLinearNew extends Value {
 		optimizer: Optimizer,
 	) {
 		super(typ);
-		this.items = items.map((item) => as_unit(optimizer, item));
+		this.items = items.map((item) => item.asTac(optimizer));
 	}
 
 	public override toString(): string {

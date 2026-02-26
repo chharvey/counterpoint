@@ -1,7 +1,6 @@
 import type {AST} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
-import {as_unit} from './utils-private.ts';
 import {Value} from './Value.ts';
 
 
@@ -14,7 +13,7 @@ export class RecordNew extends Value {
 		optimizer: Optimizer,
 	) {
 		super(typ);
-		this.props = props.map(([key, value]) => [key, as_unit(optimizer, value)]);
+		this.props = props.map(([key, value]) => [key, value.asTac(optimizer)]);
 	}
 
 	public override toString(): string {
