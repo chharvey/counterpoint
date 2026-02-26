@@ -4,6 +4,7 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
+	type IrLocal,
 	type Optimizer,
 	IR,
 } from '../../index.ts';
@@ -96,35 +97,63 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		const base_type:  TYPE.Type = this.base.type();
 		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
 
+		let returned: IR.Value | null = null;
+
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				assert_instanceof(base_type, TYPE.Tuple);
-				return new IR.TupleGet(base_value, this.accessor.index, typ);
+				returned = new IR.TupleGet(base_value, this.accessor.index, typ);
+				break;
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				assert_instanceof(base_type, TYPE.Record);
-				return new IR.RecordGet(base_value, this.accessor, typ);
+				returned = new IR.RecordGet(base_value, this.accessor, typ);
+				break;
 			}
 			default: {
 				assert_instanceof(this.accessor, ASTNodeExpression);
 				const accessor_value: IR.Value = this.accessor.lower(optimizer);
 				switch (true) {
 					case base_type instanceof TYPE.List: {
-						return new IR.CollectionDynamicGet(IR.CollectionDynamicName.LIST, base_value, accessor_value, typ);
+						returned = new IR.CollectionDynamicGet(IR.CollectionDynamicName.LIST, base_value, accessor_value, typ);
+						break;
 					}
 					case base_type instanceof TYPE.Dict: {
-						return new IR.CollectionDynamicGet(IR.CollectionDynamicName.DICT, base_value, accessor_value, typ);
+						returned = new IR.CollectionDynamicGet(IR.CollectionDynamicName.DICT, base_value, accessor_value, typ);
+						break;
 					}
 					case base_type instanceof TYPE.Set: {
-						return new IR.CollectionHashedGet(IR.CollectionHashedName.SET, base_value, accessor_value, typ);
+						returned = new IR.CollectionHashedGet(IR.CollectionHashedName.SET, base_value, accessor_value, typ);
+						break;
 					}
 					case base_type instanceof TYPE.Map: {
-						return new IR.CollectionHashedGet(IR.CollectionHashedName.MAP, base_value, accessor_value, typ);
+						returned = new IR.CollectionHashedGet(IR.CollectionHashedName.MAP, base_value, accessor_value, typ);
+						break;
 					}
 					default: {
 						assert.fail(`Expected ${ base_type } to be a \`List|Dict|Set|Map\`.`);
 					}
 				}
+			}
+		}
+
+		switch (this.kind as Operator.DOT | Operator.DOT_MAY) {
+			case Operator.DOT: {
+				return returned;
+			}
+			case Operator.DOT_MAY: {
+				const block_else:  string = optimizer.newLabel();
+				const block_endif: string = optimizer.newLabel();
+
+				const result: IrLocal = optimizer.newTempLocal(this.type());
+
+				optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Binop(IR.BinOp.EQ, base_value, new IR.Const(VALUE.NULL), TYPE.BOOL), block_else));
+				optimizer.pushInstruction(new IR.Set(result, new IR.Const(VALUE.NULL)));
+				optimizer.pushInstruction(new IR.Goto(block_endif));
+				optimizer.pushInstruction(new IR.Label(block_else));
+				optimizer.pushInstruction(new IR.Set(result, returned));
+				optimizer.pushInstruction(new IR.Label(block_endif));
+				return new IR.Get(result);
 			}
 		}
 	}

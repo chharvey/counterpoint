@@ -1096,7 +1096,14 @@ describe('ASTNodeAccess', () => {
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL my_tuple)
 					(SET my_tuple (TUPLE.NEW (GET $0) (GET $1)))
-					(DROP (TUPLE.GET 2 (GET my_tuple)))
+					(DECL $2)
+					if_false (EQ (GET my_tuple) (NULL.CONST null)), goto "block-0".
+					(SET $2 (NULL.CONST null))
+					goto "block-1".
+					"block-0":
+					(SET $2 (TUPLE.GET 2 (GET my_tuple)))
+					"block-1":
+					(DROP (GET $2))
 				`.join('\n'));
 			});
 			it('record access.', () => {
@@ -1110,7 +1117,14 @@ describe('ASTNodeAccess', () => {
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL my_record)
 					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
-					(DROP (RECORD.GET @b (GET my_record)))
+					(DECL $2)
+					if_false (EQ (GET my_record) (NULL.CONST null)), goto "block-0".
+					(SET $2 (NULL.CONST null))
+					goto "block-1".
+					"block-0":
+					(SET $2 (RECORD.GET @b (GET my_record)))
+					"block-1":
+					(DROP (GET $2))
 				`.join('\n'));
 			});
 			it('List access.', () => {
@@ -1120,7 +1134,14 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL my_list)
 					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-					(DROP (LIST.GET (GET my_list) (INT.CONST 2)))
+					(DECL $0)
+					if_false (EQ (GET my_list) (NULL.CONST null)), goto "block-0".
+					(SET $0 (NULL.CONST null))
+					goto "block-1".
+					"block-0":
+					(SET $0 (LIST.GET (GET my_list) (INT.CONST 2)))
+					"block-1":
+					(DROP (GET $0))
 				`.join('\n'));
 			});
 			it('Dict access.', () => {
@@ -1130,7 +1151,14 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL my_dict)
 					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @c) (INT.CONST 42)))
-					(DROP (DICT.GET (GET my_dict) (SYM.CONST @b)))
+					(DECL $0)
+					if_false (EQ (GET my_dict) (NULL.CONST null)), goto "block-0".
+					(SET $0 (NULL.CONST null))
+					goto "block-1".
+					"block-0":
+					(SET $0 (DICT.GET (GET my_dict) (SYM.CONST @b)))
+					"block-1":
+					(DROP (GET $0))
 				`.join('\n'));
 			});
 			it('Map access.', () => {
@@ -1139,7 +1167,14 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
 					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
-					(DROP (MAP.GET (GET $0) (INT.CONST 22)))
+					(DECL $1)
+					if_false (EQ (GET $0) (NULL.CONST null)), goto "block-0".
+					(SET $1 (NULL.CONST null))
+					goto "block-1".
+					"block-0":
+					(SET $1 (MAP.GET (GET $0) (INT.CONST 22)))
+					"block-1":
+					(DROP (GET $1))
 				`.join('\n'));
 			});
 		});

@@ -122,12 +122,25 @@ Lower(SemanticDict dict)  := (DICT.NEW   [`...dict.children.flatMap(Lower)`]);
 Lower(SemanticSet set)    := (SET.NEW    [`...set.children.map(Lower)`]);
 Lower(SemanticMap map)    := (MAP.NEW    [`...map.children.map(Lower)`]);
 
-Lower(SemanticAccess ::= SemanticExpression SemanticIndex) := (TUPLE.GET  SemanticIndex.index [`Lower(SemanticExpression)`]);
-Lower(SemanticAccess ::= SemanticExpression SemanticKey)   := (RECORD.GET SemanticKey.id      [`Lower(SemanticExpression)`]);
-Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
-Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
-Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
-Lower(SemanticAccess ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Lower(SemanticExpression)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Lower(SemanticExpression)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+
+Lower(SemanticAccess[kind=MAYBE] access) := [
+	(DECL $tuple)
+	(SET $tuple `Lower(access.0)`)
+	(DECL $result)
+	if_false (EQ (GET $tuple) (NULL.CONST null)), goto "block-0".
+	(SET $result (NULL.CONST null))
+	goto "block-1".
+	"block-0":
+	(SET result `Lower(access[kind=NORMAL])`)
+	"block-1":
+	return (GET $result).
+];
 
 // Lower(SemanticCall call);
 // Lower(SemanticClaim claim);
