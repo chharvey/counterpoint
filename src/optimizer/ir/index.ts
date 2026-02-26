@@ -11,7 +11,6 @@ export * from './MapNew.ts';
 export * from './TupleGet.ts';
 export * from './RecordGet.ts';
 export * from './CollectionDynamicGet.ts';
-export * from './CollectionHashedGet.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
 

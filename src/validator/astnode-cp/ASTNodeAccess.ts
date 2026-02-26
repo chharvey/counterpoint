@@ -113,27 +113,17 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 			default: {
 				assert_instanceof(this.accessor, ASTNodeExpression);
 				const accessor_value: IR.Value = this.accessor.lower(optimizer);
-				switch (true) {
-					case base_type instanceof TYPE.List: {
-						returned = new IR.CollectionDynamicGet(IR.CollectionDynamicName.LIST, base_value, accessor_value, typ);
-						break;
-					}
-					case base_type instanceof TYPE.Dict: {
-						returned = new IR.CollectionDynamicGet(IR.CollectionDynamicName.DICT, base_value, accessor_value, typ);
-						break;
-					}
-					case base_type instanceof TYPE.Set: {
-						returned = new IR.CollectionHashedGet(IR.CollectionHashedName.SET, base_value, accessor_value, typ);
-						break;
-					}
-					case base_type instanceof TYPE.Map: {
-						returned = new IR.CollectionHashedGet(IR.CollectionHashedName.MAP, base_value, accessor_value, typ);
-						break;
-					}
-					default: {
-						assert.fail(`Expected ${ base_type } to be a \`List|Dict|Set|Map\`.`);
-					}
-				}
+				returned = new IR.CollectionDynamicGet(
+					(
+						base_type instanceof TYPE.List ?         IR.CollectionDynamicName.LIST :
+						base_type instanceof TYPE.Dict ?         IR.CollectionDynamicName.DICT :
+						base_type instanceof TYPE.Set  ?         IR.CollectionDynamicName.SET :
+						(assert_instanceof(base_type, TYPE.Map), IR.CollectionDynamicName.MAP)
+					),
+					base_value,
+					accessor_value,
+					typ,
+				);
 			}
 		}
 

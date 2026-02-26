@@ -981,7 +981,7 @@ describe('ASTNodeAccess', () => {
 			return {goal, opt};
 		}
 		describe('access kind: normal access (`a.‹b›`).', () => {
-			it('tuple access returns an IR.CollectionStaticGet.', () => {
+			it('tuple access returns an IR.TupleGet.', () => {
 				assert.strictEqual(setupScript(`{
 					(41 + 1, 42 / 2, 43 - 3).1;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
@@ -998,7 +998,7 @@ describe('ASTNodeAccess', () => {
 					(DROP (TUPLE.GET 1 (GET $4)))
 				`.join('\n'));
 			});
-			it('record access returns an IR.CollectionStaticGet.', () => {
+			it('record access returns an IR.RecordGet.', () => {
 				assert.strictEqual(setupScript(`{
 					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
@@ -1049,7 +1049,7 @@ describe('ASTNodeAccess', () => {
 					(DROP (DICT.GET (GET $4) (SYM.CONST @b)))
 				`.join('\n'));
 			});
-			it('Set access returns an IR.CollectionHashedGet.', () => {
+			it('Set access returns an IR.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					{41 + 1, 42 / 2, 43 - 3}.[21];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
@@ -1066,7 +1066,7 @@ describe('ASTNodeAccess', () => {
 					(DROP (SET.GET (GET $4) (INT.CONST 21)))
 				`.join('\n'));
 			});
-			it('Map access returns an IR.CollectionHashedGet.', () => {
+			it('Map access returns an IR.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`

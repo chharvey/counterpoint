@@ -6,11 +6,13 @@ import {Value} from './Value.ts';
 export enum CollectionDynamicName {
 	LIST,
 	DICT,
+	SET,
+	MAP,
 }
 
 
 
-/** Read an entry of a dynamic collection (List/Dict). */
+/** Read an entry of a dynamic collection (List/Dict/Set/Map). */
 export class CollectionDynamicGet extends Value {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
