@@ -1,5 +1,4 @@
 import type {TYPE} from '../../typer/index.ts';
-import type {Optimizer} from '../Optimizer.ts';
 import {Value} from './Value.ts';
 
 
@@ -22,11 +21,8 @@ export class CollectionHashedGet extends Value {
 		private readonly collection: Value,
 		private readonly accessor:   Value,
 		entry_type: TYPE.Type,
-		optimizer:  Optimizer,
 	) {
 		super(entry_type);
-		this.collection = collection.asTac(optimizer);
-		this.accessor   = accessor  .asTac(optimizer);
 	}
 
 	public override toString(): string {

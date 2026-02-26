@@ -1,5 +1,4 @@
 import type {TYPE} from '../../typer/index.ts';
-import type {Optimizer} from '../Optimizer.ts';
 import {Value} from './Value.ts';
 
 
@@ -41,19 +40,13 @@ export enum BinOp {
 
 /** A binary operation of 2 values. */
 export class Binop extends Value {
-	private readonly operand0: Value;
-	private readonly operand1: Value;
-
 	public constructor(
 		private readonly operator: BinOp,
-		operand0:  Value,
-		operand1:  Value,
-		typ:       TYPE.Type,
-		optimizer: Optimizer,
+		private readonly operand0: Value,
+		private readonly operand1: Value,
+		typ: TYPE.Type,
 	) {
 		super(typ);
-		this.operand0 = operand0.asTac(optimizer);
-		this.operand1 = operand1.asTac(optimizer);
 	}
 
 	public override toString(): string {

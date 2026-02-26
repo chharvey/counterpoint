@@ -986,15 +986,15 @@ describe('ASTNodeAccess', () => {
 					(41 + 1, 42 / 2, 43 - 3).1;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (INT.NEG (INT.CONST 3)))
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL $1)
-					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL $2)
-					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(SET $2 (INT.NEG (INT.CONST 3)))
 					(DECL $3)
-					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL $4)
-					(SET $4 (TUPLE.NEW (GET $1) (GET $2) (GET $3)))
+					(SET $4 (TUPLE.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (TUPLE.GET 1 (GET $4)))
 				`.join('\n'));
 			});
@@ -1003,15 +1003,15 @@ describe('ASTNodeAccess', () => {
 					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (INT.NEG (INT.CONST 3)))
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL $1)
-					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL $2)
-					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(SET $2 (INT.NEG (INT.CONST 3)))
 					(DECL $3)
-					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL $4)
-					(SET $4 (RECORD.NEW @a @b @c (GET $1) (GET $2) (GET $3)))
+					(SET $4 (RECORD.NEW @a @b @c (GET $0) (GET $1) (GET $3)))
 					(DROP (RECORD.GET @b (GET $4)))
 				`.join('\n'));
 			});
@@ -1020,15 +1020,15 @@ describe('ASTNodeAccess', () => {
 					[41 + 1, 42 / 2, 43 - 3].[1];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (INT.NEG (INT.CONST 3)))
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL $1)
-					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL $2)
-					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(SET $2 (INT.NEG (INT.CONST 3)))
 					(DECL $3)
-					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL $4)
-					(SET $4 (LIST.NEW (GET $1) (GET $2) (GET $3)))
+					(SET $4 (LIST.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (LIST.GET (GET $4) (INT.CONST 1)))
 				`.join('\n'));
 			});
@@ -1037,15 +1037,15 @@ describe('ASTNodeAccess', () => {
 					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (INT.NEG (INT.CONST 3)))
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL $1)
-					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL $2)
-					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(SET $2 (INT.NEG (INT.CONST 3)))
 					(DECL $3)
-					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL $4)
-					(SET $4 (DICT.NEW (SYM.CONST @a) (GET $1) (SYM.CONST @b) (GET $2) (SYM.CONST @c) (GET $3)))
+					(SET $4 (DICT.NEW (SYM.CONST @a) (GET $0) (SYM.CONST @b) (GET $1) (SYM.CONST @c) (GET $3)))
 					(DROP (DICT.GET (GET $4) (SYM.CONST @b)))
 				`.join('\n'));
 			});
@@ -1054,15 +1054,15 @@ describe('ASTNodeAccess', () => {
 					{41 + 1, 42 / 2, 43 - 3}.[21];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (INT.NEG (INT.CONST 3)))
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL $1)
-					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL $2)
-					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(SET $2 (INT.NEG (INT.CONST 3)))
 					(DECL $3)
-					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL $4)
-					(SET $4 (SET.NEW (GET $1) (GET $2) (GET $3)))
+					(SET $4 (SET.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (SET.GET (GET $4) (INT.CONST 21)))
 				`.join('\n'));
 			});
@@ -1071,15 +1071,15 @@ describe('ASTNodeAccess', () => {
 					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL $0)
-					(SET $0 (INT.NEG (INT.CONST 3)))
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL $1)
-					(SET $1 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL $2)
-					(SET $2 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(SET $2 (INT.NEG (INT.CONST 3)))
 					(DECL $3)
-					(SET $3 (INT.ADD (INT.CONST 43) (GET $0)))
+					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL $4)
-					(SET $4 (MAP.NEW (INT.CONST 21) (GET $1) (INT.CONST 22) (GET $2) (INT.CONST 23) (GET $3)))
+					(SET $4 (MAP.NEW (INT.CONST 21) (GET $0) (INT.CONST 22) (GET $1) (INT.CONST 23) (GET $3)))
 					(DROP (MAP.GET (GET $4) (INT.CONST 22)))
 				`.join('\n'));
 			});

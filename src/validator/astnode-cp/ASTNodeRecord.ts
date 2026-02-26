@@ -81,7 +81,7 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ: TYPE.Type = this.type();
-		return new IR.RecordNew(this.children.map((c) => [c.key, c.val.lower(optimizer)]), typ, optimizer);
+		return new IR.RecordNew(this.children.map((c) => [c.key, c.val.lower(optimizer).asTac(optimizer)]), typ);
 	}
 
 	@memoizeMethod

@@ -1,6 +1,5 @@
 import type {AST} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Optimizer} from '../Optimizer.ts';
 import {Value} from './Value.ts';
 
 
@@ -9,11 +8,9 @@ import {Value} from './Value.ts';
 export class RecordNew extends Value {
 	public constructor(
 		private readonly props: readonly (readonly [AST.ASTNodeKey, Value])[],
-		typ:       TYPE.Type,
-		optimizer: Optimizer,
+		typ: TYPE.Type,
 	) {
 		super(typ);
-		this.props = props.map(([key, value]) => [key, value.asTac(optimizer)]);
 	}
 
 	public override toString(): string {

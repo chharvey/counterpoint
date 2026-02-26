@@ -1,5 +1,4 @@
 import type {TYPE} from '../../typer/index.ts';
-import type {Optimizer} from '../Optimizer.ts';
 import {Value} from './Value.ts';
 
 
@@ -10,10 +9,8 @@ export class TupleGet extends Value {
 		private readonly tuple:    Value,
 		private readonly accessor: bigint,
 		entry_type: TYPE.Type,
-		optimizer:  Optimizer,
 	) {
 		super(entry_type);
-		this.tuple = tuple.asTac(optimizer);
 	}
 
 	public override toString(): string {

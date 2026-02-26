@@ -84,7 +84,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GE,  IR.BinOp.GE],
 			[Operator.NLT, IR.BinOp.NLT],
 			[Operator.NGT, IR.BinOp.NGT],
-		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer), typ, optimizer);
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), typ);
 	}
 
 	@memoizeMethod

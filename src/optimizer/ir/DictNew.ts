@@ -3,7 +3,6 @@ import {
 	VALUE,
 	type TYPE,
 } from '../../typer/index.ts';
-import type {Optimizer} from '../Optimizer.ts';
 import {Value} from './Value.ts';
 import {Const} from './Const.ts';
 
@@ -13,9 +12,9 @@ import {Const} from './Const.ts';
 export class DictNew extends Value {
 	private readonly props: readonly (readonly [Const, Value])[];
 
-	public constructor(props: readonly (readonly [AST.ASTNodeKey, Value])[], typ: TYPE.Type, optimizer: Optimizer) {
+	public constructor(props: readonly (readonly [AST.ASTNodeKey, Value])[], typ: TYPE.Type) {
 		super(typ);
-		this.props = props.map(([key, value]) => [new Const(new VALUE.Symbol(key.id, key.source)), value.asTac(optimizer)]);
+		this.props = props.map(([key, value]) => [new Const(new VALUE.Symbol(key.id, key.source)), value]);
 	}
 
 	public override toString(): string {

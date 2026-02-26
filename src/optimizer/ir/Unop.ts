@@ -1,5 +1,4 @@
 import type {TYPE} from '../../typer/index.ts';
-import type {Optimizer} from '../Optimizer.ts';
 import {Value} from './Value.ts';
 
 
@@ -21,16 +20,12 @@ export enum UnOp {
 
 /** A unary operation of 1 value. */
 export class Unop extends Value {
-	private readonly operand: Value;
-
 	public constructor(
 		private readonly operator: UnOp,
-		operand:   Value,
-		typ:       TYPE.Type,
-		optimizer: Optimizer,
+		private readonly operand:  Value,
+		typ: TYPE.Type,
 	) {
 		super(typ);
-		this.operand = operand.asTac(optimizer);
 	}
 
 	public override toString(): string {

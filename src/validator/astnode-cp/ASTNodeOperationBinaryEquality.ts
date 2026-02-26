@@ -110,7 +110,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			[Operator.EQ,  IR.BinOp.EQ],
 			[Operator.NID, IR.BinOp.NID],
 			[Operator.NEQ, IR.BinOp.NEQ],
-		]).get(this.operator)!, this.operand0.lower(optimizer), this.operand1.lower(optimizer), typ, optimizer);
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), typ);
 	}
 
 	@memoizeMethod

@@ -94,32 +94,32 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ:        TYPE.Type = this.type();
 		const base_type:  TYPE.Type = this.base.type();
-		const base_value: IR.Value  = this.base.lower(optimizer);
+		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
 
 		switch (true) {
 			case this.accessor instanceof ASTNodeIndex: {
 				assert_instanceof(base_type, TYPE.Tuple);
-				return new IR.TupleGet(base_value, this.accessor.index, typ, optimizer);
+				return new IR.TupleGet(base_value, this.accessor.index, typ);
 			}
 			case this.accessor instanceof ASTNodeKey: {
 				assert_instanceof(base_type, TYPE.Record);
-				return new IR.RecordGet(base_value, this.accessor, typ, optimizer);
+				return new IR.RecordGet(base_value, this.accessor, typ);
 			}
 			default: {
 				assert_instanceof(this.accessor, ASTNodeExpression);
 				const accessor_value: IR.Value = this.accessor.lower(optimizer);
 				switch (true) {
 					case base_type instanceof TYPE.List: {
-						return new IR.CollectionDynamicGet(IR.CollectionDynamicName.LIST, base_value, accessor_value, typ, optimizer);
+						return new IR.CollectionDynamicGet(IR.CollectionDynamicName.LIST, base_value, accessor_value, typ);
 					}
 					case base_type instanceof TYPE.Dict: {
-						return new IR.CollectionDynamicGet(IR.CollectionDynamicName.DICT, base_value, accessor_value, typ, optimizer);
+						return new IR.CollectionDynamicGet(IR.CollectionDynamicName.DICT, base_value, accessor_value, typ);
 					}
 					case base_type instanceof TYPE.Set: {
-						return new IR.CollectionHashedGet(IR.CollectionHashedName.SET, base_value, accessor_value, typ, optimizer);
+						return new IR.CollectionHashedGet(IR.CollectionHashedName.SET, base_value, accessor_value, typ);
 					}
 					case base_type instanceof TYPE.Map: {
-						return new IR.CollectionHashedGet(IR.CollectionHashedName.MAP, base_value, accessor_value, typ, optimizer);
+						return new IR.CollectionHashedGet(IR.CollectionHashedName.MAP, base_value, accessor_value, typ);
 					}
 					default: {
 						assert.fail(`Expected ${ base_type } to be a \`List|Dict|Set|Map\`.`);
