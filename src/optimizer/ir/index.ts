@@ -4,7 +4,7 @@ export * from './Value.ts';
 export * from './Trap.ts';
 export * from './Const.ts';
 export * from './Get.ts';
-export * from './CollectionIndexedNew.ts';
+export * from './CollectionLinearNew.ts';
 export * from './RecordNew.ts';
 export * from './DictNew.ts';
 export * from './MapNew.ts';
