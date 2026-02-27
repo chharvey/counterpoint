@@ -97,55 +97,49 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		const base_type:  TYPE.Type = this.base.type();
 		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
 
-		let returned: IR.Value | null = null;
+		const non_nullish_base = (): IR.Value => {
+			switch (true) {
+				case this.accessor instanceof ASTNodeIndex: {
+					assert_instanceof(base_type, TYPE.Tuple);
+					return new IR.TupleGet(base_value, this.accessor.index, typ);
+				}
+				case this.accessor instanceof ASTNodeKey: {
+					assert_instanceof(base_type, TYPE.Record);
+					return new IR.RecordGet(base_value, this.accessor, typ);
+				}
+				default: {
+					assert_instanceof(this.accessor, ASTNodeExpression);
+					const accessor_value: IR.Value = this.accessor.lower(optimizer);
+					return new IR.CollectionDynamicGet(
+						(
+							base_type instanceof TYPE.List ?         IR.TypeName.LIST :
+							base_type instanceof TYPE.Dict ?         IR.TypeName.DICT :
+							base_type instanceof TYPE.Set  ?         IR.TypeName.SET :
+							(assert_instanceof(base_type, TYPE.Map), IR.TypeName.MAP)
+						),
+						base_value,
+						accessor_value,
+						typ,
+					);
+				}
+			}
+		};
 
-		switch (true) {
-			case this.accessor instanceof ASTNodeIndex: {
-				assert_instanceof(base_type, TYPE.Tuple);
-				returned = new IR.TupleGet(base_value, this.accessor.index, typ);
-				break;
-			}
-			case this.accessor instanceof ASTNodeKey: {
-				assert_instanceof(base_type, TYPE.Record);
-				returned = new IR.RecordGet(base_value, this.accessor, typ);
-				break;
-			}
-			default: {
-				assert_instanceof(this.accessor, ASTNodeExpression);
-				const accessor_value: IR.Value = this.accessor.lower(optimizer);
-				returned = new IR.CollectionDynamicGet(
-					(
-						base_type instanceof TYPE.List ?         IR.TypeName.LIST :
-						base_type instanceof TYPE.Dict ?         IR.TypeName.DICT :
-						base_type instanceof TYPE.Set  ?         IR.TypeName.SET :
-						(assert_instanceof(base_type, TYPE.Map), IR.TypeName.MAP)
-					),
-					base_value,
-					accessor_value,
-					typ,
-				);
-			}
+		if (this.kind === Operator.DOT_MAY) {
+			const block_else:  string = optimizer.newLabel();
+			const block_endif: string = optimizer.newLabel();
+
+			const result: IrLocal = optimizer.newTempLocal(this.type());
+
+			optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL), block_else));
+			optimizer.pushInstruction(new IR.Set(result, new IR.Const(VALUE.NULL)));
+			optimizer.pushInstruction(new IR.Goto(block_endif));
+			optimizer.pushInstruction(new IR.Label(block_else));
+			optimizer.pushInstruction(new IR.Set(result, non_nullish_base()));
+			optimizer.pushInstruction(new IR.Label(block_endif));
+			return new IR.Get(result);
 		}
-
-		switch (this.kind as Operator.DOT | Operator.DOT_MAY) {
-			case Operator.DOT: {
-				return returned;
-			}
-			case Operator.DOT_MAY: {
-				const block_else:  string = optimizer.newLabel();
-				const block_endif: string = optimizer.newLabel();
-
-				const result: IrLocal = optimizer.newTempLocal(this.type());
-
-				optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL), block_else));
-				optimizer.pushInstruction(new IR.Set(result, new IR.Const(VALUE.NULL)));
-				optimizer.pushInstruction(new IR.Goto(block_endif));
-				optimizer.pushInstruction(new IR.Label(block_else));
-				optimizer.pushInstruction(new IR.Set(result, returned));
-				optimizer.pushInstruction(new IR.Label(block_endif));
-				return new IR.Get(result);
-			}
-		}
+		return non_nullish_base();
 	}
 
 	@memoizeMethod
