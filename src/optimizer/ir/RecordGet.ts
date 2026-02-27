@@ -1,5 +1,6 @@
 import type {AST} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 
@@ -15,6 +16,6 @@ export class RecordGet extends Value {
 	}
 
 	public override toString(): string {
-		return `(RECORD.GET @${ this.accessor.source } ${ this.record })`; // accessor is static so it comes first
+		return `(${ TypeName[TypeName.RECORD] }.GET @${ this.accessor.source } ${ this.record })`; // accessor is static so it comes first
 	}
 }

@@ -3,6 +3,7 @@ import {
 	VALUE,
 	type TYPE,
 } from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 import {Const} from './Const.ts';
 
@@ -18,6 +19,6 @@ export class DictNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(DICT.NEW ${ this.props.flat().join(' ') })`;
+		return `(${ TypeName[TypeName.DICT] }.NEW ${ this.props.flat().join(' ') })`;
 	}
 }

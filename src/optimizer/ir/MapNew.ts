@@ -1,4 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 
@@ -13,6 +14,6 @@ export class MapNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(MAP.NEW ${ this.cases.flat().join(' ') })`;
+		return `(${ TypeName[TypeName.MAP] }.NEW ${ this.cases.flat().join(' ') })`;
 	}
 }

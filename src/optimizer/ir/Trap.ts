@@ -1,4 +1,5 @@
 import {TYPE} from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 
@@ -10,7 +11,7 @@ export class Trap extends Value {
 	}
 
 	public override toString(): string {
-		return '(TRAP)';
+		return `(${ TypeName[TypeName.TRAP] })`;
 	}
 
 	public override asTac(): Trap {

@@ -1,0 +1,16 @@
+export enum TypeName {
+	TRAP,
+	NULL,
+	BOOL,
+	SYM,
+	INT,
+	NAT,
+	FLOAT,
+	STR,
+	TUPLE,
+	RECORD,
+	LIST,
+	DICT,
+	SET,
+	MAP,
+}
