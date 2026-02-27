@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {VALUE} from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {TypeName} from './Type.ts';
 import {Value} from './Value.ts';
 
 

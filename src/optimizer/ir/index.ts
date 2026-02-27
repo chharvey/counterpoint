@@ -1,4 +1,4 @@
-export * from './TypeName.ts';
+export * from './Type.ts';
 
 export * from './Instruction.ts';
 

@@ -1,6 +1,6 @@
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
-import type {TypeName} from './TypeName.ts';
+import type {TypeName} from './Type.ts';
 import {Instruction} from './Instruction.ts';
 
 

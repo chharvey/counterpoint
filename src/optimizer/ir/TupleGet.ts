@@ -1,4 +1,4 @@
-import {TypeName} from './TypeName.ts';
+import {TypeName} from './Type.ts';
 import {Value} from './Value.ts';
 
 
