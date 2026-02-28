@@ -85,8 +85,9 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 	public override lower(optimizer: Optimizer): void {
 		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
-			optimizer.pushInstruction(new IR.Decl(this.assignee));
-			optimizer.pushInstruction(new IR.Set(this.assignee, value));
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
+			optimizer.pushInstruction(new IR.Decl(symbol));
+			optimizer.pushInstruction(new IR.Set(symbol, value));
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
 		}
