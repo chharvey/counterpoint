@@ -56,6 +56,6 @@ export abstract class Value extends Instruction {
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
 	public asTac(optimizer: Optimizer): Value {
-		return new Get(optimizer.newTempLocal(this.type, this));
+		return new Get(optimizer.newTempLocal(this));
 	}
 }

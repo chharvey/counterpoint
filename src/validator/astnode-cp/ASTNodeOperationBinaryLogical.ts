@@ -152,7 +152,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		}
 
 		const result: IrLocal = optimizer.newTempLocal(typ);
-		const left:   IrLocal = optimizer.newTempLocal(IR.Type.fromAstType(this.operand0.type()), this.operand0.lower(optimizer));
+		const left:   IrLocal = optimizer.newTempLocal(this.operand0.lower(optimizer));
 
 		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Get(left), block_else));
 		optimizer.pushInstruction(new IR.Set(result, branch_then(left)));
