@@ -985,15 +985,15 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					(41 + 1, 42 / 2, 43 - 3).1;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL $2)
+					(DECL INT $2)
 					(SET $2 (INT.NEG (INT.CONST 3)))
-					(DECL $3)
+					(DECL INT $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL $4)
+					(DECL TUPLE $4)
 					(SET $4 (TUPLE.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (TUPLE.GET 1 (GET $4)))
 				`.join('\n'));
@@ -1002,15 +1002,15 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL $2)
+					(DECL INT $2)
 					(SET $2 (INT.NEG (INT.CONST 3)))
-					(DECL $3)
+					(DECL INT $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL $4)
+					(DECL RECORD $4)
 					(SET $4 (RECORD.NEW @a @b @c (GET $0) (GET $1) (GET $3)))
 					(DROP (RECORD.GET @b (GET $4)))
 				`.join('\n'));
@@ -1019,15 +1019,15 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					[41 + 1, 42 / 2, 43 - 3].[1];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL $2)
+					(DECL INT $2)
 					(SET $2 (INT.NEG (INT.CONST 3)))
-					(DECL $3)
+					(DECL INT $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL $4)
+					(DECL LIST $4)
 					(SET $4 (LIST.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (LIST.GET (GET $4) (INT.CONST 1)))
 				`.join('\n'));
@@ -1036,15 +1036,15 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL $2)
+					(DECL INT $2)
 					(SET $2 (INT.NEG (INT.CONST 3)))
-					(DECL $3)
+					(DECL INT $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL $4)
+					(DECL DICT $4)
 					(SET $4 (DICT.NEW (SYM.CONST @a) (GET $0) (SYM.CONST @b) (GET $1) (SYM.CONST @c) (GET $3)))
 					(DROP (DICT.GET (GET $4) (SYM.CONST @b)))
 				`.join('\n'));
@@ -1053,15 +1053,15 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					{41 + 1, 42 / 2, 43 - 3}.[21];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL $2)
+					(DECL INT $2)
 					(SET $2 (INT.NEG (INT.CONST 3)))
-					(DECL $3)
+					(DECL INT $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL $4)
+					(DECL SET $4)
 					(SET $4 (SET.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (SET.GET (GET $4) (INT.CONST 21)))
 				`.join('\n'));
@@ -1070,15 +1070,15 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL $2)
+					(DECL INT $2)
 					(SET $2 (INT.NEG (INT.CONST 3)))
-					(DECL $3)
+					(DECL INT $3)
 					(SET $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL $4)
+					(DECL MAP $4)
 					(SET $4 (MAP.NEW (INT.CONST 21) (GET $0) (INT.CONST 22) (GET $1) (INT.CONST 23) (GET $3)))
 					(DROP (MAP.GET (GET $4) (INT.CONST 22)))
 				`.join('\n'));
@@ -1087,15 +1087,15 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					[("hello", {41, 42, 43})].[0].1.[42];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL SET $0)
 					(SET $0 (SET.NEW (INT.CONST 41) (INT.CONST 42) (INT.CONST 43)))
-					(DECL $1)
+					(DECL TUPLE $1)
 					(SET $1 (TUPLE.NEW (STR.CONST "hello") (GET $0)))
-					(DECL $2)
+					(DECL LIST $2)
 					(SET $2 (LIST.NEW (GET $1)))
-					(DECL $3)
+					(DECL TUPLE $3)
 					(SET $3 (LIST.GET (GET $2) (INT.CONST 0)))
-					(DECL $4)
+					(DECL SET $4)
 					(SET $4 (TUPLE.GET 1 (GET $3)))
 					(DROP (SET.GET (GET $4) (INT.CONST 42)))
 				`.join('\n'));
@@ -1104,16 +1104,16 @@ describe('ASTNodeAccess', () => {
 		describe('access kind: maybe access (`a?.‹b›`).', () => {
 			it('tuple access.', () => {
 				assert.strictEqual(setupScript(`{
-					val my_tuple: (int, int, ?:int) = (41 + 1, 42 / 2);
+					val mut my_tuple: (int, int, ?:int) = (41 + 1, 42 / 2);
 					my_tuple?.2;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL my_tuple)
+					(DECL TUPLE my_tuple)
 					(SET my_tuple (TUPLE.NEW (GET $0) (GET $1)))
-					(DECL $2)
+					(DECL ANY $2)
 					if_false (ISNULL (GET my_tuple)), goto "block-0".
 					(SET $2 (NULL.CONST null))
 					goto "block-1".
@@ -1125,16 +1125,16 @@ describe('ASTNodeAccess', () => {
 			});
 			it('record access.', () => {
 				assert.strictEqual(setupScript(`{
-					val my_record: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
+					val mut my_record: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
 					my_record?.b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL my_record)
+					(DECL RECORD my_record)
 					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
-					(DECL $2)
+					(DECL ANY $2)
 					if_false (ISNULL (GET my_record)), goto "block-0".
 					(SET $2 (NULL.CONST null))
 					goto "block-1".
@@ -1146,12 +1146,12 @@ describe('ASTNodeAccess', () => {
 			});
 			it('List access.', () => {
 				assert.strictEqual(setupScript(`{
-					val my_list: [int] = [41, 42];
+					val mut my_list: [int] = [41, 42];
 					my_list?.[2];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL my_list)
+					(DECL LIST my_list)
 					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-					(DECL $0)
+					(DECL ANY $0)
 					if_false (ISNULL (GET my_list)), goto "block-0".
 					(SET $0 (NULL.CONST null))
 					goto "block-1".
@@ -1163,12 +1163,12 @@ describe('ASTNodeAccess', () => {
 			});
 			it('Dict access.', () => {
 				assert.strictEqual(setupScript(`{
-					val my_dict: [:int] = [a= 41, c= 42];
+					val mut my_dict: [:int] = [a= 41, c= 42];
 					my_dict?.[@b];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL my_dict)
+					(DECL DICT my_dict)
 					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @c) (INT.CONST 42)))
-					(DECL $0)
+					(DECL ANY $0)
 					if_false (ISNULL (GET my_dict)), goto "block-0".
 					(SET $0 (NULL.CONST null))
 					goto "block-1".
@@ -1180,16 +1180,19 @@ describe('ASTNodeAccess', () => {
 			});
 			it('Map access.', () => {
 				assert.strictEqual(setupScript(`{
-					{21 -> 41, 22 -> 42, 23 -> 43}?.[22];
+					val mut accessor: int = 22;
+					{21 -> 41, 22 -> 42, 23 -> 43}?.[accessor];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL $0)
+					(DECL INT accessor)
+					(SET accessor (INT.CONST 22))
+					(DECL MAP $0)
 					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
-					(DECL $1)
+					(DECL ANY $1)
 					if_false (ISNULL (GET $0)), goto "block-0".
 					(SET $1 (NULL.CONST null))
 					goto "block-1".
 					"block-0":
-					(SET $1 (MAP.GET (GET $0) (INT.CONST 22)))
+					(SET $1 (MAP.GET (GET $0) (GET accessor)))
 					"block-1":
 					(DROP (GET $1))
 				`.join('\n'));

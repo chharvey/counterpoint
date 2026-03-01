@@ -23,7 +23,7 @@ export class Optimizer {
 			name: `$${ this.#tempLocalCounter++ }`,
 			type: type_or_value instanceof IR.Value ? type_or_value.type : type_or_value,
 		};
-		this.pushInstruction(new IR.Decl(local));
+		this.pushInstruction(new IR.Decl(local, local.type));
 		if (type_or_value instanceof IR.Value) {
 			this.pushInstruction(new IR.Set(local, type_or_value));
 		}

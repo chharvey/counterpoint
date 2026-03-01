@@ -86,7 +86,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
-			optimizer.pushInstruction(new IR.Decl(symbol));
+			const ir_type: IR.TypeName = this.assigned ? symbol.irType : IR.TypeName.ANY; // uninitialized variables are unioned with null. TODO: once SSA is implemented, this will no longer be necessary
+			optimizer.pushInstruction(new IR.Decl(symbol, ir_type));
 			optimizer.pushInstruction(new IR.Set(symbol, value));
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
