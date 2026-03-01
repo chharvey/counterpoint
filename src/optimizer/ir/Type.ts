@@ -49,28 +49,38 @@ export class Type {
 
 
 	public static fromAstType(typ: TYPE.Type): Type {
-		return (
-			typ.isSubtypeOf(TYPE.NULL)  ? Type.NULL :
-			typ.isSubtypeOf(TYPE.BOOL)  ? Type.BOOL :
-			typ.isSubtypeOf(TYPE.SYM)   ? Type.SYM :
-			typ.isSubtypeOf(TYPE.INT)   ? Type.INT :
-			// typ.isSubtypeOf(TYPE.NAT)   ? Type.NAT :
-			typ.isSubtypeOf(TYPE.FLOAT) ? Type.FLOAT :
-			typ.isSubtypeOf(TYPE.STR)   ? Type.STR :
+		switch (true) {
+			case typ.isSubtypeOf(TYPE.NULL):  { return Type.NULL; }
+			case typ.isSubtypeOf(TYPE.BOOL):  { return Type.BOOL; }
+			case typ.isSubtypeOf(TYPE.SYM):   { return Type.SYM; }
+			case typ.isSubtypeOf(TYPE.INT):   { return Type.INT; }
+			// case typ.isSubtypeOf(TYPE.NAT):   { return Type.NAT; }
+			case typ.isSubtypeOf(TYPE.FLOAT): { return Type.FLOAT; }
+			case typ.isSubtypeOf(TYPE.STR):   { return Type.STR; }
 
-			typ instanceof TYPE.Tuple  ? Type.TUPLE :
-			typ instanceof TYPE.Record ? Type.RECORD :
-			typ instanceof TYPE.List   ? Type.LIST :
-			typ instanceof TYPE.Dict   ? Type.DICT :
-			typ instanceof TYPE.Set    ? Type.SET :
-			typ instanceof TYPE.Map    ? Type.MAP :
+			case typ instanceof TYPE.Tuple:  { return Type.TUPLE; }
+			case typ instanceof TYPE.Record: { return Type.RECORD; }
+			case typ instanceof TYPE.List:   { return Type.LIST; }
+			case typ instanceof TYPE.Dict:   { return Type.DICT; }
+			case typ instanceof TYPE.Set:    { return Type.SET; }
+			case typ instanceof TYPE.Map:    { return Type.MAP; }
+		}
 
-			Type.ANY
-		);
+		if (typ instanceof TYPE.Union || typ instanceof TYPE.Intersection) {
+			switch (true) {
+				case typ.operands.every((op) => op instanceof TYPE.Tuple):  { return Type.TUPLE; }
+				case typ.operands.every((op) => op instanceof TYPE.Record): { return Type.RECORD; }
+				case typ.operands.every((op) => op instanceof TYPE.List):   { return Type.LIST; }
+				case typ.operands.every((op) => op instanceof TYPE.Dict):   { return Type.DICT; }
+				case typ.operands.every((op) => op instanceof TYPE.Set):    { return Type.SET; }
+				case typ.operands.every((op) => op instanceof TYPE.Map):    { return Type.MAP; }
+			}
+		}
+		return Type.ANY;
 	}
 
 
-	private constructor(private readonly name: TypeName) {}
+	private constructor(public readonly name: TypeName) {}
 
 	public toString(): string {
 		return TypeName[this.name];

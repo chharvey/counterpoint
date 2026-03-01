@@ -94,35 +94,31 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ:        IR.Type   = IR.Type.fromAstType(this.type());
-		const base_type:  TYPE.Type = this.base.type();
 		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {
 				case this.accessor instanceof ASTNodeIndex: {
-					assert_instanceof(base_type, TYPE.Tuple);
-					return new IR.TupleGet(base_value, this.accessor.index, typ);
+					if (base_value.type === IR.Type.TUPLE) {
+						return new IR.TupleGet(base_value, this.accessor.index, typ);
+					}
+					break;
 				}
 				case this.accessor instanceof ASTNodeKey: {
-					assert_instanceof(base_type, TYPE.Record);
-					return new IR.RecordGet(base_value, this.accessor, typ);
+					if (base_value.type === IR.Type.RECORD) {
+						return new IR.RecordGet(base_value, this.accessor, typ);
+					}
+					break;
 				}
 				default: {
 					assert_instanceof(this.accessor, ASTNodeExpression);
 					const accessor_value: IR.Value = this.accessor.lower(optimizer);
-					return new IR.CollectionDynamicGet(
-						(
-							base_type instanceof TYPE.List ?         IR.TypeName.LIST :
-							base_type instanceof TYPE.Dict ?         IR.TypeName.DICT :
-							base_type instanceof TYPE.Set  ?         IR.TypeName.SET :
-							(assert_instanceof(base_type, TYPE.Map), IR.TypeName.MAP)
-						),
-						base_value,
-						accessor_value,
-						typ,
-					);
+					if ([IR.Type.LIST, IR.Type.DICT, IR.Type.SET, IR.Type.MAP].includes(base_value.type)) {
+						return new IR.CollectionDynamicGet(base_value.type.name as IR.CollectionDynamicGetName, base_value, accessor_value, typ);
+					}
 				}
 			}
+			return new IR.Const(VALUE.NULL);
 		};
 
 		if (this.kind === Operator.DOT_MAY) {

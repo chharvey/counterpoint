@@ -8,6 +8,7 @@ import {
 	VALUE,
 	TYPE,
 	Optimizer,
+	IR,
 	type Builder,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
@@ -1100,8 +1101,61 @@ describe('ASTNodeAccess', () => {
 					(DROP (SET.GET (GET $4) (INT.CONST 42)))
 				`.join('\n'));
 			});
+			it('union access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut tup:   (int, ?: float)     | (int, ?: str)     = (42,);
+					val mut rec:   (a: int, b?: float) | (a: int, c?: str) = (a= 42);
+					val mut list:  [int]               | [float]           = [42];
+					val mut dict:  [:int]              | [:float]          = [a= 42];
+					val mut 'set': {int}               | {float}           = {42};
+					val mut map:   {int -> str}        | {float -> str}    = {42 -> "hello"};
+					tup.0;
+					rec.a;
+					list.[0];
+					dict.[@a];
+					'set'.[42];
+					map.[42];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL TUPLE tup)
+					(SET tup (TUPLE.NEW (INT.CONST 42)))
+					(DECL RECORD rec)
+					(SET rec (RECORD.NEW @a (INT.CONST 42)))
+					(DECL LIST list)
+					(SET list (LIST.NEW (INT.CONST 42)))
+					(DECL DICT dict)
+					(SET dict (DICT.NEW (SYM.CONST @a) (INT.CONST 42)))
+					(DECL SET 'set')
+					(SET 'set' (SET.NEW (INT.CONST 42)))
+					(DECL MAP map)
+					(SET map (MAP.NEW (INT.CONST 42) (STR.CONST "hello")))
+					(DROP (TUPLE.GET 0 (GET tup)))
+					(DROP (RECORD.GET @a (GET rec)))
+					(DROP (LIST.GET (GET list) (INT.CONST 0)))
+					(DROP (DICT.GET (GET dict) (SYM.CONST @a)))
+					(DROP (SET.GET (GET 'set') (INT.CONST 42)))
+					(DROP (MAP.GET (GET map) (INT.CONST 42)))
+				`.join('\n'));
+			});
 		});
 		describe('access kind: maybe access (`a?.‹b›`).', () => {
+			function maybe_access_output(
+				block_n:            number,
+				result_n:           number,
+				result_type:        IR.Type,
+				base_name:          string,
+				non_nullish_result: string,
+			): string[] {
+				return extract_lines`
+					(DECL ${ result_type } $${ result_n })
+					if_false (ISNULL (GET ${ base_name })), goto "block-${ block_n }".
+					(SET $${ result_n } (NULL.CONST null))
+					goto "block-${ block_n + 1 }".
+					"block-${ block_n }":
+					(SET $${ result_n } ${ non_nullish_result })
+					"block-${ block_n + 1 }":
+					(DROP (GET $${ result_n }))
+				`;
+			}
 			it('tuple access.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_tuple: (int, int, ?:int) = (41 + 1, 42 / 2);
@@ -1113,15 +1167,7 @@ describe('ASTNodeAccess', () => {
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL TUPLE my_tuple)
 					(SET my_tuple (TUPLE.NEW (GET $0) (GET $1)))
-					(DECL ANY $2)
-					if_false (ISNULL (GET my_tuple)), goto "block-0".
-					(SET $2 (NULL.CONST null))
-					goto "block-1".
-					"block-0":
-					(SET $2 (TUPLE.GET 2 (GET my_tuple)))
-					"block-1":
-					(DROP (GET $2))
-				`.join('\n'));
+				`.concat(...maybe_access_output(0, 2, IR.Type.ANY, 'my_tuple', '(TUPLE.GET 2 (GET my_tuple))')).join('\n'));
 			});
 			it('record access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1134,15 +1180,7 @@ describe('ASTNodeAccess', () => {
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL RECORD my_record)
 					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
-					(DECL ANY $2)
-					if_false (ISNULL (GET my_record)), goto "block-0".
-					(SET $2 (NULL.CONST null))
-					goto "block-1".
-					"block-0":
-					(SET $2 (RECORD.GET @b (GET my_record)))
-					"block-1":
-					(DROP (GET $2))
-				`.join('\n'));
+				`.concat(...maybe_access_output(0, 2, IR.Type.ANY, 'my_record', '(RECORD.GET @b (GET my_record))')).join('\n'));
 			});
 			it('List access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1151,15 +1189,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL LIST my_list)
 					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-					(DECL ANY $0)
-					if_false (ISNULL (GET my_list)), goto "block-0".
-					(SET $0 (NULL.CONST null))
-					goto "block-1".
-					"block-0":
-					(SET $0 (LIST.GET (GET my_list) (INT.CONST 2)))
-					"block-1":
-					(DROP (GET $0))
-				`.join('\n'));
+				`.concat(...maybe_access_output(0, 0, IR.Type.ANY, 'my_list', '(LIST.GET (GET my_list) (INT.CONST 2))')).join('\n'));
 			});
 			it('Dict access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1168,15 +1198,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL DICT my_dict)
 					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @c) (INT.CONST 42)))
-					(DECL ANY $0)
-					if_false (ISNULL (GET my_dict)), goto "block-0".
-					(SET $0 (NULL.CONST null))
-					goto "block-1".
-					"block-0":
-					(SET $0 (DICT.GET (GET my_dict) (SYM.CONST @b)))
-					"block-1":
-					(DROP (GET $0))
-				`.join('\n'));
+				`.concat(...maybe_access_output(0, 0, IR.Type.ANY, 'my_dict', '(DICT.GET (GET my_dict) (SYM.CONST @b))')).join('\n'));
 			});
 			it('Map access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1187,15 +1209,53 @@ describe('ASTNodeAccess', () => {
 					(SET accessor (INT.CONST 22))
 					(DECL MAP $0)
 					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
-					(DECL ANY $1)
-					if_false (ISNULL (GET $0)), goto "block-0".
-					(SET $1 (NULL.CONST null))
-					goto "block-1".
-					"block-0":
-					(SET $1 (MAP.GET (GET $0) (GET accessor)))
-					"block-1":
-					(DROP (GET $1))
-				`.join('\n'));
+				`.concat(...maybe_access_output(0, 1, IR.Type.ANY, '$0', '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
+			});
+			it('union access.', () => {
+				/* eslint-disable @stylistic/indent */
+				assert.strictEqual(setupScript(`{
+					val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
+					val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
+					val mut mixed_lst: [int]            | [:int]                       = [42];
+					val mut mixed_dct: [int]            | [:int]                       = [a= 42];
+					val mut mixed_set: {int}            | {int -> str}                 = {42};
+					val mut mixed_map: {int}            | {int -> str}                 = {42 -> "hello"};
+					mixed_tup?.0;    %== "hello"
+					mixed_tup?.a;    %== null
+					mixed_rec?.0;    %== null
+					mixed_rec?.a;    %== 42
+					mixed_lst?.[0];  %== 42
+					mixed_lst?.[@a]; %== null
+					mixed_dct?.[0];  %== null
+					mixed_dct?.[@a]; %== 42
+					mixed_set?.[42]; %== true
+					mixed_map?.[42]; %== "hello"
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL ANY mixed_tup)
+					(SET mixed_tup (TUPLE.NEW (STR.CONST "hello") (BOOL.CONST true) (SYM.CONST @world)))
+					(DECL ANY mixed_rec)
+					(SET mixed_rec (RECORD.NEW @a (INT.CONST 42)))
+					(DECL ANY mixed_lst)
+					(SET mixed_lst (LIST.NEW (INT.CONST 42)))
+					(DECL ANY mixed_dct)
+					(SET mixed_dct (DICT.NEW (SYM.CONST @a) (INT.CONST 42)))
+					(DECL ANY mixed_set)
+					(SET mixed_set (SET.NEW (INT.CONST 42)))
+					(DECL ANY mixed_map)
+					(SET mixed_map (MAP.NEW (INT.CONST 42) (STR.CONST "hello")))
+				`.concat(
+					...maybe_access_output(0x00, 0, IR.Type.ANY, 'mixed_tup', '(NULL.CONST null)'), // FIXME: should be (TUPLE.GET 0 (GET mixed_tup))
+					...maybe_access_output(0x02, 1, IR.Type.ANY, 'mixed_tup', '(NULL.CONST null)'),
+					...maybe_access_output(0x04, 2, IR.Type.ANY, 'mixed_rec', '(NULL.CONST null)'),
+					...maybe_access_output(0x06, 3, IR.Type.ANY, 'mixed_rec', '(NULL.CONST null)'), // FIXME: should be (RECORD.GET @a (GET mixed_rec))
+					...maybe_access_output(0x08, 4, IR.Type.ANY, 'mixed_lst', '(NULL.CONST null)'), // FIXME: should be (LIST.GET (GET mixed_lst) (INT.CONST 0))
+					...maybe_access_output(0x0a, 5, IR.Type.ANY, 'mixed_lst', '(NULL.CONST null)'),
+					...maybe_access_output(0x0c, 6, IR.Type.ANY, 'mixed_dct', '(NULL.CONST null)'),
+					...maybe_access_output(0x0e, 7, IR.Type.ANY, 'mixed_dct', '(NULL.CONST null)'), // FIXME: should be (DICT.GET (GET mixed_dct) (SYM.CONST @a))
+					...maybe_access_output(0x10, 8, IR.Type.ANY, 'mixed_set', '(NULL.CONST null)'), // FIXME: should be (SET.GET (GET mixed_set) (INT.CONST 42))
+					...maybe_access_output(0x12, 9, IR.Type.ANY, 'mixed_map', '(NULL.CONST null)'), // FIXME: should be (MAP.GET (GET mixed_map) (INT.CONST 42))
+				).join('\n'));
+				/* eslint-enable @stylistic/indent */
 			});
 		});
 	});
