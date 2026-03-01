@@ -7,7 +7,7 @@ import {Value} from './Value.ts';
 /** Read the value of a variable/local. */
 export class Get extends Value {
 	public constructor(private readonly target: SymbolSchemaVar | Local) {
-		super(target instanceof SymbolSchemaVar ? target.type : target.type);
+		super(target instanceof SymbolSchemaVar ? target.irType : target.type);
 	}
 
 	public override toString(): string {

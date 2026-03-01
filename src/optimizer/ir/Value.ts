@@ -1,6 +1,6 @@
-import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
+import type {TypeName} from './TypeName.ts';
 import {Instruction} from './Instruction.ts';
 
 
@@ -26,7 +26,7 @@ export abstract class Value extends Instruction {
 	/**
 	 * @param type The type of the expression.
 	 */
-	public constructor(public readonly type: TYPE.Type) {
+	public constructor(public readonly type: TypeName) {
 		super();
 	}
 

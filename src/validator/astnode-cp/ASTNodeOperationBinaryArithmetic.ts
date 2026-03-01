@@ -79,7 +79,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: TYPE.Type = this.type();
+		const typ: IR.TypeName = IR.Type.fromAstType(this.type());
 		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
 		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
 		return (

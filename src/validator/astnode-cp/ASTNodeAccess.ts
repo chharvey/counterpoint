@@ -93,9 +93,9 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ:        TYPE.Type = this.type();
-		const base_type:  TYPE.Type = this.base.type();
-		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
+		const typ:        IR.TypeName = IR.Type.fromAstType(this.type());
+		const base_type:  TYPE.Type   = this.base.type();
+		const base_value: IR.Value    = this.base.lower(optimizer).asTac(optimizer);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {
@@ -126,12 +126,11 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		};
 
 		if (this.kind === Operator.DOT_MAY) {
-			const block_else:  string = optimizer.newLabel();
-			const block_endif: string = optimizer.newLabel();
+			const block_else:  string  = optimizer.newLabel();
+			const block_endif: string  = optimizer.newLabel();
+			const result:      IrLocal = optimizer.newTempLocal(typ);
 
-			const result: IrLocal = optimizer.newTempLocal(this.type());
-
-			optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL), block_else));
+			optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.ISNULL, base_value, IR.TypeName.BOOL), block_else));
 			optimizer.pushInstruction(new IR.Set(result, new IR.Const(VALUE.NULL)));
 			optimizer.pushInstruction(new IR.Goto(block_endif));
 			optimizer.pushInstruction(new IR.Label(block_else));

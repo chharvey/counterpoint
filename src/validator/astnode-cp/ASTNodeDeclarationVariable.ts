@@ -73,7 +73,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
-			symbol.type = assignee_type;
+			[symbol.type, symbol.irType] = [assignee_type, IR.Type.fromAstType(assignee_type)];
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
 				assert.ok(!symbol.unfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
 				symbol.value = value;

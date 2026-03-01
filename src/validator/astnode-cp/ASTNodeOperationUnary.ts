@@ -105,9 +105,9 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: TYPE.Type = this.type();
-		const t0:  TYPE.Type = this.operand.type();
-		const v0:  IR.Value  = this.operand.lower(optimizer).asTac(optimizer);
+		const typ: IR.TypeName = IR.Type.fromAstType(this.type());
+		const t0:  TYPE.Type   = this.operand.type();
+		const v0:  IR.Value    = this.operand.lower(optimizer).asTac(optimizer);
 		return (
 			[Operator.NOT, Operator.EMP].includes(this.operator) ? new IR.Unop(new Map<Operator, IR.UnOp>([
 				[Operator.NOT, IR.UnOp.NOT],

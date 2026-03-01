@@ -1,5 +1,4 @@
 import type {AST} from '../../validator/index.ts';
-import type {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
@@ -10,7 +9,7 @@ export class RecordGet extends Value {
 	public constructor(
 		private readonly record:   Value,
 		private readonly accessor: AST.ASTNodeKey,
-		entry_type: TYPE.Type,
+		entry_type: TypeName,
 	) {
 		super(entry_type);
 	}
