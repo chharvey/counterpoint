@@ -4,7 +4,6 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
-	type IrLocal,
 	type Optimizer,
 	IR,
 } from '../../index.ts';
@@ -126,17 +125,13 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		};
 
 		if (this.kind === Operator.DOT_MAY) {
-			const block_else:  string  = optimizer.newLabel();
-			const block_endif: string  = optimizer.newLabel();
-			const result:      IrLocal = optimizer.newTempLocal(typ);
-
-			optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.ISNULL, base_value, IR.Type.BOOL), block_else));
-			optimizer.pushInstruction(new IR.Set(result, new IR.Const(VALUE.NULL)));
-			optimizer.pushInstruction(new IR.Goto(block_endif));
-			optimizer.pushInstruction(new IR.Label(block_else));
-			optimizer.pushInstruction(new IR.Set(result, non_nullish_base()));
-			optimizer.pushInstruction(new IR.Label(block_endif));
-			return new IR.Get(result);
+			return IR.conditional_expression(
+				optimizer,
+				typ,
+				() => new IR.Unop(IR.UnOp.ISNULL, base_value, IR.Type.BOOL),
+				() => new IR.Const(VALUE.NULL),
+				non_nullish_base,
+			);
 		}
 		return non_nullish_base();
 	}

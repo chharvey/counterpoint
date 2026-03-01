@@ -313,15 +313,15 @@ describe('ASTNodeOperation', () => {
 					"block-1":
 					(DROP (GET $0))
 					(DECL BOOL $1)
+					(SET $1 (NOT (GET a)))
 					(DECL BOOL $2)
-					(SET $2 (NOT (GET a)))
-					if_false (TOBOOL (GET $2)), goto "block-2".
-					(SET $1 (NOT (GET b)))
+					if_false (TOBOOL (GET $1)), goto "block-2".
+					(SET $2 (NOT (GET b)))
 					goto "block-3".
 					"block-2":
-					(SET $1 (GET $2))
+					(SET $2 (GET $1))
 					"block-3":
-					(DROP (GET $1))
+					(DROP (GET $2))
 				`.join('\n'));
 			});
 			it('[operator=OR]', () => {
@@ -344,19 +344,19 @@ describe('ASTNodeOperation', () => {
 					"block-1":
 					(DROP (GET $0))
 					(DECL INT $1)
+					(SET $1 (INT.NEG (GET c)))
 					(DECL INT $2)
-					(SET $2 (INT.NEG (GET c)))
+					(SET $2 (INT.ADD (GET $1) (INT.CONST 1)))
 					(DECL INT $3)
-					(SET $3 (INT.ADD (GET $2) (INT.CONST 1)))
-					if_false (TOBOOL (GET $3)), goto "block-2".
-					(SET $1 (GET $3))
+					if_false (TOBOOL (GET $2)), goto "block-2".
+					(SET $3 (GET $2))
 					goto "block-3".
 					"block-2":
 					(DECL FLOAT $4)
 					(SET $4 (FLOAT.NEG (GET d)))
-					(SET $1 (FLOAT.ADD (FLOAT.CONST 1.0) (GET $4)))
+					(SET $3 (FLOAT.ADD (FLOAT.CONST 1.0) (GET $4)))
 					"block-3":
-					(DROP (GET $1))
+					(DROP (GET $3))
 				`.join('\n'));
 			});
 			it('[operator=NAND]', () => {

@@ -3,7 +3,6 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	type IrLocal,
 	type Optimizer,
 	IR,
 	BinVect,
@@ -99,17 +98,13 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		 * return (GET result).
 		 * ```
 		 */
-		const block_else:  string  = optimizer.newLabel();
-		const block_endif: string  = optimizer.newLabel();
-		const result:      IrLocal = optimizer.newTempLocal(typ);
-
-		optimizer.pushInstruction(new IR.GotoIfFalse(this.operand0.lower(optimizer), block_else));
-		optimizer.pushInstruction(new IR.Set(result, this.operand1.lower(optimizer)));
-		optimizer.pushInstruction(new IR.Goto(block_endif));
-		optimizer.pushInstruction(new IR.Label(block_else));
-		optimizer.pushInstruction(new IR.Set(result, this.operand2.lower(optimizer)));
-		optimizer.pushInstruction(new IR.Label(block_endif));
-		return new IR.Get(result);
+		return IR.conditional_expression(
+			optimizer,
+			typ,
+			() => this.operand0.lower(optimizer),
+			() => this.operand1.lower(optimizer),
+			() => this.operand2.lower(optimizer),
+		);
 	}
 
 	@memoizeMethod
