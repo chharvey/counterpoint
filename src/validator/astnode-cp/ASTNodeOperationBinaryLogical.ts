@@ -145,16 +145,16 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
 		// We’re using functions because we want them to be run in the correct order.
-		let branch_then = (_: IrLocal):          IR.Value => this.operand1.lower(optimizer);
-		let branch_else = (left_local: IrLocal): IR.Value => new IR.Get(left_local);
+		let branch_then = (_: IR.Value):          IR.Value => this.operand1.lower(optimizer);
+		let branch_else = (left_value: IR.Value): IR.Value => left_value;
 		if (this.operator === Operator.OR) {
 			[branch_then, branch_else] = [branch_else, branch_then];
 		}
 
-		const result: IrLocal = optimizer.newTempLocal(typ);
-		const left:   IrLocal = optimizer.newTempLocal(this.operand0.lower(optimizer));
+		const result: IrLocal  = optimizer.newTempLocal(typ);
+		const left:   IR.Value = this.operand0.lower(optimizer).asTac(optimizer);
 
-		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.TOBOOL, new IR.Get(left), IR.Type.BOOL), block_else));
+		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.TOBOOL, left, IR.Type.BOOL), block_else));
 		optimizer.pushInstruction(new IR.Set(result, branch_then(left)));
 		optimizer.pushInstruction(new IR.Goto(block_endif));
 		optimizer.pushInstruction(new IR.Label(block_else));

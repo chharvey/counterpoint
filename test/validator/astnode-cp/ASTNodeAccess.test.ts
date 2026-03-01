@@ -1304,22 +1304,20 @@ describe('ASTNodeAccess', () => {
 					`),
 					...maybe_access_output(2, 4, IR.Type.ANY, 'my_dict', (set) => `
 						(DECL SYM $5)
-						(DECL SYM $6)
-						(SET $6 (SYM.CONST @b))
-						if_false (TOBOOL (GET $6)), goto "block-4".
+						if_false (TOBOOL (SYM.CONST @b)), goto "block-4".
 						(SET $5 (SYM.CONST @a))
 						goto "block-5".
 						"block-4":
-						(SET $5 (GET $6))
+						(SET $5 (SYM.CONST @b))
 						"block-5":
 						${ set('(DICT.GET (GET my_dict) (GET $5))') }
 					`),
-					...maybe_access_output(6, 7, IR.Type.ANY, 'my_map', (set) => `
+					...maybe_access_output(6, 6, IR.Type.ANY, 'my_map', (set) => `
+						(DECL INT $7)
+						(SET $7 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
 						(DECL INT $8)
-						(SET $8 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
-						(DECL INT $9)
-						(SET $9 (INT.ADD (INT.CONST 5) (GET $8)))
-						${ set('(MAP.GET (GET my_map) (GET $9))') }
+						(SET $8 (INT.ADD (INT.CONST 5) (GET $7)))
+						${ set('(MAP.GET (GET my_map) (GET $8))') }
 					`),
 				).join('\n'));
 			});
