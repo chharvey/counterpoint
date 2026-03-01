@@ -307,7 +307,7 @@ describe('ASTNodeOperation', () => {
 					(DECL NULL $0)
 					(DECL NULL $1)
 					(SET $1 (GET a))
-					if_false (GET $1), goto "block-0".
+					if_false (TOBOOL (GET $1)), goto "block-0".
 					(SET $0 (GET b))
 					goto "block-1".
 					"block-0":
@@ -317,7 +317,7 @@ describe('ASTNodeOperation', () => {
 					(DECL BOOL $2)
 					(DECL BOOL $3)
 					(SET $3 (NOT (GET a)))
-					if_false (GET $3), goto "block-2".
+					if_false (TOBOOL (GET $3)), goto "block-2".
 					(SET $2 (NOT (GET b)))
 					goto "block-3".
 					"block-2":
@@ -340,7 +340,7 @@ describe('ASTNodeOperation', () => {
 					(DECL INT $0)
 					(DECL INT $1)
 					(SET $1 (GET c))
-					if_false (GET $1), goto "block-0".
+					if_false (TOBOOL (GET $1)), goto "block-0".
 					(SET $0 (GET $1))
 					goto "block-1".
 					"block-0":
@@ -352,7 +352,7 @@ describe('ASTNodeOperation', () => {
 					(SET $3 (INT.NEG (GET c)))
 					(DECL INT $4)
 					(SET $4 (INT.ADD (GET $3) (INT.CONST 1)))
-					if_false (GET $4), goto "block-2".
+					if_false (TOBOOL (GET $4)), goto "block-2".
 					(SET $2 (GET $4))
 					goto "block-3".
 					"block-2":
@@ -376,7 +376,7 @@ describe('ASTNodeOperation', () => {
 					(DECL NULL $0)
 					(DECL NULL $1)
 					(SET $1 (GET a))
-					if_false (GET $1), goto "block-0".
+					if_false (TOBOOL (GET $1)), goto "block-0".
 					(SET $0 (GET b))
 					goto "block-1".
 					"block-0":
@@ -398,7 +398,7 @@ describe('ASTNodeOperation', () => {
 					(DECL INT $0)
 					(DECL INT $1)
 					(SET $1 (GET c))
-					if_false (GET $1), goto "block-0".
+					if_false (TOBOOL (GET $1)), goto "block-0".
 					(SET $0 (GET $1))
 					goto "block-1".
 					"block-0":

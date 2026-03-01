@@ -1306,7 +1306,7 @@ describe('ASTNodeAccess', () => {
 						(DECL SYM $5)
 						(DECL SYM $6)
 						(SET $6 (SYM.CONST @b))
-						if_false (GET $6), goto "block-4".
+						if_false (TOBOOL (GET $6)), goto "block-4".
 						(SET $5 (SYM.CONST @a))
 						goto "block-5".
 						"block-4":
