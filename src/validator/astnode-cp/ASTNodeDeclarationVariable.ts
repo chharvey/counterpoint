@@ -73,7 +73,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
-			[symbol.type, symbol.irType] = [assignee_type, IR.Type.fromAstType(assignee_type)];
+			symbol.type = assignee_type;
 			if (this.validator.config.compilerOptions.constantFolding && !symbol.type.hasMutable && !this.unfixed) {
 				assert.ok(!symbol.unfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
 				symbol.value = value;
@@ -86,8 +86,8 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
-			const ir_type: IR.Type = this.assigned ? symbol.irType : IR.Type.ANY; // uninitialized variables are unioned with null. TODO: once SSA is implemented, this will no longer be necessary
-			optimizer.pushInstruction(new IR.Decl(symbol, ir_type));
+			symbol.irType = value.type;
+			optimizer.pushInstruction(new IR.Decl(symbol, value.type));
 			optimizer.pushInstruction(new IR.Set(symbol, value));
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));

@@ -62,10 +62,10 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		return optimizer.pushInstruction(new IR.Set(
-			this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar,
-			this.assigned.lower(optimizer),
-		));
+		const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
+		const value: IR.Value = this.assigned.lower(optimizer);
+		symbol.irType = value.type;
+		return optimizer.pushInstruction(new IR.Set(symbol, value));
 	}
 
 	public override build(): binaryen.ExpressionRef {

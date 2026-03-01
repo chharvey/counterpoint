@@ -219,7 +219,7 @@ describe('ASTNodeExpression', () => {
 				val assignee_a: int = 42; % \`(DECL INT assignee_a) (SET assignee_a (INT.CONST 42))\`
 
 				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(DECL ANY assignee_b) (SET assignee_b null)\`
+				val mut assignee_b?: int;              % \`(DECL NULL assignee_b) (SET assignee_b null)\`
 				val mut assignee_c:  int = 42;         % \`(DECL INT assignee_c) (SET assignee_c 42)\`
 				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
 				val     assignee_d:  int = assignee_c; % \`(DECL INT assignee_d) (SET assignee_d assignee_c)\`
@@ -240,7 +240,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (INT.CONST 42))
 				(DECL INT assignee_a)
 				(SET assignee_a (INT.CONST 42))
-				(DECL ANY assignee_b)
+				(DECL NULL assignee_b)
 				(SET assignee_b (NULL.CONST null))
 				(DECL INT assignee_c)
 				(SET assignee_c (INT.CONST 42))

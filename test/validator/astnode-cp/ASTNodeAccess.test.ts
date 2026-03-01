@@ -1231,29 +1231,29 @@ describe('ASTNodeAccess', () => {
 					mixed_set?.[42]; %== true
 					mixed_map?.[42]; %== "hello"
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL ANY mixed_tup)
+					(DECL TUPLE mixed_tup)
 					(SET mixed_tup (TUPLE.NEW (STR.CONST "hello") (BOOL.CONST true) (SYM.CONST @world)))
-					(DECL ANY mixed_rec)
+					(DECL RECORD mixed_rec)
 					(SET mixed_rec (RECORD.NEW @a (INT.CONST 42)))
-					(DECL ANY mixed_lst)
+					(DECL LIST mixed_lst)
 					(SET mixed_lst (LIST.NEW (INT.CONST 42)))
-					(DECL ANY mixed_dct)
+					(DECL DICT mixed_dct)
 					(SET mixed_dct (DICT.NEW (SYM.CONST @a) (INT.CONST 42)))
-					(DECL ANY mixed_set)
+					(DECL SET mixed_set)
 					(SET mixed_set (SET.NEW (INT.CONST 42)))
-					(DECL ANY mixed_map)
+					(DECL MAP mixed_map)
 					(SET mixed_map (MAP.NEW (INT.CONST 42) (STR.CONST "hello")))
 				`.concat(
-					...maybe_access_output(0x00, 0, IR.Type.ANY, 'mixed_tup', '(NULL.CONST null)'), // FIXME: should be (TUPLE.GET 0 (GET mixed_tup))
+					...maybe_access_output(0x00, 0, IR.Type.ANY, 'mixed_tup', '(TUPLE.GET 0 (GET mixed_tup))'),
 					...maybe_access_output(0x02, 1, IR.Type.ANY, 'mixed_tup', '(NULL.CONST null)'),
 					...maybe_access_output(0x04, 2, IR.Type.ANY, 'mixed_rec', '(NULL.CONST null)'),
-					...maybe_access_output(0x06, 3, IR.Type.ANY, 'mixed_rec', '(NULL.CONST null)'), // FIXME: should be (RECORD.GET @a (GET mixed_rec))
-					...maybe_access_output(0x08, 4, IR.Type.ANY, 'mixed_lst', '(NULL.CONST null)'), // FIXME: should be (LIST.GET (GET mixed_lst) (INT.CONST 0))
-					...maybe_access_output(0x0a, 5, IR.Type.ANY, 'mixed_lst', '(NULL.CONST null)'),
-					...maybe_access_output(0x0c, 6, IR.Type.ANY, 'mixed_dct', '(NULL.CONST null)'),
-					...maybe_access_output(0x0e, 7, IR.Type.ANY, 'mixed_dct', '(NULL.CONST null)'), // FIXME: should be (DICT.GET (GET mixed_dct) (SYM.CONST @a))
-					...maybe_access_output(0x10, 8, IR.Type.ANY, 'mixed_set', '(NULL.CONST null)'), // FIXME: should be (SET.GET (GET mixed_set) (INT.CONST 42))
-					...maybe_access_output(0x12, 9, IR.Type.ANY, 'mixed_map', '(NULL.CONST null)'), // FIXME: should be (MAP.GET (GET mixed_map) (INT.CONST 42))
+					...maybe_access_output(0x06, 3, IR.Type.ANY, 'mixed_rec', '(RECORD.GET @a (GET mixed_rec))'),
+					...maybe_access_output(0x08, 4, IR.Type.ANY, 'mixed_lst', '(LIST.GET (GET mixed_lst) (INT.CONST 0))'),
+					...maybe_access_output(0x0a, 5, IR.Type.ANY, 'mixed_lst', '(LIST.GET (GET mixed_lst) (SYM.CONST @a))'), // FIXME: should be (NULL.CONST null)
+					...maybe_access_output(0x0c, 6, IR.Type.ANY, 'mixed_dct', '(DICT.GET (GET mixed_dct) (INT.CONST 0))'),  // FIXME: should be (NULL.CONST null)
+					...maybe_access_output(0x0e, 7, IR.Type.ANY, 'mixed_dct', '(DICT.GET (GET mixed_dct) (SYM.CONST @a))'),
+					...maybe_access_output(0x10, 8, IR.Type.ANY, 'mixed_set', '(SET.GET (GET mixed_set) (INT.CONST 42))'),
+					...maybe_access_output(0x12, 9, IR.Type.ANY, 'mixed_map', '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
 				).join('\n'));
 				/* eslint-enable @stylistic/indent */
 			});
