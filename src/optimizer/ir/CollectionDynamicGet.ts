@@ -1,7 +1,5 @@
-import {
-	TypeName,
-	type Type,
-} from './Type.ts';
+import type {TYPE} from '../../typer/index.ts';
+import {TypeName} from './Type.ts';
 import {Value} from './Value.ts';
 
 
@@ -21,7 +19,7 @@ export class CollectionDynamicGet extends Value {
 		private readonly name:       CollectionDynamicGetName,
 		private readonly collection: Value,
 		private readonly accessor:   Value,
-		entry_type: Type,
+		entry_type: TYPE.Type,
 	) {
 		super(entry_type);
 	}

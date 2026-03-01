@@ -98,7 +98,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: IR.Type = IR.Type.fromAstType(this.type());
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```
@@ -149,8 +148,8 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		const left: IR.Value = this.operand0.lower(optimizer).asTac(optimizer);
 		return IR.conditional_expression(
 			optimizer,
-			typ,
-			() => new IR.Unop(IR.UnOp.TOBOOL, left, IR.Type.BOOL),
+			this.type(),
+			() => new IR.Unop(IR.UnOp.TOBOOL, left, TYPE.BOOL),
 			() => branch_then(left),
 			() => branch_else(left),
 		);

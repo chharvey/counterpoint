@@ -1,8 +1,6 @@
 import type {AST} from '../../validator/index.ts';
-import {
-	TypeName,
-	type Type,
-} from './Type.ts';
+import type {TYPE} from '../../typer/index.ts';
+import {TypeName} from './Type.ts';
 import {Value} from './Value.ts';
 
 
@@ -11,7 +9,7 @@ import {Value} from './Value.ts';
 export class RecordNew extends Value {
 	public constructor(
 		private readonly props: readonly (readonly [AST.ASTNodeKey, Value])[],
-		typ: Type,
+		typ: TYPE.Type,
 	) {
 		super(typ);
 	}

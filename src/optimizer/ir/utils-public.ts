@@ -1,7 +1,7 @@
+import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {
-	type Type,
 	type Value,
 	Get,
 	Set,
@@ -37,7 +37,7 @@ import {
  */
 export function conditional_expression(
 	optimizer:   Optimizer,
-	result_type: Type,
+	result_type: TYPE.Type,
 	condition:   () => Value,
 	consequent:  () => Value,
 	alternative: () => Value,

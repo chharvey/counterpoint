@@ -92,28 +92,29 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ:        IR.Type   = IR.Type.fromAstType(this.type());
-		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
+		const typ:           TYPE.Type   = this.type();
+		const base_value:    IR.Value    = this.base.lower(optimizer).asTac(optimizer);
+		const base_typename: IR.TypeName = IR.Type.fromAstType(base_value.type).name;
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {
 				case this.accessor instanceof ASTNodeIndex: {
-					if (base_value.type === IR.Type.TUPLE) {
+					if (base_typename === IR.TypeName.TUPLE) {
 						return new IR.TupleGet(base_value, this.accessor.index, typ);
 					}
 					break;
 				}
 				case this.accessor instanceof ASTNodeKey: {
-					if (base_value.type === IR.Type.RECORD) {
+					if (base_typename === IR.TypeName.RECORD) {
 						return new IR.RecordGet(base_value, this.accessor, typ);
 					}
 					break;
 				}
 				default: {
 					assert_instanceof(this.accessor, ASTNodeExpression);
-					if ([IR.Type.LIST, IR.Type.DICT, IR.Type.SET, IR.Type.MAP].includes(base_value.type)) {
+					if ([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename)) {
 						return new IR.CollectionDynamicGet(
-							base_value.type.name as IR.CollectionDynamicGetName,
+							base_typename as IR.CollectionDynamicGetName,
 							base_value,
 							this.accessor.lower(optimizer).asTac(optimizer),
 							typ,
@@ -128,7 +129,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 			return IR.conditional_expression(
 				optimizer,
 				typ,
-				() => new IR.Unop(IR.UnOp.ISNULL, base_value, IR.Type.BOOL),
+				() => new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL),
 				() => new IR.Const(VALUE.NULL),
 				non_nullish_base,
 			);

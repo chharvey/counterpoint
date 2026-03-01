@@ -49,7 +49,7 @@ export class Type {
 
 
 	public static fromAstType(typ: TYPE.Type): Type {
-		switch (true) {
+		switch (true) { // copied from `AST.DeclarationVariable::writable_inferred_type` v0.5+ and modified slightly
 			case typ.isSubtypeOf(TYPE.NULL):  { return Type.NULL; }
 			case typ.isSubtypeOf(TYPE.BOOL):  { return Type.BOOL; }
 			case typ.isSubtypeOf(TYPE.SYM):   { return Type.SYM; }
