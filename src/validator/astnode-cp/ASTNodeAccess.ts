@@ -94,7 +94,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	public override lower(optimizer: Optimizer): IR.Value {
 		const typ:           TYPE.Type   = this.type();
 		const base_value:    IR.Value    = this.base.lower(optimizer).asTac(optimizer);
-		const base_typename: IR.TypeName = IR.Type.fromAstType(base_value.type).name;
+		const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {

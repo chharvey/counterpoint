@@ -1,5 +1,8 @@
 import type {VALUE} from '../../typer/index.ts';
-import {Type} from './Type.ts';
+import {
+	TypeName,
+	ast_type_name,
+} from './Type.ts';
 import {Value} from './Value.ts';
 
 
@@ -11,7 +14,7 @@ export class Const extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ Type.fromAstType(this.type) }.CONST ${ this.value })`;
+		return `(${ TypeName[ast_type_name(this.type)] }.CONST ${ this.value })`;
 	}
 
 	public override asTac(): Const {
