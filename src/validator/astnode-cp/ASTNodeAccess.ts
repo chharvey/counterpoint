@@ -4,8 +4,9 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
+	type IrLocal,
 	type Optimizer,
-	type IR,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -91,8 +92,53 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeAccess#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ:        IR.Type   = IR.Type.fromAstType(this.type());
+		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
+
+		const non_nullish_base = (): IR.Value => {
+			switch (true) {
+				case this.accessor instanceof ASTNodeIndex: {
+					if (base_value.type === IR.Type.TUPLE) {
+						return new IR.TupleGet(base_value, this.accessor.index, typ);
+					}
+					break;
+				}
+				case this.accessor instanceof ASTNodeKey: {
+					if (base_value.type === IR.Type.RECORD) {
+						return new IR.RecordGet(base_value, this.accessor, typ);
+					}
+					break;
+				}
+				default: {
+					assert_instanceof(this.accessor, ASTNodeExpression);
+					if ([IR.Type.LIST, IR.Type.DICT, IR.Type.SET, IR.Type.MAP].includes(base_value.type)) {
+						return new IR.CollectionDynamicGet(
+							base_value.type.name as IR.CollectionDynamicGetName,
+							base_value,
+							this.accessor.lower(optimizer).asTac(optimizer),
+							typ,
+						);
+					}
+				}
+			}
+			return new IR.Const(VALUE.NULL);
+		};
+
+		if (this.kind === Operator.DOT_MAY) {
+			const block_else:  string  = optimizer.newLabel();
+			const block_endif: string  = optimizer.newLabel();
+			const result:      IrLocal = optimizer.newTempLocal(typ);
+
+			optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Unop(IR.UnOp.ISNULL, base_value, IR.Type.BOOL), block_else));
+			optimizer.pushInstruction(new IR.Set(result, new IR.Const(VALUE.NULL)));
+			optimizer.pushInstruction(new IR.Goto(block_endif));
+			optimizer.pushInstruction(new IR.Label(block_else));
+			optimizer.pushInstruction(new IR.Set(result, non_nullish_base()));
+			optimizer.pushInstruction(new IR.Label(block_endif));
+			return new IR.Get(result);
+		}
+		return non_nullish_base();
 	}
 
 	@memoizeMethod

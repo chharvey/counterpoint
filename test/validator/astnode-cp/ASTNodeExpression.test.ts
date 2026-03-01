@@ -7,6 +7,8 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
+	type SymbolSchema,
+	SymbolSchemaVar,
 	VALUE,
 	TYPE,
 	Optimizer,
@@ -36,15 +38,17 @@ import {
 
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
+		function setupScript(src: string, _: object): {opt: Optimizer} {
+			const opt = new Optimizer();
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return {opt};
+		}
+
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
 			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
-			[AST.ASTNodeTuple,    '(41, 42, 43)'],
-			[AST.ASTNodeRecord,   '(a= 41, b= 42, c= 43)'],
-			[AST.ASTNodeList,     '[41, 42, 43]'],
-			[AST.ASTNodeDict,     '[a= 41, b= 42, c= 43]'],
-			[AST.ASTNodeSet,      '{41, 42, 43}'],
-			[AST.ASTNodeMap,      '{"a" -> 41, "b" -> 42, "c" -> 43}'],
-			[AST.ASTNodeAccess,   '(41, 42, 43).1'],
 			[AST.ASTNodeCall,     'List.<int>((41, 42, 43))'],
 		]), (src, klass) => {
 			it(klass.name, () => {
@@ -70,7 +74,140 @@ describe('ASTNodeExpression', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			const expr = (goal.children[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-			return assert.deepStrictEqual(expr.lower(), new IR.Get(expr));
+			const symbol: SymbolSchema | null = expr.validator.getSymbolInfo(expr.id);
+			assert_instanceof(symbol, SymbolSchemaVar);
+			return assert.deepStrictEqual(expr.lower(), new IR.Get(symbol));
+		});
+		it('AST.Tuple returns an IR.CollectionIndexedNew.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: bool  = false;
+				val mut y: int   = 5;
+				val mut z: float = 0.2;
+				(x, y + 2, 3.0 * z - 1.0);
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL BOOL x)
+				(SET x (BOOL.CONST false))
+				(DECL INT y)
+				(SET y (INT.CONST 5))
+				(DECL FLOAT z)
+				(SET z (FLOAT.CONST 0.2))
+				(DECL INT $0)
+				(SET $0 (INT.ADD (GET y) (INT.CONST 2)))
+				(DECL FLOAT $1)
+				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+				(DECL FLOAT $2)
+				(SET $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL FLOAT $3)
+				(SET $3 (FLOAT.ADD (GET $1) (GET $2)))
+				(DROP (TUPLE.NEW (GET x) (GET $0) (GET $3)))
+			`.join('\n'));
+		});
+		it('AST.Record returns an IR.RecordNew.', () => {
+			assert.strictEqual(setupScript(`{
+				val x: bool  = false;
+				val y: int   = 5;
+				val z: float = 0.2;
+				(a= x, b= y + 2, c= 3.0 * z - 1.0);
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL BOOL x)
+				(SET x (BOOL.CONST false))
+				(DECL INT y)
+				(SET y (INT.CONST 5))
+				(DECL FLOAT z)
+				(SET z (FLOAT.CONST 0.2))
+				(DECL INT $0)
+				(SET $0 (INT.ADD (GET y) (INT.CONST 2)))
+				(DECL FLOAT $1)
+				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+				(DECL FLOAT $2)
+				(SET $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL FLOAT $3)
+				(SET $3 (FLOAT.ADD (GET $1) (GET $2)))
+				(DROP (RECORD.NEW @a @b @c (GET x) (GET $0) (GET $3)))
+			`.join('\n'));
+		});
+		it('AST.List returns an IR.CollectionIndexedNew.', () => {
+			assert.strictEqual(setupScript(`{
+				[false, 5 + 2, 3.0 * 0.2 - 1.0];
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL INT $0)
+				(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+				(DECL FLOAT $1)
+				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+				(DECL FLOAT $2)
+				(SET $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL FLOAT $3)
+				(SET $3 (FLOAT.ADD (GET $1) (GET $2)))
+				(DROP (LIST.NEW (BOOL.CONST false) (GET $0) (GET $3)))
+			`.join('\n'));
+		});
+		it('AST.Dict returns an IR.DictNew.', () => {
+			assert.strictEqual(setupScript(`{
+				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL INT $0)
+				(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+				(DECL FLOAT $1)
+				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+				(DECL FLOAT $2)
+				(SET $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL FLOAT $3)
+				(SET $3 (FLOAT.ADD (GET $1) (GET $2)))
+				(DROP (DICT.NEW (SYM.CONST @a) (BOOL.CONST false) (SYM.CONST @b) (GET $0) (SYM.CONST @c) (GET $3)))
+			`.join('\n'));
+		});
+		it('AST.Set returns an IR.SetNew.', () => {
+			assert.strictEqual(setupScript(`{
+				{false, 5 + 2, 3.0 * 0.2 - 1.0};
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL INT $0)
+				(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+				(DECL FLOAT $1)
+				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+				(DECL FLOAT $2)
+				(SET $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL FLOAT $3)
+				(SET $3 (FLOAT.ADD (GET $1) (GET $2)))
+				(DROP (SET.NEW (BOOL.CONST false) (GET $0) (GET $3)))
+			`.join('\n'));
+		});
+		describe('AST.Map', () => {
+			it('returns an IR.MapNew.', () => {
+				assert.strictEqual(setupScript(`{
+					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+					(DECL FLOAT $1)
+					(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+					(DECL FLOAT $2)
+					(SET $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+					(DECL FLOAT $3)
+					(SET $3 (FLOAT.ADD (GET $1) (GET $2)))
+					(DROP (MAP.NEW (STR.CONST "a") (BOOL.CONST false) (STR.CONST "b") (GET $0) (STR.CONST "c") (GET $3)))
+				`.join('\n'));
+			});
+			it('evaluates antecedents and consequents interchangeably in source order.', () => {
+				assert.strictEqual(setupScript(`{
+					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL LIST $0)
+					(SET $0 (LIST.NEW (INT.CONST 10)))
+					(DECL INT $1)
+					(SET $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
+					(DECL LIST $2)
+					(SET $2 (LIST.NEW (INT.CONST 12)))
+					(DECL INT $3)
+					(SET $3 (INT.MUL (INT.CONST 5) (INT.CONST 2)))
+					(DECL INT $4)
+					(SET $4 (INT.ADD (GET $3) (INT.CONST 3)))
+					(DECL INT $5)
+					(SET $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
+					(DECL LIST $6)
+					(SET $6 (LIST.NEW (GET $5)))
+					(DROP (MAP.NEW (GET $0) (GET $1) (GET $2) (GET $4) (GET $6) (INT.CONST 15)))
+				`.join('\n'));
+			});
 		});
 
 		// TODO: move these to ASTNodeStatement tests
@@ -78,15 +215,15 @@ describe('ASTNodeExpression', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				% Foldable cases:
-				val _:          int = 42; % \`(DROP (CONST 42))\`
-				val assignee_a: int = 42; % \`(DECL assignee_a) (SET assignee_a (CONST 42))\`
+				val _:          int = 42; % \`(DROP (INT.CONST 42))\`
+				val assignee_a: int = 42; % \`(DECL INT assignee_a) (SET assignee_a (INT.CONST 42))\`
 
 				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(DECL assignee_b) (SET assignee_b null)\`
-				val mut assignee_c:  int = 42;         % \`(DECL assignee_c) (SET assignee_c 42)\`
+				val mut assignee_b?: int;              % \`(DECL NULL assignee_b) (SET assignee_b null)\`
+				val mut assignee_c:  int = 42;         % \`(DECL INT assignee_c) (SET assignee_c 42)\`
 				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
-				val     assignee_d:  int = assignee_c; % \`(DECL assignee_d) (SET assignee_d assignee_c)\`
-				val mut assignee_e:  int = assignee_c; % \`(DECL assignee_e) (SET assignee_e assignee_c)\`
+				val     assignee_d:  int = assignee_c; % \`(DECL INT assignee_d) (SET assignee_d assignee_c)\`
+				val mut assignee_e:  int = assignee_c; % \`(DECL INT assignee_e) (SET assignee_e assignee_c)\`
 
 				%% Syntactically impossible cases (for completion):
 				val _?:          int;
@@ -100,17 +237,17 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			goal.children.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
-				(DROP (CONST 42))
-				(DECL assignee_a)
-				(SET assignee_a (CONST 42))
-				(DECL assignee_b)
-				(SET assignee_b (CONST null))
-				(DECL assignee_c)
-				(SET assignee_c (CONST 42))
+				(DROP (INT.CONST 42))
+				(DECL INT assignee_a)
+				(SET assignee_a (INT.CONST 42))
+				(DECL NULL assignee_b)
+				(SET assignee_b (NULL.CONST null))
+				(DECL INT assignee_c)
+				(SET assignee_c (INT.CONST 42))
 				(DROP (GET assignee_c))
-				(DECL assignee_d)
+				(DECL INT assignee_d)
 				(SET assignee_d (GET assignee_c))
-				(DECL assignee_e)
+				(DECL INT assignee_e)
 				(SET assignee_e (GET assignee_c))
 			`.join('\n'));
 		});
@@ -133,7 +270,7 @@ describe('ASTNodeExpression', () => {
 			assert.strictEqual(opt.instructions.length, 2);
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (GET x))
-				(DROP (CONST 42))
+				(DROP (INT.CONST 42))
 			`.join('\n'));
 		});
 		it('AST.StatementReassignment pushes SET instruction.', () => {
@@ -148,9 +285,9 @@ describe('ASTNodeExpression', () => {
 			goal.typeCheck();
 			goal.children.slice(1).forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
-				(SET x (CONST 43))
-				(SET x (CONST 44))
-				(SET x (CONST -42))
+				(SET x (INT.CONST 43))
+				(SET x (INT.CONST 44))
+				(SET x (INT.CONST -42))
 			`.join('\n'));
 		});
 		it('AST.Goal lowers each statement.', () => {

@@ -1,109 +1,186 @@
-TRAP() -> Nothing;
-CONST(Primitive) -> Value;
-GET(SemanticVariable | String) -> Value;
+/*
+# Conventions
 
-TOINT(Number)   -> Integer;
-TONAT(Number)   -> Natural;
-TOFLOAT(Number) -> Float;
+- «Value» refers to an IR value (a value on the conceptual stack).
+- «Number», «Integer», «Natural», «Float», etc. all refer to IR values that are of those respective types. Their types are given by semantic analysis on the AST.
+- Types starting with «TYPE.» and «VALUE.» refer to Counterpoint Language types and values respectively.
+- Native types are referred to by «native-number», «native-bigint», and «native-string».
 
-NOT(Value) -> Boolean;
-EMP(Value) -> Boolean;
+IR functions may have zero or more static parameters and consume zero or more dynamic arguments from the stack.
+They may return one value back to the stack, or none at all.
 
-INT_NEG(Integer) -> Integer;
-FLOAT_NEG(Float) -> Float;
-
-INT_ADD(Integer, Integer) -> Integer;
-INT_SUB(Integer, Integer) -> Integer;
-INT_MUL(Integer, Integer) -> Integer;
-INT_DIV(Integer, Integer) -> Integer;
-INT_EXP(Integer, Integer) -> Integer;
-
-NAT_ADD(Natural, Natural) -> Natural;
-NAT_SUB(Natural, Natural) -> Natural;
-NAT_MUL(Natural, Natural) -> Natural;
-NAT_DIV(Natural, Natural) -> Natural;
-NAT_EXP(Natural, Natural) -> Natural;
-
-FLOAT_ADD(Float, Float) -> Float;
-FLOAT_SUB(Float, Float) -> Float;
-FLOAT_MUL(Float, Float) -> Float;
-FLOAT_DIV(Float, Float) -> Float;
-FLOAT_EXP(Float, Float) -> Float;
-
-LT (Number, Number) -> Boolean;
-GT (Number, Number) -> Boolean;
-LE (Number, Number) -> Boolean;
-GE (Number, Number) -> Boolean;
-NLT(Number, Number) -> Boolean;
-NGT(Number, Number) -> Boolean;
-
-ID (Value, Value) -> Boolean;
-EQ (Value, Value) -> Boolean;
-NID(Value, Value) -> Boolean;
-NEQ(Value, Value) -> Boolean;
-
-DROP(Value);
-DECL(SemanticVariable | String);
-SET(SemanticVariable | String, Value);
+Every function signature takes the form «‹NAME›(‹static params› [‹dynamic params›]) -> ‹return›;», where:
+- ‹NAME› is an uppercase function name, optionally containg dots
+- ‹static params› is a space-separated list of types representing statically known values
+- ‹dynamic params› is a space-separated list of types representing dynamic IR values on the stack
+- consecutive multiples of the same type «T» can be written as «T*» in shorthand
+- « -> ‹return›» is optional — it means the function does not return a value.
+*/
 
 
 
+TRAP();
+NULL.CONST(VALUE.Null)    -> Value;
+BOOL.CONST(VALUE.Boolean) -> Value;
+SYM.CONST(VALUE.Symbol)   -> Value;
+INT.CONST(VALUE.Integer)  -> Value;
+NAT.CONST(VALUE.Natural)  -> Value;
+FLOAT.CONST(VALUE.Float)  -> Value;
+STR.CONST(VALUE.String)   -> Value;
+GET(SymbolSchemaVar|native-string) -> Value;
+
+ISNULL([Value]) -> Boolean;
+
+TOINT([Number])   -> Integer;
+TONAT([Number])   -> Natural;
+TOFLOAT([Number]) -> Float;
+
+TUPLE.NEW([Value*]) -> Tuple;
+RECORD.NEW(SemanticKey* [Value*]) -> Record;
+LIST.NEW([Value*]) -> List;
+DICT.NEW([Value*]) -> Dict;
+SET.NEW([Value*]) -> Set;
+MAP.NEW([Value*]) -> Map;
+
+TUPLE.GET(native-bigint  [Value]) -> Value;
+RECORD.GET(native-bigint [Value]) -> Value;
+LIST.GET([Value Value])           -> Value;
+DICT.GET([Value Value])           -> Value;
+SET.GET([Value  Value])           -> Value;
+MAP.GET([Value  Value])           -> Value;
+
+NOT([Value]) -> Boolean;
+EMP([Value]) -> Boolean;
+
+INT.NEG([Integer]) -> Integer;
+FLOAT.NEG([Float]) -> Float;
+
+INT.ADD([Integer Integer]) -> Integer;
+INT.SUB([Integer Integer]) -> Integer;
+INT.MUL([Integer Integer]) -> Integer;
+INT.DIV([Integer Integer]) -> Integer;
+INT.EXP([Integer Integer]) -> Integer;
+
+NAT.ADD([Natural Natural]) -> Natural;
+NAT.SUB([Natural Natural]) -> Natural;
+NAT.MUL([Natural Natural]) -> Natural;
+NAT.DIV([Natural Natural]) -> Natural;
+NAT.EXP([Natural Natural]) -> Natural;
+
+FLOAT.ADD([Float Float]) -> Float;
+FLOAT.SUB([Float Float]) -> Float;
+FLOAT.MUL([Float Float]) -> Float;
+FLOAT.DIV([Float Float]) -> Float;
+FLOAT.EXP([Float Float]) -> Float;
+
+LT ([Number Number]) -> Boolean;
+GT ([Number Number]) -> Boolean;
+LE ([Number Number]) -> Boolean;
+GE ([Number Number]) -> Boolean;
+NLT([Number Number]) -> Boolean;
+NGT([Number Number]) -> Boolean;
+
+ID ([Value Value]) -> Boolean;
+EQ ([Value Value]) -> Boolean;
+NID([Value Value]) -> Boolean;
+NEQ([Value Value]) -> Boolean;
+
+DROP([Value]);
+DECL(SymbolSchemaVar|native-string);
+SET(SymbolSchemaVar|native-string [Value]);
 
 
 
-Lower(Null n)    := (CONST n);
-Lower(Boolean b) := (CONST b);
-Lower(Symbol s)  := (CONST s);
-Lower(Number n)  := (CONST n);
 
-Lower(SemanticConstant const) := (CONST Lower(ValueOf(const)~!));
-Lower(SemanticVariable var)   := (GET var);
+
+
+Lower(Null    n) := (NULL.CONST  n);
+Lower(Boolean b) := (BOOL.CONST  b);
+Lower(Symbol  s) := (SYM.CONST   s);
+Lower(Integer i) := (INT.CONST   i);
+Lower(Natural n) := (NAT.CONST   n);
+Lower(Float   f) := (FLOAT.CONST f);
+Lower(String  s) := (STR.CONST   s);
+
+Lower(SemanticCase     case) := (TUPLE.NEW [`Lower(case.0)` `Lower(case.1)`]);
+Lower(SemanticProperty prop) := Sequence [`prop.0`, `Lower(prop.1)`];
+
+Lower(SemanticConstant[type=TYPE.Null]    const) := (NULL.CONST  `Lower(ValueOf(const)~!)`);
+Lower(SemanticConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Lower(ValueOf(const)~!)`);
+Lower(SemanticConstant[type=TYPE.Symbol]  const) := (SYM.CONST   `Lower(ValueOf(const)~!)`);
+Lower(SemanticConstant[type=TYPE.Integer] const) := (INT.CONST   `Lower(ValueOf(const)~!)`);
+Lower(SemanticConstant[type=TYPE.Natural] const) := (NAT.CONST   `Lower(ValueOf(const)~!)`);
+Lower(SemanticConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Lower(ValueOf(const)~!)`);
+Lower(SemanticConstant[type=TYPE.String]  const) := (STR.CONST   `Lower(ValueOf(const)~!)`);
+
+Lower(SemanticVariable var) := (GET `GetSymbolSchema(var)`);
 
 // Lower(SemanticTemplate tpl);
-// Lower(SemanticTuple tup);
-// Lower(SemanticRecord rec);
-// Lower(SemanticList list);
-// Lower(SemanticDict dict);
-// Lower(SemanticSet set);
-// Lower(SemanticMap map);
-// Lower(SemanticAccess access);
+
+Lower(SemanticTuple tup)  := (TUPLE.NEW  [`...tup.children.map(Lower)`]);
+Lower(SemanticRecord rec) := (RECORD.NEW `...rec.children.map(prop.0.id)` [`...rec.children.map(Lower(prop.1))`]);
+Lower(SemanticList list)  := (LIST.NEW   [`...list.children.map(Lower)`]);
+Lower(SemanticDict dict)  := (DICT.NEW   [`...dict.children.flatMap(Lower)`]);
+Lower(SemanticSet set)    := (SET.NEW    [`...set.children.map(Lower)`]);
+Lower(SemanticMap map)    := (MAP.NEW    [`...map.children.map(Lower)`]);
+
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Lower(SemanticExpression)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Lower(SemanticExpression)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
+
+Lower(SemanticAccess[kind=MAYBE] access) := [
+	(DECL $tuple)
+	(SET $tuple `Lower(access.0)`)
+	(DECL $result)
+	if_false (ISNULL (GET $tuple)), goto "block-0".
+	(SET $result (NULL.CONST null))
+	goto "block-1".
+	"block-0":
+	(SET result `Lower(access[kind=NORMAL])`)
+	"block-1":
+	return (GET $result).
+];
+
 // Lower(SemanticCall call);
 // Lower(SemanticClaim claim);
 
-Lower(SemanticOperation[operator=NOT] op)             := (NOT op.0);
-Lower(SemanticOperation[operator=EMP] op)             := (EMP op.0);
-Lower(SemanticOperation[operator=NEG][0: Integer] op) := (INT_NEG   op.0);
-Lower(SemanticOperation[operator=NEG][0: Float]   op) := (FLOAT_NEG op.0);
+Lower(SemanticOperation[operator=NOT] op)             := (NOT       [`op.0`]);
+Lower(SemanticOperation[operator=EMP] op)             := (EMP       [`op.0`]);
+Lower(SemanticOperation[operator=NEG][0: Integer] op) := (INT.NEG   [`op.0`]);
+Lower(SemanticOperation[operator=NEG][0: Float]   op) := (FLOAT.NEG [`op.0`]);
 
-Lower(SemanticOperation[operator=ADD][0: Integer][1: Integer] op) := (INT_ADD op.0 op.1);
-Lower(SemanticOperation[operator=SUB][0: Integer][1: Integer] op) := (INT_SUB op.0 op.1);
-Lower(SemanticOperation[operator=MUL][0: Integer][1: Integer] op) := (INT_MUL op.0 op.1);
-Lower(SemanticOperation[operator=DIV][0: Integer][1: Integer] op) := (INT_DIV op.0 op.1);
-Lower(SemanticOperation[operator=EXP][0: Integer][1: Integer] op) := (INT_EXP op.0 op.1);
+Lower(SemanticOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=MUL][0: Integer][1: Integer] op) := (INT.MUL [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=DIV][0: Integer][1: Integer] op) := (INT.DIV [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=EXP][0: Integer][1: Integer] op) := (INT.EXP [`op.0` `op.1`]);
 
-Lower(SemanticOperation[operator=ADD][0: Natural][1: Natural] op) := (NAT_ADD op.0 op.1);
-Lower(SemanticOperation[operator=SUB][0: Natural][1: Natural] op) := (NAT_SUB op.0 op.1);
-Lower(SemanticOperation[operator=MUL][0: Natural][1: Natural] op) := (NAT_MUL op.0 op.1);
-Lower(SemanticOperation[operator=DIV][0: Natural][1: Natural] op) := (NAT_DIV op.0 op.1);
-Lower(SemanticOperation[operator=EXP][0: Natural][1: Natural] op) := (NAT_EXP op.0 op.1);
+Lower(SemanticOperation[operator=ADD][0: Natural][1: Natural] op) := (NAT.ADD [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=SUB][0: Natural][1: Natural] op) := (NAT.SUB [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=MUL][0: Natural][1: Natural] op) := (NAT.MUL [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=DIV][0: Natural][1: Natural] op) := (NAT.DIV [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=EXP][0: Natural][1: Natural] op) := (NAT.EXP [`op.0` `op.1`]);
 
-Lower(SemanticOperation[operator=ADD][0: Float][1: Float] op) := (FLOAT_ADD op.0 op.1);
-Lower(SemanticOperation[operator=SUB][0: Float][1: Float] op) := (FLOAT_SUB op.0 op.1);
-Lower(SemanticOperation[operator=MUL][0: Float][1: Float] op) := (FLOAT_MUL op.0 op.1);
-Lower(SemanticOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT_DIV op.0 op.1);
-Lower(SemanticOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT_EXP op.0 op.1);
+Lower(SemanticOperation[operator=ADD][0: Float][1: Float] op) := (FLOAT.ADD [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=SUB][0: Float][1: Float] op) := (FLOAT.SUB [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=MUL][0: Float][1: Float] op) := (FLOAT.MUL [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT.DIV [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT.EXP [`op.0` `op.1`]);
 
-Lower(SemanticOperation[operator=LT] [0: Number][1: Number] op) := (LT op.0 op.1);
-Lower(SemanticOperation[operator=GT] [0: Number][1: Number] op) := (GT op.0 op.1);
-Lower(SemanticOperation[operator=LE] [0: Number][1: Number] op) := (LE op.0 op.1);
-Lower(SemanticOperation[operator=GE] [0: Number][1: Number] op) := (GE op.0 op.1);
-Lower(SemanticOperation[operator=NLT][0: Number][1: Number] op) := (NLT op.0 op.1);
-Lower(SemanticOperation[operator=NGT][0: Number][1: Number] op) := (NGT op.0 op.1);
+Lower(SemanticOperation[operator=LT] [0: Number][1: Number] op) := (LT  [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=GT] [0: Number][1: Number] op) := (GT  [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=LE] [0: Number][1: Number] op) := (LE  [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=GE] [0: Number][1: Number] op) := (GE  [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=NLT][0: Number][1: Number] op) := (NLT [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=NGT][0: Number][1: Number] op) := (NGT [`op.0` `op.1`]);
 
-Lower(SemanticOperation[operator=ID]  op) := (ID  op.0 op.1);
-Lower(SemanticOperation[operator=EQ]  op) := (EQ  op.0 op.1);
-Lower(SemanticOperation[operator=NID] op) := (NID op.0 op.1);
-Lower(SemanticOperation[operator=NEQ] op) := (NEQ op.0 op.1);
+Lower(SemanticOperation[operator=ID]  op) := (ID  [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=EQ]  op) := (EQ  [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=NID] op) := (NID [`op.0` `op.1`]);
+Lower(SemanticOperation[operator=NEQ] op) := (NEQ [`op.0` `op.1`]);
 
 
 Lower(SemanticOperation[operator=AND] op) := [
@@ -146,15 +223,15 @@ Lower(SemanticOperation[operator=COND] op) := [
 Lower(SemanticDeclarationType decl) := [];
 
 Lower(SemanticDeclarationVariable:has(SemanticVariable):has(SemanticExpression) decl) := [
-	(DECL decl.0)
-	(SET decl.0 `Lower(decl.2)`)
+   (DECL `GetSymbolSchema(decl.0)`)
+   (SET `GetSymbolSchema(decl.0)` `Lower(decl.2)`)
 ];
 Lower(SemanticDeclarationVariable:has(SemanticVariable) decl) := [
-	(DECL decl.0)
-	(SET decl.0 (CONST null))
+   (DECL `GetSymbolSchema(decl.0)`)
+   (SET `GetSymbolSchema(decl.0)` (CONST null))
 ];
 Lower(SemanticDeclarationVariable decl):has(SemanticVariable) := [
-	(DROP `Lower(decl.1)`)
+   (DROP `Lower(decl.1)`)
 ];
 
 Lower(SemanticStatementExpression:has(SemanticExpression) stmt) := [
@@ -163,9 +240,16 @@ Lower(SemanticStatementExpression:has(SemanticExpression) stmt) := [
 Lower(SemanticStatementExpression stmt) := [];
 
 Lower(SemanticAssignment stmt) := [
-	(SET stmt.0 `Lower(stmt.1)`)
+   (SET `GetSymbolSchema(stmt.0)` `Lower(stmt.1)`)
 ];
 
 Lower(SemanticBlock block) := block.children.map(Lower);
 
 Lower(SemanticGoal goal) := Lower(goal.0);
+
+
+
+SymbolSchemaVar GetSymbolSchema(SemanticVariable var) :=
+	1. *Assert:* the validator’s symbol table contains a SymbolSchemaVar `symbol` whose `id` is `var.id`.
+	2. *Return:* `symbol`.
+;

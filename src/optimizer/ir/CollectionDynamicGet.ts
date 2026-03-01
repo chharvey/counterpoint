@@ -1,0 +1,32 @@
+import {
+	TypeName,
+	type Type,
+} from './Type.ts';
+import {Value} from './Value.ts';
+
+
+
+export type CollectionDynamicGetName = (
+	| TypeName.LIST
+	| TypeName.DICT
+	| TypeName.SET
+	| TypeName.MAP
+);
+
+
+
+/** Read an entry of a dynamic collection (List/Dict/Set/Map). */
+export class CollectionDynamicGet extends Value {
+	public constructor(
+		private readonly name:       CollectionDynamicGetName,
+		private readonly collection: Value,
+		private readonly accessor:   Value,
+		entry_type: Type,
+	) {
+		super(entry_type);
+	}
+
+	public override toString(): string {
+		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
+	}
+}

@@ -76,7 +76,7 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	public override lower(): IR.Value {
-		return new IR.Get(this);
+		return new IR.Get(this.validator.getSymbolInfo(this.id) as SymbolSchemaVar);
 	}
 
 	@memoizeMethod
