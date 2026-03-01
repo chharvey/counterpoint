@@ -31,8 +31,8 @@ export class Optimizer {
 		return local;
 	}
 
-	public newLabel(): string {
-		return `block-${ this.#labelCounter++ }`;
+	public newLabel(): IR.Label {
+		return new IR.Label(`block-${ this.#labelCounter++ }`);
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {

@@ -6,7 +6,7 @@ import {
 	type Value,
 	Get,
 	Set,
-	Label,
+	type Label,
 	Goto,
 	GotoIfFalse,
 } from './index.ts';
@@ -52,16 +52,16 @@ export function conditional_expression(
 	consequent:  () => Value,
 	alternative: () => Value,
 ): Get {
-	const block_else:  string = optimizer.newLabel();
-	const block_endif: string = optimizer.newLabel();
-	const result:      Local  = optimizer.newTempLocal(result_type);
+	const block_else:  Label = optimizer.newLabel();
+	const block_endif: Label = optimizer.newLabel();
+	const result:      Local = optimizer.newTempLocal(result_type);
 
 	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), block_else));
 	optimizer.pushInstruction(new Set(result, consequent.call(null)));
 	optimizer.pushInstruction(new Goto(block_endif));
-	optimizer.pushInstruction(new Label(block_else));
+	optimizer.pushInstruction(block_else);
 	optimizer.pushInstruction(new Set(result, alternative.call(null)));
-	optimizer.pushInstruction(new Label(block_endif));
+	optimizer.pushInstruction(block_endif);
 	return new Get(result);
 }
 
@@ -89,15 +89,15 @@ export function conditional_statement(
 	consequent:   () => void,
 	alternative?: () => void,
 ): void {
-	const block_else:  string = optimizer.newLabel();
-	const block_endif: string = optimizer.newLabel();
+	const block_else:  Label = optimizer.newLabel();
+	const block_endif: Label = optimizer.newLabel();
 
 	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), alternative ? block_else : block_endif));
 	consequent.call(null);
 	optimizer.pushInstruction(new Goto(block_endif));
 	if (alternative) {
-		optimizer.pushInstruction(new Label(block_else));
+		optimizer.pushInstruction(block_else);
 		alternative.call(null);
 	}
-	optimizer.pushInstruction(new Label(block_endif));
+	optimizer.pushInstruction(block_endif);
 }
