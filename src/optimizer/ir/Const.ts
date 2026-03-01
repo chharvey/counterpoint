@@ -2,7 +2,7 @@ import type {VALUE} from '../../typer/index.ts';
 import {
 	TypeName,
 	ast_type_name,
-} from './Type.ts';
+} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 

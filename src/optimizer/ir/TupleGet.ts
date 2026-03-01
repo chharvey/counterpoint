@@ -1,5 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
-import {TypeName} from './Type.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 

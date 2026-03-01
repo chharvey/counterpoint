@@ -1,6 +1,6 @@
 export * from './utils-public.ts';
 
-export * from './Type.ts';
+export * from './TypeName.ts';
 
 export * from './Instruction.ts';
 

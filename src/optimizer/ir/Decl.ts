@@ -4,7 +4,7 @@ import type {Local} from '../utils-private.ts';
 import {
 	TypeName,
 	ast_type_name,
-} from './Type.ts';
+} from './TypeName.ts';
 import {Instruction} from './Instruction.ts';
 
 
