@@ -1,27 +1,22 @@
-import type {TYPE} from '../../typer/index.ts';
+import {
+	TypeName,
+	type Type,
+} from './Type.ts';
 import {Value} from './Value.ts';
-
-
-
-export enum CollectionLinearName {
-	TUPLE,
-	LIST,
-	SET,
-}
 
 
 
 /** Create an indexed collection (tuple/List/Set). */
 export class CollectionLinearNew extends Value {
 	public constructor(
-		private readonly name:  CollectionLinearName,
+		private readonly name:  TypeName.TUPLE | TypeName.LIST | TypeName.SET,
 		private readonly items: readonly Value[],
-		typ: TYPE.Type,
+		typ: Type,
 	) {
 		super(typ);
 	}
 
 	public override toString(): string {
-		return `(${ CollectionLinearName[this.name] }.NEW ${ this.items.join(' ') })`;
+		return `(${ TypeName[this.name] }.NEW ${ this.items.join(' ') })`;
 	}
 }

@@ -130,9 +130,9 @@ describe('ASTNodeOperation', () => {
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (NOT (INT.CONST 42)))
-				(DECL y)
+				(DECL INT y)
 				(SET y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
-				(DECL $0)
+				(DECL INT $0)
 				(SET $0 (INT.ADD (INT.CONST 42) (GET y)))
 				(DROP (NOT (GET $0)))
 			`.join('\n'));
@@ -149,12 +149,12 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
-				(DECL x)
+				(DECL INT x)
 				(SET x (INT.CONST 42))
 				(DROP (EMP (GET x)))
-				(DECL y)
+				(DECL INT y)
 				(SET y (INT.DIV (GET x) (INT.CONST 7)))
-				(DECL $0)
+				(DECL INT $0)
 				(SET $0 (INT.ADD (GET x) (GET y)))
 				(DROP (EMP (GET $0)))
 			`.join('\n'));
@@ -171,12 +171,12 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
-				(DECL x)
+				(DECL INT x)
 				(SET x (INT.CONST 42))
 				(DROP (INT.NEG (GET x)))
-				(DECL y)
+				(DECL FLOAT y)
 				(SET y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
-				(DECL $0)
+				(DECL FLOAT $0)
 				(SET $0 (FLOAT.ADD (FLOAT.CONST 3.0) (GET y)))
 				(DROP (FLOAT.NEG (GET $0)))
 			`.join('\n'));
@@ -193,13 +193,13 @@ describe('ASTNodeOperation', () => {
 				goal.typeCheck();
 				goal.lower(opt);
 				return assert.strictEqual(opt.print(), extract_lines`
-					(DECL x)
+					(DECL INT x)
 					(SET x (INT.CONST 42))
-					(DECL $0)
+					(DECL INT $0)
 					(SET $0 (INT.EXP (GET x) (INT.CONST 2)))
-					(DECL $1)
+					(DECL INT $1)
 					(SET $1 (INT.EXP (INT.CONST 2) (INT.CONST 3)))
-					(DECL $2)
+					(DECL INT $2)
 					(SET $2 (INT.DIV (GET $0) (GET $1)))
 					(DROP (INT.ADD (INT.CONST 3) (GET $2)))
 				`.join('\n'));
@@ -236,22 +236,22 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
-				(DECL a)
+				(DECL INT a)
 				(SET a (INT.CONST 10))
-				(DECL b)
+				(DECL INT b)
 				(SET b (INT.CONST 100))
-				(DECL c)
+				(DECL FLOAT c)
 				(SET c (FLOAT.CONST 0.1))
-				(DECL d)
+				(DECL FLOAT d)
 				(SET d (FLOAT.CONST 0.01))
 				(DROP (LT (GET a) (GET b)))
 				(DROP (GT (GET c) (GET d)))
 				(DROP (LE (GET a) (GET b)))
 				(DROP (GE (GET c) (GET d)))
-				(DECL $0)
+				(DECL BOOL $0)
 				(SET $0 (LT (GET a) (GET d)))
 				(DROP (NOT (GET $0)))
-				(DECL $1)
+				(DECL BOOL $1)
 				(SET $1 (GT (GET b) (GET c)))
 				(DROP (NOT (GET $1)))
 			`.join('\n'));
@@ -273,20 +273,20 @@ describe('ASTNodeOperation', () => {
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
-				(DECL a)
+				(DECL NULL a)
 				(SET a (NULL.CONST null))
-				(DECL b)
+				(DECL BOOL b)
 				(SET b (BOOL.CONST false))
-				(DECL c)
+				(DECL INT c)
 				(SET c (INT.CONST 10))
-				(DECL d)
+				(DECL FLOAT d)
 				(SET d (FLOAT.CONST 0.1))
 				(DROP (ID (GET a) (GET b)))
 				(DROP (EQ (GET c) (GET d)))
-				(DECL $0)
+				(DECL BOOL $0)
 				(SET $0 (ID (GET c) (GET a)))
 				(DROP (NOT (GET $0)))
-				(DECL $1)
+				(DECL BOOL $1)
 				(SET $1 (EQ (GET d) (GET b)))
 				(DROP (NOT (GET $1)))
 			`.join('\n'));
@@ -300,12 +300,12 @@ describe('ASTNodeOperation', () => {
 					a && b;
 					!a && !b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL a)
+					(DECL NULL a)
 					(SET a (NULL.CONST null))
-					(DECL b)
+					(DECL BOOL b)
 					(SET b (BOOL.CONST false))
-					(DECL $0)
-					(DECL $1)
+					(DECL NULL $0)
+					(DECL NULL $1)
 					(SET $1 (GET a))
 					if_false (GET $1), goto "block-0".
 					(SET $0 (GET b))
@@ -314,8 +314,8 @@ describe('ASTNodeOperation', () => {
 					(SET $0 (GET $1))
 					"block-1":
 					(DROP (GET $0))
-					(DECL $2)
-					(DECL $3)
+					(DECL BOOL $2)
+					(DECL BOOL $3)
 					(SET $3 (NOT (GET a)))
 					if_false (GET $3), goto "block-2".
 					(SET $2 (NOT (GET b)))
@@ -333,12 +333,12 @@ describe('ASTNodeOperation', () => {
 					c || d;
 					-c + 1 || 1.0 - d;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL c)
+					(DECL INT c)
 					(SET c (INT.CONST 10))
-					(DECL d)
+					(DECL FLOAT d)
 					(SET d (FLOAT.CONST 0.1))
-					(DECL $0)
-					(DECL $1)
+					(DECL INT $0)
+					(DECL INT $1)
 					(SET $1 (GET c))
 					if_false (GET $1), goto "block-0".
 					(SET $0 (GET $1))
@@ -347,16 +347,16 @@ describe('ASTNodeOperation', () => {
 					(SET $0 (GET d))
 					"block-1":
 					(DROP (GET $0))
-					(DECL $2)
-					(DECL $3)
+					(DECL INT $2)
+					(DECL INT $3)
 					(SET $3 (INT.NEG (GET c)))
-					(DECL $4)
+					(DECL INT $4)
 					(SET $4 (INT.ADD (GET $3) (INT.CONST 1)))
 					if_false (GET $4), goto "block-2".
 					(SET $2 (GET $4))
 					goto "block-3".
 					"block-2":
-					(DECL $5)
+					(DECL FLOAT $5)
 					(SET $5 (FLOAT.NEG (GET d)))
 					(SET $2 (FLOAT.ADD (FLOAT.CONST 1.0) (GET $5)))
 					"block-3":
@@ -369,12 +369,12 @@ describe('ASTNodeOperation', () => {
 					val mut b: bool  = false;
 					a !& b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL a)
+					(DECL NULL a)
 					(SET a (NULL.CONST null))
-					(DECL b)
+					(DECL BOOL b)
 					(SET b (BOOL.CONST false))
-					(DECL $0)
-					(DECL $1)
+					(DECL NULL $0)
+					(DECL NULL $1)
 					(SET $1 (GET a))
 					if_false (GET $1), goto "block-0".
 					(SET $0 (GET b))
@@ -391,12 +391,12 @@ describe('ASTNodeOperation', () => {
 					val mut d: float = 0.1;
 					c !| d;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL c)
+					(DECL INT c)
 					(SET c (INT.CONST 10))
-					(DECL d)
+					(DECL FLOAT d)
 					(SET d (FLOAT.CONST 0.1))
-					(DECL $0)
-					(DECL $1)
+					(DECL INT $0)
+					(DECL INT $1)
 					(SET $1 (GET c))
 					if_false (GET $1), goto "block-0".
 					(SET $0 (GET $1))
@@ -416,13 +416,13 @@ describe('ASTNodeOperation', () => {
 				if x then y else z;
 				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
-				(DECL x)
+				(DECL BOOL x)
 				(SET x (BOOL.CONST false))
-				(DECL y)
+				(DECL FLOAT y)
 				(SET y (FLOAT.CONST 0.5))
-				(DECL z)
+				(DECL FLOAT z)
 				(SET z (FLOAT.CONST 0.2))
-				(DECL $0)
+				(DECL FLOAT $0)
 				if_false (GET x), goto "block-0".
 				(SET $0 (GET y))
 				goto "block-1".
@@ -430,14 +430,14 @@ describe('ASTNodeOperation', () => {
 				(SET $0 (GET z))
 				"block-1":
 				(DROP (GET $0))
-				(DECL $1)
+				(DECL FLOAT $1)
 				if_false (LT (GET y) (GET z)), goto "block-2".
-				(DECL $2)
+				(DECL FLOAT $2)
 				(SET $2 (FLOAT.MUL (GET y) (FLOAT.CONST 2.0)))
 				(SET $1 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
 				goto "block-3".
 				"block-2":
-				(DECL $3)
+				(DECL FLOAT $3)
 				(SET $3 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
 				(SET $1 (FLOAT.ADD (GET $3) (FLOAT.CONST 0.02)))
 				"block-3":

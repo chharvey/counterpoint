@@ -1,8 +1,6 @@
 import * as assert from 'node:assert';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
+import {VALUE} from '../../typer/index.ts';
+import {Type} from './Type.ts';
 import {Value} from './Value.ts';
 
 
@@ -10,21 +8,20 @@ import {Value} from './Value.ts';
 /** A constant primitive value. */
 export class Const extends Value {
 	public constructor(private readonly value: VALUE.Primitive) {
-		super(value.toType());
+		super(( // copied from `AST.DeclarationVariable::writable_inferred_type` v0.5+ and modified slightly
+			value instanceof VALUE.Null    ? Type.NULL :
+			value instanceof VALUE.Boolean ? Type.BOOL :
+			value instanceof VALUE.Symbol  ? Type.SYM :
+			value instanceof VALUE.Integer ? Type.INT :
+			// value instanceof VALUE.Natural ? Type.NAT :
+			value instanceof VALUE.Float   ? Type.FLOAT :
+			value instanceof VALUE.String  ? Type.STR :
+			assert.fail(`Expected ${ value } to be a primitive value.`)
+		));
 	}
 
 	public override toString(): string {
-		const wide_type = ( // copied from `AST.DeclarationVariable::writable_inferred_type`, v0.5+
-			this.value instanceof VALUE.Null    ? TYPE.NULL :
-			this.value instanceof VALUE.Boolean ? TYPE.BOOL :
-			this.value instanceof VALUE.Symbol  ? TYPE.SYM :
-			this.value instanceof VALUE.Integer ? TYPE.INT :
-			// this.value instanceof VALUE.Natural ? TYPE.NAT :
-			this.value instanceof VALUE.Float   ? TYPE.FLOAT :
-			this.value instanceof VALUE.String  ? TYPE.STR :
-			assert.fail(`Expected ${ this.value } to be a primitive value.`)
-		);
-		return `(${ wide_type.toString().toUpperCase() }.CONST ${ this.value })`;
+		return `(${ this.type }.CONST ${ this.value })`;
 	}
 
 	public override asTac(): Const {

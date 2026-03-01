@@ -82,6 +82,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
+		const typ: IR.Type = IR.Type.fromAstType(this.type());
 		/*
 		 * ```
 		 * if ‹v0› then ‹v1› else ‹v2›;
@@ -98,10 +99,9 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		 * return (GET result).
 		 * ```
 		 */
-		const block_else:  string = optimizer.newLabel();
-		const block_endif: string = optimizer.newLabel();
-
-		const result: IrLocal = optimizer.newTempLocal(this.type());
+		const block_else:  string  = optimizer.newLabel();
+		const block_endif: string  = optimizer.newLabel();
+		const result:      IrLocal = optimizer.newTempLocal(typ);
 
 		optimizer.pushInstruction(new IR.GotoIfFalse(this.operand0.lower(optimizer), block_else));
 		optimizer.pushInstruction(new IR.Set(result, this.operand1.lower(optimizer)));

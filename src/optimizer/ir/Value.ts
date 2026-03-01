@@ -1,6 +1,6 @@
-import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
+import type {Type} from './Type.ts';
 import {Instruction} from './Instruction.ts';
 
 
@@ -26,7 +26,7 @@ export abstract class Value extends Instruction {
 	/**
 	 * @param type The type of the expression.
 	 */
-	public constructor(public readonly type: TYPE.Type) {
+	public constructor(public readonly type: Type) {
 		super();
 	}
 
@@ -56,6 +56,6 @@ export abstract class Value extends Instruction {
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
 	public asTac(optimizer: Optimizer): Value {
-		return new Get(optimizer.newTempLocal(this.type, this));
+		return new Get(optimizer.newTempLocal(this));
 	}
 }

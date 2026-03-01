@@ -1,29 +1,32 @@
-import type {TYPE} from '../../typer/index.ts';
+import {
+	TypeName,
+	type Type,
+} from './Type.ts';
 import {Value} from './Value.ts';
 
 
 
-export enum CollectionDynamicName {
-	LIST,
-	DICT,
-	SET,
-	MAP,
-}
+export type CollectionDynamicGetName = (
+	| TypeName.LIST
+	| TypeName.DICT
+	| TypeName.SET
+	| TypeName.MAP
+);
 
 
 
 /** Read an entry of a dynamic collection (List/Dict/Set/Map). */
 export class CollectionDynamicGet extends Value {
 	public constructor(
-		private readonly name:       CollectionDynamicName,
+		private readonly name:       CollectionDynamicGetName,
 		private readonly collection: Value,
 		private readonly accessor:   Value,
-		entry_type: TYPE.Type,
+		entry_type: Type,
 	) {
 		super(entry_type);
 	}
 
 	public override toString(): string {
-		return `(${ CollectionDynamicName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
+		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
 	}
 }

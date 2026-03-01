@@ -1,3 +1,5 @@
+export * from './Type.ts';
+
 export * from './Instruction.ts';
 
 export * from './Value.ts';

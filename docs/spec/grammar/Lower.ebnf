@@ -27,7 +27,7 @@ INT.CONST(VALUE.Integer)  -> Value;
 NAT.CONST(VALUE.Natural)  -> Value;
 FLOAT.CONST(VALUE.Float)  -> Value;
 STR.CONST(VALUE.String)   -> Value;
-GET(SemanticVariable|native-string) -> Value;
+GET(SymbolSchemaVar|native-string) -> Value;
 
 ISNULL([Value]) -> Boolean;
 
@@ -86,8 +86,8 @@ NID([Value Value]) -> Boolean;
 NEQ([Value Value]) -> Boolean;
 
 DROP([Value]);
-DECL(SemanticVariable|native-string);
-SET(SemanticVariable|native-string [Value]);
+DECL(SymbolSchemaVar|native-string);
+SET(SymbolSchemaVar|native-string [Value]);
 
 
 
@@ -113,7 +113,7 @@ Lower(SemanticConstant[type=TYPE.Natural] const) := (NAT.CONST   `Lower(ValueOf(
 Lower(SemanticConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Lower(ValueOf(const)~!)`);
 Lower(SemanticConstant[type=TYPE.String]  const) := (STR.CONST   `Lower(ValueOf(const)~!)`);
 
-Lower(SemanticVariable var) := (GET var);
+Lower(SemanticVariable var) := (GET `GetSymbolSchema(var)`);
 
 // Lower(SemanticTemplate tpl);
 
@@ -219,3 +219,26 @@ Lower(SemanticOperation[operator=COND] op) := [
 	"endif":
 	return (GET $result).
 ];
+
+Lower(SemanticDeclarationVariable:has(SemanticVariable):has(SemanticExpression) decl) := [
+   (DECL `GetSymbolSchema(decl.0)`)
+   (SET `GetSymbolSchema(decl.0)` `Lower(decl.2)`)
+];
+Lower(SemanticDeclarationVariable:has(SemanticVariable) decl) := [
+   (DECL `GetSymbolSchema(decl.0)`)
+   (SET `GetSymbolSchema(decl.0)` (CONST null))
+];
+Lower(SemanticDeclarationVariable decl):has(SemanticVariable) := [
+   (DROP `Lower(decl.1)`)
+];
+
+Lower(SemanticAssignment stmt) := [
+   (SET `GetSymbolSchema(stmt.0)` `Lower(stmt.1)`)
+];
+
+
+
+SymbolSchemaVar GetSymbolSchema(SemanticVariable var) :=
+	1. *Assert:* the validator’s symbol table contains a SymbolSchemaVar `symbol` whose `id` is `var.id`.
+	2. *Return:* `symbol`.
+;
