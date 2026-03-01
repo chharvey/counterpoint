@@ -38,13 +38,13 @@ import {
 
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
-		function setupScript(src: string, _: object): {opt: Optimizer} {
+		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
 			goal.varCheck();
 			goal.typeCheck();
-			goal.lower(opt);
-			return {opt};
+			'lower' in opts && opts.lower && goal.lower(opt);
+			return {goal, opt};
 		}
 
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
@@ -273,7 +273,7 @@ describe('ASTNodeExpression', () => {
 				(DROP (INT.CONST 42))
 			`.join('\n'));
 		});
-		it('AST.StatementReassignment pushes SET instruction.', () => {
+		it('AST.StatementReassignment for variables pushes SET instruction.', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				val mut x: int = 42;
@@ -288,6 +288,43 @@ describe('ASTNodeExpression', () => {
 				(SET x (INT.CONST 43))
 				(SET x (INT.CONST 44))
 				(SET x (INT.CONST -42))
+			`.join('\n'));
+		});
+		it('AST.StatementReassignment for collections pushes IR.CollectionDynamicSet.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut my_list: mut [int]        = [41, 42];
+				val mut my_dict: mut [:int]       = [a= 41, b= 42];
+				val mut my_set:  mut {int}        = {41 + 1, 42 / 2, 43 ^ 3};
+				val mut my_map:  mut {int -> int} = {21 -> 41, 22 -> 42, 23 -> 43};
+
+				val mut accessor: int = 22;
+				my_list.[0 + 1]   = 84;
+				my_dict.[@b]      = 84;
+				my_set.[accessor] = true;
+				my_map.[accessor] = 84;
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL LIST my_list)
+				(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+				(DECL DICT my_dict)
+				(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @b) (INT.CONST 42)))
+				(DECL INT $0)
+				(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+				(DECL INT $1)
+				(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+				(DECL INT $2)
+				(SET $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+				(DECL SET my_set)
+				(SET my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
+				(DECL MAP my_map)
+				(SET my_map (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
+				(DECL INT accessor)
+				(SET accessor (INT.CONST 22))
+				(DECL INT $3)
+				(SET $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
+				(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
+				(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
+				(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
+				(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
 			`.join('\n'));
 		});
 		it('AST.Goal lowers each statement.', () => {

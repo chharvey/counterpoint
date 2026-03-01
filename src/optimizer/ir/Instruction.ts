@@ -6,6 +6,7 @@
  * - Drop
  * - Decl
  * - Set
+ * - CollectionDynamicSet
  * - Label
  * - Goto
  * - GotoIfFalse

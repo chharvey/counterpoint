@@ -2,6 +2,7 @@ import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {
+	type TypeName,
 	type Value,
 	Get,
 	Set,
@@ -9,6 +10,15 @@ import {
 	Goto,
 	GotoIfFalse,
 } from './index.ts';
+
+
+
+export type CollectionDynamicName = (
+	| TypeName.LIST
+	| TypeName.DICT
+	| TypeName.SET
+	| TypeName.MAP
+);
 
 
 
