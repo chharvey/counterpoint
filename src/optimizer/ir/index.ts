@@ -1,9 +1,20 @@
+export * from './utils-public.ts';
+
+export * from './TypeName.ts';
+
 export * from './Instruction.ts';
 
 export * from './Value.ts';
 export * from './Trap.ts';
 export * from './Const.ts';
 export * from './Get.ts';
+export * from './CollectionLinearNew.ts';
+export * from './RecordNew.ts';
+export * from './DictNew.ts';
+export * from './MapNew.ts';
+export * from './TupleGet.ts';
+export * from './RecordGet.ts';
+export * from './CollectionDynamicGet.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
 

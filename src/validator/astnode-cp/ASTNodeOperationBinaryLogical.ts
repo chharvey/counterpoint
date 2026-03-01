@@ -2,7 +2,6 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
-	type IrLocal,
 	type Optimizer,
 	IR,
 	drop_then,
@@ -101,7 +100,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```
 		 * val left = ‹v0›;
-		 * if left then ‹v1› else left;
+		 * if !!left then ‹v1› else left
 		 * ```
 		 * IR Outline:
 		 * ```
@@ -120,7 +119,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		 * `‹v0› || ‹v1›` desugars to:
 		 * ```
 		 * val left = ‹v0›;
-		 * if left then left else ‹v1›;
+		 * if !!left then left else ‹v1›
 		 * ```
 		 * IR Outline:
 		 * ```
@@ -137,27 +136,21 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		 * ```
 		 */
 
-		const block_else:  string = optimizer.newLabel();
-		const block_endif: string = optimizer.newLabel();
-
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
 		// We’re using functions because we want them to be run in the correct order.
-		let branch_then = (_: IrLocal):          IR.Value => this.operand1.lower(optimizer);
-		let branch_else = (left_local: IrLocal): IR.Value => new IR.Get(left_local);
+		let branch_then = (_: IR.Value):          IR.Value => this.operand1.lower(optimizer);
+		let branch_else = (left_value: IR.Value): IR.Value => left_value;
 		if (this.operator === Operator.OR) {
 			[branch_then, branch_else] = [branch_else, branch_then];
 		}
-
-		const result: IrLocal = optimizer.newTempLocal(this.type());
-		const left:   IrLocal = optimizer.newTempLocal(this.operand0.type(), this.operand0.lower(optimizer));
-
-		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Get(left), block_else));
-		optimizer.pushInstruction(new IR.Set(result, branch_then(left)));
-		optimizer.pushInstruction(new IR.Goto(block_endif));
-		optimizer.pushInstruction(new IR.Label(block_else));
-		optimizer.pushInstruction(new IR.Set(result, branch_else(left)));
-		optimizer.pushInstruction(new IR.Label(block_endif));
-		return new IR.Get(result);
+		const left: IR.Value = this.operand0.lower(optimizer).asTac(optimizer);
+		return IR.conditional_expression(
+			optimizer,
+			this.type(),
+			() => new IR.Unop(IR.UnOp.TOBOOL, left, TYPE.BOOL),
+			() => branch_then(left),
+			() => branch_else(left),
+		);
 	}
 
 	@memoizeMethod

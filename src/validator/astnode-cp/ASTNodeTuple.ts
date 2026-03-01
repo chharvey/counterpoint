@@ -5,7 +5,7 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type IR,
+	IR,
 	build_tuple_like,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -65,8 +65,8 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeTuple#lower` not yet supported.');
+	public lower(optimizer: Optimizer): IR.Value {
+		return new IR.CollectionLinearNew(IR.TypeName.TUPLE, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod

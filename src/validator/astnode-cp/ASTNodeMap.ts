@@ -4,7 +4,7 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type IR,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -65,8 +65,8 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeMap#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		return new IR.MapNew(this.children.map((c) => [c.antecedent.lower(optimizer).asTac(optimizer), c.consequent.lower(optimizer).asTac(optimizer)]), this.type());
 	}
 
 	@memoizeMethod

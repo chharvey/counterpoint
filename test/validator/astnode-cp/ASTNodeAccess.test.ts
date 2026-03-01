@@ -8,6 +8,7 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	IR,
 	type Builder,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
@@ -969,6 +970,337 @@ test.suite('ASTNodeAccess', () => {
 
 	test.test.todo('access kind: result access (`a!.‹b›`).', () => {
 		assert.ok('TODO:');
+	});
+
+	test.suite('#lower', () => {
+		test.suite('access kind: normal access (`a.‹b›`).', () => {
+			test.test('tuple access returns an IR.TupleGet.', () => {
+				assert.strictEqual(setupScript(`{
+					(41 + 1, 42 / 2, 43 - 3).1;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL INT $2)
+					(SET $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+					(DECL TUPLE $3)
+					(SET $3 (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+					(DROP (TUPLE.GET 1 (GET $3)))
+				`.join('\n'));
+			});
+			test.test('record access returns an IR.RecordGet.', () => {
+				assert.strictEqual(setupScript(`{
+					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL INT $2)
+					(SET $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+					(DECL RECORD $3)
+					(SET $3 (RECORD.NEW @a @b @c (GET $0) (GET $1) (GET $2)))
+					(DROP (RECORD.GET @b (GET $3)))
+				`.join('\n'));
+			});
+			test.test('List access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					[41 + 1, 42 / 2, 43 - 3].[1];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL INT $2)
+					(SET $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+					(DECL LIST $3)
+					(SET $3 (LIST.NEW (GET $0) (GET $1) (GET $2)))
+					(DROP (LIST.GET (GET $3) (INT.CONST 1)))
+				`.join('\n'));
+			});
+			test.test('Dict access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL INT $2)
+					(SET $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+					(DECL DICT $3)
+					(SET $3 (DICT.NEW (SYM.CONST @a) (GET $0) (SYM.CONST @b) (GET $1) (SYM.CONST @c) (GET $2)))
+					(DROP (DICT.GET (GET $3) (SYM.CONST @b)))
+				`.join('\n'));
+			});
+			test.test('Set access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					{41 + 1, 42 / 2, 43 - 3}.[21];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL INT $2)
+					(SET $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+					(DECL SET $3)
+					(SET $3 (SET.NEW (GET $0) (GET $1) (GET $2)))
+					(DROP (SET.GET (GET $3) (INT.CONST 21)))
+				`.join('\n'));
+			});
+			test.test('Map access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL INT $2)
+					(SET $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+					(DECL MAP $3)
+					(SET $3 (MAP.NEW (INT.CONST 21) (GET $0) (INT.CONST 22) (GET $1) (INT.CONST 23) (GET $2)))
+					(DROP (MAP.GET (GET $3) (INT.CONST 22)))
+				`.join('\n'));
+			});
+			test.test('nested access.', () => {
+				assert.strictEqual(setupScript(`{
+					[("hello", {41, 42, 43})].[0].1.[42];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL SET $0)
+					(SET $0 (SET.NEW (INT.CONST 41) (INT.CONST 42) (INT.CONST 43)))
+					(DECL TUPLE $1)
+					(SET $1 (TUPLE.NEW (STR.CONST "hello") (GET $0)))
+					(DECL LIST $2)
+					(SET $2 (LIST.NEW (GET $1)))
+					(DECL TUPLE $3)
+					(SET $3 (LIST.GET (GET $2) (INT.CONST 0)))
+					(DECL SET $4)
+					(SET $4 (TUPLE.GET 1 (GET $3)))
+					(DROP (SET.GET (GET $4) (INT.CONST 42)))
+				`.join('\n'));
+			});
+			test.test('union access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut tup:   (int, ?: float)     | (int, ?: str)     = (42,);
+					val mut rec:   (a: int, b?: float) | (a: int, c?: str) = (a= 42);
+					val mut list:  [int]               | [float]           = [42];
+					val mut dict:  [:int]              | [:float]          = [a= 42];
+					val mut 'set': {int}               | {float}           = {42};
+					val mut map:   {int -> str}        | {float -> str}    = {42 -> "hello"};
+					tup.0;
+					rec.a;
+					list.[0];
+					dict.[@a];
+					'set'.[42];
+					map.[42];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL TUPLE tup)
+					(SET tup (TUPLE.NEW (INT.CONST 42)))
+					(DECL RECORD rec)
+					(SET rec (RECORD.NEW @a (INT.CONST 42)))
+					(DECL LIST list)
+					(SET list (LIST.NEW (INT.CONST 42)))
+					(DECL DICT dict)
+					(SET dict (DICT.NEW (SYM.CONST @a) (INT.CONST 42)))
+					(DECL SET 'set')
+					(SET 'set' (SET.NEW (INT.CONST 42)))
+					(DECL MAP map)
+					(SET map (MAP.NEW (INT.CONST 42) (STR.CONST "hello")))
+					(DROP (TUPLE.GET 0 (GET tup)))
+					(DROP (RECORD.GET @a (GET rec)))
+					(DROP (LIST.GET (GET list) (INT.CONST 0)))
+					(DROP (DICT.GET (GET dict) (SYM.CONST @a)))
+					(DROP (SET.GET (GET 'set') (INT.CONST 42)))
+					(DROP (MAP.GET (GET map) (INT.CONST 42)))
+				`.join('\n'));
+			});
+		});
+		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
+			function maybe_access_output(
+				block_n:      number,
+				result_n:     number,
+				result_type:  IR.TypeName,
+				base_name:    string,
+				result_value: string | ((set: (value: string) => string) => string),
+			): string[] {
+				return extract_lines`
+					(DECL ${ IR.TypeName[result_type] } $${ result_n })
+					if_false (ISNULL (GET ${ base_name })), goto "block-${ block_n }".
+					(SET $${ result_n } (NULL.CONST null))
+					goto "block-${ block_n + 1 }".
+					"block-${ block_n }":
+					${ typeof result_value === 'string' ? `(SET $${ result_n } ${ result_value })` : result_value((value) => `(SET $${ result_n } ${ value })`) }
+					"block-${ block_n + 1 }":
+					(DROP (GET $${ result_n }))
+				`;
+			}
+			test.test('tuple access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_tuple: (int, int, ?:int) = (41 + 1, 42 / 2);
+					my_tuple?.2;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL TUPLE my_tuple)
+					(SET my_tuple (TUPLE.NEW (GET $0) (GET $1)))
+				`.concat(...maybe_access_output(0, 2, IR.TypeName.ANY, 'my_tuple', '(TUPLE.GET 2 (GET my_tuple))')).join('\n'));
+			});
+			test.test('record access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_record: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
+					my_record?.b;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT $0)
+					(SET $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $1)
+					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL RECORD my_record)
+					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
+				`.concat(...maybe_access_output(0, 2, IR.TypeName.ANY, 'my_record', '(RECORD.GET @b (GET my_record))')).join('\n'));
+			});
+			test.test('List access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: [int] = [41, 42];
+					my_list?.[2];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL LIST my_list)
+					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+				`.concat(...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_list', '(LIST.GET (GET my_list) (INT.CONST 2))')).join('\n'));
+			});
+			test.test('Dict access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_dict: [:int] = [a= 41, c= 42];
+					my_dict?.[@b];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL DICT my_dict)
+					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @c) (INT.CONST 42)))
+				`.concat(...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_dict', '(DICT.GET (GET my_dict) (SYM.CONST @b))')).join('\n'));
+			});
+			test.test('Map access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut accessor: int = 22;
+					{21 -> 41, 22 -> 42, 23 -> 43}?.[accessor];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL INT accessor)
+					(SET accessor (INT.CONST 22))
+					(DECL MAP $0)
+					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
+				`.concat(...maybe_access_output(0, 1, IR.TypeName.ANY, '$0', '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
+			});
+			/* eslint-disable @stylistic/indent */
+			test.test('union access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
+					val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
+					val mut mixed_lst: [int]            | [:int]                       = [42];
+					val mut mixed_dct: [int]            | [:int]                       = [a= 42];
+					val mut mixed_set: {int}            | {int -> str}                 = {42};
+					val mut mixed_map: {int}            | {int -> str}                 = {42 -> "hello"};
+					mixed_tup?.0;    %== "hello"
+					mixed_tup?.a;    %== null
+					mixed_rec?.0;    %== null
+					mixed_rec?.a;    %== 42
+					mixed_lst?.[0];  %== 42
+					mixed_lst?.[@a]; %== null
+					mixed_dct?.[0];  %== null
+					mixed_dct?.[@a]; %== 42
+					mixed_set?.[42]; %== true
+					mixed_map?.[42]; %== "hello"
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL TUPLE mixed_tup)
+					(SET mixed_tup (TUPLE.NEW (STR.CONST "hello") (BOOL.CONST true) (SYM.CONST @world)))
+					(DECL RECORD mixed_rec)
+					(SET mixed_rec (RECORD.NEW @a (INT.CONST 42)))
+					(DECL LIST mixed_lst)
+					(SET mixed_lst (LIST.NEW (INT.CONST 42)))
+					(DECL DICT mixed_dct)
+					(SET mixed_dct (DICT.NEW (SYM.CONST @a) (INT.CONST 42)))
+					(DECL SET mixed_set)
+					(SET mixed_set (SET.NEW (INT.CONST 42)))
+					(DECL MAP mixed_map)
+					(SET mixed_map (MAP.NEW (INT.CONST 42) (STR.CONST "hello")))
+				`.concat(
+					...maybe_access_output(0x00, 0, IR.TypeName.ANY, 'mixed_tup', '(TUPLE.GET 0 (GET mixed_tup))'),
+					...maybe_access_output(0x02, 1, IR.TypeName.ANY, 'mixed_tup', '(NULL.CONST null)'),
+					...maybe_access_output(0x04, 2, IR.TypeName.ANY, 'mixed_rec', '(NULL.CONST null)'),
+					...maybe_access_output(0x06, 3, IR.TypeName.ANY, 'mixed_rec', '(RECORD.GET @a (GET mixed_rec))'),
+					...maybe_access_output(0x08, 4, IR.TypeName.ANY, 'mixed_lst', '(LIST.GET (GET mixed_lst) (INT.CONST 0))'),
+					...maybe_access_output(0x0a, 5, IR.TypeName.ANY, 'mixed_lst', '(LIST.GET (GET mixed_lst) (SYM.CONST @a))'), // FIXME: should be (NULL.CONST null)
+					...maybe_access_output(0x0c, 6, IR.TypeName.ANY, 'mixed_dct', '(DICT.GET (GET mixed_dct) (INT.CONST 0))'),  // FIXME: should be (NULL.CONST null)
+					...maybe_access_output(0x0e, 7, IR.TypeName.ANY, 'mixed_dct', '(DICT.GET (GET mixed_dct) (SYM.CONST @a))'),
+					...maybe_access_output(0x10, 8, IR.TypeName.ANY, 'mixed_set', '(SET.GET (GET mixed_set) (INT.CONST 42))'),
+					...maybe_access_output(0x12, 9, IR.TypeName.ANY, 'mixed_map', '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
+				).join('\n'));
+			});
+			test.test('returns null when base is null.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: [int]        | null = null;
+					val mut my_dict: [:int]       | null = null;
+					val mut my_map:  {int -> int} | null = null;
+					my_list?.[2 * 2 - 3];
+					my_dict?.[@b && @a];
+					my_map?.[5 + 3 * 2];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL NULL my_list)
+					(SET my_list (NULL.CONST null))
+					(DECL NULL my_dict)
+					(SET my_dict (NULL.CONST null))
+					(DECL NULL my_map)
+					(SET my_map (NULL.CONST null))
+				`.concat(
+					...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_list', '(NULL.CONST null)'),
+					...maybe_access_output(2, 1, IR.TypeName.ANY, 'my_dict', '(NULL.CONST null)'),
+					...maybe_access_output(4, 2, IR.TypeName.ANY, 'my_map',  '(NULL.CONST null)'),
+				).join('\n'));
+			});
+			test.test('short-circuits evaluation of dynamic accessor when base is non-null.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: [int]        | null = [42];
+					val mut my_dict: [:int]       | null = [a= 42];
+					val mut my_map:  {int -> int} | null = {42 -> 11};
+					my_list?.[2 * 2 - 3];
+					my_dict?.[@b && @a];
+					my_map?.[5 + 3 * 2];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL LIST my_list)
+					(SET my_list (LIST.NEW (INT.CONST 42)))
+					(DECL DICT my_dict)
+					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 42)))
+					(DECL MAP my_map)
+					(SET my_map (MAP.NEW (INT.CONST 42) (INT.CONST 11)))
+				`.concat(
+					...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_list', (set) => `
+						(DECL INT $1)
+						(SET $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
+						(DECL INT $2)
+						(SET $2 (INT.SUB (GET $1) (INT.CONST 3)))
+						${ set('(LIST.GET (GET my_list) (GET $2))') }
+					`),
+					...maybe_access_output(2, 3, IR.TypeName.ANY, 'my_dict', (set) => `
+						(DECL SYM $4)
+						if_false (TOBOOL (SYM.CONST @b)), goto "block-4".
+						(SET $4 (SYM.CONST @a))
+						goto "block-5".
+						"block-4":
+						(SET $4 (SYM.CONST @b))
+						"block-5":
+						${ set('(DICT.GET (GET my_dict) (GET $4))') }
+					`),
+					...maybe_access_output(6, 5, IR.TypeName.ANY, 'my_map', (set) => `
+						(DECL INT $6)
+						(SET $6 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL INT $7)
+						(SET $7 (INT.ADD (INT.CONST 5) (GET $6)))
+						${ set('(MAP.GET (GET my_map) (GET $7))') }
+					`),
+				).join('\n'));
+			});
+			/* eslint-enable @stylistic/indent */
+		});
 	});
 
 	test.suite('#build', () => {

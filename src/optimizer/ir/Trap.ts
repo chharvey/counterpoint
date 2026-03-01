@@ -1,15 +1,20 @@
 import {TYPE} from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 
 
 /** Immediately halt the runtime program. */
 export class Trap extends Value {
-	public override get type(): TYPE.Type {
-		return TYPE.NOTHING;
-	};
+	public constructor() {
+		super(TYPE.NOTHING);
+	}
 
 	public override toString(): string {
-		return '(TRAP)';
+		return `(${ TypeName[TypeName.TRAP] })`;
+	}
+
+	public override asTac(): Trap {
+		return this;
 	}
 }

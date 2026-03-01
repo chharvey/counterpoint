@@ -5,7 +5,7 @@ import {
 	VALUE,
 	TYPE,
 	type Optimizer,
-	type IR,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -94,8 +94,50 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeAccess#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ:           TYPE.Type   = this.type();
+		const base_value:    IR.Value    = this.base.lower(optimizer).asTac(optimizer);
+		const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
+
+		const non_nullish_base = (): IR.Value => {
+			switch (true) {
+				case this.accessor instanceof ASTNodeIndex: {
+					if (base_typename === IR.TypeName.TUPLE) {
+						return new IR.TupleGet(base_value, this.accessor.index, typ);
+					}
+					break;
+				}
+				case this.accessor instanceof ASTNodeKey: {
+					if (base_typename === IR.TypeName.RECORD) {
+						return new IR.RecordGet(base_value, this.accessor, typ);
+					}
+					break;
+				}
+				default: {
+					assert_instanceof(this.accessor, ASTNodeExpression);
+					if ([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename)) {
+						return new IR.CollectionDynamicGet(
+							base_typename as IR.CollectionDynamicGetName,
+							base_value,
+							this.accessor.lower(optimizer).asTac(optimizer),
+							typ,
+						);
+					}
+				}
+			}
+			return new IR.Const(VALUE.NULL);
+		};
+
+		if (this.kind === Operator.DOT_MAY) {
+			return IR.conditional_expression(
+				optimizer,
+				typ,
+				() => new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL),
+				() => new IR.Const(VALUE.NULL),
+				non_nullish_base,
+			);
+		}
+		return non_nullish_base();
 	}
 
 	@memoizeMethod
