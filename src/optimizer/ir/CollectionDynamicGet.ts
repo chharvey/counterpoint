@@ -1,4 +1,7 @@
-import {TypeName} from './Type.ts';
+import {
+	TypeName,
+	type Type,
+} from './Type.ts';
 import {Value} from './Value.ts';
 
 
@@ -9,7 +12,7 @@ export class CollectionDynamicGet extends Value {
 		private readonly name:       TypeName.LIST | TypeName.DICT | TypeName.SET | TypeName.MAP,
 		private readonly collection: Value,
 		private readonly accessor:   Value,
-		entry_type: TypeName,
+		entry_type: Type,
 	) {
 		super(entry_type);
 	}

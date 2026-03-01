@@ -63,7 +63,7 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	public lower(optimizer: Optimizer): IR.Value {
-		return new IR.CollectionLinearNew(IR.TypeName.TUPLE, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), IR.TypeName.TUPLE);
+		return new IR.CollectionLinearNew(IR.TypeName.TUPLE, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), IR.Type.TUPLE);
 	}
 
 	@memoizeMethod

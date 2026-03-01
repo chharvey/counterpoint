@@ -1,4 +1,7 @@
-import {TypeName} from './Type.ts';
+import {
+	TypeName,
+	type Type,
+} from './Type.ts';
 import {Value} from './Value.ts';
 
 
@@ -8,7 +11,7 @@ export class TupleGet extends Value {
 	public constructor(
 		private readonly tuple:    Value,
 		private readonly accessor: bigint,
-		entry_type: TypeName,
+		entry_type: Type,
 	) {
 		super(entry_type);
 	}

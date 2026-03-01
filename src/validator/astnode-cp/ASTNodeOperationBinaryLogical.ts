@@ -99,7 +99,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: IR.TypeName = IR.Type.fromAstType(this.type());
+		const typ: IR.Type = IR.Type.fromAstType(this.type());
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```

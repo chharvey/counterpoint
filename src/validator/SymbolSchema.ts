@@ -49,7 +49,7 @@ export class SymbolSchemaVar extends SymbolSchema {
 	public type: TYPE.Type = TYPE.UNKNOWN;
 
 	/** The variable’s type as represented in IR. */
-	public irType: IR.TypeName = IR.TypeName.TRAP;
+	public irType: IR.Type = IR.Type.TRAP;
 
 	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
 	public value: VALUE.Value | null = null;

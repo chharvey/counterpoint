@@ -75,7 +75,7 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		return new IR.DictNew(this.children.map((c) => [c.key, c.val.lower(optimizer).asTac(optimizer)]), IR.TypeName.DICT);
+		return new IR.DictNew(this.children.map((c) => [c.key, c.val.lower(optimizer).asTac(optimizer)]), IR.Type.DICT);
 	}
 
 	@memoizeMethod

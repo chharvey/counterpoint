@@ -1,4 +1,7 @@
-import {TypeName} from './Type.ts';
+import {
+	TypeName,
+	type Type,
+} from './Type.ts';
 import {Value} from './Value.ts';
 
 
@@ -7,7 +10,7 @@ import {Value} from './Value.ts';
 export class MapNew extends Value {
 	public constructor(
 		private readonly cases: readonly (readonly [Value, Value])[],
-		typ: TypeName,
+		typ: Type,
 	) {
 		super(typ);
 	}

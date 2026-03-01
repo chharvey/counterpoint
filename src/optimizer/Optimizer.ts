@@ -18,10 +18,10 @@ export class Optimizer {
 		return [...this.#instructions];
 	}
 
-	public newTempLocal(type_or_value: IR.TypeName | IR.Value): Local {
+	public newTempLocal(type_or_value: IR.Type | IR.Value): Local {
 		const local: Local = {
 			name: `$${ this.#tempLocalCounter++ }`,
-			type: type_or_value instanceof IR.Value ? type_or_value.type : type_or_value,
+			type: type_or_value instanceof IR.Type ? type_or_value : type_or_value.type,
 		};
 		this.pushInstruction(new IR.Decl(local, local.type));
 		if (type_or_value instanceof IR.Value) {

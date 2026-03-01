@@ -1,6 +1,6 @@
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {Local} from '../utils-public.ts';
-import {TypeName} from './Type.ts';
+import type {Type} from './Type.ts';
 import {Instruction} from './Instruction.ts';
 
 
@@ -9,12 +9,12 @@ import {Instruction} from './Instruction.ts';
 export class Decl extends Instruction {
 	public constructor(
 		private readonly target: SymbolSchemaVar | Local,
-		private readonly type:   TypeName,
+		private readonly type:   Type,
 	) {
 		super();
 	}
 
 	public override toString(): string {
-		return `(DECL ${ TypeName[this.type] } ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name })`;
+		return `(DECL ${ this.type } ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name })`;
 	}
 }

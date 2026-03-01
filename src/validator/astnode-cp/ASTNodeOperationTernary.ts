@@ -82,7 +82,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: IR.TypeName = IR.Type.fromAstType(this.type());
+		const typ: IR.Type = IR.Type.fromAstType(this.type());
 		/*
 		 * ```
 		 * if ‹v0› then ‹v1› else ‹v2›;
