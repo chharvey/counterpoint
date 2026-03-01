@@ -63,7 +63,7 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		return new IR.MapNew(this.children.map((c) => [c.antecedent.lower(optimizer).asTac(optimizer), c.consequent.lower(optimizer).asTac(optimizer)]), IR.Type.MAP);
+		return new IR.MapNew(this.children.map((c) => [c.antecedent.lower(optimizer).asTac(optimizer), c.consequent.lower(optimizer).asTac(optimizer)]), this.type());
 	}
 
 	@memoizeMethod

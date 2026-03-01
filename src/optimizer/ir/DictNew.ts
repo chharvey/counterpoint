@@ -1,9 +1,9 @@
 import type {AST} from '../../validator/index.ts';
-import {VALUE} from '../../typer/index.ts';
 import {
-	TypeName,
-	type Type,
-} from './Type.ts';
+	VALUE,
+	type TYPE,
+} from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 import {Const} from './Const.ts';
 
@@ -13,7 +13,7 @@ import {Const} from './Const.ts';
 export class DictNew extends Value {
 	private readonly props: readonly (readonly [Const, Value])[];
 
-	public constructor(props: readonly (readonly [AST.ASTNodeKey, Value])[], typ: Type) {
+	public constructor(props: readonly (readonly [AST.ASTNodeKey, Value])[], typ: TYPE.Type) {
 		super(typ);
 		this.props = props.map(([key, value]) => [new Const(new VALUE.Symbol(key.id, key.source)), value]);
 	}

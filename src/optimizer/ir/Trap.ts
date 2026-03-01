@@ -1,7 +1,5 @@
-import {
-	TypeName,
-	Type,
-} from './Type.ts';
+import {TYPE} from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 
@@ -9,7 +7,7 @@ import {Value} from './Value.ts';
 /** Immediately halt the runtime program. */
 export class Trap extends Value {
 	public constructor() {
-		super(Type.TRAP);
+		super(TYPE.UNKNOWN);
 	}
 
 	public override toString(): string {

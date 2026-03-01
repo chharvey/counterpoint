@@ -1,7 +1,5 @@
-import {
-	TypeName,
-	type Type,
-} from './Type.ts';
+import type {TYPE} from '../../typer/index.ts';
+import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
 
@@ -11,7 +9,7 @@ export class CollectionLinearNew extends Value {
 	public constructor(
 		private readonly name:  TypeName.TUPLE | TypeName.LIST | TypeName.SET,
 		private readonly items: readonly Value[],
-		typ: Type,
+		typ: TYPE.Type,
 	) {
 		super(typ);
 	}

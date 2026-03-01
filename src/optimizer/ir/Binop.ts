@@ -1,4 +1,4 @@
-import type {Type} from './Type.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
 
@@ -44,7 +44,7 @@ export class Binop extends Value {
 		private readonly operator: BinOp,
 		private readonly operand0: Value,
 		private readonly operand1: Value,
-		typ: Type,
+		typ: TYPE.Type,
 	) {
 		super(typ);
 	}

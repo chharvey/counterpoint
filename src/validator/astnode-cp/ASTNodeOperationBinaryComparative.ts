@@ -76,7 +76,6 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ: IR.Type = IR.Type.fromAstType(this.type());
 		return new IR.Binop(new Map<Operator, IR.BinOp>([
 			[Operator.LT,  IR.BinOp.LT],
 			[Operator.GT,  IR.BinOp.GT],
@@ -84,7 +83,7 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GE,  IR.BinOp.GE],
 			[Operator.NLT, IR.BinOp.NLT],
 			[Operator.NGT, IR.BinOp.NGT],
-		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), typ);
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
 	}
 
 	@memoizeMethod

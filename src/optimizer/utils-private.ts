@@ -1,8 +1,8 @@
-import type {IR} from './index.ts';
+import type {TYPE} from '../typer/index.ts';
 
 
 
 export type Local = {
 	readonly name: string,
-	readonly type: IR.Type,
+	readonly type: TYPE.Type,
 };

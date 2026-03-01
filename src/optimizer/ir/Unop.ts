@@ -1,4 +1,4 @@
-import type {Type} from './Type.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
 
@@ -26,7 +26,7 @@ export class Unop extends Value {
 	public constructor(
 		private readonly operator: UnOp,
 		private readonly operand:  Value,
-		typ: Type,
+		typ: TYPE.Type,
 	) {
 		super(typ);
 	}
