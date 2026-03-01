@@ -1139,11 +1139,11 @@ describe('ASTNodeAccess', () => {
 		});
 		describe('access kind: maybe access (`a?.‹b›`).', () => {
 			function maybe_access_output(
-				block_n:            number,
-				result_n:           number,
-				result_type:        IR.Type,
-				base_name:          string,
-				non_nullish_result: string,
+				block_n:      number,
+				result_n:     number,
+				result_type:  IR.Type,
+				base_name:    string,
+				result_value: string | ((set: (value: string) => string) => string),
 			): string[] {
 				return extract_lines`
 					(DECL ${ result_type } $${ result_n })
@@ -1151,7 +1151,7 @@ describe('ASTNodeAccess', () => {
 					(SET $${ result_n } (NULL.CONST null))
 					goto "block-${ block_n + 1 }".
 					"block-${ block_n }":
-					(SET $${ result_n } ${ non_nullish_result })
+					${ typeof result_value === 'string' ? `(SET $${ result_n } ${ result_value })` : result_value((value) => `(SET $${ result_n } ${ value })`) }
 					"block-${ block_n + 1 }":
 					(DROP (GET $${ result_n }))
 				`;
@@ -1211,8 +1211,8 @@ describe('ASTNodeAccess', () => {
 					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
 				`.concat(...maybe_access_output(0, 1, IR.Type.ANY, '$0', '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
 			});
+			/* eslint-disable @stylistic/indent */
 			it('union access.', () => {
-				/* eslint-disable @stylistic/indent */
 				assert.strictEqual(setupScript(`{
 					val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
 					val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
@@ -1255,8 +1255,75 @@ describe('ASTNodeAccess', () => {
 					...maybe_access_output(0x10, 8, IR.Type.ANY, 'mixed_set', '(SET.GET (GET mixed_set) (INT.CONST 42))'),
 					...maybe_access_output(0x12, 9, IR.Type.ANY, 'mixed_map', '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
 				).join('\n'));
-				/* eslint-enable @stylistic/indent */
 			});
+			it('returns null when base is null.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: [int]        | null = null;
+					val mut my_dict: [:int]       | null = null;
+					val mut my_map:  {int -> int} | null = null;
+					my_list?.[2 * 2 - 3];
+					my_dict?.[@b && @a];
+					my_map?.[5 + 3 * 2];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL NULL my_list)
+					(SET my_list (NULL.CONST null))
+					(DECL NULL my_dict)
+					(SET my_dict (NULL.CONST null))
+					(DECL NULL my_map)
+					(SET my_map (NULL.CONST null))
+ 				`.concat(
+					...maybe_access_output(0, 0, IR.Type.ANY, 'my_list', '(NULL.CONST null)'),
+					...maybe_access_output(2, 1, IR.Type.ANY, 'my_dict', '(NULL.CONST null)'),
+					...maybe_access_output(4, 2, IR.Type.ANY, 'my_map',  '(NULL.CONST null)'),
+				).join('\n'));
+			});
+			it('short-circuits evaluation of dynamic accessor when base is non-null.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: [int]        | null = [42];
+					val mut my_dict: [:int]       | null = [a= 42];
+					val mut my_map:  {int -> int} | null = {42 -> 11};
+					my_list?.[2 * 2 - 3];
+					my_dict?.[@b && @a];
+					my_map?.[5 + 3 * 2];
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL LIST my_list)
+					(SET my_list (LIST.NEW (INT.CONST 42)))
+					(DECL DICT my_dict)
+					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 42)))
+					(DECL MAP my_map)
+					(SET my_map (MAP.NEW (INT.CONST 42) (INT.CONST 11)))
+ 				`.concat(
+					...maybe_access_output(0, 0, IR.Type.ANY, 'my_list', (set) => `
+						(DECL INT $1)
+						(SET $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
+						(DECL INT $2)
+						(SET $2 (INT.NEG (INT.CONST 3)))
+						(DECL INT $3)
+						(SET $3 (INT.ADD (GET $1) (GET $2)))
+						${ set('(LIST.GET (GET my_list) (GET $3))') }
+					`),
+					...maybe_access_output(2, 4, IR.Type.ANY, 'my_dict', (set) => `
+						(DECL SYM $5)
+						(DECL SYM $6)
+						(SET $6 (SYM.CONST @b))
+						if_false (GET $6), goto "block-4".
+						(SET $5 (SYM.CONST @a))
+						goto "block-5".
+						"block-4":
+						(SET $5 (GET $6))
+						"block-5":
+						${ set('(DICT.GET (GET my_dict) (GET $5))') }
+					`),
+					...maybe_access_output(6, 7, IR.Type.ANY, 'my_map', (set) => `
+						(DECL INT $8)
+						(SET $8 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL INT $9)
+						(SET $9 (INT.ADD (INT.CONST 5) (GET $8)))
+						${ set('(MAP.GET (GET my_map) (GET $9))') }
+					`),
+				).join('\n'));
+			});
+			/* eslint-enable @stylistic/indent */
 		});
 	});
 

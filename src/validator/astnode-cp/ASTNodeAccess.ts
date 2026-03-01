@@ -112,9 +112,13 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				}
 				default: {
 					assert_instanceof(this.accessor, ASTNodeExpression);
-					const accessor_value: IR.Value = this.accessor.lower(optimizer);
 					if ([IR.Type.LIST, IR.Type.DICT, IR.Type.SET, IR.Type.MAP].includes(base_value.type)) {
-						return new IR.CollectionDynamicGet(base_value.type.name as IR.CollectionDynamicGetName, base_value, accessor_value, typ);
+						return new IR.CollectionDynamicGet(
+							base_value.type.name as IR.CollectionDynamicGetName,
+							base_value,
+							this.accessor.lower(optimizer).asTac(optimizer),
+							typ,
+						);
 					}
 				}
 			}
