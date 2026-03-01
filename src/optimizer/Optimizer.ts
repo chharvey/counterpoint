@@ -1,5 +1,5 @@
 import {IR} from './index.ts';
-import type {Local} from './utils-public.ts';
+import type {Local} from './utils-private.ts';
 
 
 

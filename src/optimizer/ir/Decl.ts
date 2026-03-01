@@ -1,5 +1,5 @@
 import {SymbolSchemaVar} from '../../validator/index.ts';
-import type {Local} from '../utils-public.ts';
+import type {Local} from '../utils-private.ts';
 import type {Type} from './Type.ts';
 import {Instruction} from './Instruction.ts';
 

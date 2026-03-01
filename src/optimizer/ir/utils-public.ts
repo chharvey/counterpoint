@@ -1,4 +1,4 @@
-import type {Local} from '../utils-public.ts';
+import type {Local} from '../utils-private.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {
 	type Type,
