@@ -8,7 +8,6 @@ import {
 	VALUE,
 	TYPE,
 	Optimizer,
-	IR,
 	type Builder,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
@@ -1140,20 +1139,31 @@ describe('ASTNodeAccess', () => {
 		describe('access kind: maybe access (`a?.‹b›`).', () => {
 			function maybe_access_output(
 				block_n:      number,
-				result_n:     number,
-				result_type:  IR.TypeName,
 				base_name:    string,
+				result_ns:    [number, number] | [number],
 				result_value: string | ((set: (value: string) => string) => string),
 			): string[] {
+				const block_then:       string = `block-${ block_n }`;
+				const block_else:       string = `block-${ block_n + 1 }`;
+				const block_endif:      string = `block-${ block_n + 2 }`;
+				const result_then_name: string = `$${ result_ns[0] }`;
+				const result_else_name: string = `$${ result_ns[1] ?? result_ns[0] + 1 }`;
 				return extract_lines`
-					(DECL ${ IR.TypeName[result_type] } $${ result_n })
-					if_false (ISNULL (GET ${ base_name })), goto "block-${ block_n }".
-					(SET $${ result_n } (NULL.CONST null))
-					goto "block-${ block_n + 1 }".
-					"block-${ block_n }":
-					${ typeof result_value === 'string' ? `(SET $${ result_n } ${ result_value })` : result_value((value) => `(SET $${ result_n } ${ value })`) }
-					"block-${ block_n + 1 }":
-					(DROP (GET $${ result_n }))
+					if_false (ISNULL (GET ${ base_name })), goto "${ block_else }".
+					"${ block_then }":
+					(DECL NULL ${ result_then_name })
+					(SET ${ result_then_name } (NULL.CONST null))
+					goto "${ block_endif }".
+					"${ block_else }":
+					${ typeof result_value === 'string' ? `
+						(DECL ${ result_value === '(NULL.CONST null)' ? 'NULL' : 'ANY' } ${ result_else_name })
+						(SET ${ result_else_name } ${ result_value })
+					` : result_value((value) => `
+						(DECL ANY ${ result_else_name })
+						(SET ${ result_else_name } ${ value })
+					`) }
+					"${ block_endif }":
+					(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
 				`;
 			}
 			it('tuple access.', () => {
@@ -1167,7 +1177,7 @@ describe('ASTNodeAccess', () => {
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL TUPLE my_tuple)
 					(SET my_tuple (TUPLE.NEW (GET $0) (GET $1)))
-				`.concat(...maybe_access_output(0, 2, IR.TypeName.ANY, 'my_tuple', '(TUPLE.GET 2 (GET my_tuple))')).join('\n'));
+				`.concat(...maybe_access_output(0, 'my_tuple', [2], '(TUPLE.GET 2 (GET my_tuple))')).join('\n'));
 			});
 			it('record access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1180,7 +1190,7 @@ describe('ASTNodeAccess', () => {
 					(SET $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 					(DECL RECORD my_record)
 					(SET my_record (RECORD.NEW @a @c (GET $0) (GET $1)))
-				`.concat(...maybe_access_output(0, 2, IR.TypeName.ANY, 'my_record', '(RECORD.GET @b (GET my_record))')).join('\n'));
+				`.concat(...maybe_access_output(0, 'my_record', [2], '(RECORD.GET @b (GET my_record))')).join('\n'));
 			});
 			it('List access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1189,7 +1199,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL LIST my_list)
 					(SET my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-				`.concat(...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_list', '(LIST.GET (GET my_list) (INT.CONST 2))')).join('\n'));
+				`.concat(...maybe_access_output(0, 'my_list', [0], '(LIST.GET (GET my_list) (INT.CONST 2))')).join('\n'));
 			});
 			it('Dict access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1198,7 +1208,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL DICT my_dict)
 					(SET my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @c) (INT.CONST 42)))
-				`.concat(...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_dict', '(DICT.GET (GET my_dict) (SYM.CONST @b))')).join('\n'));
+				`.concat(...maybe_access_output(0, 'my_dict', [0], '(DICT.GET (GET my_dict) (SYM.CONST @b))')).join('\n'));
 			});
 			it('Map access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1209,7 +1219,7 @@ describe('ASTNodeAccess', () => {
 					(SET accessor (INT.CONST 22))
 					(DECL MAP $0)
 					(SET $0 (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
-				`.concat(...maybe_access_output(0, 1, IR.TypeName.ANY, '$0', '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
+				`.concat(...maybe_access_output(0, '$0', [1], '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
 			});
 			/* eslint-disable @stylistic/indent */
 			it('union access.', () => {
@@ -1244,16 +1254,16 @@ describe('ASTNodeAccess', () => {
 					(DECL MAP mixed_map)
 					(SET mixed_map (MAP.NEW (INT.CONST 42) (STR.CONST "hello")))
 				`.concat(
-					...maybe_access_output(0x00, 0, IR.TypeName.ANY, 'mixed_tup', '(TUPLE.GET 0 (GET mixed_tup))'),
-					...maybe_access_output(0x02, 1, IR.TypeName.ANY, 'mixed_tup', '(NULL.CONST null)'),
-					...maybe_access_output(0x04, 2, IR.TypeName.ANY, 'mixed_rec', '(NULL.CONST null)'),
-					...maybe_access_output(0x06, 3, IR.TypeName.ANY, 'mixed_rec', '(RECORD.GET @a (GET mixed_rec))'),
-					...maybe_access_output(0x08, 4, IR.TypeName.ANY, 'mixed_lst', '(LIST.GET (GET mixed_lst) (INT.CONST 0))'),
-					...maybe_access_output(0x0a, 5, IR.TypeName.ANY, 'mixed_lst', '(LIST.GET (GET mixed_lst) (SYM.CONST @a))'), // FIXME: should be (NULL.CONST null)
-					...maybe_access_output(0x0c, 6, IR.TypeName.ANY, 'mixed_dct', '(DICT.GET (GET mixed_dct) (INT.CONST 0))'),  // FIXME: should be (NULL.CONST null)
-					...maybe_access_output(0x0e, 7, IR.TypeName.ANY, 'mixed_dct', '(DICT.GET (GET mixed_dct) (SYM.CONST @a))'),
-					...maybe_access_output(0x10, 8, IR.TypeName.ANY, 'mixed_set', '(SET.GET (GET mixed_set) (INT.CONST 42))'),
-					...maybe_access_output(0x12, 9, IR.TypeName.ANY, 'mixed_map', '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
+					...maybe_access_output(0x00, 'mixed_tup', [0x00], '(TUPLE.GET 0 (GET mixed_tup))'),
+					...maybe_access_output(0x03, 'mixed_tup', [0x02], '(NULL.CONST null)'),
+					...maybe_access_output(0x06, 'mixed_rec', [0x04], '(NULL.CONST null)'),
+					...maybe_access_output(0x09, 'mixed_rec', [0x06], '(RECORD.GET @a (GET mixed_rec))'),
+					...maybe_access_output(0x0c, 'mixed_lst', [0x08], '(LIST.GET (GET mixed_lst) (INT.CONST 0))'),
+					...maybe_access_output(0x0f, 'mixed_lst', [0x0a], '(LIST.GET (GET mixed_lst) (SYM.CONST @a))'), // FIXME: should be (NULL.CONST null)
+					...maybe_access_output(0x12, 'mixed_dct', [0x0c], '(DICT.GET (GET mixed_dct) (INT.CONST 0))'),  // FIXME: should be (NULL.CONST null)
+					...maybe_access_output(0x15, 'mixed_dct', [0x0e], '(DICT.GET (GET mixed_dct) (SYM.CONST @a))'),
+					...maybe_access_output(0x18, 'mixed_set', [0x10], '(SET.GET (GET mixed_set) (INT.CONST 42))'),
+					...maybe_access_output(0x1b, 'mixed_map', [0x12], '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
 				).join('\n'));
 			});
 			it('returns null when base is null.', () => {
@@ -1272,9 +1282,9 @@ describe('ASTNodeAccess', () => {
 					(DECL NULL my_map)
 					(SET my_map (NULL.CONST null))
 				`.concat(
-					...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_list', '(NULL.CONST null)'),
-					...maybe_access_output(2, 1, IR.TypeName.ANY, 'my_dict', '(NULL.CONST null)'),
-					...maybe_access_output(4, 2, IR.TypeName.ANY, 'my_map',  '(NULL.CONST null)'),
+					...maybe_access_output(0, 'my_list', [0], '(NULL.CONST null)'),
+					...maybe_access_output(3, 'my_dict', [2], '(NULL.CONST null)'),
+					...maybe_access_output(6, 'my_map',  [4], '(NULL.CONST null)'),
 				).join('\n'));
 			});
 			it('short-circuits evaluation of dynamic accessor when base is non-null.', () => {
@@ -1293,7 +1303,7 @@ describe('ASTNodeAccess', () => {
 					(DECL MAP my_map)
 					(SET my_map (MAP.NEW (INT.CONST 42) (INT.CONST 11)))
 				`.concat(
-					...maybe_access_output(0, 0, IR.TypeName.ANY, 'my_list', (set) => `
+					...maybe_access_output(0, 'my_list', [0, 4], (set) => `
 						(DECL INT $1)
 						(SET $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
 						(DECL INT $2)
@@ -1302,22 +1312,26 @@ describe('ASTNodeAccess', () => {
 						(SET $3 (INT.ADD (GET $1) (GET $2)))
 						${ set('(LIST.GET (GET my_list) (GET $3))') }
 					`),
-					...maybe_access_output(2, 4, IR.TypeName.ANY, 'my_dict', (set) => `
-						(DECL SYM $5)
-						if_false (TOBOOL (SYM.CONST @b)), goto "block-4".
-						(SET $5 (SYM.CONST @a))
-						goto "block-5".
-						"block-4":
-						(SET $5 (SYM.CONST @b))
-						"block-5":
-						${ set('(DICT.GET (GET my_dict) (GET $5))') }
+					...maybe_access_output(3, 'my_dict', [5, 9], (set) => `
+						if_false (TOBOOL (SYM.CONST @b)), goto "block-7".
+						"block-6":
+						(DECL SYM $6)
+						(SET $6 (SYM.CONST @a))
+						goto "block-8".
+						"block-7":
+						(DECL SYM $7)
+						(SET $7 (SYM.CONST @b))
+						"block-8":
+						(DECL ANY $8)
+						(SET $8 (PHI "block-6"->(GET $6) "block-7"->(GET $7)))
+						${ set('(DICT.GET (GET my_dict) (GET $8))') }
 					`),
-					...maybe_access_output(6, 6, IR.TypeName.ANY, 'my_map', (set) => `
-						(DECL INT $7)
-						(SET $7 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
-						(DECL INT $8)
-						(SET $8 (INT.ADD (INT.CONST 5) (GET $7)))
-						${ set('(MAP.GET (GET my_map) (GET $8))') }
+					...maybe_access_output(9, 'my_map', [10, 13], (set) => `
+						(DECL INT $11)
+						(SET $11 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL INT $12)
+						(SET $12 (INT.ADD (INT.CONST 5) (GET $11)))
+						${ set('(MAP.GET (GET my_map) (GET $12))') }
 					`),
 				).join('\n'));
 			});

@@ -85,6 +85,8 @@ EQ ([Value Value]) -> Boolean;
 NID([Value Value]) -> Boolean;
 NEQ([Value Value]) -> Boolean;
 
+PHI(‹label› -> Value, ‹label› -> Value) -> Value;
+
 DROP([Value]);
 DECL(SymbolSchemaVar|native-string);
 SET(SymbolSchemaVar|native-string [Value]);
@@ -188,40 +190,46 @@ Lower(SemanticOperation[operator=NEQ] op) := (NEQ [`op.0` `op.1`]);
 
 
 Lower(SemanticOperation[operator=AND] op) := [
-	(DECL $result)
 	(DECL $left)
 	(SET $left `Lower(op.0)`)
 	if_false (GET $left), goto "else".
-	(SET $result `Lower(op.1)`)
+	"then":
+	(DECL $result_then)
+	(SET $result_then `Lower(op.1)`)
 	goto "endif".
 	"else":
-	(SET $result (GET $left))
+	(DECL $result_else)
+	(SET $result_else (GET $left))
 	"endif":
-	return (GET $result).
+	return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
 ];
 
 Lower(SemanticOperation[operator=OR] op) := [
-	(DECL $result)
 	(DECL $left)
 	(SET $left `Lower(op.0)`)
 	if_false (GET $left), goto "else".
-	(SET $result (GET $left))
+	"then":
+	(DECL $result_then)
+	(SET $result_then (GET $left))
 	goto "endif".
 	"else":
-	(SET $result `Lower(op.1)`)
+	(DECL $result_else)
+	(SET $result_else `Lower(op.1)`)
 	"endif":
-	return (GET $result).
+	return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
 ];
 
 Lower(SemanticOperation[operator=COND] op) := [
-	(DECL $result)
 	if_false `Lower(op.0)`, goto "else".
-	(SET $result `Lower(op.1)`)
+	"then":
+	(DECL $result_then)
+	(SET $result_then `Lower(op.1)`)
 	goto "endif".
 	"else":
-	(SET $result `Lower(op.2)`)
+	(DECL $result_else)
+	(SET $result_else `Lower(op.2)`)
 	"endif":
-	return (GET $result).
+	return (PHI "then"->(GET $result_then) "then"->(GET $result_else)).
 ];
 
 Lower(SemanticDeclarationType decl) := [];

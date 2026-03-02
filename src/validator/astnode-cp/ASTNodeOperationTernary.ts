@@ -81,25 +81,8 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		/*
-		 * ```
-		 * if ‹v0› then ‹v1› else ‹v2›;
-		 * ```
-		 * IR Outline:
-		 * ```
-		 * (DECL result)
-		 * if_false (GET ‹v0›), goto "else".
-		 * (SET result ‹v1›) ;; evaluate consequent and set to result
-		 * goto "endif".
-		 * "else":
-		 * (SET result ‹v2›) ;; evaluate alternative and set to result
-		 * "endif":
-		 * return (GET result).
-		 * ```
-		 */
 		return IR.conditional_expression(
 			optimizer,
-			this.type(),
 			() => this.operand0.lower(optimizer),
 			() => this.operand1.lower(optimizer),
 			() => this.operand2.lower(optimizer),

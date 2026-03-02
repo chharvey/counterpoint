@@ -304,24 +304,28 @@ describe('ASTNodeOperation', () => {
 					(SET a (NULL.CONST null))
 					(DECL BOOL b)
 					(SET b (BOOL.CONST false))
-					(DECL NULL $0)
-					if_false (TOBOOL (GET a)), goto "block-0".
-					(SET $0 (GET b))
-					goto "block-1".
+					if_false (TOBOOL (GET a)), goto "block-1".
 					"block-0":
-					(SET $0 (GET a))
+					(DECL BOOL $0)
+					(SET $0 (GET b))
+					goto "block-2".
 					"block-1":
-					(DROP (GET $0))
-					(DECL BOOL $1)
-					(SET $1 (NOT (GET a)))
-					(DECL BOOL $2)
-					if_false (TOBOOL (GET $1)), goto "block-2".
-					(SET $2 (NOT (GET b)))
-					goto "block-3".
+					(DECL NULL $1)
+					(SET $1 (GET a))
 					"block-2":
-					(SET $2 (GET $1))
+					(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
+					(DECL BOOL $2)
+					(SET $2 (NOT (GET a)))
+					if_false (TOBOOL (GET $2)), goto "block-4".
 					"block-3":
-					(DROP (GET $2))
+					(DECL BOOL $3)
+					(SET $3 (NOT (GET b)))
+					goto "block-5".
+					"block-4":
+					(DECL BOOL $4)
+					(SET $4 (GET $2))
+					"block-5":
+					(DROP (PHI "block-3"->(GET $3) "block-4"->(GET $4)))
 				`.join('\n'));
 			});
 			it('[operator=OR]', () => {
@@ -335,28 +339,32 @@ describe('ASTNodeOperation', () => {
 					(SET c (INT.CONST 10))
 					(DECL FLOAT d)
 					(SET d (FLOAT.CONST 0.1))
-					(DECL INT $0)
-					if_false (TOBOOL (GET c)), goto "block-0".
-					(SET $0 (GET c))
-					goto "block-1".
+					if_false (TOBOOL (GET c)), goto "block-1".
 					"block-0":
-					(SET $0 (GET d))
+					(DECL INT $0)
+					(SET $0 (GET c))
+					goto "block-2".
 					"block-1":
-					(DROP (GET $0))
-					(DECL INT $1)
-					(SET $1 (INT.NEG (GET c)))
-					(DECL INT $2)
-					(SET $2 (INT.ADD (GET $1) (INT.CONST 1)))
-					(DECL INT $3)
-					if_false (TOBOOL (GET $2)), goto "block-2".
-					(SET $3 (GET $2))
-					goto "block-3".
+					(DECL FLOAT $1)
+					(SET $1 (GET d))
 					"block-2":
-					(DECL FLOAT $4)
-					(SET $4 (FLOAT.NEG (GET d)))
-					(SET $3 (FLOAT.ADD (FLOAT.CONST 1.0) (GET $4)))
+					(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
+					(DECL INT $2)
+					(SET $2 (INT.NEG (GET c)))
+					(DECL INT $3)
+					(SET $3 (INT.ADD (GET $2) (INT.CONST 1)))
+					if_false (TOBOOL (GET $3)), goto "block-4".
 					"block-3":
-					(DROP (GET $3))
+					(DECL INT $4)
+					(SET $4 (GET $3))
+					goto "block-5".
+					"block-4":
+					(DECL FLOAT $5)
+					(SET $5 (FLOAT.NEG (GET d)))
+					(DECL FLOAT $6)
+					(SET $6 (FLOAT.ADD (FLOAT.CONST 1.0) (GET $5)))
+					"block-5":
+					(DROP (PHI "block-3"->(GET $4) "block-4"->(GET $6)))
 				`.join('\n'));
 			});
 			it('[operator=NAND]', () => {
@@ -369,14 +377,18 @@ describe('ASTNodeOperation', () => {
 					(SET a (NULL.CONST null))
 					(DECL BOOL b)
 					(SET b (BOOL.CONST false))
-					(DECL NULL $0)
-					if_false (TOBOOL (GET a)), goto "block-0".
-					(SET $0 (GET b))
-					goto "block-1".
+					if_false (TOBOOL (GET a)), goto "block-1".
 					"block-0":
-					(SET $0 (GET a))
+					(DECL BOOL $0)
+					(SET $0 (GET b))
+					goto "block-2".
 					"block-1":
-					(DROP (NOT (GET $0)))
+					(DECL NULL $1)
+					(SET $1 (GET a))
+					"block-2":
+					(DECL ANY $2)
+					(SET $2 (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
+					(DROP (NOT (GET $2)))
 				`.join('\n'));
 			});
 			it('[operator=NOR]', () => {
@@ -389,14 +401,18 @@ describe('ASTNodeOperation', () => {
 					(SET c (INT.CONST 10))
 					(DECL FLOAT d)
 					(SET d (FLOAT.CONST 0.1))
-					(DECL INT $0)
-					if_false (TOBOOL (GET c)), goto "block-0".
-					(SET $0 (GET c))
-					goto "block-1".
+					if_false (TOBOOL (GET c)), goto "block-1".
 					"block-0":
-					(SET $0 (GET d))
+					(DECL INT $0)
+					(SET $0 (GET c))
+					goto "block-2".
 					"block-1":
-					(DROP (NOT (GET $0)))
+					(DECL FLOAT $1)
+					(SET $1 (GET d))
+					"block-2":
+					(DECL ANY $2)
+					(SET $2 (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
+					(DROP (NOT (GET $2)))
 				`.join('\n'));
 			});
 		});
@@ -414,26 +430,30 @@ describe('ASTNodeOperation', () => {
 				(SET y (FLOAT.CONST 0.5))
 				(DECL FLOAT z)
 				(SET z (FLOAT.CONST 0.2))
-				(DECL FLOAT $0)
-				if_false (GET x), goto "block-0".
-				(SET $0 (GET y))
-				goto "block-1".
+				if_false (GET x), goto "block-1".
 				"block-0":
-				(SET $0 (GET z))
+				(DECL FLOAT $0)
+				(SET $0 (GET y))
+				goto "block-2".
 				"block-1":
-				(DROP (GET $0))
 				(DECL FLOAT $1)
-				if_false (LT (GET y) (GET z)), goto "block-2".
+				(SET $1 (GET z))
+				"block-2":
+				(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
+				if_false (LT (GET y) (GET z)), goto "block-4".
+				"block-3":
 				(DECL FLOAT $2)
 				(SET $2 (FLOAT.MUL (GET y) (FLOAT.CONST 2.0)))
-				(SET $1 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
-				goto "block-3".
-				"block-2":
 				(DECL FLOAT $3)
-				(SET $3 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(SET $1 (FLOAT.ADD (GET $3) (FLOAT.CONST 0.02)))
-				"block-3":
-				(DROP (GET $1))
+				(SET $3 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
+				goto "block-5".
+				"block-4":
+				(DECL FLOAT $4)
+				(SET $4 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+				(DECL FLOAT $5)
+				(SET $5 (FLOAT.ADD (GET $4) (FLOAT.CONST 0.02)))
+				"block-5":
+				(DROP (PHI "block-3"->(GET $3) "block-4"->(GET $5)))
 			`.join('\n'));
 		});
 	});
