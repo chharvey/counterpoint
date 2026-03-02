@@ -30,12 +30,10 @@ export type CollectionDynamicName = (
  * ```
  * if_false ‹condition›, goto "else".
  * "then":
- * (DECL ‹result_type› $result_then)
- * (SET $result_then ‹consequent›) ;; evaluate consequent and set to result
+ * (DECL ‹result_type› $result_then ‹consequent›) ;; evaluate consequent and set to result
  * goto "endif".
  * "else":
- * (DECL ‹result_type› $result_else)
- * (SET $result_else ‹alternative›) ;; evaluate alternative and set to result
+ * (DECL ‹result_type› $result_else ‹alternative›) ;; evaluate alternative and set to result
  * "endif":
  * return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
  * ```
