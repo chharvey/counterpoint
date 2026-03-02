@@ -85,8 +85,10 @@ EQ ([Value Value]) -> Boolean;
 NID([Value Value]) -> Boolean;
 NEQ([Value Value]) -> Boolean;
 
+PHI(‹label› -> Value, ‹label› -> Value) -> Value;
+
 DROP([Value]);
-DECL(SymbolSchemaVar|native-string);
+DECL(SymbolSchemaVar|native-string Type [Value]);
 SET(SymbolSchemaVar|native-string [Value]);
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
@@ -136,16 +138,15 @@ Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.SET]  Sem
 Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (MAP.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
 
 Lower(SemanticAccess[kind=MAYBE] access) := [
-	(DECL $tuple)
-	(SET $tuple `Lower(access.0)`)
-	(DECL $result)
-	if_false (ISNULL (GET $tuple)), goto "block-0".
-	(SET $result (NULL.CONST null))
-	goto "block-1".
-	"block-0":
-	(SET result `Lower(access[kind=NORMAL])`)
-	"block-1":
-	return (GET $result).
+	(DECL ‹type› $tuple `Lower(access.0)`)
+	if_false (ISNULL (GET $tuple)), goto "nonnull".
+	"isnull":
+	(DECL ‹type› $result_null (NULL.CONST null))
+	goto "endif".
+	"nonnull":
+	(DECL ‹type› $result_nonnull `Lower(access[kind=NORMAL])`)
+	"endif":
+	return (PHI "isnull"->(GET $result_null) "nonnull"->(GET $result_nonnull)).
 ];
 
 // Lower(SemanticCall call);
@@ -188,51 +189,47 @@ Lower(SemanticOperation[operator=NEQ] op) := (NEQ [`op.0` `op.1`]);
 
 
 Lower(SemanticOperation[operator=AND] op) := [
-	(DECL $result)
-	(DECL $left)
-	(SET $left `Lower(op.0)`)
+	(DECL ‹type› $left `Lower(op.0)`)
 	if_false (GET $left), goto "else".
-	(SET $result `Lower(op.1)`)
+	"then":
+	(DECL ‹type› $result_then `Lower(op.1)`)
 	goto "endif".
 	"else":
-	(SET $result (GET $left))
+	(DECL ‹type› $result_else (GET $left))
 	"endif":
-	return (GET $result).
+	return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
 ];
 
 Lower(SemanticOperation[operator=OR] op) := [
-	(DECL $result)
-	(DECL $left)
-	(SET $left `Lower(op.0)`)
+	(DECL ‹type› $left `Lower(op.0)`)
 	if_false (GET $left), goto "else".
-	(SET $result (GET $left))
+	"then":
+	(DECL ‹type› $result_then (GET $left))
 	goto "endif".
 	"else":
-	(SET $result `Lower(op.1)`)
+	(DECL ‹type› $result_else `Lower(op.1)`)
 	"endif":
-	return (GET $result).
+	return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
 ];
 
 Lower(SemanticOperation[operator=COND] op) := [
-	(DECL $result)
 	if_false `Lower(op.0)`, goto "else".
-	(SET $result `Lower(op.1)`)
+	"then":
+	(DECL ‹type› $result_then `Lower(op.1)`)
 	goto "endif".
 	"else":
-	(SET $result `Lower(op.2)`)
+	(DECL ‹type› $result_else `Lower(op.2)`)
 	"endif":
-	return (GET $result).
+	return (PHI "then"->(GET $result_then) "then"->(GET $result_else)).
 ];
 
 Lower(SemanticDeclarationType decl) := [];
 
 Lower(SemanticDeclarationVariable:has(SemanticVariable):has(SemanticExpression) decl) := [
-   (DECL `GetSymbolSchema(decl.0)`)
-   (SET `GetSymbolSchema(decl.0)` `Lower(decl.2)`)
+   (DECL ‹type› `GetSymbolSchema(decl.0)` `Lower(decl.2)`)
 ];
 Lower(SemanticDeclarationVariable:has(SemanticVariable) decl) := [
-   (DECL `GetSymbolSchema(decl.0)`)
-   (SET `GetSymbolSchema(decl.0)` (CONST null))
+   (DECL NULL `GetSymbolSchema(decl.0)` (NULL.CONST null))
 ];
 Lower(SemanticDeclarationVariable decl):has(SemanticVariable) := [
    (DROP `Lower(decl.1)`)

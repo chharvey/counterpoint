@@ -17,6 +17,7 @@ export * from './RecordGet.ts';
 export * from './CollectionDynamicGet.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
+export * from './Phi.ts';
 
 export * from './Drop.ts';
 export * from './Decl.ts';
