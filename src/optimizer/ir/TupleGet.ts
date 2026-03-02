@@ -1,3 +1,4 @@
+import {runOnceMethod} from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
@@ -12,6 +13,11 @@ export class TupleGet extends Value {
 		entry_type: TYPE.Type,
 	) {
 		super(entry_type);
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		return this.tuple.validate();
 	}
 
 	public override toString(): string {

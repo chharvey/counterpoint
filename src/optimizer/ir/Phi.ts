@@ -1,4 +1,5 @@
-import {TYPE} from '../../typer/index.ts';
+import * as xjs from 'extrajs';
+import {runOnceMethod} from '../../lib/index.ts';
 import {Value} from './Value.ts';
 import type {Label} from './Label.ts';
 
@@ -18,11 +19,16 @@ export class Phi extends Value {
 		[then_label, then_value]: readonly [Label, Value],
 		[else_label, else_value]: readonly [Label, Value],
 	) {
-		super(TYPE.UNKNOWN);
+		super(then_value.type.union(else_value.type));
 		this.labelThen = then_label;
 		this.labelElse = else_label;
 		this.valueThen = then_value;
 		this.valueElse = else_value;
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		return xjs.Array.forEachAggregated([this.valueThen, this.valueElse], (value) => value.validate());
 	}
 
 	public override toString(): string {

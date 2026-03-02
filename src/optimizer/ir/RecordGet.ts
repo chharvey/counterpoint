@@ -1,3 +1,4 @@
+import {runOnceMethod} from '../../lib/index.ts';
 import type {AST} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
@@ -13,6 +14,11 @@ export class RecordGet extends Value {
 		entry_type: TYPE.Type,
 	) {
 		super(entry_type);
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		return this.record.validate();
 	}
 
 	public override toString(): string {

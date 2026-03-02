@@ -89,7 +89,8 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	 */
 	@runOnceMethod
 	public lower(optimizer: Optimizer): void {
-		return this.children.forEach((stmt) => stmt.lower(optimizer));
+		this.children.forEach((stmt) => stmt.lower(optimizer));
+		return optimizer.validate();
 	}
 
 	/** @implements Buildable */

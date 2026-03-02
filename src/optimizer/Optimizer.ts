@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs';
+import {runOnceMethod} from '../lib/index.ts';
 import {IR} from './index.ts';
 import type {Local} from './utils-private.ts';
 
@@ -23,7 +25,7 @@ export class Optimizer {
 			name: `$${ this.#tempLocalCounter++ }`,
 			type: value.type,
 		};
-		this.pushInstruction(new IR.Decl(local, value.type, value));
+		this.pushInstruction(new IR.Decl(local, value));
 		return local;
 	}
 
@@ -33,6 +35,11 @@ export class Optimizer {
 
 	public pushInstruction(instr: IR.Instruction): void {
 		this.#instructions.push(instr);
+	}
+
+	@runOnceMethod
+	public validate(): void {
+		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
 	}
 
 	public print(): string {

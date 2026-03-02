@@ -87,7 +87,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		if (this.assignee) {
 			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = value.type;
-			optimizer.pushInstruction(new IR.Decl(symbol, value.type, value));
+			optimizer.pushInstruction(new IR.Decl(symbol, value));
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
 		}

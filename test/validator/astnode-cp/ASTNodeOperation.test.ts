@@ -192,17 +192,14 @@ describe('ASTNodeOperation', () => {
 					(DROP (INT.ADD (INT.CONST 3) (GET $2)))
 				`.join('\n'));
 			});
-			it('emits `(TRAP)` when types mismatch.', () => {
+			it('throws validation error when types mismatch.', () => {
 				const opt = new Optimizer();
 				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 					3.5 + 4.2 / 2;
 				`);
 				goal.varCheck();
 				goal.typeCheck();
-				goal.lower(opt);
-				return assert.strictEqual(opt.print(), extract_lines`
-					(DROP (FLOAT.ADD (FLOAT.CONST 3.5) (TRAP)))
-				`.join('\n'));
+				return assert.throws(() => goal.lower(opt), assert.AssertionError);
 			});
 		});
 

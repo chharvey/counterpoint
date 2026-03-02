@@ -1181,8 +1181,6 @@ describe('ASTNodeAccess', () => {
 					mixed_rec?.0;    %== null
 					mixed_rec?.a;    %== 42
 					mixed_lst?.[0];  %== 42
-					mixed_lst?.[@a]; %== null
-					mixed_dct?.[0];  %== null
 					mixed_dct?.[@a]; %== 42
 					mixed_set?.[42]; %== true
 					mixed_map?.[42]; %== "hello"
@@ -1199,12 +1197,30 @@ describe('ASTNodeAccess', () => {
 					...maybe_access_output(0x06, 'mixed_rec', [0x04], '(NULL.CONST null)'),
 					...maybe_access_output(0x09, 'mixed_rec', [0x06], '(RECORD.GET @a (GET mixed_rec))'),
 					...maybe_access_output(0x0c, 'mixed_lst', [0x08], '(LIST.GET (GET mixed_lst) (INT.CONST 0))'),
-					...maybe_access_output(0x0f, 'mixed_lst', [0x0a], '(LIST.GET (GET mixed_lst) (SYM.CONST @a))'), // FIXME: should be (NULL.CONST null)
-					...maybe_access_output(0x12, 'mixed_dct', [0x0c], '(DICT.GET (GET mixed_dct) (INT.CONST 0))'),  // FIXME: should be (NULL.CONST null)
-					...maybe_access_output(0x15, 'mixed_dct', [0x0e], '(DICT.GET (GET mixed_dct) (SYM.CONST @a))'),
-					...maybe_access_output(0x18, 'mixed_set', [0x10], '(SET.GET (GET mixed_set) (INT.CONST 42))'),
-					...maybe_access_output(0x1b, 'mixed_map', [0x12], '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
+					...maybe_access_output(0x0f, 'mixed_dct', [0x0a], '(DICT.GET (GET mixed_dct) (SYM.CONST @a))'),
+					...maybe_access_output(0x12, 'mixed_set', [0x0c], '(SET.GET (GET mixed_set) (INT.CONST 42))'),
+					...maybe_access_output(0x15, 'mixed_map', [0x0e], '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
 				).join('\n'));
+			});
+			it('throws a validation error when accessor is incorrect type.', () => {
+				assert.throws(() => setupScript(`{
+					val mut mixed_lst: [int] | [:int] = [42];
+					val mut mixed_dct: [int] | [:int] = [a= 42];
+					mixed_lst?.[@a]; % \`(LIST.GET (GET mixed_lst) (SYM.CONST @a))\` is invalid
+					mixed_dct?.[0];  % \`(DICT.GET (GET mixed_dct) (INT.CONST 0))\`  is invalid
+				}`, {lower: true, build: false}), (err) => {
+					/* eslint-enable @stylistic/indent */
+					assert_instanceof(err, AggregateError);
+					assertAssignable(err, {
+						cons:   AggregateError,
+						errors: [
+							{cons: assert.AssertionError, message: 'The expression evaluated to a falsy value:\n\n  assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT))\n'},
+							{cons: assert.AssertionError, message: 'The expression evaluated to a falsy value:\n\n  assert.ok(this.accessor.type.isSubtypeOf(TYPE.SYM))\n'},
+						],
+					});
+					return true;
+					/* eslint-disable @stylistic/indent */
+				});
 			});
 			it('returns null when base is null.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1251,7 +1267,7 @@ describe('ASTNodeAccess', () => {
 						"block-7":
 						(DECL SYM $7 (SYM.CONST @b))
 						"block-8":
-						(DECL ANY $8 (PHI "block-6"->(GET $6) "block-7"->(GET $7)))
+						(DECL SYM $8 (PHI "block-6"->(GET $6) "block-7"->(GET $7)))
 						${ set('(DICT.GET (GET my_dict) (GET $8))') }
 					`),
 					...maybe_access_output(9, 'my_map', [10, 13], (set) => `
