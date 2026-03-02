@@ -1,4 +1,6 @@
-import type {TYPE} from '../../typer/index.ts';
+import * as assert from 'node:assert';
+import {runOnceMethod} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
 
@@ -29,6 +31,19 @@ export class Unop extends Value {
 		typ: TYPE.Type,
 	) {
 		super(typ);
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+		this.operand.validate();
+		switch (this.operator) {
+			case UnOp.TOINT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
+			case UnOp.TONAT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
+			case UnOp.TOFLOAT:   { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
+			case UnOp.INT_NEG:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.INT)); }
+			case UnOp.FLOAT_NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.FLOAT)); }
+		}
 	}
 
 	public override toString(): string {

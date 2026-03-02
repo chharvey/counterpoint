@@ -1,4 +1,5 @@
-import {TYPE} from '../typer/index.ts';
+import * as xjs from 'extrajs';
+import {runOnceMethod} from '../lib/index.ts';
 import {IR} from './index.ts';
 import type {Local} from './utils-private.ts';
 
@@ -19,24 +20,26 @@ export class Optimizer {
 		return [...this.#instructions];
 	}
 
-	public newTempLocal(type_or_value: TYPE.Type | IR.Value): Local {
+	public newTempLocal(value: IR.Value): Local {
 		const local: Local = {
 			name: `$${ this.#tempLocalCounter++ }`,
-			type: type_or_value instanceof TYPE.Type ? type_or_value : type_or_value.type,
+			type: value.type,
 		};
-		this.pushInstruction(new IR.Decl(local, local.type));
-		if (type_or_value instanceof IR.Value) {
-			this.pushInstruction(new IR.Set(local, type_or_value));
-		}
+		this.pushInstruction(new IR.Decl(local, value));
 		return local;
 	}
 
-	public newLabel(): string {
-		return `block-${ this.#labelCounter++ }`;
+	public newLabel(): IR.Label {
+		return new IR.Label(`block-${ this.#labelCounter++ }`);
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {
 		this.#instructions.push(instr);
+	}
+
+	@runOnceMethod
+	public validate(): void {
+		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
 	}
 
 	public print(): string {

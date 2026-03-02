@@ -117,7 +117,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 					assert_instanceof(this.accessor, ASTNodeExpression);
 					if ([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename)) {
 						return new IR.CollectionDynamicGet(
-							base_typename as IR.CollectionDynamicGetName,
+							base_typename as IR.CollectionDynamicName,
 							base_value,
 							this.accessor.lower(optimizer).asTac(optimizer),
 							typ,
@@ -131,7 +131,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		if (this.kind === Operator.DOT_MAY) {
 			return IR.conditional_expression(
 				optimizer,
-				typ,
 				() => new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL),
 				() => new IR.Const(VALUE.NULL),
 				non_nullish_base,

@@ -1,3 +1,5 @@
+import * as xjs from 'extrajs';
+import {runOnceMethod} from '../../lib/index.ts';
 import type {AST} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
@@ -12,6 +14,11 @@ export class RecordNew extends Value {
 		typ: TYPE.Type,
 	) {
 		super(typ);
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		return xjs.Array.forEachAggregated(this.props, ([_, value]) => value.validate());
 	}
 
 	public override toString(): string {

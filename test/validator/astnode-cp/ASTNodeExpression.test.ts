@@ -71,18 +71,12 @@ test.suite('ASTNodeExpression', () => {
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
-				(DECL BOOL x)
-				(SET x (BOOL.CONST false))
-				(DECL INT y)
-				(SET y (INT.CONST 5))
-				(DECL FLOAT z)
-				(SET z (FLOAT.CONST 0.2))
-				(DECL INT $0)
-				(SET $0 (INT.ADD (GET y) (INT.CONST 2)))
-				(DECL FLOAT $1)
-				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(DECL FLOAT $2)
-				(SET $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+				(DECL BOOL x (BOOL.CONST false))
+				(DECL INT y (INT.CONST 5))
+				(DECL FLOAT z (FLOAT.CONST 0.2))
+				(DECL INT $0 (INT.ADD (GET y) (INT.CONST 2)))
+				(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+				(DECL FLOAT $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 				(DROP (TUPLE.NEW (GET x) (GET $0) (GET $2)))
 			`.join('\n'));
 		});
@@ -93,18 +87,12 @@ test.suite('ASTNodeExpression', () => {
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
-				(DECL BOOL x)
-				(SET x (BOOL.CONST false))
-				(DECL INT y)
-				(SET y (INT.CONST 5))
-				(DECL FLOAT z)
-				(SET z (FLOAT.CONST 0.2))
-				(DECL INT $0)
-				(SET $0 (INT.ADD (GET y) (INT.CONST 2)))
-				(DECL FLOAT $1)
-				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(DECL FLOAT $2)
-				(SET $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+				(DECL BOOL x (BOOL.CONST false))
+				(DECL INT y (INT.CONST 5))
+				(DECL FLOAT z (FLOAT.CONST 0.2))
+				(DECL INT $0 (INT.ADD (GET y) (INT.CONST 2)))
+				(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+				(DECL FLOAT $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 				(DROP (RECORD.NEW @a @b @c (GET x) (GET $0) (GET $2)))
 			`.join('\n'));
 		});
@@ -112,12 +100,9 @@ test.suite('ASTNodeExpression', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
-				(DECL INT $0)
-				(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-				(DECL FLOAT $1)
-				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL FLOAT $2)
-				(SET $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+				(DECL INT $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+				(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+				(DECL FLOAT $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 				(DROP (LIST.NEW (BOOL.CONST false) (GET $0) (GET $2)))
 			`.join('\n'));
 		});
@@ -125,12 +110,9 @@ test.suite('ASTNodeExpression', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
-				(DECL INT $0)
-				(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-				(DECL FLOAT $1)
-				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL FLOAT $2)
-				(SET $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+				(DECL INT $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+				(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+				(DECL FLOAT $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 				(DROP (DICT.NEW (SYM.CONST @a) (BOOL.CONST false) (SYM.CONST @b) (GET $0) (SYM.CONST @c) (GET $2)))
 			`.join('\n'));
 		});
@@ -138,12 +120,9 @@ test.suite('ASTNodeExpression', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
-				(DECL INT $0)
-				(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-				(DECL FLOAT $1)
-				(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL FLOAT $2)
-				(SET $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+				(DECL INT $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+				(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+				(DECL FLOAT $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 				(DROP (SET.NEW (BOOL.CONST false) (GET $0) (GET $2)))
 			`.join('\n'));
 		});
@@ -152,12 +131,9 @@ test.suite('ASTNodeExpression', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0)
-					(SET $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-					(DECL FLOAT $1)
-					(SET $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-					(DECL FLOAT $2)
-					(SET $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+					(DECL INT $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+					(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+					(DECL FLOAT $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 					(DROP (MAP.NEW (STR.CONST "a") (BOOL.CONST false) (STR.CONST "b") (GET $0) (STR.CONST "c") (GET $2)))
 				`.join('\n'));
 			});
@@ -165,20 +141,13 @@ test.suite('ASTNodeExpression', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL LIST $0)
-					(SET $0 (LIST.NEW (INT.CONST 10)))
-					(DECL INT $1)
-					(SET $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
-					(DECL LIST $2)
-					(SET $2 (LIST.NEW (INT.CONST 12)))
-					(DECL INT $3)
-					(SET $3 (INT.MUL (INT.CONST 5) (INT.CONST 2)))
-					(DECL INT $4)
-					(SET $4 (INT.ADD (GET $3) (INT.CONST 3)))
-					(DECL INT $5)
-					(SET $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
-					(DECL LIST $6)
-					(SET $6 (LIST.NEW (GET $5)))
+					(DECL LIST $0 (LIST.NEW (INT.CONST 10)))
+					(DECL INT $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
+					(DECL LIST $2 (LIST.NEW (INT.CONST 12)))
+					(DECL INT $3 (INT.MUL (INT.CONST 5) (INT.CONST 2)))
+					(DECL INT $4 (INT.ADD (GET $3) (INT.CONST 3)))
+					(DECL INT $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
+					(DECL LIST $6 (LIST.NEW (GET $5)))
 					(DROP (MAP.NEW (GET $0) (GET $1) (GET $2) (GET $4) (GET $6) (INT.CONST 15)))
 				`.join('\n'));
 			});
@@ -198,9 +167,9 @@ test.suite('ASTNodeExpression', () => {
 				assert.strictEqual(opt.instructions.length, 0);
 				const expr = (stmts[0] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeClaim;
 				expr.operand.lower(opt);
-				assert.strictEqual(opt.instructions.length, 2);
+				assert.strictEqual(opt.instructions.length, 1);
 				expr.lower(opt);
-				assert.strictEqual(opt.instructions.length, 2);
+				assert.strictEqual(opt.instructions.length, 1);
 			});
 		});
 
@@ -209,14 +178,14 @@ test.suite('ASTNodeExpression', () => {
 			const {stmts, opt} = setupScript(`{
 				% Foldable cases:
 				val _:          int = 42; % \`(DROP (INT.CONST 42))\`
-				val assignee_a: int = 42; % \`(DECL INT assignee_a) (SET assignee_a (INT.CONST 42))\`
+				val assignee_a: int = 42; % \`(DECL INT assignee_a (INT.CONST 42))\`
 
 				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(DECL NULL assignee_b) (SET assignee_b null)\`
-				val mut assignee_c:  int = 42;         % \`(DECL INT assignee_c) (SET assignee_c 42)\`
+				val mut assignee_b?: int;              % \`(DECL NULL assignee_b null)\`
+				val mut assignee_c:  int = 42;         % \`(DECL INT assignee_c 42)\`
 				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
-				val     assignee_d:  int = assignee_c; % \`(DECL INT assignee_d) (SET assignee_d assignee_c)\`
-				val mut assignee_e:  int = assignee_c; % \`(DECL INT assignee_e) (SET assignee_e assignee_c)\`
+				val     assignee_d:  int = assignee_c; % \`(DECL INT assignee_d assignee_c)\`
+				val mut assignee_e:  int = assignee_c; % \`(DECL INT assignee_e assignee_c)\`
 
 				%% Syntactically impossible cases (for completion):
 				val _?:          int;
@@ -229,17 +198,12 @@ test.suite('ASTNodeExpression', () => {
 			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (INT.CONST 42))
-				(DECL INT assignee_a)
-				(SET assignee_a (INT.CONST 42))
-				(DECL NULL assignee_b)
-				(SET assignee_b (NULL.CONST null))
-				(DECL INT assignee_c)
-				(SET assignee_c (INT.CONST 42))
+				(DECL INT assignee_a (INT.CONST 42))
+				(DECL NULL assignee_b (NULL.CONST null))
+				(DECL INT assignee_c (INT.CONST 42))
 				(DROP (GET assignee_c))
-				(DECL INT assignee_d)
-				(SET assignee_d (GET assignee_c))
-				(DECL INT assignee_e)
-				(SET assignee_e (GET assignee_c))
+				(DECL INT assignee_d (GET assignee_c))
+				(DECL INT assignee_e (GET assignee_c))
 			`.join('\n'));
 		});
 		test.test('AST.StatementExpression pushes DROP instruction if expression exists.', () => {
@@ -271,7 +235,7 @@ test.suite('ASTNodeExpression', () => {
 				(DROP (GET x))
 			`.join('\n'));
 		});
-		test.test('AST.StatementReassignment pushes SET instruction.', () => {
+		test.test('AST.StatementReassignment for variables pushes SET instruction.', () => {
 			const {stmts, opt} = setupScript(`{
 				val mut x: int = 42;
 				set x = 43;
@@ -283,6 +247,34 @@ test.suite('ASTNodeExpression', () => {
 				(SET x (INT.CONST 43))
 				(SET x (INT.CONST 44))
 				(SET x (INT.CONST -42))
+			`.join('\n'));
+		});
+		test.test('AST.StatementReassignment for collections pushes IR.CollectionDynamicSet.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut my_list: mut [int]        = [41, 42];
+				val mut my_dict: mut [:int]       = [a= 41, b= 42];
+				val mut my_set:  mut {int}        = {41 + 1, 42 / 2, 43 ^ 3};
+				val mut my_map:  mut {int -> int} = {21 -> 41, 22 -> 42, 23 -> 43};
+
+				val mut accessor: int = 22;
+				set my_list.[0 + 1]   = 84;
+				set my_dict.[@b]      = 84;
+				set my_set.[accessor] = true;
+				set my_map.[accessor] = 84;
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL LIST my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+				(DECL DICT my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @b) (INT.CONST 42)))
+				(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+				(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+				(DECL INT $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+				(DECL SET my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
+				(DECL MAP my_map (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
+				(DECL INT accessor (INT.CONST 22))
+				(DECL INT $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
+				(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
+				(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
+				(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
+				(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
 			`.join('\n'));
 		});
 		test.test('AST.Goal lowers each statement.', () => {
@@ -301,7 +293,7 @@ test.suite('ASTNodeExpression', () => {
 				set assignee_e = 43;
 				set assignee_e = 44;
 				set assignee_e = -42;
-			}`, {lower: true, build: false}).opt.instructions.length, 16);
+			}`, {lower: true, build: false}).opt.instructions.length, 12);
 		});
 	});
 

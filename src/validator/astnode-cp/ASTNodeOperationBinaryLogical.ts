@@ -102,37 +102,11 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		 * val left = ‹v0›;
 		 * if !!left then ‹v1› else left
 		 * ```
-		 * IR Outline:
-		 * ```
-		 * (DECL result)
-		 * (DECL left)
-		 * (SET left ‹v0›)
-		 * if_false (GET left), goto "else".
-		 * (SET result ‹v1›) ;; evaluate right-hand value and set to result
-		 * goto "endif".
-		 * "else":
-		 * (SET result (GET left)) ;; get left-hand variable and set to result
-		 * "endif":
-		 * return (GET result).
-		 * ```
 		 *
 		 * `‹v0› || ‹v1›` desugars to:
 		 * ```
 		 * val left = ‹v0›;
 		 * if !!left then left else ‹v1›
-		 * ```
-		 * IR Outline:
-		 * ```
-		 * (DECL result)
-		 * (DECL left)
-		 * (SET left ‹v0›)
-		 * if_false (GET left), goto "else".
-		 * (SET result (GET left)) ;; get left-hand variable and set to result
-		 * goto "endif".
-		 * "else":
-		 * (SET result ‹v1›) ;; evaluate right-hand value and set to result
-		 * "endif":
-		 * return (GET result).
 		 * ```
 		 */
 
@@ -146,7 +120,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		const left: IR.Value = this.operand0.lower(optimizer).asTac(optimizer);
 		return IR.conditional_expression(
 			optimizer,
-			this.type(),
 			() => new IR.Unop(IR.UnOp.TOBOOL, left, TYPE.BOOL),
 			() => branch_then(left),
 			() => branch_else(left),

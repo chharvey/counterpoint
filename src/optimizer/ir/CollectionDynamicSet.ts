@@ -4,24 +4,25 @@ import {runOnceMethod} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {TypeName} from './TypeName.ts';
-import {Value} from './Value.ts';
+import {Instruction} from './Instruction.ts';
+import type {Value} from './Value.ts';
 
 
 
-/** Read an entry of a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicGet extends Value {
+/** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
+export class CollectionDynamicSet extends Instruction {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
 		private readonly collection: Value,
 		private readonly accessor:   Value,
-		entry_type: TYPE.Type,
+		private readonly value:      Value,
 	) {
-		super(entry_type);
+		super();
 	}
 
 	@runOnceMethod
 	public override validate(): void {
-		xjs.Array.forEachAggregated([this.collection, this.accessor], (value) => value.validate());
+		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate());
 		switch (this.name) {
 			case TypeName.LIST: { return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT)); }
 			case TypeName.DICT: { return assert.ok(this.accessor.type.isSubtypeOf(TYPE.SYM)); }
@@ -30,6 +31,6 @@ export class CollectionDynamicGet extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
+		return `(${ TypeName[this.name] }.SET ${ this.collection } ${ this.accessor } ${ this.value })`;
 	}
 }

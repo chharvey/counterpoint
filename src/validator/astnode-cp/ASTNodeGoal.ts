@@ -92,7 +92,8 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	 */
 	@runOnceMethod
 	public lower(optimizer: Optimizer): void {
-		return this.block?.lower(optimizer);
+		this.block?.lower(optimizer);
+		return optimizer.validate();
 	}
 
 	/** @implements Buildable */
