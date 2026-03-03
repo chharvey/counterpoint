@@ -170,7 +170,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override lower(optimizer: Optimizer): IR.Binop {
 		const typ: TYPE.Type = this.type();
 		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
 		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
@@ -182,14 +182,14 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.ADD, IR.BinOp.INT_ADD],
 				[Operator.SUB, IR.BinOp.INT_SUB],
 			]).get(this.operator)!, v0, v1, typ) :
-			bothFloats(t0, t1) ? new IR.Binop(new Map<Operator, IR.BinOp>([
+			// TODO: v0.5+ bothNats(t0, t1)
+			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.BinOp>([
 				[Operator.EXP, IR.BinOp.FLOAT_EXP],
 				[Operator.MUL, IR.BinOp.FLOAT_MUL],
 				[Operator.DIV, IR.BinOp.FLOAT_DIV],
 				[Operator.ADD, IR.BinOp.FLOAT_ADD],
 				[Operator.SUB, IR.BinOp.FLOAT_SUB],
-			]).get(this.operator)!, v0, v1, typ) :
-			new IR.Trap()
+			]).get(this.operator)!, v0, v1, typ))
 		);
 	}
 

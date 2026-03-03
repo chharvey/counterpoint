@@ -3,7 +3,7 @@ import {
 	type VALUE,
 	TYPE,
 	type Optimizer,
-	type IR,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -56,8 +56,8 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeTemplate#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Template {
+		return new IR.Template(this.children.map((c) => c.lower(optimizer).asTac(optimizer)));
 	}
 
 	@memoizeMethod

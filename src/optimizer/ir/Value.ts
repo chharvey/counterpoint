@@ -12,6 +12,7 @@ import {Instruction} from './Instruction.ts';
  * - Trap
  * - Const
  * - Get
+ * - Template
  * - CollectionLinearNew
  * - RecordNew
  * - DictNew
@@ -19,6 +20,7 @@ import {Instruction} from './Instruction.ts';
  * - TupleGet
  * - RecordGet
  * - CollectionDynamicGet
+ * - Call
  * - Unop
  * - Binop
  * - Phi

@@ -35,12 +35,12 @@ TOINT([Number])   -> Integer;
 TONAT([Number])   -> Natural;
 TOFLOAT([Number]) -> Float;
 
-TUPLE.NEW([Value*]) -> Tuple;
-RECORD.NEW(SemanticKey* [Value*]) -> Record;
-LIST.NEW([Value*]) -> List;
-DICT.NEW([Value*]) -> Dict;
-SET.NEW([Value*]) -> Set;
-MAP.NEW([Value*]) -> Map;
+TUPLE.NEW([Value*])                       -> Tuple;
+RECORD.NEW(Vector<native-bigint, Value>*) -> Record;
+LIST.NEW([Value*])                        -> List;
+DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
+SET.NEW([Value*])                         -> Set;
+MAP.NEW(Vector<Value, Value>*)            -> Map;
 
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
@@ -48,6 +48,8 @@ LIST.GET([Value Value])           -> Value;
 DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
+
+CALL([Value*]) -> Value;
 
 NOT([Value]) -> Boolean;
 EMP([Value]) -> Boolean;
@@ -94,6 +96,10 @@ LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
 SET.SET ([Value Value Value]);
 MAP.SET ([Value Value Value]);
+LIST.COPY([Value Value]);
+DICT.COPY([Value Value]);
+SET.COPY ([Value Value]);
+MAP.COPY ([Value Value]);
 
 
 
@@ -108,8 +114,8 @@ Lower(Natural n) := (NAT.CONST   n);
 Lower(Float   f) := (FLOAT.CONST f);
 Lower(String  s) := (STR.CONST   s);
 
-Lower(SemanticCase     case) := (TUPLE.NEW [`Lower(case.0)` `Lower(case.1)`]);
-Lower(SemanticProperty prop) := Sequence [`prop.0`, `Lower(prop.1)`];
+Lower(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Lower(prop.1)`];
+Lower(SemanticCase     case) := Sequence [`Lower(case.0)`, `Lower(case.1)`];
 
 Lower(SemanticConstant[type=TYPE.Null]    const) := (NULL.CONST  `Lower(ValueOf(const)~!)`);
 Lower(SemanticConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Lower(ValueOf(const)~!)`);
@@ -124,11 +130,11 @@ Lower(SemanticVariable var) := (GET `GetSymbolSchema(var)`);
 // Lower(SemanticTemplate tpl);
 
 Lower(SemanticTuple tup)  := (TUPLE.NEW  [`...tup.children.map(Lower)`]);
-Lower(SemanticRecord rec) := (RECORD.NEW `...rec.children.map(prop.0.id)` [`...rec.children.map(Lower(prop.1))`]);
+Lower(SemanticRecord rec) := (RECORD.NEW `...rec.children.map(Sequence [prop.0.id, Lower(prop.1)])`);
 Lower(SemanticList list)  := (LIST.NEW   [`...list.children.map(Lower)`]);
-Lower(SemanticDict dict)  := (DICT.NEW   [`...dict.children.flatMap(Lower)`]);
+Lower(SemanticDict dict)  := (DICT.NEW   `...dict.children.flatMap(Lower)`);
 Lower(SemanticSet set)    := (SET.NEW    [`...set.children.map(Lower)`]);
-Lower(SemanticMap map)    := (MAP.NEW    [`...map.children.map(Lower)`]);
+Lower(SemanticMap map)    := (MAP.NEW    `...map.children.map(Lower)`);
 
 Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Lower(SemanticExpression)`]);
 Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Lower(SemanticExpression)`]);
@@ -149,7 +155,35 @@ Lower(SemanticAccess[kind=MAYBE] access) := [
 	return (PHI "isnull"->(GET $result_null) "nonnull"->(GET $result_nonnull)).
 ];
 
-// Lower(SemanticCall call);
+Lower(SemanticCall:has(SemanticVariable ::= "List") call) := (LIST.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "Dict") call) := (DICT.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "Set")  call) := (SET.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "Map")  call) := (MAP.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "List"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL <List> $destination (LIST.NEW))
+	(LIST.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall:has(SemanticVariable ::= "Dict"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL <Dict> $destination (DICT.NEW))
+	(DICT.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall:has(SemanticVariable ::= "Set"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL <Set> $destination (SET.NEW))
+	(SET.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall:has(SemanticVariable ::= "Map"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL <Map> $destination (MAP.NEW))
+	(MAP.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall call) := (CALL [`Lower(call.0)` `...call.SemanticExpression*.map(Lower)`]);
 
 Lower(SemanticClaim claim) := Lower(claim.0);
 
@@ -230,7 +264,7 @@ Lower(SemanticDeclarationVariable:has(SemanticVariable):has(SemanticExpression) 
 	(DECL ‹type› `GetSymbolSchema(decl.0)` `Lower(decl.2)`)
 ];
 Lower(SemanticDeclarationVariable:has(SemanticVariable) decl) := [
-	(DECL NULL `GetSymbolSchema(decl.0)` (NULL.CONST null))
+	(DECL <null> `GetSymbolSchema(decl.0)` (NULL.CONST null))
 ];
 Lower(SemanticDeclarationVariable decl):has(SemanticVariable) := [
 	(DROP `Lower(decl.1)`)

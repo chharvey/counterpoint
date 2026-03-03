@@ -7,6 +7,7 @@
  * - Decl
  * - Set
  * - CollectionDynamicSet
+ * - CollectionDynamicCopy
  * - Label
  * - Goto
  * - GotoIfFalse
