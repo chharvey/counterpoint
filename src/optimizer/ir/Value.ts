@@ -12,6 +12,7 @@ import {Instruction} from './Instruction.ts';
  * - Trap
  * - Const
  * - Get
+ * - Template
  * - CollectionLinearNew
  * - RecordNew
  * - DictNew

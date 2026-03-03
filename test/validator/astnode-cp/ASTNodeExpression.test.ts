@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	type ConstructorType,
 	assert_instanceof,
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -46,24 +45,16 @@ describe('ASTNodeExpression', () => {
 			'lower' in opts && opts.lower && goal.lower(opt);
 			return {goal, opt};
 		}
-
-		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
-			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
-		]), (src, klass) => {
-			it(klass.name, () => {
-				const opt = new Optimizer();
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`${ src };`);
-				goal.varCheck();
-				goal.typeCheck();
-				const expr: AST.ASTNodeExpression = (goal.children[0] as AST.ASTNodeStatementExpression).expr!;
-				assert_instanceof(expr, klass);
-				return assert.throws(() => expr.lower(opt), /not yet supported/);
-			});
-		});
-
 		it('AST.Constant returns an IR.Const.', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42;');
 			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
+		});
+		it('AST.Template returns an IR.Template.', () => {
+			const opt = new Optimizer();
+			const tpl: AST.ASTNodeTemplate = AST.ASTNodeTemplate.fromSource('"""hello {{ 42 }} world""";');
+			const value: IR.Template = tpl.lower(opt);
+			assert.deepStrictEqual(value, new IR.Template(tpl.children.map((c) => c.lower(opt))));
+			assert.strictEqual(value.toString(), '(STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world"))');
 		});
 		it('AST.Variable returns an IR.Variable.', () => {
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
