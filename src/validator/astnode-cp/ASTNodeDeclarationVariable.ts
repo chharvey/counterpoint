@@ -4,9 +4,14 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -73,6 +78,18 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 				assert.ok(!symbol.unfixed, `Symbol \`${ symbol.source }\` should not be unfixed.`);
 				symbol.value = value;
 			}
+		}
+	}
+
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
+		if (this.assignee) {
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
+			symbol.irType = value.type;
+			optimizer.pushInstruction(new IR.Decl(symbol, value));
+		} else {
+			optimizer.pushInstruction(new IR.Drop(value));
 		}
 	}
 

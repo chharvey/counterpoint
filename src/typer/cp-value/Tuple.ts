@@ -1,9 +1,9 @@
 import binaryen from 'binaryen';
-import {TYPE} from '../index.ts';
 import {
 	build_tuple_like,
 	type Builder,
 } from '../../index.ts';
+import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
 	language_values_equal,

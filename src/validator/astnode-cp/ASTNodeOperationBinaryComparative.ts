@@ -3,6 +3,8 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -73,6 +75,18 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		return new IR.Binop(new Map<Operator, IR.BinOp>([
+			[Operator.LT,  IR.BinOp.LT],
+			[Operator.GT,  IR.BinOp.GT],
+			[Operator.LE,  IR.BinOp.LE],
+			[Operator.GE,  IR.BinOp.GE],
+			[Operator.NLT, IR.BinOp.NLT],
+			[Operator.NGT, IR.BinOp.NGT],
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
+	}
+
+	@memoizeMethod
 	public override fold(): VALUE.Value | null {
 		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
@@ -96,8 +110,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],
 			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
-			// [Operator.NLT, (x, y) => !x.lt(y)],
-			// [Operator.NGT, (x, y) => !y.lt(x)],
+			[Operator.NLT, (x, y) => !x.lt(y)],
+			[Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(v0, v1));
 	}
 }

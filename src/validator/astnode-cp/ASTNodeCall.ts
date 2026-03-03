@@ -3,6 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../index.ts';
@@ -270,6 +272,33 @@ export class ASTNodeCall extends ASTNodeExpression {
 				invalid_function_name(this.base.source);
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		const args: readonly IR.Value[] = this.exprargs.map((c) => c.lower(optimizer).asTac(optimizer));
+
+		/*
+		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `IR.Call` object.
+		 * But until we get functions and classes, statically build the function calls.
+		 */
+		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
+			return new IR.Call(this.base.lower(optimizer).asTac(optimizer), args, this.type());
+		}
+
+		const [name, ctor] = new Map<ValidFunctionName, [IR.CollectionDynamicName, () => IR.Value]>([
+			[ValidFunctionName.LIST, [IR.TypeName.LIST, () => new IR.CollectionLinearNew(IR.TypeName.LIST, [], this.type())]],
+			[ValidFunctionName.DICT, [IR.TypeName.DICT, () => new IR.DictNew(new Map(), this.type())]],
+			[ValidFunctionName.SET,  [IR.TypeName.SET,  () => new IR.CollectionLinearNew(IR.TypeName.SET, [], this.type())]],
+			[ValidFunctionName.MAP,  [IR.TypeName.MAP,  () => new IR.MapNew(new Map(), this.type())]],
+		]).get(this.base.source as ValidFunctionName)!;
+		const new_obj: IR.Value = ctor();
+		if (!args.length) {
+			return new_obj;
+		}
+		const get_obj = new IR.Get(optimizer.newTempLocal(new_obj));
+		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_obj, args[0]));
+		return get_obj;
 	}
 
 	@memoizeMethod

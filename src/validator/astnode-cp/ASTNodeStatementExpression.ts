@@ -1,5 +1,12 @@
 import type binaryen from 'binaryen';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	type Optimizer,
+	IR,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -22,6 +29,13 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		public readonly expr?: ASTNodeExpression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
+	}
+
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		if (this.expr) {
+			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+		}
 	}
 
 	public override build(): binaryen.ExpressionRef {

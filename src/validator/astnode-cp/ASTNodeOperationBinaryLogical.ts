@@ -2,6 +2,8 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	type Local,
 	BinVect,
 } from '../../index.ts';
@@ -92,6 +94,38 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 				);
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Phi {
+		/*
+		 * `‹v0› && ‹v1›` desugars to:
+		 * ```
+		 * val left = ‹v0›;
+		 * if !!left then ‹v1› else left
+		 * ```
+		 *
+		 * `‹v0› || ‹v1›` desugars to:
+		 * ```
+		 * val left = ‹v0›;
+		 * if !!left then left else ‹v1›
+		 * ```
+		 */
+		const left: IR.Value = this.operand0.lower(optimizer).asTac(optimizer);
+
+		// Assume `Operator.AND` first, then switch if `Operator.OR`.
+		let conseq = (): IR.Value => this.operand1.lower(optimizer);
+		let altern = (): IR.Value => left;
+		if (this.operator === Operator.OR) {
+			[conseq, altern] = [altern, conseq];
+		}
+
+		return IR.conditional_expression(
+			optimizer,
+			() => new IR.Unop(IR.UnOp.TOBOOL, left, TYPE.BOOL),
+			conseq,
+			altern,
+		);
 	}
 
 	@memoizeMethod

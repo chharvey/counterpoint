@@ -3,6 +3,8 @@ import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	type IR,
 	ErrorCode,
 } from '../../index.ts';
 import {
@@ -122,6 +124,13 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	 * @return the compile-time type of this node
 	 */
 	public abstract type(): TYPE.Type;
+
+	/**
+	 * Lower this AST node to a high-level IR value.
+	 * @param  optimizer the set of instructions to build the IR
+	 * @return           an optimized value
+	 */
+	public abstract lower(optimizer: Optimizer): IR.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

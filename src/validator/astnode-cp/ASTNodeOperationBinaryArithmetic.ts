@@ -4,6 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -76,6 +78,30 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		const typ: TYPE.Type = this.type();
+		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
+		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
+		return (
+			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.BinOp>([
+				[Operator.EXP, IR.BinOp.INT_EXP],
+				[Operator.MUL, IR.BinOp.INT_MUL],
+				[Operator.DIV, IR.BinOp.INT_DIV],
+				[Operator.ADD, IR.BinOp.INT_ADD],
+				[Operator.SUB, IR.BinOp.INT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			// TODO: v0.5+ bothNats(t0, t1)
+			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.BinOp>([
+				[Operator.EXP, IR.BinOp.FLOAT_EXP],
+				[Operator.MUL, IR.BinOp.FLOAT_MUL],
+				[Operator.DIV, IR.BinOp.FLOAT_DIV],
+				[Operator.ADD, IR.BinOp.FLOAT_ADD],
+				[Operator.SUB, IR.BinOp.FLOAT_SUB],
+			]).get(this.operator)!, v0, v1, typ))
+		);
+	}
+
+	@memoizeMethod
 	public override fold(): VALUE.Value | null {
 		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
@@ -103,7 +129,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.MUL, (x, y) => x.times(y)],
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
-				// [Operator.SUB, (x, y) => x.minus(y)],
+				[Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(v0, v1);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;

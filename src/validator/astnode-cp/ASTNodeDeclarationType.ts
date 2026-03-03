@@ -56,6 +56,11 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
+	// @runOnceMethod
+	public override lower(): void {
+		return;
+	}
+
 	public override build(): binaryen.ExpressionRef {
 		return this.builder.module.nop();
 	}

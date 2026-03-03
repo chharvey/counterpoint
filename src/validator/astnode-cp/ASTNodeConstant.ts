@@ -4,6 +4,7 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
 	type TYPE,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -71,6 +72,11 @@ export class ASTNodeConstant extends ASTNodeExpression {
 	// @typeDeco // explicitly leaving off for performance
 	public override type(): TYPE.Type {
 		return this.fold().toType();
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Const {
+		return new IR.Const(this.fold());
 	}
 
 	@memoizeMethod

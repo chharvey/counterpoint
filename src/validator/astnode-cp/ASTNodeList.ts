@@ -3,6 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -16,9 +18,9 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import {
-	ASTNodeExpression,
 	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
@@ -54,6 +56,11 @@ export class ASTNodeList extends ASTNodeCollectionLiteral {
 			TYPE.Union.all(this.children.map((c) => c.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.CollectionLinearNew {
+		return new IR.CollectionLinearNew(IR.TypeName.LIST, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod
