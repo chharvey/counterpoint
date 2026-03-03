@@ -4,6 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	build_tuple_like,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -60,6 +62,11 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 			return TYPE.NOTHING;
 		}
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
+	}
+
+	@memoizeMethod
+	public lower(optimizer: Optimizer): IR.CollectionLinearNew {
+		return new IR.CollectionLinearNew(IR.TypeName.TUPLE, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod

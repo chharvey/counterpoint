@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
+	type Optimizer,
 	BinVect,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -67,6 +68,11 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		if (!this.condition.type().isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(this.condition, TYPE.BOOL);
 		}
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): void {
+		throw new Error('`ASTNodeStatementLoop#lower` not yet supported.');
 	}
 
 	@memoizeMethod

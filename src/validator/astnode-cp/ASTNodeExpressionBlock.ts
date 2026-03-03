@@ -3,6 +3,8 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
+	type IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -70,6 +72,11 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 			throw new Error('The determining expression-statement of a block-expression must be nonempty.');
 		}
 		return expr.type();
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeExpressionBlock#lower` not yet supported.');
 	}
 
 	@memoizeMethod

@@ -2,6 +2,8 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
+	type Optimizer,
+	type IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -60,6 +62,11 @@ export class ASTNodeClaim extends ASTNodeExpression {
 			throw new TypeErrorNotAssignable(this.operand, claimed_type, this);
 		}
 		return claimed_type;
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		return this.operand.lower(optimizer);
 	}
 
 	@memoizeMethod

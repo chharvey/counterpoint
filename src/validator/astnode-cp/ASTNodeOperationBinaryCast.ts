@@ -2,6 +2,8 @@ import type binaryen from 'binaryen';
 import type {
 	VALUE,
 	TYPE,
+	Optimizer,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -48,6 +50,11 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
 		throw new Error('ASTNodeOperationBinaryCast#type not yet supported.');
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeOperationBinaryCast#lower` not yet supported.');
 	}
 
 	@memoizeMethod

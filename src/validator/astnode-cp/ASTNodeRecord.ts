@@ -3,6 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	build_record_like,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
@@ -22,9 +24,9 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	ASTNodeExpression,
 	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
@@ -77,6 +79,14 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 			c.key.id,
 			c.val.type(),
 		])));
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.RecordNew {
+		return new IR.RecordNew(new Map(this.children.map((c) => ([
+			c.key.id,
+			{keysrc: c.key.source, value: c.val.lower(optimizer).asTac(optimizer)},
+		]))), this.type());
 	}
 
 	@memoizeMethod

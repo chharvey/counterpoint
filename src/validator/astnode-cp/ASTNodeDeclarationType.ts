@@ -6,9 +6,11 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	noopMethod,
 	noopGetter,
 	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -68,6 +70,11 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}
+	}
+
+	@noopMethod(runOnceMethod)
+	public override lower(): void {
+		return;
 	}
 
 	@memoizeMethod

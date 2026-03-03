@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -71,6 +72,11 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
 		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Get {
+		return new IR.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
 	}
 
 	@memoizeMethod

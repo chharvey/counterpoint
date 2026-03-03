@@ -3,6 +3,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	TYPE,
+	type Optimizer,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
@@ -87,6 +88,11 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 			(this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).type = assignee_type;
 		}
 		this.block.typeCheck();
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): void {
+		throw new Error('`ASTNodeStatementIteration#lower` not yet supported.');
 	}
 
 	@memoizeMethod

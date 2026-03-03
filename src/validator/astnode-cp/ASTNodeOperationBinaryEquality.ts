@@ -2,6 +2,8 @@ import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	drop_then,
 } from '../../index.ts';
 import {
@@ -87,6 +89,16 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		return new IR.Binop(new Map<Operator, IR.BinOp>([
+			[Operator.ID,  IR.BinOp.ID],
+			[Operator.EQ,  IR.BinOp.EQ],
+			[Operator.NID, IR.BinOp.NID],
+			[Operator.NEQ, IR.BinOp.NEQ],
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
+	}
+
+	@memoizeMethod
 	public override fold(): VALUE.Value | null {
 		const v0: VALUE.Value | null = this.operand0.fold();
 		if (!v0) {
@@ -101,10 +113,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 
 	private foldEquality(v0: VALUE.Value, v1: VALUE.Value): VALUE.Boolean {
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
-			[Operator.ID, (x, y) => x.identical(y)],
-			[Operator.EQ, (x, y) => x.equal(y)],
-			// [Operator.NID, (x, y) => !x.identical(y)],
-			// [Operator.NEQ, (x, y) => !x.equal(y)],
+			[Operator.ID,  (x, y) => x.identical(y)],
+			[Operator.EQ,  (x, y) => x.equal(y)],
+			[Operator.NID, (x, y) => !x.identical(y)],
+			[Operator.NEQ, (x, y) => !x.equal(y)],
 		]).get(this.operator)!(v0, v1));
 	}
 }

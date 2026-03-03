@@ -1,9 +1,14 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
+import type {
+	Optimizer,
+	Lowerable,
+} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -21,7 +26,7 @@ import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts
 
 
 
-export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
+export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable, Buildable {
 	/**
 	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -62,6 +67,15 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 	@memoizeGetter
 	public get hasBottomType(): boolean {
 		return this.children.some((c) => c.hasBottomType);
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@runOnceMethod
+	public lower(optimizer: Optimizer): void {
+		return this.children.forEach((stmt) => stmt.lower(optimizer));
 	}
 
 	/** @implements Buildable */

@@ -1,8 +1,13 @@
 import type binaryen from 'binaryen';
 import {
+	type Optimizer,
+	IR,
+} from '../../index.ts';
+import {
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -39,6 +44,13 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.expr?.type().isBottomType ?? false;
+	}
+
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		if (this.expr) {
+			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+		}
 	}
 
 	@memoizeMethod

@@ -3,6 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -18,9 +20,9 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeCase} from './ASTNodeCase.ts';
 import {
-	ASTNodeExpression,
 	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
@@ -60,6 +62,14 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 			TYPE.Union.all(this.children.map((c) => c.consequent.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.MapNew {
+		return new IR.MapNew(new Map(this.children.map((c) => [
+			c.antecedent.lower(optimizer).asTac(optimizer),
+			c.consequent.lower(optimizer).asTac(optimizer),
+		])), this.type());
 	}
 
 	@memoizeMethod
