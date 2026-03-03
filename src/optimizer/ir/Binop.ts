@@ -65,11 +65,11 @@ export class Binop extends Value {
 				case BinOp.INT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
 				case BinOp.INT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
 
-				// case BinOp.NAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
 
 				case BinOp.FLOAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
 				case BinOp.FLOAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
