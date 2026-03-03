@@ -985,11 +985,11 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					(41 + 1, 42 / 2, 43 - 3).1;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.NEG (INT.CONST 3)))
-					(DECL INT $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL TUPLE $4 (TUPLE.NEW (GET $0) (GET $1) (GET $3)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
+					(DECL <tuple> $4 (TUPLE.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (TUPLE.GET 1 (GET $4)))
 				`.join('\n'));
 			});
@@ -997,11 +997,11 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.NEG (INT.CONST 3)))
-					(DECL INT $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL RECORD $4 (RECORD.NEW @a->(GET $0) @b->(GET $1) @c->(GET $3)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
+					(DECL <record> $4 (RECORD.NEW @a->(GET $0) @b->(GET $1) @c->(GET $3)))
 					(DROP (RECORD.GET @b (GET $4)))
 				`.join('\n'));
 			});
@@ -1009,11 +1009,11 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					[41 + 1, 42 / 2, 43 - 3].[1];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.NEG (INT.CONST 3)))
-					(DECL INT $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL LIST $4 (LIST.NEW (GET $0) (GET $1) (GET $3)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
+					(DECL <List> $4 (LIST.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (LIST.GET (GET $4) (INT.CONST 1)))
 				`.join('\n'));
 			});
@@ -1021,11 +1021,11 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.NEG (INT.CONST 3)))
-					(DECL INT $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL DICT $4 (DICT.NEW @a->(GET $0) @b->(GET $1) @c->(GET $3)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
+					(DECL <Dict> $4 (DICT.NEW @a->(GET $0) @b->(GET $1) @c->(GET $3)))
 					(DROP (DICT.GET (GET $4) (SYM.CONST @b)))
 				`.join('\n'));
 			});
@@ -1033,11 +1033,11 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					{41 + 1, 42 / 2, 43 - 3}.[21];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.NEG (INT.CONST 3)))
-					(DECL INT $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL SET $4 (SET.NEW (GET $0) (GET $1) (GET $3)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
+					(DECL <Set> $4 (SET.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (SET.GET (GET $4) (INT.CONST 21)))
 				`.join('\n'));
 			});
@@ -1045,11 +1045,11 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.NEG (INT.CONST 3)))
-					(DECL INT $3 (INT.ADD (INT.CONST 43) (GET $2)))
-					(DECL MAP $4 (MAP.NEW (INT.CONST 21)->(GET $0) (INT.CONST 22)->(GET $1) (INT.CONST 23)->(GET $3)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
+					(DECL <Map> $4 (MAP.NEW (INT.CONST 21)->(GET $0) (INT.CONST 22)->(GET $1) (INT.CONST 23)->(GET $3)))
 					(DROP (MAP.GET (GET $4) (INT.CONST 22)))
 				`.join('\n'));
 			});
@@ -1057,11 +1057,11 @@ describe('ASTNodeAccess', () => {
 				assert.strictEqual(setupScript(`{
 					[("hello", {41, 42, 43})].[0].1.[42];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL SET $0 (SET.NEW (INT.CONST 41) (INT.CONST 42) (INT.CONST 43)))
-					(DECL TUPLE $1 (TUPLE.NEW (STR.CONST "hello") (GET $0)))
-					(DECL LIST $2 (LIST.NEW (GET $1)))
-					(DECL TUPLE $3 (LIST.GET (GET $2) (INT.CONST 0)))
-					(DECL SET $4 (TUPLE.GET 1 (GET $3)))
+					(DECL <Set> $0 (SET.NEW (INT.CONST 41) (INT.CONST 42) (INT.CONST 43)))
+					(DECL <tuple> $1 (TUPLE.NEW (STR.CONST "hello") (GET $0)))
+					(DECL <List> $2 (LIST.NEW (GET $1)))
+					(DECL <tuple> $3 (LIST.GET (GET $2) (INT.CONST 0)))
+					(DECL <Set> $4 (TUPLE.GET 1 (GET $3)))
 					(DROP (SET.GET (GET $4) (INT.CONST 42)))
 				`.join('\n'));
 			});
@@ -1080,12 +1080,12 @@ describe('ASTNodeAccess', () => {
 					'set'.[42];
 					map.[42];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL TUPLE tup (TUPLE.NEW (INT.CONST 42)))
-					(DECL RECORD rec (RECORD.NEW @a->(INT.CONST 42)))
-					(DECL LIST list (LIST.NEW (INT.CONST 42)))
-					(DECL DICT dict (DICT.NEW @a->(INT.CONST 42)))
-					(DECL SET 'set' (SET.NEW (INT.CONST 42)))
-					(DECL MAP map (MAP.NEW (INT.CONST 42)->(STR.CONST "hello")))
+					(DECL <tuple> tup (TUPLE.NEW (INT.CONST 42)))
+					(DECL <record> rec (RECORD.NEW @a->(INT.CONST 42)))
+					(DECL <List> list (LIST.NEW (INT.CONST 42)))
+					(DECL <Dict> dict (DICT.NEW @a->(INT.CONST 42)))
+					(DECL <Set> 'set' (SET.NEW (INT.CONST 42)))
+					(DECL <Map> map (MAP.NEW (INT.CONST 42)->(STR.CONST "hello")))
 					(DROP (TUPLE.GET 0 (GET tup)))
 					(DROP (RECORD.GET @a (GET rec)))
 					(DROP (LIST.GET (GET list) (INT.CONST 0)))
@@ -1110,13 +1110,13 @@ describe('ASTNodeAccess', () => {
 				return extract_lines`
 					if_false (ISNULL (GET ${ base_name })), goto "${ block_else }".
 					"${ block_then }":
-					(DECL NULL ${ result_then_name } (NULL.CONST null))
+					(DECL <null> ${ result_then_name } (NULL.CONST null))
 					goto "${ block_endif }".
 					"${ block_else }":
 					${ typeof result_value === 'string' ? `
-						(DECL ${ result_value === '(NULL.CONST null)' ? 'NULL' : 'ANY' } ${ result_else_name } ${ result_value })
+						(DECL <${ result_value === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ result_else_name } ${ result_value })
 					` : result_value((value) => `
-						(DECL ANY ${ result_else_name } ${ value })
+						(DECL <anything> ${ result_else_name } ${ value })
 					`) }
 					"${ block_endif }":
 					(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
@@ -1130,13 +1130,13 @@ describe('ASTNodeAccess', () => {
 					my_tupleA?.2;
 					my_tupleB?.2;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-					(DECL TUPLE my_tupleA (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
-					(DECL INT $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL TUPLE my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+					(DECL <tuple> my_tupleA (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
 				`.concat(
 					...maybe_access_output(0, 'my_tupleA', [5], '(TUPLE.GET 2 (GET my_tupleA))'),
 					...maybe_access_output(3, 'my_tupleB', [7], '(NULL.CONST null)'),
@@ -1149,13 +1149,13 @@ describe('ASTNodeAccess', () => {
 					my_recordX?.b;
 					my_recordY?.b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL INT $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-					(DECL RECORD my_recordX (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
-					(DECL INT $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL INT $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL RECORD my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+					(DECL <record> my_recordX (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
+					(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
 				`.concat(
 					...maybe_access_output(0, 'my_recordX', [5], '(RECORD.GET @b (GET my_recordX))'),
 					...maybe_access_output(3, 'my_recordY', [7], '(NULL.CONST null)'),
@@ -1166,7 +1166,7 @@ describe('ASTNodeAccess', () => {
 					val mut my_list: [int] = [41, 42];
 					my_list?.[2];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL LIST my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+					(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 				`.concat(...maybe_access_output(0, 'my_list', [0], '(LIST.GET (GET my_list) (INT.CONST 2))')).join('\n'));
 			});
 			it('Dict access.', () => {
@@ -1174,7 +1174,7 @@ describe('ASTNodeAccess', () => {
 					val mut my_dict: [:int] = [a= 41, c= 42];
 					my_dict?.[@b];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL DICT my_dict (DICT.NEW @a->(INT.CONST 41) @c->(INT.CONST 42)))
+					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @c->(INT.CONST 42)))
 				`.concat(...maybe_access_output(0, 'my_dict', [0], '(DICT.GET (GET my_dict) (SYM.CONST @b))')).join('\n'));
 			});
 			it('Map access.', () => {
@@ -1182,8 +1182,8 @@ describe('ASTNodeAccess', () => {
 					val mut accessor: int = 22;
 					{21 -> 41, 22 -> 42, 23 -> 43}?.[accessor];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL INT accessor (INT.CONST 22))
-					(DECL MAP $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
+					(DECL <int> accessor (INT.CONST 22))
+					(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
 				`.concat(...maybe_access_output(0, '$0', [1], '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
 			});
 			it('union access.', () => {
@@ -1203,12 +1203,12 @@ describe('ASTNodeAccess', () => {
 					mixed_set?.[42]; %== true
 					mixed_map?.[42]; %== "hello"
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL TUPLE mixed_tup (TUPLE.NEW (STR.CONST "hello") (BOOL.CONST true) (SYM.CONST @world)))
-					(DECL RECORD mixed_rec (RECORD.NEW @a->(INT.CONST 42)))
-					(DECL LIST mixed_lst (LIST.NEW (INT.CONST 42)))
-					(DECL DICT mixed_dct (DICT.NEW @a->(INT.CONST 42)))
-					(DECL SET mixed_set (SET.NEW (INT.CONST 42)))
-					(DECL MAP mixed_map (MAP.NEW (INT.CONST 42)->(STR.CONST "hello")))
+					(DECL <tuple> mixed_tup (TUPLE.NEW (STR.CONST "hello") (BOOL.CONST true) (SYM.CONST @world)))
+					(DECL <record> mixed_rec (RECORD.NEW @a->(INT.CONST 42)))
+					(DECL <List> mixed_lst (LIST.NEW (INT.CONST 42)))
+					(DECL <Dict> mixed_dct (DICT.NEW @a->(INT.CONST 42)))
+					(DECL <Set> mixed_set (SET.NEW (INT.CONST 42)))
+					(DECL <Map> mixed_map (MAP.NEW (INT.CONST 42)->(STR.CONST "hello")))
 				`.concat(
 					...maybe_access_output(0x00, 'mixed_tup', [0x00], '(TUPLE.GET 0 (GET mixed_tup))'),
 					...maybe_access_output(0x03, 'mixed_tup', [0x02], '(NULL.CONST null)'),
@@ -1249,9 +1249,9 @@ describe('ASTNodeAccess', () => {
 					my_dict?.[@b && @a];
 					my_map?.[5 + 3 * 2];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL NULL my_list (NULL.CONST null))
-					(DECL NULL my_dict (NULL.CONST null))
-					(DECL NULL my_map (NULL.CONST null))
+					(DECL <null> my_list (NULL.CONST null))
+					(DECL <null> my_dict (NULL.CONST null))
+					(DECL <null> my_map (NULL.CONST null))
 				`.concat(
 					...maybe_access_output(0, 'my_list', [0], '(NULL.CONST null)'),
 					...maybe_access_output(3, 'my_dict', [2], '(NULL.CONST null)'),
@@ -1267,30 +1267,30 @@ describe('ASTNodeAccess', () => {
 					my_dict?.[@b && @a];
 					my_map?.[5 + 3 * 2];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL LIST my_list (LIST.NEW (INT.CONST 42)))
-					(DECL DICT my_dict (DICT.NEW @a->(INT.CONST 42)))
-					(DECL MAP my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
+					(DECL <List> my_list (LIST.NEW (INT.CONST 42)))
+					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 42)))
+					(DECL <Map> my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
 				`.concat(
 					...maybe_access_output(0, 'my_list', [0, 4], (set) => `
-						(DECL INT $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
-						(DECL INT $2 (INT.NEG (INT.CONST 3)))
-						(DECL INT $3 (INT.ADD (GET $1) (GET $2)))
+						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
+						(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+						(DECL <int> $3 (INT.ADD (GET $1) (GET $2)))
 						${ set('(LIST.GET (GET my_list) (GET $3))') }
 					`),
 					...maybe_access_output(3, 'my_dict', [5, 9], (set) => `
 						if_false (TOBOOL (SYM.CONST @b)), goto "block-7".
 						"block-6":
-						(DECL SYM $6 (SYM.CONST @a))
+						(DECL <sym> $6 (SYM.CONST @a))
 						goto "block-8".
 						"block-7":
-						(DECL SYM $7 (SYM.CONST @b))
+						(DECL <sym> $7 (SYM.CONST @b))
 						"block-8":
-						(DECL SYM $8 (PHI "block-6"->(GET $6) "block-7"->(GET $7)))
+						(DECL <sym> $8 (PHI "block-6"->(GET $6) "block-7"->(GET $7)))
 						${ set('(DICT.GET (GET my_dict) (GET $8))') }
 					`),
 					...maybe_access_output(9, 'my_map', [10, 13], (set) => `
-						(DECL INT $11 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
-						(DECL INT $12 (INT.ADD (INT.CONST 5) (GET $11)))
+						(DECL <int> $11 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL <int> $12 (INT.ADD (INT.CONST 5) (GET $11)))
 						${ set('(MAP.GET (GET my_map) (GET $12))') }
 					`),
 				).join('\n'));

@@ -4,8 +4,8 @@ import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
 import {
-	TypeName,
 	ast_type_name,
+	stringify_type_name,
 } from './TypeName.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -31,6 +31,6 @@ export class Decl extends Instruction {
 	}
 
 	public override toString(): string {
-		return `(DECL ${ TypeName[ast_type_name(this.targetType)] } ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
+		return `(DECL <${ stringify_type_name(ast_type_name(this.targetType)) }> ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
 	}
 }
