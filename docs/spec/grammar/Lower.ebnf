@@ -155,7 +155,36 @@ Lower(SemanticAccess[kind=MAYBE] access) := [
 	return (PHI "isnull"->(GET $result_null) "nonnull"->(GET $result_nonnull)).
 ];
 
-// Lower(SemanticCall call);
+Lower(SemanticCall:has(SemanticVariable ::= "List") call) := (LIST.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "Dict") call) := (DICT.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "Set")  call) := (SET.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "Map")  call) := (MAP.NEW);
+Lower(SemanticCall:has(SemanticVariable ::= "List"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL LIST $destination (LIST.NEW))
+	(LIST.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall:has(SemanticVariable ::= "Dict"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL DICT $destination (DICT.NEW))
+	(DICT.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall:has(SemanticVariable ::= "Set"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL SET $destination (SET.NEW))
+	(SET.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall:has(SemanticVariable ::= "Map"):has(SemanticExpression) call) := [
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
+	(DECL MAP $destination (MAP.NEW))
+	(MAP.COPY (GET $destination) (GET $arg))
+	return (GET $destination).
+];
+Lower(SemanticCall call) := (CALL [`Lower(call.0)` `...call.SemanticExpression*.map(Lower)`]);
+
 // Lower(SemanticClaim claim);
 
 Lower(SemanticOperation[operator=NOT] op)             := (NOT       [`op.0`]);

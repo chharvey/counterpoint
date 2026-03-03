@@ -49,7 +49,6 @@ describe('ASTNodeExpression', () => {
 
 		xjs.Map.forEachAggregated(new Map<ConstructorType<AST.ASTNodeExpression>, string>([
 			[AST.ASTNodeTemplate, '"""hello {{ 42 }} world"""'],
-			[AST.ASTNodeCall,     'List.<int>((41, 42, 43))'],
 		]), (src, klass) => {
 			it(klass.name, () => {
 				const opt = new Optimizer();
