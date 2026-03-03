@@ -100,13 +100,23 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 			switch (true) {
 				case this.accessor instanceof ASTNodeIndex: {
 					if (base_typename === IR.TypeName.TUPLE) {
-						return new IR.TupleGet(base_value, this.accessor.index, typ);
+						assert_instanceof(base_value.type, TYPE.Tuple);
+						// we can assert there are no optional entries since this tuple type was created by the AST expression (`TYPE.Tuple.fromTypes`)
+						const canon_index: bigint | undefined = base_value.type.canonicalizeIndex(this.accessor.index);
+						return canon_index !== undefined
+							? new IR.TupleGet(base_value, canon_index, typ)
+							: new IR.Const(VALUE.NULL);
 					}
 					break;
 				}
 				case this.accessor instanceof ASTNodeKey: {
 					if (base_typename === IR.TypeName.RECORD) {
-						return new IR.RecordGet(base_value, {keyid: this.accessor.id, keysrc: this.accessor.source}, typ);
+						assert_instanceof(base_value.type, TYPE.Record);
+						// we can assert there are no optional entries since this record type was created by the AST expression (`TYPE.Record.fromTypes`)
+						const canon_key: bigint | undefined = base_value.type.canonicalizeKey(this.accessor.id);
+						return canon_key !== undefined
+							? new IR.RecordGet(base_value, {keyid: canon_key, keysrc: this.accessor.source}, typ)
+							: new IR.Const(VALUE.NULL);
 					}
 					break;
 				}

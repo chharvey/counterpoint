@@ -1122,25 +1122,44 @@ describe('ASTNodeAccess', () => {
 					(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
 				`;
 			}
+			/* eslint-disable @stylistic/indent */
 			it('tuple access.', () => {
 				assert.strictEqual(setupScript(`{
-					val mut my_tuple: (int, int, ?:int) = (41 + 1, 42 / 2);
-					my_tuple?.2;
+					val mut my_tupleA: (int, int, ?:int) = (41 + 1, 42 / 2, 43 ^ 3);
+					val mut my_tupleB: (int, int, ?:int) = (41 + 1, 42 / 2);
+					my_tupleA?.2;
+					my_tupleB?.2;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL TUPLE my_tuple (TUPLE.NEW (GET $0) (GET $1)))
-				`.concat(...maybe_access_output(0, 'my_tuple', [2], '(TUPLE.GET 2 (GET my_tuple))')).join('\n'));
+					(DECL INT $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+					(DECL TUPLE my_tupleA (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+					(DECL INT $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL TUPLE my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
+				`.concat(
+					...maybe_access_output(0, 'my_tupleA', [5], '(TUPLE.GET 2 (GET my_tupleA))'),
+					...maybe_access_output(3, 'my_tupleB', [7], '(NULL.CONST null)'),
+				).join('\n'));
 			});
 			it('record access.', () => {
 				assert.strictEqual(setupScript(`{
-					val mut my_record: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
-					my_record?.b;
+					val mut my_recordX: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2, b= 43 ^ 3);
+					val mut my_recordY: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
+					my_recordX?.b;
+					my_recordY?.b;
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL RECORD my_record (RECORD.NEW @a->(GET $0) @c->(GET $1)))
-				`.concat(...maybe_access_output(0, 'my_record', [2], '(RECORD.GET @b (GET my_record))')).join('\n'));
+					(DECL INT $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+					(DECL RECORD my_recordX (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
+					(DECL INT $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL INT $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL RECORD my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
+				`.concat(
+					...maybe_access_output(0, 'my_recordX', [5], '(RECORD.GET @b (GET my_recordX))'),
+					...maybe_access_output(3, 'my_recordY', [7], '(NULL.CONST null)'),
+				).join('\n'));
 			});
 			it('List access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1167,7 +1186,6 @@ describe('ASTNodeAccess', () => {
 					(DECL MAP $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
 				`.concat(...maybe_access_output(0, '$0', [1], '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
 			});
-			/* eslint-disable @stylistic/indent */
 			it('union access.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
