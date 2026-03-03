@@ -24,8 +24,8 @@ export class CollectionDynamicSet extends Instruction {
 	public override validate(): void {
 		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate());
 		switch (this.name) {
-			case TypeName.LIST: { return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT)); }
-			case TypeName.DICT: { return assert.ok(this.accessor.type.isSubtypeOf(TYPE.SYM)); }
+			case TypeName.LIST: { return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT)); } // TODO: v0.5: .union(TYPE.NAT)
+			case TypeName.DICT: { return assert.ok(this.accessor.type.isSubtypeOf(TYPE.SYM.union(TYPE.STR))); }
 			// TODO: Set and Map type generics
 		}
 	}

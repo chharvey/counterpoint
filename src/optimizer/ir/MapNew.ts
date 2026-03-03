@@ -9,7 +9,7 @@ import {Value} from './Value.ts';
 /** Create a Map. */
 export class MapNew extends Value {
 	public constructor(
-		private readonly cases: readonly (readonly [Value, Value])[],
+		private readonly cases: ReadonlyMap<Value, Value>,
 		typ: TYPE.Type,
 	) {
 		super(typ);
@@ -17,10 +17,10 @@ export class MapNew extends Value {
 
 	@runOnceMethod
 	public override validate(): void {
-		return xjs.Array.forEachAggregated(this.cases, ([ant, con]) => xjs.Array.forEachAggregated([ant, con], (value) => value.validate()));
+		return xjs.Map.forEachAggregated(this.cases, (con, ant) => xjs.Array.forEachAggregated([ant, con], (value) => value.validate()));
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[TypeName.MAP] }.NEW ${ this.cases.flat().join(' ') })`;
+		return `(${ TypeName[TypeName.MAP] }.NEW ${ [...this.cases].map(([ant, con]) => `${ ant }->${ con }`).join(' ') })`;
 	}
 }

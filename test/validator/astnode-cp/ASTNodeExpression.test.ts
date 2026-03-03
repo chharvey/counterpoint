@@ -109,7 +109,7 @@ describe('ASTNodeExpression', () => {
 				(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
 				(DECL FLOAT $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
 				(DECL FLOAT $3 (FLOAT.ADD (GET $1) (GET $2)))
-				(DROP (RECORD.NEW @a @b @c (GET x) (GET $0) (GET $3)))
+				(DROP (RECORD.NEW @a->(GET x) @b->(GET $0) @c->(GET $3)))
 			`.join('\n'));
 		});
 		it('AST.List returns an IR.CollectionIndexedNew.', () => {
@@ -131,7 +131,7 @@ describe('ASTNodeExpression', () => {
 				(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL FLOAT $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
 				(DECL FLOAT $3 (FLOAT.ADD (GET $1) (GET $2)))
-				(DROP (DICT.NEW (SYM.CONST @a) (BOOL.CONST false) (SYM.CONST @b) (GET $0) (SYM.CONST @c) (GET $3)))
+				(DROP (DICT.NEW @a->(BOOL.CONST false) @b->(GET $0) @c->(GET $3)))
 			`.join('\n'));
 		});
 		it('AST.Set returns an IR.SetNew.', () => {
@@ -154,7 +154,7 @@ describe('ASTNodeExpression', () => {
 					(DECL FLOAT $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL FLOAT $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
 					(DECL FLOAT $3 (FLOAT.ADD (GET $1) (GET $2)))
-					(DROP (MAP.NEW (STR.CONST "a") (BOOL.CONST false) (STR.CONST "b") (GET $0) (STR.CONST "c") (GET $3)))
+					(DROP (MAP.NEW (STR.CONST "a")->(BOOL.CONST false) (STR.CONST "b")->(GET $0) (STR.CONST "c")->(GET $3)))
 				`.join('\n'));
 			});
 			it('evaluates antecedents and consequents interchangeably in source order.', () => {
@@ -168,7 +168,7 @@ describe('ASTNodeExpression', () => {
 					(DECL INT $4 (INT.ADD (GET $3) (INT.CONST 3)))
 					(DECL INT $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
 					(DECL LIST $6 (LIST.NEW (GET $5)))
-					(DROP (MAP.NEW (GET $0) (GET $1) (GET $2) (GET $4) (GET $6) (INT.CONST 15)))
+					(DROP (MAP.NEW (GET $0)->(GET $1) (GET $2)->(GET $4) (GET $6)->(INT.CONST 15)))
 				`.join('\n'));
 			});
 		});
@@ -262,12 +262,12 @@ describe('ASTNodeExpression', () => {
 				my_map.[accessor] = 84;
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
 				(DECL LIST my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-				(DECL DICT my_dict (DICT.NEW (SYM.CONST @a) (INT.CONST 41) (SYM.CONST @b) (INT.CONST 42)))
+				(DECL DICT my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
 				(DECL INT $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 				(DECL INT $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 				(DECL INT $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
 				(DECL SET my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
-				(DECL MAP my_map (MAP.NEW (INT.CONST 21) (INT.CONST 41) (INT.CONST 22) (INT.CONST 42) (INT.CONST 23) (INT.CONST 43)))
+				(DECL MAP my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
 				(DECL INT accessor (INT.CONST 22))
 				(DECL INT $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
 				(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))

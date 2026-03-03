@@ -6,7 +6,7 @@ import {Value} from './Value.ts';
 
 
 
-/** Create an indexed collection (tuple/List/Set). */
+/** Create a linear collection (tuple/List/Set). */
 export class CollectionLinearNew extends Value {
 	public constructor(
 		private readonly name:  TypeName.TUPLE | TypeName.LIST | TypeName.SET,

@@ -106,7 +106,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				}
 				case this.accessor instanceof ASTNodeKey: {
 					if (base_typename === IR.TypeName.RECORD) {
-						return new IR.RecordGet(base_value, this.accessor, typ);
+						return new IR.RecordGet(base_value, {keyid: this.accessor.id, keysrc: this.accessor.source}, typ);
 					}
 					break;
 				}
