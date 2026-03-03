@@ -80,7 +80,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override lower(optimizer: Optimizer): IR.Phi {
 		return IR.conditional_expression(
 			optimizer,
 			() => this.operand0.lower(optimizer),

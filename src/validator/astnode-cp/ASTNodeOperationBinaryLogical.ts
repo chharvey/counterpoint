@@ -97,7 +97,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override lower(optimizer: Optimizer): IR.Phi {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```

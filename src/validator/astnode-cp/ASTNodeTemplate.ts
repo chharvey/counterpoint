@@ -56,7 +56,7 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override lower(optimizer: Optimizer): IR.Template {
 		return new IR.Template(this.children.map((c) => c.lower(optimizer).asTac(optimizer)));
 	}
 
