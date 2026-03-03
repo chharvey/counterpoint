@@ -147,6 +147,28 @@ test.suite('ASTNodeExpression', () => {
 				`.join('\n'));
 			});
 		});
+		test.suite('AST.ExpressionBlock returns the last expression-statement’s expression.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: int = 42;
+				val mut y: int = {
+					set x = x + 2;
+					x / 2;
+				};
+				set y = {
+					y;
+					set y = y + x;
+					y * 2;
+				} + y;
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL <int> x (INT.CONST 42))
+				(SET x (INT.ADD (GET x) (INT.CONST 2)))
+				(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
+				(DROP (GET y))
+				(SET y (INT.ADD (GET y) (GET x)))
+				(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
+				(SET y (INT.ADD (GET $0) (GET y)))
+			`.join('\n'));
+		});
 		test.suite('AST.Claim', () => {
 			test.test('returns the operand.', () => {
 				const {stmts, opt} = setupScript(`{

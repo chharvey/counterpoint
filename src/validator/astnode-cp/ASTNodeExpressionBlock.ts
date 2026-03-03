@@ -75,8 +75,9 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeExpressionBlock#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): IR.Value {
+		this.block.children.slice(0, -1).forEach((stmt) => stmt.lower(optimizer));
+		return (this.block.children.at(-1) as ASTNodeStatementExpression).expr!.lower(optimizer);
 	}
 
 	@memoizeMethod

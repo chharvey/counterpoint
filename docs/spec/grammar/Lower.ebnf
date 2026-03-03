@@ -143,6 +143,11 @@ Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] Sem
 Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
 Lower(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (MAP.GET  [`Lower(SemanticExpression__0)` `Lower(SemanticExpression__1)`]);
 
+Lower(SemanticExpressionBlock blex) := [
+	...`blex.0.SemanticStatement.slice(0, 1).map(Lower)`
+	return `Lower(blex.0.-1.SemanticExpression)`.
+];
+
 Lower(SemanticAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $tuple `Lower(access.0)`)
 	if_false (ISNULL (GET $tuple)), goto "nonnull".
