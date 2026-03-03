@@ -19,6 +19,7 @@ import {Instruction} from './Instruction.ts';
  * - TupleGet
  * - RecordGet
  * - CollectionDynamicGet
+ * - Call
  * - Unop
  * - Binop
  * - Phi
