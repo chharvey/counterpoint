@@ -150,6 +150,19 @@ SemanticStatement =:=
 
 
 
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+;
+
+SemanticDeclarationType
+	::= SemanticTypeAlias? SemanticType;
+
+SemanticDeclarationVariable[writable: Boolean]
+	::= SemanticVariable? SemanticType? SemanticExpression?;
+
+
+
 SemanticStatementExpression
 	::= SemanticExpression?;
 
@@ -175,19 +188,6 @@ SemanticStatementBreak[skip: Boolean]
 
 SemanticBlock
 	::= SemanticStatement+;
-
-
-
-SemanticDeclaration =:=
-	| SemanticDeclarationType
-	| SemanticDeclarationVariable
-;
-
-SemanticDeclarationType
-	::= SemanticTypeAlias? SemanticType;
-
-SemanticDeclarationVariable[writable: Boolean]
-	::= SemanticVariable? SemanticType? SemanticExpression?;
 
 
 
