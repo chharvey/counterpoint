@@ -23,6 +23,7 @@ export * from './Drop.ts';
 export * from './Decl.ts';
 export * from './Set.ts';
 export * from './CollectionDynamicSet.ts';
+export * from './CollectionDynamicCopy.ts';
 export * from './Label.ts';
 export * from './Goto.ts';
 export * from './GotoIfFalse.ts';

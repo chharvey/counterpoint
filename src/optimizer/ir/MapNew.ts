@@ -21,6 +21,6 @@ export class MapNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[TypeName.MAP] }.NEW ${ [...this.cases].map(([ant, con]) => `${ ant }->${ con }`).join(' ') })`;
+		return `(${ [`${ TypeName[TypeName.MAP] }.NEW`, ...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`)].join(' ') })`;
 	}
 }

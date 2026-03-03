@@ -1,5 +1,8 @@
-import {runOnceMethod} from '../../lib/index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import {
+	assert_instanceof,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
@@ -17,7 +20,8 @@ export class RecordGet extends Value {
 
 	@runOnceMethod
 	public override validate(): void {
-		return this.record.validate();
+		this.record.validate();
+		return assert_instanceof(this.record.type, TYPE.Record);
 	}
 
 	public override toString(): string {

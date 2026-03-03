@@ -22,6 +22,6 @@ export class RecordNew extends Value {
 
 	public override toString(): string {
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
-		return `(${ TypeName[TypeName.RECORD] }.NEW ${ [...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`).join(' ') })`;
+		return `(${ [`${ TypeName[TypeName.RECORD] }.NEW`, ...[...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`)].join(' ') })`;
 	}
 }

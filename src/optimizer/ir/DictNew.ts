@@ -24,6 +24,6 @@ export class DictNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[TypeName.DICT] }.NEW ${ [...this.props].map(([sym, value]) => `${ sym }->${ value }`).join(' ') })`;
+		return `(${ [`${ TypeName[TypeName.DICT] }.NEW`, ...[...this.props].map(([sym, value]) => `${ sym }->${ value }`)].join(' ') })`;
 	}
 }

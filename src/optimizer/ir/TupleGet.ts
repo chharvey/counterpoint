@@ -1,5 +1,8 @@
-import {runOnceMethod} from '../../lib/index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import {
+	assert_instanceof,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
@@ -17,7 +20,8 @@ export class TupleGet extends Value {
 
 	@runOnceMethod
 	public override validate(): void {
-		return this.tuple.validate();
+		this.tuple.validate();
+		return assert_instanceof(this.tuple.type, TYPE.Tuple);
 	}
 
 	public override toString(): string {

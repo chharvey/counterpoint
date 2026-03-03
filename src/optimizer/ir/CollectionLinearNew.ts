@@ -22,6 +22,6 @@ export class CollectionLinearNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.NEW ${ this.items.join(' ') })`;
+		return `(${ [`${ TypeName[this.name] }.NEW`, ...this.items].join(' ') })`;
 	}
 }
