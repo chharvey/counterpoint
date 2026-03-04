@@ -12,12 +12,12 @@ export class Template extends Value {
 		super(TYPE.STR);
 	}
 
+	public override toString(): string {
+		return `(${ [`${ TypeName[TypeName.STR] }.TEMPLATE`, ...this.items].join(' ') })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
-	}
-
-	public override toString(): string {
-		return `(${ [`${ TypeName[TypeName.STR] }.TEMPLATE`, ...this.items].join(' ') })`;
 	}
 }

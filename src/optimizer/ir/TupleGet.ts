@@ -18,13 +18,13 @@ export class TupleGet extends Value {
 		super(entry_type);
 	}
 
+	public override toString(): string {
+		return `(${ TypeName[TypeName.TUPLE] }.GET ${ this.accessor } ${ this.tuple })`; // accessor is static so it comes first
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		this.tuple.validate();
 		return assert_instanceof(this.tuple.type, TYPE.Tuple);
-	}
-
-	public override toString(): string {
-		return `(${ TypeName[TypeName.TUPLE] }.GET ${ this.accessor } ${ this.tuple })`; // accessor is static so it comes first
 	}
 }

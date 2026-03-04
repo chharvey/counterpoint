@@ -15,13 +15,13 @@ export class RecordNew extends Value {
 		super(typ);
 	}
 
-	@runOnceMethod
-	public override validate(): void {
-		return xjs.Map.forEachAggregated(this.props, ({value}) => value.validate());
-	}
-
 	public override toString(): string {
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
 		return `(${ [`${ TypeName[TypeName.RECORD] }.NEW`, ...[...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`)].join(' ') })`;
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		return xjs.Map.forEachAggregated(this.props, ({value}) => value.validate());
 	}
 }

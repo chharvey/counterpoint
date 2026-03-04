@@ -15,13 +15,13 @@ export class Const extends Value {
 		super(value.toType());
 	}
 
+	public override toString(): string {
+		return `(${ TypeName[ast_type_name(this.type)] }.CONST ${ this.value })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return assert.ok(this.value.toType().isSubtypeOf(this.type));
-	}
-
-	public override toString(): string {
-		return `(${ TypeName[ast_type_name(this.type)] }.CONST ${ this.value })`;
 	}
 
 	public override asTac(): Const {

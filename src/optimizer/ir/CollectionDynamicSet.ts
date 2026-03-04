@@ -23,6 +23,10 @@ export class CollectionDynamicSet extends Instruction {
 		super();
 	}
 
+	public override toString(): string {
+		return `(${ TypeName[this.name] }.SET ${ this.collection } ${ this.accessor } ${ this.value })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate());
@@ -44,9 +48,5 @@ export class CollectionDynamicSet extends Instruction {
 				return; // TODO: Map type generics
 			}
 		}
-	}
-
-	public override toString(): string {
-		return `(${ TypeName[this.name] }.SET ${ this.collection } ${ this.accessor } ${ this.value })`;
 	}
 }

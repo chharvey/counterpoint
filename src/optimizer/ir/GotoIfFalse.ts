@@ -16,13 +16,13 @@ export class GotoIfFalse extends Instruction {
 		super();
 	}
 
+	public override toString(): string {
+		return `if_false ${ this.condition }, goto "${ this.label.name }".`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		this.condition.validate();
 		return assert.ok(this.condition.type.isSubtypeOf(TYPE.BOOL));
-	}
-
-	public override toString(): string {
-		return `if_false ${ this.condition }, goto "${ this.label.name }".`;
 	}
 }

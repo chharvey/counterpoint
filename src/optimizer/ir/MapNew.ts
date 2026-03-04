@@ -15,12 +15,12 @@ export class MapNew extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ [`${ TypeName[TypeName.MAP] }.NEW`, ...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`)].join(' ') })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Map.forEachAggregated(this.cases, (con, ant) => xjs.Array.forEachAggregated([ant, con], (value) => value.validate()));
-	}
-
-	public override toString(): string {
-		return `(${ [`${ TypeName[TypeName.MAP] }.NEW`, ...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`)].join(' ') })`;
 	}
 }

@@ -16,12 +16,12 @@ export class CollectionLinearNew extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ [`${ TypeName[this.name] }.NEW`, ...this.items].join(' ') })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
-	}
-
-	public override toString(): string {
-		return `(${ [`${ TypeName[this.name] }.NEW`, ...this.items].join(' ') })`;
 	}
 }

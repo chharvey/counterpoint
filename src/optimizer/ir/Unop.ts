@@ -33,6 +33,10 @@ export class Unop extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ UnOp[this.operator].replace(/_/, '.') } ${ this.operand })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
@@ -44,9 +48,5 @@ export class Unop extends Value {
 			case UnOp.INT_NEG:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.INT)); }
 			case UnOp.FLOAT_NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.FLOAT)); }
 		}
-	}
-
-	public override toString(): string {
-		return `(${ UnOp[this.operator].replace(/_/, '.') } ${ this.operand })`;
 	}
 }

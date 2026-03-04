@@ -18,12 +18,12 @@ export class DictNew extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ [`${ TypeName[TypeName.DICT] }.NEW`, ...[...this.props].map(([sym, value]) => `${ sym }->${ value }`)].join(' ') })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Map.forEachAggregated(this.props, (value) => value.validate());
-	}
-
-	public override toString(): string {
-		return `(${ [`${ TypeName[TypeName.DICT] }.NEW`, ...[...this.props].map(([sym, value]) => `${ sym }->${ value }`)].join(' ') })`;
 	}
 }

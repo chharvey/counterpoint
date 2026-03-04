@@ -52,6 +52,10 @@ export class Binop extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ BinOp[this.operator].replace(/_/, '.') } ${ this.operand0 } ${ this.operand1 })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		const operands = [this.operand0, this.operand1] as const;
@@ -85,9 +89,5 @@ export class Binop extends Value {
 				case BinOp.NGT: { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
 			}
 		});
-	}
-
-	public override toString(): string {
-		return `(${ BinOp[this.operator].replace(/_/, '.') } ${ this.operand0 } ${ this.operand1 })`;
 	}
 }

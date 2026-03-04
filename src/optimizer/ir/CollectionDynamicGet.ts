@@ -22,6 +22,10 @@ export class CollectionDynamicGet extends Value {
 		super(entry_type);
 	}
 
+	public override toString(): string {
+		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		xjs.Array.forEachAggregated([this.collection, this.accessor], (value) => value.validate());
@@ -43,9 +47,5 @@ export class CollectionDynamicGet extends Value {
 				return; // TODO: Map type generics
 			}
 		}
-	}
-
-	public override toString(): string {
-		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
 	}
 }

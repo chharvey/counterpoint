@@ -24,13 +24,13 @@ export class Decl extends Instruction {
 		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
 	}
 
+	public override toString(): string {
+		return `(DECL <${ stringify_type_name(ast_type_name(this.targetType)) }> ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		this.value.validate();
 		return assert.ok(this.value.type.isSubtypeOf(this.targetType));
-	}
-
-	public override toString(): string {
-		return `(DECL <${ stringify_type_name(ast_type_name(this.targetType)) }> ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
 	}
 }

@@ -15,12 +15,12 @@ export class Call extends Value {
 		super(return_type);
 	}
 
+	public override toString(): string {
+		return `(${ ['CALL', this.callable, ...this.args].join(' ') })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated([this.callable, ...this.args], (value) => value.validate());
-	}
-
-	public override toString(): string {
-		return `(${ ['CALL', this.callable, ...this.args].join(' ') })`;
 	}
 }

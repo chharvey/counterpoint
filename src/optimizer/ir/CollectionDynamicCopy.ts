@@ -22,6 +22,10 @@ export class CollectionDynamicCopy extends Instruction {
 		super();
 	}
 
+	public override toString(): string {
+		return `(${ TypeName[this.name] }.COPY ${ this.destination } ${ this.source })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		xjs.Array.forEachAggregated([this.destination, this.source], (value) => value.validate());
@@ -43,9 +47,5 @@ export class CollectionDynamicCopy extends Instruction {
 				return assert.ok([TYPE.Tuple, TYPE.List, TYPE.Set, TYPE.Map].some((typ) => this.source.type instanceof typ));
 			}
 		}
-	}
-
-	public override toString(): string {
-		return `(${ TypeName[this.name] }.COPY ${ this.destination } ${ this.source })`;
 	}
 }

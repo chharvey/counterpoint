@@ -26,12 +26,12 @@ export class Phi extends Value {
 		this.valueElse = else_value;
 	}
 
+	public override toString(): string {
+		return `(PHI "${ this.labelThen.name }"->${ this.valueThen } "${ this.labelElse.name }"->${ this.valueElse })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated([this.valueThen, this.valueElse], (value) => value.validate());
-	}
-
-	public override toString(): string {
-		return `(PHI "${ this.labelThen.name }"->${ this.valueThen } "${ this.labelElse.name }"->${ this.valueElse })`;
 	}
 }

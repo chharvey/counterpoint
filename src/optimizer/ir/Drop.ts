@@ -10,12 +10,12 @@ export class Drop extends Instruction {
 		super();
 	}
 
+	public override toString(): string {
+		return `(DROP ${ this.value })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return this.value.validate();
-	}
-
-	public override toString(): string {
-		return `(DROP ${ this.value })`;
 	}
 }
