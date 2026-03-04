@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	type Optimizer,
+	IR,
 	BinVect,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -71,8 +72,25 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): void {
-		throw new Error('`ASTNodeStatementLoop#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): void {
+		const block_while:    IR.Label = optimizer.newLabel();
+		const block_endwhile: IR.Label = optimizer.newLabel();
+
+		let condition: () => IR.Value = () => this.condition.lower(optimizer);
+		if (this.until) {
+			condition = () => new IR.Unop(IR.UnOp.NOT, this.condition.lower(optimizer), TYPE.BOOL);
+		}
+
+		optimizer.pushInstruction(block_while);
+		if (this.doFirst) {
+			this.block.lower(optimizer);
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), block_endwhile));
+		} else {
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), block_endwhile));
+			this.block.lower(optimizer);
+		}
+		optimizer.pushInstruction(new IR.Goto(block_while));
+		optimizer.pushInstruction(block_endwhile);
 	}
 
 	@memoizeMethod

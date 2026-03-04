@@ -764,6 +764,66 @@ test.suite('ASTNodeStatement', () => {
 				`.join('\n'));
 			});
 		});
+
+		test.suite('StatementLoop', () => {
+			test.test('pushes an if_false block.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut cond: bool = false;
+					while cond do {
+						42;
+						4.2;
+					};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL <bool> cond (BOOL.CONST false))
+					"block-0":
+					if_false (GET cond), goto "block-1".
+					(DROP (INT.CONST 42))
+					(DROP (FLOAT.CONST 4.2))
+					goto "block-0".
+					"block-1":
+				`.join('\n'));
+			});
+			test.test('negates the condition for `until` statements.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut cond: bool = false;
+					until cond do {
+						42;
+					};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL <bool> cond (BOOL.CONST false))
+					"block-0":
+					if_false (NOT (GET cond)), goto "block-1".
+					(DROP (INT.CONST 42))
+					goto "block-0".
+					"block-1":
+				`.join('\n'));
+			});
+			test.test('bottom-tested conditions.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut cond: bool = false;
+					do {
+						42;
+						4.2;
+					} while cond;
+					do {
+						42;
+					} until cond;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL <bool> cond (BOOL.CONST false))
+					"block-0":
+					(DROP (INT.CONST 42))
+					(DROP (FLOAT.CONST 4.2))
+					if_false (GET cond), goto "block-1".
+					goto "block-0".
+					"block-1":
+					"block-2":
+					(DROP (INT.CONST 42))
+					if_false (NOT (GET cond)), goto "block-3".
+					goto "block-2".
+					"block-3":
+				`.join('\n'));
+			});
+		});
 	});
 
 

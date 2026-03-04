@@ -323,7 +323,35 @@ Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression Semantic
 	"endif":
 ];
 
-// Lower(SemanticStatementLoop);
+Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	if_false `Lower(SemanticExpression)`, goto "endwhile".
+	...`Lower(SemanticBlock)`
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementLoop[doFirst=false][until=true] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	if_false (NOT `Lower(SemanticExpression)`), goto "endwhile".
+	...`Lower(SemanticBlock)`
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementLoop[doFirst=true][until=false] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	...`Lower(SemanticBlock)`
+	if_false `Lower(SemanticExpression)`, goto "endwhile".
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	...`Lower(SemanticBlock)`
+	if_false (NOT `Lower(SemanticExpression)`), goto "endwhile".
+	goto "while".
+	"endwhile":
+];
+
 // Lower(SemanticStatementIteration);
 // Lower(SemanticStatementBreak);
 
