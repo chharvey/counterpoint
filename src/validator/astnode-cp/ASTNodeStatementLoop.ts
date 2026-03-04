@@ -22,11 +22,12 @@ import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	buildDeco,
 	ASTNodeStatement,
+	StatementBreakable,
 } from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeStatementLoop extends ASTNodeStatement {
+export class ASTNodeStatementLoop extends StatementBreakable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementLoop {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementLoop);
@@ -37,9 +38,6 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	#labelExit:   string = '';
 	#labelRepeat: string = '';
 	#labelBody:   string = '';
-
-	#labelWhile?:    IR.Label;
-	#labelEndwhile?: IR.Label;
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_loop'>,
@@ -62,10 +60,6 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		return this.condition.type().isBottomType || this.block.hasBottomType;
 	}
 
-	public get labels(): {readonly while: IR.Label | undefined, readonly endwhile: IR.Label | undefined} {
-		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
-	}
-
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we VarCheck children in a different order.
 		xjs.Array.forEachAggregated(this.doFirst ? [this.block, this.condition] : [this.condition, this.block], (c) => c.varCheck());
@@ -80,24 +74,24 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		this.#labelWhile    = optimizer.newLabel();
-		this.#labelEndwhile = optimizer.newLabel();
+		this.labelWhile    = optimizer.newLabel();
+		this.labelEndwhile = optimizer.newLabel();
 
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.until) {
 			condition = () => new IR.Unop(IR.UnOp.NOT, this.condition.lower(optimizer), TYPE.BOOL);
 		}
 
-		optimizer.pushInstruction(this.#labelWhile);
+		optimizer.pushInstruction(this.labels.while!);
 		if (this.doFirst) {
 			this.block.lower(optimizer);
-			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.#labelEndwhile));
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.labels.endwhile!));
 		} else {
-			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.#labelEndwhile));
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.labels.endwhile!));
 			this.block.lower(optimizer);
 		}
-		optimizer.pushInstruction(new IR.Goto(this.#labelWhile));
-		optimizer.pushInstruction(this.#labelEndwhile);
+		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+		optimizer.pushInstruction(this.labels.endwhile!);
 	}
 
 	@memoizeMethod

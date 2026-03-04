@@ -28,19 +28,17 @@ import type {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {
 	buildDeco,
 	ASTNodeStatement,
+	StatementBreakable,
 } from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeStatementIteration extends ASTNodeStatement {
+export class ASTNodeStatementIteration extends StatementBreakable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementIteration {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementIteration);
 		return statement;
 	}
-
-	#labelWhile?:    IR.Label;
-	#labelEndwhile?: IR.Label;
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_iteration'>,
@@ -60,10 +58,6 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.iterable.type().isBottomType || this.block.hasBottomType;
-	}
-
-	public get labels(): {readonly while: IR.Label | undefined, readonly endwhile: IR.Label | undefined} {
-		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
 	}
 
 	public override varCheck(): void {
@@ -106,16 +100,16 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 		const get_index          = new IR.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 
-		this.#labelWhile    = optimizer.newLabel();
-		this.#labelEndwhile = optimizer.newLabel();
+		this.labelWhile    = optimizer.newLabel();
+		this.labelEndwhile = optimizer.newLabel();
 
-		optimizer.pushInstruction(this.#labelWhile);
+		optimizer.pushInstruction(this.labels.while!);
 		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Binop(
 			IR.BinOp.LT,
 			get_index,
 			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable),
 			TYPE.BOOL,
-		), this.#labelEndwhile));
+		), this.labels.endwhile!));
 		if (this.assignee) {
 			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
@@ -126,8 +120,8 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 		}
 		this.block.lower(optimizer);
 		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.BinOp.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
-		optimizer.pushInstruction(new IR.Goto(this.#labelWhile));
-		optimizer.pushInstruction(this.#labelEndwhile);
+		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+		optimizer.pushInstruction(this.labels.endwhile!);
 	}
 
 	@memoizeMethod
