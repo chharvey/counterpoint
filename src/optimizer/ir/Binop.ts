@@ -55,7 +55,7 @@ export class Binop extends Value {
 	@runOnceMethod
 	public override validate(): void {
 		const operands = [this.operand0, this.operand1] as const;
-		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.NAT);
 		return xjs.Array.forEachAggregated(operands, (arg) => {
 			arg.validate();
 			switch (this.operator) {

@@ -827,6 +827,35 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
+		test.test('StatementIteration', () => {
+			assert.strictEqual(setupScript(`{
+				for item: int in [10, 20, 30] do {
+					item + 5;
+				};
+				for _: float in [4.4, 5.5, 6.6] do {
+					null;
+				};
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
+				(DECL <nat> $1 (NAT.CONST +0))
+				"block-0":
+				if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-1".
+				(DECL <int> item (LIST.GET (GET $0) (GET $1)))
+				(DROP (INT.ADD (GET item) (INT.CONST 5)))
+				(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
+				goto "block-0".
+				"block-1":
+				(DECL <List> $2 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
+				(DECL <nat> $3 (NAT.CONST +0))
+				"block-2":
+				if_false (LT (GET $3) (LIST.COUNT (GET $2))), goto "block-3".
+				(DROP (NULL.CONST null))
+				(SET $3 (NAT.ADD (GET $3) (NAT.CONST +1)))
+				goto "block-2".
+				"block-3":
+			`.join('\n'));
+		});
+
 		test.suite('StatementBreak', () => {
 			test.test('[skip=false] returns IR.Goto("endwhile"). [skip=true] returns IR.Goto("while").', () => {
 				assert.strictEqual(setupScript(`{
@@ -836,6 +865,13 @@ test.suite('ASTNodeStatement', () => {
 						42;
 						skip;
 						43;
+					};
+					for word: str in ["alpha", "beta", "gamma"] do {
+						10;
+						skip;
+						20;
+						break;
+						30;
 					};
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					"block-0":
@@ -847,6 +883,19 @@ test.suite('ASTNodeStatement', () => {
 					(DROP (INT.CONST 43))
 					goto "block-0".
 					"block-1":
+					(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
+					(DECL <nat> $1 (NAT.CONST +0))
+					"block-2":
+					if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-3".
+					(DECL <str> word (LIST.GET (GET $0) (GET $1)))
+					(DROP (INT.CONST 10))
+					goto "block-2".
+					(DROP (INT.CONST 20))
+					goto "block-3".
+					(DROP (INT.CONST 30))
+					(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
+					goto "block-2".
+					"block-3":
 				`.join('\n'));
 			});
 			test.test('nested loops.', () => {

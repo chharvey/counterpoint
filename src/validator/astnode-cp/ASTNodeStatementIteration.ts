@@ -2,8 +2,10 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	VALUE,
 	TYPE,
 	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
@@ -37,6 +39,9 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 		return statement;
 	}
 
+	#labelWhile?:    IR.Label;
+	#labelEndwhile?: IR.Label;
+
 	public constructor(
 		start_node: SyntaxNodeType<'statement_iteration'>,
 		private readonly assignee: ASTNodeVariable | null,
@@ -55,6 +60,10 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.iterable.type().isBottomType || this.block.hasBottomType;
+	}
+
+	public get labels(): {readonly while: IR.Label | undefined, readonly endwhile: IR.Label | undefined} {
+		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
 	}
 
 	public override varCheck(): void {
@@ -91,8 +100,34 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): void {
-		throw new Error('`ASTNodeStatementIteration#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): void {
+		const iterable: IR.Value = this.iterable.lower(optimizer).asTac(optimizer);
+		const index              = optimizer.newTempLocal(new IR.Const(VALUE.NAT_0));
+		const get_index          = new IR.Get(index);
+		assert_instanceof(iterable.type, TYPE.List);
+
+		this.#labelWhile    = optimizer.newLabel();
+		this.#labelEndwhile = optimizer.newLabel();
+
+		optimizer.pushInstruction(this.#labelWhile);
+		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Binop(
+			IR.BinOp.LT,
+			get_index,
+			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable),
+			TYPE.BOOL,
+		), this.#labelEndwhile));
+		if (this.assignee) {
+			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			symbol.irType = iterable.type.typearg;
+			optimizer.pushInstruction(new IR.Decl(
+				symbol,
+				new IR.CollectionDynamicGet(IR.TypeName.LIST, iterable, get_index, iterable.type.typearg),
+			));
+		}
+		this.block.lower(optimizer);
+		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.BinOp.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
+		optimizer.pushInstruction(new IR.Goto(this.#labelWhile));
+		optimizer.pushInstruction(this.#labelEndwhile);
 	}
 
 	@memoizeMethod

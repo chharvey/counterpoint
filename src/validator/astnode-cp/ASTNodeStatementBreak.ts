@@ -21,6 +21,7 @@ import {
 	ASTNodeStatement,
 } from './ASTNodeStatement.ts';
 import {ASTNodeStatementLoop} from './ASTNodeStatementLoop.ts';
+import {ASTNodeStatementIteration} from './ASTNodeStatementIteration.ts';
 
 
 
@@ -54,7 +55,7 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		let labels: ASTNodeStatementLoop['labels'] | undefined = undefined;
 		let node = this.parent as ASTNodeCP | undefined;
 		while (node && labels === undefined) {
-			if (node instanceof ASTNodeStatementLoop) {
+			if (node instanceof ASTNodeStatementLoop || node instanceof ASTNodeStatementIteration) {
 				labels = node.labels;
 			}
 			node = node.parent as ASTNodeCP | undefined;

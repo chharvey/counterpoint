@@ -49,6 +49,11 @@ DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
 
+LIST.COUNT([Value]) -> Value;
+DICT.COUNT([Value]) -> Value;
+SET.COUNT([Value])  -> Value;
+MAP.COUNT([Value])  -> Value;
+
 CALL([Value*]) -> Value;
 
 NOT([Value]) -> Boolean;
@@ -352,7 +357,27 @@ Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression Sem
 	"endwhile":
 ];
 
-// Lower(SemanticStatementIteration);
+Lower(SemanticStatementIteration ::= SemanticVariable SemanticType SemanticExpression SemanticBlock) := [
+	(DECL <List> $iterable `Lower(SemanticExpression)`)
+	(DECL <nat> $index (NAT.CONST +0))
+	"while":
+	if_false (LT (GET $index) (LIST.COUNT (GET $iterable))), goto "endwhile".
+	(DECL ‹type› `GetSymbolSchema(SemanticVariable)` (LIST.GET (GET $iterable) (GET $index)))
+	...`Lower(SemanticBlock)`
+	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementIteration ::= SemanticVariable? SemanticType SemanticExpression SemanticBlock) := [
+	(DECL <List> $iterable `Lower(SemanticExpression)`)
+	(DECL <nat> $index (NAT.CONST +0))
+	"while":
+	if_false (LT (GET $index) (LIST.COUNT (GET $iterable))), goto "endwhile".
+	...`Lower(SemanticBlock)`
+	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
+	goto "while".
+	"endwhile":
+];
 
 Lower(SemanticStatementBreak[skip=false] stmt) := [ goto "endwhile". ];
 Lower(SemanticStatementBreak[skip=true]  stmt) := [ goto "while". ];
