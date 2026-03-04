@@ -1218,7 +1218,7 @@ test.suite('ASTNodeAccess', () => {
 					assertAssignable(err, {
 						cons:   AggregateError,
 						errors: [
-							{cons: assert.AssertionError, message: 'The expression evaluated to a falsy value:\n\n  assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT))\n'},
+							{cons: assert.AssertionError, message: 'The expression evaluated to a falsy value:\n\n  assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT.union(TYPE.NAT)))\n'},
 							{cons: assert.AssertionError, message: 'The expression evaluated to a falsy value:\n\n  assert.ok(this.accessor.type.isSubtypeOf(TYPE.SYM.union(TYPE.STR)))\n'},
 						],
 					});

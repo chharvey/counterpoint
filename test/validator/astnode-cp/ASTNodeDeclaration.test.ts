@@ -610,6 +610,47 @@ test.suite('ASTNodeDeclaration', () => {
 	});
 
 
+	test.suite('#lower', () => {
+		test.test('AST.DeclarationType has no effect.', () => {
+			assert.strictEqual(setupScript(`{
+				type N = int | nat | float;
+			}`, {lower: true, build: false}).opt.print(), '');
+		});
+		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
+			const {stmts, opt} = setupScript(`{
+				% Foldable cases:
+				val _:          int = 42; % \`(DROP (INT.CONST 42))\`
+				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
+
+				% Non-Foldable cases:
+				val mut assignee_b?: int;              % \`(DECL <null> assignee_b null)\`
+				val mut assignee_c:  int = 42;         % \`(DECL <int> assignee_c 42)\`
+				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
+				val     assignee_d:  int = assignee_c; % \`(DECL <int> assignee_d assignee_c)\`
+				val mut assignee_e:  int = assignee_c; % \`(DECL <int> assignee_e assignee_c)\`
+
+				%% Syntactically impossible cases (for completion):
+				val _?:          int;
+				val assignee_f?: int;
+				val mut _?:      int;
+				val mut _:       int = 42;
+				val mut _:       int = assignee_c;
+				%%
+			}`, {build: false});
+			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
+			return assert.strictEqual(opt.print(), extract_lines`
+				(DROP (INT.CONST 42))
+				(DECL <int> assignee_a (INT.CONST 42))
+				(DECL <null> assignee_b (NULL.CONST null))
+				(DECL <int> assignee_c (INT.CONST 42))
+				(DROP (GET assignee_c))
+				(DECL <int> assignee_d (GET assignee_c))
+				(DECL <int> assignee_e (GET assignee_c))
+			`.join('\n'));
+		});
+	});
+
+
 	test.suite('#build', () => {
 		test.suite('ASTNodeDeclarationType', () => {
 			test.test('always returns `(nop)`.', () => {

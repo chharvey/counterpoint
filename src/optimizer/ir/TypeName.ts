@@ -29,7 +29,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 		case typ.isSubtypeOf(TYPE.BOOL):  { return TypeName.BOOL; }
 		case typ.isSubtypeOf(TYPE.SYM):   { return TypeName.SYM; }
 		case typ.isSubtypeOf(TYPE.INT):   { return TypeName.INT; }
-		// case typ.isSubtypeOf(TYPE.NAT):   { return TypeName.NAT; }
+		case typ.isSubtypeOf(TYPE.NAT):   { return TypeName.NAT; }
 		case typ.isSubtypeOf(TYPE.FLOAT): { return TypeName.FLOAT; }
 		case typ.isSubtypeOf(TYPE.STR):   { return TypeName.STR; }
 

@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {
 	Optimizer,
+	IR,
 	Lowerable,
 } from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
@@ -77,4 +78,26 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lo
 	 * @implements Buildable
 	 */
 	public abstract build(): binaryen.ExpressionRef;
+}
+
+
+
+export abstract class StatementBreakable extends ASTNodeStatement {
+	#labelWhile?:    IR.Label;
+	#labelEndwhile?: IR.Label;
+
+	/** @final */
+	public get labels(): {while: IR.Label | undefined, endwhile: IR.Label | undefined} {
+		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
+	}
+
+	/** @final */
+	protected set labelWhile(label: IR.Label) {
+		this.#labelWhile = label;
+	}
+
+	/** @final */
+	protected set labelEndwhile(label: IR.Label) {
+		this.#labelEndwhile = label;
+	}
 }

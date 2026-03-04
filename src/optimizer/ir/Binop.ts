@@ -55,7 +55,7 @@ export class Binop extends Value {
 	@runOnceMethod
 	public override validate(): void {
 		const operands = [this.operand0, this.operand1] as const;
-		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
+		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.NAT);
 		return xjs.Array.forEachAggregated(operands, (arg) => {
 			arg.validate();
 			switch (this.operator) {
@@ -65,11 +65,11 @@ export class Binop extends Value {
 				case BinOp.INT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
 				case BinOp.INT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
 
-				// case BinOp.NAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
-				// case BinOp.NAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_MUL: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
+				case BinOp.NAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.NAT)); }
 
 				case BinOp.FLOAT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
 				case BinOp.FLOAT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }

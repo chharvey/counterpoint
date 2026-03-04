@@ -182,7 +182,13 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.ADD, IR.BinOp.INT_ADD],
 				[Operator.SUB, IR.BinOp.INT_SUB],
 			]).get(this.operator)!, v0, v1, typ) :
-			// TODO: v0.5+ bothNats(t0, t1)
+			bothNats(t0, t1) ? new IR.Binop(new Map<Operator, IR.BinOp>([
+				[Operator.EXP, IR.BinOp.NAT_EXP],
+				[Operator.MUL, IR.BinOp.NAT_MUL],
+				[Operator.DIV, IR.BinOp.NAT_DIV],
+				[Operator.ADD, IR.BinOp.NAT_ADD],
+				[Operator.SUB, IR.BinOp.NAT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
 			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.BinOp>([
 				[Operator.EXP, IR.BinOp.FLOAT_EXP],
 				[Operator.MUL, IR.BinOp.FLOAT_MUL],

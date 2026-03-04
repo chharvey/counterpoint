@@ -109,19 +109,19 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const typ: TYPE.Type = this.type();
 		const t0:  TYPE.Type = this.operand.type();
 		const v0:  IR.Value  = this.operand.lower(optimizer).asTac(optimizer);
-		return (
-			[Operator.NOT, Operator.EMP].includes(this.operator) ? new IR.Unop(new Map<Operator, IR.UnOp>([
-				[Operator.NOT, IR.UnOp.NOT],
-				[Operator.EMP, IR.UnOp.EMP],
-			]).get(this.operator)!, v0, typ) :
-			this.operator === Operator.NEG ? new IR.Unop(
+		return this.operator === Operator.NEG
+			? new IR.Unop(
 				t0.isSubtypeOf(TYPE.INT) ? IR.UnOp.INT_NEG : (assert.ok(t0.isSubtypeOf(TYPE.FLOAT)), IR.UnOp.FLOAT_NEG),
 				v0,
 				typ,
-			) :
-			// TODO: v0.5+ unary operators int, nat, float
-			assert.fail(`Unexpected operator ${ Operator[this.operator] }`)
-		);
+			)
+			: new IR.Unop(new Map<Operator, IR.UnOp>([
+				[Operator.NOT,   IR.UnOp.NOT],
+				[Operator.EMP,   IR.UnOp.EMP],
+				[Operator.INT,   IR.UnOp.TOINT],
+				[Operator.NAT,   IR.UnOp.TONAT],
+				[Operator.FLOAT, IR.UnOp.TOFLOAT],
+			]).get(this.operator)!, v0, typ);
 	}
 
 	@memoizeMethod

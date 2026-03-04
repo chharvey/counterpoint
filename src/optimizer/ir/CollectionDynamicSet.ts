@@ -29,7 +29,7 @@ export class CollectionDynamicSet extends Instruction {
 		switch (this.name) {
 			case TypeName.LIST: {
 				assert_instanceof(this.collection.type, TYPE.List);
-				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT)); // TODO: v0.5: .union(TYPE.NAT)
+				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT.union(TYPE.NAT)));
 			}
 			case TypeName.DICT: {
 				assert_instanceof(this.collection.type, TYPE.Dict);

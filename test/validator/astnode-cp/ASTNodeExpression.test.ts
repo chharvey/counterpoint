@@ -147,6 +147,28 @@ test.suite('ASTNodeExpression', () => {
 				`.join('\n'));
 			});
 		});
+		test.suite('AST.ExpressionBlock returns the last expression-statement’s expression.', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x: int = 42;
+				val mut y: int = {
+					set x = x + 2;
+					x / 2;
+				};
+				set y = {
+					y;
+					set y = y + x;
+					y * 2;
+				} + y;
+			}`, {lower: true, build: false}).opt.print(), extract_lines`
+				(DECL <int> x (INT.CONST 42))
+				(SET x (INT.ADD (GET x) (INT.CONST 2)))
+				(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
+				(DROP (GET y))
+				(SET y (INT.ADD (GET y) (GET x)))
+				(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
+				(SET y (INT.ADD (GET $0) (GET y)))
+			`.join('\n'));
+		});
 		test.suite('AST.Claim', () => {
 			test.test('returns the operand.', () => {
 				const {stmts, opt} = setupScript(`{
@@ -166,129 +188,6 @@ test.suite('ASTNodeExpression', () => {
 				expr.lower(opt);
 				assert.strictEqual(opt.instructions.length, 1);
 			});
-		});
-
-		// TODO: move these to ASTNodeStatement tests
-		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
-			const {stmts, opt} = setupScript(`{
-				% Foldable cases:
-				val _:          int = 42; % \`(DROP (INT.CONST 42))\`
-				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
-
-				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(DECL <null> assignee_b null)\`
-				val mut assignee_c:  int = 42;         % \`(DECL <int> assignee_c 42)\`
-				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
-				val     assignee_d:  int = assignee_c; % \`(DECL <int> assignee_d assignee_c)\`
-				val mut assignee_e:  int = assignee_c; % \`(DECL <int> assignee_e assignee_c)\`
-
-				%% Syntactically impossible cases (for completion):
-				val _?:          int;
-				val assignee_f?: int;
-				val mut _?:      int;
-				val mut _:       int = 42;
-				val mut _:       int = assignee_c;
-				%%
-			}`, {build: false});
-			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
-			return assert.strictEqual(opt.print(), extract_lines`
-				(DROP (INT.CONST 42))
-				(DECL <int> assignee_a (INT.CONST 42))
-				(DECL <null> assignee_b (NULL.CONST null))
-				(DECL <int> assignee_c (INT.CONST 42))
-				(DROP (GET assignee_c))
-				(DECL <int> assignee_d (GET assignee_c))
-				(DECL <int> assignee_e (GET assignee_c))
-			`.join('\n'));
-		});
-		test.test('AST.StatementExpression pushes DROP instruction if expression exists.', () => {
-			const {stmts, opt} = setupScript(`{
-				val mut x: int = 42;
-				x;
-				42;
-				;
-			}`, {build: false});
-			assert.strictEqual(opt.instructions.length, 0);
-			(stmts[1] as AST.ASTNodeStatementExpression).lower(opt);
-			assert.strictEqual(opt.instructions.length, 1);
-			(stmts[2] as AST.ASTNodeStatementExpression).lower(opt);
-			assert.strictEqual(opt.instructions.length, 2);
-			(stmts[3] as AST.ASTNodeStatementExpression).lower(opt);
-			assert.strictEqual(opt.instructions.length, 2);
-			return assert.strictEqual(opt.print(), extract_lines`
-				(DROP (GET x))
-				(DROP (INT.CONST 42))
-			`.join('\n'));
-		});
-		test.test('AST.StatementClaim pushes DROP.', () => {
-			const {stmts, opt} = setupScript(`{%
-				val mut x: int | float = 42;
-				claim x: int;
-			}`, {build: false});
-			(stmts[1] as AST.ASTNodeStatementClaim).lower(opt);
-			return assert.strictEqual(opt.print(), extract_lines`
-				(DROP (GET x))
-			`.join('\n'));
-		});
-		test.test('AST.StatementReassignment for variables pushes SET instruction.', () => {
-			const {stmts, opt} = setupScript(`{
-				val mut x: int = 42;
-				set x = 43;
-				set x = 44;
-				set x = -42;
-			}`, {build: false});
-			stmts.slice(1).forEach((stmt) => (stmt as AST.ASTNodeStatementReassignment).lower(opt));
-			return assert.strictEqual(opt.print(), extract_lines`
-				(SET x (INT.CONST 43))
-				(SET x (INT.CONST 44))
-				(SET x (INT.CONST -42))
-			`.join('\n'));
-		});
-		test.test('AST.StatementReassignment for collections pushes IR.CollectionDynamicSet.', () => {
-			assert.strictEqual(setupScript(`{
-				val mut my_list: mut [int]        = [41, 42];
-				val mut my_dict: mut [:int]       = [a= 41, b= 42];
-				val mut my_set:  mut {int}        = {41 + 1, 42 / 2, 43 ^ 3};
-				val mut my_map:  mut {int -> int} = {21 -> 41, 22 -> 42, 23 -> 43};
-
-				val mut accessor: int = 22;
-				set my_list.[0 + 1]   = 84;
-				set my_dict.[@b]      = 84;
-				set my_set.[accessor] = true;
-				set my_map.[accessor] = 84;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
-				(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-				(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
-				(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-				(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-				(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-				(DECL <Set> my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
-				(DECL <Map> my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
-				(DECL <int> accessor (INT.CONST 22))
-				(DECL <int> $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
-				(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
-				(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
-				(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
-				(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
-			`.join('\n'));
-		});
-		test.test('AST.Goal lowers each statement.', () => {
-			assert.strictEqual(setupScript(`{
-				val mut assignee_b?: int;
-				val mut assignee_c:  int = 42;
-				val     _:           int = assignee_c;
-				val     assignee_d:  int = assignee_c;
-				val mut assignee_e:  int = assignee_c;
-
-				assignee_b;
-				assignee_c;
-				assignee_d;
-				assignee_e;
-
-				set assignee_e = 43;
-				set assignee_e = 44;
-				set assignee_e = -42;
-			}`, {lower: true, build: false}).opt.instructions.length, 12);
 		});
 	});
 
