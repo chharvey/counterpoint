@@ -570,6 +570,79 @@ test.suite('ASTNodeStatement', () => {
 	});
 
 
+	test.suite('#lower', () => {
+		test.suite('AST.StatementConditional', () => {
+			test.test('pushes an if_false block.', () => {
+				assert.strictEqual(setupScript(`{
+					if true then {
+						(2 * 1 + 0);
+						2.2;
+					} else {
+						(6 / (1 + 1));
+						3.3;
+					};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					if_false (BOOL.CONST true), goto "block-1".
+					"block-0":
+					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
+					(DROP (FLOAT.CONST 2.2))
+					goto "block-2".
+					"block-1":
+					(DECL <int> $1 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
+					(DROP (INT.DIV (INT.CONST 6) (GET $1)))
+					(DROP (FLOAT.CONST 3.3))
+					"block-2":
+				`.join('\n'));
+			});
+			test.test('with no alternative.', () => {
+				assert.strictEqual(setupScript(`{
+					if false then {
+						(2 * 1 + 0);
+						2.2;
+					};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					if_false (BOOL.CONST false), goto "block-2".
+					"block-0":
+					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
+					(DROP (FLOAT.CONST 2.2))
+					"block-2":
+				`.join('\n'));
+			});
+			test.test('SSA.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut unknown_cond: bool = false;
+					val mut x: int = 42;
+					if unknown_cond then {
+						set x = x * (1 + 1);
+						val y: float = 2.2;
+					} else {
+						set x = x - (6 / 2);
+						val y: float = 3.3;
+					};
+					x;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL <bool> unknown_cond (BOOL.CONST false))
+					(DECL <int> x (INT.CONST 42))
+					if_false (GET unknown_cond), goto "block-1".
+					"block-0":
+					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
+					(SET x (INT.MUL (GET x) (GET $0)))
+					(DECL <float> y (FLOAT.CONST 2.2))
+					goto "block-2".
+					"block-1":
+					(DECL <int> $1 (INT.DIV (INT.CONST 6) (INT.CONST 2)))
+					(SET x (INT.SUB (GET x) (GET $1)))
+					(DECL <float> y (FLOAT.CONST 3.3))
+					"block-2":
+					(DROP (GET x))
+				`.join('\n'));
+			});
+		});
+	});
+
+
 	test.suite('#build', () => {
 		test.suite('ASTNodeStatementClaim', () => {
 			test.test('always returns `(nop)`.', () => {

@@ -292,7 +292,31 @@ Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[t
 Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.SET]  SemanticExpression) SemanticExpression) := (SET.SET  [`Lower(SemanticAccess.0)` `Lower(SemanticAccess.1)` `Lower(SemanticExpression)`]);
 Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.MAP]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Lower(SemanticAccess.0)` `Lower(SemanticAccess.1)` `Lower(SemanticExpression)`]);
 
-// Lower(SemanticStatementConditional);
+Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock) := [
+	if_false `Lower(SemanticExpression)`, goto "endif".
+	"then":
+	...`Lower(SemanticBlock)`
+	"endif":
+];
+Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock__0 SemanticBlock__1) := [
+	if_false `Lower(SemanticExpression)`, goto "else".
+	"then":
+	...`Lower(SemanticBlock__0)`
+	goto "endif".
+	"else":
+	...`Lower(SemanticBlock__1)`
+	"endif":
+];
+Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock SemanticStatementConditional) := [
+	if_false `Lower(SemanticExpression)`, goto "else".
+	"then":
+	...`Lower(SemanticBlock)`
+	goto "endif".
+	"else":
+	...`Lower(SemanticStatementConditional)`
+	"endif":
+];
+
 // Lower(SemanticStatementLoop);
 // Lower(SemanticStatementIteration);
 // Lower(SemanticStatementBreak);

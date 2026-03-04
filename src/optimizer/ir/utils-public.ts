@@ -99,8 +99,8 @@ export function conditional_statement(
 	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), alternative ? block_else : block_endif));
 	optimizer.pushInstruction(block_then);
 	consequent.call(null);
-	optimizer.pushInstruction(new Goto(block_endif));
 	if (alternative) {
+		optimizer.pushInstruction(new Goto(block_endif));
 		optimizer.pushInstruction(block_else);
 		alternative.call(null);
 	}
