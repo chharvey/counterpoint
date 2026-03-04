@@ -50,19 +50,19 @@ export function conditional_expression(
 	consequent:  () => Value,
 	alternative: () => Value,
 ): Phi {
-	const block_then:  Label = optimizer.newLabel();
-	const block_else:  Label = optimizer.newLabel();
-	const block_endif: Label = optimizer.newLabel();
+	const label_then:  Label = optimizer.newLabel();
+	const label_else:  Label = optimizer.newLabel();
+	const label_endif: Label = optimizer.newLabel();
 
-	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), block_else));
-	optimizer.pushInstruction(block_then);
+	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), label_else));
+	optimizer.pushInstruction(label_then);
 	const result_then: Local = optimizer.newTempLocal(consequent.call(null));
-	optimizer.pushInstruction(new Goto(block_endif));
-	optimizer.pushInstruction(block_else);
+	optimizer.pushInstruction(new Goto(label_endif));
+	optimizer.pushInstruction(label_else);
 	const result_else: Local = optimizer.newTempLocal(alternative.call(null));
-	optimizer.pushInstruction(block_endif);
+	optimizer.pushInstruction(label_endif);
 	return new Phi(
-		[block_then, new Get(result_then)],
-		[block_else, new Get(result_else)],
+		[label_then, new Get(result_then)],
+		[label_else, new Get(result_else)],
 	);
 }

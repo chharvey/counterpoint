@@ -625,6 +625,7 @@ test.suite('ASTNodeStatement', () => {
 				(DROP (INT.CONST 42))
 			`.join('\n'));
 		});
+
 		test.test('AST.StatementClaim pushes DROP.', () => {
 			const {stmts, opt} = setupScript(`{%
 				val mut x: int | float = 42;
@@ -635,6 +636,7 @@ test.suite('ASTNodeStatement', () => {
 				(DROP (GET x))
 			`.join('\n'));
 		});
+
 		test.suite('AST.StatementReassignment', () => {
 			test.test('for variables: pushes SET instruction.', () => {
 				const {stmts, opt} = setupScript(`{
