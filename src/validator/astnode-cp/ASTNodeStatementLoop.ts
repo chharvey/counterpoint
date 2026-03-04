@@ -38,6 +38,9 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 	#labelRepeat: string = '';
 	#labelBody:   string = '';
 
+	#labelWhile?:    IR.Label;
+	#labelEndwhile?: IR.Label;
+
 	public constructor(
 		start_node: SyntaxNodeType<'statement_loop'>,
 		private readonly doFirst:   boolean,
@@ -59,6 +62,10 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 		return this.condition.type().isBottomType || this.block.hasBottomType;
 	}
 
+	public get labels(): {readonly while: IR.Label | undefined, readonly endwhile: IR.Label | undefined} {
+		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
+	}
+
 	public override varCheck(): void {
 		// Do not call `super.varCheck()` as we VarCheck children in a different order.
 		xjs.Array.forEachAggregated(this.doFirst ? [this.block, this.condition] : [this.condition, this.block], (c) => c.varCheck());
@@ -73,24 +80,24 @@ export class ASTNodeStatementLoop extends ASTNodeStatement {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		const block_while:    IR.Label = optimizer.newLabel();
-		const block_endwhile: IR.Label = optimizer.newLabel();
+		this.#labelWhile    = optimizer.newLabel();
+		this.#labelEndwhile = optimizer.newLabel();
 
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.until) {
 			condition = () => new IR.Unop(IR.UnOp.NOT, this.condition.lower(optimizer), TYPE.BOOL);
 		}
 
-		optimizer.pushInstruction(block_while);
+		optimizer.pushInstruction(this.#labelWhile);
 		if (this.doFirst) {
 			this.block.lower(optimizer);
-			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), block_endwhile));
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.#labelEndwhile));
 		} else {
-			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), block_endwhile));
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.#labelEndwhile));
 			this.block.lower(optimizer);
 		}
-		optimizer.pushInstruction(new IR.Goto(block_while));
-		optimizer.pushInstruction(block_endwhile);
+		optimizer.pushInstruction(new IR.Goto(this.#labelWhile));
+		optimizer.pushInstruction(this.#labelEndwhile);
 	}
 
 	@memoizeMethod

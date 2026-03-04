@@ -824,6 +824,70 @@ test.suite('ASTNodeStatement', () => {
 				`.join('\n'));
 			});
 		});
+
+		test.suite('StatementBreak', () => {
+			test.test('[skip=false] returns IR.Goto("endwhile"). [skip=true] returns IR.Goto("while").', () => {
+				assert.strictEqual(setupScript(`{
+					while true do {
+						41;
+						break;
+						42;
+						skip;
+						43;
+					};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					"block-0":
+					if_false (BOOL.CONST true), goto "block-1".
+					(DROP (INT.CONST 41))
+					goto "block-1".
+					(DROP (INT.CONST 42))
+					goto "block-0".
+					(DROP (INT.CONST 43))
+					goto "block-0".
+					"block-1":
+				`.join('\n'));
+			});
+			test.test('nested loops.', () => {
+				assert.strictEqual(setupScript(`{
+					while true do {
+						10;
+						break;
+						20;
+						if true then {
+							30;
+							while true do {
+								40;
+								skip;
+								50;
+							};
+							60;
+						};
+						70;
+					};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					"block-0":
+					if_false (BOOL.CONST true), goto "block-1".
+					(DROP (INT.CONST 10))
+					goto "block-1".
+					(DROP (INT.CONST 20))
+					if_false (BOOL.CONST true), goto "block-4".
+					"block-2":
+					(DROP (INT.CONST 30))
+					"block-5":
+					if_false (BOOL.CONST true), goto "block-6".
+					(DROP (INT.CONST 40))
+					goto "block-5".
+					(DROP (INT.CONST 50))
+					goto "block-5".
+					"block-6":
+					(DROP (INT.CONST 60))
+					"block-4":
+					(DROP (INT.CONST 70))
+					goto "block-0".
+					"block-1":
+				`.join('\n'));
+			});
+		});
 	});
 
 

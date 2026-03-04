@@ -353,7 +353,9 @@ Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression Sem
 ];
 
 // Lower(SemanticStatementIteration);
-// Lower(SemanticStatementBreak);
+
+Lower(SemanticStatementBreak[skip=false] stmt) := [ goto "endwhile". ];
+Lower(SemanticStatementBreak[skip=true]  stmt) := [ goto "while". ];
 
 Lower(SemanticBlock block) := block.children.map(Lower);
 
