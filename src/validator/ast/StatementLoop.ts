@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	TYPE,
 	type Optimizer,
+	IR,
 	BinVect,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -21,11 +22,12 @@ import type {Expression} from './Expression.ts';
 import {
 	buildDeco,
 	Statement,
+	StatementBreakable,
 } from './Statement.ts';
 
 
 
-export class StatementLoop extends Statement {
+export class StatementLoop extends StatementBreakable {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): StatementLoop {
 		const statement: Statement = Statement.fromSource(src, config);
 		assert_instanceof(statement, StatementLoop);
@@ -71,8 +73,25 @@ export class StatementLoop extends Statement {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): void {
-		throw new Error('`ASTNodeStatementLoop#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): void {
+		this.labelWhile    = optimizer.newLabel();
+		this.labelEndwhile = optimizer.newLabel();
+
+		let condition: () => IR.Value = () => this.condition.lower(optimizer);
+		if (this.until) {
+			condition = () => new IR.Unop(IR.UnOp.NOT, this.condition.lower(optimizer), TYPE.BOOL);
+		}
+
+		optimizer.pushInstruction(this.labels.while!);
+		if (this.doFirst) {
+			this.block.lower(optimizer);
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.labels.endwhile!));
+		} else {
+			optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.labels.endwhile!));
+			this.block.lower(optimizer);
+		}
+		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+		optimizer.pushInstruction(this.labels.endwhile!);
 	}
 
 	@memoizeMethod

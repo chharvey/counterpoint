@@ -49,6 +49,11 @@ DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
 
+LIST.COUNT([Value]) -> Value;
+DICT.COUNT([Value]) -> Value;
+SET.COUNT([Value])  -> Value;
+MAP.COUNT([Value])  -> Value;
+
 CALL([Value*]) -> Value;
 
 NOT([Value]) -> Boolean;
@@ -292,13 +297,19 @@ Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[t
 Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.SET]  SemanticExpression) SemanticExpression) := (SET.SET  [`Lower(SemanticAccess.0)` `Lower(SemanticAccess.1)` `Lower(SemanticExpression)`]);
 Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.MAP]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Lower(SemanticAccess.0)` `Lower(SemanticAccess.1)` `Lower(SemanticExpression)`]);
 
-Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock) := [
+Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock) := [
 	if_false `Lower(SemanticExpression)`, goto "endif".
 	"then":
 	...`Lower(SemanticBlock)`
 	"endif":
 ];
-Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock__0 SemanticBlock__1) := [
+Lower(SemanticStatementConditional[unless=true] ::= SemanticExpression SemanticBlock) := [
+	if_false (NOT `Lower(SemanticExpression)`), goto "endif".
+	"then":
+	...`Lower(SemanticBlock)`
+	"endif":
+];
+Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock__0 SemanticBlock__1) := [
 	if_false `Lower(SemanticExpression)`, goto "else".
 	"then":
 	...`Lower(SemanticBlock__0)`
@@ -307,7 +318,7 @@ Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock__0 Seman
 	...`Lower(SemanticBlock__1)`
 	"endif":
 ];
-Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock SemanticStatementConditional) := [
+Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock SemanticStatementConditional) := [
 	if_false `Lower(SemanticExpression)`, goto "else".
 	"then":
 	...`Lower(SemanticBlock)`
@@ -317,9 +328,59 @@ Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock Semantic
 	"endif":
 ];
 
-// Lower(SemanticStatementLoop);
-// Lower(SemanticStatementIteration);
-// Lower(SemanticStatementBreak);
+Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	if_false `Lower(SemanticExpression)`, goto "endwhile".
+	...`Lower(SemanticBlock)`
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementLoop[doFirst=false][until=true] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	if_false (NOT `Lower(SemanticExpression)`), goto "endwhile".
+	...`Lower(SemanticBlock)`
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementLoop[doFirst=true][until=false] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	...`Lower(SemanticBlock)`
+	if_false `Lower(SemanticExpression)`, goto "endwhile".
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression SemanticBlock) := [
+	"while":
+	...`Lower(SemanticBlock)`
+	if_false (NOT `Lower(SemanticExpression)`), goto "endwhile".
+	goto "while".
+	"endwhile":
+];
+
+Lower(SemanticStatementIteration ::= SemanticVariable SemanticType SemanticExpression SemanticBlock) := [
+	(DECL <List> $iterable `Lower(SemanticExpression)`)
+	(DECL <nat> $index (NAT.CONST +0))
+	"while":
+	if_false (LT (GET $index) (LIST.COUNT (GET $iterable))), goto "endwhile".
+	(DECL ‹type› `GetSymbolSchema(SemanticVariable)` (LIST.GET (GET $iterable) (GET $index)))
+	...`Lower(SemanticBlock)`
+	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
+	goto "while".
+	"endwhile":
+];
+Lower(SemanticStatementIteration ::= SemanticVariable? SemanticType SemanticExpression SemanticBlock) := [
+	(DECL <List> $iterable `Lower(SemanticExpression)`)
+	(DECL <nat> $index (NAT.CONST +0))
+	"while":
+	if_false (LT (GET $index) (LIST.COUNT (GET $iterable))), goto "endwhile".
+	...`Lower(SemanticBlock)`
+	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
+	goto "while".
+	"endwhile":
+];
+
+Lower(SemanticStatementBreak[skip=false] stmt) := [ goto "endwhile". ];
+Lower(SemanticStatementBreak[skip=true]  stmt) := [ goto "while". ];
 
 Lower(SemanticBlock block) := block.children.map(Lower);
 

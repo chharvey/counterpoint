@@ -611,12 +611,12 @@ test.suite('Declaration', () => {
 
 
 	test.suite('#lower', () => {
-		test.test('AST.DeclarationType has no effect.', () => {
+		test.test('DeclarationType has no effect.', () => {
 			assert.strictEqual(setupScript(`{
 				type N = int | nat | float;
 			}`, {lower: true, build: false}).opt.print(), '');
 		});
-		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
+		test.test('DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
 			const {stmts, opt} = setupScript(`{
 				% Foldable cases:
 				val _:          int = 42; % \`(DROP (INT.CONST 42))\`

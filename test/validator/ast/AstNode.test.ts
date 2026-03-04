@@ -180,7 +180,7 @@ test.suite('AstNode', () => {
 
 
 		test.suite('#lower', () => {
-			test.test('AST.Goal lowers each statement.', () => {
+			test.test('Goal lowers each statement.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut assignee_b?: int;
 					val mut assignee_c:  int = 42;

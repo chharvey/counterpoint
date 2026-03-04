@@ -646,14 +646,14 @@ export class Decorator {
 			)],
 
 			['statement_loop', (node) => node.children[0].text === Keyword.DO ? new AST.StatementLoop(
-				// we have `"do" Block ("while" | "until") Expression ";"`
+				// we have `"do" Block ("while" | "until") Expression ";"` (bottom-tested)
 				node as SyntaxNodeType<'statement_loop'>,
 				true,
 				node.children[2].text === Keyword.UNTIL,
 				this.decorateExprNode(node.children[3] as SyntaxNodeSupertype<'expression'>),
 				this.decorate(node.children[1] as SyntaxNodeType<'block__break'>),
 			) : new AST.StatementLoop(
-				// we have `("while" | "until") Expression "do" Block ";"`
+				// we have `("while" | "until") Expression "do" Block ";"` (top-tested)
 				node as SyntaxNodeType<'statement_loop'>,
 				false,
 				node.children[0].text === Keyword.UNTIL,

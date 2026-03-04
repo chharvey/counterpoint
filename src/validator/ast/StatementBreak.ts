@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import type {Optimizer} from '../../index.ts';
+import {
+	type Optimizer,
+	IR,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	noopGetter,
@@ -15,6 +18,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	buildDeco,
 	Statement,
+	StatementBreakable,
 } from './Statement.ts';
 
 
@@ -45,8 +49,19 @@ export class StatementBreak extends Statement {
 	}
 
 	@memoizeMethod
-	public override lower(_: Optimizer): void {
-		throw new Error('`ASTNodeStatementBreak#lower` not yet supported.');
+	public override lower(optimizer: Optimizer): void {
+		let labels: StatementBreakable['labels'] | undefined = undefined;
+		let node = this.parent;
+		while (node && labels === undefined) {
+			if (node instanceof StatementBreakable) {
+				labels = node.labels;
+			}
+			node = node.parent;
+		}
+		// we should already have labels by the time we reach the root node
+		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementLoop.');
+		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementLoop to have its labels already created.');
+		optimizer.pushInstruction(new IR.Goto(this.skip ? labels.while : labels.endwhile));
 	}
 
 	@memoizeMethod

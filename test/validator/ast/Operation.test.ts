@@ -370,7 +370,7 @@ test.suite('Operation', () => {
 
 
 	test.suite('#lower', () => {
-		test.test('AST.OperationUnary[operator=NOT]', () => {
+		test.test('OperationUnary[operator=NOT]', () => {
 			assert.strictEqual(setupScript(`{
 				!42;
 				val y: int = 42 / 7;
@@ -382,7 +382,7 @@ test.suite('Operation', () => {
 				(DROP (NOT (GET $0)))
 			`.join('\n'));
 		});
-		test.test('AST.OperationUnary[operator=EMP]', () => {
+		test.test('OperationUnary[operator=EMP]', () => {
 			assert.strictEqual(setupScript(`{
 				val x: int = 42;
 				?x;
@@ -396,7 +396,7 @@ test.suite('Operation', () => {
 				(DROP (EMP (GET $0)))
 			`.join('\n'));
 		});
-		test.test('AST.OperationUnary[operator=NEG]', () => {
+		test.test('OperationUnary[operator=NEG]', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				-x;
@@ -411,7 +411,7 @@ test.suite('Operation', () => {
 			`.join('\n'));
 		});
 
-		test.test('AST.OperationBinaryArithmetic', () => {
+		test.test('OperationBinaryArithmetic', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				3 + x^2 / 2^3;
@@ -424,7 +424,7 @@ test.suite('Operation', () => {
 			`.join('\n'));
 		});
 
-		test.test('AST.OperationBinaryComparative', () => {
+		test.test('OperationBinaryComparative', () => {
 			assert.strictEqual(setupScript(`{
 				val mut a: int = 10;
 				val mut b: int = 100;
@@ -452,7 +452,7 @@ test.suite('Operation', () => {
 			`.join('\n'));
 		});
 
-		test.test('AST.OperationBinaryEquality', () => {
+		test.test('OperationBinaryEquality', () => {
 			assert.strictEqual(setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
@@ -476,7 +476,7 @@ test.suite('Operation', () => {
 			`.join('\n'));
 		});
 
-		test.suite('AST.OperationBinaryLogical', () => {
+		test.suite('OperationBinaryLogical', () => {
 			test.test('[operator=AND]', () => {
 				assert.strictEqual(setupScript(`{
 					val mut a: null  = null;
@@ -573,7 +573,7 @@ test.suite('Operation', () => {
 				`.join('\n'));
 			});
 		});
-		test.test('AST.OperationTernary', () => {
+		test.test('OperationTernary', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: bool  = false;
 				val mut y: float = 0.5;
