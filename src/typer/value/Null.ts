@@ -3,9 +3,11 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
+import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
+	memoizeBinOp,
 } from '../utils-private.ts';
 import type {Value} from './Value.ts';
 import {Primitive} from './Primitive.ts';
@@ -37,8 +39,8 @@ export class Null extends Primitive {
 	}
 
 	@strictEqual
+	@noopMethod(memoizeBinOp(true, true))
 	@instanceOf(() => Null)
-	// @memoizeBinOp(true, true) // memoizing takes longer than returning a constant
 	public override identical(_value: Value): boolean {
 		return true;
 	}

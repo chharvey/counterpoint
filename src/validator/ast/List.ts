@@ -3,6 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -16,9 +18,9 @@ import {
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
 import {
-	Expression,
 	buildDeco,
 	typeDeco,
+	Expression,
 } from './Expression.ts';
 import {
 	assignToDeco,
@@ -57,6 +59,11 @@ export class List extends CollectionLiteral {
 			TYPE.Union.all(this.children.map((c) => c.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.CollectionLinearNew {
+		return new IR.CollectionLinearNew(IR.TypeName.LIST, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod

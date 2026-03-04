@@ -4,9 +4,11 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
 	type TYPE,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	noopMethod,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
@@ -20,7 +22,11 @@ import {
 } from '../utils-private.ts';
 import {Validator} from '../Validator.ts';
 import {valueOfTokenNumber} from './utils-private.ts';
-import {Expression} from './Expression.ts';
+import {
+	buildDeco,
+	typeDeco,
+	Expression,
+} from './Expression.ts';
 
 
 
@@ -62,15 +68,20 @@ export class Constant extends Expression {
 	}
 
 	@memoizeMethod
-	// @buildDeco // explicitly leaving off for performance
+	@noopMethod(buildDeco)
 	public override build(): binaryen.ExpressionRef {
 		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod
-	// @typeDeco // explicitly leaving off for performance
+	@noopMethod(typeDeco)
 	public override type(): TYPE.Type {
 		return this.fold().toType();
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Const {
+		return new IR.Const(this.fold());
 	}
 
 	@memoizeMethod

@@ -3,6 +3,8 @@ import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
+	type IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -70,6 +72,12 @@ export class ExpressionBlock extends Expression {
 			throw new Error('The determining expression-statement of a block-expression must be nonempty.');
 		}
 		return expr.type();
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		this.block.children.slice(0, -1).forEach((stmt) => stmt.lower(optimizer));
+		return (this.block.children.at(-1) as StatementExpression).expr!.lower(optimizer);
 	}
 
 	@memoizeMethod

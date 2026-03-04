@@ -1,9 +1,9 @@
 import binaryen from 'binaryen';
-import {TYPE} from '../index.ts';
 import {
 	build_tuple_like,
 	type Builder,
 } from '../../index.ts';
+import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
 	language_values_equal,
@@ -29,16 +29,16 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	}
 
 	@strictEqual
-	@instanceOf(() => ValueTuple)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueTuple)
 	public override identical(value: Value): boolean {
 		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, language_values_identical);
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueTuple)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueTuple)
 	public override equal(value: Value): boolean {
 		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, language_values_equal);
 	}

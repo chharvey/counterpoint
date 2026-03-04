@@ -1,8 +1,11 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
+import type {Optimizer} from '../../index.ts';
 import {
 	assert_instanceof,
+	noopGetter,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CplConfig,
@@ -31,14 +34,19 @@ export class StatementBreak extends Statement {
 		super(start_node, {}, []);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return false; // break statements will always have side-effects
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): void {
+		throw new Error('`ASTNodeStatementBreak#lower` not yet supported.');
 	}
 
 	@memoizeMethod

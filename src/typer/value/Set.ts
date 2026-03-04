@@ -56,8 +56,8 @@ class ValueSet<T extends Value = Value> extends Collection {
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueSet)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueSet)
 	public override equal(value: Value): boolean {
 		return xjs.Set.is<Value>(this.elements, (value as ValueSet).elements, language_values_equal);
 	}

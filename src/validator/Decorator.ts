@@ -471,7 +471,7 @@ export class Decorator {
 					Operator.NOT,
 					new AST.OperationBinaryComparative(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
-						Operator.IS,
+						Operator.IS as ValidOperatorComparative, // TODO: make a new class for comparing object instances
 						...operands,
 					),
 				) :

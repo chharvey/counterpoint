@@ -4,6 +4,8 @@ import {
 	type EntryType,
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -89,6 +91,62 @@ export class Access extends Expression implements Reassignable {
 		const entry: EntryType = get_entry_info(this.base.type(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		const typ:           TYPE.Type   = this.type();
+		const base_value:    IR.Value    = this.base.lower(optimizer).asTac(optimizer);
+		const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
+
+		const non_nullish_base = (): IR.Value => {
+			switch (true) {
+				case this.accessor instanceof Index: {
+					if (base_typename === IR.TypeName.TUPLE) {
+						assert_instanceof(base_value.type, TYPE.Tuple);
+						// we can assert there are no optional entries since this tuple type was created by the AST expression (`TYPE.Tuple.fromTypes`)
+						const canon_index: bigint | undefined = base_value.type.canonicalizeIndex(this.accessor.index);
+						return canon_index !== undefined
+							? new IR.TupleGet(base_value, canon_index, typ)
+							: new IR.Const(VALUE.NULL);
+					}
+					break;
+				}
+				case this.accessor instanceof Key: {
+					if (base_typename === IR.TypeName.RECORD) {
+						assert_instanceof(base_value.type, TYPE.Record);
+						// we can assert there are no optional entries since this record type was created by the AST expression (`TYPE.Record.fromTypes`)
+						const canon_key: bigint | undefined = base_value.type.canonicalizeKey(this.accessor.id);
+						return canon_key !== undefined
+							? new IR.RecordGet(base_value, {keyid: canon_key, keysrc: this.accessor.source}, typ)
+							: new IR.Const(VALUE.NULL);
+					}
+					break;
+				}
+				default: {
+					assert_instanceof(this.accessor, Expression);
+					if ([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename)) {
+						return new IR.CollectionDynamicGet(
+							base_typename as IR.CollectionDynamicName,
+							base_value,
+							this.accessor.lower(optimizer).asTac(optimizer),
+							typ,
+						);
+					}
+				}
+			}
+			return new IR.Const(VALUE.NULL);
+		};
+
+		if (this.kind === Operator.DOT_MAY) {
+			return IR.conditional_expression(
+				optimizer,
+				() => new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL),
+				() => new IR.Const(VALUE.NULL),
+				non_nullish_base,
+			);
+		}
+		return non_nullish_base();
 	}
 
 	@memoizeMethod

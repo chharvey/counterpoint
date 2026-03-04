@@ -2,10 +2,13 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
+	type Optimizer,
+	type IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
 	assert_instanceof,
+	noopMethod,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
@@ -15,6 +18,7 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Type} from './Type.ts';
 import {
+	typeDeco,
 	buildDeco,
 	Expression,
 } from './Expression.ts';
@@ -44,7 +48,7 @@ export class Claim extends Expression {
 	}
 
 	@memoizeMethod
-	// @typeDeco // explicitly leaving off to omit folding logic
+	@noopMethod(typeDeco) // don’t want folded type overriding this logic
 	public override type(): TYPE.Type {
 		const computed_type: TYPE.Type = this.operand.type();
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
@@ -58,6 +62,11 @@ export class Claim extends Expression {
 			throw new TypeErrorNotAssignable(this.operand, claimed_type, this);
 		}
 		return claimed_type;
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		return this.operand.lower(optimizer);
 	}
 
 	@memoizeMethod

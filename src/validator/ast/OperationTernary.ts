@@ -2,6 +2,8 @@ import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	drop_then,
 	BinVect,
 	TypeErrorInvalidOperation,
@@ -70,6 +72,16 @@ export class OperationTernary extends Operation {
 			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
 			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
+		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Phi {
+		return IR.conditional_expression(
+			optimizer,
+			() => this.operand0.lower(optimizer),
+			() => this.operand1.lower(optimizer),
+			() => this.operand2.lower(optimizer),
 		);
 	}
 

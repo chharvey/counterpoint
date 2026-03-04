@@ -2,10 +2,15 @@ import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
+	type Optimizer,
+	type Lowerable,
 	Builder,
 	ParseError01,
 } from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -44,7 +49,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class Goal extends AstNode implements Buildable {
+export class Goal extends AstNode implements Lowerable, Buildable {
 	/**
 	 * Construct a new Goal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -79,6 +84,16 @@ export class Goal extends AstNode implements Buildable {
 
 	public override get builder(): Builder {
 		return this.#builder;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@runOnceMethod
+	public lower(optimizer: Optimizer): void {
+		this.block?.lower(optimizer);
+		return optimizer.validate();
 	}
 
 	/** @implements Buildable */

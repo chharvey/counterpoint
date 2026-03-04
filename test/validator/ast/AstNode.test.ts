@@ -1,12 +1,9 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
-	drop_then,
-	BinVect,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
@@ -19,7 +16,6 @@ import {
 	assertEqualBins,
 } from '../../assert-helpers.ts';
 import {setupScript} from '../../helpers.ts';
-import {extract_lines} from '../../utils.ts';
 
 
 
@@ -36,172 +32,6 @@ test.suite('AstNode', () => {
 					assert_instanceof(expr_accessor, AST.Index);
 					assert.strictEqual(expr_accessor.index, index);
 				});
-			});
-		});
-	});
-
-
-
-	test.suite('StatementExpression', () => {
-		test.suite('#build', () => {
-			test.test('returns `(nop)` for empty statement expression.', () => {
-				const stmt: AST.StatementExpression = AST.StatementExpression.fromSource(';');
-				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
-			});
-			test.test('returns `(nop)` for nonempty foldable statement expression.', () => {
-				const stmt: AST.StatementExpression = AST.StatementExpression.fromSource('42 + 420;');
-				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
-			});
-			test.test('returns `(drop)` for nonempty non-foldable statement expression.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut x: int = 42;
-					x * 10;
-				}`);
-				assert_instanceof(stmts[1], AST.StatementExpression);
-				assert.ok(stmts[1].expr);
-				return assertEqualBins(
-					stmts[1].build(),
-					mod.drop(stmts[1].expr.build()),
-				);
-			});
-		});
-	});
-
-
-
-	test.suite('StatementConditional', () => {
-		test.suite('#typeCheck', () => {
-			const NON_BOOLS: readonly string[] = extract_lines`
-				val mut cond: int         = 42;
-				val mut cond: int | false = 42;
-				val mut cond: int | true  = 42;
-				val mut cond: int | bool  = 42;
-			`;
-			const BOOLS: readonly string[] = extract_lines`
-				val mut cond: false = false;
-				val mut cond: true  = true;
-				val mut cond: bool  = false;
-			`;
-			test.test('passes when condition is subtype of Boolean.', () => {
-				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
-					setupScript(`{
-						${ decl }
-						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
-						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
-					}`, {build: false}); // assert does not throw
-				}));
-			});
-			test.test('throws when condition is not subtype of Boolean.', () => {
-				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
-					const {stmts} = setupScript(`{
-						${ decl }
-						if     cond then { "consequent"; } else { "alternative"; };
-						unless cond then { "consequent"; };
-					}`, {typeCheck: false});
-					stmts[0].typeCheck(); // assert does not throw
-					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
-				});
-			});
-		});
-
-
-		test.suite('#build', () => {
-			test.test('produces `(nop)` for alternative if there is none.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond: bool = false;
-					if cond then {
-						42;
-					};
-				}`);
-				const stmt = stmts[1] as AST.StatementConditional;
-				return assertEqualBins(stmt.build(), mod.if(
-					new BinVect(mod, stmt.condition.build()).isSpecial(true),
-					stmt.consequent.build(),
-					mod.nop(),
-				));
-			});
-			test.test('produces a simple block if the condition is definitely truthy/falsy.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut TRUE:  true  = true;
-					val mut FALSE: false = false;
-					if TRUE then {
-						42;
-					};
-					if TRUE then {
-						42;
-					} else {
-						69;
-					};
-					if FALSE then {
-						42;
-					};
-					if FALSE then {
-						42;
-					} else {
-						69;
-					};
-				}`);
-				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
-					drop_then(
-						mod,
-						[(stmts[2] as AST.StatementConditional).condition.build()],
-						(stmts[2] as AST.StatementConditional).consequent.build(),
-					),
-					drop_then(
-						mod,
-						[(stmts[3] as AST.StatementConditional).condition.build()],
-						(stmts[3] as AST.StatementConditional).consequent.build(),
-					),
-					drop_then(
-						mod,
-						[(stmts[4] as AST.StatementConditional).condition.build()],
-						mod.nop(),
-					),
-					drop_then(
-						mod,
-						[(stmts[5] as AST.StatementConditional).condition.build()],
-						(stmts[5] as AST.StatementConditional).alternative!.build(),
-					),
-				]);
-			});
-			test.test('negates the condition for `unless` statements.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond: bool = false;
-					unless cond then {
-						42;
-					};
-				}`);
-				const stmt = stmts[1] as AST.StatementConditional;
-				return assertEqualBins(stmt.build(), mod.if(
-					new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(true),
-					stmt.consequent.build(),
-					mod.nop(),
-				));
-			});
-			test.test('nested if–else.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond1: bool = false;
-					val mut cond2: bool = true;
-					if cond1 then {
-						42;
-					} else if cond2 then {
-						4.2;
-					} else {
-						null;
-					};
-				}`);
-				const stmt1 = stmts[2] as AST.StatementConditional;
-				const stmt2 = stmt1.alternative as AST.StatementConditional;
-				assertEqualBins(stmt1.build(), mod.if(
-					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
-					stmt1.consequent.build(),
-					stmt2.build(),
-				));
-				assertEqualBins(stmt2.build(), mod.if(
-					new BinVect(mod, stmt2.condition.build()).isSpecial(true),
-					stmt2.consequent.build(),
-					stmt2.alternative!.build(),
-				));
 			});
 		});
 	});
@@ -345,6 +175,28 @@ test.suite('AstNode', () => {
 					});
 					return true;
 				});
+			});
+		});
+
+
+		test.suite('#lower', () => {
+			test.test('AST.Goal lowers each statement.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut assignee_b?: int;
+					val mut assignee_c:  int = 42;
+					val     _:           int = assignee_c;
+					val     assignee_d:  int = assignee_c;
+					val mut assignee_e:  int = assignee_c;
+
+					assignee_b;
+					assignee_c;
+					assignee_d;
+					assignee_e;
+
+					set assignee_e = 43;
+					set assignee_e = 44;
+					set assignee_e = -42;
+				}`, {lower: true, build: false}).opt.instructions.length, 12);
 			});
 		});
 

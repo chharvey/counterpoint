@@ -4,6 +4,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -88,17 +90,17 @@ export class Call extends Expression {
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
 		const resolved_generic_args: TYPE.Type[]       = TypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
-		switch (this.base.source as ValidFunctionName) {
-			case ValidFunctionName.LIST: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+		try {
+			this.checkFunctionArgs(constructor_schema, resolved_generic_args);
+		} catch (err) {
+			if (err instanceof TypeErrorArgCount) {
+				throw err;
+			} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
+				// FIXME: should report whole AggregateError
+				throw err.errors[0];
+			}
+			switch (this.base.source as ValidFunctionName) {
+				case ValidFunctionName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:      Expression = this.exprargs[0];
@@ -115,19 +117,9 @@ export class Call extends Expression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
-			}
-			case ValidFunctionName.DICT: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+				case ValidFunctionName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type  = this.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
@@ -152,19 +144,9 @@ export class Call extends Expression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
-			}
-			case ValidFunctionName.SET: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+				case ValidFunctionName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:    Expression = this.exprargs[0];
@@ -181,19 +163,9 @@ export class Call extends Expression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
-			}
-			case ValidFunctionName.MAP: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+				case ValidFunctionName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const anttype:   TYPE.Type  = this.typeargs[0].eval();
 					const contype:   TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
@@ -212,11 +184,38 @@ export class Call extends Expression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
 			}
 		}
 		return constructor_schema.returnType(resolved_generic_args).mutableOf();
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		const args: readonly IR.Value[] = this.exprargs.map((c) => c.lower(optimizer).asTac(optimizer));
+
+		/*
+		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `IR.Call` object.
+		 * But until we get functions and classes, statically build the function calls.
+		 */
+		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
+			return new IR.Call(this.base.lower(optimizer).asTac(optimizer), args, this.type());
+		}
+
+		const [name, ctor] = new Map<ValidFunctionName, [IR.CollectionDynamicName, () => IR.Value]>([
+			[ValidFunctionName.LIST, [IR.TypeName.LIST, () => new IR.CollectionLinearNew(IR.TypeName.LIST, [], this.type())]],
+			[ValidFunctionName.DICT, [IR.TypeName.DICT, () => new IR.DictNew(new Map(), this.type())]],
+			[ValidFunctionName.SET,  [IR.TypeName.SET,  () => new IR.CollectionLinearNew(IR.TypeName.SET, [], this.type())]],
+			[ValidFunctionName.MAP,  [IR.TypeName.MAP,  () => new IR.MapNew(new Map(), this.type())]],
+		]).get(this.base.source as ValidFunctionName)!;
+		const new_obj: IR.Value = ctor();
+		if (!args.length) {
+			return new_obj;
+		}
+		const get_obj = new IR.Get(optimizer.newTempLocal(new_obj));
+		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_obj, args[0]));
+		return get_obj;
 	}
 
 	@memoizeMethod

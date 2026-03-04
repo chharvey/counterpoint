@@ -2,6 +2,8 @@ import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -51,6 +53,11 @@ export class Template extends Expression {
 	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.STR;
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Template {
+		return new IR.Template(this.children.map((c) => c.lower(optimizer).asTac(optimizer)));
 	}
 
 	@memoizeMethod

@@ -2,9 +2,17 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	noopGetter,
+	memoizeMethod,
+	memoizeGetter,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -39,12 +47,12 @@ export class StatementClaim extends Statement {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return true;
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
 	}
@@ -83,6 +91,12 @@ export class StatementClaim extends Statement {
 		}
 	}
 
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		return optimizer.pushInstruction(new IR.Drop(this.assignee.lower(optimizer)));
+	}
+
+	@memoizeMethod
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		assert.fail('Expected `StatementClaim#isFoldable` to be true.');

@@ -3,6 +3,8 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -20,9 +22,9 @@ import {typecheck_assign} from './AstNode.ts';
 import type {Key} from './Key.ts';
 import type {Property} from './Property.ts';
 import {
-	Expression,
 	buildDeco,
 	typeDeco,
+	Expression,
 } from './Expression.ts';
 import {
 	assignToDeco,
@@ -72,6 +74,14 @@ export class Dict extends CollectionLiteral {
 			TYPE.Union.all(this.children.map((c) => c.val.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.DictNew {
+		return new IR.DictNew(new Map(this.children.map((c) => [
+			new VALUE.Symbol(c.key.id, c.key.source),
+			c.val.lower(optimizer).asTac(optimizer),
+		])), this.type());
 	}
 
 	@memoizeMethod

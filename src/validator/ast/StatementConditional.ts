@@ -1,6 +1,8 @@
 import binaryen from 'binaryen';
 import {
 	TYPE,
+	type Optimizer,
+	IR,
 	drop_then,
 	BinVect,
 	TypeErrorNotAssignable,
@@ -67,6 +69,16 @@ export class StatementConditional extends Statement {
 		if (!this.condition.type().isSubtypeOf(TYPE.BOOL)) {
 			throw new TypeErrorNotAssignable(this.condition, TYPE.BOOL);
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): void {
+		IR.conditional_statement(
+			optimizer,
+			() => this.condition.lower(optimizer),
+			() => this.consequent.lower(optimizer),
+			this.alternative ? () => this.alternative!.lower(optimizer) : undefined,
+		);
 	}
 
 	@memoizeMethod

@@ -4,12 +4,14 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	runOnceMethod,
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
@@ -170,7 +172,18 @@ export class DeclarationVariable extends Statement {
 		}
 	}
 
-	@memoizeMethod
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
+		if (this.assignee) {
+			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			symbol.irType = value.type;
+			optimizer.pushInstruction(new IR.Decl(symbol, value));
+		} else {
+			optimizer.pushInstruction(new IR.Drop(value));
+		}
+	}
+
 	@buildDeco
 	public override build(): binaryen.ExpressionRef {
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
