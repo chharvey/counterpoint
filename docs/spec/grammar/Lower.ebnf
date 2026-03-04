@@ -292,13 +292,19 @@ Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[t
 Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.SET]  SemanticExpression) SemanticExpression) := (SET.SET  [`Lower(SemanticAccess.0)` `Lower(SemanticAccess.1)` `Lower(SemanticExpression)`]);
 Lower(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.MAP]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Lower(SemanticAccess.0)` `Lower(SemanticAccess.1)` `Lower(SemanticExpression)`]);
 
-Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock) := [
+Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock) := [
 	if_false `Lower(SemanticExpression)`, goto "endif".
 	"then":
 	...`Lower(SemanticBlock)`
 	"endif":
 ];
-Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock__0 SemanticBlock__1) := [
+Lower(SemanticStatementConditional[unless=true] ::= SemanticExpression SemanticBlock) := [
+	if_false (NOT `Lower(SemanticExpression)`), goto "endif".
+	"then":
+	...`Lower(SemanticBlock)`
+	"endif":
+];
+Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock__0 SemanticBlock__1) := [
 	if_false `Lower(SemanticExpression)`, goto "else".
 	"then":
 	...`Lower(SemanticBlock__0)`
@@ -307,7 +313,7 @@ Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock__0 Seman
 	...`Lower(SemanticBlock__1)`
 	"endif":
 ];
-Lower(SemanticStatementConditional ::= SemanticExpression SemanticBlock SemanticStatementConditional) := [
+Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock SemanticStatementConditional) := [
 	if_false `Lower(SemanticExpression)`, goto "else".
 	"then":
 	...`Lower(SemanticBlock)`

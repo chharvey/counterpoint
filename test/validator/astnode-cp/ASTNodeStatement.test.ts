@@ -679,6 +679,7 @@ test.suite('ASTNodeStatement', () => {
 				`.join('\n'));
 			});
 		});
+
 		test.suite('AST.StatementConditional', () => {
 			test.test('pushes an if_false block.', () => {
 				assert.strictEqual(setupScript(`{
@@ -711,6 +712,21 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					if_false (BOOL.CONST false), goto "block-2".
+					"block-0":
+					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
+					(DROP (FLOAT.CONST 2.2))
+					"block-2":
+				`.join('\n'));
+			});
+			test.test('negates the condition for `unless` statements.', () => {
+				assert.strictEqual(setupScript(`{
+					unless false then {
+						(2 * 1 + 0);
+						2.2;
+					};
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					if_false (NOT (BOOL.CONST false)), goto "block-2".
 					"block-0":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
 					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
