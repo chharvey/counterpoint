@@ -37,6 +37,42 @@ Sequence<Instruction> Build(SemanticExpression expr) :=
 
 
 
+Sequence<Instruction> Build(SemanticDeclarationType decl) :=
+	1. *Return:* [].
+;
+
+
+
+Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
+	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
+	2. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
+	3. *If* `assigned` is *none*:
+		1. *If* `assignee` is *none*:
+			1. *Return:* [].
+		2. *Else:*
+			1. *Let* `instrs` be *UnwrapAffirm:* `Build(null)`.
+	4. *Else:*
+		1. *Let* `value` be `ValueOf(assigned)`.
+		2. *If* `value` is a normal completion:
+			1. *If* `decl.writable` is `false` *or* `assignee` is *none*:
+				1. *Note:* references to the variable will be constant-propegated by its fixed value.
+				2. *Return:* [].
+		3. *Let* `instrs` be *UnwrapAffirm:* `Build(assigned)`.
+	5. *If* `assignee` is *none*:
+		1. *Return:* [
+			...instrs,
+			"DROP",
+		].
+	6. *Else:*
+		1. *Let* `name` be the string-concatenation of "glb" and `assignee.id`.
+		2. *Return:* [
+			...instrs,
+			"DECL the global variable `name`.",
+		].
+;
+
+
+
 Sequence<Instruction> Build(SemanticStatementExpression stmt) :=
 	1. *If* `stmt.children.count` is greater than 0:
 		1. *Return:* `Build(stmt.children.0)`.
@@ -136,42 +172,6 @@ Sequence<Instruction> Build(SemanticStatementBreak stmt) :=
 
 Sequence<Instruction> Build(SemanticBlock block) :=
 	1. *Return:* a flattened mapping of `block.children` for each `stmt` to *UnwrapAffirm:* `Build(stmt)`.
-;
-
-
-
-Sequence<Instruction> Build(SemanticDeclarationType decl) :=
-	1. *Return:* [].
-;
-
-
-
-Sequence<Instruction> Build(SemanticDeclarationVariable decl) :=
-	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
-	2. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
-	3. *If* `assigned` is *none*:
-		1. *If* `assignee` is *none*:
-			1. *Return:* [].
-		2. *Else:*
-			1. *Let* `instrs` be *UnwrapAffirm:* `Build(null)`.
-	4. *Else:*
-		1. *Let* `value` be `ValueOf(assigned)`.
-		2. *If* `value` is a normal completion:
-			1. *If* `decl.writable` is `false` *or* `assignee` is *none*:
-				1. *Note:* references to the variable will be constant-propegated by its fixed value.
-				2. *Return:* [].
-		3. *Let* `instrs` be *UnwrapAffirm:* `Build(assigned)`.
-	5. *If* `assignee` is *none*:
-		1. *Return:* [
-			...instrs,
-			"DROP",
-		].
-	6. *Else:*
-		1. *Let* `name` be the string-concatenation of "glb" and `assignee.id`.
-		2. *Return:* [
-			...instrs,
-			"DECL the global variable `name`.",
-		].
 ;
 
 

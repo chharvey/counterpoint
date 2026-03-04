@@ -90,17 +90,17 @@ export class ASTNodeCall extends ASTNodeExpression {
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
 		const resolved_generic_args: TYPE.Type[]       = ASTNodeTypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
-		switch (this.base.source as ValidFunctionName) {
-			case ValidFunctionName.LIST: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+		try {
+			this.checkFunctionArgs(constructor_schema, resolved_generic_args);
+		} catch (err) {
+			if (err instanceof TypeErrorArgCount) {
+				throw err;
+			} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
+				// FIXME: should report whole AggregateError
+				throw err.errors[0];
+			}
+			switch (this.base.source as ValidFunctionName) {
+				case ValidFunctionName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type         = this.typeargs[0].eval();
 					const arg:      ASTNodeExpression = this.exprargs[0];
@@ -117,19 +117,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
-			}
-			case ValidFunctionName.DICT: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+				case ValidFunctionName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type         = this.typeargs[0].eval();
 					const entrytype: TYPE.Tuple        = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
@@ -154,19 +144,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
-			}
-			case ValidFunctionName.SET: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+				case ValidFunctionName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type         = this.typeargs[0].eval();
 					const arg:    ASTNodeExpression = this.exprargs[0];
@@ -183,19 +163,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
-			}
-			case ValidFunctionName.MAP: {
-				try {
-					this.checkFunctionArgs(constructor_schema, resolved_generic_args);
-				} catch (err) {
-					if (err instanceof TypeErrorArgCount) {
-						throw err;
-					} else if (err instanceof AggregateError && err.errors.every((suberr) => suberr instanceof TypeErrorArgCount)) {
-						// FIXME: should report whole AggregateError
-						throw err.errors[0];
-					}
+				case ValidFunctionName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const anttype:   TYPE.Type         = this.typeargs[0].eval();
 					const contype:   TYPE.Type         = this.typeargs[1]?.eval() ?? anttype;
@@ -214,8 +184,8 @@ export class ASTNodeCall extends ASTNodeExpression {
 							throw err;
 						}
 					}
+					break;
 				}
-				break;
 			}
 		}
 		return constructor_schema.returnType(resolved_generic_args).mutableOf();
