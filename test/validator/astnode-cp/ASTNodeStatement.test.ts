@@ -9,6 +9,7 @@ import {
 	type SymbolSchema,
 	SymbolSchemaVar,
 	TYPE,
+	drop_then,
 	BinVect,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
@@ -474,6 +475,40 @@ test.suite('ASTNodeStatement', () => {
 			});
 		});
 
+		test.suite('ASTNodeStatementConditional', () => {
+			const NON_BOOLS: readonly string[] = extract_lines`
+				val mut cond: int         = 42;
+				val mut cond: int | false = 42;
+				val mut cond: int | true  = 42;
+				val mut cond: int | bool  = 42;
+			`;
+			const BOOLS: readonly string[] = extract_lines`
+				val mut cond: false = false;
+				val mut cond: true  = true;
+				val mut cond: bool  = false;
+			`;
+			test.test('passes when condition is subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated([BOOLS, NON_BOOLS], (decl_set) => xjs.Array.forEachAggregated(decl_set, (decl) => {
+					setupScript(`{
+						${ decl }
+						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
+						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
+					}`, {build: false}); // assert does not throw
+				}));
+			});
+			test.test('throws when condition is not subtype of Boolean.', () => {
+				xjs.Array.forEachAggregated(NON_BOOLS, (decl) => {
+					const {stmts} = setupScript(`{
+						${ decl }
+						if     cond then { "consequent"; } else { "alternative"; };
+						unless cond then { "consequent"; };
+					}`, {typeCheck: false});
+					stmts[0].typeCheck(); // assert does not throw
+					return xjs.Array.forEachAggregated(stmts.slice(1), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+				});
+			});
+		});
+
 		test.suite('ASTNodeStatementLoop', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
 				val mut cond: int         = 42;
@@ -571,6 +606,79 @@ test.suite('ASTNodeStatement', () => {
 
 
 	test.suite('#lower', () => {
+		test.test('AST.StatementExpression pushes DROP instruction if expression exists.', () => {
+			const {stmts, opt} = setupScript(`{
+				val mut x: int = 42;
+				x;
+				42;
+				;
+			}`, {build: false});
+			assert.strictEqual(opt.instructions.length, 0);
+			(stmts[1] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 1);
+			(stmts[2] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 2);
+			(stmts[3] as AST.ASTNodeStatementExpression).lower(opt);
+			assert.strictEqual(opt.instructions.length, 2);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(DROP (GET x))
+				(DROP (INT.CONST 42))
+			`.join('\n'));
+		});
+		test.test('AST.StatementClaim pushes DROP.', () => {
+			const {stmts, opt} = setupScript(`{%
+				val mut x: int | float = 42;
+				claim x: int;
+			}`, {build: false});
+			(stmts[1] as AST.ASTNodeStatementClaim).lower(opt);
+			return assert.strictEqual(opt.print(), extract_lines`
+				(DROP (GET x))
+			`.join('\n'));
+		});
+		test.suite('AST.StatementReassignment', () => {
+			test.test('for variables: pushes SET instruction.', () => {
+				const {stmts, opt} = setupScript(`{
+					val mut x: int = 42;
+					set x = 43;
+					set x = 44;
+					set x = -42;
+				}`, {build: false});
+				stmts.slice(1).forEach((stmt) => (stmt as AST.ASTNodeStatementReassignment).lower(opt));
+				return assert.strictEqual(opt.print(), extract_lines`
+					(SET x (INT.CONST 43))
+					(SET x (INT.CONST 44))
+					(SET x (INT.CONST -42))
+				`.join('\n'));
+			});
+			test.test('for collections: pushes IR.CollectionDynamicSet.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: mut [int]        = [41, 42];
+					val mut my_dict: mut [:int]       = [a= 41, b= 42];
+					val mut my_set:  mut {int}        = {41 + 1, 42 / 2, 43 ^ 3};
+					val mut my_map:  mut {int -> int} = {21 -> 41, 22 -> 42, 23 -> 43};
+
+					val mut accessor: int = 22;
+					set my_list.[0 + 1]   = 84;
+					set my_dict.[@b]      = 84;
+					set my_set.[accessor] = true;
+					set my_map.[accessor] = 84;
+				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+					(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+					(DECL <Set> my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
+					(DECL <Map> my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
+					(DECL <int> accessor (INT.CONST 22))
+					(DECL <int> $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
+					(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
+					(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
+					(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
+					(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
+				`.join('\n'));
+			});
+		});
 		test.suite('AST.StatementConditional', () => {
 			test.test('pushes an if_false block.', () => {
 				assert.strictEqual(setupScript(`{
@@ -644,6 +752,29 @@ test.suite('ASTNodeStatement', () => {
 
 
 	test.suite('#build', () => {
+		test.suite('ASTNodeStatementExpression', () => {
+			test.test('returns `(nop)` for empty statement expression.', () => {
+				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
+				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
+			});
+			test.test('returns `(nop)` for nonempty foldable statement expression.', () => {
+				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
+				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
+			});
+			test.test('returns `(drop)` for nonempty non-foldable statement expression.', () => {
+				const {stmts, mod} = setupScript(`{
+					val mut x: int = 42;
+					x * 10;
+				}`);
+				assert_instanceof(stmts[1], AST.ASTNodeStatementExpression);
+				assert.ok(stmts[1].expr);
+				return assertEqualBins(
+					stmts[1].build(),
+					mod.drop(stmts[1].expr.build()),
+				);
+			});
+		});
+
 		test.suite('ASTNodeStatementClaim', () => {
 			test.test('always returns `(nop)`.', () => {
 				const {stmts, mod} = setupScript(`{
@@ -683,6 +814,20 @@ test.suite('ASTNodeStatement', () => {
 		});
 
 		test.suite('ASTNodeStatementConditional', () => {
+			test.test('produces `(nop)` for alternative if there is none.', () => {
+				const {stmts, mod} = setupScript(`{
+					val mut cond: bool = false;
+					if cond then {
+						42;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				return assertEqualBins(stmt.build(), mod.if(
+					new BinVect(mod, stmt.condition.build()).isSpecial(true),
+					stmt.consequent.build(),
+					mod.nop(),
+				));
+			});
 			test.suite('produces `(nop)` for entire statement when …', () => {
 				test.test('… condition is foldable and truthy (or falsy for `unless`), and consequent is foldable.', () => {
 					const {stmts, mod} = setupScript(`{
@@ -724,6 +869,50 @@ test.suite('ASTNodeStatement', () => {
 					);
 				});
 			});
+			test.test('produces a simple block if the condition is definitely truthy/falsy.', () => {
+				const {stmts, mod} = setupScript(`{
+					val mut TRUE:  true  = true;
+					val mut FALSE: false = false;
+					if TRUE then {
+						42;
+					};
+					if TRUE then {
+						42;
+					} else {
+						69;
+					};
+					if FALSE then {
+						42;
+					};
+					if FALSE then {
+						42;
+					} else {
+						69;
+					};
+				}`);
+				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
+					drop_then(
+						mod,
+						[(stmts[2] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[2] as AST.ASTNodeStatementConditional).consequent.build(),
+					),
+					drop_then(
+						mod,
+						[(stmts[3] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[3] as AST.ASTNodeStatementConditional).consequent.build(),
+					),
+					drop_then(
+						mod,
+						[(stmts[4] as AST.ASTNodeStatementConditional).condition.build()],
+						mod.nop(),
+					),
+					drop_then(
+						mod,
+						[(stmts[5] as AST.ASTNodeStatementConditional).condition.build()],
+						(stmts[5] as AST.ASTNodeStatementConditional).alternative!.build(),
+					),
+				]);
+			});
 			test.test('if not foldable, retuns `(if)`.', () => {
 				const {stmts, mod} = setupScript(`{
 					val mut unknown_cond: bool = false;
@@ -738,6 +927,45 @@ test.suite('ASTNodeStatement', () => {
 					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
 					stmt1.consequent.build(),
 					stmt1.alternative!.build(),
+				));
+			});
+			test.test('negates the condition for `unless` statements.', () => {
+				const {stmts, mod} = setupScript(`{
+					val mut cond: bool = false;
+					unless cond then {
+						42;
+					};
+				}`);
+				const stmt = stmts[1] as AST.ASTNodeStatementConditional;
+				return assertEqualBins(stmt.build(), mod.if(
+					new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(true),
+					stmt.consequent.build(),
+					mod.nop(),
+				));
+			});
+			test.test('nested if–else.', () => {
+				const {stmts, mod} = setupScript(`{
+					val mut cond1: bool = false;
+					val mut cond2: bool = true;
+					if cond1 then {
+						42;
+					} else if cond2 then {
+						4.2;
+					} else {
+						null;
+					};
+				}`);
+				const stmt1 = stmts[2] as AST.ASTNodeStatementConditional;
+				const stmt2 = stmt1.alternative as AST.ASTNodeStatementConditional;
+				assertEqualBins(stmt1.build(), mod.if(
+					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
+					stmt1.consequent.build(),
+					stmt2.build(),
+				));
+				assertEqualBins(stmt2.build(), mod.if(
+					new BinVect(mod, stmt2.condition.build()).isSpecial(true),
+					stmt2.consequent.build(),
+					stmt2.alternative!.build(),
 				));
 			});
 		});
