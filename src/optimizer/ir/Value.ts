@@ -1,13 +1,11 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
-import {Instruction} from './Instruction.ts';
+import {IrNode} from './IrNode.ts';
 
 
 
 /**
- * An Instruction to the internal representation (IR).
- *
  * Known subclasses:
  * - Trap
  * - Const
@@ -25,7 +23,7 @@ import {Instruction} from './Instruction.ts';
  * - Binop
  * - Phi
  */
-export abstract class Value extends Instruction {
+export abstract class Value extends IrNode {
 	/**
 	 * @param type The type of the expression.
 	 */
