@@ -33,8 +33,6 @@ describe('IrNode', () => {
 				[a= 42, b= 43, c= 44].[@a];
 				{42, 43, 44}.[42];
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"];
-				List.<int>((42, 43, 44));
-				-42;
 				42 + 43;
 				[42, 43, 44].[0]                        = 43;
 				[a= 42, b= 43, c= 44].[@a]              = 43;
@@ -83,7 +81,7 @@ describe('IrNode', () => {
 			);
 		});
 
-		it('Get returns (local.get)', () => {
+		it('Get returns (local.get).', () => {
 			const opt = new Optimizer();
 			const cg  = new Builder();
 			const mod = cg.module;
@@ -116,7 +114,33 @@ describe('IrNode', () => {
 			);
 		});
 
-		it('Decl returns (local.set)', () => {
+		it('Drop returns (drop).', () => {
+			const opt = new Optimizer();
+			const cg  = new Builder();
+			const mod = cg.module;
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				null;
+				false;
+				@hello;
+				42;
+				4.2;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assertEqualBins(
+				opt.instructions.map((instr) => (instr).codegen(cg)),
+				[
+					mod.drop(genConst(mod)),
+					mod.drop(genConst(mod, false)),
+					mod.drop(genConst(mod, Symbol(0x100))),
+					mod.drop(genConst(mod, 42n)),
+					mod.drop(genConst(mod, 4.2)),
+				],
+			);
+		});
+
+		it('Decl returns (local.set).', () => {
 			const opt = new Optimizer();
 			const cg  = new Builder();
 			const mod = cg.module;
@@ -142,7 +166,7 @@ describe('IrNode', () => {
 			);
 		});
 
-		it('Set returns (local.set)', () => {
+		it('Set returns (local.set).', () => {
 			const opt = new Optimizer();
 			const cg  = new Builder();
 			const mod = cg.module;
