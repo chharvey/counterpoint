@@ -1,5 +1,10 @@
 import * as assert from 'node:assert';
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
@@ -48,5 +53,10 @@ export class Unop extends Value {
 			case UnOp.INT_NEG:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.INT)); }
 			case UnOp.FLOAT_NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.FLOAT)); }
 		}
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

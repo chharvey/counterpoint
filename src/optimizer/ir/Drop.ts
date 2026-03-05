@@ -1,4 +1,9 @@
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
@@ -17,5 +22,10 @@ export class Drop extends Instruction {
 	@runOnceMethod
 	public override validate(): void {
 		return this.value.validate();
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

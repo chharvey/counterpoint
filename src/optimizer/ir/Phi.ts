@@ -1,5 +1,10 @@
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {Value} from './Value.ts';
 import type {Label} from './Label.ts';
 
@@ -33,5 +38,10 @@ export class Phi extends Value {
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated([this.valueThen, this.valueElse], (value) => value.validate());
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

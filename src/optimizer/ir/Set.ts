@@ -1,5 +1,10 @@
 import * as assert from 'node:assert';
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
@@ -28,6 +33,11 @@ class IrSet extends Instruction {
 	public override validate(): void {
 		this.value.validate();
 		return assert.ok(this.value.type.isSubtypeOf(this.targetType));
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }
 export {IrSet as Set};

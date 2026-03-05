@@ -1,5 +1,8 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
+	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
@@ -26,5 +29,10 @@ export class TupleGet extends Value {
 	public override validate(): void {
 		this.tuple.validate();
 		return assert_instanceof(this.tuple.type, TYPE.Tuple);
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

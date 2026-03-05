@@ -1,5 +1,10 @@
 import * as assert from 'node:assert';
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import type {VALUE} from '../../typer/index.ts';
 import {
 	TypeName,
@@ -22,6 +27,11 @@ export class Const extends Value {
 	@runOnceMethod
 	public override validate(): void {
 		return assert.ok(this.value.toType().isSubtypeOf(this.type));
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 
 	public override asTac(): Const {

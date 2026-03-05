@@ -1,3 +1,8 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+
+
+
 /**
  * An node in to the internal representation (IR).
  *
@@ -13,4 +18,7 @@ export abstract class IrNode {
 	public validate(): void {
 		return;
 	}
+
+	/** Generate assembly code. */
+	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
 }

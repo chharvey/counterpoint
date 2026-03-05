@@ -1,7 +1,10 @@
 import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
+	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
@@ -47,5 +50,10 @@ export class CollectionDynamicCopy extends Instruction {
 				return assert.ok([TYPE.Tuple, TYPE.List, TYPE.Set, TYPE.Map].some((typ) => this.source.type instanceof typ));
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

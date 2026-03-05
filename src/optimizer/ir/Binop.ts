@@ -1,6 +1,11 @@
 import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
@@ -89,5 +94,10 @@ export class Binop extends Value {
 				case BinOp.NGT: { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
 			}
 		});
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

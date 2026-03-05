@@ -1,3 +1,6 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {Local} from '../utils-private.ts';
 import {Value} from './Value.ts';
@@ -12,6 +15,11 @@ export class Get extends Value {
 
 	public override toString(): string {
 		return `(GET ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name })`;
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 
 	public override asTac(): Get {
