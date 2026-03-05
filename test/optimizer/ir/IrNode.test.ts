@@ -114,6 +114,56 @@ describe('IrNode', () => {
 			);
 		});
 
+		it('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
+			const CALL = {
+				vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.v128),
+				vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.v128),
+				vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
+			} as const;
+
+			const opt = new Optimizer();
+			const cg  = new Builder();
+			const mod = cg.module;
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				!null;
+				!false;
+				!@hello;
+				!42;
+				!4.2;
+
+				?null;
+				?false;
+				?@hello;
+				?42;
+				?4.2;
+
+				-(42);
+				-(4.2);
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assertEqualBins(
+				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+				[
+					CALL.vnot(mod, genConst(mod)),
+					CALL.vnot(mod, genConst(mod, false)),
+					CALL.vnot(mod, genConst(mod, Symbol(0x100))),
+					CALL.vnot(mod, genConst(mod, 42n)),
+					CALL.vnot(mod, genConst(mod, 4.2)),
+
+					CALL.vemp(mod, genConst(mod)),
+					CALL.vemp(mod, genConst(mod, false)),
+					CALL.vemp(mod, genConst(mod, Symbol(0x100))),
+					CALL.vemp(mod, genConst(mod, 42n)),
+					CALL.vemp(mod, genConst(mod, 4.2)),
+
+					CALL.vneg(mod, genConst(mod, 42n)),
+					CALL.vneg(mod, genConst(mod, 4.2)),
+				],
+			);
+		});
+
 		it('Drop returns (drop).', () => {
 			const opt = new Optimizer();
 			const cg  = new Builder();

@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import binaryen from 'binaryen';
+import {
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -52,7 +55,23 @@ export class Unop extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
+		switch (this.operator) {
+			case UnOp.ISNULL: {
+				return new BinVect(cg.module, code).isSpecial(null);
+			}
+			case UnOp.TOBOOL: {
+				return cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128);
+			}
+			case UnOp.TOINT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case UnOp.TONAT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case UnOp.TOFLOAT: { throw new Error('not yet supported.'); } // TODO: v0.5+
+		}
+		return cg.module.call(new Map<UnOp, string>([
+			[UnOp.NOT, 'vnot'],
+			[UnOp.EMP, 'vemp'],
+			[UnOp.NEG, 'vneg'],
+		]).get(this.operator)!, [code], binaryen.v128);
 	}
 }
