@@ -15,10 +15,17 @@ import {genConst} from '../../helpers.ts';
 
 describe('IrNode', () => {
 	describe('#codegen', () => {
-		it('is not yet supported.', () => {
+		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
 			const opt = new Optimizer();
-			const cg  = new Builder();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
+			goal.varCheck();
+			goal.typeCheck();
+			'lower' in opts && opts.lower && goal.lower(opt);
+			return {goal, opt};
+		}
+
+		it('is not yet supported.', () => {
+			const {opt} = setupScript(`{
 				"hello";
 				"""hello {{ 42 }}""";
 				(42, 43, 44);
@@ -38,10 +45,8 @@ describe('IrNode', () => {
 				[a= 42, b= 43, c= 44].[@a]              = 43;
 				{42, 43, 44}.[42]                       = false;
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"] = 43;
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
+			}`, {lower: true, build: false});
+			const cg = new Builder();
 			xjs.Array.forEachAggregated([
 				...opt.instructions,
 				new IR.Label('label1'),
@@ -56,19 +61,15 @@ describe('IrNode', () => {
 		});
 
 		it('Const returns (v128.const).', () => {
-			const opt = new Optimizer();
-			const cg  = new Builder();
-			const mod = cg.module;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const {goal, opt} = setupScript(`{
 				null;
 				false;
 				@hello;
 				42;
 				4.2;
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
+			}`, {lower: true, build: false});
+			const cg  = new Builder();
+			const mod = cg.module;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
@@ -82,10 +83,7 @@ describe('IrNode', () => {
 		});
 
 		it('Get returns (local.get).', () => {
-			const opt = new Optimizer();
-			const cg  = new Builder();
-			const mod = cg.module;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const {goal, opt} = setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
 				val mut c: sym   = @hello;
@@ -97,10 +95,9 @@ describe('IrNode', () => {
 				c;
 				d;
 				e;
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
+			}`, {lower: true, build: false});
+			const cg  = new Builder();
+			const mod = cg.module;
 			opt.instructions.slice(0, 5).map((instr) => (instr).codegen(cg));
 			return assertEqualBins(
 				goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -121,10 +118,7 @@ describe('IrNode', () => {
 				vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
 			} as const;
 
-			const opt = new Optimizer();
-			const cg  = new Builder();
-			const mod = cg.module;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const {goal, opt} = setupScript(`{
 				!null;
 				!false;
 				!@hello;
@@ -139,10 +133,9 @@ describe('IrNode', () => {
 
 				-(42);
 				-(4.2);
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
+			}`, {lower: true, build: false});
+			const cg  = new Builder();
+			const mod = cg.module;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
@@ -165,19 +158,15 @@ describe('IrNode', () => {
 		});
 
 		it('Drop returns (drop).', () => {
-			const opt = new Optimizer();
-			const cg  = new Builder();
-			const mod = cg.module;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const {opt} = setupScript(`{
 				null;
 				false;
 				@hello;
 				42;
 				4.2;
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
+			}`, {lower: true, build: false});
+			const cg  = new Builder();
+			const mod = cg.module;
 			return assertEqualBins(
 				opt.instructions.map((instr) => (instr).codegen(cg)),
 				[
@@ -191,19 +180,15 @@ describe('IrNode', () => {
 		});
 
 		it('Decl returns (local.set).', () => {
-			const opt = new Optimizer();
-			const cg  = new Builder();
-			const mod = cg.module;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const {opt} = setupScript(`{
 				val a: null  = null;
 				val b: bool  = false;
 				val c: sym   = @hello;
 				val d: int   = 42;
 				val e: float = 4.2;
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
+			}`, {lower: true, build: false});
+			const cg  = new Builder();
+			const mod = cg.module;
 			return assertEqualBins(
 				opt.instructions.map((instr) => (instr).codegen(cg)),
 				[
@@ -217,10 +202,7 @@ describe('IrNode', () => {
 		});
 
 		it('Set returns (local.set).', () => {
-			const opt = new Optimizer();
-			const cg  = new Builder();
-			const mod = cg.module;
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+			const {opt} = setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
 				val mut c: sym   = @hello;
@@ -232,10 +214,9 @@ describe('IrNode', () => {
 				c = @world;
 				d = 43;
 				e = 4.3;
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
+			}`, {lower: true, build: false});
+			const cg  = new Builder();
+			const mod = cg.module;
 			return assertEqualBins(
 				opt.instructions.slice(5).map((instr) => (instr).codegen(cg)),
 				[
