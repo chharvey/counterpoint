@@ -72,6 +72,25 @@ export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VA
 
 
 
+export function genConst(mod: binaryen.Module, value: null | boolean | symbol | bigint | number | string = null): binaryen.ExpressionRef {
+	return (
+		value === null            ? VALUE.NULL :
+		value === false           ? VALUE.FALSE :
+		value === true            ? VALUE.TRUE :
+		value === 0n              ? VALUE.INT_0 :
+		value === 1n              ? VALUE.INT_1 :
+		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
+		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'bigint' ? new VALUE.Integer(value) :
+		typeof value === 'number' ? new VALUE.Float(value) :
+		typeof value === 'string' ? assert.fail('String argument to `genConst` is not yet supported.') :
+		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+	).codegen(mod);
+}
+
+
+
 export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string = null): binaryen.ExpressionRef {
 	return (
 		value === null            ? VALUE.NULL :

@@ -30,8 +30,8 @@ export class Const extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return this.value.codegen(cg.module);
 	}
 
 	public override asTac(): Const {

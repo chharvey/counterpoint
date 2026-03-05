@@ -45,13 +45,17 @@ export class Float extends ValueNumber<Float> {
 		return this.data === (value as ValueNumber).toFloat().data;
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
+	public override codegen(mod: binaryen.Module): binaryen.ExpressionRef {
 		return new BinVect(
-			builder.module,
+			mod,
 			Object.is(this.data, -0.0)
-				? builder.module.f64.ceil(builder.module.f64.const(-0.5))
-				: builder.module.f64.const(this.data),
+				? mod.f64.ceil(mod.f64.const(-0.5))
+				: mod.f64.const(this.data),
 		).vect;
+	}
+
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return this.codegen(builder.module);
 	}
 
 	public override toFloat(): this {

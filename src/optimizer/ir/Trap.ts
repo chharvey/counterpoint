@@ -1,6 +1,9 @@
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
@@ -17,9 +20,9 @@ export class Trap extends Value {
 		return `(${ TypeName[TypeName.TRAP] })`;
 	}
 
-	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	@noopMethod(memoizeMethod)
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.module.unreachable();
 	}
 
 	public override asTac(): Trap {
