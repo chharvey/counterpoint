@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -19,8 +20,6 @@ describe('IrNode', () => {
 			const cg  = new Builder();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
 				"hello";
-				val mut x: int = 42;
-				x;
 				"""hello {{ 42 }}""";
 				(42, 43, 44);
 				[42, 43, 44];
@@ -37,8 +36,6 @@ describe('IrNode', () => {
 				List.<int>((42, 43, 44));
 				-42;
 				42 + 43;
-				if false then 42 else 43;
-				x = 43;
 				[42, 43, 44].[0]                        = 43;
 				[a= 42, b= 43, c= 44].[@a]              = 43;
 				{42, 43, 44}.[42]                       = false;
@@ -82,6 +79,97 @@ describe('IrNode', () => {
 					genConst(mod, Symbol(0x100)),
 					genConst(mod, 42n),
 					genConst(mod, 4.2),
+				],
+			);
+		});
+
+		it('Get returns (local.get)', () => {
+			const opt = new Optimizer();
+			const cg  = new Builder();
+			const mod = cg.module;
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut a: null  = null;
+				val mut b: bool  = false;
+				val mut c: sym   = @hello;
+				val mut d: int   = 42;
+				val mut e: float = 4.2;
+
+				a;
+				b;
+				c;
+				d;
+				e;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			opt.instructions.slice(0, 5).map((instr) => (instr).codegen(cg));
+			return assertEqualBins(
+				goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+				[
+					mod.local.get(0, binaryen.f32),
+					mod.local.get(1, binaryen.f32),
+					mod.local.get(2, binaryen.f32),
+					mod.local.get(3, binaryen.f32),
+					mod.local.get(4, binaryen.f32),
+				],
+			);
+		});
+
+		it('Decl returns (local.set)', () => {
+			const opt = new Optimizer();
+			const cg  = new Builder();
+			const mod = cg.module;
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val a: null  = null;
+				val b: bool  = false;
+				val c: sym   = @hello;
+				val d: int   = 42;
+				val e: float = 4.2;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assertEqualBins(
+				opt.instructions.map((instr) => (instr).codegen(cg)),
+				[
+					mod.local.set(0, genConst(mod)),
+					mod.local.set(1, genConst(mod, false)),
+					mod.local.set(2, genConst(mod, Symbol(0x102))),
+					mod.local.set(3, genConst(mod, 42n)),
+					mod.local.set(4, genConst(mod, 4.2)),
+				],
+			);
+		});
+
+		it('Set returns (local.set)', () => {
+			const opt = new Optimizer();
+			const cg  = new Builder();
+			const mod = cg.module;
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+				val mut a: null  = null;
+				val mut b: bool  = false;
+				val mut c: sym   = @hello;
+				val mut d: int   = 42;
+				val mut e: float = 4.2;
+
+				a = null;
+				b = true;
+				c = @world;
+				d = 43;
+				e = 4.3;
+			`);
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			return assertEqualBins(
+				opt.instructions.slice(5).map((instr) => (instr).codegen(cg)),
+				[
+					mod.local.set(0, genConst(mod)),
+					mod.local.set(1, genConst(mod, true)),
+					mod.local.set(2, genConst(mod, Symbol(0x106))),
+					mod.local.set(3, genConst(mod, 43n)),
+					mod.local.set(4, genConst(mod, 4.3)),
 				],
 			);
 		});

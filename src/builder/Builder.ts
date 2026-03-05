@@ -10,6 +10,16 @@ import type {
 
 
 
+/** Schema of WASM local variable info. */
+type LocalInfo = {
+	/** WASM local index. */
+	readonly index: number,
+	/** Binaryen type. */
+	readonly type:  number,
+};
+
+
+
 /**
  * The Builder generates assembly code.
  */
@@ -26,6 +36,12 @@ export class Builder {
 	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
 	 */
 	#varCount: bigint = -0x40n;
+
+	/** Tracking WASM local indices. */
+	#localCount: bigint = 0n;
+
+	/** A lookup table from variable ids to WASM local variable info. */
+	readonly #localTable = new Map<bigint, LocalInfo>();
 
 	#typeCount: bigint = 0n;
 
@@ -46,6 +62,30 @@ export class Builder {
 
 	public nextTypeIndex(): bigint {
 		return this.#typeCount++;
+	}
+
+	/**
+	 * Return a WASM `(local.set)` instruction. Generates its own WASM variable index.
+	 * @param id    a validator’s variable id or an IR temporary local id, which identifies the symbol to be written to
+	 * @param value a Binaryen value to assign to the variable
+	 * @return      `(local.set ‹index› ‹value›)`
+	 */
+	public localSet(id: bigint, value: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		this.#localTable.has(id) || this.#localTable.set(id, {index: Number(this.#localCount++), type: binaryen.getExpressionType(value)});
+		return this.module.local.set(this.#localTable.get(id)!.index, value);
+	}
+
+	/**
+	 * Return a WASM `(local.get)` instruction.
+	 * @param id a validator’s variable id or an IR temporary local id, which identifies the symbol to be read
+	 * @return   `(local.get ‹index›)`
+	 */
+	public localGet(id: bigint): binaryen.ExpressionRef {
+		const local_info: LocalInfo | undefined = this.#localTable.get(id);
+		if (!local_info) {
+			throw new ReferenceError(`Local with id \`${ id }\` must be set first!`);
+		}
+		return this.module.local.get(local_info.index, local_info.type);
 	}
 
 	/**

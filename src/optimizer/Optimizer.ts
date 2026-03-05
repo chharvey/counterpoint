@@ -21,8 +21,11 @@ export class Optimizer {
 	}
 
 	public newTempLocal(value: IR.Value): Local {
-		const local: Local = {
-			name: `$${ this.#tempLocalCounter++ }`,
+		const id:    bigint = this.#tempLocalCounter--; // temp local ids are negative so as not to conflict with actual variable ids
+		const local: Local  = {
+			id,
+			value,
+			name: `$${ -id }`, // appears positive
 			type: value.type,
 		};
 		this.pushInstruction(new IR.Decl(local, value));

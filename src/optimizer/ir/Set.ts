@@ -36,8 +36,8 @@ class IrSet extends Instruction {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.localSet(this.target.id, this.value.codegen(cg));
 	}
 }
 export {IrSet as Set};
