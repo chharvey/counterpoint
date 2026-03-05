@@ -51,11 +51,12 @@ MAP.GET ([Value Value])           -> Value;
 
 CALL([Value*]) -> Value;
 
-NOT([Value]) -> Boolean;
-EMP([Value]) -> Boolean;
-
-INT.NEG([Integer]) -> Integer;
-FLOAT.NEG([Float]) -> Float;
+NOT([Value])   -> Boolean;
+EMP([Value])   -> Boolean;
+NEG([Integer]) -> Integer;
+NEG([Natural]) -> Natural;
+NEG([Float])   -> Float;
+NEG([Number])  -> Number;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
@@ -187,10 +188,9 @@ Lower(SemanticCall call) := (CALL [`Lower(call.0)` `...call.SemanticExpression*.
 
 // Lower(SemanticClaim claim);
 
-Lower(SemanticOperation[operator=NOT] op)             := (NOT       [`op.0`]);
-Lower(SemanticOperation[operator=EMP] op)             := (EMP       [`op.0`]);
-Lower(SemanticOperation[operator=NEG][0: Integer] op) := (INT.NEG   [`op.0`]);
-Lower(SemanticOperation[operator=NEG][0: Float]   op) := (FLOAT.NEG [`op.0`]);
+Lower(SemanticOperation[operator=NOT] ::= SemanticExpression)               := (NOT [`SemanticExpression`]);
+Lower(SemanticOperation[operator=EMP] ::= SemanticExpression)               := (EMP [`SemanticExpression`]);
+Lower(SemanticOperation[operator=NEG] ::= SemanticExpression[type: Number]) := (NEG [`SemanticExpression`]);
 
 Lower(SemanticOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`op.0` `op.1`]);
 Lower(SemanticOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`op.0` `op.1`]);

@@ -80,7 +80,7 @@ describe('ASTNodeExpression', () => {
 				(DECL <float> z (FLOAT.CONST 0.2))
 				(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(DECL <float> $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
 				(DECL <float> $3 (FLOAT.ADD (GET $1) (GET $2)))
 				(DROP (TUPLE.NEW (GET x) (GET $0) (GET $3)))
 			`.join('\n'));
@@ -97,7 +97,7 @@ describe('ASTNodeExpression', () => {
 				(DECL <float> z (FLOAT.CONST 0.2))
 				(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(DECL <float> $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
 				(DECL <float> $3 (FLOAT.ADD (GET $1) (GET $2)))
 				(DROP (RECORD.NEW @a->(GET x) @b->(GET $0) @c->(GET $3)))
 			`.join('\n'));
@@ -108,7 +108,7 @@ describe('ASTNodeExpression', () => {
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL <float> $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
 				(DECL <float> $3 (FLOAT.ADD (GET $1) (GET $2)))
 				(DROP (LIST.NEW (BOOL.CONST false) (GET $0) (GET $3)))
 			`.join('\n'));
@@ -119,7 +119,7 @@ describe('ASTNodeExpression', () => {
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL <float> $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
 				(DECL <float> $3 (FLOAT.ADD (GET $1) (GET $2)))
 				(DROP (DICT.NEW @a->(BOOL.CONST false) @b->(GET $0) @c->(GET $3)))
 			`.join('\n'));
@@ -130,7 +130,7 @@ describe('ASTNodeExpression', () => {
 			}`, {lower: true, build: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL <float> $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
 				(DECL <float> $3 (FLOAT.ADD (GET $1) (GET $2)))
 				(DROP (SET.NEW (BOOL.CONST false) (GET $0) (GET $3)))
 			`.join('\n'));
@@ -142,7 +142,7 @@ describe('ASTNodeExpression', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-					(DECL <float> $2 (FLOAT.NEG (FLOAT.CONST 1.0)))
+					(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
 					(DECL <float> $3 (FLOAT.ADD (GET $1) (GET $2)))
 					(DROP (MAP.NEW (STR.CONST "a")->(BOOL.CONST false) (STR.CONST "b")->(GET $0) (STR.CONST "c")->(GET $3)))
 				`.join('\n'));

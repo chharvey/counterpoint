@@ -94,7 +94,7 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		 */
 		if (t0.intersect(t1).isBottomType && (
 			this.operator === Operator.ID ||
-			[t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ||
+			[t0, t1].some((t) => t.intersect(TYPE.NUMBER).isBottomType) ||
 			!int_coercion && [t0, t1].some((t) => !t.includes(VALUE.FLOAT_0) && !t.includes(VALUE.FLOAT_N0))
 		)) {
 			return TYPE.FALSE;

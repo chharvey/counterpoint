@@ -72,9 +72,8 @@ export function invalid_function_name(source: string): never {
 export function bothNumeric(t0: TYPE.Type, t1: TYPE.Type): boolean;
 export function bothNumeric(v0: VALUE.Value, v1: VALUE.Value): boolean;
 export function bothNumeric(arg0: TYPE.Type | VALUE.Value, arg1: TYPE.Type | VALUE.Value): boolean {
-	const int_float: TYPE.Type = TYPE.INT.union(TYPE.FLOAT);
 	return (arg0 instanceof TYPE.Type && arg1 instanceof TYPE.Type)
-		? [arg0, arg1].every((t) => t.isSubtypeOf(int_float))
+		? [arg0, arg1].every((t) => t.isSubtypeOf(TYPE.NUMBER))
 		: [arg0, arg1].every((o) => o instanceof VALUE.Number);
 }
 

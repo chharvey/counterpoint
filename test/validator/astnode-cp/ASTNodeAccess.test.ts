@@ -987,7 +987,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $2 (NEG (INT.CONST 3)))
 					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL <tuple> $4 (TUPLE.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (TUPLE.GET 1 (GET $4)))
@@ -999,7 +999,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $2 (NEG (INT.CONST 3)))
 					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL <record> $4 (RECORD.NEW @a->(GET $0) @b->(GET $1) @c->(GET $3)))
 					(DROP (RECORD.GET @b (GET $4)))
@@ -1011,7 +1011,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $2 (NEG (INT.CONST 3)))
 					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL <List> $4 (LIST.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (LIST.GET (GET $4) (INT.CONST 1)))
@@ -1023,7 +1023,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $2 (NEG (INT.CONST 3)))
 					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL <Dict> $4 (DICT.NEW @a->(GET $0) @b->(GET $1) @c->(GET $3)))
 					(DROP (DICT.GET (GET $4) (SYM.CONST @b)))
@@ -1035,7 +1035,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $2 (NEG (INT.CONST 3)))
 					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL <Set> $4 (SET.NEW (GET $0) (GET $1) (GET $3)))
 					(DROP (SET.GET (GET $4) (INT.CONST 21)))
@@ -1047,7 +1047,7 @@ describe('ASTNodeAccess', () => {
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+					(DECL <int> $2 (NEG (INT.CONST 3)))
 					(DECL <int> $3 (INT.ADD (INT.CONST 43) (GET $2)))
 					(DECL <Map> $4 (MAP.NEW (INT.CONST 21)->(GET $0) (INT.CONST 22)->(GET $1) (INT.CONST 23)->(GET $3)))
 					(DROP (MAP.GET (GET $4) (INT.CONST 22)))
@@ -1273,7 +1273,7 @@ describe('ASTNodeAccess', () => {
 				`.concat(
 					...maybe_access_output(0, 'my_list', [0, 4], (set) => `
 						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
-						(DECL <int> $2 (INT.NEG (INT.CONST 3)))
+						(DECL <int> $2 (NEG (INT.CONST 3)))
 						(DECL <int> $3 (INT.ADD (GET $1) (GET $2)))
 						${ set('(LIST.GET (GET my_list) (GET $3))') }
 					`),

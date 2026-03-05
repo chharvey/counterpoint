@@ -21,9 +21,7 @@ export enum UnOp {
 
 	NOT,
 	EMP,
-
-	INT_NEG,
-	FLOAT_NEG,
+	NEG,
 }
 
 
@@ -44,14 +42,12 @@ export class Unop extends Value {
 
 	@runOnceMethod
 	public override validate(): void {
-		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		this.operand.validate();
 		switch (this.operator) {
-			case UnOp.TOINT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case UnOp.TONAT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case UnOp.TOFLOAT:   { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case UnOp.INT_NEG:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.INT)); }
-			case UnOp.FLOAT_NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.FLOAT)); }
+			case UnOp.TOINT:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case UnOp.TONAT:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case UnOp.TOFLOAT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case UnOp.NEG:       { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
 		}
 	}
 
