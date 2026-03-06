@@ -1,0 +1,90 @@
+Codegen((TRAP)) := (unreachable);
+
+Codegen((NULL.CONST null))  := (v128.const i16x8 0 0 0 0x0001 0 0 0 0);
+Codegen((BOOL.CONST false)) := (v128.const i16x8 0 0 0 0x0002 0 0 0 0);
+Codegen((BOOL.CONST true))  := (v128.const i16x8 0 0 0 0x0003 0 0 0 0);
+
+Codegen((SYM.CONST   `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.id`));
+Codegen((INT.CONST   `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0018 0 0 0 0) (i64.const `v.data`));
+Codegen((NAT.CONST   `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.data`));
+Codegen((FLOAT.CONST `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0048 0 0 0 0) (i64.const `v.data`));
+
+// Codegen((STR.CONST `v`));
+
+Codegen((GET `s`)) := (local.get ‹index› `s.type`);
+
+// Codegen((STR.TEMPLATE `v`));
+
+// Codegen((TUPLE.NEW  `values`));
+// Codegen((RECORD.NEW `pairs`));
+// Codegen((LIST.NEW   `values`));
+// Codegen((DICT.NEW   `pairs`));
+// Codegen((SET.NEW    `values`));
+// Codegen((MAP.NEW    `pairs`));
+
+// Codegen((TUPLE.GET  `index` `obj`));
+// Codegen((RECORD.GET `key`   `obj`));
+// Codegen((LIST.GET `obj` `accessor`));
+// Codegen((DICT.GET `obj` `accessor`));
+// Codegen((SET.GET  `obj` `accessor`));
+// Codegen((MAP.GET  `obj` `accessor`));
+
+// Codegen((CALL `values`));
+
+Codegen((ISNULL `v`)) := (i32.eq (i16x8.extract_lane_s 3 `Codegen(v)`) (i32.const 0x0001));
+
+Codegen((NOT `v`)) := (call $vnot `Codegen(v)`);
+Codegen((EMP `v`)) := (call $vemp `Codegen(v)`);
+Codegen((NEG `v`)) := (call $vneg `Codegen(v)`);
+
+Codegen((TOINT `v`))   := (call $vtoi `Codegen(v)`);
+Codegen((TONAT `v`))   := (call $vton `Codegen(v)`);
+Codegen((TOFLOAT `v`)) := (call $vtof `Codegen(v)`);
+
+Codegen((INT.ADD `v0` `v1`)) := (call $viadd   `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.SUB `v0` `v1`)) := (call $visub_s `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.MUL `v0` `v1`)) := (call $vimul   `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.DIV `v0` `v1`)) := (call $vidiv_s `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.EXP `v0` `v1`)) := (call $viexp   `Codegen(v0)` `Codegen(v1)`);
+
+Codegen((NAT.ADD `v0` `v1`)) := (call $viadd   `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.SUB `v0` `v1`)) := (call $visub_u `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.MUL `v0` `v1`)) := (call $vimul   `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.DIV `v0` `v1`)) := (call $vidiv_u `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.EXP `v0` `v1`)) := (call $viexp   `Codegen(v0)` `Codegen(v1)`);
+
+Codegen((FLOAT.ADD `v0` `v1`)) := (call $vfadd `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.SUB `v0` `v1`)) := (call $vfsub `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.MUL `v0` `v1`)) := (call $vfmul `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.DIV `v0` `v1`)) := (call $vfdiv `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.EXP `v0` `v1`)) := (unreachable);
+
+Codegen((LT  `v0` `v1`)) := (call $vlt `Codegen(v0)` `Codegen(v1)`);
+Codegen((GT  `v0` `v1`)) := (call $vgt `Codegen(v0)` `Codegen(v1)`);
+Codegen((LE  `v0` `v1`)) := (call $vle `Codegen(v0)` `Codegen(v1)`);
+Codegen((GE  `v0` `v1`)) := (call $vge `Codegen(v0)` `Codegen(v1)`);
+Codegen((NLT `v0` `v1`)) := `Codegen((NOT (LT `v0` `v1`)))`;
+Codegen((NGT `v0` `v1`)) := `Codegen((NOT (GT `v0` `v1`)))`;
+
+
+Codegen((ID  `v0` `v1`)) := (call $vid `Codegen(v0)` `Codegen(v1)`);
+Codegen((EQ  `v0` `v1`)) := (call $veq `Codegen(v0)` `Codegen(v1)`);
+Codegen((NID `v0` `v1`)) := `Codegen((NOT (ID `v0` `v1`)))`;
+Codegen((NEQ `v0` `v1`)) := `Codegen((NOT (EQ `v0` `v1`)))`;
+
+// Codegen((PHI `pairs`));
+
+// Codegen((DROP `v`));
+
+// Codegen((DECL `id` `type` `v`));
+// Codegen((SET  `id`        `v`));
+
+// Codegen((LIST.SET `obj` `accessor` `v`));
+// Codegen((DICT.SET `obj` `accessor` `v`));
+// Codegen((SET.SET  `obj` `accessor` `v`));
+// Codegen((MAP.SET  `obj` `accessor` `v`));
+
+// Codegen((LIST.COPY `dest` `src`));
+// Codegen((DICT.COPY `dest` `src`));
+// Codegen((SET.COPY  `dest` `src`));
+// Codegen((MAP.COPY  `dest` `src`));

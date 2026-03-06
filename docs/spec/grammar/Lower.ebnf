@@ -20,20 +20,18 @@ Every function signature takes the form «‹NAME›(‹static params› [‹dyn
 
 
 TRAP();
-NULL.CONST(VALUE.Null)    -> Value;
-BOOL.CONST(VALUE.Boolean) -> Value;
-SYM.CONST(VALUE.Symbol)   -> Value;
-INT.CONST(VALUE.Integer)  -> Value;
-NAT.CONST(VALUE.Natural)  -> Value;
-FLOAT.CONST(VALUE.Float)  -> Value;
-STR.CONST(VALUE.String)   -> Value;
+
+NULL.CONST (VALUE.Null)    -> Value;
+BOOL.CONST (VALUE.Boolean) -> Value;
+SYM.CONST  (VALUE.Symbol)  -> Value;
+INT.CONST  (VALUE.Integer) -> Value;
+NAT.CONST  (VALUE.Natural) -> Value;
+FLOAT.CONST(VALUE.Float)   -> Value;
+STR.CONST  (VALUE.String)  -> Value;
+
 GET(SymbolSchemaVar|native-string) -> Value;
 
-ISNULL([Value]) -> Boolean;
-
-TOINT([Number])   -> Integer;
-TONAT([Number])   -> Natural;
-TOFLOAT([Number]) -> Float;
+STR.TEMPLATE([Value*]) -> String;
 
 TUPLE.NEW([Value*])                       -> Tuple;
 RECORD.NEW(Vector<native-bigint, Value>*) -> Record;
@@ -51,12 +49,18 @@ MAP.GET ([Value Value])           -> Value;
 
 CALL([Value*]) -> Value;
 
+ISNULL([Value]) -> Boolean;
+
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
 NEG([Integer]) -> Integer;
 NEG([Natural]) -> Natural;
 NEG([Float])   -> Float;
 NEG([Number])  -> Number;
+
+TOINT([Number])   -> Integer;
+TONAT([Number])   -> Natural;
+TOFLOAT([Number]) -> Float;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
@@ -91,12 +95,15 @@ NEQ([Value Value]) -> Boolean;
 PHI(‹label› -> Value, ‹label› -> Value) -> Value;
 
 DROP([Value]);
+
 DECL(SymbolSchemaVar|native-string Type [Value]);
-SET(SymbolSchemaVar|native-string [Value]);
+SET (SymbolSchemaVar|native-string      [Value]);
+
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
 SET.SET ([Value Value Value]);
 MAP.SET ([Value Value Value]);
+
 LIST.COPY([Value Value]);
 DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
@@ -128,7 +135,7 @@ Lower(SemanticConstant[type=TYPE.String]  const) := (STR.CONST   `Lower(ValueOf(
 
 Lower(SemanticVariable var) := (GET `GetSymbolSchema(var)`);
 
-// Lower(SemanticTemplate tpl);
+Lower(SemanticTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Lower)`);
 
 Lower(SemanticTuple tup)  := (TUPLE.NEW  [`...tup.children.map(Lower)`]);
 Lower(SemanticRecord rec) := (RECORD.NEW `...rec.children.map(Sequence [prop.0.id, Lower(prop.1)])`);
