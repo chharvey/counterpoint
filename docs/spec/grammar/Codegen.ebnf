@@ -31,7 +31,7 @@ Codegen((GET `s`)) := (local.get ‹index› `s.type`);
 
 // Codegen((CALL `values`));
 
-Codegen((ISNULL `v`)) := (i32.eq (i16x8.extract_lane_s 3 `Codegen(v)`) (i32.const 0x0001));
+Codegen((ISNULL `v`)) := (call $isnull `Codegen(v)`);
 
 Codegen((NOT `v`)) := (call $vnot `Codegen(v)`);
 Codegen((EMP `v`)) := (call $vemp `Codegen(v)`);

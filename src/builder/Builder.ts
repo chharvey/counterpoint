@@ -191,6 +191,9 @@ export class Builder {
 	}
 
 	#setupFunctions(): void {
+		this.module.addFunction('isnull', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => (
+			BinVect.asBool(mod, new BinVect(mod, mod.local.get(0, binaryen.v128)).isSpecial(null))
+		))(this.module)], binaryen.v128));
 		this.module.addFunction('vnot', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
 			const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
 			return BinVect.asBool(mod, mod.i32.or(vect.isSpecial(null), vect.isSpecial(false)));
