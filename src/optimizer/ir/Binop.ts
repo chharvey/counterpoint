@@ -99,6 +99,8 @@ export class Binop extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
+			case BinOp.FLOAT_EXP: { return cg.module.unreachable(); }
+
 			case BinOp.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, binaryen.v128)], binaryen.v128); }
 			case BinOp.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, binaryen.v128)], binaryen.v128); }
 
@@ -106,24 +108,22 @@ export class Binop extends Value {
 			case BinOp.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, binaryen.v128)], binaryen.v128); }
 		}
 		return cg.module.call(new Map<BinOp, string>([
-			// TODO: v0.5+: update with new functions
-			[BinOp.INT_ADD, 'vadd'],
+			[BinOp.INT_ADD, 'viadd'],
 			[BinOp.INT_SUB, 'visub_s'],
-			[BinOp.INT_MUL, 'vmul'],
-			[BinOp.INT_DIV, 'vdiv'],
-			[BinOp.INT_EXP, 'vexp'],
+			[BinOp.INT_MUL, 'vimul'],
+			[BinOp.INT_DIV, 'vidiv_s'],
+			[BinOp.INT_EXP, 'viexp'],
 
-			[BinOp.NAT_ADD, 'vadd'],
+			[BinOp.NAT_ADD, 'viadd'],
 			[BinOp.NAT_SUB, 'visub_u'],
-			[BinOp.NAT_MUL, 'vmul'],
-			[BinOp.NAT_DIV, 'vdiv'],
-			[BinOp.NAT_EXP, 'vexp'],
+			[BinOp.NAT_MUL, 'vimul'],
+			[BinOp.NAT_DIV, 'vidiv_u'],
+			[BinOp.NAT_EXP, 'viexp'],
 
-			[BinOp.FLOAT_ADD, 'vadd'],
+			[BinOp.FLOAT_ADD, 'vfadd'],
 			[BinOp.FLOAT_SUB, 'vfsub'],
-			[BinOp.FLOAT_MUL, 'vmul'],
-			[BinOp.FLOAT_DIV, 'vdiv'],
-			[BinOp.FLOAT_EXP, 'vexp'],
+			[BinOp.FLOAT_MUL, 'vfmul'],
+			[BinOp.FLOAT_DIV, 'vfdiv'],
 
 			[BinOp.LT, 'vlt'],
 			[BinOp.GT, 'vgt'],
