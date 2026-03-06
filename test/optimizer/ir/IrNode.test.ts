@@ -106,12 +106,22 @@ test.suite('IrNode', () => {
 
 		test.test('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
 			const CALL = {
+				vtoi: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], binaryen.v128),
+				vton: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], binaryen.v128),
+				vtof: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], binaryen.v128),
 				vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.v128),
 				vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.v128),
 				vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
 			} as const;
 
 			const {stmts, opt} = setupScript(`{
+				int   +42;
+				int   4.2;
+				nat   42;
+				nat   4.2;
+				float +42;
+				float 42;
+
 				!null;
 				!false;
 				!@hello;
@@ -132,6 +142,13 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
+					CALL.vtoi(mod, genConst(mod, 42n, 'nat')),
+					CALL.vtoi(mod, genConst(mod, 4.2)),
+					CALL.vton(mod, genConst(mod, 42n)),
+					CALL.vton(mod, genConst(mod, 4.2)),
+					CALL.vtof(mod, genConst(mod, 42n, 'nat')),
+					CALL.vtof(mod, genConst(mod, 42n)),
+
 					CALL.vnot(mod, genConst(mod)),
 					CALL.vnot(mod, genConst(mod, false)),
 					CALL.vnot(mod, genConst(mod, Symbol(0x100))),

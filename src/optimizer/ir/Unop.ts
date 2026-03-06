@@ -54,19 +54,17 @@ export class Unop extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
-		switch (this.operator) {
-			case UnOp.TOBOOL: {
-				return cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128);
-			}
-			case UnOp.TOINT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
-			case UnOp.TONAT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
-			case UnOp.TOFLOAT: { throw new Error('not yet supported.'); } // TODO: v0.5+
+		if (this.operator === UnOp.TOBOOL) {
+			return cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128);
 		}
 		return cg.module.call(new Map<UnOp, string>([
-			[UnOp.ISNULL, 'isnull'],
-			[UnOp.NOT,    'vnot'],
-			[UnOp.EMP,    'vemp'],
-			[UnOp.NEG,    'vneg'],
+			[UnOp.ISNULL,  'isnull'],
+			[UnOp.TOINT,   'vtoi'],
+			[UnOp.TONAT,   'vton'],
+			[UnOp.TOFLOAT, 'vtof'],
+			[UnOp.NOT,     'vnot'],
+			[UnOp.EMP,     'vemp'],
+			[UnOp.NEG,     'vneg'],
 		]).get(this.operator)!, [code], binaryen.v128);
 	}
 }
