@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {
@@ -96,7 +96,42 @@ export class Binop extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
+		switch (this.operator) {
+			case BinOp.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, binaryen.v128)], binaryen.v128); }
+			case BinOp.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, binaryen.v128)], binaryen.v128); }
+
+			case BinOp.NID: { return cg.module.call('vnot', [cg.module.call('vid', codes, binaryen.v128)], binaryen.v128); }
+			case BinOp.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, binaryen.v128)], binaryen.v128); }
+		}
+		return cg.module.call(new Map<BinOp, string>([
+			// TODO: v0.5+: update with new functions
+			[BinOp.INT_ADD, 'vadd'],
+			[BinOp.INT_SUB, 'visub_s'],
+			[BinOp.INT_MUL, 'vmul'],
+			[BinOp.INT_DIV, 'vdiv'],
+			[BinOp.INT_EXP, 'vexp'],
+
+			[BinOp.NAT_ADD, 'vadd'],
+			[BinOp.NAT_SUB, 'visub_u'],
+			[BinOp.NAT_MUL, 'vmul'],
+			[BinOp.NAT_DIV, 'vdiv'],
+			[BinOp.NAT_EXP, 'vexp'],
+
+			[BinOp.FLOAT_ADD, 'vadd'],
+			[BinOp.FLOAT_SUB, 'vfsub'],
+			[BinOp.FLOAT_MUL, 'vmul'],
+			[BinOp.FLOAT_DIV, 'vdiv'],
+			[BinOp.FLOAT_EXP, 'vexp'],
+
+			[BinOp.LT, 'vlt'],
+			[BinOp.GT, 'vgt'],
+			[BinOp.LE, 'vle'],
+			[BinOp.GE, 'vge'],
+
+			[BinOp.ID, 'vid'],
+			[BinOp.EQ, 'veq'],
+		]).get(this.operator)!, codes, binaryen.v128);
 	}
 }

@@ -40,7 +40,6 @@ describe('IrNode', () => {
 				[a= 42, b= 43, c= 44].[@a];
 				{42, 43, 44}.[42];
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"];
-				42 + 43;
 				[42, 43, 44].[0]                        = 43;
 				[a= 42, b= 43, c= 44].[@a]              = 43;
 				{42, 43, 44}.[42]                       = false;
@@ -153,6 +152,76 @@ describe('IrNode', () => {
 
 					CALL.vneg(mod, genConst(mod, 42n)),
 					CALL.vneg(mod, genConst(mod, 4.2)),
+				],
+			);
+		});
+
+		it('Binop returns custom WASM functions `viadd`, `vfmul`, etc.', () => {
+			const CALL = {
+				vadd: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd', [arg0, arg1], binaryen.v128),
+				vmul: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul', [arg0, arg1], binaryen.v128),
+				vdiv: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv', [arg0, arg1], binaryen.v128),
+				vexp: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp', [arg0, arg1], binaryen.v128),
+				vlt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',  [arg0, arg1], binaryen.v128),
+				vgt:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',  [arg0, arg1], binaryen.v128),
+				vle:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',  [arg0, arg1], binaryen.v128),
+				vge:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',  [arg0, arg1], binaryen.v128),
+				vid:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',  [arg0, arg1], binaryen.v128),
+				veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
+			} as const;
+
+			const {goal, opt} = setupScript(`{
+				2 + 3;
+				% 2 - 3; % TODO: v0.5
+				2 * 3;
+				2 / 3;
+				2 ^ 3;
+
+				%%
+				TODO: v0.5
+				+2 + +3;
+				+2 - +3;
+				+2 * +3;
+				+2 / +3;
+				+2 ^ +3;
+				%%
+
+				2.0 + 3.0;
+				% 2.0 - 3.0; % TODO: v0.5
+				2.0 * 3.0;
+				2.0 / 3.0;
+				2.0 ^ 3.0;
+
+				2 < 3.0;
+				2 > 3.0;
+				2 <= 3.0;
+				2 >= 3.0;
+
+				2.0 === 3;
+				2.0 ==  3;
+			}`, {lower: true, build: false});
+			const cg  = new Builder();
+			const mod = cg.module;
+			return assertEqualBins(
+				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+				[
+					CALL.vadd(mod, genConst(mod, 2n), genConst(mod, 3n)),
+					CALL.vmul(mod, genConst(mod, 2n), genConst(mod, 3n)),
+					CALL.vdiv(mod, genConst(mod, 2n), genConst(mod, 3n)),
+					CALL.vexp(mod, genConst(mod, 2n), genConst(mod, 3n)),
+
+					CALL.vadd(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
+					CALL.vmul(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
+					CALL.vdiv(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
+					CALL.vexp(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
+
+					CALL.vlt(mod, genConst(mod, 2n), genConst(mod, 3.0)),
+					CALL.vgt(mod, genConst(mod, 2n), genConst(mod, 3.0)),
+					CALL.vle(mod, genConst(mod, 2n), genConst(mod, 3.0)),
+					CALL.vge(mod, genConst(mod, 2n), genConst(mod, 3.0)),
+
+					CALL.vid(mod, genConst(mod, 2.0), genConst(mod, 3n)),
+					CALL.veq(mod, genConst(mod, 2.0), genConst(mod, 3n)),
 				],
 			);
 		});
