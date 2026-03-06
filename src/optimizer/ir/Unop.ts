@@ -1,5 +1,10 @@
 import * as assert from 'node:assert';
-import {runOnceMethod} from '../../lib/index.ts';
+import binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
@@ -16,9 +21,7 @@ export enum UnOp {
 
 	NOT,
 	EMP,
-
-	INT_NEG,
-	FLOAT_NEG,
+	NEG,
 }
 
 
@@ -33,20 +36,37 @@ export class Unop extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ UnOp[this.operator].replace(/_/, '.') } ${ this.operand })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
-		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		this.operand.validate();
 		switch (this.operator) {
-			case UnOp.TOINT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case UnOp.TONAT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case UnOp.TOFLOAT:   { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case UnOp.INT_NEG:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.INT)); }
-			case UnOp.FLOAT_NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.FLOAT)); }
+			case UnOp.TOINT:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case UnOp.TONAT:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case UnOp.TOFLOAT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case UnOp.NEG:       { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
 		}
 	}
 
-	public override toString(): string {
-		return `(${ UnOp[this.operator].replace(/_/, '.') } ${ this.operand })`;
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
+		switch (this.operator) {
+			case UnOp.TOBOOL: {
+				return cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128);
+			}
+			case UnOp.TOINT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case UnOp.TONAT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case UnOp.TOFLOAT: { throw new Error('not yet supported.'); } // TODO: v0.5+
+		}
+		return cg.module.call(new Map<UnOp, string>([
+			[UnOp.ISNULL, 'isnull'],
+			[UnOp.NOT,    'vnot'],
+			[UnOp.EMP,    'vemp'],
+			[UnOp.NEG,    'vneg'],
+		]).get(this.operator)!, [code], binaryen.v128);
 	}
 }

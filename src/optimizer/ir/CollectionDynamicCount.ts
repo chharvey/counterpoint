@@ -1,5 +1,8 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
+	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
@@ -16,6 +19,10 @@ export class CollectionDynamicCount extends Value {
 		private readonly collection: Value,
 	) {
 		super(TYPE.NAT);
+	}
+
+	public override toString(): string {
+		return `(${ TypeName[this.name] }.COUNT ${ this.collection })`;
 	}
 
 	@runOnceMethod
@@ -37,7 +44,8 @@ export class CollectionDynamicCount extends Value {
 		}
 	}
 
-	public override toString(): string {
-		return `(${ TypeName[this.name] }.COUNT ${ this.collection })`;
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

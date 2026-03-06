@@ -1,3 +1,6 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {Instruction} from './Instruction.ts';
 import type {Label} from './Label.ts';
 
@@ -11,5 +14,10 @@ export class Goto extends Instruction {
 
 	public override toString(): string {
 		return `goto "${ this.label.name }".`;
+	}
+
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

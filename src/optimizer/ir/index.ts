@@ -1,9 +1,8 @@
 export * from './utils-public.ts';
 
+export * from './IrNode.ts';
+
 export * from './TypeName.ts';
-
-export * from './Instruction.ts';
-
 export * from './Value.ts';
 export * from './Trap.ts';
 export * from './Const.ts';
@@ -22,6 +21,7 @@ export * from './Unop.ts';
 export * from './Binop.ts';
 export * from './Phi.ts';
 
+export * from './Instruction.ts';
 export * from './Drop.ts';
 export * from './Decl.ts';
 export * from './Set.ts';

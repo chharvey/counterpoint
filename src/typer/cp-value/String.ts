@@ -52,8 +52,12 @@ class ValueString extends Primitive {
 		return this;
 	}
 
-	public override build(_: Builder): binaryen.ExpressionRef {
-		throw new Error('`ValueString#build` not yet supported.');
+	public override codegen(_: binaryen.Module): binaryen.ExpressionRef {
+		throw new Error('`ValueString#codegen` not yet supported.');
+	}
+
+	public override build(builder: Builder): binaryen.ExpressionRef {
+		return this.codegen(builder.module);
 	}
 
 	/**

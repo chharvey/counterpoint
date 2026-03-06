@@ -1,5 +1,10 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
@@ -16,12 +21,17 @@ export class CollectionLinearNew extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ [`${ TypeName[this.name] }.NEW`, ...this.items].join(' ') })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
 	}
 
-	public override toString(): string {
-		return `(${ [`${ TypeName[this.name] }.NEW`, ...this.items].join(' ') })`;
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

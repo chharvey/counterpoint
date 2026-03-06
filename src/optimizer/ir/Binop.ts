@@ -1,6 +1,11 @@
 import * as assert from 'node:assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {Value} from './Value.ts';
 
@@ -52,10 +57,13 @@ export class Binop extends Value {
 		super(typ);
 	}
 
+	public override toString(): string {
+		return `(${ BinOp[this.operator].replace(/_/, '.') } ${ this.operand0 } ${ this.operand1 })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		const operands = [this.operand0, this.operand1] as const;
-		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.NAT);
 		return xjs.Array.forEachAggregated(operands, (arg) => {
 			arg.validate();
 			switch (this.operator) {
@@ -77,17 +85,53 @@ export class Binop extends Value {
 				case BinOp.FLOAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
 				case BinOp.FLOAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
 
-				case BinOp.LT:  { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
-				case BinOp.GT:  { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
-				case BinOp.LE:  { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
-				case BinOp.GE:  { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
-				case BinOp.NLT: { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
-				case BinOp.NGT: { return assert.ok(arg.type.isSubtypeOf(NUMBER)); }
+				case BinOp.LT:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case BinOp.GT:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case BinOp.LE:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case BinOp.GE:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case BinOp.NLT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case BinOp.NGT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
 			}
 		});
 	}
 
-	public override toString(): string {
-		return `(${ BinOp[this.operator].replace(/_/, '.') } ${ this.operand0 } ${ this.operand1 })`;
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
+		switch (this.operator) {
+			case BinOp.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, binaryen.v128)], binaryen.v128); }
+			case BinOp.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, binaryen.v128)], binaryen.v128); }
+
+			case BinOp.NID: { return cg.module.call('vnot', [cg.module.call('vid', codes, binaryen.v128)], binaryen.v128); }
+			case BinOp.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, binaryen.v128)], binaryen.v128); }
+		}
+		return cg.module.call(new Map<BinOp, string>([
+			// TODO: v0.5+: update with new functions
+			[BinOp.INT_ADD, 'vadd'],
+			[BinOp.INT_SUB, 'visub_s'],
+			[BinOp.INT_MUL, 'vmul'],
+			[BinOp.INT_DIV, 'vdiv'],
+			[BinOp.INT_EXP, 'vexp'],
+
+			[BinOp.NAT_ADD, 'vadd'],
+			[BinOp.NAT_SUB, 'visub_u'],
+			[BinOp.NAT_MUL, 'vmul'],
+			[BinOp.NAT_DIV, 'vdiv'],
+			[BinOp.NAT_EXP, 'vexp'],
+
+			[BinOp.FLOAT_ADD, 'vadd'],
+			[BinOp.FLOAT_SUB, 'vfsub'],
+			[BinOp.FLOAT_MUL, 'vmul'],
+			[BinOp.FLOAT_DIV, 'vdiv'],
+			[BinOp.FLOAT_EXP, 'vexp'],
+
+			[BinOp.LT, 'vlt'],
+			[BinOp.GT, 'vgt'],
+			[BinOp.LE, 'vle'],
+			[BinOp.GE, 'vge'],
+
+			[BinOp.ID, 'vid'],
+			[BinOp.EQ, 'veq'],
+		]).get(this.operator)!, codes, binaryen.v128);
 	}
 }

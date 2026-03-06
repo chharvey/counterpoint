@@ -56,8 +56,12 @@ class ValueBoolean extends Primitive {
 		return this.data === (value as ValueBoolean).data;
 	}
 
+	public override codegen(mod: binaryen.Module): binaryen.ExpressionRef {
+		return new BinVect(mod, this.isTruthy).vect;
+	}
+
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, this.isTruthy).vect;
+		return this.codegen(builder.module);
 	}
 }
 export {ValueBoolean as Boolean};

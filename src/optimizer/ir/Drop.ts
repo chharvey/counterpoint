@@ -1,4 +1,9 @@
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
@@ -10,12 +15,17 @@ export class Drop extends Instruction {
 		super();
 	}
 
+	public override toString(): string {
+		return `(DROP ${ this.value })`;
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return this.value.validate();
 	}
 
-	public override toString(): string {
-		return `(DROP ${ this.value })`;
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.module.drop(this.value.codegen(cg));
 	}
 }

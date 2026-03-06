@@ -1,7 +1,10 @@
 import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
+	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
@@ -20,6 +23,10 @@ export class CollectionDynamicGet extends Value {
 		entry_type: TYPE.Type,
 	) {
 		super(entry_type);
+	}
+
+	public override toString(): string {
+		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
 	}
 
 	@runOnceMethod
@@ -45,7 +52,8 @@ export class CollectionDynamicGet extends Value {
 		}
 	}
 
-	public override toString(): string {
-		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }
