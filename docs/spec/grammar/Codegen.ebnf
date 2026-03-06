@@ -11,7 +11,7 @@ Codegen((FLOAT.CONST `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x00
 
 // Codegen((STR.CONST `v`));
 
-Codegen((GET `s`)) := (local.get ‹index› `s.type`);
+Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 
 // Codegen((STR.TEMPLATE `v`));
 
@@ -73,10 +73,10 @@ Codegen((NEQ `v0` `v1`)) := `Codegen((NOT (EQ `v0` `v1`)))`;
 
 // Codegen((PHI `pairs`));
 
-// Codegen((DROP `v`));
+Codegen((DROP `v`)) := (drop `Codegen(v)`);
 
-// Codegen((DECL `id` `type` `v`));
-// Codegen((SET  `id`        `v`));
+Codegen((DECL `id` `type` `v`)) := (local.set ‹index› `id` `Codegen(v)`);
+Codegen((SET  `id`        `v`)) := (local.set ‹index› `id` `Codegen(v)`);
 
 // Codegen((LIST.SET `obj` `accessor` `v`));
 // Codegen((DICT.SET `obj` `accessor` `v`));
