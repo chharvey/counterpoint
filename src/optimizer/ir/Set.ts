@@ -3,6 +3,7 @@ import {runOnceMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
+import {OpCode} from './utils-public.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
@@ -16,7 +17,7 @@ class IrSet extends Instruction {
 		private readonly target: SymbolSchemaVar | Local,
 		private readonly value:  Value,
 	) {
-		super();
+		super(OpCode.SET);
 		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
 	}
 
@@ -27,7 +28,7 @@ class IrSet extends Instruction {
 	}
 
 	public override toString(): string {
-		return `(SET ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
+		return `(${ this.opCodeString } ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
 	}
 }
 export {IrSet as Set};

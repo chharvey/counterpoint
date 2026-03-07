@@ -1,4 +1,5 @@
 import type {TYPE} from '../../typer/index.ts';
+import type {OpCode} from './utils-public.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
 import {Instruction} from './Instruction.ts';
@@ -29,8 +30,11 @@ export abstract class Value extends Instruction {
 	/**
 	 * @param type The type of the expression.
 	 */
-	public constructor(public readonly type: TYPE.Type) {
-		super();
+	public constructor(
+		op_code: OpCode,
+		public readonly type: TYPE.Type,
+	) {
+		super(op_code);
 	}
 
 	/**

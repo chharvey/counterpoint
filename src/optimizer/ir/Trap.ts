@@ -1,5 +1,5 @@
 import {TYPE} from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {OpCode} from './utils-public.ts';
 import {Value} from './Value.ts';
 
 
@@ -7,11 +7,11 @@ import {Value} from './Value.ts';
 /** Immediately halt the runtime program. */
 export class Trap extends Value {
 	public constructor() {
-		super(TYPE.UNKNOWN);
+		super(OpCode.TRAP, TYPE.UNKNOWN);
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[TypeName.TRAP] })`;
+		return `(${ this.opCodeString })`;
 	}
 
 	public override asTac(): Trap {

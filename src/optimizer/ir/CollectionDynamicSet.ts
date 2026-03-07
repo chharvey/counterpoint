@@ -6,6 +6,7 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
+import {OpCode} from './utils-public.ts';
 import {TypeName} from './TypeName.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -20,7 +21,12 @@ export class CollectionDynamicSet extends Instruction {
 		private readonly accessor:   Value,
 		private readonly value:      Value,
 	) {
-		super();
+		super(new Map<TypeName, OpCode>([
+			[TypeName.LIST, OpCode.LIST_SET],
+			[TypeName.DICT, OpCode.DICT_SET],
+			[TypeName.SET,  OpCode.SET_SET],
+			[TypeName.MAP,  OpCode.MAP_SET],
+		]).get(name));
 	}
 
 	@runOnceMethod
@@ -47,6 +53,6 @@ export class CollectionDynamicSet extends Instruction {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.SET ${ this.collection } ${ this.accessor } ${ this.value })`;
+		return `(${ this.opCodeString } ${ this.collection } ${ this.accessor } ${ this.value })`;
 	}
 }

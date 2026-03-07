@@ -4,7 +4,7 @@ import type {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {OpCode} from './utils-public.ts';
 import {Value} from './Value.ts';
 
 
@@ -15,7 +15,7 @@ export class DictNew extends Value {
 		private readonly props: ReadonlyMap<VALUE.Symbol, Value>,
 		typ: TYPE.Type,
 	) {
-		super(typ);
+		super(OpCode.DICT_NEW, typ);
 	}
 
 	@runOnceMethod
@@ -24,6 +24,6 @@ export class DictNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ [`${ TypeName[TypeName.DICT] }.NEW`, ...[...this.props].map(([sym, value]) => `${ sym }->${ value }`)].join(' ') })`;
+		return `(${ [this.opCodeString, ...[...this.props].map(([sym, value]) => `${ sym }->${ value }`)].join(' ') })`;
 	}
 }

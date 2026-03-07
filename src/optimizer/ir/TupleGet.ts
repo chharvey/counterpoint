@@ -3,7 +3,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {OpCode} from './utils-public.ts';
 import {Value} from './Value.ts';
 
 
@@ -15,7 +15,7 @@ export class TupleGet extends Value {
 		private readonly accessor: bigint,
 		entry_type: TYPE.Type,
 	) {
-		super(entry_type);
+		super(OpCode.TUPLE_GET, entry_type);
 	}
 
 	@runOnceMethod
@@ -25,6 +25,6 @@ export class TupleGet extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[TypeName.TUPLE] }.GET ${ this.accessor } ${ this.tuple })`; // accessor is static so it comes first
+		return `(${ this.opCodeString } ${ this.accessor } ${ this.tuple })`; // accessor is static so it comes first
 	}
 }

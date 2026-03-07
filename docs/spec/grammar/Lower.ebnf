@@ -20,6 +20,7 @@ Every function signature takes the form «‹NAME›(‹static params› [‹dyn
 
 
 TRAP();
+
 NULL.CONST(VALUE.Null)    -> Value;
 BOOL.CONST(VALUE.Boolean) -> Value;
 SYM.CONST(VALUE.Symbol)   -> Value;
@@ -31,12 +32,6 @@ STR.CONST(VALUE.String)   -> Value;
 STR.TEMPLATE([Value*]) -> String;
 
 GET(SymbolSchemaVar|native-string) -> Value;
-
-ISNULL([Value]) -> Boolean;
-
-TOINT([Number])   -> Integer;
-TONAT([Number])   -> Natural;
-TOFLOAT([Number]) -> Float;
 
 TUPLE.NEW([Value*])                       -> Tuple;
 RECORD.NEW(Vector<native-bigint, Value>*) -> Record;
@@ -54,11 +49,17 @@ MAP.GET ([Value Value])           -> Value;
 
 CALL([Value*]) -> Value;
 
+ISNULL([Value]) -> Boolean;
+
 NOT([Value]) -> Boolean;
 EMP([Value]) -> Boolean;
 
 INT.NEG([Integer]) -> Integer;
 FLOAT.NEG([Float]) -> Float;
+
+TOINT([Number])   -> Integer;
+TONAT([Number])   -> Natural;
+TOFLOAT([Number]) -> Float;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
@@ -95,10 +96,12 @@ PHI(‹label› -> Value, ‹label› -> Value) -> Value;
 DROP([Value]);
 DECL(SymbolSchemaVar|native-string Type [Value]);
 SET(SymbolSchemaVar|native-string [Value]);
+
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
 SET.SET ([Value Value Value]);
 MAP.SET ([Value Value Value]);
+
 LIST.COPY([Value Value]);
 DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);

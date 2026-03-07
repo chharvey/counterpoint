@@ -3,7 +3,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {OpCode} from './utils-public.ts';
 import {Value} from './Value.ts';
 
 
@@ -15,7 +15,7 @@ export class RecordGet extends Value {
 		private readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
 		entry_type: TYPE.Type,
 	) {
-		super(entry_type);
+		super(OpCode.RECORD_GET, entry_type);
 	}
 
 	@runOnceMethod
@@ -26,6 +26,6 @@ export class RecordGet extends Value {
 
 	public override toString(): string {
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
-		return `(${ TypeName[TypeName.RECORD] }.GET @${ this.accessor.keysrc || `\\x${ this.accessor.keyid.toString(16) }` } ${ this.record })`; // accessor is static so it comes first
+		return `(${ this.opCodeString } @${ this.accessor.keysrc || `\\x${ this.accessor.keyid.toString(16) }` } ${ this.record })`; // accessor is static so it comes first
 	}
 }

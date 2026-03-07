@@ -3,6 +3,7 @@ import {runOnceMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
+import {OpCode} from './utils-public.ts';
 import {
 	ast_type_name,
 	stringify_type_name,
@@ -20,7 +21,7 @@ export class Decl extends Instruction {
 		private readonly target: SymbolSchemaVar | Local,
 		private readonly value:  Value,
 	) {
-		super();
+		super(OpCode.DECL);
 		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
 	}
 
@@ -31,6 +32,6 @@ export class Decl extends Instruction {
 	}
 
 	public override toString(): string {
-		return `(DECL <${ stringify_type_name(ast_type_name(this.targetType)) }> ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
+		return `(${ this.opCodeString } <${ stringify_type_name(ast_type_name(this.targetType)) }> ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
 	}
 }

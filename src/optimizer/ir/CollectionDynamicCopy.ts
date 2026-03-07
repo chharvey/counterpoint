@@ -5,6 +5,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import {OpCode} from './utils-public.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {TypeName} from './TypeName.ts';
 import {Instruction} from './Instruction.ts';
@@ -19,7 +20,12 @@ export class CollectionDynamicCopy extends Instruction {
 		private readonly destination: Value,
 		private readonly source:      Value,
 	) {
-		super();
+		super(new Map<TypeName, OpCode>([
+			[TypeName.LIST, OpCode.LIST_COPY],
+			[TypeName.DICT, OpCode.DICT_COPY],
+			[TypeName.SET,  OpCode.SET_COPY],
+			[TypeName.MAP,  OpCode.MAP_COPY],
+		]).get(name));
 	}
 
 	@runOnceMethod
@@ -46,6 +52,6 @@ export class CollectionDynamicCopy extends Instruction {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.COPY ${ this.destination } ${ this.source })`;
+		return `(${ this.opCodeString } ${ this.destination } ${ this.source })`;
 	}
 }
