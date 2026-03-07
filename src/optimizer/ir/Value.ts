@@ -11,8 +11,8 @@ import {Instruction} from './Instruction.ts';
  * Known subclasses:
  * - Trap
  * - Const
- * - Get
  * - Template
+ * - Get
  * - CollectionLinearNew
  * - RecordNew
  * - DictNew

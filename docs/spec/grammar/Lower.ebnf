@@ -27,6 +27,9 @@ INT.CONST(VALUE.Integer)  -> Value;
 NAT.CONST(VALUE.Natural)  -> Value;
 FLOAT.CONST(VALUE.Float)  -> Value;
 STR.CONST(VALUE.String)   -> Value;
+
+STR.TEMPLATE([Value*]) -> String;
+
 GET(SymbolSchemaVar|native-string) -> Value;
 
 ISNULL([Value]) -> Boolean;
@@ -125,9 +128,9 @@ Lower(SemanticConstant[type=TYPE.Natural] const) := (NAT.CONST   `Lower(ValueOf(
 Lower(SemanticConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Lower(ValueOf(const)~!)`);
 Lower(SemanticConstant[type=TYPE.String]  const) := (STR.CONST   `Lower(ValueOf(const)~!)`);
 
-Lower(SemanticVariable var) := (GET `GetSymbolSchema(var)`);
+Lower(SemanticTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Lower)`);
 
-// Lower(SemanticTemplate tpl);
+Lower(SemanticVariable var) := (GET `GetSymbolSchema(var)`);
 
 Lower(SemanticTuple tup)  := (TUPLE.NEW  [`...tup.children.map(Lower)`]);
 Lower(SemanticRecord rec) := (RECORD.NEW `...rec.children.map(Sequence [prop.0.id, Lower(prop.1)])`);
