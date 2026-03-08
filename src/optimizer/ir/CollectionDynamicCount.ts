@@ -19,7 +19,7 @@ export class CollectionDynamicCount extends Value {
 		private readonly name:       CollectionDynamicName,
 		private readonly collection: Value,
 	) {
-		super(new Map<TypeName, OpCode>([
+		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_COUNT],
 			[TypeName.DICT, OpCode.DICT_COUNT],
 			[TypeName.SET,  OpCode.SET_COUNT],

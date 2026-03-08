@@ -26,7 +26,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 		private readonly destination: Value,
 		private readonly source:      Value,
 	) {
-		super(new Map<TypeName, OpCode>([
+		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_COPY],
 			[TypeName.DICT, OpCode.DICT_COPY],
 			[TypeName.SET,  OpCode.SET_COPY],

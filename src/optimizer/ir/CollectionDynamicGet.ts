@@ -23,7 +23,7 @@ export class CollectionDynamicGet extends Value {
 		private readonly accessor:   Value,
 		entry_type: TYPE.Type,
 	) {
-		super(new Map<TypeName, OpCode>([
+		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_GET],
 			[TypeName.DICT, OpCode.DICT_GET],
 			[TypeName.SET,  OpCode.SET_GET],
