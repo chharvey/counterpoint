@@ -79,7 +79,7 @@ export class StatementConditional extends Statement {
 
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.unless) {
-			condition = () => new IR.Unop(IR.UnOp.NOT, this.condition.lower(optimizer), TYPE.BOOL);
+			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
 		}
 
 		optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.alternative ? label_else : label_endif));

@@ -90,11 +90,11 @@ export class OperationBinaryEquality extends OperationBinary {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Binop {
-		return new IR.Binop(new Map<Operator, IR.BinOp>([
-			[Operator.ID,  IR.BinOp.ID],
-			[Operator.EQ,  IR.BinOp.EQ],
-			[Operator.NID, IR.BinOp.NID],
-			[Operator.NEQ, IR.BinOp.NEQ],
+		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+			[Operator.ID,  IR.OpCode.ID],
+			[Operator.EQ,  IR.OpCode.EQ],
+			[Operator.NID, IR.OpCode.NID],
+			[Operator.NEQ, IR.OpCode.NEQ],
 		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
 	}
 

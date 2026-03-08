@@ -141,7 +141,7 @@ export class Access extends Expression implements Reassignable {
 		if (this.kind === Operator.DOT_MAY) {
 			return IR.conditional_expression(
 				optimizer,
-				() => new IR.Unop(IR.UnOp.ISNULL, base_value, TYPE.BOOL),
+				() => new IR.Unop(IR.OpCode.ISNULL, base_value, TYPE.BOOL),
 				() => new IR.Const(VALUE.NULL),
 				non_nullish_base,
 			);

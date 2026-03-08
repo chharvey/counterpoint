@@ -74,8 +74,8 @@ export function typeDeco(
  * A sematic node representing an expression.
  * Known subclasses:
  * - Constant
- * - Variable
  * - Template
+ * - Variable
  * - CollectionLiteral
  * - ExpressionBlock
  * - Access
