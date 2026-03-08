@@ -8,13 +8,13 @@ import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {OpCode} from './utils-public.ts';
 import {TypeName} from './TypeName.ts';
-import {Instruction} from './Instruction.ts';
+import {Opcode} from './Opcode.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicSet extends Instruction {
+export class CollectionDynamicSet extends Opcode {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
 		private readonly collection: Value,
@@ -26,7 +26,7 @@ export class CollectionDynamicSet extends Instruction {
 			[TypeName.DICT, OpCode.DICT_SET],
 			[TypeName.SET,  OpCode.SET_SET],
 			[TypeName.MAP,  OpCode.MAP_SET],
-		]).get(name));
+		]).get(name)!);
 	}
 
 	@runOnceMethod

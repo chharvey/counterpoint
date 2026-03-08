@@ -3,6 +3,7 @@ export * from './utils-public.ts';
 export * from './TypeName.ts';
 
 export * from './Instruction.ts';
+export * from './Opcode.ts';
 
 export * from './Value.ts';
 export * from './Trap.ts';
@@ -26,6 +27,7 @@ export * from './Decl.ts';
 export * from './Set.ts';
 export * from './CollectionDynamicSet.ts';
 export * from './CollectionDynamicCopy.ts';
+
 export * from './Label.ts';
 export * from './Goto.ts';
 export * from './GotoIfFalse.ts';

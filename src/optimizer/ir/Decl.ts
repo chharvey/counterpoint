@@ -8,13 +8,13 @@ import {
 	ast_type_name,
 	stringify_type_name,
 } from './TypeName.ts';
-import {Instruction} from './Instruction.ts';
+import {Opcode} from './Opcode.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Declare a variable/local without initializing it. */
-export class Decl extends Instruction {
+export class Decl extends Opcode {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(

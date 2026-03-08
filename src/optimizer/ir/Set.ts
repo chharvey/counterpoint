@@ -4,13 +4,13 @@ import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
 import {OpCode} from './utils-public.ts';
-import {Instruction} from './Instruction.ts';
+import {Opcode} from './Opcode.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Write a value to a variable/local. */
-class IrSet extends Instruction {
+class IrSet extends Opcode {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(

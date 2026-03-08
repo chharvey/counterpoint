@@ -2,7 +2,7 @@ import type {TYPE} from '../../typer/index.ts';
 import type {OpCode} from './utils-public.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
-import {Instruction} from './Instruction.ts';
+import {Opcode} from './Opcode.ts';
 
 
 
@@ -26,7 +26,7 @@ import {Instruction} from './Instruction.ts';
  * - Binop
  * - Phi
  */
-export abstract class Value extends Instruction {
+export abstract class Value extends Opcode {
 	/**
 	 * @param type The type of the expression.
 	 */
