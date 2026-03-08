@@ -122,7 +122,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 		return IR.conditional_expression(
 			optimizer,
-			() => new IR.Unop(IR.UnOp.TOBOOL, left, TYPE.BOOL),
+			() => new IR.Unop(IR.OpCode.TOBOOL, left, TYPE.BOOL),
 			conseq,
 			altern,
 		);

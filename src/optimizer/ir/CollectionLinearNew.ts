@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
 import {runOnceMethod} from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
+import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
@@ -13,7 +14,11 @@ export class CollectionLinearNew extends Value {
 		private readonly items: readonly Value[],
 		typ: TYPE.Type,
 	) {
-		super(typ);
+		super(new Map<TypeName, OpCode>([
+			[TypeName.TUPLE, OpCode.TUPLE_NEW],
+			[TypeName.LIST,  OpCode.LIST_NEW],
+			[TypeName.SET,   OpCode.SET_NEW],
+		]).get(name)!, typ);
 	}
 
 	@runOnceMethod
@@ -22,6 +27,6 @@ export class CollectionLinearNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ [`${ TypeName[this.name] }.NEW`, ...this.items].join(' ') })`;
+		return super.toString(...this.items);
 	}
 }

@@ -82,8 +82,8 @@ export function typeDeco(
  * A sematic node representing an expression.
  * Known subclasses:
  * - ASTNodeConstant
- * - ASTNodeVariable
  * - ASTNodeTemplate
+ * - ASTNodeVariable
  * - ASTNodeCollectionLiteral
  * - ASTNodeAccess
  * - ASTNodeCall

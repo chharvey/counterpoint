@@ -83,20 +83,20 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
 		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
 		return (
-			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.BinOp>([
-				[Operator.EXP, IR.BinOp.INT_EXP],
-				[Operator.MUL, IR.BinOp.INT_MUL],
-				[Operator.DIV, IR.BinOp.INT_DIV],
-				[Operator.ADD, IR.BinOp.INT_ADD],
-				[Operator.SUB, IR.BinOp.INT_SUB],
+			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.INT_EXP],
+				[Operator.MUL, IR.OpCode.INT_MUL],
+				[Operator.DIV, IR.OpCode.INT_DIV],
+				[Operator.ADD, IR.OpCode.INT_ADD],
+				[Operator.SUB, IR.OpCode.INT_SUB],
 			]).get(this.operator)!, v0, v1, typ) :
 			// TODO: v0.5+ bothNats(t0, t1)
-			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.BinOp>([
-				[Operator.EXP, IR.BinOp.FLOAT_EXP],
-				[Operator.MUL, IR.BinOp.FLOAT_MUL],
-				[Operator.DIV, IR.BinOp.FLOAT_DIV],
-				[Operator.ADD, IR.BinOp.FLOAT_ADD],
-				[Operator.SUB, IR.BinOp.FLOAT_SUB],
+			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.FLOAT_EXP],
+				[Operator.MUL, IR.OpCode.FLOAT_MUL],
+				[Operator.DIV, IR.OpCode.FLOAT_DIV],
+				[Operator.ADD, IR.OpCode.FLOAT_ADD],
+				[Operator.SUB, IR.OpCode.FLOAT_SUB],
 			]).get(this.operator)!, v0, v1, typ))
 		);
 	}
