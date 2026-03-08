@@ -106,13 +106,13 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Unop {
-		return new IR.Unop(new Map<Operator, IR.UnOp>([
-			[Operator.NOT,   IR.UnOp.NOT],
-			[Operator.EMP,   IR.UnOp.EMP],
-			[Operator.NEG,   IR.UnOp.NEG],
-			[Operator.INT,   IR.UnOp.TOINT],
-			[Operator.NAT,   IR.UnOp.TONAT],
-			[Operator.FLOAT, IR.UnOp.TOFLOAT],
+		return new IR.Unop(new Map<Operator, IR.OpCodeUn>([
+			[Operator.NOT,   IR.OpCode.NOT],
+			[Operator.EMP,   IR.OpCode.EMP],
+			[Operator.NEG,   IR.OpCode.NEG],
+			[Operator.INT,   IR.OpCode.TOINT],
+			[Operator.NAT,   IR.OpCode.TONAT],
+			[Operator.FLOAT, IR.OpCode.TOFLOAT],
 		]).get(this.operator)!, this.operand.lower(optimizer).asTac(optimizer), this.type());
 	}
 

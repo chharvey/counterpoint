@@ -9,6 +9,7 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 
@@ -22,11 +23,16 @@ export class CollectionDynamicGet extends Value {
 		private readonly accessor:   Value,
 		entry_type: TYPE.Type,
 	) {
-		super(entry_type);
+		super(new Map<TypeName, OpCode>([
+			[TypeName.LIST, OpCode.LIST_GET],
+			[TypeName.DICT, OpCode.DICT_GET],
+			[TypeName.SET,  OpCode.SET_GET],
+			[TypeName.MAP,  OpCode.MAP_GET],
+		]).get(name)!, entry_type);
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.GET ${ this.collection } ${ this.accessor })`;
+		return super.toString(this.collection, this.accessor); // dynamic accessor after collection
 	}
 
 	@runOnceMethod

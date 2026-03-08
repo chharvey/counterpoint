@@ -192,17 +192,17 @@ Sequence<Instruction> BuildExpression(SemanticConstant const) :=
 
 
 
+Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
+	// TO BE DETERMINED
+;
+
+
+
 Sequence<Instruction> BuildExpression(SemanticVariable var) :=
 	1. *Let* `name` be the string-concatenation of "glb" and `var.id`.
 	2. *Return:* [
 		"GET the global variable `name`.",
 	].
-;
-
-
-
-Sequence<Instruction> BuildExpression(SemanticTemplate tpl) :=
-	// TO BE DETERMINED
 ;
 
 

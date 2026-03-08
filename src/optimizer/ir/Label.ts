@@ -1,12 +1,13 @@
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
-import {Instruction} from './Instruction.ts';
+import {IrNode} from './IrNode.ts';
+import type {Instruction} from './Instruction.ts';
 
 
 
 /** A label to mark a location in the instruction list. */
-export class Label extends Instruction {
+export class Label extends IrNode implements Instruction {
 	public constructor(public readonly name: string) {
 		super();
 	}

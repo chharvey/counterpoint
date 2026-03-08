@@ -6,6 +6,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 
@@ -17,11 +18,11 @@ export class Call extends Value {
 		private readonly args:     readonly Value[],
 		return_type: TYPE.Type,
 	) {
-		super(return_type);
+		super(OpCode.CALL, return_type);
 	}
 
 	public override toString(): string {
-		return `(${ ['CALL', this.callable, ...this.args].join(' ') })`;
+		return super.toString(this.callable, ...this.args);
 	}
 
 	@runOnceMethod

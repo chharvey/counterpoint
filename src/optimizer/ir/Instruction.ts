@@ -1,9 +1,9 @@
-import {IrNode} from './IrNode.ts';
+import type {IrNode} from './IrNode.ts';
 
 
 
 /**
- * Known subclasses:
+ * Known implementers:
  * - Drop
  * - Decl
  * - Set
@@ -13,5 +13,5 @@ import {IrNode} from './IrNode.ts';
  * - Goto
  * - GotoIfFalse
  */
-export abstract class Instruction extends IrNode {
+export interface Instruction extends IrNode { // eslint-disable-line @typescript-eslint/no-empty-object-type
 }
