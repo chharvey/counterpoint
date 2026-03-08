@@ -6,48 +6,49 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 
 
-/** An enum of unary operations. */
-export enum UnOp {
-	ISNULL,
+/** An enum of allowed unary operations. */
+export type OpCodeUn = (
+	| OpCode.ISNULL
 
-	TOBOOL,
-	TOINT,
-	TONAT,
-	TOFLOAT,
+	| OpCode.NOT
+	| OpCode.EMP
+	| OpCode.NEG
 
-	NOT,
-	EMP,
-	NEG,
-}
+	| OpCode.TOBOOL
+	| OpCode.TOINT
+	| OpCode.TONAT
+	| OpCode.TOFLOAT
+);
 
 
 
 /** A unary operation of 1 value. */
 export class Unop extends Value {
 	public constructor(
-		private readonly operator: UnOp,
+		private readonly operator: OpCodeUn,
 		private readonly operand:  Value,
 		typ: TYPE.Type,
 	) {
-		super(typ);
+		super(operator, typ);
 	}
 
 	public override toString(): string {
-		return `(${ UnOp[this.operator].replace(/_/, '.') } ${ this.operand })`;
+		return super.toString(this.operand);
 	}
 
 	@runOnceMethod
 	public override validate(): void {
 		this.operand.validate();
 		switch (this.operator) {
-			case UnOp.TOINT:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-			case UnOp.TONAT:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-			case UnOp.TOFLOAT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-			case UnOp.NEG:       { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.TOINT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.TONAT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.TOFLOAT: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.NEG:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
 		}
 	}
 
@@ -55,18 +56,18 @@ export class Unop extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
-			case UnOp.TOBOOL: {
+			case OpCode.TOBOOL: {
 				return cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128);
 			}
-			case UnOp.TOINT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
-			case UnOp.TONAT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
-			case UnOp.TOFLOAT: { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case OpCode.TOINT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case OpCode.TONAT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case OpCode.TOFLOAT: { throw new Error('not yet supported.'); } // TODO: v0.5+
 		}
-		return cg.module.call(new Map<UnOp, string>([
-			[UnOp.ISNULL, 'isnull'],
-			[UnOp.NOT,    'vnot'],
-			[UnOp.EMP,    'vemp'],
-			[UnOp.NEG,    'vneg'],
+		return cg.module.call(new Map<OpCode, string>([
+			[OpCode.ISNULL, 'isnull'],
+			[OpCode.NOT,    'vnot'],
+			[OpCode.EMP,    'vemp'],
+			[OpCode.NEG,    'vneg'],
 		]).get(this.operator)!, [code], binaryen.v128);
 	}
 }

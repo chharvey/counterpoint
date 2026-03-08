@@ -5,7 +5,7 @@ import {
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 
@@ -13,11 +13,7 @@ import {Value} from './Value.ts';
 /** Immediately halt the runtime program. */
 export class Trap extends Value {
 	public constructor() {
-		super(TYPE.UNKNOWN);
-	}
-
-	public override toString(): string {
-		return `(${ TypeName[TypeName.TRAP] })`;
+		super(OpCode.TRAP, TYPE.UNKNOWN);
 	}
 
 	@noopMethod(memoizeMethod)

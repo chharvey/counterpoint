@@ -9,25 +9,34 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
+import type {Instruction} from './Instruction.ts';
+import {
+	OpCode,
+	Opcode,
+} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
-import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicSet extends Instruction {
+export class CollectionDynamicSet extends Opcode implements Instruction {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
 		private readonly collection: Value,
 		private readonly accessor:   Value,
 		private readonly value:      Value,
 	) {
-		super();
+		super(new Map<TypeName, OpCode>([
+			[TypeName.LIST, OpCode.LIST_SET],
+			[TypeName.DICT, OpCode.DICT_SET],
+			[TypeName.SET,  OpCode.SET_SET],
+			[TypeName.MAP,  OpCode.MAP_SET],
+		]).get(name)!);
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.SET ${ this.collection } ${ this.accessor } ${ this.value })`;
+		return super.toString(this.collection, this.accessor, this.value);
 	}
 
 	@runOnceMethod

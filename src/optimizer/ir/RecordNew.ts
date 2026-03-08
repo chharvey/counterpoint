@@ -6,7 +6,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 
@@ -17,12 +17,12 @@ export class RecordNew extends Value {
 		private readonly props: ReadonlyMap<bigint, {readonly keysrc?: string, readonly value: Value}>,
 		typ: TYPE.Type,
 	) {
-		super(typ);
+		super(OpCode.RECORD_NEW, typ);
 	}
 
 	public override toString(): string {
 		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
-		return `(${ [`${ TypeName[TypeName.RECORD] }.NEW`, ...[...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`)].join(' ') })`;
+		return super.toString(...[...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`));
 	}
 
 	@runOnceMethod

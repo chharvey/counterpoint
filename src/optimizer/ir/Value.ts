@@ -1,7 +1,10 @@
 import type {TYPE} from '../../typer/index.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
-import {IrNode} from './IrNode.ts';
+import {
+	type OpCode,
+	Opcode,
+} from './Opcode.ts';
 
 
 
@@ -9,8 +12,8 @@ import {IrNode} from './IrNode.ts';
  * Known subclasses:
  * - Trap
  * - Const
- * - Get
  * - Template
+ * - Get
  * - CollectionLinearNew
  * - RecordNew
  * - DictNew
@@ -23,12 +26,15 @@ import {IrNode} from './IrNode.ts';
  * - Binop
  * - Phi
  */
-export abstract class Value extends IrNode {
+export abstract class Value extends Opcode {
 	/**
 	 * @param type The type of the expression.
 	 */
-	public constructor(public readonly type: TYPE.Type) {
-		super();
+	public constructor(
+		op_code: OpCode,
+		public readonly type: TYPE.Type,
+	) {
+		super(op_code);
 	}
 
 	/**

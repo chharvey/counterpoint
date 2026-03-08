@@ -8,25 +8,32 @@ import {
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
-import {Instruction} from './Instruction.ts';
+import type {Instruction} from './Instruction.ts';
+import {
+	OpCode,
+	Opcode,
+} from './Opcode.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Write a value to a variable/local. */
-class IrSet extends Instruction {
+class IrSet extends Opcode implements Instruction {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(
 		private readonly target: SymbolSchemaVar | Local,
 		private readonly value:  Value,
 	) {
-		super();
+		super(OpCode.SET);
 		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
 	}
 
 	public override toString(): string {
-		return `(SET ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
+		return super.toString(
+			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
+			this.value,
+		);
 	}
 
 	@runOnceMethod

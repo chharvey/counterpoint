@@ -108,10 +108,10 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const typ: TYPE.Type = this.type();
 		const v0:  IR.Value  = this.operand.lower(optimizer).asTac(optimizer);
 		return (
-			[Operator.NOT, Operator.EMP, Operator.NEG].includes(this.operator) ? new IR.Unop(new Map<Operator, IR.UnOp>([
-				[Operator.NOT, IR.UnOp.NOT],
-				[Operator.EMP, IR.UnOp.EMP],
-				[Operator.NEG, IR.UnOp.NEG],
+			[Operator.NOT, Operator.EMP, Operator.NEG].includes(this.operator) ? new IR.Unop(new Map<Operator, IR.OpCodeUn>([
+				[Operator.NOT, IR.OpCode.NOT],
+				[Operator.EMP, IR.OpCode.EMP],
+				[Operator.NEG, IR.OpCode.NEG],
 			]).get(this.operator)!, v0, typ) :
 			// TODO: v0.5+ unary operators int, nat, float
 			assert.fail(`Unexpected operator ${ Operator[this.operator] }`)
