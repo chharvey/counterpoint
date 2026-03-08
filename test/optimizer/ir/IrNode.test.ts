@@ -8,6 +8,7 @@ import {
 	IR,
 	Builder,
 } from '../../../src/index.ts';
+import type {TypeBuilder} from '../../../src/builder/-types.d.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {genConst} from '../../helpers.ts';
 
@@ -28,13 +29,11 @@ describe('IrNode', () => {
 			const {opt} = setupScript(`{
 				"hello";
 				"""hello {{ 42 }}""";
-				(42, 43, 44);
 				[42, 43, 44];
 				{42, 43, 44};
 				(a= 42, b= 43, c= 44);
 				[a= 42, b= 43, c= 44];
 				{"a" -> 42, "b" -> 43, "c" -> 44};
-				(42, 43, 44).0;
 				(a= 42, b= 43, c= 44).a;
 				[42, 43, 44].[0];
 				[a= 42, b= 43, c= 44].[@a];
@@ -52,6 +51,11 @@ describe('IrNode', () => {
 				new IR.Goto(new IR.Label('label2')),
 				new IR.GotoIfFalse(new IR.Const(VALUE.NULL), new IR.Label('label2')),
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
+
+			// more cases
+			xjs.Array.forEachAggregated<IR.Instruction>([
+				setupScript('{ (42, 43, 44).0; }', {lower: true, build: false}).opt.instructions[1], // (TUPLE.GET)
+			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
 		it('Trap returns (unreachable).', () => {
@@ -108,6 +112,45 @@ describe('IrNode', () => {
 					mod.local.get(4, binaryen.f32),
 				],
 			);
+		});
+
+		describe('CollectionLinearNew', () => {
+			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
+			before(() => {
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
+				tb.setStructType(0, []);
+				TEST_HEAPTYPE = tb.buildAndDispose()[0];
+			});
+			it('empty TUPLE.NEW returns (struct.new_default).', () => {
+				const {goal, opt} = setupScript(`{
+					();
+				}`, {lower: true, build: false});
+				const cg  = new Builder();
+				const mod = cg.module;
+				return assertEqualBins(
+					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.struct.new_default(TEST_HEAPTYPE),
+				);
+			});
+			it('TUPLE.NEW returns (struct.new).', () => {
+				const {goal, opt} = setupScript(`{
+					val mut x: int = 1;
+					(x, 2.0, (null,));
+				}`, {lower: true, build: false});
+				const cg  = new Builder();
+				const mod = cg.module;
+				opt.instructions.map((instr) => instr.codegen(cg));
+				return assertEqualBins(
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.struct.new([
+						mod.local.get(0, binaryen.v128),
+						genConst(mod, 2.0),
+						mod.local.get(1, binaryen.anyref),
+					], TEST_HEAPTYPE),
+				);
+			});
 		});
 
 		it('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {

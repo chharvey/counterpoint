@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {
@@ -8,6 +8,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import type {TypeBuilder} from '../../builder/-types.d.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
@@ -43,7 +44,27 @@ export class CollectionLinearNew extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		switch (this.name) {
+			case TypeName.TUPLE: {
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
+				if (!this.items.length) {
+					tb.setStructType(0, []);
+					return cg.module.struct.new_default(tb.buildAndDispose()[0]);
+				}
+				const codes: readonly binaryen.ExpressionRef[] = this.items.map((item) => item.codegen(cg));
+				tb.setStructType(0, codes.map((code) => ({
+					type:       binaryen.getExpressionType(code),
+					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+					// eslint-disable-next-line
+					packedType: binaryen.notPacked,
+					mutable:    false,
+				})));
+				return cg.module.struct.new(codes, tb.buildAndDispose()[0]);
+			}
+		}
 		throw new Error('not yet supported.');
 	}
 }
