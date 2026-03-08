@@ -5,6 +5,7 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {TypeName} from './TypeName.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 
@@ -15,7 +16,12 @@ export class CollectionDynamicCount extends Value {
 		private readonly name:       CollectionDynamicName,
 		private readonly collection: Value,
 	) {
-		super(TYPE.NAT);
+		super(new Map<TypeName, OpCode>([
+			[TypeName.LIST, OpCode.LIST_COUNT],
+			[TypeName.DICT, OpCode.DICT_COUNT],
+			[TypeName.SET,  OpCode.SET_COUNT],
+			[TypeName.MAP,  OpCode.MAP_COUNT],
+		]).get(name)!, TYPE.NAT);
 	}
 
 	@runOnceMethod
@@ -38,6 +44,6 @@ export class CollectionDynamicCount extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.COUNT ${ this.collection })`;
+		return super.toString(this.collection);
 	}
 }

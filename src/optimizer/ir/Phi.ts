@@ -1,7 +1,8 @@
 import * as xjs from 'extrajs';
 import {runOnceMethod} from '../../lib/index.ts';
+import type {Label} from './index.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
-import type {Label} from './Label.ts';
 
 
 
@@ -19,7 +20,7 @@ export class Phi extends Value {
 		[then_label, then_value]: readonly [Label, Value],
 		[else_label, else_value]: readonly [Label, Value],
 	) {
-		super(then_value.type.union(else_value.type));
+		super(OpCode.PHI, then_value.type.union(else_value.type));
 		this.labelThen = then_label;
 		this.labelElse = else_label;
 		this.valueThen = then_value;
@@ -32,6 +33,9 @@ export class Phi extends Value {
 	}
 
 	public override toString(): string {
-		return `(PHI "${ this.labelThen.name }"->${ this.valueThen } "${ this.labelElse.name }"->${ this.valueElse })`;
+		return super.toString(
+			`"${ this.labelThen.name }"->${ this.valueThen }`,
+			`"${ this.labelElse.name }"->${ this.valueElse }`,
+		);
 	}
 }

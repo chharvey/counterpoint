@@ -105,7 +105,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 
 		optimizer.pushInstruction(this.labels.while!);
 		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Binop(
-			IR.BinOp.LT,
+			IR.OpCode.LT,
 			get_index,
 			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable),
 			TYPE.BOOL,
@@ -119,7 +119,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 			));
 		}
 		this.block.lower(optimizer);
-		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.BinOp.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
+		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.OpCode.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
 		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
 		optimizer.pushInstruction(this.labels.endwhile!);
 	}

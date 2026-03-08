@@ -79,7 +79,7 @@ export class ASTNodeStatementLoop extends StatementBreakable {
 
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.until) {
-			condition = () => new IR.Unop(IR.UnOp.NOT, this.condition.lower(optimizer), TYPE.BOOL);
+			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
 		}
 
 		optimizer.pushInstruction(this.labels.while!);

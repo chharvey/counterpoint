@@ -1,10 +1,14 @@
 import * as assert from 'node:assert';
 import {runOnceMethod} from '../../lib/index.ts';
-import type {VALUE} from '../../typer/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {
 	TypeName,
 	ast_type_name,
 } from './TypeName.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 
@@ -12,7 +16,17 @@ import {Value} from './Value.ts';
 /** A constant primitive value. */
 export class Const extends Value {
 	public constructor(private readonly value: VALUE.Primitive) {
-		super(value.toType());
+		const typ: TYPE.Unit = value.toType();
+		super(new Map<TypeName, OpCode>([
+			[TypeName.TRAP,  OpCode.TRAP],
+			[TypeName.NULL,  OpCode.NULL_CONST],
+			[TypeName.BOOL,  OpCode.BOOL_CONST],
+			[TypeName.SYM,   OpCode.SYM_CONST],
+			[TypeName.INT,   OpCode.INT_CONST],
+			[TypeName.NAT,   OpCode.NAT_CONST],
+			[TypeName.FLOAT, OpCode.FLOAT_CONST],
+			[TypeName.STR,   OpCode.STR_CONST],
+		]).get(ast_type_name(typ))!, typ);
 	}
 
 	@runOnceMethod
@@ -21,7 +35,7 @@ export class Const extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[ast_type_name(this.type)] }.CONST ${ this.value })`;
+		return super.toString(this.value);
 	}
 
 	public override asTac(): Const {

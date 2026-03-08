@@ -111,16 +111,16 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 		const v0:  IR.Value  = this.operand.lower(optimizer).asTac(optimizer);
 		return this.operator === Operator.NEG
 			? new IR.Unop(
-				t0.isSubtypeOf(TYPE.INT) ? IR.UnOp.INT_NEG : (assert.ok(t0.isSubtypeOf(TYPE.FLOAT)), IR.UnOp.FLOAT_NEG),
+				t0.isSubtypeOf(TYPE.INT) ? IR.OpCode.INT_NEG : (assert.ok(t0.isSubtypeOf(TYPE.FLOAT)), IR.OpCode.FLOAT_NEG),
 				v0,
 				typ,
 			)
-			: new IR.Unop(new Map<Operator, IR.UnOp>([
-				[Operator.NOT,   IR.UnOp.NOT],
-				[Operator.EMP,   IR.UnOp.EMP],
-				[Operator.INT,   IR.UnOp.TOINT],
-				[Operator.NAT,   IR.UnOp.TONAT],
-				[Operator.FLOAT, IR.UnOp.TOFLOAT],
+			: new IR.Unop(new Map<Operator, IR.OpCodeUn>([
+				[Operator.NOT,   IR.OpCode.NOT],
+				[Operator.EMP,   IR.OpCode.EMP],
+				[Operator.INT,   IR.OpCode.TOINT],
+				[Operator.NAT,   IR.OpCode.TONAT],
+				[Operator.FLOAT, IR.OpCode.TOFLOAT],
 			]).get(this.operator)!, v0, typ);
 	}
 

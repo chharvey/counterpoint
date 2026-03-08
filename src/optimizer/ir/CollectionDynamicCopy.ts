@@ -7,19 +7,27 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {TypeName} from './TypeName.ts';
-import {Instruction} from './Instruction.ts';
+import {
+	OpCode,
+	Opcode,
+} from './Opcode.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Copy an existing collection into a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicCopy extends Instruction {
+export class CollectionDynamicCopy extends Opcode {
 	public constructor(
 		private readonly name:        CollectionDynamicName,
 		private readonly destination: Value,
 		private readonly source:      Value,
 	) {
-		super();
+		super(new Map<TypeName, OpCode>([
+			[TypeName.LIST, OpCode.LIST_COPY],
+			[TypeName.DICT, OpCode.DICT_COPY],
+			[TypeName.SET,  OpCode.SET_COPY],
+			[TypeName.MAP,  OpCode.MAP_COPY],
+		]).get(name)!);
 	}
 
 	@runOnceMethod
@@ -46,6 +54,6 @@ export class CollectionDynamicCopy extends Instruction {
 	}
 
 	public override toString(): string {
-		return `(${ TypeName[this.name] }.COPY ${ this.destination } ${ this.source })`;
+		return super.toString(this.destination, this.source);
 	}
 }

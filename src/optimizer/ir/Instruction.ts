@@ -2,12 +2,7 @@
  * An Instruction to the internal representation (IR).
  *
  * Known subclasses:
- * - Value
- * - Drop
- * - Decl
- * - Set
- * - CollectionDynamicSet
- * - CollectionDynamicCopy
+ * - Opcode
  * - Label
  * - Goto
  * - GotoIfFalse
