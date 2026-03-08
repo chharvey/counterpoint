@@ -16,17 +16,23 @@ import {genConst} from '../../helpers.ts';
 
 describe('IrNode', () => {
 	describe('#codegen', () => {
-		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
+		function setupScript(src: string, opts: object): {
+			goal: AST.ASTNodeGoal,
+			opt:  Optimizer,
+			cg:   Builder,
+		} {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
+			const cg:   Builder         = new Builder();
 			goal.varCheck();
 			goal.typeCheck();
-			'lower' in opts && opts.lower && goal.lower(opt);
-			return {goal, opt};
+			'lower'   in opts && opts.lower   && goal.lower(opt);
+			'codegen' in opts && opts.codegen && opt.instructions.map((instr) => instr.codegen(cg));
+			return {goal, opt, cg};
 		}
 
 		it('is not yet supported.', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				"hello";
 				"""hello {{ 42 }}""";
 				[42, 43, 44];
@@ -43,8 +49,7 @@ describe('IrNode', () => {
 				[a= 42, b= 43, c= 44].[@a]              = 43;
 				{42, 43, 44}.[42]                       = false;
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"] = 43;
-			}`, {lower: true, build: false});
-			const cg = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			xjs.Array.forEachAggregated([
 				...opt.instructions,
 				new IR.Label('label1'),
@@ -54,7 +59,7 @@ describe('IrNode', () => {
 
 			// more cases
 			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ (42, 43, 44).0; }', {lower: true, build: false}).opt.instructions[1], // (TUPLE.GET)
+				setupScript('{ (42, 43, 44).0; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (TUPLE.GET)
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
@@ -64,14 +69,13 @@ describe('IrNode', () => {
 		});
 
 		it('Const returns (v128.const).', () => {
-			const {goal, opt} = setupScript(`{
+			const {goal, opt, cg} = setupScript(`{
 				null;
 				false;
 				@hello;
 				42;
 				4.2;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -86,7 +90,7 @@ describe('IrNode', () => {
 		});
 
 		it('Get returns (local.get).', () => {
-			const {goal, opt} = setupScript(`{
+			const {goal, opt, cg} = setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
 				val mut c: sym   = @hello;
@@ -98,18 +102,17 @@ describe('IrNode', () => {
 				c;
 				d;
 				e;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
-			opt.instructions.slice(0, 5).map((instr) => (instr).codegen(cg));
+			opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
 			return assertEqualBins(
 				goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					mod.local.get(0, binaryen.f32),
-					mod.local.get(1, binaryen.f32),
-					mod.local.get(2, binaryen.f32),
-					mod.local.get(3, binaryen.f32),
-					mod.local.get(4, binaryen.f32),
+					mod.local.get(0, binaryen.v128),
+					mod.local.get(1, binaryen.v128),
+					mod.local.get(2, binaryen.v128),
+					mod.local.get(3, binaryen.v128),
+					mod.local.get(4, binaryen.v128),
 				],
 			);
 		});
@@ -124,10 +127,9 @@ describe('IrNode', () => {
 				TEST_HEAPTYPE = tb.buildAndDispose()[0];
 			});
 			it('empty TUPLE.NEW returns (struct.new_default).', () => {
-				const {goal, opt} = setupScript(`{
+				const {goal, opt, cg} = setupScript(`{
 					();
-				}`, {lower: true, build: false});
-				const cg  = new Builder();
+				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
@@ -135,18 +137,16 @@ describe('IrNode', () => {
 				);
 			});
 			it('TUPLE.NEW returns (struct.new).', () => {
-				const {goal, opt} = setupScript(`{
-					val mut x: int = 1;
-					(x, 2.0, (null,));
-				}`, {lower: true, build: false});
-				const cg  = new Builder();
+				const {goal, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					(x, 4.2, (null,));
+				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				opt.instructions.map((instr) => instr.codegen(cg));
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.struct.new([
 						mod.local.get(0, binaryen.v128),
-						genConst(mod, 2.0),
+						genConst(mod, 4.2),
 						mod.local.get(1, binaryen.anyref),
 					], TEST_HEAPTYPE),
 				);
@@ -160,7 +160,7 @@ describe('IrNode', () => {
 				vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
 			} as const;
 
-			const {goal, opt} = setupScript(`{
+			const {goal, opt, cg} = setupScript(`{
 				!null;
 				!false;
 				!@hello;
@@ -175,8 +175,7 @@ describe('IrNode', () => {
 
 				-(42);
 				-(4.2);
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -213,7 +212,7 @@ describe('IrNode', () => {
 				veq:  (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], binaryen.v128),
 			} as const;
 
-			const {goal, opt} = setupScript(`{
+			const {goal, opt, cg} = setupScript(`{
 				2 + 3;
 				% 2 - 3; % TODO: v0.5
 				2 * 3;
@@ -242,8 +241,7 @@ describe('IrNode', () => {
 
 				2.0 === 3;
 				2.0 ==  3;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -270,17 +268,16 @@ describe('IrNode', () => {
 		});
 
 		it('Drop returns (drop).', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				null;
 				false;
 				@hello;
 				42;
 				4.2;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => (instr).codegen(cg)),
+				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
 					mod.drop(genConst(mod)),
 					mod.drop(genConst(mod, false)),
@@ -292,17 +289,16 @@ describe('IrNode', () => {
 		});
 
 		it('Decl returns (local.set).', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				val a: null  = null;
 				val b: bool  = false;
 				val c: sym   = @hello;
 				val d: int   = 42;
 				val e: float = 4.2;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => (instr).codegen(cg)),
+				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
 					mod.local.set(0, genConst(mod)),
 					mod.local.set(1, genConst(mod, false)),
@@ -314,7 +310,7 @@ describe('IrNode', () => {
 		});
 
 		it('Set returns (local.set).', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
 				val mut c: sym   = @hello;
@@ -326,11 +322,10 @@ describe('IrNode', () => {
 				c = @world;
 				d = 43;
 				e = 4.3;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.slice(5).map((instr) => (instr).codegen(cg)),
+				opt.instructions.slice(5).map((instr) => instr.codegen(cg)),
 				[
 					mod.local.set(0, genConst(mod)),
 					mod.local.set(1, genConst(mod, true)),
