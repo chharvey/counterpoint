@@ -6,9 +6,11 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
-import {OpCode} from './utils-public.ts';
 import {TypeName} from './TypeName.ts';
-import {Opcode} from './Opcode.ts';
+import {
+	OpCode,
+	Opcode,
+} from './Opcode.ts';
 import type {Value} from './Value.ts';
 
 

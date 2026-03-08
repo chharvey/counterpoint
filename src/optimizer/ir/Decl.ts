@@ -3,12 +3,14 @@ import {runOnceMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Local} from '../utils-private.ts';
-import {OpCode} from './utils-public.ts';
 import {
 	ast_type_name,
 	stringify_type_name,
 } from './TypeName.ts';
-import {Opcode} from './Opcode.ts';
+import {
+	OpCode,
+	Opcode,
+} from './Opcode.ts';
 import type {Value} from './Value.ts';
 
 

@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {runOnceMethod} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import {OpCode} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 

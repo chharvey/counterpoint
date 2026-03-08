@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {runOnceMethod} from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import {OpCode} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
 

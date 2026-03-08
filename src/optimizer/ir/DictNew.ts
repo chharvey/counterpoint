@@ -4,7 +4,7 @@ import type {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {OpCode} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 

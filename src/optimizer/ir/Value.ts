@@ -1,8 +1,10 @@
 import type {TYPE} from '../../typer/index.ts';
-import type {OpCode} from './utils-public.ts';
 import type {Optimizer} from '../Optimizer.ts';
 import {Get} from './index.ts';
-import {Opcode} from './Opcode.ts';
+import {
+	type OpCode,
+	Opcode,
+} from './Opcode.ts';
 
 
 

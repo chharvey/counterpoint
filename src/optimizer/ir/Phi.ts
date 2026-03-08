@@ -1,8 +1,8 @@
 import * as xjs from 'extrajs';
 import {runOnceMethod} from '../../lib/index.ts';
-import {OpCode} from './utils-public.ts';
+import type {Label} from './index.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
-import type {Label} from './Label.ts';
 
 
 

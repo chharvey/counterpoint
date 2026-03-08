@@ -4,11 +4,11 @@ import type {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {OpCode} from './utils-public.ts';
 import {
 	TypeName,
 	ast_type_name,
 } from './TypeName.ts';
+import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
 
