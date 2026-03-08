@@ -2,10 +2,11 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
@@ -26,6 +27,7 @@ export class MapNew extends Value {
 
 	@runOnceMethod
 	public override validate(): void {
+		assert_instanceof(this.type, TYPE.Map);
 		return xjs.Map.forEachAggregated(this.cases, (con, ant) => xjs.Array.forEachAggregated([ant, con], (value) => value.validate()));
 	}
 

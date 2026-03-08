@@ -2,10 +2,12 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {
+	type ConstructorType,
+	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
@@ -32,6 +34,11 @@ export class CollectionLinearNew extends Value {
 
 	@runOnceMethod
 	public override validate(): void {
+		assert_instanceof(this.type, new Map<TypeName, ConstructorType<TYPE.Type>>([
+			[TypeName.TUPLE, TYPE.Tuple],
+			[TypeName.LIST,  TYPE.List],
+			[TypeName.SET,   TYPE.Set],
+		]).get(this.name)!);
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
 	}
 

@@ -2,11 +2,12 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {
-	VALUE,
+import {
+	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
@@ -29,6 +30,7 @@ export class DictNew extends Value {
 
 	@runOnceMethod
 	public override validate(): void {
+		assert_instanceof(this.type, TYPE.Dict);
 		return xjs.Map.forEachAggregated(this.props, (value) => value.validate());
 	}
 
