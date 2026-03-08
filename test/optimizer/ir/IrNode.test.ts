@@ -37,10 +37,8 @@ describe('IrNode', () => {
 				"""hello {{ 42 }}""";
 				[42, 43, 44];
 				{42, 43, 44};
-				(a= 42, b= 43, c= 44);
 				[a= 42, b= 43, c= 44];
 				{"a" -> 42, "b" -> 43, "c" -> 44};
-				(a= 42, b= 43, c= 44).a;
 				[42, 43, 44].[0];
 				[a= 42, b= 43, c= 44].[@a];
 				{42, 43, 44}.[42];
@@ -59,7 +57,8 @@ describe('IrNode', () => {
 
 			// more cases
 			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ (42, 43, 44).0; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (TUPLE.GET)
+				setupScript('{ (42, 43, 44).0; }',          {lower: true, codegen: false, build: false}).opt.instructions[1], // (TUPLE.GET)
+				setupScript('{ (a= 42, b= 43, c= 44).a; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (RECORD.GET)
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
@@ -148,6 +147,55 @@ describe('IrNode', () => {
 						mod.local.get(0, binaryen.v128),
 						genConst(mod, 4.2),
 						mod.local.get(1, binaryen.anyref),
+					], TEST_HEAPTYPE),
+				);
+			});
+		});
+
+		describe('RecordNew', () => {
+			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
+			before(() => {
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
+				tb.setStructType(0, []);
+				TEST_HEAPTYPE = tb.buildAndDispose()[0];
+			});
+			it('empty record returns (struct.new_default).', () => {
+				const {goal, opt, cg} = setupScript(`{
+					();
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				return assertEqualBins(
+					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.struct.new_default(TEST_HEAPTYPE),
+				);
+			});
+			it('record returns (struct.new).', () => {
+				const {goal, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
+				[binaryen.v128, binaryen.structref].forEach((valuetype, i) => entry_tb.setStructType(i, [binaryen.i64, valuetype].map((type) => ({
+					type,
+					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+					// eslint-disable-next-line
+					packedType: binaryen.notPacked,
+					mutable:    false,
+				}))));
+				const registry: readonly binaryen.Type[] = entry_tb.buildAndDispose();
+				return assertEqualBins(
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.struct.new([
+						mod.struct.new([mod.i64.const(260, 0), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						mod.struct.new([mod.i64.const(261, 0), genConst(mod, Symbol(0x105))],      registry[0]),
+						mod.struct.new([mod.i64.const(257, 0), mod.local.get(0, binaryen.v128)],   registry[0]),
+						mod.struct.new([mod.i64.const(258, 0), genConst(mod, 4.2)],                registry[0]),
+						mod.struct.new([mod.i64.const(259, 0), mod.local.get(1, binaryen.anyref)], registry[1]),
 					], TEST_HEAPTYPE),
 				);
 			});
