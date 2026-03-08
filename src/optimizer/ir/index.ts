@@ -1,10 +1,9 @@
 export * from './utils-public.ts';
 
-export * from './TypeName.ts';
-
 export * from './Instruction.ts';
 export * from './Opcode.ts';
 
+export * from './TypeName.ts';
 export * from './Value.ts';
 export * from './Trap.ts';
 export * from './Const.ts';

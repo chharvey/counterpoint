@@ -23,7 +23,7 @@ export class CollectionDynamicSet extends Opcode {
 		private readonly accessor:   Value,
 		private readonly value:      Value,
 	) {
-		super(new Map<TypeName, OpCode>([
+		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_SET],
 			[TypeName.DICT, OpCode.DICT_SET],
 			[TypeName.SET,  OpCode.SET_SET],
