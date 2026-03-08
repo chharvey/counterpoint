@@ -17,6 +17,6 @@ export class Drop extends Opcode {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.value })`;
+		return super.toString(this.value);
 	}
 }

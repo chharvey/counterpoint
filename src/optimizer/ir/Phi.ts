@@ -33,6 +33,9 @@ export class Phi extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } "${ this.labelThen.name }"->${ this.valueThen } "${ this.labelElse.name }"->${ this.valueElse })`;
+		return super.toString(
+			`"${ this.labelThen.name }"->${ this.valueThen }`,
+			`"${ this.labelElse.name }"->${ this.valueElse }`,
+		);
 	}
 }

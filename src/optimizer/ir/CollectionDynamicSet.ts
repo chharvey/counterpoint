@@ -53,6 +53,6 @@ export class CollectionDynamicSet extends Opcode {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.collection } ${ this.accessor } ${ this.value })`;
+		return super.toString(this.collection, this.accessor, this.value);
 	}
 }

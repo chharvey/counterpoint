@@ -21,6 +21,6 @@ export class MapNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ [this.opCodeString, ...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`)].join(' ') })`;
+		return super.toString(...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`));
 	}
 }

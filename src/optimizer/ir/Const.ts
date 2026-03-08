@@ -35,7 +35,7 @@ export class Const extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.value })`;
+		return super.toString(this.value);
 	}
 
 	public override asTac(): Const {

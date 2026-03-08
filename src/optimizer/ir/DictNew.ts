@@ -24,6 +24,6 @@ export class DictNew extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ [this.opCodeString, ...[...this.props].map(([sym, value]) => `${ sym }->${ value }`)].join(' ') })`;
+		return super.toString(...[...this.props].map(([sym, value]) => `${ sym }->${ value }`));
 	}
 }

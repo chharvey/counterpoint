@@ -32,6 +32,10 @@ export class Decl extends Opcode {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } <${ stringify_type_name(ast_type_name(this.targetType)) }> ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
+		return super.toString(
+			`<${ stringify_type_name(ast_type_name(this.targetType)) }>`,
+			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
+			this.value,
+		);
 	}
 }

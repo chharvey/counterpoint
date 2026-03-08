@@ -28,7 +28,10 @@ class IrSet extends Opcode {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name } ${ this.value })`;
+		return super.toString(
+			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
+			this.value,
+		);
 	}
 }
 export {IrSet as Set};

@@ -89,6 +89,6 @@ export class Binop extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.operand0 } ${ this.operand1 })`;
+		return super.toString(this.operand0, this.operand1);
 	}
 }

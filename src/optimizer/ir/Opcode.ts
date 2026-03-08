@@ -20,7 +20,7 @@ export abstract class Opcode extends Instruction {
 	}
 
 	/** @final */
-	protected get opCodeString(): string {
-		return OpCode[this.opCode].replace(/_/, '.');
+	public override toString(...args: readonly {toString(): string}[]): string {
+		return `(${ [OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ') })`;
 	}
 }

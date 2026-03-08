@@ -18,6 +18,6 @@ export class Template extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ [this.opCodeString, ...this.items].join(' ') })`;
+		return super.toString(...this.items);
 	}
 }

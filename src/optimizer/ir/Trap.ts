@@ -10,10 +10,6 @@ export class Trap extends Value {
 		super(OpCode.TRAP, TYPE.UNKNOWN);
 	}
 
-	public override toString(): string {
-		return `(${ this.opCodeString })`;
-	}
-
 	public override asTac(): Trap {
 		return this;
 	}

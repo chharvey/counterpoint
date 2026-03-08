@@ -48,6 +48,6 @@ export class Unop extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.operand })`;
+		return super.toString(this.operand);
 	}
 }

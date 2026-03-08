@@ -52,6 +52,6 @@ export class CollectionDynamicGet extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.collection } ${ this.accessor })`;
+		return super.toString(this.collection, this.accessor); // dynamic accessor after collection
 	}
 }

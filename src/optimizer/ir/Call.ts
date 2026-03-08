@@ -22,6 +22,6 @@ export class Call extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ [this.opCodeString, this.callable, ...this.args].join(' ') })`;
+		return super.toString(this.callable, ...this.args);
 	}
 }

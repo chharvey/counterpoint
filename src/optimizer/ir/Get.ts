@@ -12,7 +12,7 @@ export class Get extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name })`;
+		return super.toString(this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name);
 	}
 
 	public override asTac(): Get {

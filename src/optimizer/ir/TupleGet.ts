@@ -25,6 +25,6 @@ export class TupleGet extends Value {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.accessor } ${ this.tuple })`; // accessor is static so it comes first
+		return super.toString(this.accessor, this.tuple); // static accessor before collection
 	}
 }

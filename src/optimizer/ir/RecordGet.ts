@@ -25,7 +25,10 @@ export class RecordGet extends Value {
 	}
 
 	public override toString(): string {
-		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
-		return `(${ this.opCodeString } @${ this.accessor.keysrc || `\\x${ this.accessor.keyid.toString(16) }` } ${ this.record })`; // accessor is static so it comes first
+		return super.toString(
+			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
+			`@${ this.accessor.keysrc || `\\x${ this.accessor.keyid.toString(16) }` }`, // static accessor before collection
+			this.record,
+		);
 	}
 }

@@ -52,6 +52,6 @@ export class CollectionDynamicCopy extends Opcode {
 	}
 
 	public override toString(): string {
-		return `(${ this.opCodeString } ${ this.destination } ${ this.source })`;
+		return super.toString(this.destination, this.source);
 	}
 }
