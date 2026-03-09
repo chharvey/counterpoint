@@ -34,7 +34,58 @@ Codegen((RECORD.NEW `pairs`)) := [
 	(struct.new $Record `pairs.hashMap((struct.new $Entry_i `pairs[i].0` `pairs[i].1`))`)
 ];
 
-// Codegen((LIST.NEW   `values`));
+Codegen((LIST.NEW)) := [
+	(type $Entry (struct
+		(field $tag       i8)
+		(field $primitive v128)
+		(field $composite eqref) ;; (ref null eq)
+	))
+	(type $InternalArray (array (mut (ref null $Entry))))
+	(type $List (struct
+		(field $count (mut v128))
+		(field $array (mut (ref $InternalArray)))
+	))
+	(block
+		(local.set $internal (array.new_default $InternalArray (i32.const 8)))
+		(struct.new $List
+			(i32.const 0)
+			(local.get $internal)
+		)
+	)
+];
+Codegen((LIST.NEW `values`)) := [
+	(type $Entry (struct
+		(field $tag       i8)
+		(field $primitive v128)
+		(field $composite eqref) ;; (ref null eq)
+	))
+	(type $InternalArray (array (mut (ref null $Entry))))
+	(type $List (struct
+		(field $count (mut v128))
+		(field $array (mut (ref $InternalArray)))
+	))
+	(block
+		(local.set $internal (array.new_default $InternalArray (i32.const `LeastPowerOf2GreaterThan(values.count)`)))
+		`values.map((array.set
+			(local.get $internal)
+			(i32.const `i`)
+			(if `Codegen(value)` is v128 then (struct.new $Entry
+				(i32.const 0)
+				`Codegen(value)`
+				(ref.null eq)
+			) else (struct.new $Entry
+				(i32.const 1)
+				(v128.const 0)
+				`Codegen(value)`
+			))
+		))`
+		(struct.new $List
+			(i32.const `values.count`)
+			(local.get $internal)
+		)
+	)
+];
+
 // Codegen((DICT.NEW   `pairs`));
 // Codegen((SET.NEW    `values`));
 // Codegen((MAP.NEW    `pairs`));

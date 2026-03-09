@@ -7,6 +7,7 @@ import {
 	Optimizer,
 	IR,
 	Builder,
+	BinVect,
 } from '../../../src/index.ts';
 import type {TypeBuilder} from '../../../src/builder/-types.d.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
@@ -35,15 +36,12 @@ describe('IrNode', () => {
 			const {opt, cg} = setupScript(`{
 				"hello";
 				"""hello {{ 42 }}""";
-				[42, 43, 44];
 				{42, 43, 44};
 				[a= 42, b= 43, c= 44];
 				{"a" -> 42, "b" -> 43, "c" -> 44};
-				[42, 43, 44].[0];
 				[a= 42, b= 43, c= 44].[@a];
 				{42, 43, 44}.[42];
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"];
-				[42, 43, 44].[0]                        = 43;
 				[a= 42, b= 43, c= 44].[@a]              = 43;
 				{42, 43, 44}.[42]                       = false;
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"] = 43;
@@ -59,6 +57,8 @@ describe('IrNode', () => {
 			xjs.Array.forEachAggregated<IR.Instruction>([
 				setupScript('{ (42, 43, 44).0; }',          {lower: true, codegen: false, build: false}).opt.instructions[1], // (TUPLE.GET)
 				setupScript('{ (a= 42, b= 43, c= 44).a; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (RECORD.GET)
+				setupScript('{ [42, 43, 44].[0]; }',        {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.GET)
+				setupScript('{ [42, 43, 44].[0] = 43; }',   {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.SET)
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
@@ -148,6 +148,70 @@ describe('IrNode', () => {
 						genConst(mod, 4.2),
 						mod.local.get(1, binaryen.anyref),
 					], TEST_HEAPTYPE),
+				);
+			});
+			it('LIST.NEW returns (struct.new) with count and internal array.', () => {
+				const {goal, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					[x, 4.2, (null,), x/2, @e];
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const app_tb: TypeBuilder = new binaryen.TypeBuilder(3); // TODO: a type-builder like this is used in application code. make a utility!
+				app_tb.setStructType(0, [binaryen.i32, binaryen.v128, binaryen.eqref].map((type, i) => ({
+					type,
+					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+					// eslint-disable-next-line
+					packedType: i === 0 ? binaryen.i8 : binaryen.notPacked,
+					mutable:    false,
+				})));
+				app_tb.setArrayType(
+					1,
+					app_tb.getTempRefType(app_tb.getTempHeapType(0), true),
+					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+					// eslint-disable-next-line
+					binaryen.notPacked,
+					true,
+				);
+				app_tb.setStructType(2, [binaryen.v128, app_tb.getTempRefType(app_tb.getTempHeapType(1), false)].map((type) => ({
+					type,
+					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+					// eslint-disable-next-line
+					packedType: binaryen.notPacked,
+					mutable:    true,
+				})));
+				const [entry_type, internalarray_type, list_type] = app_tb.buildAndDispose();
+				function Entry_primitive(code: binaryen.ExpressionRef): binaryen.ExpressionRef { // TODO: make these utilities!
+					return mod.struct.new([
+						mod.i32.const(0),
+						code,
+						mod.ref.null(binaryen.eqref),
+					], entry_type);
+				}
+				function Entry_composite(code: binaryen.ExpressionRef): binaryen.ExpressionRef {
+					return mod.struct.new([
+						mod.i32.const(1),
+						mod.v128.const(new Uint8Array(16)),
+						code,
+					], entry_type);
+				}
+				return assertEqualBins(
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.block(null, [
+						mod.local.set(3, mod.array.new_default(internalarray_type, mod.i32.const(8))),
+						...[
+							Entry_primitive(mod.local.get(0, binaryen.v128)),
+							Entry_primitive(genConst(mod, 4.2)),
+							Entry_composite(mod.local.get(1, binaryen.anyref)), // composite
+							Entry_primitive(mod.local.get(2, binaryen.v128)),
+							Entry_primitive(genConst(mod, Symbol(0x101))),
+						].map((code, i) => mod.array.set(mod.local.get(3, internalarray_type), mod.i32.const(i), code)),
+						mod.struct.new([
+							new BinVect(mod, mod.i32.const(5)).vect,
+							mod.local.get(3, internalarray_type),
+						], list_type),
+					], list_type),
 				);
 			});
 		});

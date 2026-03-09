@@ -60,6 +60,10 @@ export class Builder {
 	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
 
 
+	public nextLocalIndex(): bigint {
+		return this.#localCount++;
+	}
+
 	public nextTypeIndex(): bigint {
 		return this.#typeCount++;
 	}
