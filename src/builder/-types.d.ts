@@ -24,7 +24,7 @@ export interface BinaryenModuleUpdates extends binaryen.Module {
 		init_elem(name: string, ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, offset: binaryen.ExpressionRef, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
 	};
 }
-type Field = {
+export type Field = {
 	type:       binaryen.Type,
 	packedType: binaryen.Type,
 	mutable:    boolean,

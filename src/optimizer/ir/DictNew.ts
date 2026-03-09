@@ -13,7 +13,6 @@ import {
 	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {TypeBuilder} from '../../builder/-types.d.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
@@ -40,50 +39,9 @@ export class DictNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		// eslint-disable-next-line
-		const tb: TypeBuilder = new binaryen.TypeBuilder(3);
-		/*
-		 * (type $Entry (struct
-		 * 	(field $key       i64)
-		 * 	(field $tag       i8)    ;; 0 = primitive, 1 = composite
-		 * 	(field $primitive v128)
-		 * 	(field $composite eqref) ;; (ref null eq)
-		 * ))
-		 */
-		tb.setStructType(0, [binaryen.i64, binaryen.i32, binaryen.v128, binaryen.eqref].map((type, i) => ({
-			type,
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
-			packedType: i === 1 ? binaryen.i8 : binaryen.notPacked,
-			mutable:    false,
-		})));
-		/*
-		 * (type $InternalArray (array (mut (ref null $Entry)))) ;; mutable to allow reassigning array entries
-		 */
-		tb.setArrayType(
-			1,
-			tb.getTempRefType(tb.getTempHeapType(0), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
-			binaryen.notPacked,
-			true,
-		);
-		/*
-		 * ;; precursor to the `Dict` class
-		 * (type $Dict (struct
-		 * 	(field $count (mut v128))                 ;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
-		 * 	(field $array (mut (ref $InternalArray))) ;; the array of values; mutable to allow reallocation
-		 * ))
-		 */
-		tb.setStructType(2, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(1), false)].map((type) => ({
-			type,
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
-			packedType: binaryen.notPacked,
-			mutable:    true,
-		})));
-		const [entry_type, internalarray_type, dict_type] = tb.buildAndDispose();
+		const entry_type:         binaryen.Type = cg.typeRegistry.get('DictEntry')!;
+		const internalarray_type: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
+		const dict_type:          binaryen.Type = cg.typeRegistry.get('Dict')!;
 
 		/**
 		 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.

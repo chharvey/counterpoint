@@ -1,6 +1,7 @@
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	Field_new,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -58,59 +59,13 @@ export class CollectionLinearNew extends Value {
 					return cg.module.struct.new_default(tb.buildAndDispose()[0]);
 				}
 				const codes: readonly binaryen.ExpressionRef[] = this.items.map((item) => item.codegen(cg));
-				tb.setStructType(0, codes.map((code) => ({
-					type:       binaryen.getExpressionType(code),
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					packedType: binaryen.notPacked,
-					mutable:    false,
-				})));
+				tb.setStructType(0, codes.map((code) => Field_new(binaryen.getExpressionType(code))));
 				return cg.module.struct.new(codes, tb.buildAndDispose()[0]);
 			}
 			case TypeName.LIST: {
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const tb: TypeBuilder = new binaryen.TypeBuilder(3);
-				/*
-				 * (type $Entry (struct
-				 * 	(field $tag       i8)    ;; 0 = primitive, 1 = composite
-				 * 	(field $primitive v128)
-				 * 	(field $composite eqref) ;; (ref null eq)
-				 * ))
-				 */
-				tb.setStructType(0, [binaryen.i32, binaryen.v128, binaryen.eqref].map((type, i) => ({
-					type,
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					packedType: i === 0 ? binaryen.i8 : binaryen.notPacked,
-					mutable:    false,
-				})));
-				/*
-				 * (type $InternalArray (array (mut (ref null $Entry)))) ;; mutable to allow reassigning array entries
-				 */
-				tb.setArrayType(
-					1,
-					tb.getTempRefType(tb.getTempHeapType(0), true),
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					binaryen.notPacked,
-					true,
-				);
-				/*
-				 * ;; precursor to the `List` class
-				 * (type $List (struct
-				 * 	(field $count (mut v128))                 ;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
-				 * 	(field $array (mut (ref $InternalArray))) ;; the array of values; mutable to allow reallocation
-				 * ))
-				 */
-				tb.setStructType(2, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(1), false)].map((type) => ({
-					type,
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					packedType: binaryen.notPacked,
-					mutable:    true,
-				})));
-				const [entry_type, internalarray_type, list_type] = tb.buildAndDispose();
+				const entry_type:         binaryen.Type = cg.typeRegistry.get('ListEntry')!;
+				const internalarray_type: binaryen.Type = cg.typeRegistry.get('ListInternal')!;
+				const list_type:          binaryen.Type = cg.typeRegistry.get('List')!;
 
 				/**
 				 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
@@ -122,6 +77,7 @@ export class CollectionLinearNew extends Value {
 				while (capacity < this.items.length) {
 					capacity *= 2;
 				}
+
 				/*
 				 * create an empty internal array with the power of 2 capacity,
 				 * fill in the entries,

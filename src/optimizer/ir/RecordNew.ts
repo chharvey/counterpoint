@@ -1,6 +1,9 @@
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	Field_new,
+	type Builder,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -57,13 +60,7 @@ export class RecordNew extends Value {
 			 * 	(field $value ‹type of value›)
 			 * ))
 			 */
-			prop_tb.setStructType(0, [binaryen.i64, binaryen.getExpressionType(code)].map((type) => ({
-				type,
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				packedType: binaryen.notPacked,
-				mutable:    false,
-			})));
+			prop_tb.setStructType(0, [binaryen.i64, binaryen.getExpressionType(code)].map((typ) => Field_new(typ)));
 			const entry: binaryen.ExpressionRef = cg.module.struct.new([
 				cg.module.i64.const(Number(id), 0), // TODO: use `bigint_to_i64`
 				code,
@@ -83,13 +80,7 @@ export class RecordNew extends Value {
 			}
 			insertEntry(Number(id) % COUNT);
 		});
-		tb.setStructType(0, entries.map((entry) => ({
-			type:       binaryen.getExpressionType(entry),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
-			packedType: binaryen.notPacked,
-			mutable:    false,
-		})));
+		tb.setStructType(0, entries.map((entry) => Field_new(binaryen.getExpressionType(entry))));
 		return cg.module.struct.new(entries, tb.buildAndDispose()[0]);
 	}
 }

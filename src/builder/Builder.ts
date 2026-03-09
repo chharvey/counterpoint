@@ -1,6 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
+import {Field_new} from '../code-generator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 import type {
@@ -25,6 +26,7 @@ type LocalInfo = {
  */
 export class Builder {
 	private static readonly IMPORTS: readonly string[] = [
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 	];
@@ -43,6 +45,9 @@ export class Builder {
 	/** A lookup table from variable ids to WASM local variable info. */
 	readonly #localTable = new Map<bigint, LocalInfo>();
 
+	/** A lookup table for types created by a Binaryen TypeBuilder. */
+	readonly #typeRegistry = new Map<string, binaryen.Type>();
+
 	#typeCount: bigint = 0n;
 
 	/** A setlist containing ids of local variables. */
@@ -59,6 +64,13 @@ export class Builder {
 	// eslint-disable-next-line
 	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
 
+	public constructor() {
+		this.#setupTypes();
+	}
+
+	public get typeRegistry(): Map<string, binaryen.Type> {
+		return new Map([...this.#typeRegistry]);
+	}
 
 	public nextLocalIndex(): bigint {
 		return this.#localCount++;
@@ -179,6 +191,59 @@ export class Builder {
 	public clearLocals(): this {
 		this.locals.length = 0;
 		return this;
+	}
+
+	/**
+	 * Set up common types.
+	 * We’ve defined these in a static `types.wat` file,
+	 * but there’s currently no way to access them dynamically with Binaryen,
+	 * so we repeat them here.
+	 */
+	#setupTypes(): void {
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		// eslint-disable-next-line
+		const tb: TypeBuilder = new binaryen.TypeBuilder(6);
+
+		/* (type $ListEntry ...) */
+		tb.setStructType(0, [binaryen.i32, binaryen.v128, binaryen.eqref].map((typ, i) => Field_new(typ, i === 0 ? 'i8' : 'notPacked')));
+		/* (type $ListInternal ...) */
+		tb.setArrayType(
+			1,
+			tb.getTempRefType(tb.getTempHeapType(0), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			true,
+		);
+		/* (type $List ...) */
+		tb.setStructType(2, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(1), false)].map((typ) => Field_new(typ, 'notPacked', true)));
+		/* (type $DictEntry ...) */
+		tb.setStructType(3, [binaryen.i64, binaryen.i32, binaryen.v128, binaryen.eqref].map((typ, i) => Field_new(typ, i === 1 ? 'i8' : 'notPacked')));
+		/* (type $DictInternal ...) */
+		tb.setArrayType(
+			4,
+			tb.getTempRefType(tb.getTempHeapType(3), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			true,
+		);
+		/* (type $Dict ...) */
+		tb.setStructType(5, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(4), false)].map((typ) => Field_new(typ, 'notPacked', true)));
+
+		const [
+			/* eslint-disable @stylistic/array-element-newline */
+			list_item_t, list_internal_t, list_t,
+			dict_item_t, dict_internal_t, dict_t,
+			/* eslint-enable @stylistic/array-element-newline */
+		] = tb.buildAndDispose();
+
+		this.#typeRegistry.set('ListEntry',    list_item_t);
+		this.#typeRegistry.set('ListInternal', list_internal_t);
+		this.#typeRegistry.set('List',         list_t);
+		this.#typeRegistry.set('DictEntry',    dict_item_t);
+		this.#typeRegistry.set('DictInternal', dict_internal_t);
+		this.#typeRegistry.set('Dict',         dict_t);
 	}
 
 	#binOpFunction(

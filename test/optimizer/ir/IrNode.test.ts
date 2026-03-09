@@ -155,32 +155,9 @@ describe('IrNode', () => {
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const app_tb: TypeBuilder = new binaryen.TypeBuilder(3); // TODO: a type-builder like this is used in application code. make a utility!
-				app_tb.setStructType(0, [binaryen.i32, binaryen.v128, binaryen.eqref].map((type, i) => ({
-					type,
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					packedType: i === 0 ? binaryen.i8 : binaryen.notPacked,
-					mutable:    false,
-				})));
-				app_tb.setArrayType(
-					1,
-					app_tb.getTempRefType(app_tb.getTempHeapType(0), true),
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					binaryen.notPacked,
-					true,
-				);
-				app_tb.setStructType(2, [binaryen.v128, app_tb.getTempRefType(app_tb.getTempHeapType(1), false)].map((type) => ({
-					type,
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					packedType: binaryen.notPacked,
-					mutable:    true,
-				})));
-				const [entry_type, internalarray_type, list_type] = app_tb.buildAndDispose();
+				const entry_type:         binaryen.Type = cg.typeRegistry.get('ListEntry')!;
+				const internalarray_type: binaryen.Type = cg.typeRegistry.get('ListInternal')!;
+				const list_type:          binaryen.Type = cg.typeRegistry.get('List')!;
 				function Entry_primitive(code: binaryen.ExpressionRef): binaryen.ExpressionRef { // TODO: make these utilities!
 					return mod.struct.new([
 						mod.i32.const(0),
@@ -270,32 +247,9 @@ describe('IrNode', () => {
 				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 			}`, {lower: true, codegen: true, build: false});
 			const mod = cg.module;
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
-			const app_tb: TypeBuilder = new binaryen.TypeBuilder(3); // TODO: a type-builder like this is used in application code. make a utility!
-			app_tb.setStructType(0, [binaryen.i64, binaryen.i32, binaryen.v128, binaryen.eqref].map((type, i) => ({
-				type,
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				packedType: i === 1 ? binaryen.i8 : binaryen.notPacked,
-				mutable:    false,
-			})));
-			app_tb.setArrayType(
-				1,
-				app_tb.getTempRefType(app_tb.getTempHeapType(0), true),
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				binaryen.notPacked,
-				true,
-			);
-			app_tb.setStructType(2, [binaryen.v128, app_tb.getTempRefType(app_tb.getTempHeapType(1), false)].map((type) => ({
-				type,
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				packedType: binaryen.notPacked,
-				mutable:    true,
-			})));
-			const [entry_type, internalarray_type, dict_type] = app_tb.buildAndDispose();
+			const entry_type:         binaryen.Type = cg.typeRegistry.get('DictEntry')!;
+			const internalarray_type: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
+			const dict_type:          binaryen.Type = cg.typeRegistry.get('Dict')!;
 			function Entry_primitive(id: number, code: binaryen.ExpressionRef): binaryen.ExpressionRef { // TODO: make these utilities!
 				return mod.struct.new([
 					mod.i64.const(id, 0), // TODO: use `bigint_to_i64`
