@@ -15,8 +15,25 @@ Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 
 // Codegen((STR.TEMPLATE `v`));
 
-// Codegen((TUPLE.NEW  `values`));
-// Codegen((RECORD.NEW `pairs`));
+Codegen((TUPLE.NEW)) := [
+	(type               $Tuple)
+	(struct.new_default $Tuple)
+];
+Codegen((TUPLE.NEW `values`)) := [
+	(type       $Tuple `values.map(WasmType)`)
+	(struct.new $Tuple `values.map(Codegen)`)
+];
+
+Codegen((RECORD.NEW)) := [
+	(type               $Record)
+	(struct.new_default $Record)
+];
+Codegen((RECORD.NEW `pairs`)) := [
+	`pairs.map((type $Entry_i (struct (field $key i64) (field $value `WasmType(pairs[i].1)`))))`
+	(type       $Record `pairs.hashMap((field $entry_i (ref $Entry_i)))`)
+	(struct.new $Record `pairs.hashMap((struct.new $Entry_i `pairs[i].0` `pairs[i].1`))`)
+];
+
 // Codegen((LIST.NEW   `values`));
 // Codegen((DICT.NEW   `pairs`));
 // Codegen((SET.NEW    `values`));
