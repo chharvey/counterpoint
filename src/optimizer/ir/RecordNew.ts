@@ -43,7 +43,7 @@ export class RecordNew extends Value {
 			tb.setStructType(0, []);
 			return cg.module.struct.new_default(tb.buildAndDispose()[0]);
 		}
-		/** An array of id–code pairs, which will go into the record’s struct. */
+		/** An array of `$Entry`s, which will go into the record’s struct. */
 		const entries = new Array<binaryen.ExpressionRef>(COUNT);
 		this.props.forEach(({value}, id) => {
 			const code: binaryen.ExpressionRef = value.codegen(cg);
@@ -53,8 +53,8 @@ export class RecordNew extends Value {
 			const prop_tb: TypeBuilder = new binaryen.TypeBuilder(1);
 			/*
 			 * (type $Entry (struct
-			 * 	(field $id   i64)
-			 * 	(field $code ‹type of value›)
+			 * 	(field $key   i64)
+			 * 	(field $value ‹type of value›)
 			 * ))
 			 */
 			prop_tb.setStructType(0, [binaryen.i64, binaryen.getExpressionType(code)].map((type) => ({

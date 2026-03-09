@@ -37,12 +37,9 @@ describe('IrNode', () => {
 				"hello";
 				"""hello {{ 42 }}""";
 				{42, 43, 44};
-				[a= 42, b= 43, c= 44];
 				{"a" -> 42, "b" -> 43, "c" -> 44};
-				[a= 42, b= 43, c= 44].[@a];
 				{42, 43, 44}.[42];
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"];
-				[a= 42, b= 43, c= 44].[@a]              = 43;
 				{42, 43, 44}.[42]                       = false;
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"] = 43;
 			}`, {lower: true, codegen: false, build: false});
@@ -55,10 +52,12 @@ describe('IrNode', () => {
 
 			// more cases
 			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ (42, 43, 44).0; }',          {lower: true, codegen: false, build: false}).opt.instructions[1], // (TUPLE.GET)
-				setupScript('{ (a= 42, b= 43, c= 44).a; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (RECORD.GET)
-				setupScript('{ [42, 43, 44].[0]; }',        {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.GET)
-				setupScript('{ [42, 43, 44].[0] = 43; }',   {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.SET)
+				setupScript('{ (42, 43, 44).0; }',                  {lower: true, codegen: false, build: false}).opt.instructions[1], // (TUPLE.GET)
+				setupScript('{ (a= 42, b= 43, c= 44).a; }',         {lower: true, codegen: false, build: false}).opt.instructions[1], // (RECORD.GET)
+				setupScript('{ [42, 43, 44].[0]; }',                {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.GET)
+				setupScript('{ [42, 43, 44].[0] = 43; }',           {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.SET)
+				setupScript('{ [a= 42, b= 43, c= 44].[@a]; }',      {lower: true, codegen: false, build: false}).opt.instructions[1], // (DICT.GET)
+				setupScript('{ [a= 42, b= 43, c= 44].[@a] = 43; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (DICT.SET)
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
@@ -263,6 +262,79 @@ describe('IrNode', () => {
 					], TEST_HEAPTYPE),
 				);
 			});
+		});
+
+		it('DICT.NEW returns (struct.new) with count and internal array.', () => {
+			const {goal, opt, cg} = setupScript(`{
+				val mut x: int = 42;
+				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
+			}`, {lower: true, codegen: true, build: false});
+			const mod = cg.module;
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			const app_tb: TypeBuilder = new binaryen.TypeBuilder(3); // TODO: a type-builder like this is used in application code. make a utility!
+			app_tb.setStructType(0, [binaryen.i64, binaryen.i32, binaryen.v128, binaryen.eqref].map((type, i) => ({
+				type,
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				packedType: i === 1 ? binaryen.i8 : binaryen.notPacked,
+				mutable:    false,
+			})));
+			app_tb.setArrayType(
+				1,
+				app_tb.getTempRefType(app_tb.getTempHeapType(0), true),
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				binaryen.notPacked,
+				true,
+			);
+			app_tb.setStructType(2, [binaryen.v128, app_tb.getTempRefType(app_tb.getTempHeapType(1), false)].map((type) => ({
+				type,
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				packedType: binaryen.notPacked,
+				mutable:    true,
+			})));
+			const [entry_type, internalarray_type, dict_type] = app_tb.buildAndDispose();
+			function Entry_primitive(id: number, code: binaryen.ExpressionRef): binaryen.ExpressionRef { // TODO: make these utilities!
+				return mod.struct.new([
+					mod.i64.const(id, 0), // TODO: use `bigint_to_i64`
+					mod.i32.const(0),
+					code,
+					mod.ref.null(binaryen.eqref),
+				], entry_type);
+			}
+			function Entry_composite(id: number, code: binaryen.ExpressionRef): binaryen.ExpressionRef {
+				return mod.struct.new([
+					mod.i64.const(id, 0), // TODO: use `bigint_to_i64`
+					mod.i32.const(1),
+					mod.v128.const(new Uint8Array(16)),
+					code,
+				], entry_type);
+			}
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(binaryen.getTypeFromHeapType(entry_type, true));
+			return assertEqualBins(
+				(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+				mod.block(null, [
+					mod.local.set(3, mod.array.new_default(internalarray_type, mod.i32.const(8))),
+					...[
+						WASM_NULL,
+						Entry_primitive(257, mod.local.get(0, binaryen.v128)),
+						Entry_primitive(258, genConst(mod, 4.2)),
+						Entry_composite(259, mod.local.get(1, binaryen.anyref)),
+						Entry_primitive(260, mod.local.get(2, binaryen.v128)),
+						Entry_primitive(261, genConst(mod, Symbol(0x105))),
+						WASM_NULL,
+						WASM_NULL,
+					].map((code, i) => mod.array.set(mod.local.get(3, internalarray_type), mod.i32.const(i), code)),
+					mod.struct.new([
+						new BinVect(mod, mod.i32.const(5)).vect,
+						mod.local.get(3, internalarray_type),
+					], dict_type),
+				], dict_type),
+			);
 		});
 
 		it('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {

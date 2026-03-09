@@ -86,7 +86,67 @@ Codegen((LIST.NEW `values`)) := [
 	)
 ];
 
-// Codegen((DICT.NEW   `pairs`));
+Codegen((DICT.NEW)) := [
+	(type $Entry (struct
+		(field $key       i64)
+		(field $tag       i8)
+		(field $primitive v128)
+		(field $composite eqref) ;; (ref null eq)
+	))
+	(type $InternalArray (array (mut (ref null $Entry))))
+	(type $Dict (struct
+		(field $count (mut v128))
+		(field $array (mut (ref $InternalArray)))
+	))
+	(block
+		(local.set $internal (array.new_default $InternalArray (i32.const 8)))
+		`[0...7].map((array.set
+			(local.get $internal)
+			(i32.const `i`)
+			(ref.null (ref null $Entry))
+		))`
+		(struct.new $Dict
+			(i32.const 0)
+			(local.get $internal)
+		)
+	)
+];
+Codegen((DICT.NEW `pairs`)) := [
+	(type $Entry (struct
+		(field $key       i64)
+		(field $tag       i8)
+		(field $primitive v128)
+		(field $composite eqref) ;; (ref null eq)
+	))
+	(type $InternalArray (array (mut (ref null $Entry))))
+	(type $Dict (struct
+		(field $count (mut v128))
+		(field $array (mut (ref $InternalArray)))
+	))
+	(block
+		(local.set $internal (array.new_default $InternalArray (i32.const 8)))
+		`pairs.hashMap((array.set
+			(local.get $internal)
+			(i32.const `i`)
+			(if `Codegen(pairs[i].1)` is v128 then (struct.new $Entry
+				(i64.const `pairs[i].0`)
+				(i32.const 0)
+				`Codegen(pairs[i].1)`
+				(ref.null eq)
+			) else (struct.new $Entry
+				(i64.const `pairs[i].0`)
+				(i32.const 1)
+				(v128.const 0)
+				`Codegen(pairs[i].1)`
+			))
+		))`
+		(struct.new $Dict
+			(i32.const 0)
+			(local.get $internal)
+		)
+	)
+];
+
 // Codegen((SET.NEW    `values`));
 // Codegen((MAP.NEW    `pairs`));
 

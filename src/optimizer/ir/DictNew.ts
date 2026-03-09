@@ -1,6 +1,9 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -10,6 +13,7 @@ import {
 	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
+import type {TypeBuilder} from '../../builder/-types.d.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
@@ -35,7 +39,119 @@ export class DictNew extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		// eslint-disable-next-line
+		const tb: TypeBuilder = new binaryen.TypeBuilder(3);
+		/*
+		 * (type $Entry (struct
+		 * 	(field $key       i64)
+		 * 	(field $tag       i8)    ;; 0 = primitive, 1 = composite
+		 * 	(field $primitive v128)
+		 * 	(field $composite eqref) ;; (ref null eq)
+		 * ))
+		 */
+		tb.setStructType(0, [binaryen.i64, binaryen.i32, binaryen.v128, binaryen.eqref].map((type, i) => ({
+			type,
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			packedType: i === 1 ? binaryen.i8 : binaryen.notPacked,
+			mutable:    false,
+		})));
+		/*
+		 * (type $InternalArray (array (mut (ref null $Entry)))) ;; mutable to allow reassigning array entries
+		 */
+		tb.setArrayType(
+			1,
+			tb.getTempRefType(tb.getTempHeapType(0), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			true,
+		);
+		/*
+		 * ;; precursor to the `Dict` class
+		 * (type $Dict (struct
+		 * 	(field $count (mut v128))                 ;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
+		 * 	(field $array (mut (ref $InternalArray))) ;; the array of values; mutable to allow reallocation
+		 * ))
+		 */
+		tb.setStructType(2, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(1), false)].map((type) => ({
+			type,
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			packedType: binaryen.notPacked,
+			mutable:    true,
+		})));
+		const [entry_type, internalarray_type, dict_type] = tb.buildAndDispose();
+
+		/**
+		 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
+		 * ```
+		 * $Dict[$array].length === max(8, $Dict[$count])
+		 * ```
+		 */
+		let capacity: number = 8;
+		while (capacity < this.props.size) {
+			capacity *= 2;
+		}
+
+		/**
+		 * An array of `$Entry`s, which will go into the internal array.
+		 * This array is sparse, because the number of items may be less than its capacity.
+		 */
+		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity);
+		this.props.forEach((value, {id}) => {
+			const code: binaryen.ExpressionRef = value.codegen(cg);
+			const entry: binaryen.ExpressionRef = binaryen.getExpressionType(code) === binaryen.v128
+				? cg.module.struct.new([
+					cg.module.i64.const(Number(id), 0), // TODO: use `bigint_to_i64`
+					cg.module.i32.const(0),
+					code,
+					cg.module.ref.null(binaryen.eqref),
+				], entry_type)
+				: cg.module.struct.new([
+					cg.module.i64.const(Number(id), 0), // TODO: use `bigint_to_i64`
+					cg.module.i32.const(1),
+					cg.module.v128.const(new Uint8Array(16)),
+					code,
+				], entry_type);
+			/**
+			 * Find a bucket in which to place the entry.
+			 * By default this will have index `id mod COUNT`,
+			 * but in the case of collisions we will use the *linear probing* technique.
+			 * @see https://en.wikipedia.org/wiki/Linear_probing
+			 */
+			function insertEntry(index: number): void {
+				if (!entries[index]) {
+					entries[index] = entry;
+					return;
+				}
+				return insertEntry((index + 1) % capacity);
+			}
+			insertEntry(Number(id) % capacity);
+		});
+
+
+		/*
+		 * create an empty raw array with the power of 2 capacity,
+		 * fill in the entries,
+		 * return a $Dict type with the $count and $array fields
+		 */
+		const internalarray_idx: number = Number(cg.nextLocalIndex());
+		return cg.module.block(null, [
+			cg.module.local.set(internalarray_idx, cg.module.array.new_default(internalarray_type, cg.module.i32.const(capacity))),
+			...[...entries].map((entry, i) => cg.module.array.set( // `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
+				cg.module.local.get(internalarray_idx, internalarray_type),
+				cg.module.i32.const(i),
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				entry ?? cg.module.ref.null(binaryen.getTypeFromHeapType(entry_type, true)),
+			)),
+			cg.module.struct.new([
+				new BinVect(cg.module, cg.module.i32.const(this.props.size)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
+				cg.module.local.get(internalarray_idx, internalarray_type),
+			], dict_type),
+		], dict_type);
 	}
 }
