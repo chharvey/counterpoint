@@ -6,6 +6,9 @@ import {
 	VALUE,
 	Optimizer,
 	IR,
+	Field_new,
+	ListEntry_new,
+	DictEntry_new,
 	Builder,
 	BinVect,
 } from '../../../src/index.ts';
@@ -155,33 +158,18 @@ describe('IrNode', () => {
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				const entry_type:         binaryen.Type = cg.typeRegistry.get('ListEntry')!;
 				const internalarray_type: binaryen.Type = cg.typeRegistry.get('ListInternal')!;
 				const list_type:          binaryen.Type = cg.typeRegistry.get('List')!;
-				function Entry_primitive(code: binaryen.ExpressionRef): binaryen.ExpressionRef { // TODO: make these utilities!
-					return mod.struct.new([
-						mod.i32.const(0),
-						code,
-						mod.ref.null(binaryen.eqref),
-					], entry_type);
-				}
-				function Entry_composite(code: binaryen.ExpressionRef): binaryen.ExpressionRef {
-					return mod.struct.new([
-						mod.i32.const(1),
-						mod.v128.const(new Uint8Array(16)),
-						code,
-					], entry_type);
-				}
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.block(null, [
 						mod.local.set(3, mod.array.new_default(internalarray_type, mod.i32.const(8))),
 						...[
-							Entry_primitive(mod.local.get(0, binaryen.v128)),
-							Entry_primitive(genConst(mod, 4.2)),
-							Entry_composite(mod.local.get(1, binaryen.anyref)), // composite
-							Entry_primitive(mod.local.get(2, binaryen.v128)),
-							Entry_primitive(genConst(mod, Symbol(0x101))),
+							ListEntry_new(cg, mod.local.get(0, binaryen.v128)),
+							ListEntry_new(cg, genConst(mod, 4.2)),
+							ListEntry_new(cg, mod.local.get(1, binaryen.anyref)), // composite
+							ListEntry_new(cg, mod.local.get(2, binaryen.v128)),
+							ListEntry_new(cg, genConst(mod, Symbol(0x101))),
 						].map((code, i) => mod.array.set(mod.local.get(3, internalarray_type), mod.i32.const(i), code)),
 						mod.struct.new([
 							new BinVect(mod, mod.i32.const(5)).vect,
@@ -220,13 +208,7 @@ describe('IrNode', () => {
 				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 				// eslint-disable-next-line
 				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
-				[binaryen.v128, binaryen.structref].forEach((valuetype, i) => entry_tb.setStructType(i, [binaryen.i64, valuetype].map((type) => ({
-					type,
-					// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-					// eslint-disable-next-line
-					packedType: binaryen.notPacked,
-					mutable:    false,
-				}))));
+				[binaryen.v128, binaryen.structref].forEach((valuetype, i) => entry_tb.setStructType(i, [binaryen.i64, valuetype].map((typ) => Field_new(typ))));
 				const registry: readonly binaryen.Type[] = entry_tb.buildAndDispose();
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
@@ -247,39 +229,22 @@ describe('IrNode', () => {
 				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 			}`, {lower: true, codegen: true, build: false});
 			const mod = cg.module;
-			const entry_type:         binaryen.Type = cg.typeRegistry.get('DictEntry')!;
 			const internalarray_type: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
 			const dict_type:          binaryen.Type = cg.typeRegistry.get('Dict')!;
-			function Entry_primitive(id: number, code: binaryen.ExpressionRef): binaryen.ExpressionRef { // TODO: make these utilities!
-				return mod.struct.new([
-					mod.i64.const(id, 0), // TODO: use `bigint_to_i64`
-					mod.i32.const(0),
-					code,
-					mod.ref.null(binaryen.eqref),
-				], entry_type);
-			}
-			function Entry_composite(id: number, code: binaryen.ExpressionRef): binaryen.ExpressionRef {
-				return mod.struct.new([
-					mod.i64.const(id, 0), // TODO: use `bigint_to_i64`
-					mod.i32.const(1),
-					mod.v128.const(new Uint8Array(16)),
-					code,
-				], entry_type);
-			}
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			// eslint-disable-next-line
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(binaryen.getTypeFromHeapType(entry_type, true));
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(binaryen.getTypeFromHeapType(cg.typeRegistry.get('DictEntry')!, true));
 			return assertEqualBins(
 				(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 				mod.block(null, [
 					mod.local.set(3, mod.array.new_default(internalarray_type, mod.i32.const(8))),
 					...[
 						WASM_NULL,
-						Entry_primitive(257, mod.local.get(0, binaryen.v128)),
-						Entry_primitive(258, genConst(mod, 4.2)),
-						Entry_composite(259, mod.local.get(1, binaryen.anyref)),
-						Entry_primitive(260, mod.local.get(2, binaryen.v128)),
-						Entry_primitive(261, genConst(mod, Symbol(0x105))),
+						DictEntry_new(cg, 257n, mod.local.get(0, binaryen.v128)),
+						DictEntry_new(cg, 258n, genConst(mod, 4.2)),
+						DictEntry_new(cg, 259n, mod.local.get(1, binaryen.anyref)),
+						DictEntry_new(cg, 260n, mod.local.get(2, binaryen.v128)),
+						DictEntry_new(cg, 261n, genConst(mod, Symbol(0x105))),
 						WASM_NULL,
 						WASM_NULL,
 					].map((code, i) => mod.array.set(mod.local.get(3, internalarray_type), mod.i32.const(i), code)),

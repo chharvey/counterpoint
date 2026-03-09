@@ -1,6 +1,7 @@
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	DictEntry_new,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -39,7 +40,6 @@ export class DictNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const entry_type:         binaryen.Type = cg.typeRegistry.get('DictEntry')!;
 		const internalarray_type: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
 		const dict_type:          binaryen.Type = cg.typeRegistry.get('Dict')!;
 
@@ -60,20 +60,7 @@ export class DictNew extends Value {
 		 */
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity);
 		this.props.forEach((value, {id}) => {
-			const code: binaryen.ExpressionRef = value.codegen(cg);
-			const entry: binaryen.ExpressionRef = binaryen.getExpressionType(code) === binaryen.v128
-				? cg.module.struct.new([
-					cg.module.i64.const(Number(id), 0), // TODO: use `bigint_to_i64`
-					cg.module.i32.const(0),
-					code,
-					cg.module.ref.null(binaryen.eqref),
-				], entry_type)
-				: cg.module.struct.new([
-					cg.module.i64.const(Number(id), 0), // TODO: use `bigint_to_i64`
-					cg.module.i32.const(1),
-					cg.module.v128.const(new Uint8Array(16)),
-					code,
-				], entry_type);
+			const entry: binaryen.ExpressionRef = DictEntry_new(cg, id, value.codegen(cg));
 			/**
 			 * Find a bucket in which to place the entry.
 			 * By default this will have index `id mod COUNT`,
@@ -90,7 +77,6 @@ export class DictNew extends Value {
 			insertEntry(Number(id) % capacity);
 		});
 
-
 		/*
 		 * create an empty raw array with the power of 2 capacity,
 		 * fill in the entries,
@@ -104,7 +90,7 @@ export class DictNew extends Value {
 				cg.module.i32.const(i),
 				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 				// eslint-disable-next-line
-				entry ?? cg.module.ref.null(binaryen.getTypeFromHeapType(entry_type, true)),
+				entry ?? cg.module.ref.null(binaryen.getTypeFromHeapType(cg.typeRegistry.get('DictEntry')!, true)),
 			)),
 			cg.module.struct.new([
 				new BinVect(cg.module, cg.module.i32.const(this.props.size)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`

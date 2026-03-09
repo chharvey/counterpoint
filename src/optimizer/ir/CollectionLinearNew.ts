@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	Field_new,
+	ListEntry_new,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -63,7 +64,6 @@ export class CollectionLinearNew extends Value {
 				return cg.module.struct.new(codes, tb.buildAndDispose()[0]);
 			}
 			case TypeName.LIST: {
-				const entry_type:         binaryen.Type = cg.typeRegistry.get('ListEntry')!;
 				const internalarray_type: binaryen.Type = cg.typeRegistry.get('ListInternal')!;
 				const list_type:          binaryen.Type = cg.typeRegistry.get('List')!;
 
@@ -86,23 +86,10 @@ export class CollectionLinearNew extends Value {
 				const internalarray_idx: number = Number(cg.nextLocalIndex());
 				return cg.module.block(null, [
 					cg.module.local.set(internalarray_idx, cg.module.array.new_default(internalarray_type, cg.module.i32.const(capacity))),
-					...this.items.map((item) => {
-						const code: binaryen.ExpressionRef = item.codegen(cg);
-						return binaryen.getExpressionType(code) === binaryen.v128
-							? cg.module.struct.new([
-								cg.module.i32.const(0),
-								code,
-								cg.module.ref.null(binaryen.eqref),
-							], entry_type)
-							: cg.module.struct.new([
-								cg.module.i32.const(1),
-								cg.module.v128.const(new Uint8Array(16)),
-								code,
-							], entry_type);
-					}).map((entry, i) => cg.module.array.set(
+					...this.items.map((item, i) => cg.module.array.set(
 						cg.module.local.get(internalarray_idx, internalarray_type),
 						cg.module.i32.const(i),
-						entry,
+						ListEntry_new(cg, item.codegen(cg)),
 					)),
 					cg.module.struct.new([
 						new BinVect(cg.module, cg.module.i32.const(this.items.length)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
