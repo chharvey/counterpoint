@@ -202,61 +202,86 @@ export class Builder {
 	#setupTypes(): void {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		// eslint-disable-next-line
-		const tb: TypeBuilder = new binaryen.TypeBuilder(7);
+		const tb: TypeBuilder = new binaryen.TypeBuilder();
+
+		let type_count: number = 0;
 
 		/* (type $Object ...) */
-		tb.setStructType(0, []);
-		tb.setOpen(0);
+		const i_object: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_object, []);
+		tb.setOpen(i_object);
 
 		/* (type $Value ...) */
-		tb.setStructType(1, [binaryen.i32, binaryen.v128, tb.getTempRefType(tb.getTempHeapType(0), true)].map((typ, i) => Field_new(typ, i === 0 ? 'i8' : 'notPacked')));
+		const i_value: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_value, [
+			Field_new(binaryen.i32, 'i8'),
+			Field_new(binaryen.v128),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_object), true)),
+		]);
 
 		/* (type $ListInternal ...) */
+		const i_list_internal: number = type_count++;
+		tb.grow(1);
 		tb.setArrayType(
-			2,
-			tb.getTempRefType(tb.getTempHeapType(1), true),
+			i_list_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_value), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
+
 		/* (type $List ...) */
-		tb.setStructType(3, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(2), false)].map((typ) => Field_new(typ, 'notPacked', true)));
-		tb.setSubType(3, tb.getTempHeapType(0));
-		tb.setOpen(3);
+		const i_list: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_list, [
+			Field_new(binaryen.v128, 'notPacked', true),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_list, tb.getTempHeapType(i_object));
+		tb.setOpen(i_list);
 
 		/* (type $DictEntry ...) */
-		tb.setStructType(4, [binaryen.i64, tb.getTempRefType(tb.getTempHeapType(1), false)].map((typ) => Field_new(typ)));
+		const i_dict_entry: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_dict_entry, [
+			Field_new(binaryen.i64),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		]);
+
 		/* (type $DictInternal ...) */
+		const i_dict_internal: number = type_count++;
+		tb.grow(1);
 		tb.setArrayType(
-			5,
-			tb.getTempRefType(tb.getTempHeapType(4), true),
+			i_dict_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_dict_entry), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
+
 		/* (type $Dict ...) */
-		tb.setStructType(6, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(5), false)].map((typ) => Field_new(typ, 'notPacked', true)));
-		tb.setSubType(6, tb.getTempHeapType(0));
-		tb.setOpen(6);
+		const i_dict: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_dict, [
+			Field_new(binaryen.v128, 'notPacked', true),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
+		tb.setOpen(i_dict);
 
-		const [
-			/* eslint-disable @stylistic/array-element-newline */
-			object_t,
-			value_t,
-			list_internal_t, list_t,
-			dict_entry_t, dict_internal_t, dict_t,
-			/* eslint-enable @stylistic/array-element-newline */
-		] = tb.buildAndDispose();
+		const heap_types: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		this.#typeRegistry.set('Object',       object_t);
-		this.#typeRegistry.set('Value',        value_t);
-		this.#typeRegistry.set('ListInternal', list_internal_t);
-		this.#typeRegistry.set('List',         list_t);
-		this.#typeRegistry.set('DictEntry',    dict_entry_t);
-		this.#typeRegistry.set('DictInternal', dict_internal_t);
-		this.#typeRegistry.set('Dict',         dict_t);
+		this.#typeRegistry.set('Object',       heap_types[i_object]);
+		this.#typeRegistry.set('Value',        heap_types[i_value]);
+		this.#typeRegistry.set('ListInternal', heap_types[i_list_internal]);
+		this.#typeRegistry.set('List',         heap_types[i_list]);
+		this.#typeRegistry.set('DictEntry',    heap_types[i_dict_entry]);
+		this.#typeRegistry.set('DictInternal', heap_types[i_dict_internal]);
+		this.#typeRegistry.set('Dict',         heap_types[i_dict]);
 	}
 
 	#binOpFunction(
