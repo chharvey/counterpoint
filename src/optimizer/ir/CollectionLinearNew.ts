@@ -2,7 +2,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	Field_new,
-	ListEntry_new,
+	Value_new,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -64,8 +64,8 @@ export class CollectionLinearNew extends Value {
 				return cg.module.struct.new(codes, tb.buildAndDispose()[0]);
 			}
 			case TypeName.LIST: {
-				const internalarray_type: binaryen.Type = cg.typeRegistry.get('ListInternal')!;
-				const list_type:          binaryen.Type = cg.typeRegistry.get('List')!;
+				const t_list_internal: binaryen.Type = cg.typeRegistry.get('ListInternal')!;
+				const t_list:          binaryen.Type = cg.typeRegistry.get('List')!;
 
 				/**
 				 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
@@ -85,17 +85,17 @@ export class CollectionLinearNew extends Value {
 				 */
 				const internalarray_idx: number = Number(cg.nextLocalIndex());
 				return cg.module.block(null, [
-					cg.module.local.set(internalarray_idx, cg.module.array.new_default(internalarray_type, cg.module.i32.const(capacity))),
+					cg.module.local.set(internalarray_idx, cg.module.array.new_default(t_list_internal, cg.module.i32.const(capacity))),
 					...this.items.map((item, i) => cg.module.array.set(
-						cg.module.local.get(internalarray_idx, internalarray_type),
+						cg.module.local.get(internalarray_idx, t_list_internal),
 						cg.module.i32.const(i),
-						ListEntry_new(cg, item.codegen(cg)),
+						Value_new(cg, item.codegen(cg)),
 					)),
 					cg.module.struct.new([
 						new BinVect(cg.module, cg.module.i32.const(this.items.length)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
-						cg.module.local.get(internalarray_idx, internalarray_type),
-					], list_type),
-				], list_type);
+						cg.module.local.get(internalarray_idx, t_list_internal),
+					], t_list),
+				], t_list);
 			}
 		}
 		throw new Error('not yet supported.');
