@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	AST,
 	VALUE,
+	TYPE,
 	Optimizer,
 	IR,
 	Field_new,
@@ -189,17 +190,15 @@ describe('IrNode', () => {
 				tb.setStructType(0, []);
 				TEST_HEAPTYPE = tb.buildAndDispose()[0];
 			});
-			it('empty record returns (struct.new_default).', () => {
-				const {goal, opt, cg} = setupScript(`{
-					();
-				}`, {lower: true, codegen: false, build: false});
-				const mod = cg.module;
+			it('empty RECORD.NEW returns (struct.new_default).', () => {
+				// there exists no syntax for empty records, so constructing it manually
+				const cg = new Builder();
 				return assertEqualBins(
-					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new_default(TEST_HEAPTYPE),
+					new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
+					cg.module.struct.new_default(TEST_HEAPTYPE),
 				);
 			});
-			it('record returns (struct.new).', () => {
+			it('RECORD.NEW returns (struct.new).', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
