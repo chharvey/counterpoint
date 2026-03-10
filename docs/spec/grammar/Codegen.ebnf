@@ -49,11 +49,11 @@ Codegen((LIST.NEW `values`)) := [
 		`values.map((array.set
 			(local.get $internal)
 			(i32.const `i`)
-			(if `Codegen(value)` is v128 then (struct.new $ListEntry
+			(if `Codegen(value)` is v128 then (struct.new $Value
 				(i32.const 0)
 				`Codegen(value)`
 				(ref.null eq)
-			) else (struct.new $ListEntry
+			) else (struct.new $Value
 				(i32.const 1)
 				(v128.const 0)
 				`Codegen(value)`

@@ -40,8 +40,8 @@ export class DictNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const internalarray_type: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
-		const dict_type:          binaryen.Type = cg.typeRegistry.get('Dict')!;
+		const dict_internal_t: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
+		const dict_t:          binaryen.Type = cg.typeRegistry.get('Dict')!;
 
 		/**
 		 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
@@ -84,9 +84,9 @@ export class DictNew extends Value {
 		 */
 		const internalarray_idx: number = Number(cg.nextLocalIndex());
 		return cg.module.block(null, [
-			cg.module.local.set(internalarray_idx, cg.module.array.new_default(internalarray_type, cg.module.i32.const(capacity))),
+			cg.module.local.set(internalarray_idx, cg.module.array.new_default(dict_internal_t, cg.module.i32.const(capacity))),
 			...[...entries].map((entry, i) => cg.module.array.set( // `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
-				cg.module.local.get(internalarray_idx, internalarray_type),
+				cg.module.local.get(internalarray_idx, dict_internal_t),
 				cg.module.i32.const(i),
 				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 				// eslint-disable-next-line
@@ -94,8 +94,8 @@ export class DictNew extends Value {
 			)),
 			cg.module.struct.new([
 				new BinVect(cg.module, cg.module.i32.const(this.props.size)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
-				cg.module.local.get(internalarray_idx, internalarray_type),
-			], dict_type),
-		], dict_type);
+				cg.module.local.get(internalarray_idx, dict_internal_t),
+			], dict_t),
+		], dict_t);
 	}
 }

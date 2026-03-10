@@ -1,15 +1,16 @@
 ;; # Common Types
 
-
-;; type of entry in every List
-(type $ListEntry (struct
+;; a Counterpoint value
+(type $Value (struct
 	(field $tag       i8)    ;; 0 = primitive, 1 = composite
 	(field $primitive v128)
 	(field $composite eqref) ;; (ref null eq)
 ))
 
+
+
 ;; internal holding of List items
-(type $ListInternal (array (mut (ref null $ListEntry)))) ;; mutable to allow reassigning array entries
+(type $ListInternal (array (mut (ref null $Value)))) ;; mutable to allow reassigning array entries
 
 ;; precursor to the `List` class
 (type $List (struct

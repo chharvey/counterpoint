@@ -204,8 +204,9 @@ export class Builder {
 		// eslint-disable-next-line
 		const tb: TypeBuilder = new binaryen.TypeBuilder(6);
 
-		/* (type $ListEntry ...) */
+		/* (type $Value ...) */
 		tb.setStructType(0, [binaryen.i32, binaryen.v128, binaryen.eqref].map((typ, i) => Field_new(typ, i === 0 ? 'i8' : 'notPacked')));
+
 		/* (type $ListInternal ...) */
 		tb.setArrayType(
 			1,
@@ -217,6 +218,7 @@ export class Builder {
 		);
 		/* (type $List ...) */
 		tb.setStructType(2, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(1), false)].map((typ) => Field_new(typ, 'notPacked', true)));
+
 		/* (type $DictEntry ...) */
 		tb.setStructType(3, [binaryen.i64, binaryen.i32, binaryen.v128, binaryen.eqref].map((typ, i) => Field_new(typ, i === 1 ? 'i8' : 'notPacked')));
 		/* (type $DictInternal ...) */
@@ -233,15 +235,16 @@ export class Builder {
 
 		const [
 			/* eslint-disable @stylistic/array-element-newline */
-			list_item_t, list_internal_t, list_t,
-			dict_item_t, dict_internal_t, dict_t,
+			value_t,
+			list_internal_t, list_t,
+			dict_entry_t, dict_internal_t, dict_t,
 			/* eslint-enable @stylistic/array-element-newline */
 		] = tb.buildAndDispose();
 
-		this.#typeRegistry.set('ListEntry',    list_item_t);
+		this.#typeRegistry.set('Value',        value_t);
 		this.#typeRegistry.set('ListInternal', list_internal_t);
 		this.#typeRegistry.set('List',         list_t);
-		this.#typeRegistry.set('DictEntry',    dict_item_t);
+		this.#typeRegistry.set('DictEntry',    dict_entry_t);
 		this.#typeRegistry.set('DictInternal', dict_internal_t);
 		this.#typeRegistry.set('Dict',         dict_t);
 	}
