@@ -220,7 +220,7 @@ export class Builder {
 		tb.setStructType(2, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(1), false)].map((typ) => Field_new(typ, 'notPacked', true)));
 
 		/* (type $DictEntry ...) */
-		tb.setStructType(3, [binaryen.i64, binaryen.i32, binaryen.v128, binaryen.eqref].map((typ, i) => Field_new(typ, i === 1 ? 'i8' : 'notPacked')));
+		tb.setStructType(3, [binaryen.i64, tb.getTempRefType(tb.getTempHeapType(0), false)].map((typ) => Field_new(typ)));
 		/* (type $DictInternal ...) */
 		tb.setArrayType(
 			4,

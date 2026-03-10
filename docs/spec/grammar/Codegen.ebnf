@@ -88,14 +88,18 @@ Codegen((DICT.NEW `pairs`)) := [
 			(i32.const `i`)
 			(if `Codegen(pairs[i].1)` is v128 then (struct.new $DictEntry
 				(i64.const `pairs[i].0`)
-				(i32.const 0)
-				`Codegen(pairs[i].1)`
-				(ref.null eq)
+				(struct.new $Value
+					(i32.const 0)
+					`Codegen(pairs[i].1)`
+					(ref.null eq)
+				)
 			) else (struct.new $DictEntry
 				(i64.const `pairs[i].0`)
-				(i32.const 1)
-				(v128.const 0)
-				`Codegen(pairs[i].1)`
+				(struct.new $Value
+					(i32.const 1)
+					(v128.const 0)
+					`Codegen(pairs[i].1)`
+				)
 			))
 		))`
 		(struct.new $Dict

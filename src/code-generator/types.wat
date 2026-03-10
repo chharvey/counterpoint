@@ -22,10 +22,8 @@
 
 ;; type of entry in every Dict
 (type $DictEntry (struct
-	(field $key       i64)
-	(field $tag       i8)    ;; 0 = primitive, 1 = composite
-	(field $primitive v128)
-	(field $composite eqref) ;; (ref null eq)
+	(field $key   i64)
+	(field $value (ref $Value))
 ))
 
 ;; internal holding of Dict entries

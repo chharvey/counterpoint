@@ -34,18 +34,8 @@ export function Value_new(cg: Builder, code: binaryen.ExpressionRef): binaryen.E
 
 
 export function DictEntry_new(cg: Builder, id: bigint, code: binaryen.ExpressionRef): binaryen.ExpressionRef {
-	const dict_entry_t: binaryen.Type = cg.typeRegistry.get('DictEntry')!;
-	return binaryen.getExpressionType(code) === binaryen.v128
-		? cg.module.struct.new([
-			cg.module.i64.const(Number(id), 0), // TODO: v0.5: use `bigint_to_i64`
-			cg.module.i32.const(0),
-			code,
-			cg.module.ref.null(binaryen.eqref),
-		], dict_entry_t)
-		: cg.module.struct.new([
-			cg.module.i64.const(Number(id), 0), // TODO: v0.5: use `bigint_to_i64`
-			cg.module.i32.const(1),
-			cg.module.v128.const(new Uint8Array(16)),
-			code,
-		], dict_entry_t);
+	return cg.module.struct.new([
+		cg.module.i64.const(Number(id), 0), // TODO: v0.5: use `bigint_to_i64`
+		Value_new(cg, code),
+	], cg.typeRegistry.get('DictEntry')!);
 }
