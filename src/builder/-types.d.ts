@@ -24,7 +24,7 @@ export interface BinaryenModuleUpdates extends binaryen.Module {
 		init_elem(name: string, ref: binaryen.ExpressionRef, index: binaryen.ExpressionRef, offset: binaryen.ExpressionRef, size: binaryen.ExpressionRef): binaryen.ExpressionRef,
 	};
 }
-type Field = {
+export type Field = {
 	type:       binaryen.Type,
 	packedType: binaryen.Type,
 	mutable:    boolean,
@@ -36,13 +36,13 @@ export interface TypeBuilder {
 	setStructType(index: number, fields: Field[]): void;
 	setArrayType(index: number, elementType: binaryen.Type, elementPackedType: binaryen.Type, elementMutable: boolean): void;
 	getTempHeapType(index: number): binaryen.Type;
+	getTempRefType(heapType: binaryen.Type, nullable: boolean): binaryen.Type;
+	setSubType(index: number, superType: binaryen.Type): void;
+	setOpen(index: number): void;
 	buildAndDispose(): binaryen.Type[];
 
 	/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 	getTempTupleType: Function;
-	getTempRefType:   Function;
-	setSubType:       Function;
-	setOpen:          Function;
 	createRecGroup:   Function;
 	/* eslint-enable @typescript-eslint/no-unsafe-function-type */
 }

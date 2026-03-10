@@ -5,9 +5,16 @@ import * as xjs from 'extrajs';
 import {
 	type AST,
 	VALUE,
+	TYPE,
 	IR,
+	Field_new,
+	Value_new,
+	DictEntry_new,
+	bigint_to_i64,
 	Builder,
+	BinVect,
 } from '../../../src/index.ts';
+import type {TypeBuilder} from '../../../src/builder/-types.d.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {
 	setupScript,
@@ -19,33 +26,32 @@ import {
 test.suite('IrNode', () => {
 	test.suite('#codegen', () => {
 		test.test('is not yet supported.', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				"hello";
 				"""hello {{ 42 }}""";
-				(42, 43, 44);
-				[42, 43, 44];
 				{42, 43, 44};
-				(a= 42, b= 43, c= 44);
-				[a= 42, b= 43, c= 44];
 				{"a" -> 42, "b" -> 43, "c" -> 44};
-				(42, 43, 44).0;
-				(a= 42, b= 43, c= 44).a;
-				[42, 43, 44].[0];
-				[a= 42, b= 43, c= 44].[@a];
 				{42, 43, 44}.[42];
 				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"];
-				set [42, 43, 44].[0]                        = 43;
-				set [a= 42, b= 43, c= 44].[@a]              = 43;
 				set {42, 43, 44}.[42]                       = false;
 				set {"a" -> 42, "b" -> 43, "c" -> 44}.["a"] = 43;
-			}`, {lower: true, build: false});
-			const cg = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			xjs.Array.forEachAggregated([
 				...opt.instructions,
 				new IR.Label('label1'),
 				new IR.Goto(new IR.Label('label2')),
 				new IR.GotoIfFalse(new IR.Const(VALUE.NULL), new IR.Label('label2')),
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
+
+			// more cases
+			xjs.Array.forEachAggregated<IR.Instruction>([
+				setupScript('{ (42, 43, 44).0; }',                      {lower: true, codegen: false, build: false}).opt.instructions[1], // (TUPLE.GET)
+				setupScript('{ (a= 42, b= 43, c= 44).a; }',             {lower: true, codegen: false, build: false}).opt.instructions[1], // (RECORD.GET)
+				setupScript('{ [42, 43, 44].[0]; }',                    {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.GET)
+				setupScript('{ set [42, 43, 44].[0] = 43; }',           {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.SET)
+				setupScript('{ [a= 42, b= 43, c= 44].[@a]; }',          {lower: true, codegen: false, build: false}).opt.instructions[1], // (DICT.GET)
+				setupScript('{ set [a= 42, b= 43, c= 44].[@a] = 43; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (DICT.SET)
+			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
 		test.test('Trap returns (unreachable).', () => {
@@ -54,14 +60,13 @@ test.suite('IrNode', () => {
 		});
 
 		test.test('Const returns (v128.const).', () => {
-			const {stmts, opt} = setupScript(`{
+			const {stmts, opt, cg} = setupScript(`{
 				null;
 				false;
 				@hello;
 				42;
 				4.2;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -76,7 +81,7 @@ test.suite('IrNode', () => {
 		});
 
 		test.test('Get returns (local.get).', () => {
-			const {stmts, opt} = setupScript(`{
+			const {stmts, opt, cg} = setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
 				val mut c: sym   = @hello;
@@ -88,19 +93,154 @@ test.suite('IrNode', () => {
 				c;
 				d;
 				e;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
-			opt.instructions.slice(0, 5).map((instr) => (instr).codegen(cg));
+			opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
 			return assertEqualBins(
 				stmts.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					mod.local.get(0, binaryen.f32),
-					mod.local.get(1, binaryen.f32),
-					mod.local.get(2, binaryen.f32),
-					mod.local.get(3, binaryen.f32),
-					mod.local.get(4, binaryen.f32),
+					mod.local.get(0, binaryen.v128),
+					mod.local.get(1, binaryen.v128),
+					mod.local.get(2, binaryen.v128),
+					mod.local.get(3, binaryen.v128),
+					mod.local.get(4, binaryen.v128),
 				],
+			);
+		});
+
+		test.suite('CollectionLinearNew', () => {
+			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
+			test.before(() => {
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
+				tb.setStructType(0, []);
+				TEST_HEAPTYPE = tb.buildAndDispose()[0];
+			});
+			test.test('empty TUPLE.NEW returns (struct.new_default).', () => {
+				const {stmts, opt, cg} = setupScript(`{
+					();
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				return assertEqualBins(
+					(stmts[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.struct.new_default(TEST_HEAPTYPE),
+				);
+			});
+			test.test('TUPLE.NEW returns (struct.new).', () => {
+				const {stmts, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					(x, 4.2, (null,));
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				return assertEqualBins(
+					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.struct.new([
+						mod.local.get(0, binaryen.v128),
+						genConst(mod, 4.2),
+						mod.local.get(1, binaryen.anyref),
+					], TEST_HEAPTYPE),
+				);
+			});
+			test.test('LIST.NEW returns (struct.new) with count and internal array.', () => {
+				const {stmts, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					[x, 4.2, (null,), x/2, @e];
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				const t_list_internal: binaryen.Type = cg.typeRegistry.get('ListInternal')!;
+				const t_list:          binaryen.Type = cg.typeRegistry.get('List')!;
+				return assertEqualBins(
+					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.block(null, [
+						mod.local.set(3, mod.array.new_default(t_list_internal, mod.i32.const(8))),
+						...[
+							Value_new(cg, mod.local.get(0, binaryen.v128)),
+							Value_new(cg, genConst(mod, 4.2)),
+							Value_new(cg, mod.local.get(1, binaryen.anyref)), // composite
+							Value_new(cg, mod.local.get(2, binaryen.v128)),
+							Value_new(cg, genConst(mod, Symbol(0x101))),
+						].map((code, i) => mod.array.set(mod.local.get(3, t_list_internal), mod.i32.const(i), code)),
+						mod.struct.new([
+							new BinVect(mod, bigint_to_i64(mod, 5n)).vect,
+							mod.local.get(3, t_list_internal),
+						], t_list),
+					], t_list),
+				);
+			});
+		});
+
+		test.suite('RecordNew', () => {
+			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
+			test.before(() => {
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
+				tb.setStructType(0, []);
+				TEST_HEAPTYPE = tb.buildAndDispose()[0];
+			});
+			test.test('empty RECORD.NEW returns (struct.new_default).', () => {
+				// there exists no syntax for empty records, so constructing it manually
+				const cg = new Builder();
+				return assertEqualBins(
+					new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
+					cg.module.struct.new_default(TEST_HEAPTYPE),
+				);
+			});
+			test.test('RECORD.NEW returns (struct.new).', () => {
+				const {stmts, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
+				[binaryen.v128, binaryen.structref].forEach((valuetype, i) => entry_tb.setStructType(i, [binaryen.i64, valuetype].map((typ) => Field_new(typ))));
+				const registry: readonly binaryen.Type[] = entry_tb.buildAndDispose();
+				return assertEqualBins(
+					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					mod.struct.new([
+						mod.struct.new([mod.i64.const(260, 0), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						mod.struct.new([mod.i64.const(261, 0), genConst(mod, Symbol(0x105))],      registry[0]),
+						mod.struct.new([mod.i64.const(257, 0), mod.local.get(0, binaryen.v128)],   registry[0]),
+						mod.struct.new([mod.i64.const(258, 0), genConst(mod, 4.2)],                registry[0]),
+						mod.struct.new([mod.i64.const(259, 0), mod.local.get(1, binaryen.anyref)], registry[1]),
+					], TEST_HEAPTYPE),
+				);
+			});
+		});
+
+		test.test('DICT.NEW returns (struct.new) with count and internal array.', () => {
+			const {stmts, opt, cg} = setupScript(`{
+				val mut x: int = 42;
+				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
+			}`, {lower: true, codegen: true, build: false});
+			const mod = cg.module;
+			const t_dict_internal: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
+			const t_dict:          binaryen.Type = cg.typeRegistry.get('Dict')!;
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(binaryen.getTypeFromHeapType(cg.typeRegistry.get('DictEntry')!, true));
+			return assertEqualBins(
+				(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+				mod.block(null, [
+					mod.local.set(3, mod.array.new_default(t_dict_internal, mod.i32.const(8))),
+					...[
+						WASM_NULL,
+						DictEntry_new(cg, 257n, mod.local.get(0, binaryen.v128)),
+						DictEntry_new(cg, 258n, genConst(mod, 4.2)),
+						DictEntry_new(cg, 259n, mod.local.get(1, binaryen.anyref)),
+						DictEntry_new(cg, 260n, mod.local.get(2, binaryen.v128)),
+						DictEntry_new(cg, 261n, genConst(mod, Symbol(0x105))),
+						WASM_NULL,
+						WASM_NULL,
+					].map((code, i) => mod.array.set(mod.local.get(3, t_dict_internal), mod.i32.const(i), code)),
+					mod.struct.new([
+						new BinVect(mod, bigint_to_i64(mod, 5n)).vect,
+						mod.local.get(3, t_dict_internal),
+					], t_dict),
+				], t_dict),
 			);
 		});
 
@@ -114,14 +254,7 @@ test.suite('IrNode', () => {
 				vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
 			} as const;
 
-			const {stmts, opt} = setupScript(`{
-				int   +42;
-				int   4.2;
-				nat   42;
-				nat   4.2;
-				float +42;
-				float 42;
-
+			const {stmts, opt, cg} = setupScript(`{
 				!null;
 				!false;
 				!@hello;
@@ -136,19 +269,18 @@ test.suite('IrNode', () => {
 
 				-(42);
 				-(4.2);
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+
+				int   +42;
+				int   4.2;
+				nat   42;
+				nat   4.2;
+				float +42;
+				float 42;
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					CALL.vtoi(mod, genConst(mod, 42n, 'nat')),
-					CALL.vtoi(mod, genConst(mod, 4.2)),
-					CALL.vton(mod, genConst(mod, 42n)),
-					CALL.vton(mod, genConst(mod, 4.2)),
-					CALL.vtof(mod, genConst(mod, 42n, 'nat')),
-					CALL.vtof(mod, genConst(mod, 42n)),
-
 					CALL.vnot(mod, genConst(mod)),
 					CALL.vnot(mod, genConst(mod, false)),
 					CALL.vnot(mod, genConst(mod, Symbol(0x100))),
@@ -163,6 +295,13 @@ test.suite('IrNode', () => {
 
 					CALL.vneg(mod, genConst(mod, 42n)),
 					CALL.vneg(mod, genConst(mod, 4.2)),
+
+					CALL.vtoi(mod, genConst(mod, 42n, 'nat')),
+					CALL.vtoi(mod, genConst(mod, 4.2)),
+					CALL.vton(mod, genConst(mod, 42n)),
+					CALL.vton(mod, genConst(mod, 4.2)),
+					CALL.vtof(mod, genConst(mod, 42n, 'nat')),
+					CALL.vtof(mod, genConst(mod, 42n)),
 				],
 			);
 		});
@@ -188,7 +327,7 @@ test.suite('IrNode', () => {
 				veq:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',     [arg0, arg1], binaryen.v128),
 			} as const;
 
-			const {stmts, opt} = setupScript(`{
+			const {stmts, opt, cg} = setupScript(`{
 				2 + 3;
 				2 - 3;
 				2 * 3;
@@ -214,8 +353,7 @@ test.suite('IrNode', () => {
 
 				2.0 === 3;
 				2.0 ==  3;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -250,17 +388,16 @@ test.suite('IrNode', () => {
 		});
 
 		test.test('Drop returns (drop).', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				null;
 				false;
 				@hello;
 				42;
 				4.2;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => (instr).codegen(cg)),
+				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
 					mod.drop(genConst(mod)),
 					mod.drop(genConst(mod, false)),
@@ -272,17 +409,16 @@ test.suite('IrNode', () => {
 		});
 
 		test.test('Decl returns (local.set).', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				val a: null  = null;
 				val b: bool  = false;
 				val c: sym   = @hello;
 				val d: int   = 42;
 				val e: float = 4.2;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => (instr).codegen(cg)),
+				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
 					mod.local.set(0, genConst(mod)),
 					mod.local.set(1, genConst(mod, false)),
@@ -294,7 +430,7 @@ test.suite('IrNode', () => {
 		});
 
 		test.test('Set returns (local.set).', () => {
-			const {opt} = setupScript(`{
+			const {opt, cg} = setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
 				val mut c: sym   = @hello;
@@ -306,11 +442,10 @@ test.suite('IrNode', () => {
 				set c = @world;
 				set d = 43;
 				set e = 4.3;
-			}`, {lower: true, build: false});
-			const cg  = new Builder();
+			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.slice(5).map((instr) => (instr).codegen(cg)),
+				opt.instructions.slice(5).map((instr) => instr.codegen(cg)),
 				[
 					mod.local.set(0, genConst(mod)),
 					mod.local.set(1, genConst(mod, true)),

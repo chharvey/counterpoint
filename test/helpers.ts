@@ -5,7 +5,7 @@ import {
 	VALUE,
 	type TYPE,
 	Optimizer,
-	type Builder,
+	Builder,
 } from '../src/index.ts';
 
 
@@ -23,34 +23,40 @@ const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
  * @param opts.varCheck  Should the VarCheck  algorithm be performed? (defaults true)
  * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
  * @param opts.lower     Should the Lower     algorithm be performed? (defaults false --- will change once feature is complete) (only done if `varCheck` and `typeCheck` are true)
+ * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults false --- will change once feature is complete) (only done if `varCheck`, `typeCheck`, and `lower` are true)
  * @param opts.build     Should the Build     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
  * @param config         compiler config options
  * @return               the `ASTNodeGoal` instance and some properties of it
  */
 export function setupScript(
 	source: string,
-	opts:   {varCheck?: boolean, typeCheck?: boolean, lower?: boolean, build?: boolean} = {},
+	opts:   {varCheck?: boolean, typeCheck?: boolean, lower?: boolean, codegen?: boolean, build?: boolean} = {},
 ): {
 	readonly goal:  AST.ASTNodeGoal,
 	readonly stmts: NonNullable<typeof goal.block>['children'],
 	readonly opt:   Optimizer,
+	readonly cg:    Builder,
 	readonly mod:   typeof goal.builder.module,
 	readonly tb:    typeof goal.builder.typeBuilder,
 } {
 	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
 	const opt:  Optimizer       = new Optimizer();
+	const cg:   Builder         = new Builder();
 	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
 	opts.lower     ??= false; // TODO: once fully implemented, default to true
+	opts.codegen   ??= false; // TODO: once fully implemented, default to true
 	opts.build     ??= true;
 	opts.varCheck &&                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&               goal.typeCheck();
 	opts.varCheck && opts.typeCheck && opts.lower && goal.lower(opt);
+	opts.varCheck && opts.typeCheck && opts.lower && opts.codegen && opt.instructions.map((instr) => instr.codegen(cg));
 	opts.varCheck && opts.typeCheck && opts.build && goal.build();
 	return {
 		goal,
 		opt,
+		cg,
 		stmts: goal.block.children,
 		mod:   goal.builder.module,
 		tb:    goal.builder.typeBuilder,

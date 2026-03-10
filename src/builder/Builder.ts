@@ -5,6 +5,7 @@ import type {
 	AST,
 	SymbolSchemaVar,
 } from '../validator/index.ts';
+import {Field_new} from '../code-generator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 import type {
@@ -39,6 +40,7 @@ type Block = {
  */
 export class Builder {
 	private static readonly IMPORTS: readonly string[] = [
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/isub_u.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
@@ -50,6 +52,9 @@ export class Builder {
 
 	/** A lookup table from variable ids to WASM local variable info. */
 	readonly #localTable = new Map<bigint, LocalInfo>();
+
+	/** A lookup table for types created by a Binaryen TypeBuilder. */
+	readonly #typeRegistry = new Map<string, binaryen.Type>();
 
 	#typeCount: bigint = 0n;
 
@@ -70,6 +75,17 @@ export class Builder {
 	// eslint-disable-next-line
 	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
 
+	public constructor() {
+		this.#setupTypes();
+	}
+
+	public get typeRegistry(): Map<string, binaryen.Type> {
+		return new Map([...this.#typeRegistry]);
+	}
+
+	public nextLocalIndex(): bigint {
+		return this.#localCount++;
+	}
 
 	public nextTypeIndex(): bigint {
 		return this.#typeCount++;
@@ -187,6 +203,97 @@ export class Builder {
 	public teeBlock(node: AST.ASTNodeCP): Block {
 		this.setBlock(node);
 		return this.getBlock(node)!;
+	}
+
+	/**
+	 * Set up common types.
+	 * We’ve defined these in a static `types.wat` file,
+	 * but there’s currently no way to access them dynamically with Binaryen,
+	 * so we repeat them here.
+	 */
+	#setupTypes(): void {
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		// eslint-disable-next-line
+		const tb: TypeBuilder = new binaryen.TypeBuilder();
+
+		let type_count: number = 0;
+
+		/* (type $Object ...) */
+		const i_object: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_object, []);
+		tb.setOpen(i_object);
+
+		/* (type $Value ...) */
+		const i_value: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_value, [
+			Field_new(binaryen.i32, 'i8'),
+			Field_new(binaryen.v128),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_object), true)),
+		]);
+
+		/* (type $ListInternal ...) */
+		const i_list_internal: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_list_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_value), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			true,
+		);
+
+		/* (type $List ...) */
+		const i_list: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_list, [
+			Field_new(binaryen.v128, 'notPacked', true),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_list, tb.getTempHeapType(i_object));
+		tb.setOpen(i_list);
+
+		/* (type $DictEntry ...) */
+		const i_dict_entry: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_dict_entry, [
+			Field_new(binaryen.i64),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		]);
+
+		/* (type $DictInternal ...) */
+		const i_dict_internal: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_dict_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_dict_entry), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			true,
+		);
+
+		/* (type $Dict ...) */
+		const i_dict: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_dict, [
+			Field_new(binaryen.v128, 'notPacked', true),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
+		tb.setOpen(i_dict);
+
+		const heap_types: readonly binaryen.Type[] = tb.buildAndDispose();
+
+		this.#typeRegistry.set('Object',       heap_types[i_object]);
+		this.#typeRegistry.set('Value',        heap_types[i_value]);
+		this.#typeRegistry.set('ListInternal', heap_types[i_list_internal]);
+		this.#typeRegistry.set('List',         heap_types[i_list]);
+		this.#typeRegistry.set('DictEntry',    heap_types[i_dict_entry]);
+		this.#typeRegistry.set('DictInternal', heap_types[i_dict_internal]);
+		this.#typeRegistry.set('Dict',         heap_types[i_dict]);
 	}
 
 	#binOpArithmetic(
