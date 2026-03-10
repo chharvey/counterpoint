@@ -37,12 +37,12 @@ export interface TypeBuilder {
 	setArrayType(index: number, elementType: binaryen.Type, elementPackedType: binaryen.Type, elementMutable: boolean): void;
 	getTempHeapType(index: number): binaryen.Type;
 	getTempRefType(heapType: binaryen.Type, nullable: boolean): binaryen.Type;
+	setSubType(index: number, superType: binaryen.Type): void;
+	setOpen(index: number): void;
 	buildAndDispose(): binaryen.Type[];
 
 	/* eslint-disable @typescript-eslint/no-unsafe-function-type */
 	getTempTupleType: Function;
-	setSubType:       Function;
-	setOpen:          Function;
 	createRecGroup:   Function;
 	/* eslint-enable @typescript-eslint/no-unsafe-function-type */
 }

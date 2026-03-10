@@ -202,45 +202,55 @@ export class Builder {
 	#setupTypes(): void {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		// eslint-disable-next-line
-		const tb: TypeBuilder = new binaryen.TypeBuilder(6);
+		const tb: TypeBuilder = new binaryen.TypeBuilder(7);
+
+		/* (type $Object ...) */
+		tb.setStructType(0, []);
+		tb.setOpen(0);
 
 		/* (type $Value ...) */
-		tb.setStructType(0, [binaryen.i32, binaryen.v128, binaryen.eqref].map((typ, i) => Field_new(typ, i === 0 ? 'i8' : 'notPacked')));
+		tb.setStructType(1, [binaryen.i32, binaryen.v128, tb.getTempRefType(tb.getTempHeapType(0), true)].map((typ, i) => Field_new(typ, i === 0 ? 'i8' : 'notPacked')));
 
 		/* (type $ListInternal ...) */
 		tb.setArrayType(
-			1,
-			tb.getTempRefType(tb.getTempHeapType(0), true),
+			2,
+			tb.getTempRefType(tb.getTempHeapType(1), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
 		/* (type $List ...) */
-		tb.setStructType(2, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(1), false)].map((typ) => Field_new(typ, 'notPacked', true)));
+		tb.setStructType(3, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(2), false)].map((typ) => Field_new(typ, 'notPacked', true)));
+		tb.setSubType(3, tb.getTempHeapType(0));
+		tb.setOpen(3);
 
 		/* (type $DictEntry ...) */
-		tb.setStructType(3, [binaryen.i64, tb.getTempRefType(tb.getTempHeapType(0), false)].map((typ) => Field_new(typ)));
+		tb.setStructType(4, [binaryen.i64, tb.getTempRefType(tb.getTempHeapType(1), false)].map((typ) => Field_new(typ)));
 		/* (type $DictInternal ...) */
 		tb.setArrayType(
-			4,
-			tb.getTempRefType(tb.getTempHeapType(3), true),
+			5,
+			tb.getTempRefType(tb.getTempHeapType(4), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
 		/* (type $Dict ...) */
-		tb.setStructType(5, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(4), false)].map((typ) => Field_new(typ, 'notPacked', true)));
+		tb.setStructType(6, [binaryen.v128, tb.getTempRefType(tb.getTempHeapType(5), false)].map((typ) => Field_new(typ, 'notPacked', true)));
+		tb.setSubType(6, tb.getTempHeapType(0));
+		tb.setOpen(6);
 
 		const [
 			/* eslint-disable @stylistic/array-element-newline */
+			object_t,
 			value_t,
 			list_internal_t, list_t,
 			dict_entry_t, dict_internal_t, dict_t,
 			/* eslint-enable @stylistic/array-element-newline */
 		] = tb.buildAndDispose();
 
+		this.#typeRegistry.set('Object',       object_t);
 		this.#typeRegistry.set('Value',        value_t);
 		this.#typeRegistry.set('ListInternal', list_internal_t);
 		this.#typeRegistry.set('List',         list_t);
