@@ -3,7 +3,7 @@ import type {IR} from './index.ts';
 
 
 
-export type Local = {
+export type Temp = {
 	readonly id:    bigint,
 	readonly name:  string,
 	readonly type:  TYPE.Type,

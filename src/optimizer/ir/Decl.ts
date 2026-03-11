@@ -7,7 +7,7 @@ import {
 } from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Local} from '../utils-private.ts';
+import type {Temp} from '../utils-private.ts';
 import type {Instruction} from './Instruction.ts';
 import {
 	OpCode,
@@ -26,7 +26,7 @@ export class Decl extends Opcode implements Instruction {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(
-		private readonly target: SymbolSchemaVar | Local,
+		private readonly target: SymbolSchemaVar | Temp,
 		private readonly value:  Value,
 	) {
 		super(OpCode.DECL);

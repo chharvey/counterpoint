@@ -81,7 +81,7 @@ export class Builder {
 
 	/**
 	 * Return a WASM `(local.set)` instruction. Generates its own WASM variable index.
-	 * @param id    a validator’s variable id or an IR temporary local id, which identifies the symbol to be written to
+	 * @param id    a validator’s variable id or an IR temp id, which identifies the symbol to be written to
 	 * @param value a Binaryen value to assign to the variable
 	 * @return      `(local.set ‹index› ‹value›)`
 	 */
@@ -92,7 +92,7 @@ export class Builder {
 
 	/**
 	 * Return a WASM `(local.get)` instruction.
-	 * @param id a validator’s variable id or an IR temporary local id, which identifies the symbol to be read
+	 * @param id a validator’s variable id or an IR temp id, which identifies the symbol to be read
 	 * @return   `(local.get ‹index›)`
 	 */
 	public localGet(id: bigint): binaryen.ExpressionRef {
