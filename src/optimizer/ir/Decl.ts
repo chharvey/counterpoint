@@ -49,6 +49,6 @@ export class Decl extends Opcode implements Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.localSet(this.target.id, this.value.codegen(cg));
+		return cg.teeLocal(this.target, this.value.codegen(cg)).set();
 	}
 }
