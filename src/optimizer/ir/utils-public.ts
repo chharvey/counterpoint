@@ -1,5 +1,7 @@
-import type {Temp} from '../utils-private.ts';
-import type {Optimizer} from '../Optimizer.ts';
+import type {
+	Temp,
+	Optimizer,
+} from '../Optimizer.ts';
 import {
 	type TypeName,
 	type Value,

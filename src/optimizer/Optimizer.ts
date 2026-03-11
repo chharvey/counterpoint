@@ -1,7 +1,16 @@
 import * as xjs from 'extrajs';
 import {runOnceMethod} from '../lib/index.ts';
+import type {TYPE} from '../typer/index.ts';
 import {IR} from './index.ts';
-import type {Temp} from './utils-private.ts';
+
+
+
+export type Temp = {
+	readonly id:    bigint,
+	readonly name:  string,
+	readonly type:  TYPE.Type,
+	readonly value: IR.Value,
+};
 
 
 

@@ -2,7 +2,7 @@ import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
-import type {Temp} from '../utils-private.ts';
+import type {Temp} from '../Optimizer.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
