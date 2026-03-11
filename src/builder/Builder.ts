@@ -1,6 +1,8 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
+import type {SymbolSchemaVar} from '../validator/index.ts';
+import type {Temp} from '../optimizer/index.ts';
 import {Field_new} from '../code-generator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
@@ -32,13 +34,6 @@ export class Builder {
 	];
 
 
-	/**
-	 * A counter for internal variables.
-	 * Used for optimizing short-circuited expressions.
-	 * Starts at a low negative number so as not to conflict with ‘real’ varible ids.
-	 */
-	#varCount: bigint = -0x40n;
-
 	/** Tracking WASM local indices. */
 	#localCount: bigint = 0n;
 
@@ -53,8 +48,8 @@ export class Builder {
 
 	#typeCount: bigint = 0n;
 
-	/** A setlist containing ids of local variables. */
-	private readonly locals: Local[] = [];
+	/** A set containing data of WASM local variables. */
+	readonly #locals = new Set<Local>();
 
 	/** The Binaryen module to build upon building. */
 	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
@@ -112,92 +107,58 @@ export class Builder {
 	}
 
 	/**
-	 * Add a new local variable.
+	 * Create and add a new local variable.
 	 * @param value the binaryen value of the variable to add
-	 * @return      [`this`, the new local variable]
+	 * @return      the new local variable
 	 */
-	public addLocal(value: binaryen.ExpressionRef): [this, Local] {
-		const local = new Local(this.module, this.#varCount++, this.locals.length, value);
-		this.locals.push(local);
-		return [this, local];
+	public newLocal(value: binaryen.ExpressionRef): Local {
+		const local = new Local(this.module, this.#locals.size, value);
+		this.#locals.add(local);
+		return local;
 	}
 
 	/**
 	 * Set a local variable, given a variable id.
 	 * If a variable with that id has already been added, do nothing.
-	 * @param id    the id of the variable to set
-	 * @param value the binaryen value of the variable to set
-	 * @return      [`this`, Was the operation performed?]
+	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
+	 * @param value  the binaryen value of the variable to set
+	 * @return       Was the operation performed?
 	 */
-	public setLocal(id: bigint, value: binaryen.ExpressionRef): [this, boolean] {
+	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef): boolean {
 		let did: boolean = false;
-		if (!this.hasLocal(id)) {
-			this.locals.push(new Local(this.module, id, this.locals.length, value));
+		if (!this.getLocal(schema)) {
+			this.#locals.add(new Local(this.module, this.#locals.size, value, schema));
 			did = true;
 		}
-		return [this, did];
-	}
-
-	/**
-	 * Remove a local variable.
-	 * If the local variable doesn’t exist, do nothing.
-	 * @param id the id of the variable to remove
-	 * @return [`this`, Was the operation performed?]
-	 */
-	public removeLocal(id: bigint): [this, boolean] {
-		let did = false;
-		const found = this.getLocal(id);
-		if (found) {
-			this.locals.splice(this.locals.indexOf(found), 1);
-			did = true;
-		}
-		return [this, did];
-	}
-
-	/**
-	 * Check whether this Builder’s setlist of locals has the given id.
-	 * @param id the id to check
-	 * @return Does the setlist of locals include the id?
-	 */
-	public hasLocal(id: bigint): boolean {
-		return !!this.getLocal(id);
+		return did;
 	}
 
 	/**
 	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `null`.
-	 * @param  id the id of the local to get
-	 * @return    the local or `null`
+	 * @param  id the schema of the local to get
+	 * @return    the local or `undefined`
 	 */
-	public getLocal(id: bigint): Local | null {
-		return this.locals.find((var_) => var_.id === id) ?? null;
+	public getLocal(schema: SymbolSchemaVar | Temp): Local | undefined {
+		return [...this.#locals].find((local) => local.schema === schema);
 	}
 
 	/**
-	 * Set a local variable to the given id and return it.
-	 * If a variable with that id has already been added, this Builder’s state is not changed.
-	 * @param id    the id of the variable to set
-	 * @param value the binaryen value of the variable to set
-	 * @return      the local variable set (or retreived)
+	 * Set and then return a local variable.
+	 * @param schema the symbol schema of the variable to set
+	 * @param value  the binaryen value of the variable to set
+	 * @return       the local variable set (or retreived)
 	 */
-	public teeLocal(id: bigint, value: binaryen.ExpressionRef): Local {
-		return this.setLocal(id, value)[0].getLocal(id)!;
+	public teeLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef): Local {
+		this.setLocal(schema, value);
+		return this.getLocal(schema)!;
 	}
 
 	/**
 	 * Return a copy of a list of this Builder’s local variables.
 	 * @return the local variables in an array
 	 */
-	public getLocals(): Local[] {
-		return [...this.locals];
-	}
-
-	/**
-	 * Remove all local variables in this Builder.
-	 * @return `this`
-	 */
-	public clearLocals(): this {
-		this.locals.length = 0;
-		return this;
+	public getAllLocals(): Local[] {
+		return [...this.#locals];
 	}
 
 	/**

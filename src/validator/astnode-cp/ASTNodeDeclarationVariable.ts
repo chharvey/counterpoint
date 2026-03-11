@@ -103,7 +103,7 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
 		if (this.assignee) {
-			return this.builder.teeLocal(this.assignee.id, value).set(ASTNodeStatement.coerceAssignment(
+			return this.builder.teeLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar, value).set(ASTNodeStatement.coerceAssignment(
 				this.builder.module,
 				this.typenode.eval(),
 				this.assigned?.type() ?? TYPE.NULL,
