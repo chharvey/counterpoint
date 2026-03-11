@@ -45,8 +45,11 @@ export class Builder {
 	/** A lookup table from variable ids to WASM local variable info. */
 	readonly #localTable = new Map<bigint, LocalInfo>();
 
-	/** A lookup table for types created by a Binaryen TypeBuilder. */
-	readonly #typeRegistry = new Map<string, binaryen.Type>();
+	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
+	readonly #heapTypeRegistry = new Map<string, binaryen.Type>();
+
+	/** A registry of reference (and reference-null) types. */
+	readonly #refTypeRegistry = new Map<string, binaryen.Type>();
 
 	#typeCount: bigint = 0n;
 
@@ -66,10 +69,6 @@ export class Builder {
 
 	public constructor() {
 		this.#setupTypes();
-	}
-
-	public get typeRegistry(): Map<string, binaryen.Type> {
-		return new Map([...this.#typeRegistry]);
 	}
 
 	public nextLocalIndex(): bigint {
@@ -102,6 +101,14 @@ export class Builder {
 			throw new ReferenceError(`Local with id \`${ id }\` must be set first!`);
 		}
 		return this.module.local.get(local_info.index, local_info.type);
+	}
+
+	public getHeapType(key: string): binaryen.Type | undefined {
+		return this.#heapTypeRegistry.get(key);
+	}
+
+	public getRefType(key: string): binaryen.Type | undefined {
+		return this.#refTypeRegistry.get(key);
 	}
 
 	/**
@@ -275,13 +282,13 @@ export class Builder {
 
 		const heap_types: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		this.#typeRegistry.set('Object',       heap_types[i_object]);
-		this.#typeRegistry.set('Value',        heap_types[i_value]);
-		this.#typeRegistry.set('ListInternal', heap_types[i_list_internal]);
-		this.#typeRegistry.set('List',         heap_types[i_list]);
-		this.#typeRegistry.set('DictEntry',    heap_types[i_dict_entry]);
-		this.#typeRegistry.set('DictInternal', heap_types[i_dict_internal]);
-		this.#typeRegistry.set('Dict',         heap_types[i_dict]);
+		this.#heapTypeRegistry.set('$Object',       heap_types[i_object]);
+		this.#heapTypeRegistry.set('$Value',        heap_types[i_value]);
+		this.#heapTypeRegistry.set('$ListInternal', heap_types[i_list_internal]);
+		this.#heapTypeRegistry.set('$List',         heap_types[i_list]);
+		this.#heapTypeRegistry.set('$DictEntry',    heap_types[i_dict_entry]);
+		this.#heapTypeRegistry.set('$DictInternal', heap_types[i_dict_internal]);
+		this.#heapTypeRegistry.set('$Dict',         heap_types[i_dict]);
 	}
 
 	#binOpFunction(
