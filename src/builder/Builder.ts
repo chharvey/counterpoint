@@ -289,6 +289,22 @@ export class Builder {
 		this.#heapTypeRegistry.set('$DictEntry',    heap_types[i_dict_entry]);
 		this.#heapTypeRegistry.set('$DictInternal', heap_types[i_dict_internal]);
 		this.#heapTypeRegistry.set('$Dict',         heap_types[i_dict]);
+
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		const {getTypeFromHeapType} = binaryen;
+
+		/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
+		this.#refTypeRegistry.set('(ref $Object)',       getTypeFromHeapType(heap_types[i_object],        false));
+		this.#refTypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heap_types[i_value],         false));
+		this.#refTypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heap_types[i_list_internal], false));
+		this.#refTypeRegistry.set('(ref $List)',         getTypeFromHeapType(heap_types[i_list],          false));
+		this.#refTypeRegistry.set('(ref $DictInternal)', getTypeFromHeapType(heap_types[i_dict_internal], false));
+		this.#refTypeRegistry.set('(ref $Dict)',         getTypeFromHeapType(heap_types[i_dict],          false));
+
+		this.#refTypeRegistry.set('(ref null $Object)',    getTypeFromHeapType(heap_types[i_object],     true)); // used as the `$composite` field of `$Value`
+		this.#refTypeRegistry.set('(ref null $Value)',     getTypeFromHeapType(heap_types[i_value],      true)); // used as the fields of `$ListInternal`
+		this.#refTypeRegistry.set('(ref null $DictEntry)', getTypeFromHeapType(heap_types[i_dict_entry], true)); // used as the fields of `$DictInternal`
+		/* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 	}
 
 	#binOpFunction(

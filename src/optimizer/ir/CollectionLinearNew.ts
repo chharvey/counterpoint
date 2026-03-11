@@ -64,9 +64,6 @@ export class CollectionLinearNew extends Value {
 				return cg.module.struct.new(codes, tb.buildAndDispose()[0]);
 			}
 			case TypeName.LIST: {
-				const ht_list_internal: binaryen.Type = cg.getHeapType('$ListInternal')!;
-				const ht_list:          binaryen.Type = cg.getHeapType('$List')!;
-
 				/**
 				 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
 				 * ```
@@ -83,19 +80,20 @@ export class CollectionLinearNew extends Value {
 				 * fill in the entries,
 				 * return a $List type with the $count and $array fields
 				 */
-				const internalarray_idx: number = Number(cg.nextLocalIndex());
+				const internalarray_idx: number                 = Number(cg.nextLocalIndex());
+				const internalarray_get: binaryen.ExpressionRef = cg.module.local.get(internalarray_idx, cg.getRefType('(ref $ListInternal)')!);
 				return cg.module.block(null, [
-					cg.module.local.set(internalarray_idx, cg.module.array.new_default(ht_list_internal, cg.module.i32.const(capacity))),
+					cg.module.local.set(internalarray_idx, cg.module.array.new_default(cg.getHeapType('$ListInternal')!, cg.module.i32.const(capacity))),
 					...this.items.map((item, i) => cg.module.array.set(
-						cg.module.local.get(internalarray_idx, ht_list_internal),
+						internalarray_get,
 						cg.module.i32.const(i),
 						Value_new(cg, item.codegen(cg)),
 					)),
 					cg.module.struct.new([
 						new BinVect(cg.module, cg.module.i32.const(this.items.length)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
-						cg.module.local.get(internalarray_idx, ht_list_internal),
-					], ht_list),
-				], ht_list);
+						internalarray_get,
+					], cg.getHeapType('$List')!),
+				], cg.getRefType('(ref $List)'));
 			}
 		}
 		throw new Error('not yet supported.');
