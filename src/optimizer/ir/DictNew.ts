@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	DictEntry_new,
 	type Builder,
+	type Local,
 	BinVect,
 } from '../../index.ts';
 import {
@@ -79,18 +80,20 @@ export class DictNew extends Value {
 		 * fill in the entries,
 		 * return a $Dict type with the $count and $array fields
 		 */
-		const internalarray_idx: number                 = Number(cg.nextLocalIndex());
-		const internalarray_get: binaryen.ExpressionRef = cg.module.local.get(internalarray_idx, cg.getRefType('(ref $DictInternal)')!);
+		const internalarray: Local = cg.newLocal(
+			cg.module.array.new_default(cg.getHeapType('$DictInternal')!, cg.module.i32.const(capacity)),
+			cg.getRefType('(ref $DictInternal)'),
+		);
 		return cg.module.block(null, [
-			cg.module.local.set(internalarray_idx, cg.module.array.new_default(cg.getHeapType('$DictInternal')!, cg.module.i32.const(capacity))),
+			internalarray.set(),
 			...[...entries].map((entry, i) => cg.module.array.set( // `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
-				internalarray_get,
+				internalarray.get(),
 				cg.module.i32.const(i),
 				entry ?? cg.module.ref.null(cg.getRefType('(ref null $DictEntry)')!),
 			)),
 			cg.module.struct.new([
 				new BinVect(cg.module, cg.module.i32.const(this.props.size)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
-				internalarray_get,
+				internalarray.get(),
 			], cg.getHeapType('$Dict')!),
 		], cg.getRefType('(ref $Dict)'));
 	}

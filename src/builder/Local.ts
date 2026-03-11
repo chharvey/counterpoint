@@ -25,10 +25,11 @@ export class Local {
 		private readonly module: binaryen.Module,
 		private readonly index:  number,
 		value: binaryen.ExpressionRef,
+		type?: binaryen.Type,
 		public readonly schema?: SymbolSchemaVar | Temp,
 	) {
 		this.#value = value;
-		this.type   = binaryen.getExpressionType(value);
+		this.type   = type ?? binaryen.getExpressionType(value);
 	}
 
 	/* The Binaryen value of the variable. */

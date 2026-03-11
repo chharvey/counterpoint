@@ -24,9 +24,6 @@ export class Builder {
 	];
 
 
-	/** Tracking WASM local indices. */
-	#localCount: bigint = 0n;
-
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
 	readonly #heapTypeRegistry = new Map<string, binaryen.Type>();
 
@@ -53,10 +50,6 @@ export class Builder {
 		this.#setupTypes();
 	}
 
-	public nextLocalIndex(): bigint {
-		return BigInt(this.#locals.size) + this.#localCount++;
-	}
-
 	public nextTypeIndex(): bigint {
 		return this.#typeCount++;
 	}
@@ -72,10 +65,11 @@ export class Builder {
 	/**
 	 * Create and add a new temporary local variable, for use in short-circuiting operations and placeholder values.
 	 * @param value the binaryen value of the variable to add
+	 * @param type  the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return      the new local variable
 	 */
-	public newLocal(value: binaryen.ExpressionRef): Local {
-		const local = new Local(this.module, this.#locals.size, value);
+	public newLocal(value: binaryen.ExpressionRef, typ?: binaryen.Type): Local {
+		const local = new Local(this.module, this.#locals.size, value, typ);
 		this.#locals.add(local);
 		return local;
 	}
@@ -85,12 +79,13 @@ export class Builder {
 	 * If a variable with that id has already been added, do nothing.
 	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
 	 * @param value  the binaryen value of the variable to set
+	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       Was the operation performed?
 	 */
-	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef): boolean {
+	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
-			this.#locals.add(new Local(this.module, this.#locals.size, value, schema));
+			this.#locals.add(new Local(this.module, this.#locals.size, value, typ, schema));
 			did = true;
 		}
 		return did;
@@ -109,10 +104,11 @@ export class Builder {
 	 * Set and then return a local variable.
 	 * @param schema the symbol schema of the variable to set
 	 * @param value  the binaryen value of the variable to set
+	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       the local variable set (or retreived)
 	 */
-	public teeLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef): Local {
-		this.setLocal(schema, value);
+	public teeLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
+		this.setLocal(schema, value, type);
 		return this.getLocal(schema)!;
 	}
 

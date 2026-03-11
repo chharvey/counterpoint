@@ -4,6 +4,7 @@ import {
 	Field_new,
 	Value_new,
 	type Builder,
+	type Local,
 	BinVect,
 } from '../../index.ts';
 import {
@@ -80,18 +81,20 @@ export class CollectionLinearNew extends Value {
 				 * fill in the entries,
 				 * return a $List type with the $count and $array fields
 				 */
-				const internalarray_idx: number                 = Number(cg.nextLocalIndex());
-				const internalarray_get: binaryen.ExpressionRef = cg.module.local.get(internalarray_idx, cg.getRefType('(ref $ListInternal)')!);
+				const internalarray: Local = cg.newLocal(
+					cg.module.array.new_default(cg.getHeapType('$ListInternal')!, cg.module.i32.const(capacity)),
+					cg.getRefType('(ref $ListInternal)'),
+				);
 				return cg.module.block(null, [
-					cg.module.local.set(internalarray_idx, cg.module.array.new_default(cg.getHeapType('$ListInternal')!, cg.module.i32.const(capacity))),
+					internalarray.set(),
 					...this.items.map((item, i) => cg.module.array.set(
-						internalarray_get,
+						internalarray.get(),
 						cg.module.i32.const(i),
 						Value_new(cg, item.codegen(cg)),
 					)),
 					cg.module.struct.new([
 						new BinVect(cg.module, cg.module.i32.const(this.items.length)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
-						internalarray_get,
+						internalarray.get(),
 					], cg.getHeapType('$List')!),
 				], cg.getRefType('(ref $List)'));
 			}
