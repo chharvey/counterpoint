@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	assert_instanceof,
 	AST,
@@ -440,11 +439,6 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
-				{id: 0x102n, type: binaryen.v128},
-				{id: 0x103n, type: binaryen.v128},
-				{id: 0x104n, type: binaryen.v128},
-			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
 				[
@@ -475,11 +469,6 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.build();
-			assert.deepStrictEqual(goal.builder.getLocals().map(({id, type}) => ({id, type})), [
-				{id: 0x100n, type: binaryen.v128},
-				{id: 0x101n, type: binaryen.v128},
-				{id: 0x102n, type: binaryen.v128},
-			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),
 				[
@@ -503,9 +492,9 @@ describe('ASTNodeDeclarationVariable', () => {
 			goal.typeCheck();
 			goal.build();
 			const [tup, rec] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-			assert.deepStrictEqual(goal.builder.getLocals().map(({id, value}) => ({id, value})), [
-				{id:  0x100n, value: tup.build()},
-				{id:  0x108n, value: rec.build()},
+			assert.deepStrictEqual(goal.builder.getAllLocals().map(({value}) => (value)), [
+				tup.build(),
+				rec.build(),
 			]);
 			return assertEqualBins(
 				goal.children.map((stmt) => stmt.build()),

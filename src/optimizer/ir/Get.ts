@@ -1,8 +1,9 @@
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
-import type {Local} from '../utils-private.ts';
+import type {Temp} from '../Optimizer.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
@@ -10,7 +11,7 @@ import {Value} from './Value.ts';
 
 /** Read the value of a variable/local. */
 export class Get extends Value {
-	public constructor(private readonly target: SymbolSchemaVar | Local) {
+	public constructor(private readonly target: SymbolSchemaVar | Temp) {
 		super(OpCode.GET, target instanceof SymbolSchemaVar ? target.irType : target.type);
 	}
 
@@ -20,7 +21,7 @@ export class Get extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.localGet(this.target.id);
+		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 
 	public override asTac(): Get {

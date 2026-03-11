@@ -7,7 +7,7 @@ import {
 } from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Local} from '../utils-private.ts';
+import type {Temp} from '../Optimizer.ts';
 import type {Instruction} from './Instruction.ts';
 import {
 	OpCode,
@@ -22,7 +22,7 @@ class IrSet extends Opcode implements Instruction {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(
-		private readonly target: SymbolSchemaVar | Local,
+		private readonly target: SymbolSchemaVar | Temp,
 		private readonly value:  Value,
 	) {
 		super(OpCode.SET);
@@ -44,7 +44,7 @@ class IrSet extends Opcode implements Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.localSet(this.target.id, this.value.codegen(cg));
+		return cg.teeLocal(this.target, this.value.codegen(cg)).set();
 	}
 }
 export {IrSet as Set};

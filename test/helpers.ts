@@ -86,7 +86,7 @@ export function genConst(mod: binaryen.Module, value: null | boolean | symbol | 
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? assert.fail('String argument to `genConst` is not yet supported.') :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).codegen(mod);
+	).codegen(mod).vect;
 }
 
 
