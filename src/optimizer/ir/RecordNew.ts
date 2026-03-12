@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	Field_new,
+	bigint_to_i64,
 	type Builder,
 } from '../../index.ts';
 import {
@@ -62,7 +63,7 @@ export class RecordNew extends Value {
 			 */
 			prop_tb.setStructType(0, [binaryen.i64, binaryen.getExpressionType(code)].map((typ) => Field_new(typ)));
 			const entry: binaryen.ExpressionRef = cg.module.struct.new([
-				cg.module.i64.const(Number(id), 0), // TODO: use `bigint_to_i64`
+				bigint_to_i64(cg.module, id),
 				code,
 			], prop_tb.buildAndDispose()[0]);
 			/**
