@@ -114,7 +114,7 @@ export function build_record_like(builder: Builder, builds: readonly {readonly k
 			readonly localSet: binaryen.ExpressionRef,
 			readonly localGet: binaryen.ExpressionRef,
 		}> = builds.map(({key: id, pair: [binval, bintype]}) => {
-			const set_local: Local = builder.addLocal(binval);
+			const set_local: Local = builder.newLocal(binval);
 			return {
 				id,
 				type:     bintype,

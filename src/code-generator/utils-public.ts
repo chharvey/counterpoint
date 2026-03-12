@@ -20,18 +20,18 @@ export function Field_new(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | '
 
 
 export function Value_new(cg: Builder, code: binaryen.ExpressionRef): binaryen.ExpressionRef {
-	const t_value: binaryen.Type = cg.typeRegistry.get('Value')!;
+	const ht_value: binaryen.Type = cg.getHeapType('$Value')!;
 	return binaryen.getExpressionType(code) === binaryen.v128
 		? cg.module.struct.new([
 			cg.module.i32.const(0),
 			code,
-			cg.module.ref.null(binaryen.eqref),
-		], t_value)
+			cg.module.ref.null(cg.getRefType('(ref null $Object)')!),
+		], ht_value)
 		: cg.module.struct.new([
 			cg.module.i32.const(1),
 			cg.module.v128.const(new Uint8Array(16)),
 			code,
-		], t_value);
+		], ht_value);
 }
 
 
@@ -40,5 +40,5 @@ export function DictEntry_new(cg: Builder, id: bigint, code: binaryen.Expression
 	return cg.module.struct.new([
 		bigint_to_i64(cg.module, id),
 		Value_new(cg, code),
-	], cg.typeRegistry.get('DictEntry')!);
+	], cg.getHeapType('$DictEntry')!);
 }

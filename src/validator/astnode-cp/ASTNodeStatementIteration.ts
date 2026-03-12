@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Temp,
 	type Optimizer,
 	IR,
 	AssignmentErrorDuplicateDeclaration,
@@ -96,7 +97,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
 		const iterable: IR.Value = this.iterable.lower(optimizer).asTac(optimizer);
-		const index              = optimizer.newTempLocal(new IR.Const(VALUE.NAT_0));
+		const index:    Temp     = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
 		const get_index          = new IR.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 

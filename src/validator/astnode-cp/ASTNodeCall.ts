@@ -213,7 +213,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (!args.length) {
 			return new_obj;
 		}
-		const get_obj = new IR.Get(optimizer.newTempLocal(new_obj));
+		const get_obj = new IR.Get(optimizer.newTemp(new_obj));
 		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_obj, args[0]));
 		return get_obj;
 	}

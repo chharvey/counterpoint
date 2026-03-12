@@ -459,7 +459,7 @@ test.suite('ASTNodeExpression', () => {
 				}`);
 				const var0 = (stmts[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 				const var1 = (stmts[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map((local) => local.type);
+				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map(({type}) => type);
 				return assertEqualBins(
 					[
 						var0.build(),

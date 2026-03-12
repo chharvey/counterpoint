@@ -1,5 +1,6 @@
 import binaryen from 'binaryen';
 import type {SymbolSchemaVar} from '../validator/index.ts';
+import type {Temp} from '../optimizer/index.ts';
 
 
 
@@ -18,16 +19,17 @@ export class Local {
 	 * @param module A Binaryen module to send instructions to.
 	 * @param index  The variable’s WASM index.
 	 * @param value  The Binaryen value of the variable.
-	 * @param schema The compiler’s internal data for a declared variable.
+	 * @param schema The compiler’s internal data for a declared variable or an optimizer temporary.
 	 */
 	public constructor(
 		private readonly module: binaryen.Module,
 		private readonly index:  number,
 		value: binaryen.ExpressionRef,
-		public readonly schema?: SymbolSchemaVar,
+		type?: binaryen.Type,
+		public readonly schema?: SymbolSchemaVar | Temp,
 	) {
 		this.#value = value;
-		this.type   = binaryen.getExpressionType(value);
+		this.type   = type ?? binaryen.getExpressionType(value);
 	}
 
 	/* The Binaryen value of the variable. */

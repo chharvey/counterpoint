@@ -5,6 +5,7 @@ import type {
 	AST,
 	SymbolSchemaVar,
 } from '../validator/index.ts';
+import type {Temp} from '../optimizer/index.ts';
 import {Field_new} from '../code-generator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
@@ -12,16 +13,6 @@ import type {
 	BinaryenModuleUpdates,
 	TypeBuilder,
 } from './-types.d.ts';
-
-
-
-/** Schema of WASM local variable info. */
-type LocalInfo = {
-	/** WASM local index. */
-	readonly index: number,
-	/** Binaryen type. */
-	readonly type:  number,
-};
 
 
 
@@ -47,19 +38,16 @@ export class Builder {
 	];
 
 
-	/** Tracking WASM local indices. */
-	#localCount: bigint = 0n;
+	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
+	readonly #heapTypeRegistry = new Map<string, binaryen.Type>();
 
-	/** A lookup table from variable ids to WASM local variable info. */
-	readonly #localTable = new Map<bigint, LocalInfo>();
-
-	/** A lookup table for types created by a Binaryen TypeBuilder. */
-	readonly #typeRegistry = new Map<string, binaryen.Type>();
+	/** A registry of reference (and reference-null) types. */
+	readonly #refTypeRegistry = new Map<string, binaryen.Type>();
 
 	#typeCount: bigint = 0n;
 
-	/** A set containing local variables. */
-	private readonly locals = new Set<Local>();
+	/** A set containing data of WASM local variables. */
+	readonly #locals = new Set<Local>();
 
 	/** A set containing blocks. */
 	private readonly blocks = new Set<Block>();
@@ -79,87 +67,66 @@ export class Builder {
 		this.#setupTypes();
 	}
 
-	public get typeRegistry(): Map<string, binaryen.Type> {
-		return new Map([...this.#typeRegistry]);
-	}
-
-	public nextLocalIndex(): bigint {
-		return this.#localCount++;
-	}
-
 	public nextTypeIndex(): bigint {
 		return this.#typeCount++;
 	}
 
-	/**
-	 * Return a WASM `(local.set)` instruction. Generates its own WASM variable index.
-	 * @param id    a validator’s variable id or an IR temporary local id, which identifies the symbol to be written to
-	 * @param value a Binaryen value to assign to the variable
-	 * @return      `(local.set ‹index› ‹value›)`
-	 */
-	public localSet(id: bigint, value: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		this.#localTable.has(id) || this.#localTable.set(id, {index: Number(this.#localCount++), type: binaryen.getExpressionType(value)});
-		return this.module.local.set(this.#localTable.get(id)!.index, value);
+	public getHeapType(key: string): binaryen.Type | undefined {
+		return this.#heapTypeRegistry.get(key);
+	}
+
+	public getRefType(key: string): binaryen.Type | undefined {
+		return this.#refTypeRegistry.get(key);
 	}
 
 	/**
-	 * Return a WASM `(local.get)` instruction.
-	 * @param id a validator’s variable id or an IR temporary local id, which identifies the symbol to be read
-	 * @return   `(local.get ‹index›)`
-	 */
-	public localGet(id: bigint): binaryen.ExpressionRef {
-		const local_info: LocalInfo | undefined = this.#localTable.get(id);
-		if (!local_info) {
-			throw new ReferenceError(`Local with id \`${ id }\` must be set first!`);
-		}
-		return this.module.local.get(local_info.index, local_info.type);
-	}
-
-	/**
-	 * Add a new local variable.
+	 * Create and add a new temporary local variable, for use in short-circuiting operations and placeholder values.
 	 * @param value the binaryen value of the variable to add
-	 * @return      [`this`, the new local variable]
+	 * @param type  the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
+	 * @return      the new local variable
 	 */
-	public addLocal(value: binaryen.ExpressionRef): Local {
-		const local = new Local(this.module, this.locals.size, value);
-		this.locals.add(local);
+	public newLocal(value: binaryen.ExpressionRef, typ?: binaryen.Type): Local {
+		const local = new Local(this.module, this.#locals.size, value, typ);
+		this.#locals.add(local);
 		return local;
 	}
 
 	/**
 	 * Set a local variable, given a variable id.
 	 * If a variable with that id has already been added, do nothing.
-	 * @param schema the compiler’s internal data for a declared variable
+	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
 	 * @param value  the binaryen value of the variable to set
+	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       Was the operation performed?
 	 */
-	public setLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): boolean {
+	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
-			this.locals.add(new Local(this.module, this.locals.size, value, schema));
+			this.#locals.add(new Local(this.module, this.#locals.size, value, typ, schema));
 			did = true;
 		}
 		return did;
 	}
 
 	/**
-	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `undefined`.
-	 * @param  schema the symbol schema of the local to get
+	 * Get the local with the given schema/temp in this Builder’s list, if it’s been added; else, return `undefined`.
+	 * @param  schema the compiler’s internal data for a declared variable or an optimizer temporary
 	 * @return        the local or `undefined`
 	 */
-	public getLocal(schema: SymbolSchemaVar): Local | undefined {
-		return [...this.locals].find((local) => local.schema === schema);
+	public getLocal(schema: SymbolSchemaVar | Temp): Local | undefined {
+		return [...this.#locals].find((local) => local.schema === schema);
 	}
 
 	/**
-	 * Set a local variable to the given id and return it.
-	 * If a variable with that id has already been added, this Builder’s state is not changed.
-	 * @param schema the symbol schema of the variable to set
+	 * Set and then return a local variable.
+	 * If a variable with that schema has already been added, this Builder’s state is not changed.
+	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
 	 * @param value  the binaryen value of the variable to set
-	 * @return      the local variable set (or retreived)
+	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
+	 * @return       the local variable set (or retreived)
 	 */
-	public teeLocal(schema: SymbolSchemaVar, value: binaryen.ExpressionRef): Local {
-		this.setLocal(schema, value);
+	public teeLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
+		this.setLocal(schema, value, type);
 		return this.getLocal(schema)!;
 	}
 
@@ -168,7 +135,7 @@ export class Builder {
 	 * @return the local variables in an array
 	 */
 	public getAllLocals(): Local[] {
-		return [...this.locals];
+		return [...this.#locals];
 	}
 
 	/**
@@ -195,8 +162,8 @@ export class Builder {
 	}
 
 	/**
-	 * Set a block to the given id and return it.
-	 * If a block with that id has already been added, this Builder’s state is not changed.
+	 * Set a block to the given node and return it.
+	 * If a block with that node has already been added, this Builder’s state is not changed.
 	 * @param node the node of the block to set
 	 * @return     the block set (or retreived)
 	 */
@@ -287,13 +254,29 @@ export class Builder {
 
 		const heap_types: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		this.#typeRegistry.set('Object',       heap_types[i_object]);
-		this.#typeRegistry.set('Value',        heap_types[i_value]);
-		this.#typeRegistry.set('ListInternal', heap_types[i_list_internal]);
-		this.#typeRegistry.set('List',         heap_types[i_list]);
-		this.#typeRegistry.set('DictEntry',    heap_types[i_dict_entry]);
-		this.#typeRegistry.set('DictInternal', heap_types[i_dict_internal]);
-		this.#typeRegistry.set('Dict',         heap_types[i_dict]);
+		this.#heapTypeRegistry.set('$Object',       heap_types[i_object]);
+		this.#heapTypeRegistry.set('$Value',        heap_types[i_value]);
+		this.#heapTypeRegistry.set('$ListInternal', heap_types[i_list_internal]);
+		this.#heapTypeRegistry.set('$List',         heap_types[i_list]);
+		this.#heapTypeRegistry.set('$DictEntry',    heap_types[i_dict_entry]);
+		this.#heapTypeRegistry.set('$DictInternal', heap_types[i_dict_internal]);
+		this.#heapTypeRegistry.set('$Dict',         heap_types[i_dict]);
+
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		const {getTypeFromHeapType} = binaryen;
+
+		/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
+		this.#refTypeRegistry.set('(ref $Object)',       getTypeFromHeapType(heap_types[i_object],        false));
+		this.#refTypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heap_types[i_value],         false));
+		this.#refTypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heap_types[i_list_internal], false));
+		this.#refTypeRegistry.set('(ref $List)',         getTypeFromHeapType(heap_types[i_list],          false));
+		this.#refTypeRegistry.set('(ref $DictInternal)', getTypeFromHeapType(heap_types[i_dict_internal], false));
+		this.#refTypeRegistry.set('(ref $Dict)',         getTypeFromHeapType(heap_types[i_dict],          false));
+
+		this.#refTypeRegistry.set('(ref null $Object)',    getTypeFromHeapType(heap_types[i_object],     true)); // used as the `$composite` field of `$Value`
+		this.#refTypeRegistry.set('(ref null $Value)',     getTypeFromHeapType(heap_types[i_value],      true)); // used as the fields of `$ListInternal`
+		this.#refTypeRegistry.set('(ref null $DictEntry)', getTypeFromHeapType(heap_types[i_dict_entry], true)); // used as the fields of `$DictInternal`
+		/* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 	}
 
 	#binOpArithmetic(

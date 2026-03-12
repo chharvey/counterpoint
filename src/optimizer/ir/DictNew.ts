@@ -1,9 +1,10 @@
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	DictEntry_new,
 	bigint_to_i64,
 	type Builder,
+	type Local,
 	BinVect,
 } from '../../index.ts';
 import {
@@ -41,9 +42,6 @@ export class DictNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const t_dict_internal: binaryen.Type = cg.typeRegistry.get('DictInternal')!;
-		const t_dict:          binaryen.Type = cg.typeRegistry.get('Dict')!;
-
 		/**
 		 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
 		 * ```
@@ -83,20 +81,21 @@ export class DictNew extends Value {
 		 * fill in the entries,
 		 * return a $Dict type with the $count and $array fields
 		 */
-		const internalarray_idx: number = Number(cg.nextLocalIndex());
+		const internalarray: Local = cg.newLocal(
+			cg.module.array.new_default(cg.getHeapType('$DictInternal')!, cg.module.i32.const(capacity)),
+			cg.getRefType('(ref $DictInternal)'),
+		);
 		return cg.module.block(null, [
-			cg.module.local.set(internalarray_idx, cg.module.array.new_default(t_dict_internal, cg.module.i32.const(capacity))),
+			internalarray.set(),
 			...[...entries].map((entry, i) => cg.module.array.set( // `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
-				cg.module.local.get(internalarray_idx, t_dict_internal),
+				internalarray.get(),
 				cg.module.i32.const(i),
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				entry ?? cg.module.ref.null(binaryen.getTypeFromHeapType(cg.typeRegistry.get('DictEntry')!, true)),
+				entry ?? cg.module.ref.null(cg.getRefType('(ref null $DictEntry)')!),
 			)),
 			cg.module.struct.new([
 				new BinVect(cg.module, bigint_to_i64(cg.module, BigInt(this.props.size))).vect,
-				cg.module.local.get(internalarray_idx, t_dict_internal),
-			], t_dict),
-		], t_dict);
+				internalarray.get(),
+			], cg.getHeapType('$Dict')!),
+		], cg.getRefType('(ref $Dict)'));
 	}
 }

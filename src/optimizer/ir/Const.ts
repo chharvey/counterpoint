@@ -45,7 +45,7 @@ export class Const extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return this.value.codegen(cg.module);
+		return this.value.codegen(cg.module).vect;
 	}
 
 	public override asTac(): Const {

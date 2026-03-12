@@ -702,7 +702,7 @@ test.suite('ASTNodeDeclaration', () => {
 					val rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= tr)));
 				}`);
 				const [tup, rec] = stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				assert.deepStrictEqual(goal.builder.getAllLocals().slice(1).map((local) => local.value), [
+				assert.deepStrictEqual(goal.builder.getAllLocals().slice(1).map(({value}) => value), [
 					tup.build(),
 					rec.build(),
 				]);

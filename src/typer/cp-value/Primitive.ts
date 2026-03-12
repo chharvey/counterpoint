@@ -1,4 +1,5 @@
 import type binaryen from 'binaryen';
+import type {BinVect} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {Value} from './Value.ts';
@@ -27,5 +28,5 @@ export abstract class Primitive extends Value {
 	 * @param mod the binaryen module
 	 * @return the binaryen expression
 	 */
-	public abstract codegen(mod: binaryen.Module): binaryen.ExpressionRef;
+	public abstract codegen(mod: binaryen.Module): BinVect;
 }
