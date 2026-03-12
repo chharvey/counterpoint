@@ -254,7 +254,7 @@ on the binding object at runtime. This operator is designed to work with
 optional entries on types, such as optional properties on a record type, as well as
 [the `Maybe` algeraic sum type] (link pending).
 
-Given a record `record` of type `[a: bool, b?: int]`,
+Given a record `record` of type `(a: bool, b?: int)`,
 the expression `record.b` would result in a crash if there’s no actual value at that location,
 so the compiler raises an error when using that syntax.
 Using the maybe access operator though, `record?.b` will produce the value at `record.b`

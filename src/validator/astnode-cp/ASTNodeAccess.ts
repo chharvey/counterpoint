@@ -85,6 +85,9 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.base.type().isBottomType) {
+			return TYPE.NEVER;
+		}
 		const entry: EntryType = get_entry_info(this.base.type(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);

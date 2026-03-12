@@ -460,63 +460,74 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access, Boolean is_writing) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
-	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
+	3. *Let* `accessor_maybe` be `false`.
+	4. *If* `access.kind` is `MAYBE`:
+		1. *Set* `accessor_maybe` to `true`.
+	5. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* a new EntryTypeSchema [
-				type=     `Unknown`,
+				type=     `Nothing`,
+				optional= `accessor_maybe`,
+			].
+	6. *If* *UnwrapAffirm:* `Subtype(Null, base_type)` is `true`:
+		1. *Let* `nonnull_base_type` be *UnwrapAffirm:* `Difference(base_type, Null)`.
+		2. *Let* `entry_info` be *Unwrap*: `GetEntryInfo(nonnull_base_type, access, is_writing)`.
+		3. *Let* `result` be *UnwrapAffirm:* `Union(entry_info, Null)`.
+		4. *Return:* a new EntryTypeSchema [
+				type=     `result`,
 				optional= `true`,
 			].
-	4. *If* `base_type` is the intersection or union of some types `a` and `b`:
+	7. *If* `base_type` is the intersection or union of some types `a` and `b`:
 		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
 		2. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
 		3. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
 		4. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
 		5. *Set* `entries` to a mapping of `entries` for each `entry` to `entry.value`.
-		6. *If* `entries.count` is 0:
-			1. *If* `errors.count` is 1:
-				1. *Throw:* `errors.0`.
-			2. *Throw:* a new AggregateError containing `errors`.
-		7. *If* `base_type` is the intersection of some types `a` and `b`:
-			1. *Let* `all_optional` be `true`.
-			2. *For each* `entry` in `entries`:
+		6. *If* `base_type` is the intersection of some types `a` and `b`:
+			1. *If* `entries.count` is 0:
+				1. *Throw:* all of the items in `errors`.
+			2. *Let* `all_optional` be `true`.
+			3. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `false`:
 					1. *Set* `all_optional` to `false`.
-			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to `Intersection(x.type, y.type)`.
-			4. *Return:* a new EntryTypeSchema [
+			4. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to `Intersection(x.type, y.type)`.
+			5. *Return:* a new EntryTypeSchema [
 					type=     `intersection`,
 					optional= `all_optional`,
 				].
-		8. *Else:*
+		7. *Else:*
 			1. *Assert:* `base_type` is the union of some types `a` and `b`.
-			2. *Let* `any_optional` be `false`.
-			3. *For each* `entry` in `entries`:
+			2. *If* `errors.count` is greater than 0:
+				1. *Throw:* all of the items in `errors`.
+			3. *Let* `any_optional` be `false`.
+			4. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `true`:
 					1. *Set* `any_optional` to `true`.
-			4. *If* `errors.count` is greater than 0:
-				1. *Set* `any_optional` to `true`.
 			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to `Union(x.type, y.type)`.
 			6. *Return:* a new EntryTypeSchema [
 					type=     `union`,
 					optional= `any_optional`,
 				].
-	5. *If* `accessor` is a SemanticIndex:
+	8. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
 			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
 			2. *Return:* `entry`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	6. *Else If* `accessor` is a SemanticKey:
+	9. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
 			2. *Return:* `entry`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	7. *Else:*
+	10. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *Let* `accessor_maybe` be `false`.
-		4. *If* `access.kind` is `MAYBE`:
-			1. *Set* `accessor_maybe` to `true`.
-		5. *If* `base_type` is a List type:
+		3. *If* *UnwrapAffirm:* `IsBottomType(accessor_type)` is `true`:
+			1. *Return:* a new EntryTypeSchema [
+					type=     `Nothing`,
+					optional= `accessor_maybe`,
+				].
+		4. *If* `base_type` is a List type:
 			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
@@ -525,7 +536,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				].
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		6. *Else If* `base_type` is a Dict type:
+		5. *Else If* `base_type` is a Dict type:
 			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
@@ -536,7 +547,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				1. *Throw:* a new Error "String keys for dict access are not yet supported."
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		7. *Else If* `base_type` is a Set type:
+		6. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
@@ -545,7 +556,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				].
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		8. *Else If* `base_type` is a Map type:
+		7. *Else If* `base_type` is a Map type:
 			1. *Let* `k` be the antecedent type argument over `base_type`.
 			2. *Let* `v` be the consequent type argument over `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true` *or* `is_writing` is `false`:
@@ -555,7 +566,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				].
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		9. *Else:*
+		8. *Else:*
 			1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
