@@ -128,12 +128,6 @@ describe('ASTNodeAccess', () => {
 				tup_unfixed.0; % type \`int\`     % non-foldable value
 				tup_unfixed.1; % type \`float\`   % non-foldable value
 				tup_unfixed.2; % type \`str\`     % non-foldable value
-				tup_fixed.-3;   % type \`1\`       % value \`1\`
-				tup_fixed.-2;   % type \`2.0\`     % value \`2.0\`
-				tup_fixed.-1;   % type \`"three"\` % value \`"three"\`
-				tup_unfixed.-3; % type \`int\`     % non-foldable value
-				tup_unfixed.-2; % type \`float\`   % non-foldable value
-				tup_unfixed.-1; % type \`str\`     % non-foldable value
 
 				rec_fixed.a;   % type \`1\`       % value \`1\`
 				rec_fixed.b;   % type \`2.0\`     % value \`2.0\`
@@ -144,16 +138,13 @@ describe('ASTNodeAccess', () => {
 			`;
 			const THROWS = extract_lines`
 				(1, 2.0, "three").3;
+				(1, 2.0, "three").-1;
 				(1, 2.0, "three").-4;
 				(a= 1, b= 2.0, c= "three").d;
 			`;
 			describe('#fold', () => {
 				it('return individual entries.', () => {
 					testExprValues(SRC, [
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-						...repeat(null, 3),
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
@@ -512,13 +503,6 @@ describe('ASTNodeAccess', () => {
 						tup_unfixed.1;  % type \`float\`
 						tup_unfixed.2;  % type \`str\`
 
-						tup_fixed.-3;   % type \`1\`
-						tup_fixed.-2;   % type \`2.0\`
-						tup_fixed.-1;   % type \`"three"\`
-						tup_unfixed.-3; % type \`int\`
-						tup_unfixed.-2; % type \`float\`
-						tup_unfixed.-1; % type \`str\`
-
 						rec_fixed.a;   % type \`1\`
 						rec_fixed.b;   % type \`2.0\`
 						rec_fixed._;   % type \`"three"\`
@@ -539,12 +523,6 @@ describe('ASTNodeAccess', () => {
 						rec_a?.z;
 						rec_b?.z;
 					`, [
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-						TYPE.INT,
-						TYPE.FLOAT,
-						TYPE.STR,
 						typeUnit(1n),
 						typeUnit(2.0),
 						typeUnit('three'),
@@ -1398,33 +1376,6 @@ describe('ASTNodeAccess', () => {
 						mod.struct.get(0, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
 						mod.struct.get(1, mod.struct.get(1, mod.struct.get(1, tuple, tb.getTempHeapType(5)), tb.getTempHeapType(4)), tb.getTempHeapType(3)),
 					],
-				);
-			});
-		});
-
-		describe('tuple negative index access.', () => {
-			it('direct access.', () => {
-				const {builder, expr} = setup(`
-					val mut x: float = 1.1;
-					(x, 2.2, 3.3).-2;
-				`);
-				return assertEqualBins(
-					expr,
-					builder.module.struct.get(1, builder.module.struct.new([
-						builder.module.local.get(0, binaryen.v128),
-						buildConst(builder, 2.2),
-						buildConst(builder, 3.3),
-					], builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(0)),
-				);
-			});
-			it('pointer access.', () => {
-				const {builder, expr} = setup(`
-					val mut tuple: (float, float, float) = (4.4, 5.5, 6.6);
-					tuple.-1;
-				`);
-				return assertEqualBins(
-					expr,
-					builder.module.struct.get(2, builder.module.local.get(0, builder.typeBuilder.getTempHeapType(0)), builder.typeBuilder.getTempHeapType(0)),
 				);
 			});
 		});

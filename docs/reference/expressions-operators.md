@@ -218,17 +218,17 @@ Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.
 
 ### Property Access
 ```
-<Tuple  | List> `.` int-literal
-<Record | Dict> `.` word
-<Object>        `.` `[` <Object> `]`
+<Tuple>  `.` int-literal
+<Record> `.` word
+<Object> `.` `[` <Object> `]`
 
-<Tuple  | List> `?.` int-literal
-<Record | Dict> `?.` word
-<Object>        `?.` `[` <Object> `]`
+<Tuple>  `?.` int-literal
+<Record> `?.` word
+<Object> `?.` `[` <Object> `]`
 
-<Tuple  | List> `!.` int-literal
-<Record | Dict> `!.` word
-<Object>        `!.` `[` <Object> `]`
+<Tuple>  `!.` int-literal
+<Record> `!.` word
+<Object> `!.` `[` <Object> `]`
 ```
 The **property accesss** syntax is a unary operator on an object.
 The object it operates on is called the **binding object** and

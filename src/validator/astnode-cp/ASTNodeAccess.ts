@@ -118,9 +118,8 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 						 * If the index is out of range, drop the base and return null.
 						 * We can assert there are no optional entries since this tuple type was created by the AST expression (`TYPE.Tuple.fromTypes`).
 						 */
-						const canon_index: bigint | undefined = base_value.type.canonicalizeIndex(this.accessor.index);
-						if (canon_index !== undefined) {
-							return new IR.TupleGet(base_value, canon_index, typ);
+						if (base_value.type.isIndexCanonical(this.accessor.index)) {
+							return new IR.TupleGet(base_value, this.accessor.index, typ);
 						} else {
 							optimizer.pushInstruction(new IR.Drop(base_value));
 							return new IR.Const(VALUE.NULL);
