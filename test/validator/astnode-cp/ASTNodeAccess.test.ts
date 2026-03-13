@@ -1167,7 +1167,7 @@ describe('ASTNodeAccess', () => {
 					${ typeof result_value === 'string' ? `
 						(DECL <${ result_value === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ result_else_name } ${ result_value })
 					` : result_value((value) => `
-						(DECL <anything> ${ result_else_name } ${ value })
+						(DECL <${ value === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ result_else_name } ${ value })
 					`) }
 					"${ block_endif }":
 					(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
@@ -1190,7 +1190,10 @@ describe('ASTNodeAccess', () => {
 					(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
 				`.concat(
 					...maybe_access_output(0, 'my_tupleA', [5], '(TUPLE.GET 2 (GET my_tupleA))'),
-					...maybe_access_output(3, 'my_tupleB', [7], '(NULL.CONST null)'),
+					...maybe_access_output(3, 'my_tupleB', [7], (set) => `
+						(DROP (GET my_tupleB))
+						${ set('(NULL.CONST null)') }
+					`),
 				).join('\n'));
 			});
 			it('record access.', () => {
@@ -1209,7 +1212,10 @@ describe('ASTNodeAccess', () => {
 					(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
 				`.concat(
 					...maybe_access_output(0, 'my_recordX', [5], '(RECORD.GET @b (GET my_recordX))'),
-					...maybe_access_output(3, 'my_recordY', [7], '(NULL.CONST null)'),
+					...maybe_access_output(3, 'my_recordY', [7], (set) => `
+						(DROP (GET my_recordY))
+						${ set('(NULL.CONST null)') }
+					`),
 				).join('\n'));
 			});
 			it('List access.', () => {

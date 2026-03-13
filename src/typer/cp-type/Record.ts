@@ -97,7 +97,11 @@ class TypeRecord extends ValueType {
 	}
 
 	public canonicalizeKey(key: bigint): bigint | undefined {
-		return this.#canonicalizedKeys.includes(key) ? BigInt(this.#canonicalizedKeys.indexOf(key)) : undefined;
+		return this.isKeyCanonical(key) ? BigInt(this.#canonicalizedKeys.indexOf(key)) : undefined;
+	}
+
+	public isKeyCanonical(key: bigint): boolean {
+		return this.#canonicalizedKeys.includes(key);
 	}
 }
 export {TypeRecord as Record};
