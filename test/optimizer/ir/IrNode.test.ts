@@ -199,11 +199,11 @@ test.suite('IrNode', () => {
 				return assertEqualBins(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.struct.new([
-						mod.struct.new([mod.i64.const(260, 0), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						mod.struct.new([mod.i64.const(261, 0), genConst(mod, Symbol(0x105))],      registry[0]),
-						mod.struct.new([mod.i64.const(257, 0), mod.local.get(0, binaryen.v128)],   registry[0]),
-						mod.struct.new([mod.i64.const(258, 0), genConst(mod, 4.2)],                registry[0]),
-						mod.struct.new([mod.i64.const(259, 0), mod.local.get(1, binaryen.anyref)], registry[1]),
+						mod.struct.new([bigint_to_i64(mod, 260n), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, Symbol(0x105))],      registry[0]),
+						mod.struct.new([bigint_to_i64(mod, 257n), mod.local.get(0, binaryen.v128)],   registry[0]),
+						mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 4.2)],                registry[0]),
+						mod.struct.new([bigint_to_i64(mod, 259n), mod.local.get(1, binaryen.anyref)], registry[1]),
 					], TEST_HEAPTYPE),
 				);
 			});

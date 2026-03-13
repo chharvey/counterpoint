@@ -7,6 +7,7 @@ import type {
 } from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
 import {Field_new} from '../code-generator/index.ts';
+import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 import type {
@@ -402,7 +403,7 @@ export class Builder {
 			mod.if(
 				local_vects[0].isInt,
 				// `-n` in two’s complement is `(n xor -1) + 1`
-				new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].intValue, mod.i64.const(-1, 0)), mod.i64.const(1, 0))).vect,
+				new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].intValue, bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
 				mod.if(
 					local_vects[0].isFloat,
 					new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
