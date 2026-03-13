@@ -1151,24 +1151,25 @@ describe('ASTNodeAccess', () => {
 				block_n:      number,
 				base_name:    string,
 				result_ns:    [number, number] | [number],
-				result_value: string | ((set: (value: string) => string) => string),
+				result_value: string | ((decl: (value: string) => string) => string),
 			): string[] {
 				const block_then:       string = `block-${ block_n }`;
 				const block_else:       string = `block-${ block_n + 1 }`;
 				const block_endif:      string = `block-${ block_n + 2 }`;
 				const result_then_name: string = `$${ result_ns[0] }`;
 				const result_else_name: string = `$${ result_ns[1] ?? result_ns[0] + 1 }`;
+				function decl_result(res_name: string, res_val: string = '(NULL.CONST null)'): string {
+					return `(DECL <${ res_val === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ res_name } ${ res_val })`;
+				}
 				return extract_lines`
 					if_false (ISNULL (GET ${ base_name })), goto "${ block_else }".
 					"${ block_then }":
-					(DECL <null> ${ result_then_name } (NULL.CONST null))
+					${ decl_result(result_then_name) }
 					goto "${ block_endif }".
 					"${ block_else }":
-					${ typeof result_value === 'string' ? `
-						(DECL <${ result_value === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ result_else_name } ${ result_value })
-					` : result_value((value) => `
-						(DECL <${ value === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ result_else_name } ${ value })
-					`) }
+					${ typeof result_value === 'string'
+						? decl_result(result_else_name, result_value)
+						: result_value((value) => decl_result(result_else_name, value)) }
 					"${ block_endif }":
 					(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
 				`;
@@ -1190,9 +1191,9 @@ describe('ASTNodeAccess', () => {
 					(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
 				`.concat(
 					...maybe_access_output(0, 'my_tupleA', [5], '(TUPLE.GET 2 (GET my_tupleA))'),
-					...maybe_access_output(3, 'my_tupleB', [7], (set) => `
+					...maybe_access_output(3, 'my_tupleB', [7], (decl) => `
 						(DROP (GET my_tupleB))
-						${ set('(NULL.CONST null)') }
+						${ decl('(NULL.CONST null)') }
 					`),
 				).join('\n'));
 			});
@@ -1212,9 +1213,9 @@ describe('ASTNodeAccess', () => {
 					(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
 				`.concat(
 					...maybe_access_output(0, 'my_recordX', [5], '(RECORD.GET @b (GET my_recordX))'),
-					...maybe_access_output(3, 'my_recordY', [7], (set) => `
+					...maybe_access_output(3, 'my_recordY', [7], (decl) => `
 						(DROP (GET my_recordY))
-						${ set('(NULL.CONST null)') }
+						${ decl('(NULL.CONST null)') }
 					`),
 				).join('\n'));
 			});
@@ -1282,13 +1283,13 @@ describe('ASTNodeAccess', () => {
 					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 42)))
 					(DECL <Map> my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
 				`.concat(
-					...maybe_access_output(0, 'my_list', [0, 4], (set) => `
+					...maybe_access_output(0, 'my_list', [0, 4], (decl) => `
 						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
 						(DECL <int> $2 (NEG (INT.CONST 3)))
 						(DECL <int> $3 (INT.ADD (GET $1) (GET $2)))
-						${ set('(LIST.GET (GET my_list) (GET $3))') }
+						${ decl('(LIST.GET (GET my_list) (GET $3))') }
 					`),
-					...maybe_access_output(3, 'my_dict', [5, 9], (set) => `
+					...maybe_access_output(3, 'my_dict', [5, 9], (decl) => `
 						if_false (TOBOOL (SYM.CONST @b)), goto "block-7".
 						"block-6":
 						(DECL <sym> $6 (SYM.CONST @a))
@@ -1297,12 +1298,12 @@ describe('ASTNodeAccess', () => {
 						(DECL <sym> $7 (SYM.CONST @b))
 						"block-8":
 						(DECL <sym> $8 (PHI "block-6"->(GET $6) "block-7"->(GET $7)))
-						${ set('(DICT.GET (GET my_dict) (GET $8))') }
+						${ decl('(DICT.GET (GET my_dict) (GET $8))') }
 					`),
-					...maybe_access_output(9, 'my_map', [10, 13], (set) => `
+					...maybe_access_output(9, 'my_map', [10, 13], (decl) => `
 						(DECL <int> $11 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
 						(DECL <int> $12 (INT.ADD (INT.CONST 5) (GET $11)))
-						${ set('(MAP.GET (GET my_map) (GET $12))') }
+						${ decl('(MAP.GET (GET my_map) (GET $12))') }
 					`),
 				).join('\n'));
 			});
