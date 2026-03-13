@@ -135,6 +135,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 					}
 				}
 			}
+			// else, it was a union with null (the only other valid option)
 			return new IR.Const(VALUE.NULL);
 		};
 

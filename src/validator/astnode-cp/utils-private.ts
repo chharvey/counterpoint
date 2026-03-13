@@ -124,6 +124,10 @@ export function valueOfTokenNumber(source: string, config: CPConfig): VALUE.Inte
 
 
 
+function decombine(t: TYPE.Type): TYPE.Type[] {
+	return t instanceof TYPE.Combinable ? t.operands.flatMap((comp) => decombine(comp)) : [t];
+}
+
 export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
 	if (base_type.isBottomType) {
@@ -133,6 +137,12 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 		return {type: get_entry_info(base_type.subtract(TYPE.NULL), access, is_writing).type.union(TYPE.NULL), optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
+		const constituents: readonly TYPE.Type[] = decombine(base_type);
+		constituents.slice(0, -1).forEach((comp, i) => {
+			if (comp.constructor !== constituents[i + 1].constructor) {
+				throw new TypeErrorInvalidOperation(access);
+			}
+		});
 		const entry_infos: readonly (EntryType | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
 			try {
 				return get_entry_info(comp, access, is_writing);

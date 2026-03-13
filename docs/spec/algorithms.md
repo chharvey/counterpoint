@@ -477,12 +477,14 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				optional= `true`,
 			].
 	7. *If* `base_type` is the intersection or union of some types `a` and `b`:
-		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
-		2. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
-		3. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
-		4. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
-		5. *Set* `entries` to a mapping of `entries` for each `entry` to `entry.value`.
-		6. *If* `base_type` is the intersection of some types `a` and `b`:
+		1. If `a` and `b` are of different types:
+			1. *Throw:* a new TypeErrorInvalidOperation.
+		2. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
+		3. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
+		4. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
+		5. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
+		6. *Set* `entries` to a mapping of `entries` for each `entry` to `entry.value`.
+		7. *If* `base_type` is the intersection of some types `a` and `b`:
 			1. *If* `entries.count` is 0:
 				1. *Throw:* all of the items in `errors`.
 			2. *Let* `all_optional` be `true`.
@@ -494,7 +496,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 					type=     `intersection`,
 					optional= `all_optional`,
 				].
-		7. *Else:*
+		8. *Else:*
 			1. *Assert:* `base_type` is the union of some types `a` and `b`.
 			2. *If* `errors.count` is greater than 0:
 				1. *Throw:* all of the items in `errors`.

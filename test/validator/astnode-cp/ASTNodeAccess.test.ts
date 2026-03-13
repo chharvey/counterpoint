@@ -727,7 +727,7 @@ describe('ASTNodeAccess', () => {
 						mixed_rec.0;
 						mixed_tup?.a;
 						mixed_rec?.0;
-					`, repeat(TypeErrorNoEntry, 4));
+					`, repeat(TypeErrorInvalidOperation, 4));
 				});
 				it('every constituent has the entry and it’s required in every constituent.', () => {
 					testExprTypes(`
@@ -896,28 +896,30 @@ describe('ASTNodeAccess', () => {
 					set_unfixed?.[42.0];
 				`, repeat(TypeErrorInvalidOperation, 8));
 			});
-			it('throws when some constituent is of incorrect type.', () => {
+			it('throws when constituents are of different types (allowing null).', () => {
 				testExprTypes(`
 					val mut mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
 					val mut mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
 
+					val mut mixed_set:   {int} | {int -> int} = {42, 43};
+					val mut mixed_map:   {int} | {int -> int} = {42 -> 43};
 					val mut nullish_map: {int -> bool} | null = {42 -> false};
 
 					mixed_list.[@a];
 					mixed_dict.[0];
 
+					mixed_set.[21];
+					mixed_map.[21];
 					nullish_map.[42];
 
 					mixed_list?.[@a];
 					mixed_dict?.[0];
 
+					mixed_set?.[21];
+					mixed_map?.[21];
 					nullish_map?.[42]; % type \`bool | null\`
 				`, [
-					TypeErrorNotNarrow,
-					TypeErrorNotNarrow,
-					TypeErrorInvalidOperation,
-					TypeErrorNotNarrow,
-					TypeErrorNotNarrow,
+					...repeat(TypeErrorInvalidOperation, 9),
 					TYPE.BOOL.union(TYPE.NULL),
 				]);
 			});
@@ -1235,45 +1237,30 @@ describe('ASTNodeAccess', () => {
 					(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
 				`.concat(...maybe_access_output(0, '$0', [1], '(MAP.GET (GET $0) (GET accessor))')).join('\n'));
 			});
-			it.skip('should throw when accessing a union.', () => {
-				// TODO: accessing a `{int} | {int -> str}` should throw
-				assert.strictEqual(setupScript(`{
-					val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
-					val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
-					val mut mixed_lst: [int]            | [:int]                       = [42];
-					val mut mixed_dct: [int]            | [:int]                       = [a= 42];
-					val mut mixed_set: {int}            | {int -> str}                 = {42};
-					val mut mixed_map: {int}            | {int -> str}                 = {42 -> "hello"};
-					mixed_set?.[42]; %== true
-					mixed_map?.[42]; %== "hello"
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
-					(DECL <tuple> mixed_tup (TUPLE.NEW (STR.CONST "hello") (BOOL.CONST true) (SYM.CONST @world)))
-					(DECL <record> mixed_rec (RECORD.NEW @a->(INT.CONST 42)))
-					(DECL <List> mixed_lst (LIST.NEW (INT.CONST 42)))
-					(DECL <Dict> mixed_dct (DICT.NEW @a->(INT.CONST 42)))
-					(DECL <Set> mixed_set (SET.NEW (INT.CONST 42)))
-					(DECL <Map> mixed_map (MAP.NEW (INT.CONST 42)->(STR.CONST "hello")))
-				`.concat(
-					...maybe_access_output(0x00, 'mixed_set', [0x00], '(SET.GET (GET mixed_set) (INT.CONST 42))'),
-					...maybe_access_output(0x03, 'mixed_map', [0x02], '(MAP.GET (GET mixed_map) (INT.CONST 42))'),
-				).join('\n'));
-			});
 			it('returns null when base is null.', () => {
 				assert.strictEqual(setupScript(`{
+					val mut my_tup:  (int, bool)  | null = null;
+					val mut my_rec:  (a: int)     | null = null;
 					val mut my_list: [int]        | null = null;
 					val mut my_dict: [:int]       | null = null;
 					val mut my_map:  {int -> int} | null = null;
+					my_tup?.1;
+					my_rec?.a;
 					my_list?.[2 * 2 - 3];
 					my_dict?.[@b && @a];
 					my_map?.[5 + 3 * 2];
 				}`, {lower: true, build: false}).opt.print(), extract_lines`
+					(DECL <null> my_tup (NULL.CONST null))
+					(DECL <null> my_rec (NULL.CONST null))
 					(DECL <null> my_list (NULL.CONST null))
 					(DECL <null> my_dict (NULL.CONST null))
 					(DECL <null> my_map (NULL.CONST null))
 				`.concat(
-					...maybe_access_output(0, 'my_list', [0], '(NULL.CONST null)'),
-					...maybe_access_output(3, 'my_dict', [2], '(NULL.CONST null)'),
-					...maybe_access_output(6, 'my_map',  [4], '(NULL.CONST null)'),
+					...maybe_access_output( 0, 'my_tup',  [0], '(NULL.CONST null)'),
+					...maybe_access_output( 3, 'my_rec',  [2], '(NULL.CONST null)'),
+					...maybe_access_output( 6, 'my_list', [4], '(NULL.CONST null)'),
+					...maybe_access_output( 9, 'my_dict', [6], '(NULL.CONST null)'),
+					...maybe_access_output(12, 'my_map',  [8], '(NULL.CONST null)'),
 				).join('\n'));
 			});
 			it('short-circuits evaluation of dynamic accessor when base is non-null.', () => {
