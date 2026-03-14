@@ -65,14 +65,13 @@ export class DictNew extends Value {
 			 * but in the case of collisions we will use the *linear probing* technique.
 			 * @see https://en.wikipedia.org/wiki/Linear_probing
 			 */
-			function insertEntry(index: number): void {
-				if (!entries[index]) {
-					entries[index] = entry;
-					return;
+			function write_entry(index: number): void {
+				if (entries[index]) {
+					return write_entry((index + 1) % capacity);
 				}
-				return insertEntry((index + 1) % capacity);
+				entries[index] = entry;
 			}
-			insertEntry(Number(id) % capacity);
+			return write_entry(Number(id) % capacity);
 		});
 
 		/*
