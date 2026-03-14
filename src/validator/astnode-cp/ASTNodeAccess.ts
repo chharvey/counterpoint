@@ -88,6 +88,9 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.base.type().isBottomType) {
+			return TYPE.NOTHING;
+		}
 		const entry: EntryType = get_entry_info(this.base.type(), this);
 		validate_access_kind(this.kind, entry.optional, this);
 		return update_accessed_type(entry.type, this.kind);
@@ -104,22 +107,54 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				case this.accessor instanceof ASTNodeIndex: {
 					if (base_typename === IR.TypeName.TUPLE) {
 						assert_instanceof(base_value.type, TYPE.Tuple);
-						// we can assert there are no optional entries since this tuple type was created by the AST expression (`TYPE.Tuple.fromTypes`)
-						const canon_index: bigint | undefined = base_value.type.canonicalizeIndex(this.accessor.index);
-						return canon_index !== undefined
-							? new IR.TupleGet(base_value, canon_index, typ)
-							: new IR.Const(VALUE.NULL);
+						/*
+						 * Canonicalize the index. It may be within the range `[-count, count - 1]`.
+						 * We cannot assume that this index is validated by the type-checker,
+						 * since the actual type of the base may be narrower than its declared type.
+						 * E.g.:
+						 * ```
+						 * val tuple: (int, ?: float) = (42,);
+						 * tuple?.1;
+						 * ```
+						 * The accessor is valid, but we want to make sure
+						 * we don’t accidentally try to get the value there at runtime.
+						 * If the index is out of range, drop the base and return null.
+						 * We can assert there are no optional entries since this tuple type was created by the AST expression (`TYPE.Tuple.fromTypes`).
+						 */
+						if (base_value.type.isIndexCanonical(this.accessor.index)) {
+							return new IR.TupleGet(base_value, this.accessor.index, typ);
+						} else {
+							optimizer.pushInstruction(new IR.Drop(base_value));
+							return new IR.Const(VALUE.NULL);
+						}
 					}
 					break;
 				}
 				case this.accessor instanceof ASTNodeKey: {
 					if (base_typename === IR.TypeName.RECORD) {
 						assert_instanceof(base_value.type, TYPE.Record);
-						// we can assert there are no optional entries since this record type was created by the AST expression (`TYPE.Record.fromTypes`)
-						const canon_key: bigint | undefined = base_value.type.canonicalizeKey(this.accessor.id);
-						return canon_key !== undefined
-							? new IR.RecordGet(base_value, {keyid: canon_key, keysrc: this.accessor.source}, typ)
-							: new IR.Const(VALUE.NULL);
+						/*
+						 * Ensure a canonical key.
+						 * We cannot assume that this key is validated by the type-checker,
+						 * since the actual type of the base may be narrower than its declared type.
+						 * E.g.:
+						 * ```
+						 * val record: (a: int, b?: float) = (a= 42);
+						 * record?.b;
+						 * ```
+						 * The accessor is valid, but we want to make sure
+						 * we don’t accidentally try to get the value there at runtime.
+						 * If the key is not canonical, drop the base and return null.
+						 * We can assert there are no optional entries since this record type was created by the AST expression (`TYPE.Record.fromTypes`).
+						 *
+						 * Note: Key hashing will be taken care of in the codegen phase.
+						 */
+						if (base_value.type.isKeyCanonical(this.accessor.id)) {
+							return new IR.RecordGet(base_value, {keyid: this.accessor.id, keysrc: this.accessor.source}, typ);
+						} else {
+							optimizer.pushInstruction(new IR.Drop(base_value));
+							return new IR.Const(VALUE.NULL);
+						}
 					}
 					break;
 				}
@@ -135,6 +170,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 					}
 				}
 			}
+			// else, it was a union with null (the only other valid option)
 			return new IR.Const(VALUE.NULL);
 		};
 

@@ -207,6 +207,73 @@ test.suite('IrNode', () => {
 					], TEST_HEAPTYPE),
 				);
 			});
+			test.test('hashing collisions are resolved in source order.', () => {
+				const {stmts, opt, cg} = setupScript(`{
+					% sym  | id  | mod 3
+					% ---- | --- | ----
+					@b;    % 256 % 1
+					@c;    % 257 % 2
+					@a;    % 258 % 0
+					@bb;   % 259 % 1
+					@cc;   % 260 % 2
+					@aa;   % 261 % 0
+					@bbb;  % 262 % 1
+					@ccc;  % 263 % 2
+					@aaa;  % 264 % 0
+					(a= 42, aa= false, b= 4.2);
+					%%
+						(???,         ???,         ???)
+						(258,         ???,         ???)
+						(258 & 261->, ???,         ???)
+						(258,         261,         ???)
+						(258,         261 & 256->, ???)
+						(258,         261,         256) (a, aa, b)
+					%%
+					(aa= true, c= null, a= 42);
+					%%
+						(???,         ???,       ???)
+						(261,         ???,       ???)
+						(261,         ???,       257)
+						(261 & 258->, ???,       257)
+						(261,         258,       257) (aa, a, c)
+					%%
+					(b= 42, bb= 4.2, bbb= null);
+					%%
+						(???,         256,         ???)
+						(???,         256 & 259->, ???)
+						(???,         256,         259)
+						(???,         256 & 262->, 259)
+						(???,         256,         259 & 262->)
+						(262,         256,         259) (bbb, b, bb)
+					%%
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+				// eslint-disable-next-line
+				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
+				entry_tb.setStructType(0, [binaryen.i64, binaryen.v128].map((typ) => Field_new(typ)));
+				const ht_entry: binaryen.Type = entry_tb.buildAndDispose()[0];
+				return assertEqualBins(
+					stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+					[
+						mod.struct.new([
+							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],   ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, false)], ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 4.2)],   ht_entry),
+						], TEST_HEAPTYPE),
+						mod.struct.new([
+							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, true)], ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],  ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 257n), genConst(mod)],       ht_entry),
+						], TEST_HEAPTYPE),
+						mod.struct.new([
+							mod.struct.new([bigint_to_i64(mod, 262n), genConst(mod)],      ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 42n)], ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 259n), genConst(mod, 4.2)], ht_entry),
+						], TEST_HEAPTYPE),
+					],
+				);
+			});
 		});
 
 		test.test('DICT.NEW returns (struct.new) with count and internal array.', () => {

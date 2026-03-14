@@ -72,14 +72,13 @@ export class RecordNew extends Value {
 			 * but in the case of collisions we will use the *linear probing* technique.
 			 * @see https://en.wikipedia.org/wiki/Linear_probing
 			 */
-			function insertEntry(index: number): void {
-				if (!entries[index]) {
-					entries[index] = entry;
-					return;
+			function write_entry(index: number): void {
+				if (entries[index]) {
+					return write_entry((index + 1) % COUNT);
 				}
-				return insertEntry((index + 1) % COUNT);
+				entries[index] = entry;
 			}
-			insertEntry(Number(id) % COUNT);
+			return write_entry(Number(id) % COUNT);
 		});
 		tb.setStructType(0, entries.map((entry) => Field_new(binaryen.getExpressionType(entry))));
 		return cg.module.struct.new(entries, tb.buildAndDispose()[0]);
