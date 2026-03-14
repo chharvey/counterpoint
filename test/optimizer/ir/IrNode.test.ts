@@ -9,9 +9,8 @@ import {
 	IR,
 	Field_new,
 	Value_new,
-	DictEntry_new,
+	Property_new,
 	Builder,
-	BinVect,
 } from '../../../src/index.ts';
 import type {TypeBuilder} from '../../../src/builder/-types.d.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
@@ -21,9 +20,6 @@ import {genConst} from '../../helpers.ts';
 
 describe('IrNode', () => {
 	describe('#codegen', () => {
-		function bigint_to_i64(mod: binaryen.Module, i: bigint): binaryen.ExpressionRef { // TODO: v0.5: delete
-			return mod.i64.const(Number(i), 0);
-		}
 		function setupScript(src: string, opts: object): {
 			goal: AST.ASTNodeGoal,
 			opt:  Optimizer,
@@ -174,7 +170,7 @@ describe('IrNode', () => {
 							Value_new(cg, genConst(mod, Symbol(0x101))),
 						].map((code, i) => mod.array.set(mod.local.get(3, cg.getRefType('(ref $ListInternal)')!), mod.i32.const(i), code)),
 						mod.struct.new([
-							new BinVect(mod, mod.i32.const(5)).vect,
+							mod.i32.const(5),
 							mod.local.get(3, cg.getRefType('(ref $ListInternal)')!),
 						], cg.getHeapType('$List')!),
 					], cg.getRefType('(ref $List)')),
@@ -213,11 +209,11 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.struct.new([
-						mod.struct.new([bigint_to_i64(mod, 260n), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, Symbol(0x105))],      registry[0]),
-						mod.struct.new([bigint_to_i64(mod, 257n), mod.local.get(0, binaryen.v128)],   registry[0]),
-						mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 4.2)],                registry[0]),
-						mod.struct.new([bigint_to_i64(mod, 259n), mod.local.get(1, binaryen.anyref)], registry[1]),
+						mod.struct.new([mod.i32.const(260), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						mod.struct.new([mod.i32.const(261), genConst(mod, Symbol(0x105))],      registry[0]),
+						mod.struct.new([mod.i32.const(257), mod.local.get(0, binaryen.v128)],   registry[0]),
+						mod.struct.new([mod.i32.const(258), genConst(mod, 4.2)],                registry[0]),
+						mod.struct.new([mod.i32.const(259), mod.local.get(1, binaryen.anyref)], registry[1]),
 					], TEST_HEAPTYPE),
 				);
 			});
@@ -271,19 +267,19 @@ describe('IrNode', () => {
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
 						mod.struct.new([
-							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],   ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, false)], ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 4.2)],   ht_entry),
+							mod.struct.new([mod.i32.const(258), genConst(mod, 42n)],   ht_entry),
+							mod.struct.new([mod.i32.const(261), genConst(mod, false)], ht_entry),
+							mod.struct.new([mod.i32.const(256), genConst(mod, 4.2)],   ht_entry),
 						], TEST_HEAPTYPE),
 						mod.struct.new([
-							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, true)], ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],  ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 257n), genConst(mod)],       ht_entry),
+							mod.struct.new([mod.i32.const(261), genConst(mod, true)], ht_entry),
+							mod.struct.new([mod.i32.const(258), genConst(mod, 42n)],  ht_entry),
+							mod.struct.new([mod.i32.const(257), genConst(mod)],       ht_entry),
 						], TEST_HEAPTYPE),
 						mod.struct.new([
-							mod.struct.new([bigint_to_i64(mod, 262n), genConst(mod)],      ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 42n)], ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 259n), genConst(mod, 4.2)], ht_entry),
+							mod.struct.new([mod.i32.const(262), genConst(mod)],      ht_entry),
+							mod.struct.new([mod.i32.const(256), genConst(mod, 42n)], ht_entry),
+							mod.struct.new([mod.i32.const(259), genConst(mod, 4.2)], ht_entry),
 						], TEST_HEAPTYPE),
 					],
 				);
@@ -296,23 +292,23 @@ describe('IrNode', () => {
 				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 			}`, {lower: true, codegen: true, build: false});
 			const mod = cg.module;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getRefType('(ref null $DictEntry)')!);
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getRefType('(ref null $Property)')!);
 			return assertEqualBins(
 				(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 				mod.block(null, [
 					mod.local.set(3, mod.array.new_default(cg.getHeapType('$DictInternal')!, mod.i32.const(8))),
 					...[
 						WASM_NULL,
-						DictEntry_new(cg, 257n, mod.local.get(0, binaryen.v128)),
-						DictEntry_new(cg, 258n, genConst(mod, 4.2)),
-						DictEntry_new(cg, 259n, mod.local.get(1, binaryen.anyref)),
-						DictEntry_new(cg, 260n, mod.local.get(2, binaryen.v128)),
-						DictEntry_new(cg, 261n, genConst(mod, Symbol(0x105))),
+						Property_new(cg, 257n, mod.local.get(0, binaryen.v128)),
+						Property_new(cg, 258n, genConst(mod, 4.2)),
+						Property_new(cg, 259n, mod.local.get(1, binaryen.anyref)),
+						Property_new(cg, 260n, mod.local.get(2, binaryen.v128)),
+						Property_new(cg, 261n, genConst(mod, Symbol(0x105))),
 						WASM_NULL,
 						WASM_NULL,
 					].map((code, i) => mod.array.set(mod.local.get(3, cg.getRefType('(ref $DictInternal)')!), mod.i32.const(i), code)),
 					mod.struct.new([
-						new BinVect(mod, mod.i32.const(5)).vect,
+						mod.i32.const(5),
 						mod.local.get(3, cg.getRefType('(ref $DictInternal)')!),
 					], cg.getHeapType('$Dict')!),
 				], cg.getRefType('(ref $Dict)')),

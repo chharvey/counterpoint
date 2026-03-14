@@ -33,9 +33,9 @@ export function Value_new(cg: Builder, code: binaryen.ExpressionRef): binaryen.E
 
 
 
-export function DictEntry_new(cg: Builder, id: bigint, code: binaryen.ExpressionRef): binaryen.ExpressionRef {
+export function Property_new(cg: Builder, id: bigint, code: binaryen.ExpressionRef): binaryen.ExpressionRef {
 	return cg.module.struct.new([
-		cg.module.i64.const(Number(id), 0), // TODO: v0.5: use `bigint_to_i64`
+		cg.module.i32.const(Number(id)),
 		Value_new(cg, code),
-	], cg.getHeapType('$DictEntry')!);
+	], cg.getHeapType('$Property')!);
 }

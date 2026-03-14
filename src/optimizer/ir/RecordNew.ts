@@ -56,13 +56,13 @@ export class RecordNew extends Value {
 			const prop_tb: TypeBuilder = new binaryen.TypeBuilder(1);
 			/*
 			 * (type $Entry (struct
-			 * 	(field $key   i64)
+			 * 	(field $key   i32)
 			 * 	(field $value ‹type of value›)
 			 * ))
 			 */
-			prop_tb.setStructType(0, [binaryen.i64, binaryen.getExpressionType(code)].map((typ) => Field_new(typ)));
+			prop_tb.setStructType(0, [binaryen.i32, binaryen.getExpressionType(code)].map((typ) => Field_new(typ)));
 			const entry: binaryen.ExpressionRef = cg.module.struct.new([
-				cg.module.i64.const(Number(id), 0), // TODO: use `bigint_to_i64`
+				cg.module.i32.const(Number(id)),
 				code,
 			], prop_tb.buildAndDispose()[0]);
 			/**

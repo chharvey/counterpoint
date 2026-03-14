@@ -5,7 +5,6 @@ import {
 	Value_new,
 	type Builder,
 	type Local,
-	BinVect,
 } from '../../index.ts';
 import {
 	type ConstructorType,
@@ -93,7 +92,7 @@ export class CollectionLinearNew extends Value {
 						Value_new(cg, item.codegen(cg)),
 					)),
 					cg.module.struct.new([
-						new BinVect(cg.module, cg.module.i32.const(this.items.length)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
+						cg.module.i32.const(this.items.length),
 						internalarray.get(),
 					], cg.getHeapType('$List')!),
 				], cg.getRefType('(ref $List)'));

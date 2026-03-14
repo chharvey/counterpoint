@@ -1,10 +1,9 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	DictEntry_new,
+	Property_new,
 	type Builder,
 	type Local,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -58,7 +57,7 @@ export class DictNew extends Value {
 		 */
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity);
 		this.props.forEach((value, {id}) => {
-			const entry: binaryen.ExpressionRef = DictEntry_new(cg, id, value.codegen(cg));
+			const entry: binaryen.ExpressionRef = Property_new(cg, id, value.codegen(cg));
 			/**
 			 * Find a bucket in which to place the entry.
 			 * By default this will have index `id mod COUNT`,
@@ -88,10 +87,10 @@ export class DictNew extends Value {
 			...[...entries].map((entry, i) => cg.module.array.set( // `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
 				internalarray.get(),
 				cg.module.i32.const(i),
-				entry ?? cg.module.ref.null(cg.getRefType('(ref null $DictEntry)')!),
+				entry ?? cg.module.ref.null(cg.getRefType('(ref null $Property)')!),
 			)),
 			cg.module.struct.new([
-				new BinVect(cg.module, cg.module.i32.const(this.props.size)).vect, // TODO: v0.5: use i64 with `bigint_to_i64`
+				cg.module.i32.const(this.props.size),
 				internalarray.get(),
 			], cg.getHeapType('$Dict')!),
 		], cg.getRefType('(ref $Dict)'));
