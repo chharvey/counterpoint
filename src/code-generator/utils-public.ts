@@ -1,5 +1,5 @@
 import binaryen from 'binaryen';
-import type {Builder} from '../builder/index.ts';
+import type {Builder} from '../index.ts';
 import type {Field} from '../builder/-types.d.ts';
 
 
@@ -22,7 +22,7 @@ export function Value_new(cg: Builder, code: binaryen.ExpressionRef): binaryen.E
 		? cg.module.struct.new([
 			cg.module.i32.const(0),
 			code,
-			cg.module.ref.null(cg.getRefType('(ref null $Object)')!),
+			cg.module.ref.null(binaryen.eqref),
 		], ht_value)
 		: cg.module.struct.new([
 			cg.module.i32.const(1),

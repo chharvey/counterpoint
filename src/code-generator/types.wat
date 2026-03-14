@@ -1,15 +1,15 @@
 ;; # Common Types
 
-;; a Counterpoint object; extended by every subclass
-(type $Object (sub (struct
-)))
-
 ;; WASM representation of a Counterpoint value
 (type $Value (struct
 	(field $tag       i8) ;; 0 = primitive, 1 = composite
 	(field $primitive v128)
-	(field $composite (ref null $Object))
+	(field $composite eqref) ;; (ref null eq)
 ))
+
+;; a Counterpoint object; precursor to the `Object` root class
+(type $Object (sub (struct
+)))
 
 
 
