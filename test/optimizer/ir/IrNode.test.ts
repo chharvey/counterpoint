@@ -21,6 +21,9 @@ import {genConst} from '../../helpers.ts';
 
 describe('IrNode', () => {
 	describe('#codegen', () => {
+		function bigint_to_i64(mod: binaryen.Module, i: bigint): binaryen.ExpressionRef { // TODO: v0.5: delete
+			return mod.i64.const(Number(i), 0);
+		}
 		function setupScript(src: string, opts: object): {
 			goal: AST.ASTNodeGoal,
 			opt:  Optimizer,
@@ -210,11 +213,11 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.struct.new([
-						mod.struct.new([mod.i64.const(260, 0), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						mod.struct.new([mod.i64.const(261, 0), genConst(mod, Symbol(0x105))],      registry[0]),
-						mod.struct.new([mod.i64.const(257, 0), mod.local.get(0, binaryen.v128)],   registry[0]),
-						mod.struct.new([mod.i64.const(258, 0), genConst(mod, 4.2)],                registry[0]),
-						mod.struct.new([mod.i64.const(259, 0), mod.local.get(1, binaryen.anyref)], registry[1]),
+						mod.struct.new([bigint_to_i64(mod, 260n), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, Symbol(0x105))],      registry[0]),
+						mod.struct.new([bigint_to_i64(mod, 257n), mod.local.get(0, binaryen.v128)],   registry[0]),
+						mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 4.2)],                registry[0]),
+						mod.struct.new([bigint_to_i64(mod, 259n), mod.local.get(1, binaryen.anyref)], registry[1]),
 					], TEST_HEAPTYPE),
 				);
 			});
@@ -268,19 +271,19 @@ describe('IrNode', () => {
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
 						mod.struct.new([
-							mod.struct.new([mod.i64.const(258, 0), genConst(mod, 42n)],   ht_entry),
-							mod.struct.new([mod.i64.const(261, 0), genConst(mod, false)], ht_entry),
-							mod.struct.new([mod.i64.const(256, 0), genConst(mod, 4.2)],   ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],   ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, false)], ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 4.2)],   ht_entry),
 						], TEST_HEAPTYPE),
 						mod.struct.new([
-							mod.struct.new([mod.i64.const(261, 0), genConst(mod, true)], ht_entry),
-							mod.struct.new([mod.i64.const(258, 0), genConst(mod, 42n)],  ht_entry),
-							mod.struct.new([mod.i64.const(257, 0), genConst(mod)],       ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, true)], ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],  ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 257n), genConst(mod)],       ht_entry),
 						], TEST_HEAPTYPE),
 						mod.struct.new([
-							mod.struct.new([mod.i64.const(262, 0), genConst(mod)],      ht_entry),
-							mod.struct.new([mod.i64.const(256, 0), genConst(mod, 42n)], ht_entry),
-							mod.struct.new([mod.i64.const(259, 0), genConst(mod, 4.2)], ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 262n), genConst(mod)],      ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 42n)], ht_entry),
+							mod.struct.new([bigint_to_i64(mod, 259n), genConst(mod, 4.2)], ht_entry),
 						], TEST_HEAPTYPE),
 					],
 				);
