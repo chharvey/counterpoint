@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	Value_new,
+	BinValue,
 	type Builder,
 } from '../../index.ts';
 import {
@@ -51,7 +51,7 @@ export class CollectionLinearNew extends Value {
 			case TypeName.TUPLE: {
 				return cg.module.array.new_fixed(
 					cg.getHeaptype('$Tuple')!,
-					this.items.map((item) => Value_new(cg, item.codegen(cg))),
+					this.items.map((item) => new BinValue(cg, item.codegen(cg)).value),
 				);
 			}
 			case TypeName.LIST: {
@@ -71,7 +71,7 @@ export class CollectionLinearNew extends Value {
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$ListInternal')!,
 						Array.from(new Array(capacity), (_, i) => (this.items[i]
-							? Value_new(cg, this.items[i].codegen(cg))
+							? new BinValue(cg, this.items[i].codegen(cg)).value
 							: cg.module.ref.null(cg.getReftype('(ref null $Value)')!)
 						)),
 					),

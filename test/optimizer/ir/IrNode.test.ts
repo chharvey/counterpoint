@@ -7,8 +7,8 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
-	Value_new,
 	Property_new,
+	BinValue,
 	Builder,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
@@ -136,9 +136,9 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
-						Value_new(cg, mod.local.get(0, binaryen.v128)),
-						Value_new(cg, genConst(mod, 4.2)),
-						Value_new(cg, mod.local.get(1, cg.getHeaptype('$Tuple')!)),
+						new BinValue(cg, mod.local.get(0, binaryen.v128)).value,
+						new BinValue(cg, genConst(mod, 4.2)).value,
+						new BinValue(cg, mod.local.get(1, cg.getHeaptype('$Tuple')!)).value,
 					]),
 				);
 			});
@@ -154,11 +154,11 @@ describe('IrNode', () => {
 					mod.struct.new([
 						mod.i32.const(5),
 						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
-							Value_new(cg, mod.local.get(0, binaryen.v128)),
-							Value_new(cg, genConst(mod, 4.2)),
-							Value_new(cg, mod.local.get(1, cg.getHeaptype('$Tuple')!)),
-							Value_new(cg, mod.local.get(2, binaryen.v128)),
-							Value_new(cg, genConst(mod, Symbol(0x101))),
+							new BinValue(cg, mod.local.get(0, binaryen.v128)).value,
+							new BinValue(cg, genConst(mod, 4.2)).value,
+							new BinValue(cg, mod.local.get(1, cg.getHeaptype('$Tuple')!)).value,
+							new BinValue(cg, mod.local.get(2, binaryen.v128)).value,
+							new BinValue(cg, genConst(mod, Symbol(0x101))).value,
 							WASM_NULL,
 							WASM_NULL,
 							WASM_NULL,
