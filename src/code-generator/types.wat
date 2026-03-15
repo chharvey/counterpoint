@@ -1,40 +1,49 @@
 ;; # Common Types
 
-;; a Counterpoint object; extended by every subclass
-(type $Object (sub (struct
-)))
-
 ;; WASM representation of a Counterpoint value
 (type $Value (struct
 	(field $tag       i8) ;; 0 = primitive, 1 = composite
 	(field $primitive v128)
-	(field $composite (ref null $Object))
+	(field $composite eqref) ;; (ref null eq)
 ))
 
-
-
-;; internal holding of List items
-(type $ListInternal (array (mut (ref null $Value)))) ;; mutable to allow reassigning array entries
-
-;; precursor to the `List` class
-(type $List (sub $Object (struct
-	(field $count (mut v128))                ;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
-	(field $array (mut (ref $ListInternal))) ;; the array of values; mutable to allow reallocation
-)))
-
-
-
-;; type of entry in every Dict
-(type $DictEntry (struct
-	(field $key   i64)
+;; type of entry in records/Dicts
+(type $Property (struct
+	(field $key   i32)
 	(field $value (ref $Value))
 ))
 
-;; internal holding of Dict entries
-(type $DictInternal (array (mut (ref null $DictEntry)))) ;; mutable to allow reassigning array entries
+
+
+;; ## Compound Value Types: tuples and records
+(type $Tuple  (array (ref $Value)))
+(type $Record (array (ref $Property)))
+
+
+
+;; ## List/Dict Internals: storage of items/properties
+;; mutable to allow reassigning array entries, nullable because array can be sparse
+(type $ListInternal (array (mut (ref null $Value))))
+(type $DictInternal (array (mut (ref null $Property))))
+
+
+
+;; a Counterpoint object; precursor to the `Object` root class
+(type $Object (sub (struct
+)))
+
+;; precursor to the `List` class
+(type $List (sub $Object (struct
+	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
+	(field $count (mut i32))
+	;; the array of values; mutable to allow reallocation
+	(field $array (mut (ref $ListInternal)))
+)))
 
 ;; precursor to the `Dict` class
 (type $Dict (sub $Object (struct
-	(field $count (mut v128))                ;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
-	(field $array (mut (ref $DictInternal))) ;; the array of values; mutable to allow reallocation
+	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
+	(field $count (mut i32))
+	;; the array of values; mutable to allow reallocation
+	(field $array (mut (ref $DictInternal)))
 )))

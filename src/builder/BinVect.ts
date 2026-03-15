@@ -213,7 +213,7 @@ export class BinVect {
 
 	/** The value as interpreted as an int. */
 	public get intValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.vect, 2);
+		return this.mod.i32x4.extract_lane(this.vect, 3);
 	}
 
 	/** The value as interpreted as a float. */

@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -45,7 +48,7 @@ export class Const extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return this.value.codegen(cg.module).vect;
+		return new BinValue(cg, this.value.codegen(cg.module)).value;
 	}
 
 	public override asTac(): Const {

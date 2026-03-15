@@ -3,13 +3,40 @@ import * as path from 'node:path';
 import binaryen from 'binaryen';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {Field_new} from '../code-generator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 import type {
 	BinaryenModuleUpdates,
+	Field,
 	TypeBuilder,
 } from './-types.d.ts';
+
+
+
+type HeaptypeKey = (
+	| '$Value'
+	| '$Property'
+	| '$Tuple'
+	| '$Record'
+	| '$ListInternal'
+	| '$DictInternal'
+	| '$Object'
+	| '$List'
+	| '$Dict'
+);
+type ReftypeKey = `(ref ${ 'null ' | '' }${ HeaptypeKey })`;
+
+
+
+function Field_new(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
+	return {
+		type:       typ,
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		// eslint-disable-next-line
+		packedType: binaryen[packedType],
+		mutable,
+	};
+}
 
 
 
@@ -25,10 +52,10 @@ export class Builder {
 
 
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
-	readonly #heapTypeRegistry = new Map<string, binaryen.Type>();
+	readonly #heaptypeRegistry = new Map<HeaptypeKey, binaryen.Type>();
 
 	/** A registry of reference (and reference-null) types. */
-	readonly #refTypeRegistry = new Map<string, binaryen.Type>();
+	readonly #reftypeRegistry = new Map<ReftypeKey, binaryen.Type>();
 
 	#typeCount: bigint = 0n;
 
@@ -54,12 +81,12 @@ export class Builder {
 		return this.#typeCount++;
 	}
 
-	public getHeapType(key: string): binaryen.Type | undefined {
-		return this.#heapTypeRegistry.get(key);
+	public getHeaptype(key: HeaptypeKey): binaryen.Type | undefined {
+		return this.#heaptypeRegistry.get(key);
 	}
 
-	public getRefType(key: string): binaryen.Type | undefined {
-		return this.#refTypeRegistry.get(key);
+	public getReftype(key: ReftypeKey): binaryen.Type | undefined {
+		return this.#reftypeRegistry.get(key);
 	}
 
 	/**
@@ -133,20 +160,46 @@ export class Builder {
 
 		let type_count: number = 0;
 
-		/* (type $Object ...) */
-		const i_object: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_object, []);
-		tb.setOpen(i_object);
-
 		/* (type $Value ...) */
 		const i_value: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_value, [
 			Field_new(binaryen.i32, 'i8'),
 			Field_new(binaryen.v128),
-			Field_new(tb.getTempRefType(tb.getTempHeapType(i_object), true)),
+			Field_new(binaryen.eqref),
 		]);
+
+		/* (type $Property ...) */
+		const i_property: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_property, [
+			Field_new(binaryen.i32),
+			Field_new(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		]);
+
+		/* (type $Tuple ...) */
+		const i_tuple: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_tuple,
+			tb.getTempRefType(tb.getTempHeapType(i_value), false),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			false,
+		);
+
+		/* (type $Record ...) */
+		const i_record: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_record,
+			tb.getTempRefType(tb.getTempHeapType(i_property), false),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			false,
+		);
 
 		/* (type $ListInternal ...) */
 		const i_list_internal: number = type_count++;
@@ -160,6 +213,24 @@ export class Builder {
 			true,
 		);
 
+		/* (type $DictInternal ...) */
+		const i_dict_internal: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_dict_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_property), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			true,
+		);
+
+		/* (type $Object ...) */
+		const i_object: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_object, []);
+		tb.setOpen(i_object);
+
 		/* (type $List ...) */
 		const i_list: number = type_count++;
 		tb.grow(1);
@@ -169,26 +240,6 @@ export class Builder {
 		]);
 		tb.setSubType(i_list, tb.getTempHeapType(i_object));
 		tb.setOpen(i_list);
-
-		/* (type $DictEntry ...) */
-		const i_dict_entry: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_dict_entry, [
-			Field_new(binaryen.i64),
-			Field_new(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-		]);
-
-		/* (type $DictInternal ...) */
-		const i_dict_internal: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_dict_internal,
-			tb.getTempRefType(tb.getTempHeapType(i_dict_entry), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
-			binaryen.notPacked,
-			true,
-		);
 
 		/* (type $Dict ...) */
 		const i_dict: number = type_count++;
@@ -200,30 +251,34 @@ export class Builder {
 		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
 		tb.setOpen(i_dict);
 
-		const heap_types: readonly binaryen.Type[] = tb.buildAndDispose();
+		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		this.#heapTypeRegistry.set('$Object',       heap_types[i_object]);
-		this.#heapTypeRegistry.set('$Value',        heap_types[i_value]);
-		this.#heapTypeRegistry.set('$ListInternal', heap_types[i_list_internal]);
-		this.#heapTypeRegistry.set('$List',         heap_types[i_list]);
-		this.#heapTypeRegistry.set('$DictEntry',    heap_types[i_dict_entry]);
-		this.#heapTypeRegistry.set('$DictInternal', heap_types[i_dict_internal]);
-		this.#heapTypeRegistry.set('$Dict',         heap_types[i_dict]);
+		this.#heaptypeRegistry.set('$Value',        heaptypes[i_value]);
+		this.#heaptypeRegistry.set('$Property',     heaptypes[i_property]);
+		this.#heaptypeRegistry.set('$Tuple',        heaptypes[i_tuple]);
+		this.#heaptypeRegistry.set('$Record',       heaptypes[i_record]);
+		this.#heaptypeRegistry.set('$ListInternal', heaptypes[i_list_internal]);
+		this.#heaptypeRegistry.set('$DictInternal', heaptypes[i_dict_internal]);
+		this.#heaptypeRegistry.set('$Object',       heaptypes[i_object]);
+		this.#heaptypeRegistry.set('$List',         heaptypes[i_list]);
+		this.#heaptypeRegistry.set('$Dict',         heaptypes[i_dict]);
 
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const {getTypeFromHeapType} = binaryen;
 
 		/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
-		this.#refTypeRegistry.set('(ref $Object)',       getTypeFromHeapType(heap_types[i_object],        false));
-		this.#refTypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heap_types[i_value],         false));
-		this.#refTypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heap_types[i_list_internal], false));
-		this.#refTypeRegistry.set('(ref $List)',         getTypeFromHeapType(heap_types[i_list],          false));
-		this.#refTypeRegistry.set('(ref $DictInternal)', getTypeFromHeapType(heap_types[i_dict_internal], false));
-		this.#refTypeRegistry.set('(ref $Dict)',         getTypeFromHeapType(heap_types[i_dict],          false));
+		this.#reftypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heaptypes[i_value],         false));
+		this.#reftypeRegistry.set('(ref $Property)',     getTypeFromHeapType(heaptypes[i_property],      false));
+		this.#reftypeRegistry.set('(ref $Tuple)',        getTypeFromHeapType(heaptypes[i_tuple],         false));
+		this.#reftypeRegistry.set('(ref $Record)',       getTypeFromHeapType(heaptypes[i_record],        false));
+		this.#reftypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heaptypes[i_list_internal], false));
+		this.#reftypeRegistry.set('(ref $DictInternal)', getTypeFromHeapType(heaptypes[i_dict_internal], false));
+		this.#reftypeRegistry.set('(ref $Object)',       getTypeFromHeapType(heaptypes[i_object],        false));
+		this.#reftypeRegistry.set('(ref $List)',         getTypeFromHeapType(heaptypes[i_list],          false));
+		this.#reftypeRegistry.set('(ref $Dict)',         getTypeFromHeapType(heaptypes[i_dict],          false));
 
-		this.#refTypeRegistry.set('(ref null $Object)',    getTypeFromHeapType(heap_types[i_object],     true)); // used as the `$composite` field of `$Value`
-		this.#refTypeRegistry.set('(ref null $Value)',     getTypeFromHeapType(heap_types[i_value],      true)); // used as the fields of `$ListInternal`
-		this.#refTypeRegistry.set('(ref null $DictEntry)', getTypeFromHeapType(heap_types[i_dict_entry], true)); // used as the fields of `$DictInternal`
+		this.#reftypeRegistry.set('(ref null $Value)',    getTypeFromHeapType(heaptypes[i_value],    true)); // only used as the fields of `$ListInternal`
+		this.#reftypeRegistry.set('(ref null $Property)', getTypeFromHeapType(heaptypes[i_property], true)); // only used as the fields of `$DictInternal`
 		/* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 	}
 

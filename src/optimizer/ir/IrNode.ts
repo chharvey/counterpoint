@@ -19,6 +19,10 @@ export abstract class IrNode {
 		return;
 	}
 
-	/** Generate assembly code. */
+	/**
+	 * Generate assembly code.
+	 * @param  cg code-generator
+	 * @return    a binaryen expression of type `(ref $Value)`
+	 */
 	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
 }
