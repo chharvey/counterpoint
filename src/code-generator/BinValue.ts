@@ -33,7 +33,7 @@ export class BinValue {
 	 * @param  cg  a CodeGenerator to get the types
 	 * @param  arg a Binaryen value of WASM type `v128`,
 	 *               `(ref $Object)` or a subtype, `(ref $Tuple)`, `(ref $Record)`,
-	 *               `(ref $Value)`, or `(ref null $Value)`
+	 *               `(ref $Value)`, or `(ref null $Value)`, or a BinVect object
 	 */
 	public constructor(
 		private readonly cg: Builder,
@@ -41,20 +41,16 @@ export class BinValue {
 	) {
 		this.TYPE = cg.getReftype('(ref $Value)')!;
 		if (arg instanceof BinVect) {
-			this.value = arg.vect;
+			this.value = new BinValue(cg, arg.vect).value;
 			return;
 		}
 		const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
 		switch (binaryen.getExpressionType(arg)) {
 			case cg.getReftype('(ref null $Value)')!: { // in case a nullish `$Value` gets wrapped
-				// if arg is WASM null, return VALUE.NULL, else return the arg
+				// if arg is WASM null, return (unreachable), else return the arg
 				this.value = cg.module.if(
 					cg.module.ref.is_null(arg),
-					cg.module.struct.new([
-						cg.module.i32.const(0),
-						new BinVect(cg.module).vect, // VALUE.NULL.codegen(cg.module).vect
-						cg.module.ref.null(binaryen.eqref),
-					], ht_value),
+					cg.module.unreachable(),
 					arg,
 				);
 				break;
