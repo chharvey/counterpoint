@@ -7,14 +7,9 @@ import {
 	VALUE,
 	TYPE,
 	IR,
-	Field_new,
-	Value_new,
-	DictEntry_new,
-	bigint_to_i64,
+	Property_new,
 	Builder,
-	BinVect,
 } from '../../../src/index.ts';
-import type {TypeBuilder} from '../../../src/builder/-types.d.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {
 	setupScript,
@@ -67,15 +62,14 @@ test.suite('IrNode', () => {
 				42;
 				4.2;
 			}`, {lower: true, codegen: false, build: false});
-			const mod = cg.module;
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					genConst(mod),
-					genConst(mod, false),
-					genConst(mod, Symbol(0x100)),
-					genConst(mod, 42n),
-					genConst(mod, 4.2),
+					genConst(cg),
+					genConst(cg, false),
+					genConst(cg, Symbol(0x100)),
+					genConst(cg, 42n),
+					genConst(cg, 4.2),
 				],
 			);
 		});
@@ -99,35 +93,27 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				stmts.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					mod.local.get(0, binaryen.v128),
-					mod.local.get(1, binaryen.v128),
-					mod.local.get(2, binaryen.v128),
-					mod.local.get(3, binaryen.v128),
-					mod.local.get(4, binaryen.v128),
+					mod.local.get(0, cg.getReftype('(ref $Value)')!),
+					mod.local.get(1, cg.getReftype('(ref $Value)')!),
+					mod.local.get(2, cg.getReftype('(ref $Value)')!),
+					mod.local.get(3, cg.getReftype('(ref $Value)')!),
+					mod.local.get(4, cg.getReftype('(ref $Value)')!),
 				],
 			);
 		});
 
 		test.suite('CollectionLinearNew', () => {
-			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
-			test.before(() => {
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
-				tb.setStructType(0, []);
-				TEST_HEAPTYPE = tb.buildAndDispose()[0];
-			});
-			test.test('empty TUPLE.NEW returns (struct.new_default).', () => {
+			test.test('empty TUPLE.NEW returns (array.new_fixed).', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					();
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				return assertEqualBins(
 					(stmts[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new_default(TEST_HEAPTYPE),
+					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, []),
 				);
 			});
-			test.test('TUPLE.NEW returns (struct.new).', () => {
+			test.test('TUPLE.NEW returns (array.new_fixed).', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(x, 4.2, (null,));
@@ -135,11 +121,11 @@ test.suite('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new([
-						mod.local.get(0, binaryen.v128),
-						genConst(mod, 4.2),
-						mod.local.get(1, binaryen.anyref),
-					], TEST_HEAPTYPE),
+					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
+						mod.local.get(0, cg.getReftype('(ref $Value)')!),
+						genConst(cg, 4.2),
+						mod.local.get(1, cg.getReftype('(ref $Value)')!),
+					]),
 				);
 			});
 			test.test('LIST.NEW returns (struct.new) with count and internal array.', () => {
@@ -148,63 +134,50 @@ test.suite('IrNode', () => {
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
+				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Value)')!);
 				return assertEqualBins(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.block(null, [
-						mod.local.set(3, mod.array.new_default(cg.getHeapType('$ListInternal')!, mod.i32.const(8))),
-						...[
-							Value_new(cg, mod.local.get(0, binaryen.v128)),
-							Value_new(cg, genConst(mod, 4.2)),
-							Value_new(cg, mod.local.get(1, binaryen.anyref)), // composite
-							Value_new(cg, mod.local.get(2, binaryen.v128)),
-							Value_new(cg, genConst(mod, Symbol(0x101))),
-						].map((code, i) => mod.array.set(mod.local.get(3, cg.getRefType('(ref $ListInternal)')!), mod.i32.const(i), code)),
-						mod.struct.new([
-							new BinVect(mod, bigint_to_i64(mod, 5n)).vect,
-							mod.local.get(3, cg.getRefType('(ref $ListInternal)')!),
-						], cg.getHeapType('$List')!),
-					], cg.getRefType('(ref $List)')),
+					mod.struct.new([
+						mod.i32.const(5),
+						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
+							mod.local.get(0, cg.getReftype('(ref null $Value)')!),
+							genConst(cg, 4.2),
+							mod.local.get(1, cg.getReftype('(ref null $Value)')!),
+							mod.local.get(2, cg.getReftype('(ref null $Value)')!),
+							genConst(cg, Symbol(0x101)),
+							WASM_NULL,
+							WASM_NULL,
+							WASM_NULL,
+						]),
+					], cg.getHeaptype('$List')!),
 				);
 			});
 		});
 
 		test.suite('RecordNew', () => {
-			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
-			test.before(() => {
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
-				tb.setStructType(0, []);
-				TEST_HEAPTYPE = tb.buildAndDispose()[0];
-			});
-			test.test('empty RECORD.NEW returns (struct.new_default).', () => {
+			test.test('empty RECORD.NEW returns (array.new_fixed).', () => {
 				// there exists no syntax for empty records, so constructing it manually
 				const cg = new Builder();
 				return assertEqualBins(
 					new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
-					cg.module.struct.new_default(TEST_HEAPTYPE),
+					cg.module.array.new_fixed(cg.getHeaptype('$Tuple')!, []),
 				);
 			});
-			test.test('RECORD.NEW returns (struct.new).', () => {
+			test.test('RECORD.NEW returns (array.new_fixed).', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
-				[binaryen.v128, binaryen.structref].forEach((valuetype, i) => entry_tb.setStructType(i, [binaryen.i64, valuetype].map((typ) => Field_new(typ))));
-				const registry: readonly binaryen.Type[] = entry_tb.buildAndDispose();
 				return assertEqualBins(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new([
-						mod.struct.new([bigint_to_i64(mod, 260n), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, Symbol(0x105))],      registry[0]),
-						mod.struct.new([bigint_to_i64(mod, 257n), mod.local.get(0, binaryen.v128)],   registry[0]),
-						mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 4.2)],                registry[0]),
-						mod.struct.new([bigint_to_i64(mod, 259n), mod.local.get(1, binaryen.anyref)], registry[1]),
-					], TEST_HEAPTYPE),
+					mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
+						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 258n, genConst(cg, 4.2)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
+					]),
 				);
 			});
 			test.test('hashing collisions are resolved in source order.', () => {
@@ -248,60 +221,51 @@ test.suite('IrNode', () => {
 					%%
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
-				entry_tb.setStructType(0, [binaryen.i64, binaryen.v128].map((typ) => Field_new(typ)));
-				const ht_entry: binaryen.Type = entry_tb.buildAndDispose()[0];
 				return assertEqualBins(
 					stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
-						mod.struct.new([
-							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],   ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, false)], ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 4.2)],   ht_entry),
-						], TEST_HEAPTYPE),
-						mod.struct.new([
-							mod.struct.new([bigint_to_i64(mod, 261n), genConst(mod, true)], ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 258n), genConst(mod, 42n)],  ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 257n), genConst(mod)],       ht_entry),
-						], TEST_HEAPTYPE),
-						mod.struct.new([
-							mod.struct.new([bigint_to_i64(mod, 262n), genConst(mod)],      ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 256n), genConst(mod, 42n)], ht_entry),
-							mod.struct.new([bigint_to_i64(mod, 259n), genConst(mod, 4.2)], ht_entry),
-						], TEST_HEAPTYPE),
+						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+							Property_new(cg, 258n, genConst(cg, 42n)),
+							Property_new(cg, 261n, genConst(cg, false)),
+							Property_new(cg, 256n, genConst(cg, 4.2)),
+						]),
+						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+							Property_new(cg, 261n, genConst(cg, true)),
+							Property_new(cg, 258n, genConst(cg, 42n)),
+							Property_new(cg, 257n, genConst(cg)),
+						]),
+						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+							Property_new(cg, 262n, genConst(cg)),
+							Property_new(cg, 256n, genConst(cg, 42n)),
+							Property_new(cg, 259n, genConst(cg, 4.2)),
+						]),
 					],
 				);
 			});
 		});
 
-		test.test('DICT.NEW returns (struct.new) with count and internal array.', () => {
+		test.test('DictNew returns (struct.new) with count and internal array.', () => {
 			const {stmts, opt, cg} = setupScript(`{
 				val mut x: int = 42;
 				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 			}`, {lower: true, codegen: true, build: false});
 			const mod = cg.module;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getRefType('(ref null $DictEntry)')!);
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)')!);
 			return assertEqualBins(
 				(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-				mod.block(null, [
-					mod.local.set(3, mod.array.new_default(cg.getHeapType('$DictInternal')!, mod.i32.const(8))),
-					...[
+				mod.struct.new([
+					mod.i32.const(5),
+					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, [
 						WASM_NULL,
-						DictEntry_new(cg, 257n, mod.local.get(0, binaryen.v128)),
-						DictEntry_new(cg, 258n, genConst(mod, 4.2)),
-						DictEntry_new(cg, 259n, mod.local.get(1, binaryen.anyref)),
-						DictEntry_new(cg, 260n, mod.local.get(2, binaryen.v128)),
-						DictEntry_new(cg, 261n, genConst(mod, Symbol(0x105))),
+						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 258n, genConst(cg, 4.2)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
 						WASM_NULL,
 						WASM_NULL,
-					].map((code, i) => mod.array.set(mod.local.get(3, cg.getRefType('(ref $DictInternal)')!), mod.i32.const(i), code)),
-					mod.struct.new([
-						new BinVect(mod, bigint_to_i64(mod, 5n)).vect,
-						mod.local.get(3, cg.getRefType('(ref $DictInternal)')!),
-					], cg.getHeapType('$Dict')!),
-				], cg.getRefType('(ref $Dict)')),
+					]),
+				], cg.getHeaptype('$Dict')!),
 			);
 		});
 
@@ -342,27 +306,27 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					CALL.vnot(mod, genConst(mod)),
-					CALL.vnot(mod, genConst(mod, false)),
-					CALL.vnot(mod, genConst(mod, Symbol(0x100))),
-					CALL.vnot(mod, genConst(mod, 42n)),
-					CALL.vnot(mod, genConst(mod, 4.2)),
+					CALL.vnot(mod, genConst(cg)),
+					CALL.vnot(mod, genConst(cg, false)),
+					CALL.vnot(mod, genConst(cg, Symbol(0x100))),
+					CALL.vnot(mod, genConst(cg, 42n)),
+					CALL.vnot(mod, genConst(cg, 4.2)),
 
-					CALL.vemp(mod, genConst(mod)),
-					CALL.vemp(mod, genConst(mod, false)),
-					CALL.vemp(mod, genConst(mod, Symbol(0x100))),
-					CALL.vemp(mod, genConst(mod, 42n)),
-					CALL.vemp(mod, genConst(mod, 4.2)),
+					CALL.vemp(mod, genConst(cg)),
+					CALL.vemp(mod, genConst(cg, false)),
+					CALL.vemp(mod, genConst(cg, Symbol(0x100))),
+					CALL.vemp(mod, genConst(cg, 42n)),
+					CALL.vemp(mod, genConst(cg, 4.2)),
 
-					CALL.vneg(mod, genConst(mod, 42n)),
-					CALL.vneg(mod, genConst(mod, 4.2)),
+					CALL.vneg(mod, genConst(cg, 42n)),
+					CALL.vneg(mod, genConst(cg, 4.2)),
 
-					CALL.vtoi(mod, genConst(mod, 42n, 'nat')),
-					CALL.vtoi(mod, genConst(mod, 4.2)),
-					CALL.vton(mod, genConst(mod, 42n)),
-					CALL.vton(mod, genConst(mod, 4.2)),
-					CALL.vtof(mod, genConst(mod, 42n, 'nat')),
-					CALL.vtof(mod, genConst(mod, 42n)),
+					CALL.vtoi(mod, genConst(cg, 42n, 'nat')),
+					CALL.vtoi(mod, genConst(cg, 4.2)),
+					CALL.vton(mod, genConst(cg, 42n)),
+					CALL.vton(mod, genConst(cg, 4.2)),
+					CALL.vtof(mod, genConst(cg, 42n, 'nat')),
+					CALL.vtof(mod, genConst(cg, 42n)),
 				],
 			);
 		});
@@ -419,31 +383,31 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					CALL.viadd  (mod, genConst(mod, 2n), genConst(mod, 3n)),
-					CALL.visub_s(mod, genConst(mod, 2n), genConst(mod, 3n)),
-					CALL.vimul  (mod, genConst(mod, 2n), genConst(mod, 3n)),
-					CALL.vidiv_s(mod, genConst(mod, 2n), genConst(mod, 3n)),
-					CALL.viexp  (mod, genConst(mod, 2n), genConst(mod, 3n)),
+					CALL.viadd  (mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.visub_s(mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.vimul  (mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.vidiv_s(mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.viexp  (mod, genConst(cg, 2n), genConst(cg, 3n)),
 
-					CALL.viadd  (mod, genConst(mod, 2n, 'nat'), genConst(mod, 3n, 'nat')),
-					CALL.visub_u(mod, genConst(mod, 2n, 'nat'), genConst(mod, 3n, 'nat')),
-					CALL.vimul  (mod, genConst(mod, 2n, 'nat'), genConst(mod, 3n, 'nat')),
-					CALL.vidiv_u(mod, genConst(mod, 2n, 'nat'), genConst(mod, 3n, 'nat')),
-					CALL.viexp  (mod, genConst(mod, 2n, 'nat'), genConst(mod, 3n, 'nat')),
+					CALL.viadd  (mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.visub_u(mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.vimul  (mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.vidiv_u(mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.viexp  (mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
 
-					CALL.vfadd(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
-					CALL.vfsub(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
-					CALL.vfmul(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
-					CALL.vfdiv(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
+					CALL.vfadd(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vfsub(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vfmul(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vfdiv(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
 					mod.unreachable(),
 
-					CALL.vlt(mod, genConst(mod, 2n), genConst(mod, 3.0)),
-					CALL.vgt(mod, genConst(mod, 2n), genConst(mod, 3.0)),
-					CALL.vle(mod, genConst(mod, 2n), genConst(mod, 3.0)),
-					CALL.vge(mod, genConst(mod, 2n), genConst(mod, 3.0)),
+					CALL.vlt(mod, genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vgt(mod, genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vle(mod, genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vge(mod, genConst(cg, 2n), genConst(cg, 3.0)),
 
-					CALL.vid(mod, genConst(mod, 2.0), genConst(mod, 3n)),
-					CALL.veq(mod, genConst(mod, 2.0), genConst(mod, 3n)),
+					CALL.vid(mod, genConst(cg, 2.0), genConst(cg, 3n)),
+					CALL.veq(mod, genConst(cg, 2.0), genConst(cg, 3n)),
 				],
 			);
 		});
@@ -460,11 +424,11 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
-					mod.drop(genConst(mod)),
-					mod.drop(genConst(mod, false)),
-					mod.drop(genConst(mod, Symbol(0x100))),
-					mod.drop(genConst(mod, 42n)),
-					mod.drop(genConst(mod, 4.2)),
+					mod.drop(genConst(cg)),
+					mod.drop(genConst(cg, false)),
+					mod.drop(genConst(cg, Symbol(0x100))),
+					mod.drop(genConst(cg, 42n)),
+					mod.drop(genConst(cg, 4.2)),
 				],
 			);
 		});
@@ -481,11 +445,11 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
-					mod.local.set(0, genConst(mod)),
-					mod.local.set(1, genConst(mod, false)),
-					mod.local.set(2, genConst(mod, Symbol(0x102))),
-					mod.local.set(3, genConst(mod, 42n)),
-					mod.local.set(4, genConst(mod, 4.2)),
+					mod.local.set(0, genConst(cg)),
+					mod.local.set(1, genConst(cg, false)),
+					mod.local.set(2, genConst(cg, Symbol(0x102))),
+					mod.local.set(3, genConst(cg, 42n)),
+					mod.local.set(4, genConst(cg, 4.2)),
 				],
 			);
 		});
@@ -508,11 +472,11 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				opt.instructions.slice(5).map((instr) => instr.codegen(cg)),
 				[
-					mod.local.set(0, genConst(mod)),
-					mod.local.set(1, genConst(mod, true)),
-					mod.local.set(2, genConst(mod, Symbol(0x106))),
-					mod.local.set(3, genConst(mod, 43n)),
-					mod.local.set(4, genConst(mod, 4.3)),
+					mod.local.set(0, genConst(cg)),
+					mod.local.set(1, genConst(cg, true)),
+					mod.local.set(2, genConst(cg, Symbol(0x106))),
+					mod.local.set(3, genConst(cg, 43n)),
+					mod.local.set(4, genConst(cg, 4.3)),
 				],
 			);
 		});

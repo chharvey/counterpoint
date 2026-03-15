@@ -29,7 +29,7 @@ Codegen((RECORD.NEW)) := [
 	(struct.new_default $record)
 ];
 Codegen((RECORD.NEW `pairs`)) := [
-	`pairs.map((type $Entry_i (struct (field $key i64) (field $value `WasmType(pairs[i].1)`))))`
+	`pairs.map((type $Entry_i (struct (field $key i32) (field $value `WasmType(pairs[i].1)`))))`
 	(type       $record `pairs.hashMap((field $entry_i (ref $Entry_i)))`)
 	(struct.new $record `pairs.hashMap((struct.new $Entry_i `pairs[i].0` `pairs[i].1`))`)
 ];
@@ -72,7 +72,7 @@ Codegen((DICT.NEW)) := [
 		`[0...7].map((array.set
 			(local.get $internal)
 			(i32.const `i`)
-			(ref.null (ref null $DictEntry))
+			(ref.null (ref null $Property))
 		))`
 		(struct.new $Dict
 			(i32.const 0)
@@ -86,15 +86,15 @@ Codegen((DICT.NEW `pairs`)) := [
 		`pairs.hashMap((array.set
 			(local.get $internal)
 			(i32.const `i`)
-			(if `Codegen(pairs[i].1)` is v128 then (struct.new $DictEntry
-				(i64.const `pairs[i].0`)
+			(if `Codegen(pairs[i].1)` is v128 then (struct.new $Property
+				(i32.const `pairs[i].0`)
 				(struct.new $Value
 					(i32.const 0)
 					`Codegen(pairs[i].1)`
 					(ref.null eq)
 				)
-			) else (struct.new $DictEntry
-				(i64.const `pairs[i].0`)
+			) else (struct.new $Property
+				(i32.const `pairs[i].0`)
 				(struct.new $Value
 					(i32.const 1)
 					(v128.const 0)

@@ -1,8 +1,7 @@
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	Field_new,
-	bigint_to_i64,
+	Property_new,
 	type Builder,
 } from '../../index.ts';
 import {
@@ -11,7 +10,6 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import type {TypeBuilder} from '../../builder/-types.d.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
@@ -40,32 +38,13 @@ export class RecordNew extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		const COUNT: number = this.props.size;
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		// eslint-disable-next-line
-		const tb: TypeBuilder = new binaryen.TypeBuilder(1);
 		if (!COUNT) {
-			tb.setStructType(0, []);
-			return cg.module.struct.new_default(tb.buildAndDispose()[0]);
+			return cg.module.array.new_fixed(cg.getHeaptype('$Record')!, []);
 		}
-		/** An array of `$Entry`s, which will go into the record’s struct. */
+		/** An array of `$Property`s, which will go into the record’s struct. */
 		const entries = new Array<binaryen.ExpressionRef>(COUNT);
 		this.props.forEach(({value}, id) => {
-			const code: binaryen.ExpressionRef = value.codegen(cg);
-			/** A separate TypeBuilder for each property. */
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
-			const prop_tb: TypeBuilder = new binaryen.TypeBuilder(1);
-			/*
-			 * (type $Entry (struct
-			 * 	(field $key   i64)
-			 * 	(field $value ‹type of value›)
-			 * ))
-			 */
-			prop_tb.setStructType(0, [binaryen.i64, binaryen.getExpressionType(code)].map((typ) => Field_new(typ)));
-			const entry: binaryen.ExpressionRef = cg.module.struct.new([
-				bigint_to_i64(cg.module, id),
-				code,
-			], prop_tb.buildAndDispose()[0]);
+			const entry: binaryen.ExpressionRef = Property_new(cg, id, value.codegen(cg));
 			/**
 			 * Find a bucket in which to place the entry.
 			 * By default this will have index `id mod COUNT`,
@@ -80,7 +59,6 @@ export class RecordNew extends Value {
 			}
 			return write_entry(Number(id) % COUNT);
 		});
-		tb.setStructType(0, entries.map((entry) => Field_new(binaryen.getExpressionType(entry))));
-		return cg.module.struct.new(entries, tb.buildAndDispose()[0]);
+		return cg.module.array.new_fixed(cg.getHeaptype('$Record')!, entries);
 	}
 }

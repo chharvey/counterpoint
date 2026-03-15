@@ -5,6 +5,7 @@ import {
 	VALUE,
 	type TYPE,
 	Optimizer,
+	BinValue,
 	Builder,
 } from '../src/index.ts';
 
@@ -97,18 +98,18 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 
 
 
-export function genConst(mod: binaryen.Module, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
-export function genConst(mod: binaryen.Module, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
-export function genConst(mod: binaryen.Module, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
+export function genConst(cg: Builder, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
+export function genConst(cg: Builder, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
+export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
 	if (t === 'nat') {
-		return (
+		return new BinValue(cg, (
 			value === 0n              ? VALUE.NAT_0 :
 			value === 1n              ? VALUE.NAT_1 :
 			typeof value === 'bigint' ? new VALUE.Natural(value) :
 			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-		).codegen(mod).vect;
+		).codegen(cg.module)).value;
 	}
-	return (
+	return new BinValue(cg, (
 		value === null            ? VALUE.NULL :
 		value === false           ? VALUE.FALSE :
 		value === true            ? VALUE.TRUE :
@@ -121,7 +122,7 @@ export function genConst(mod: binaryen.Module, value: null | boolean | symbol | 
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? assert.fail('String argument to `genConst` is not yet supported.') :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).codegen(mod).vect;
+	).codegen(cg.module)).value;
 }
 
 
