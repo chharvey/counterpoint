@@ -148,22 +148,22 @@ describe('IrNode', () => {
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
+				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getRefType('(ref null $Property)')!);
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.block(null, [
-						mod.local.set(3, mod.array.new_default(cg.getHeapType('$ListInternal')!, mod.i32.const(8))),
-						...[
+					mod.struct.new([
+						mod.i32.const(5),
+						mod.array.new_fixed(cg.getHeapType('$ListInternal')!, [
 							Value_new(cg, mod.local.get(0, binaryen.v128)),
 							Value_new(cg, genConst(mod, 4.2)),
-							Value_new(cg, mod.local.get(1, binaryen.anyref)), // composite
+							Value_new(cg, mod.local.get(1, cg.getHeapType('$Tuple')!)),
 							Value_new(cg, mod.local.get(2, binaryen.v128)),
 							Value_new(cg, genConst(mod, Symbol(0x101))),
-						].map((code, i) => mod.array.set(mod.local.get(3, cg.getRefType('(ref $ListInternal)')!), mod.i32.const(i), code)),
-						mod.struct.new([
-							mod.i32.const(5),
-							mod.local.get(3, cg.getRefType('(ref $ListInternal)')!),
-						], cg.getHeapType('$List')!),
-					], cg.getRefType('(ref $List)')),
+							WASM_NULL,
+							WASM_NULL,
+							WASM_NULL,
+						]),
+					], cg.getHeapType('$List')!),
 				);
 			});
 		});
@@ -258,7 +258,7 @@ describe('IrNode', () => {
 			});
 		});
 
-		it('DICT.NEW returns (struct.new) with count and internal array.', () => {
+		it('DictNew returns (struct.new) with count and internal array.', () => {
 			const {goal, opt, cg} = setupScript(`{
 				val mut x: int = 42;
 				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
@@ -267,23 +267,19 @@ describe('IrNode', () => {
 			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getRefType('(ref null $Property)')!);
 			return assertEqualBins(
 				(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-				mod.block(null, [
-					mod.local.set(3, mod.array.new_default(cg.getHeapType('$DictInternal')!, mod.i32.const(8))),
-					...[
+				mod.struct.new([
+					mod.i32.const(5),
+					mod.array.new_fixed(cg.getHeapType('$DictInternal')!, [
 						WASM_NULL,
 						Property_new(cg, 257n, mod.local.get(0, binaryen.v128)),
 						Property_new(cg, 258n, genConst(mod, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, binaryen.anyref)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getHeapType('$Tuple')!)),
 						Property_new(cg, 260n, mod.local.get(2, binaryen.v128)),
 						Property_new(cg, 261n, genConst(mod, Symbol(0x105))),
 						WASM_NULL,
 						WASM_NULL,
-					].map((code, i) => mod.array.set(mod.local.get(3, cg.getRefType('(ref $DictInternal)')!), mod.i32.const(i), code)),
-					mod.struct.new([
-						mod.i32.const(5),
-						mod.local.get(3, cg.getRefType('(ref $DictInternal)')!),
-					], cg.getHeapType('$Dict')!),
-				], cg.getRefType('(ref $Dict)')),
+					]),
+				], cg.getHeapType('$Dict')!),
 			);
 		});
 

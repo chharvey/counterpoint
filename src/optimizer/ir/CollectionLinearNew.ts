@@ -3,7 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	Value_new,
 	type Builder,
-	type Local,
 } from '../../index.ts';
 import {
 	type ConstructorType,
@@ -67,27 +66,16 @@ export class CollectionLinearNew extends Value {
 					capacity *= 2;
 				}
 
-				/*
-				 * create an empty internal array with the power of 2 capacity,
-				 * fill in the entries,
-				 * return a $List type with the $count and $array fields
-				 */
-				const internalarray: Local = cg.newLocal(
-					cg.module.array.new_default(cg.getHeapType('$ListInternal')!, cg.module.i32.const(capacity)),
-					cg.getRefType('(ref $ListInternal)'),
-				);
-				return cg.module.block(null, [
-					internalarray.set(),
-					...this.items.map((item, i) => cg.module.array.set(
-						internalarray.get(),
-						cg.module.i32.const(i),
-						Value_new(cg, item.codegen(cg)),
-					)),
-					cg.module.struct.new([
-						cg.module.i32.const(this.items.length),
-						internalarray.get(),
-					], cg.getHeapType('$List')!),
-				], cg.getRefType('(ref $List)'));
+				return cg.module.struct.new([
+					cg.module.i32.const(this.items.length),
+					cg.module.array.new_fixed(
+						cg.getHeapType('$ListInternal')!,
+						Array.from(new Array(capacity), (_, i) => (this.items[i]
+							? Value_new(cg, this.items[i].codegen(cg))
+							: cg.module.ref.null(cg.getRefType('(ref null $Value)')!)
+						)),
+					),
+				], cg.getHeapType('$List')!);
 			}
 		}
 		throw new Error('not yet supported.');

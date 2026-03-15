@@ -3,7 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	Property_new,
 	type Builder,
-	type Local,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -73,26 +72,13 @@ export class DictNew extends Value {
 			return write_entry(Number(id) % capacity);
 		});
 
-		/*
-		 * create an empty raw array with the power of 2 capacity,
-		 * fill in the entries,
-		 * return a $Dict type with the $count and $array fields
-		 */
-		const internalarray: Local = cg.newLocal(
-			cg.module.array.new_default(cg.getHeapType('$DictInternal')!, cg.module.i32.const(capacity)),
-			cg.getRefType('(ref $DictInternal)'),
-		);
-		return cg.module.block(null, [
-			internalarray.set(),
-			...[...entries].map((entry, i) => cg.module.array.set( // `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
-				internalarray.get(),
-				cg.module.i32.const(i),
-				entry ?? cg.module.ref.null(cg.getRefType('(ref null $Property)')!),
-			)),
-			cg.module.struct.new([
-				cg.module.i32.const(this.props.size),
-				internalarray.get(),
-			], cg.getHeapType('$Dict')!),
-		], cg.getRefType('(ref $Dict)'));
+		return cg.module.struct.new([
+			cg.module.i32.const(this.props.size),
+			cg.module.array.new_fixed(
+				cg.getHeapType('$DictInternal')!,
+				// `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
+				[...entries].map((entry) => entry ?? cg.module.ref.null(cg.getRefType('(ref null $Property)')!)),
+			),
+		], cg.getHeapType('$Dict')!);
 	}
 }
