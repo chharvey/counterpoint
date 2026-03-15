@@ -75,10 +75,10 @@ export class DictNew extends Value {
 		return cg.module.struct.new([
 			cg.module.i32.const(this.props.size),
 			cg.module.array.new_fixed(
-				cg.getHeapType('$DictInternal')!,
+				cg.getHeaptype('$DictInternal')!,
 				// `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
-				[...entries].map((entry) => entry ?? cg.module.ref.null(cg.getRefType('(ref null $Property)')!)),
+				[...entries].map((entry) => entry ?? cg.module.ref.null(cg.getReftype('(ref null $Property)')!)),
 			),
-		], cg.getHeapType('$Dict')!);
+		], cg.getHeaptype('$Dict')!);
 	}
 }

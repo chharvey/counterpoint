@@ -50,7 +50,7 @@ export class CollectionLinearNew extends Value {
 		switch (this.name) {
 			case TypeName.TUPLE: {
 				return cg.module.array.new_fixed(
-					cg.getHeapType('$Tuple')!,
+					cg.getHeaptype('$Tuple')!,
 					this.items.map((item) => Value_new(cg, item.codegen(cg))),
 				);
 			}
@@ -69,13 +69,13 @@ export class CollectionLinearNew extends Value {
 				return cg.module.struct.new([
 					cg.module.i32.const(this.items.length),
 					cg.module.array.new_fixed(
-						cg.getHeapType('$ListInternal')!,
+						cg.getHeaptype('$ListInternal')!,
 						Array.from(new Array(capacity), (_, i) => (this.items[i]
 							? Value_new(cg, this.items[i].codegen(cg))
-							: cg.module.ref.null(cg.getRefType('(ref null $Value)')!)
+							: cg.module.ref.null(cg.getReftype('(ref null $Value)')!)
 						)),
 					),
-				], cg.getHeapType('$List')!);
+				], cg.getHeaptype('$List')!);
 			}
 		}
 		throw new Error('not yet supported.');

@@ -4,7 +4,7 @@ import type {Builder} from '../index.ts';
 
 
 export function Value_new(cg: Builder, code: binaryen.ExpressionRef): binaryen.ExpressionRef {
-	const ht_value: binaryen.Type = cg.getHeapType('$Value')!;
+	const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
 	return binaryen.getExpressionType(code) === binaryen.v128
 		? cg.module.struct.new([
 			cg.module.i32.const(0),
@@ -24,5 +24,5 @@ export function Property_new(cg: Builder, id: bigint, code: binaryen.ExpressionR
 	return cg.module.struct.new([
 		cg.module.i32.const(Number(id)),
 		Value_new(cg, code),
-	], cg.getHeapType('$Property')!);
+	], cg.getHeaptype('$Property')!);
 }
