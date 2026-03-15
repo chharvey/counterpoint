@@ -17,6 +17,11 @@ import {genConst} from '../../helpers.ts';
 
 describe('IrNode', () => {
 	describe('#codegen', () => {
+		/** Return either `(ref $Value)` or `(ref null $Value)`. */
+		function reftype_value(cg: Builder, nullish: boolean = false): binaryen.Type {
+			return cg.getReftype(`(ref ${ nullish ? 'null ' : '' }$Value)`)!;
+		}
+
 		function setupScript(src: string, opts: object): {
 			goal: AST.ASTNodeGoal,
 			opt:  Optimizer,
@@ -105,11 +110,11 @@ describe('IrNode', () => {
 			return assertEqualBins(
 				goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					mod.local.get(0, cg.getReftype('(ref $Value)')!),
-					mod.local.get(1, cg.getReftype('(ref $Value)')!),
-					mod.local.get(2, cg.getReftype('(ref $Value)')!),
-					mod.local.get(3, cg.getReftype('(ref $Value)')!),
-					mod.local.get(4, cg.getReftype('(ref $Value)')!),
+					mod.local.get(0, reftype_value(cg)),
+					mod.local.get(1, reftype_value(cg)),
+					mod.local.get(2, reftype_value(cg)),
+					mod.local.get(3, reftype_value(cg)),
+					mod.local.get(4, reftype_value(cg)),
 				],
 			);
 		});
@@ -134,9 +139,9 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
-						mod.local.get(0, cg.getReftype('(ref $Value)')!),
+						mod.local.get(0, reftype_value(cg)),
 						genConst(cg, 4.2),
-						mod.local.get(1, cg.getReftype('(ref $Value)')!),
+						mod.local.get(1, reftype_value(cg)),
 					]),
 				);
 			});
@@ -146,16 +151,16 @@ describe('IrNode', () => {
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Value)')!);
+				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(reftype_value(cg, true));
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.struct.new([
 						mod.i32.const(5),
 						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
-							mod.local.get(0, cg.getReftype('(ref null $Value)')!),
+							mod.local.get(0, reftype_value(cg, true)),
 							genConst(cg, 4.2),
-							mod.local.get(1, cg.getReftype('(ref null $Value)')!),
-							mod.local.get(2, cg.getReftype('(ref null $Value)')!),
+							mod.local.get(1, reftype_value(cg, true)),
+							mod.local.get(2, reftype_value(cg, true)),
 							genConst(cg, Symbol(0x101)),
 							WASM_NULL,
 							WASM_NULL,
@@ -184,11 +189,11 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						Property_new(cg, 260n, mod.local.get(2, reftype_value(cg))), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
 						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
-						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 257n, mod.local.get(0, reftype_value(cg))),
 						Property_new(cg, 258n, genConst(cg, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 259n, mod.local.get(1, reftype_value(cg))),
 					]),
 				);
 			});
@@ -269,10 +274,10 @@ describe('IrNode', () => {
 					mod.i32.const(5),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, [
 						WASM_NULL,
-						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 257n, mod.local.get(0, reftype_value(cg))),
 						Property_new(cg, 258n, genConst(cg, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
-						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 259n, mod.local.get(1, reftype_value(cg))),
+						Property_new(cg, 260n, mod.local.get(2, reftype_value(cg))),
 						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
 						WASM_NULL,
 						WASM_NULL,

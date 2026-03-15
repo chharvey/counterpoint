@@ -19,8 +19,14 @@ import {
  * `$composite` | `(ref null eq)` | an opaque reference pointing to a WASM struct/array. can be an `$Object` (or a subtype), a `$Tuple`, or a `$Record`. (see `types.wat`)
  */
 export class BinValue {
-	/** A WASM value of type `$Value`. */
+	/** A WASM value of type `(ref $Value)`. */
 	public readonly value: binaryen.ExpressionRef;
+
+	/**
+	 * The type of the WASM value.
+	 * It is always type `(ref $Value)`, and is the same for every BinValue instance.
+	 */
+	public readonly TYPE: binaryen.Type;
 
 	/**
 	 * Construct a new BinValue object.
@@ -33,13 +39,13 @@ export class BinValue {
 		private readonly cg: Builder,
 		arg: binaryen.ExpressionRef | BinVect,
 	) {
+		this.TYPE = cg.getReftype('(ref $Value)')!;
 		if (arg instanceof BinVect) {
 			this.value = arg.vect;
 			return;
 		}
 		const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
-		const argtype:  binaryen.Type = binaryen.getExpressionType(arg);
-		switch (argtype) {
+		switch (binaryen.getExpressionType(arg)) {
 			case cg.getReftype('(ref null $Value)')!: { // in case a nullish `$Value` gets wrapped
 				// if arg is WASM null, return VALUE.NULL, else return the arg
 				this.value = cg.module.if(
@@ -96,7 +102,7 @@ export class BinValue {
 
 	/** Whether the value is primitive (tag == 0). */
 	public get isPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eqz(this.cg.module.struct.get(0, this.value, this.cg.getReftype('(ref $Value)')!));
+		return this.cg.module.i32.eqz(this.cg.module.struct.get(0, this.value, this.TYPE, false));
 	}
 
 	/** Whether the value is composite (tag == 1). */
@@ -106,11 +112,11 @@ export class BinValue {
 
 	/** The primitive value if it exists, otherwise a `(v128.const 0)`. */
 	public get primitiveValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(1, this.value, this.cg.getReftype('(ref $Value)')!);
+		return this.cg.module.struct.get(1, this.value, this.TYPE);
 	}
 
 	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
 	public get compositeValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(2, this.value, this.cg.getReftype('(ref $Value)')!);
+		return this.cg.module.struct.get(2, this.value, this.TYPE);
 	}
 }
