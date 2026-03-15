@@ -138,7 +138,7 @@ describe('IrNode', () => {
 					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
 						new BinValue(cg, mod.local.get(0, binaryen.v128)).value,
 						new BinValue(cg, genConst(mod, 4.2)).value,
-						new BinValue(cg, mod.local.get(1, cg.getHeaptype('$Tuple')!)).value,
+						new BinValue(cg, mod.local.get(1, cg.getReftype('(ref $Tuple)')!)).value,
 					]),
 				);
 			});
@@ -156,7 +156,7 @@ describe('IrNode', () => {
 						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
 							new BinValue(cg, mod.local.get(0, binaryen.v128)).value,
 							new BinValue(cg, genConst(mod, 4.2)).value,
-							new BinValue(cg, mod.local.get(1, cg.getHeaptype('$Tuple')!)).value,
+							new BinValue(cg, mod.local.get(1, cg.getReftype('(ref null $Tuple)')!)).value,
 							new BinValue(cg, mod.local.get(2, binaryen.v128)).value,
 							new BinValue(cg, genConst(mod, Symbol(0x101))).value,
 							WASM_NULL,
@@ -190,7 +190,7 @@ describe('IrNode', () => {
 						Property_new(cg, 261n, genConst(mod, Symbol(0x105))),
 						Property_new(cg, 257n, mod.local.get(0, binaryen.v128)),
 						Property_new(cg, 258n, genConst(mod, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getHeaptype('$Tuple')!)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Tuple)')!)),
 					]),
 				);
 			});
@@ -273,7 +273,7 @@ describe('IrNode', () => {
 						WASM_NULL,
 						Property_new(cg, 257n, mod.local.get(0, binaryen.v128)),
 						Property_new(cg, 258n, genConst(mod, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getHeaptype('$Tuple')!)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref null $Tuple)')!)),
 						Property_new(cg, 260n, mod.local.get(2, binaryen.v128)),
 						Property_new(cg, 261n, genConst(mod, Symbol(0x105))),
 						WASM_NULL,

@@ -96,7 +96,7 @@ export class BinValue {
 
 	/** Whether the value is primitive (tag == 0). */
 	public get isPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eqz(this.cg.module.struct.get(0, this.value, this.cg.getHeaptype('$Value')!));
+		return this.cg.module.i32.eqz(this.cg.module.struct.get(0, this.value, this.cg.getReftype('(ref $Value)')!));
 	}
 
 	/** Whether the value is composite (tag == 1). */
@@ -106,11 +106,11 @@ export class BinValue {
 
 	/** The primitive value if it exists, otherwise a `(v128.const 0)`. */
 	public get primitiveValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(1, this.value, this.cg.getHeaptype('$Value')!);
+		return this.cg.module.struct.get(1, this.value, this.cg.getReftype('(ref $Value)')!);
 	}
 
 	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
 	public get compositeValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(2, this.value, this.cg.getHeaptype('$Value')!);
+		return this.cg.module.struct.get(2, this.value, this.cg.getReftype('(ref $Value)')!);
 	}
 }
