@@ -7,12 +7,10 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
-	Field_new,
 	Value_new,
 	Property_new,
 	Builder,
 } from '../../../src/index.ts';
-import type {TypeBuilder} from '../../../src/builder/-types.d.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {genConst} from '../../helpers.ts';
 
@@ -119,25 +117,17 @@ describe('IrNode', () => {
 		});
 
 		describe('CollectionLinearNew', () => {
-			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
-			before(() => {
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
-				tb.setStructType(0, []);
-				TEST_HEAPTYPE = tb.buildAndDispose()[0];
-			});
-			it('empty TUPLE.NEW returns (struct.new_default).', () => {
+			it('empty TUPLE.NEW returns (array.new_fixed).', () => {
 				const {goal, opt, cg} = setupScript(`{
 					();
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new_default(TEST_HEAPTYPE),
+					mod.array.new_fixed(cg.getHeapType('$Tuple')!, []),
 				);
 			});
-			it('TUPLE.NEW returns (struct.new).', () => {
+			it('TUPLE.NEW returns (array.new_fixed).', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(x, 4.2, (null,));
@@ -145,11 +135,11 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new([
-						mod.local.get(0, binaryen.v128),
-						genConst(mod, 4.2),
-						mod.local.get(1, binaryen.anyref),
-					], TEST_HEAPTYPE),
+					mod.array.new_fixed(cg.getHeapType('$Tuple')!, [
+						Value_new(cg, mod.local.get(0, binaryen.v128)),
+						Value_new(cg, genConst(mod, 4.2)),
+						Value_new(cg, mod.local.get(1, cg.getHeapType('$Tuple')!)),
+					]),
 				);
 			});
 			it('LIST.NEW returns (struct.new) with count and internal array.', () => {
@@ -179,42 +169,29 @@ describe('IrNode', () => {
 		});
 
 		describe('RecordNew', () => {
-			let TEST_HEAPTYPE: binaryen.Type; // eslint-disable-line @typescript-eslint/init-declarations
-			before(() => {
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
-				tb.setStructType(0, []);
-				TEST_HEAPTYPE = tb.buildAndDispose()[0];
-			});
-			it('empty RECORD.NEW returns (struct.new_default).', () => {
+			it('empty RECORD.NEW returns (array.new_fixed).', () => {
 				// there exists no syntax for empty records, so constructing it manually
 				const cg = new Builder();
 				return assertEqualBins(
 					new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
-					cg.module.struct.new_default(TEST_HEAPTYPE),
+					cg.module.array.new_fixed(cg.getHeapType('$Tuple')!, []),
 				);
 			});
-			it('RECORD.NEW returns (struct.new).', () => {
+			it('RECORD.NEW returns (array.new_fixed).', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
-				[binaryen.v128, binaryen.structref].forEach((valuetype, i) => entry_tb.setStructType(i, [binaryen.i64, valuetype].map((typ) => Field_new(typ))));
-				const registry: readonly binaryen.Type[] = entry_tb.buildAndDispose();
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new([
-						mod.struct.new([mod.i32.const(260), mod.local.get(2, binaryen.v128)],   registry[0]), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						mod.struct.new([mod.i32.const(261), genConst(mod, Symbol(0x105))],      registry[0]),
-						mod.struct.new([mod.i32.const(257), mod.local.get(0, binaryen.v128)],   registry[0]),
-						mod.struct.new([mod.i32.const(258), genConst(mod, 4.2)],                registry[0]),
-						mod.struct.new([mod.i32.const(259), mod.local.get(1, binaryen.anyref)], registry[1]),
-					], TEST_HEAPTYPE),
+					mod.array.new_fixed(cg.getHeapType('$Record')!, [
+						Property_new(cg, 260n, mod.local.get(2, binaryen.v128)), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						Property_new(cg, 261n, genConst(mod, Symbol(0x105))),
+						Property_new(cg, 257n, mod.local.get(0, binaryen.v128)),
+						Property_new(cg, 258n, genConst(mod, 4.2)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getHeapType('$Tuple')!)),
+					]),
 				);
 			});
 			it('hashing collisions are resolved in source order.', () => {
@@ -258,29 +235,24 @@ describe('IrNode', () => {
 					%%
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const entry_tb: TypeBuilder = new binaryen.TypeBuilder(2);
-				entry_tb.setStructType(0, [binaryen.i64, binaryen.v128].map((typ) => Field_new(typ)));
-				const ht_entry: binaryen.Type = entry_tb.buildAndDispose()[0];
 				return assertEqualBins(
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
-						mod.struct.new([
-							mod.struct.new([mod.i32.const(258), genConst(mod, 42n)],   ht_entry),
-							mod.struct.new([mod.i32.const(261), genConst(mod, false)], ht_entry),
-							mod.struct.new([mod.i32.const(256), genConst(mod, 4.2)],   ht_entry),
-						], TEST_HEAPTYPE),
-						mod.struct.new([
-							mod.struct.new([mod.i32.const(261), genConst(mod, true)], ht_entry),
-							mod.struct.new([mod.i32.const(258), genConst(mod, 42n)],  ht_entry),
-							mod.struct.new([mod.i32.const(257), genConst(mod)],       ht_entry),
-						], TEST_HEAPTYPE),
-						mod.struct.new([
-							mod.struct.new([mod.i32.const(262), genConst(mod)],      ht_entry),
-							mod.struct.new([mod.i32.const(256), genConst(mod, 42n)], ht_entry),
-							mod.struct.new([mod.i32.const(259), genConst(mod, 4.2)], ht_entry),
-						], TEST_HEAPTYPE),
+						mod.array.new_fixed(cg.getHeapType('$Record')!, [
+							Property_new(cg, 258n, genConst(mod, 42n)),
+							Property_new(cg, 261n, genConst(mod, false)),
+							Property_new(cg, 256n, genConst(mod, 4.2)),
+						]),
+						mod.array.new_fixed(cg.getHeapType('$Record')!, [
+							Property_new(cg, 261n, genConst(mod, true)),
+							Property_new(cg, 258n, genConst(mod, 42n)),
+							Property_new(cg, 257n, genConst(mod)),
+						]),
+						mod.array.new_fixed(cg.getHeapType('$Record')!, [
+							Property_new(cg, 262n, genConst(mod)),
+							Property_new(cg, 256n, genConst(mod, 42n)),
+							Property_new(cg, 259n, genConst(mod, 4.2)),
+						]),
 					],
 				);
 			});

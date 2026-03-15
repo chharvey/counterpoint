@@ -1,7 +1,6 @@
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	Field_new,
 	Value_new,
 	type Builder,
 	type Local,
@@ -13,7 +12,6 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import type {TypeBuilder} from '../../builder/-types.d.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
@@ -52,16 +50,10 @@ export class CollectionLinearNew extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		switch (this.name) {
 			case TypeName.TUPLE: {
-				// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-				// eslint-disable-next-line
-				const tb: TypeBuilder = new binaryen.TypeBuilder(1);
-				if (!this.items.length) {
-					tb.setStructType(0, []);
-					return cg.module.struct.new_default(tb.buildAndDispose()[0]);
-				}
-				const codes: readonly binaryen.ExpressionRef[] = this.items.map((item) => item.codegen(cg));
-				tb.setStructType(0, codes.map((code) => Field_new(binaryen.getExpressionType(code))));
-				return cg.module.struct.new(codes, tb.buildAndDispose()[0]);
+				return cg.module.array.new_fixed(
+					cg.getHeapType('$Tuple')!,
+					this.items.map((item) => Value_new(cg, item.codegen(cg))),
+				);
 			}
 			case TypeName.LIST: {
 				/**

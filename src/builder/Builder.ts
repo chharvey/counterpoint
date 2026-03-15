@@ -3,13 +3,25 @@ import * as path from 'node:path';
 import binaryen from 'binaryen';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {Field_new} from '../code-generator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 import type {
 	BinaryenModuleUpdates,
+	Field,
 	TypeBuilder,
 } from './-types.d.ts';
+
+
+
+function Field_new(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
+	return {
+		type:       typ,
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		// eslint-disable-next-line
+		packedType: binaryen[packedType],
+		mutable,
+	};
+}
 
 
 
