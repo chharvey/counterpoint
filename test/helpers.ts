@@ -5,6 +5,7 @@ import {
 	CONFIG_DEFAULT,
 	VALUE,
 	type TYPE,
+	BinValue,
 	type Builder,
 } from '../src/index.ts';
 
@@ -72,8 +73,8 @@ export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VA
 
 
 
-export function genConst(mod: binaryen.Module, value: null | boolean | symbol | bigint | number | string = null): binaryen.ExpressionRef {
-	return (
+export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null): binaryen.ExpressionRef {
+	return new BinValue(cg, (
 		value === null            ? VALUE.NULL :
 		value === false           ? VALUE.FALSE :
 		value === true            ? VALUE.TRUE :
@@ -86,7 +87,7 @@ export function genConst(mod: binaryen.Module, value: null | boolean | symbol | 
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? assert.fail('String argument to `genConst` is not yet supported.') :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).codegen(mod).vect;
+	).codegen(cg.module)).value;
 }
 
 

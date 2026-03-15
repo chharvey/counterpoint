@@ -8,7 +8,6 @@ import {
 	Optimizer,
 	IR,
 	Property_new,
-	BinValue,
 	Builder,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
@@ -75,15 +74,14 @@ describe('IrNode', () => {
 				42;
 				4.2;
 			}`, {lower: true, codegen: false, build: false});
-			const mod = cg.module;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					genConst(mod),
-					genConst(mod, false),
-					genConst(mod, Symbol(0x100)),
-					genConst(mod, 42n),
-					genConst(mod, 4.2),
+					genConst(cg),
+					genConst(cg, false),
+					genConst(cg, Symbol(0x100)),
+					genConst(cg, 42n),
+					genConst(cg, 4.2),
 				],
 			);
 		});
@@ -107,11 +105,11 @@ describe('IrNode', () => {
 			return assertEqualBins(
 				goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					mod.local.get(0, binaryen.v128),
-					mod.local.get(1, binaryen.v128),
-					mod.local.get(2, binaryen.v128),
-					mod.local.get(3, binaryen.v128),
-					mod.local.get(4, binaryen.v128),
+					mod.local.get(0, cg.getReftype('(ref $Value)')!),
+					mod.local.get(1, cg.getReftype('(ref $Value)')!),
+					mod.local.get(2, cg.getReftype('(ref $Value)')!),
+					mod.local.get(3, cg.getReftype('(ref $Value)')!),
+					mod.local.get(4, cg.getReftype('(ref $Value)')!),
 				],
 			);
 		});
@@ -136,9 +134,9 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
-						new BinValue(cg, mod.local.get(0, binaryen.v128)).value,
-						new BinValue(cg, genConst(mod, 4.2)).value,
-						new BinValue(cg, mod.local.get(1, cg.getReftype('(ref $Tuple)')!)).value,
+						mod.local.get(0, cg.getReftype('(ref $Value)')!),
+						genConst(cg, 4.2),
+						mod.local.get(1, cg.getReftype('(ref $Value)')!),
 					]),
 				);
 			});
@@ -148,17 +146,17 @@ describe('IrNode', () => {
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)')!);
+				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Value)')!);
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.struct.new([
 						mod.i32.const(5),
 						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
-							new BinValue(cg, mod.local.get(0, binaryen.v128)).value,
-							new BinValue(cg, genConst(mod, 4.2)).value,
-							new BinValue(cg, mod.local.get(1, cg.getReftype('(ref null $Tuple)')!)).value,
-							new BinValue(cg, mod.local.get(2, binaryen.v128)).value,
-							new BinValue(cg, genConst(mod, Symbol(0x101))).value,
+							mod.local.get(0, cg.getReftype('(ref null $Value)')!),
+							genConst(cg, 4.2),
+							mod.local.get(1, cg.getReftype('(ref null $Value)')!),
+							mod.local.get(2, cg.getReftype('(ref null $Value)')!),
+							genConst(cg, Symbol(0x101)),
 							WASM_NULL,
 							WASM_NULL,
 							WASM_NULL,
@@ -186,11 +184,11 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-						Property_new(cg, 260n, mod.local.get(2, binaryen.v128)), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						Property_new(cg, 261n, genConst(mod, Symbol(0x105))),
-						Property_new(cg, 257n, mod.local.get(0, binaryen.v128)),
-						Property_new(cg, 258n, genConst(mod, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Tuple)')!)),
+						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
+						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 258n, genConst(cg, 4.2)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
 					]),
 				);
 			});
@@ -239,19 +237,19 @@ describe('IrNode', () => {
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
 						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 258n, genConst(mod, 42n)),
-							Property_new(cg, 261n, genConst(mod, false)),
-							Property_new(cg, 256n, genConst(mod, 4.2)),
+							Property_new(cg, 258n, genConst(cg, 42n)),
+							Property_new(cg, 261n, genConst(cg, false)),
+							Property_new(cg, 256n, genConst(cg, 4.2)),
 						]),
 						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 261n, genConst(mod, true)),
-							Property_new(cg, 258n, genConst(mod, 42n)),
-							Property_new(cg, 257n, genConst(mod)),
+							Property_new(cg, 261n, genConst(cg, true)),
+							Property_new(cg, 258n, genConst(cg, 42n)),
+							Property_new(cg, 257n, genConst(cg)),
 						]),
 						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 262n, genConst(mod)),
-							Property_new(cg, 256n, genConst(mod, 42n)),
-							Property_new(cg, 259n, genConst(mod, 4.2)),
+							Property_new(cg, 262n, genConst(cg)),
+							Property_new(cg, 256n, genConst(cg, 42n)),
+							Property_new(cg, 259n, genConst(cg, 4.2)),
 						]),
 					],
 				);
@@ -271,11 +269,11 @@ describe('IrNode', () => {
 					mod.i32.const(5),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, [
 						WASM_NULL,
-						Property_new(cg, 257n, mod.local.get(0, binaryen.v128)),
-						Property_new(cg, 258n, genConst(mod, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref null $Tuple)')!)),
-						Property_new(cg, 260n, mod.local.get(2, binaryen.v128)),
-						Property_new(cg, 261n, genConst(mod, Symbol(0x105))),
+						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 258n, genConst(cg, 4.2)),
+						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)),
+						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
 						WASM_NULL,
 						WASM_NULL,
 					]),
@@ -310,20 +308,20 @@ describe('IrNode', () => {
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					CALL.vnot(mod, genConst(mod)),
-					CALL.vnot(mod, genConst(mod, false)),
-					CALL.vnot(mod, genConst(mod, Symbol(0x100))),
-					CALL.vnot(mod, genConst(mod, 42n)),
-					CALL.vnot(mod, genConst(mod, 4.2)),
+					CALL.vnot(mod, genConst(cg)),
+					CALL.vnot(mod, genConst(cg, false)),
+					CALL.vnot(mod, genConst(cg, Symbol(0x100))),
+					CALL.vnot(mod, genConst(cg, 42n)),
+					CALL.vnot(mod, genConst(cg, 4.2)),
 
-					CALL.vemp(mod, genConst(mod)),
-					CALL.vemp(mod, genConst(mod, false)),
-					CALL.vemp(mod, genConst(mod, Symbol(0x100))),
-					CALL.vemp(mod, genConst(mod, 42n)),
-					CALL.vemp(mod, genConst(mod, 4.2)),
+					CALL.vemp(mod, genConst(cg)),
+					CALL.vemp(mod, genConst(cg, false)),
+					CALL.vemp(mod, genConst(cg, Symbol(0x100))),
+					CALL.vemp(mod, genConst(cg, 42n)),
+					CALL.vemp(mod, genConst(cg, 4.2)),
 
-					CALL.vneg(mod, genConst(mod, 42n)),
-					CALL.vneg(mod, genConst(mod, 4.2)),
+					CALL.vneg(mod, genConst(cg, 42n)),
+					CALL.vneg(mod, genConst(cg, 4.2)),
 				],
 			);
 		});
@@ -376,23 +374,23 @@ describe('IrNode', () => {
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					CALL.vadd(mod, genConst(mod, 2n), genConst(mod, 3n)),
-					CALL.vmul(mod, genConst(mod, 2n), genConst(mod, 3n)),
-					CALL.vdiv(mod, genConst(mod, 2n), genConst(mod, 3n)),
-					CALL.vexp(mod, genConst(mod, 2n), genConst(mod, 3n)),
+					CALL.vadd(mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.vmul(mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.vdiv(mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.vexp(mod, genConst(cg, 2n), genConst(cg, 3n)),
 
-					CALL.vadd(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
-					CALL.vmul(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
-					CALL.vdiv(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
-					CALL.vexp(mod, genConst(mod, 2.0), genConst(mod, 3.0)),
+					CALL.vadd(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vmul(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vdiv(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vexp(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
 
-					CALL.vlt(mod, genConst(mod, 2n), genConst(mod, 3.0)),
-					CALL.vgt(mod, genConst(mod, 2n), genConst(mod, 3.0)),
-					CALL.vle(mod, genConst(mod, 2n), genConst(mod, 3.0)),
-					CALL.vge(mod, genConst(mod, 2n), genConst(mod, 3.0)),
+					CALL.vlt(mod, genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vgt(mod, genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vle(mod, genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vge(mod, genConst(cg, 2n), genConst(cg, 3.0)),
 
-					CALL.vid(mod, genConst(mod, 2.0), genConst(mod, 3n)),
-					CALL.veq(mod, genConst(mod, 2.0), genConst(mod, 3n)),
+					CALL.vid(mod, genConst(cg, 2.0), genConst(cg, 3n)),
+					CALL.veq(mod, genConst(cg, 2.0), genConst(cg, 3n)),
 				],
 			);
 		});
@@ -409,11 +407,11 @@ describe('IrNode', () => {
 			return assertEqualBins(
 				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
-					mod.drop(genConst(mod)),
-					mod.drop(genConst(mod, false)),
-					mod.drop(genConst(mod, Symbol(0x100))),
-					mod.drop(genConst(mod, 42n)),
-					mod.drop(genConst(mod, 4.2)),
+					mod.drop(genConst(cg)),
+					mod.drop(genConst(cg, false)),
+					mod.drop(genConst(cg, Symbol(0x100))),
+					mod.drop(genConst(cg, 42n)),
+					mod.drop(genConst(cg, 4.2)),
 				],
 			);
 		});
@@ -430,11 +428,11 @@ describe('IrNode', () => {
 			return assertEqualBins(
 				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
-					mod.local.set(0, genConst(mod)),
-					mod.local.set(1, genConst(mod, false)),
-					mod.local.set(2, genConst(mod, Symbol(0x102))),
-					mod.local.set(3, genConst(mod, 42n)),
-					mod.local.set(4, genConst(mod, 4.2)),
+					mod.local.set(0, genConst(cg)),
+					mod.local.set(1, genConst(cg, false)),
+					mod.local.set(2, genConst(cg, Symbol(0x102))),
+					mod.local.set(3, genConst(cg, 42n)),
+					mod.local.set(4, genConst(cg, 4.2)),
 				],
 			);
 		});
@@ -457,11 +455,11 @@ describe('IrNode', () => {
 			return assertEqualBins(
 				opt.instructions.slice(5).map((instr) => instr.codegen(cg)),
 				[
-					mod.local.set(0, genConst(mod)),
-					mod.local.set(1, genConst(mod, true)),
-					mod.local.set(2, genConst(mod, Symbol(0x106))),
-					mod.local.set(3, genConst(mod, 43n)),
-					mod.local.set(4, genConst(mod, 4.3)),
+					mod.local.set(0, genConst(cg)),
+					mod.local.set(1, genConst(cg, true)),
+					mod.local.set(2, genConst(cg, Symbol(0x106))),
+					mod.local.set(3, genConst(cg, 43n)),
+					mod.local.set(4, genConst(cg, 4.3)),
 				],
 			);
 		});

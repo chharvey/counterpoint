@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type ConstructorType,
 	assert_instanceof,
@@ -51,7 +48,7 @@ export class CollectionLinearNew extends Value {
 			case TypeName.TUPLE: {
 				return cg.module.array.new_fixed(
 					cg.getHeaptype('$Tuple')!,
-					this.items.map((item) => new BinValue(cg, item.codegen(cg)).value),
+					this.items.map((item) => item.codegen(cg)),
 				);
 			}
 			case TypeName.LIST: {
@@ -71,7 +68,7 @@ export class CollectionLinearNew extends Value {
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$ListInternal')!,
 						Array.from(new Array(capacity), (_, i) => (this.items[i]
-							? new BinValue(cg, this.items[i].codegen(cg)).value
+							? this.items[i].codegen(cg)
 							: cg.module.ref.null(cg.getReftype('(ref null $Value)')!)
 						)),
 					),
