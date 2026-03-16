@@ -66,6 +66,12 @@ describe('BinValue', () => {
 				composite,
 			], cg.getHeaptype('$Value')!)));
 		});
+		it('reuses `BinValue#value`.', () => {
+			assertEqualBins(
+				new BinValue(cg, genConst(cg, 42n)).value,
+				genConst(cg, 42n),
+			);
+		});
 	});
 
 	it('#isPrimitive', () => {

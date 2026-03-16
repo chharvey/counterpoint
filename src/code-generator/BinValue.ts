@@ -46,6 +46,9 @@ export class BinValue {
 		}
 		const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
 		switch (binaryen.getExpressionType(arg)) {
+			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+			case cg.getReftype('(ref null $Value)')! | 4:
+			case cg.getReftype('(ref $Value)')!      | 4:
 			case cg.getReftype('(ref null $Value)')!:
 			case cg.getReftype('(ref $Value)')!: { // if given a (nullish) `$Value`, just use that
 				this.value = arg;
