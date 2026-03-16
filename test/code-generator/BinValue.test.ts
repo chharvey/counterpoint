@@ -13,78 +13,84 @@ import {repeat} from '../utils.ts';
 
 
 describe('BinValue', () => {
-	const CG  = new Builder();
-	const MOD = CG.module;
+	/* eslint-disable @typescript-eslint/init-declarations */
+	let cg:  Builder;
+	let mod: Builder['module'];
+	/* eslint-enable @typescript-eslint/init-declarations */
+	beforeEach(() => {
+		cg  = new Builder();
+		mod = cg.module;
+	});
 
 	describe('#value', () => {
 		it('primitive values.', () => {
 			xjs.Array.forEachAggregated([
-				new BinVect(MOD, null),
-				new BinVect(MOD, false),
-				new BinVect(MOD, MOD.i32.const(0x100)),
-				new BinVect(MOD, MOD.i32.const(42)),
-				new BinVect(MOD, MOD.f64.const(4.2)),
-			], (binvect) => assertEqualBins(new BinValue(CG, binvect).value, MOD.struct.new([
-				MOD.i32.const(0),
+				new BinVect(mod, null),
+				new BinVect(mod, false),
+				new BinVect(mod, mod.i32.const(0x100)),
+				new BinVect(mod, mod.i32.const(42)),
+				new BinVect(mod, mod.f64.const(4.2)),
+			], (binvect) => assertEqualBins(new BinValue(cg, binvect).value, mod.struct.new([
+				mod.i32.const(0),
 				binvect.vect,
-				MOD.ref.null(binaryen.eqref),
-			], CG.getHeaptype('$Value')!)));
+				mod.ref.null(binaryen.eqref),
+			], cg.getHeaptype('$Value')!)));
 		});
 		it('composite values.', () => {
 			xjs.Array.forEachAggregated([
-				CG.codegenTuple([
-					genConst(CG, true),
-					genConst(CG, 42n),
+				cg.codegenTuple([
+					genConst(cg, true),
+					genConst(cg, 42n),
 				]),
-				CG.codegenRecord(new Map([
-					[0x100n, Property_new(CG, 0x100n, genConst(CG, true))],
-					[0x101n, Property_new(CG, 0x101n, genConst(CG, 42n))],
-					[0x102n, Property_new(CG, 0x102n, genConst(CG, 4.2))],
+				cg.codegenRecord(new Map([
+					[0x100n, Property_new(cg, 0x100n, genConst(cg, true))],
+					[0x101n, Property_new(cg, 0x101n, genConst(cg, 42n))],
+					[0x102n, Property_new(cg, 0x102n, genConst(cg, 4.2))],
 				])),
-				CG.codegenList([
-					genConst(CG, 1.1),
-					genConst(CG, 2.2),
-					genConst(CG, 3.3),
-					...repeat(CG.module.ref.null(CG.getReftype('(ref null $Value)')!), 5),
+				cg.codegenList([
+					genConst(cg, 1.1),
+					genConst(cg, 2.2),
+					genConst(cg, 3.3),
+					...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')!), 5),
 				]),
-				CG.codegenDict(new Map([
-					[0x106n, Property_new(CG, 0x106n, genConst(CG, 1.1))],
-					[0x107n, Property_new(CG, 0x107n, genConst(CG, 2.2))],
-					[0x108n, Property_new(CG, 0x108n, genConst(CG, 3.3))],
-					[0x109n, Property_new(CG, 0x109n, genConst(CG, 4.4))],
-					[0x10an, Property_new(CG, 0x10an, genConst(CG, 5.5))],
+				cg.codegenDict(new Map([
+					[0x106n, Property_new(cg, 0x106n, genConst(cg, 1.1))],
+					[0x107n, Property_new(cg, 0x107n, genConst(cg, 2.2))],
+					[0x108n, Property_new(cg, 0x108n, genConst(cg, 3.3))],
+					[0x109n, Property_new(cg, 0x109n, genConst(cg, 4.4))],
+					[0x10an, Property_new(cg, 0x10an, genConst(cg, 5.5))],
 				])),
-			], (composite) => assertEqualBins(new BinValue(CG, composite).value, MOD.struct.new([
-				MOD.i32.const(1),
-				MOD.v128.const(new Uint8Array(16)),
+			], (composite) => assertEqualBins(new BinValue(cg, composite).value, mod.struct.new([
+				mod.i32.const(1),
+				mod.v128.const(new Uint8Array(16)),
 				composite,
-			], CG.getHeaptype('$Value')!)));
+			], cg.getHeaptype('$Value')!)));
 		});
 	});
 
 	it('#isPrimitive', () => {
 		xjs.Array.forEachAggregated([
-			new BinValue(CG, new BinVect(MOD, null)),
-			new BinValue(CG, new BinVect(MOD, false)),
-			new BinValue(CG, new BinVect(MOD, MOD.i32.const(0x100))),
-			new BinValue(CG, new BinVect(MOD, MOD.i32.const(42))),
-			new BinValue(CG, new BinVect(MOD, MOD.f64.const(4.2))),
+			new BinValue(cg, new BinVect(mod, null)),
+			new BinValue(cg, new BinVect(mod, false)),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(0x100))),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(42))),
+			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isPrimitive,
-			MOD.i32.eqz(MOD.struct.get(0, binval.value, CG.getReftype('(ref $Value)')!, false)),
+			mod.i32.eqz(mod.struct.get(0, binval.value, cg.getReftype('(ref $Value)')!, false)),
 		));
 	});
 
 	it('#isComposite', () => {
 		xjs.Array.forEachAggregated([
-			new BinValue(CG, new BinVect(MOD, null)),
-			new BinValue(CG, new BinVect(MOD, false)),
-			new BinValue(CG, new BinVect(MOD, MOD.i32.const(0x100))),
-			new BinValue(CG, new BinVect(MOD, MOD.i32.const(42))),
-			new BinValue(CG, new BinVect(MOD, MOD.f64.const(4.2))),
+			new BinValue(cg, new BinVect(mod, null)),
+			new BinValue(cg, new BinVect(mod, false)),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(0x100))),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(42))),
+			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isComposite,
-			MOD.i32.eqz(binval.isPrimitive),
+			mod.i32.eqz(binval.isPrimitive),
 		));
 	});
 });
