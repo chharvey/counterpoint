@@ -46,16 +46,8 @@ export class BinValue {
 		}
 		const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
 		switch (binaryen.getExpressionType(arg)) {
-			case cg.getReftype('(ref null $Value)')!: { // in case a nullish `$Value` gets wrapped
-				// if arg is WASM null, return (unreachable), else return the arg
-				this.value = cg.module.if(
-					cg.module.ref.is_null(arg),
-					cg.module.unreachable(),
-					arg,
-				);
-				break;
-			}
-			case cg.getReftype('(ref $Value)')!: { // if given a `$Value`, just use that
+			case cg.getReftype('(ref null $Value)')!:
+			case cg.getReftype('(ref $Value)')!: { // if given a (nullish) `$Value`, just use that
 				this.value = arg;
 				break;
 			}

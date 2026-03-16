@@ -17,17 +17,6 @@ describe('BinValue', () => {
 	const MOD = CG.module;
 
 	describe('#value', () => {
-		// FIXME:
-		it.skip('given a null reference, returns unreachable', () => {
-			xjs.Array.forEachAggregated([
-				MOD.ref.null(CG.getReftype('(ref null $Value)')!),
-				MOD.ref.null(CG.getReftype('(ref null $Property)')!),
-			], (nullref) => assertEqualBins(new BinValue(CG, nullref).value, MOD.if(
-				MOD.ref.is_null(nullref),
-				MOD.unreachable(),
-				nullref,
-			)));
-		});
 		it('primitive values.', () => {
 			xjs.Array.forEachAggregated([
 				new BinVect(MOD, null),
