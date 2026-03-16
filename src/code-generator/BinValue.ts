@@ -74,7 +74,7 @@ export class BinValue {
 			case cg.getReftype('(ref $Object)')!:
 			default: { // a composite
 				this.value = cg.module.struct.new([
-					cg.module.i32.const(0),
+					cg.module.i32.const(1),
 					cg.module.v128.const(new Uint8Array(16)),
 					arg,
 				], ht_value);

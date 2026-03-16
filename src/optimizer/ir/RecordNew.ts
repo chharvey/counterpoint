@@ -42,7 +42,7 @@ export class RecordNew extends Value {
 		if (!COUNT) {
 			return new BinValue(cg, cg.module.array.new_fixed(cg.getHeaptype('$Record')!, [])).value;
 		}
-		/** An array of `$Property`s, which will go into the record’s struct. */
+		/** An array of `(ref $Property)`s, which will go into the record’s array. */
 		const entries = new Array<binaryen.ExpressionRef>(COUNT);
 		this.props.forEach(({value}, id) => {
 			const entry: binaryen.ExpressionRef = Property_new(cg, id, value.codegen(cg));

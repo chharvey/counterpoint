@@ -52,7 +52,7 @@ export class DictNew extends Value {
 		}
 
 		/**
-		 * An array of `$Entry`s, which will go into the internal array.
+		 * An array of `(ref null $Property)`s, which will go into the internal array.
 		 * This array is sparse, because the number of items may be less than its capacity.
 		 */
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity);
