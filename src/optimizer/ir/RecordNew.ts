@@ -38,28 +38,9 @@ export class RecordNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const COUNT: number = this.props.size;
-		if (!COUNT) {
-			return new BinValue(cg, cg.module.array.new_fixed(cg.getHeaptype('$Record')!, [])).value;
-		}
-		/** An array of `(ref $Property)`s, which will go into the record’s array. */
-		const entries = new Array<binaryen.ExpressionRef>(COUNT);
-		this.props.forEach(({value}, id) => {
-			const entry: binaryen.ExpressionRef = Property_new(cg, id, value.codegen(cg));
-			/**
-			 * Find a bucket in which to place the entry.
-			 * By default this will have index `id mod COUNT`,
-			 * but in the case of collisions we will use the *linear probing* technique.
-			 * @see https://en.wikipedia.org/wiki/Linear_probing
-			 */
-			function write_entry(index: number): void {
-				if (entries[index]) {
-					return write_entry((index + 1) % COUNT);
-				}
-				entries[index] = entry;
-			}
-			return write_entry(Number(id) % COUNT);
-		});
-		return new BinValue(cg, cg.module.array.new_fixed(cg.getHeaptype('$Record')!, entries)).value;
+		return new BinValue(cg, cg.codegenRecord(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([id, {value}]) => [
+			id,
+			Property_new(cg, id, value.codegen(cg)),
+		])))).value;
 	}
 }

@@ -121,17 +121,16 @@ describe('IrNode', () => {
 		});
 
 		describe('CollectionLinearNew', () => {
-			it('empty TUPLE.NEW returns (array.new_fixed).', () => {
+			it('empty TUPLE.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					();
 				}`, {lower: true, codegen: false, build: false});
-				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [])).value,
+					new BinValue(cg, cg.codegenTuple()).value,
 				);
 			});
-			it('TUPLE.NEW returns (array.new_fixed).', () => {
+			it('nonempty TUPLE.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(x, 4.2, (null,));
@@ -139,49 +138,42 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
+					new BinValue(cg, cg.codegenTuple([
 						mod.local.get(0, reftype_value(cg)),
 						genConst(cg, 4.2),
 						mod.local.get(1, reftype_value(cg)),
 					])).value,
 				);
 			});
-			it('LIST.NEW returns (struct.new) with count and internal array.', () => {
+			it('LIST.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(reftype_value(cg, true));
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					new BinValue(cg, mod.struct.new([
-						mod.i32.const(5),
-						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
-							mod.local.get(0, reftype_value(cg, true)),
-							genConst(cg, 4.2),
-							mod.local.get(1, reftype_value(cg, true)),
-							mod.local.get(2, reftype_value(cg, true)),
-							genConst(cg, Symbol(0x101)),
-							WASM_NULL,
-							WASM_NULL,
-							WASM_NULL,
-						]),
-					], cg.getHeaptype('$List')!)).value,
+					new BinValue(cg, cg.codegenList([
+						mod.local.get(0, reftype_value(cg, true)),
+						genConst(cg, 4.2),
+						mod.local.get(1, reftype_value(cg, true)),
+						mod.local.get(2, reftype_value(cg, true)),
+						genConst(cg, Symbol(0x101)),
+					])).value,
 				);
 			});
 		});
 
 		describe('RecordNew', () => {
-			it('empty RECORD.NEW returns (array.new_fixed).', () => {
+			it('empty RECORD.NEW', () => {
 				// there exists no syntax for empty records, so constructing it manually
 				const cg = new Builder();
 				return assertEqualBins(
 					new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
-					new BinValue(cg, cg.module.array.new_fixed(cg.getHeaptype('$Tuple')!, [])).value,
+					new BinValue(cg, cg.codegenRecord()).value,
 				);
 			});
-			it('RECORD.NEW returns (array.new_fixed).', () => {
+			it('nonempty RECORD.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
@@ -189,16 +181,16 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-						Property_new(cg, 260n, mod.local.get(2, reftype_value(cg))), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
-						Property_new(cg, 257n, mod.local.get(0, reftype_value(cg))),
-						Property_new(cg, 258n, genConst(cg, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, reftype_value(cg))),
-					])).value,
+					new BinValue(cg, cg.codegenRecord(new Map([
+						[257n, Property_new(cg, 257n, mod.local.get(0, reftype_value(cg)))],
+						[258n, Property_new(cg, 258n, genConst(cg, 4.2))],
+						[259n, Property_new(cg, 259n, mod.local.get(1, reftype_value(cg)))],
+						[260n, Property_new(cg, 260n, mod.local.get(2, reftype_value(cg)))], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						[261n, Property_new(cg, 261n, genConst(cg, Symbol(0x105)))],
+					]))).value,
 				);
 			});
-			it('hashing collisions are resolved in source order.', () => {
+			it('inserts keys in source order.', () => {
 				const {goal, opt, cg} = setupScript(`{
 					% sym  | id  | mod 3
 					% ---- | --- | ----
@@ -211,80 +203,87 @@ describe('IrNode', () => {
 					@bbb;  % 262 % 1
 					@ccc;  % 263 % 2
 					@aaa;  % 264 % 0
-					(a= 42, aa= false, b= 4.2);
-					%%
-						(???,         ???,         ???)
-						(258,         ???,         ???)
-						(258 & 261->, ???,         ???)
-						(258,         261,         ???)
-						(258,         261 & 256->, ???)
-						(258,         261,         256) (a, aa, b)
-					%%
-					(aa= true, c= null, a= 42);
-					%%
-						(???,         ???,       ???)
-						(261,         ???,       ???)
-						(261,         ???,       257)
-						(261 & 258->, ???,       257)
-						(261,         258,       257) (aa, a, c)
-					%%
-					(b= 42, bb= 4.2, bbb= null);
-					%%
-						(???,         256,         ???)
-						(???,         256 & 259->, ???)
-						(???,         256,         259)
-						(???,         256 & 262->, 259)
-						(???,         256,         259 & 262->)
-						(262,         256,         259) (bbb, b, bb)
-					%%
+					(a= 42, aa= false, b= 4.2);  % (258, 261, 256)
+					(aa= true, c= null, a= 42);  % (261, 257, 258)
+					(b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
 				}`, {lower: true, codegen: true, build: false});
-				const mod = cg.module;
 				return assertEqualBins(
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-					[
-						new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 258n, genConst(cg, 42n)),
-							Property_new(cg, 261n, genConst(cg, false)),
-							Property_new(cg, 256n, genConst(cg, 4.2)),
-						])).value,
-						new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 261n, genConst(cg, true)),
-							Property_new(cg, 258n, genConst(cg, 42n)),
-							Property_new(cg, 257n, genConst(cg)),
-						])).value,
-						new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 262n, genConst(cg)),
-							Property_new(cg, 256n, genConst(cg, 42n)),
-							Property_new(cg, 259n, genConst(cg, 4.2)),
-						])).value,
-					],
+					[new Map([
+						// (a= 42, aa= false, b= 4.2);  % (258, 261, 256)
+						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+						[261n, Property_new(cg, 261n, genConst(cg, false))],
+						[256n, Property_new(cg, 256n, genConst(cg, 4.2))],
+					]), new Map([
+						// (aa= true, c= null, a= 42);  % (261, 257, 258)
+						[261n, Property_new(cg, 261n, genConst(cg, true))],
+						[257n, Property_new(cg, 257n, genConst(cg))],
+						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+					]), new Map([
+						// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
+						[256n, Property_new(cg, 256n, genConst(cg, 42n))],
+						[259n, Property_new(cg, 259n, genConst(cg, 4.2))],
+						[262n, Property_new(cg, 262n, genConst(cg))],
+					])].map((props) => new BinValue(cg, cg.codegenRecord(props)).value),
 				);
 			});
 		});
 
-		it('DictNew returns (struct.new) with count and internal array.', () => {
-			const {goal, opt, cg} = setupScript(`{
-				val mut x: int = 42;
-				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
-			}`, {lower: true, codegen: true, build: false});
-			const mod = cg.module;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)')!);
-			return assertEqualBins(
-				(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-				new BinValue(cg, mod.struct.new([
-					mod.i32.const(5),
-					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, [
-						WASM_NULL,
-						Property_new(cg, 257n, mod.local.get(0, reftype_value(cg))),
-						Property_new(cg, 258n, genConst(cg, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, reftype_value(cg))),
-						Property_new(cg, 260n, mod.local.get(2, reftype_value(cg))),
-						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
-						WASM_NULL,
-						WASM_NULL,
-					]),
-				], cg.getHeaptype('$Dict')!)).value,
-			);
+		describe('DictNew', () => {
+			it('DICT.NEW', () => {
+				const {goal, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				return assertEqualBins(
+					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					new BinValue(cg, cg.codegenDict(new Map([
+						[257n, Property_new(cg, 257n, mod.local.get(0, reftype_value(cg)))],
+						[258n, Property_new(cg, 258n, genConst(cg, 4.2))],
+						[259n, Property_new(cg, 259n, mod.local.get(1, reftype_value(cg)))],
+						[260n, Property_new(cg, 260n, mod.local.get(2, reftype_value(cg)))],
+						[261n, Property_new(cg, 261n, genConst(cg, Symbol(0x105)))],
+					]))).value,
+				);
+			});
+			it('inserts keys in source order.', () => {
+				const {goal, opt, cg} = setupScript(`{
+					% sym  | id  | mod 8
+					% ---- | --- | ----
+					@b;    % 256 % 0
+					@c;    % 257 % 1
+					@a;    % 258 % 2
+					@bb;   % 259 % 3
+					@cc;   % 260 % 4
+					@aa;   % 261 % 5
+					@bbb;  % 262 % 6
+					@ccc;  % 263 % 7
+					@aaa;  % 264 % 0
+					[a= 42, aa= false, b= 4.2]; % (258, 261, 256)
+					[aa= true, c= null, a= 42]; % (261, 257, 258)
+					[b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
+				}`, {lower: true, codegen: true, build: false});
+				return assertEqualBins(
+					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+					[new Map([
+						// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
+						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+						[261n, Property_new(cg, 261n, genConst(cg, false))],
+						[256n, Property_new(cg, 256n, genConst(cg, 4.2))],
+					]), new Map([
+						// [aa= true, c= null, a= 42]; % (261, 257, 258)
+						[261n, Property_new(cg, 261n, genConst(cg, true))],
+						[257n, Property_new(cg, 257n, genConst(cg))],
+						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+					]), new Map([
+						// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
+						[256n, Property_new(cg, 256n, genConst(cg, 42n))],
+						[257n, Property_new(cg, 257n, genConst(cg, 4.2))],
+						[264n, Property_new(cg, 264n, genConst(cg))],
+					])].map((props) => new BinValue(cg, cg.codegenDict(props)).value),
+				);
+			});
 		});
 
 		it('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {

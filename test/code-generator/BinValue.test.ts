@@ -32,40 +32,28 @@ describe('BinValue', () => {
 		});
 		it('composite values.', () => {
 			xjs.Array.forEachAggregated([
-				MOD.array.new_fixed(CG.getHeaptype('$Tuple')!, [
+				CG.codegenTuple([
 					genConst(CG, true),
 					genConst(CG, 42n),
 				]),
-				MOD.array.new_fixed(CG.getHeaptype('$Record')!, [
-					Property_new(CG, 0x100n, genConst(CG, true)),
-					Property_new(CG, 0x101n, genConst(CG, 42n)),
+				CG.codegenRecord(new Map([
+					[0x100n, Property_new(CG, 0x100n, genConst(CG, true))],
+					[0x101n, Property_new(CG, 0x101n, genConst(CG, 42n))],
+					[0x102n, Property_new(CG, 0x102n, genConst(CG, 4.2))],
+				])),
+				CG.codegenList([
+					genConst(CG, 1.1),
+					genConst(CG, 2.2),
+					genConst(CG, 3.3),
+					...repeat(CG.module.ref.null(CG.getReftype('(ref null $Value)')!), 5),
 				]),
-				MOD.struct.new([
-					MOD.i32.const(3),
-					MOD.array.new_fixed(
-						CG.getHeaptype('$ListInternal')!,
-						[
-							genConst(CG, 1.1),
-							genConst(CG, 2.2),
-							genConst(CG, 3.3),
-							...repeat(CG.module.ref.null(CG.getReftype('(ref null $Value)')!), 5),
-						],
-					),
-				], CG.getHeaptype('$List')!),
-				MOD.struct.new([
-					MOD.i32.const(5),
-					MOD.array.new_fixed(
-						CG.getHeaptype('$DictInternal')!,
-						[
-							Property_new(CG, 0x108n, genConst(CG, 3.3)),
-							Property_new(CG, 0x109n, genConst(CG, 4.4)),
-							Property_new(CG, 0x10an, genConst(CG, 5.5)),
-							...repeat(CG.module.ref.null(CG.getReftype('(ref null $Property)')!), 3),
-							Property_new(CG, 0x106n, genConst(CG, 1.1)),
-							Property_new(CG, 0x107n, genConst(CG, 2.2)),
-						],
-					),
-				], CG.getHeaptype('$Dict')!),
+				CG.codegenDict(new Map([
+					[0x106n, Property_new(CG, 0x106n, genConst(CG, 1.1))],
+					[0x107n, Property_new(CG, 0x107n, genConst(CG, 2.2))],
+					[0x108n, Property_new(CG, 0x108n, genConst(CG, 3.3))],
+					[0x109n, Property_new(CG, 0x109n, genConst(CG, 4.4))],
+					[0x10an, Property_new(CG, 0x10an, genConst(CG, 5.5))],
+				])),
 			], (composite) => assertEqualBins(new BinValue(CG, composite).value, MOD.struct.new([
 				MOD.i32.const(1),
 				MOD.v128.const(new Uint8Array(16)),

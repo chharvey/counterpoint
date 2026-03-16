@@ -49,33 +49,10 @@ export class CollectionLinearNew extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		switch (this.name) {
 			case TypeName.TUPLE: {
-				return new BinValue(cg, cg.module.array.new_fixed(
-					cg.getHeaptype('$Tuple')!,
-					this.items.map((item) => item.codegen(cg)),
-				)).value;
+				return new BinValue(cg, cg.codegenTuple(this.items.map((item) => item.codegen(cg)))).value;
 			}
 			case TypeName.LIST: {
-				/**
-				 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
-				 * ```
-				 * $List[$array].length === max(8, $List[$count])
-				 * ```
-				 */
-				let capacity: number = 8;
-				while (capacity < this.items.length) {
-					capacity *= 2;
-				}
-
-				return new BinValue(cg, cg.module.struct.new([
-					cg.module.i32.const(this.items.length),
-					cg.module.array.new_fixed(
-						cg.getHeaptype('$ListInternal')!,
-						Array.from(new Array(capacity), (_, i) => (this.items[i]
-							? this.items[i].codegen(cg)
-							: cg.module.ref.null(cg.getReftype('(ref null $Value)')!)
-						)),
-					),
-				], cg.getHeaptype('$List')!)).value;
+				return new BinValue(cg, cg.codegenList(this.items.map((item) => item.codegen(cg)))).value;
 			}
 		}
 		throw new Error('not yet supported.');

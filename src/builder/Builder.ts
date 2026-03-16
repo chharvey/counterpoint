@@ -41,6 +41,36 @@ function Field_new(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 
 
 
 /**
+ * Insert entries into an internal array for a record/Dict.
+ *
+ * Find a bucket in which to place the entry.
+ * By default this will have index `id mod capacity`,
+ * but in the case of collisions we will use the *linear probing* technique.
+ *
+ * This function mutates the `array` argument.
+ * For records, the array will have been completely filled by the time this function returns.
+ * For Dicts, the array may still have empty slots (native `undefined`);
+ * these are expected to be filled with `(ref.null $Property)` values later, but are not done so here.
+ *
+ * @param entry the entry to insert; must be of type `(ref $Property)` in the case of records, `(ref null $Property)` in the case of Dicts
+ * @param index the index of the internal array at which to attempt to insert the entry; should be the result of an already-hashed key
+ * @param array an empty array in which to insert the entry
+ * @see https://en.wikipedia.org/wiki/Linear_probing
+ */
+function insert_entry(entry: binaryen.ExpressionRef, index: number, array: Array<binaryen.ExpressionRef | undefined>): void {
+	if (index < 0 || array.length < index) {
+		throw new RangeError('Given index must not be out of array bounds.');
+	}
+	if (array[index] === undefined) {
+		array[index] = entry;
+		return;
+	}
+	return insert_entry(entry, (index + 1) % array.length, array);
+}
+
+
+
+/**
  * The Builder generates assembly code.
  */
 export class Builder {
@@ -145,6 +175,73 @@ export class Builder {
 	 */
 	public getAllLocals(): Local[] {
 		return [...this.#locals];
+	}
+
+	/**
+	 * Return a new `$Tuple` from items.
+	 * @param items items in the array; must be of type `(ref $Value)`
+	 * @return      `(array.new_fixed $Tuple <...items>)`
+	 */
+	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.module.array.new_fixed(this.getHeaptype('$Tuple')!, items);
+	}
+
+	/**
+	 * Return a new `$Record` from properties.
+	 * This method automatically hashes the property keys and inserts them at the correct indices.
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Property)`) are items in the array
+	 * @return      `(array.new_fixed $Record <...props>)`
+	 */
+	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
+		props.forEach((code, id) => insert_entry(code, Number(id) % entries.length, entries));
+		return this.module.array.new_fixed(this.getHeaptype('$Record')!, entries as binaryen.ExpressionRef[]);
+	}
+
+	/**
+	 * Return a new `$List` from items.
+	 * The capacity of `$ListInternal` is always the least power of 2 greater than or equal to
+	 * the number of given items (the List’s count), or 8, whichever is greater.
+	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
+	 * @param items items in the array; must be of type `(ref null $Value)`
+	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
+	 */
+	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		let capacity: number = 8;
+		while (capacity < items.length) {
+			capacity *= 2;
+		}
+		const entries: binaryen.ExpressionRef[] = Array.from(
+			new Array(capacity),
+			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')!),
+		);
+		return this.module.struct.new([
+			this.module.i32.const(items.length),
+			this.module.array.new_fixed(this.getHeaptype('$ListInternal')!, entries),
+		], this.getHeaptype('$List')!);
+	}
+
+	/**
+	 * Return a new `$Dict` from properties.
+	 * This method automatically hashes the property keys and inserts them at the correct indices,
+	 * as well as populates blank slots with the WASM expression `(ref.null $Property)`.
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref null $Property)`) are items in the array
+	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...items>))`
+	 */
+	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		let capacity: number = 8;
+		while (capacity < props.size) {
+			capacity *= 2;
+		}
+		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
+		props.forEach((code, id) => insert_entry(code, Number(id) % entries.length, entries));
+		return this.module.struct.new([
+			this.module.i32.const(props.size),
+			this.module.array.new_fixed(
+				this.getHeaptype('$DictInternal')!,
+				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)')!)),
+			),
+		], this.getHeaptype('$Dict')!);
 	}
 
 	/**
