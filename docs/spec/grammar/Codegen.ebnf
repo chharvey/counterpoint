@@ -44,25 +44,17 @@ Codegen((LIST.NEW)) := [
 	)
 ];
 Codegen((LIST.NEW `values`)) := [
-	(block
-		(local.set $internal (array.new_default $ListInternal (i32.const `LeastPowerOf2GreaterThan(values.count)`)))
-		`values.map((array.set
-			(local.get $internal)
-			(i32.const `i`)
-			(if `Codegen(value)` is v128 then (struct.new $Value
-				(i32.const 0)
-				`Codegen(value)`
-				(ref.null eq)
-			) else (struct.new $Value
-				(i32.const 1)
-				(v128.const 0)
-				`Codegen(value)`
-			))
-		))`
-		(struct.new $List
-			(i32.const `values.count`)
-			(local.get $internal)
-		)
+	(struct.new $List
+		(i32.const `values.count`)
+		(array.new_fixed $ListInternal `values.pad(LeastPowerOf2GreaterThan(values.count)).map((if `Codegen(value)` is v128 then (struct.new $Value
+			(i32.const 0)
+			`Codegen(value)`
+			(ref.null eq)
+		) else (struct.new $Value
+			(i32.const 1)
+			(v128.const 0)
+			`Codegen(value)`
+		)))`)
 	)
 ];
 
@@ -81,31 +73,23 @@ Codegen((DICT.NEW)) := [
 	)
 ];
 Codegen((DICT.NEW `pairs`)) := [
-	(block
-		(local.set $internal (array.new_default $DictInternal (i32.const 8)))
-		`pairs.hashMap((array.set
-			(local.get $internal)
-			(i32.const `i`)
-			(if `Codegen(pairs[i].1)` is v128 then (struct.new $Property
-				(i32.const `pairs[i].0`)
-				(struct.new $Value
-					(i32.const 0)
-					`Codegen(pairs[i].1)`
-					(ref.null eq)
-				)
-			) else (struct.new $Property
-				(i32.const `pairs[i].0`)
-				(struct.new $Value
-					(i32.const 1)
-					(v128.const 0)
-					`Codegen(pairs[i].1)`
-				)
-			))
-		))`
-		(struct.new $Dict
-			(i32.const 0)
-			(local.get $internal)
-		)
+	(struct.new $Dict
+		(i32.const `pairs.count`)
+		(array.new_fixed $DictInternal `pairs.pad(LeastPowerOf2GreaterThan(pairs.count)).hashMap((if `Codegen(pairs[i].1)` is v128 then (struct.new $Property
+			(i32.const `pairs[i].0`)
+			(struct.new $Value
+				(i32.const 0)
+				`Codegen(pairs[i].1)`
+				(ref.null eq)
+			)
+		) else (struct.new $Property
+			(i32.const `pairs[i].0`)
+			(struct.new $Value
+				(i32.const 1)
+				(v128.const 0)
+				`Codegen(pairs[i].1)`
+			)
+		)))`)
 	)
 ];
 
