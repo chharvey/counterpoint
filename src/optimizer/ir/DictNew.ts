@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	Property_new,
+	BinValue,
 	type Builder,
 } from '../../index.ts';
 import {
@@ -72,13 +73,13 @@ export class DictNew extends Value {
 			return write_entry(Number(id) % capacity);
 		});
 
-		return cg.module.struct.new([
+		return new BinValue(cg, cg.module.struct.new([
 			cg.module.i32.const(this.props.size),
 			cg.module.array.new_fixed(
 				cg.getHeaptype('$DictInternal')!,
 				// `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
 				[...entries].map((entry) => entry ?? cg.module.ref.null(cg.getReftype('(ref null $Property)')!)),
 			),
-		], cg.getHeaptype('$Dict')!);
+		], cg.getHeaptype('$Dict')!)).value;
 	}
 }

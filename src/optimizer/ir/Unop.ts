@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -57,17 +60,17 @@ export class Unop extends Value {
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
 			case OpCode.TOBOOL: {
-				return cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128);
+				return new BinValue(cg, cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128)).value;
 			}
 			case OpCode.TOINT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
 			case OpCode.TONAT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
 			case OpCode.TOFLOAT: { throw new Error('not yet supported.'); } // TODO: v0.5+
 		}
-		return cg.module.call(new Map<OpCode, string>([
+		return new BinValue(cg, cg.module.call(new Map<OpCode, string>([
 			[OpCode.ISNULL, 'isnull'],
 			[OpCode.NOT,    'vnot'],
 			[OpCode.EMP,    'vemp'],
 			[OpCode.NEG,    'vneg'],
-		]).get(this.operator)!, [code], binaryen.v128);
+		]).get(this.operator)!, [code], binaryen.v128)).value;
 	}
 }

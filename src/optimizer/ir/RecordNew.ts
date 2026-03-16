@@ -2,6 +2,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	Property_new,
+	BinValue,
 	type Builder,
 } from '../../index.ts';
 import {
@@ -39,7 +40,7 @@ export class RecordNew extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		const COUNT: number = this.props.size;
 		if (!COUNT) {
-			return cg.module.array.new_fixed(cg.getHeaptype('$Record')!, []);
+			return new BinValue(cg, cg.module.array.new_fixed(cg.getHeaptype('$Record')!, [])).value;
 		}
 		/** An array of `$Property`s, which will go into the record’s struct. */
 		const entries = new Array<binaryen.ExpressionRef>(COUNT);
@@ -59,6 +60,6 @@ export class RecordNew extends Value {
 			}
 			return write_entry(Number(id) % COUNT);
 		});
-		return cg.module.array.new_fixed(cg.getHeaptype('$Record')!, entries);
+		return new BinValue(cg, cg.module.array.new_fixed(cg.getHeaptype('$Record')!, entries)).value;
 	}
 }

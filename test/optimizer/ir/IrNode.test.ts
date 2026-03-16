@@ -8,6 +8,7 @@ import {
 	Optimizer,
 	IR,
 	Property_new,
+	BinValue,
 	Builder,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
@@ -127,7 +128,7 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, []),
+					new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [])).value,
 				);
 			});
 			it('TUPLE.NEW returns (array.new_fixed).', () => {
@@ -138,11 +139,11 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
+					new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
 						mod.local.get(0, reftype_value(cg)),
 						genConst(cg, 4.2),
 						mod.local.get(1, reftype_value(cg)),
-					]),
+					])).value,
 				);
 			});
 			it('LIST.NEW returns (struct.new) with count and internal array.', () => {
@@ -154,7 +155,7 @@ describe('IrNode', () => {
 				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(reftype_value(cg, true));
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new([
+					new BinValue(cg, mod.struct.new([
 						mod.i32.const(5),
 						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
 							mod.local.get(0, reftype_value(cg, true)),
@@ -166,7 +167,7 @@ describe('IrNode', () => {
 							WASM_NULL,
 							WASM_NULL,
 						]),
-					], cg.getHeaptype('$List')!),
+					], cg.getHeaptype('$List')!)).value,
 				);
 			});
 		});
@@ -177,7 +178,7 @@ describe('IrNode', () => {
 				const cg = new Builder();
 				return assertEqualBins(
 					new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
-					cg.module.array.new_fixed(cg.getHeaptype('$Tuple')!, []),
+					new BinValue(cg, cg.module.array.new_fixed(cg.getHeaptype('$Tuple')!, [])).value,
 				);
 			});
 			it('RECORD.NEW returns (array.new_fixed).', () => {
@@ -188,13 +189,13 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+					new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
 						Property_new(cg, 260n, mod.local.get(2, reftype_value(cg))), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
 						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
 						Property_new(cg, 257n, mod.local.get(0, reftype_value(cg))),
 						Property_new(cg, 258n, genConst(cg, 4.2)),
 						Property_new(cg, 259n, mod.local.get(1, reftype_value(cg))),
-					]),
+					])).value,
 				);
 			});
 			it('hashing collisions are resolved in source order.', () => {
@@ -241,21 +242,21 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
-						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+						new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
 							Property_new(cg, 258n, genConst(cg, 42n)),
 							Property_new(cg, 261n, genConst(cg, false)),
 							Property_new(cg, 256n, genConst(cg, 4.2)),
-						]),
-						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+						])).value,
+						new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
 							Property_new(cg, 261n, genConst(cg, true)),
 							Property_new(cg, 258n, genConst(cg, 42n)),
 							Property_new(cg, 257n, genConst(cg)),
-						]),
-						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
+						])).value,
+						new BinValue(cg, mod.array.new_fixed(cg.getHeaptype('$Record')!, [
 							Property_new(cg, 262n, genConst(cg)),
 							Property_new(cg, 256n, genConst(cg, 42n)),
 							Property_new(cg, 259n, genConst(cg, 4.2)),
-						]),
+						])).value,
 					],
 				);
 			});
@@ -270,7 +271,7 @@ describe('IrNode', () => {
 			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)')!);
 			return assertEqualBins(
 				(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-				mod.struct.new([
+				new BinValue(cg, mod.struct.new([
 					mod.i32.const(5),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, [
 						WASM_NULL,
@@ -282,7 +283,7 @@ describe('IrNode', () => {
 						WASM_NULL,
 						WASM_NULL,
 					]),
-				], cg.getHeaptype('$Dict')!),
+				], cg.getHeaptype('$Dict')!)).value,
 			);
 		});
 
@@ -327,7 +328,7 @@ describe('IrNode', () => {
 
 					CALL.vneg(mod, genConst(cg, 42n)),
 					CALL.vneg(mod, genConst(cg, 4.2)),
-				],
+				].map((code) => new BinValue(cg, code).value),
 			);
 		});
 
@@ -396,7 +397,7 @@ describe('IrNode', () => {
 
 					CALL.vid(mod, genConst(cg, 2.0), genConst(cg, 3n)),
 					CALL.veq(mod, genConst(cg, 2.0), genConst(cg, 3n)),
-				],
+				].map((code) => new BinValue(cg, code).value),
 			);
 		});
 

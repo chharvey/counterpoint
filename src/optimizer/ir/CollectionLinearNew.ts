@@ -1,6 +1,9 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
 import {
 	type ConstructorType,
 	assert_instanceof,
@@ -46,10 +49,10 @@ export class CollectionLinearNew extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		switch (this.name) {
 			case TypeName.TUPLE: {
-				return cg.module.array.new_fixed(
+				return new BinValue(cg, cg.module.array.new_fixed(
 					cg.getHeaptype('$Tuple')!,
 					this.items.map((item) => item.codegen(cg)),
-				);
+				)).value;
 			}
 			case TypeName.LIST: {
 				/**
@@ -63,7 +66,7 @@ export class CollectionLinearNew extends Value {
 					capacity *= 2;
 				}
 
-				return cg.module.struct.new([
+				return new BinValue(cg, cg.module.struct.new([
 					cg.module.i32.const(this.items.length),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$ListInternal')!,
@@ -72,7 +75,7 @@ export class CollectionLinearNew extends Value {
 							: cg.module.ref.null(cg.getReftype('(ref null $Value)')!)
 						)),
 					),
-				], cg.getHeaptype('$List')!);
+				], cg.getHeaptype('$List')!)).value;
 			}
 		}
 		throw new Error('not yet supported.');

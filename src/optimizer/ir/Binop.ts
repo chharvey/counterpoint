@@ -1,7 +1,10 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -100,13 +103,13 @@ export class Binop extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
-			case OpCode.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, binaryen.v128)], binaryen.v128); }
-			case OpCode.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, binaryen.v128)], binaryen.v128); }
+			case OpCode.NLT: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('vlt', codes, binaryen.v128)], binaryen.v128)).value; }
+			case OpCode.NGT: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('vgt', codes, binaryen.v128)], binaryen.v128)).value; }
 
-			case OpCode.NID: { return cg.module.call('vnot', [cg.module.call('vid', codes, binaryen.v128)], binaryen.v128); }
-			case OpCode.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, binaryen.v128)], binaryen.v128); }
+			case OpCode.NID: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('vid', codes, binaryen.v128)], binaryen.v128)).value; }
+			case OpCode.NEQ: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('veq', codes, binaryen.v128)], binaryen.v128)).value; }
 		}
-		return cg.module.call(new Map<OpCode, string>([
+		return new BinValue(cg, cg.module.call(new Map<OpCode, string>([
 			// TODO: v0.5+: update with new functions
 			[OpCode.INT_ADD, 'vadd'],
 			[OpCode.INT_SUB, 'visub_s'],
@@ -133,6 +136,6 @@ export class Binop extends Value {
 
 			[OpCode.ID, 'vid'],
 			[OpCode.EQ, 'veq'],
-		]).get(this.operator)!, codes, binaryen.v128);
+		]).get(this.operator)!, codes, binaryen.v128)).value;
 	}
 }
