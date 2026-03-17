@@ -7,7 +7,6 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
-	Property_new,
 	BinValue,
 	Builder,
 } from '../../../src/index.ts';
@@ -182,11 +181,11 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenRecord(new Map([
-						[257n, Property_new(cg, 257n, mod.local.get(0, reftype_value(cg)))],
-						[258n, Property_new(cg, 258n, genConst(cg, 4.2))],
-						[259n, Property_new(cg, 259n, mod.local.get(1, reftype_value(cg)))],
-						[260n, Property_new(cg, 260n, mod.local.get(2, reftype_value(cg)))], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						[261n, Property_new(cg, 261n, genConst(cg, Symbol(0x105)))],
+						[257n, new BinValue(cg, mod.local.get(0, reftype_value(cg))).toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
+						[259n, new BinValue(cg, mod.local.get(1, reftype_value(cg))).toProperty(259n)],
+						[260n, new BinValue(cg, mod.local.get(2, reftype_value(cg))).toProperty(260n)], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
 					]))).value,
 				);
 			});
@@ -211,19 +210,19 @@ describe('IrNode', () => {
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[new Map([
 						// (a= 42, aa= false, b= 4.2);  % (258, 261, 256)
-						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
-						[261n, Property_new(cg, 261n, genConst(cg, false))],
-						[256n, Property_new(cg, 256n, genConst(cg, 4.2))],
+						[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
+						[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
+						[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
 					]), new Map([
 						// (aa= true, c= null, a= 42);  % (261, 257, 258)
-						[261n, Property_new(cg, 261n, genConst(cg, true))],
-						[257n, Property_new(cg, 257n, genConst(cg))],
-						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+						[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
+						[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
 					]), new Map([
 						// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
-						[256n, Property_new(cg, 256n, genConst(cg, 42n))],
-						[259n, Property_new(cg, 259n, genConst(cg, 4.2))],
-						[262n, Property_new(cg, 262n, genConst(cg))],
+						[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
+						[259n, new BinValue(cg, genConst(cg, 4.2)).toProperty(259n)],
+						[262n, new BinValue(cg, genConst(cg))     .toProperty(262n)],
 					])].map((props) => new BinValue(cg, cg.codegenRecord(props)).value),
 				);
 			});
@@ -239,11 +238,11 @@ describe('IrNode', () => {
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenDict(new Map([
-						[257n, Property_new(cg, 257n, mod.local.get(0, reftype_value(cg)))],
-						[258n, Property_new(cg, 258n, genConst(cg, 4.2))],
-						[259n, Property_new(cg, 259n, mod.local.get(1, reftype_value(cg)))],
-						[260n, Property_new(cg, 260n, mod.local.get(2, reftype_value(cg)))],
-						[261n, Property_new(cg, 261n, genConst(cg, Symbol(0x105)))],
+						[257n, new BinValue(cg, mod.local.get(0, reftype_value(cg))).toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
+						[259n, new BinValue(cg, mod.local.get(1, reftype_value(cg))).toProperty(259n)],
+						[260n, new BinValue(cg, mod.local.get(2, reftype_value(cg))).toProperty(260n)],
+						[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
 					]))).value,
 				);
 			});
@@ -268,19 +267,19 @@ describe('IrNode', () => {
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[new Map([
 						// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
-						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
-						[261n, Property_new(cg, 261n, genConst(cg, false))],
-						[256n, Property_new(cg, 256n, genConst(cg, 4.2))],
+						[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
+						[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
+						[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
 					]), new Map([
 						// [aa= true, c= null, a= 42]; % (261, 257, 258)
-						[261n, Property_new(cg, 261n, genConst(cg, true))],
-						[257n, Property_new(cg, 257n, genConst(cg))],
-						[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+						[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
+						[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
 					]), new Map([
 						// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
-						[256n, Property_new(cg, 256n, genConst(cg, 42n))],
-						[257n, Property_new(cg, 257n, genConst(cg, 4.2))],
-						[264n, Property_new(cg, 264n, genConst(cg))],
+						[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
+						[257n, new BinValue(cg, genConst(cg, 4.2)).toProperty(257n)],
+						[264n, new BinValue(cg, genConst(cg))     .toProperty(264n)],
 					])].map((props) => new BinValue(cg, cg.codegenDict(props)).value),
 				);
 			});

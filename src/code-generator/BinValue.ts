@@ -110,4 +110,12 @@ export class BinValue {
 	public get compositeValue(): binaryen.ExpressionRef {
 		return this.cg.module.struct.get(2, this.value, this.TYPE);
 	}
+
+	/** Wrap this `$Value` in a `$Property`, given a key id. */
+	public toProperty(keyid: bigint): binaryen.ExpressionRef {
+		return this.cg.module.struct.new([
+			this.cg.module.i32.const(Number(keyid)),
+			this.value,
+		], this.cg.getHeaptype('$Property')!);
+	}
 }

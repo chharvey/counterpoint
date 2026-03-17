@@ -1,7 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	Property_new,
 	BinValue,
 	type Builder,
 } from '../../index.ts';
@@ -42,7 +41,7 @@ export class DictNew extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return new BinValue(cg, cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
 			id,
-			Property_new(cg, id, value.codegen(cg)),
+			new BinValue(cg, value.codegen(cg)).toProperty(id),
 		])))).value;
 	}
 }

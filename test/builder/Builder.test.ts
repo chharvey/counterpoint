@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	Property_new,
+	BinValue,
 	Builder,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
@@ -32,14 +32,14 @@ describe('Builder', () => {
 			]],
 			['`#codegenRecord` returns (array.new_fixed).', (cg) => [
 				cg.codegenRecord(new Map([
-					[0x100n, Property_new(cg, 0x100n, genConst(cg, true))],
-					[0x101n, Property_new(cg, 0x101n, genConst(cg, 42n))],
-					[0x102n, Property_new(cg, 0x102n, genConst(cg, 4.2))],
+					[0x100n, new BinValue(cg, genConst(cg, true)).toProperty(0x100n)],
+					[0x101n, new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n)],
+					[0x102n, new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n)],
 				])),
 				cg.module.array.new_fixed(cg.getHeaptype('$Record')!, [
-					Property_new(cg, 0x102n, genConst(cg, 4.2)),
-					Property_new(cg, 0x100n, genConst(cg, true)),
-					Property_new(cg, 0x101n, genConst(cg, 42n)),
+					new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n),
+					new BinValue(cg, genConst(cg, true)).toProperty(0x100n),
+					new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n),
 				]),
 			]],
 			['`#codegenList` returns (struct.new) with count and internal array.', (cg) => [
@@ -63,23 +63,23 @@ describe('Builder', () => {
 			]],
 			['`#codegenDict` (struct.new) with count and internal array.', (cg) => [
 				cg.codegenDict(new Map([
-					[0x106n, Property_new(cg, 0x106n, genConst(cg, 1.1))],
-					[0x107n, Property_new(cg, 0x107n, genConst(cg, 2.2))],
-					[0x108n, Property_new(cg, 0x108n, genConst(cg, 3.3))],
-					[0x109n, Property_new(cg, 0x109n, genConst(cg, 4.4))],
-					[0x10an, Property_new(cg, 0x10an, genConst(cg, 5.5))],
+					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
+					[0x107n, new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n)],
+					[0x108n, new BinValue(cg, genConst(cg, 3.3)).toProperty(0x108n)],
+					[0x109n, new BinValue(cg, genConst(cg, 4.4)).toProperty(0x109n)],
+					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 				cg.module.struct.new([
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$DictInternal')!,
 						[
-							Property_new(cg, 0x108n, genConst(cg, 3.3)),
-							Property_new(cg, 0x109n, genConst(cg, 4.4)),
-							Property_new(cg, 0x10an, genConst(cg, 5.5)),
+							new BinValue(cg, genConst(cg, 3.3)).toProperty(0x108n),
+							new BinValue(cg, genConst(cg, 4.4)).toProperty(0x109n),
+							new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an),
 							...repeat(cg.module.ref.null(cg.getReftype('(ref null $Property)')!), 3),
-							Property_new(cg, 0x106n, genConst(cg, 1.1)),
-							Property_new(cg, 0x107n, genConst(cg, 2.2)),
+							new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n),
+							new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n),
 						],
 					),
 				], cg.getHeaptype('$Dict')!),
@@ -136,35 +136,35 @@ describe('Builder', () => {
 			return assertEqualBins(
 				[new Map([
 					// (a= 42, aa= false, b= 4.2); % (258, 261, 256)
-					[258n, Property_new(cg, 258n, genConst(cg, 42n))],
-					[261n, Property_new(cg, 261n, genConst(cg, false))],
-					[256n, Property_new(cg, 256n, genConst(cg, 4.2))],
+					[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
+					[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
+					[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
 				]), new Map([
 					// (aa= true, c= null, a= 42); % (261, 257, 258)
-					[261n, Property_new(cg, 261n, genConst(cg, true))],
-					[257n, Property_new(cg, 257n, genConst(cg))],
-					[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+					[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
+					[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
+					[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
 				]), new Map([
 					// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
-					[256n, Property_new(cg, 256n, genConst(cg, 42n))],
-					[259n, Property_new(cg, 259n, genConst(cg, 4.2))],
-					[262n, Property_new(cg, 262n, genConst(cg))],
+					[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
+					[259n, new BinValue(cg, genConst(cg, 4.2)).toProperty(259n)],
+					[262n, new BinValue(cg, genConst(cg))     .toProperty(262n)],
 				])].map((props) => cg.codegenRecord(props)),
 				[[
 					// (258,         261,         256) % (a, aa, b)
-					Property_new(cg, 258n, genConst(cg, 42n)),
-					Property_new(cg, 261n, genConst(cg, false)),
-					Property_new(cg, 256n, genConst(cg, 4.2)),
+					new BinValue(cg, genConst(cg, 42n))  .toProperty(258n),
+					new BinValue(cg, genConst(cg, false)).toProperty(261n),
+					new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n),
 				], [
 					// (261,         258,         257) % (aa, a, c)
-					Property_new(cg, 261n, genConst(cg, true)),
-					Property_new(cg, 258n, genConst(cg, 42n)),
-					Property_new(cg, 257n, genConst(cg)),
+					new BinValue(cg, genConst(cg, true)).toProperty(261n),
+					new BinValue(cg, genConst(cg, 42n)) .toProperty(258n),
+					new BinValue(cg, genConst(cg))      .toProperty(257n),
 				], [
 					// (262,         256,         259)         % (bbb, b, bb)
-					Property_new(cg, 262n, genConst(cg)),
-					Property_new(cg, 256n, genConst(cg, 42n)),
-					Property_new(cg, 259n, genConst(cg, 4.2)),
+					new BinValue(cg, genConst(cg))     .toProperty(262n),
+					new BinValue(cg, genConst(cg, 42n)).toProperty(256n),
+					new BinValue(cg, genConst(cg, 4.2)).toProperty(259n),
 				]].map((entries) => mod.array.new_fixed(cg.getHeaptype('$Record')!, entries)),
 			);
 		});
@@ -212,45 +212,45 @@ describe('Builder', () => {
 			return assertEqualBins(
 				[new Map([
 					// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
-					[258n, Property_new(cg, 258n, genConst(cg, 42n))],
-					[261n, Property_new(cg, 261n, genConst(cg, false))],
-					[256n, Property_new(cg, 256n, genConst(cg, 4.2))],
+					[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
+					[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
+					[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
 				]), new Map([
 					// [aa= true, c= null, a= 42]; % (261, 257, 258)
-					[261n, Property_new(cg, 261n, genConst(cg, true))],
-					[257n, Property_new(cg, 257n, genConst(cg))],
-					[258n, Property_new(cg, 258n, genConst(cg, 42n))],
+					[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
+					[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
+					[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
 				]), new Map([
 					// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
-					[256n, Property_new(cg, 256n, genConst(cg, 42n))],
-					[257n, Property_new(cg, 257n, genConst(cg, 4.2))],
-					[264n, Property_new(cg, 264n, genConst(cg))],
+					[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
+					[257n, new BinValue(cg, genConst(cg, 4.2)).toProperty(257n)],
+					[264n, new BinValue(cg, genConst(cg))     .toProperty(264n)],
 				])].map((props) => cg.codegenDict(props)),
 				[[
 					// (256,         ???,         258,         ???,         ???,         261,         ???,         ???) % (b, -, a, -, -, aa, -, -)
-					Property_new(cg, 256n, genConst(cg, 4.2)),
+					new BinValue(cg, genConst(cg, 4.2)).toProperty(256n),
 					WASM_NULL,
-					Property_new(cg, 258n, genConst(cg, 42n)),
+					new BinValue(cg, genConst(cg, 42n)).toProperty(258n),
 					WASM_NULL,
 					WASM_NULL,
-					Property_new(cg, 261n, genConst(cg, false)),
+					new BinValue(cg, genConst(cg, false)).toProperty(261n),
 					WASM_NULL,
 					WASM_NULL,
 				], [
 					// (???,         257,         258,         ???,         ???,         261,         ???,         ???) % (-, c, a, -, -, aa, -, -)
 					WASM_NULL,
-					Property_new(cg, 257n, genConst(cg)),
-					Property_new(cg, 258n, genConst(cg, 42n)),
+					new BinValue(cg, genConst(cg))     .toProperty(257n),
+					new BinValue(cg, genConst(cg, 42n)).toProperty(258n),
 					WASM_NULL,
 					WASM_NULL,
-					Property_new(cg, 261n, genConst(cg, true)),
+					new BinValue(cg, genConst(cg, true)).toProperty(261n),
 					WASM_NULL,
 					WASM_NULL,
 				], [
 					// (256,         257,         264,         ???,         ???,         ???,         ???,         ???) % (b, c, aaa, -, -, -, -, -)
-					Property_new(cg, 256n, genConst(cg, 42n)),
-					Property_new(cg, 257n, genConst(cg, 4.2)),
-					Property_new(cg, 264n, genConst(cg)),
+					new BinValue(cg, genConst(cg, 42n)).toProperty(256n),
+					new BinValue(cg, genConst(cg, 4.2)).toProperty(257n),
+					new BinValue(cg, genConst(cg))     .toProperty(264n),
 					WASM_NULL,
 					WASM_NULL,
 					WASM_NULL,

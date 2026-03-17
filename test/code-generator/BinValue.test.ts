@@ -1,7 +1,6 @@
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	Property_new,
 	BinValue,
 	Builder,
 	BinVect,
@@ -43,9 +42,9 @@ describe('BinValue', () => {
 					genConst(cg, 42n),
 				]),
 				cg.codegenRecord(new Map([
-					[0x100n, Property_new(cg, 0x100n, genConst(cg, true))],
-					[0x101n, Property_new(cg, 0x101n, genConst(cg, 42n))],
-					[0x102n, Property_new(cg, 0x102n, genConst(cg, 4.2))],
+					[0x100n, new BinValue(cg, genConst(cg, true)).toProperty(0x100n)],
+					[0x101n, new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n)],
+					[0x102n, new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n)],
 				])),
 				cg.codegenList([
 					genConst(cg, 1.1),
@@ -54,11 +53,11 @@ describe('BinValue', () => {
 					...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')!), 5),
 				]),
 				cg.codegenDict(new Map([
-					[0x106n, Property_new(cg, 0x106n, genConst(cg, 1.1))],
-					[0x107n, Property_new(cg, 0x107n, genConst(cg, 2.2))],
-					[0x108n, Property_new(cg, 0x108n, genConst(cg, 3.3))],
-					[0x109n, Property_new(cg, 0x109n, genConst(cg, 4.4))],
-					[0x10an, Property_new(cg, 0x10an, genConst(cg, 5.5))],
+					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
+					[0x107n, new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n)],
+					[0x108n, new BinValue(cg, genConst(cg, 3.3)).toProperty(0x108n)],
+					[0x109n, new BinValue(cg, genConst(cg, 4.4)).toProperty(0x109n)],
+					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 			], (composite) => assertEqualBins(new BinValue(cg, composite).value, mod.struct.new([
 				mod.i32.const(1),
@@ -98,5 +97,28 @@ describe('BinValue', () => {
 			binval.isComposite,
 			mod.i32.eqz(binval.isPrimitive),
 		));
+	});
+
+	it('#toProperty', () => {
+		assertEqualBins([
+			new BinValue(cg, new BinVect(mod))                                    .toProperty(0x100n),
+			new BinValue(cg, new BinVect(mod, true).vect)                         .toProperty(0x101n),
+			new BinValue(cg, genConst(cg))                                        .toProperty(0x102n),
+			new BinValue(cg, genConst(cg, 42n))                                   .toProperty(0x103n),
+			new BinValue(cg, new BinValue(cg, new BinVect(mod, false).vect).value).toProperty(0x104n),
+			new BinValue(cg, new BinValue(cg, genConst(cg, 4.2)).value)           .toProperty(0x105n),
+			new BinValue(cg, new BinValue(cg, genConst(cg, 4.2)).value)           .toProperty(0x106n),
+		], ([
+			[0x100n, new BinValue(cg, new BinVect(mod)).value],
+			[0x101n, new BinValue(cg, new BinVect(mod, true).vect).value],
+			[0x102n, genConst(cg)],
+			[0x103n, genConst(cg, 42n)],
+			[0x104n, new BinValue(cg, new BinVect(mod, false).vect).value],
+			[0x105n, new BinValue(cg, genConst(cg, 4.2)).value],
+			[0x106n, genConst(cg, 4.2)],
+		] as const).map(([id, code]) => cg.module.struct.new([
+			cg.module.i32.const(Number(id)),
+			code,
+		], cg.getHeaptype('$Property')!)));
 	});
 });
