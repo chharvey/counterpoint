@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
@@ -97,6 +98,52 @@ describe('BinValue', () => {
 			binval.isComposite,
 			mod.i32.eqz(binval.isPrimitive),
 		));
+	});
+
+	it('#primitiveValue', () => {
+		xjs.Array.forEachAggregated([
+			// `$Value`s with primitive filled
+			new BinValue(cg, new BinVect(mod, null)),
+			new BinValue(cg, new BinVect(mod, false)),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(0x100))),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(42))),
+			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
+			// `$Value`s with composite filled
+			new BinValue(cg, cg.codegenTuple()),
+			new BinValue(cg, cg.codegenRecord()),
+			new BinValue(cg, cg.codegenList()),
+			new BinValue(cg, cg.codegenDict()),
+		], (binval) => {
+			const {primitiveValue} = binval;
+			assertEqualBins(
+				primitiveValue,
+				mod.struct.get(1, binval.value, cg.getReftype('(ref $Value)')!),
+			);
+			return assert.strictEqual(binaryen.getExpressionType(primitiveValue), binaryen.v128);
+		});
+	});
+
+	it('#compositeValue', () => {
+		xjs.Array.forEachAggregated([
+			// `$Value`s with primitive filled
+			new BinValue(cg, new BinVect(mod, null)),
+			new BinValue(cg, new BinVect(mod, false)),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(0x100))),
+			new BinValue(cg, new BinVect(mod, mod.i32.const(42))),
+			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
+			// `$Value`s with composite filled
+			new BinValue(cg, cg.codegenTuple()),
+			new BinValue(cg, cg.codegenRecord()),
+			new BinValue(cg, cg.codegenList()),
+			new BinValue(cg, cg.codegenDict()),
+		], (binval) => {
+			const {compositeValue} = binval;
+			assertEqualBins(
+				compositeValue,
+				mod.struct.get(2, binval.value, cg.getReftype('(ref $Value)')!),
+			);
+			return assert.strictEqual(binaryen.getExpressionType(compositeValue), binaryen.eqref);
+		});
 	});
 
 	it('#toProperty', () => {
