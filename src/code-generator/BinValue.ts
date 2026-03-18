@@ -19,41 +19,42 @@ import {
  * `$composite` | `(ref null eq)` | an opaque reference pointing to a WASM struct/array. can be an `$Object` (or a subtype), a `$Tuple`, or a `$Record`. (see `types.wat`)
  */
 export class BinValue {
-	/** A WASM value of type `$Value`. */
+	/** A WASM value of type `(ref $Value)`. */
 	public readonly value: binaryen.ExpressionRef;
+
+	/**
+	 * The type of the WASM value.
+	 * It is always type `(ref $Value)`, and is the same for every BinValue instance.
+	 */
+	public readonly TYPE: binaryen.Type;
 
 	/**
 	 * Construct a new BinValue object.
 	 * @param  cg  a CodeGenerator to get the types
 	 * @param  arg a Binaryen value of WASM type `v128`,
 	 *               `(ref $Object)` or a subtype, `(ref $Tuple)`, `(ref $Record)`,
-	 *               `(ref $Value)`, or `(ref null $Value)`
+	 *               `(ref $Value)`, or `(ref null $Value)`, or a BinVect object
 	 */
 	public constructor(
 		private readonly cg: Builder,
 		arg: binaryen.ExpressionRef | BinVect,
 	) {
+		this.TYPE = cg.getReftype('(ref $Value)')!;
 		if (arg instanceof BinVect) {
-			this.value = arg.vect;
+			this.value = new BinValue(cg, arg.vect).value;
 			return;
 		}
 		const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
-		const argtype:  binaryen.Type = binaryen.getExpressionType(arg);
-		switch (argtype) {
-			case cg.getReftype('(ref null $Value)')!: { // in case a nullish `$Value` gets wrapped
-				// if arg is WASM null, return VALUE.NULL, else return the arg
-				this.value = cg.module.if(
-					cg.module.ref.is_null(arg),
-					cg.module.struct.new([
-						cg.module.i32.const(0),
-						new BinVect(cg.module).vect, // VALUE.NULL.codegen(cg.module).vect
-						cg.module.ref.null(binaryen.eqref),
-					], ht_value),
-					arg,
-				);
+		switch (binaryen.getExpressionType(arg)) {
+			case binaryen.unreachable: {
+				this.value = arg;
 				break;
 			}
-			case cg.getReftype('(ref $Value)')!: { // if given a `$Value`, just use that
+			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+			case cg.getReftype('(ref null $Value)')! | 4:
+			case cg.getReftype('(ref $Value)')!      | 4:
+			case cg.getReftype('(ref null $Value)')!:
+			case cg.getReftype('(ref $Value)')!: { // if given a (nullish) `$Value`, just use that
 				this.value = arg;
 				break;
 			}
@@ -72,7 +73,7 @@ export class BinValue {
 			case cg.getReftype('(ref $Object)')!:
 			default: { // a composite
 				this.value = cg.module.struct.new([
-					cg.module.i32.const(0),
+					cg.module.i32.const(1),
 					cg.module.v128.const(new Uint8Array(16)),
 					arg,
 				], ht_value);
@@ -96,7 +97,7 @@ export class BinValue {
 
 	/** Whether the value is primitive (tag == 0). */
 	public get isPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eqz(this.cg.module.struct.get(0, this.value, this.cg.getReftype('(ref $Value)')!));
+		return this.cg.module.i32.eqz(this.cg.module.struct.get(0, this.value, this.TYPE, false));
 	}
 
 	/** Whether the value is composite (tag == 1). */
@@ -106,11 +107,19 @@ export class BinValue {
 
 	/** The primitive value if it exists, otherwise a `(v128.const 0)`. */
 	public get primitiveValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(1, this.value, this.cg.getReftype('(ref $Value)')!);
+		return this.cg.module.struct.get(1, this.value, this.TYPE);
 	}
 
 	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
 	public get compositeValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(2, this.value, this.cg.getReftype('(ref $Value)')!);
+		return this.cg.module.struct.get(2, this.value, this.TYPE);
+	}
+
+	/** Wrap this `$Value` in a `$Property`, given a key id. */
+	public toProperty(keyid: bigint): binaryen.ExpressionRef {
+		return this.cg.module.struct.new([
+			this.cg.module.i32.const(Number(keyid)),
+			this.value,
+		], this.cg.getHeaptype('$Property')!);
 	}
 }

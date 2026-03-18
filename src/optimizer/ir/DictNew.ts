@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	Property_new,
+	BinValue,
 	type Builder,
 } from '../../index.ts';
 import {
@@ -39,46 +39,9 @@ export class DictNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		/**
-		 * An array’s capacity is always the least power of 2 greater than or equal to its count, or 8, whichever is greater.
-		 * ```
-		 * $Dict[$array].length === max(8, $Dict[$count])
-		 * ```
-		 */
-		let capacity: number = 8;
-		while (capacity < this.props.size) {
-			capacity *= 2;
-		}
-
-		/**
-		 * An array of `$Entry`s, which will go into the internal array.
-		 * This array is sparse, because the number of items may be less than its capacity.
-		 */
-		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity);
-		this.props.forEach((value, {id}) => {
-			const entry: binaryen.ExpressionRef = Property_new(cg, id, value.codegen(cg));
-			/**
-			 * Find a bucket in which to place the entry.
-			 * By default this will have index `id mod COUNT`,
-			 * but in the case of collisions we will use the *linear probing* technique.
-			 * @see https://en.wikipedia.org/wiki/Linear_probing
-			 */
-			function write_entry(index: number): void {
-				if (entries[index]) {
-					return write_entry((index + 1) % capacity);
-				}
-				entries[index] = entry;
-			}
-			return write_entry(Number(id) % capacity);
-		});
-
-		return cg.module.struct.new([
-			cg.module.i32.const(this.props.size),
-			cg.module.array.new_fixed(
-				cg.getHeaptype('$DictInternal')!,
-				// `entries` is sparse, so spreading it resolves all the “empty” slots to `undefined`
-				[...entries].map((entry) => entry ?? cg.module.ref.null(cg.getReftype('(ref null $Property)')!)),
-			),
-		], cg.getHeaptype('$Dict')!);
+		return new BinValue(cg, cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
+			id,
+			new BinValue(cg, value.codegen(cg)).toProperty(id),
+		])))).value;
 	}
 }
