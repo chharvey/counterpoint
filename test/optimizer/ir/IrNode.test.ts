@@ -418,28 +418,7 @@ describe('IrNode', () => {
 			);
 		});
 
-		it('Decl returns (local.set).', () => {
-			const {opt, cg} = setupScript(`{
-				val a: null  = null;
-				val b: bool  = false;
-				val c: sym   = @hello;
-				val d: int   = 42;
-				val e: float = 4.2;
-			}`, {lower: true, codegen: false, build: false});
-			const mod = cg.module;
-			return assertEqualBins(
-				opt.instructions.map((instr) => instr.codegen(cg)),
-				[
-					mod.local.set(0, genConst(cg)),
-					mod.local.set(1, genConst(cg, false)),
-					mod.local.set(2, genConst(cg, Symbol(0x102))),
-					mod.local.set(3, genConst(cg, 42n)),
-					mod.local.set(4, genConst(cg, 4.2)),
-				],
-			);
-		});
-
-		it('Set returns (local.set).', () => {
+		it('Decl & Set both return (local.set).', () => {
 			const {opt, cg} = setupScript(`{
 				val mut a: null  = null;
 				val mut b: bool  = false;
@@ -455,8 +434,14 @@ describe('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.slice(5).map((instr) => instr.codegen(cg)),
+				opt.instructions.map((instr) => instr.codegen(cg)), // TODO: `opt.codegen()`
 				[
+					mod.local.set(0, genConst(cg)),
+					mod.local.set(1, genConst(cg, false)),
+					mod.local.set(2, genConst(cg, Symbol(0x102))),
+					mod.local.set(3, genConst(cg, 42n)),
+					mod.local.set(4, genConst(cg, 4.2)),
+
 					mod.local.set(0, genConst(cg)),
 					mod.local.set(1, genConst(cg, true)),
 					mod.local.set(2, genConst(cg, Symbol(0x106))),

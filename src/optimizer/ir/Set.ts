@@ -44,7 +44,7 @@ class IrSet extends Opcode implements Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.teeLocal(this.target, this.value.codegen(cg)).set();
+		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 }
 export {IrSet as Set};
