@@ -333,7 +333,7 @@ export class Builder {
 		const i_list: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_list, [
-			Field_new(binaryen.v128, 'notPacked', true),
+			Field_new(binaryen.i32, 'notPacked', true),
 			Field_new(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_list, tb.getTempHeapType(i_object));
@@ -343,7 +343,7 @@ export class Builder {
 		const i_dict: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_dict, [
-			Field_new(binaryen.v128, 'notPacked', true),
+			Field_new(binaryen.i32, 'notPacked', true),
 			Field_new(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_dict, tb.getTempHeapType(i_object));

@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -464,6 +464,125 @@ describe('IrNode', () => {
 					mod.local.set(4, genConst(cg, 4.3)),
 				],
 			);
+		});
+
+		it('WASM module validates.', () => {
+			const {opt, cg} = setupScript(`{
+				null;
+				false;
+				@hello;
+				42;
+				4.2;
+
+				val mut a: null  = null;
+				val mut b: bool  = false;
+				val mut c: sym   = @hello;
+				val mut d: int   = 42;
+				val mut e: float = 4.2;
+
+				a;
+				b;
+				c;
+				d;
+				e;
+
+				();
+
+				val mut x1: int = 42;
+				(x1, 4.2, (null,));
+
+				val mut x2: int = 42;
+				[x2, 4.2, (null,), x2/2, @e];
+
+				val mut x3: int = 42;
+				(a= x3, b= 4.2, c= (null,), d= x3/2, e= @e);
+
+				@b;
+				@c;
+				@a;
+				@bb;
+				@cc;
+				@aa;
+				@bbb;
+				@ccc;
+				@aaa;
+				(a= 42, aa= false, b= 4.2);
+				(aa= true, c= null, a= 42);
+				(b= 42, bb= 4.2, bbb= null);
+
+				val mut x4: int = 42;
+				[a= x4, b= 4.2, c= (null,), d= x4/2, e= @e];
+
+				@b;
+				@c;
+				@a;
+				@bb;
+				@cc;
+				@aa;
+				@bbb;
+				@ccc;
+				@aaa;
+				[a= 42, aa= false, b= 4.2];
+				[aa= true, c= null, a= 42];
+				[b= 42, c= 4.2, aaa= null];
+
+				!null;
+				!false;
+				!@hello;
+				!42;
+				!4.2;
+
+				?null;
+				?false;
+				?@hello;
+				?42;
+				?4.2;
+
+				-(42);
+				-(4.2);
+
+				2 + 3;
+				2 - 3;
+				2 * 3;
+				2 / 3;
+				2 ^ 3;
+
+				+2 + +3;
+				+2 - +3;
+				+2 * +3;
+				+2 / +3;
+				+2 ^ +3;
+
+				2.0 + 3.0;
+				2.0 - 3.0;
+				2.0 * 3.0;
+				2.0 / 3.0;
+				2.0 ^ 3.0;
+
+				2 < 3.0;
+				2 > 3.0;
+				2 <= 3.0;
+				2 >= 3.0;
+
+				2.0 === 3;
+				2.0 ==  3;
+
+				a = null;
+				b = true;
+				c = @world;
+				d = 43;
+				e = 4.3;
+			}`, {lower: true, codegen: false, build: false});
+			return cg.setupModule((mod) => {
+				const codes: binaryen.ExpressionRef[] = opt.instructions.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
+				mod.addFunction(
+					'main',
+					binaryen.none,
+					binaryen.none,
+					cg.getAllLocals().map((local) => local.type),
+					mod.block(null, codes),
+				);
+			}); // assert does not throw
 		});
 	});
 });
