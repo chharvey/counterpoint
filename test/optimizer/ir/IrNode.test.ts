@@ -33,7 +33,7 @@ describe('IrNode', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			'lower'   in opts && opts.lower   && goal.lower(opt);
-			'codegen' in opts && opts.codegen && opt.instructions.map((instr) => instr.codegen(cg));
+			'codegen' in opts && opts.codegen && opt.codegen(cg);
 			return {goal, opt, cg};
 		}
 
@@ -407,7 +407,7 @@ describe('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => instr.codegen(cg)),
+				opt.codegen(cg),
 				[
 					mod.drop(genConst(cg)),
 					mod.drop(genConst(cg, false)),
@@ -428,7 +428,7 @@ describe('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => instr.codegen(cg)),
+				opt.codegen(cg),
 				[
 					mod.local.set(0, genConst(cg)),
 					mod.local.set(1, genConst(cg, false)),
@@ -574,7 +574,7 @@ describe('IrNode', () => {
 				e = 4.3;
 			}`, {lower: true, codegen: false, build: false});
 			return cg.setupModule((mod) => {
-				const codes: binaryen.ExpressionRef[] = opt.instructions.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
+				const codes: binaryen.ExpressionRef[] = opt.codegen(cg); // must codegen before calling `.getAllLocals()`
 				mod.addFunction(
 					'main',
 					binaryen.none,

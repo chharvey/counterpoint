@@ -1,4 +1,6 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import type {Builder} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import {IR} from './index.ts';
@@ -52,6 +54,10 @@ export class Optimizer {
 	@runOnceMethod
 	public validate(): void {
 		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
+	}
+
+	public codegen(cg: Builder): binaryen.ExpressionRef[] {
+		return this.#instructions.map((instr) => instr.codegen(cg));
 	}
 
 	public print(): string {
