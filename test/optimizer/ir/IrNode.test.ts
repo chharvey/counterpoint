@@ -1,13 +1,13 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type AST,
 	VALUE,
 	TYPE,
 	IR,
-	Property_new,
+	BinValue,
 	Builder,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
@@ -20,6 +20,11 @@ import {
 
 test.suite('IrNode', () => {
 	test.suite('#codegen', () => {
+		/** Return either `(ref $Value)` or `(ref null $Value)`. */
+		function reftype_value(cg: Builder, nullish: boolean = false): binaryen.Type {
+			return cg.getReftype(`(ref ${ nullish ? 'null ' : '' }$Value)`)!;
+		}
+
 		test.test('is not yet supported.', () => {
 			const {opt, cg} = setupScript(`{
 				"hello";
@@ -93,27 +98,26 @@ test.suite('IrNode', () => {
 			return assertEqualBins(
 				stmts.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					mod.local.get(0, cg.getReftype('(ref $Value)')!),
-					mod.local.get(1, cg.getReftype('(ref $Value)')!),
-					mod.local.get(2, cg.getReftype('(ref $Value)')!),
-					mod.local.get(3, cg.getReftype('(ref $Value)')!),
-					mod.local.get(4, cg.getReftype('(ref $Value)')!),
+					mod.local.get(0, reftype_value(cg)),
+					mod.local.get(1, reftype_value(cg)),
+					mod.local.get(2, reftype_value(cg)),
+					mod.local.get(3, reftype_value(cg)),
+					mod.local.get(4, reftype_value(cg)),
 				],
 			);
 		});
 
 		test.suite('CollectionLinearNew', () => {
-			test.test('empty TUPLE.NEW returns (array.new_fixed).', () => {
+			test.test('empty TUPLE.NEW', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					();
 				}`, {lower: true, codegen: false, build: false});
-				const mod = cg.module;
 				return assertEqualBins(
 					(stmts[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, []),
+					new BinValue(cg, cg.codegenTuple()).value,
 				);
 			});
-			test.test('TUPLE.NEW returns (array.new_fixed).', () => {
+			test.test('nonempty TUPLE.NEW', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(x, 4.2, (null,));
@@ -121,49 +125,42 @@ test.suite('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.array.new_fixed(cg.getHeaptype('$Tuple')!, [
-						mod.local.get(0, cg.getReftype('(ref $Value)')!),
+					new BinValue(cg, cg.codegenTuple([
+						mod.local.get(0, reftype_value(cg)),
 						genConst(cg, 4.2),
-						mod.local.get(1, cg.getReftype('(ref $Value)')!),
-					]),
+						mod.local.get(1, reftype_value(cg)),
+					])).value,
 				);
 			});
-			test.test('LIST.NEW returns (struct.new) with count and internal array.', () => {
+			test.test('LIST.NEW', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
-				const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Value)')!);
 				return assertEqualBins(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.struct.new([
-						mod.i32.const(5),
-						mod.array.new_fixed(cg.getHeaptype('$ListInternal')!, [
-							mod.local.get(0, cg.getReftype('(ref null $Value)')!),
-							genConst(cg, 4.2),
-							mod.local.get(1, cg.getReftype('(ref null $Value)')!),
-							mod.local.get(2, cg.getReftype('(ref null $Value)')!),
-							genConst(cg, Symbol(0x101)),
-							WASM_NULL,
-							WASM_NULL,
-							WASM_NULL,
-						]),
-					], cg.getHeaptype('$List')!),
+					new BinValue(cg, cg.codegenList([
+						mod.local.get(0, reftype_value(cg, true)),
+						genConst(cg, 4.2),
+						mod.local.get(1, reftype_value(cg, true)),
+						mod.local.get(2, reftype_value(cg, true)),
+						genConst(cg, Symbol(0x101)),
+					])).value,
 				);
 			});
 		});
 
 		test.suite('RecordNew', () => {
-			test.test('empty RECORD.NEW returns (array.new_fixed).', () => {
+			test.test('empty RECORD.NEW', () => {
 				// there exists no syntax for empty records, so constructing it manually
 				const cg = new Builder();
 				return assertEqualBins(
 					new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
-					cg.module.array.new_fixed(cg.getHeaptype('$Tuple')!, []),
+					new BinValue(cg, cg.codegenRecord()).value,
 				);
 			});
-			test.test('RECORD.NEW returns (array.new_fixed).', () => {
+			test.test('nonempty RECORD.NEW', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
@@ -171,16 +168,16 @@ test.suite('IrNode', () => {
 				const mod = cg.module;
 				return assertEqualBins(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-					mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
-						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
-						Property_new(cg, 258n, genConst(cg, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
-					]),
+					new BinValue(cg, cg.codegenRecord(new Map([
+						[257n, new BinValue(cg, mod.local.get(0, reftype_value(cg))).toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
+						[259n, new BinValue(cg, mod.local.get(1, reftype_value(cg))).toProperty(259n)],
+						[260n, new BinValue(cg, mod.local.get(2, reftype_value(cg))).toProperty(260n)], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
+					]))).value,
 				);
 			});
-			test.test('hashing collisions are resolved in source order.', () => {
+			test.test('inserts keys in source order.', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					% sym  | id  | mod 3
 					% ---- | --- | ----
@@ -193,92 +190,90 @@ test.suite('IrNode', () => {
 					@bbb;  % 262 % 1
 					@ccc;  % 263 % 2
 					@aaa;  % 264 % 0
-					(a= 42, aa= false, b= 4.2);
-					%%
-						(???,         ???,         ???)
-						(258,         ???,         ???)
-						(258 & 261->, ???,         ???)
-						(258,         261,         ???)
-						(258,         261 & 256->, ???)
-						(258,         261,         256) (a, aa, b)
-					%%
-					(aa= true, c= null, a= 42);
-					%%
-						(???,         ???,       ???)
-						(261,         ???,       ???)
-						(261,         ???,       257)
-						(261 & 258->, ???,       257)
-						(261,         258,       257) (aa, a, c)
-					%%
-					(b= 42, bb= 4.2, bbb= null);
-					%%
-						(???,         256,         ???)
-						(???,         256 & 259->, ???)
-						(???,         256,         259)
-						(???,         256 & 262->, 259)
-						(???,         256,         259 & 262->)
-						(262,         256,         259) (bbb, b, bb)
-					%%
+					(a= 42, aa= false, b= 4.2);  % (258, 261, 256)
+					(aa= true, c= null, a= 42);  % (261, 257, 258)
+					(b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
 				}`, {lower: true, codegen: true, build: false});
-				const mod = cg.module;
 				return assertEqualBins(
 					stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-					[
-						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 258n, genConst(cg, 42n)),
-							Property_new(cg, 261n, genConst(cg, false)),
-							Property_new(cg, 256n, genConst(cg, 4.2)),
-						]),
-						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 261n, genConst(cg, true)),
-							Property_new(cg, 258n, genConst(cg, 42n)),
-							Property_new(cg, 257n, genConst(cg)),
-						]),
-						mod.array.new_fixed(cg.getHeaptype('$Record')!, [
-							Property_new(cg, 262n, genConst(cg)),
-							Property_new(cg, 256n, genConst(cg, 42n)),
-							Property_new(cg, 259n, genConst(cg, 4.2)),
-						]),
-					],
+					[new Map([
+						// (a= 42, aa= false, b= 4.2);  % (258, 261, 256)
+						[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
+						[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
+						[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
+					]), new Map([
+						// (aa= true, c= null, a= 42);  % (261, 257, 258)
+						[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
+						[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
+					]), new Map([
+						// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
+						[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
+						[259n, new BinValue(cg, genConst(cg, 4.2)).toProperty(259n)],
+						[262n, new BinValue(cg, genConst(cg))     .toProperty(262n)],
+					])].map((props) => new BinValue(cg, cg.codegenRecord(props)).value),
 				);
 			});
 		});
 
-		test.test('DictNew returns (struct.new) with count and internal array.', () => {
-			const {stmts, opt, cg} = setupScript(`{
-				val mut x: int = 42;
-				[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
-			}`, {lower: true, codegen: true, build: false});
-			const mod = cg.module;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)')!);
-			return assertEqualBins(
-				(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-				mod.struct.new([
-					mod.i32.const(5),
-					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, [
-						WASM_NULL,
-						Property_new(cg, 257n, mod.local.get(0, cg.getReftype('(ref $Value)')!)),
-						Property_new(cg, 258n, genConst(cg, 4.2)),
-						Property_new(cg, 259n, mod.local.get(1, cg.getReftype('(ref $Value)')!)),
-						Property_new(cg, 260n, mod.local.get(2, cg.getReftype('(ref $Value)')!)),
-						Property_new(cg, 261n, genConst(cg, Symbol(0x105))),
-						WASM_NULL,
-						WASM_NULL,
-					]),
-				], cg.getHeaptype('$Dict')!),
-			);
+		test.suite('DictNew', () => {
+			test.test('DICT.NEW', () => {
+				const {stmts, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				return assertEqualBins(
+					(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					new BinValue(cg, cg.codegenDict(new Map([
+						[257n, new BinValue(cg, mod.local.get(0, reftype_value(cg))).toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
+						[259n, new BinValue(cg, mod.local.get(1, reftype_value(cg))).toProperty(259n)],
+						[260n, new BinValue(cg, mod.local.get(2, reftype_value(cg))).toProperty(260n)],
+						[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
+					]))).value,
+				);
+			});
+			test.test('inserts keys in source order.', () => {
+				const {stmts, opt, cg} = setupScript(`{
+					% sym  | id  | mod 8
+					% ---- | --- | ----
+					@b;    % 256 % 0
+					@c;    % 257 % 1
+					@a;    % 258 % 2
+					@bb;   % 259 % 3
+					@cc;   % 260 % 4
+					@aa;   % 261 % 5
+					@bbb;  % 262 % 6
+					@ccc;  % 263 % 7
+					@aaa;  % 264 % 0
+					[a= 42, aa= false, b= 4.2]; % (258, 261, 256)
+					[aa= true, c= null, a= 42]; % (261, 257, 258)
+					[b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
+				}`, {lower: true, codegen: true, build: false});
+				return assertEqualBins(
+					stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+					[new Map([
+						// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
+						[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
+						[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
+						[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
+					]), new Map([
+						// [aa= true, c= null, a= 42]; % (261, 257, 258)
+						[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
+						[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
+					]), new Map([
+						// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
+						[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
+						[257n, new BinValue(cg, genConst(cg, 4.2)).toProperty(257n)],
+						[264n, new BinValue(cg, genConst(cg))     .toProperty(264n)],
+					])].map((props) => new BinValue(cg, cg.codegenDict(props)).value),
+				);
+			});
 		});
 
 		test.test('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
-			const CALL = {
-				vtoi: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], binaryen.v128),
-				vton: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], binaryen.v128),
-				vtof: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], binaryen.v128),
-				vnot: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], binaryen.v128),
-				vemp: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], binaryen.v128),
-				vneg: (mod: binaryen.Module, arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], binaryen.v128),
-			} as const;
-
 			const {stmts, opt, cg} = setupScript(`{
 				!null;
 				!false;
@@ -303,55 +298,43 @@ test.suite('IrNode', () => {
 				float 42;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
+			const CALL = {
+				vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot_', [arg], reftype_value(cg)),
+				vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp_', [arg], reftype_value(cg)),
+				vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg_', [arg], reftype_value(cg)),
+				vtoi: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi_', [arg], reftype_value(cg)),
+				vton: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton_', [arg], reftype_value(cg)),
+				vtof: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof_', [arg], reftype_value(cg)),
+			} as const;
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					CALL.vnot(mod, genConst(cg)),
-					CALL.vnot(mod, genConst(cg, false)),
-					CALL.vnot(mod, genConst(cg, Symbol(0x100))),
-					CALL.vnot(mod, genConst(cg, 42n)),
-					CALL.vnot(mod, genConst(cg, 4.2)),
+					CALL.vnot(genConst(cg)),
+					CALL.vnot(genConst(cg, false)),
+					CALL.vnot(genConst(cg, Symbol(0x100))),
+					CALL.vnot(genConst(cg, 42n)),
+					CALL.vnot(genConst(cg, 4.2)),
 
-					CALL.vemp(mod, genConst(cg)),
-					CALL.vemp(mod, genConst(cg, false)),
-					CALL.vemp(mod, genConst(cg, Symbol(0x100))),
-					CALL.vemp(mod, genConst(cg, 42n)),
-					CALL.vemp(mod, genConst(cg, 4.2)),
+					CALL.vemp(genConst(cg)),
+					CALL.vemp(genConst(cg, false)),
+					CALL.vemp(genConst(cg, Symbol(0x100))),
+					CALL.vemp(genConst(cg, 42n)),
+					CALL.vemp(genConst(cg, 4.2)),
 
-					CALL.vneg(mod, genConst(cg, 42n)),
-					CALL.vneg(mod, genConst(cg, 4.2)),
+					CALL.vneg(genConst(cg, 42n)),
+					CALL.vneg(genConst(cg, 4.2)),
 
-					CALL.vtoi(mod, genConst(cg, 42n, 'nat')),
-					CALL.vtoi(mod, genConst(cg, 4.2)),
-					CALL.vton(mod, genConst(cg, 42n)),
-					CALL.vton(mod, genConst(cg, 4.2)),
-					CALL.vtof(mod, genConst(cg, 42n, 'nat')),
-					CALL.vtof(mod, genConst(cg, 42n)),
+					CALL.vtoi(genConst(cg, 42n, 'nat')),
+					CALL.vtoi(genConst(cg, 4.2)),
+					CALL.vton(genConst(cg, 42n)),
+					CALL.vton(genConst(cg, 4.2)),
+					CALL.vtof(genConst(cg, 42n, 'nat')),
+					CALL.vtof(genConst(cg, 42n)),
 				],
 			);
 		});
 
 		test.test('Binop returns custom WASM functions `viadd`, `vfmul`, etc.', () => {
-			const CALL = {
-				viadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viadd',   [arg0, arg1], binaryen.v128),
-				vfadd:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfadd',   [arg0, arg1], binaryen.v128),
-				visub_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_s', [arg0, arg1], binaryen.v128),
-				visub_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_u', [arg0, arg1], binaryen.v128),
-				vfsub:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfsub',   [arg0, arg1], binaryen.v128),
-				vimul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vimul',   [arg0, arg1], binaryen.v128),
-				vfmul:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfmul',   [arg0, arg1], binaryen.v128),
-				vidiv_s: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_s', [arg0, arg1], binaryen.v128),
-				vidiv_u: (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_u', [arg0, arg1], binaryen.v128),
-				vfdiv:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfdiv',   [arg0, arg1], binaryen.v128),
-				viexp:   (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viexp',   [arg0, arg1], binaryen.v128),
-				vlt:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',     [arg0, arg1], binaryen.v128),
-				vgt:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',     [arg0, arg1], binaryen.v128),
-				vle:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',     [arg0, arg1], binaryen.v128),
-				vge:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',     [arg0, arg1], binaryen.v128),
-				vid:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',     [arg0, arg1], binaryen.v128),
-				veq:     (mod: binaryen.Module, arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',     [arg0, arg1], binaryen.v128),
-			} as const;
-
 			const {stmts, opt, cg} = setupScript(`{
 				2 + 3;
 				2 - 3;
@@ -380,34 +363,53 @@ test.suite('IrNode', () => {
 				2.0 ==  3;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
+			const CALL = {
+				viadd:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viadd_',   [arg0, arg1], reftype_value(cg)),
+				vfadd:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfadd_',   [arg0, arg1], reftype_value(cg)),
+				visub_s: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_s_', [arg0, arg1], reftype_value(cg)),
+				visub_u: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_u_', [arg0, arg1], reftype_value(cg)),
+				vfsub:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfsub_',   [arg0, arg1], reftype_value(cg)),
+				vimul:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vimul_',   [arg0, arg1], reftype_value(cg)),
+				vfmul:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfmul_',   [arg0, arg1], reftype_value(cg)),
+				vidiv_s: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_s_', [arg0, arg1], reftype_value(cg)),
+				vidiv_u: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_u_', [arg0, arg1], reftype_value(cg)),
+				vfdiv:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfdiv_',   [arg0, arg1], reftype_value(cg)),
+				viexp:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viexp_',   [arg0, arg1], reftype_value(cg)),
+				vlt:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt_',     [arg0, arg1], reftype_value(cg)),
+				vgt:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt_',     [arg0, arg1], reftype_value(cg)),
+				vle:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle_',     [arg0, arg1], reftype_value(cg)),
+				vge:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge_',     [arg0, arg1], reftype_value(cg)),
+				vid:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid_',     [arg0, arg1], reftype_value(cg)),
+				veq:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq_',     [arg0, arg1], reftype_value(cg)),
+			} as const;
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					CALL.viadd  (mod, genConst(cg, 2n), genConst(cg, 3n)),
-					CALL.visub_s(mod, genConst(cg, 2n), genConst(cg, 3n)),
-					CALL.vimul  (mod, genConst(cg, 2n), genConst(cg, 3n)),
-					CALL.vidiv_s(mod, genConst(cg, 2n), genConst(cg, 3n)),
-					CALL.viexp  (mod, genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.viadd  (genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.visub_s(genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.vimul  (genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.vidiv_s(genConst(cg, 2n), genConst(cg, 3n)),
+					CALL.viexp  (genConst(cg, 2n), genConst(cg, 3n)),
 
-					CALL.viadd  (mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-					CALL.visub_u(mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-					CALL.vimul  (mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-					CALL.vidiv_u(mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-					CALL.viexp  (mod, genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.viadd  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.visub_u(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.vimul  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.vidiv_u(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+					CALL.viexp  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
 
-					CALL.vfadd(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
-					CALL.vfsub(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
-					CALL.vfmul(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
-					CALL.vfdiv(mod, genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vfadd(genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vfsub(genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vfmul(genConst(cg, 2.0), genConst(cg, 3.0)),
+					CALL.vfdiv(genConst(cg, 2.0), genConst(cg, 3.0)),
 					mod.unreachable(),
 
-					CALL.vlt(mod, genConst(cg, 2n), genConst(cg, 3.0)),
-					CALL.vgt(mod, genConst(cg, 2n), genConst(cg, 3.0)),
-					CALL.vle(mod, genConst(cg, 2n), genConst(cg, 3.0)),
-					CALL.vge(mod, genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vlt(genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vgt(genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vle(genConst(cg, 2n), genConst(cg, 3.0)),
+					CALL.vge(genConst(cg, 2n), genConst(cg, 3.0)),
 
-					CALL.vid(mod, genConst(cg, 2.0), genConst(cg, 3n)),
-					CALL.veq(mod, genConst(cg, 2.0), genConst(cg, 3n)),
+					CALL.vid(genConst(cg, 2.0), genConst(cg, 3n)),
+					CALL.veq(genConst(cg, 2.0), genConst(cg, 3n)),
 				],
 			);
 		});

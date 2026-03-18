@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {
 	memoizeMethod,
@@ -54,18 +54,19 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)')!;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		if (this.operator === OpCode.TOBOOL) {
-			return cg.module.call('vnot', [cg.module.call('vnot', [code], binaryen.v128)], binaryen.v128);
+			return cg.module.call('vnot_', [cg.module.call('vnot_', [code], rt_value)], rt_value);
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.ISNULL,  'isnull'],
-			[OpCode.TOINT,   'vtoi'],
-			[OpCode.TONAT,   'vton'],
-			[OpCode.TOFLOAT, 'vtof'],
-			[OpCode.NOT,     'vnot'],
-			[OpCode.EMP,     'vemp'],
-			[OpCode.NEG,     'vneg'],
-		]).get(this.operator)!, [code], binaryen.v128);
+			[OpCode.ISNULL,  'isnull_'],
+			[OpCode.NOT,     'vnot_'],
+			[OpCode.EMP,     'vemp_'],
+			[OpCode.NEG,     'vneg_'],
+			[OpCode.TOINT,   'vtoi_'],
+			[OpCode.TONAT,   'vton_'],
+			[OpCode.TOFLOAT, 'vtof_'],
+		]).get(this.operator)!, [code], rt_value);
 	}
 }

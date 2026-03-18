@@ -6,6 +6,7 @@ import type {
 	SymbolSchemaVar,
 } from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
+import {BinValue} from '../code-generator/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
@@ -51,6 +52,36 @@ type Block = {
 	readonly index: number,
 	readonly node:  AST.ASTNodeCP,
 };
+
+
+
+/**
+ * Insert entries into an internal array for a record/Dict.
+ *
+ * Find a bucket in which to place the entry.
+ * By default this will have index `id mod capacity`,
+ * but in the case of collisions we will use the *linear probing* technique.
+ *
+ * This function mutates the `array` argument.
+ * For records, the array will have been completely filled by the time this function returns.
+ * For Dicts, the array may still have empty slots (native `undefined`);
+ * these are expected to be filled with `(ref.null $Property)` values later, but are not done so here.
+ *
+ * @param entry the entry to insert; must be of type `(ref $Property)` in the case of records, `(ref null $Property)` in the case of Dicts
+ * @param index the index of the internal array at which to attempt to insert the entry; should be the result of an already-hashed key
+ * @param array an empty array in which to insert the entry
+ * @see https://en.wikipedia.org/wiki/Linear_probing
+ */
+function insert_entry(entry: binaryen.ExpressionRef, index: number, array: Array<binaryen.ExpressionRef | undefined>): void {
+	if (index < 0 || array.length < index) {
+		throw new RangeError('Given index must not be out of array bounds.');
+	}
+	if (array[index] === undefined) {
+		array[index] = entry;
+		return;
+	}
+	return insert_entry(entry, (index + 1) % array.length, array);
+}
 
 
 
@@ -198,6 +229,73 @@ export class Builder {
 	public teeBlock(node: AST.ASTNodeCP): Block {
 		this.setBlock(node);
 		return this.getBlock(node)!;
+	}
+
+	/**
+	 * Return a new `$Tuple` from items.
+	 * @param items items in the array; must be of type `(ref $Value)`
+	 * @return      `(array.new_fixed $Tuple <...items>)`
+	 */
+	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.module.array.new_fixed(this.getHeaptype('$Tuple')!, items);
+	}
+
+	/**
+	 * Return a new `$Record` from properties.
+	 * This method automatically hashes the property keys and inserts them at the correct indices.
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Property)`) are items in the array
+	 * @return      `(array.new_fixed $Record <...props>)`
+	 */
+	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
+		props.forEach((code, id) => insert_entry(code, Number(id) % entries.length, entries));
+		return this.module.array.new_fixed(this.getHeaptype('$Record')!, entries as binaryen.ExpressionRef[]);
+	}
+
+	/**
+	 * Return a new `$List` from items.
+	 * The capacity of `$ListInternal` is always the least power of 2 greater than or equal to
+	 * the number of given items (the List’s count), or 8, whichever is greater.
+	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
+	 * @param items items in the array; must be of type `(ref null $Value)`
+	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
+	 */
+	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		let capacity: number = 8;
+		while (capacity < items.length) {
+			capacity *= 2;
+		}
+		const entries: binaryen.ExpressionRef[] = Array.from(
+			new Array(capacity),
+			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')!),
+		);
+		return this.module.struct.new([
+			this.module.i32.const(items.length),
+			this.module.array.new_fixed(this.getHeaptype('$ListInternal')!, entries),
+		], this.getHeaptype('$List')!);
+	}
+
+	/**
+	 * Return a new `$Dict` from properties.
+	 * This method automatically hashes the property keys and inserts them at the correct indices,
+	 * as well as populates blank slots with the WASM expression `(ref.null $Property)`.
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref null $Property)`) are items in the array
+	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...items>))`
+	 */
+	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		let capacity: number = 8;
+		while (capacity < props.size) {
+			capacity *= 2;
+		}
+		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
+		props.forEach((code, id) => insert_entry(code, Number(id) % entries.length, entries));
+		return this.module.struct.new([
+			this.module.i32.const(props.size),
+			this.module.array.new_fixed(
+				this.getHeaptype('$DictInternal')!,
+				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)')!)),
+			),
+		], this.getHeaptype('$Dict')!);
 	}
 
 	/**
@@ -425,6 +523,102 @@ export class Builder {
 		));
 	}
 
+	/** assumes both operands are primitive */
+	#setupBinopArithmetic(
+		name:    string,
+		method:  (num0: binaryen.ExpressionRef, num1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		typekey: 'intValue' | 'natValue' | 'floatValue',
+	): binaryen.FunctionRef {
+		const mod:      BinaryenModuleUpdates = this.module;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const local_vects = [
+			new BinValue(this, mod.local.get(0, rt_value)),
+			new BinValue(this, mod.local.get(1, rt_value)),
+		].map((binval) => new BinVect(mod, binval.primitiveValue));
+		return mod.addFunction(
+			name,
+			binaryen.createType([rt_value, rt_value]),
+			rt_value,
+			[],
+			new BinValue(this, new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect).value,
+		);
+	};
+
+	/** assumes both operands are primitive */
+	#setupBinopComparative(
+		name:        string,
+		method_ints: (int0:   binaryen.ExpressionRef, int1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_nats: (nat0:   binaryen.ExpressionRef, nat1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+	): binaryen.FunctionRef {
+		const mod:      BinaryenModuleUpdates = this.module;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const local_vects = [
+			new BinValue(this, mod.local.get(0, rt_value)),
+			new BinValue(this, mod.local.get(1, rt_value)),
+		].map((binval) => new BinVect(mod, binval.primitiveValue));
+
+		const int_int: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_ints.call(null, local_vects[0].intValue,   local_vects[1].intValue)))  .value;
+		const int_nat: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_nats.call(null, local_vects[0].i_to_n(),   local_vects[1].natValue)))  .value;
+		const int_flt: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_flts.call(null, local_vects[0].i_to_f(),   local_vects[1].floatValue))).value;
+		const nat_int: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].i_to_n())))  .value;
+		const nat_nat: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].natValue)))  .value;
+		const nat_flt: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_flts.call(null, local_vects[0].n_to_f(),   local_vects[1].floatValue))).value;
+		const flt_int: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_flts.call(null, local_vects[0].floatValue, local_vects[1].i_to_f())))  .value;
+		const flt_nat: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_flts.call(null, local_vects[0].floatValue, local_vects[1].n_to_f())))  .value;
+		const flt_flt: binaryen.ExpressionRef = new BinValue(this, BinVect.asBool(mod, method_flts.call(null, local_vects[0].floatValue, local_vects[1].floatValue))).value;
+
+		return mod.addFunction(name, binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
+			local_vects[0].isInt,
+			mod.if(
+				local_vects[1].isInt,
+				int_int,
+				mod.if(
+					local_vects[1].isNat,
+					int_nat,
+					mod.if(
+						local_vects[1].isFloat,
+						int_flt,
+						mod.unreachable(),
+					),
+				),
+			),
+			mod.if(
+				local_vects[0].isNat,
+				mod.if(
+					local_vects[1].isInt,
+					nat_int,
+					mod.if(
+						local_vects[1].isNat,
+						nat_nat,
+						mod.if(
+							local_vects[1].isFloat,
+							nat_flt,
+							mod.unreachable(),
+						),
+					),
+				),
+				mod.if(
+					local_vects[0].isFloat,
+					mod.if(
+						local_vects[1].isInt,
+						flt_int,
+						mod.if(
+							local_vects[1].isNat,
+							flt_nat,
+							mod.if(
+								local_vects[1].isFloat,
+								flt_flt,
+								mod.unreachable(),
+							),
+						),
+					),
+					mod.unreachable(),
+				),
+			),
+		));
+	};
+
 	#setupFunctions(): void {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
@@ -550,6 +744,141 @@ export class Builder {
 		this.#binOpComparative('veq', mod.i64.eq.bind(null), mod.i64.eq.bind(null), mod.f64.eq.bind(null));
 	}
 
+	#setupFunctions2(): void {
+		const mod:      BinaryenModuleUpdates = this.module;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const local_vals = [
+			new BinValue(this, mod.local.get(0, rt_value)),
+			new BinValue(this, mod.local.get(1, rt_value)),
+		] as const;
+		const local_vects = local_vals.map((binval) => new BinVect(mod, binval.primitiveValue));
+
+		mod.addFunction('isnull_', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+			local_vals[0].isPrimitive,
+			local_vects[0].isSpecial(null),
+		))).value);
+		mod.addFunction('vnot_', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+			local_vals[0].isPrimitive,
+			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
+		))).value);
+		mod.addFunction('vemp_', rt_value, rt_value, [], mod.if(
+			local_vals[0].isPrimitive,
+			mod.if(
+				local_vects[0].isSpecial(),
+				mod.call('vnot_', [local_vals[0].value], rt_value),
+				new BinValue(this, mod.if(
+					local_vects[0].isInt,
+					BinVect.asBool(mod, mod.i64.eqz(local_vects[0].intValue)),
+					mod.if(
+						local_vects[0].isNat,
+						BinVect.asBool(mod, mod.i64.eqz(local_vects[0].natValue)),
+						mod.if(
+							local_vects[0].isFloat,
+							BinVect.asBool(mod, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+							BinVect.asBool(mod, mod.i32.and(local_vects[0].isAddr, mod.i64.eqz(local_vects[0].addrValue))),
+						),
+					),
+				)).value,
+			),
+			mod.unreachable(), // TODO: EMP operator on composites
+		));
+		mod.addFunction('vneg_', rt_value, rt_value, [], new BinValue(this, mod.if( // assume operand is primitive
+			local_vects[0].isInt,
+			// `-n` in two’s complement is `(n xor -1) + 1`
+			new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].intValue, bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
+			mod.if(
+				local_vects[0].isFloat,
+				new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
+				mod.unreachable(), // cannot call NEG on other primitives
+			),
+		)).value);
+		mod.addFunction('vtoi_', rt_value, rt_value, [], mod.if( // assume operand is primitive
+			local_vects[0].isInt,
+			new BinValue(this, local_vects[0].vect).value,
+			mod.if(
+				local_vects[0].isNat,
+				new BinValue(this, new BinVect(mod, local_vects[0].n_to_i(), {unsigned: false}).vect).value,
+				mod.if(
+					local_vects[0].isFloat,
+					new BinValue(this, new BinVect(mod, local_vects[0].f_to_i()).vect).value,
+					mod.unreachable(),
+				),
+			),
+		));
+		mod.addFunction('vton_', rt_value, rt_value, [], mod.if( // assume operand is primitive
+			local_vects[0].isInt,
+			new BinValue(this, new BinVect(mod, local_vects[0].i_to_n(), {unsigned: true}).vect).value,
+			mod.if(
+				local_vects[0].isNat,
+				new BinValue(this, local_vects[0].vect).value,
+				mod.if(
+					local_vects[0].isFloat,
+					new BinValue(this, new BinVect(mod, local_vects[0].f_to_n()).vect).value,
+					mod.unreachable(),
+				),
+			),
+		));
+		mod.addFunction('vtof_', rt_value, rt_value, [], mod.if( // assume operand is primitive
+			local_vects[0].isInt,
+			new BinValue(this, new BinVect(mod, local_vects[0].i_to_f()).vect).value,
+			mod.if(
+				local_vects[0].isNat,
+				new BinValue(this, new BinVect(mod, local_vects[0].n_to_f()).vect).value,
+				mod.if(
+					local_vects[0].isFloat,
+					new BinValue(this, local_vects[0].vect).value,
+					mod.unreachable(),
+				),
+			),
+		));
+
+		this.#setupBinopArithmetic('viadd_',   mod.i64.add  .bind(null), 'intValue');
+		this.#setupBinopArithmetic('vfadd_',   mod.f64.add  .bind(null), 'floatValue');
+		this.#setupBinopArithmetic('visub_s_', mod.i64.sub  .bind(null), 'intValue');
+		this.#setupBinopArithmetic('visub_u_', (num0, num1) => mod.call('isub_u', [num0, num1], binaryen.i64), 'natValue');
+		this.#setupBinopArithmetic('vfsub_',   mod.f64.sub  .bind(null), 'floatValue');
+		this.#setupBinopArithmetic('vimul_',   mod.i64.mul  .bind(null), 'intValue');
+		this.#setupBinopArithmetic('vfmul_',   mod.f64.mul  .bind(null), 'floatValue');
+		this.#setupBinopArithmetic('vidiv_s_', mod.i64.div_s.bind(null), 'intValue');
+		this.#setupBinopArithmetic('vidiv_u_', mod.i64.div_u.bind(null), 'natValue');
+		this.#setupBinopArithmetic('vfdiv_',   mod.f64.div  .bind(null), 'floatValue');
+		this.#setupBinopArithmetic('viexp_',   (num0, num1) => mod.call('iexp', [num0, num1], binaryen.i64), 'intValue');
+
+		this.#setupBinopComparative('vlt_', mod.i64.lt_s.bind(null), mod.i64.lt_u.bind(null), mod.f64.lt.bind(null));
+		this.#setupBinopComparative('vgt_', mod.i64.gt_s.bind(null), mod.i64.gt_u.bind(null), mod.f64.gt.bind(null));
+		this.#setupBinopComparative('vle_', mod.i64.le_s.bind(null), mod.i64.le_u.bind(null), mod.f64.le.bind(null));
+		this.#setupBinopComparative('vge_', mod.i64.ge_s.bind(null), mod.i64.ge_u.bind(null), mod.f64.ge.bind(null));
+		this.#setupBinopComparative('veqn', mod.i64.eq  .bind(null), mod.i64.eq  .bind(null), mod.f64.eq.bind(null));
+
+		this.module.addFunction('vid_', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
+			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
+			mod.if(
+				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
+				BinVect.asBool(mod, mod.i32.eq(local_vects[0].specialValue, local_vects[1].specialValue)),
+				mod.if(
+					mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
+					BinVect.asBool(mod, mod.i64.eq(local_vects[0].intValue, local_vects[1].intValue)), // `i64.eq` for ints gives the same result as `ID` operator
+					mod.if(
+						mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
+						BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
+						new BinVect(mod, false).vect,
+					),
+				),
+			),
+			BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)), // TODO: handle identity of tuples/records
+		)).value);
+
+		this.module.addFunction('veq_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
+			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
+			mod.if(
+				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
+				mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value),
+				mod.call('veqn', [local_vals[0].value, local_vals[1].value], rt_value),
+			),
+			mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value), // TODO: handle equality of all composites
+		));
+	}
+
 	/**
 	 * Prepare this builder’s module, with optional additional actions/modifications.
 	 * @param main a callback to run after setup but before validation
@@ -565,6 +894,7 @@ export class Builder {
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
 		this.#setupFunctions();
+		this.#setupFunctions2();
 		main?.call(null, this.module);
 		if (!this.module.validate()) {
 			throw new Error('Invalid WebAssembly module.');
