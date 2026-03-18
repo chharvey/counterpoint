@@ -257,9 +257,19 @@ export class BinVect {
 		return this.mod.i64x2.extract_lane(this.vect, 1);
 	}
 
+	/** Reinterpretation. Assuming `this.isInt`, return the value interpreted as a `nat`. */
+	public i_to_n(): binaryen.ExpressionRef {
+		return this.natValue; // reinterpretation doesn’t change the bits
+	}
+
 	/** Conversion. Assuming `this.isInt`, return a new value representing a `float`. */
 	public i_to_f(): binaryen.ExpressionRef {
 		return this.mod.f64.convert_s.i64(this.intValue);
+	}
+
+	/** Reinterpretation. Assuming `this.isNat`, return the value interpreted as an `int`. */
+	public n_to_i(): binaryen.ExpressionRef {
+		return this.intValue; // reinterpretation doesn’t change the bits
 	}
 
 	/** Conversion. Assuming `this.isNat`, return a new value representing a `float`. */

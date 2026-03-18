@@ -337,24 +337,28 @@ export class Builder {
 
 	#binOpArithmetic(
 		name:    string,
-		method:  (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		typekey: 'intValue' | 'floatValue',
+		method:  (num0: binaryen.ExpressionRef, num1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		typekey: 'intValue' | 'natValue' | 'floatValue',
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
-		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+		return mod.addFunction(
+			name,
+			binaryen.createType([binaryen.v128, binaryen.v128]),
+			binaryen.v128,
+			[],
 			new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect,
-		], binaryen.v128));
+		);
 	}
 
 	#binOpComparative(
 		name:        string,
-		method_ints: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		method_nats: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		method_flts: (left: binaryen.ExpressionRef, right: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_ints: (int0:   binaryen.ExpressionRef, int1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_nats: (nat0:   binaryen.ExpressionRef, nat1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
+		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
@@ -362,65 +366,63 @@ export class Builder {
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
 		const int_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_ints.call(null, local_vects[0].intValue,   local_vects[1].intValue));
-		const int_nat: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].natValue));
+		const int_nat: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].i_to_n(),   local_vects[1].natValue));
 		const int_flt: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].i_to_f(),   local_vects[1].floatValue));
-		const nat_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].natValue));
+		const nat_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].i_to_n()));
 		const nat_nat: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].natValue));
 		const nat_flt: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].n_to_f(),   local_vects[1].floatValue));
 		const flt_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].floatValue, local_vects[1].i_to_f()));
 		const flt_nat: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].floatValue, local_vects[1].n_to_f()));
 		const flt_flt: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].floatValue, local_vects[1].floatValue));
-		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+		return mod.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.if(
+			local_vects[0].isInt,
 			mod.if(
-				local_vects[0].isInt,
+				local_vects[1].isInt,
+				int_int,
+				mod.if(
+					local_vects[1].isNat,
+					int_nat,
+					mod.if(
+						local_vects[1].isFloat,
+						int_flt,
+						mod.unreachable(),
+					),
+				),
+			),
+			mod.if(
+				local_vects[0].isNat,
 				mod.if(
 					local_vects[1].isInt,
-					int_int,
+					nat_int,
 					mod.if(
 						local_vects[1].isNat,
-						int_nat,
+						nat_nat,
 						mod.if(
 							local_vects[1].isFloat,
-							int_flt,
+							nat_flt,
 							mod.unreachable(),
 						),
 					),
 				),
 				mod.if(
-					local_vects[0].isNat,
+					local_vects[0].isFloat,
 					mod.if(
 						local_vects[1].isInt,
-						nat_int,
+						flt_int,
 						mod.if(
 							local_vects[1].isNat,
-							nat_nat,
+							flt_nat,
 							mod.if(
 								local_vects[1].isFloat,
-								nat_flt,
+								flt_flt,
 								mod.unreachable(),
 							),
 						),
 					),
-					mod.if(
-						local_vects[0].isFloat,
-						mod.if(
-							local_vects[1].isInt,
-							flt_int,
-							mod.if(
-								local_vects[1].isNat,
-								flt_nat,
-								mod.if(
-									local_vects[1].isFloat,
-									flt_flt,
-									mod.unreachable(),
-								),
-							),
-						),
-						mod.unreachable(),
-					),
+					mod.unreachable(),
 				),
 			),
-		], binaryen.v128));
+		));
 	}
 
 	#setupFunctions(): void {
@@ -429,99 +431,97 @@ export class Builder {
 			new BinVect(mod, mod.local.get(0, binaryen.v128)),
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
-		mod.addFunction('isnull', binaryen.v128, binaryen.v128, [], mod.block(null, [
+		mod.addFunction(
+			'isnull',
+			binaryen.v128,
+			binaryen.v128,
+			[],
 			BinVect.asBool(mod, local_vects[0].isSpecial(null)),
-		], binaryen.v128));
-		mod.addFunction('vnot', binaryen.v128, binaryen.v128, [], mod.block(null, [
+		);
+		mod.addFunction(
+			'vnot',
+			binaryen.v128,
+			binaryen.v128,
+			[],
 			BinVect.asBool(mod, mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false))),
-		], binaryen.v128));
-		mod.addFunction('vemp', binaryen.v128, binaryen.v128, [], mod.block(null, [
+		);
+		mod.addFunction('vemp', binaryen.v128, binaryen.v128, [], mod.if(
+			local_vects[0].isSpecial(),
+			mod.call('vnot', [local_vects[0].vect], binaryen.v128),
 			mod.if(
-				local_vects[0].isSpecial(),
-				mod.call('vnot', [local_vects[0].vect], binaryen.v128),
+				local_vects[0].isInt,
+				BinVect.asBool(mod, mod.i64.eqz(local_vects[0].intValue)),
 				mod.if(
-					local_vects[0].isInt,
-					BinVect.asBool(mod, mod.i64.eqz(local_vects[0].intValue)),
+					local_vects[0].isNat,
+					BinVect.asBool(mod, mod.i64.eqz(local_vects[0].natValue)),
 					mod.if(
-						local_vects[0].isNat,
-						BinVect.asBool(mod, mod.i64.eqz(local_vects[0].natValue)),
-						mod.if(
-							local_vects[0].isFloat,
-							BinVect.asBool(mod, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of -0.0
-							BinVect.asBool(mod, mod.i32.and(local_vects[0].isAddr, mod.i64.eqz(local_vects[0].addrValue))),
-						),
+						local_vects[0].isFloat,
+						BinVect.asBool(mod, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of -0.0
+						BinVect.asBool(mod, mod.i32.and(local_vects[0].isAddr, mod.i64.eqz(local_vects[0].addrValue))),
 					),
 				),
 			),
-		], binaryen.v128));
-		mod.addFunction('vneg', binaryen.v128, binaryen.v128, [], mod.block(null, [
+		));
+		mod.addFunction('vneg', binaryen.v128, binaryen.v128, [], mod.if(
+			local_vects[0].isInt,
+			// `-n` in two’s complement is `(n xor -1) + 1`
+			new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].intValue, bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
 			mod.if(
-				local_vects[0].isInt,
-				// `-n` in two’s complement is `(n xor -1) + 1`
-				new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].intValue, bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
+				local_vects[0].isFloat,
+				new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
+				mod.unreachable(),
+			),
+		));
+		mod.addFunction('vtoi', binaryen.v128, binaryen.v128, [], mod.if(
+			local_vects[0].isInt,
+			local_vects[0].vect,
+			mod.if(
+				local_vects[0].isNat,
+				new BinVect(mod, local_vects[0].n_to_i(), {unsigned: false}).vect,
 				mod.if(
 					local_vects[0].isFloat,
-					new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
+					new BinVect(mod, local_vects[0].f_to_i()).vect,
 					mod.unreachable(),
 				),
 			),
-		], binaryen.v128));
-		mod.addFunction('vtoi', binaryen.v128, binaryen.v128, [], mod.block(null, [
+		));
+		mod.addFunction('vton', binaryen.v128, binaryen.v128, [], mod.if(
+			local_vects[0].isInt,
+			new BinVect(mod, local_vects[0].i_to_n(), {unsigned: true}).vect,
 			mod.if(
-				local_vects[0].isInt,
+				local_vects[0].isNat,
 				local_vects[0].vect,
 				mod.if(
-					local_vects[0].isNat,
-					new BinVect(mod, local_vects[0].natValue, {unsigned: false}).vect,
-					mod.if(
-						local_vects[0].isFloat,
-						new BinVect(mod, local_vects[0].f_to_i()).vect,
-						mod.unreachable(),
-					),
+					local_vects[0].isFloat,
+					new BinVect(mod, local_vects[0].f_to_n()).vect,
+					mod.unreachable(),
 				),
 			),
-		], binaryen.v128));
-		mod.addFunction('vton', binaryen.v128, binaryen.v128, [], mod.block(null, [
+		));
+		mod.addFunction('vtof', binaryen.v128, binaryen.v128, [], mod.if(
+			local_vects[0].isInt,
+			new BinVect(mod, local_vects[0].i_to_f()).vect,
 			mod.if(
-				local_vects[0].isInt,
-				new BinVect(mod, local_vects[0].intValue, {unsigned: true}).vect,
+				local_vects[0].isNat,
+				new BinVect(mod, local_vects[0].n_to_f()).vect,
 				mod.if(
-					local_vects[0].isNat,
+					local_vects[0].isFloat,
 					local_vects[0].vect,
-					mod.if(
-						local_vects[0].isFloat,
-						new BinVect(mod, local_vects[0].f_to_n()).vect,
-						mod.unreachable(),
-					),
+					mod.unreachable(),
 				),
 			),
-		], binaryen.v128));
-		mod.addFunction('vtof', binaryen.v128, binaryen.v128, [], mod.block(null, [
-			mod.if(
-				local_vects[0].isInt,
-				new BinVect(mod, local_vects[0].i_to_f()).vect,
-				mod.if(
-					local_vects[0].isNat,
-					new BinVect(mod, local_vects[0].n_to_f()).vect,
-					mod.if(
-						local_vects[0].isFloat,
-						local_vects[0].vect,
-						mod.unreachable(),
-					),
-				),
-			),
-		], binaryen.v128));
+		));
 
-		this.#binOpArithmetic('viexp',   (i0, i1) => mod.call('iexp', [i0, i1], binaryen.i64), 'intValue');
+		this.#binOpArithmetic('viexp',   (num0, num1) => mod.call('iexp', [num0, num1], binaryen.i64), 'intValue');
 		this.#binOpArithmetic('vimul',   mod.i64.mul  .bind(null), 'intValue');
 		this.#binOpArithmetic('vfmul',   mod.f64.mul  .bind(null), 'floatValue');
 		this.#binOpArithmetic('vidiv_s', mod.i64.div_s.bind(null), 'intValue');
-		this.#binOpArithmetic('vidiv_u', mod.i64.div_u.bind(null), 'intValue');
+		this.#binOpArithmetic('vidiv_u', mod.i64.div_u.bind(null), 'natValue');
 		this.#binOpArithmetic('vfdiv',   mod.f64.div  .bind(null), 'floatValue');
 		this.#binOpArithmetic('viadd',   mod.i64.add  .bind(null), 'intValue');
 		this.#binOpArithmetic('vfadd',   mod.f64.add  .bind(null), 'floatValue');
 		this.#binOpArithmetic('visub_s', mod.i64.sub  .bind(null), 'intValue');
-		this.#binOpArithmetic('visub_u', (i0, i1) => mod.call('isub_u', [i0, i1], binaryen.i64), 'intValue');
+		this.#binOpArithmetic('visub_u', (num0, num1) => mod.call('isub_u', [num0, num1], binaryen.i64), 'natValue');
 		this.#binOpArithmetic('vfsub',   mod.f64.sub  .bind(null), 'floatValue');
 
 		this.#binOpComparative('vlt', mod.i64.lt_s.bind(null), mod.i64.lt_u.bind(null), mod.f64.lt.bind(null));
@@ -529,25 +529,23 @@ export class Builder {
 		this.#binOpComparative('vle', mod.i64.le_s.bind(null), mod.i64.le_u.bind(null), mod.f64.le.bind(null));
 		this.#binOpComparative('vge', mod.i64.ge_s.bind(null), mod.i64.ge_u.bind(null), mod.f64.ge.bind(null));
 
-		mod.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.block(null, [
+		mod.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], mod.if(
+			mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
+			BinVect.asBool(mod, mod.i32.eq(local_vects[0].specialValue, local_vects[1].specialValue)),
 			mod.if(
-				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				BinVect.asBool(mod, mod.i32.eq(local_vects[0].specialValue, local_vects[1].specialValue)),
+				mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
+				BinVect.asBool(mod, mod.i64.eq(local_vects[0].intValue, local_vects[1].intValue)), // `i64.eq` for ints gives the same result as `ID` operator
 				mod.if(
-					mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-					BinVect.asBool(mod, mod.i64.eq(local_vects[0].intValue, local_vects[1].intValue)), // `i64.eq` for ints gives the same result as `ID` operator
+					mod.i32.and(local_vects[0].isNat, local_vects[1].isNat),
+					BinVect.asBool(mod, mod.i64.eq(local_vects[0].natValue, local_vects[1].natValue)),
 					mod.if(
-						mod.i32.and(local_vects[0].isNat, local_vects[1].isNat),
-						BinVect.asBool(mod, mod.i64.eq(local_vects[0].natValue, local_vects[1].natValue)),
-						mod.if(
-							mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-							BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
-							new BinVect(mod, false).vect,
-						),
+						mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
+						BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
+						new BinVect(mod, false).vect,
 					),
 				),
 			),
-		], binaryen.v128));
+		));
 
 		this.#binOpComparative('veq', mod.i64.eq.bind(null), mod.i64.eq.bind(null), mod.f64.eq.bind(null));
 	}
