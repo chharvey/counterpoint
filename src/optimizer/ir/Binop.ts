@@ -1,10 +1,7 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -101,41 +98,42 @@ export class Binop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)')!;
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
-			case OpCode.NLT: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('vlt', codes, binaryen.v128)], binaryen.v128)).value; }
-			case OpCode.NGT: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('vgt', codes, binaryen.v128)], binaryen.v128)).value; }
+			case OpCode.NLT: { return cg.module.call('vnot_', [cg.module.call('vlt_', codes, rt_value)], rt_value); }
+			case OpCode.NGT: { return cg.module.call('vnot_', [cg.module.call('vgt_', codes, rt_value)], rt_value); }
 
-			case OpCode.NID: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('vid', codes, binaryen.v128)], binaryen.v128)).value; }
-			case OpCode.NEQ: { return new BinValue(cg, cg.module.call('vnot', [cg.module.call('veq', codes, binaryen.v128)], binaryen.v128)).value; }
+			case OpCode.NID: { return cg.module.call('vnot_', [cg.module.call('vid_', codes, rt_value)], rt_value); }
+			case OpCode.NEQ: { return cg.module.call('vnot_', [cg.module.call('veq_', codes, rt_value)], rt_value); }
 		}
-		return new BinValue(cg, cg.module.call(new Map<OpCode, string>([
+		return cg.module.call(new Map<OpCode, string>([
 			// TODO: v0.5+: update with new functions
-			[OpCode.INT_ADD, 'vadd'],
-			[OpCode.INT_SUB, 'visub_s'],
-			[OpCode.INT_MUL, 'vmul'],
-			[OpCode.INT_DIV, 'vdiv'],
-			[OpCode.INT_EXP, 'vexp'],
+			[OpCode.INT_ADD, 'vadd_'],
+			[OpCode.INT_SUB, 'visub_s_'],
+			[OpCode.INT_MUL, 'vmul_'],
+			[OpCode.INT_DIV, 'vdiv_'],
+			[OpCode.INT_EXP, 'vexp_'],
 
-			[OpCode.NAT_ADD, 'vadd'],
-			[OpCode.NAT_SUB, 'visub_u'],
-			[OpCode.NAT_MUL, 'vmul'],
-			[OpCode.NAT_DIV, 'vdiv'],
-			[OpCode.NAT_EXP, 'vexp'],
+			[OpCode.NAT_ADD, 'vadd_'],
+			[OpCode.NAT_SUB, 'visub_u_'],
+			[OpCode.NAT_MUL, 'vmul_'],
+			[OpCode.NAT_DIV, 'vdiv_'],
+			[OpCode.NAT_EXP, 'vexp_'],
 
-			[OpCode.FLOAT_ADD, 'vadd'],
-			[OpCode.FLOAT_SUB, 'vfsub'],
-			[OpCode.FLOAT_MUL, 'vmul'],
-			[OpCode.FLOAT_DIV, 'vdiv'],
-			[OpCode.FLOAT_EXP, 'vexp'],
+			[OpCode.FLOAT_ADD, 'vadd_'],
+			[OpCode.FLOAT_SUB, 'vfsub_'],
+			[OpCode.FLOAT_MUL, 'vmul_'],
+			[OpCode.FLOAT_DIV, 'vdiv_'],
+			[OpCode.FLOAT_EXP, 'vexp_'],
 
-			[OpCode.LT, 'vlt'],
-			[OpCode.GT, 'vgt'],
-			[OpCode.LE, 'vle'],
-			[OpCode.GE, 'vge'],
+			[OpCode.LT, 'vlt_'],
+			[OpCode.GT, 'vgt_'],
+			[OpCode.LE, 'vle_'],
+			[OpCode.GE, 'vge_'],
 
-			[OpCode.ID, 'vid'],
-			[OpCode.EQ, 'veq'],
-		]).get(this.operator)!, codes, binaryen.v128)).value;
+			[OpCode.ID, 'vid_'],
+			[OpCode.EQ, 'veq_'],
+		]).get(this.operator)!, codes, rt_value);
 	}
 }
