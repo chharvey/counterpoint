@@ -152,7 +152,7 @@ export class Builder {
 	#binOpArithmetic(
 		name:    string,
 		method:  (num0: binaryen.ExpressionRef, num1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		typekey: 'intValue' | 'floatValue',
+		typekey: 'intValue' | 'natValue' | 'floatValue',
 	): binaryen.FunctionRef {
 		const mod: binaryen.Module = this.module;
 		const local_vects = [
@@ -323,12 +323,12 @@ export class Builder {
 		this.#binOpArithmetic('vimul',   mod.i64.mul  .bind(null), 'intValue');
 		this.#binOpArithmetic('vfmul',   mod.f64.mul  .bind(null), 'floatValue');
 		this.#binOpArithmetic('vidiv_s', mod.i64.div_s.bind(null), 'intValue');
-		this.#binOpArithmetic('vidiv_u', mod.i64.div_u.bind(null), 'intValue');
+		this.#binOpArithmetic('vidiv_u', mod.i64.div_u.bind(null), 'natValue');
 		this.#binOpArithmetic('vfdiv',   mod.f64.div  .bind(null), 'floatValue');
 		this.#binOpArithmetic('viadd',   mod.i64.add  .bind(null), 'intValue');
 		this.#binOpArithmetic('vfadd',   mod.f64.add  .bind(null), 'floatValue');
 		this.#binOpArithmetic('visub_s', mod.i64.sub  .bind(null), 'intValue');
-		this.#binOpArithmetic('visub_u', (num0, num1) => mod.call('isub_u', [num0, num1], binaryen.i64), 'intValue');
+		this.#binOpArithmetic('visub_u', (num0, num1) => mod.call('isub_u', [num0, num1], binaryen.i64), 'natValue');
 		this.#binOpArithmetic('vfsub',   mod.f64.sub  .bind(null), 'floatValue');
 
 		this.#binOpComparative('vlt', mod.i64.lt_s.bind(null), mod.i64.lt_u.bind(null), mod.f64.lt.bind(null));
