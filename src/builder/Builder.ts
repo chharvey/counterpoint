@@ -180,9 +180,9 @@ export class Builder {
 			new BinVect(mod, mod.local.get(1, binaryen.v128)),
 		] as const;
 		const int_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_ints.call(null, local_vects[0].intValue,   local_vects[1].intValue));
-		const int_nat: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].natValue));
+		const int_nat: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].i_to_n(),   local_vects[1].natValue));
 		const int_flt: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].i_to_f(),   local_vects[1].floatValue));
-		const nat_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].natValue));
+		const nat_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].i_to_n()));
 		const nat_nat: binaryen.ExpressionRef = BinVect.asBool(mod, method_nats.call(null, local_vects[0].natValue,   local_vects[1].natValue));
 		const nat_flt: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].n_to_f(),   local_vects[1].floatValue));
 		const flt_int: binaryen.ExpressionRef = BinVect.asBool(mod, method_flts.call(null, local_vects[0].floatValue, local_vects[1].i_to_f()));
@@ -284,7 +284,7 @@ export class Builder {
 			local_vects[0].vect,
 			mod.if(
 				local_vects[0].isNat,
-				new BinVect(mod, local_vects[0].natValue, {unsigned: false}).vect,
+				new BinVect(mod, local_vects[0].n_to_i(), {unsigned: false}).vect,
 				mod.if(
 					local_vects[0].isFloat,
 					new BinVect(mod, local_vects[0].f_to_i()).vect,
@@ -294,7 +294,7 @@ export class Builder {
 		));
 		mod.addFunction('vton', binaryen.v128, binaryen.v128, [], mod.if(
 			local_vects[0].isInt,
-			new BinVect(mod, local_vects[0].intValue, {unsigned: true}).vect,
+			new BinVect(mod, local_vects[0].i_to_n(), {unsigned: true}).vect,
 			mod.if(
 				local_vects[0].isNat,
 				local_vects[0].vect,
