@@ -3,6 +3,10 @@ import type binaryen from 'binaryen';
 
 
 export interface BinaryenModuleUpdates extends binaryen.Module {
+	readonly ref: binaryen.Module['ref'] & {
+		test(value: binaryen.ExpressionRef, castType: binaryen.Type): binaryen.ExpressionRef,
+		cast(value: binaryen.ExpressionRef, castType: binaryen.Type): binaryen.ExpressionRef,
+	};
 	readonly struct: {
 		readonly new: (operands: readonly binaryen.ExpressionRef[], type: binaryen.Type) => binaryen.ExpressionRef,
 		new_default(type: binaryen.Type): binaryen.ExpressionRef,

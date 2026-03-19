@@ -133,6 +133,10 @@ export class BinVect {
 			 * else, if the arg is any other `v128`, set all lanes to those lanes.
 			 */
 			switch (binaryen.getExpressionType(arg)) {
+				case binaryen.unreachable: {
+					this.vect = arg;
+					break;
+				}
 				case binaryen.i32: {
 					this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0014));
 					this.vect = this.mod.i32x4.replace_lane(this.vect, 3, arg);

@@ -37,7 +37,7 @@
 	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
 	(field $count (mut i32))
 	;; the array of values; mutable to allow reallocation
-	(field $array (mut (ref $ListInternal)))
+	(field $internal (mut (ref $ListInternal)))
 )))
 
 ;; precursor to the `Dict` class
@@ -45,5 +45,5 @@
 	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
 	(field $count (mut i32))
 	;; the array of values; mutable to allow reallocation
-	(field $array (mut (ref $DictInternal)))
+	(field $internal (mut (ref $DictInternal)))
 )))

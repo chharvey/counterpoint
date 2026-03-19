@@ -74,10 +74,38 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 // Codegen((SET.NEW    `values`));
 // Codegen((MAP.NEW    `pairs`));
 
-// Codegen((TUPLE.GET  `index` `obj`));
-// Codegen((RECORD.GET `key`   `obj`));
-// Codegen((LIST.GET `obj` `accessor`));
-// Codegen((DICT.GET `obj` `accessor`));
+Codegen((TUPLE.GET `index` `obj`)) := (array.get
+	(ref.cast (ref $Tuple) (struct.get $composite `Codegen(obj)`))
+	(i32.const `index`)
+);
+
+Codegen((RECORD.GET `key` `obj`)) := (call $retrieve-entry-record
+	(ref.cast (ref $Record) (struct.get $composite `Codegen(obj)`))
+	(i32.const `key`)
+);
+
+Codegen((LIST.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(local.set $item (array.get
+		(struct.get $internal (ref.cast (ref $List) (struct.get $composite `Codegen(obj)`)))
+		(i32x4.extract_lane 3 (struct.get $primitive `Codegen(accessor)`)) ;; TODO: v0.5: convert from i64 to i32
+	))
+	(if (result (ref $Value)) (ref.is_null (local.get $item))
+		(then `Codegen((NULL.CONST null))`)
+		(else (ref.as_non_null (local.get $item)))
+	)
+);
+
+Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(local.set $item (call $retrieve-entry-dict
+		(ref.cast (ref $Dict) (struct.get $composite `Codegen(obj)`))
+		(i32x4.extract_lane 3 (struct.get $primitive `Codegen(accessor)`)) ;; TODO: v0.5: convert from i64 to i32
+	))
+	(if (result (ref $Value)) (ref.is_null (local.get $item))
+		(then `Codegen((NULL.CONST null))`)
+		(else (ref.as_non_null (local.get $item)))
+	)
+);
+
 // Codegen((SET.GET  `obj` `accessor`));
 // Codegen((MAP.GET  `obj` `accessor`));
 

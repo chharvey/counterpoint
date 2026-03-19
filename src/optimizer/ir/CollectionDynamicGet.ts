@@ -1,13 +1,21 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+	type Local,
+	BinVect,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
@@ -59,7 +67,50 @@ export class CollectionDynamicGet extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)')!;
+		/*
+		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
+		 * But we still need to check for nullish values in the collection.
+		 */
+		switch (this.name) {
+			case TypeName.LIST: {
+				const rt_list: binaryen.Type = cg.getReftype('(ref $List)')!;
+				const item:    Local         = cg.newLocal(cg.module.array.get(
+					cg.module.struct.get(
+						1,
+						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, rt_list),
+						rt_list,
+					),
+					new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue, // TODO: v0.5: convert from i64 to i32
+					cg.getReftype('(ref $ListInternal)')!,
+				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is as designed
+
+				return cg.module.block(null, [
+					item.set(),
+					cg.module.if(
+						cg.module.ref.is_null(item.get()),
+						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						cg.module.ref.as_non_null(item.get()),
+					),
+				], rt_value);
+			}
+			case TypeName.DICT: {
+				const item: Local = cg.newLocal(cg.module.call('retrieve-entry-dict', [
+					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')!),
+					new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue, // TODO: v0.5: convert from i64 to i32
+				], cg.getReftype('(ref null $Value)')!));
+
+				return cg.module.block(null, [
+					item.set(),
+					cg.module.if(
+						cg.module.ref.is_null(item.get()),
+						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						cg.module.ref.as_non_null(item.get()),
+					),
+				], rt_value);
+			}
+		}
 		throw new Error('not yet supported.');
 	}
 }
