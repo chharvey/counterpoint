@@ -18,7 +18,7 @@
 			(then (return (struct.get $Property $value (local.get $prop))))
 			(else
 				(local.set $loop_count (i32.add (local.get $loop_count) (i32.const 1)))
-				(if (i32.ge_u (local.get $loop_count) (local.get $ARRLEN))
+				(if (i32.gt_u (local.get $loop_count) (local.get $ARRLEN))
 					(then (unreachable))
 				)
 				(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))

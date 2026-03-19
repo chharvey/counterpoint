@@ -59,7 +59,7 @@ function Field_new(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 
  * @see https://en.wikipedia.org/wiki/Linear_probing
  */
 function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: number, entry: binaryen.ExpressionRef): void {
-	if (index < 0 || array.length < index) {
+	if (index < 0 || array.length <= index) {
 		throw new RangeError('Given index must not be out of array bounds.');
 	}
 	if (array[index] === undefined) {
