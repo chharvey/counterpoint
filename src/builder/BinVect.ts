@@ -156,6 +156,10 @@ export class BinVect {
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			switch (binaryen.getExpressionType(arg)) {
+				case binaryen.unreachable: {
+					this.vect = arg;
+					break;
+				}
 				/*
 				 * If the arg is an `i64`:
 				 * - Set Lane 3 to `\x0018` if signed (Counterpoint type `int`), `\x0028` if unsigned (Counterpoint type `nat`), `\x0058` if address (heap offset).

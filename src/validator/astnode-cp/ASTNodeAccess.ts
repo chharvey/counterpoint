@@ -108,7 +108,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 					if (base_typename === IR.TypeName.TUPLE) {
 						assert_instanceof(base_value.type, TYPE.Tuple);
 						/*
-						 * Canonicalize the index. It may be within the range `[-count, count - 1]`.
+						 * Ensure a canonical index. It may be within the range `[0, count - 1]`.
 						 * We cannot assume that this index is validated by the type-checker,
 						 * since the actual type of the base may be narrower than its declared type.
 						 * E.g.:
@@ -134,7 +134,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 					if (base_typename === IR.TypeName.RECORD) {
 						assert_instanceof(base_value.type, TYPE.Record);
 						/*
-						 * Ensure a canonical key.
+						 * Ensure a canonical key. It must have been added to the value’s type.
 						 * We cannot assume that this key is validated by the type-checker,
 						 * since the actual type of the base may be narrower than its declared type.
 						 * E.g.:
