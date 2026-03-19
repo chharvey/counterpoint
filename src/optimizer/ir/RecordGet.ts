@@ -1,5 +1,9 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+	type Local,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -36,7 +40,10 @@ export class RecordGet extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.module.call('retrieve-entry-record', [
+			cg.module.ref.cast(new BinValue(cg, this.record.codegen(cg)).compositeValue, cg.getReftype('(ref $Record)')!),
+			cg.module.i32.const(Number(this.accessor.keyid)),
+		], cg.getReftype('(ref $Value)')!);
 	}
 }

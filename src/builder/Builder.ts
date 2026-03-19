@@ -58,7 +58,7 @@ function Field_new(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 
  * @param array an empty array in which to insert the entry
  * @see https://en.wikipedia.org/wiki/Linear_probing
  */
-function insert_entry(entry: binaryen.ExpressionRef, index: number, array: Array<binaryen.ExpressionRef | undefined>): void {
+function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: number, entry: binaryen.ExpressionRef): void {
 	if (index < 0 || array.length < index) {
 		throw new RangeError('Given index must not be out of array bounds.');
 	}
@@ -66,7 +66,7 @@ function insert_entry(entry: binaryen.ExpressionRef, index: number, array: Array
 		array[index] = entry;
 		return;
 	}
-	return insert_entry(entry, (index + 1) % array.length, array);
+	return insert_entry(array, (index + 1) % array.length, entry);
 }
 
 
@@ -79,6 +79,8 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-record.wat'), 'utf8'),
 	];
 
 
@@ -163,7 +165,7 @@ export class Builder {
 	 * @param schema the symbol schema of the variable to set
 	 * @param value  the binaryen value of the variable to set
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
-	 * @return       the local variable set (or retreived)
+	 * @return       the local variable set (or retrieved)
 	 */
 	public teeLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, type?: binaryen.Type): Local {
 		this.setLocal(schema, value, type);
@@ -195,7 +197,7 @@ export class Builder {
 	 */
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
-		props.forEach((code, id) => insert_entry(code, Number(id) % entries.length, entries));
+		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.module.array.new_fixed(this.getHeaptype('$Record')!, entries as binaryen.ExpressionRef[]);
 	}
 
@@ -235,7 +237,7 @@ export class Builder {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
-		props.forEach((code, id) => insert_entry(code, Number(id) % entries.length, entries));
+		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.module.struct.new([
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
