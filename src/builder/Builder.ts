@@ -29,18 +29,6 @@ type ReftypeKey = `(ref ${ 'null ' | '' }${ HeaptypeKey })`;
 
 
 
-function Field_new(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
-	return {
-		type:       typ,
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		// eslint-disable-next-line
-		packedType: binaryen[packedType],
-		mutable,
-	};
-}
-
-
-
 /**
  * Insert entries into an internal array for a record/Dict.
  *
@@ -83,6 +71,22 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-record.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-dict.wat'), 'utf8'),
 	];
+
+	/**
+	 * Create a new struct field for a `TypeBuilder`.
+	 * @param typ        the field type
+	 * @param packedType one of `'notPacked' | 'i8' | 'i16'` @default `'notPacked'`
+	 * @param mutable    Can the field be reassigned?        @default `false`
+	 */
+	private static newField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
+		return {
+			type:       typ,
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			packedType: binaryen[packedType],
+			mutable,
+		};
+	}
 
 
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
@@ -265,17 +269,17 @@ export class Builder {
 		const i_value: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_value, [
-			Field_new(binaryen.i32, 'i8'),
-			Field_new(binaryen.v128),
-			Field_new(binaryen.eqref),
+			Builder.newField(binaryen.i32, 'i8'),
+			Builder.newField(binaryen.v128),
+			Builder.newField(binaryen.eqref),
 		]);
 
 		/* (type $Property ...) */
 		const i_property: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_property, [
-			Field_new(binaryen.i32),
-			Field_new(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+			Builder.newField(binaryen.i32),
+			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		]);
 
 		/* (type $Tuple ...) */
@@ -336,8 +340,8 @@ export class Builder {
 		const i_list: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_list, [
-			Field_new(binaryen.v128, 'notPacked', true),
-			Field_new(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+			Builder.newField(binaryen.v128, 'notPacked', true),
+			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_list, tb.getTempHeapType(i_object));
 		tb.setOpen(i_list);
@@ -346,8 +350,8 @@ export class Builder {
 		const i_dict: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_dict, [
-			Field_new(binaryen.v128, 'notPacked', true),
-			Field_new(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+			Builder.newField(binaryen.v128, 'notPacked', true),
+			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
 		tb.setOpen(i_dict);

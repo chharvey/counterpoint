@@ -2,7 +2,6 @@ import type binaryen from 'binaryen';
 import {
 	BinValue,
 	type Builder,
-	type Local,
 } from '../../index.ts';
 import {
 	assert_instanceof,
