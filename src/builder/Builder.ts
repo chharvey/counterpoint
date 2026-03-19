@@ -81,6 +81,7 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-record.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-dict.wat'), 'utf8'),
 	];
 
 

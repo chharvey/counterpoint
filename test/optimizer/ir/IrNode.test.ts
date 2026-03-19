@@ -9,6 +9,7 @@ import {
 	IR,
 	BinValue,
 	Builder,
+	BinVect,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {genConst} from '../../helpers.ts';
@@ -57,9 +58,7 @@ describe('IrNode', () => {
 
 			// more cases
 			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ [42, 43, 44].[0]; }',                {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.GET)
 				setupScript('{ [42, 43, 44].[0] = 43; }',           {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.SET)
-				setupScript('{ [a= 42, b= 43, c= 44].[@a]; }',      {lower: true, codegen: false, build: false}).opt.instructions[1], // (DICT.GET)
 				setupScript('{ [a= 42, b= 43, c= 44].[@a] = 43; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (DICT.SET)
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
@@ -340,6 +339,121 @@ describe('IrNode', () => {
 					mod.i32.const(0x102),
 				], reftype_value(cg))),
 			]);
+		});
+
+		describe('CollectionDynamicGet', () => {
+			it('LIST.GET', () => {
+				const {opt, cg} = setupScript(`{
+					val mut x:    int   = 42;
+					val mut list: [int] = [42, 43];
+
+					[x, 43, 44].[1 + 1];
+					list.[0];
+					list.[3];
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_list:          binaryen.Type = cg.getReftype('(ref $List)')!;
+				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)')!;
+				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
+				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
+					mod.drop(mod.block(null, [
+						mod.local.set(4, mod.array.get(
+							mod.struct.get(
+								1,
+								mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_list),
+								rt_list,
+							),
+							new BinVect(mod, new BinValue(cg, mod.local.get(3, reftype_value(cg))).primitiveValue).intValue,
+							rt_list_internal,
+						)),
+						cg.module.if(
+							cg.module.ref.is_null(mod.local.get(4, reftype_value(cg))),
+							genConst(cg),
+							cg.module.ref.as_non_null(mod.local.get(4, reftype_value(cg))),
+						),
+					], reftype_value(cg))),
+					mod.drop(mod.block(null, [
+						mod.local.set(5, mod.array.get(
+							mod.struct.get(
+								1,
+								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
+								rt_list,
+							),
+							new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue,
+							rt_list_internal,
+						)),
+						cg.module.if(
+							cg.module.ref.is_null(mod.local.get(5, reftype_value(cg, true))),
+							genConst(cg),
+							cg.module.ref.as_non_null(mod.local.get(5, reftype_value(cg, true))),
+						),
+					], reftype_value(cg))),
+					mod.drop(mod.block(null, [
+						mod.local.set(6, mod.array.get(
+							mod.struct.get(
+								1,
+								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
+								rt_list,
+							),
+							new BinVect(mod, new BinValue(cg, genConst(cg, 3n)).primitiveValue).intValue,
+							rt_list_internal,
+						)),
+						cg.module.if(
+							cg.module.ref.is_null(mod.local.get(6, reftype_value(cg, true))),
+							genConst(cg),
+							cg.module.ref.as_non_null(mod.local.get(6, reftype_value(cg, true))),
+						),
+					], reftype_value(cg))),
+				]);
+			});
+			it('DICT.GET', () => {
+				const {opt, cg} = setupScript(`{
+					val mut x:    int    = 42;
+					val mut dict: [:int] = [a= 42, c= 43];
+
+					[a= x, b= 43, c= 44].[@b];
+					dict.[@a];
+					dict.[@c];
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_dict: binaryen.Type = cg.getReftype('(ref $Dict)')!;
+				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
+				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
+					mod.drop(mod.block(null, [
+						mod.local.set(3, mod.call('retrieve-entry-dict', [
+							mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_dict),
+							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue,
+						], reftype_value(cg, true))),
+						cg.module.if(
+							cg.module.ref.is_null(mod.local.get(3, reftype_value(cg))),
+							genConst(cg),
+							cg.module.ref.as_non_null(mod.local.get(3, reftype_value(cg))),
+						),
+					], reftype_value(cg))),
+					mod.drop(mod.block(null, [
+						mod.local.set(4, mod.call('retrieve-entry-dict', [
+							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
+							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue,
+						], reftype_value(cg, true))),
+						cg.module.if(
+							cg.module.ref.is_null(mod.local.get(4, reftype_value(cg, true))),
+							genConst(cg),
+							cg.module.ref.as_non_null(mod.local.get(4, reftype_value(cg, true))),
+						),
+					], reftype_value(cg))),
+					mod.drop(mod.block(null, [
+						mod.local.set(5, mod.call('retrieve-entry-dict', [
+							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
+							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue,
+						], reftype_value(cg))),
+						cg.module.if(
+							cg.module.ref.is_null(mod.local.get(5, reftype_value(cg, true))),
+							genConst(cg),
+							cg.module.ref.as_non_null(mod.local.get(5, reftype_value(cg, true))),
+						),
+					], reftype_value(cg))),
+				]);
+			});
 		});
 
 		it('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
