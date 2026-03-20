@@ -25,7 +25,7 @@ describe('Builder', () => {
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
-				cg.module.array.new_fixed(cg.getHeaptype('$Tuple')!, [
+				cg.module.array.new_fixed(cg.getHeaptype('$Tuple'), [
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
@@ -36,7 +36,7 @@ describe('Builder', () => {
 					[0x101n, new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n)],
 					[0x102n, new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n)],
 				])),
-				cg.module.array.new_fixed(cg.getHeaptype('$Record')!, [
+				cg.module.array.new_fixed(cg.getHeaptype('$Record'), [
 					new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n),
 					new BinValue(cg, genConst(cg, true)).toProperty(0x100n),
 					new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n),
@@ -51,15 +51,15 @@ describe('Builder', () => {
 				cg.module.struct.new([
 					cg.module.i32.const(3),
 					cg.module.array.new_fixed(
-						cg.getHeaptype('$ListInternal')!,
+						cg.getHeaptype('$ListInternal'),
 						[
 							genConst(cg, 1.1),
 							genConst(cg, 2.2),
 							genConst(cg, 3.3),
-							...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')!), 5),
+							...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 5),
 						],
 					),
-				], cg.getHeaptype('$List')!),
+				], cg.getHeaptype('$List')),
 			]],
 			['`#codegenDict` (struct.new) with count and internal array.', (cg) => [
 				cg.codegenDict(new Map([
@@ -72,17 +72,17 @@ describe('Builder', () => {
 				cg.module.struct.new([
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
-						cg.getHeaptype('$DictInternal')!,
+						cg.getHeaptype('$DictInternal'),
 						[
 							new BinValue(cg, genConst(cg, 3.3)).toProperty(0x108n),
 							new BinValue(cg, genConst(cg, 4.4)).toProperty(0x109n),
 							new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an),
-							...repeat(cg.module.ref.null(cg.getReftype('(ref null $Property)')!), 3),
+							...repeat(cg.module.ref.null(cg.getReftype('(ref null $Property)')), 3),
 							new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n),
 							new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n),
 						],
 					),
-				], cg.getHeaptype('$Dict')!),
+				], cg.getHeaptype('$Dict')),
 			]],
 		]), (bins, description) => {
 			it(description, () => { // TODO: v0.5: tail call
@@ -165,7 +165,7 @@ describe('Builder', () => {
 					new BinValue(cg, genConst(cg))     .toProperty(262n),
 					new BinValue(cg, genConst(cg, 42n)).toProperty(256n),
 					new BinValue(cg, genConst(cg, 4.2)).toProperty(259n),
-				]].map((entries) => mod.array.new_fixed(cg.getHeaptype('$Record')!, entries)),
+				]].map((entries) => mod.array.new_fixed(cg.getHeaptype('$Record'), entries)),
 			);
 		});
 
@@ -208,7 +208,7 @@ describe('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)')!);
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)'));
 			return assertEqualBins(
 				[new Map([
 					// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
@@ -258,8 +258,8 @@ describe('Builder', () => {
 					WASM_NULL,
 				]].map((entries) => mod.struct.new([
 					mod.i32.const(3),
-					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, entries),
-				], cg.getHeaptype('$Dict')!)),
+					mod.array.new_fixed(cg.getHeaptype('$DictInternal'), entries),
+				], cg.getHeaptype('$Dict'))),
 			);
 		});
 	});

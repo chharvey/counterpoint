@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
@@ -119,12 +120,14 @@ export class Builder {
 		return this.#typeCount++;
 	}
 
-	public getHeaptype(key: HeaptypeKey): binaryen.Type | undefined {
-		return this.#heaptypeRegistry.get(key);
+	public getHeaptype(key: HeaptypeKey): binaryen.Type {
+		assert.ok(this.#heaptypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
+		return this.#heaptypeRegistry.get(key)!;
 	}
 
-	public getReftype(key: ReftypeKey): binaryen.Type | undefined {
-		return this.#reftypeRegistry.get(key);
+	public getReftype(key: ReftypeKey): binaryen.Type {
+		assert.ok(this.#reftypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
+		return this.#reftypeRegistry.get(key)!;
 	}
 
 	/**
@@ -191,7 +194,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.module.array.new_fixed(this.getHeaptype('$Tuple')!, items);
+		return this.module.array.new_fixed(this.getHeaptype('$Tuple'), items);
 	}
 
 	/**
@@ -203,7 +206,7 @@ export class Builder {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.module.array.new_fixed(this.getHeaptype('$Record')!, entries as binaryen.ExpressionRef[]);
+		return this.module.array.new_fixed(this.getHeaptype('$Record'), entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -221,12 +224,12 @@ export class Builder {
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')!),
+			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
 		);
 		return this.module.struct.new([
 			this.module.i32.const(items.length),
-			this.module.array.new_fixed(this.getHeaptype('$ListInternal')!, entries),
-		], this.getHeaptype('$List')!);
+			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
+		], this.getHeaptype('$List'));
 	}
 
 	/**
@@ -246,10 +249,10 @@ export class Builder {
 		return this.module.struct.new([
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
-				this.getHeaptype('$DictInternal')!,
-				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)')!)),
+				this.getHeaptype('$DictInternal'),
+				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)'))),
 			),
-		], this.getHeaptype('$Dict')!);
+		], this.getHeaptype('$Dict'));
 	}
 
 	/**
@@ -408,7 +411,7 @@ export class Builder {
 		comparative: boolean = false, // if true, expects method calls to return `i32`; otherwise, expects any argument to BinVect
 	): binaryen.FunctionRef {
 		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -583,7 +586,7 @@ export class Builder {
 
 
 		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),

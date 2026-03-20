@@ -68,14 +68,14 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
 		 * But we still need to check for nullish values in the collection.
 		 */
 		switch (this.name) {
 			case TypeName.LIST: {
-				const rt_list: binaryen.Type = cg.getReftype('(ref $List)')!;
+				const rt_list: binaryen.Type = cg.getReftype('(ref $List)');
 				const item:    Local         = cg.newLocal(cg.module.array.get(
 					cg.module.struct.get(
 						1,
@@ -83,8 +83,8 @@ export class CollectionDynamicGet extends Value {
 						rt_list,
 					),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
-					cg.getReftype('(ref $ListInternal)')!,
-				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is as designed
+					cg.getReftype('(ref $ListInternal)'),
+				), cg.getReftype('(ref null $Value)')); // `array.get` will trap if array length is 0 or if index is out of bounds. this is as designed
 
 				return cg.module.block(null, [
 					item.set(),
@@ -97,9 +97,9 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.DICT: {
 				const item: Local = cg.newLocal(cg.module.call('retrieve-entry-dict', [
-					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')!),
+					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
-				], cg.getReftype('(ref null $Value)')!));
+				], cg.getReftype('(ref null $Value)')));
 
 				return cg.module.block(null, [
 					item.set(),

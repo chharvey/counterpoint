@@ -39,22 +39,22 @@ export class BinValue {
 		private readonly cg: Builder,
 		arg: binaryen.ExpressionRef | BinVect,
 	) {
-		this.TYPE = cg.getReftype('(ref $Value)')!;
+		this.TYPE = cg.getReftype('(ref $Value)');
 		if (arg instanceof BinVect) {
 			this.value = new BinValue(cg, arg.vect).value;
 			return;
 		}
-		const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
+		const ht_value: binaryen.Type = cg.getHeaptype('$Value');
 		switch (binaryen.getExpressionType(arg)) {
 			case binaryen.unreachable: {
 				this.value = arg;
 				break;
 			}
 			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			case cg.getReftype('(ref null $Value)')! | 4:
-			case cg.getReftype('(ref $Value)')!      | 4:
-			case cg.getReftype('(ref null $Value)')!:
-			case cg.getReftype('(ref $Value)')!: { // if given a (nullish) `$Value`, just use that
+			case cg.getReftype('(ref null $Value)') | 4:
+			case cg.getReftype('(ref $Value)')      | 4:
+			case cg.getReftype('(ref null $Value)'):
+			case cg.getReftype('(ref $Value)'): { // if given a (nullish) `$Value`, just use that
 				this.value = arg;
 				break;
 			}
@@ -67,11 +67,11 @@ export class BinValue {
 				break;
 			}
 			case binaryen.eqref:
-			case cg.getReftype('(ref $Tuple)')!:
-			case cg.getReftype('(ref $Record)')!:
-			case cg.getReftype('(ref $List)')!:
-			case cg.getReftype('(ref $Dict)')!:
-			case cg.getReftype('(ref $Object)')!:
+			case cg.getReftype('(ref $Tuple)'):
+			case cg.getReftype('(ref $Record)'):
+			case cg.getReftype('(ref $List)'):
+			case cg.getReftype('(ref $Dict)'):
+			case cg.getReftype('(ref $Object)'):
 			default: { // a composite
 				this.value = cg.module.struct.new([
 					cg.module.i32.const(1),
@@ -121,6 +121,6 @@ export class BinValue {
 		return this.cg.module.struct.new([
 			this.cg.module.i32.const(Number(keyid)),
 			this.value,
-		], this.cg.getHeaptype('$Property')!);
+		], this.cg.getHeaptype('$Property'));
 	}
 }

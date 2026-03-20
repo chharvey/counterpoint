@@ -20,7 +20,7 @@ describe('IrNode', () => {
 	describe('#codegen', () => {
 		/** Return either `(ref $Value)` or `(ref null $Value)`. */
 		function reftype_value(cg: Builder, nullish: boolean = false): binaryen.Type {
-			return cg.getReftype(`(ref ${ nullish ? 'null ' : '' }$Value)`)!;
+			return cg.getReftype(`(ref ${ nullish ? 'null ' : '' }$Value)`);
 		}
 
 		function setupScript(src: string, opts: object): {
@@ -292,7 +292,7 @@ describe('IrNode', () => {
 				tup.1;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
-			const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)')!;
+			const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 				mod.drop(mod.array.get(
@@ -323,7 +323,7 @@ describe('IrNode', () => {
 				rec.b;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
-			const rt_record: binaryen.Type = cg.getReftype('(ref $Record)')!;
+			const rt_record: binaryen.Type = cg.getReftype('(ref $Record)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 				mod.drop(mod.call('retrieve-entry-record', [
@@ -352,8 +352,8 @@ describe('IrNode', () => {
 					list.[3];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
-				const rt_list:          binaryen.Type = cg.getReftype('(ref $List)')!;
-				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)')!;
+				const rt_list:          binaryen.Type = cg.getReftype('(ref $List)');
+				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)');
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
@@ -416,7 +416,7 @@ describe('IrNode', () => {
 					dict.[@c];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
-				const rt_dict: binaryen.Type = cg.getReftype('(ref $Dict)')!;
+				const rt_dict: binaryen.Type = cg.getReftype('(ref $Dict)');
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
