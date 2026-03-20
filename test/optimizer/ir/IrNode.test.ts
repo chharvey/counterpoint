@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -416,40 +416,42 @@ describe('IrNode', () => {
 					dict.[@c];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
-				const rt_dict: binaryen.Type = cg.getReftype('(ref $Dict)')!;
+				const rt_dict:       binaryen.Type = cg.getReftype('(ref $Dict)')!;
+				const rt_property:   binaryen.Type = cg.getReftype('(ref $Property)')!;
+				const rt_n_property: binaryen.Type = cg.getReftype('(ref null $Property)')!;
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
-						mod.local.set(3, mod.call('Dict.get', [
+						mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
-						], reftype_value(cg, true))),
+						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(3, reftype_value(cg))),
+							mod.ref.is_null(mod.local.get(3, rt_n_property)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(3, reftype_value(cg))),
+							mod.struct.get(1, mod.ref.as_non_null(mod.local.get(3, rt_n_property)), rt_property),
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
-						mod.local.set(4, mod.call('Dict.get', [
+						mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
-						], reftype_value(cg, true))),
+						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(4, reftype_value(cg, true))),
+							mod.ref.is_null(mod.local.get(4, rt_n_property)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(4, reftype_value(cg, true))),
+							mod.struct.get(1, mod.ref.as_non_null(mod.local.get(4, rt_n_property)), rt_property),
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
-						mod.local.set(5, mod.call('Dict.get', [
+						mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
-						], reftype_value(cg))),
+						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(5, reftype_value(cg, true))),
+							mod.ref.is_null(mod.local.get(5, rt_n_property)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(5, reftype_value(cg, true))),
+							mod.struct.get(1, mod.ref.as_non_null(mod.local.get(5, rt_n_property)), rt_property),
 						),
 					], reftype_value(cg))),
 				]);

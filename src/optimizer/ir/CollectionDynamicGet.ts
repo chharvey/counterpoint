@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinValue,
@@ -78,7 +78,7 @@ export class CollectionDynamicGet extends Value {
 				const rt_list: binaryen.Type = cg.getReftype('(ref $List)')!;
 				const item:    Local         = cg.newLocal(cg.module.array.get(
 					cg.module.struct.get(
-						1,
+						/* $internal */ 1,
 						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, rt_list),
 						rt_list,
 					),
@@ -96,17 +96,17 @@ export class CollectionDynamicGet extends Value {
 				], rt_value);
 			}
 			case TypeName.DICT: {
-				const item: Local = cg.newLocal(cg.module.call('Dict.get', [
+				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
 					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')!),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
-				], cg.getReftype('(ref null $Value)')!));
+				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Property)')!])), 1));
 
 				return cg.module.block(null, [
-					item.set(),
+					maybe_prop.set(),
 					cg.module.if(
-						cg.module.ref.is_null(item.get()),
+						cg.module.ref.is_null(maybe_prop.get()),
 						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
-						cg.module.ref.as_non_null(item.get()),
+						cg.module.struct.get(/* $value */ 1, cg.module.ref.as_non_null(maybe_prop.get()), cg.getReftype('(ref $Property)')!),
 					),
 				], rt_value);
 			}
