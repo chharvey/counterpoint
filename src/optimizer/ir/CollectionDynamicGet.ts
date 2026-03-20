@@ -82,7 +82,7 @@ export class CollectionDynamicGet extends Value {
 						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, rt_list),
 						rt_list,
 					),
-					new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue, // TODO: v0.5: convert from i64 to i32
+					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
 					cg.getReftype('(ref $ListInternal)')!,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is as designed
 
@@ -98,7 +98,7 @@ export class CollectionDynamicGet extends Value {
 			case TypeName.DICT: {
 				const item: Local = cg.newLocal(cg.module.call('retrieve-entry-dict', [
 					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')!),
-					new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue, // TODO: v0.5: convert from i64 to i32
+					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
 				], cg.getReftype('(ref null $Value)')!));
 
 				return cg.module.block(null, [

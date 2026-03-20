@@ -363,7 +363,7 @@ describe('IrNode', () => {
 								mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
-							new BinVect(mod, new BinValue(cg, mod.local.get(3, reftype_value(cg))).primitiveValue).intValue,
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, reftype_value(cg))).primitiveValue).intValue),
 							rt_list_internal,
 						)),
 						cg.module.if(
@@ -379,7 +379,7 @@ describe('IrNode', () => {
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
-							new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue,
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
 							rt_list_internal,
 						)),
 						cg.module.if(
@@ -395,7 +395,7 @@ describe('IrNode', () => {
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
-							new BinVect(mod, new BinValue(cg, genConst(cg, 3n)).primitiveValue).intValue,
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 3n)).primitiveValue).intValue),
 							rt_list_internal,
 						)),
 						cg.module.if(
@@ -422,7 +422,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(3, mod.call('retrieve-entry-dict', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_dict),
-							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue,
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
 						], reftype_value(cg, true))),
 						cg.module.if(
 							cg.module.ref.is_null(mod.local.get(3, reftype_value(cg))),
@@ -433,7 +433,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.call('retrieve-entry-dict', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
-							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue,
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
 						], reftype_value(cg, true))),
 						cg.module.if(
 							cg.module.ref.is_null(mod.local.get(4, reftype_value(cg, true))),
@@ -444,7 +444,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.call('retrieve-entry-dict', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
-							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue,
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
 						], reftype_value(cg))),
 						cg.module.if(
 							cg.module.ref.is_null(mod.local.get(5, reftype_value(cg, true))),
