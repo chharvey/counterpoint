@@ -313,7 +313,7 @@ describe('IrNode', () => {
 			]);
 		});
 
-		it('RecordGet returns (call $retrieve-entry-record).', () => {
+		it('RecordGet returns (call $Record.get).', () => {
 			const {opt, cg} = setupScript(`{
 				val mut x:   int                       = 42;
 				val mut rec: (a: int, b: int, c?: int) = (a= 42, b= 43);
@@ -326,15 +326,15 @@ describe('IrNode', () => {
 			const rt_record: binaryen.Type = cg.getReftype('(ref $Record)')!;
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-				mod.drop(mod.call('retrieve-entry-record', [
+				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_record),
 					mod.i32.const(0x103),
 				], reftype_value(cg))),
-				mod.drop(mod.call('retrieve-entry-record', [
+				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_record),
 					mod.i32.const(0x101),
 				], reftype_value(cg))),
-				mod.drop(mod.call('retrieve-entry-record', [
+				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_record),
 					mod.i32.const(0x102),
 				], reftype_value(cg))),
@@ -420,7 +420,7 @@ describe('IrNode', () => {
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
-						mod.local.set(3, mod.call('retrieve-entry-dict', [
+						mod.local.set(3, mod.call('Dict.get', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
 						], reftype_value(cg, true))),
@@ -431,7 +431,7 @@ describe('IrNode', () => {
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
-						mod.local.set(4, mod.call('retrieve-entry-dict', [
+						mod.local.set(4, mod.call('Dict.get', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
 						], reftype_value(cg, true))),
@@ -442,7 +442,7 @@ describe('IrNode', () => {
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
-						mod.local.set(5, mod.call('retrieve-entry-dict', [
+						mod.local.set(5, mod.call('Dict.get', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
 						], reftype_value(cg))),

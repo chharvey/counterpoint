@@ -96,7 +96,7 @@ export class CollectionDynamicGet extends Value {
 				], rt_value);
 			}
 			case TypeName.DICT: {
-				const item: Local = cg.newLocal(cg.module.call('retrieve-entry-dict', [
+				const item: Local = cg.newLocal(cg.module.call('Dict.get', [
 					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')!),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
 				], cg.getReftype('(ref null $Value)')!));
