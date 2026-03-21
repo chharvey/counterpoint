@@ -14,18 +14,15 @@
 	(local $internal (ref $DictInternal))
 	;; the length of the array. constant.
 	(local $ARRLEN i32)
-	;; tracks the number of loops. if it exceeds the array length, trap.
-	(local $loop-count i32)
 	;; index of the array to retrieve from. increments on each loop until an entry is found.
 	(local $index i32)
 	;; property at the specified index.
 	(local $prop (ref null $Property))
 
-	(local.set $internal   (struct.get $Dict $internal (local.get $dict)))
-	(local.set $ARRLEN     (array.len (local.get $internal)))
-	(local.set $loop-count (i32.const 0))
-	(local.set $index      (call $mod (local.get $key) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
-	(local.set $prop       (array.get $DictInternal (local.get $internal) (local.get $index)))
+	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
+	(local.set $ARRLEN   (array.len (local.get $internal)))
+	(local.set $index    (call $mod (local.get $key) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $prop     (array.get $DictInternal (local.get $internal) (local.get $index)))
 
 	(loop $repeat
 		(if (i32.or
@@ -34,10 +31,7 @@
 		)
 			(then (return (local.get $index) (local.get $prop)))
 			(else
-				(local.set $loop-count (i32.add (local.get $loop-count) (i32.const 1)))
-				(if (i32.gt_u (local.get $loop-count) (local.get $ARRLEN))
-					(then (unreachable)) ;; TODO: enforce load factor of 0.875 (7/8); that will guarantee some empty slots; then remove loop-count
-				)
+				;; a load factor of 0.875 (7/8) is enforced; this guarantees some empty slots, so the loop will terminate
 				(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
 				(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
 				(br $repeat)
@@ -139,4 +133,41 @@
 			(br $repeat)
 		)
 	)
+)
+
+
+
+;; Set a Dict value given a key.
+(func $Dict.set (param $dict (ref $Dict)) (param $key i32) (param $value (ref $Value))
+	;; index of the array to set to.
+	(local $index i32)
+	;; property at the specified index.
+	(local $prop (ref null $Property))
+
+	(call $Dict.find (local.get $dict) (local.get $key))
+	(local.set $prop)
+	(local.set $index)
+
+	(if (ref.is_null (local.get $prop)) ;; TODO: also if prop is tombstone
+		(then
+			;; increment the count
+			(struct.set $Dict $count (local.get $dict) (i32.add (struct.get $Dict $count (local.get $dict)) (i32.const 1)))
+			;; grow the array if needed
+			(if (i32.ge_u
+				(struct.get $Dict $count (local.get $dict))
+				;; `$dict.internal.len * 7 / 8` will always be a whole number since `$dict.internal.len` is always a multiple of 8.
+				(i32.div_u (i32.mul (array.len (struct.get $Dict $internal (local.get $dict))) (i32.const 7)) (i32.const 8)) ;; LOAD_FACTOR == 7.0/8.0 == 0.875
+			)
+				(then
+					(call $Dict.grow (local.get $dict))
+					;; if growing the array, local index pointer needs to be reset
+					(local.set $index (drop (call $Dict.find (local.get $dict) (local.get $key))))
+				)
+			)
+		)
+	)
+	(array.set $DictInternal (struct.get $Dict $internal (local.get $dict)) (local.get $index) (struct.new $Property
+		(local.get $key)
+		(local.get $value)
+	))
 )
