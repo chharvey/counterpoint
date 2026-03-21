@@ -45,3 +45,98 @@
 		)
 	)
 )
+
+
+
+;; Grow a Dict’s internal array.
+;; The number of entries in a Dict must not exceed its Load Factor: 87.5% (7/8) of its capacity;
+;; this method should only be called under that condition.
+;; If the Dict’s count exceeds this percentage, a new array with double the capacity is allocated and assigned.
+;; The Dict’s properties are copied over to the new array, according to the usual key hashing and linear probing technique.
+;; There is no guarantee the entries’ positioning and/or order will be preserved.
+(func $Dict.grow (param $dict (ref $Dict))
+	;; the given Dict’s original internal array.
+	(local $orig (ref $DictInternal))
+	;; the length of the original array. constant.
+	(local $ARRLEN i32)
+	;; copy of the Dict’s entries, to be used as the Dict’s new internal array.
+	(local $copy (ref $DictInternal))
+	;; index of iteration over original array.
+	(local $i i32)
+	;; property at index $i in original array.
+	(local $prop (ref null $Property))
+
+	(local.set $orig   (struct.get $Dict $internal (local.get $dict)))
+	(local.set $ARRLEN (array.len (local.get $orig)))
+	(local.set $copy   (array.new_default $DictInternal (i32.mul (local.get $ARRLEN) (i32.const 2))))
+
+	;; assign the new copy to the Dict
+	(struct.set $Dict $internal (local.get $dict) (local.get $copy))
+
+	;; copy the original array’s elements to the new copy
+	;; we can’t perform a simple `(array.copy)` because hashing could be different
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (local.get $ARRLEN)))
+			(local.set $prop (array.get $DictInternal (local.get $orig) (local.get $i)))
+			(if (i32.eqz (ref.is_null (local.get $prop)))
+				(then (array.set $DictInternal
+					(local.get $copy)
+					(drop (call $Dict.find (local.get $dict) (struct.get $Property $key (local.get $prop))))
+					(local.get $prop)
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
+
+
+
+;; Shrink a Dict’s internal array.
+;; An array is doubled in size when its item count reaches 87.5% (7/8) of its capacity (this is the Load Factor);
+;; therefore, as a factual result, its item count is never less than 43.75% (7/16) of its capacity.
+;; This method should be called when (and only when) this condition occurs when removing items from the array.
+;; If the Dict’s count falls below this minimum percentage, a new array with half the capacity is allocated and assigned.
+;; The Dict’s properties are copied over to the new array, according to the usual key hashing and linear probing technique.
+;; There is no guarantee the entries’ positioning and/or order will be preserved.
+(func $Dict.shrink (param $dict (ref $Dict))
+	;; the given Dict’s original internal array.
+	(local $orig (ref $DictInternal))
+	;; the length of the original array. constant.
+	(local $ARRLEN i32)
+	;; copy of the Dict’s entries, to be used as the Dict’s new internal array.
+	(local $copy (ref $DictInternal))
+	;; index of iteration over original array.
+	(local $i i32)
+	;; property at index $i in original array.
+	(local $prop (ref null $Property))
+
+	(local.set $orig   (struct.get $Dict $internal (local.get $dict)))
+	(local.set $ARRLEN (array.len (local.get $orig)))
+	(local.set $copy   (array.new_default $DictInternal (i32.div_u (local.get $ARRLEN) (i32.const 2))))
+
+	;; assign the new copy to the Dict
+	(struct.set $Dict $internal (local.get $dict) (local.get $copy))
+
+	;; copy the original array’s elements to the new copy
+	;; we can’t perform a simple `(array.copy)` because hashing could be different
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (local.get $ARRLEN)))
+			(local.set $prop (array.get $DictInternal (local.get $orig) (local.get $i)))
+			(if (i32.eqz (ref.is_null (local.get $prop)))
+				(then (array.set $DictInternal
+					(local.get $copy)
+					(drop (call $Dict.find (local.get $dict) (struct.get $Property $key (local.get $prop))))
+					(local.get $prop)
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+)
