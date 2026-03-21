@@ -299,17 +299,17 @@ describe('IrNode', () => {
 				mod.drop(mod.array.get(
 					mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_tuple),
 					mod.i32.const(2),
-					rt_tuple,
+					reftype_value(cg),
 				)),
 				mod.drop(mod.array.get(
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_tuple),
 					mod.i32.const(0),
-					rt_tuple,
+					reftype_value(cg),
 				)),
 				mod.drop(mod.array.get(
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_tuple),
 					mod.i32.const(1),
-					rt_tuple,
+					reftype_value(cg),
 				)),
 			]);
 		});
@@ -362,10 +362,10 @@ describe('IrNode', () => {
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
 								mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_list),
-								rt_list,
+								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, reftype_value(cg))).primitiveValue).intValue),
-							rt_list_internal,
+							reftype_value(cg, true),
 						)),
 						mod.if(
 							mod.ref.is_null(mod.local.get(4, reftype_value(cg))),
@@ -378,10 +378,10 @@ describe('IrNode', () => {
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
-								rt_list,
+								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
-							rt_list_internal,
+							reftype_value(cg, true),
 						)),
 						mod.if(
 							mod.ref.is_null(mod.local.get(5, reftype_value(cg, true))),
@@ -394,10 +394,10 @@ describe('IrNode', () => {
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
-								rt_list,
+								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 3n)).primitiveValue).intValue),
-							rt_list_internal,
+							reftype_value(cg, true),
 						)),
 						mod.if(
 							mod.ref.is_null(mod.local.get(6, reftype_value(cg, true))),

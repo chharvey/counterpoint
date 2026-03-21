@@ -40,7 +40,7 @@ export class TupleGet extends Value {
 		return cg.module.array.get(
 			cg.module.ref.cast(new BinValue(cg, this.tuple.codegen(cg)).compositeValue, rt_tuple),
 			cg.module.i32.const(Number(this.accessor)),
-			rt_tuple,
+			cg.getReftype('(ref $Value)'),
 		);
 	}
 }

@@ -81,11 +81,11 @@ export class CollectionDynamicGet extends Value {
 					cg.module.struct.get(
 						STRUCT_FIELD.LIST_INTERNAL,
 						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, rt_list),
-						rt_list,
+						cg.getReftype('(ref $ListInternal)'),
 					),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
-					cg.getReftype('(ref $ListInternal)'),
-				), cg.getReftype('(ref null $Value)')); // `array.get` will trap if array length is 0 or if index is out of bounds. this is as designed
+					cg.getReftype('(ref null $Value)'),
+				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
 
 				return cg.module.block(null, [
 					item.set(),
