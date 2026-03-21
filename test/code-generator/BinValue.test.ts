@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	STRUCT_FIELD,
 	BinValue,
 	Builder,
 	BinVect,
@@ -83,7 +84,7 @@ describe('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isPrimitive,
-			mod.i32.eqz(mod.struct.get(0, binval.value, cg.getReftype('(ref $Value)'), false)),
+			mod.i32.eqz(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, cg.getReftype('(ref $Value)'), false)),
 		));
 	});
 
@@ -117,7 +118,7 @@ describe('BinValue', () => {
 			const {primitiveValue} = binval;
 			assertEqualBins(
 				primitiveValue,
-				mod.struct.get(1, binval.value, cg.getReftype('(ref $Value)')),
+				mod.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, binval.value, cg.getReftype('(ref $Value)')),
 			);
 			return assert.strictEqual(binaryen.getExpressionType(primitiveValue), binaryen.v128);
 		});
@@ -140,7 +141,7 @@ describe('BinValue', () => {
 			const {compositeValue} = binval;
 			assertEqualBins(
 				compositeValue,
-				mod.struct.get(2, binval.value, cg.getReftype('(ref $Value)')),
+				mod.struct.get(STRUCT_FIELD.VALUE_COMPOSITE, binval.value, cg.getReftype('(ref $Value)')),
 			);
 			return assert.strictEqual(binaryen.getExpressionType(compositeValue), binaryen.eqref);
 		});

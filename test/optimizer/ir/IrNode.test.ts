@@ -7,6 +7,7 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
+	STRUCT_FIELD,
 	BinValue,
 	Builder,
 	BinVect,
@@ -359,7 +360,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
 							mod.struct.get(
-								1,
+								STRUCT_FIELD.LIST_INTERNAL,
 								mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
@@ -375,7 +376,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
 							mod.struct.get(
-								1,
+								STRUCT_FIELD.LIST_INTERNAL,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
@@ -391,7 +392,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
 							mod.struct.get(
-								1,
+								STRUCT_FIELD.LIST_INTERNAL,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
