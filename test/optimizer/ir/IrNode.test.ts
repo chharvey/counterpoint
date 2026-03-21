@@ -19,11 +19,6 @@ import {genConst} from '../../helpers.ts';
 
 describe('IrNode', () => {
 	describe('#codegen', () => {
-		/** Return either `(ref $Value)` or `(ref null $Value)`. */
-		function reftype_value(cg: Builder, nullish: boolean = false): binaryen.Type {
-			return cg.getReftype(`(ref ${ nullish ? 'null ' : '' }$Value)`);
-		}
-
 		function setupScript(src: string, opts: object): {
 			goal: AST.ASTNodeGoal,
 			opt:  Optimizer,
@@ -104,15 +99,16 @@ describe('IrNode', () => {
 				e;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
+			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
 			return assertEqualBins(
 				goal.children.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
-					mod.local.get(0, reftype_value(cg)),
-					mod.local.get(1, reftype_value(cg)),
-					mod.local.get(2, reftype_value(cg)),
-					mod.local.get(3, reftype_value(cg)),
-					mod.local.get(4, reftype_value(cg)),
+					mod.local.get(0, rt_value),
+					mod.local.get(1, rt_value),
+					mod.local.get(2, rt_value),
+					mod.local.get(3, rt_value),
+					mod.local.get(4, rt_value),
 				],
 			);
 		});
@@ -133,12 +129,13 @@ describe('IrNode', () => {
 					(x, 4.2, (null,));
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenTuple([
-						mod.local.get(0, reftype_value(cg)),
+						mod.local.get(0, rt_value),
 						genConst(cg, 4.2),
-						mod.local.get(1, reftype_value(cg)),
+						mod.local.get(1, rt_value),
 					])).value,
 				);
 			});
@@ -148,13 +145,14 @@ describe('IrNode', () => {
 					[x, 4.2, (null,), x/2, @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
+				const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenList([
-						mod.local.get(0, reftype_value(cg, true)),
+						mod.local.get(0, rt_n_value),
 						genConst(cg, 4.2),
-						mod.local.get(1, reftype_value(cg, true)),
-						mod.local.get(2, reftype_value(cg, true)),
+						mod.local.get(1, rt_n_value),
+						mod.local.get(2, rt_n_value),
 						genConst(cg, Symbol(0x101)),
 					])).value,
 				);
@@ -176,14 +174,15 @@ describe('IrNode', () => {
 					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenRecord(new Map([
-						[257n, new BinValue(cg, mod.local.get(0, reftype_value(cg))).toProperty(257n)],
-						[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
-						[259n, new BinValue(cg, mod.local.get(1, reftype_value(cg))).toProperty(259n)],
-						[260n, new BinValue(cg, mod.local.get(2, reftype_value(cg))).toProperty(260n)], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-						[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
+						[257n, new BinValue(cg, mod.local.get(0, rt_value)) .toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 4.2))          .toProperty(258n)],
+						[259n, new BinValue(cg, mod.local.get(1, rt_value)) .toProperty(259n)],
+						[260n, new BinValue(cg, mod.local.get(2, rt_value)) .toProperty(260n)], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						[261n, new BinValue(cg, genConst(cg, Symbol(0x105))).toProperty(261n)],
 					]))).value,
 				);
 			});
@@ -233,14 +232,15 @@ describe('IrNode', () => {
 					[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 				}`, {lower: true, codegen: true, build: false});
 				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assertEqualBins(
 					(goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenDict(new Map([
-						[257n, new BinValue(cg, mod.local.get(0, reftype_value(cg))).toProperty(257n)],
-						[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
-						[259n, new BinValue(cg, mod.local.get(1, reftype_value(cg))).toProperty(259n)],
-						[260n, new BinValue(cg, mod.local.get(2, reftype_value(cg))).toProperty(260n)],
-						[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
+						[257n, new BinValue(cg, mod.local.get(0, rt_value)) .toProperty(257n)],
+						[258n, new BinValue(cg, genConst(cg, 4.2))          .toProperty(258n)],
+						[259n, new BinValue(cg, mod.local.get(1, rt_value)) .toProperty(259n)],
+						[260n, new BinValue(cg, mod.local.get(2, rt_value)) .toProperty(260n)],
+						[261n, new BinValue(cg, genConst(cg, Symbol(0x105))).toProperty(261n)],
 					]))).value,
 				);
 			});
@@ -293,23 +293,24 @@ describe('IrNode', () => {
 				tup.1;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
+			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 				mod.drop(mod.array.get(
-					mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_tuple),
+					mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_tuple),
 					mod.i32.const(2),
-					reftype_value(cg),
+					rt_value,
 				)),
 				mod.drop(mod.array.get(
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_tuple),
+					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_tuple),
 					mod.i32.const(0),
-					reftype_value(cg),
+					rt_value,
 				)),
 				mod.drop(mod.array.get(
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_tuple),
+					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_tuple),
 					mod.i32.const(1),
-					reftype_value(cg),
+					rt_value,
 				)),
 			]);
 		});
@@ -324,21 +325,22 @@ describe('IrNode', () => {
 				rec.b;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
+			const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
 			const rt_record: binaryen.Type = cg.getReftype('(ref $Record)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 				mod.drop(mod.call('retrieve-entry-record', [
-					mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_record),
+					mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_record),
 					mod.i32.const(0x103),
-				], reftype_value(cg))),
+				], rt_value)),
 				mod.drop(mod.call('retrieve-entry-record', [
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_record),
+					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
 					mod.i32.const(0x101),
-				], reftype_value(cg))),
+				], rt_value)),
 				mod.drop(mod.call('retrieve-entry-record', [
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_record),
+					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
 					mod.i32.const(0x102),
-				], reftype_value(cg))),
+				], rt_value)),
 			]);
 		});
 
@@ -353,6 +355,8 @@ describe('IrNode', () => {
 					list.[3];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
+				const rt_value:         binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_n_value:       binaryen.Type = cg.getReftype('(ref null $Value)');
 				const rt_list:          binaryen.Type = cg.getReftype('(ref $List)');
 				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)');
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
@@ -361,50 +365,50 @@ describe('IrNode', () => {
 						mod.local.set(4, mod.array.get(
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
-								mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_list),
+								mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_list),
 								rt_list_internal,
 							),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, reftype_value(cg))).primitiveValue).intValue),
-							reftype_value(cg, true),
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
+							rt_n_value,
 						)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(4, reftype_value(cg))),
+							mod.ref.is_null(mod.local.get(4, rt_value)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(4, reftype_value(cg))),
+							mod.ref.as_non_null(mod.local.get(4, rt_value)),
 						),
-					], reftype_value(cg))),
+					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
-								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
+								mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
 								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
-							reftype_value(cg, true),
+							rt_n_value,
 						)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(5, reftype_value(cg, true))),
+							mod.ref.is_null(mod.local.get(5, rt_n_value)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(5, reftype_value(cg, true))),
+							mod.ref.as_non_null(mod.local.get(5, rt_n_value)),
 						),
-					], reftype_value(cg))),
+					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
-								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
+								mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
 								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 3n)).primitiveValue).intValue),
-							reftype_value(cg, true),
+							rt_n_value,
 						)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(6, reftype_value(cg, true))),
+							mod.ref.is_null(mod.local.get(6, rt_n_value)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(6, reftype_value(cg, true))),
+							mod.ref.as_non_null(mod.local.get(6, rt_n_value)),
 						),
-					], reftype_value(cg))),
+					], rt_value)),
 				]);
 			});
 			it('DICT.GET', () => {
@@ -417,42 +421,44 @@ describe('IrNode', () => {
 					dict.[@c];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
-				const rt_dict: binaryen.Type = cg.getReftype('(ref $Dict)');
+				const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
+				const rt_dict:    binaryen.Type = cg.getReftype('(ref $Dict)');
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(3, mod.call('retrieve-entry-dict', [
-							mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_dict),
+							mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
-						], reftype_value(cg, true))),
+						], rt_n_value)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(3, reftype_value(cg))),
+							mod.ref.is_null(mod.local.get(3, rt_value)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(3, reftype_value(cg))),
+							mod.ref.as_non_null(mod.local.get(3, rt_value)),
 						),
-					], reftype_value(cg))),
+					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.call('retrieve-entry-dict', [
-							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
+							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
-						], reftype_value(cg, true))),
+						], rt_n_value)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(4, reftype_value(cg, true))),
+							mod.ref.is_null(mod.local.get(4, rt_n_value)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(4, reftype_value(cg, true))),
+							mod.ref.as_non_null(mod.local.get(4, rt_n_value)),
 						),
-					], reftype_value(cg))),
+					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.call('retrieve-entry-dict', [
-							mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_dict),
+							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
-						], reftype_value(cg))),
+						], rt_value)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(5, reftype_value(cg, true))),
+							mod.ref.is_null(mod.local.get(5, rt_n_value)),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(5, reftype_value(cg, true))),
+							mod.ref.as_non_null(mod.local.get(5, rt_n_value)),
 						),
-					], reftype_value(cg))),
+					], rt_value)),
 				]);
 			});
 		});
@@ -475,10 +481,11 @@ describe('IrNode', () => {
 				-(4.2);
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
+			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			const CALL = {
-				vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot_', [arg], reftype_value(cg)),
-				vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp_', [arg], reftype_value(cg)),
-				vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg_', [arg], reftype_value(cg)),
+				vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot_', [arg], rt_value),
+				vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp_', [arg], rt_value),
+				vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg_', [arg], rt_value),
 			} as const;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -533,17 +540,18 @@ describe('IrNode', () => {
 				2.0 ==  3;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
+			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			const CALL = {
-				vadd: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd_', [arg0, arg1], reftype_value(cg)),
-				vmul: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul_', [arg0, arg1], reftype_value(cg)),
-				vdiv: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv_', [arg0, arg1], reftype_value(cg)),
-				vexp: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp_', [arg0, arg1], reftype_value(cg)),
-				vlt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt_',  [arg0, arg1], reftype_value(cg)),
-				vgt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt_',  [arg0, arg1], reftype_value(cg)),
-				vle:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle_',  [arg0, arg1], reftype_value(cg)),
-				vge:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge_',  [arg0, arg1], reftype_value(cg)),
-				vid:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid_',  [arg0, arg1], reftype_value(cg)),
-				veq:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq_',  [arg0, arg1], reftype_value(cg)),
+				vadd: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd_', [arg0, arg1], rt_value),
+				vmul: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul_', [arg0, arg1], rt_value),
+				vdiv: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv_', [arg0, arg1], rt_value),
+				vexp: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp_', [arg0, arg1], rt_value),
+				vlt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt_',  [arg0, arg1], rt_value),
+				vgt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt_',  [arg0, arg1], rt_value),
+				vle:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle_',  [arg0, arg1], rt_value),
+				vge:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge_',  [arg0, arg1], rt_value),
+				vid:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid_',  [arg0, arg1], rt_value),
+				veq:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq_',  [arg0, arg1], rt_value),
 			} as const;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
