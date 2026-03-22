@@ -219,7 +219,7 @@ export class Builder {
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < items.length) {
+		while (capacity < items.length * 8 / 7) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
@@ -241,7 +241,7 @@ export class Builder {
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < props.size) {
+		while (capacity < props.size * 8 / 7) {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
