@@ -18,7 +18,7 @@
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(local.set $prop (array.get $DictInternal (local.get $internal) (local.get $i)))
-			;; if the property is non-null and not a tombstone, increment the count
+			;; if the property is “live”, increment the count
 			(if (i32.and
 				(i32.eqz (ref.is_null (local.get $prop)))
 				(i32.eqz (call $Property.is-tombstone (local.get $prop)))
@@ -175,7 +175,7 @@
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
 	(if (ref.is_null (local.get $prop))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
+			(local.set $new-capacity (call $capacity-needed (i32.add (call $Dict.count (local.get $dict)) (i32.const 1))))
 			(if (i32.ne (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
 				(then
 					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))
@@ -231,11 +231,10 @@
 		)
 	)
 	;; tombstones still contribute to the Dict’s size, so do not decrement it here. size will be recomputed on reallocation.
-	;; FIXME: call $capacity-needed with count, not size
-	;; (local.set $new-capacity (call $capacity-needed (i32.sub (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
-	;; (if (i32.ne (array.len (local.get $internal)) (local.get $new-capacity))
-	;; 	(then (call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity)))
-	;; )
+	(local.set $new-capacity (call $capacity-needed (i32.sub (call $Dict.count (local.get $dict)) (i32.const 1))))
+	(if (i32.ne (array.len (local.get $internal)) (local.get $new-capacity))
+		(then (call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity)))
+	)
 
 	(local.get $prop)
 )
