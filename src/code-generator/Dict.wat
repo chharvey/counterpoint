@@ -1,3 +1,39 @@
+;; Returns the number of “live” elements in the Dict.
+;; “Live” elements are non-null, non-tombstone properties.
+(func $Dict.count (param $dict (ref $Dict)) (result i32)
+	;; the return value, the number of live elements.
+	(local $count i32)
+	;; the Dict’s internal array.
+	(local $internal (ref $DictInternal))
+	;; index of iteration.
+	(local $i i32)
+	;; object of iteration.
+	(local $prop (ref null $Property))
+
+	(local.set $count    (i32.const 0))
+	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
+			(local.set $prop (array.get $DictInternal (local.get $internal) (local.get $i)))
+			;; if the property is non-null and not a tombstone, increment the count
+			(if (i32.and
+				(i32.eqz (ref.is_null (local.get $prop)))
+				(i32.eqz (call $Property.is-tombstone (local.get $prop)))
+			)
+				(then (local.set $count (i32.add (local.get $count) (i32.const 1))))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(local.get $count)
+)
+
+
+
 ;; Find a Property in a Dict with the given key.
 ;; If a Property with the key is found, returns the property and its matching index.
 ;; Else, returns a null Property or tombstone with the index that the key hashes to.
@@ -7,9 +43,8 @@
 ;; 	- if null or a “tombstone” is returned, no entry with the given key exists in the Dict
 ;; 	- if a non-null, “live” Property is returned, its value is what you want
 ;; - when setting:
-;; 	- if null is returned, it means you’re adding a new property; you should put the new entry at the returned index and increment the Dict’s size and count
-;; 	- if a “tombstone” is returned, you’re reusing it; you should replace it with the new entry and *only* increment the Dict’s count, but not its size
-;; 	- if a non-null, “live” Property is returned, you should replace it with the new entry and increment *neither* the Dict’s size *nor* its count!
+;; 	- if null is returned, it means you’re adding a new property; you should put the new entry at the returned index and increment the Dict’s size
+;; 	- if a “tombstone” or a non-null, “live” Property is returned, you should replace it with the new entry, but *do not* increment the Dict’s size
 (func $Dict.find (param $dict (ref $Dict)) (param $key i32) (result i32 (ref null $Property))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
@@ -97,7 +132,7 @@
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $orig))))
 			(local.set $prop (array.get $DictInternal (local.get $orig) (local.get $i)))
-			;; if the property is non-null and not a tombstone, put it in the copy and increment the size
+			;; if the property is “live”, put it in the copy and increment the size
 			(if (i32.and
 				(i32.eqz (ref.is_null (local.get $prop)))
 				(i32.eqz (call $Property.is-tombstone (local.get $prop)))
@@ -115,7 +150,6 @@
 			(br $repeat)
 		)
 	)
-	(struct.set $Dict $count (local.get $dict) (struct.get $Dict $size (local.get $dict)))
 )
 
 
@@ -137,6 +171,8 @@
 	(local.set $prop)
 	(local.set $index)
 
+	;; if prop is null, we’re adding a new entry. update the capacity, reallocate if necessary, then increment the size.
+	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
 	(if (ref.is_null (local.get $prop))
 		(then
 			(local.set $new-capacity (call $capacity (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)) (local.get $len)))
@@ -147,15 +183,9 @@
 					(local.set $index (drop (call $Dict.find (local.get $dict) (local.get $key))))
 				)
 			)
-			;; set these after adjusting, as they were reset in the adjustment
+			;; set this after adjusting, as it was reset in the adjustment
 			(struct.set $Dict $size (local.get $dict) (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)))
-			(struct.set $Dict $count (local.get $dict) (i32.add (struct.get $Dict $count (local.get $dict)) (i32.const 1)))
 		)
-		;; else if prop is a tombstone, increment only the count, not the size
-		(else (if (call $Property.is-tombstone (local.get $prop))
-			(then (struct.set $Dict $count (local.get $dict) (i32.add (struct.get $Dict $count (local.get $dict)) (i32.const 1))))
-			;; else, prop must be live; just replace it without incrementing size/count
-		))
 	)
 	(array.set $DictInternal (struct.get $Dict $internal (local.get $dict)) (local.get $index) (struct.new $Property
 		(local.get $key)

@@ -228,7 +228,6 @@ export class Builder {
 		);
 		return this.module.struct.new([
 			this.module.i32.const(items.length),
-			this.module.i32.const(items.length),
 			this.module.array.new_fixed(this.getHeaptype('$ListInternal')!, entries),
 		], this.getHeaptype('$List')!);
 	}
@@ -248,7 +247,6 @@ export class Builder {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.module.struct.new([
-			this.module.i32.const(props.size),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
 				this.getHeaptype('$DictInternal')!,
@@ -346,7 +344,6 @@ export class Builder {
 		tb.grow(1);
 		tb.setStructType(i_list, [
 			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $count */    Builder.newField(binaryen.i32, 'notPacked', true),
 			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_list, tb.getTempHeapType(i_object));
@@ -357,7 +354,6 @@ export class Builder {
 		tb.grow(1);
 		tb.setStructType(i_dict, [
 			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $count */    Builder.newField(binaryen.i32, 'notPacked', true),
 			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_dict, tb.getTempHeapType(i_object));

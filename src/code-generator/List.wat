@@ -1,3 +1,12 @@
+;; Returns the number of “live” elements in the List.
+;; Since lists are contiguously front-packed and contain no tombstones,
+;; this should always be equal to the List’s size.
+(func $List.count (param $list (ref $List)) (result i32)
+	(struct.get $List $size (local.get $list))
+)
+
+
+
 ;; Adjust a List’s internal array as needed.
 ;; The number of entries in a List must not exceed its Load Factor: 87.5% (7/8) of its capacity.
 ;; If the List’s size exceeds this percentage, a new array with double the capacity is allocated and assigned.
@@ -23,7 +32,6 @@
 		(i32.const 0)
 		(array.len (local.get $orig))
 	)
-	(struct.set $List $count (local.get $list) (struct.get $List $size (local.get $list)))
 )
 
 
@@ -35,7 +43,7 @@
 	;; item at the specified index.
 	(local $item (ref null $Value))
 
-	(if (i32.gt_u (local.get $index) (struct.get $List $count (local.get $list)))
+	(if (i32.gt_u (local.get $index) (call $List.count (local.get $list)))
 		(then (unreachable))
 	)
 

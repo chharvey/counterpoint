@@ -359,7 +359,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
 							mod.struct.get(
-								/* $internal */ 2,
+								/* $internal */ 1,
 								mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
@@ -375,7 +375,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
 							mod.struct.get(
-								/* $internal */ 2,
+								/* $internal */ 1,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
@@ -391,7 +391,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
 							mod.struct.get(
-								/* $internal */ 2,
+								/* $internal */ 1,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
