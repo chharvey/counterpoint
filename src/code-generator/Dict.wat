@@ -156,16 +156,12 @@
 
 ;; Set a Dict value given a key.
 (func $Dict.set (param $dict (ref $Dict)) (param $key i32) (param $value (ref $Value))
-	;; length of the Dict’s internal array.
-	(local $len i32)
 	;; index of the array to set to.
 	(local $index i32)
 	;; property at the specified index.
 	(local $prop (ref null $Property))
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
-
-	(local.set $len (array.len (struct.get $Dict $internal (local.get $dict))))
 
 	(call $Dict.find (local.get $dict) (local.get $key))
 	(local.set $prop)
@@ -175,8 +171,8 @@
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
 	(if (ref.is_null (local.get $prop))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)) (local.get $len)))
-			(if (i32.ne (local.get $len) (local.get $new-capacity))
+			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
+			(if (i32.ne (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
 				(then
 					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
