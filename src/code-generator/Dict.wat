@@ -1,41 +1,65 @@
 ;; Find a Property in a Dict with the given key.
 ;; If a Property with the key is found, returns the property and its matching index.
-;; Else, returns a null Property with the index that the key hashes to.
+;; Else, returns a null Property or tombstone with the index that the key hashes to.
 ;;
 ;; Useful for get and set operations:
 ;; - when getting:
-;; 	- if a null Property is returned, no entry with the given key exists in the Dict
-;; 	- if a non-null Property is returned, its value is what you want
+;; 	- if null or a “tombstone” is returned, no entry with the given key exists in the Dict
+;; 	- if a non-null, “live” Property is returned, its value is what you want
 ;; - when setting:
-;; 	- if a null Property is returned, put the new entry at the returned index
-;; 	- if a non-null Property is returned, replace it in the Dict with the new entry
+;; 	- if null is returned, it means you’re adding a new property; you should put the new entry at the returned index and increment the Dict’s size and count
+;; 	- if a “tombstone” is returned, you’re reusing it; you should replace it with the new entry and *only* increment the Dict’s count, but not its size
+;; 	- if a non-null, “live” Property is returned, you should replace it with the new entry and increment *neither* the Dict’s size *nor* its count!
 (func $Dict.find (param $dict (ref $Dict)) (param $key i32) (result i32 (ref null $Property))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
 	;; the length of the array. constant.
 	(local $ARRLEN i32)
-	;; index of the array to retrieve from. increments on each loop until an entry is found.
+	;; index of the array to retrieve from. increments on each loop until an entry or null is found.
 	(local $index i32)
 	;; property at the specified index.
 	(local $prop (ref null $Property))
+	;; the index and object of the first tombstone we’ve passed, if any.
+	;; if the key is not in the dict and `$tombprop` is set,
+	;; return it and `$tombidx` instead of the current prop and index of iteration.
+	;; this will tell callers of `$Dict.set` that we’re reusing a tombstone, so incrementing `$size` should not be done.
+	(local $tombidx  i32)
+	(local $tombprop (ref null $Property))
 
 	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
 	(local.set $index    (call $mod (local.get $key) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $prop     (array.get $DictInternal (local.get $internal) (local.get $index)))
+	(local.set $tombidx  (i32.const -1))
+	(local.set $tombprop (ref.null $Property))
 
 	(loop $repeat
-		(if (i32.or
-			(ref.is_null (local.get $prop))
-			(i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
-		)
-			(then (return (local.get $index) (local.get $prop)))
-			(else
-				;; a load factor of 0.875 (7/8) is enforced; this guarantees some empty slots, so the loop will terminate
-				(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
-				(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
-				(br $repeat)
-			)
+		;; if the current property is null, the key is definitely not in the Dict.
+		;; if we’ve passed a tombstone, return it and its index.
+		;; otherwise, return the current null property and its index.
+		(if (ref.is_null (local.get $prop))
+			(then (return (if (result i32 (ref null $Property)) (ref.is_null (local.get $tombprop))
+				(then (local.get $index)   (local.get $prop))
+				(else (local.get $tombidx) (local.get $tombprop))
+			)))
+			;; else the current property is either a tombstone or a “live” property. compare the keys.
+			(else (if (i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
+				;; if the keys match, we have our result.
+				(then (return (local.get $index) (local.get $prop)))
+				;; else if the current property is a tombstone, store it, then continue the search.
+				(else
+					(if (call $Property.is-tombstone (local.get $prop))
+						(then
+							(local.set $tombidx  (local.get $index))
+							(local.set $tombprop (local.get $prop))
+						)
+					)
+					;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
+					(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+					(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
+					(br $repeat)
+				)
+			))
 		)
 	)
 )
