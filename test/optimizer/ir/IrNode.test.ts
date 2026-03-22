@@ -359,7 +359,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
 							mod.struct.get(
-								1,
+								/* $internal */ 2,
 								mod.ref.cast(new BinValue(cg, mod.local.get(2, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
@@ -375,7 +375,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
 							mod.struct.get(
-								1,
+								/* $internal */ 2,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
@@ -391,7 +391,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
 							mod.struct.get(
-								1,
+								/* $internal */ 2,
 								mod.ref.cast(new BinValue(cg, mod.local.get(1, reftype_value(cg))).compositeValue, rt_list),
 								rt_list,
 							),
@@ -429,7 +429,7 @@ describe('IrNode', () => {
 						mod.if(
 							mod.ref.is_null(mod.local.get(3, rt_n_property)),
 							genConst(cg),
-							mod.struct.get(1, mod.ref.as_non_null(mod.local.get(3, rt_n_property)), rt_property),
+							mod.struct.get(/* $value */ 1, mod.ref.as_non_null(mod.local.get(3, rt_n_property)), rt_property),
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
@@ -440,7 +440,7 @@ describe('IrNode', () => {
 						mod.if(
 							mod.ref.is_null(mod.local.get(4, rt_n_property)),
 							genConst(cg),
-							mod.struct.get(1, mod.ref.as_non_null(mod.local.get(4, rt_n_property)), rt_property),
+							mod.struct.get(/* $value */ 1, mod.ref.as_non_null(mod.local.get(4, rt_n_property)), rt_property),
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
@@ -451,7 +451,7 @@ describe('IrNode', () => {
 						mod.if(
 							mod.ref.is_null(mod.local.get(5, rt_n_property)),
 							genConst(cg),
-							mod.struct.get(1, mod.ref.as_non_null(mod.local.get(5, rt_n_property)), rt_property),
+							mod.struct.get(/* $value */ 1, mod.ref.as_non_null(mod.local.get(5, rt_n_property)), rt_property),
 						),
 					], reftype_value(cg))),
 				]);

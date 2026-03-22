@@ -50,6 +50,7 @@ describe('Builder', () => {
 				]),
 				cg.module.struct.new([
 					cg.module.i32.const(3),
+					cg.module.i32.const(3),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$ListInternal')!,
 						[
@@ -70,6 +71,7 @@ describe('Builder', () => {
 					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 				cg.module.struct.new([
+					cg.module.i32.const(5),
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$DictInternal')!,
@@ -257,6 +259,7 @@ describe('Builder', () => {
 					WASM_NULL,
 					WASM_NULL,
 				]].map((entries) => mod.struct.new([
+					mod.i32.const(3),
 					mod.i32.const(3),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal')!, entries),
 				], cg.getHeaptype('$Dict')!)),

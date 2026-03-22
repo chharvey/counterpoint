@@ -78,7 +78,7 @@ export class CollectionDynamicGet extends Value {
 				const rt_list: binaryen.Type = cg.getReftype('(ref $List)')!;
 				const item:    Local         = cg.newLocal(cg.module.array.get(
 					cg.module.struct.get(
-						/* $internal */ 1,
+						/* $internal */ 2,
 						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, rt_list),
 						rt_list,
 					),

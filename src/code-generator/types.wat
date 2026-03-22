@@ -35,6 +35,8 @@
 ;; precursor to the `List` class
 (type $List (sub $Object (struct
 	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
+	(field $size (mut i32))
+	;; always equal to `$size`
 	(field $count (mut i32))
 	;; the array of values; mutable to allow reallocation
 	(field $internal (mut (ref $ListInternal)))
@@ -42,7 +44,9 @@
 
 ;; precursor to the `Dict` class
 (type $Dict (sub $Object (struct
-	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
+	;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
+	(field $size (mut i32))
+	;; number of ‘live’ (non-tombstone) Properties in the array
 	(field $count (mut i32))
 	;; the array of values; mutable to allow reallocation
 	(field $internal (mut (ref $DictInternal)))
