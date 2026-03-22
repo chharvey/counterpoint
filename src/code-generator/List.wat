@@ -41,7 +41,7 @@
 
 	(local.set $item (array.get $ListInternal (struct.get $List $internal (local.get $list)) (local.get $index)))
 
-	(if (ref.is_null (local.get $item)) ;; TODO: also if item is tombstone
+	(if (ref.is_null (local.get $item))
 		(then
 			(struct.set $List $size (local.get $list) (i32.add (struct.get $List $size (local.get $list)) (i32.const 1)))
 			(call $List.adjust-capacity (local.get $list) (call $capacity (struct.get $List $size (local.get $list)) (array.len (struct.get $List $internal (local.get $list)))))

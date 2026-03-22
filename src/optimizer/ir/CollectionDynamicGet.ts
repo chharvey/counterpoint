@@ -88,6 +88,7 @@ export class CollectionDynamicGet extends Value {
 
 				return cg.module.block(null, [
 					item.set(),
+					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
 					cg.module.if(
 						cg.module.ref.is_null(item.get()),
 						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
@@ -103,10 +104,14 @@ export class CollectionDynamicGet extends Value {
 
 				return cg.module.block(null, [
 					maybe_prop.set(),
+					// if `(ref.null $Property)` or a tombstone is returned, return Counterpoint `null`; else return the property value
 					cg.module.if(
-						cg.module.ref.is_null(maybe_prop.get()),
+						cg.module.i32.or(
+							cg.module.ref.is_null(maybe_prop.get()),
+							cg.module.i32.lt_s(cg.module.struct.get(/* $key */ 0, maybe_prop.get(), binaryen.i32), cg.module.i32.const(0)),
+						),
 						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
-						cg.module.struct.get(/* $value */ 1, cg.module.ref.as_non_null(maybe_prop.get()), cg.getReftype('(ref $Property)')!),
+						cg.module.struct.get(/* $value */ 1, maybe_prop.get(), cg.getReftype('(ref $Property)')!),
 					),
 				], rt_value);
 			}

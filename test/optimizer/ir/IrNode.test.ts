@@ -427,9 +427,12 @@ describe('IrNode', () => {
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(3, rt_n_property)),
+							mod.i32.or(
+								mod.ref.is_null(mod.local.get(3, rt_n_property)),
+								mod.i32.lt_s(mod.struct.get(/* $key */ 0, mod.local.get(3, rt_n_property), binaryen.i32), mod.i32.const(0)),
+							),
 							genConst(cg),
-							mod.struct.get(/* $value */ 1, mod.ref.as_non_null(mod.local.get(3, rt_n_property)), rt_property),
+							mod.struct.get(/* $value */ 1, mod.local.get(3, rt_n_property), rt_property),
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
@@ -438,9 +441,12 @@ describe('IrNode', () => {
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(4, rt_n_property)),
+							mod.i32.or(
+								mod.ref.is_null(mod.local.get(4, rt_n_property)),
+								mod.i32.lt_s(mod.struct.get(/* $key */ 0, mod.local.get(4, rt_n_property), binaryen.i32), mod.i32.const(0)),
+							),
 							genConst(cg),
-							mod.struct.get(/* $value */ 1, mod.ref.as_non_null(mod.local.get(4, rt_n_property)), rt_property),
+							mod.struct.get(/* $value */ 1, mod.local.get(4, rt_n_property), rt_property),
 						),
 					], reftype_value(cg))),
 					mod.drop(mod.block(null, [
@@ -449,9 +455,12 @@ describe('IrNode', () => {
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(5, rt_n_property)),
+							mod.i32.or(
+								mod.ref.is_null(mod.local.get(5, rt_n_property)),
+								mod.i32.lt_s(mod.struct.get(/* $key */ 0, mod.local.get(5, rt_n_property), binaryen.i32), mod.i32.const(0)),
+							),
 							genConst(cg),
-							mod.struct.get(/* $value */ 1, mod.ref.as_non_null(mod.local.get(5, rt_n_property)), rt_property),
+							mod.struct.get(/* $value */ 1, mod.local.get(5, rt_n_property), rt_property),
 						),
 					], reftype_value(cg))),
 				]);

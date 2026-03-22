@@ -73,7 +73,11 @@
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $orig))))
 			(local.set $prop (array.get $DictInternal (local.get $orig) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $prop)))
+			;; if the property is non-null and not a tombstone, put it in the copy and increment the size
+			(if (i32.and
+				(i32.eqz (ref.is_null (local.get $prop)))
+				(i32.ge_s (struct.get $Property $key (local.get $prop)) (i32.const 0))
+			)
 				(then
 					(array.set $DictInternal
 						(local.get $copy)
@@ -94,22 +98,40 @@
 
 ;; Set a Dict value given a key.
 (func $Dict.set (param $dict (ref $Dict)) (param $key i32) (param $value (ref $Value))
+	;; length of the Dict’s internal array.
+	(local $len i32)
 	;; index of the array to set to.
 	(local $index i32)
 	;; property at the specified index.
 	(local $prop (ref null $Property))
+	;; capacity needed for adjustment.
+	(local $new-capacity i32)
+
+	(local.set $len (array.len (struct.get $Dict $internal (local.get $dict))))
 
 	(call $Dict.find (local.get $dict) (local.get $key))
 	(local.set $prop)
 	(local.set $index)
 
-	(if (ref.is_null (local.get $prop)) ;; TODO: also if prop is tombstone
+	(if (ref.is_null (local.get $prop))
 		(then
+			(local.set $new-capacity (call $capacity (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)) (local.get $len)))
+			(if (i32.ne (local.get $len) (local.get $new-capacity))
+				(then
+					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))
+					;; if adjusting the array, local index pointer needs to be reset
+					(local.set $index (drop (call $Dict.find (local.get $dict) (local.get $key))))
+				)
+			)
+			;; set these after adjusting, as they were reset in the adjustment
 			(struct.set $Dict $size (local.get $dict) (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)))
-			(call $Dict.adjust-capacity (local.get $dict) (call $capacity (struct.get $Dict $size (local.get $dict)) (array.len (struct.get $Dict $internal (local.get $dict)))))
-			;; if adjusting the array, local index pointer needs to be reset
-			(local.set $index (drop (call $Dict.find (local.get $dict) (local.get $key))))
+			(struct.set $Dict $count (local.get $dict) (i32.add (struct.get $Dict $count (local.get $dict)) (i32.const 1)))
 		)
+		;; else if prop is a tombstone, increment only the count, not the size
+		(else (if (i32.lt_s (struct.get $Property $key (local.get $prop)) (i32.const 0))
+			(then (struct.set $Dict $count (local.get $dict) (i32.add (struct.get $Dict $count (local.get $dict)) (i32.const 1))))
+			;; else, prop must be live; just replace it without incrementing size/count
+		))
 	)
 	(array.set $DictInternal (struct.get $Dict $internal (local.get $dict)) (local.get $index) (struct.new $Property
 		(local.get $key)
