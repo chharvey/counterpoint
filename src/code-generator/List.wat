@@ -42,6 +42,8 @@
 (func $List.set (param $list (ref $List)) (param $index i32) (param $value (ref $Value))
 	;; item at the specified index.
 	(local $item (ref null $Value))
+	;; capacity needed for adjustment.
+	(local $new-capacity i32)
 
 	(if (i32.gt_u (local.get $index) (call $List.count (local.get $list)))
 		(then (unreachable))
@@ -51,8 +53,14 @@
 
 	(if (ref.is_null (local.get $item))
 		(then
+			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $List $size (local.get $list)) (i32.const 1))))
+			(if (i32.ne (array.len (struct.get $List $internal (local.get $list))) (local.get $new-capacity))
+				(then
+					(call $List.adjust-capacity (local.get $list) (local.get $new-capacity))
+				)
+			)
+			;; set this after adjusting, to mirror `$Dict.set`
 			(struct.set $List $size (local.get $list) (i32.add (struct.get $List $size (local.get $list)) (i32.const 1)))
-			(call $List.adjust-capacity (local.get $list) (call $capacity-needed (struct.get $List $size (local.get $list))))
 		)
 	)
 	(array.set $ListInternal (struct.get $List $internal (local.get $list)) (local.get $index) (local.get $value))
