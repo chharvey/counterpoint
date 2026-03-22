@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	STRUCT_FIELD,
 	BinValue,
 	bigint_to_i64,
 	Builder,
@@ -36,7 +37,7 @@ test.suite('BinValue', () => {
 				mod.i32.const(0),
 				binvect.vect,
 				mod.ref.null(binaryen.eqref),
-			], cg.getHeaptype('$Value')!)));
+			], cg.getHeaptype('$Value'))));
 		});
 		test.test('composite values.', () => {
 			xjs.Array.forEachAggregated([
@@ -53,7 +54,7 @@ test.suite('BinValue', () => {
 					genConst(cg, 1.1),
 					genConst(cg, 2.2),
 					genConst(cg, 3.3),
-					...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')!), 5),
+					...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 5),
 				]),
 				cg.codegenDict(new Map([
 					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
@@ -66,7 +67,7 @@ test.suite('BinValue', () => {
 				mod.i32.const(1),
 				mod.v128.const(new Uint8Array(16)),
 				composite,
-			], cg.getHeaptype('$Value')!)));
+			], cg.getHeaptype('$Value'))));
 		});
 		test.test('reuses `BinValue#value`.', () => {
 			assertEqualBins(
@@ -85,7 +86,7 @@ test.suite('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isPrimitive,
-			mod.i32.eqz(mod.struct.get(0, binval.value, cg.getReftype('(ref $Value)')!, false)),
+			mod.i32.eqz(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false)),
 		));
 	});
 
@@ -119,7 +120,7 @@ test.suite('BinValue', () => {
 			const {primitiveValue} = binval;
 			assertEqualBins(
 				primitiveValue,
-				mod.struct.get(1, binval.value, cg.getReftype('(ref $Value)')!),
+				mod.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, binval.value, binaryen.v128),
 			);
 			return assert.strictEqual(binaryen.getExpressionType(primitiveValue), binaryen.v128);
 		});
@@ -142,7 +143,7 @@ test.suite('BinValue', () => {
 			const {compositeValue} = binval;
 			assertEqualBins(
 				compositeValue,
-				mod.struct.get(2, binval.value, cg.getReftype('(ref $Value)')!),
+				mod.struct.get(STRUCT_FIELD.VALUE_COMPOSITE, binval.value, binaryen.eqref),
 			);
 			return assert.strictEqual(binaryen.getExpressionType(compositeValue), binaryen.eqref);
 		});
@@ -168,6 +169,6 @@ test.suite('BinValue', () => {
 		] as const).map(([id, code]) => cg.module.struct.new([
 			cg.module.i32.const(Number(id)),
 			code,
-		], cg.getHeaptype('$Property')!)));
+		], cg.getHeaptype('$Property'))));
 	});
 });

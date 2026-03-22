@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
@@ -83,8 +84,11 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/isub_u.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-record.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-dict.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Property.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
 	];
 
 	/**
@@ -137,12 +141,14 @@ export class Builder {
 		return this.#typeCount++;
 	}
 
-	public getHeaptype(key: HeaptypeKey): binaryen.Type | undefined {
-		return this.#heaptypeRegistry.get(key);
+	public getHeaptype(key: HeaptypeKey): binaryen.Type {
+		assert.ok(this.#heaptypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
+		return this.#heaptypeRegistry.get(key)!;
 	}
 
-	public getReftype(key: ReftypeKey): binaryen.Type | undefined {
-		return this.#reftypeRegistry.get(key);
+	public getReftype(key: ReftypeKey): binaryen.Type {
+		assert.ok(this.#reftypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
+		return this.#reftypeRegistry.get(key)!;
 	}
 
 	/**
@@ -244,7 +250,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.module.array.new_fixed(this.getHeaptype('$Tuple')!, items);
+		return this.module.array.new_fixed(this.getHeaptype('$Tuple'), items);
 	}
 
 	/**
@@ -256,7 +262,7 @@ export class Builder {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.module.array.new_fixed(this.getHeaptype('$Record')!, entries as binaryen.ExpressionRef[]);
+		return this.module.array.new_fixed(this.getHeaptype('$Record'), entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -269,17 +275,17 @@ export class Builder {
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < items.length) {
+		while (capacity < items.length * 8 / 7) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')!),
+			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
 		);
 		return this.module.struct.new([
 			this.module.i32.const(items.length),
-			this.module.array.new_fixed(this.getHeaptype('$ListInternal')!, entries),
-		], this.getHeaptype('$List')!);
+			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
+		], this.getHeaptype('$List'));
 	}
 
 	/**
@@ -291,7 +297,7 @@ export class Builder {
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < props.size) {
+		while (capacity < props.size * 8 / 7) {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
@@ -299,10 +305,10 @@ export class Builder {
 		return this.module.struct.new([
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
-				this.getHeaptype('$DictInternal')!,
-				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)')!)),
+				this.getHeaptype('$DictInternal'),
+				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)'))),
 			),
-		], this.getHeaptype('$Dict')!);
+		], this.getHeaptype('$Dict'));
 	}
 
 	/**
@@ -322,17 +328,17 @@ export class Builder {
 		const i_value: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_value, [
-			Builder.newField(binaryen.i32, 'i8'),
-			Builder.newField(binaryen.v128),
-			Builder.newField(binaryen.eqref),
+			/* $tag */       Builder.newField(binaryen.i32, 'i8'),
+			/* $primitive */ Builder.newField(binaryen.v128),
+			/* $composite */ Builder.newField(binaryen.eqref),
 		]);
 
 		/* (type $Property ...) */
 		const i_property: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_property, [
-			Builder.newField(binaryen.i32),
-			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+			/* $key */   Builder.newField(binaryen.i32),
+			/* $value */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		]);
 
 		/* (type $Tuple ...) */
@@ -393,8 +399,8 @@ export class Builder {
 		const i_list: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_list, [
-			Builder.newField(binaryen.v128, 'notPacked', true),
-			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
+			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_list, tb.getTempHeapType(i_object));
 		tb.setOpen(i_list);
@@ -403,8 +409,8 @@ export class Builder {
 		const i_dict: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_dict, [
-			Builder.newField(binaryen.v128, 'notPacked', true),
-			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
+			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
 		tb.setOpen(i_dict);
@@ -537,7 +543,7 @@ export class Builder {
 		typekey: 'intValue' | 'natValue' | 'floatValue',
 	): binaryen.FunctionRef {
 		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
 		const local_vects = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -559,7 +565,7 @@ export class Builder {
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
 		const local_vects = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -753,7 +759,7 @@ export class Builder {
 
 	#setupFunctions2(): void {
 		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),

@@ -54,7 +54,7 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		if (this.operator === OpCode.TOBOOL) {
 			return cg.module.call('vnot_', [cg.module.call('vnot_', [code], rt_value)], rt_value);

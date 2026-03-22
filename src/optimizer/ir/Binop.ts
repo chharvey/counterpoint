@@ -98,7 +98,7 @@ export class Binop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)')!;
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
 			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }

@@ -1,7 +1,11 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -63,7 +67,23 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		switch (this.name) {
+			case TypeName.LIST: {
+				return cg.module.call('List.set', [
+					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $List)')),
+					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
+					this.value.codegen(cg),
+				], binaryen.none);
+			}
+			case TypeName.DICT: {
+				return cg.module.call('Dict.set', [
+					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')),
+					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
+					this.value.codegen(cg),
+				], binaryen.none);
+			}
+		}
 		throw new Error('not yet supported.');
 	}
 }

@@ -3,6 +3,7 @@ import {
 	type Builder,
 	BinVect,
 } from '../index.ts';
+import {STRUCT_FIELD} from './utils-public.ts';
 
 
 
@@ -39,22 +40,22 @@ export class BinValue {
 		private readonly cg: Builder,
 		arg: binaryen.ExpressionRef | BinVect,
 	) {
-		this.TYPE = cg.getReftype('(ref $Value)')!;
+		this.TYPE = cg.getReftype('(ref $Value)');
 		if (arg instanceof BinVect) {
 			this.value = new BinValue(cg, arg.vect).value;
 			return;
 		}
-		const ht_value: binaryen.Type = cg.getHeaptype('$Value')!;
+		const ht_value: binaryen.Type = cg.getHeaptype('$Value');
 		switch (binaryen.getExpressionType(arg)) {
 			case binaryen.unreachable: {
 				this.value = arg;
 				break;
 			}
 			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			case cg.getReftype('(ref null $Value)')! | 4:
-			case cg.getReftype('(ref $Value)')!      | 4:
-			case cg.getReftype('(ref null $Value)')!:
-			case cg.getReftype('(ref $Value)')!: { // if given a (nullish) `$Value`, just use that
+			case cg.getReftype('(ref null $Value)') | 4:
+			case cg.getReftype('(ref $Value)')      | 4:
+			case cg.getReftype('(ref null $Value)'):
+			case cg.getReftype('(ref $Value)'): { // if given a (nullish) `$Value`, just use that
 				this.value = arg;
 				break;
 			}
@@ -67,11 +68,11 @@ export class BinValue {
 				break;
 			}
 			case binaryen.eqref:
-			case cg.getReftype('(ref $Tuple)')!:
-			case cg.getReftype('(ref $Record)')!:
-			case cg.getReftype('(ref $List)')!:
-			case cg.getReftype('(ref $Dict)')!:
-			case cg.getReftype('(ref $Object)')!:
+			case cg.getReftype('(ref $Tuple)'):
+			case cg.getReftype('(ref $Record)'):
+			case cg.getReftype('(ref $List)'):
+			case cg.getReftype('(ref $Dict)'):
+			case cg.getReftype('(ref $Object)'):
 			default: { // a composite
 				this.value = cg.module.struct.new([
 					cg.module.i32.const(1),
@@ -98,7 +99,7 @@ export class BinValue {
 
 	/** Whether the value is primitive (tag == 0). */
 	public get isPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eqz(this.cg.module.struct.get(0, this.value, this.TYPE, false));
+		return this.cg.module.i32.eqz(this.cg.module.struct.get(STRUCT_FIELD.VALUE_TAG, this.value, binaryen.i32, false));
 	}
 
 	/** Whether the value is composite (tag == 1). */
@@ -108,12 +109,12 @@ export class BinValue {
 
 	/** The primitive value if it exists, otherwise a `(v128.const 0)`. */
 	public get primitiveValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(1, this.value, this.TYPE);
+		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, this.value, binaryen.v128);
 	}
 
 	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
 	public get compositeValue(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(2, this.value, this.TYPE);
+		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_COMPOSITE, this.value, binaryen.eqref);
 	}
 
 	/** Wrap this `$Value` in a `$Property`, given a key id. */
@@ -121,6 +122,6 @@ export class BinValue {
 		return this.cg.module.struct.new([
 			this.cg.module.i32.const(Number(keyid)),
 			this.value,
-		], this.cg.getHeaptype('$Property')!);
+		], this.cg.getHeaptype('$Property'));
 	}
 }
