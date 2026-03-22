@@ -429,7 +429,7 @@ describe('IrNode', () => {
 						mod.if(
 							mod.i32.or(
 								mod.ref.is_null(mod.local.get(3, rt_n_property)),
-								mod.i32.lt_s(mod.struct.get(/* $key */ 0, mod.local.get(3, rt_n_property), binaryen.i32), mod.i32.const(0)),
+								mod.call('Property.is-tombstone', [mod.local.get(3, rt_n_property)], binaryen.i32),
 							),
 							genConst(cg),
 							mod.struct.get(/* $value */ 1, mod.local.get(3, rt_n_property), rt_property),
@@ -443,7 +443,7 @@ describe('IrNode', () => {
 						mod.if(
 							mod.i32.or(
 								mod.ref.is_null(mod.local.get(4, rt_n_property)),
-								mod.i32.lt_s(mod.struct.get(/* $key */ 0, mod.local.get(4, rt_n_property), binaryen.i32), mod.i32.const(0)),
+								mod.call('Property.is-tombstone', [mod.local.get(4, rt_n_property)], binaryen.i32),
 							),
 							genConst(cg),
 							mod.struct.get(/* $value */ 1, mod.local.get(4, rt_n_property), rt_property),
@@ -457,7 +457,7 @@ describe('IrNode', () => {
 						mod.if(
 							mod.i32.or(
 								mod.ref.is_null(mod.local.get(5, rt_n_property)),
-								mod.i32.lt_s(mod.struct.get(/* $key */ 0, mod.local.get(5, rt_n_property), binaryen.i32), mod.i32.const(0)),
+								mod.call('Property.is-tombstone', [mod.local.get(5, rt_n_property)], binaryen.i32),
 							),
 							genConst(cg),
 							mod.struct.get(/* $value */ 1, mod.local.get(5, rt_n_property), rt_property),

@@ -76,7 +76,7 @@
 			;; if the property is non-null and not a tombstone, put it in the copy and increment the size
 			(if (i32.and
 				(i32.eqz (ref.is_null (local.get $prop)))
-				(i32.ge_s (struct.get $Property $key (local.get $prop)) (i32.const 0))
+				(i32.eqz (call $Property.is-tombstone (local.get $prop)))
 			)
 				(then
 					(array.set $DictInternal
@@ -128,7 +128,7 @@
 			(struct.set $Dict $count (local.get $dict) (i32.add (struct.get $Dict $count (local.get $dict)) (i32.const 1)))
 		)
 		;; else if prop is a tombstone, increment only the count, not the size
-		(else (if (i32.lt_s (struct.get $Property $key (local.get $prop)) (i32.const 0))
+		(else (if (call $Property.is-tombstone (local.get $prop))
 			(then (struct.set $Dict $count (local.get $dict) (i32.add (struct.get $Dict $count (local.get $dict)) (i32.const 1))))
 			;; else, prop must be live; just replace it without incrementing size/count
 		))

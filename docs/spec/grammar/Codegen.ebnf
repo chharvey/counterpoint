@@ -108,7 +108,7 @@ Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
 	(drop)
 	(if (result (ref $Value)) (i32.or
 		(ref.is_null (local.get $maybe-prop))
-		(i32.lt_s (struct.get $Property $key (local.get $maybe-prop)) (i32.const 0))
+		(call $Property.is-tombstone (local.get $maybe-prop))
 	)
 		(then `Codegen((NULL.CONST null))`)
 		(else (struct.get $value (local.get $maybe-prop)))

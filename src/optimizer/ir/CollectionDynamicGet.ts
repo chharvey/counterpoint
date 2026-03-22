@@ -108,7 +108,7 @@ export class CollectionDynamicGet extends Value {
 					cg.module.if(
 						cg.module.i32.or(
 							cg.module.ref.is_null(maybe_prop.get()),
-							cg.module.i32.lt_s(cg.module.struct.get(/* $key */ 0, maybe_prop.get(), binaryen.i32), cg.module.i32.const(0)),
+							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
 						),
 						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
 						cg.module.struct.get(/* $value */ 1, maybe_prop.get(), cg.getReftype('(ref $Property)')!),
