@@ -22,7 +22,7 @@
 
 	(block $exit
 		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $result) (local.get $limit)))
+			(br_if $exit (i32.gt_u (local.get $result) (local.get $limit)))
 			(local.set $result (i32.mul (local.get $result) (i32.const 2)))
 			(br $repeat)
 		)
