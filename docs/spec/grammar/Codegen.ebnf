@@ -165,8 +165,17 @@ Codegen((DROP `v`)) := (drop `Codegen(v)`);
 Codegen((DECL `id` `type` `v`)) := (local.set ‹index› `id` `Codegen(v)`);
 Codegen((SET  `id`        `v`)) := (local.set ‹index› `id` `Codegen(v)`);
 
-// Codegen((LIST.SET `obj` `accessor` `v`));
-// Codegen((DICT.SET `obj` `accessor` `v`));
+Codegen((LIST.SET `obj` `accessor` `v`)) := (call $List.set
+	(ref.cast (ref $List) (struct.get $composite `Codegen(obj)`))
+	(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $primitive `Codegen(accessor)`)))
+	`Codegen(v)`
+);
+Codegen((DICT.SET `obj` `accessor` `v`)) := (call $Dict.set
+	(ref.cast (ref $Dict) (struct.get $composite `Codegen(obj)`))
+	(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $primitive `Codegen(accessor)`)))
+	`Codegen(v)`
+);
+
 // Codegen((SET.SET  `obj` `accessor` `v`));
 // Codegen((MAP.SET  `obj` `accessor` `v`));
 
