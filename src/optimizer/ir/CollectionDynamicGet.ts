@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	STRUCT_FIELD,
@@ -69,6 +69,7 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		cg.module.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
@@ -76,11 +77,10 @@ export class CollectionDynamicGet extends Value {
 		 */
 		switch (this.name) {
 			case TypeName.LIST: {
-				const rt_list: binaryen.Type = cg.getReftype('(ref $List)');
-				const item:    Local         = cg.newLocal(cg.module.array.get(
+				const item: Local = cg.newLocal(cg.module.array.get(
 					cg.module.struct.get(
 						STRUCT_FIELD.LIST_INTERNAL,
-						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, rt_list),
+						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $List)')),
 						cg.getReftype('(ref $ListInternal)'),
 					),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
@@ -89,6 +89,7 @@ export class CollectionDynamicGet extends Value {
 
 				return cg.module.block(null, [
 					item.set(),
+					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
 					cg.module.if(
 						cg.module.ref.is_null(item.get()),
 						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
@@ -97,17 +98,21 @@ export class CollectionDynamicGet extends Value {
 				], rt_value);
 			}
 			case TypeName.DICT: {
-				const item: Local = cg.newLocal(cg.module.call('retrieve-entry-dict', [
+				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
 					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
-				], cg.getReftype('(ref null $Value)')));
+				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Property)')])), 1));
 
 				return cg.module.block(null, [
-					item.set(),
+					maybe_prop.set(),
+					// if `(ref.null $Property)` or a tombstone is returned, return Counterpoint `null`; else return the property value
 					cg.module.if(
-						cg.module.ref.is_null(item.get()),
+						cg.module.i32.or(
+							cg.module.ref.is_null(maybe_prop.get()),
+							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
+						),
 						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
-						cg.module.ref.as_non_null(item.get()),
+						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VALUE, maybe_prop.get(), rt_value),
 					),
 				], rt_value);
 			}

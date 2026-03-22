@@ -69,8 +69,11 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-record.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/retrieve-entry-dict.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Property.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
 	];
 
 	/**
@@ -219,7 +222,7 @@ export class Builder {
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < items.length) {
+		while (capacity < items.length * 8 / 7) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
@@ -241,7 +244,7 @@ export class Builder {
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < props.size) {
+		while (capacity < props.size * 8 / 7) {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
@@ -272,17 +275,17 @@ export class Builder {
 		const i_value: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_value, [
-			Builder.newField(binaryen.i32, 'i8'),
-			Builder.newField(binaryen.v128),
-			Builder.newField(binaryen.eqref),
+			/* $tag */       Builder.newField(binaryen.i32, 'i8'),
+			/* $primitive */ Builder.newField(binaryen.v128),
+			/* $composite */ Builder.newField(binaryen.eqref),
 		]);
 
 		/* (type $Property ...) */
 		const i_property: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_property, [
-			Builder.newField(binaryen.i32),
-			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+			/* $key */   Builder.newField(binaryen.i32),
+			/* $value */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		]);
 
 		/* (type $Tuple ...) */
@@ -343,8 +346,8 @@ export class Builder {
 		const i_list: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_list, [
-			Builder.newField(binaryen.v128, 'notPacked', true),
-			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
+			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_list, tb.getTempHeapType(i_object));
 		tb.setOpen(i_list);
@@ -353,8 +356,8 @@ export class Builder {
 		const i_dict: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_dict, [
-			Builder.newField(binaryen.v128, 'notPacked', true),
-			Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
+			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
 		tb.setOpen(i_dict);

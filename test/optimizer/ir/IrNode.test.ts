@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	AST,
@@ -51,12 +51,6 @@ describe('IrNode', () => {
 				new IR.Goto(new IR.Label('label2')),
 				new IR.GotoIfFalse(new IR.Const(VALUE.NULL), new IR.Label('label2')),
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
-
-			// more cases
-			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ [42, 43, 44].[0] = 43; }',           {lower: true, codegen: false, build: false}).opt.instructions[1], // (LIST.SET)
-				setupScript('{ [a= 42, b= 43, c= 44].[@a] = 43; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (DICT.SET)
-			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
 		it('Trap returns (unreachable).', () => {
@@ -315,7 +309,7 @@ describe('IrNode', () => {
 			]);
 		});
 
-		it('RecordGet returns (call $retrieve-entry-record).', () => {
+		it('RecordGet returns (call $Record.get).', () => {
 			const {opt, cg} = setupScript(`{
 				val mut x:   int                       = 42;
 				val mut rec: (a: int, b: int, c?: int) = (a= 42, b= 43);
@@ -329,15 +323,15 @@ describe('IrNode', () => {
 			const rt_record: binaryen.Type = cg.getReftype('(ref $Record)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-				mod.drop(mod.call('retrieve-entry-record', [
+				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_record),
 					mod.i32.const(0x103),
 				], rt_value)),
-				mod.drop(mod.call('retrieve-entry-record', [
+				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
 					mod.i32.const(0x101),
 				], rt_value)),
-				mod.drop(mod.call('retrieve-entry-record', [
+				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
 					mod.i32.const(0x102),
 				], rt_value)),
@@ -360,6 +354,7 @@ describe('IrNode', () => {
 				const rt_list:          binaryen.Type = cg.getReftype('(ref $List)');
 				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)');
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
+				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
@@ -421,44 +416,121 @@ describe('IrNode', () => {
 					dict.[@c];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
-				const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
-				const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
-				const rt_dict:    binaryen.Type = cg.getReftype('(ref $Dict)');
+				const rt_value:      binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_dict:       binaryen.Type = cg.getReftype('(ref $Dict)');
+				const rt_n_property: binaryen.Type = cg.getReftype('(ref null $Property)');
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
+				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
-						mod.local.set(3, mod.call('retrieve-entry-dict', [
+						mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
-						], rt_n_value)),
+						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(3, rt_value)),
+							mod.i32.or(
+								mod.ref.is_null(mod.local.get(3, rt_n_property)),
+								mod.call('Property.is-tombstone', [mod.local.get(3, rt_n_property)], binaryen.i32),
+							),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(3, rt_value)),
+							mod.struct.get(STRUCT_FIELD.PROPERTY_VALUE, mod.local.get(3, rt_n_property), rt_value),
 						),
 					], rt_value)),
 					mod.drop(mod.block(null, [
-						mod.local.set(4, mod.call('retrieve-entry-dict', [
+						mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
-						], rt_n_value)),
+						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(4, rt_n_value)),
+							mod.i32.or(
+								mod.ref.is_null(mod.local.get(4, rt_n_property)),
+								mod.call('Property.is-tombstone', [mod.local.get(4, rt_n_property)], binaryen.i32),
+							),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(4, rt_n_value)),
+							mod.struct.get(STRUCT_FIELD.PROPERTY_VALUE, mod.local.get(4, rt_n_property), rt_value),
 						),
 					], rt_value)),
 					mod.drop(mod.block(null, [
-						mod.local.set(5, mod.call('retrieve-entry-dict', [
+						mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
-						], rt_value)),
+						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(5, rt_n_value)),
+							mod.i32.or(
+								mod.ref.is_null(mod.local.get(5, rt_n_property)),
+								mod.call('Property.is-tombstone', [mod.local.get(5, rt_n_property)], binaryen.i32),
+							),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(5, rt_n_value)),
+							mod.struct.get(STRUCT_FIELD.PROPERTY_VALUE, mod.local.get(5, rt_n_property), rt_value),
 						),
 					], rt_value)),
+				]);
+			});
+		});
+
+		describe('CollectionDynamicSet', () => {
+			it('LIST.SET', () => {
+				const {opt, cg} = setupScript(`{
+					val mut x:    int       = 42;
+					val mut list: mut [int] = [42, 43];
+
+					[x, 43, 44].[1 + 1] = 45;
+					list.[0] = 46;
+					list.[2] = 47;
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_list:  binaryen.Type = cg.getReftype('(ref $List)');
+				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
+				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
+				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
+					mod.call('List.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_list),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
+						genConst(cg, 45n),
+					], binaryen.none),
+					mod.call('List.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
+						genConst(cg, 46n),
+					], binaryen.none),
+					mod.call('List.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 2n)).primitiveValue).intValue),
+						genConst(cg, 47n),
+					], binaryen.none),
+				]);
+			});
+			it('DICT.SET', () => {
+				const {opt, cg} = setupScript(`{
+					val mut x:    int        = 42;
+					val mut dict: mut [:int] = [a= 42, c= 43];
+
+					[a= x, b= 43, c= 44].[@b] = 45;
+					dict.[@a] = 46;
+					dict.[@c] = 47;
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_dict:  binaryen.Type = cg.getReftype('(ref $Dict)');
+				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
+				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
+				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
+					mod.call('Dict.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
+						genConst(cg, 45n),
+					], binaryen.none),
+					mod.call('Dict.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
+						genConst(cg, 46n),
+					], binaryen.none),
+					mod.call('Dict.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
+						genConst(cg, 47n),
+					], binaryen.none),
 				]);
 			});
 		});
