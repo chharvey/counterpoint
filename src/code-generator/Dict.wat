@@ -175,7 +175,7 @@
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
 	(if (ref.is_null (local.get $prop))
 		(then
-			(local.set $new-capacity (call $capacity (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)) (local.get $len)))
+			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)) (local.get $len)))
 			(if (i32.ne (local.get $len) (local.get $new-capacity))
 				(then
 					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))

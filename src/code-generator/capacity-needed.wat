@@ -11,7 +11,7 @@
 ;; @param $size the number of items in an array (the array may be sparse, containing null values, and it need not be front-packed)
 ;; @param $len  the length of the array
 ;; @return      either half of `$len`, twice `$len`, or `$len`, depending on `$size`
-(func $capacity (param $size i32) (param $len i32) (result i32)
+(func $capacity-needed (param $size i32) (param $len i32) (result i32)
 	(if (result i32) (i32.ge_u
 		(local.get $size)
 		;; `$len * 7 / 8` will always be a whole number since `$len` is always a multiple of 8.
