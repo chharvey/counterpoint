@@ -50,21 +50,18 @@
 ;; In either case, the Dict’s “live” (non-tombstone) properties are copied over to the new array,
 ;; according to the usual key hashing and linear probing technique, and its size and count are updated.
 ;; There is no guarantee the entries’ positioning and/or order will be preserved.
-(func $Dict.adjust-capacity (param $dict (ref $Dict))
+(func $Dict.adjust-capacity (param $dict (ref $Dict)) (param $capacity i32)
 	;; the given Dict’s original internal array.
 	(local $orig (ref $DictInternal))
 	;; copy of the Dict’s entries, to be used as the Dict’s new internal array.
 	(local $copy (ref $DictInternal))
-	;; new array capacity. either double or half the old capacity.
-	(local $capacity i32)
 	;; index of iteration over original array.
 	(local $i i32)
 	;; property at index $i in original array.
 	(local $prop (ref null $Property))
 
-	(local.set $orig     (struct.get $Dict $internal (local.get $dict)))
-	(local.set $capacity (call $capacity (struct.get $Dict $size (local.get $dict)) (array.len (local.get $orig))))
-	(local.set $copy     (array.new_default $DictInternal (local.get $capacity)))
+	(local.set $orig (struct.get $Dict $internal (local.get $dict)))
+	(local.set $copy (array.new_default $DictInternal (local.get $capacity)))
 
 	(struct.set $Dict $internal (local.get $dict) (local.get $copy))
 
@@ -109,7 +106,7 @@
 	(if (ref.is_null (local.get $prop)) ;; TODO: also if prop is tombstone
 		(then
 			(struct.set $Dict $size (local.get $dict) (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)))
-			(call $Dict.adjust-capacity (local.get $dict))
+			(call $Dict.adjust-capacity (local.get $dict) (call $capacity (struct.get $Dict $size (local.get $dict)) (array.len (struct.get $Dict $internal (local.get $dict)))))
 			;; if adjusting the array, local index pointer needs to be reset
 			(local.set $index (drop (call $Dict.find (local.get $dict) (local.get $key))))
 		)
