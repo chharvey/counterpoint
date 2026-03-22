@@ -68,6 +68,7 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		cg.module.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)')!;
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.

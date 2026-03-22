@@ -355,6 +355,7 @@ describe('IrNode', () => {
 				const rt_list:          binaryen.Type = cg.getReftype('(ref $List)')!;
 				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)')!;
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
+				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
@@ -420,6 +421,7 @@ describe('IrNode', () => {
 				const rt_property:   binaryen.Type = cg.getReftype('(ref $Property)')!;
 				const rt_n_property: binaryen.Type = cg.getReftype('(ref null $Property)')!;
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
+				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
