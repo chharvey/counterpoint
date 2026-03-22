@@ -38,13 +38,16 @@
 ;; If a Property with the key is found, returns the property and its matching index.
 ;; Else, returns a null Property or tombstone with the index that the key hashes to.
 ;;
-;; Useful for get and set operations:
+;; Useful for get, set, and delete operations:
 ;; - when getting:
 ;; 	- if null or a “tombstone” is returned, no entry with the given key exists in the Dict
 ;; 	- if a non-null, “live” Property is returned, its value is what you want
 ;; - when setting:
 ;; 	- if null is returned, it means you’re adding a new property; you should put the new entry at the returned index and increment the Dict’s size
 ;; 	- if a “tombstone” or a non-null, “live” Property is returned, you should replace it with the new entry, but *do not* increment the Dict’s size
+;; - when deleting:
+;; 	- if null or a “tombstone” is returned, it means the key wasn’t found and the Dict was not mutated; *do not* change the Dict’s size
+;; 	- if a non-null, “live” Property is returned, it was deleted from the Dict and replaced with a tombstone; *do not* change the Dict’s size (as tombstones are still counted)
 (func $Dict.find (param $dict (ref $Dict)) (param $key i32) (result i32 (ref null $Property))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
@@ -155,6 +158,7 @@
 
 
 ;; Set a Dict value given a key.
+;; This method first reallocates if necessary, then adds the value.
 (func $Dict.set (param $dict (ref $Dict)) (param $key i32) (param $value (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
@@ -187,4 +191,51 @@
 		(local.get $key)
 		(local.get $value)
 	))
+)
+
+
+
+;; Delete a Dict property with the given key.
+;; If a property with the given key exists, it is removed and returned;
+;; otherwise null is returned and the Dict is not mutated.
+;; This method removes the property first (if found), then reallocates if necessary.
+(func $Dict.delete (param $dict (ref $Dict)) (param $key i32) (result (ref null $Property))
+	;; the given Dict’s internal array.
+	(local $internal (ref $DictInternal))
+	;; index of the found property in the internal array.
+	(local $index i32)
+	;; found property at the specified index.
+	(local $prop (ref null $Property))
+	;; capacity needed for adjustment.
+	(local $new-capacity i32)
+
+	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
+	(call $Dict.find (local.get $dict) (local.get $key))
+	(local.set $prop)
+	(local.set $index)
+
+	(if (i32.or
+		(ref.is_null (local.get $prop))
+		(call $Property.is-tombstone (local.get $prop))
+	)
+		(then (return (ref.null $Property)))
+	)
+
+	;; replace the property with a tombstone
+	(array.set $DictInternal
+		(local.get $internal)
+		(local.get $index)
+		(struct.new $Property
+			(i32.const -1)
+			(struct.new_default $Value)
+		)
+	)
+	;; tombstones still contribute to the Dict’s size, so do not decrement it here. size will be recomputed on reallocation.
+	;; FIXME: call $capacity-needed with count, not size
+	;; (local.set $new-capacity (call $capacity-needed (i32.sub (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
+	;; (if (i32.ne (array.len (local.get $internal)) (local.get $new-capacity))
+	;; 	(then (call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity)))
+	;; )
+
+	(local.get $prop)
 )
