@@ -171,8 +171,8 @@
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
 	(if (ref.is_null (local.get $prop))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (call $Dict.count (local.get $dict)) (i32.const 1))))
-			(if (i32.ne (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
+			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
+			(if (i32.lt_u (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
 				(then
 					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
@@ -226,12 +226,7 @@
 			(struct.new_default $Value)
 		)
 	)
-
-	;; tombstones still contribute to the Dict’s size, so do not decrement it here. size will be recomputed on reallocation.
-	(local.set $new-capacity (call $capacity-needed (i32.sub (call $Dict.count (local.get $dict)) (i32.const 1))))
-	(if (i32.ne (array.len (local.get $internal)) (local.get $new-capacity))
-		(then (call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity)))
-	)
+	;; capacity adjustment does not occur here. only on insertion.
 
 	(local.get $prop)
 )
