@@ -230,6 +230,7 @@
 			(struct.new_default $Value)
 		)
 	)
+
 	;; tombstones still contribute to the Dict’s size, so do not decrement it here. size will be recomputed on reallocation.
 	(local.set $new-capacity (call $capacity-needed (i32.sub (call $Dict.count (local.get $dict)) (i32.const 1))))
 	(if (i32.ne (array.len (local.get $internal)) (local.get $new-capacity))
