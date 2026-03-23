@@ -167,7 +167,7 @@ test.suite('BinValue', () => {
 			[0x105n, new BinValue(cg, genConst(cg, 4.2)).value],
 			[0x106n, genConst(cg, 4.2)],
 		] as const).map(([id, code]) => cg.module.struct.new([
-			cg.module.i32.const(Number(id)),
+			bigint_to_i64(cg.module, id, true),
 			code,
 		], cg.getHeaptype('$Property'))));
 	});

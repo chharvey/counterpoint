@@ -9,6 +9,7 @@ import {
 	IR,
 	STRUCT_FIELD,
 	BinValue,
+	bigint_to_i64,
 	Builder,
 	BinVect,
 } from '../../../src/index.ts';
@@ -313,15 +314,15 @@ test.suite('IrNode', () => {
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_record),
-					mod.i32.const(0x103),
+					bigint_to_i64(mod, 0x103n, true),
 				], rt_value)),
 				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
-					mod.i32.const(0x101),
+					bigint_to_i64(mod, 0x101n, true),
 				], rt_value)),
 				mod.drop(mod.call('Record.get', [
 					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
-					mod.i32.const(0x102),
+					bigint_to_i64(mod, 0x102n, true),
 				], rt_value)),
 			]);
 		});
@@ -335,6 +336,7 @@ test.suite('IrNode', () => {
 					[x, 43, 44].[1 + 1];
 					list.[0];
 					list.[3];
+					list.[-1];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				const rt_value:         binaryen.Type = cg.getReftype('(ref $Value)');
@@ -391,6 +393,23 @@ test.suite('IrNode', () => {
 							mod.ref.as_non_null(mod.local.get(6, rt_n_value)),
 						),
 					], rt_value)),
+					// FIXME: negative indexes `-i` should access at `array.length - i`
+					mod.drop(mod.block(null, [
+						mod.local.set(7, mod.array.get(
+							mod.struct.get(
+								STRUCT_FIELD.LIST_INTERNAL,
+								mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+								rt_list_internal,
+							),
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, -1n)).primitiveValue).intValue),
+							rt_n_value,
+						)),
+						mod.if(
+							mod.ref.is_null(mod.local.get(7, rt_n_value)),
+							genConst(cg),
+							mod.ref.as_non_null(mod.local.get(7, rt_n_value)),
+						),
+					], rt_value)),
 				]);
 			});
 			test.test('DICT.GET', () => {
@@ -411,7 +430,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
+							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue,
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -425,7 +444,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
+							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue,
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -439,7 +458,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
 							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
+							new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue,
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -450,71 +469,6 @@ test.suite('IrNode', () => {
 							mod.struct.get(STRUCT_FIELD.PROPERTY_VALUE, mod.local.get(5, rt_n_property), rt_value),
 						),
 					], rt_value)),
-				]);
-			});
-		});
-
-		test.suite('CollectionDynamicSet', () => {
-			test.test('LIST.SET', () => {
-				const {opt, cg} = setupScript(`{
-					val mut x:    int       = 42;
-					val mut list: mut [int] = [42, 43];
-
-					set [x, 43, 44].[1 + 1] = 45;
-					set list.[0] = 46;
-					set list.[2] = 47;
-				}`, {lower: true, codegen: false, build: false});
-				const mod = cg.module;
-				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-				const rt_list:  binaryen.Type = cg.getReftype('(ref $List)');
-				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
-				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
-					mod.call('List.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_list),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
-						genConst(cg, 45n),
-					], binaryen.none),
-					mod.call('List.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
-						genConst(cg, 46n),
-					], binaryen.none),
-					mod.call('List.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 2n)).primitiveValue).intValue),
-						genConst(cg, 47n),
-					], binaryen.none),
-				]);
-			});
-			test.test('DICT.SET', () => {
-				const {opt, cg} = setupScript(`{
-					val mut x:    int        = 42;
-					val mut dict: mut [:int] = [a= 42, c= 43];
-
-					set [a= x, b= 43, c= 44].[@b] = 45;
-					set dict.[@a] = 46;
-					set dict.[@c] = 47;
-				}`, {lower: true, codegen: false, build: false});
-				const mod = cg.module;
-				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-				const rt_dict:  binaryen.Type = cg.getReftype('(ref $Dict)');
-				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
-				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-					mod.call('Dict.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue),
-						genConst(cg, 45n),
-					], binaryen.none),
-					mod.call('Dict.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue),
-						genConst(cg, 46n),
-					], binaryen.none),
-					mod.call('Dict.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue),
-						genConst(cg, 47n),
-					], binaryen.none),
 				]);
 			});
 		});
@@ -714,6 +668,71 @@ test.suite('IrNode', () => {
 					mod.local.set(4, genConst(cg, 4.3)),
 				],
 			);
+		});
+
+		test.suite('CollectionDynamicSet', () => {
+			test.test('LIST.SET', () => {
+				const {opt, cg} = setupScript(`{
+					val mut x:    int       = 42;
+					val mut list: mut [int] = [42, 43];
+
+					set [x, 43, 44].[1 + 1] = 45;
+					set list.[0] = 46;
+					set list.[2] = 47;
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_list:  binaryen.Type = cg.getReftype('(ref $List)');
+				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
+				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
+					mod.call('List.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_list),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
+						genConst(cg, 45n),
+					], binaryen.none),
+					mod.call('List.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
+						genConst(cg, 46n),
+					], binaryen.none),
+					mod.call('List.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 2n)).primitiveValue).intValue),
+						genConst(cg, 47n),
+					], binaryen.none),
+				]);
+			});
+			test.test('DICT.SET', () => {
+				const {opt, cg} = setupScript(`{
+					val mut x:    int        = 42;
+					val mut dict: mut [:int] = [a= 42, c= 43];
+
+					set [a= x, b= 43, c= 44].[@b] = 45;
+					set dict.[@a] = 46;
+					set dict.[@c] = 47;
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_dict:  binaryen.Type = cg.getReftype('(ref $Dict)');
+				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
+				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
+					mod.call('Dict.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
+						new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue,
+						genConst(cg, 45n),
+					], binaryen.none),
+					mod.call('Dict.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+						new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue,
+						genConst(cg, 46n),
+					], binaryen.none),
+					mod.call('Dict.set', [
+						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+						new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue,
+						genConst(cg, 47n),
+					], binaryen.none),
+				]);
+			});
 		});
 	});
 });

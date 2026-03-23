@@ -98,15 +98,13 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ:           TYPE.Type   = this.type();
-		const base_value:    IR.Value    = this.base.lower(optimizer).asTac(optimizer);
-		const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
+		const typ:        TYPE.Type = this.type();
+		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {
 				case this.accessor instanceof ASTNodeIndex: {
-					if (base_typename === IR.TypeName.TUPLE) {
-						assert_instanceof(base_value.type, TYPE.Tuple);
+					if (base_value.type instanceof TYPE.Tuple) {
 						/*
 						 * Ensure a canonical index. It may be within the range `[0, count - 1]`.
 						 * We cannot assume that this index is validated by the type-checker,
@@ -131,8 +129,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 					break;
 				}
 				case this.accessor instanceof ASTNodeKey: {
-					if (base_typename === IR.TypeName.RECORD) {
-						assert_instanceof(base_value.type, TYPE.Record);
+					if (base_value.type instanceof TYPE.Record) {
 						/*
 						 * Ensure a canonical key. It must have been added to the value’s type.
 						 * We cannot assume that this key is validated by the type-checker,
@@ -160,6 +157,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				}
 				default: {
 					assert_instanceof(this.accessor, ASTNodeExpression);
+					const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
 					if ([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename)) {
 						return new IR.CollectionDynamicGet(
 							base_typename as IR.CollectionDynamicName,

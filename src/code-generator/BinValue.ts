@@ -1,5 +1,6 @@
 import binaryen from 'binaryen';
 import {
+	bigint_to_i64,
 	type Builder,
 	BinVect,
 } from '../index.ts';
@@ -107,7 +108,7 @@ export class BinValue {
 		return this.cg.module.i32.eqz(this.isPrimitive);
 	}
 
-	/** The primitive value if it exists, otherwise a `(v128.const 0)`. */
+	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
 	public get primitiveValue(): binaryen.ExpressionRef {
 		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, this.value, binaryen.v128);
 	}
@@ -120,7 +121,7 @@ export class BinValue {
 	/** Wrap this `$Value` in a `$Property`, given a key id. */
 	public toProperty(keyid: bigint): binaryen.ExpressionRef {
 		return this.cg.module.struct.new([
-			this.cg.module.i32.const(Number(keyid)),
+			bigint_to_i64(this.cg.module, keyid, true),
 			this.value,
 		], this.cg.getHeaptype('$Property'));
 	}

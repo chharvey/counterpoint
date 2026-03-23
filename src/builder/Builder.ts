@@ -78,6 +78,13 @@ function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: n
  * The Builder generates assembly code.
  */
 export class Builder {
+	/**
+	 * Load Factor for arrays.
+	 * The number of items (including tombstones) in a `$ListInternal`/`$DictInternal`
+	 * must not exceed this factor as a multiple of array length.
+	 */
+	static readonly #LOAD_FACTOR = 7 / 8;
+
 	private static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
@@ -268,14 +275,14 @@ export class Builder {
 	/**
 	 * Return a new `$List` from items.
 	 * The capacity of `$ListInternal` is always the least power of 2 greater than or equal to
-	 * the number of given items (the List’s count), or 8, whichever is greater.
+	 * the number of given items (the List’s count) divided by the Load Factor, or 8, whichever is greater.
 	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
 	 * @param items items in the array; must be of type `(ref null $Value)`
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < items.length * 8 / 7) {
+		while (items.length > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
@@ -297,7 +304,7 @@ export class Builder {
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity < props.size * 8 / 7) {
+		while (props.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);

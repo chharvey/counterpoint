@@ -1,5 +1,6 @@
 import type binaryen from 'binaryen';
 import {
+	bigint_to_i64,
 	BinValue,
 	type Builder,
 } from '../../index.ts';
@@ -42,7 +43,7 @@ export class RecordGet extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.module.call('Record.get', [
 			cg.module.ref.cast(new BinValue(cg, this.record.codegen(cg)).compositeValue, cg.getReftype('(ref $Record)')),
-			cg.module.i32.const(Number(this.accessor.keyid)),
+			bigint_to_i64(cg.module, this.accessor.keyid, true),
 		], cg.getReftype('(ref $Value)'));
 	}
 }

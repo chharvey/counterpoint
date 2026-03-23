@@ -205,9 +205,9 @@ export class ASTNodeCall extends ASTNodeExpression {
 
 		const [name, ctor] = new Map<ValidFunctionName, [IR.CollectionDynamicName, () => IR.Value]>([
 			[ValidFunctionName.LIST, [IR.TypeName.LIST, () => new IR.CollectionLinearNew(IR.TypeName.LIST, [], this.type())]],
-			[ValidFunctionName.DICT, [IR.TypeName.DICT, () => new IR.DictNew(new Map(), this.type())]],
-			[ValidFunctionName.SET,  [IR.TypeName.SET,  () => new IR.CollectionLinearNew(IR.TypeName.SET, [], this.type())]],
-			[ValidFunctionName.MAP,  [IR.TypeName.MAP,  () => new IR.MapNew(new Map(), this.type())]],
+			[ValidFunctionName.SET,  [IR.TypeName.SET,  () => new IR.CollectionLinearNew(IR.TypeName.SET,  [], this.type())]],
+			[ValidFunctionName.DICT, [IR.TypeName.DICT, () => new IR.DictNew            (new Map(),            this.type())]],
+			[ValidFunctionName.MAP,  [IR.TypeName.MAP,  () => new IR.MapNew             (new Map(),            this.type())]],
 		]).get(this.base.source as ValidFunctionName)!;
 		const new_obj: IR.Value = ctor();
 		if (!args.length) {
