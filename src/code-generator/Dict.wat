@@ -218,10 +218,7 @@
 	(array.set $DictInternal
 		(local.get $internal)
 		(local.get $index)
-		(struct.new $Property
-			(i64.const -1)
-			(struct.new_default $Value)
-		)
+		(call $Property.new-tombstone)
 	)
 	;; capacity adjustment does not occur here. only on insertion.
 
