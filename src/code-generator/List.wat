@@ -7,12 +7,8 @@
 
 
 
-;; Adjust a List’s internal array as needed.
-;; The number of entries in a List must not exceed its Load Factor: 87.5% (7/8) of its capacity.
-;; If the List’s size exceeds this percentage, a new array with double the capacity is allocated and assigned.
-;; Conversely, the number of entries in a List must not be less than 43.75% (7/16) of its capacity.
-;; If the List’s size falls below this minimum percentage, a new array with half the capacity is allocated and assigned.
-;; In either case, the List’s items are copied over to the new array, preserving the order from the original array.
+;; Reallocate a List’s internal array as needed, adjusting for size.
+;; The List’s items are copied over to the new array, preserving the order from the original array.
 (func $List.adjust-capacity (param $list (ref $List)) (param $capacity i32)
 	;; the given List’s original internal array.
 	(local $orig (ref $ListInternal))
@@ -46,7 +42,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(if (i32.gt_u (local.get $index) (call $List.count (local.get $list)))
+	(if (i32.gt_u (local.get $index) (struct.get $List $size (local.get $list)))
 		(then (unreachable))
 	)
 
@@ -54,8 +50,8 @@
 
 	(if (ref.is_null (local.get $item))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (call $List.count (local.get $list)) (i32.const 1))))
-			(if (i32.ne (array.len (struct.get $List $internal (local.get $list))) (local.get $new-capacity))
+			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $List $size (local.get $list)) (i32.const 1))))
+			(if (i32.lt_u (array.len (struct.get $List $internal (local.get $list))) (local.get $new-capacity))
 				(then (call $List.adjust-capacity (local.get $list) (local.get $new-capacity)))
 			)
 			;; set this after adjusting, to mirror `$Dict.set`
@@ -79,7 +75,7 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(if (i32.ge_u (local.get $index) (call $List.count (local.get $list)))
+	(if (i32.ge_u (local.get $index) (struct.get $List $size (local.get $list)))
 		(then (unreachable))
 	)
 
@@ -100,13 +96,7 @@
 		(i32.sub (struct.get $List $size (local.get $list)) (i32.const 1))
 		(ref.null $Value)
 	)
-
-	;; set this before adjusting, since there is no parallel in `$Dict.delete`
-	(struct.set $List $size (local.get $list) (i32.sub (struct.get $List $size (local.get $list)) (i32.const 1)))
-	(local.set $new-capacity (call $capacity-needed (call $List.count (local.get $list))))
-	(if (i32.ne (array.len (local.get $internal)) (local.get $new-capacity))
-		(then (call $List.adjust-capacity (local.get $list) (local.get $new-capacity)))
-	)
+	;; capacity adjustment does not occur here. only on insertion.
 
 	(local.get $item)
 )

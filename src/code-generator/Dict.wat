@@ -80,36 +80,29 @@
 				(then (local.get $index)   (local.get $prop))
 				(else (local.get $tombidx) (local.get $tombprop))
 			)))
-			;; else the current property is either a tombstone or a “live” property. compare the keys.
-			(else (if (i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
-				;; if the keys match, we have our result.
-				(then (return (local.get $index) (local.get $prop)))
-				;; else if the current property is a tombstone, store it, then continue the search.
-				(else
-					(if (call $Property.is-tombstone (local.get $prop))
-						(then
-							(local.set $tombidx  (local.get $index))
-							(local.set $tombprop (local.get $prop))
-						)
-					)
-					;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
-					(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
-					(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
-					(br $repeat)
-				)
-			))
 		)
+		;; if the keys match, we have our result.
+		(if (i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
+			(then (return (local.get $index) (local.get $prop)))
+		)
+		;; if the current property is a tombstone, store it, then continue the search.
+		(if (call $Property.is-tombstone (local.get $prop))
+			(then
+				(local.set $tombidx  (local.get $index))
+				(local.set $tombprop (local.get $prop))
+			)
+		)
+		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
+		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+		(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
+		(br $repeat)
 	)
 )
 
 
 
-;; Adjust a Dict’s internal array as needed.
-;; The number of entries in a Dict must not exceed its Load Factor: 87.5% (7/8) of its capacity.
-;; If the Dict’s size exceeds this percentage, a new array with double the capacity is allocated and assigned.
-;; Conversely, the number of entries in a Dict must not be less than 43.75% (7/16) of its capacity.
-;; If the Dict’s size falls below this minimum percentage, a new array with half the capacity is allocated and assigned.
-;; In either case, the Dict’s “live” (non-tombstone) properties are copied over to the new array,
+;; Reallocate a Dict’s internal array as needed, adjusting for size.
+;; Only the Dict’s “live” (non-tombstone) properties are copied over to the new array,
 ;; according to the usual key hashing and linear probing technique, and its size and count are updated.
 ;; There is no guarantee the entries’ positioning and/or order will be preserved.
 (func $Dict.adjust-capacity (param $dict (ref $Dict)) (param $capacity i32)
@@ -175,8 +168,8 @@
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
 	(if (ref.is_null (local.get $prop))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (call $Dict.count (local.get $dict)) (i32.const 1))))
-			(if (i32.ne (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
+			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
+			(if (i32.lt_u (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
 				(then
 					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
@@ -230,11 +223,7 @@
 			(struct.new_default $Value)
 		)
 	)
-	;; tombstones still contribute to the Dict’s size, so do not decrement it here. size will be recomputed on reallocation.
-	(local.set $new-capacity (call $capacity-needed (i32.sub (call $Dict.count (local.get $dict)) (i32.const 1))))
-	(if (i32.ne (array.len (local.get $internal)) (local.get $new-capacity))
-		(then (call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity)))
-	)
+	;; capacity adjustment does not occur here. only on insertion.
 
 	(local.get $prop)
 )
