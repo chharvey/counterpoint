@@ -9,7 +9,7 @@
 
 ;; type of entry in records/Dicts
 (type $Property (struct
-	(field $key   i32)
+	(field $key   i64)
 	(field $value (ref $Value))
 ))
 

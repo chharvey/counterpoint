@@ -100,7 +100,7 @@ export class CollectionDynamicGet extends Value {
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
 					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')),
-					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
+					cg.module.i64.extend_u(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
 				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Property)')])), 1));
 
 				return cg.module.block(null, [

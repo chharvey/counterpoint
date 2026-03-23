@@ -1,5 +1,5 @@
 ;; Get the value in a record at the given key.
-(func $Record.get (param $record (ref $Record)) (param $key i32) (result (ref $Value))
+(func $Record.get (param $record (ref $Record)) (param $key i64) (result (ref $Value))
 	;; the length of the given record. constant.
 	(local $ARRLEN i32)
 	;; tracks the number of loops. if it exceeds the array length, trap.
@@ -11,11 +11,11 @@
 
 	(local.set $ARRLEN     (array.len (local.get $record)))
 	(local.set $loop-count (i32.const 0))
-	(local.set $index      (call $mod (local.get $key) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index      (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $prop       (array.get $Record (local.get $record) (local.get $index)))
 
 	(loop $repeat
-		(if (i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
+		(if (i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
 			(then (return (struct.get $Property $value (local.get $prop))))
 			(else
 				(local.set $loop-count (i32.add (local.get $loop-count) (i32.const 1)))

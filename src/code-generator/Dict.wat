@@ -48,7 +48,7 @@
 ;; - when deleting:
 ;; 	- if null or a “tombstone” is returned, it means the key wasn’t found and the Dict was not mutated; *do not* change the Dict’s size
 ;; 	- if a non-null, “live” Property is returned, it was deleted from the Dict and replaced with a tombstone; *do not* change the Dict’s size (as tombstones are still counted)
-(func $Dict.find (param $dict (ref $Dict)) (param $key i32) (result i32 (ref null $Property))
+(func $Dict.find (param $dict (ref $Dict)) (param $key i64) (result i32 (ref null $Property))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
 	;; the length of the array. constant.
@@ -66,7 +66,7 @@
 
 	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
-	(local.set $index    (call $mod (local.get $key) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index    (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $prop     (array.get $DictInternal (local.get $internal) (local.get $index)))
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombprop (ref.null $Property))
@@ -82,7 +82,7 @@
 			)))
 		)
 		;; if the keys match, we have our result.
-		(if (i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
+		(if (i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
 			(then (return (local.get $index) (local.get $prop)))
 		)
 		;; if the current property is a tombstone, store it, then continue the search.
@@ -152,7 +152,7 @@
 
 ;; Set a Dict value given a key.
 ;; This method first reallocates if necessary, then adds the value.
-(func $Dict.set (param $dict (ref $Dict)) (param $key i32) (param $value (ref $Value))
+(func $Dict.set (param $dict (ref $Dict)) (param $key i64) (param $value (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
 	;; property at the specified index.
@@ -192,7 +192,7 @@
 ;; If a property with the given key exists, it is removed and returned;
 ;; otherwise null is returned and the Dict is not mutated.
 ;; This method removes the property first (if found), then reallocates if necessary.
-(func $Dict.delete (param $dict (ref $Dict)) (param $key i32) (result (ref null $Property))
+(func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Property))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
 	;; index of the found property in the internal array.
@@ -219,7 +219,7 @@
 		(local.get $internal)
 		(local.get $index)
 		(struct.new $Property
-			(i32.const -1)
+			(i64.const -1)
 			(struct.new_default $Value)
 		)
 	)
