@@ -104,12 +104,8 @@
 
 
 
-;; Adjust a Dict’s internal array as needed.
-;; The number of entries in a Dict must not exceed its Load Factor: 87.5% (7/8) of its capacity.
-;; If the Dict’s size exceeds this percentage, a new array with double the capacity is allocated and assigned.
-;; Conversely, the number of entries in a Dict must not be less than 43.75% (7/16) of its capacity.
-;; If the Dict’s size falls below this minimum percentage, a new array with half the capacity is allocated and assigned.
-;; In either case, the Dict’s “live” (non-tombstone) properties are copied over to the new array,
+;; Reallocate a Dict’s internal array as needed, adjusting for size.
+;; Only the Dict’s “live” (non-tombstone) properties are copied over to the new array,
 ;; according to the usual key hashing and linear probing technique, and its size and count are updated.
 ;; There is no guarantee the entries’ positioning and/or order will be preserved.
 (func $Dict.adjust-capacity (param $dict (ref $Dict)) (param $capacity i32)

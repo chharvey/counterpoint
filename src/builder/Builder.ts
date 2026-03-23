@@ -67,7 +67,7 @@ export class Builder {
 	/**
 	 * Load Factor for arrays.
 	 * The number of items (including tombstones) in a `$ListInternal`/`$DictInternal`
-	 * must be strictly less than this factor as a multiple of array length.
+	 * must not exceed this factor as a multiple of array length.
 	 */
 	static readonly #LOAD_FACTOR = 7 / 8;
 
@@ -229,7 +229,7 @@ export class Builder {
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity <= items.length / Builder.#LOAD_FACTOR) {
+		while (items.length > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
@@ -251,7 +251,7 @@ export class Builder {
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
-		while (capacity <= props.size / Builder.#LOAD_FACTOR) {
+		while (props.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
