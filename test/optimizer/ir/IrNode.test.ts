@@ -347,6 +347,7 @@ describe('IrNode', () => {
 					[x, 43, 44].[1 + 1];
 					list.[0];
 					list.[3];
+					list.[-1];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				const rt_value:         binaryen.Type = cg.getReftype('(ref $Value)');
@@ -402,6 +403,23 @@ describe('IrNode', () => {
 							mod.ref.is_null(mod.local.get(6, rt_n_value)),
 							genConst(cg),
 							mod.ref.as_non_null(mod.local.get(6, rt_n_value)),
+						),
+					], rt_value)),
+					// FIXME: negative indexes `-i` should access at `array.length - i`
+					mod.drop(mod.block(null, [
+						mod.local.set(7, mod.array.get(
+							mod.struct.get(
+								STRUCT_FIELD.LIST_INTERNAL,
+								mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+								rt_list_internal,
+							),
+							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, -1n)).primitiveValue).intValue),
+							rt_n_value,
+						)),
+						mod.if(
+							mod.ref.is_null(mod.local.get(7, rt_n_value)),
+							genConst(cg),
+							mod.ref.as_non_null(mod.local.get(7, rt_n_value)),
 						),
 					], rt_value)),
 				]);
