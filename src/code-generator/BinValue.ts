@@ -107,7 +107,7 @@ export class BinValue {
 		return this.cg.module.i32.eqz(this.isPrimitive);
 	}
 
-	/** The primitive value if it exists, otherwise a `(v128.const 0)`. */
+	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
 	public get primitiveValue(): binaryen.ExpressionRef {
 		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, this.value, binaryen.v128);
 	}

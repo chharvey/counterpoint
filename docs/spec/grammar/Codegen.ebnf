@@ -4,10 +4,10 @@ Codegen((NULL.CONST null))  := (v128.const i16x8 0 0 0 0x0001 0 0 0 0);
 Codegen((BOOL.CONST false)) := (v128.const i16x8 0 0 0 0x0002 0 0 0 0);
 Codegen((BOOL.CONST true))  := (v128.const i16x8 0 0 0 0x0003 0 0 0 0);
 
-Codegen((SYM.CONST   `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.id`));
-Codegen((INT.CONST   `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0018 0 0 0 0) (i64.const `v.data`));
-Codegen((NAT.CONST   `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.data`));
-Codegen((FLOAT.CONST `v`)) := (i32x4.replace_lane 3 (v128.const i16x8 0 0 0 0x0048 0 0 0 0) (i64.const `v.data`));
+Codegen((SYM.CONST   `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.id`));
+Codegen((INT.CONST   `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0018 0 0 0 0) (i64.const `v.data`));
+Codegen((NAT.CONST   `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.data`));
+Codegen((FLOAT.CONST `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0048 0 0 0 0) (i64.const `v.data`));
 
 // Codegen((STR.CONST `v`));
 
@@ -18,23 +18,23 @@ Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 Codegen((TUPLE.NEW)) := (struct.new $Value
 	(i32.const 1)
 	(v128.const i64x2 0 0)
-	(array.new_fixed $Tuple)
+	(array.new_fixed $Tuple 0)
 );
 Codegen((TUPLE.NEW `values`)) := (struct.new $Value
 	(i32.const 1)
 	(v128.const i64x2 0 0)
-	(array.new_fixed $Tuple `values.map(Codegen)`)
+	(array.new_fixed $Tuple `values.count` `values.map(Codegen)`)
 );
 
 Codegen((RECORD.NEW)) := (struct.new $Value
 	(i32.const 1)
 	(v128.const i64x2 0 0)
-	(array.new_fixed $Record)
+	(array.new_fixed $Record 0)
 );
 Codegen((RECORD.NEW `pairs`)) := (struct.new $Value
 	(i32.const 1)
 	(v128.const i64x2 0 0)
-	(array.new_fixed $Record `pairs.hashMap((struct.new $Property `pairs[i].0` `pairs[i].1`))`)
+	(array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i32.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
 );
 
 Codegen((LIST.NEW)) := (struct.new $Value
@@ -50,7 +50,7 @@ Codegen((LIST.NEW `values`)) := (struct.new $Value
 	(v128.const i64x2 0 0)
 	(struct.new $List
 		(i32.const `values.count`)
-		(array.new_fixed $ListInternal `values.pad(LeastPowerOf2GreaterThan(values.count), `(ref.null $Value)`).map(Codegen)`)
+		(array.new_fixed $ListInternal `CapacityNeeded(values.count)` `values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`)
 	)
 );
 
@@ -67,7 +67,7 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 	(v128.const i64x2 0 0)
 	(struct.new $Dict
 		(i32.const `pairs.count`)
-		(array.new_fixed $DictInternal `pairs.pad(LeastPowerOf2GreaterThan(pairs.count), `(ref.null $Property)`).hashMap((struct.new $Property (i32.const `pairs[i].0`) `Codegen(pairs[i].1)`))`)
+		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)` `pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property (i32.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
 	)
 );
 
@@ -90,7 +90,7 @@ Codegen((LIST.GET `obj` `accessor`)) := (block (result (ref $Value))
 		(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $primitive `Codegen(accessor)`)))
 	))
 	(if (result (ref $Value)) (ref.is_null (local.get $item))
-		(then `Codegen((NULL.CONST null))`)
+		(then `Codegen("(NULL.CONST null)")`)
 		(else (ref.as_non_null (local.get $item)))
 	)
 );
@@ -108,7 +108,7 @@ Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
 		(ref.is_null (local.get $maybe-prop))
 		(call $Property.is-tombstone (local.get $maybe-prop))
 	)
-		(then `Codegen((NULL.CONST null))`)
+		(then `Codegen("(NULL.CONST null)")`)
 		(else (struct.get $value (local.get $maybe-prop)))
 	)
 );
@@ -150,13 +150,13 @@ Codegen((LT  `v0` `v1`)) := (call $vlt `Codegen(v0)` `Codegen(v1)`);
 Codegen((GT  `v0` `v1`)) := (call $vgt `Codegen(v0)` `Codegen(v1)`);
 Codegen((LE  `v0` `v1`)) := (call $vle `Codegen(v0)` `Codegen(v1)`);
 Codegen((GE  `v0` `v1`)) := (call $vge `Codegen(v0)` `Codegen(v1)`);
-Codegen((NLT `v0` `v1`)) := `Codegen((NOT (LT `v0` `v1`)))`;
-Codegen((NGT `v0` `v1`)) := `Codegen((NOT (GT `v0` `v1`)))`;
+Codegen((NLT `v0` `v1`)) := `Codegen("(NOT (LT `v0` `v1`))")`;
+Codegen((NGT `v0` `v1`)) := `Codegen("(NOT (GT `v0` `v1`))")`;
 
 Codegen((ID  `v0` `v1`)) := (call $vid `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ  `v0` `v1`)) := (call $veq `Codegen(v0)` `Codegen(v1)`);
-Codegen((NID `v0` `v1`)) := `Codegen((NOT (ID `v0` `v1`)))`;
-Codegen((NEQ `v0` `v1`)) := `Codegen((NOT (EQ `v0` `v1`)))`;
+Codegen((NID `v0` `v1`)) := `Codegen("(NOT (ID `v0` `v1`))")`;
+Codegen((NEQ `v0` `v1`)) := `Codegen("(NOT (EQ `v0` `v1`))")`;
 
 // Codegen((PHI `pairs`));
 
