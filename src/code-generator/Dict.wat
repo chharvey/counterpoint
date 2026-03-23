@@ -80,25 +80,22 @@
 				(then (local.get $index)   (local.get $prop))
 				(else (local.get $tombidx) (local.get $tombprop))
 			)))
-			;; else the current property is either a tombstone or a “live” property. compare the keys.
-			(else (if (i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
-				;; if the keys match, we have our result.
-				(then (return (local.get $index) (local.get $prop)))
-				;; else if the current property is a tombstone, store it, then continue the search.
-				(else
-					(if (call $Property.is-tombstone (local.get $prop))
-						(then
-							(local.set $tombidx  (local.get $index))
-							(local.set $tombprop (local.get $prop))
-						)
-					)
-					;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
-					(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
-					(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
-					(br $repeat)
-				)
-			))
 		)
+		;; if the keys match, we have our result.
+		(if (i32.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
+			(then (return (local.get $index) (local.get $prop)))
+		)
+		;; if the current property is a tombstone, store it, then continue the search.
+		(if (call $Property.is-tombstone (local.get $prop))
+			(then
+				(local.set $tombidx  (local.get $index))
+				(local.set $tombprop (local.get $prop))
+			)
+		)
+		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
+		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+		(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
+		(br $repeat)
 	)
 )
 
