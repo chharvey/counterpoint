@@ -4,7 +4,6 @@ import * as xjs from 'extrajs';
 import {
 	BinValue,
 	type Builder,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -73,14 +72,14 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 			case TypeName.LIST: {
 				return cg.module.call('List.set', [
 					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
-					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
+					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
 			case TypeName.DICT: {
 				return cg.module.call('Dict.set', [
 					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
-					cg.module.i64.extend_u(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+					cg.module.i64.extend_u(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
 					this.value.codegen(cg),
 				], binaryen.none);
 			}

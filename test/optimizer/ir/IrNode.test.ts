@@ -10,7 +10,6 @@ import {
 	STRUCT_FIELD,
 	BinValue,
 	Builder,
-	BinVect,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {genConst} from '../../helpers.ts';
@@ -361,7 +360,7 @@ describe('IrNode', () => {
 								new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
+							mod.i32.wrap(new BinValue(cg, mod.local.get(3, rt_value)).interpret('intValue')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -377,7 +376,7 @@ describe('IrNode', () => {
 								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
+							mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('intValue')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -393,7 +392,7 @@ describe('IrNode', () => {
 								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 3n)).primitiveValue).intValue),
+							mod.i32.wrap(new BinValue(cg, genConst(cg, 3n)).interpret('intValue')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -410,7 +409,7 @@ describe('IrNode', () => {
 								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
-							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, -1n)).primitiveValue).intValue),
+							mod.i32.wrap(new BinValue(cg, genConst(cg, -1n)).interpret('intValue')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -438,7 +437,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
 							new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Dict)'),
-							mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
+							mod.i64.extend_u(new BinValue(cg, genConst(cg, Symbol(0x104))).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -452,7 +451,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
 							new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-							mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
+							mod.i64.extend_u(new BinValue(cg, genConst(cg, Symbol(0x101))).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -466,7 +465,7 @@ describe('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
 							new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-							mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
+							mod.i64.extend_u(new BinValue(cg, genConst(cg, Symbol(0x102))).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -666,17 +665,17 @@ describe('IrNode', () => {
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.call('List.set', [
 						new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)'),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
+						mod.i32.wrap(new BinValue(cg, mod.local.get(3, rt_value)).interpret('intValue')),
 						genConst(cg, 45n),
 					], binaryen.none),
 					mod.call('List.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
+						mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('intValue')),
 						genConst(cg, 46n),
 					], binaryen.none),
 					mod.call('List.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
-						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 2n)).primitiveValue).intValue),
+						mod.i32.wrap(new BinValue(cg, genConst(cg, 2n)).interpret('intValue')),
 						genConst(cg, 47n),
 					], binaryen.none),
 				]);
@@ -696,17 +695,17 @@ describe('IrNode', () => {
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.call('Dict.set', [
 						new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Dict)'),
-						mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
+						mod.i64.extend_u(new BinValue(cg, genConst(cg, Symbol(0x104))).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						genConst(cg, 45n),
 					], binaryen.none),
 					mod.call('Dict.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-						mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
+						mod.i64.extend_u(new BinValue(cg, genConst(cg, Symbol(0x101))).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						genConst(cg, 46n),
 					], binaryen.none),
 					mod.call('Dict.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-						mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
+						mod.i64.extend_u(new BinValue(cg, genConst(cg, Symbol(0x102))).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						genConst(cg, 47n),
 					], binaryen.none),
 				]);
