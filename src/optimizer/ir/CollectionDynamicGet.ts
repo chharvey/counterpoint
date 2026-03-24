@@ -80,7 +80,7 @@ export class CollectionDynamicGet extends Value {
 				const item: Local = cg.newLocal(cg.module.array.get(
 					cg.module.struct.get(
 						STRUCT_FIELD.LIST_INTERNAL,
-						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $List)')),
+						new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
 						cg.getReftype('(ref $ListInternal)'),
 					),
 					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
@@ -99,7 +99,7 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
-					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')),
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
 					cg.module.i64.extend_u(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
 				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Property)')])), 1));
 

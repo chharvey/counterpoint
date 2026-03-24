@@ -288,21 +288,20 @@ describe('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-			const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 				mod.drop(mod.array.get(
-					mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_tuple),
+					new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Tuple)'),
 					mod.i32.const(2),
 					rt_value,
 				)),
 				mod.drop(mod.array.get(
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_tuple),
+					new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Tuple)'),
 					mod.i32.const(0),
 					rt_value,
 				)),
 				mod.drop(mod.array.get(
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_tuple),
+					new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Tuple)'),
 					mod.i32.const(1),
 					rt_value,
 				)),
@@ -319,20 +318,19 @@ describe('IrNode', () => {
 				rec.b;
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
-			const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
-			const rt_record: binaryen.Type = cg.getReftype('(ref $Record)');
+			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 			return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 				mod.drop(mod.call('Record.get', [
-					mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_record),
+					new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Record)'),
 					mod.i64.const(0x103, 0), // TODO: `bigint_to_i64` unsigned
 				], rt_value)),
 				mod.drop(mod.call('Record.get', [
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
+					new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Record)'),
 					mod.i64.const(0x101, 0), // TODO: `bigint_to_i64` unsigned
 				], rt_value)),
 				mod.drop(mod.call('Record.get', [
-					mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_record),
+					new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Record)'),
 					mod.i64.const(0x102, 0), // TODO: `bigint_to_i64` unsigned
 				], rt_value)),
 			]);
@@ -352,7 +350,6 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				const rt_value:         binaryen.Type = cg.getReftype('(ref $Value)');
 				const rt_n_value:       binaryen.Type = cg.getReftype('(ref null $Value)');
-				const rt_list:          binaryen.Type = cg.getReftype('(ref $List)');
 				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)');
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
 				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
@@ -361,7 +358,7 @@ describe('IrNode', () => {
 						mod.local.set(4, mod.array.get(
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
-								mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_list),
+								new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
@@ -377,7 +374,7 @@ describe('IrNode', () => {
 						mod.local.set(5, mod.array.get(
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
-								mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
@@ -393,7 +390,7 @@ describe('IrNode', () => {
 						mod.local.set(6, mod.array.get(
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
-								mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 3n)).primitiveValue).intValue),
@@ -410,7 +407,7 @@ describe('IrNode', () => {
 						mod.local.set(7, mod.array.get(
 							mod.struct.get(
 								STRUCT_FIELD.LIST_INTERNAL,
-								mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 								rt_list_internal,
 							),
 							mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, -1n)).primitiveValue).intValue),
@@ -435,13 +432,12 @@ describe('IrNode', () => {
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				const rt_value:      binaryen.Type = cg.getReftype('(ref $Value)');
-				const rt_dict:       binaryen.Type = cg.getReftype('(ref $Dict)');
 				const rt_n_property: binaryen.Type = cg.getReftype('(ref null $Property)');
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
-							mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
+							new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Dict)'),
 							mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
@@ -455,7 +451,7 @@ describe('IrNode', () => {
 					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
-							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+							new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
 							mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
@@ -469,7 +465,7 @@ describe('IrNode', () => {
 					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
-							mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+							new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
 							mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
@@ -665,22 +661,21 @@ describe('IrNode', () => {
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-				const rt_list:  binaryen.Type = cg.getReftype('(ref $List)');
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
 				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.call('List.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_list),
+						new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)'),
 						mod.i32.wrap(new BinVect(mod, new BinValue(cg, mod.local.get(3, rt_value)).primitiveValue).intValue),
 						genConst(cg, 45n),
 					], binaryen.none),
 					mod.call('List.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 0n)).primitiveValue).intValue),
 						genConst(cg, 46n),
 					], binaryen.none),
 					mod.call('List.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_list),
+						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
 						mod.i32.wrap(new BinVect(mod, new BinValue(cg, genConst(cg, 2n)).primitiveValue).intValue),
 						genConst(cg, 47n),
 					], binaryen.none),
@@ -697,21 +692,20 @@ describe('IrNode', () => {
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-				const rt_dict:  binaryen.Type = cg.getReftype('(ref $Dict)');
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.call('Dict.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(2, rt_value)).compositeValue, rt_dict),
+						new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Dict)'),
 						mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x104))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						genConst(cg, 45n),
 					], binaryen.none),
 					mod.call('Dict.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
 						mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x101))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						genConst(cg, 46n),
 					], binaryen.none),
 					mod.call('Dict.set', [
-						mod.ref.cast(new BinValue(cg, mod.local.get(1, rt_value)).compositeValue, rt_dict),
+						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
 						mod.i64.extend_u(new BinVect(mod, new BinValue(cg, genConst(cg, Symbol(0x102))).primitiveValue).intValue), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						genConst(cg, 47n),
 					], binaryen.none),
