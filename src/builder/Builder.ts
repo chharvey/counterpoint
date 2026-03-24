@@ -29,7 +29,7 @@ type HeaptypeKey = (
 	| '$List'
 	| '$Dict'
 );
-type ReftypeKey = `(ref ${ 'null ' | '' }${ HeaptypeKey })`;
+type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' }` })`;
 
 
 
