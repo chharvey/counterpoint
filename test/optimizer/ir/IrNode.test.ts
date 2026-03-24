@@ -347,19 +347,14 @@ describe('IrNode', () => {
 					list.[-1];
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
-				const rt_value:         binaryen.Type = cg.getReftype('(ref $Value)');
-				const rt_n_value:       binaryen.Type = cg.getReftype('(ref null $Value)');
-				const rt_list_internal: binaryen.Type = cg.getReftype('(ref $ListInternal)');
+				const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
+				const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
 				mod.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
-							mod.struct.get(
-								STRUCT_FIELD.LIST_INTERNAL,
-								new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)'),
-								rt_list_internal,
-							),
+							cg.getListInternal(new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)')),
 							mod.i32.wrap(new BinValue(cg, mod.local.get(3, rt_value)).interpret('intValue')),
 							rt_n_value,
 						)),
@@ -371,11 +366,7 @@ describe('IrNode', () => {
 					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
-							mod.struct.get(
-								STRUCT_FIELD.LIST_INTERNAL,
-								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
-								rt_list_internal,
-							),
+							cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('intValue')),
 							rt_n_value,
 						)),
@@ -387,11 +378,7 @@ describe('IrNode', () => {
 					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
-							mod.struct.get(
-								STRUCT_FIELD.LIST_INTERNAL,
-								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
-								rt_list_internal,
-							),
+							cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, 3n)).interpret('intValue')),
 							rt_n_value,
 						)),
@@ -404,11 +391,7 @@ describe('IrNode', () => {
 					// FIXME: negative indexes `-i` should access at `array.length - i`
 					mod.drop(mod.block(null, [
 						mod.local.set(7, mod.array.get(
-							mod.struct.get(
-								STRUCT_FIELD.LIST_INTERNAL,
-								new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
-								rt_list_internal,
-							),
+							cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, -1n)).interpret('intValue')),
 							rt_n_value,
 						)),

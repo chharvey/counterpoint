@@ -77,11 +77,7 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(cg.module.array.get(
-					cg.module.struct.get(
-						STRUCT_FIELD.LIST_INTERNAL,
-						new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
-						cg.getReftype('(ref $ListInternal)'),
-					),
+					cg.getListInternal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)')),
 					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
 					cg.getReftype('(ref null $Value)'),
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design

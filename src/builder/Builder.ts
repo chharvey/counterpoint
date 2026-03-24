@@ -4,7 +4,10 @@ import * as path from 'node:path';
 import binaryen from 'binaryen';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {BinValue} from '../code-generator/index.ts';
+import {
+	STRUCT_FIELD,
+	BinValue,
+} from '../code-generator/index.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
 import type {
@@ -263,6 +266,16 @@ export class Builder {
 				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)'))),
 			),
 		], this.getHeaptype('$Dict'));
+	}
+
+	/** @return `(struct.get $List $internal <list>)` */
+	public getListInternal(list: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return this.module.struct.get(STRUCT_FIELD.LIST_INTERNAL, list, this.getReftype('(ref $ListInternal)'));
+	}
+
+	/** @return `(struct.get $Dict $internal <dict>)` */
+	public getDictInternal(dict: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return this.module.struct.get(STRUCT_FIELD.DICT_INTERNAL, dict, this.getReftype('(ref $DictInternal)'));
 	}
 
 	/**
