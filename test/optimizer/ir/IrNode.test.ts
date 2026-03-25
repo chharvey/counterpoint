@@ -694,5 +694,191 @@ describe('IrNode', () => {
 				]);
 			});
 		});
+
+		describe('CollectionDynamicCopy', () => {
+			describe('LIST.COPY', () => {
+				it('tuple argument.', () => {
+					const {opt, cg} = setupScript(`{
+						List.<int>((2, 3, 5));
+					}`, {lower: true, codegen: false, build: false});
+					const mod = cg.module;
+					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
+					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $Tuple)'));
+					return assertEqualBins(
+						opt.instructions[2].codegen(cg),
+						mod.block(null, [
+							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Tuple)')),
+							mod.array.copy(
+								cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+								mod.i32.const(0),
+								srcref_get,
+								mod.i32.const(0),
+								mod.array.len(srcref_get),
+							),
+						]),
+					);
+				});
+				it('List argument.', () => {
+					const {opt, cg} = setupScript(`{
+						List.<int>([2, 3, 5]);
+					}`, {lower: true, codegen: false, build: false});
+					const mod = cg.module;
+					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
+					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $ListInternal)'));
+					return assertEqualBins(
+						opt.instructions[2].codegen(cg),
+						mod.block(null, [
+							mod.local.set(2, cg.getListInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)'))),
+							mod.array.copy(
+								cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+								mod.i32.const(0),
+								srcref_get,
+								mod.i32.const(0),
+								mod.array.len(srcref_get),
+							),
+						]),
+					);
+				});
+				it('Set argument.', () => {
+					const {opt, cg} = setupScript(`{
+						List.<int>({2, 3, 5});
+					}`, {lower: true, codegen: false, build: false});
+					return assert.throws(() => opt.instructions.map((instr) => instr.codegen(cg)), /not yet supported/);
+				});
+			});
+			describe('DICT.COPY', () => {
+				it('tuple argument.', () => {
+					const {opt, cg} = setupScript(`{
+						Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
+					}`, {lower: true, codegen: false, build: false});
+					const mod = cg.module;
+					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+					const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
+					opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
+					const pairs_get: binaryen.ExpressionRef = mod.local.get(6, rt_tuple);
+					const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
+					const pair_get:  binaryen.ExpressionRef = mod.local.get(9, rt_tuple);
+					return assertEqualBins(
+						opt.instructions[5].codegen(cg),
+						mod.block(null, [
+							mod.local.set(5, new BinValue(cg, mod.local.get(4, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(6, new BinValue(cg, mod.local.get(3, rt_value)).cast('(ref $Tuple)')),
+							mod.block('exit-0', [
+								mod.local.set(7, mod.i32.const(0)),
+								mod.loop('repeat-0', mod.block(null, [
+									mod.br_if('exit-0', mod.i32.ge_u(mod.local.get(7, binaryen.i32), mod.array.len(pairs_get))),
+									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_value)),
+									mod.local.set(9, new BinValue(cg, mod.local.get(8, rt_value)).cast('(ref $Tuple)')),
+									mod.call('Dict.set', [
+										mod.local.get(5, cg.getReftype('(ref $Dict)')),
+										mod.i64.extend_u(new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+										mod.array.get(pair_get, mod.i32.const(1), rt_value),
+									], binaryen.none),
+									mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
+									mod.br('repeat-0'),
+								])),
+							]),
+						]),
+					);
+				});
+				it('record argument.', () => {
+					const {opt, cg} = setupScript(`{
+						Dict.<int>((a= 2, b= 3, c= 5));
+					}`, {lower: true, codegen: false, build: false});
+					const mod = cg.module;
+					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
+					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $Record)'));
+					return assertEqualBins(
+						opt.instructions[2].codegen(cg),
+						mod.block(null, [
+							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Record)')),
+							mod.array.copy(
+								cg.getDictInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
+								mod.i32.const(0),
+								srcref_get,
+								mod.i32.const(0),
+								mod.array.len(srcref_get),
+							),
+						]),
+					);
+				});
+				it('List argument.', () => {
+					const {opt, cg} = setupScript(`{
+						Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
+					}`, {lower: true, codegen: false, build: false});
+					const mod = cg.module;
+					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+					opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
+					const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.getReftype('(ref $ListInternal)'));
+					const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
+					const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.getReftype('(ref null $Value)'));
+					const pair_get:  binaryen.ExpressionRef = mod.local.get(9, cg.getReftype('(ref $Tuple)'));
+					return assertEqualBins(
+						opt.instructions[5].codegen(cg),
+						mod.block(null, [
+							mod.local.set(5, new BinValue(cg, mod.local.get(4, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(6, cg.getListInternal(new BinValue(cg, mod.local.get(3, rt_value)).cast('(ref $List)'))),
+							mod.block('exit-0', [
+								mod.local.set(7, mod.i32.const(0)),
+								mod.loop('repeat-0', mod.block(null, [
+									mod.br_if('exit-0', mod.i32.ge_u(mod.local.get(7, binaryen.i32), mod.array.len(pairs_get))),
+									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_value)),
+									mod.if(
+										mod.i32.eqz(mod.ref.is_null(item_get)),
+										mod.block(null, [
+											mod.local.set(9, new BinValue(cg, item_get).cast('(ref $Tuple)')),
+											mod.call('Dict.set', [
+												mod.local.get(5, cg.getReftype('(ref $Dict)')),
+												mod.i64.extend_u(new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+												mod.array.get(pair_get, mod.i32.const(1), rt_value),
+											], binaryen.none),
+										]),
+									),
+									mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
+									mod.br('repeat-0'),
+								])),
+							]),
+						]),
+					);
+				});
+				it('Dict argument.', () => {
+					const {opt, cg} = setupScript(`{
+						Dict.<int>([a= 2, b= 3, c= 5]);
+					}`, {lower: true, codegen: false, build: false});
+					const mod = cg.module;
+					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
+					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $DictInternal)'));
+					return assertEqualBins(
+						opt.instructions[2].codegen(cg),
+						mod.block(null, [
+							mod.local.set(2, cg.getDictInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)'))),
+							mod.array.copy(
+								cg.getDictInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
+								mod.i32.const(0),
+								srcref_get,
+								mod.i32.const(0),
+								mod.array.len(srcref_get),
+							),
+						]),
+					);
+				});
+				it('Set argument.', () => {
+					const {opt, cg} = setupScript(`{
+						Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
+					}`, {lower: true, codegen: false, build: false});
+					return assert.throws(() => opt.instructions.map((instr) => instr.codegen(cg)), /not yet supported/);
+				});
+				it('Map argument.', () => {
+					const {opt, cg} = setupScript(`{
+						Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
+					}`, {lower: true, codegen: false, build: false});
+					return assert.throws(() => opt.instructions.map((instr) => instr.codegen(cg)), /not yet supported/);
+				});
+			});
+		});
 	});
 });
