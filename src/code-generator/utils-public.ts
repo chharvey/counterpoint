@@ -12,13 +12,13 @@ export const STRUCT_FIELD = {
 	/** $Property.$value */
 	PROPERTY_VALUE: 1,
 
-	/** $List.$count */
-	LIST_COUNT:    0,
+	/** $List.$size */
+	LIST_SIZE:     0,
 	/** $List.$internal */
 	LIST_INTERNAL: 1,
 
-	/** $Dict.$count */
-	DICT_COUNT:    0,
+	/** $Dict.$size */
+	DICT_SIZE:     0,
 	/** $Dict.$internal */
 	DICT_INTERNAL: 1,
 } as const;

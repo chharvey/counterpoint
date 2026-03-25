@@ -124,4 +124,32 @@ export class BinValue {
 			this.value,
 		], this.cg.getHeaptype('$Property'));
 	}
+
+	/**
+	 * Extracts this value’s `$primitive` field
+	 * and interprets it as an `int`, `nat`, or `float`, depending on the argument.
+	 * This method does not test the value’s `$tag` field — it assumes its `$primitive` field is filled.
+	 * @param typekey the string key of the type to cast to; accessed on `BinVect`
+	 * @return        `({i64x2,f64x2}.extract_lane 1 (struct.get $Value $primitive <this>))`
+	 */
+	public interpret(typekey: 'specialValue' | 'intValue' | 'natValue' | 'floatValue'): binaryen.ExpressionRef {
+		// TODO: v0.5: remove these lines
+		if (typekey === 'specialValue') {
+			return this.cg.module.i16x8.extract_lane_u(new BinVect(this.cg.module, this.primitiveValue).vect, 3);
+		}
+		if (typekey === 'natValue') {
+			typekey = 'intValue';
+		}
+		return new BinVect(this.cg.module, this.primitiveValue)[typekey];
+	}
+
+	/**
+	 * Extracts this value’s `$composite` field and returns a `(ref.cast)` to the given reference type.
+	 * This method does not test the value’s `$tag` field — it assumes its `$composite` field is filled.
+	 * @param reftype the string key of the type to cast to
+	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
+	 */
+	public cast(reftype: Parameters<Builder['getReftype']>[0]): binaryen.ExpressionRef {
+		return this.cg.module.ref.cast(this.compositeValue, this.cg.getReftype(reftype));
+	}
 }

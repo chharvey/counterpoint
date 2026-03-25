@@ -41,7 +41,7 @@ export class RecordGet extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.module.call('Record.get', [
-			cg.module.ref.cast(new BinValue(cg, this.record.codegen(cg)).compositeValue, cg.getReftype('(ref $Record)')),
+			new BinValue(cg, this.record.codegen(cg)).cast('(ref $Record)'),
 			cg.module.i64.const(Number(this.accessor.keyid), 0), // TODO: v0.5: use `bigint_to_i64(this.cg.module, this.accessor.keyid, true)`
 		], cg.getReftype('(ref $Value)'));
 	}
