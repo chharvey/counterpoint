@@ -82,7 +82,7 @@ function set_pairs_as_props(cg: Builder, dict: Local, pairs: Local, check_null: 
 		pair.set(),
 		cg.module.call('Dict.set', [
 			dict.get(),
-			new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue'),
+			new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('natValue'),
 			cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
 		], binaryen.none),
 	];

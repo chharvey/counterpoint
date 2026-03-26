@@ -78,7 +78,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 			case TypeName.DICT: {
 				return cg.module.call('Dict.set', [
 					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
-					new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue'),
+					new BinValue(cg, this.accessor.codegen(cg)).interpret('natValue'),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
