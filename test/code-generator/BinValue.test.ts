@@ -32,7 +32,7 @@ describe('BinValue', () => {
 				new BinVect(mod, mod.i32.const(42)),
 				new BinVect(mod, mod.f64.const(4.2)),
 			], (binvect) => assertEqualBins(new BinValue(cg, binvect).value, mod.struct.new([
-				mod.i32.const(0),
+				mod.i32.const(1),
 				binvect.vect,
 				mod.ref.null(binaryen.eqref),
 			], cg.getHeaptype('$Value'))));
@@ -62,7 +62,7 @@ describe('BinValue', () => {
 					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 			], (composite) => assertEqualBins(new BinValue(cg, composite).value, mod.struct.new([
-				mod.i32.const(1),
+				mod.i32.const(2),
 				mod.v128.const(new Uint8Array(16)),
 				composite,
 			], cg.getHeaptype('$Value'))));
@@ -77,6 +77,7 @@ describe('BinValue', () => {
 
 	it('#isPrimitive', () => {
 		xjs.Array.forEachAggregated([
+			new BinValue(cg, null),
 			new BinValue(cg, new BinVect(mod, null)),
 			new BinValue(cg, new BinVect(mod, false)),
 			new BinValue(cg, new BinVect(mod, mod.i32.const(0x100))),
@@ -84,12 +85,13 @@ describe('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isPrimitive,
-			mod.i32.eqz(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false)),
+			mod.i32.eq(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false), mod.i32.const(1)),
 		));
 	});
 
 	it('#isComposite', () => {
 		xjs.Array.forEachAggregated([
+			new BinValue(cg, null),
 			new BinValue(cg, new BinVect(mod, null)),
 			new BinValue(cg, new BinVect(mod, false)),
 			new BinValue(cg, new BinVect(mod, mod.i32.const(0x100))),
@@ -97,7 +99,7 @@ describe('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isComposite,
-			mod.i32.eqz(binval.isPrimitive),
+			mod.i32.eq(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false), mod.i32.const(2)),
 		));
 	});
 

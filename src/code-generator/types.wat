@@ -2,7 +2,7 @@
 
 ;; WASM representation of a Counterpoint value
 (type $Value (struct
-	(field $tag       i8) ;; 0 = primitive, 1 = composite
+	(field $tag       i8) ;; 1 = primitive, 2 = composite
 	(field $primitive v128)
 	(field $composite eqref) ;; (ref null eq)
 ))
