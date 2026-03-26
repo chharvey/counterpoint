@@ -6,7 +6,6 @@ import {
 	BinValue,
 	type Builder,
 	type Local,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -77,12 +76,8 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(cg.module.array.get(
-					cg.module.struct.get(
-						STRUCT_FIELD.LIST_INTERNAL,
-						cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $List)')),
-						cg.getReftype('(ref $ListInternal)'),
-					),
-					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
+					cg.getListInternal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)')),
+					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
 					cg.getReftype('(ref null $Value)'),
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
 
@@ -98,8 +93,8 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
-					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')),
-					new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue,
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
+					new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue'),
 				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Property)')])), 1));
 
 				return cg.module.block(null, [

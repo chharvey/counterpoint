@@ -4,7 +4,6 @@ import * as xjs from 'extrajs';
 import {
 	BinValue,
 	type Builder,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -71,15 +70,15 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 		switch (this.name) {
 			case TypeName.LIST: {
 				return cg.module.call('List.set', [
-					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $List)')),
-					cg.module.i32.wrap(new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue),
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
+					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
 			case TypeName.DICT: {
 				return cg.module.call('Dict.set', [
-					cg.module.ref.cast(new BinValue(cg, this.collection.codegen(cg)).compositeValue, cg.getReftype('(ref $Dict)')),
-					new BinVect(cg.module, new BinValue(cg, this.accessor.codegen(cg)).primitiveValue).intValue,
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
+					new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue'),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
