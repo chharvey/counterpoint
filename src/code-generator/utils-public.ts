@@ -12,6 +12,11 @@ export const STRUCT_FIELD = {
 	/** $Property.$value */
 	PROPERTY_VALUE: 1,
 
+	/** $Case.$ant */
+	CASE_ANT: 0,
+	/** $Case.$con */
+	CASE_CON: 1,
+
 	/** $List.$size */
 	LIST_SIZE:     0,
 	/** $List.$internal */
@@ -21,4 +26,9 @@ export const STRUCT_FIELD = {
 	DICT_SIZE:     0,
 	/** $Dict.$internal */
 	DICT_INTERNAL: 1,
+
+	/** $Map.$size */
+	MAP_SIZE:     0,
+	/** $Map.$internal */
+	MAP_INTERNAL: 1,
 } as const;

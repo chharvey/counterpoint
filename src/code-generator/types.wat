@@ -12,6 +12,11 @@
 	(field $key   i64)
 	(field $value (ref $Value))
 ))
+;; type of entry in Maps
+(type $Case (struct
+	(field $ant (ref $Value))
+	(field $con (ref $Value))
+))
 
 
 
@@ -21,10 +26,11 @@
 
 
 
-;; ## List/Dict Internals: storage of items/properties
+;; ## Collection Internals: storage of items/properties
 ;; mutable to allow reassigning array entries, nullable because array can be sparse
 (type $ListInternal (array (mut (ref null $Value))))
 (type $DictInternal (array (mut (ref null $Property))))
+(type $MapInternal  (array (mut (ref null $Case))))
 
 
 
@@ -46,4 +52,12 @@
 	(field $size (mut i32))
 	;; the array of values; mutable to allow reallocation
 	(field $internal (mut (ref $DictInternal)))
+)))
+
+;; precursor to the `Map` class
+(type $Map (sub $Object (struct
+	;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
+	(field $size (mut i32))
+	;; the array of values; mutable to allow reallocation
+	(field $internal (mut (ref $MapInternal)))
 )))
