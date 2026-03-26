@@ -148,7 +148,7 @@ describe('build_tuple_like', () => {
 
 
 	describe('<VALUE.Value>', () => {
-		let builder: Builder = new Builder();
+		let builder: Builder; // eslint-disable-line @typescript-eslint/init-declarations
 
 		beforeEach(() => {
 			builder = new Builder();
@@ -384,7 +384,7 @@ describe('build_record_like', () => {
 
 
 	describe('<VALUE.Value>', () => {
-		let builder: Builder = new Builder();
+		let builder: Builder; // eslint-disable-line @typescript-eslint/init-declarations
 
 		beforeEach(() => {
 			builder = new Builder();
