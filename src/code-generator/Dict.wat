@@ -35,7 +35,7 @@
 
 
 ;; Find a Property in a Dict with the given key.
-;; If a Property with the key is found, returns the property and its matching index.
+;; If a Property with the key is found, returns the Property and its matching index.
 ;; Else, returns a null Property or tombstone with the index that the key hashes to.
 ;;
 ;; Useful for get, set, and delete operations:
@@ -58,7 +58,7 @@
 	;; property at the specified index.
 	(local $prop (ref null $Property))
 	;; the index and object of the first tombstone we’ve passed, if any.
-	;; if the key is not in the dict and `$tombprop` is set,
+	;; if the key is not in the Dict and `$tombprop` is set,
 	;; return it and `$tombidx` instead of the current prop and index of iteration.
 	;; this will tell callers of `$Dict.set` that we’re reusing a tombstone, so incrementing `$size` should not be done.
 	(local $tombidx  i32)
@@ -67,11 +67,11 @@
 	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
 	(local.set $index    (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
-	(local.set $prop     (array.get $DictInternal (local.get $internal) (local.get $index)))
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombprop (ref.null $Property))
 
 	(loop $repeat
+		(local.set $prop (array.get $DictInternal (local.get $internal) (local.get $index)))
 		;; if the current property is null, the key is definitely not in the Dict.
 		;; if we’ve passed a tombstone, return it and its index.
 		;; otherwise, return the current null property and its index.
@@ -94,7 +94,6 @@
 		)
 		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
 		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
-		(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
 		(br $repeat)
 	)
 )
@@ -152,7 +151,7 @@
 
 ;; Set a Dict value given a key.
 ;; This method first reallocates if necessary, then adds the value.
-(func $Dict.set (param $dict (ref $Dict)) (param $key i64) (param $value (ref $Value))
+(func $Dict.set (param $dict (ref $Dict)) (param $key i64) (param $val (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
 	;; property at the specified index.
@@ -182,17 +181,17 @@
 	)
 	(array.set $DictInternal (struct.get $Dict $internal (local.get $dict)) (local.get $index) (struct.new $Property
 		(local.get $key)
-		(local.get $value)
+		(local.get $val)
 	))
 )
 
 
 
-;; Delete a Dict property with the given key.
-;; If a property with the given key exists, it is removed and returned;
+;; Delete a Dict Property with the given key.
+;; If a Property with the given key exists, it is removed and its value is returned;
 ;; otherwise null is returned and the Dict is not mutated.
-;; This method removes the property first (if found), then reallocates if necessary.
-(func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Property))
+;; This method removes the Property first (if found), then reallocates if necessary.
+(func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Value))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
 	;; index of the found property in the internal array.
@@ -211,7 +210,7 @@
 		(ref.is_null (local.get $prop))
 		(call $Property.is-tombstone (local.get $prop))
 	)
-		(then (return (ref.null $Property)))
+		(then (return (ref.null $Value)))
 	)
 
 	;; replace the property with a tombstone
@@ -222,5 +221,5 @@
 	)
 	;; capacity adjustment does not occur here. only on insertion.
 
-	(local.get $prop)
+	(struct.get $Property $val (local.get $prop))
 )

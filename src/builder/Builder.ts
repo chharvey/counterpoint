@@ -305,8 +305,8 @@ export class Builder {
 		const i_property: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_property, [
-			/* $key */   Builder.newField(binaryen.i32),
-			/* $value */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+			/* $key */ Builder.newField(binaryen.i32),
+			/* $val */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		]);
 
 		/* (type $Tuple ...) */

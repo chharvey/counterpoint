@@ -8,9 +8,9 @@ export const STRUCT_FIELD = {
 	VALUE_COMPOSITE: 2,
 
 	/** $Property.$key */
-	PROPERTY_KEY:   0,
-	/** $Property.$value */
-	PROPERTY_VALUE: 1,
+	PROPERTY_KEY: 0,
+	/** $Property.$val */
+	PROPERTY_VAL: 1,
 
 	/** $Case.$ant */
 	CASE_ANT: 0,

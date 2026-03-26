@@ -109,7 +109,7 @@ Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
 		(call $Property.is-tombstone (local.get $maybe-prop))
 	)
 		(then `Codegen("(NULL.CONST null)")`)
-		(else (struct.get $value (local.get $maybe-prop)))
+		(else (struct.get $val (local.get $maybe-prop)))
 	)
 );
 

@@ -107,7 +107,7 @@ export class CollectionDynamicGet extends Value {
 							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
 						),
 						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
-						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VALUE, maybe_prop.get(), rt_value),
+						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), rt_value),
 					),
 				], rt_value);
 			}

@@ -428,7 +428,7 @@ describe('IrNode', () => {
 								mod.call('Property.is-tombstone', [mod.local.get(3, rt_n_property)], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.PROPERTY_VALUE, mod.local.get(3, rt_n_property), rt_value),
+							mod.struct.get(STRUCT_FIELD.PROPERTY_VAL, mod.local.get(3, rt_n_property), rt_value),
 						),
 					], rt_value)),
 					mod.drop(mod.block(null, [
@@ -442,7 +442,7 @@ describe('IrNode', () => {
 								mod.call('Property.is-tombstone', [mod.local.get(4, rt_n_property)], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.PROPERTY_VALUE, mod.local.get(4, rt_n_property), rt_value),
+							mod.struct.get(STRUCT_FIELD.PROPERTY_VAL, mod.local.get(4, rt_n_property), rt_value),
 						),
 					], rt_value)),
 					mod.drop(mod.block(null, [
@@ -456,7 +456,7 @@ describe('IrNode', () => {
 								mod.call('Property.is-tombstone', [mod.local.get(5, rt_n_property)], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.PROPERTY_VALUE, mod.local.get(5, rt_n_property), rt_value),
+							mod.struct.get(STRUCT_FIELD.PROPERTY_VAL, mod.local.get(5, rt_n_property), rt_value),
 						),
 					], rt_value)),
 				]);

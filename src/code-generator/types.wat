@@ -9,8 +9,8 @@
 
 ;; type of entry in records/Dicts
 (type $Property (struct
-	(field $key   i64)
-	(field $value (ref $Value))
+	(field $key i64)
+	(field $val (ref $Value))
 ))
 ;; type of entry in Maps
 (type $Case (struct
