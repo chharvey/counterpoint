@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinValue,
@@ -49,6 +49,10 @@ describe('Builder', () => {
 					genConst(cg, 3.3),
 				]),
 				cg.module.struct.new([
+					cg.module.block(null, [
+						cg.module.global.get('obj-ctr', binaryen.i64),
+						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), cg.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+					], binaryen.i64),
 					cg.module.i32.const(3),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$ListInternal'),
@@ -70,6 +74,10 @@ describe('Builder', () => {
 					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 				cg.module.struct.new([
+					cg.module.block(null, [
+						cg.module.global.get('obj-ctr', binaryen.i64),
+						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), cg.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+					], binaryen.i64),
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$DictInternal'),
@@ -257,6 +265,10 @@ describe('Builder', () => {
 					WASM_NULL,
 					WASM_NULL,
 				]].map((entries) => mod.struct.new([
+					cg.module.block(null, [
+						cg.module.global.get('obj-ctr', binaryen.i64),
+						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), cg.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+					], binaryen.i64),
 					mod.i32.const(3),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal'), entries),
 				], cg.getHeaptype('$Dict'))),

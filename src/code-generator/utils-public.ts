@@ -17,18 +17,21 @@ export const STRUCT_FIELD = {
 	/** $Case.$con */
 	CASE_CON: 1,
 
+	/** $Object.$id */
+	OBJECT_ID: 0,
+
 	/** $List.$size */
-	LIST_SIZE:     0,
+	LIST_SIZE:     1,
 	/** $List.$internal */
-	LIST_INTERNAL: 1,
+	LIST_INTERNAL: 2,
 
 	/** $Dict.$size */
-	DICT_SIZE:     0,
+	DICT_SIZE:     1,
 	/** $Dict.$internal */
-	DICT_INTERNAL: 1,
+	DICT_INTERNAL: 2,
 
 	/** $Map.$size */
-	MAP_SIZE:     0,
+	MAP_SIZE:     1,
 	/** $Map.$internal */
-	MAP_INTERNAL: 1,
+	MAP_INTERNAL: 2,
 } as const;

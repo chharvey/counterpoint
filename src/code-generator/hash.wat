@@ -109,9 +109,9 @@
 
 
 ;; hash an $Object.
-;; stub!
+;; Returns its id.
 (func $hash-Object (param $obj (ref $Object)) (result i64)
-	(i64.const 1)
+	(struct.get $Object $id (local.get $obj))
 )
 
 

@@ -242,6 +242,10 @@ export class Builder {
 			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
 		);
 		return this.module.struct.new([
+			this.module.block(null, [
+				this.module.global.get('obj-ctr', binaryen.i64),
+				this.module.global.set('obj-ctr', this.module.i64.add(this.module.global.get('obj-ctr', binaryen.i64), this.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+			], binaryen.i64),
 			this.module.i32.const(items.length),
 			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
 		], this.getHeaptype('$List'));
@@ -262,6 +266,10 @@ export class Builder {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.module.struct.new([
+			this.module.block(null, [
+				this.module.global.get('obj-ctr', binaryen.i64),
+				this.module.global.set('obj-ctr', this.module.i64.add(this.module.global.get('obj-ctr', binaryen.i64), this.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+			], binaryen.i64),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
 				this.getHeaptype('$DictInternal'),
@@ -361,13 +369,16 @@ export class Builder {
 		/* (type $Object ...) */
 		const i_object: number = type_count++;
 		tb.grow(1);
-		tb.setStructType(i_object, []);
+		tb.setStructType(i_object, [
+			/* $id */ Builder.newField(binaryen.i64),
+		]);
 		tb.setOpen(i_object);
 
 		/* (type $List ...) */
 		const i_list: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_list, [
+			/* $id */       Builder.newField(binaryen.i64),
 			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
 			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 		]);
@@ -378,6 +389,7 @@ export class Builder {
 		const i_dict: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_dict, [
+			/* $id */       Builder.newField(binaryen.i64),
 			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
 			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 		]);
@@ -489,6 +501,10 @@ export class Builder {
 			),
 		));
 	};
+
+	#setupGlobals(): void {
+		this.module.addGlobal('obj-ctr', binaryen.i64, true, this.module.i64.const(0, 0)); // TODO: v0.5: `bigint_to_i64`
+	}
 
 	#setupFunctions(): void {
 		this.module.addFunction('isnull', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => (
@@ -720,6 +736,7 @@ export class Builder {
 			binaryen.Features.GC
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
+		this.#setupGlobals();
 		this.#setupFunctions();
 		main?.call(null, this.module);
 		if (!this.module.validate()) {
