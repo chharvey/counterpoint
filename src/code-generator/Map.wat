@@ -1,8 +1,3 @@
-;; stub for hashing function
-(func $hash (param $val (ref $Value)) (result i64)
-	(i64.const 0)
-)
-
 ;; Returns the number of “live” elements in the Map.
 ;; “Live” elements are non-null, non-tombstone cases.
 (func $Map.count (param $map (ref $Map)) (result i32)

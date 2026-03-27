@@ -81,6 +81,7 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
