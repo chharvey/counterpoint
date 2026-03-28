@@ -92,6 +92,7 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
@@ -646,8 +647,10 @@ export class Builder {
 		})(this.module)], binaryen.v128));
 
 
-		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
+		const mod:       BinaryenModuleUpdates = this.module;
+		const rt_value:  binaryen.Type         = this.getReftype('(ref $Value)');
+		const rt_tuple:  binaryen.Type         = this.getReftype('(ref $Tuple)');
+		const rt_record: binaryen.Type         = this.getReftype('(ref $Record)');
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -732,7 +735,27 @@ export class Builder {
 					),
 				),
 			),
-			BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)), // TODO: handle identity of tuples/records
+			mod.if(
+				mod.ref.test(local_vals[0].compositeValue, rt_tuple),
+				BinVect.asBool(mod, mod.i32.and(
+					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
+					mod.call('Tuple.identical', [
+						mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
+						mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
+					], binaryen.i32),
+				)),
+				mod.if(
+					mod.ref.test(local_vals[0].compositeValue, rt_record),
+					BinVect.asBool(mod, mod.i32.and(
+						mod.ref.test(local_vals[1].compositeValue, rt_record),
+						mod.call('Record.identical', [
+							mod.ref.cast(local_vals[0].compositeValue, rt_record),
+							mod.ref.cast(local_vals[1].compositeValue, rt_record),
+						], binaryen.i32),
+					)),
+					BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)),
+				),
+			),
 		)).value);
 
 		this.module.addFunction('veq_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
