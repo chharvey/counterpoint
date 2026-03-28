@@ -764,7 +764,7 @@ export class Builder {
 				BinVect.asBool(mod, mod.i64.eq(local_vects[0].intValue, local_vects[1].intValue)), // `i64.eq` for ints gives the same result as `ID` operator
 				mod.if(
 					mod.i32.and(local_vects[0].isNat, local_vects[1].isNat),
-					BinVect.asBool(mod, mod.i64.eq(local_vects[0].natValue, local_vects[1].natValue)),
+					BinVect.asBool(mod, mod.i64.eq(local_vects[0].natValue, local_vects[1].natValue)), // `i64.eq` for nats gives the same result as `ID` operator
 					mod.if(
 						mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
 						BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
@@ -883,7 +883,7 @@ export class Builder {
 		this.#setupBinopComparative('vge_', mod.i64.ge_s.bind(null), mod.i64.ge_u.bind(null), mod.f64.ge.bind(null));
 		this.#setupBinopComparative('veqn', mod.i64.eq  .bind(null), mod.i64.eq  .bind(null), mod.f64.eq.bind(null));
 
-		this.module.addFunction('vid_', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
+		mod.addFunction('vid_', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
@@ -892,16 +892,20 @@ export class Builder {
 					mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
 					BinVect.asBool(mod, mod.i64.eq(local_vects[0].intValue, local_vects[1].intValue)), // `i64.eq` for ints gives the same result as `ID` operator
 					mod.if(
-						mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-						BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
-						new BinVect(mod, false).vect,
+						mod.i32.and(local_vects[0].isNat, local_vects[1].isNat),
+						BinVect.asBool(mod, mod.i64.eq(local_vects[0].natValue, local_vects[1].natValue)), // `i64.eq` for nats gives the same result as `ID` operator
+						mod.if(
+							mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
+							BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
+							new BinVect(mod, false).vect,
+						),
 					),
 				),
 			),
 			BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)), // TODO: handle identity of tuples/records
 		)).value);
 
-		this.module.addFunction('veq_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
+		mod.addFunction('veq_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
 				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
