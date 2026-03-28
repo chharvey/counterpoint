@@ -109,7 +109,7 @@ function set_pairs_as_props(cg: Builder, dict: Local, pairs: Local, check_null: 
 					)]
 					: item_is_non_null
 				),
-				i.set(cg.module.i32.add(i.get(), cg.module.i32.const(1))),
+				i.inc(),
 				cg.module.br(`repeat-${ block_n }`),
 			])),
 		]),

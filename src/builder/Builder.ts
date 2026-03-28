@@ -264,10 +264,7 @@ export class Builder {
 		);
 		const obj_ctr: Global = this.getGlobal('obj-ctr')!;
 		return this.module.struct.new([
-			this.module.block(null, [
-				obj_ctr.get(),
-				obj_ctr.set(this.module.i64.add(obj_ctr.get(), bigint_to_i64(this.module, 1n, true))),
-			], obj_ctr.type),
+			obj_ctr.plusPlus(),
 			this.module.i32.const(items.length),
 			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
 		], this.getHeaptype('$List'));
@@ -289,10 +286,7 @@ export class Builder {
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		const obj_ctr: Global = this.getGlobal('obj-ctr')!;
 		return this.module.struct.new([
-			this.module.block(null, [
-				obj_ctr.get(),
-				obj_ctr.set(this.module.i64.add(obj_ctr.get(), bigint_to_i64(this.module, 1n, true))),
-			], obj_ctr.type),
+			obj_ctr.plusPlus(),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
 				this.getHeaptype('$DictInternal'),
