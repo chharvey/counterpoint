@@ -12,9 +12,9 @@
 	(local.set $ARRLEN     (array.len (local.get $record)))
 	(local.set $loop-count (i32.const 0))
 	(local.set $index      (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
-	(local.set $prop       (array.get $Record (local.get $record) (local.get $index)))
 
 	(loop $repeat
+		(local.set $prop (array.get $Record (local.get $record) (local.get $index)))
 		(if (i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
 			(then (return (struct.get $Property $val (local.get $prop))))
 		)
@@ -25,7 +25,6 @@
 			(then (unreachable))
 		)
 		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
-		(local.set $prop  (array.get $Record (local.get $record) (local.get $index)))
 		(br $repeat)
 	)
 )
