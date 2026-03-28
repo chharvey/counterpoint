@@ -85,6 +85,7 @@ export class Builder {
 
 	private static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stubs.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
@@ -653,6 +654,7 @@ export class Builder {
 		] as const;
 		const local_vects = local_vals.map((binval) => new BinVect(mod, binval.primitiveValue));
 
+		/* Unary Operators */
 		mod.addFunction('isnull_', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
 			local_vals[0].isPrimitive,
 			local_vects[0].isSpecial(null),
@@ -695,6 +697,7 @@ export class Builder {
 			),
 		)).value);
 
+		/* Binary Operators */
 		mod.addFunction('vexp_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if( // TODO: v0.5: will be fixed in 'viexp'
 			mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
 			new BinValue(this, new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i32))).value,
@@ -710,6 +713,7 @@ export class Builder {
 		this.#setupBinopPrimitive('vge_',  mod.i32.ge_s .bind(null), mod.f64.ge .bind(null), true);
 		this.#setupBinopPrimitive('veqn',  mod.i32.eq   .bind(null), mod.f64.eq .bind(null), true);
 
+		mod.removeFunction('vid_'); // removes stub defined in `stubs.wat`
 		this.module.addFunction('vid_', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
@@ -740,6 +744,11 @@ export class Builder {
 			),
 			mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value), // TODO: handle equality of all composites
 		));
+
+
+		/* Utilities */
+		mod.removeFunction('bool-to-i32'); // removes stub defined in `stubs.wat`
+		mod.addFunction('bool-to-i32', rt_value, binaryen.i32, [], new BinVect(mod, local_vals[0].primitiveValue).isSpecial(true));
 	}
 
 	/**

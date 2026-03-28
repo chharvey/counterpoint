@@ -82,7 +82,7 @@
 			)))
 		)
 		;; if the antecedents match, we have our result.
-		(if (ref.eq (struct.get $Case $ant (local.get $case)) (local.get $ant)) ;; FIXME: use `vid_` created in Builder#setupFunctions
+		(if (call $bool-to-i32 (call $vid_ (struct.get $Case $ant (local.get $case)) (local.get $ant)))
 			(then (return (local.get $index) (local.get $case)))
 		)
 		;; if the current case is a tombstone, store it, then continue the search.
