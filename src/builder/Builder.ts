@@ -6,6 +6,7 @@ import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
 import {
 	STRUCT_FIELD,
+	Global,
 	BinValue,
 } from '../code-generator/index.ts';
 import {Local} from './Local.ts';
@@ -30,6 +31,14 @@ type HeaptypeKey = (
 	| '$Dict'
 );
 type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' }` })`;
+
+
+
+/** stub for v0.5 */
+export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = false): binaryen.ExpressionRef {
+	u;
+	return mod.i64.const(Number(value), 0);
+}
 
 
 
@@ -115,6 +124,9 @@ export class Builder {
 
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
+
+	/** A set containing data of WASM local variables. */
+	readonly #globals = new Set<Global>();
 
 	/** The Binaryen module to build upon building. */
 	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
@@ -204,6 +216,15 @@ export class Builder {
 	}
 
 	/**
+	 * Get the global with the given name in this CodeGenerator’s list, if it’s been added; else, return `undefined`.
+	 * @param  name the name of the global to get
+	 * @return      the global or `undefined`
+	 */
+	private getGlobal(name: string): Global | undefined {
+		return [...this.#globals].find((global) => global.name === name);
+	}
+
+	/**
 	 * Return a new `$Tuple` from items.
 	 * @param items items in the array; must be of type `(ref $Value)`
 	 * @return      `(array.new_fixed $Tuple <...items>)`
@@ -241,11 +262,12 @@ export class Builder {
 			new Array(capacity),
 			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
 		);
+		const obj_ctr: Global = this.getGlobal('obj-ctr')!;
 		return this.module.struct.new([
 			this.module.block(null, [
-				this.module.global.get('obj-ctr', binaryen.i64),
-				this.module.global.set('obj-ctr', this.module.i64.add(this.module.global.get('obj-ctr', binaryen.i64), this.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
-			], binaryen.i64),
+				obj_ctr.get(),
+				obj_ctr.set(this.module.i64.add(obj_ctr.get(), bigint_to_i64(this.module, 1n, true))),
+			], obj_ctr.type),
 			this.module.i32.const(items.length),
 			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
 		], this.getHeaptype('$List'));
@@ -265,11 +287,12 @@ export class Builder {
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
+		const obj_ctr: Global = this.getGlobal('obj-ctr')!;
 		return this.module.struct.new([
 			this.module.block(null, [
-				this.module.global.get('obj-ctr', binaryen.i64),
-				this.module.global.set('obj-ctr', this.module.i64.add(this.module.global.get('obj-ctr', binaryen.i64), this.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
-			], binaryen.i64),
+				obj_ctr.get(),
+				obj_ctr.set(this.module.i64.add(obj_ctr.get(), bigint_to_i64(this.module, 1n, true))),
+			], obj_ctr.type),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
 				this.getHeaptype('$DictInternal'),
@@ -503,7 +526,9 @@ export class Builder {
 	};
 
 	#setupGlobals(): void {
-		this.module.addGlobal('obj-ctr', binaryen.i64, true, this.module.i64.const(0, 0)); // TODO: v0.5: `bigint_to_i64`
+		const global = new Global(this.module, 'obj-ctr', bigint_to_i64(this.module, 0n, true), binaryen.i64, true);
+		this.#globals.add(global);
+		global.init();
 	}
 
 	#setupFunctions(): void {

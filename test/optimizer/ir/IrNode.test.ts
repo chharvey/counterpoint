@@ -28,6 +28,7 @@ describe('IrNode', () => {
 			const cg:   Builder         = new Builder();
 			goal.varCheck();
 			goal.typeCheck();
+			cg.setupModule();
 			'lower'   in opts && opts.lower   && goal.lower(opt);
 			'codegen' in opts && opts.codegen && opt.instructions.map((instr) => instr.codegen(cg));
 			return {goal, opt, cg};

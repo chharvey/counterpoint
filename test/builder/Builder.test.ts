@@ -2,6 +2,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinValue,
+	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
@@ -51,7 +52,7 @@ describe('Builder', () => {
 				cg.module.struct.new([
 					cg.module.block(null, [
 						cg.module.global.get('obj-ctr', binaryen.i64),
-						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), cg.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), bigint_to_i64(cg.module, 1n, true))),
 					], binaryen.i64),
 					cg.module.i32.const(3),
 					cg.module.array.new_fixed(
@@ -76,7 +77,7 @@ describe('Builder', () => {
 				cg.module.struct.new([
 					cg.module.block(null, [
 						cg.module.global.get('obj-ctr', binaryen.i64),
-						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), cg.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), bigint_to_i64(cg.module, 1n, true))),
 					], binaryen.i64),
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
@@ -94,7 +95,9 @@ describe('Builder', () => {
 			]],
 		]), (bins, description) => {
 			it(description, () => { // TODO: v0.5: tail call
-				const [actual, expected] = bins(new Builder());
+				const cg = new Builder();
+				cg.setupModule();
+				const [actual, expected] = bins(cg);
 				assertEqualBins(actual, expected);
 			});
 		});
@@ -141,6 +144,7 @@ describe('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
+			cg.setupModule();
 			return assertEqualBins(
 				[new Map([
 					// (a= 42, aa= false, b= 4.2); % (258, 261, 256)
@@ -216,6 +220,7 @@ describe('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
+			cg.setupModule();
 			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)'));
 			return assertEqualBins(
 				[new Map([
@@ -267,7 +272,7 @@ describe('Builder', () => {
 				]].map((entries) => mod.struct.new([
 					cg.module.block(null, [
 						cg.module.global.get('obj-ctr', binaryen.i64),
-						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), cg.module.i64.const(1, 0))), // TODO: v0.5: `bigint_to_i64`
+						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), bigint_to_i64(mod, 1n, true))),
 					], binaryen.i64),
 					mod.i32.const(3),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal'), entries),
