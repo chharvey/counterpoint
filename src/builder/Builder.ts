@@ -651,6 +651,8 @@ export class Builder {
 		const rt_value:  binaryen.Type         = this.getReftype('(ref $Value)');
 		const rt_tuple:  binaryen.Type         = this.getReftype('(ref $Tuple)');
 		const rt_record: binaryen.Type         = this.getReftype('(ref $Record)');
+		const rt_list:   binaryen.Type         = this.getReftype('(ref $List)');
+		const rt_dict:   binaryen.Type         = this.getReftype('(ref $Dict)');
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -758,6 +760,7 @@ export class Builder {
 			),
 		)).value);
 
+		mod.removeFunction('veq_'); // removes stub defined in `stubs.wat`
 		this.module.addFunction('veq_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
@@ -765,7 +768,47 @@ export class Builder {
 				mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value),
 				mod.call('veqn', [local_vals[0].value, local_vals[1].value], rt_value),
 			),
-			mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value), // TODO: handle equality of all composites
+			mod.if(
+				mod.ref.test(local_vals[0].compositeValue, rt_tuple),
+				new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
+					mod.call('Tuple.equal', [
+						mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
+						mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
+					], binaryen.i32),
+				))).value,
+				mod.if(
+					mod.ref.test(local_vals[0].compositeValue, rt_record),
+					new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+						mod.ref.test(local_vals[1].compositeValue, rt_record),
+						mod.call('Record.equal', [
+							mod.ref.cast(local_vals[0].compositeValue, rt_record),
+							mod.ref.cast(local_vals[1].compositeValue, rt_record),
+						], binaryen.i32),
+					))).value,
+					mod.if(
+						mod.ref.test(local_vals[0].compositeValue, rt_list),
+						new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+							mod.ref.test(local_vals[1].compositeValue, rt_list),
+							mod.call('List.equal', [
+								mod.ref.cast(local_vals[0].compositeValue, rt_list),
+								mod.ref.cast(local_vals[1].compositeValue, rt_list),
+							], binaryen.i32),
+						))).value,
+						mod.if(
+							mod.ref.test(local_vals[0].compositeValue, rt_dict),
+							new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+								mod.ref.test(local_vals[1].compositeValue, rt_dict),
+								mod.call('Dict.equal', [
+									mod.ref.cast(local_vals[0].compositeValue, rt_dict),
+									mod.ref.cast(local_vals[1].compositeValue, rt_dict),
+								], binaryen.i32),
+							))).value,
+							mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value), // TODO: Set.equal, Map.equal
+						),
+					),
+				),
+			),
 		));
 
 

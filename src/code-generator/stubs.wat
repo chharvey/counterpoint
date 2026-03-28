@@ -10,6 +10,12 @@
 
 
 
+(func $veq_ (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+	(unreachable)
+)
+
+
+
 (func $bool-to-i32 (param $arg0 (ref $Value)) (result i32)
 	(unreachable)
 )

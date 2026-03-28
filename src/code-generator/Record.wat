@@ -86,3 +86,38 @@
 	)
 	(i32.const 1)
 )
+
+
+
+;; Returns whether two records are equal —
+;; whether they have equal values at the same keys.
+(func $Record.equal (param $record0 (ref $Record)) (param $record1 (ref $Record)) (result i32)
+	(local $i    i32)
+	(local $prop (ref $Property))
+	(local $key  i64)
+
+	(if (i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
+		(then (return (i32.const 0)))
+	)
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record0))))
+			(local.set $prop (array.get $Record (local.get $record0) (local.get $i)))
+			(local.set $key  (struct.get $Property $key (local.get $prop)))
+			(if (i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
+				(then (return (i32.const 0)))
+			)
+			(if (i32.eqz (call $bool-to-i32 (call $veq_
+				(struct.get $Property $val (local.get $prop))
+				(call $Record.get (local.get $record1) (local.get $key))
+			)))
+				(then (return (i32.const 0)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
+)
