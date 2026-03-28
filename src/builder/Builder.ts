@@ -738,23 +738,23 @@ export class Builder {
 				),
 			),
 			mod.if(
-				mod.ref.test(local_vals[0].compositeValue, rt_tuple),
-				BinVect.asBool(mod, mod.i32.and(
+				mod.i32.and(
+					mod.ref.test(local_vals[0].compositeValue, rt_tuple),
 					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
-					mod.call('Tuple.identical', [
-						mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
-						mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
-					], binaryen.i32),
-				)),
+				),
+				BinVect.asBool(mod, mod.call('Tuple.identical', [
+					mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
+					mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
+				], binaryen.i32)),
 				mod.if(
-					mod.ref.test(local_vals[0].compositeValue, rt_record),
-					BinVect.asBool(mod, mod.i32.and(
+					mod.i32.and(
+						mod.ref.test(local_vals[0].compositeValue, rt_record),
 						mod.ref.test(local_vals[1].compositeValue, rt_record),
-						mod.call('Record.identical', [
-							mod.ref.cast(local_vals[0].compositeValue, rt_record),
-							mod.ref.cast(local_vals[1].compositeValue, rt_record),
-						], binaryen.i32),
-					)),
+					),
+					BinVect.asBool(mod, mod.call('Record.identical', [
+						mod.ref.cast(local_vals[0].compositeValue, rt_record),
+						mod.ref.cast(local_vals[1].compositeValue, rt_record),
+					], binaryen.i32)),
 					BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)),
 				),
 			),
@@ -769,41 +769,41 @@ export class Builder {
 				mod.call('veqn', [local_vals[0].value, local_vals[1].value], rt_value),
 			),
 			mod.if(
-				mod.ref.test(local_vals[0].compositeValue, rt_tuple),
-				new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+				mod.i32.and(
+					mod.ref.test(local_vals[0].compositeValue, rt_tuple),
 					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
-					mod.call('Tuple.equal', [
-						mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
-						mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
-					], binaryen.i32),
-				))).value,
+				),
+				new BinValue(this, BinVect.asBool(mod, mod.call('Tuple.equal', [
+					mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
+					mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
+				], binaryen.i32))).value,
 				mod.if(
-					mod.ref.test(local_vals[0].compositeValue, rt_record),
-					new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+					mod.i32.and(
+						mod.ref.test(local_vals[0].compositeValue, rt_record),
 						mod.ref.test(local_vals[1].compositeValue, rt_record),
-						mod.call('Record.equal', [
-							mod.ref.cast(local_vals[0].compositeValue, rt_record),
-							mod.ref.cast(local_vals[1].compositeValue, rt_record),
-						], binaryen.i32),
-					))).value,
+					),
+					new BinValue(this, BinVect.asBool(mod, mod.call('Record.equal', [
+						mod.ref.cast(local_vals[0].compositeValue, rt_record),
+						mod.ref.cast(local_vals[1].compositeValue, rt_record),
+					], binaryen.i32))).value,
 					mod.if(
-						mod.ref.test(local_vals[0].compositeValue, rt_list),
-						new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+						mod.i32.and(
+							mod.ref.test(local_vals[0].compositeValue, rt_list),
 							mod.ref.test(local_vals[1].compositeValue, rt_list),
-							mod.call('List.equal', [
-								mod.ref.cast(local_vals[0].compositeValue, rt_list),
-								mod.ref.cast(local_vals[1].compositeValue, rt_list),
-							], binaryen.i32),
-						))).value,
+						),
+						new BinValue(this, BinVect.asBool(mod, mod.call('List.equal', [
+							mod.ref.cast(local_vals[0].compositeValue, rt_list),
+							mod.ref.cast(local_vals[1].compositeValue, rt_list),
+						], binaryen.i32))).value,
 						mod.if(
-							mod.ref.test(local_vals[0].compositeValue, rt_dict),
-							new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+							mod.i32.and(
+								mod.ref.test(local_vals[0].compositeValue, rt_dict),
 								mod.ref.test(local_vals[1].compositeValue, rt_dict),
-								mod.call('Dict.equal', [
-									mod.ref.cast(local_vals[0].compositeValue, rt_dict),
-									mod.ref.cast(local_vals[1].compositeValue, rt_dict),
-								], binaryen.i32),
-							))).value,
+							),
+							new BinValue(this, BinVect.asBool(mod, mod.call('Dict.equal', [
+								mod.ref.cast(local_vals[0].compositeValue, rt_dict),
+								mod.ref.cast(local_vals[1].compositeValue, rt_dict),
+							], binaryen.i32))).value,
 							mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value), // TODO: Set.equal, Map.equal
 						),
 					),
