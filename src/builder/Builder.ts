@@ -187,7 +187,7 @@ export class Builder {
 	}
 
 	/**
-	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `null`.
+	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `undefined`.
 	 * @param  id the schema of the local to get
 	 * @return    the local or `undefined`
 	 */
