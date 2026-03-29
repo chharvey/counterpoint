@@ -135,7 +135,16 @@ describe('IrNode', () => {
 					])).value,
 				);
 			});
-			it('LIST.NEW', () => {
+			it('empty LIST.NEW', () => {
+				const {goal, opt, cg} = setupScript(`{
+					[];
+				}`, {lower: true, codegen: true, build: false});
+				return assertEqualBins(
+					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
+					new BinValue(cg, cg.codegenList()).value,
+				);
+			});
+			it('nonempty LIST.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					[x, 4.2, (null,), x/2, @e];
@@ -222,7 +231,16 @@ describe('IrNode', () => {
 		});
 
 		describe('DictNew', () => {
-			it('DICT.NEW', () => {
+			it('empty DICT.NEW', () => {
+				// there exists no syntax for empty Dicts, so constructing it manually
+				const cg = new Builder();
+				cg.setupModule();
+				return assertEqualBins(
+					new IR.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
+					new BinValue(cg, cg.codegenDict()).value,
+				);
+			});
+			it('nonempty DICT.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
@@ -281,7 +299,7 @@ describe('IrNode', () => {
 
 		describe('MapNew', () => {
 			it('empty MAP.NEW', () => {
-				// there exists no syntax for empty maps, so constructing it manually
+				// there exists no syntax for empty Maps, so constructing it manually
 				const cg = new Builder();
 				cg.setupModule();
 				return assert.strictEqual(

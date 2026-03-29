@@ -27,6 +27,10 @@ describe('Builder', () => {
 			], binaryen.i64);
 		}
 		xjs.Map.forEachAggregated(new Map<string, (cg: Builder) => [binaryen.ExpressionRef, binaryen.ExpressionRef]>([
+			['empty `#codegenTuple`.', (cg) => [
+				cg.codegenTuple(),
+				cg.module.array.new_fixed(cg.getHeaptype('$Tuple'), []),
+			]],
 			['`#codegenTuple` returns (array.new_fixed).', (cg) => [
 				cg.codegenTuple([
 					genConst(cg, true),
@@ -36,6 +40,10 @@ describe('Builder', () => {
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
+			]],
+			['empty `#codegenRecord`.', (cg) => [
+				cg.codegenRecord(),
+				cg.module.array.new_fixed(cg.getHeaptype('$Record'), []),
 			]],
 			['`#codegenRecord` returns (array.new_fixed).', (cg) => [
 				cg.codegenRecord(new Map([
@@ -48,6 +56,17 @@ describe('Builder', () => {
 					new BinValue(cg, genConst(cg, true)).toProperty(0x100n),
 					new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n),
 				]),
+			]],
+			['empty `#codegenList`.', (cg) => [
+				cg.codegenList(),
+				cg.module.struct.new([
+					obj_ctr_plus_plus(cg.module),
+					cg.module.i32.const(0),
+					cg.module.array.new_fixed(
+						cg.getHeaptype('$ListInternal'),
+						repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 8),
+					),
+				], cg.getHeaptype('$List')),
 			]],
 			['`#codegenList` returns (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenList([
@@ -68,6 +87,17 @@ describe('Builder', () => {
 						],
 					),
 				], cg.getHeaptype('$List')),
+			]],
+			['empty `#codegenDict`.', (cg) => [
+				cg.codegenDict(),
+				cg.module.struct.new([
+					obj_ctr_plus_plus(cg.module),
+					cg.module.i32.const(0),
+					cg.module.array.new_fixed(
+						cg.getHeaptype('$DictInternal'),
+						repeat(cg.module.ref.null(cg.getReftype('(ref null $Property)')), 8),
+					),
+				], cg.getHeaptype('$Dict')),
 			]],
 			['`#codegenDict` (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenDict(new Map([
@@ -93,6 +123,21 @@ describe('Builder', () => {
 					),
 				], cg.getHeaptype('$Dict')),
 			]],
+			['empty `#codegenMap`.', (cg) => {
+				const mod = cg.module;
+				const rt_map: binaryen.Type = cg.getReftype('(ref $Map)');
+				return [
+					cg.codegenMap(),
+					mod.block(null, [
+						mod.local.set(0, mod.struct.new([
+							obj_ctr_plus_plus(mod),
+							mod.i32.const(0),
+							mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
+						], cg.getHeaptype('$Map'))),
+						mod.local.get(0, rt_map),
+					], rt_map),
+				];
+			}],
 			['`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', (cg) => {
 				const mod = cg.module;
 				const rt_map:  binaryen.Type          = cg.getReftype('(ref $Map)');
