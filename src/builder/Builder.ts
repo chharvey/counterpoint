@@ -298,6 +298,24 @@ export class Builder {
 		], this.getHeaptype('$Dict'));
 	}
 
+	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		let capacity: number = 8;
+		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
+			capacity *= 2;
+		}
+		const rt_map: binaryen.Type = this.getReftype('(ref $Map)');
+		const map: Local = this.newLocal(this.module.struct.new([
+			this.getGlobal('obj-ctr')!.plusPlus(),
+			this.module.i32.const(cases.size),
+			this.module.array.new_default(this.getHeaptype('$MapInternal'), this.module.i32.const(capacity)),
+		], this.getHeaptype('$Map')), rt_map);
+		return this.module.block(null, [
+			map.set(),
+			...[...cases].map(([ant, con]) => this.module.call('Map.set', [map.get(), ant, con], binaryen.none)),
+			map.get(),
+		], rt_map);
+	}
+
 	/** @return `(struct.get $List $internal <list>)` */
 	public getListInternal(list: binaryen.ExpressionRef): binaryen.ExpressionRef {
 		return this.module.struct.get(STRUCT_FIELD.LIST_INTERNAL, list, this.getReftype('(ref $ListInternal)'));

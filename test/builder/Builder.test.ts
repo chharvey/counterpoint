@@ -93,6 +93,33 @@ describe('Builder', () => {
 					),
 				], cg.getHeaptype('$Dict')),
 			]],
+			['`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', (cg) => {
+				const mod = cg.module;
+				const rt_map:  binaryen.Type          = cg.getReftype('(ref $Map)');
+				const map_get: binaryen.ExpressionRef = mod.local.get(0, rt_map);
+				return [
+					cg.codegenMap(new Map([
+						[genConst(cg, 10n), genConst(cg, 1.1)],
+						[genConst(cg, 20n), genConst(cg, 2.2)],
+						[genConst(cg, 30n), genConst(cg, 3.3)],
+						[genConst(cg, 40n), genConst(cg, 4.4)],
+						[genConst(cg, 50n), genConst(cg, 5.5)],
+					])),
+					mod.block(null, [
+						mod.local.set(0, mod.struct.new([
+							obj_ctr_plus_plus(mod),
+							mod.i32.const(5),
+							mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
+						], cg.getHeaptype('$Map'))),
+						mod.call('Map.set', [map_get, genConst(cg, 10n), genConst(cg, 1.1)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 20n), genConst(cg, 2.2)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 30n), genConst(cg, 3.3)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 40n), genConst(cg, 4.4)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 50n), genConst(cg, 5.5)], binaryen.none),
+						map_get,
+					], rt_map),
+				];
+			}],
 		]), (bins, description) => {
 			it(description, () => { // TODO: v0.5: tail call
 				const cg = new Builder();
