@@ -20,6 +20,12 @@ describe('Builder', () => {
 
 
 	describe('#codegen*', () => {
+		function obj_ctr_plus_plus(mod: Builder['module']): binaryen.ExpressionRef {
+			return mod.block(null, [
+				mod.global.get('obj-ctr', binaryen.i64),
+				mod.global.set('obj-ctr', mod.i64.add(mod.global.get('obj-ctr', binaryen.i64), bigint_to_i64(mod, 1n, true))),
+			], binaryen.i64);
+		}
 		xjs.Map.forEachAggregated(new Map<string, (cg: Builder) => [binaryen.ExpressionRef, binaryen.ExpressionRef]>([
 			['`#codegenTuple` returns (array.new_fixed).', (cg) => [
 				cg.codegenTuple([
@@ -43,17 +49,14 @@ describe('Builder', () => {
 					new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n),
 				]),
 			]],
-			['`#codegenList` returns (struct.new) with count and internal array.', (cg) => [
+			['`#codegenList` returns (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenList([
 					genConst(cg, 1.1),
 					genConst(cg, 2.2),
 					genConst(cg, 3.3),
 				]),
 				cg.module.struct.new([
-					cg.module.block(null, [
-						cg.module.global.get('obj-ctr', binaryen.i64),
-						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), bigint_to_i64(cg.module, 1n, true))),
-					], binaryen.i64),
+					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(3),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$ListInternal'),
@@ -66,7 +69,7 @@ describe('Builder', () => {
 					),
 				], cg.getHeaptype('$List')),
 			]],
-			['`#codegenDict` (struct.new) with count and internal array.', (cg) => [
+			['`#codegenDict` (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenDict(new Map([
 					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
 					[0x107n, new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n)],
@@ -75,10 +78,7 @@ describe('Builder', () => {
 					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 				cg.module.struct.new([
-					cg.module.block(null, [
-						cg.module.global.get('obj-ctr', binaryen.i64),
-						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), bigint_to_i64(cg.module, 1n, true))),
-					], binaryen.i64),
+					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$DictInternal'),

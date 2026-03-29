@@ -267,9 +267,8 @@ export class Builder {
 			new Array(capacity),
 			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
 		);
-		const obj_ctr: Global = this.getGlobal('obj-ctr')!;
 		return this.module.struct.new([
-			obj_ctr.plusPlus(),
+			this.getGlobal('obj-ctr')!.plusPlus(),
 			this.module.i32.const(items.length),
 			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
 		], this.getHeaptype('$List'));
@@ -289,9 +288,8 @@ export class Builder {
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		const obj_ctr: Global = this.getGlobal('obj-ctr')!;
 		return this.module.struct.new([
-			obj_ctr.plusPlus(),
+			this.getGlobal('obj-ctr')!.plusPlus(),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
 				this.getHeaptype('$DictInternal'),
