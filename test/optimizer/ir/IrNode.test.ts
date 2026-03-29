@@ -47,9 +47,7 @@ describe('IrNode', () => {
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
 
 			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ {42, 43, 44}.[42]; }',                               {lower: true, codegen: false, build: false}).opt.instructions[1], // (SET.GET)
 				setupScript('{ {42, 43, 44}.[42]                       = false; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (SET.SET)
-				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1]; }',         {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.GET)
 				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1] = 43; }',    {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.SET)
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
@@ -527,6 +525,94 @@ describe('IrNode', () => {
 							),
 							genConst(cg),
 							mod.struct.get(STRUCT_FIELD.PROPERTY_VAL, mod.local.get(5, rt_n_property), rt_value),
+						),
+					], rt_value)),
+				]);
+			});
+			it('SET.GET', () => {
+				const {opt, cg} = setupScript(`{
+					val 'set': {float} = {4.2, 2.4};
+					'set'.[4.2];
+					'set'.[3.3];
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_value:     binaryen.Type          = cg.getReftype('(ref $Value)');
+				const rt_n_case:    binaryen.Type          = cg.getReftype('(ref null $Case)');
+				const base:         binaryen.ExpressionRef = mod.local.get(1, rt_value); // index 0 = map setup (implementation of Set)
+				const maybe_case_0: binaryen.ExpressionRef = mod.local.get(2, rt_n_case);
+				const maybe_case_1: binaryen.ExpressionRef = mod.local.get(3, rt_n_case);
+				opt.instructions[0].codegen(cg);
+				return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
+					mod.drop(mod.block(null, [
+						mod.local.set(2, mod.tuple.extract(mod.call('Map.find', [
+							new BinValue(cg, base).cast('(ref $Map)'),
+							genConst(cg, 4.2),
+						], binaryen.createType([binaryen.i32, rt_n_case])), 1)),
+						mod.if(
+							mod.i32.or(
+								mod.ref.is_null(maybe_case_0),
+								mod.call('Case.is-tombstone', [maybe_case_0], binaryen.i32),
+							),
+							genConst(cg, false),
+							genConst(cg, true),
+						),
+					], rt_value)),
+					mod.drop(mod.block(null, [
+						mod.local.set(3, mod.tuple.extract(mod.call('Map.find', [
+							new BinValue(cg, base).cast('(ref $Map)'),
+							genConst(cg, 3.3),
+						], binaryen.createType([binaryen.i32, rt_n_case])), 1)),
+						mod.if(
+							mod.i32.or(
+								mod.ref.is_null(maybe_case_1),
+								mod.call('Case.is-tombstone', [maybe_case_1], binaryen.i32),
+							),
+							genConst(cg, false),
+							genConst(cg, true),
+						),
+					], rt_value)),
+				]);
+			});
+			it('MAP.GET', () => {
+				const {opt, cg} = setupScript(`{
+					val map: {float -> int} = {4.2 -> 42, 2.4 -> 24};
+					map.[4.2];
+					map.[3.3];
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_value:     binaryen.Type          = cg.getReftype('(ref $Value)');
+				const rt_n_case:    binaryen.Type          = cg.getReftype('(ref null $Case)');
+				const base:         binaryen.ExpressionRef = mod.local.get(1, rt_value); // index 0 = map setup
+				const maybe_case_0: binaryen.ExpressionRef = mod.local.get(2, rt_n_case);
+				const maybe_case_1: binaryen.ExpressionRef = mod.local.get(3, rt_n_case);
+				opt.instructions[0].codegen(cg);
+				return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
+					mod.drop(mod.block(null, [
+						mod.local.set(2, mod.tuple.extract(mod.call('Map.find', [
+							new BinValue(cg, base).cast('(ref $Map)'),
+							genConst(cg, 4.2),
+						], binaryen.createType([binaryen.i32, rt_n_case])), 1)),
+						mod.if(
+							mod.i32.or(
+								mod.ref.is_null(maybe_case_0),
+								mod.call('Case.is-tombstone', [maybe_case_0], binaryen.i32),
+							),
+							genConst(cg),
+							mod.struct.get(STRUCT_FIELD.CASE_CON, maybe_case_0, rt_value),
+						),
+					], rt_value)),
+					mod.drop(mod.block(null, [
+						mod.local.set(3, mod.tuple.extract(mod.call('Map.find', [
+							new BinValue(cg, base).cast('(ref $Map)'),
+							genConst(cg, 3.3),
+						], binaryen.createType([binaryen.i32, rt_n_case])), 1)),
+						mod.if(
+							mod.i32.or(
+								mod.ref.is_null(maybe_case_1),
+								mod.call('Case.is-tombstone', [maybe_case_1], binaryen.i32),
+							),
+							genConst(cg),
+							mod.struct.get(STRUCT_FIELD.CASE_CON, maybe_case_1, rt_value),
 						),
 					], rt_value)),
 				]);

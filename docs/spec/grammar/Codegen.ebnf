@@ -162,8 +162,41 @@ Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
 	)
 );
 
-// Codegen((SET.GET  `obj` `accessor`));
-// Codegen((MAP.GET  `obj` `accessor`));
+Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(drop
+		(local.set $maybe-case
+			(call $Map.find
+				(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+				`Codegen(accessor)`
+			)
+		)
+	)
+	(if (result (ref $Value)) (i32.or
+		(ref.is_null (local.get $maybe-case))
+		(call $Case.is-tombstone (local.get $maybe-case))
+	)
+		(then `Codegen((BOOL.CONST false))`)
+		(else `Codegen((BOOL.CONST true))`)
+	)
+);
+
+Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(drop
+		(local.set $maybe-case
+			(call $Map.find
+				(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+				`Codegen(accessor)`
+			)
+		)
+	)
+	(if (result (ref $Value)) (i32.or
+		(ref.is_null (local.get $maybe-case))
+		(call $Case.is-tombstone (local.get $maybe-case))
+	)
+		(then `Codegen((NULL.CONST null))`)
+		(else (struct.get $Case $con (local.get $maybe-case)))
+	)
+);
 
 // Codegen((CALL `values`));
 
