@@ -16,29 +16,29 @@ Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 // Codegen((STR.TEMPLATE `v`));
 
 Codegen((TUPLE.NEW)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(array.new_fixed $Tuple 0)
 );
 Codegen((TUPLE.NEW `values`)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(array.new_fixed $Tuple `values.count` `values.map(Codegen)`)
 );
 
 Codegen((RECORD.NEW)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(array.new_fixed $Record 0)
 );
 Codegen((RECORD.NEW `pairs`)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
 );
 
 Codegen((LIST.NEW)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(struct.new $List
 		(block (result i64)
@@ -50,7 +50,7 @@ Codegen((LIST.NEW)) := (struct.new $Value
 	)
 );
 Codegen((LIST.NEW `values`)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(struct.new $List
 		(block (result i64)
@@ -63,7 +63,7 @@ Codegen((LIST.NEW `values`)) := (struct.new $Value
 );
 
 Codegen((DICT.NEW)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(struct.new $Dict
 		(block (result i64)
@@ -75,7 +75,7 @@ Codegen((DICT.NEW)) := (struct.new $Value
 	)
 );
 Codegen((DICT.NEW `pairs`)) := (struct.new $Value
-	(i32.const 1)
+	(i32.const 2)
 	(v128.const i64x2 0 0)
 	(struct.new $Dict
 		(block (result i64)
