@@ -88,7 +88,38 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 );
 
 // Codegen((SET.NEW    `values`));
-// Codegen((MAP.NEW    `pairs`));
+
+Codegen((MAP.NEW)) := (struct.new $Value
+	(i32.const 2)
+	(v128.const i64x2 0 0)
+	(block (result (ref $Map))
+		(local.set $map (struct.new $Map
+			(block (result i64)
+				(global.get $obj-ctr)
+				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			)
+			(i32.const 0)
+			(array.new_default $MapInternal (i32.const 8))
+		))
+		(local.get $map)
+	)
+);
+Codegen((MAP.NEW `pairs`)) := (struct.new $Value
+	(i32.const 2)
+	(v128.const i64x2 0 0)
+	(block (result (ref $Map))
+		(local.set $map (struct.new $Map
+			(block (result i64)
+				(global.get $obj-ctr)
+				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			)
+			(i32.const `pairs.count`)
+			(array.new_default $MapInternal `CapacityNeeded(pairs.count)`)
+		))
+		`...pairs.map("(call $Map.set `Codegen(pairs[i].0)` `Codegen(pairs[i].1)`)")`
+		(local.get $map)
+	)
+);
 
 Codegen((TUPLE.GET `index` `obj`)) := (array.get
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`))

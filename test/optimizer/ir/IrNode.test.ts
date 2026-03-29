@@ -39,11 +39,8 @@ describe('IrNode', () => {
 				"hello";
 				"""hello {{ 42 }}""";
 				{42, 43, 44};
-				{"a" -> 42, "b" -> 43, "c" -> 44};
 				{42, 43, 44}.[42];
-				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"];
 				{42, 43, 44}.[42]                       = false;
-				{"a" -> 42, "b" -> 43, "c" -> 44}.["a"] = 43;
 			}`, {lower: true, codegen: false, build: false});
 			xjs.Array.forEachAggregated([
 				...opt.instructions,
@@ -51,6 +48,11 @@ describe('IrNode', () => {
 				new IR.Goto(new IR.Label('label2')),
 				new IR.GotoIfFalse(new IR.Const(VALUE.NULL), new IR.Label('label2')),
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
+
+			xjs.Array.forEachAggregated<IR.Instruction>([
+				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1]; }',      {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.GET)
+				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1] = 43; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.SET)
+			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
 		it('Trap returns (unreachable).', () => {
@@ -273,6 +275,36 @@ describe('IrNode', () => {
 						[257n, new BinValue(cg, genConst(cg, 4.2)).toProperty(257n)],
 						[264n, new BinValue(cg, genConst(cg))     .toProperty(264n)],
 					])].map((props) => new BinValue(cg, cg.codegenDict(props)).value),
+				);
+			});
+		});
+
+		describe('MapNew', () => {
+			it('empty MAP.NEW', () => {
+				// there exists no syntax for empty maps, so constructing it manually
+				const cg = new Builder();
+				cg.setupModule();
+				return assert.strictEqual(
+					binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
+					binaryen.emitText(new BinValue(cg, cg.codegenMap()).value).replaceAll('$1', '$0'),
+				);
+			});
+			it('nonempty MAP.NEW', () => {
+				const {goal, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					{1.1 -> x, 2.2 -> 4.2, 3.3 -> (null,), 4.4 -> x/2, 5.5 -> @e};
+				}`, {lower: true, codegen: true, build: false});
+				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+				return assert.strictEqual(
+					binaryen.emitText((goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+					binaryen.emitText(new BinValue(cg, cg.codegenMap(new Map([
+						[genConst(cg, 1.1), new BinValue(cg, mod.local.get(0, rt_value)).value],
+						[genConst(cg, 2.2), genConst(cg, 4.2)],
+						[genConst(cg, 3.3), new BinValue(cg, mod.local.get(1, rt_value)).value],
+						[genConst(cg, 4.4), new BinValue(cg, mod.local.get(2, rt_value)).value], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						[genConst(cg, 5.5), genConst(cg, Symbol(0x101))],
+					]))).value).replaceAll('$4', '$3'),
 				);
 			});
 		});
