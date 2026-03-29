@@ -87,7 +87,9 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 	)
 );
 
-// Codegen((SET.NEW    `values`));
+// `Set<T>`s are implemented as `Map<T, null>`s
+Codegen((SET.NEW))          := `Codegen((MAP.NEW))`;
+Codegen((SET.NEW `values`)) := `Codegen((MAP.NEW `values.map(Sequence [values[i], (NULL.CONST null)])`))`;
 
 Codegen((MAP.NEW)) := (struct.new $Value
 	(i32.const 2)
@@ -137,7 +139,7 @@ Codegen((LIST.GET `obj` `accessor`)) := (block (result (ref $Value))
 		(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
 	))
 	(if (result (ref $Value)) (ref.is_null (local.get $item))
-		(then `Codegen("(NULL.CONST null)")`)
+		(then `Codegen((NULL.CONST null))`)
 		(else (ref.as_non_null (local.get $item)))
 	)
 );
@@ -155,7 +157,7 @@ Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
 		(ref.is_null (local.get $maybe-prop))
 		(call $Property.is-tombstone (local.get $maybe-prop))
 	)
-		(then `Codegen("(NULL.CONST null)")`)
+		(then `Codegen((NULL.CONST null))`)
 		(else (struct.get $val (local.get $maybe-prop)))
 	)
 );
@@ -197,13 +199,13 @@ Codegen((LT  `v0` `v1`)) := (call $vlt `Codegen(v0)` `Codegen(v1)`);
 Codegen((GT  `v0` `v1`)) := (call $vgt `Codegen(v0)` `Codegen(v1)`);
 Codegen((LE  `v0` `v1`)) := (call $vle `Codegen(v0)` `Codegen(v1)`);
 Codegen((GE  `v0` `v1`)) := (call $vge `Codegen(v0)` `Codegen(v1)`);
-Codegen((NLT `v0` `v1`)) := `Codegen("(NOT (LT `v0` `v1`))")`;
-Codegen((NGT `v0` `v1`)) := `Codegen("(NOT (GT `v0` `v1`))")`;
+Codegen((NLT `v0` `v1`)) := `Codegen((NOT (LT `v0` `v1`)))`;
+Codegen((NGT `v0` `v1`)) := `Codegen((NOT (GT `v0` `v1`)))`;
 
 Codegen((ID  `v0` `v1`)) := (call $vid `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ  `v0` `v1`)) := (call $veq `Codegen(v0)` `Codegen(v1)`);
-Codegen((NID `v0` `v1`)) := `Codegen("(NOT (ID `v0` `v1`))")`;
-Codegen((NEQ `v0` `v1`)) := `Codegen("(NOT (EQ `v0` `v1`))")`;
+Codegen((NID `v0` `v1`)) := `Codegen((NOT (ID `v0` `v1`)))`;
+Codegen((NEQ `v0` `v1`)) := `Codegen((NOT (EQ `v0` `v1`)))`;
 
 // Codegen((PHI `pairs`));
 

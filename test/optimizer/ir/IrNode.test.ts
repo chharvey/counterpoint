@@ -38,9 +38,6 @@ describe('IrNode', () => {
 			const {opt, cg} = setupScript(`{
 				"hello";
 				"""hello {{ 42 }}""";
-				{42, 43, 44};
-				{42, 43, 44}.[42];
-				{42, 43, 44}.[42]                       = false;
 			}`, {lower: true, codegen: false, build: false});
 			xjs.Array.forEachAggregated([
 				...opt.instructions,
@@ -50,8 +47,10 @@ describe('IrNode', () => {
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
 
 			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1]; }',      {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.GET)
-				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1] = 43; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.SET)
+				setupScript('{ {42, 43, 44}.[42]; }',                               {lower: true, codegen: false, build: false}).opt.instructions[1], // (SET.GET)
+				setupScript('{ {42, 43, 44}.[42]                       = false; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (SET.SET)
+				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1]; }',         {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.GET)
+				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1] = 43; }',    {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.SET)
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
@@ -160,6 +159,26 @@ describe('IrNode', () => {
 						mod.local.get(2, rt_n_value),
 						genConst(cg, Symbol(0x101)),
 					])).value,
+				);
+			});
+			it('empty SET.NEW', () => {
+				const {goal, opt, cg} = setupScript(`{
+					{};
+				}`, {lower: true, codegen: true, build: false});
+				return assert.strictEqual(
+					binaryen.emitText((goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+					binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)).replaceAll('$1', '$0'),
+				);
+			});
+			it('nonempty SET.NEW', () => {
+				const {goal, opt, cg} = setupScript(`{
+					val mut x: int = 42;
+					{x, 4.2, (null,), x/2, @e};
+					{x -> null, 4.2 -> null, (null,) -> null, x/2 -> null, @e -> null};
+				}`, {lower: true, codegen: true, build: false});
+				return assert.strictEqual(
+					binaryen.emitText((goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+					binaryen.emitText((goal.children[2] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)).replaceAll('$4', '$1').replaceAll('$5', '$2').replaceAll('$6', '$3'),
 				);
 			});
 		});
