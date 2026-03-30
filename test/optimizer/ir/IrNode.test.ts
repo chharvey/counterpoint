@@ -906,13 +906,19 @@ describe('IrNode', () => {
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
-					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $Tuple)'));
+					const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $List)'));
+					const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.getReftype('(ref $Tuple)'));
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Tuple)')),
+							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+							mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Tuple)')),
+							mod.call('List.adjust-capacity', [
+								destlist_get,
+								mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
+							], binaryen.none),
 							mod.array.copy(
-								cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+								cg.getListInternal(destlist_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -928,13 +934,19 @@ describe('IrNode', () => {
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
-					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $ListInternal)'));
+					const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $List)'));
+					const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.getReftype('(ref $ListInternal)'));
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, cg.getListInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)'))),
+							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+							mod.local.set(3, cg.getListInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)'))),
+							mod.call('List.adjust-capacity', [
+								destlist_get,
+								mod.array.len(srcref_get),
+							], binaryen.none),
 							mod.array.copy(
-								cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+								cg.getListInternal(destlist_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -992,13 +1004,19 @@ describe('IrNode', () => {
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
-					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $Record)'));
+					const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $Dict)'));
+					const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.getReftype('(ref $Record)'));
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Record)')),
+							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Record)')),
+							mod.call('Dict.adjust-capacity', [
+								destdict_get,
+								mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
+							], binaryen.none),
 							mod.array.copy(
-								cg.getDictInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
+								cg.getDictInternal(destdict_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -1053,13 +1071,19 @@ describe('IrNode', () => {
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
-					const srcref_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $DictInternal)'));
+					const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.getReftype('(ref $Dict)'));
+					const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.getReftype('(ref $DictInternal)'));
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, cg.getDictInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)'))),
+							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(3, cg.getDictInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)'))),
+							mod.call('Dict.adjust-capacity', [
+								destdict_get,
+								mod.array.len(srcref_get),
+							], binaryen.none),
 							mod.array.copy(
-								cg.getDictInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
+								cg.getDictInternal(destdict_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),

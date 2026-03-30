@@ -165,23 +165,48 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
 
-		let destref: binaryen.ExpressionRef = 0;
-		let srcref:  Local; // eslint-disable-line @typescript-eslint/init-declarations
-
 		switch (this.name) {
 			case TypeName.LIST: {
-				destref = cg.getListInternal(new BinValue(cg, code_dest).cast('(ref $List)'));
+				const destlist: Local = cg.newLocal(new BinValue(cg, code_dest).cast('(ref $List)'));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						srcref = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
-						break;
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src) .cast('(ref $Tuple)'));
+						return cg.module.block(null, [
+							destlist.set(),
+							srcref.set(),
+							cg.module.call('List.adjust-capacity', [
+								destlist.get(),
+								cg.module.call('capacity-needed', [cg.module.array.len(srcref.get())], binaryen.i32),
+							], binaryen.none),
+							cg.module.array.copy(
+								cg.getListInternal(destlist.get()),
+								cg.module.i32.const(0),
+								srcref.get(),
+								cg.module.i32.const(0),
+								cg.module.array.len(srcref.get()),
+							),
+						]);
 					}
 					// List.<T>(List.<T>((t, t, t)));
 					// List.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						srcref = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
-						break;
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
+						return cg.module.block(null, [
+							destlist.set(),
+							srcref.set(),
+							cg.module.call('List.adjust-capacity', [
+								destlist.get(),
+								cg.module.array.len(srcref.get()),
+							], binaryen.none),
+							cg.module.array.copy(
+								cg.getListInternal(destlist.get()),
+								cg.module.i32.const(0),
+								srcref.get(),
+								cg.module.i32.const(0),
+								cg.module.array.len(srcref.get()),
+							),
+						]);
 					}
 					// List.<T>(Set.<T>((t, t, t)));
 					// List.<T>({t, t, t});
@@ -189,36 +214,60 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						throw new Error('not yet supported.');
 					}
 					default: {
-						assert.fail(`Expected \`${ this.source }\` to pass validation.`);
+						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
 					}
 				}
-				break;
 			}
 			case TypeName.DICT: {
-				const dict: binaryen.ExpressionRef = new BinValue(cg, code_dest).cast('(ref $Dict)');
-				destref = cg.getDictInternal(dict);
+				const destdict: Local = cg.newLocal(new BinValue(cg, code_dest).cast('(ref $Dict)'));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case this.source.type instanceof TYPE.Tuple: {
-						// returning here because we’re already copying the properties into the destination. (not returning `(array.copy)`)
-						return set_pairs_as_props(cg, cg.newLocal(dict), cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)')), false);
+						return set_pairs_as_props(cg, destdict, cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)')), false);
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
-						srcref = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Record)'));
-						break;
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Record)'));
+						return cg.module.block(null, [
+							destdict.set(),
+							srcref.set(),
+							cg.module.call('Dict.adjust-capacity', [
+								destdict.get(),
+								cg.module.call('capacity-needed', [cg.module.array.len(srcref.get())], binaryen.i32),
+							], binaryen.none),
+							cg.module.array.copy(
+								cg.getDictInternal(destdict.get()),
+								cg.module.i32.const(0),
+								srcref.get(),
+								cg.module.i32.const(0),
+								cg.module.array.len(srcref.get()),
+							),
+						]);
 					}
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					case this.source.type instanceof TYPE.List: {
-						// returning here because we’re already copying the properties into the destination. (not returning `(array.copy)`)
-						return set_pairs_as_props(cg, cg.newLocal(dict), cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)'))), true);
+						return set_pairs_as_props(cg, destdict, cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)'))), true);
 					}
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					// Dict.<T>([a= t, b= t, c= t]);
 					case this.source.type instanceof TYPE.Dict: {
-						srcref = cg.newLocal(cg.getDictInternal(new BinValue(cg, code_src).cast('(ref $Dict)')));
-						break;
+						const srcref: Local = cg.newLocal(cg.getDictInternal(new BinValue(cg, code_src).cast('(ref $Dict)')));
+						return cg.module.block(null, [
+							destdict.set(),
+							srcref.set(),
+							cg.module.call('Dict.adjust-capacity', [
+								destdict.get(),
+								cg.module.array.len(srcref.get()),
+							], binaryen.none),
+							cg.module.array.copy(
+								cg.getDictInternal(destdict.get()),
+								cg.module.i32.const(0),
+								srcref.get(),
+								cg.module.i32.const(0),
+								cg.module.array.len(srcref.get()),
+							),
+						]);
 					}
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
@@ -231,27 +280,14 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						throw new Error('not yet supported.');
 					}
 					default: {
-						assert.fail(`Expected \`${ this.source }\` to pass validation.`);
+						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
 					}
 				}
-				break;
 			}
 			case TypeName.SET:
 			case TypeName.MAP: {
 				throw new Error('not yet supported.');
 			}
 		}
-
-		return cg.module.block(null, [
-			srcref.set(),
-			cg.module.array.copy(
-				destref,
-				cg.module.i32.const(0),
-				srcref.get(),
-				cg.module.i32.const(0),
-				cg.module.array.len(srcref.get()),
-			),
-		]);
-		throw new Error('not yet supported.');
 	}
 }
