@@ -23,6 +23,34 @@ import type {Value} from './Value.ts';
 
 
 
+/** Adjusts destination capacity before copying. */
+function copy_array(
+	mod:          Builder['module'],
+	destobj:      Local,
+	destref:      binaryen.ExpressionRef,
+	srcref:       Local,
+	adj_cap_name: string,
+	cap_needed:   binaryen.ExpressionRef,
+): binaryen.ExpressionRef {
+	return mod.block(null, [
+		destobj.set(),
+		srcref.set(),
+		mod.call(adj_cap_name, [
+			destobj.get(),
+			cap_needed,
+		], binaryen.none),
+		mod.array.copy(
+			destref,
+			mod.i32.const(0),
+			srcref.get(),
+			mod.i32.const(0),
+			mod.array.len(srcref.get()),
+		),
+	]);
+}
+
+
+
 /**
  * Converts an array of key–value pairs into an array of properties for Dict insertion.
  * The pairs given must be an array of possibly nullable `$Value`s,
@@ -172,41 +200,27 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(new BinValue(cg, code_src) .cast('(ref $Tuple)'));
-						return cg.module.block(null, [
-							destlist.set(),
-							srcref.set(),
-							cg.module.call('List.adjust-capacity', [
-								destlist.get(),
-								cg.module.call('capacity-needed', [cg.module.array.len(srcref.get())], binaryen.i32),
-							], binaryen.none),
-							cg.module.array.copy(
-								cg.getListInternal(destlist.get()),
-								cg.module.i32.const(0),
-								srcref.get(),
-								cg.module.i32.const(0),
-								cg.module.array.len(srcref.get()),
-							),
-						]);
+						return copy_array(
+							cg.module,
+							destlist,
+							cg.getListInternal(destlist.get()),
+							srcref,
+							'List.adjust-capacity',
+							cg.module.call('capacity-needed', [cg.module.array.len(srcref.get())], binaryen.i32),
+						);
 					}
 					// List.<T>(List.<T>((t, t, t)));
 					// List.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
-						return cg.module.block(null, [
-							destlist.set(),
-							srcref.set(),
-							cg.module.call('List.adjust-capacity', [
-								destlist.get(),
-								cg.module.array.len(srcref.get()),
-							], binaryen.none),
-							cg.module.array.copy(
-								cg.getListInternal(destlist.get()),
-								cg.module.i32.const(0),
-								srcref.get(),
-								cg.module.i32.const(0),
-								cg.module.array.len(srcref.get()),
-							),
-						]);
+						return copy_array(
+							cg.module,
+							destlist,
+							cg.getListInternal(destlist.get()),
+							srcref,
+							'List.adjust-capacity',
+							cg.module.array.len(srcref.get()),
+						);
 					}
 					// List.<T>(Set.<T>((t, t, t)));
 					// List.<T>({t, t, t});
@@ -228,21 +242,14 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
 						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Record)'));
-						return cg.module.block(null, [
-							destdict.set(),
-							srcref.set(),
-							cg.module.call('Dict.adjust-capacity', [
-								destdict.get(),
-								cg.module.call('capacity-needed', [cg.module.array.len(srcref.get())], binaryen.i32),
-							], binaryen.none),
-							cg.module.array.copy(
-								cg.getDictInternal(destdict.get()),
-								cg.module.i32.const(0),
-								srcref.get(),
-								cg.module.i32.const(0),
-								cg.module.array.len(srcref.get()),
-							),
-						]);
+						return copy_array(
+							cg.module,
+							destdict,
+							cg.getDictInternal(destdict.get()),
+							srcref,
+							'Dict.adjust-capacity',
+							cg.module.call('capacity-needed', [cg.module.array.len(srcref.get())], binaryen.i32),
+						);
 					}
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
@@ -253,21 +260,14 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>([a= t, b= t, c= t]);
 					case this.source.type instanceof TYPE.Dict: {
 						const srcref: Local = cg.newLocal(cg.getDictInternal(new BinValue(cg, code_src).cast('(ref $Dict)')));
-						return cg.module.block(null, [
-							destdict.set(),
-							srcref.set(),
-							cg.module.call('Dict.adjust-capacity', [
-								destdict.get(),
-								cg.module.array.len(srcref.get()),
-							], binaryen.none),
-							cg.module.array.copy(
-								cg.getDictInternal(destdict.get()),
-								cg.module.i32.const(0),
-								srcref.get(),
-								cg.module.i32.const(0),
-								cg.module.array.len(srcref.get()),
-							),
-						]);
+						return copy_array(
+							cg.module,
+							destdict,
+							cg.getDictInternal(destdict.get()),
+							srcref,
+							'Dict.adjust-capacity',
+							cg.module.array.len(srcref.get()),
+						);
 					}
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
