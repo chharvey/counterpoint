@@ -911,8 +911,8 @@ describe('IrNode', () => {
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
-							mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Tuple)')),
+							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)')),
+							mod.local.set(3, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Tuple)')),
 							mod.call('List.adjust-capacity', [
 								destlist_get,
 								mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
@@ -939,8 +939,8 @@ describe('IrNode', () => {
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
-							mod.local.set(3, cg.getListInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)'))),
+							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)')),
+							mod.local.set(3, cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'))),
 							mod.call('List.adjust-capacity', [
 								destlist_get,
 								mod.array.len(srcref_get),
@@ -977,8 +977,8 @@ describe('IrNode', () => {
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
-							mod.local.set(5, new BinValue(cg, mod.local.get(4, rt_value)).cast('(ref $Dict)')),
-							mod.local.set(6, new BinValue(cg, mod.local.get(3, rt_value)).cast('(ref $Tuple)')),
+							mod.local.set(5, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(6, new BinValue(cg, mod.local.get(4, rt_value)).cast('(ref $Tuple)')),
 							mod.block('exit-0', [
 								mod.local.set(7, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1009,8 +1009,8 @@ describe('IrNode', () => {
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
-							mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Record)')),
+							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(3, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Record)')),
 							mod.call('Dict.adjust-capacity', [
 								destdict_get,
 								mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
@@ -1039,8 +1039,8 @@ describe('IrNode', () => {
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
-							mod.local.set(5, new BinValue(cg, mod.local.get(4, rt_value)).cast('(ref $Dict)')),
-							mod.local.set(6, cg.getListInternal(new BinValue(cg, mod.local.get(3, rt_value)).cast('(ref $List)'))),
+							mod.local.set(5, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(6, cg.getListInternal(new BinValue(cg, mod.local.get(4, rt_value)).cast('(ref $List)'))),
 							mod.block('exit-0', [
 								mod.local.set(7, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1076,8 +1076,8 @@ describe('IrNode', () => {
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(2, new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)')),
-							mod.local.set(3, cg.getDictInternal(new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)'))),
+							mod.local.set(2, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(3, cg.getDictInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'))),
 							mod.call('Dict.adjust-capacity', [
 								destdict_get,
 								mod.array.len(srcref_get),
