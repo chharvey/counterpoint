@@ -106,7 +106,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 							accessor.get(),
 						], binaryen.none),
 					),
-				], binaryen.none);
+				]);
 			}
 			case TypeName.MAP: {
 				return cg.module.call('Map.set', [

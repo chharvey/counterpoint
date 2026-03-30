@@ -869,7 +869,7 @@ describe('IrNode', () => {
 							mod.call('Map.set',    [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
 							mod.call('Map.delete', [base_get_0, accessor_get_0],               binaryen.none),
 						),
-					], binaryen.none),
+					]),
 					mod.block(null, [
 						mod.local.set(4, new BinValue(cg, base).cast('(ref $Map)')),
 						mod.local.set(5, genConst(cg, 3.3)),
@@ -878,7 +878,7 @@ describe('IrNode', () => {
 							mod.call('Map.set',    [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
 							mod.call('Map.delete', [base_get_1, accessor_get_1],               binaryen.none),
 						),
-					], binaryen.none),
+					]),
 				]);
 			});
 			it('MAP.SET', () => {

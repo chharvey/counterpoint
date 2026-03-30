@@ -199,7 +199,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 				switch (true) { // using `ast_type_name()` is too expensive
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(new BinValue(cg, code_src) .cast('(ref $Tuple)'));
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
 						return copy_array(
 							cg.module,
 							destlist,
