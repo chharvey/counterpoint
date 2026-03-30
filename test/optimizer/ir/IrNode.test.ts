@@ -10,6 +10,7 @@ import {
 	STRUCT_FIELD,
 	BinValue,
 	Builder,
+	BinVect,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {genConst} from '../../helpers.ts';
@@ -45,11 +46,6 @@ describe('IrNode', () => {
 				new IR.Goto(new IR.Label('label2')),
 				new IR.GotoIfFalse(new IR.Const(VALUE.NULL), new IR.Label('label2')),
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
-
-			xjs.Array.forEachAggregated<IR.Instruction>([
-				setupScript('{ {42, 43, 44}.[42]                       = false; }', {lower: true, codegen: false, build: false}).opt.instructions[1], // (SET.SET)
-				setupScript('{ {0.1 -> 42, 0.2 -> 43, 0.4 -> 44}.[0.1] = 43; }',    {lower: true, codegen: false, build: false}).opt.instructions[1], // (MAP.SET)
-			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
 		it('Trap returns (unreachable).', () => {
@@ -847,6 +843,56 @@ describe('IrNode', () => {
 						mod.i64.extend_u(new BinValue(cg, genConst(cg, Symbol(0x102))).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `mod.i64.extend_u()` call
 						genConst(cg, 47n),
 					], binaryen.none),
+				]);
+			});
+			it('SET.SET', () => {
+				const {opt, cg} = setupScript(`{
+					val 'set': mut {float} = {4.2, 2.4};
+					'set'.[4.2] = false;
+					'set'.[3.3] = true;
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const rt_value:       binaryen.Type          = cg.getReftype('(ref $Value)');
+				const rt_map:         binaryen.Type          = cg.getReftype('(ref $Map)');
+				const base:           binaryen.ExpressionRef = mod.local.get(1, rt_value); // index 0 = map setup
+				const base_get_0:     binaryen.ExpressionRef = mod.local.get(2, rt_map);
+				const accessor_get_0: binaryen.ExpressionRef = mod.local.get(3, rt_value);
+				const base_get_1:     binaryen.ExpressionRef = mod.local.get(4, rt_map);
+				const accessor_get_1: binaryen.ExpressionRef = mod.local.get(5, rt_value);
+				opt.instructions[0].codegen(cg);
+				return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
+					mod.block(null, [
+						mod.local.set(2, new BinValue(cg, base).cast('(ref $Map)')),
+						mod.local.set(3, genConst(cg, 4.2)),
+						mod.if(
+							new BinVect(mod, new BinValue(cg, genConst(cg, false)).primitiveValue).isSpecial(true),
+							mod.call('Map.set',    [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
+							mod.call('Map.delete', [base_get_0, accessor_get_0],               binaryen.none),
+						),
+					], binaryen.none),
+					mod.block(null, [
+						mod.local.set(4, new BinValue(cg, base).cast('(ref $Map)')),
+						mod.local.set(5, genConst(cg, 3.3)),
+						mod.if(
+							new BinVect(mod, new BinValue(cg, genConst(cg, true)).primitiveValue).isSpecial(true),
+							mod.call('Map.set',    [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
+							mod.call('Map.delete', [base_get_1, accessor_get_1],               binaryen.none),
+						),
+					], binaryen.none),
+				]);
+			});
+			it('MAP.SET', () => {
+				const {opt, cg} = setupScript(`{
+					val map: mut {float -> int} = {4.2 -> 42, 2.4 -> 24};
+					map.[4.2] = 21;
+					map.[3.3] = 21;
+				}`, {lower: true, codegen: false, build: false});
+				const mod = cg.module;
+				const base: binaryen.ExpressionRef = mod.local.get(1, cg.getReftype('(ref $Value)')); // index 0 = map setup
+				opt.instructions[0].codegen(cg);
+				return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
+					mod.call('Map.set', [new BinValue(cg, base).cast('(ref $Map)'), genConst(cg, 4.2), genConst(cg, 21n)], binaryen.none),
+					mod.call('Map.set', [new BinValue(cg, base).cast('(ref $Map)'), genConst(cg, 3.3), genConst(cg, 21n)], binaryen.none),
 				]);
 			});
 		});

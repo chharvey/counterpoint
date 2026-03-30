@@ -252,14 +252,38 @@ Codegen((LIST.SET `obj` `accessor` `v`)) := (call $List.set
 	(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
 	`Codegen(v)`
 );
+
 Codegen((DICT.SET `obj` `accessor` `v`)) := (call $Dict.set
 	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))
 	(i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`))
 	`Codegen(v)`
 );
 
-// Codegen((SET.SET  `obj` `accessor` `v`));
-// Codegen((MAP.SET  `obj` `accessor` `v`));
+Codegen((SET.SET `obj` `accessor` `v`)) := (block
+	(local.set $base     (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`)))
+	(local.set $accessor `Codegen(accessor)`)
+	(if
+		(i32.eq
+			(i16x8.extract_lane_u 3 (struct.get $Value $primitive `Codegen(v)`))
+			(i32.const 0x0003)
+		)
+		(call $Map.set
+			(local.get $base)
+			(local.get $accessor)
+			`Codegen((NULL.CONST null))`
+		)
+		(call $Map.delete
+			(local.get $base)
+			(local.get $accessor)
+		)
+	)
+);
+
+Codegen((MAP.SET `obj` `accessor` `v`)) := (call $Map.set
+	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+	`Codegen(accessor)`
+	`Codegen(v)`
+);
 
 Codegen((LIST.COPY `dest` `src:Tuple`)) := (block
 	(local.set $srcref (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`)))
