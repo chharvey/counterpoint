@@ -16,7 +16,7 @@ import {STRUCT_FIELD} from './utils-public.ts';
  *
  * Name         | Type            | Description
  * ------------ | --------------- | -----------
- * `$tag`       | `i8`            | a 0 or 1, discriminating either a primitive value (0) or a composite value (1)
+ * `$tag`       | `i8`            | a 1 or 2, discriminating either a primitive value (1) or a composite value (2)
  * `$primitive` | `v128`          | a union of primitive types specified by the {@link BinVect} class
  * `$composite` | `(ref null eq)` | an opaque reference pointing to a WASM struct/array. can be an `$Object` (or a subtype), a `$Tuple`, or a `$Record`. (see `types.wat`)
  */
@@ -35,11 +35,12 @@ export class BinValue {
 	 * @param  cg  a CodeGenerator to get the types
 	 * @param  arg a Binaryen value of WASM type `v128`,
 	 *               `(ref $Object)` or a subtype, `(ref $Tuple)`, `(ref $Record)`,
-	 *               `(ref $Value)`, or `(ref null $Value)`, or a BinVect object
+	 *               `(ref $Value)`, or `(ref null $Value)`, or a BinVect object,
+	 *               or `null`
 	 */
 	public constructor(
 		private readonly cg: Builder,
-		arg: binaryen.ExpressionRef | BinVect,
+		arg: binaryen.ExpressionRef | BinVect | null,
 	) {
 		this.TYPE = cg.getReftype('(ref $Value)');
 		if (arg instanceof BinVect) {
@@ -47,6 +48,10 @@ export class BinValue {
 			return;
 		}
 		const ht_value: binaryen.Type = cg.getHeaptype('$Value');
+		if (arg === null) {
+			this.value = cg.module.struct.new_default(ht_value);
+			return;
+		}
 		switch (binaryen.getExpressionType(arg)) {
 			case binaryen.unreachable: {
 				this.value = arg;
@@ -62,7 +67,7 @@ export class BinValue {
 			}
 			case binaryen.v128: { // a primitive
 				this.value = cg.module.struct.new([
-					cg.module.i32.const(0),
+					cg.module.i32.const(1),
 					arg,
 					cg.module.ref.null(binaryen.eqref),
 				], ht_value);
@@ -76,7 +81,7 @@ export class BinValue {
 			case cg.getReftype('(ref $Object)'):
 			default: { // a composite
 				this.value = cg.module.struct.new([
-					cg.module.i32.const(1),
+					cg.module.i32.const(2),
 					cg.module.v128.const(new Uint8Array(16)),
 					arg,
 				], ht_value);
@@ -98,14 +103,14 @@ export class BinValue {
 		}
 	}
 
-	/** Whether the value is primitive (tag == 0). */
+	/** Whether the value is primitive (tag == 1). */
 	public get isPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eqz(this.cg.module.struct.get(STRUCT_FIELD.VALUE_TAG, this.value, binaryen.i32, false));
+		return this.cg.module.i32.eq(this.cg.module.struct.get(STRUCT_FIELD.VALUE_TAG, this.value, binaryen.i32, false), this.cg.module.i32.const(1));
 	}
 
-	/** Whether the value is composite (tag == 1). */
+	/** Whether the value is composite (tag == 2). */
 	public get isComposite(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eqz(this.isPrimitive);
+		return this.cg.module.i32.eq(this.cg.module.struct.get(STRUCT_FIELD.VALUE_TAG, this.value, binaryen.i32, false), this.cg.module.i32.const(2));
 	}
 
 	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */

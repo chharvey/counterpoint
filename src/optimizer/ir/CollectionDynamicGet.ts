@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	STRUCT_FIELD,
 	BinValue,
+	BinConst,
 	type Builder,
 	type Local,
 } from '../../index.ts';
@@ -12,10 +13,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
@@ -86,7 +84,7 @@ export class CollectionDynamicGet extends Value {
 					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
 					cg.module.if(
 						cg.module.ref.is_null(item.get()),
-						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						cg.getConst(BinConst.NULL),
 						cg.module.ref.as_non_null(item.get()),
 					),
 				], rt_value);
@@ -105,12 +103,49 @@ export class CollectionDynamicGet extends Value {
 							cg.module.ref.is_null(maybe_prop.get()),
 							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
 						),
-						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
-						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VALUE, maybe_prop.get(), rt_value),
+						cg.getConst(BinConst.NULL),
+						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), rt_value),
+					),
+				], rt_value);
+			}
+			case TypeName.SET: {
+				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					this.accessor.codegen(cg),
+				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Case)')])), 1));
+
+				return cg.module.block(null, [
+					maybe_case.set(),
+					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `false`; else return `true`
+					cg.module.if(
+						cg.module.i32.or(
+							cg.module.ref.is_null(maybe_case.get()),
+							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+						),
+						cg.getConst(BinConst.FALSE),
+						cg.getConst(BinConst.TRUE),
+					),
+				], rt_value);
+			}
+			case TypeName.MAP: {
+				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					this.accessor.codegen(cg),
+				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Case)')])), 1));
+
+				return cg.module.block(null, [
+					maybe_case.set(),
+					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `null`; else return the consequent
+					cg.module.if(
+						cg.module.i32.or(
+							cg.module.ref.is_null(maybe_case.get()),
+							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+						),
+						cg.getConst(BinConst.NULL),
+						cg.module.struct.get(STRUCT_FIELD.CASE_CON, maybe_case.get(), rt_value),
 					),
 				], rt_value);
 			}
 		}
-		throw new Error('not yet supported.');
 	}
 }

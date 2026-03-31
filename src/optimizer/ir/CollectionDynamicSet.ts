@@ -3,7 +3,10 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinValue,
+	BinConst,
 	type Builder,
+	type Local,
+	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -82,7 +85,33 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
+			case TypeName.SET: {
+				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'));
+				const accessor: Local = cg.newLocal(this.accessor.codegen(cg));
+				return cg.module.block(null, [
+					base.set(),
+					accessor.set(),
+					cg.module.if(
+						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).primitiveValue).isSpecial(true),
+						cg.module.call('Map.set', [
+							base.get(),
+							accessor.get(),
+							cg.getConst(BinConst.NULL),
+						], binaryen.none),
+						cg.module.call('Map.delete', [
+							base.get(),
+							accessor.get(),
+						], binaryen.none),
+					),
+				]);
+			}
+			case TypeName.MAP: {
+				return cg.module.call('Map.set', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					this.accessor.codegen(cg),
+					this.value.codegen(cg),
+				], binaryen.none);
+			}
 		}
-		throw new Error('not yet supported.');
 	}
 }

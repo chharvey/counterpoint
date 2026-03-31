@@ -35,7 +35,7 @@
 
 
 ;; Find a Property in a Dict with the given key.
-;; If a Property with the key is found, returns the property and its matching index.
+;; If a Property with the key is found, returns the Property and its matching index.
 ;; Else, returns a null Property or tombstone with the index that the key hashes to.
 ;;
 ;; Useful for get, set, and delete operations:
@@ -58,7 +58,7 @@
 	;; property at the specified index.
 	(local $prop (ref null $Property))
 	;; the index and object of the first tombstone we’ve passed, if any.
-	;; if the key is not in the dict and `$tombprop` is set,
+	;; if the key is not in the Dict and `$tombprop` is set,
 	;; return it and `$tombidx` instead of the current prop and index of iteration.
 	;; this will tell callers of `$Dict.set` that we’re reusing a tombstone, so incrementing `$size` should not be done.
 	(local $tombidx  i32)
@@ -67,11 +67,11 @@
 	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
 	(local.set $index    (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
-	(local.set $prop     (array.get $DictInternal (local.get $internal) (local.get $index)))
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombprop (ref.null $Property))
 
 	(loop $repeat
+		(local.set $prop (array.get $DictInternal (local.get $internal) (local.get $index)))
 		;; if the current property is null, the key is definitely not in the Dict.
 		;; if we’ve passed a tombstone, return it and its index.
 		;; otherwise, return the current null property and its index.
@@ -94,7 +94,6 @@
 		)
 		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
 		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
-		(local.set $prop  (array.get $DictInternal (local.get $internal) (local.get $index)))
 		(br $repeat)
 	)
 )
@@ -152,7 +151,7 @@
 
 ;; Set a Dict value given a key.
 ;; This method first reallocates if necessary, then adds the value.
-(func $Dict.set (param $dict (ref $Dict)) (param $key i64) (param $value (ref $Value))
+(func $Dict.set (param $dict (ref $Dict)) (param $key i64) (param $val (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
 	;; property at the specified index.
@@ -180,21 +179,23 @@
 			(struct.set $Dict $size (local.get $dict) (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)))
 		)
 	)
-	(array.set $DictInternal (struct.get $Dict $internal (local.get $dict)) (local.get $index) (struct.new $Property
-		(local.get $key)
-		(local.get $value)
-	))
+	(array.set $DictInternal
+		(struct.get $Dict $internal (local.get $dict))
+		(local.get $index)
+		(struct.new $Property
+			(local.get $key)
+			(local.get $val)
+		)
+	)
 )
 
 
 
-;; Delete a Dict property with the given key.
-;; If a property with the given key exists, it is removed and returned;
+;; Delete a Dict Property with the given key.
+;; If a Property with the given key exists, it is removed and its value is returned;
 ;; otherwise null is returned and the Dict is not mutated.
-;; This method removes the property first (if found), then reallocates if necessary.
-(func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Property))
-	;; the given Dict’s internal array.
-	(local $internal (ref $DictInternal))
+;; This method removes the Property first (if found), then reallocates if necessary.
+(func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Value))
 	;; index of the found property in the internal array.
 	(local $index i32)
 	;; found property at the specified index.
@@ -202,7 +203,6 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(call $Dict.find (local.get $dict) (local.get $key))
 	(local.set $prop)
 	(local.set $index)
@@ -211,16 +211,74 @@
 		(ref.is_null (local.get $prop))
 		(call $Property.is-tombstone (local.get $prop))
 	)
-		(then (return (ref.null $Property)))
+		(then (return (ref.null $Value)))
 	)
 
 	;; replace the property with a tombstone
 	(array.set $DictInternal
-		(local.get $internal)
+		(struct.get $Dict $internal (local.get $dict))
 		(local.get $index)
 		(call $Property.new-tombstone)
 	)
 	;; capacity adjustment does not occur here. only on insertion.
 
-	(local.get $prop)
+	(struct.get $Property $val (local.get $prop))
+)
+
+
+
+;; Returns whether two Dicts are equal —
+;; whether they have equal values at the same keys.
+(func $Dict.equal (param $dict0 (ref $Dict)) (param $dict1 (ref $Dict)) (result i32)
+	(local $i         i32)
+	(local $internal0 (ref $DictInternal))
+	(local $internal1 (ref $DictInternal))
+	(local $prop0     (ref null $Property))
+	(local $prop1     (ref null $Property))
+	(local $key       i64)
+
+	;; Dicts that are identical are always equal
+	(if (ref.eq (local.get $dict0) (local.get $dict1)) ;; using `ref.eq` instead of `vid_` since they’re already unwrapped
+		(then (return (i32.const 1)))
+	)
+
+	;; compare $Dict.$size since two equal Dicts may have different internal array lengths
+	(if (i32.ne (struct.get $Dict $size (local.get $dict0)) (struct.get $Dict $size (local.get $dict1)))
+		(then (return (i32.const 0)))
+	)
+
+	(local.set $internal0 (struct.get $Dict $internal (local.get $dict0)))
+	(local.set $internal1 (struct.get $Dict $internal (local.get $dict1)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(local.set $prop0 (array.get $DictInternal (local.get $internal0) (local.get $i)))
+			(if (i32.eqz (ref.is_null (local.get $prop0)))
+				(then
+					(local.set $key (struct.get $Property $key (local.get $prop0)))
+
+					;; if $dict1 doesn’t have the key, return false
+					(drop (local.set $prop1 (call $Dict.find (local.get $dict1) (local.get $key))))
+					(if (i32.or
+						(ref.is_null (local.get $prop1))
+						(call $Property.is-tombstone (local.get $prop1))
+					)
+						(then (return (i32.const 0)))
+					)
+
+					(if (i32.eqz (call $bool-to-i32 (call $veq_
+						(struct.get $Property $val (local.get $prop0))
+						(struct.get $Property $val (local.get $prop1))
+					)))
+						(then (return (i32.const 0)))
+					)
+				)
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
 )

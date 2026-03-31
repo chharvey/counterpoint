@@ -1,6 +1,9 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -32,7 +35,7 @@ export class MapNew extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, cg.codegenMap(new Map([...this.cases].map(([ant, con]) => [ant.codegen(cg), con.codegen(cg)])))).value;
 	}
 }

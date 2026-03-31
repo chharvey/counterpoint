@@ -6,6 +6,7 @@ import {
 	type TYPE,
 	Optimizer,
 	BinValue,
+	BinConst,
 	Builder,
 } from '../src/index.ts';
 
@@ -43,6 +44,7 @@ export function setupScript(
 	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
 	const opt:  Optimizer       = new Optimizer();
 	const cg:   Builder         = new Builder();
+	cg.setupModule();
 	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
@@ -101,6 +103,11 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 export function genConst(cg: Builder, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
 export function genConst(cg: Builder, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
 export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
+	switch (value) {
+		case null:  { return cg.getConst(BinConst.NULL); }
+		case false: { return cg.getConst(BinConst.FALSE); }
+		case true:  { return cg.getConst(BinConst.TRUE); }
+	}
 	if (t === 'nat') {
 		return new BinValue(cg, (
 			value === 0n              ? VALUE.NAT_0 :
@@ -110,9 +117,6 @@ export function genConst(cg: Builder, value: null | boolean | symbol | bigint | 
 		).codegen(cg.module)).value;
 	}
 	return new BinValue(cg, (
-		value === null            ? VALUE.NULL :
-		value === false           ? VALUE.FALSE :
-		value === true            ? VALUE.TRUE :
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :

@@ -23,6 +23,7 @@ test.suite('BinValue', () => {
 	test.beforeEach(() => {
 		cg  = new Builder();
 		mod = cg.module;
+		cg.setupModule();
 	});
 
 	test.suite('#value', () => {
@@ -34,7 +35,7 @@ test.suite('BinValue', () => {
 				new BinVect(mod, bigint_to_i64(mod, 42n)),
 				new BinVect(mod, mod.f64.const(4.2)),
 			], (binvect) => assertEqualBins(new BinValue(cg, binvect).value, mod.struct.new([
-				mod.i32.const(0),
+				mod.i32.const(1),
 				binvect.vect,
 				mod.ref.null(binaryen.eqref),
 			], cg.getHeaptype('$Value'))));
@@ -64,7 +65,7 @@ test.suite('BinValue', () => {
 					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 			], (composite) => assertEqualBins(new BinValue(cg, composite).value, mod.struct.new([
-				mod.i32.const(1),
+				mod.i32.const(2),
 				mod.v128.const(new Uint8Array(16)),
 				composite,
 			], cg.getHeaptype('$Value'))));
@@ -79,6 +80,7 @@ test.suite('BinValue', () => {
 
 	test.test('#isPrimitive', () => {
 		xjs.Array.forEachAggregated([
+			new BinValue(cg, null),
 			new BinValue(cg, new BinVect(mod, null)),
 			new BinValue(cg, new BinVect(mod, false)),
 			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 0x100n))),
@@ -86,12 +88,13 @@ test.suite('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isPrimitive,
-			mod.i32.eqz(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false)),
+			mod.i32.eq(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false), mod.i32.const(1)),
 		));
 	});
 
 	test.test('#isComposite', () => {
 		xjs.Array.forEachAggregated([
+			new BinValue(cg, null),
 			new BinValue(cg, new BinVect(mod, null)),
 			new BinValue(cg, new BinVect(mod, false)),
 			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 0x100n))),
@@ -99,7 +102,7 @@ test.suite('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isComposite,
-			mod.i32.eqz(binval.isPrimitive),
+			mod.i32.eq(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false), mod.i32.const(2)),
 		));
 	});
 

@@ -9,6 +9,7 @@ import type {
 import type {Temp} from '../optimizer/index.ts';
 import {
 	STRUCT_FIELD,
+	Global,
 	BinValue,
 } from '../code-generator/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
@@ -25,15 +26,24 @@ import type {
 type HeaptypeKey = (
 	| '$Value'
 	| '$Property'
+	| '$Case'
 	| '$Tuple'
 	| '$Record'
 	| '$ListInternal'
 	| '$DictInternal'
+	| '$MapInternal'
 	| '$Object'
 	| '$List'
 	| '$Dict'
+	| '$Map'
 );
-type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' }` })`;
+type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' | '$Case' }` })`;
+
+export enum BinConst {
+	NULL,
+	FALSE,
+	TRUE,
+}
 
 
 
@@ -90,15 +100,19 @@ export class Builder {
 
 	private static readonly IMPORTS: readonly string[] = [
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stubs.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/isub_u.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Property.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Map.wat'), 'utf8'),
 	];
 
 	/**
@@ -124,10 +138,16 @@ export class Builder {
 	/** A registry of reference (and reference-null) types. */
 	readonly #reftypeRegistry = new Map<ReftypeKey, binaryen.Type>();
 
+	/** A registry of constant WASM values. */
+	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
+
 	#typeCount: bigint = 0n;
 
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
+
+	/** A map containing data of WASM local variables, indexed by their name. */
+	readonly #globals = new Map<string, Global>();
 
 	/** A set containing blocks. */
 	private readonly blocks = new Set<Block>();
@@ -145,6 +165,12 @@ export class Builder {
 
 	public constructor() {
 		this.#setupTypes();
+
+		this.#constRegistry = new Map([
+			[BinConst.NULL,  new BinValue(this, new BinVect(this.module))       .value],
+			[BinConst.FALSE, new BinValue(this, new BinVect(this.module, false)).value],
+			[BinConst.TRUE,  new BinValue(this, new BinVect(this.module, true)) .value],
+		]);
 	}
 
 	public nextTypeIndex(): bigint {
@@ -159,6 +185,11 @@ export class Builder {
 	public getReftype(key: ReftypeKey): binaryen.Type {
 		assert.ok(this.#reftypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
 		return this.#reftypeRegistry.get(key)!;
+	}
+
+	public getConst(key: BinConst): binaryen.ExpressionRef {
+		assert.ok(this.#constRegistry.has(key), `Expected constant registry to have constant \`${ BinConst[key] }\`.`);
+		return this.#constRegistry.get(key)!;
 	}
 
 	/**
@@ -293,6 +324,7 @@ export class Builder {
 			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
 		);
 		return this.module.struct.new([
+			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(items.length),
 			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
 		], this.getHeaptype('$List'));
@@ -313,12 +345,35 @@ export class Builder {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.module.struct.new([
+			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
 				this.getHeaptype('$DictInternal'),
 				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)'))),
 			),
 		], this.getHeaptype('$Dict'));
+	}
+
+	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		let capacity: number = 8;
+		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
+			capacity *= 2;
+		}
+		const rt_map: binaryen.Type = this.getReftype('(ref $Map)');
+		const map_obj = this.module.struct.new([
+			this.#globals.get('obj-ctr')!.plusPlus(),
+			this.module.i32.const(cases.size),
+			this.module.array.new_default(this.getHeaptype('$MapInternal'), this.module.i32.const(capacity)),
+		], this.getHeaptype('$Map'));
+		if (!cases.size) {
+			return map_obj;
+		}
+		const local: Local = this.newLocal(map_obj, rt_map);
+		return this.module.block(null, [
+			local.set(),
+			...[...cases].map(([ant, con]) => this.module.call('Map.set', [local.get(), ant, con], binaryen.none)),
+			local.get(),
+		], rt_map);
 	}
 
 	/** @return `(struct.get $List $internal <list>)` */
@@ -329,6 +384,11 @@ export class Builder {
 	/** @return `(struct.get $Dict $internal <dict>)` */
 	public getDictInternal(dict: binaryen.ExpressionRef): binaryen.ExpressionRef {
 		return this.module.struct.get(STRUCT_FIELD.DICT_INTERNAL, dict, this.getReftype('(ref $DictInternal)'));
+	}
+
+	/** @return `(struct.get $Map $internal <map>)` */
+	public getMapInternal(map: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return this.module.struct.get(STRUCT_FIELD.MAP_INTERNAL, map, this.getReftype('(ref $MapInternal)'));
 	}
 
 	/**
@@ -357,8 +417,16 @@ export class Builder {
 		const i_property: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_property, [
-			/* $key */   Builder.newField(binaryen.i32),
-			/* $value */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+			/* $key */ Builder.newField(binaryen.i64),
+			/* $val */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		]);
+
+		/* (type $Case ...) */
+		const i_case: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_case, [
+			/* $ant */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+			/* $con */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		]);
 
 		/* (type $Tuple ...) */
@@ -409,16 +477,31 @@ export class Builder {
 			true,
 		);
 
+		/* (type $MapInternal ...) */
+		const i_map_internal: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_map_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_case), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			// eslint-disable-next-line
+			binaryen.notPacked,
+			true,
+		);
+
 		/* (type $Object ...) */
 		const i_object: number = type_count++;
 		tb.grow(1);
-		tb.setStructType(i_object, []);
+		tb.setStructType(i_object, [
+			/* $id */ Builder.newField(binaryen.i64),
+		]);
 		tb.setOpen(i_object);
 
 		/* (type $List ...) */
 		const i_list: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_list, [
+			/* $id */       Builder.newField(binaryen.i64),
 			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
 			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 		]);
@@ -429,23 +512,38 @@ export class Builder {
 		const i_dict: number = type_count++;
 		tb.grow(1);
 		tb.setStructType(i_dict, [
+			/* $id */       Builder.newField(binaryen.i64),
 			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
 			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 		]);
 		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
 		tb.setOpen(i_dict);
 
+		/* (type $Map ...) */
+		const i_map: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_map, [
+			/* $id */       Builder.newField(binaryen.i64),
+			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
+			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_map, tb.getTempHeapType(i_object));
+		tb.setOpen(i_map);
+
 		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
 		this.#heaptypeRegistry.set('$Value',        heaptypes[i_value]);
 		this.#heaptypeRegistry.set('$Property',     heaptypes[i_property]);
+		this.#heaptypeRegistry.set('$Case',         heaptypes[i_case]);
 		this.#heaptypeRegistry.set('$Tuple',        heaptypes[i_tuple]);
 		this.#heaptypeRegistry.set('$Record',       heaptypes[i_record]);
 		this.#heaptypeRegistry.set('$ListInternal', heaptypes[i_list_internal]);
 		this.#heaptypeRegistry.set('$DictInternal', heaptypes[i_dict_internal]);
+		this.#heaptypeRegistry.set('$MapInternal',  heaptypes[i_map_internal]);
 		this.#heaptypeRegistry.set('$Object',       heaptypes[i_object]);
 		this.#heaptypeRegistry.set('$List',         heaptypes[i_list]);
 		this.#heaptypeRegistry.set('$Dict',         heaptypes[i_dict]);
+		this.#heaptypeRegistry.set('$Map',          heaptypes[i_map]);
 
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const {getTypeFromHeapType} = binaryen;
@@ -453,16 +551,20 @@ export class Builder {
 		/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 		this.#reftypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heaptypes[i_value],         false));
 		this.#reftypeRegistry.set('(ref $Property)',     getTypeFromHeapType(heaptypes[i_property],      false));
+		this.#reftypeRegistry.set('(ref $Case)',         getTypeFromHeapType(heaptypes[i_case],          false));
 		this.#reftypeRegistry.set('(ref $Tuple)',        getTypeFromHeapType(heaptypes[i_tuple],         false));
 		this.#reftypeRegistry.set('(ref $Record)',       getTypeFromHeapType(heaptypes[i_record],        false));
 		this.#reftypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heaptypes[i_list_internal], false));
 		this.#reftypeRegistry.set('(ref $DictInternal)', getTypeFromHeapType(heaptypes[i_dict_internal], false));
+		this.#reftypeRegistry.set('(ref $MapInternal)',  getTypeFromHeapType(heaptypes[i_map_internal],  false));
 		this.#reftypeRegistry.set('(ref $Object)',       getTypeFromHeapType(heaptypes[i_object],        false));
 		this.#reftypeRegistry.set('(ref $List)',         getTypeFromHeapType(heaptypes[i_list],          false));
 		this.#reftypeRegistry.set('(ref $Dict)',         getTypeFromHeapType(heaptypes[i_dict],          false));
+		this.#reftypeRegistry.set('(ref $Map)',          getTypeFromHeapType(heaptypes[i_map],           false));
 
 		this.#reftypeRegistry.set('(ref null $Value)',    getTypeFromHeapType(heaptypes[i_value],    true)); // only used as the fields of `$ListInternal`
 		this.#reftypeRegistry.set('(ref null $Property)', getTypeFromHeapType(heaptypes[i_property], true)); // only used as the fields of `$DictInternal`
+		this.#reftypeRegistry.set('(ref null $Case)',     getTypeFromHeapType(heaptypes[i_case],     true)); // only used as the fields of `$MapInternal`
 		/* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 	}
 
@@ -575,7 +677,7 @@ export class Builder {
 			[],
 			new BinValue(this, new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect).value,
 		);
-	};
+	}
 
 	/** assumes both operands are primitive */
 	#setupBinopComparative(
@@ -650,7 +752,13 @@ export class Builder {
 				),
 			),
 		));
-	};
+	}
+
+	#setupGlobals(): void {
+		const global = new Global(this.module, 'obj-ctr', bigint_to_i64(this.module, 0n, true), binaryen.i64, true);
+		this.#globals.set(global.name, global);
+		global.init();
+	}
 
 	#setupFunctions(): void {
 		const mod: binaryen.Module = this.module;
@@ -778,14 +886,20 @@ export class Builder {
 	}
 
 	#setupFunctions2(): void {
-		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
+		const mod:       BinaryenModuleUpdates = this.module;
+		const rt_value:  binaryen.Type         = this.getReftype('(ref $Value)');
+		const rt_tuple:  binaryen.Type         = this.getReftype('(ref $Tuple)');
+		const rt_record: binaryen.Type         = this.getReftype('(ref $Record)');
+		const rt_list:   binaryen.Type         = this.getReftype('(ref $List)');
+		const rt_dict:   binaryen.Type         = this.getReftype('(ref $Dict)');
+		const rt_map:    binaryen.Type         = this.getReftype('(ref $Map)');
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
 		] as const;
 		const local_vects = local_vals.map((binval) => new BinVect(mod, binval.primitiveValue));
 
+		/* Unary Operators */
 		mod.addFunction('isnull_', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
 			local_vals[0].isPrimitive,
 			local_vects[0].isSpecial(null),
@@ -865,6 +979,7 @@ export class Builder {
 			),
 		));
 
+		/* Binary Operators */
 		this.#setupBinopArithmetic('viadd_',   mod.i64.add  .bind(null), 'intValue');
 		this.#setupBinopArithmetic('vfadd_',   mod.f64.add  .bind(null), 'floatValue');
 		this.#setupBinopArithmetic('visub_s_', mod.i64.sub  .bind(null), 'intValue');
@@ -883,6 +998,7 @@ export class Builder {
 		this.#setupBinopComparative('vge_', mod.i64.ge_s.bind(null), mod.i64.ge_u.bind(null), mod.f64.ge.bind(null));
 		this.#setupBinopComparative('veqn', mod.i64.eq  .bind(null), mod.i64.eq  .bind(null), mod.f64.eq.bind(null));
 
+		mod.removeFunction('vid_'); // removes stub defined in `stubs.wat`
 		mod.addFunction('vid_', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
@@ -902,9 +1018,30 @@ export class Builder {
 					),
 				),
 			),
-			BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)), // TODO: handle identity of tuples/records
+			mod.if(
+				mod.i32.and(
+					mod.ref.test(local_vals[0].compositeValue, rt_tuple),
+					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
+				),
+				BinVect.asBool(mod, mod.call('Tuple.identical', [
+					mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
+					mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
+				], binaryen.i32)),
+				mod.if(
+					mod.i32.and(
+						mod.ref.test(local_vals[0].compositeValue, rt_record),
+						mod.ref.test(local_vals[1].compositeValue, rt_record),
+					),
+					BinVect.asBool(mod, mod.call('Record.identical', [
+						mod.ref.cast(local_vals[0].compositeValue, rt_record),
+						mod.ref.cast(local_vals[1].compositeValue, rt_record),
+					], binaryen.i32)),
+					BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)),
+				),
+			),
 		)).value);
 
+		mod.removeFunction('veq_'); // removes stub defined in `stubs.wat`
 		mod.addFunction('veq_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
@@ -912,8 +1049,63 @@ export class Builder {
 				mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value),
 				mod.call('veqn', [local_vals[0].value, local_vals[1].value], rt_value),
 			),
-			mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value), // TODO: handle equality of all composites
+			mod.if(
+				mod.i32.and(
+					mod.ref.test(local_vals[0].compositeValue, rt_tuple),
+					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
+				),
+				new BinValue(this, BinVect.asBool(mod, mod.call('Tuple.equal', [
+					mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
+					mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
+				], binaryen.i32))).value,
+				mod.if(
+					mod.i32.and(
+						mod.ref.test(local_vals[0].compositeValue, rt_record),
+						mod.ref.test(local_vals[1].compositeValue, rt_record),
+					),
+					new BinValue(this, BinVect.asBool(mod, mod.call('Record.equal', [
+						mod.ref.cast(local_vals[0].compositeValue, rt_record),
+						mod.ref.cast(local_vals[1].compositeValue, rt_record),
+					], binaryen.i32))).value,
+					mod.if(
+						mod.i32.and(
+							mod.ref.test(local_vals[0].compositeValue, rt_list),
+							mod.ref.test(local_vals[1].compositeValue, rt_list),
+						),
+						new BinValue(this, BinVect.asBool(mod, mod.call('List.equal', [
+							mod.ref.cast(local_vals[0].compositeValue, rt_list),
+							mod.ref.cast(local_vals[1].compositeValue, rt_list),
+						], binaryen.i32))).value,
+						mod.if(
+							mod.i32.and(
+								mod.ref.test(local_vals[0].compositeValue, rt_dict),
+								mod.ref.test(local_vals[1].compositeValue, rt_dict),
+							),
+							new BinValue(this, BinVect.asBool(mod, mod.call('Dict.equal', [
+								mod.ref.cast(local_vals[0].compositeValue, rt_dict),
+								mod.ref.cast(local_vals[1].compositeValue, rt_dict),
+							], binaryen.i32))).value,
+							mod.if(
+								mod.i32.and(
+									mod.ref.test(local_vals[0].compositeValue, rt_map),
+									mod.ref.test(local_vals[1].compositeValue, rt_map),
+								),
+								new BinValue(this, BinVect.asBool(mod, mod.call('Map.equal', [
+									mod.ref.cast(local_vals[0].compositeValue, rt_map),
+									mod.ref.cast(local_vals[1].compositeValue, rt_map),
+								], binaryen.i32))).value,
+								mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value),
+							),
+						),
+					),
+				),
+			),
 		));
+
+
+		/* Utilities */
+		mod.removeFunction('bool-to-i32'); // removes stub defined in `stubs.wat`
+		mod.addFunction('bool-to-i32', rt_value, binaryen.i32, [], new BinVect(mod, local_vals[0].primitiveValue).isSpecial(true));
 	}
 
 	/**
@@ -930,6 +1122,7 @@ export class Builder {
 			binaryen.Features.GC
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
+		this.#setupGlobals();
 		this.#setupFunctions();
 		this.#setupFunctions2();
 		main?.call(null, this.module);

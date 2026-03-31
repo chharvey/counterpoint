@@ -178,26 +178,26 @@ Lower(SemanticCall:has(SemanticVariable ::= "Dict") call) := (DICT.NEW);
 Lower(SemanticCall:has(SemanticVariable ::= "Set")  call) := (SET.NEW);
 Lower(SemanticCall:has(SemanticVariable ::= "Map")  call) := (MAP.NEW);
 Lower(SemanticCall:has(SemanticVariable ::= "List"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <List> $destination (LIST.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(LIST.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Lower(SemanticCall:has(SemanticVariable ::= "Dict"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <Dict> $destination (DICT.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DICT.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Lower(SemanticCall:has(SemanticVariable ::= "Set"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <Set> $destination (SET.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(SET.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Lower(SemanticCall:has(SemanticVariable ::= "Map"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <Map> $destination (MAP.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];

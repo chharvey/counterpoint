@@ -10,10 +10,15 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import {MapNew} from './index.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
+import {Const} from './Const.ts';
 
 
 
@@ -54,7 +59,13 @@ export class CollectionLinearNew extends Value {
 			case TypeName.LIST: {
 				return new BinValue(cg, cg.codegenList(this.items.map((item) => item.codegen(cg)))).value;
 			}
+			case TypeName.SET: {
+				const sentinel = new Const(VALUE.NULL);
+				return new MapNew(
+					new Map(this.items.map((item) => [item, sentinel])),
+					new TYPE.Map((this.type as TYPE.Set).typearg, TYPE.NULL),
+				).codegen(cg);
+			}
 		}
-		throw new Error('not yet supported.');
 	}
 }
