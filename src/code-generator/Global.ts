@@ -11,12 +11,6 @@ export class Global {
 	/* The Binaryen value of the variable. */
 	#value: binaryen.ExpressionRef;
 
-	/** The Binaryen type of the variable. */
-	public readonly type: binaryen.Type;
-
-	/** Whether the variable is mutable. */
-	public readonly mut: boolean;
-
 	/**
 	 * Construct a new Global object.
 	 * @param module A Binaryen module to send instructions to.
@@ -29,12 +23,10 @@ export class Global {
 		private readonly module: binaryen.Module,
 		public  readonly name:   string,
 		value: binaryen.ExpressionRef,
-		typ?:  binaryen.Type,
-		mut?:  boolean,
+		public readonly type: binaryen.Type = binaryen.getExpressionType(value),
+		public readonly mut:  boolean = false,
 	) {
-		this.#value    = value;
-		this.type      = typ ?? binaryen.getExpressionType(value);
-		this.mut = mut ?? false;
+		this.#value = value;
 	}
 
 	/* The Binaryen value of the variable. */

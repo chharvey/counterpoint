@@ -13,9 +13,6 @@ export class Local {
 	/* The Binaryen value of the variable. */
 	#value: binaryen.ExpressionRef;
 
-	/** The Binaryen type of the variable. */
-	public readonly type: binaryen.Type;
-
 	/**
 	 * Construct a new Local object.
 	 * @param module A Binaryen module to send instructions to.
@@ -28,11 +25,10 @@ export class Local {
 		private readonly module: binaryen.Module,
 		private readonly index:  number,
 		value: binaryen.ExpressionRef,
-		typ?:  binaryen.Type,
+		public readonly type:    binaryen.Type = binaryen.getExpressionType(value),
 		public readonly schema?: SymbolSchemaVar | Temp,
 	) {
 		this.#value = value;
-		this.type   = typ ?? binaryen.getExpressionType(value);
 	}
 
 	/* The Binaryen value of the variable. */
