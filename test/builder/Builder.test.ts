@@ -338,10 +338,7 @@ describe('Builder', () => {
 					WASM_NULL,
 					WASM_NULL,
 				]].map((entries) => mod.struct.new([
-					cg.module.block(null, [
-						cg.module.global.get('obj-ctr', binaryen.i64),
-						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), bigint_to_i64(mod, 1n, true))),
-					], binaryen.i64),
+					obj_ctr_plus_plus(mod),
 					mod.i32.const(3),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal'), entries),
 				], cg.getHeaptype('$Dict'))),

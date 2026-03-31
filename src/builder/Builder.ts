@@ -139,8 +139,8 @@ export class Builder {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
-	/** A set containing data of WASM local variables. */
-	readonly #globals = new Set<Global>();
+	/** A map containing data of WASM local variables, indexed by their name. */
+	readonly #globals = new Map<string, Global>();
 
 	/** The Binaryen module to build upon building. */
 	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
@@ -241,15 +241,6 @@ export class Builder {
 	}
 
 	/**
-	 * Get the global with the given name in this CodeGenerator’s list, if it’s been added; else, return `undefined`.
-	 * @param  name the name of the global to get
-	 * @return      the global or `undefined`
-	 */
-	private getGlobal(name: string): Global | undefined {
-		return [...this.#globals].find((global) => global.name === name);
-	}
-
-	/**
 	 * Return a new `$Tuple` from items.
 	 * @param items items in the array; must be of type `(ref $Value)`
 	 * @return      `(array.new_fixed $Tuple <...items>)`
@@ -288,7 +279,7 @@ export class Builder {
 			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
 		);
 		return this.module.struct.new([
-			this.getGlobal('obj-ctr')!.plusPlus(),
+			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(items.length),
 			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
 		], this.getHeaptype('$List'));
@@ -309,7 +300,7 @@ export class Builder {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.module.struct.new([
-			this.getGlobal('obj-ctr')!.plusPlus(),
+			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
 				this.getHeaptype('$DictInternal'),
@@ -325,7 +316,7 @@ export class Builder {
 		}
 		const rt_map: binaryen.Type = this.getReftype('(ref $Map)');
 		const map_obj = this.module.struct.new([
-			this.getGlobal('obj-ctr')!.plusPlus(),
+			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(cases.size),
 			this.module.array.new_default(this.getHeaptype('$MapInternal'), this.module.i32.const(capacity)),
 		], this.getHeaptype('$Map'));
@@ -609,7 +600,7 @@ export class Builder {
 
 	#setupGlobals(): void {
 		const global = new Global(this.module, 'obj-ctr', bigint_to_i64(this.module, 0n, true), binaryen.i64, true);
-		this.#globals.add(global);
+		this.#globals.set(global.name, global);
 		global.init();
 	}
 
