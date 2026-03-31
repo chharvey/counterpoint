@@ -326,6 +326,11 @@ export class Builder {
 		return this.module.struct.get(STRUCT_FIELD.DICT_INTERNAL, dict, this.getReftype('(ref $DictInternal)'));
 	}
 
+	/** @return `(struct.get $Map $internal <map>)` */
+	public getMapInternal(map: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		return this.module.struct.get(STRUCT_FIELD.MAP_INTERNAL, map, this.getReftype('(ref $MapInternal)'));
+	}
+
 	/**
 	 * Set up common types.
 	 * We’ve defined these in a static `types.wat` file,
