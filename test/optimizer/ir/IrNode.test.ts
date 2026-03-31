@@ -854,7 +854,7 @@ describe('IrNode', () => {
 				const mod = cg.module;
 				const rt_value:       binaryen.Type          = cg.getReftype('(ref $Value)');
 				const rt_map:         binaryen.Type          = cg.getReftype('(ref $Map)');
-				const base:           binaryen.ExpressionRef = mod.local.get(1, rt_value); // index 0 = map setup
+				const base:           binaryen.ExpressionRef = mod.local.get(1, rt_value); // index 0 = map setup (implementation of Set)
 				const base_get_0:     binaryen.ExpressionRef = mod.local.get(2, rt_map);
 				const accessor_get_0: binaryen.ExpressionRef = mod.local.get(3, rt_value);
 				const base_get_1:     binaryen.ExpressionRef = mod.local.get(4, rt_map);
