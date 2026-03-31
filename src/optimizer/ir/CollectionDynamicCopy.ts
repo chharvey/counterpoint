@@ -101,149 +101,100 @@ function each_item(
 
 
 /**
- * Converts an array of key–value pairs into an array of properties for Dict insertion.
- * The pairs given must be an array of possibly nullable `$Value`s,
- * where each `$Value` holds a composite `$Tuple`, which has two `$Values`:
+ * Converts a two-tuple key–value pair into the fields of a `$Property` for Dict insertion.
+ * The pair given must be a `$Tuple` that has two `$Value`s:
  * one representing a Counterpoint value of type `sym`, followed by one representing any Counterpoint value.
- * This method maps each pair to a `$Property` by using the symbol ID as the key, and inserts it (via `$Dict.set`) into the given Dict.
+ * This method creates the fields of a `$Property` by using the symbol ID as the key, and the second component as the value.
  *
- * Example using `$ListInternal` (though a `$Tuple` could also be given):
+ * Example:
  * ```
  * ;; argument:
- * (array.new_fixed $ListInternal 4
- * 	(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
- * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
- * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) <val>) ;; any CPL value, primitive or composite
- * 	))
- * 	(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
- * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
- * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) <val>) ;; any CPL value, primitive or composite
- * 	))
- * 	(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
- * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
- * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) <val>) ;; any CPL value, primitive or composite
- * 	))
- * 	(ref.null $Value)
+ * (array.new_fixed $Tuple 2
+ * 	(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+ * 	(struct.new $Value <val>) ;; any CPL value, primitive or composite
  * )
- * ;; map:
- * (array.new_fixed $DictInternal 4
- * 	(struct.new $Property
- * 		(i64.const <sym_key>)
- * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) <val>)
- * 	)
- * 	(struct.new $Property
- * 		(i64.const <sym_key>)
- * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) <val>)
- * 	)
- * 	(struct.new $Property
- * 		(i64.const <sym_key>)
- * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) <val>)
- * 	)
- * 	(ref.null $Property)
+ * ;; returns the fields of:
+ * (struct.new $Property
+ * 	(i64.const <sym_key>)
+ * 	(struct.new $Value <val>)
  * )
  * ```
- *
- * @param cg         code-generator
- * @param dict       a Local holding the dict, a `(ref $Dict)`, into which to insert the properties
- * @param pairs      a Local holding the list of 2-tuples, an `(array (ref null? $Tuple))`
- * @param check_null whether to test whether each item in `pairs` is null (`false` if the array is a `$Tuple`, `true` if it’s a `$ListInternal`)
- * @return           a block performing the work, returning void
+ * @param cg   code-generator
+ * @param pair a Local of a `$Tuple` containing 2 `$Value`s. This method does not call `pair.set()`.
+ * @return     the key and value of the `$Property`
  */
+function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
+	const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+	return {
+		key: cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+		val: cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+	};
+}
 
 
 
 /**
- * Converts an array of items into an array of elements for Set insertion.
- * The pairs given must be an array of possibly nullable `$Value`s,
- * where each `$Value` represents any Counterpoint value.
- * This method uses each item as an antecedent, and inserts it (via `$Map.set`), along with Counterpoint `null` as the consequent, into the given Set.
+ * Converts a `$Case` into the fields of a `$Property` for Dict insertion.
+ * The `$Case` given must have an antecedent representing a Counterpoint value of type `sym`,
+ * and a consequent representing any Counterpoint value.
+ * This method creates the fields of a `$Property` by using the symbol ID as the key, and the consequent as the value.
  *
- * Example using `$ListInternal` (though a `$Tuple` could also be given):
+ * Example:
  * ```
  * ;; argument:
- * (array.new_fixed $ListInternal 4
- * 	(struct.new $Value <ant>) ;; any CPL value, primitive or composite
- * 	(struct.new $Value <ant>) ;; any CPL value, primitive or composite
- * 	(struct.new $Value <ant>) ;; any CPL value, primitive or composite
- * 	(ref.null $Value)
+ * (struct.new $Case
+ * 	(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+ * 	(struct.new $Value <val>) ;; any CPL value, primitive or composite
  * )
- * ;; map:
- * (array.new_fixed $MapInternal 4
- * 	(struct.new $Case
- * 		(struct.new $Value <ant>)
- * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0001 0 0 0 0) (ref.null eq)) ;; CPL `null` value
- * 	)
- * 	(struct.new $Case
- * 		(struct.new $Value <ant>)
- * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0001 0 0 0 0) (ref.null eq)) ;; CPL `null` value
- * 	)
- * 	(struct.new $Case
- * 		(struct.new $Value <ant>)
- * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0001 0 0 0 0) (ref.null eq)) ;; CPL `null` value
- * 	)
- * 	(ref.null $Case)
+ * ;; returns the fields of:
+ * (struct.new $Property
+ * 	(i64.const <sym_key>)
+ * 	(struct.new $Value <val>)
  * )
  * ```
- *
- * @param cg         code-generator
- * @param set        a Local holding the Set, a `(ref $Map)`, into which to insert the elements
- * @param items      a Local holding the list of items, an `(array (ref null? $Value))`
- * @param check_null whether to test whether each item in `items` is null (`false` if the array is a `$Tuple`, `true` if it’s a `$ListInternal`)
- * @return           a block performing the work, returning void
+ * @param cg    code-generator
+ * @param case_ a Local of a `$Case` whose `$ant` represents a Counterpoint Symbol. This method does not call `case_.set()`.
+ * @return      the key and value of the `$Property`
  */
+function case_to_prop(cg: Builder, case_: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
+	const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+	return {
+		key: cg.module.i64.extend_u(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+		val: cg.module.struct.get(STRUCT_FIELD.CASE_CON, case_.get(), rt_value),
+	};
+}
 
 
 
 /**
- * Converts an array of key–value pairs into an array of Cases for Map insertion.
- * The pairs given must be an array of possibly nullable `$Value`s,
- * where each `$Value` holds a composite `$Tuple`, which has two `$Values`:
- * each representing a Counterpoint value of any type.
- * This method maps each pair to a `$Case` by using a hash of the first inner Value as the antecedent,
- * and the second inner Value as the consequent, and inserts it (via `$Map.set`) into the given Map.
+ * Converts a two-tuple antecedent–consequent pair into the fields of a `$Case` for Map insertion.
+ * The pair given must be a `$Tuple` that has two `$Value`s.
+ * This method creates the fields of a `$Case` by using the components of the tuple.
  *
- * Example using `$ListInternal` (though a `$Tuple` could also be given):
+ * Example:
  * ```
  * ;; argument:
- * (array.new_fixed $ListInternal 4
- * 	(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
- * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
- * 		(struct.new $Value <con>) ;; any CPL value, primitive or composite
- * 	))
- * 	(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
- * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
- * 		(struct.new $Value <con>) ;; any CPL value, primitive or composite
- * 	))
- * 	(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
- * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
- * 		(struct.new $Value <con>) ;; any CPL value, primitive or composite
- * 	))
- * 	(ref.null $Value)
+ * (array.new_fixed $Tuple 2
+ * 	(struct.new $Value <ant>) ;; any CPL value, primitive or composite
+ * 	(struct.new $Value <con>) ;; any CPL value, primitive or composite
  * )
- * ;; map:
- * (array.new_fixed $MapInternal 4
- * 	(struct.new $Case
- * 		(struct.new $Value <ant>)
- * 		(struct.new $Value <con>)
- * 	)
- * 	(struct.new $Case
- * 		(struct.new $Value <ant>)
- * 		(struct.new $Value <con>)
- * 	)
- * 	(struct.new $Case
- * 		(struct.new $Value <ant>)
- * 		(struct.new $Value <con>)
- * 	)
- * 	(ref.null $Case)
+ * ;; returns the fields of:
+ * (struct.new $Case
+ * 	(struct.new $Value <ant>)
+ * 	(struct.new $Value <con>)
  * )
  * ```
- *
- * @param cg         code-generator
- * @param map        a Local holding the Map, a `(ref $Map)`, into which to insert the Cases
- * @param pairs      a Local holding the list of 2-tuples, an `(array (ref null? $Tuple))`
- * @param check_null whether to test whether each item in `pairs` is null (`false` if the array is a `$Tuple`, `true` if it’s a `$ListInternal`)
- * @return           a block performing the work, returning void
+ * @param cg   code-generator
+ * @param pair a Local of a `$Tuple` containing 2 `$Value`s. This method does not call `pair.set()`.
+ * @return     the antecedent and consequent of a new `$Case`
  */
+function two_tuple_to_case(cg: Builder, pair: Local): {ant: binaryen.ExpressionRef, con: binaryen.ExpressionRef} {
+	const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+	return {
+		ant: cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
+		con: cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+	};
+}
 
 
 
@@ -327,46 +278,14 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// List.<T>(Set.<T>((t, t, t)));
 					// List.<T>({t, t, t});
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
 						/*
-						 * Converts a Set of Values into an array of Values for List insertion.
-						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
-						 * where each `$Case` has a `$Value` antecedent and a Counterpoint `null` consequent,
-						 * where the antecedent represents a Counterpoint value of any type.
-						 * This method extracts from each `$Case` the `$Value` antecedent,
-						 * and inserts it (via `$List.set`) into the given List.
-						 *
 						 * NOTE: This method iterates over the Set in internal array order, and inserts them into the List in that order.
 						 * The items in the resulting List do not necessarily appear in the same order as they were inserted into the Set.
-						 *
-						 * Example using `$MapInternal`:
-						 * ```
-						 * ;; argument:
-						 * (array.new_fixed $MapInternal 4
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(ref.null $Case)
-						 * )
-						 * ;; map:
-						 * (array.new_fixed $ListInternal 4
-						 * 	(struct.new $Value <ant>)
-						 * 	(struct.new $Value <ant>)
-						 * 	(struct.new $Value <ant>)
-						 * 	(ref.null $Value)
-						 * )
-						 * ```
+						 * This may be surprising to programmers who expect the copy to preserve order;
+						 * however, Set semantics explicitly state that programmers should not expect iteration to occur in any particular order.
 						 */
-						const j: Local = cg.newLocal(cg.module.i32.const(0));
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
+						const j:      Local = cg.newLocal(cg.module.i32.const(0));
 						return cg.module.block(null, [
 							j.set(),
 							each_item(cg, destlist, srcref, cg.getReftype('(ref null $Case)'), true, (item) => cg.module.block(null, [
@@ -392,13 +311,10 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
 						return each_item(cg, destdict, srcref, cg.getReftype('(ref $Value)'), false, (item) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							const {key, val} = two_tuple_to_prop(cg, pair);
 							return [
 								pair.set(),
-								cg.module.call('Dict.set', [
-									destdict.get(),
-									cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-								], binaryen.none),
+								cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none),
 							];
 						});
 					}
@@ -420,13 +336,10 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
 						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Value)'), true, (item) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							const {key, val} = two_tuple_to_prop(cg, pair);
 							return [
 								pair.set(),
-								cg.module.call('Dict.set', [
-									destdict.get(),
-									cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-								], binaryen.none),
+								cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none),
 							];
 						});
 					}
@@ -447,69 +360,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-						/*
-						 * Converts a Set of key–value pairs into an array of Properties for Dict insertion.
-						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
-						 * where each `$Case` has a `$Value` antecedent and a Counterpoint `null` consequent,
-						 * where the antecedent is a composite `$Tuple` with two `$Value`s:
-						 * one representing a Counterpoint value of type `sym`, followed by one representing any Counterpoint value.
-						 * This method maps each `$Case` of the form `$Case ($Value ($Tuple (sym, val)), null)` to a `$Property`,
-						 * and inserts it (via `$Dict.set`) into the given Dict.
-						 *
-						 * Example using `$MapInternal`:
-						 * ```
-						 * ;; argument:
-						 * (array.new_fixed $MapInternal 4
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
-						 * 			(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
-						 * 			(struct.new $Value <val>) ;; any CPL value, primitive or composite
-						 * 		))
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
-						 * 			(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
-						 * 			(struct.new $Value <val>) ;; any CPL value, primitive or composite
-						 * 		))
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
-						 * 			(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
-						 * 			(struct.new $Value <val>) ;; any CPL value, primitive or composite
-						 * 		))
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(ref.null $Case)
-						 * )
-						 * ;; map:
-						 * (array.new_fixed $DictInternal 4
-						 * 	(struct.new $Property
-						 * 		(i64.const <sym_key>)
-						 * 		(struct.new $Value <val>)
-						 * 	)
-						 * 	(struct.new $Property
-						 * 		(i64.const <sym_key>)
-						 * 		(struct.new $Value <val>)
-						 * 	)
-						 * 	(struct.new $Property
-						 * 		(i64.const <sym_key>)
-						 * 		(struct.new $Value <val>)
-						 * 	)
-						 * 	(ref.null $Property)
-						 * )
-						 * ```
-						 */
 						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (item) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item.get(), rt_value)).cast('(ref $Tuple)'));
+							const {key, val} = two_tuple_to_prop(cg, pair);
 							return cg.module.block(null, [
 								pair.set(),
-								cg.module.call('Dict.set', [
-									destdict.get(),
-									cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-								], binaryen.none),
+								cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none),
 							]);
 						});
 					}
@@ -517,55 +373,10 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					case this.source.type instanceof TYPE.Map: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-						/*
-						 * Converts a Map into an array of Properties for Dict insertion.
-						 * The given Map has an array of cases: possibly nullable `$Case`s,
-						 * where each `$Case`’s antecedent represents a Counterpoint value of type `sym`,
-						 * and consequent represents any Counterpoint value
-						 * This method maps each `$Case` to a `$Property`,
-						 * and inserts it (via `$Dict.set`) into the given Dict.
-						 *
-						 * Example using `$MapInternal`:
-						 * ```
-						 * ;; argument:
-						 * (array.new_fixed $MapInternal 4
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
-						 * 		(struct.new $Value <val>) ;; any CPL value, primitive or composite
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
-						 * 		(struct.new $Value <val>) ;; any CPL value, primitive or composite
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
-						 * 		(struct.new $Value <val>) ;; any CPL value, primitive or composite
-						 * 	)
-						 * 	(ref.null $Case)
-						 * )
-						 * ;; map:
-						 * (array.new_fixed $DictInternal 4
-						 * 	(struct.new $Property
-						 * 		(i64.const <sym_key>)
-						 * 		(struct.new $Value <val>)
-						 * 	)
-						 * 	(struct.new $Property
-						 * 		(i64.const <sym_key>)
-						 * 		(struct.new $Value <val>)
-						 * 	)
-						 * 	(struct.new $Property
-						 * 		(i64.const <sym_key>)
-						 * 		(struct.new $Value <val>)
-						 * 	)
-						 * 	(ref.null $Property)
-						 * )
-						 * ```
-						 */
-						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (item) => cg.module.call('Dict.set', [
-							destdict.get(),
-							cg.module.i64.extend_u(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item.get(), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-							cg.module.struct.get(STRUCT_FIELD.CASE_CON, item.get(), rt_value),
-						], binaryen.none));
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (item) => {
+							const {key, val} = case_to_prop(cg, item);
+							return cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none);
+						});
 					}
 					default: {
 						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
@@ -620,13 +431,10 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
 						return each_item(cg, destmap, srcref, cg.getReftype('(ref $Value)'), false, (item) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							const {ant, con} = two_tuple_to_case(cg, pair);
 							return [
 								pair.set(),
-								cg.module.call('Map.set', [
-									destmap.get(),
-									cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
-									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-								], binaryen.none),
+								cg.module.call('Map.set', [destmap.get(), ant, con], binaryen.none),
 							];
 						});
 					}
@@ -636,13 +444,10 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
 						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Value)'), true, (item) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							const {ant, con} = two_tuple_to_case(cg, pair);
 							return [
 								pair.set(),
-								cg.module.call('Map.set', [
-									destmap.get(),
-									cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
-									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-								], binaryen.none),
+								cg.module.call('Map.set', [destmap.get(), ant, con], binaryen.none),
 							];
 						});
 					}
@@ -650,68 +455,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-						/*
-						 * Converts a Set of key–value pairs into an array of Cases for Map insertion.
-						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
-						 * where each `$Case` has a `$Value` antecedent and a Counterpoint `null` consequent,
-						 * where the antecedent is a composite `$Tuple` with two `$Values`: each representing a Counterpoint value of any type.
-						 * This method maps each `$Case` of the form `$Case ($Value ($Tuple (ant, con)), null)` to a `$Case` of the form `$Case (ant, con)`,
-						 * and inserts it (via `$Map.set`) into the given Map.
-						 *
-						 * Example using `$MapInternal`:
-						 * ```
-						 * ;; argument:
-						 * (array.new_fixed $MapInternal 4
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
-						 * 			(struct.new $Value <ant>) ;; any CPL value, primitive or composite
-						 * 			(struct.new $Value <con>) ;; any CPL value, primitive or composite
-						 * 		))
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
-						 * 			(struct.new $Value <ant>) ;; any CPL value, primitive or composite
-						 * 			(struct.new $Value <con>) ;; any CPL value, primitive or composite
-						 * 		))
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
-						 * 			(struct.new $Value <ant>) ;; any CPL value, primitive or composite
-						 * 			(struct.new $Value <con>) ;; any CPL value, primitive or composite
-						 * 		))
-						 * 		(struct.new $Value <CPL null>)
-						 * 	)
-						 * 	(ref.null $Case)
-						 * )
-						 * ;; map:
-						 * (array.new_fixed $MapInternal 4
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value <ant>)
-						 * 		(struct.new $Value <con>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value <ant>)
-						 * 		(struct.new $Value <con>)
-						 * 	)
-						 * 	(struct.new $Case
-						 * 		(struct.new $Value <ant>)
-						 * 		(struct.new $Value <con>)
-						 * 	)
-						 * 	(ref.null $Case)
-						 * )
-						 * ```
-						 */
 						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Case)'), true, (item) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item.get(), rt_value)).cast('(ref $Tuple)'));
+							const {ant, con} = two_tuple_to_case(cg, pair);
 							return cg.module.block(null, [
 								pair.set(),
-								cg.module.call('Map.set', [
-									destmap.get(),
-									cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
-									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-								], binaryen.none),
+								cg.module.call('Map.set', [destmap.get(), ant, con], binaryen.none),
 							]);
 						});
 					}
