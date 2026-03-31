@@ -224,3 +224,61 @@
 
 	(struct.get $Case $con (local.get $case))
 )
+
+
+
+;; Returns whether two Maps are equal —
+;; whether they have equal consequents at equal antecedents.
+(func $Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (result i32)
+	(local $i         i32)
+	(local $internal0 (ref $MapInternal))
+	(local $internal1 (ref $MapInternal))
+	(local $case0     (ref null $Case))
+	(local $case1     (ref null $Case))
+	(local $ant       (ref $Value))
+
+	;; Maps that are identical are always equal
+	(if (ref.eq (local.get $map0) (local.get $map1)) ;; using `ref.eq` instead of `vid_` since they’re already unwrapped
+		(then (return (i32.const 1)))
+	)
+
+	;; compare $Map.$size since two equal Maps may have different internal array lengths
+	(if (i32.ne (struct.get $Map $size (local.get $map0)) (struct.get $Map $size (local.get $map1)))
+		(then (return (i32.const 0)))
+	)
+
+	(local.set $internal0 (struct.get $Map $internal (local.get $map0)))
+	(local.set $internal1 (struct.get $Map $internal (local.get $map1)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(local.set $case0 (array.get $MapInternal (local.get $internal0) (local.get $i)))
+			(if (i32.eqz (ref.is_null (local.get $case0)))
+				(then
+					(local.set $ant (struct.get $Case $ant (local.get $case0)))
+
+					;; if $map1 doesn’t have the key, return false
+					(drop (local.set $case1 (call $Map.find (local.get $map1) (local.get $ant))))
+					(if (i32.or
+						(ref.is_null (local.get $case1))
+						(call $Case.is-tombstone (local.get $case1))
+					)
+						(then (return (i32.const 0)))
+					)
+
+					(if (i32.eqz (call $bool-to-i32 (call $veq_
+						(struct.get $Case $con (local.get $case0))
+						(struct.get $Case $con (local.get $case1))
+					)))
+						(then (return (i32.const 0)))
+					)
+				)
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
+)

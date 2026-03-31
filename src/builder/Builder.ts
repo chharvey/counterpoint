@@ -471,8 +471,8 @@ export class Builder {
 			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
 			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
 		]);
-		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
-		tb.setOpen(i_dict);
+		tb.setSubType(i_map, tb.getTempHeapType(i_object));
+		tb.setOpen(i_map);
 
 		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
@@ -719,6 +719,7 @@ export class Builder {
 		const rt_record: binaryen.Type         = this.getReftype('(ref $Record)');
 		const rt_list:   binaryen.Type         = this.getReftype('(ref $List)');
 		const rt_dict:   binaryen.Type         = this.getReftype('(ref $Dict)');
+		const rt_map:    binaryen.Type         = this.getReftype('(ref $Map)');
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -870,7 +871,17 @@ export class Builder {
 								mod.ref.cast(local_vals[0].compositeValue, rt_dict),
 								mod.ref.cast(local_vals[1].compositeValue, rt_dict),
 							], binaryen.i32))).value,
-							mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value), // TODO: Set.equal, Map.equal
+							mod.if(
+								mod.i32.and(
+									mod.ref.test(local_vals[0].compositeValue, rt_map),
+									mod.ref.test(local_vals[1].compositeValue, rt_map),
+								),
+								new BinValue(this, BinVect.asBool(mod, mod.call('Map.equal', [
+									mod.ref.cast(local_vals[0].compositeValue, rt_map),
+									mod.ref.cast(local_vals[1].compositeValue, rt_map),
+								], binaryen.i32))).value,
+								mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value),
+							),
 						),
 					),
 				),

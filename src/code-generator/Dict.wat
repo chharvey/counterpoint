@@ -259,7 +259,7 @@
 				(then
 					(local.set $key (struct.get $Property $key (local.get $prop0)))
 
-					;; if dict1 doesn’t have the key, return false
+					;; if $dict1 doesn’t have the key, return false
 					(drop (local.set $prop1 (call $Dict.find (local.get $dict1) (local.get $key))))
 					(if (i32.or
 						(ref.is_null (local.get $prop1))
