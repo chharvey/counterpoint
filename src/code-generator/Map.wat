@@ -179,10 +179,14 @@
 			(struct.set $Map $size (local.get $map) (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1)))
 		)
 	)
-	(array.set $MapInternal (struct.get $Map $internal (local.get $map)) (local.get $index) (struct.new $Case
-		(local.get $ant)
-		(local.get $con)
-	))
+	(array.set $MapInternal
+		(struct.get $Map $internal (local.get $map))
+		(local.get $index)
+		(struct.new $Case
+			(local.get $ant)
+			(local.get $con)
+		)
+	)
 )
 
 
@@ -192,8 +196,6 @@
 ;; otherwise null is returned and the Map is not mutated.
 ;; This method removes the Case first (if found), then reallocates if necessary.
 (func $Map.delete (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref null $Value))
-	;; the given Map’s internal array.
-	(local $internal (ref $MapInternal))
 	;; index of the found case in the internal array.
 	(local $index i32)
 	;; found case at the specified index.
@@ -201,7 +203,6 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(local.set $internal (struct.get $Map $internal (local.get $map)))
 	(call $Map.find (local.get $map) (local.get $ant))
 	(local.set $case)
 	(local.set $index)
@@ -215,7 +216,7 @@
 
 	;; replace the case with a tombstone
 	(array.set $MapInternal
-		(local.get $internal)
+		(struct.get $Map $internal (local.get $map))
 		(local.get $index)
 		(call $Case.new-tombstone)
 	)

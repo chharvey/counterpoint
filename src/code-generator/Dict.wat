@@ -179,10 +179,14 @@
 			(struct.set $Dict $size (local.get $dict) (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1)))
 		)
 	)
-	(array.set $DictInternal (struct.get $Dict $internal (local.get $dict)) (local.get $index) (struct.new $Property
-		(local.get $key)
-		(local.get $val)
-	))
+	(array.set $DictInternal
+		(struct.get $Dict $internal (local.get $dict))
+		(local.get $index)
+		(struct.new $Property
+			(local.get $key)
+			(local.get $val)
+		)
+	)
 )
 
 
@@ -192,8 +196,6 @@
 ;; otherwise null is returned and the Dict is not mutated.
 ;; This method removes the Property first (if found), then reallocates if necessary.
 (func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Value))
-	;; the given Dict’s internal array.
-	(local $internal (ref $DictInternal))
 	;; index of the found property in the internal array.
 	(local $index i32)
 	;; found property at the specified index.
@@ -201,7 +203,6 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(call $Dict.find (local.get $dict) (local.get $key))
 	(local.set $prop)
 	(local.set $index)
@@ -215,7 +216,7 @@
 
 	;; replace the property with a tombstone
 	(array.set $DictInternal
-		(local.get $internal)
+		(struct.get $Dict $internal (local.get $dict))
 		(local.get $index)
 		(call $Property.new-tombstone)
 	)

@@ -58,7 +58,11 @@
 			(struct.set $List $size (local.get $list) (i32.add (struct.get $List $size (local.get $list)) (i32.const 1)))
 		)
 	)
-	(array.set $ListInternal (struct.get $List $internal (local.get $list)) (local.get $index) (local.get $value))
+	(array.set $ListInternal
+		(struct.get $List $internal (local.get $list))
+		(local.get $index)
+		(local.get $value)
+	)
 )
 
 
