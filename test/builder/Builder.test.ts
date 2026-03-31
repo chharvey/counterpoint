@@ -1,7 +1,8 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinValue,
+	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
@@ -19,7 +20,17 @@ describe('Builder', () => {
 
 
 	describe('#codegen*', () => {
+		function obj_ctr_plus_plus(mod: Builder['module']): binaryen.ExpressionRef {
+			return mod.block(null, [
+				mod.global.get('obj-ctr', binaryen.i64),
+				mod.global.set('obj-ctr', mod.i64.add(mod.global.get('obj-ctr', binaryen.i64), bigint_to_i64(mod, 1n, true))),
+			], binaryen.i64);
+		}
 		xjs.Map.forEachAggregated(new Map<string, (cg: Builder) => [binaryen.ExpressionRef, binaryen.ExpressionRef]>([
+			['empty `#codegenTuple`.', (cg) => [
+				cg.codegenTuple(),
+				cg.module.array.new_fixed(cg.getHeaptype('$Tuple'), []),
+			]],
 			['`#codegenTuple` returns (array.new_fixed).', (cg) => [
 				cg.codegenTuple([
 					genConst(cg, true),
@@ -29,6 +40,10 @@ describe('Builder', () => {
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
+			]],
+			['empty `#codegenRecord`.', (cg) => [
+				cg.codegenRecord(),
+				cg.module.array.new_fixed(cg.getHeaptype('$Record'), []),
 			]],
 			['`#codegenRecord` returns (array.new_fixed).', (cg) => [
 				cg.codegenRecord(new Map([
@@ -42,13 +57,25 @@ describe('Builder', () => {
 					new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n),
 				]),
 			]],
-			['`#codegenList` returns (struct.new) with count and internal array.', (cg) => [
+			['empty `#codegenList`.', (cg) => [
+				cg.codegenList(),
+				cg.module.struct.new([
+					obj_ctr_plus_plus(cg.module),
+					cg.module.i32.const(0),
+					cg.module.array.new_fixed(
+						cg.getHeaptype('$ListInternal'),
+						repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 8),
+					),
+				], cg.getHeaptype('$List')),
+			]],
+			['`#codegenList` returns (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenList([
 					genConst(cg, 1.1),
 					genConst(cg, 2.2),
 					genConst(cg, 3.3),
 				]),
 				cg.module.struct.new([
+					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(3),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$ListInternal'),
@@ -61,7 +88,18 @@ describe('Builder', () => {
 					),
 				], cg.getHeaptype('$List')),
 			]],
-			['`#codegenDict` (struct.new) with count and internal array.', (cg) => [
+			['empty `#codegenDict`.', (cg) => [
+				cg.codegenDict(),
+				cg.module.struct.new([
+					obj_ctr_plus_plus(cg.module),
+					cg.module.i32.const(0),
+					cg.module.array.new_fixed(
+						cg.getHeaptype('$DictInternal'),
+						repeat(cg.module.ref.null(cg.getReftype('(ref null $Property)')), 8),
+					),
+				], cg.getHeaptype('$Dict')),
+			]],
+			['`#codegenDict` (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenDict(new Map([
 					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
 					[0x107n, new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n)],
@@ -70,6 +108,7 @@ describe('Builder', () => {
 					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
 				])),
 				cg.module.struct.new([
+					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
 						cg.getHeaptype('$DictInternal'),
@@ -84,9 +123,49 @@ describe('Builder', () => {
 					),
 				], cg.getHeaptype('$Dict')),
 			]],
+			['empty `#codegenMap`.', (cg) => {
+				const mod = cg.module;
+				return [
+					cg.codegenMap(),
+					mod.struct.new([
+						obj_ctr_plus_plus(mod),
+						mod.i32.const(0),
+						mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
+					], cg.getHeaptype('$Map')),
+				];
+			}],
+			['`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', (cg) => {
+				const mod = cg.module;
+				const rt_map:  binaryen.Type          = cg.getReftype('(ref $Map)');
+				const map_get: binaryen.ExpressionRef = mod.local.get(0, rt_map);
+				return [
+					cg.codegenMap(new Map([
+						[genConst(cg, 10n), genConst(cg, 1.1)],
+						[genConst(cg, 20n), genConst(cg, 2.2)],
+						[genConst(cg, 30n), genConst(cg, 3.3)],
+						[genConst(cg, 40n), genConst(cg, 4.4)],
+						[genConst(cg, 50n), genConst(cg, 5.5)],
+					])),
+					mod.block(null, [
+						mod.local.set(0, mod.struct.new([
+							obj_ctr_plus_plus(mod),
+							mod.i32.const(5),
+							mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
+						], cg.getHeaptype('$Map'))),
+						mod.call('Map.set', [map_get, genConst(cg, 10n), genConst(cg, 1.1)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 20n), genConst(cg, 2.2)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 30n), genConst(cg, 3.3)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 40n), genConst(cg, 4.4)], binaryen.none),
+						mod.call('Map.set', [map_get, genConst(cg, 50n), genConst(cg, 5.5)], binaryen.none),
+						map_get,
+					], rt_map),
+				];
+			}],
 		]), (bins, description) => {
 			it(description, () => { // TODO: v0.5: tail call
-				const [actual, expected] = bins(new Builder());
+				const cg = new Builder();
+				cg.setupModule();
+				const [actual, expected] = bins(cg);
 				assertEqualBins(actual, expected);
 			});
 		});
@@ -133,6 +212,7 @@ describe('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
+			cg.setupModule();
 			return assertEqualBins(
 				[new Map([
 					// (a= 42, aa= false, b= 4.2); % (258, 261, 256)
@@ -208,6 +288,7 @@ describe('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
+			cg.setupModule();
 			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)'));
 			return assertEqualBins(
 				[new Map([
@@ -257,6 +338,10 @@ describe('Builder', () => {
 					WASM_NULL,
 					WASM_NULL,
 				]].map((entries) => mod.struct.new([
+					cg.module.block(null, [
+						cg.module.global.get('obj-ctr', binaryen.i64),
+						cg.module.global.set('obj-ctr', cg.module.i64.add(cg.module.global.get('obj-ctr', binaryen.i64), bigint_to_i64(mod, 1n, true))),
+					], binaryen.i64),
 					mod.i32.const(3),
 					mod.array.new_fixed(cg.getHeaptype('$DictInternal'), entries),
 				], cg.getHeaptype('$Dict'))),
