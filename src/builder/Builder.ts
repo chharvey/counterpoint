@@ -304,15 +304,19 @@ export class Builder {
 			capacity *= 2;
 		}
 		const rt_map: binaryen.Type = this.getReftype('(ref $Map)');
-		const map: Local = this.newLocal(this.module.struct.new([
+		const map_obj = this.module.struct.new([
 			this.getGlobal('obj-ctr')!.plusPlus(),
 			this.module.i32.const(cases.size),
 			this.module.array.new_default(this.getHeaptype('$MapInternal'), this.module.i32.const(capacity)),
-		], this.getHeaptype('$Map')), rt_map);
+		], this.getHeaptype('$Map'));
+		if (!cases.size) {
+			return map_obj;
+		}
+		const local: Local = this.newLocal(map_obj, rt_map);
 		return this.module.block(null, [
-			map.set(),
-			...[...cases].map(([ant, con]) => this.module.call('Map.set', [map.get(), ant, con], binaryen.none)),
-			map.get(),
+			local.set(),
+			...[...cases].map(([ant, con]) => this.module.call('Map.set', [local.get(), ant, con], binaryen.none)),
+			local.get(),
 		], rt_map);
 	}
 

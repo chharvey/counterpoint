@@ -125,17 +125,13 @@ describe('Builder', () => {
 			]],
 			['empty `#codegenMap`.', (cg) => {
 				const mod = cg.module;
-				const rt_map: binaryen.Type = cg.getReftype('(ref $Map)');
 				return [
 					cg.codegenMap(),
-					mod.block(null, [
-						mod.local.set(0, mod.struct.new([
-							obj_ctr_plus_plus(mod),
-							mod.i32.const(0),
-							mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
-						], cg.getHeaptype('$Map'))),
-						mod.local.get(0, rt_map),
-					], rt_map),
+					mod.struct.new([
+						obj_ctr_plus_plus(mod),
+						mod.i32.const(0),
+						mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
+					], cg.getHeaptype('$Map')),
 				];
 			}],
 			['`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', (cg) => {
