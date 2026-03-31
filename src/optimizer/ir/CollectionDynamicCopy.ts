@@ -404,7 +404,83 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// List.<T>(Set.<T>((t, t, t)));
 					// List.<T>({t, t, t});
 					case this.source.type instanceof TYPE.Set: {
-						throw new Error('not yet supported.');
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
+
+						/*
+						 * Converts a Set of Values into an array of Values for List insertion.
+						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
+						 * where each `$Case` has a `$Value` antecedent and a Counterpoint `null` consequent,
+						 * where the antecedent represents a Counterpoint value of any type.
+						 * This method extracts from each `$Case` the `$Value` antecedent,
+						 * and inserts it (via `$List.set`) into the given List.
+						 *
+						 * NOTE: This method iterates over the Set in internal array order, and inserts them into the List in that order.
+						 * The items in the resulting List do not necessarily appear in the same order as they were inserted into the Set.
+						 *
+						 * Example using `$MapInternal`:
+						 * ```
+						 * ;; argument:
+						 * (array.new_fixed $MapInternal 4
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
+						 * 		(struct.new $Value <CPL null>)
+						 * 	)
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
+						 * 		(struct.new $Value <CPL null>)
+						 * 	)
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value <ant>) ;; any CPL value, primitive or composite
+						 * 		(struct.new $Value <CPL null>)
+						 * 	)
+						 * 	(ref.null $Case)
+						 * )
+						 * ;; map:
+						 * (array.new_fixed $ListInternal 4
+						 * 	(struct.new $Value <ant>)
+						 * 	(struct.new $Value <ant>)
+						 * 	(struct.new $Value <ant>)
+						 * 	(ref.null $Value)
+						 * )
+						 * ```
+						 */
+						const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+						const i:     Local = cg.newLocal(cg.module.i32.const(0));
+						const j:     Local = cg.newLocal(cg.module.i32.const(0));
+						const case_: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), cg.getReftype('(ref null $Case)')));
+
+						// HACK: Temporary counter until we get CodeGenerator blocks.
+						if (!('blockCount' in cg)) {
+							Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
+						}
+						const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
+						Reflect.set(cg, 'blockCount', block_n + 1n);
+
+						return cg.module.block(null, [
+							destlist.set(),
+							srcref.set(),
+							cg.module.block(`exit-${ block_n }`, [
+								i.set(),
+								j.set(),
+								cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
+									cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
+									case_.set(),
+									cg.module.if(
+										cg.module.i32.eqz(cg.module.ref.is_null(case_.get())),
+										cg.module.block(null, [
+											cg.module.call('List.set', [
+												destlist.get(),
+												j.get(),
+												cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value),
+											], binaryen.none),
+											j.inc(),
+										]),
+									),
+									i.inc(),
+									cg.module.br(`repeat-${ block_n }`),
+								])),
+							]),
+						]);
 					}
 					default: {
 						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
@@ -451,12 +527,180 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					case this.source.type instanceof TYPE.Set: {
-						throw new Error('not yet supported.');
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
+
+						/*
+						 * Converts a Set of key–value pairs into an array of Properties for Dict insertion.
+						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
+						 * where each `$Case` has a `$Value` antecedent and a Counterpoint `null` consequent,
+						 * where the antecedent is a composite `$Tuple` with two `$Value`s:
+						 * one representing a Counterpoint value of type `sym`, followed by one representing any Counterpoint value.
+						 * This method maps each `$Case` of the form `$Case ($Value ($Tuple (sym, val)), null)` to a `$Property`,
+						 * and inserts it (via `$Dict.set`) into the given Dict.
+						 *
+						 * Example using `$MapInternal`:
+						 * ```
+						 * ;; argument:
+						 * (array.new_fixed $MapInternal 4
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
+						 * 			(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+						 * 			(struct.new $Value <val>) ;; any CPL value, primitive or composite
+						 * 		))
+						 * 		(struct.new $Value <CPL null>)
+						 * 	)
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
+						 * 			(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+						 * 			(struct.new $Value <val>) ;; any CPL value, primitive or composite
+						 * 		))
+						 * 		(struct.new $Value <CPL null>)
+						 * 	)
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value (i32.const 1) (v128.const i64x2 0 0) (array.new_fixed $Tuple 2
+						 * 			(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+						 * 			(struct.new $Value <val>) ;; any CPL value, primitive or composite
+						 * 		))
+						 * 		(struct.new $Value <CPL null>)
+						 * 	)
+						 * 	(ref.null $Case)
+						 * )
+						 * ;; map:
+						 * (array.new_fixed $DictInternal 4
+						 * 	(struct.new $Property
+						 * 		(i64.const <sym_key>)
+						 * 		(struct.new $Value <val>)
+						 * 	)
+						 * 	(struct.new $Property
+						 * 		(i64.const <sym_key>)
+						 * 		(struct.new $Value <val>)
+						 * 	)
+						 * 	(struct.new $Property
+						 * 		(i64.const <sym_key>)
+						 * 		(struct.new $Value <val>)
+						 * 	)
+						 * 	(ref.null $Property)
+						 * )
+						 * ```
+						 */
+						const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+						const i:     Local = cg.newLocal(cg.module.i32.const(0));
+						const case_: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), cg.getReftype('(ref null $Case)')));
+						const pair:  Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value)).cast('(ref $Tuple)'));
+
+						// HACK: Temporary counter until we get CodeGenerator blocks.
+						if (!('blockCount' in cg)) {
+							Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
+						}
+						const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
+						Reflect.set(cg, 'blockCount', block_n + 1n);
+
+						return cg.module.block(null, [
+							destdict.set(),
+							srcref.set(),
+							cg.module.block(`exit-${ block_n }`, [
+								i.set(),
+								cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
+									cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
+									case_.set(),
+									cg.module.if(
+										cg.module.i32.eqz(cg.module.ref.is_null(case_.get())),
+										cg.module.block(null, [
+											pair.set(),
+											cg.module.call('Dict.set', [
+												destdict.get(),
+												cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+												cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+											], binaryen.none),
+										]),
+									),
+									i.inc(),
+									cg.module.br(`repeat-${ block_n }`),
+								])),
+							]),
+						]);
 					}
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					case this.source.type instanceof TYPE.Map: {
-						throw new Error('not yet supported.');
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
+
+						/*
+						 * Converts a Map into an array of Properties for Dict insertion.
+						 * The given Map has an array of cases: possibly nullable `$Case`s,
+						 * where each `$Case`’s antecedent represents a Counterpoint value of type `sym`,
+						 * and consequent represents any Counterpoint value
+						 * This method maps each `$Case` to a `$Property`,
+						 * and inserts it (via `$Dict.set`) into the given Dict.
+						 *
+						 * Example using `$MapInternal`:
+						 * ```
+						 * ;; argument:
+						 * (array.new_fixed $MapInternal 4
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+						 * 		(struct.new $Value <val>) ;; any CPL value, primitive or composite
+						 * 	)
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+						 * 		(struct.new $Value <val>) ;; any CPL value, primitive or composite
+						 * 	)
+						 * 	(struct.new $Case
+						 * 		(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
+						 * 		(struct.new $Value <val>) ;; any CPL value, primitive or composite
+						 * 	)
+						 * 	(ref.null $Case)
+						 * )
+						 * ;; map:
+						 * (array.new_fixed $DictInternal 4
+						 * 	(struct.new $Property
+						 * 		(i64.const <sym_key>)
+						 * 		(struct.new $Value <val>)
+						 * 	)
+						 * 	(struct.new $Property
+						 * 		(i64.const <sym_key>)
+						 * 		(struct.new $Value <val>)
+						 * 	)
+						 * 	(struct.new $Property
+						 * 		(i64.const <sym_key>)
+						 * 		(struct.new $Value <val>)
+						 * 	)
+						 * 	(ref.null $Property)
+						 * )
+						 * ```
+						 */
+						const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+						const i:     Local = cg.newLocal(cg.module.i32.const(0));
+						const case_: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), cg.getReftype('(ref null $Case)')));
+
+						// HACK: Temporary counter until we get CodeGenerator blocks.
+						if (!('blockCount' in cg)) {
+							Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
+						}
+						const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
+						Reflect.set(cg, 'blockCount', block_n + 1n);
+
+						return cg.module.block(null, [
+							destdict.set(),
+							srcref.set(),
+							cg.module.block(`exit-${ block_n }`, [
+								i.set(),
+								cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
+									cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
+									case_.set(),
+									cg.module.if(
+										cg.module.i32.eqz(cg.module.ref.is_null(case_.get())),
+										cg.module.call('Dict.set', [
+											destdict.get(),
+											cg.module.i64.extend_u(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+											cg.module.struct.get(STRUCT_FIELD.CASE_CON, case_.get(), rt_value),
+										], binaryen.none),
+									),
+									i.inc(),
+									cg.module.br(`repeat-${ block_n }`),
+								])),
+							]),
+						]);
 					}
 					default: {
 						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);

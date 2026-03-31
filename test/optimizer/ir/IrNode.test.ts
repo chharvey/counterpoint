@@ -959,7 +959,42 @@ describe('IrNode', () => {
 					const {opt, cg} = setupScript(`{
 						List.<int>({2, 3, 5});
 					}`, {lower: true, codegen: false, build: false});
-					return assert.throws(() => opt.instructions.map((instr) => instr.codegen(cg)), /not yet supported/);
+					const mod = cg.module;
+					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
+					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
+					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
+					const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.getReftype('(ref $MapInternal)'));
+					const i_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
+					const j_get:     binaryen.ExpressionRef = mod.local.get(6, binaryen.i32);
+					const case_get:  binaryen.ExpressionRef = mod.local.get(7, rt_n_case);
+					return assertEqualBins(
+						opt.instructions[2].codegen(cg),
+						mod.block(null, [
+							mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)')),
+							mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Map)'))), // index 1 = map setup (implementation of Set)
+							mod.block('exit-0', [
+								mod.local.set(5, mod.i32.const(0)),
+								mod.local.set(6, mod.i32.const(0)),
+								mod.loop('repeat-0', mod.block(null, [
+									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(cases_get))),
+									mod.local.set(7, mod.array.get(cases_get, i_get, rt_n_case)),
+									mod.if(
+										mod.i32.eqz(mod.ref.is_null(case_get)),
+										mod.block(null, [
+											mod.call('List.set', [
+												mod.local.get(3, cg.getReftype('(ref $List)')),
+												j_get,
+												mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value),
+											], binaryen.none),
+											mod.local.set(6, mod.i32.add(j_get, mod.i32.const(1))),
+										]),
+									),
+									mod.local.set(5, mod.i32.add(i_get, mod.i32.const(1))),
+									mod.br('repeat-0'),
+								])),
+							]),
+						]),
+					);
 				});
 			});
 			describe('DICT.COPY', () => {
@@ -982,7 +1017,7 @@ describe('IrNode', () => {
 							mod.block('exit-0', [
 								mod.local.set(7, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
-									mod.br_if('exit-0', mod.i32.ge_u(mod.local.get(7, binaryen.i32), mod.array.len(pairs_get))),
+									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(pairs_get))),
 									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_value)),
 									mod.local.set(9, new BinValue(cg, mod.local.get(8, rt_value)).cast('(ref $Tuple)')),
 									mod.call('Dict.set', [
@@ -1030,11 +1065,12 @@ describe('IrNode', () => {
 						Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
 					}`, {lower: true, codegen: false, build: false});
 					const mod = cg.module;
-					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+					const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
+					const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
 					opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
 					const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.getReftype('(ref $ListInternal)'));
 					const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
-					const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.getReftype('(ref null $Value)'));
+					const item_get:  binaryen.ExpressionRef = mod.local.get(8, rt_n_value);
 					const pair_get:  binaryen.ExpressionRef = mod.local.get(9, cg.getReftype('(ref $Tuple)'));
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
@@ -1044,8 +1080,8 @@ describe('IrNode', () => {
 							mod.block('exit-0', [
 								mod.local.set(7, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
-									mod.br_if('exit-0', mod.i32.ge_u(mod.local.get(7, binaryen.i32), mod.array.len(pairs_get))),
-									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_value)),
+									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(pairs_get))),
+									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_n_value)),
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(item_get)),
 										mod.block(null, [
@@ -1096,13 +1132,79 @@ describe('IrNode', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
 					}`, {lower: true, codegen: false, build: false});
-					return assert.throws(() => opt.instructions.map((instr) => instr.codegen(cg)), /not yet supported/);
+					const mod = cg.module;
+					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
+					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
+					opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
+					const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.getReftype('(ref $MapInternal)'));
+					const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
+					const case_get:  binaryen.ExpressionRef = mod.local.get(9, rt_n_case);
+					const pair_get:  binaryen.ExpressionRef = mod.local.get(10, cg.getReftype('(ref $Tuple)'));
+					return assertEqualBins(
+						opt.instructions[5].codegen(cg),
+						mod.block(null, [
+							mod.local.set(6, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(7, cg.getMapInternal(new BinValue(cg, mod.local.get(5, rt_value)).cast('(ref $Map)'))), // index 4 = map setup (implementation of Set)
+							mod.block('exit-0', [
+								mod.local.set(8, mod.i32.const(0)),
+								mod.loop('repeat-0', mod.block(null, [
+									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(cases_get))),
+									mod.local.set(9, mod.array.get(cases_get, i_get, rt_n_case)),
+									mod.if(
+										mod.i32.eqz(mod.ref.is_null(case_get)),
+										mod.block(null, [
+											mod.local.set(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)')),
+											mod.call('Dict.set', [
+												mod.local.get(6, cg.getReftype('(ref $Dict)')),
+												mod.i64.extend_u(new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+												mod.array.get(pair_get, mod.i32.const(1), rt_value),
+											], binaryen.none),
+										]),
+									),
+									mod.local.set(8, mod.i32.add(i_get, mod.i32.const(1))),
+									mod.br('repeat-0'),
+								])),
+							]),
+						]),
+					);
 				});
 				it('Map argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
 					}`, {lower: true, codegen: false, build: false});
-					return assert.throws(() => opt.instructions.map((instr) => instr.codegen(cg)), /not yet supported/);
+					const mod = cg.module;
+					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
+					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
+					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
+					const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.getReftype('(ref $MapInternal)'));
+					const i_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
+					const case_get:  binaryen.ExpressionRef = mod.local.get(6, rt_n_case);
+					return assertEqualBins(
+						opt.instructions[2].codegen(cg),
+						mod.block(null, [
+							mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $Dict)')),
+							mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Map)'))), // index 1 = map setup
+							mod.block('exit-0', [
+								mod.local.set(5, mod.i32.const(0)),
+								mod.loop('repeat-0', mod.block(null, [
+									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(cases_get))),
+									mod.local.set(6, mod.array.get(cases_get, i_get, rt_n_case)),
+									mod.if(
+										mod.i32.eqz(mod.ref.is_null(case_get)),
+										mod.block(null, [
+											mod.call('Dict.set', [
+												mod.local.get(3, cg.getReftype('(ref $Dict)')),
+												mod.i64.extend_u(new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+												mod.struct.get(STRUCT_FIELD.CASE_CON, case_get, rt_value),
+											], binaryen.none),
+										]),
+									),
+									mod.local.set(5, mod.i32.add(i_get, mod.i32.const(1))),
+									mod.br('repeat-0'),
+								])),
+							]),
+						]),
+					);
 				});
 			});
 			describe('SET.COPY', () => {
