@@ -964,34 +964,36 @@ describe('IrNode', () => {
 					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
 					const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.getReftype('(ref $MapInternal)'));
-					const i_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
-					const j_get:     binaryen.ExpressionRef = mod.local.get(6, binaryen.i32);
+					const j_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
+					const i_get:     binaryen.ExpressionRef = mod.local.get(6, binaryen.i32);
 					const case_get:  binaryen.ExpressionRef = mod.local.get(7, rt_n_case);
 					return assertEqualBins(
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
-							mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)')),
-							mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Map)'))), // index 1 = map setup (implementation of Set)
-							mod.block('exit-0', [
-								mod.local.set(5, mod.i32.const(0)),
-								mod.local.set(6, mod.i32.const(0)),
-								mod.loop('repeat-0', mod.block(null, [
-									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(cases_get))),
-									mod.local.set(7, mod.array.get(cases_get, i_get, rt_n_case)),
-									mod.if(
-										mod.i32.eqz(mod.ref.is_null(case_get)),
-										mod.block(null, [
-											mod.call('List.set', [
-												mod.local.get(3, cg.getReftype('(ref $List)')),
-												j_get,
-												mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value),
-											], binaryen.none),
-											mod.local.set(6, mod.i32.add(j_get, mod.i32.const(1))),
-										]),
-									),
-									mod.local.set(5, mod.i32.add(i_get, mod.i32.const(1))),
-									mod.br('repeat-0'),
-								])),
+							mod.local.set(5, mod.i32.const(0)),
+							mod.block(null, [
+								mod.local.set(3, new BinValue(cg, mod.local.get(0, rt_value)).cast('(ref $List)')),
+								mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Map)'))), // index 1 = map setup (implementation of Set)
+								mod.block('exit-0', [
+									mod.local.set(6, mod.i32.const(0)),
+									mod.loop('repeat-0', mod.block(null, [
+										mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(cases_get))),
+										mod.local.set(7, mod.array.get(cases_get, i_get, rt_n_case)),
+										mod.if(
+											mod.i32.eqz(mod.ref.is_null(case_get)),
+											mod.block(null, [
+												mod.call('List.set', [
+													mod.local.get(3, cg.getReftype('(ref $List)')),
+													j_get,
+													mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value),
+												], binaryen.none),
+												mod.local.set(5, mod.i32.add(j_get, mod.i32.const(1))),
+											]),
+										),
+										mod.local.set(6, mod.i32.add(i_get, mod.i32.const(1))),
+										mod.br('repeat-0'),
+									])),
+								]),
 							]),
 						]),
 					);

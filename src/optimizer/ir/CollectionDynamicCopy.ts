@@ -55,6 +55,51 @@ function copy_array(
 
 
 
+/** Perform a set (insert) for each item. */
+function each_item(
+	cg:         Builder,
+	destobj:    Local,
+	srcref:     Local,
+	itemtype:   binaryen.Type,
+	check_null: boolean,
+	when_item_is_non_null: (item: Local) => binaryen.ExpressionRef | binaryen.ExpressionRef[], // FIXME: always use singular
+): binaryen.ExpressionRef {
+	// HACK: Temporary counter until we get CodeGenerator blocks.
+	if (!('blockCount' in cg)) {
+		Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
+	}
+	const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
+	Reflect.set(cg, 'blockCount', block_n + 1n);
+
+	const i:    Local = cg.newLocal(cg.module.i32.const(0));
+	const item: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), itemtype));
+
+	const non_null_item: binaryen.ExpressionRef | binaryen.ExpressionRef[] = when_item_is_non_null(item); // FIXME: always use singular
+
+	return cg.module.block(null, [
+		destobj.set(),
+		srcref.set(),
+		cg.module.block(`exit-${ block_n }`, [
+			i.set(),
+			cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
+				cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
+				item.set(),
+				...(check_null // FIXME: always use singular
+					? [cg.module.if(
+						cg.module.i32.eqz(cg.module.ref.is_null(item.get())),
+						Array.isArray(non_null_item) ? cg.module.block(null, non_null_item) : non_null_item,
+					)]
+					: Array.isArray(non_null_item) ? non_null_item : [non_null_item]
+				),
+				i.inc(),
+				cg.module.br(`repeat-${ block_n }`),
+			])),
+		]),
+	]);
+}
+
+
+
 /**
  * Converts an array of key–value pairs into an array of properties for Dict insertion.
  * The pairs given must be an array of possibly nullable `$Value`s,
@@ -104,49 +149,6 @@ function copy_array(
  * @param check_null whether to test whether each item in `pairs` is null (`false` if the array is a `$Tuple`, `true` if it’s a `$ListInternal`)
  * @return           a block performing the work, returning void
  */
-function set_pairs_as_props(cg: Builder, dict: Local, pairs: Local, check_null: boolean): binaryen.ExpressionRef {
-	const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-	const i:    Local = cg.newLocal(cg.module.i32.const(0));
-	const item: Local = cg.newLocal(cg.module.array.get(pairs.get(), i.get(), cg.getReftype(check_null ? '(ref null $Value)' : '(ref $Value)')));
-	const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
-
-	const item_is_non_null: binaryen.ExpressionRef[] = [
-		pair.set(),
-		cg.module.call('Dict.set', [
-			dict.get(),
-			cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-			cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-		], binaryen.none),
-	];
-
-	// HACK: Temporary counter until we get CodeGenerator blocks.
-	if (!('blockCount' in cg)) {
-		Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
-	}
-	const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
-	Reflect.set(cg, 'blockCount', block_n + 1n);
-
-	return cg.module.block(null, [
-		dict.set(),
-		pairs.set(),
-		cg.module.block(`exit-${ block_n }`, [
-			i.set(),
-			cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
-				cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(pairs.get()))),
-				item.set(),
-				...(check_null
-					? [cg.module.if(
-						cg.module.i32.eqz(cg.module.ref.is_null(item.get())),
-						cg.module.block(null, item_is_non_null),
-					)]
-					: item_is_non_null
-				),
-				i.inc(),
-				cg.module.br(`repeat-${ block_n }`),
-			])),
-		]),
-	]);
-}
 
 
 
@@ -189,43 +191,6 @@ function set_pairs_as_props(cg: Builder, dict: Local, pairs: Local, check_null: 
  * @param check_null whether to test whether each item in `items` is null (`false` if the array is a `$Tuple`, `true` if it’s a `$ListInternal`)
  * @return           a block performing the work, returning void
  */
-function set_items_as_elements(cg: Builder, set: Local, items: Local, check_null: boolean): binaryen.ExpressionRef {
-	const i:    Local = cg.newLocal(cg.module.i32.const(0));
-	const item: Local = cg.newLocal(cg.module.array.get(items.get(), i.get(), cg.getReftype(check_null ? '(ref null $Value)' : '(ref $Value)')));
-
-	const item_is_non_null: binaryen.ExpressionRef = cg.module.call('Map.set', [
-		set.get(),
-		item.get(),
-		new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
-	], binaryen.none);
-
-	// HACK: Temporary counter until we get CodeGenerator blocks.
-	if (!('blockCount' in cg)) {
-		Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
-	}
-	const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
-	Reflect.set(cg, 'blockCount', block_n + 1n);
-
-	return cg.module.block(null, [
-		set.set(),
-		items.set(),
-		cg.module.block(`exit-${ block_n }`, [
-			i.set(),
-			cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
-				cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(items.get()))),
-				item.set(),
-				check_null
-					? cg.module.if(
-						cg.module.i32.eqz(cg.module.ref.is_null(item.get())),
-						item_is_non_null,
-					)
-					: item_is_non_null,
-				i.inc(),
-				cg.module.br(`repeat-${ block_n }`),
-			])),
-		]),
-	]);
-}
 
 
 
@@ -279,49 +244,6 @@ function set_items_as_elements(cg: Builder, set: Local, items: Local, check_null
  * @param check_null whether to test whether each item in `pairs` is null (`false` if the array is a `$Tuple`, `true` if it’s a `$ListInternal`)
  * @return           a block performing the work, returning void
  */
-function set_pairs_as_cases(cg: Builder, map: Local, pairs: Local, check_null: boolean): binaryen.ExpressionRef {
-	const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-	const i:    Local = cg.newLocal(cg.module.i32.const(0));
-	const item: Local = cg.newLocal(cg.module.array.get(pairs.get(), i.get(), cg.getReftype(check_null ? '(ref null $Value)' : '(ref $Value)')));
-	const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
-
-	const item_is_non_null: binaryen.ExpressionRef[] = [
-		pair.set(),
-		cg.module.call('Map.set', [
-			map.get(),
-			cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
-			cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-		], binaryen.none),
-	];
-
-	// HACK: Temporary counter until we get CodeGenerator blocks.
-	if (!('blockCount' in cg)) {
-		Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
-	}
-	const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
-	Reflect.set(cg, 'blockCount', block_n + 1n);
-
-	return cg.module.block(null, [
-		map.set(),
-		pairs.set(),
-		cg.module.block(`exit-${ block_n }`, [
-			i.set(),
-			cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
-				cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(pairs.get()))),
-				item.set(),
-				...(check_null
-					? [cg.module.if(
-						cg.module.i32.eqz(cg.module.ref.is_null(item.get())),
-						cg.module.block(null, item_is_non_null),
-					)]
-					: item_is_non_null
-				),
-				i.inc(),
-				cg.module.br(`repeat-${ block_n }`),
-			])),
-		]),
-	]);
-}
 
 
 
@@ -369,6 +291,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const rt_value:  binaryen.Type          = cg.getReftype('(ref $Value)');
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
 
@@ -405,7 +328,6 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// List.<T>({t, t, t});
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-
 						/*
 						 * Converts a Set of Values into an array of Values for List insertion.
 						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
@@ -444,42 +366,17 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						 * )
 						 * ```
 						 */
-						const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-						const i:     Local = cg.newLocal(cg.module.i32.const(0));
-						const j:     Local = cg.newLocal(cg.module.i32.const(0));
-						const case_: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), cg.getReftype('(ref null $Case)')));
-
-						// HACK: Temporary counter until we get CodeGenerator blocks.
-						if (!('blockCount' in cg)) {
-							Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
-						}
-						const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
-						Reflect.set(cg, 'blockCount', block_n + 1n);
-
+						const j: Local = cg.newLocal(cg.module.i32.const(0));
 						return cg.module.block(null, [
-							destlist.set(),
-							srcref.set(),
-							cg.module.block(`exit-${ block_n }`, [
-								i.set(),
-								j.set(),
-								cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
-									cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
-									case_.set(),
-									cg.module.if(
-										cg.module.i32.eqz(cg.module.ref.is_null(case_.get())),
-										cg.module.block(null, [
-											cg.module.call('List.set', [
-												destlist.get(),
-												j.get(),
-												cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value),
-											], binaryen.none),
-											j.inc(),
-										]),
-									),
-									i.inc(),
-									cg.module.br(`repeat-${ block_n }`),
-								])),
-							]),
+							j.set(),
+							each_item(cg, destlist, srcref, cg.getReftype('(ref null $Case)'), true, (item) => cg.module.block(null, [
+								cg.module.call('List.set', [
+									destlist.get(),
+									j.get(),
+									cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item.get(), rt_value),
+								], binaryen.none),
+								j.inc(),
+							])),
 						]);
 					}
 					default: {
@@ -492,7 +389,18 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case this.source.type instanceof TYPE.Tuple: {
-						return set_pairs_as_props(cg, destdict, cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)')), false);
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref $Value)'), false, (item) => {
+							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							return [
+								pair.set(),
+								cg.module.call('Dict.set', [
+									destdict.get(),
+									cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+								], binaryen.none),
+							];
+						});
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
@@ -509,7 +417,18 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					case this.source.type instanceof TYPE.List: {
-						return set_pairs_as_props(cg, destdict, cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)'))), true);
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Value)'), true, (item) => {
+							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							return [
+								pair.set(),
+								cg.module.call('Dict.set', [
+									destdict.get(),
+									cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+								], binaryen.none),
+							];
+						});
 					}
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					// Dict.<T>([a= t, b= t, c= t]);
@@ -528,7 +447,6 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-
 						/*
 						 * Converts a Set of key–value pairs into an array of Properties for Dict insertion.
 						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
@@ -583,48 +501,22 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						 * )
 						 * ```
 						 */
-						const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-						const i:     Local = cg.newLocal(cg.module.i32.const(0));
-						const case_: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), cg.getReftype('(ref null $Case)')));
-						const pair:  Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value)).cast('(ref $Tuple)'));
-
-						// HACK: Temporary counter until we get CodeGenerator blocks.
-						if (!('blockCount' in cg)) {
-							Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
-						}
-						const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
-						Reflect.set(cg, 'blockCount', block_n + 1n);
-
-						return cg.module.block(null, [
-							destdict.set(),
-							srcref.set(),
-							cg.module.block(`exit-${ block_n }`, [
-								i.set(),
-								cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
-									cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
-									case_.set(),
-									cg.module.if(
-										cg.module.i32.eqz(cg.module.ref.is_null(case_.get())),
-										cg.module.block(null, [
-											pair.set(),
-											cg.module.call('Dict.set', [
-												destdict.get(),
-												cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-												cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-											], binaryen.none),
-										]),
-									),
-									i.inc(),
-									cg.module.br(`repeat-${ block_n }`),
-								])),
-							]),
-						]);
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (item) => {
+							const pair: Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item.get(), rt_value)).cast('(ref $Tuple)'));
+							return cg.module.block(null, [
+								pair.set(),
+								cg.module.call('Dict.set', [
+									destdict.get(),
+									cg.module.i64.extend_u(new BinValue(cg, cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+								], binaryen.none),
+							]);
+						});
 					}
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					case this.source.type instanceof TYPE.Map: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-
 						/*
 						 * Converts a Map into an array of Properties for Dict insertion.
 						 * The given Map has an array of cases: possibly nullable `$Case`s,
@@ -669,38 +561,11 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						 * )
 						 * ```
 						 */
-						const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-						const i:     Local = cg.newLocal(cg.module.i32.const(0));
-						const case_: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), cg.getReftype('(ref null $Case)')));
-
-						// HACK: Temporary counter until we get CodeGenerator blocks.
-						if (!('blockCount' in cg)) {
-							Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
-						}
-						const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
-						Reflect.set(cg, 'blockCount', block_n + 1n);
-
-						return cg.module.block(null, [
-							destdict.set(),
-							srcref.set(),
-							cg.module.block(`exit-${ block_n }`, [
-								i.set(),
-								cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
-									cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
-									case_.set(),
-									cg.module.if(
-										cg.module.i32.eqz(cg.module.ref.is_null(case_.get())),
-										cg.module.call('Dict.set', [
-											destdict.get(),
-											cg.module.i64.extend_u(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-											cg.module.struct.get(STRUCT_FIELD.CASE_CON, case_.get(), rt_value),
-										], binaryen.none),
-									),
-									i.inc(),
-									cg.module.br(`repeat-${ block_n }`),
-								])),
-							]),
-						]);
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (item) => cg.module.call('Dict.set', [
+							destdict.get(),
+							cg.module.i64.extend_u(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item.get(), rt_value)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
+							cg.module.struct.get(STRUCT_FIELD.CASE_CON, item.get(), rt_value),
+						], binaryen.none));
 					}
 					default: {
 						return assert.fail(`Expected \`${ this.source }\` to pass validation.`);
@@ -712,12 +577,22 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Set.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						return set_items_as_elements(cg, destset, cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)')), false);
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
+						return each_item(cg, destset, srcref, cg.getReftype('(ref $Value)'), false, (item) => cg.module.call('Map.set', [
+							destset.get(),
+							item.get(),
+							new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						], binaryen.none));
 					}
 					// Set.<T>(List.<T>((t, t, t)));
 					// Set.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						return set_items_as_elements(cg, destset, cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)'))), true);
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
+						return each_item(cg, destset, srcref, cg.getReftype('(ref null $Value)'), true, (item) => cg.module.call('Map.set', [
+							destset.get(),
+							item.get(),
+							new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						], binaryen.none));
 					}
 					// Set.<T>(Set.<T>((t, t, t)));
 					// Set.<T>({t, t, t});
@@ -742,18 +617,39 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
 					case this.source.type instanceof TYPE.Tuple: {
-						return set_pairs_as_cases(cg, destmap, cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)')), false);
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
+						return each_item(cg, destmap, srcref, cg.getReftype('(ref $Value)'), false, (item) => {
+							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							return [
+								pair.set(),
+								cg.module.call('Map.set', [
+									destmap.get(),
+									cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
+									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+								], binaryen.none),
+							];
+						});
 					}
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					case this.source.type instanceof TYPE.List: {
-						return set_pairs_as_cases(cg, destmap, cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)'))), true);
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
+						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Value)'), true, (item) => {
+							const pair: Local = cg.newLocal(new BinValue(cg, item.get()).cast('(ref $Tuple)'));
+							return [
+								pair.set(),
+								cg.module.call('Map.set', [
+									destmap.get(),
+									cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
+									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+								], binaryen.none),
+							];
+						});
 					}
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-
 						/*
 						 * Converts a Set of key–value pairs into an array of Cases for Map insertion.
 						 * The given Set is an underlying Map with an array of cases: possibly nullable `$Case`s,
@@ -807,42 +703,17 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						 * )
 						 * ```
 						 */
-						const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
-						const i:     Local = cg.newLocal(cg.module.i32.const(0));
-						const case_: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), cg.getReftype('(ref null $Case)')));
-						const pair:  Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_.get(), rt_value)).cast('(ref $Tuple)'));
-
-						// HACK: Temporary counter until we get CodeGenerator blocks.
-						if (!('blockCount' in cg)) {
-							Reflect.defineProperty(cg, 'blockCount', {enumerable: true, writable: true, value: 0n});
-						}
-						const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
-						Reflect.set(cg, 'blockCount', block_n + 1n);
-
-						return cg.module.block(null, [
-							destmap.set(),
-							srcref.set(),
-							cg.module.block(`exit-${ block_n }`, [
-								i.set(),
-								cg.module.loop(`repeat-${ block_n }`, cg.module.block(null, [
-									cg.module.br_if(`exit-${ block_n }`, cg.module.i32.ge_u(i.get(), cg.module.array.len(srcref.get()))),
-									case_.set(),
-									cg.module.if(
-										cg.module.i32.eqz(cg.module.ref.is_null(case_.get())),
-										cg.module.block(null, [
-											pair.set(),
-											cg.module.call('Map.set', [
-												destmap.get(),
-												cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
-												cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
-											], binaryen.none),
-										]),
-									),
-									i.inc(),
-									cg.module.br(`repeat-${ block_n }`),
-								])),
-							]),
-						]);
+						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Case)'), true, (item) => {
+							const pair: Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item.get(), rt_value)).cast('(ref $Tuple)'));
+							return cg.module.block(null, [
+								pair.set(),
+								cg.module.call('Map.set', [
+									destmap.get(),
+									cg.module.array.get(pair.get(), cg.module.i32.const(0), rt_value),
+									cg.module.array.get(pair.get(), cg.module.i32.const(1), rt_value),
+								], binaryen.none),
+							]);
+						});
 					}
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({k -> v, k -> v, k -> v});
