@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import {memoizeMethod} from '../lib/index.ts';
 import {bigint_to_i64} from '../index.ts';
 
 
@@ -34,6 +35,7 @@ export class Global {
 		return this.#value;
 	}
 
+	@memoizeMethod
 	public init(): binaryen.GlobalRef {
 		return this.module.addGlobal(this.name, this.type, this.mut, this.#value);
 	}
