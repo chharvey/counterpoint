@@ -3,6 +3,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinValue,
+	BinConst,
 	type Builder,
 	type Local,
 	BinVect,
@@ -12,10 +13,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {
-	TYPE,
-	VALUE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import type {Instruction} from './Instruction.ts';
 import {
@@ -99,7 +97,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 						cg.module.call('Map.set', [
 							base.get(),
 							accessor.get(),
-							new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+							cg.getConst(BinConst.NULL),
 						], binaryen.none),
 						cg.module.call('Map.delete', [
 							base.get(),

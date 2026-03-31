@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	STRUCT_FIELD,
 	BinValue,
+	BinConst,
 	type Builder,
 	type Local,
 } from '../../index.ts';
@@ -12,10 +13,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
@@ -87,7 +85,7 @@ export class CollectionDynamicGet extends Value {
 					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
 					cg.module.if(
 						cg.module.ref.is_null(item.get()),
-						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						cg.getConst(BinConst.NULL),
 						cg.module.ref.as_non_null(item.get()),
 					),
 				], rt_value);
@@ -106,7 +104,7 @@ export class CollectionDynamicGet extends Value {
 							cg.module.ref.is_null(maybe_prop.get()),
 							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
 						),
-						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						cg.getConst(BinConst.NULL),
 						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), rt_value),
 					),
 				], rt_value);
@@ -125,8 +123,8 @@ export class CollectionDynamicGet extends Value {
 							cg.module.ref.is_null(maybe_case.get()),
 							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
 						),
-						new BinValue(cg, VALUE.FALSE.codegen(cg.module)).value,
-						new BinValue(cg, VALUE.TRUE .codegen(cg.module)).value,
+						cg.getConst(BinConst.FALSE),
+						cg.getConst(BinConst.TRUE),
 					),
 				], rt_value);
 			}
@@ -144,7 +142,7 @@ export class CollectionDynamicGet extends Value {
 							cg.module.ref.is_null(maybe_case.get()),
 							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
 						),
-						new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+						cg.getConst(BinConst.NULL),
 						cg.module.struct.get(STRUCT_FIELD.CASE_CON, maybe_case.get(), rt_value),
 					),
 				], rt_value);

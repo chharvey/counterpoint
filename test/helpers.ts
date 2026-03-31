@@ -6,6 +6,7 @@ import {
 	VALUE,
 	type TYPE,
 	BinValue,
+	BinConst,
 	type Builder,
 } from '../src/index.ts';
 
@@ -74,10 +75,12 @@ export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VA
 
 
 export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null): binaryen.ExpressionRef {
+	switch (value) {
+		case null:  { return cg.getConst(BinConst.NULL); }
+		case false: { return cg.getConst(BinConst.FALSE); }
+		case true:  { return cg.getConst(BinConst.TRUE); }
+	}
 	return new BinValue(cg, (
-		value === null            ? VALUE.NULL :
-		value === false           ? VALUE.FALSE :
-		value === true            ? VALUE.TRUE :
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :

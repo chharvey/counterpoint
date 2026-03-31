@@ -1233,7 +1233,7 @@ describe('IrNode', () => {
 									mod.call('Map.set', [
 										mod.local.get(2, cg.getReftype('(ref $Map)')),
 										item_get,
-										new BinValue(cg, VALUE.NULL.codegen(mod)).value,
+										genConst(cg),
 									], binaryen.none),
 									mod.local.set(4, mod.i32.add(i_get, mod.i32.const(1))),
 									mod.br('repeat-0'),
@@ -1267,7 +1267,7 @@ describe('IrNode', () => {
 										mod.call('Map.set', [
 											mod.local.get(2, cg.getReftype('(ref $List)')),
 											item_get,
-											new BinValue(cg, VALUE.NULL.codegen(mod)).value,
+											genConst(cg),
 										], binaryen.none),
 									),
 									mod.local.set(4, mod.i32.add(i_get, mod.i32.const(1))),

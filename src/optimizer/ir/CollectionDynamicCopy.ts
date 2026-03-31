@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import {
 	STRUCT_FIELD,
 	BinValue,
+	BinConst,
 	type Builder,
 	type Local,
 } from '../../index.ts';
@@ -12,10 +13,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {
-	TYPE,
-	VALUE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
 import type {Instruction} from './Instruction.ts';
 import {
@@ -408,7 +406,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						return each_item(cg, destset, srcref, cg.getReftype('(ref $Value)'), false, (item) => cg.module.call('Map.set', [
 							destset.get(),
 							item,
-							new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+							cg.getConst(BinConst.NULL),
 						], binaryen.none));
 					}
 					// Set.<T>(List.<T>((t, t, t)));
@@ -418,7 +416,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						return each_item(cg, destset, srcref, cg.getReftype('(ref null $Value)'), true, (item) => cg.module.call('Map.set', [
 							destset.get(),
 							item,
-							new BinValue(cg, VALUE.NULL.codegen(cg.module)).value,
+							cg.getConst(BinConst.NULL),
 						], binaryen.none));
 					}
 					// Set.<T>(Set.<T>((t, t, t)));

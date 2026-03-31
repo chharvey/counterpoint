@@ -35,6 +35,12 @@ type HeaptypeKey = (
 );
 type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' | '$Case' }` })`;
 
+export enum BinConst {
+	NULL,
+	FALSE,
+	TRUE,
+}
+
 
 
 /** stub for v0.5 */
@@ -125,6 +131,9 @@ export class Builder {
 	/** A registry of reference (and reference-null) types. */
 	readonly #reftypeRegistry = new Map<ReftypeKey, binaryen.Type>();
 
+	/** A registry of constant WASM values. */
+	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
+
 	#typeCount: bigint = 0n;
 
 	/** A set containing data of WASM local variables. */
@@ -146,6 +155,12 @@ export class Builder {
 
 	public constructor() {
 		this.#setupTypes();
+
+		this.#constRegistry = new Map([
+			[BinConst.NULL,  new BinValue(this, new BinVect(this.module))       .value],
+			[BinConst.FALSE, new BinValue(this, new BinVect(this.module, false)).value],
+			[BinConst.TRUE,  new BinValue(this, new BinVect(this.module, true)) .value],
+		]);
 	}
 
 	public nextTypeIndex(): bigint {
@@ -160,6 +175,11 @@ export class Builder {
 	public getReftype(key: ReftypeKey): binaryen.Type {
 		assert.ok(this.#reftypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
 		return this.#reftypeRegistry.get(key)!;
+	}
+
+	public getConst(key: BinConst): binaryen.ExpressionRef {
+		assert.ok(this.#constRegistry.has(key), `Expected constant registry to have constant \`${ BinConst[key] }\`.`);
+		return this.#constRegistry.get(key)!;
 	}
 
 	/**

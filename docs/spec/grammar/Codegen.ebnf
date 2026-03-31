@@ -1,13 +1,13 @@
 Codegen((TRAP)) := (unreachable);
 
-Codegen((NULL.CONST null))  := (v128.const i16x8 0 0 0 0x0001 0 0 0 0);
-Codegen((BOOL.CONST false)) := (v128.const i16x8 0 0 0 0x0002 0 0 0 0);
-Codegen((BOOL.CONST true))  := (v128.const i16x8 0 0 0 0x0003 0 0 0 0);
+Codegen((NULL.CONST null))  := (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0001 0 0 0 0) (ref.null eq));
+Codegen((BOOL.CONST false)) := (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0002 0 0 0 0) (ref.null eq));
+Codegen((BOOL.CONST true))  := (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0003 0 0 0 0) (ref.null eq));
 
-Codegen((SYM.CONST   `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.id`));
-Codegen((INT.CONST   `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0018 0 0 0 0) (i64.const `v.data`));
-Codegen((NAT.CONST   `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.data`));
-Codegen((FLOAT.CONST `v`)) := (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0048 0 0 0 0) (i64.const `v.data`));
+Codegen((SYM.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.id`))   (ref.null eq));
+Codegen((INT.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0018 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
+Codegen((NAT.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
+Codegen((FLOAT.CONST `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0048 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
 
 // Codegen((STR.CONST `v`));
 
