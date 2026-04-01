@@ -75,9 +75,9 @@ export class Unop extends Value {
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder, Operator: any, BinVect: any, t0: any, arg0: any, drop_then: any, binaryen: any): number {
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(this.builder.module, [arg0], true);
+			return drop_then(cg.module, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(this.builder.module, [arg0], false);
+			return drop_then(cg.module, [arg0], false);
 		}
 		if (this.operator === Operator.NOT) {
 			if (t0.isDefinitelyFalsy) {

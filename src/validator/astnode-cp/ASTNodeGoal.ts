@@ -3,7 +3,6 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Optimizer,
 	type Lowerable,
-	Builder,
 	ParseError01,
 } from '../../index.ts';
 import {runOnceMethod} from '../../lib/index.ts';
@@ -60,7 +59,6 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 
 
 	readonly #validator: Validator;
-	readonly #builder:   Builder;
 
 
 	public constructor(
@@ -70,15 +68,10 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 	) {
 		super(start_node, {}, children);
 		this.#validator = new Validator(config);
-		this.#builder   = new Builder();
 	}
 
 	public override get validator(): Validator {
 		return this.#validator;
-	}
-
-	public override get builder(): Builder {
-		return this.#builder;
 	}
 
 	/**
