@@ -1,5 +1,10 @@
 import * as assert from 'node:assert';
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -12,9 +17,7 @@ export type OpCodeUn = (
 
 	| OpCode.NOT
 	| OpCode.EMP
-
-	| OpCode.INT_NEG
-	| OpCode.FLOAT_NEG
+	| OpCode.NEG
 
 	| OpCode.TOBOOL
 	| OpCode.TOINT
@@ -34,20 +37,36 @@ export class Unop extends Value {
 		super(operator, typ);
 	}
 
+	public override toString(): string {
+		return super.toString(this.operand);
+	}
+
 	@runOnceMethod
 	public override validate(): void {
-		const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		this.operand.validate();
 		switch (this.operator) {
-			case OpCode.TOINT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case OpCode.TONAT:     { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case OpCode.TOFLOAT:   { return assert.ok(this.operand.type.isSubtypeOf(NUMBER)); }
-			case OpCode.INT_NEG:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.INT)); }
-			case OpCode.FLOAT_NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.FLOAT)); }
+			case OpCode.TOINT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.TONAT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.TOFLOAT: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.NEG:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
 		}
 	}
 
-	public override toString(): string {
-		return super.toString(this.operand);
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
+		if (this.operator === OpCode.TOBOOL) {
+			return cg.module.call('vnot_', [cg.module.call('vnot_', [code], rt_value)], rt_value);
+		}
+		return cg.module.call(new Map<OpCode, string>([
+			[OpCode.ISNULL,  'isnull_'],
+			[OpCode.NOT,     'vnot_'],
+			[OpCode.EMP,     'vemp_'],
+			[OpCode.NEG,     'vneg_'],
+			[OpCode.TOINT,   'vtoi_'],
+			[OpCode.TONAT,   'vton_'],
+			[OpCode.TOFLOAT, 'vtof_'],
+		]).get(this.operator)!, [code], rt_value);
 	}
 }

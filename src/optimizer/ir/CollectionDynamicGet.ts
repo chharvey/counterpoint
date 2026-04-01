@@ -1,7 +1,16 @@
 import * as assert from 'node:assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	STRUCT_FIELD,
+	BinValue,
+	BinConst,
+	type Builder,
+	type Local,
+} from '../../index.ts';
+import {
 	assert_instanceof,
+	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
@@ -20,12 +29,16 @@ export class CollectionDynamicGet extends Value {
 		private readonly accessor:   Value,
 		entry_type: TYPE.Type,
 	) {
-		super(new Map<TypeName, OpCode>([
+		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_GET],
 			[TypeName.DICT, OpCode.DICT_GET],
 			[TypeName.SET,  OpCode.SET_GET],
 			[TypeName.MAP,  OpCode.MAP_GET],
 		]).get(name)!, entry_type);
+	}
+
+	public override toString(): string {
+		return super.toString(this.collection, this.accessor); // dynamic accessor after collection
 	}
 
 	@runOnceMethod
@@ -51,7 +64,88 @@ export class CollectionDynamicGet extends Value {
 		}
 	}
 
-	public override toString(): string {
-		return super.toString(this.collection, this.accessor); // dynamic accessor after collection
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+		/*
+		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
+		 * But we still need to check for nullish values in the collection.
+		 */
+		switch (this.name) {
+			case TypeName.LIST: {
+				const item: Local = cg.newLocal(cg.module.array.get(
+					cg.getListInternal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)')),
+					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
+					cg.getReftype('(ref null $Value)'),
+				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
+
+				return cg.module.block(null, [
+					item.set(),
+					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
+					cg.module.if(
+						cg.module.ref.is_null(item.get()),
+						cg.getConst(BinConst.NULL),
+						cg.module.ref.as_non_null(item.get()),
+					),
+				], rt_value);
+			}
+			case TypeName.DICT: {
+				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
+					new BinValue(cg, this.accessor.codegen(cg)).interpret('natValue'),
+				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Property)')])), 1));
+
+				return cg.module.block(null, [
+					maybe_prop.set(),
+					// if `(ref.null $Property)` or a tombstone is returned, return Counterpoint `null`; else return the property value
+					cg.module.if(
+						cg.module.i32.or(
+							cg.module.ref.is_null(maybe_prop.get()),
+							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
+						),
+						cg.getConst(BinConst.NULL),
+						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), rt_value),
+					),
+				], rt_value);
+			}
+			case TypeName.SET: {
+				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					this.accessor.codegen(cg),
+				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Case)')])), 1));
+
+				return cg.module.block(null, [
+					maybe_case.set(),
+					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `false`; else return `true`
+					cg.module.if(
+						cg.module.i32.or(
+							cg.module.ref.is_null(maybe_case.get()),
+							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+						),
+						cg.getConst(BinConst.FALSE),
+						cg.getConst(BinConst.TRUE),
+					),
+				], rt_value);
+			}
+			case TypeName.MAP: {
+				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					this.accessor.codegen(cg),
+				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Case)')])), 1));
+
+				return cg.module.block(null, [
+					maybe_case.set(),
+					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `null`; else return the consequent
+					cg.module.if(
+						cg.module.i32.or(
+							cg.module.ref.is_null(maybe_case.get()),
+							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+						),
+						cg.getConst(BinConst.NULL),
+						cg.module.struct.get(STRUCT_FIELD.CASE_CON, maybe_case.get(), rt_value),
+					),
+				], rt_value);
+			}
+		}
 	}
 }

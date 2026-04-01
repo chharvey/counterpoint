@@ -160,7 +160,7 @@ test.suite('build_tuple_like', () => {
 
 
 	test.suite('<VALUE.Tuple>', () => {
-		let builder: Builder = new Builder();
+		let builder: Builder; // eslint-disable-line @typescript-eslint/init-declarations
 
 		test.beforeEach(() => {
 			builder = new Builder();
@@ -390,7 +390,7 @@ test.suite('build_record_like', () => {
 
 
 	test.suite('<VALUE.Record>', () => {
-		let builder: Builder = new Builder();
+		let builder: Builder; // eslint-disable-line @typescript-eslint/init-declarations
 
 		test.beforeEach(() => {
 			builder = new Builder();

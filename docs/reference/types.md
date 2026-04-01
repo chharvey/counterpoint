@@ -632,26 +632,18 @@ elements.\b01; %== "wind"
 elements.\b10; %== "fire"
 ```
 
-Negative indices count backwards from the end of the list.
-Index `-1` represents the last item, index `-2` represents the penultimate item, etc.
-```
-elements.-1;    %== "fire"
-elements.-\b10; %== "wind"
-```
-
 We can also access by natural number index.
 ```cpl
-elements.+\b01; %== "wind"
+elements.+1;    %== "wind"
 elements.+\b10; %== "fire"
 ```
 
 Tuple size is known at compile-time,
 so attempting to retrieve an out-of-bounds index results in a compile-time error.
-Positive indices beyond the end of the list, and negative indices beyond the beginning,
-result in a TypeErrorNoEntry. In other words, the indices *do not* loop around.
+Positive indices beyond the end of the list result in a TypeErrorNoEntry.
+The indices *do not* loop around.
 ```
-elements.3;  %> TypeErrorNoEntry
-elements.-4; %> TypeErrorNoEntry
+elements.3; %> TypeErrorNoEntry
 ```
 
 A tuple’s items, type, and size are all fixed.
@@ -870,11 +862,21 @@ elements.[-3 + 2];  %== "fire"
 elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```
 
+Negative indices count backwards from the end of the list.
+Index `-1` represents the last item, index `-2` represents the penultimate item, etc.
+```
+elements.[-1];    %== "fire"
+elements.[-\b10]; %== "wind"
+```
+
 When the the compiler can determine if the index is out-of-bounds (for example if the list and index are foldable),
 then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a tuple, where a TypeErrorNoEntry would be reported.)
+Indices *do not* loop around. Negative indices can not be less than the negative count.
 ```
-val i: int = 4;
+val mut i: int = 4;
+elements.[i];   %> VoidErrorOutOfBounds
+set i = -4;
 elements.[i];   %> VoidErrorOutOfBounds
 ```
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.

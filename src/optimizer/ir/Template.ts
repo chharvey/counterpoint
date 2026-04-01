@@ -1,5 +1,10 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -12,12 +17,17 @@ export class Template extends Value {
 		super(OpCode.STR_TEMPLATE, TYPE.STR);
 	}
 
+	public override toString(): string {
+		return super.toString(...this.items);
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
 	}
 
-	public override toString(): string {
-		return super.toString(...this.items);
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

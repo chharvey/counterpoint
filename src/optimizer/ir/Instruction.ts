@@ -1,18 +1,17 @@
+import type {IrNode} from './IrNode.ts';
+
+
+
 /**
- * An Instruction to the internal representation (IR).
- *
- * Known subclasses:
- * - Opcode
+ * Known implementers:
+ * - Drop
+ * - Decl
+ * - Set
+ * - CollectionDynamicSet
+ * - CollectionDynamicCopy
  * - Label
  * - Goto
  * - GotoIfFalse
  */
-export abstract class Instruction {
-	/** Type-validate this Instruction. Throws if invalid. */
-	public validate(): void {
-		return;
-	}
-
-	/** Represent this Instruction as a string for inspection. */
-	public abstract toString(): string;
+export interface Instruction extends IrNode { // eslint-disable-line @typescript-eslint/no-empty-object-type
 }

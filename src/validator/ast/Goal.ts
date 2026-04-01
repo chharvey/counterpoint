@@ -107,7 +107,7 @@ export class Goal extends AstNode implements Lowerable, Buildable {
 					fn_name,
 					binaryen.none,
 					binaryen.none,
-					this.builder.getAllLocals().map((var_) => var_.type),
+					this.builder.getAllLocals().map((local) => local.type),
 					block_build,
 				);
 				mod.addFunctionExport(fn_name, fn_name);

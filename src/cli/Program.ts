@@ -1,3 +1,4 @@
+import {runOnceMethod} from '../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -10,8 +11,6 @@ export class Program {
 	/** An AST goal produced by a Decorator. */
 	readonly #astGoal: AST.Goal;
 
-	#prebuilt = false;
-
 
 	/**
 	 * Construct a new Program object.
@@ -23,13 +22,11 @@ export class Program {
 	}
 
 
+	@runOnceMethod
 	#prebuild(): void {
-		if (!this.#prebuilt) { // TODO: use a run-once memoizer decorator
-			this.#astGoal.varCheck();
-			this.#astGoal.typeCheck();
-			this.#astGoal.build();
-			this.#prebuilt = true;
-		}
+		this.#astGoal.varCheck();
+		this.#astGoal.typeCheck();
+		this.#astGoal.build();
 	}
 
 	/**

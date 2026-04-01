@@ -1,9 +1,24 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
+import {
+	type ConstructorType,
+	assert_instanceof,
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import {MapNew} from './index.ts';
 import {OpCode} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
+import {Const} from './Const.ts';
 
 
 
@@ -21,12 +36,36 @@ export class CollectionLinearNew extends Value {
 		]).get(name)!, typ);
 	}
 
+	public override toString(): string {
+		return super.toString(...this.items);
+	}
+
 	@runOnceMethod
 	public override validate(): void {
+		assert_instanceof(this.type, new Map<TypeName, ConstructorType<TYPE.Type>>([
+			[TypeName.TUPLE, TYPE.Tuple],
+			[TypeName.LIST,  TYPE.List],
+			[TypeName.SET,   TYPE.Set],
+		]).get(this.name)!);
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
 	}
 
-	public override toString(): string {
-		return super.toString(...this.items);
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		switch (this.name) {
+			case TypeName.TUPLE: {
+				return new BinValue(cg, cg.codegenTuple(this.items.map((item) => item.codegen(cg)))).value;
+			}
+			case TypeName.LIST: {
+				return new BinValue(cg, cg.codegenList(this.items.map((item) => item.codegen(cg)))).value;
+			}
+			case TypeName.SET: {
+				const sentinel = new Const(VALUE.NULL);
+				return new MapNew(
+					new Map(this.items.map((item) => [item, sentinel])),
+					new TYPE.Map((this.type as TYPE.Set).typearg, TYPE.NULL),
+				).codegen(cg);
+			}
+		}
 	}
 }

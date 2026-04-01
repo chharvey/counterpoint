@@ -72,7 +72,7 @@ export class OperationBinaryArithmetic extends OperationBinary {
 		if (!v0) {
 			switch (this.operator) {
 				case Operator.MUL: {
-					const local0: Local = this.builder.addLocal(arg0);
+					const local0: Local = this.builder.newLocal(arg0);
 					const teeer         = new BinVect(mod, local0.tee());
 					const getter        = new BinVect(mod, local0.get());
 					// if arg0 is mathematically 0, return it
@@ -99,7 +99,7 @@ export class OperationBinaryArithmetic extends OperationBinary {
 					);
 				}
 				case Operator.ADD: {
-					const local0: Local = this.builder.addLocal(arg0);
+					const local0: Local = this.builder.newLocal(arg0);
 					const teeer         = new BinVect(mod, local0.tee());
 					const getter        = new BinVect(mod, local0.get());
 					// if arg0 is mathematically 0, return arg1

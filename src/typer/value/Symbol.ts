@@ -55,8 +55,12 @@ class ValueSymbol extends Primitive {
 		return this.id === (value as ValueSymbol).id;
 	}
 
+	public override codegen(mod: binaryen.Module): BinVect {
+		return new BinVect(mod, bigint_to_i64(mod, this.id, true), {unsigned: true});
+	}
+
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, bigint_to_i64(builder.module, this.id, true), {unsigned: true}).vect;
+		return this.codegen(builder.module).vect;
 	}
 }
 export {ValueSymbol as Symbol};

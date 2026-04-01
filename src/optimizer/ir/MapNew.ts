@@ -1,6 +1,15 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
@@ -15,12 +24,18 @@ export class MapNew extends Value {
 		super(OpCode.MAP_NEW, typ);
 	}
 
+	public override toString(): string {
+		return super.toString(...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`));
+	}
+
 	@runOnceMethod
 	public override validate(): void {
+		assert_instanceof(this.type, TYPE.Map);
 		return xjs.Map.forEachAggregated(this.cases, (con, ant) => xjs.Array.forEachAggregated([ant, con], (value) => value.validate()));
 	}
 
-	public override toString(): string {
-		return super.toString(...[...this.cases].map(([ant, con]) => `${ ant }->${ con }`));
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, cg.codegenMap(new Map([...this.cases].map(([ant, con]) => [ant.codegen(cg), con.codegen(cg)])))).value;
 	}
 }
