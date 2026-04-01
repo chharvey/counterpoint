@@ -66,16 +66,21 @@ export class Global {
 	}
 
 	/**
-	 * Places this Global’s value on the stack, but then increments it by 1 afterward.
+	 * Increments this Global’s value, but then returns its value minus 1 afterward.
 	 * Equivalent to `i++` in most imperative languages.
 	 * ```
-	 * (block
-	 * 	(global.get $this)
+	 * (block (result <$this.type>)
 	 * 	(global.set $this (.add (global.get $this) (.const 1)))
+	 * 	(.sub (global.get $this) (.const 1))
 	 * )
 	 * ```
 	 */
 	public plusPlus(): binaryen.ExpressionRef {
-		return this.module.block(null, [this.get(), this.inc()], this.type);
+		return this.module.block(null, [
+			this.inc(),
+			this.type === binaryen.i32
+				? this.module.i32.sub(this.get(), this.module.i32.const(1))
+				: (assert.strictEqual(this.type, binaryen.i64), this.module.i64.sub(this.get(), bigint_to_i64(this.module, 1n))),
+		], this.type);
 	}
 }

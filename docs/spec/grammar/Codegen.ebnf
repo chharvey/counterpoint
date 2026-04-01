@@ -42,8 +42,8 @@ Codegen((LIST.NEW)) := (struct.new $Value
 	(v128.const i64x2 0 0)
 	(struct.new $List
 		(block (result i64)
-			(global.get $obj-ctr)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const 0)
 		(array.new_default $ListInternal (i32.const 8))
@@ -54,8 +54,8 @@ Codegen((LIST.NEW `values`)) := (struct.new $Value
 	(v128.const i64x2 0 0)
 	(struct.new $List
 		(block (result i64)
-			(global.get $obj-ctr)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const `values.count`)
 		(array.new_fixed $ListInternal `CapacityNeeded(values.count)` `values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`)
@@ -67,8 +67,8 @@ Codegen((DICT.NEW)) := (struct.new $Value
 	(v128.const i64x2 0 0)
 	(struct.new $Dict
 		(block (result i64)
-			(global.get $obj-ctr)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const 0)
 		(array.new_default $DictInternal (i32.const 8))
@@ -79,8 +79,8 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 	(v128.const i64x2 0 0)
 	(struct.new $Dict
 		(block (result i64)
-			(global.get $obj-ctr)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const `pairs.count`)
 		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)` `pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
@@ -97,8 +97,8 @@ Codegen((MAP.NEW)) := (struct.new $Value
 	(block (result (ref $Map))
 		(struct.new $Map
 			(block (result i64)
-				(global.get $obj-ctr)
 				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+				(i64.sub (global.get $obj-ctr) (i64.const 1))
 			)
 			(i32.const 0)
 			(array.new_default $MapInternal (i32.const 8))
@@ -111,8 +111,8 @@ Codegen((MAP.NEW `pairs`)) := (struct.new $Value
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
 			(block (result i64)
-				(global.get $obj-ctr)
 				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+				(i64.sub (global.get $obj-ctr) (i64.const 1))
 			)
 			(i32.const `pairs.count`)
 			(array.new_default $MapInternal `CapacityNeeded(pairs.count)`)

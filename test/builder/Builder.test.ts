@@ -22,8 +22,8 @@ describe('Builder', () => {
 	describe('#codegen*', () => {
 		function obj_ctr_plus_plus(mod: Builder['module']): binaryen.ExpressionRef {
 			return mod.block(null, [
-				mod.global.get('obj-ctr', binaryen.i64),
 				mod.global.set('obj-ctr', mod.i64.add(mod.global.get('obj-ctr', binaryen.i64), bigint_to_i64(mod, 1n, true))),
+				mod.i64.sub(mod.global.get('obj-ctr', binaryen.i64), bigint_to_i64(mod, 1n, true)),
 			], binaryen.i64);
 		}
 		xjs.Map.forEachAggregated(new Map<string, (cg: Builder) => [binaryen.ExpressionRef, binaryen.ExpressionRef]>([
