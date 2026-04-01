@@ -94,15 +94,13 @@ Codegen((SET.NEW `values`)) := `Codegen((MAP.NEW `values.map(Sequence [values[i]
 Codegen((MAP.NEW)) := (struct.new $Value
 	(i32.const 2)
 	(v128.const i64x2 0 0)
-	(block (result (ref $Map))
-		(struct.new $Map
-			(block (result i64)
-				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-				(i64.sub (global.get $obj-ctr) (i64.const 1))
-			)
-			(i32.const 0)
-			(array.new_default $MapInternal (i32.const 8))
+	(struct.new $Map
+		(block (result i64)
+			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
+		(i32.const 0)
+		(array.new_default $MapInternal (i32.const 8))
 	)
 );
 Codegen((MAP.NEW `pairs`)) := (struct.new $Value
