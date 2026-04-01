@@ -3,9 +3,10 @@ import * as test from 'node:test';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	type AST,
+	AST,
 	VALUE,
 	TYPE,
+	Optimizer,
 	IR,
 	STRUCT_FIELD,
 	BinValue,
@@ -755,7 +756,7 @@ test.suite('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => instr.codegen(cg)),
+				opt.codegen(cg),
 				[
 					mod.drop(genConst(cg)),
 					mod.drop(genConst(cg, false)),
@@ -782,7 +783,7 @@ test.suite('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.instructions.map((instr) => instr.codegen(cg)), // TODO: `opt.codegen()`
+				opt.codegen(cg),
 				[
 					mod.local.set(0, genConst(cg)),
 					mod.local.set(1, genConst(cg, false)),
@@ -868,6 +869,7 @@ test.suite('IrNode', () => {
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				const rt_value:       binaryen.Type          = cg.getReftype('(ref $Value)');
+				const rt_n_value:     binaryen.Type          = cg.getReftype('(ref null $Value)');
 				const rt_map:         binaryen.Type          = cg.getReftype('(ref $Map)');
 				const base:           binaryen.ExpressionRef = mod.local.get(1, rt_value); // index 0 = nonempty map setup (implementation of Set)
 				const base_get_0:     binaryen.ExpressionRef = mod.local.get(2, rt_map);
@@ -881,8 +883,8 @@ test.suite('IrNode', () => {
 						mod.local.set(3, genConst(cg, 4.2)),
 						mod.if(
 							new BinVect(mod, new BinValue(cg, genConst(cg, false)).primitiveValue).isSpecial(true),
-							mod.call('Map.set',    [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
-							mod.call('Map.delete', [base_get_0, accessor_get_0],               binaryen.none),
+							mod.call('Map.set', [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
+							mod.drop(mod.call('Map.delete', [base_get_0, accessor_get_0], rt_n_value)),
 						),
 					]),
 					mod.block(null, [
@@ -890,8 +892,8 @@ test.suite('IrNode', () => {
 						mod.local.set(5, genConst(cg, 3.3)),
 						mod.if(
 							new BinVect(mod, new BinValue(cg, genConst(cg, true)).primitiveValue).isSpecial(true),
-							mod.call('Map.set',    [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
-							mod.call('Map.delete', [base_get_1, accessor_get_1],               binaryen.none),
+							mod.call('Map.set', [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
+							mod.drop(mod.call('Map.delete', [base_get_1, accessor_get_1], rt_n_value)),
 						),
 					]),
 				]);
@@ -1281,7 +1283,7 @@ test.suite('IrNode', () => {
 										mod.i32.eqz(mod.ref.is_null(item_get)),
 										mod.call('Map.set', [
 											mod.local.get(2, cg.getReftype('(ref $List)')),
-											item_get,
+											mod.ref.as_non_null(item_get),
 											genConst(cg),
 										], binaryen.none),
 									),
@@ -1465,6 +1467,206 @@ test.suite('IrNode', () => {
 					);
 				});
 			});
+		});
+
+		test.test('WASM module validates.', () => {
+			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+				null;
+				false;
+				@hello;
+				42;
+				4.2;
+
+				val mut a: null  = null;
+				val mut b: bool  = false;
+				val mut c: sym   = @hello;
+				val mut d: int   = 42;
+				val mut e: float = 4.2;
+
+				a;
+				b;
+				c;
+				d;
+				e;
+
+				();
+
+				val mut x1: int = 42;
+				(x1, 4.2, (null,));
+
+				[];
+
+				val mut x2: int = 42;
+				[x2, 4.2, (null,), x2/2, @e];
+
+				{};
+
+				{x2, 4.2, (null,), x2/2, @e};
+
+				val mut x3: int = 42;
+				(a= x3, b= 4.2, c= (null,), d= x3/2, e= @e);
+
+				@b;
+				@c;
+				@a;
+				@bb;
+				@cc;
+				@aa;
+				@bbb;
+				@ccc;
+				@aaa;
+				(a= 42, aa= false, b= 4.2);
+				(aa= true, c= null, a= 42);
+				(b= 42, bb= 4.2, bbb= null);
+
+				val mut x4: int = 42;
+				[a= x4, b= 4.2, c= (null,), d= x4/2, e= @e];
+
+				@b;
+				@c;
+				@a;
+				@bb;
+				@cc;
+				@aa;
+				@bbb;
+				@ccc;
+				@aaa;
+				[a= 42, aa= false, b= 4.2];
+				[aa= true, c= null, a= 42];
+				[b= 42, c= 4.2, aaa= null];
+
+				{1.1 -> x4, 2.2 -> 4.2, 3.3 -> (null,), 4.4 -> x4/2, 5.5 -> @e};
+
+				val mut tup1: (int, int, ?: int) = (42, 43);
+				val mut rec1: (a: int, b: int, c?: int) = (a= 42, b= 43);
+				val mut list1: [int] = [42, 43];
+				val mut dict1: [:int] = [a= 42, c= 43];
+				val 'set1': {float} = {4.2, 2.4};
+				val map1: {float -> int} = {4.2 -> 42, 2.4 -> 24};
+
+				(x1, 43, 44).2;
+				tup1.0;
+				tup1.1;
+
+				(a= x2, b= 43, c= 44).c;
+				rec1.a;
+				rec1.b;
+
+				[x3, 43, 44].[1 + 1];
+				list1.[0];
+				list1.[3];
+				list1.[-1];
+
+				[a= x4, b= 43, c= 44].[@b];
+				dict1.[@a];
+				dict1.[@c];
+
+				'set1'.[4.2];
+				'set1'.[3.3];
+
+				map1.[4.2];
+				map1.[3.3];
+
+				!null;
+				!false;
+				!@hello;
+				!42;
+				!4.2;
+
+				?null;
+				?false;
+				?@hello;
+				?42;
+				?4.2;
+
+				-(42);
+				-(4.2);
+
+				2 + 3;
+				2 - 3;
+				2 * 3;
+				2 / 3;
+				2 ^ 3;
+
+				+2 + +3;
+				+2 - +3;
+				+2 * +3;
+				+2 / +3;
+				+2 ^ +3;
+
+				2.0 + 3.0;
+				2.0 - 3.0;
+				2.0 * 3.0;
+				2.0 / 3.0;
+				2.0 ^ 3.0;
+
+				2 < 3.0;
+				2 > 3.0;
+				2 <= 3.0;
+				2 >= 3.0;
+
+				2.0 === 3;
+				2.0 ==  3;
+
+				set a = null;
+				set b = true;
+				set c = @world;
+				set d = 43;
+				set e = 4.3;
+
+				val mut list2: mut [int] = [42, 43];
+				val mut dict2: mut [:int] = [a= 42, c= 43];
+				val 'set2': mut {float} = {4.2, 2.4};
+				val map2: mut {float -> int} = {4.2 -> 42, 2.4 -> 24};
+
+				set [x1, 43, 44].[1 + 1] = 45;
+				set list2.[0] = 46;
+				set list2.[2] = 47;
+
+				set [a= x2, b= 43, c= 44].[@b] = 45;
+				set dict2.[@a] = 46;
+				set dict2.[@c] = 47;
+
+				set {x3, x4}.[x3] = false;
+				set 'set2'.[4.2] = false;
+				set 'set2'.[3.3] = true;
+
+				set {x3 -> 4.2, x4 -> 2.4}.[x3] = 2.4;
+				set map2.[4.2] = 21;
+				set map2.[3.3] = 21;
+
+				List.<int>((2, 3, 5));
+				List.<int>([2, 3, 5]);
+				List.<int>({2, 3, 5});
+				Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
+				Dict.<int>((a= 2, b= 3, c= 5));
+				Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
+				Dict.<int>([a= 2, b= 3, c= 5]);
+				Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
+				Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
+				Set.<int>((2, 3, 5));
+				Set.<int>([2, 3, 5]);
+				Set.<int>({2, 3, 5});
+				Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
+				Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
+				Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
+				Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
+			}`);
+			const opt = new Optimizer();
+			const cg  = new Builder();
+			goal.varCheck();
+			goal.typeCheck();
+			goal.lower(opt);
+			cg.setupModule((mod) => {
+				const codes: binaryen.ExpressionRef[] = opt.codegen(cg); // must codegen before calling `.getAllLocals()`
+				mod.addFunction(
+					'main',
+					binaryen.none,
+					binaryen.none,
+					cg.getAllLocals().map((local) => local.type),
+					mod.block(null, codes),
+				);
+			}); // assert does not throw
 		});
 	});
 });

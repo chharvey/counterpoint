@@ -42,8 +42,8 @@ export function setupScript(
 	readonly tb:    typeof goal.builder.typeBuilder,
 } {
 	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
-	const opt:  Optimizer       = new Optimizer();
-	const cg:   Builder         = new Builder();
+	const opt = new Optimizer();
+	const cg  = new Builder();
 	cg.setupModule();
 	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
 	opts.varCheck  ??= true;
@@ -54,7 +54,7 @@ export function setupScript(
 	opts.varCheck &&                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&               goal.typeCheck();
 	opts.varCheck && opts.typeCheck && opts.lower && goal.lower(opt);
-	opts.varCheck && opts.typeCheck && opts.lower && opts.codegen && opt.instructions.map((instr) => instr.codegen(cg));
+	opts.varCheck && opts.typeCheck && opts.lower && opts.codegen && opt.codegen(cg);
 	opts.varCheck && opts.typeCheck && opts.build && goal.build();
 	return {
 		goal,

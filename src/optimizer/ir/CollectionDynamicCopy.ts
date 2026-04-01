@@ -415,7 +415,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
 						return each_item(cg, destset, srcref, cg.getReftype('(ref null $Value)'), true, (item) => cg.module.call('Map.set', [
 							destset.get(),
-							item,
+							cg.module.ref.as_non_null(item),
 							cg.getConst(BinConst.NULL),
 						], binaryen.none));
 					}
