@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
@@ -60,12 +59,6 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		) {
 			this.validator.wordNodeID(this.start_node.children[1]);
 		}
-	}
-
-	@memoizeMethod
-	// @buildDeco // explicitly leaving off for performance
-	public override build(): binaryen.ExpressionRef {
-		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod

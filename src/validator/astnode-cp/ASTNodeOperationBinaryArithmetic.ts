@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -29,10 +28,7 @@ import {
 	bothInts,
 	bothFloats,
 } from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -51,17 +47,6 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.EXP, 'vexp'],
-			[Operator.MUL, 'vmul'],
-			[Operator.DIV, 'vdiv'],
-			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
