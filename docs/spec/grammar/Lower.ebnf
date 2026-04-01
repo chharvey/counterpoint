@@ -21,13 +21,13 @@ Every function signature takes the form «‹NAME›(‹static params› [‹dyn
 
 TRAP();
 
-NULL.CONST(VALUE.Null)    -> Value;
-BOOL.CONST(VALUE.Boolean) -> Value;
-SYM.CONST(VALUE.Symbol)   -> Value;
-INT.CONST(VALUE.Integer)  -> Value;
-NAT.CONST(VALUE.Natural)  -> Value;
-FLOAT.CONST(VALUE.Float)  -> Value;
-STR.CONST(VALUE.String)   -> Value;
+NULL.CONST (VALUE.Null)    -> Value;
+BOOL.CONST (VALUE.Boolean) -> Value;
+SYM.CONST  (VALUE.Symbol)  -> Value;
+INT.CONST  (VALUE.Integer) -> Value;
+NAT.CONST  (VALUE.Natural) -> Value;
+FLOAT.CONST(VALUE.Float)   -> Value;
+STR.CONST  (VALUE.String)  -> Value;
 
 STR.TEMPLATE([Value*]) -> String;
 
@@ -51,11 +51,16 @@ CALL([Value*]) -> Value;
 
 ISNULL([Value]) -> Boolean;
 
-NOT([Value]) -> Boolean;
-EMP([Value]) -> Boolean;
+NOT([Value])   -> Boolean;
+EMP([Value])   -> Boolean;
+NEG([Integer]) -> Integer;
+NEG([Natural]) -> Natural;
+NEG([Float])   -> Float;
+NEG([Number])  -> Number;
 
-INT.NEG([Integer]) -> Integer;
-FLOAT.NEG([Float]) -> Float;
+TOINT([Number])   -> Integer;
+TONAT([Number])   -> Natural;
+TOFLOAT([Number]) -> Float;
 
 TOINT([Number])   -> Integer;
 TONAT([Number])   -> Natural;
@@ -94,8 +99,9 @@ NEQ([Value Value]) -> Boolean;
 PHI(‹label› -> Value, ‹label› -> Value) -> Value;
 
 DROP([Value]);
+
 DECL(SymbolSchemaVar|native-string Type [Value]);
-SET(SymbolSchemaVar|native-string [Value]);
+SET (SymbolSchemaVar|native-string      [Value]);
 
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
@@ -166,26 +172,26 @@ Lower(SemanticCall:has(SemanticVariable ::= "Dict") call) := (DICT.NEW);
 Lower(SemanticCall:has(SemanticVariable ::= "Set")  call) := (SET.NEW);
 Lower(SemanticCall:has(SemanticVariable ::= "Map")  call) := (MAP.NEW);
 Lower(SemanticCall:has(SemanticVariable ::= "List"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <List> $destination (LIST.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(LIST.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Lower(SemanticCall:has(SemanticVariable ::= "Dict"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <Dict> $destination (DICT.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DICT.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Lower(SemanticCall:has(SemanticVariable ::= "Set"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <Set> $destination (SET.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(SET.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Lower(SemanticCall:has(SemanticVariable ::= "Map"):has(SemanticExpression) call) := [
-	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(DECL <Map> $destination (MAP.NEW))
+	(DECL ‹type› $arg `Lower(call.SemanticExpression.0)`)
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
@@ -193,10 +199,9 @@ Lower(SemanticCall call) := (CALL [`Lower(call.0)` `...call.SemanticExpression*.
 
 // Lower(SemanticClaim claim);
 
-Lower(SemanticOperation[operator=NOT] op)             := (NOT       [`op.0`]);
-Lower(SemanticOperation[operator=EMP] op)             := (EMP       [`op.0`]);
-Lower(SemanticOperation[operator=NEG][0: Integer] op) := (INT.NEG   [`op.0`]);
-Lower(SemanticOperation[operator=NEG][0: Float]   op) := (FLOAT.NEG [`op.0`]);
+Lower(SemanticOperation[operator=NOT] ::= SemanticExpression)               := (NOT [`SemanticExpression`]);
+Lower(SemanticOperation[operator=EMP] ::= SemanticExpression)               := (EMP [`SemanticExpression`]);
+Lower(SemanticOperation[operator=NEG] ::= SemanticExpression[type: Number]) := (NEG [`SemanticExpression`]);
 
 Lower(SemanticOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`op.0` `op.1`]);
 Lower(SemanticOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`op.0` `op.1`]);

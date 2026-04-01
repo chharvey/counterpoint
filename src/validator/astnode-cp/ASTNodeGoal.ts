@@ -103,7 +103,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 					fn_name,
 					binaryen.none,
 					binaryen.none,
-					this.builder.getLocals().map((var_) => var_.type),
+					this.builder.getAllLocals().map((var_) => var_.type),
 					mod.block(null, statements),
 				);
 				mod.addFunctionExport(fn_name, fn_name);

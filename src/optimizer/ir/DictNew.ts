@@ -1,7 +1,16 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
-import type {
-	VALUE,
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {
+	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
@@ -18,12 +27,21 @@ export class DictNew extends Value {
 		super(OpCode.DICT_NEW, typ);
 	}
 
+	public override toString(): string {
+		return super.toString(...[...this.props].map(([sym, value]) => `${ sym }->${ value }`));
+	}
+
 	@runOnceMethod
 	public override validate(): void {
+		assert_instanceof(this.type, TYPE.Dict);
 		return xjs.Map.forEachAggregated(this.props, (value) => value.validate());
 	}
 
-	public override toString(): string {
-		return super.toString(...[...this.props].map(([sym, value]) => `${ sym }->${ value }`));
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
+			id,
+			new BinValue(cg, value.codegen(cg)).toProperty(id),
+		])))).value;
 	}
 }

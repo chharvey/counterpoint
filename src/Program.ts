@@ -1,4 +1,5 @@
 import {
+	runOnceMethod,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
@@ -9,8 +10,6 @@ import {
 export class Program {
 	/** An AST goal produced by a Decorator. */
 	readonly #astGoal: AST.ASTNodeGoal;
-
-	#prebuilt = false;
 
 
 	/**
@@ -23,13 +22,11 @@ export class Program {
 	}
 
 
+	@runOnceMethod
 	#prebuild(): void {
-		if (!this.#prebuilt) { // TODO: use a run-once memoizer decorator
-			this.#astGoal.varCheck();
-			this.#astGoal.typeCheck();
-			this.#astGoal.build();
-			this.#prebuilt = true;
-		}
+		this.#astGoal.varCheck();
+		this.#astGoal.typeCheck();
+		this.#astGoal.build();
 	}
 
 	/**

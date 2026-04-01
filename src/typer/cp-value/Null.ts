@@ -43,7 +43,11 @@ export class Null extends Primitive {
 		return true;
 	}
 
+	public override codegen(mod: binaryen.Module): BinVect {
+		return new BinVect(mod);
+	}
+
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module).vect;
+		return this.codegen(builder.module).vect;
 	}
 }

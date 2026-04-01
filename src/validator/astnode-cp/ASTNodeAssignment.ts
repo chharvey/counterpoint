@@ -82,7 +82,7 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 
 	public override build(): binaryen.ExpressionRef {
 		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		return this.builder.getLocal(this.assignee.id)?.set(ASTNodeStatement.coerceAssignment(
+		return this.builder.getLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar)?.set(ASTNodeStatement.coerceAssignment(
 			this.builder.module,
 			this.assignee.writeType(),
 			this.assigned.type(),

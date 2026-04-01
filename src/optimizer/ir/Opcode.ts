@@ -1,4 +1,4 @@
-import {Instruction} from './Instruction.ts';
+import {IrNode} from './IrNode.ts';
 
 
 
@@ -41,9 +41,7 @@ export enum OpCode {
 
 	NOT,
 	EMP,
-
-	INT_NEG,
-	FLOAT_NEG,
+	NEG,
 
 	TOBOOL,
 	TOINT,
@@ -110,12 +108,11 @@ export enum OpCode {
  * - CollectionDynamicSet
  * - CollectionDynamicCopy
  */
-export abstract class Opcode extends Instruction {
+export abstract class Opcode extends IrNode {
 	public constructor(private readonly opCode: OpCode) {
 		super();
 	}
 
-	/** @final */
 	public override toString(...args: readonly {toString(): string}[]): string {
 		return `(${ [OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ') })`;
 	}

@@ -1,5 +1,6 @@
 import * as VALUE from '../cp-value/index.ts';
 import type {Type} from './Type.ts';
+import {Union} from './Union.ts';
 import type {Unit} from './Unit.ts';
 import {Never} from './Never.ts';
 import {Unknown} from './Unknown.ts';
@@ -51,3 +52,7 @@ export const TYPE_CONSTANTS = [
 	TRUE,
 	SYM_NEVER,
 ] as const;
+
+
+
+export const NUMBER: Type = Union.all(INT, FLOAT); // needs to be defined after `TYPE_CONSTANTS` because `Type#union` has a decorator that relies on it

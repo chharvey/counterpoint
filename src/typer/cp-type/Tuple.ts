@@ -81,20 +81,22 @@ class TypeTuple extends ValueType {
 	}
 
 	public get(index: bigint, accessor: AST.ASTNodeIndex): EntryType {
-		return this.typeargs.at(Number(index)) ?? assert.fail(new TypeErrorNoEntry('index', this, accessor));
+		return this.isIndexCanonical(index)
+			? this.typeargs.at(Number(index))!
+			: assert.fail(new TypeErrorNoEntry('index', this, accessor));
 	}
 
 	public itemTypes(): Type {
 		return Union.all(this.typeargs.map((t) => t.type));
 	}
 
+	/** @deprecated */
 	public canonicalizeIndex(index: bigint): bigint | undefined {
-		const n: bigint = BigInt(this.typeargs.length);
-		return (
-			(-n <= index && index < 0) ? index + n :
-			(0  <= index && index < n) ? index :
-			undefined
-		);
+		return this.isIndexCanonical(index) ? index : undefined;
+	}
+
+	public isIndexCanonical(index: bigint): boolean {
+		return 0 <= index && index < this.typeargs.length;
 	}
 }
 export {TypeTuple as Tuple};

@@ -67,8 +67,12 @@ export class Integer extends ValueNumber<Integer> {
 		return this.toFloat().equal(value);
 	}
 
+	public override codegen(mod: binaryen.Module): BinVect {
+		return new BinVect(mod, mod.i32.const(this.toNumber()));
+	}
+
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, builder.module.i32.const(this.toNumber())).vect;
+		return this.codegen(builder.module).vect;
 	}
 
 	public override toFloat(): Float {

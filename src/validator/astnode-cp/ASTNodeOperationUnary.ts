@@ -97,7 +97,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
-				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
 				return t;
 			}
 		}
@@ -106,18 +106,13 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Unop {
 		const typ: TYPE.Type = this.type();
-		const t0:  TYPE.Type = this.operand.type();
 		const v0:  IR.Value  = this.operand.lower(optimizer).asTac(optimizer);
 		return (
-			[Operator.NOT, Operator.EMP].includes(this.operator) ? new IR.Unop(new Map<Operator, IR.OpCodeUn>([
+			[Operator.NOT, Operator.EMP, Operator.NEG].includes(this.operator) ? new IR.Unop(new Map<Operator, IR.OpCodeUn>([
 				[Operator.NOT, IR.OpCode.NOT],
 				[Operator.EMP, IR.OpCode.EMP],
+				[Operator.NEG, IR.OpCode.NEG],
 			]).get(this.operator)!, v0, typ) :
-			this.operator === Operator.NEG ? new IR.Unop(
-				t0.isSubtypeOf(TYPE.INT) ? IR.OpCode.INT_NEG : (assert.ok(t0.isSubtypeOf(TYPE.FLOAT)), IR.OpCode.FLOAT_NEG),
-				v0,
-				typ,
-			) :
 			// TODO: v0.5+ unary operators int, nat, float
 			assert.fail(`Unexpected operator ${ Operator[this.operator] }`)
 		);

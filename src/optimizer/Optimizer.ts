@@ -1,7 +1,18 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
+import type {Builder} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
+import type {TYPE} from '../typer/index.ts';
 import {IR} from './index.ts';
-import type {Local} from './utils-private.ts';
+
+
+
+export type Temp = {
+	readonly id:    bigint,
+	readonly name:  string,
+	readonly type:  TYPE.Type,
+	readonly value: IR.Value,
+};
 
 
 
@@ -11,8 +22,8 @@ import type {Local} from './utils-private.ts';
  * the CFG represents execution order. The CFG assumes the AST is already validated.
  */
 export class Optimizer {
-	#tempLocalCounter: bigint = 0n;
-	#labelCounter:     bigint = 0n;
+	#tempCounter:  bigint = 0n;
+	#labelCounter: bigint = 0n;
 
 	readonly #instructions: IR.Instruction[] = [];
 
@@ -20,9 +31,12 @@ export class Optimizer {
 		return [...this.#instructions];
 	}
 
-	public newTempLocal(value: IR.Value): Local {
-		const local: Local = {
-			name: `$${ this.#tempLocalCounter++ }`,
+	public newTemp(value: IR.Value): Temp {
+		const id:    bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
+		const local: Temp   = {
+			id,
+			value,
+			name: `$${ -id }`, // appears positive
 			type: value.type,
 		};
 		this.pushInstruction(new IR.Decl(local, value));
@@ -40,6 +54,10 @@ export class Optimizer {
 	@runOnceMethod
 	public validate(): void {
 		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
+	}
+
+	public codegen(cg: Builder): binaryen.ExpressionRef[] {
+		return this.#instructions.map((instr) => instr.codegen(cg));
 	}
 
 	public print(): string {

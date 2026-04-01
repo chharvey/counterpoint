@@ -1,5 +1,11 @@
+import type binaryen from 'binaryen';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
 import {
 	assert_instanceof,
+	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
@@ -18,17 +24,25 @@ export class RecordGet extends Value {
 		super(OpCode.RECORD_GET, entry_type);
 	}
 
-	@runOnceMethod
-	public override validate(): void {
-		this.record.validate();
-		return assert_instanceof(this.record.type, TYPE.Record);
-	}
-
 	public override toString(): string {
 		return super.toString(
 			// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
 			`@${ this.accessor.keysrc || `\\x${ this.accessor.keyid.toString(16) }` }`, // static accessor before collection
 			this.record,
 		);
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		this.record.validate();
+		return assert_instanceof(this.record.type, TYPE.Record);
+	}
+
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.module.call('Record.get', [
+			new BinValue(cg, this.record.codegen(cg)).cast('(ref $Record)'),
+			cg.module.i64.const(Number(this.accessor.keyid), 0), // TODO: v0.5: use `bigint_to_i64(this.cg.module, this.accessor.keyid, true)`
+		], cg.getReftype('(ref $Value)'));
 	}
 }

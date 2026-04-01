@@ -161,16 +161,27 @@ describe('ASTNodeOperation', () => {
 				-x;
 				val mut y: float = 42.0 / 7.0;
 				-(3.0 + y);
+				val mut z: int | float = if false then 42 else 4.2;
+				-z;
 			`);
 			goal.varCheck();
 			goal.typeCheck();
 			goal.lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DECL <int> x (INT.CONST 42))
-				(DROP (INT.NEG (GET x)))
+				(DROP (NEG (GET x)))
 				(DECL <float> y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
 				(DECL <float> $0 (FLOAT.ADD (FLOAT.CONST 3.0) (GET y)))
-				(DROP (FLOAT.NEG (GET $0)))
+				(DROP (NEG (GET $0)))
+				if_false (BOOL.CONST false), goto "block-1".
+				"block-0":
+				(DECL <int> $1 (INT.CONST 42))
+				goto "block-2".
+				"block-1":
+				(DECL <float> $2 (FLOAT.CONST 4.2))
+				"block-2":
+				(DECL <anything> z (PHI "block-0"->(GET $1) "block-1"->(GET $2)))
+				(DROP (NEG (GET z)))
 			`.join('\n'));
 		});
 
@@ -311,14 +322,14 @@ describe('ASTNodeOperation', () => {
 					(DECL <float> $1 (GET d))
 					"block-2":
 					(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
-					(DECL <int> $2 (INT.NEG (GET c)))
+					(DECL <int> $2 (NEG (GET c)))
 					(DECL <int> $3 (INT.ADD (GET $2) (INT.CONST 1)))
 					if_false (TOBOOL (GET $3)), goto "block-4".
 					"block-3":
 					(DECL <int> $4 (GET $3))
 					goto "block-5".
 					"block-4":
-					(DECL <float> $5 (FLOAT.NEG (GET d)))
+					(DECL <float> $5 (NEG (GET d)))
 					(DECL <float> $6 (FLOAT.ADD (FLOAT.CONST 1.0) (GET $5)))
 					"block-5":
 					(DROP (PHI "block-3"->(GET $4) "block-4"->(GET $6)))
