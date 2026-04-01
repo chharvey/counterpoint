@@ -12,9 +12,9 @@ import {repeat} from '../utils.ts';
 
 
 describe('Builder', () => {
-	describe('#setupModule', () => {
+	describe('#setupMain', () => {
 		it('validates successfully.', () => {
-			new Builder().setupModule(); // assert does not throw
+			new Builder().setupMain(); // assert does not throw
 		});
 	});
 
@@ -163,9 +163,7 @@ describe('Builder', () => {
 			}],
 		]), (bins, description) => {
 			it(description, () => { // TODO: v0.5: tail call
-				const cg = new Builder();
-				cg.setupModule();
-				const [actual, expected] = bins(cg);
+				const [actual, expected] = bins(new Builder());
 				assertEqualBins(actual, expected);
 			});
 		});
@@ -212,7 +210,6 @@ describe('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
-			cg.setupModule();
 			return assertEqualBins(
 				[new Map([
 					// (a= 42, aa= false, b= 4.2); % (258, 261, 256)
@@ -288,7 +285,6 @@ describe('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
-			cg.setupModule();
 			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)'));
 			return assertEqualBins(
 				[new Map([

@@ -29,7 +29,6 @@ describe('IrNode', () => {
 			const cg:   Builder         = new Builder();
 			goal.varCheck();
 			goal.typeCheck();
-			cg.setupModule();
 			'lower'   in opts && opts.lower   && goal.lower(opt);
 			'codegen' in opts && opts.codegen && opt.codegen(cg);
 			return {goal, opt, cg};
@@ -247,7 +246,6 @@ describe('IrNode', () => {
 			it('empty DICT.NEW', () => {
 				// there exists no syntax for empty Dicts, so constructing it manually
 				const cg = new Builder();
-				cg.setupModule();
 				return assertEqualBins(
 					new IR.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
 					new BinValue(cg, cg.codegenDict()).value,
@@ -314,7 +312,6 @@ describe('IrNode', () => {
 			it('empty MAP.NEW', () => {
 				// there exists no syntax for empty Maps, so constructing it manually
 				const cg = new Builder();
-				cg.setupModule();
 				return assert.strictEqual(
 					binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
 					binaryen.emitText(new BinValue(cg, cg.codegenMap()).value).replaceAll('$1', '$0'),
@@ -1641,7 +1638,7 @@ describe('IrNode', () => {
 			goal.varCheck();
 			goal.typeCheck();
 			goal.lower(opt);
-			cg.setupModule((mod) => {
+			cg.setupMain((mod) => {
 				const codes: binaryen.ExpressionRef[] = opt.codegen(cg); // must codegen before calling `.getAllLocals()`
 				mod.addFunction(
 					'main',

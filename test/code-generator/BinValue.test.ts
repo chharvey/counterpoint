@@ -21,7 +21,6 @@ describe('BinValue', () => {
 	beforeEach(() => {
 		cg  = new Builder();
 		mod = cg.module;
-		cg.setupModule();
 	});
 
 	describe('#value', () => {

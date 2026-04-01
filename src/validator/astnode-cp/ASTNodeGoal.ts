@@ -95,7 +95,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 
 	/** @implements Buildable */
 	public build(): binaryen.ExpressionRef {
-		this.builder.setupModule((mod) => {
+		this.builder.setupMain((mod) => {
 			if (this.children.length) {
 				const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
 				const fn_name:    string                   = 'fn0';

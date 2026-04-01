@@ -131,7 +131,7 @@ export class Builder {
 	/** A registry of reference (and reference-null) types. */
 	readonly #reftypeRegistry = new Map<ReftypeKey, binaryen.Type>();
 
-	/** A registry of constant WASM values. */
+	/** A registry of constant WASM expressions. */
 	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
 
 	#typeCount: bigint = 0n;
@@ -154,7 +154,18 @@ export class Builder {
 	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
 
 	public constructor() {
+		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
+			/* eslint-disable @stylistic/operator-linebreak */
+			binaryen.Features.SIMD128 |
+			binaryen.Features.ReferenceTypes |
+			binaryen.Features.Multivalue |
+			binaryen.Features.GC
+			/* eslint-enable @stylistic/operator-linebreak */
+		));
+
 		this.#setupTypes();
+		this.#setupGlobals();
+		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
 			[BinConst.NULL,  new BinValue(this, new BinVect(this.module))       .value],
@@ -906,20 +917,11 @@ export class Builder {
 	}
 
 	/**
-	 * Prepare this builder’s module, with optional additional actions/modifications.
-	 * @param main a callback to run after setup but before validation
+	 * Prepare the main function in this binaryen Module, then performs validation.
+	 * The main function should contain generated code for a program.
+	 * @param main a callback to run before validation
 	 */
-	public setupModule(main?: (mod: binaryen.Module) => void): void {
-		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
-			/* eslint-disable @stylistic/operator-linebreak */
-			binaryen.Features.SIMD128 |
-			binaryen.Features.ReferenceTypes |
-			binaryen.Features.Multivalue |
-			binaryen.Features.GC
-			/* eslint-enable @stylistic/operator-linebreak */
-		));
-		this.#setupGlobals();
-		this.#setupFunctions();
+	public setupMain(main?: (mod: binaryen.Module) => void): void {
 		main?.call(null, this.module);
 		if (!this.module.validate()) {
 			throw new Error('Invalid WebAssembly module.');
