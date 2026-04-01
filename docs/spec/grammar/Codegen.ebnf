@@ -271,10 +271,10 @@ Codegen((SET.SET `obj` `accessor` `v`)) := (block
 			(local.get $accessor)
 			`Codegen((NULL.CONST null))`
 		)
-		(call $Map.delete
+		(drop (call $Map.delete
 			(local.get $base)
 			(local.get $accessor)
-		)
+		))
 	)
 );
 

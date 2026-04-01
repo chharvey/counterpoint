@@ -99,10 +99,10 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 							accessor.get(),
 							cg.getConst(BinConst.NULL),
 						], binaryen.none),
-						cg.module.call('Map.delete', [
+						cg.module.drop(cg.module.call('Map.delete', [
 							base.get(),
 							accessor.get(),
-						], binaryen.none),
+						], cg.getReftype('(ref null $Value)'))),
 					),
 				]);
 			}

@@ -853,6 +853,7 @@ describe('IrNode', () => {
 				}`, {lower: true, codegen: false, build: false});
 				const mod = cg.module;
 				const rt_value:       binaryen.Type          = cg.getReftype('(ref $Value)');
+				const rt_n_value:     binaryen.Type          = cg.getReftype('(ref null $Value)');
 				const rt_map:         binaryen.Type          = cg.getReftype('(ref $Map)');
 				const base:           binaryen.ExpressionRef = mod.local.get(1, rt_value); // index 0 = nonempty map setup (implementation of Set)
 				const base_get_0:     binaryen.ExpressionRef = mod.local.get(2, rt_map);
@@ -866,8 +867,8 @@ describe('IrNode', () => {
 						mod.local.set(3, genConst(cg, 4.2)),
 						mod.if(
 							new BinVect(mod, new BinValue(cg, genConst(cg, false)).primitiveValue).isSpecial(true),
-							mod.call('Map.set',    [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
-							mod.call('Map.delete', [base_get_0, accessor_get_0],               binaryen.none),
+							mod.call('Map.set', [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
+							mod.drop(mod.call('Map.delete', [base_get_0, accessor_get_0], rt_n_value)),
 						),
 					]),
 					mod.block(null, [
@@ -875,8 +876,8 @@ describe('IrNode', () => {
 						mod.local.set(5, genConst(cg, 3.3)),
 						mod.if(
 							new BinVect(mod, new BinValue(cg, genConst(cg, true)).primitiveValue).isSpecial(true),
-							mod.call('Map.set',    [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
-							mod.call('Map.delete', [base_get_1, accessor_get_1],               binaryen.none),
+							mod.call('Map.set', [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
+							mod.drop(mod.call('Map.delete', [base_get_1, accessor_get_1], rt_n_value)),
 						),
 					]),
 				]);
