@@ -480,7 +480,7 @@ Codegen((SET.COPY `dest` `src:List`)) := (block
 			(if (i32.eqz (ref.is_null (local.get $item)))
 				(call $Map.set
 					(local.get $set)
-					(local.get $item)
+					(ref.as_non_null (local.get $item))
 					`Codegen((NULL.CONST null))`
 				)
 			)

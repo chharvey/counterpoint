@@ -1267,7 +1267,7 @@ describe('IrNode', () => {
 										mod.i32.eqz(mod.ref.is_null(item_get)),
 										mod.call('Map.set', [
 											mod.local.get(2, cg.getReftype('(ref $List)')),
-											item_get,
+											mod.ref.as_non_null(item_get),
 											genConst(cg),
 										], binaryen.none),
 									),
