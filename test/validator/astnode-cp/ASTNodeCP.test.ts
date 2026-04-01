@@ -141,6 +141,18 @@ describe('ASTNodeCP', () => {
 					goal.varCheck();
 					return goal.typeCheck(); // assert does not throw
 				});
+				it('widens assignee write type for collection literals.', () => {
+					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
+						[1.01].[1]                      = 1.02;  %> Expression of type \`1.02\` is not assignable to type \`1.01\`.
+						[i= 2.03].[@j]                  = 2.04;  %> Expression of type \`2.04\` is not assignable to type \`2.03\`.
+						{3.05}.[3.05]                   = false; %  no error
+						{4.07 -> @a, 4.08 -> @b}.[4.07] = @c;    %> Expression of type \`@c\` is not assignable to type \`@a | @b\`.
+						{3.05}.[3.06]                   = true;  %> Type \`3.06\` is not a subtype of type \`3.05\`.
+						{4.07 -> @a, 4.08 -> @b}.[4.09] = @a;    %> Type \`4.09\` is not a subtype of type \`4.07 | 4.08\`.
+					`);
+					goal.varCheck();
+					return assert.throws(() => goal.typeCheck(), AggregateError); // TODO: use NodeJS `test.expectFailure`
+				});
 				it('throws when property assignee type is not supertype.', () => {
 					[
 						`
