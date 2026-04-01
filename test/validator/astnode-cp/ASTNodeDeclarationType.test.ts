@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
@@ -8,7 +7,6 @@ import {
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../src/index.ts';
-import {assertEqualBins} from '../../assert-helpers.ts';
 
 
 
@@ -66,17 +64,6 @@ describe('ASTNodeDeclarationType', () => {
 				(goal.validator.getSymbolInfo(0x100n) as SymbolSchemaType).typevalue,
 				TYPE.INT,
 			);
-		});
-	});
-
-
-	describe('#build', () => {
-		it('always returns `(nop)`.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				type T = int;
-				type U = T | float;
-			`);
-			return xjs.Array.forEachAggregated(goal.children, (stmt) => assertEqualBins(stmt.build(), goal.builder.module.nop()));
 		});
 	});
 });

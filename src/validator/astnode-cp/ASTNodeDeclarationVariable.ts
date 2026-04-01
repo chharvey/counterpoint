@@ -1,9 +1,8 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
-	TYPE,
+	type TYPE,
 	type Optimizer,
 	IR,
 	AssignmentErrorDuplicateDeclaration,
@@ -90,28 +89,6 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 			optimizer.pushInstruction(new IR.Decl(symbol, value));
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
-		}
-	}
-
-	public override build(): binaryen.ExpressionRef {
-		if (
-			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&
-			(!this.unfixed || !this.assignee) ||
-			!this.assignee && !this.assigned
-		) {
-			return this.builder.module.nop();
-		}
-		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
-		if (this.assignee) {
-			return this.builder.teeLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar, value).set(ASTNodeStatement.coerceAssignment(
-				this.builder.module,
-				this.typenode.eval(),
-				this.assigned?.type() ?? TYPE.NULL,
-				value,
-				this.validator.config.compilerOptions.intCoercion,
-			));
-		} else {
-			return this.builder.module.drop(value);
 		}
 	}
 }

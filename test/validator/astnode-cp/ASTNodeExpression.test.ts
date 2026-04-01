@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
@@ -12,7 +11,6 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
-	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -20,13 +18,11 @@ import {
 } from '../../../src/index.ts';
 import {
 	assertEqualTypes,
-	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
 	typeUnit,
-	buildConst,
 } from '../../helpers.ts';
 import {
 	extract_tokens,
@@ -371,33 +367,6 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 		/* eslint-enable @stylistic/array-element-newline */
-
-
-		specify('#build', () => {
-			xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
-				['null;',    (builder) => buildConst(builder)],
-				['false;',   (builder) => buildConst(builder, false)],
-				['true;',    (builder) => buildConst(builder, true)],
-				['@never;',  (builder) => buildConst(builder, Symbol(0x80))],
-				['@hello;',  (builder) => buildConst(builder, Symbol(0x100))],
-				['0;',       (builder) => buildConst(builder, 0n)],
-				['+0;',      (builder) => buildConst(builder, 0n)],
-				['-0;',      (builder) => buildConst(builder, 0n)],
-				['42;',      (builder) => buildConst(builder, 42n)],
-				['+42;',     (builder) => buildConst(builder, 42n)],
-				['-42;',     (builder) => buildConst(builder, -42n)],
-				['0.0;',     (builder) => buildConst(builder, 0)],
-				['+0.0;',    (builder) => buildConst(builder, 0)],
-				['-0.0;',    (builder) => buildConst(builder, -0)],
-				['-4.2e-2;', (builder) => buildConst(builder, -0.042)],
-			]), (expected_fn, src) => {
-				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF);
-				return assertEqualBins(
-					constant.build(),
-					expected_fn.call(null, constant.builder),
-				);
-			});
-		});
 	});
 
 
@@ -508,79 +477,6 @@ describe('ASTNodeExpression', () => {
 						(goal.children[5] as AST.ASTNodeStatementExpression).expr!.fold(),
 					],
 					[null, null],
-				);
-			});
-		});
-
-
-		describe('#build', () => {
-			it('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val x: int = 42;
-					val y: float = 4.2 * 10;
-					x;
-					y;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				assertEqualBins(
-					[
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(),
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(),
-					],
-					[
-						buildConst(goal.builder, 42n),
-						buildConst(goal.builder, 42.0),
-					],
-				);
-			});
-			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: int = 42;
-					val y: int = x + 10;
-					x;
-					y;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map(({type}) => (type));
-				assertEqualBins(
-					[
-						var0.build(),
-						var1.build(),
-					],
-					[
-						goal.builder.module.local.get(0, types[0]),
-						goal.builder.module.local.get(1, types[1]),
-					],
-				);
-			});
-			it('with constant folding off, always returns `(local.get)`.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val x: int = 42;
-					val mut y: float = 4.2;
-					x;
-					y;
-				`, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map(({type}) => (type));
-				assertEqualBins(
-					[
-						var0.build(),
-						var1.build(),
-					],
-					[
-						goal.builder.module.local.get(0, types[0]),
-						goal.builder.module.local.get(1, types[1]),
-					],
 				);
 			});
 		});

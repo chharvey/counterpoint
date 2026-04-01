@@ -29,7 +29,6 @@ describe('IrNode', () => {
 			const cg:   Builder         = new Builder();
 			goal.varCheck();
 			goal.typeCheck();
-			cg.setupModule();
 			'lower'   in opts && opts.lower   && goal.lower(opt);
 			'codegen' in opts && opts.codegen && opt.codegen(cg);
 			return {goal, opt, cg};
@@ -247,7 +246,6 @@ describe('IrNode', () => {
 			it('empty DICT.NEW', () => {
 				// there exists no syntax for empty Dicts, so constructing it manually
 				const cg = new Builder();
-				cg.setupModule();
 				return assertEqualBins(
 					new IR.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
 					new BinValue(cg, cg.codegenDict()).value,
@@ -314,7 +312,6 @@ describe('IrNode', () => {
 			it('empty MAP.NEW', () => {
 				// there exists no syntax for empty Maps, so constructing it manually
 				const cg = new Builder();
-				cg.setupModule();
 				return assert.strictEqual(
 					binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
 					binaryen.emitText(new BinValue(cg, cg.codegenMap()).value).replaceAll('$1', '$0'),
@@ -635,9 +632,9 @@ describe('IrNode', () => {
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			const CALL = {
-				vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot_', [arg], rt_value),
-				vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp_', [arg], rt_value),
-				vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg_', [arg], rt_value),
+				vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], rt_value),
+				vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], rt_value),
+				vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], rt_value),
 			} as const;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -694,16 +691,16 @@ describe('IrNode', () => {
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			const CALL = {
-				vadd: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd_', [arg0, arg1], rt_value),
-				vmul: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul_', [arg0, arg1], rt_value),
-				vdiv: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv_', [arg0, arg1], rt_value),
-				vexp: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp_', [arg0, arg1], rt_value),
-				vlt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt_',  [arg0, arg1], rt_value),
-				vgt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt_',  [arg0, arg1], rt_value),
-				vle:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle_',  [arg0, arg1], rt_value),
-				vge:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge_',  [arg0, arg1], rt_value),
-				vid:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid_',  [arg0, arg1], rt_value),
-				veq:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq_',  [arg0, arg1], rt_value),
+				vadd: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vadd', [arg0, arg1], rt_value),
+				vmul: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vmul', [arg0, arg1], rt_value),
+				vdiv: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vdiv', [arg0, arg1], rt_value),
+				vexp: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vexp', [arg0, arg1], rt_value),
+				vlt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',  [arg0, arg1], rt_value),
+				vgt:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',  [arg0, arg1], rt_value),
+				vle:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',  [arg0, arg1], rt_value),
+				vge:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',  [arg0, arg1], rt_value),
+				vid:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',  [arg0, arg1], rt_value),
+				veq:  (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',  [arg0, arg1], rt_value),
 			} as const;
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -739,7 +736,7 @@ describe('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.codegen(cg),
+				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
 					mod.drop(genConst(cg)),
 					mod.drop(genConst(cg, false)),
@@ -766,7 +763,7 @@ describe('IrNode', () => {
 			}`, {lower: true, codegen: false, build: false});
 			const mod = cg.module;
 			return assertEqualBins(
-				opt.codegen(cg),
+				opt.instructions.map((instr) => instr.codegen(cg)),
 				[
 					mod.local.set(0, genConst(cg)),
 					mod.local.set(1, genConst(cg, false)),
@@ -1637,20 +1634,10 @@ describe('IrNode', () => {
 				Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
 			}`.slice(1, -1));
 			const opt = new Optimizer();
-			const cg  = new Builder();
 			goal.varCheck();
 			goal.typeCheck();
 			goal.lower(opt);
-			cg.setupModule((mod) => {
-				const codes: binaryen.ExpressionRef[] = opt.codegen(cg); // must codegen before calling `.getAllLocals()`
-				mod.addFunction(
-					'main',
-					binaryen.none,
-					binaryen.none,
-					cg.getAllLocals().map((local) => local.type),
-					mod.block(null, codes),
-				);
-			}); // assert does not throw
+			opt.codegen(new Builder()); // assert does not throw
 		});
 	});
 });

@@ -101,39 +101,110 @@ export class Binop extends Value {
 		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
-			case OpCode.NLT: { return cg.module.call('vnot_', [cg.module.call('vlt_', codes, rt_value)], rt_value); }
-			case OpCode.NGT: { return cg.module.call('vnot_', [cg.module.call('vgt_', codes, rt_value)], rt_value); }
+			case OpCode.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, rt_value)], rt_value); }
+			case OpCode.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, rt_value)], rt_value); }
 
-			case OpCode.NID: { return cg.module.call('vnot_', [cg.module.call('vid_', codes, rt_value)], rt_value); }
-			case OpCode.NEQ: { return cg.module.call('vnot_', [cg.module.call('veq_', codes, rt_value)], rt_value); }
+			case OpCode.NID: { return cg.module.call('vnot', [cg.module.call('vid', codes, rt_value)], rt_value); }
+			case OpCode.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, rt_value)], rt_value); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
 			// TODO: v0.5+: update with new functions
-			[OpCode.INT_ADD, 'vadd_'],
-			[OpCode.INT_SUB, 'visub_s_'],
-			[OpCode.INT_MUL, 'vmul_'],
-			[OpCode.INT_DIV, 'vdiv_'],
-			[OpCode.INT_EXP, 'vexp_'],
+			[OpCode.INT_ADD, 'vadd'],
+			[OpCode.INT_SUB, 'visub_s'],
+			[OpCode.INT_MUL, 'vmul'],
+			[OpCode.INT_DIV, 'vdiv'],
+			[OpCode.INT_EXP, 'vexp'],
 
-			[OpCode.NAT_ADD, 'vadd_'],
-			[OpCode.NAT_SUB, 'visub_u_'],
-			[OpCode.NAT_MUL, 'vmul_'],
-			[OpCode.NAT_DIV, 'vdiv_'],
-			[OpCode.NAT_EXP, 'vexp_'],
+			[OpCode.NAT_ADD, 'vadd'],
+			[OpCode.NAT_SUB, 'visub_u'],
+			[OpCode.NAT_MUL, 'vmul'],
+			[OpCode.NAT_DIV, 'vdiv'],
+			[OpCode.NAT_EXP, 'vexp'],
 
-			[OpCode.FLOAT_ADD, 'vadd_'],
-			[OpCode.FLOAT_SUB, 'vfsub_'],
-			[OpCode.FLOAT_MUL, 'vmul_'],
-			[OpCode.FLOAT_DIV, 'vdiv_'],
-			[OpCode.FLOAT_EXP, 'vexp_'],
+			[OpCode.FLOAT_ADD, 'vadd'],
+			[OpCode.FLOAT_SUB, 'vfsub'],
+			[OpCode.FLOAT_MUL, 'vmul'],
+			[OpCode.FLOAT_DIV, 'vdiv'],
+			[OpCode.FLOAT_EXP, 'vexp'],
 
-			[OpCode.LT, 'vlt_'],
-			[OpCode.GT, 'vgt_'],
-			[OpCode.LE, 'vle_'],
-			[OpCode.GE, 'vge_'],
+			[OpCode.LT, 'vlt'],
+			[OpCode.GT, 'vgt'],
+			[OpCode.LE, 'vle'],
+			[OpCode.GE, 'vge'],
 
-			[OpCode.ID, 'vid_'],
-			[OpCode.EQ, 'veq_'],
+			[OpCode.ID, 'vid'],
+			[OpCode.EQ, 'veq'],
 		]).get(this.operator)!, codes, rt_value);
 	}
+
+	/* eslint-disable */
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, BinVect: any, t0: any, t1: any, arg0: any, arg1: any, binaryen: any): number {
+		type Local = any;
+		let mod: any;
+		let bothInts: any;
+		let bothNats: any;
+		let bothFloats: any;
+		let bigint_to_i64: any;
+
+		// Operator Addition
+		if (this.operator === Operator.ADD) {
+			const local0: Local = cg.newLocal(arg0);
+			const teeer         = new BinVect(mod, local0.tee());
+			const getter        = new BinVect(mod, local0.get());
+			// if arg0 is mathematically 0, return arg1
+			return mod.if(
+				mod.i32.or(
+					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+				),
+				arg1,
+				// else return a wasm call
+				mod.call(
+					bothInts(t0, t1) || bothNats(t0, t1) ? 'viadd' : (assert.ok(bothFloats(t0, t1)), 'vfadd'),
+					[local0.get(), arg1],
+					binaryen.v128,
+				),
+			);
+		}
+
+		// Operator Multiplication
+		if (this.operator === Operator.MUL) {
+			const local0: Local = cg.newLocal(arg0);
+			const teeer         = new BinVect(mod, local0.tee());
+			const getter        = new BinVect(mod, local0.get());
+			// if arg0 is mathematically 0, return it
+			return mod.if(
+				mod.i32.or(
+					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
+					mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+				),
+				local0.get(),
+				// else if arg0 is mathematically 1, return arg1
+				mod.if(
+					mod.i32.or(
+						mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
+						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
+					),
+					arg1,
+					// else return a wasm call
+					mod.call(
+						bothInts(t0, t1) || bothNats(t0, t1) ? 'vimul' : (assert.ok(bothFloats(t0, t1)), 'vfmul'),
+						[local0.get(), arg1],
+						binaryen.v128,
+					),
+				),
+			);
+		}
+
+		// Operator Equality
+		if (this.type().equals(TYPE.FALSE)) {
+			return cg.module.block(null, [
+				cg.module.drop(arg0),
+				cg.module.drop(arg1),
+				new BinVect(cg.module, false).vect,
+			], binaryen.v128);
+		}
+		return 0;
+	}
+	/* eslint-enable */
 }

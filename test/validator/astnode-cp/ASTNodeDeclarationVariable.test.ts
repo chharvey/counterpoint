@@ -9,14 +9,8 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {
-	assertAssignable,
-	assertEqualBins,
-} from '../../assert-helpers.ts';
-import {
-	CONFIG_FOLDING_OFF,
-	CONFIG_COERCION_OFF,
-} from '../../helpers.ts';
+import {assertAssignable} from '../../assert-helpers.ts';
+import {CONFIG_COERCION_OFF} from '../../helpers.ts';
 import {extract_lines} from '../../utils.ts';
 
 
@@ -417,103 +411,6 @@ describe('ASTNodeDeclarationVariable', () => {
 					});
 					return true;
 				});
-			});
-		});
-	});
-
-
-	describe('#build', () => {
-		it('with constant folding on.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val a: int   = 42;      % fixed, foldable: \`(nop)\`
-				val b: float = 4.2 * a; % fixed, foldable: \`(nop)\`
-				val _: bool  = true;    % blank, foldable: \`(nop)\`
-
-				val mut c: int = 42;     % unfixed, foldable: \`(local.set)\`
-				val d:     int = c + 10; % fixed, unfoldable: \`(local.set)\`
-				val _:     int = c + 10; % blank, unfoldable: \`(drop)\`
-
-				val mut e?: bool; % assignee, uninitialized: \`(local.set)\`
-				val mut _?: bool; % blank, uninitialized:    \`(nop)\`
-			`);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-			return assertEqualBins(
-				goal.children.map((stmt) => stmt.build()),
-				[
-					goal.builder.module.nop(),
-					goal.builder.module.nop(),
-					goal.builder.module.nop(),
-
-					goal.builder.module.local.set(0, (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.local.set(1, (goal.children[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.drop(        (goal.children[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-
-					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
-					goal.builder.module.nop(),
-				],
-			);
-		});
-
-		it('with constant folding off, never returns `(nop)`.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val a:     int   = 42;   % fixed, foldable:   \`(local.set)\` instead of \`(nop)\`
-				val _:     bool  = true; % blank, foldable:   \`(drop)\`      instead of \`(nop)\`
-				val mut b: float = 4.2;  % unfixed, foldable: \`(local.set)\` (same behavior)
-				val _:     bool  = !b;   % blank, unfoldable: \`(drop)\`      (same behavior)
-
-				val mut c?: bool; % assignee, uninitialized: \`(local.set)\` (same behavior)
-				val mut _?: bool; % blank, uninitialized:    \`(nop)\`       (same behavior)
-			`, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-			return assertEqualBins(
-				goal.children.map((stmt) => stmt.build()),
-				[
-					goal.builder.module.local.set(0, (goal.children[0] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.drop(        (goal.children[1] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.local.set(1, (goal.children[2] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					goal.builder.module.drop(        (goal.children[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-
-					goal.builder.module.local.set(2, VALUE.NULL.build(goal.builder)),
-					goal.builder.module.nop(),
-				],
-			);
-		});
-
-		it('tuples and records.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-				val tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    true)));
-				val rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= true)));
-			`, CONFIG_FOLDING_OFF);
-			goal.varCheck();
-			goal.typeCheck();
-			goal.build();
-			const [tup, rec] = goal.children.map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-			assert.deepStrictEqual(goal.builder.getAllLocals().map(({value}) => (value)), [
-				tup.build(),
-				rec.build(),
-			]);
-			return assertEqualBins(
-				goal.children.map((stmt) => stmt.build()),
-				[
-					goal.builder.module.local.set(0, tup.build()),
-					goal.builder.module.local.set(1, rec.build()),
-				],
-			);
-		});
-
-		it('allows tuples and records to contain each other.', () => {
-			[
-				'val tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));',
-				'val rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));',
-			].forEach((src) => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build(); // assert does not throw
 			});
 		});
 	});
