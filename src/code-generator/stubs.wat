@@ -4,13 +4,13 @@
 
 
 
-(func $vid_ (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $vid (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
 	(unreachable)
 )
 
 
 
-(func $veq_ (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $veq (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
 	(unreachable)
 )
 
