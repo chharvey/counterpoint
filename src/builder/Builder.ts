@@ -134,8 +134,6 @@ export class Builder {
 	/** A registry of constant WASM expressions. */
 	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
 
-	#typeCount: bigint = 0n;
-
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
@@ -172,10 +170,6 @@ export class Builder {
 			[BinConst.FALSE, new BinValue(this, new BinVect(this.module, false)).value],
 			[BinConst.TRUE,  new BinValue(this, new BinVect(this.module, true)) .value],
 		]);
-	}
-
-	public nextTypeIndex(): bigint {
-		return this.#typeCount++;
 	}
 
 	public getHeaptype(key: HeaptypeKey): binaryen.Type {

@@ -48,4 +48,35 @@ export class Phi extends Value {
 	public override codegen(_: Builder): binaryen.ExpressionRef {
 		throw new Error('not yet supported.');
 	}
+
+	/* eslint-disable */
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, TYPE: any, BinVect: any, t0: any, arg0: any, arg1: any, arg2: any, binaryen: any): number {
+		// Binary Logical Operator:
+		const block1: binaryen.ExpressionRef = this.builder.module.block(null, [
+			this.builder.module.drop(arg0),
+			arg1,
+		], binaryen.v128);
+		if (t0.isDefinitelyFalsy) {
+			return this.operator === Operator.AND ? arg0 : block1;
+		} else if (t0.isDefinitelyTruthy) {
+			return this.operator === Operator.AND ? block1 : arg0;
+		}
+
+
+		// Ternary Operator:
+		if (t0.equals(TYPE.FALSE)) {
+			return cg.module.block(null, [
+				cg.module.drop(arg0),
+				arg2,
+			], binaryen.v128);
+		} else if (t0.equals(TYPE.TRUE)) {
+			return cg.module.block(null, [
+				cg.module.drop(arg0),
+				arg1,
+			], binaryen.v128);
+		}
+
+		return cg.module.if(new BinVect(cg.module, arg0).isSpecial(true), arg1, arg2);
+	}
+	/* eslint-enable */
 }

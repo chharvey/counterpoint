@@ -1,5 +1,4 @@
 import * as xjs from 'extrajs';
-import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Optimizer,
@@ -20,7 +19,6 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {DECORATOR} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
 
@@ -46,7 +44,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
+export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -91,24 +89,5 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	public lower(optimizer: Optimizer): void {
 		this.children.forEach((stmt) => stmt.lower(optimizer));
 		return optimizer.validate();
-	}
-
-	/** @implements Buildable */
-	public build(): binaryen.ExpressionRef {
-		this.builder.setupMain((mod) => {
-			if (this.children.length) {
-				const statements: binaryen.ExpressionRef[] = this.children.map((stmt) => stmt.build()); // must build before calling `.getLocals()`
-				const fn_name:    string                   = 'fn0';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					this.builder.getAllLocals().map((var_) => var_.type),
-					mod.block(null, statements),
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			}
-		});
-		return this.builder.module.nop();
 	}
 }

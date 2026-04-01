@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
@@ -25,7 +24,6 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Reassignable} from './Reassignable.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -57,12 +55,6 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.getLocal(this.validator.getSymbolInfo(this.id) as SymbolSchemaVar)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
 	}
 
 	@memoizeMethod

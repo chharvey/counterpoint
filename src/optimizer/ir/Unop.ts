@@ -71,4 +71,33 @@ export class Unop extends Value {
 			[OpCode.NEG,    'vneg_'],
 		]).get(this.operator)!, [code], rt_value);
 	}
+
+	/* eslint-disable */
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, BinVect: any, t0: any, arg0: any, drop_then: any, binaryen: any): number {
+		if (this.type().isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(this.builder.module, [arg0], true);
+		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder.module, [arg0], false);
+		}
+		if (this.operator === Operator.NOT) {
+			if (t0.isDefinitelyFalsy) {
+				return cg.module.block(null, [
+					cg.module.drop(arg0),
+					new BinVect(cg.module, true).vect,
+				], binaryen.v128);
+			} else if (t0.isDefinitelyTruthy) {
+				return cg.module.block(null, [
+					cg.module.drop(arg0),
+					new BinVect(cg.module, false).vect,
+				], binaryen.v128);
+			}
+		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
+			return cg.module.block(null, [
+				cg.module.drop(arg0),
+				new BinVect(cg.module, true).vect,
+			], binaryen.v128);
+		}
+		return 0;
+	}
+	/* eslint-enable */
 }

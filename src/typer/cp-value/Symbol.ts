@@ -1,8 +1,5 @@
 import type binaryen from 'binaryen';
-import {
-	type Builder,
-	BinVect,
-} from '../../index.ts';
+import {BinVect} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -54,10 +51,6 @@ class ValueSymbol extends Primitive {
 
 	public override codegen(mod: binaryen.Module): BinVect {
 		return new BinVect(mod, mod.i32.const(Number(this.id)));
-	}
-
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.codegen(builder.module).vect;
 	}
 }
 export {ValueSymbol as Symbol};

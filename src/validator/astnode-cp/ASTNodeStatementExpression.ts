@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import {
 	type Optimizer,
 	IR,
@@ -36,11 +35,5 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		if (this.expr) {
 			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
 		}
-	}
-
-	public override build(): binaryen.ExpressionRef {
-		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
-			? this.builder.module.nop()
-			: this.builder.module.drop(this.expr.build());
 	}
 }

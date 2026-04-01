@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
@@ -19,26 +18,7 @@ import {
 	ASTNodeStatement,
 	ASTNodeStatementExpression,
 } from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-
-
-
-/**
- * Decorator for {@link ASTNodeExpression#build} method and any overrides.
- * First tries to compute the assessed value, and if successful, builds the assessed value.
- * Otherwise builds this node.
- * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['build']>
- */
-export function buildDeco(
-	method:  ASTNodeExpression['build'],
-	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
-): typeof method {
-	assert_context_name(context, 'build');
-	return function (this: ASTNodeExpression) {
-		return (this.validator.config.compilerOptions.constantFolding ? this.fold() : null)?.build(this.builder) ?? method.call(this);
-	};
-}
 
 
 
@@ -90,7 +70,7 @@ export function typeDeco(
  * - ASTNodeClaim
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeExpression extends ASTNodeCP {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -112,12 +92,6 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 		super.typeCheck();
 		this.type(); // assert does not throw
 	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	public abstract build(): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

@@ -11,7 +11,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeGoal} from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
@@ -23,7 +22,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
  * - ASTNodeStatementExpression
  * - ASTNodeAssignment
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Lowerable, Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Lowerable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -60,10 +59,4 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Lowerable, B
 	 * @implements Lowerable
 	 */
 	public abstract lower(optimizer: Optimizer): void;
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	public abstract build(): binaryen.ExpressionRef;
 }

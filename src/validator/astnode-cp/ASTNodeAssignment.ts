@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	type Optimizer,
@@ -78,16 +77,5 @@ export class ASTNodeAssignment extends ASTNodeStatement {
 				this.assigned.lower(optimizer).asTac(optimizer),
 			));
 		}
-	}
-
-	public override build(): binaryen.ExpressionRef {
-		assert_instanceof(this.assignee, ASTNodeVariable, 'Assignment access not yet supported.');
-		return this.builder.getLocal(this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar)?.set(ASTNodeStatement.coerceAssignment(
-			this.builder.module,
-			this.assignee.writeType(),
-			this.assigned.type(),
-			this.assigned.build(),
-			this.validator.config.compilerOptions.intCoercion,
-		)) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }
