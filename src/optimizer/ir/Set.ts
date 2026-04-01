@@ -1,8 +1,14 @@
 import * as assert from 'node:assert';
-import {runOnceMethod} from '../../lib/index.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Local} from '../utils-private.ts';
+import type {Temp} from '../Optimizer.ts';
+import type {Instruction} from './Instruction.ts';
 import {
 	OpCode,
 	Opcode,
@@ -12,15 +18,22 @@ import type {Value} from './Value.ts';
 
 
 /** Write a value to a variable/local. */
-class IrSet extends Opcode {
+class IrSet extends Opcode implements Instruction {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(
-		private readonly target: SymbolSchemaVar | Local,
+		private readonly target: SymbolSchemaVar | Temp,
 		private readonly value:  Value,
 	) {
 		super(OpCode.SET);
 		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
+	}
+
+	public override toString(): string {
+		return super.toString(
+			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
+			this.value,
+		);
 	}
 
 	@runOnceMethod
@@ -29,11 +42,9 @@ class IrSet extends Opcode {
 		return assert.ok(this.value.type.isSubtypeOf(this.targetType));
 	}
 
-	public override toString(): string {
-		return super.toString(
-			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-			this.value,
-		);
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 }
 export {IrSet as Set};

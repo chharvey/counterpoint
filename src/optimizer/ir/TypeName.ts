@@ -24,7 +24,7 @@ export enum TypeName {
 
 
 export function ast_type_name(typ: TYPE.Type): TypeName {
-	switch (true) { // copied from `AST.DeclarationVariable::writable_inferred_type` v0.5+ and modified slightly
+	switch (true) {
 		case typ.isSubtypeOf(TYPE.NULL):  { return TypeName.NULL; }
 		case typ.isSubtypeOf(TYPE.BOOL):  { return TypeName.BOOL; }
 		case typ.isSubtypeOf(TYPE.SYM):   { return TypeName.SYM; }

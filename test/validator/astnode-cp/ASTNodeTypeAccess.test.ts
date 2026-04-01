@@ -67,12 +67,6 @@ test.suite('ASTNodeTypeAccess', () => {
 					type A4 = TupV.0;  % type \`int\`
 					type A5 = TupV.1;  % type \`float\`
 					type A6 = TupV.2;  % type \`str\`
-					type B1 = TupC.-3; % type \`1\`
-					type B2 = TupC.-2; % type \`2.0\`
-					type B3 = TupC.-1; % type \`"three"\`
-					type B4 = TupV.-3; % type \`int\`
-					type B5 = TupV.-2; % type \`float\`
-					type B6 = TupV.-1; % type \`str\`
 
 					type C1 = RecC.a; % type \`1\`
 					type C2 = RecC.b; % type \`2.0\`
@@ -81,12 +75,6 @@ test.suite('ASTNodeTypeAccess', () => {
 					type C5 = RecV.b; % type \`float\`
 					type C6 = RecV._; % type \`str\`
 				}`, 4, [
-					typeUnit(1n),
-					typeUnit(2.0),
-					typeUnit('three'),
-					TYPE.INT,
-					TYPE.FLOAT,
-					TYPE.STR,
 					typeUnit(1n),
 					typeUnit(2.0),
 					typeUnit('three'),

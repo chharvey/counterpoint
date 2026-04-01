@@ -1,5 +1,6 @@
 export * from './utils-public.ts';
 
+export * from './IrNode.ts';
 export * from './Instruction.ts';
 export * from './Opcode.ts';
 

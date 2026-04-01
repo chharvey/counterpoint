@@ -233,8 +233,8 @@ test.suite('Value', () => {
 			const builder = new Builder();
 			const mod: binaryen.Module = builder.module;
 			return assertEqualBins(
-				[VALUE.SYM_NOTHING.build(builder),                                new VALUE.Symbol(0x100n, 'hello').build(builder)],
-				[new BinVect(mod, mod.i64.const(0x80, 0), {unsigned: true}).vect, new BinVect(mod, mod.i64.const(0x100, 0), {unsigned: true}).vect],
+				[VALUE.SYM_NOTHING.build(builder),                                         new VALUE.Symbol(0x100n, 'hello').build(builder)],
+				[new BinVect(mod, bigint_to_i64(mod, 0x80n, true), {unsigned: true}).vect, new BinVect(mod, bigint_to_i64(mod, 0x100n, true), {unsigned: true}).vect],
 			);
 		});
 

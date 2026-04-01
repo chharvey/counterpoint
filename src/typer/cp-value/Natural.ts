@@ -69,8 +69,12 @@ export class Natural extends ValueNumber<Natural> {
 		return this.toFloat().equal(value);
 	}
 
+	public override codegen(mod: binaryen.Module): BinVect {
+		return new BinVect(mod, bigint_to_i64(mod, this.data, true), {unsigned: true});
+	}
+
 	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, bigint_to_i64(builder.module, this.data, true), {unsigned: true}).vect;
+		return this.codegen(builder.module).vect;
 	}
 
 	public override toInt(): Integer {

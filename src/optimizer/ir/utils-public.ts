@@ -1,5 +1,7 @@
-import type {Local} from '../utils-private.ts';
-import type {Optimizer} from '../Optimizer.ts';
+import type {
+	Temp,
+	Optimizer,
+} from '../Optimizer.ts';
 import {
 	type TypeName,
 	type Value,
@@ -56,10 +58,10 @@ export function conditional_expression(
 
 	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), label_else));
 	optimizer.pushInstruction(label_then);
-	const result_then: Local = optimizer.newTempLocal(consequent.call(null));
+	const result_then: Temp = optimizer.newTemp(consequent.call(null));
 	optimizer.pushInstruction(new Goto(label_endif));
 	optimizer.pushInstruction(label_else);
-	const result_else: Local = optimizer.newTempLocal(alternative.call(null));
+	const result_else: Temp = optimizer.newTemp(alternative.call(null));
 	optimizer.pushInstruction(label_endif);
 	return new Phi(
 		[label_then, new Get(result_then)],

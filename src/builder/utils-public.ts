@@ -11,6 +11,7 @@ type BuildPair = readonly [binaryen.ExpressionRef, binaryen.Type];
 
 
 
+const MASK32 = 0xffff_ffffn;
 /**
  * Convert a BigInt (signed 64-bit) to Binaryen `i64.const`.
  * @param    mod   a Binaryen module instance
@@ -31,7 +32,6 @@ export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = 
 		throw new RangeError(`bigint value ${ value } is out of ${ u ? 'un' : '' }signed 64-bit range.`);
 	}
 
-	const MASK32 = 0xffff_ffffn;
 	const low:  number = Number(value & MASK32);
 	const high: number = Number((value >> 32n) & MASK32);
 
@@ -114,7 +114,7 @@ export function build_record_like(builder: Builder, builds: readonly {readonly k
 			readonly localSet: binaryen.ExpressionRef,
 			readonly localGet: binaryen.ExpressionRef,
 		}> = builds.map(({key: id, pair: [binval, bintype]}) => {
-			const set_local: Local = builder.addLocal(binval);
+			const set_local: Local = builder.newLocal(binval);
 			return {
 				id,
 				type:     bintype,

@@ -1,11 +1,21 @@
 import * as assert from 'node:assert';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	BinValue,
+	BinConst,
+	type Builder,
+	type Local,
+	BinVect,
+} from '../../index.ts';
+import {
 	assert_instanceof,
+	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
+import type {Instruction} from './Instruction.ts';
 import {
 	OpCode,
 	Opcode,
@@ -16,7 +26,7 @@ import type {Value} from './Value.ts';
 
 
 /** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicSet extends Opcode {
+export class CollectionDynamicSet extends Opcode implements Instruction {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
 		private readonly collection: Value,
@@ -29,6 +39,10 @@ export class CollectionDynamicSet extends Opcode {
 			[TypeName.SET,  OpCode.SET_SET],
 			[TypeName.MAP,  OpCode.MAP_SET],
 		]).get(name)!);
+	}
+
+	public override toString(): string {
+		return super.toString(this.collection, this.accessor, this.value);
 	}
 
 	@runOnceMethod
@@ -54,7 +68,50 @@ export class CollectionDynamicSet extends Opcode {
 		}
 	}
 
-	public override toString(): string {
-		return super.toString(this.collection, this.accessor, this.value);
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		switch (this.name) {
+			case TypeName.LIST: {
+				return cg.module.call('List.set', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
+					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
+					this.value.codegen(cg),
+				], binaryen.none);
+			}
+			case TypeName.DICT: {
+				return cg.module.call('Dict.set', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
+					new BinValue(cg, this.accessor.codegen(cg)).interpret('natValue'),
+					this.value.codegen(cg),
+				], binaryen.none);
+			}
+			case TypeName.SET: {
+				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'));
+				const accessor: Local = cg.newLocal(this.accessor.codegen(cg));
+				return cg.module.block(null, [
+					base.set(),
+					accessor.set(),
+					cg.module.if(
+						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).primitiveValue).isSpecial(true),
+						cg.module.call('Map.set', [
+							base.get(),
+							accessor.get(),
+							cg.getConst(BinConst.NULL),
+						], binaryen.none),
+						cg.module.drop(cg.module.call('Map.delete', [
+							base.get(),
+							accessor.get(),
+						], cg.getReftype('(ref null $Value)'))),
+					),
+				]);
+			}
+			case TypeName.MAP: {
+				return cg.module.call('Map.set', [
+					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					this.accessor.codegen(cg),
+					this.value.codegen(cg),
+				], binaryen.none);
+			}
+		}
 	}
 }

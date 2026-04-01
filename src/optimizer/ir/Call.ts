@@ -1,5 +1,10 @@
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../../lib/index.ts';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -16,12 +21,17 @@ export class Call extends Value {
 		super(OpCode.CALL, return_type);
 	}
 
+	public override toString(): string {
+		return super.toString(this.callable, ...this.args);
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return xjs.Array.forEachAggregated([this.callable, ...this.args], (value) => value.validate());
 	}
 
-	public override toString(): string {
-		return super.toString(this.callable, ...this.args);
+	@memoizeMethod
+	public override codegen(_: Builder): binaryen.ExpressionRef {
+		throw new Error('not yet supported.');
 	}
 }

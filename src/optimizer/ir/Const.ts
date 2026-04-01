@@ -1,8 +1,17 @@
 import * as assert from 'node:assert';
-import {runOnceMethod} from '../../lib/index.ts';
-import type {
+import type binaryen from 'binaryen';
+import {
+	BinValue,
+	BinConst,
+	type Builder,
+} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {
 	VALUE,
-	TYPE,
+	type TYPE,
 } from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {
@@ -29,13 +38,23 @@ export class Const extends Value {
 		]).get(ast_type_name(typ))!, typ);
 	}
 
+	public override toString(): string {
+		return super.toString(this.value);
+	}
+
 	@runOnceMethod
 	public override validate(): void {
 		return assert.ok(this.value.toType().isSubtypeOf(this.type));
 	}
 
-	public override toString(): string {
-		return super.toString(this.value);
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		switch (this.value) {
+			case VALUE.NULL:  { return cg.getConst(BinConst.NULL); }
+			case VALUE.FALSE: { return cg.getConst(BinConst.FALSE); }
+			case VALUE.TRUE:  { return cg.getConst(BinConst.TRUE); }
+		}
+		return new BinValue(cg, this.value.codegen(cg.module)).value;
 	}
 
 	public override asTac(): Const {
