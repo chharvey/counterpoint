@@ -17,6 +17,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
+	setupScript,
 	typeUnit,
 } from '../../helpers.ts';
 import {extract_lines} from '../../utils.ts';
@@ -63,15 +64,6 @@ describe('ASTNodeOperation', () => {
 
 
 	describe('#lower', () => {
-		function setupScript(src: string, _: object): {opt: Optimizer} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
-			return {opt};
-		}
-
 		it('AST.OperationUnary[operator=NOT]', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
@@ -237,7 +229,7 @@ describe('ASTNodeOperation', () => {
 					val mut b: bool  = false;
 					a && b;
 					!a && !b;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
 					if_false (TOBOOL (GET a)), goto "block-1".
@@ -265,7 +257,7 @@ describe('ASTNodeOperation', () => {
 					val mut d: float = 0.1;
 					c || d;
 					-c + 1 || 1.0 - d;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> c (INT.CONST 10))
 					(DECL <float> d (FLOAT.CONST 0.1))
 					if_false (TOBOOL (GET c)), goto "block-1".
@@ -294,7 +286,7 @@ describe('ASTNodeOperation', () => {
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					a !& b;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
 					if_false (TOBOOL (GET a)), goto "block-1".
@@ -313,7 +305,7 @@ describe('ASTNodeOperation', () => {
 					val mut c: int   = 10;
 					val mut d: float = 0.1;
 					c !| d;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> c (INT.CONST 10))
 					(DECL <float> d (FLOAT.CONST 0.1))
 					if_false (TOBOOL (GET c)), goto "block-1".
@@ -335,7 +327,7 @@ describe('ASTNodeOperation', () => {
 				val mut z: float = 0.2;
 				if x then y else z;
 				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <float> y (FLOAT.CONST 0.5))
 				(DECL <float> z (FLOAT.CONST 0.2))

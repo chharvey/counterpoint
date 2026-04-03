@@ -118,7 +118,6 @@ export class Builder {
 		return {
 			type:       typ,
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			packedType: binaryen[packedType],
 			mutable,
 		};
@@ -146,10 +145,6 @@ export class Builder {
 			${ Builder.IMPORTS.join('') }
 		)
 	`) as BinaryenModuleUpdates;
-
-	// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-	// eslint-disable-next-line
-	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
 
 	public constructor() {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
@@ -359,7 +354,6 @@ export class Builder {
 	 */
 	#setupTypes(): void {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		// eslint-disable-next-line
 		const tb: TypeBuilder = new binaryen.TypeBuilder();
 
 		let type_count: number = 0;
@@ -396,7 +390,6 @@ export class Builder {
 			i_tuple,
 			tb.getTempRefType(tb.getTempHeapType(i_value), false),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			false,
 		);
@@ -408,7 +401,6 @@ export class Builder {
 			i_record,
 			tb.getTempRefType(tb.getTempHeapType(i_property), false),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			false,
 		);
@@ -420,7 +412,6 @@ export class Builder {
 			i_list_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_value), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
@@ -432,7 +423,6 @@ export class Builder {
 			i_dict_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_property), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
@@ -444,7 +434,6 @@ export class Builder {
 			i_map_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_case), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
@@ -508,7 +497,6 @@ export class Builder {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const {getTypeFromHeapType} = binaryen;
 
-		/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 		this.#reftypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heaptypes[i_value],         false));
 		this.#reftypeRegistry.set('(ref $Property)',     getTypeFromHeapType(heaptypes[i_property],      false));
 		this.#reftypeRegistry.set('(ref $Case)',         getTypeFromHeapType(heaptypes[i_case],          false));
@@ -525,7 +513,6 @@ export class Builder {
 		this.#reftypeRegistry.set('(ref null $Value)',    getTypeFromHeapType(heaptypes[i_value],    true)); // only used as the fields of `$ListInternal`
 		this.#reftypeRegistry.set('(ref null $Property)', getTypeFromHeapType(heaptypes[i_property], true)); // only used as the fields of `$DictInternal`
 		this.#reftypeRegistry.set('(ref null $Case)',     getTypeFromHeapType(heaptypes[i_case],     true)); // only used as the fields of `$MapInternal`
-		/* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 	}
 
 	/** assumes both operands are primitive */

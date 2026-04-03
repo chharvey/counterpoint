@@ -178,7 +178,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				if (accessor_value === null) {
 					return null;
 				}
-				/* eslint-disable @typescript-eslint/no-unsafe-return --- type guard inference is not very good here */
 				switch (true) {
 					case base_value instanceof VALUE.List: {
 						return base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), KIND_MAYBE, this.accessor);
@@ -196,7 +195,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 						assert.fail(`Expected ${ base_value } to have a \`get\` method.`);
 					}
 				}
-				/* eslint-enable @typescript-eslint/no-unsafe-return */
 			}
 		}
 	}
