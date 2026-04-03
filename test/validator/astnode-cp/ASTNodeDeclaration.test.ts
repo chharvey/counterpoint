@@ -192,7 +192,7 @@ test.suite('ASTNodeDeclaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue,
+					}`, {lower: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -215,7 +215,7 @@ test.suite('ASTNodeDeclaration', () => {
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				setupScript(`{
 					val the_answer: nat = +42;
-				}`, {build: false}); // assert does not throw
+				}`, {lower: false}); // assert does not throw
 				const var_: AST.ASTNodeDeclarationVariable = AST.ASTNodeDeclarationVariable.fromSource(`
 					val  the_answer:  int | float =  21  *  2;
 				`);
@@ -232,13 +232,13 @@ test.suite('ASTNodeDeclaration', () => {
 					setupScript(`{
 						type Name = str;
 						${ stmt }
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 			});
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					val mut the_answer?: int | float;
-				}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
+				}`, {lower: false}).goal.block!.validator.getSymbol(0x100n), {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
@@ -259,18 +259,18 @@ test.suite('ASTNodeDeclaration', () => {
 				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
 						val fixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));
+					}`, {lower: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
 						val mut unfixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, unfixedtype));
+					}`, {lower: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
 					const {goal} = setupScript(`{
 						val     str_tpl_fixed   = """hello"""; % type \`str\`
 						val mut str_tpl_unfixed = """hello"""; % type \`str\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assert_shallowStrictEqual([
 						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
 						(goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar).type,
@@ -280,7 +280,7 @@ test.suite('ASTNodeDeclaration', () => {
 					const {goal} = setupScript(`{
 						val     list_fixed   = List.<int>((42, 69));                 % type \`mut List.<int>\`
 						val mut dict_unfixed = Dict.<str>((a= "hello", b= "world")); % type \`mut Dict.<str>\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assertEqualTypes([
 						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
 						(goal.block!.validator.getSymbol(0x103n) as SymbolSchemaVar).type,
@@ -293,7 +293,7 @@ test.suite('ASTNodeDeclaration', () => {
 					const {goal} = setupScript(`{
 						val     tup_fixed   = (   42,    (x= "hello"),    Dict.<bool>((x= false, y= true))); % type \`(   42,     (x= "hello"),    Dict.<bool>)\`
 						val mut rec_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type \`(a= int, b= (str,),       c= List.<bool>)\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assertEqualTypes([
 						(goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar).type,
 						(goal.block!.validator.getSymbol(0x106n) as SymbolSchemaVar).type,
@@ -336,7 +336,7 @@ test.suite('ASTNodeDeclaration', () => {
 					val immut:  (int, int, int)                   = (42, 420, 4200);
 					val 'mut':  mut [int]                         = [42, 420, 4200];
 					val mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
-				}`, {build: false});
+				}`, {lower: false});
 				const [immut, mut, mutmut] = [
 					goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar,
 					goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar,
@@ -613,7 +613,7 @@ test.suite('ASTNodeDeclaration', () => {
 		test.test('AST.DeclarationType has no effect.', () => {
 			assert.strictEqual(setupScript(`{
 				type N = int | nat | float;
-			}`, {lower: true, build: false}).opt.print(), '');
+			}`, {codegen: false}).opt.print(), '');
 		});
 		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
 			const {stmts, opt} = setupScript(`{
@@ -635,7 +635,7 @@ test.suite('ASTNodeDeclaration', () => {
 				val mut _:       int = 42;
 				val mut _:       int = assignee_c;
 				%%
-			}`, {build: false});
+			}`, {codegen: false});
 			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (INT.CONST 42))

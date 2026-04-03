@@ -17,7 +17,6 @@ export enum TypeName {
 	DICT,
 	SET,
 	MAP,
-	/** @deprecated temporarily representing a “top type” until we can define aggregate types */
 	ANY,
 }
 

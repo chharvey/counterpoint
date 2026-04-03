@@ -183,7 +183,7 @@ test.suite('ASTNodeStatement', () => {
 						setupScript(`{
 							val mut x: int | float = 4.2;
 							${ stmt }
-						}`, {build: false}); // assert does not throw
+						}`, {lower: false}); // assert does not throw
 					});
 				});
 				test.test('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
@@ -217,7 +217,7 @@ test.suite('ASTNodeStatement', () => {
 						x;            % type \`int | float\`
 						claim x: int;
 						x;            % type \`int\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assert.deepStrictEqual(
 						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
@@ -228,14 +228,14 @@ test.suite('ASTNodeStatement', () => {
 						val mut x: bool | null = false;
 						set x = true;
 						claim x: null;
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 				test.test('allows reassigning correct type after claim.', () => {
 					setupScript(`{
 						val mut x: bool | null = false;
 						claim x: bool;
 						set x = true;
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 				test.test('disallows reassigning incorrect type after claim.', () => {
 					const {stmts} = setupScript(`{
@@ -272,7 +272,7 @@ test.suite('ASTNodeStatement', () => {
 						claim map.["e"]:   float;
 						claim map.["tau"]: float;
 						%%
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 				test.test('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
@@ -283,7 +283,7 @@ test.suite('ASTNodeStatement', () => {
 						claim record.tuple.0: int;
 						record.value;               % type \`null\`
 						record.tuple.0;             % type \`int\`
-					}`, {build: false});
+					}`, {lower: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
 					return assert.deepStrictEqual(
 						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
@@ -301,8 +301,8 @@ test.suite('ASTNodeStatement', () => {
 						set list.[0] = 1.618;
 						claim list.[0]: int;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, {build: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
+						i === 0 && setupScript(src, {lower: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {lower: false}), /not yet supported/);
 					});
 				});
 				test.test('allows mutating correct type after claim.', () => {
@@ -316,8 +316,8 @@ test.suite('ASTNodeStatement', () => {
 						claim list.[0]: float;
 						set list.[0] = 1.618;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, {build: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
+						i === 0 && setupScript(src, {lower: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {lower: false}), /not yet supported/);
 					});
 				});
 				test.test('disallows mutating incorrect type after claim.', () => {
@@ -368,7 +368,7 @@ test.suite('ASTNodeStatement', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						val mut x?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
+					}`, {lower: false}).goal.block!.validator.getSymbol(0x100n), {
 						isWritable:      true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -395,7 +395,7 @@ test.suite('ASTNodeStatement', () => {
 						set Dict.<int>((i= 42)).[@i]              = 42;
 						set Set.<int>((42,)).[43]                 = false;
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 				test.test('throws when property assignee type is not supertype.', () => {
 					[
@@ -487,7 +487,7 @@ test.suite('ASTNodeStatement', () => {
 						${ decl }
 						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
 						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -521,7 +521,7 @@ test.suite('ASTNodeStatement', () => {
 						${ decl }
 						while ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
 						until ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -548,7 +548,7 @@ test.suite('ASTNodeStatement', () => {
 						for it: ${ vartype } in ["hello", "world"] do {
 							val greeting: ${ vartype } = it;
 						};
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 			});
 			test.test('throws when iterable is not subtype of List.', () => {
@@ -606,7 +606,7 @@ test.suite('ASTNodeStatement', () => {
 				x;
 				42;
 				;
-			}`, {build: false});
+			}`, {lower: false});
 			assert.strictEqual(opt.instructions.length, 0);
 			(stmts[1] as AST.ASTNodeStatementExpression).lower(opt);
 			assert.strictEqual(opt.instructions.length, 1);
@@ -624,7 +624,7 @@ test.suite('ASTNodeStatement', () => {
 			const {stmts, opt} = setupScript(`{%
 				val mut x: int | float = 42;
 				claim x: int;
-			}`, {build: false});
+			}`, {lower: false});
 			(stmts[1] as AST.ASTNodeStatementClaim).lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (GET x))
@@ -638,7 +638,7 @@ test.suite('ASTNodeStatement', () => {
 					set x = 43;
 					set x = 44;
 					set x = -42;
-				}`, {build: false});
+				}`, {lower: false});
 				stmts.slice(1).forEach((stmt) => (stmt as AST.ASTNodeStatementReassignment).lower(opt));
 				return assert.strictEqual(opt.print(), extract_lines`
 					(SET x (INT.CONST 43))
@@ -658,7 +658,7 @@ test.suite('ASTNodeStatement', () => {
 					set my_dict.[@b]      = 84;
 					set my_set.[accessor] = true;
 					set my_map.[accessor] = 84;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
@@ -686,7 +686,7 @@ test.suite('ASTNodeStatement', () => {
 						(6 / (1 + 1));
 						3.3;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					if_false (BOOL.CONST true), goto "block-1".
 					"block-0":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
@@ -706,7 +706,7 @@ test.suite('ASTNodeStatement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					if_false (BOOL.CONST false), goto "block-2".
 					"block-0":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
@@ -721,7 +721,7 @@ test.suite('ASTNodeStatement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					if_false (NOT (BOOL.CONST false)), goto "block-2".
 					"block-0":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
@@ -742,7 +742,7 @@ test.suite('ASTNodeStatement', () => {
 						val y: float = 3.3;
 					};
 					x;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> unknown_cond (BOOL.CONST false))
 					(DECL <int> x (INT.CONST 42))
 					if_false (GET unknown_cond), goto "block-1".
@@ -769,7 +769,7 @@ test.suite('ASTNodeStatement', () => {
 						42;
 						4.2;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
 					if_false (GET cond), goto "block-1".
@@ -785,7 +785,7 @@ test.suite('ASTNodeStatement', () => {
 					until cond do {
 						42;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
 					if_false (NOT (GET cond)), goto "block-1".
@@ -804,7 +804,7 @@ test.suite('ASTNodeStatement', () => {
 					do {
 						42;
 					} until cond;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
 					(DROP (INT.CONST 42))
@@ -829,7 +829,7 @@ test.suite('ASTNodeStatement', () => {
 				for _: float in [4.4, 5.5, 6.6] do {
 					null;
 				};
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
 				(DECL <nat> $1 (NAT.CONST +0))
 				"block-0":
@@ -867,7 +867,7 @@ test.suite('ASTNodeStatement', () => {
 						break;
 						30;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					"block-0":
 					if_false (BOOL.CONST true), goto "block-1".
 					(DROP (INT.CONST 41))
@@ -909,7 +909,7 @@ test.suite('ASTNodeStatement', () => {
 						};
 						70;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					"block-0":
 					if_false (BOOL.CONST true), goto "block-1".
 					(DROP (INT.CONST 10))

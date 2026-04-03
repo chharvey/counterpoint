@@ -42,7 +42,7 @@ test.suite('ASTNodeExpression', () => {
 			const {stmts} = setupScript(`{
 				val mut x: int = 42;
 				x;
-			}`, {build: false});
+			}`, {codegen: false});
 			const expr = (stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
@@ -61,7 +61,7 @@ test.suite('ASTNodeExpression', () => {
 				val mut y: int   = 5;
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -77,7 +77,7 @@ test.suite('ASTNodeExpression', () => {
 				val y: int   = 5;
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -90,7 +90,7 @@ test.suite('ASTNodeExpression', () => {
 		test.test('AST.List returns an IR.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -100,7 +100,7 @@ test.suite('ASTNodeExpression', () => {
 		test.test('AST.Dict returns an IR.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -110,7 +110,7 @@ test.suite('ASTNodeExpression', () => {
 		test.test('AST.Set returns an IR.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -121,7 +121,7 @@ test.suite('ASTNodeExpression', () => {
 			test.test('returns an IR.MapNew.', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -131,7 +131,7 @@ test.suite('ASTNodeExpression', () => {
 			test.test('evaluates antecedents and consequents interchangeably in source order.', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
 					(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
 					(DECL <List> $2 (LIST.NEW (INT.CONST 12)))
@@ -155,7 +155,7 @@ test.suite('ASTNodeExpression', () => {
 					set y = y + x;
 					y * 2;
 				} + y;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> x (INT.CONST 42))
 				(SET x (INT.ADD (GET x) (INT.CONST 2)))
 				(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
@@ -169,14 +169,14 @@ test.suite('ASTNodeExpression', () => {
 			test.test('returns the operand.', () => {
 				const {stmts, opt} = setupScript(`{
 					42 as <int>;
-				}`, {build: false});
+				}`, {codegen: false});
 				const expr = (stmts[0] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeClaim;
 				return assert.deepStrictEqual(expr.lower(opt), expr.operand.lower(opt));
 			});
 			test.test('repeated calls are idempotent.', () => {
 				const {stmts, opt} = setupScript(`{
 					(42 + 42 + 42) as <int | float>;
-				}`, {build: false});
+				}`, {lower: false});
 				assert.strictEqual(opt.instructions.length, 0);
 				const expr = (stmts[0] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeClaim;
 				expr.operand.lower(opt);
@@ -330,7 +330,7 @@ test.suite('ASTNodeExpression', () => {
 					val mut x?: int;
 					w;
 					x;
-				}`, {build: false});
+				}`, {lower: false});
 				assert.ok( (stmts[0] as AST.ASTNodeDeclarationVariable).assigned);
 				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).assigned);
 				return assertEqualTypes(
@@ -349,7 +349,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					val x: int = 21 * 2;
 					x;
-				}`, {build: false});
+				}`, {lower: false});
 				assert.ok(!(stmts[0] as AST.ASTNodeDeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -360,7 +360,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					val mut x: int = 21 * 2;
 					x;
-				}`, {build: false});
+				}`, {lower: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -371,7 +371,7 @@ test.suite('ASTNodeExpression', () => {
 				const {stmts} = setupScript(`{
 					val fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
-				}`, {build: false});
+				}`, {lower: false});
 				assert.ok((stmts[0] as AST.ASTNodeDeclarationVariable).typenode!.eval().hasMutable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
@@ -386,7 +386,7 @@ test.suite('ASTNodeExpression', () => {
 					val z: mut {int} = {11, 22, 33};
 					val w: bool = z.[22];
 					w;
-				}`, {build: false});
+				}`, {lower: false});
 				assert.ok(!(stmts[1] as AST.ASTNodeDeclarationVariable).writable);
 				assert.ok(!(stmts[4] as AST.ASTNodeDeclarationVariable).writable);
 				assert.deepStrictEqual(
@@ -410,7 +410,7 @@ test.suite('ASTNodeExpression', () => {
 				(setupScript(`{
 					val mut x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
-				}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
+				}`, {lower: false}).stmts[1] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeTemplate,
 			];
 		}
 		test.suite('#type', () => {
@@ -472,7 +472,7 @@ test.suite('ASTNodeExpression', () => {
 						val f: null = null;
 						(e= [x= 42, w= 4.2], f= f);
 						[g= (w= 42, x= 4.2), f= f];
-					}`, {build: false});
+					}`, {lower: false});
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
@@ -587,7 +587,7 @@ test.suite('ASTNodeExpression', () => {
 				setupScript(`{
 					(   1,    [2.2],    "three");
 					(a= 1, b= [2.2], c= "three");
-				}`, {build: false}); // assert does not throw
+				}`, {lower: false}); // assert does not throw
 			});
 		});
 
@@ -666,7 +666,7 @@ test.suite('ASTNodeExpression', () => {
 						21 + 21   -> 2.0,
 						3.0 * 1.0 -> z,
 					};
-				}`, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
+				}`, {lower: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.ASTNodeStatementExpression).expr!.fold(), null));
 			});
 		});
 	});
@@ -770,7 +770,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, {build: false});
+				}`, {lower: false});
 				assertEqualTypes((stmts[1] as AST.ASTNodeDeclarationVariable).assigned!.type(), TYPE.INT);
 			});
 		});
@@ -787,7 +787,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, {build: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
+				}`, {lower: false}).stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock).fold(), null);
 			});
 			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
@@ -802,7 +802,7 @@ test.suite('ASTNodeExpression', () => {
 					};
 					x;
 					y;
-				}`, {build: false});
+				}`, {lower: false});
 				const block_expression = (stmts[2] as AST.ASTNodeDeclarationVariable).assigned as AST.ASTNodeExpressionBlock;
 				assert.strictEqual(
 					block_expression.fold(),
@@ -818,7 +818,7 @@ test.suite('ASTNodeExpression', () => {
 					(setupScript(`{
 						val x: int = 42 - { 42; 69; };
 						x;
-					}`, {build: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
+					}`, {lower: false}).stmts[1] as AST.ASTNodeStatementExpression).expr!.fold(),
 					new VALUE.Integer(42n - 69n),
 				);
 			});

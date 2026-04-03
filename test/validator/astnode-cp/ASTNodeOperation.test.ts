@@ -89,7 +89,7 @@ test.suite('ASTNodeOperation', () => {
 							?j;
 							?k;
 							?l;
-						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+						}`, {lower: false}).stmts.slice(11).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
 						repeat(TYPE.BOOL, 11),
 					);
 				});
@@ -114,7 +114,7 @@ test.suite('ASTNodeOperation', () => {
 						(i1 + i2) * i3;
 						(n1 + n2) * n3;
 						f1 * f2 ^ f3;
-					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
+					}`, {lower: false}).stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.type()),
 					[TYPE.INT, TYPE.NAT, TYPE.FLOAT],
 				);
 			});
@@ -226,7 +226,7 @@ test.suite('ASTNodeOperation', () => {
 				!42;
 				val y: int = 42 / 7;
 				!(42 + y);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DROP (NOT (INT.CONST 42)))
 				(DECL <int> y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
 				(DECL <int> $0 (INT.ADD (INT.CONST 42) (GET y)))
@@ -239,7 +239,7 @@ test.suite('ASTNodeOperation', () => {
 				?x;
 				val y: int = x / 7;
 				?(x + y);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> x (INT.CONST 42))
 				(DROP (EMP (GET x)))
 				(DECL <int> y (INT.DIV (GET x) (INT.CONST 7)))
@@ -255,7 +255,7 @@ test.suite('ASTNodeOperation', () => {
 				-(3.0 + y);
 				val mut z: int | float = if false then 42 else 4.2;
 				-z;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> x (INT.CONST 42))
 				(DROP (NEG (GET x)))
 				(DECL <float> y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
@@ -294,7 +294,7 @@ test.suite('ASTNodeOperation', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				3 + x^2 / 2^3;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> x (INT.CONST 42))
 				(DECL <int> $0 (INT.EXP (GET x) (INT.CONST 2)))
 				(DECL <int> $1 (INT.EXP (INT.CONST 2) (INT.CONST 3)))
@@ -315,7 +315,7 @@ test.suite('ASTNodeOperation', () => {
 				c >= d;
 				a !< d;
 				b !> c;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> a (INT.CONST 10))
 				(DECL <int> b (INT.CONST 100))
 				(DECL <float> c (FLOAT.CONST 0.1))
@@ -341,7 +341,7 @@ test.suite('ASTNodeOperation', () => {
 				c ==  d;
 				c !== a;
 				d !=  b;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <null> a (NULL.CONST null))
 				(DECL <bool> b (BOOL.CONST false))
 				(DECL <int> c (INT.CONST 10))
@@ -362,7 +362,7 @@ test.suite('ASTNodeOperation', () => {
 					val mut b: bool  = false;
 					a && b;
 					!a && !b;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
 					if_false (TOBOOL (GET a)), goto "block-1".
@@ -390,7 +390,7 @@ test.suite('ASTNodeOperation', () => {
 					val mut d: float = 0.1;
 					c || d;
 					-c + 1 || 1.0 - d;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> c (INT.CONST 10))
 					(DECL <float> d (FLOAT.CONST 0.1))
 					if_false (TOBOOL (GET c)), goto "block-1".
@@ -418,7 +418,7 @@ test.suite('ASTNodeOperation', () => {
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					a !& b;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
 					if_false (TOBOOL (GET a)), goto "block-1".
@@ -437,7 +437,7 @@ test.suite('ASTNodeOperation', () => {
 					val mut c: int   = 10;
 					val mut d: float = 0.1;
 					c !| d;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> c (INT.CONST 10))
 					(DECL <float> d (FLOAT.CONST 0.1))
 					if_false (TOBOOL (GET c)), goto "block-1".
@@ -459,7 +459,7 @@ test.suite('ASTNodeOperation', () => {
 				val mut z: float = 0.2;
 				if x then y else z;
 				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <float> y (FLOAT.CONST 0.5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -532,7 +532,7 @@ test.suite('ASTNodeOperation', () => {
 							val mut b: null | false = null;
 							!a;
 							!b;
-						}`, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						}`, {lower: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					test.test('returns type `bool` for a supertype of `T narrows null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
@@ -544,7 +544,7 @@ test.suite('ASTNodeOperation', () => {
 							!b;
 							!c;
 							!d;
-						}`, {build: false}).stmts.slice(4), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
+						}`, {lower: false}).stmts.slice(4), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 					test.test('returns type `false` for any literal type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
@@ -554,7 +554,7 @@ test.suite('ASTNodeOperation', () => {
 							!a;
 							!b;
 							!c;
-						}`, {build: false}).stmts.slice(3), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
+						}`, {lower: false}).stmts.slice(3), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 					test.test('returns type `false` for any literal collection type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
@@ -562,7 +562,7 @@ test.suite('ASTNodeOperation', () => {
 							!(42,);
 							!(a= 42);
 							!{41 -> 42};
-						}`, {build: false}).stmts, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
+						}`, {lower: false}).stmts, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 				});
 				test.suite('[operator=EMP]', () => {
@@ -572,7 +572,7 @@ test.suite('ASTNodeOperation', () => {
 							val mut b: null | false = null;
 							?a;
 							?b;
-						}`, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						}`, {lower: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 				});
 				test.test('[operator=NEG] throws for `nat` type.', () => {
@@ -600,7 +600,7 @@ test.suite('ASTNodeOperation', () => {
 						float my_int;
 						float my_nat;
 						float my_flt;
-					}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+					}`, {lower: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 						TYPE.INT,
 						TYPE.INT,
 						TYPE.INT,
@@ -697,7 +697,7 @@ test.suite('ASTNodeOperation', () => {
 					float my_int;
 					float my_nat;
 					float my_flt;
-				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
+				}`, {lower: false}).stmts.slice(3).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationUnary);
 				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
 				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
 				assert.strictEqual(values[0], operands[0]);
@@ -981,7 +981,7 @@ test.suite('ASTNodeOperation', () => {
 						c != (y= 42);
 						d != {41 -> 43};
 						d != {43 -> 42};
-					}`, {build: false}).stmts.slice(4).forEach((stmt) => {
+					}`, {lower: false}).stmts.slice(4).forEach((stmt) => {
 						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
 						const fold: VALUE.Value | null = expr.fold();
 						assert_instanceof(fold, VALUE.Boolean);
@@ -1120,7 +1120,7 @@ test.suite('ASTNodeOperation', () => {
 					c != (y= 42);
 					i != {41 -> 43};
 					i != {43 -> 42};
-				}`, {build: false}).stmts.slice(13).forEach((stmt) => {
+				}`, {lower: false}).stmts.slice(13).forEach((stmt) => {
 					assert.strictEqual((stmt as AST.ASTNodeStatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
 				});
 			});
@@ -1171,7 +1171,7 @@ test.suite('ASTNodeOperation', () => {
 							val mut b: null | false = null;
 							a && 42;
 							b && 42;
-						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
 							TYPE.NULL.union(TYPE.FALSE),
 						]);
@@ -1187,7 +1187,7 @@ test.suite('ASTNodeOperation', () => {
 							b && "hello";
 							c && "hello";
 							d && "hello";
-						}`, {build: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {lower: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
 							TYPE.FALSE.union(hello),
@@ -1200,7 +1200,7 @@ test.suite('ASTNodeOperation', () => {
 							val mut b: float = 4.2;
 							a && true;
 							b && null;
-						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.TRUE,
 							TYPE.NULL,
 						]);
@@ -1213,7 +1213,7 @@ test.suite('ASTNodeOperation', () => {
 							val mut b: null | false = null;
 							a || false;
 							b || 42;
-						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.FALSE,
 							typeUnit(42n),
 						]);
@@ -1229,7 +1229,7 @@ test.suite('ASTNodeOperation', () => {
 							b || "hello";
 							c || "hello";
 							d || "hello";
-						}`, {build: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {lower: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT.union(hello),
 							TYPE.INT.union(hello),
 							TYPE.TRUE.union(hello),
@@ -1242,7 +1242,7 @@ test.suite('ASTNodeOperation', () => {
 							val mut b: float = 4.2;
 							a || true;
 							b || null;
-						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT,
 							TYPE.FLOAT,
 						]);
