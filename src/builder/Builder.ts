@@ -307,6 +307,24 @@ export class Builder {
 		], this.getHeaptype('$Dict'));
 	}
 
+	/**
+	 * Return a new struct modeling a Set from items.
+	 * It uses a `$Map` implementation, where the cases consist of item–`null` pairs (the Counterpoint `null` value).
+	 * This method automatically populates blank slots with the WASM expression `(ref.null $Case)`.
+	 * @param items items to be used as antecedents in the array of cases; must be of type `(ref null $Value)`
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 */
+	public codegenSet(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(BinConst.NULL)])));
+	}
+
+	/**
+	 * Return a new `$Map` from cases.
+	 * This method automatically hashes the case antecedents and inserts them at the correct indices,
+	 * as well as populates blank slots with the WASM expression `(ref.null $Case)`.
+	 * @param props antecedent–consequent pairs of values (of type `(ref $Value)`) in the array
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {

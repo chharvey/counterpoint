@@ -146,18 +146,25 @@ describe('IrNode', () => {
 				}`);
 				return assert.strictEqual(
 					binaryen.emitText((goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-					binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)).replaceAll('$1', '$0'),
+					binaryen.emitText(new BinValue(cg, cg.codegenMap()).value).replaceAll('$1', '$0'),
 				);
 			});
 			it('nonempty SET.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					{x, 4.2, (null,), x/2, @e};
-					{x -> null, 4.2 -> null, (null,) -> null, x/2 -> null, @e -> null};
 				}`);
+				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assert.strictEqual(
 					binaryen.emitText((goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-					binaryen.emitText((goal.children[2] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)).replaceAll('$4', '$1').replaceAll('$5', '$2').replaceAll('$6', '$3'),
+					binaryen.emitText(new BinValue(cg, cg.codegenSet([
+						new BinValue(cg, mod.local.get(0, rt_value)).value,
+						genConst(cg, 4.2),
+						new BinValue(cg, mod.local.get(1, rt_value)).value,
+						new BinValue(cg, mod.local.get(2, rt_value)).value, // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						genConst(cg, Symbol(0x101)),
+					])).value).replaceAll('$4', '$3'),
 				);
 			});
 		});
