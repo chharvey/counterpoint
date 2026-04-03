@@ -58,7 +58,9 @@ Codegen((LIST.NEW `values`)) := (struct.new $Value
 			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const `values.count`)
-		(array.new_fixed $ListInternal `CapacityNeeded(values.count)` `values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`)
+		(array.new_fixed $ListInternal `CapacityNeeded(values.count)`
+			`values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`
+		)
 	)
 );
 
@@ -83,7 +85,12 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const `pairs.count`)
-		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)` `pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
+		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)`
+			`pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property
+				(i64.const `pairs[i].0`)
+				`Codegen(pairs[i].1)`
+			)")`
+		)
 	)
 );
 

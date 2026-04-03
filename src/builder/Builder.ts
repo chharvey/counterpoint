@@ -263,8 +263,6 @@ export class Builder {
 
 	/**
 	 * Return a new `$List` from items.
-	 * The capacity of `$ListInternal` is always the least power of 2 greater than or equal to
-	 * the number of given items (the List’s count) divided by the Load Factor, or 8, whichever is greater.
 	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
 	 * @param items items in the array; must be of type `(ref null $Value)`
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
@@ -289,8 +287,8 @@ export class Builder {
 	 * Return a new `$Dict` from properties.
 	 * This method automatically hashes the property keys and inserts them at the correct indices,
 	 * as well as populates blank slots with the WASM expression `(ref.null $Property)`.
-	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref null $Property)`) are items in the array
-	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...items>))`
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Value)`) are items in the array
+	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
