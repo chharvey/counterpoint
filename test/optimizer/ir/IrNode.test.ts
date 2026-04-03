@@ -2,10 +2,9 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	AST,
+	type AST,
 	VALUE,
 	TYPE,
-	Optimizer,
 	IR,
 	STRUCT_FIELD,
 	BinValue,
@@ -13,27 +12,15 @@ import {
 	BinVect,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
-import {genConst} from '../../helpers.ts';
+import {
+	setupScript,
+	genConst,
+} from '../../helpers.ts';
 
 
 
 describe('IrNode', () => {
 	describe('#codegen', () => {
-		function setupScript(src: string, opts: object): {
-			goal: AST.ASTNodeGoal,
-			opt:  Optimizer,
-			cg:   Builder,
-		} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			const cg:   Builder         = new Builder();
-			goal.varCheck();
-			goal.typeCheck();
-			'lower'   in opts && opts.lower   && goal.lower(opt);
-			'codegen' in opts && opts.codegen && opt.codegen(cg);
-			return {goal, opt, cg};
-		}
-
 		it('is not yet supported.', () => {
 			const {opt, cg} = setupScript(`{
 				"hello";
@@ -1451,7 +1438,7 @@ describe('IrNode', () => {
 		});
 
 		it('WASM module validates.', () => {
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
+			setupScript(`{
 				null;
 				false;
 				@hello;
@@ -1632,12 +1619,7 @@ describe('IrNode', () => {
 				Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
 				Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
 				Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
-			}`.slice(1, -1));
-			const opt = new Optimizer();
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
-			opt.codegen(new Builder()); // assert does not throw
+			}`, {lower: true, codegen: true}); // assert does not throw
 		});
 	});
 });

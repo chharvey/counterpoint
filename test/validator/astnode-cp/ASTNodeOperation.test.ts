@@ -17,6 +17,7 @@ import {
 	CONFIG_FOLDING_OFF,
 	CONFIG_COERCION_OFF,
 	CONFIG_FOLDING_COERCION_OFF,
+	setupScript,
 	typeUnit,
 } from '../../helpers.ts';
 import {extract_lines} from '../../utils.ts';
@@ -63,15 +64,6 @@ describe('ASTNodeOperation', () => {
 
 
 	describe('#lower', () => {
-		function setupScript(src: string, _: object): {opt: Optimizer} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			goal.varCheck();
-			goal.typeCheck();
-			goal.lower(opt);
-			return {opt};
-		}
-
 		it('AST.OperationUnary[operator=NOT]', () => {
 			const opt = new Optimizer();
 			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`

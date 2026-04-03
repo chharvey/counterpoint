@@ -3,11 +3,13 @@ import type binaryen from 'binaryen';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
+	AST,
 	VALUE,
 	type TYPE,
+	Optimizer,
 	BinValue,
 	BinConst,
-	type Builder,
+	Builder,
 } from '../src/index.ts';
 
 
@@ -49,6 +51,50 @@ export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
 		intCoercion:     false,
 	},
 };
+
+
+
+/**
+ * Generate an {@link AST.Goal} containing a Counterpoint script and run checks on it,
+ * then return various aspects of the node.
+ * @param source         the source text of the Counterpoint script
+ * @param opts           various options for compiling
+ * @param opts.varCheck  Should the VarCheck  algorithm be performed? (defaults true)
+ * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
+ * @param opts.lower     Should the Lower     algorithm be performed? (defaults false --- will change once feature is complete) (only done if `varCheck` and `typeCheck` are true)
+ * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults false --- will change once feature is complete) (only done if `varCheck`, `typeCheck`, and `lower` are true)
+ * @param config         compiler config options
+ * @return               the `ASTNodeGoal` instance and some properties of it
+ */
+export function setupScript(
+	source: string,
+	opts:   {varCheck?: boolean, typeCheck?: boolean, lower?: boolean, codegen?: boolean} = {},
+): {
+	readonly goal:  AST.ASTNodeGoal,
+	readonly stmts: AST.ASTNodeGoal['children'],
+	readonly opt:   Optimizer,
+	readonly cg:    Builder,
+	readonly mod:   Builder['module'],
+} {
+	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source.slice(1, -1));
+	const opt = new Optimizer();
+	const cg  = new Builder();
+	opts.varCheck  ??= true;
+	opts.typeCheck ??= true;
+	opts.lower     ??= false; // TODO: once fully implemented, default to true
+	opts.codegen   ??= false; // TODO: once fully implemented, default to true
+	opts.varCheck &&                                                 goal.varCheck();
+	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
+	opts.varCheck && opts.typeCheck && opts.lower &&                 goal.lower(opt);
+	opts.varCheck && opts.typeCheck && opts.lower && opts.codegen && opt.codegen(cg);
+	return {
+		goal,
+		opt,
+		cg,
+		stmts: goal.children,
+		mod:   cg.module,
+	};
+}
 
 
 

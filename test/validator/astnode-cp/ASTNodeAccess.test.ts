@@ -5,14 +5,16 @@ import {
 	AST,
 	VALUE,
 	TYPE,
-	Optimizer,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
 	VoidErrorOutOfBounds,
 } from '../../../src/index.ts';
 import {assertEqualTypes} from '../../assert-helpers.ts';
-import {typeUnit} from '../../helpers.ts';
+import {
+	setupScript,
+	typeUnit,
+} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
@@ -992,14 +994,6 @@ describe('ASTNodeAccess', () => {
 
 
 	describe('#lower', () => {
-		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			goal.varCheck();
-			goal.typeCheck();
-			'lower' in opts && opts.lower && goal.lower(opt);
-			return {goal, opt};
-		}
 		describe('access kind: normal access (`a.‹b›`).', () => {
 			it('tuple access returns an IR.TupleGet.', () => {
 				assert.strictEqual(setupScript(`{

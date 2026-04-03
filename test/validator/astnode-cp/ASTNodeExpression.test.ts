@@ -22,6 +22,7 @@ import {
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
+	setupScript,
 	typeUnit,
 } from '../../helpers.ts';
 import {
@@ -33,14 +34,6 @@ import {
 
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
-		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			goal.varCheck();
-			goal.typeCheck();
-			'lower' in opts && opts.lower && goal.lower(opt);
-			return {goal, opt};
-		}
 		it('AST.Constant returns an IR.Const.', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42;');
 			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));

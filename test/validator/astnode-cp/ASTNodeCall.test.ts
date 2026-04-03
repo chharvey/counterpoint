@@ -5,7 +5,6 @@ import {
 	AST,
 	VALUE,
 	TYPE,
-	Optimizer,
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -14,6 +13,7 @@ import {
 	assertEqualTypes,
 	assertAssignable,
 } from '../../assert-helpers.ts';
+import {setupScript} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
@@ -257,14 +257,6 @@ describe('ASTNodeCall', () => {
 
 
 	describe('#lower', () => {
-		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			goal.varCheck();
-			goal.typeCheck();
-			'lower' in opts && opts.lower && goal.lower(opt);
-			return {goal, opt};
-		}
 		specify('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.join('\n') }
