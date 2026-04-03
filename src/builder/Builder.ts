@@ -147,10 +147,6 @@ export class Builder {
 		)
 	`) as BinaryenModuleUpdates;
 
-	// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-	// eslint-disable-next-line
-	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
-
 	public constructor() {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
 			/* eslint-disable @stylistic/operator-linebreak */
