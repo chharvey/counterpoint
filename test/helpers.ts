@@ -61,8 +61,8 @@ export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
  * @param opts           various options for compiling
  * @param opts.varCheck  Should the VarCheck  algorithm be performed? (defaults true)
  * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
- * @param opts.lower     Should the Lower     algorithm be performed? (defaults false --- will change once feature is complete) (only done if `varCheck` and `typeCheck` are true)
- * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults false --- will change once feature is complete) (only done if `varCheck`, `typeCheck`, and `lower` are true)
+ * @param opts.lower     Should the Lower     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
+ * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `varCheck`, `typeCheck`, and `lower` are true)
  * @param config         compiler config options
  * @return               the `ASTNodeGoal` instance and some properties of it
  */
@@ -81,8 +81,8 @@ export function setupScript(
 	const cg  = new Builder();
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
-	opts.lower     ??= false; // TODO: once fully implemented, default to true
-	opts.codegen   ??= false; // TODO: once fully implemented, default to true
+	opts.lower     ??= true;
+	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
 	opts.varCheck && opts.typeCheck && opts.lower &&                 goal.lower(opt);
