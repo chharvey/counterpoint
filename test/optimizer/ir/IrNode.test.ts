@@ -38,7 +38,7 @@ describe('IrNode', () => {
 			const {opt, cg} = setupScript(`{
 				"hello";
 				"""hello {{ 42 }}""";
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			xjs.Array.forEachAggregated([
 				...opt.instructions,
 				new IR.Label('label1'),
@@ -59,7 +59,7 @@ describe('IrNode', () => {
 				@hello;
 				42;
 				4.2;
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			return assertEqualBins(
 				goal.children.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 				[
@@ -85,7 +85,7 @@ describe('IrNode', () => {
 				c;
 				d;
 				e;
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			opt.instructions.slice(0, 5).map((instr) => instr.codegen(cg));
@@ -105,7 +105,7 @@ describe('IrNode', () => {
 			it('empty TUPLE.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					();
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				return assertEqualBins(
 					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenTuple()).value,
@@ -115,7 +115,7 @@ describe('IrNode', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(x, 4.2, (null,));
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assertEqualBins(
@@ -130,7 +130,7 @@ describe('IrNode', () => {
 			it('empty LIST.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					[];
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				return assertEqualBins(
 					(goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 					new BinValue(cg, cg.codegenList()).value,
@@ -140,7 +140,7 @@ describe('IrNode', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					[x, 4.2, (null,), x/2, @e];
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				const mod = cg.module;
 				const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
 				return assertEqualBins(
@@ -157,7 +157,7 @@ describe('IrNode', () => {
 			it('empty SET.NEW', () => {
 				const {goal, opt, cg} = setupScript(`{
 					{};
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				return assert.strictEqual(
 					binaryen.emitText((goal.children[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)).replaceAll('$1', '$0'),
@@ -168,7 +168,7 @@ describe('IrNode', () => {
 					val mut x: int = 42;
 					{x, 4.2, (null,), x/2, @e};
 					{x -> null, 4.2 -> null, (null,) -> null, x/2 -> null, @e -> null};
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				return assert.strictEqual(
 					binaryen.emitText((goal.children[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					binaryen.emitText((goal.children[2] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)).replaceAll('$4', '$1').replaceAll('$5', '$2').replaceAll('$6', '$3'),
@@ -189,7 +189,7 @@ describe('IrNode', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assertEqualBins(
@@ -219,7 +219,7 @@ describe('IrNode', () => {
 					(a= 42, aa= false, b= 4.2);  % (258, 261, 256)
 					(aa= true, c= null, a= 42);  % (261, 257, 258)
 					(b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				return assertEqualBins(
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[new Map([
@@ -255,7 +255,7 @@ describe('IrNode', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assertEqualBins(
@@ -285,7 +285,7 @@ describe('IrNode', () => {
 					[a= 42, aa= false, b= 4.2]; % (258, 261, 256)
 					[aa= true, c= null, a= 42]; % (261, 257, 258)
 					[b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				return assertEqualBins(
 					goal.children.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[new Map([
@@ -321,7 +321,7 @@ describe('IrNode', () => {
 				const {goal, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					{1.1 -> x, 2.2 -> 4.2, 3.3 -> (null,), 4.4 -> x/2, 5.5 -> @e};
-				}`, {lower: true, codegen: true, build: false});
+				}`, {lower: true, codegen: true});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assert.strictEqual(
@@ -345,7 +345,7 @@ describe('IrNode', () => {
 				(x, 43, 44).2;
 				tup.0;
 				tup.1;
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
@@ -376,7 +376,7 @@ describe('IrNode', () => {
 				(a= x, b= 43, c= 44).c;
 				rec.a;
 				rec.b;
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
@@ -406,7 +406,7 @@ describe('IrNode', () => {
 					list.[0];
 					list.[3];
 					list.[-1];
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
 				const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
@@ -472,7 +472,7 @@ describe('IrNode', () => {
 					[a= x, b= 43, c= 44].[@b];
 					dict.[@a];
 					dict.[@c];
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const rt_value:      binaryen.Type = cg.getReftype('(ref $Value)');
 				const rt_n_property: binaryen.Type = cg.getReftype('(ref null $Property)');
@@ -527,7 +527,7 @@ describe('IrNode', () => {
 					val 'set': {float} = {4.2, 2.4};
 					'set'.[4.2];
 					'set'.[3.3];
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const rt_value:     binaryen.Type          = cg.getReftype('(ref $Value)');
 				const rt_n_case:    binaryen.Type          = cg.getReftype('(ref null $Case)');
@@ -571,7 +571,7 @@ describe('IrNode', () => {
 					val map: {float -> int} = {4.2 -> 42, 2.4 -> 24};
 					map.[4.2];
 					map.[3.3];
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const rt_value:     binaryen.Type          = cg.getReftype('(ref $Value)');
 				const rt_n_case:    binaryen.Type          = cg.getReftype('(ref null $Case)');
@@ -628,7 +628,7 @@ describe('IrNode', () => {
 
 				-(42);
 				-(4.2);
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			const CALL = {
@@ -687,7 +687,7 @@ describe('IrNode', () => {
 
 				2.0 === 3;
 				2.0 ==  3;
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			const mod = cg.module;
 			const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 			const CALL = {
@@ -733,7 +733,7 @@ describe('IrNode', () => {
 				@hello;
 				42;
 				4.2;
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				opt.instructions.map((instr) => instr.codegen(cg)),
@@ -760,7 +760,7 @@ describe('IrNode', () => {
 				c = @world;
 				d = 43;
 				e = 4.3;
-			}`, {lower: true, codegen: false, build: false});
+			}`, {lower: true, codegen: false});
 			const mod = cg.module;
 			return assertEqualBins(
 				opt.instructions.map((instr) => instr.codegen(cg)),
@@ -789,7 +789,7 @@ describe('IrNode', () => {
 					[x, 43, 44].[1 + 1] = 45;
 					list.[0] = 46;
 					list.[2] = 47;
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				opt.instructions.slice(0, 4).map((instr) => instr.codegen(cg));
@@ -820,7 +820,7 @@ describe('IrNode', () => {
 					[a= x, b= 43, c= 44].[@b] = 45;
 					dict.[@a] = 46;
 					dict.[@c] = 47;
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				opt.instructions.slice(0, 3).map((instr) => instr.codegen(cg));
@@ -847,7 +847,7 @@ describe('IrNode', () => {
 					val 'set': mut {float} = {4.2, 2.4};
 					'set'.[4.2] = false;
 					'set'.[3.3] = true;
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const rt_value:       binaryen.Type          = cg.getReftype('(ref $Value)');
 				const rt_n_value:     binaryen.Type          = cg.getReftype('(ref null $Value)');
@@ -884,7 +884,7 @@ describe('IrNode', () => {
 					val map: mut {float -> int} = {4.2 -> 42, 2.4 -> 24};
 					map.[4.2] = 21;
 					map.[3.3] = 21;
-				}`, {lower: true, codegen: false, build: false});
+				}`, {lower: true, codegen: false});
 				const mod = cg.module;
 				const base: binaryen.ExpressionRef = mod.local.get(1, cg.getReftype('(ref $Value)')); // index 0 = nonempty map setup
 				opt.instructions[0].codegen(cg);
@@ -900,7 +900,7 @@ describe('IrNode', () => {
 				it('tuple argument.', () => {
 					const {opt, cg} = setupScript(`{
 						List.<int>((2, 3, 5));
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
@@ -928,7 +928,7 @@ describe('IrNode', () => {
 				it('List argument.', () => {
 					const {opt, cg} = setupScript(`{
 						List.<int>([2, 3, 5]);
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
@@ -956,7 +956,7 @@ describe('IrNode', () => {
 				it('Set argument.', () => {
 					const {opt, cg} = setupScript(`{
 						List.<int>({2, 3, 5});
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
@@ -1001,7 +1001,7 @@ describe('IrNode', () => {
 				it('tuple argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
@@ -1035,7 +1035,7 @@ describe('IrNode', () => {
 				it('record argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>((a= 2, b= 3, c= 5));
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
@@ -1063,7 +1063,7 @@ describe('IrNode', () => {
 				it('List argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
@@ -1103,7 +1103,7 @@ describe('IrNode', () => {
 				it('Dict argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>([a= 2, b= 3, c= 5]);
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
@@ -1131,7 +1131,7 @@ describe('IrNode', () => {
 				it('Set argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
@@ -1171,7 +1171,7 @@ describe('IrNode', () => {
 				it('Map argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
@@ -1211,7 +1211,7 @@ describe('IrNode', () => {
 				it('tuple argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Set.<int>((2, 3, 5));
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
@@ -1243,7 +1243,7 @@ describe('IrNode', () => {
 				it('List argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Set.<int>([2, 3, 5]);
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
@@ -1278,7 +1278,7 @@ describe('IrNode', () => {
 				it('Set argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Set.<int>({2, 3, 5});
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));
@@ -1308,7 +1308,7 @@ describe('IrNode', () => {
 				it('tuple argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
@@ -1342,7 +1342,7 @@ describe('IrNode', () => {
 				it('List argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
@@ -1382,7 +1382,7 @@ describe('IrNode', () => {
 				it('Set argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
@@ -1422,7 +1422,7 @@ describe('IrNode', () => {
 				it('Map argument.', () => {
 					const {opt, cg} = setupScript(`{
 						Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
-					}`, {lower: true, codegen: false, build: false});
+					}`, {lower: true, codegen: false});
 					const mod = cg.module;
 					const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 					opt.instructions.slice(0, 2).map((instr) => instr.codegen(cg));

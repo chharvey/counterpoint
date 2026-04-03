@@ -70,7 +70,7 @@ describe('ASTNodeExpression', () => {
 				val mut y: int   = 5;
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {lower: true}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -87,7 +87,7 @@ describe('ASTNodeExpression', () => {
 				val y: int   = 5;
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {lower: true}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -101,7 +101,7 @@ describe('ASTNodeExpression', () => {
 		it('AST.List returns an IR.CollectionIndexedNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {lower: true}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -112,7 +112,7 @@ describe('ASTNodeExpression', () => {
 		it('AST.Dict returns an IR.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {lower: true}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -123,7 +123,7 @@ describe('ASTNodeExpression', () => {
 		it('AST.Set returns an IR.SetNew.', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {lower: true}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -135,7 +135,7 @@ describe('ASTNodeExpression', () => {
 			it('returns an IR.MapNew.', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {lower: true}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -146,7 +146,7 @@ describe('ASTNodeExpression', () => {
 			it('evaluates antecedents and consequents interchangeably in source order.', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {lower: true}).opt.print(), extract_lines`
 					(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
 					(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
 					(DECL <List> $2 (LIST.NEW (INT.CONST 12)))
@@ -246,7 +246,7 @@ describe('ASTNodeExpression', () => {
 				my_dict.[@b]      = 84;
 				my_set.[accessor] = true;
 				my_map.[accessor] = 84;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {lower: true}).opt.print(), extract_lines`
 				(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 				(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
 				(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
