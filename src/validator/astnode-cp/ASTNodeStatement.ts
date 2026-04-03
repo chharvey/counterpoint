@@ -16,14 +16,13 @@ import type {Foldable} from './Foldable.ts';
 
 /**
  * A sematic node representing a statement.
+ *
  * Known subclasses:
  * - ASTNodeDeclaration
  * - ASTNodeStatementExpression
  * - ASTNodeStatementClaim
  * - ASTNodeStatementReassignment
  * - ASTNodeStatementConditional
- * - ASTNodeStatementLoop
- * - ASTNodeStatementIteration
  * - ASTNodeStatementBreak
  */
 export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lowerable {
@@ -56,6 +55,13 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lo
 
 
 
+/**
+ * A statement that is allowed to contain a `StatementBreak`.
+ *
+ * Known subclasses:
+ * - ASTNodeStatementLoop
+ * - ASTNodeStatementIteration
+ */
 export abstract class StatementBreakable extends ASTNodeStatement {
 	#labelWhile?:    IR.Label;
 	#labelEndwhile?: IR.Label;
