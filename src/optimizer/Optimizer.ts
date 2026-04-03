@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
@@ -56,8 +56,21 @@ export class Optimizer {
 		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
 	}
 
-	public codegen(cg: Builder): binaryen.ExpressionRef[] {
-		return this.#instructions.map((instr) => instr.codegen(cg));
+	public codegen(cg: Builder): void {
+		return cg.setupMain((mod) => {
+			if (this.#instructions.length) {
+				const codes:   binaryen.ExpressionRef[] = this.#instructions.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
+				const fn_name: string                   = 'main';
+				mod.addFunction(
+					fn_name,
+					binaryen.none,
+					binaryen.none,
+					cg.getAllLocals().map((local) => local.type),
+					mod.block(null, codes),
+				);
+				mod.addFunctionExport(fn_name, fn_name);
+			}
+		});
 	}
 
 	public print(): string {

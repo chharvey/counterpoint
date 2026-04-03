@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	BinVect,
-} from '../../index.ts';
+import {BinVect} from '../../index.ts';
 import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
@@ -57,10 +54,6 @@ export class Float extends ValueNumber<Float> {
 				? mod.f64.ceil(mod.f64.const(-0.5))
 				: mod.f64.const(this.data),
 		);
-	}
-
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.codegen(builder.module).vect;
 	}
 
 	public override toInt(): Integer {

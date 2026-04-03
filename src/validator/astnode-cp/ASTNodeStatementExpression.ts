@@ -1,11 +1,9 @@
-import type binaryen from 'binaryen';
 import {
 	type Optimizer,
 	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -15,10 +13,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -51,11 +46,5 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		if (this.expr) {
 			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
 		}
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.drop(this.expr!.build());
 	}
 }

@@ -100,11 +100,6 @@ class TypeTuple extends ValueType {
 		return Union.all(this.typeargs.map((t) => t.type));
 	}
 
-	/** @deprecated */
-	public canonicalizeIndex(index: bigint): bigint | undefined {
-		return this.isIndexCanonical(index) ? index : undefined;
-	}
-
 	public isIndexCanonical(index: bigint): boolean {
 		return 0 <= index && index < this.typeargs.length;
 	}

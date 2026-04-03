@@ -35,16 +35,12 @@ class TypeRecord extends ValueType {
 	}
 
 
-	/** This Record’s keys, sorted in canonical order. */
-	readonly #canonicalizedKeys: readonly bigint[];
-
 	/**
 	 * Construct a new TypeRecord object.
 	 * @param typeargs a map of this type’s property ids along with their associated types
 	 */
 	public constructor(public readonly typeargs: ReadonlyMap<bigint, EntryType> = new Map()) {
 		super(false, new Set([new VALUE.Record()]));
-		this.#canonicalizedKeys = [...this.typeargs.keys()].sort();
 	}
 
 	public override get hasMutable(): boolean {
@@ -103,11 +99,6 @@ class TypeRecord extends ValueType {
 
 	public valueTypes(): Type {
 		return Union.all([...this.typeargs.values()].map((t) => t.type));
-	}
-
-	/** @deprecated */
-	public canonicalizeKey(key: bigint): bigint | undefined {
-		return this.isKeyCanonical(key) ? BigInt(this.#canonicalizedKeys.indexOf(key)) : undefined;
 	}
 
 	public isKeyCanonical(key: bigint): boolean {

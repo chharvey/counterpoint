@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -27,7 +26,6 @@ import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {
-	buildDeco,
 	ASTNodeStatement,
 	StatementBreakable,
 } from './ASTNodeStatement.ts';
@@ -123,11 +121,5 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.OpCode.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
 		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
 		optimizer.pushInstruction(this.labels.endwhile!);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeStatementIteration#build` not yet supported.');
 	}
 }

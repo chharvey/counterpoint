@@ -1,11 +1,8 @@
-import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	drop_then,
-	BinVect,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -19,7 +16,6 @@ import {
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -42,21 +38,6 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 		public readonly operand2: ASTNodeExpression,
 	) {
 		super(start_node, operator, [operand0, operand1, operand2]);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const t0:                 TYPE.Type                = this.operand0.type();
-		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-
-		if (t0.isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(this.builder.module, [arg0], arg1);
-		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(this.builder.module, [arg0], arg2);
-		}
-
-		return this.builder.module.if(new BinVect(this.builder.module, arg0).isSpecial(true), arg1, arg2);
 	}
 
 	@memoizeMethod

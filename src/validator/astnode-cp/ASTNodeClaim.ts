@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
@@ -19,7 +18,6 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {
 	typeDeco,
-	buildDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 
@@ -39,12 +37,6 @@ export class ASTNodeClaim extends ASTNodeExpression {
 		public readonly claimed_type: ASTNodeType,
 	) {
 		super(start_node, {}, [operand, claimed_type]);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.operand.build();
 	}
 
 	@memoizeMethod

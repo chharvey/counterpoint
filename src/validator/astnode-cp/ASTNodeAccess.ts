@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	type EntryType,
 	VALUE,
@@ -31,7 +30,6 @@ import {
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -58,30 +56,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		super(start_node, {kind}, [base, accessor]);
 		if ([Operator.DOT_RES].includes(this.kind)) {
 			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
-		}
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const base_type: TYPE.Type = this.base.type();
-		const base_build: binaryen.ExpressionRef = this.base.build();
-		if (this.accessor instanceof ASTNodeIndex) {
-			assert_instanceof(base_type, TYPE.Tuple);
-			const index: bigint | undefined = base_type.canonicalizeIndex(this.accessor.index);
-			return index || index === 0n
-				? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
-				: this.builder.module.unreachable();
-		} else if (this.accessor instanceof ASTNodeKey) {
-			assert_instanceof(base_type, TYPE.Record);
-			const index: bigint | undefined = base_type.canonicalizeKey(this.accessor.id);
-			return index || index === 0n
-				? this.builder.module.struct.get(Number(index), base_build, binaryen.getExpressionType(base_build))
-				: this.builder.module.unreachable();
-		} else {
-			assert_instanceof(this.accessor, ASTNodeExpression);
-			this.accessor.build();
-			throw new Error('`ASTNodeAccess#build` of a list/dict/set/map is not yet supported.');
 		}
 	}
 

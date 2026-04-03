@@ -2,7 +2,6 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type TYPE,
-	type Builder,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {memoizeGetter} from '../../lib/index.ts';
@@ -91,11 +90,6 @@ export abstract class ASTNodeCP extends ASTNode {
 	@memoizeGetter
 	public get validator(): Validator {
 		return (this.parent as ASTNodeCP).validator;
-	}
-
-	@memoizeGetter
-	public get builder(): Builder {
-		return (this.parent as ASTNodeCP).builder;
 	}
 
 	/**

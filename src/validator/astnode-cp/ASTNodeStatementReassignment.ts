@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	type Optimizer,
@@ -23,10 +22,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -92,11 +88,5 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 				this.assigned.lower(optimizer).asTac(optimizer),
 			));
 		}
-	}
-
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert_instanceof(this.assignee, ASTNodeVariable, '`ASTNodeStatementReassignment[assignee: ASTNodeAccess]#build` not yet supported.');
-		return this.builder.getLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }

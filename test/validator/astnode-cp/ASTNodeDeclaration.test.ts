@@ -16,7 +16,6 @@ import {assert_instanceof} from '../../../src/lib/index.js';
 import {
 	assert_shallowStrictEqual,
 	assertEqualTypes,
-	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.js';
 import {
@@ -647,81 +646,6 @@ test.suite('ASTNodeDeclaration', () => {
 				(DECL <int> assignee_d (GET assignee_c))
 				(DECL <int> assignee_e (GET assignee_c))
 			`.join('\n'));
-		});
-	});
-
-
-	test.suite('#build', () => {
-		test.suite('ASTNodeDeclarationType', () => {
-			test.test('always returns `(nop)`.', () => {
-				const {stmts, mod} = setupScript(`{
-					type T = int;
-					type U = T | float;
-				}`);
-				return xjs.Array.forEachAggregated(stmts, (stmt) => assertEqualBins(stmt.build(), mod.nop()));
-			});
-		});
-
-		test.suite('ASTNodeDeclarationVariable', () => {
-			test.test('with constant folding on.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					% Foldable cases:
-					val _:          int = 42; % \`(nop)\`
-					val assignee_a: int = 42; % \`(nop)\`
-
-					% Non-Foldable cases:
-					val mut assignee_b?: int;              % \`(local.set)\`
-					val mut assignee_c:  int = 42;         % \`(local.set)\`
-					val     _:           int = assignee_c; % \`(drop)\`
-					val     assignee_d:  int = assignee_c; % \`(local.set)\`
-					val mut assignee_e:  int = assignee_c; % \`(local.set)\`
-
-					%% Syntactically impossible cases (for completion):
-					val _?:          int;
-					val assignee_f?: int;
-					val mut _?:      int;
-					val mut _:       int = 42;
-					val mut _:       int = assignee_c;
-					%%
-				}`);
-				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
-					mod.nop(),
-					mod.nop(),
-
-					mod.local.set(0, VALUE.NULL.build(goal.builder)),
-					mod.local.set(1, (stmts[3] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[4] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(2, (stmts[5] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-					mod.local.set(3, (stmts[6] as AST.ASTNodeDeclarationVariable).assigned!.build()),
-				]);
-			});
-			test.test('tuples and records.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					val mut tr: bool = true;
-					val tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    tr)));
-					val rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= tr)));
-				}`);
-				const [tup, rec] = stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeDeclarationVariable).assigned) as [AST.ASTNodeTuple, AST.ASTNodeRecord];
-				assert.deepStrictEqual(goal.builder.getAllLocals().slice(1).map(({value}) => value), [
-					tup.build(),
-					rec.build(),
-				]);
-				return assertEqualBins(
-					stmts.slice(1).map((stmt) => stmt.build()),
-					[
-						mod.local.set(1, tup.build()),
-						mod.local.set(2, rec.build()),
-					],
-				);
-			});
-			test.test('allows tuples and records to contain each other.', () => {
-				xjs.Array.forEachAggregated(extract_lines`
-					val mut tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));
-					val mut rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));
-				`, (src) => {
-					setupScript(`{ ${ src } }`); // assert does not throw
-				});
-			});
 		});
 	});
 });

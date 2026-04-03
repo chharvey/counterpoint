@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -22,7 +21,6 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -56,12 +54,6 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			}
 		});
 		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeDict#build` not yet supported.');
 	}
 
 	@memoizeMethod

@@ -19,6 +19,25 @@ export class Goto extends IrNode implements Instruction {
 
 	@memoizeMethod
 	public override codegen(_: Builder): binaryen.ExpressionRef {
+		// Loops:
+		/*
+			;; if `doFirst`:
+			(block $exit
+				(loop $repeat
+					(block $body ‹body›) ;; `break;` --> `(br $exit)`, `skip;` --> `(br $body)`
+					(br_if $exit (not ‹cond›))
+					(br $repeat)
+				)
+			)
+			;; else:
+			(block $exit
+				(loop $repeat
+					(br_if $exit (not ‹cond›))
+					(block $body ‹body›) ;; `break;` --> `(br $exit)`, `skip;` --> `(br $body)`
+					(br $repeat)
+				)
+			)
+		*/
 		throw new Error('not yet supported.');
 	}
 }

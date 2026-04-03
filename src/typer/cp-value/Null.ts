@@ -1,8 +1,5 @@
 import type binaryen from 'binaryen';
-import {
-	type Builder,
-	BinVect,
-} from '../../index.ts';
+import {BinVect} from '../../index.ts';
 import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
@@ -47,9 +44,5 @@ export class Null extends Primitive {
 
 	public override codegen(mod: binaryen.Module): BinVect {
 		return new BinVect(mod);
-	}
-
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.codegen(builder.module).vect;
 	}
 }

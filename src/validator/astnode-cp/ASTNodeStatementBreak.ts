@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type Optimizer,
 	IR,
@@ -17,7 +16,6 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {
-	buildDeco,
 	ASTNodeStatement,
 	StatementBreakable,
 } from './ASTNodeStatement.ts';
@@ -63,19 +61,5 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementLoop.');
 		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementLoop to have its labels already created.');
 		optimizer.pushInstruction(new IR.Goto(this.skip ? labels.while : labels.endwhile));
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		let block_index: number | undefined = undefined;
-		let node = this.parent as ASTNodeCP | undefined;
-		while (node && block_index === undefined) {
-			block_index = this.builder.getBlock(node)?.index;
-			node = node.parent as ASTNodeCP | undefined;
-		}
-		// we should already have an index by the time we reach the root node
-		assert.ok(typeof block_index === 'number', 'Expected builder to store the containing loop/iteration block of this statement.'); // better type guard than `assert.strictEqual`
-		return this.builder.module.br(this.skip ? `body${ block_index }` : `exit${ block_index }`);
 	}
 }
