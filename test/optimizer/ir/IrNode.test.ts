@@ -148,18 +148,25 @@ test.suite('IrNode', () => {
 				}`);
 				return assert.strictEqual(
 					binaryen.emitText((stmts[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-					binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)).replaceAll('$1', '$0'),
+					binaryen.emitText(new BinValue(cg, cg.codegenMap()).value).replaceAll('$1', '$0'),
 				);
 			});
 			test.test('nonempty SET.NEW', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					val mut x: int = 42;
 					{x, 4.2, (null,), x/2, @e};
-					{x -> null, 4.2 -> null, (null,) -> null, x/2 -> null, @e -> null};
 				}`);
+				const mod = cg.module;
+				const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 				return assert.strictEqual(
 					binaryen.emitText((stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-					binaryen.emitText((stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)).replaceAll('$4', '$1').replaceAll('$5', '$2').replaceAll('$6', '$3'),
+					binaryen.emitText(new BinValue(cg, cg.codegenSet([
+						new BinValue(cg, mod.local.get(0, rt_value)).value,
+						genConst(cg, 4.2),
+						new BinValue(cg, mod.local.get(1, rt_value)).value,
+						new BinValue(cg, mod.local.get(2, rt_value)).value, // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+						genConst(cg, Symbol(0x101)),
+					])).value).replaceAll('$4', '$3'),
 				);
 			});
 		});
@@ -396,6 +403,11 @@ test.suite('IrNode', () => {
 				const mod = cg.module;
 				const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
 				const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
+				const list_get:   binaryen.ExpressionRef = mod.local.get(1, rt_value);
+				const item_0_get: binaryen.ExpressionRef = mod.local.get(4, rt_n_value);
+				const item_1_get: binaryen.ExpressionRef = mod.local.get(5, rt_n_value);
+				const item_2_get: binaryen.ExpressionRef = mod.local.get(6, rt_n_value);
+				const item_3_get: binaryen.ExpressionRef = mod.local.get(7, rt_n_value);
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
@@ -404,46 +416,45 @@ test.suite('IrNode', () => {
 							rt_n_value,
 						)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(4, rt_value)),
+							mod.ref.is_null(item_0_get),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(4, rt_value)),
+							mod.ref.as_non_null(item_0_get),
 						),
 					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
-							cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+							cg.getListInternal(new BinValue(cg, list_get).cast('(ref $List)')),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('intValue')),
 							rt_n_value,
 						)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(5, rt_n_value)),
+							mod.ref.is_null(item_1_get),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(5, rt_n_value)),
+							mod.ref.as_non_null(item_1_get),
 						),
 					], rt_value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
-							cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+							cg.getListInternal(new BinValue(cg, list_get).cast('(ref $List)')),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, 3n)).interpret('intValue')),
 							rt_n_value,
 						)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(6, rt_n_value)),
+							mod.ref.is_null(item_2_get),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(6, rt_n_value)),
+							mod.ref.as_non_null(item_2_get),
 						),
 					], rt_value)),
-					// FIXME: negative indexes `-i` should access at `array.length - i`
 					mod.drop(mod.block(null, [
 						mod.local.set(7, mod.array.get(
-							cg.getListInternal(new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)')),
+							cg.getListInternal(new BinValue(cg, list_get).cast('(ref $List)')),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, -1n)).interpret('intValue')),
 							rt_n_value,
 						)),
 						mod.if(
-							mod.ref.is_null(mod.local.get(7, rt_n_value)),
+							mod.ref.is_null(item_3_get),
 							genConst(cg),
-							mod.ref.as_non_null(mod.local.get(7, rt_n_value)),
+							mod.ref.as_non_null(item_3_get),
 						),
 					], rt_value)),
 				]);

@@ -124,6 +124,26 @@ test.suite('Builder', () => {
 					),
 				], cg.getHeaptype('$Dict')),
 			]],
+			['empty `#codegenSet`.', (cg) => [
+				cg.codegenSet(),
+				new Builder().codegenMap(),
+			]],
+			['`#codegenSet` returns the result of calling `#codegenMap`.', (cg) => [
+				cg.codegenSet([
+					genConst(cg, 1.1),
+					genConst(cg, 2.2),
+					genConst(cg, 3.3),
+					genConst(cg, 4.4),
+					genConst(cg, 5.5),
+				]),
+				new Builder().codegenMap(new Map([
+					[genConst(cg, 1.1), genConst(cg)],
+					[genConst(cg, 2.2), genConst(cg)],
+					[genConst(cg, 3.3), genConst(cg)],
+					[genConst(cg, 4.4), genConst(cg)],
+					[genConst(cg, 5.5), genConst(cg)],
+				])),
+			]],
 			['empty `#codegenMap`.', (cg) => {
 				const mod = cg.module;
 				return [

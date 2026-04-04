@@ -397,6 +397,17 @@ test.suite('ASTNodeStatement', () => {
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
 					}`, {lower: false}); // assert does not throw
 				});
+				test.test('widens assignee write type for collection literals.', () => {
+					const {goal} = setupScript(`{
+						set [1.01].[1]                      = 1.02;  %> Expression of type \`1.02\` is not assignable to type \`1.01\`.
+						set [i= 2.03].[@j]                  = 2.04;  %> Expression of type \`2.04\` is not assignable to type \`2.03\`.
+						set {3.05}.[3.05]                   = false; %  no error
+						set {4.07 -> @a, 4.08 -> @b}.[4.07] = @c;    %> Expression of type \`@c\` is not assignable to type \`@a | @b\`.
+						set {3.05}.[3.06]                   = true;  %> Type \`3.06\` is not a subtype of type \`3.05\`.
+						set {4.07 -> @a, 4.08 -> @b}.[4.09] = @a;    %> Type \`4.09\` is not a subtype of type \`4.07 | 4.08\`.
+					}`, {typeCheck: false});
+					return assert.throws(() => goal.typeCheck(), AggregateError); // TODO: use NodeJS `test.expectFailure`
+				});
 				test.test('throws when property assignee type is not supertype.', () => {
 					[
 						`{

@@ -309,8 +309,6 @@ export class Builder {
 
 	/**
 	 * Return a new `$List` from items.
-	 * The capacity of `$ListInternal` is always the least power of 2 greater than or equal to
-	 * the number of given items (the List’s count) divided by the Load Factor, or 8, whichever is greater.
 	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
 	 * @param items items in the array; must be of type `(ref null $Value)`
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
@@ -335,8 +333,8 @@ export class Builder {
 	 * Return a new `$Dict` from properties.
 	 * This method automatically hashes the property keys and inserts them at the correct indices,
 	 * as well as populates blank slots with the WASM expression `(ref.null $Property)`.
-	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref null $Property)`) are items in the array
-	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...items>))`
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Value)`) are items in the array
+	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
@@ -355,6 +353,24 @@ export class Builder {
 		], this.getHeaptype('$Dict'));
 	}
 
+	/**
+	 * Return a new struct modeling a Set from items.
+	 * It uses a `$Map` implementation, where the cases consist of item–`null` pairs (the Counterpoint `null` value).
+	 * This method automatically populates blank slots with the WASM expression `(ref.null $Case)`.
+	 * @param items items to be used as antecedents in the array of cases; must be of type `(ref null $Value)`
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 */
+	public codegenSet(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(BinConst.NULL)])));
+	}
+
+	/**
+	 * Return a new `$Map` from cases.
+	 * This method automatically hashes the case antecedents and inserts them at the correct indices,
+	 * as well as populates blank slots with the WASM expression `(ref.null $Case)`.
+	 * @param props antecedent–consequent pairs of values (of type `(ref $Value)`) in the array
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
