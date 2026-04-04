@@ -1,5 +1,11 @@
-import type binaryen from 'binaryen';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	type Optimizer,
+	IR,
+} from '../../index.ts';
+import {
+	assert_instanceof,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -24,9 +30,10 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}
 
-	public override build(): binaryen.ExpressionRef {
-		return !this.expr || (this.validator.config.compilerOptions.constantFolding && this.expr.fold())
-			? this.builder.module.nop()
-			: this.builder.module.drop(this.expr.build());
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		if (this.expr) {
+			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+		}
 	}
 }

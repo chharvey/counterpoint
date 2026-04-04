@@ -1,8 +1,9 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	type IR,
 	ErrorCode,
 } from '../../index.ts';
 import {
@@ -17,26 +18,7 @@ import {
 	ASTNodeStatement,
 	ASTNodeStatementExpression,
 } from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-
-
-
-/**
- * Decorator for {@link ASTNodeExpression#build} method and any overrides.
- * First tries to compute the assessed value, and if successful, builds the assessed value.
- * Otherwise builds this node.
- * @implements MethodDecorator<ASTNodeExpression, ASTNodeExpression['build']>
- */
-export function buildDeco(
-	method:  ASTNodeExpression['build'],
-	context: ClassMethodDecoratorContext<ASTNodeExpression, typeof method>,
-): typeof method {
-	assert_context_name(context, 'build');
-	return function (this: ASTNodeExpression) {
-		return (this.validator.config.compilerOptions.constantFolding ? this.fold() : null)?.build(this.builder) ?? method.call(this);
-	};
-}
 
 
 
@@ -80,15 +62,15 @@ export function typeDeco(
  * A sematic node representing an expression.
  * Known subclasses:
  * - ASTNodeConstant
- * - ASTNodeVariable
  * - ASTNodeTemplate
+ * - ASTNodeVariable
  * - ASTNodeCollectionLiteral
  * - ASTNodeAccess
  * - ASTNodeCall
  * - ASTNodeClaim
  * - ASTNodeOperation
  */
-export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeExpression extends ASTNodeCP {
 	/**
 	 * Construct a new ASTNodeExpression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -112,16 +94,17 @@ export abstract class ASTNodeExpression extends ASTNodeCP implements Buildable {
 	}
 
 	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	public abstract build(): binaryen.ExpressionRef;
-
-	/**
 	 * The Type of this expression.
 	 * @return the compile-time type of this node
 	 */
 	public abstract type(): TYPE.Type;
+
+	/**
+	 * Lower this AST node to a high-level IR value.
+	 * @param  optimizer the set of instructions to build the IR
+	 * @return           an optimized value
+	 */
+	public abstract lower(optimizer: Optimizer): IR.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

@@ -1,0 +1,79 @@
+import binaryen from 'binaryen';
+import * as xjs from 'extrajs';
+import type {Builder} from '../index.ts';
+import {runOnceMethod} from '../lib/index.ts';
+import type {TYPE} from '../typer/index.ts';
+import {IR} from './index.ts';
+
+
+
+export type Temp = {
+	readonly id:    bigint,
+	readonly name:  string,
+	readonly type:  TYPE.Type,
+	readonly value: IR.Value,
+};
+
+
+
+/**
+ * The Optimizer is responsible for lowering the abstract syntax tree (AST) into a high-level internal representation (IR),
+ * taking the form of a control flow graph (CFG). Unlike the AST, which represents syntax structure,
+ * the CFG represents execution order. The CFG assumes the AST is already validated.
+ */
+export class Optimizer {
+	#tempCounter:  bigint = 0n;
+	#labelCounter: bigint = 0n;
+
+	readonly #instructions: IR.Instruction[] = [];
+
+	public get instructions(): IR.Instruction[] {
+		return [...this.#instructions];
+	}
+
+	public newTemp(value: IR.Value): Temp {
+		const id:    bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
+		const local: Temp   = {
+			id,
+			value,
+			name: `$${ -id }`, // appears positive
+			type: value.type,
+		};
+		this.pushInstruction(new IR.Decl(local, value));
+		return local;
+	}
+
+	public newLabel(): IR.Label {
+		return new IR.Label(`block-${ this.#labelCounter++ }`);
+	}
+
+	public pushInstruction(instr: IR.Instruction): void {
+		this.#instructions.push(instr);
+	}
+
+	@runOnceMethod
+	public validate(): void {
+		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
+	}
+
+	public codegen(cg: Builder): void {
+		return cg.setupMain((mod) => {
+			if (this.#instructions.length) {
+				const codes:   binaryen.ExpressionRef[] = this.#instructions.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
+				const fn_name: string                   = 'main';
+				mod.addFunction(
+					fn_name,
+					binaryen.none,
+					binaryen.none,
+					cg.getAllLocals().map((local) => local.type),
+					mod.block(null, codes),
+				);
+				mod.addFunctionExport(fn_name, fn_name);
+			}
+		});
+	}
+
+	public print(): string {
+		return this.#instructions.map((instr) => instr.toString()).join('\n');
+	}
+}

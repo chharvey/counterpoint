@@ -1,9 +1,9 @@
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	build_record_like,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -22,9 +22,8 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	ASTNodeExpression,
-	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
@@ -59,21 +58,20 @@ export class ASTNodeRecord extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return build_record_like(this.builder, this.children.map((prop) => {
-			const value_build: binaryen.ExpressionRef = prop.val.build();
-			return {key: prop.key.id, pair: [value_build, binaryen.getExpressionType(value_build)]};
-		}));
-	}
-
-	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>(this.children.map((c) => [
 			c.key.id,
 			c.val.type(),
 		])));
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.RecordNew {
+		return new IR.RecordNew(new Map(this.children.map((c) => ([
+			c.key.id,
+			{keysrc: c.key.source, value: c.val.lower(optimizer).asTac(optimizer)},
+		]))), this.type());
 	}
 
 	@memoizeMethod

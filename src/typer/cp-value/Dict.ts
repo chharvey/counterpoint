@@ -1,5 +1,3 @@
-import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_equal,
@@ -38,9 +36,5 @@ export class Dict<T extends Value = Value> extends CollectionKeyed<T> {
 	 */
 	public override toType(): TYPE.Dict {
 		return new TYPE.Dict(TYPE.Union.all([...this.properties.values()].map<TYPE.Type>((val) => val.toType())));
-	}
-
-	public override build(_: Builder): binaryen.ExpressionRef {
-		throw new Error('`Dict#build` not yet supported.');
 	}
 }

@@ -1,8 +1,8 @@
-import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	BinVect,
+	type Optimizer,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -21,10 +21,7 @@ import {
 	bothNumeric,
 	oneFloats,
 } from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -43,23 +40,6 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().equals(TYPE.FALSE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				this.builder.module.drop(arg1),
-				new BinVect(this.builder.module, false).vect,
-			], binaryen.v128);
-		}
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.ID, 'vid'],
-			[Operator.EQ, 'veq'],
-		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
@@ -92,12 +72,22 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		 */
 		if (t0.intersect(t1).isBottomType && (
 			this.operator === Operator.ID ||
-			[t0, t1].some((t) => t.intersect(TYPE.INT.union(TYPE.FLOAT)).isBottomType) ||
+			[t0, t1].some((t) => t.intersect(TYPE.NUMBER).isBottomType) ||
 			!int_coercion && [t0, t1].some((t) => !t.includes(VALUE.FLOAT_0) && !t.includes(VALUE.FLOAT_N0))
 		)) {
 			return TYPE.FALSE;
 		}
 		return TYPE.BOOL;
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+			[Operator.ID,  IR.OpCode.ID],
+			[Operator.EQ,  IR.OpCode.EQ],
+			[Operator.NID, IR.OpCode.NID],
+			[Operator.NEQ, IR.OpCode.NEQ],
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
 	}
 
 	@memoizeMethod
@@ -118,10 +108,10 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 			return VALUE.FALSE;
 		}
 		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
-			[Operator.ID, (x, y) => x.identical(y)],
-			[Operator.EQ, (x, y) => x.equal(y)],
-			// [Operator.NID, (x, y) => !x.identical(y)],
-			// [Operator.NEQ, (x, y) => !x.equal(y)],
+			[Operator.ID,  (x, y) => x.identical(y)],
+			[Operator.EQ,  (x, y) => x.equal(y)],
+			[Operator.NID, (x, y) => !x.identical(y)],
+			[Operator.NEQ, (x, y) => !x.equal(y)],
 		]).get(this.operator)!(v0, v1));
 	}
 }

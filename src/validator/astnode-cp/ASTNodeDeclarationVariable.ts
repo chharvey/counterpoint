@@ -1,12 +1,16 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
-	TYPE,
+	type TYPE,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -76,25 +80,15 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		}
 	}
 
-	public override build(): binaryen.ExpressionRef {
-		if (
-			this.validator.config.compilerOptions.constantFolding && this.assigned?.fold() &&
-			(!this.unfixed || !this.assignee) ||
-			!this.assignee && !this.assigned
-		) {
-			return this.builder.module.nop();
-		}
-		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
-			return this.builder.teeLocal(this.assignee.id, value).set(ASTNodeStatement.coerceAssignment(
-				this.builder.module,
-				this.typenode.eval(),
-				this.assigned?.type() ?? TYPE.NULL,
-				value,
-				this.validator.config.compilerOptions.intCoercion,
-			));
+			const symbol = this.validator.getSymbolInfo(this.assignee.id) as SymbolSchemaVar;
+			symbol.irType = value.type;
+			optimizer.pushInstruction(new IR.Decl(symbol, value));
 		} else {
-			return this.builder.module.drop(value);
+			optimizer.pushInstruction(new IR.Drop(value));
 		}
 	}
 }

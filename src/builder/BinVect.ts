@@ -92,8 +92,8 @@ export class BinVect {
 	}
 
 
-	/** Internal implementation of the v128. */
-	readonly #internal: binaryen.ExpressionRef;
+	/** Internal implementation of the `v128`. */
+	public readonly vect: binaryen.ExpressionRef;
 
 	/** The Header Lane’s value, indicating the type of data stored. */
 	readonly #type!: binaryen.ExpressionRef;
@@ -114,17 +114,17 @@ export class BinVect {
 			| readonly [bigint] | readonly [binaryen.ExpressionRef]
 		) = null,
 	) {
-		this.#internal = this.mod.v128.const(new Uint8Array(16)); // HACK: TypeScript bug where native-private fields are not emitted in constructor when `useDefineForClassFields` compiler option is off
+		this.vect = this.mod.v128.const(new Uint8Array(16));
 
 		if (arg === null) {
 			// the arg represents the Counterpoint `null` value
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0001));
+			this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0001));
 		} else if (arg === false) {
 			// the arg represents the Counterpoint `false` value
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0002));
+			this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0002));
 		} else if (arg === true) {
 			// the arg represents the Counterpoint `true` value
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0003));
+			this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0003));
 		} else if (typeof arg === 'number') {
 			// the arg represents a dynamic Binaryen expression
 			/*
@@ -133,18 +133,22 @@ export class BinVect {
 			 * else, if the arg is any other `v128`, set all lanes to those lanes.
 			 */
 			switch (binaryen.getExpressionType(arg)) {
+				case binaryen.unreachable: {
+					this.vect = arg;
+					break;
+				}
 				case binaryen.i32: {
-					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0014));
-					this.#internal = this.mod.i32x4.replace_lane(this.#internal, 3, arg);
+					this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0014));
+					this.vect = this.mod.i32x4.replace_lane(this.vect, 3, arg);
 					break;
 				}
 				case binaryen.f64: {
-					this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0028));
-					this.#internal = this.mod.f64x2.replace_lane(this.#internal, 1, arg);
+					this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0028));
+					this.vect = this.mod.f64x2.replace_lane(this.vect, 1, arg);
 					break;
 				}
 				case binaryen.v128: {
-					this.#internal = arg;
+					this.vect = arg;
 					break;
 				}
 				default: {
@@ -167,16 +171,11 @@ export class BinVect {
 			/*
 			 * Set Lane 3 to `\x0034` and set Lanes 6–7 (joined) to its `i32` value.
 			 */
-			this.#internal = this.mod.i16x8.replace_lane(this.#internal, 3, this.mod.i32.const(0x0034));
-			this.#internal = this.mod.i32x4.replace_lane(this.#internal, 3, address);
+			this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0034));
+			this.vect = this.mod.i32x4.replace_lane(this.vect, 3, address);
 		}
 
-		this.#type = this.mod.i16x8.extract_lane_s(this.#internal, 3);
-	}
-
-	/** The `v128` implementation. */
-	public get vect(): binaryen.ExpressionRef {
-		return this.#internal;
+		this.#type = this.mod.i16x8.extract_lane_s(this.vect, 3);
 	}
 
 	/** Whether the Header Lane is within a given range (inclusive). */
@@ -218,16 +217,16 @@ export class BinVect {
 
 	/** The value as interpreted as an int. */
 	public get intValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.#internal, 2);
+		return this.mod.i32x4.extract_lane(this.vect, 3);
 	}
 
 	/** The value as interpreted as a float. */
 	public get floatValue(): binaryen.ExpressionRef {
-		return this.mod.f64x2.extract_lane(this.#internal, 1);
+		return this.mod.f64x2.extract_lane(this.vect, 1);
 	}
 
 	/** The value as interpreted as an address. */
 	public get addrValue(): binaryen.ExpressionRef {
-		return this.mod.i32x4.extract_lane(this.#internal, 3);
+		return this.mod.i32x4.extract_lane(this.vect, 3);
 	}
 }

@@ -1,9 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -27,10 +28,7 @@ import {
 	bothInts,
 	bothFloats,
 } from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -51,17 +49,6 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.EXP, 'vexp'],
-			[Operator.MUL, 'vmul'],
-			[Operator.DIV, 'vdiv'],
-			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
-	}
-
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NEVER;
@@ -72,6 +59,30 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			bothFloats(t0, t1) ? TYPE.FLOAT :
 			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
 			assert.fail(new TypeErrorInvalidOperation(this))
+		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		const typ: TYPE.Type = this.type();
+		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
+		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
+		return (
+			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.INT_EXP],
+				[Operator.MUL, IR.OpCode.INT_MUL],
+				[Operator.DIV, IR.OpCode.INT_DIV],
+				[Operator.ADD, IR.OpCode.INT_ADD],
+				[Operator.SUB, IR.OpCode.INT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			// TODO: v0.5+ bothNats(t0, t1)
+			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.FLOAT_EXP],
+				[Operator.MUL, IR.OpCode.FLOAT_MUL],
+				[Operator.DIV, IR.OpCode.FLOAT_DIV],
+				[Operator.ADD, IR.OpCode.FLOAT_ADD],
+				[Operator.SUB, IR.OpCode.FLOAT_SUB],
+			]).get(this.operator)!, v0, v1, typ))
 		);
 	}
 
@@ -103,7 +114,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.MUL, (x, y) => x.times(y)],
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
-				// [Operator.SUB, (x, y) => x.minus(y)],
+				[Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(v0, v1);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;

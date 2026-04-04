@@ -1,8 +1,9 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -20,9 +21,8 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
 import {
-	ASTNodeExpression,
-	buildDeco,
 	typeDeco,
+	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
@@ -57,18 +57,20 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeDict#build` not yet supported.');
-	}
-
-	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
 		return new TYPE.Dict(
 			TYPE.Union.all(this.children.map((c) => c.val.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.DictNew {
+		return new IR.DictNew(new Map(this.children.map((c) => [
+			new VALUE.Symbol(c.key.id, c.key.source),
+			c.val.lower(optimizer).asTac(optimizer),
+		])), this.type());
 	}
 
 	@memoizeMethod

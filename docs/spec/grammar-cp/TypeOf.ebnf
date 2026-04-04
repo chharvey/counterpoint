@@ -18,6 +18,12 @@ Type TypeOfUnfolded(SemanticConstant const) :=
 
 
 
+Type TypeOfUnfolded(SemanticTemplate template) :=
+	1. *Return:* `String`.
+;
+
+
+
 Type TypeOfUnfolded(SemanticVariable var) :=
 	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
 	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
@@ -25,12 +31,6 @@ Type TypeOfUnfolded(SemanticVariable var) :=
 		1. *Return:* `Union(symbol.type, Null)`.
 	4. *Else:*
 		1. *Return:* `symbol.type`.
-;
-
-
-
-Type TypeOfUnfolded(StringTemplate template) :=
-	1. *Return:* `String`.
 ;
 
 
@@ -104,9 +104,11 @@ Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
-	4. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	5. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
-	6. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
+	4. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
+		1. *Return:* `Never`.
+	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
+	6. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
+	7. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
 ;
 
 

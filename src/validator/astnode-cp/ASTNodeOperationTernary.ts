@@ -1,9 +1,9 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
-	BinVect,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -17,7 +17,6 @@ import {
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -43,27 +42,6 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const t0:                 TYPE.Type                = this.operand0.type();
-		const [arg0, arg1, arg2]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-
-		if (t0.equals(TYPE.FALSE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				arg2,
-			], binaryen.v128);
-		} else if (t0.equals(TYPE.TRUE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				arg1,
-			], binaryen.v128);
-		}
-
-		return this.builder.module.if(new BinVect(this.builder.module, arg0).isSpecial(true), arg1, arg2);
-	}
-
-	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
 		// compute types early to rethrow any errors
@@ -74,6 +52,16 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
 			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
+		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Phi {
+		return IR.conditional_expression(
+			optimizer,
+			() => this.operand0.lower(optimizer),
+			() => this.operand1.lower(optimizer),
+			() => this.operand2.lower(optimizer),
 		);
 	}
 

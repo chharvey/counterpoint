@@ -1,8 +1,8 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -24,7 +24,6 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Reassignable} from './Reassignable.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -59,18 +58,17 @@ export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
-	}
-
-	@memoizeMethod
 	@typeDeco
 	public override type(): TYPE.Type {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
 		return symbol.uninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Get {
+		return new IR.Get(this.validator.getSymbolInfo(this.id) as SymbolSchemaVar);
 	}
 
 	@memoizeMethod

@@ -1,8 +1,9 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../index.ts';
@@ -24,7 +25,6 @@ import {
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -67,12 +67,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.exprargs,
 		], (arg) => arg.typeCheck());
 		this.type(); // assert does not throw
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeCall#build` not yet supported.');
 	}
 
 	@memoizeMethod
@@ -270,6 +264,35 @@ export class ASTNodeCall extends ASTNodeExpression {
 				invalid_function_name(this.base.source);
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		/*
+		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `IR.Call` object.
+		 * But until we get functions and classes, statically build the function calls.
+		 */
+		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
+			return new IR.Call(
+				this.base.lower(optimizer).asTac(optimizer),
+				this.exprargs.map((arg) => arg.lower(optimizer).asTac(optimizer)),
+				this.type(),
+			);
+		}
+
+		const [name, ctor] = new Map<ValidFunctionName, [IR.CollectionDynamicName, () => IR.Value]>([
+			[ValidFunctionName.LIST, [IR.TypeName.LIST, () => new IR.CollectionLinearNew(IR.TypeName.LIST, [], this.type())]],
+			[ValidFunctionName.SET,  [IR.TypeName.SET,  () => new IR.CollectionLinearNew(IR.TypeName.SET,  [], this.type())]],
+			[ValidFunctionName.DICT, [IR.TypeName.DICT, () => new IR.DictNew            (new Map(),            this.type())]],
+			[ValidFunctionName.MAP,  [IR.TypeName.MAP,  () => new IR.MapNew             (new Map(),            this.type())]],
+		]).get(this.base.source as ValidFunctionName)!;
+		const new_obj: IR.Value = ctor();
+		if (!this.exprargs.length) {
+			return new_obj;
+		}
+		const get_obj = new IR.Get(optimizer.newTemp(new_obj));
+		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_obj, this.exprargs[0].lower(optimizer).asTac(optimizer)));
+		return get_obj;
 	}
 
 	@memoizeMethod

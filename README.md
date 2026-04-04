@@ -26,14 +26,14 @@ $ npm ci && npm run build
 To be sure it installed correctly, run this command to see the current version of `counterpoint`:
 ```shell
 $ npx cpc --version # you should see:
-> counterpoint version 0.2.0
+> counterpoint version 0.4.4
 ```
 Run `npx cpc --help` for the full suite of CLI commands.
 
 Now you’re ready to start coding!
 For this demo, we’ll write a simple calculation of only numbers and operators.
 Open a new text file and enter the following source code:
-```
+```cpl
 1 + +2 ^ (5 - 3) * -4;
 ```
 Then save the file under `./sample/my-program.cp` within the project directory.

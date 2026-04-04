@@ -1,0 +1,42 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import type {Instruction} from './Instruction.ts';
+import {
+	OpCode,
+	Opcode,
+} from './Opcode.ts';
+import type {Value} from './Value.ts';
+
+
+
+/** Evaluate an expression but then drop it. */
+export class Drop extends Opcode implements Instruction {
+	public constructor(private readonly value: Value) {
+		super(OpCode.DROP);
+	}
+
+	public override toString(): string {
+		return super.toString(this.value);
+	}
+
+	@runOnceMethod
+	public override validate(): void {
+		return this.value.validate();
+	}
+
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.module.drop(this.value.codegen(cg));
+	}
+
+	/* eslint-disable */
+	#optimizationStrategy(this: any, cg: Builder): number {
+		if (!this.expr || !!this.expr.fold()) return cg.module.nop();
+		return cg.module.drop(this.expr!.build());
+	}
+	/* eslint-enable */
+}

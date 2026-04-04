@@ -2,6 +2,8 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
 	TYPE,
+	type Optimizer,
+	type Lowerable,
 	BinVect,
 } from '../../index.ts';
 import {
@@ -9,7 +11,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {ASTNodeGoal} from './index.ts';
-import type {Buildable} from './Buildable.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 
 
@@ -21,7 +22,7 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
  * - ASTNodeStatementExpression
  * - ASTNodeAssignment
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Lowerable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -53,7 +54,9 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 		return value;
 	}
 
-
-	/** @implements Buildable */
-	public abstract build(): binaryen.ExpressionRef;
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	public abstract lower(optimizer: Optimizer): void;
 }

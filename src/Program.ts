@@ -1,7 +1,10 @@
 import {
+	memoizeMethod,
 	type CPConfig,
 	CONFIG_DEFAULT,
 	AST,
+	Optimizer,
+	Builder,
 } from './index.ts';
 
 
@@ -9,8 +12,6 @@ import {
 export class Program {
 	/** An AST goal produced by a Decorator. */
 	readonly #astGoal: AST.ASTNodeGoal;
-
-	#prebuilt = false;
 
 
 	/**
@@ -23,13 +24,17 @@ export class Program {
 	}
 
 
-	#prebuild(): void {
-		if (!this.#prebuilt) { // TODO: use a run-once memoizer decorator
-			this.#astGoal.varCheck();
-			this.#astGoal.typeCheck();
-			this.#astGoal.build();
-			this.#prebuilt = true;
-		}
+	@memoizeMethod
+	#precompile(): Builder {
+		const optimizer = new Optimizer();
+		const cg        = new Builder();
+
+		this.#astGoal.varCheck();
+		this.#astGoal.typeCheck();
+		this.#astGoal.lower(optimizer);
+		optimizer.codegen(cg);
+
+		return cg;
 	}
 
 	/**
@@ -37,8 +42,7 @@ export class Program {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	public print(): string {
-		this.#prebuild();
-		return this.#astGoal.builder.module.emitText();
+		return this.#precompile().module.emitText();
 	}
 
 	/**
@@ -46,7 +50,6 @@ export class Program {
 	 * @return a binary output in WASM format, which can be executed
 	 */
 	public compile(): Uint8Array {
-		this.#prebuild();
-		return this.#astGoal.builder.module.emitBinary();
+		return this.#precompile().module.emitBinary();
 	}
 }

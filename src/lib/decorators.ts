@@ -57,6 +57,13 @@ export type SetterDecorator<
 
 
 
+/** @deprecated TODO: Use upgraded version in v0.5+ */
+export function noopMethod(_decorator: any): (method: any, context: any) => undefined { // eslint-disable-line @typescript-eslint/no-explicit-any
+	return (_method, _context) => undefined;
+}
+
+
+
 /**
  * Decorator for memoizing properties.
  * When getting a property, check whether it exists in the “database”.
