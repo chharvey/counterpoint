@@ -1,10 +1,8 @@
-import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -23,10 +21,7 @@ import {
 	bothNumeric,
 	oneFloats,
 } from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -45,23 +40,6 @@ export class ASTNodeOperationBinaryEquality extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().equals(TYPE.FALSE)) {
-			return this.builder.module.block(null, [
-				this.builder.module.drop(arg0),
-				this.builder.module.drop(arg1),
-				new BinVect(this.builder.module, false).vect,
-			], binaryen.v128);
-		}
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.ID, 'vid'],
-			[Operator.EQ, 'veq'],
-		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {

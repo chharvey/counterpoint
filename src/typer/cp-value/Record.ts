@@ -1,8 +1,3 @@
-import binaryen from 'binaryen';
-import {
-	build_record_like,
-	type Builder,
-} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -49,13 +44,6 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	 */
 	public override toType(): TYPE.Record {
 		return TYPE.Record.fromTypes(new Map([...this.properties].map<[bigint, TYPE.Type]>(([key, val]) => [key, val.toType()])));
-	}
-
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return build_record_like(builder, [...this.properties].map(([key, value]) => {
-			const value_build: binaryen.ExpressionRef = value.build(builder);
-			return {key, pair: [value_build, binaryen.getExpressionType(value_build)]};
-		}));
 	}
 }
 export {ValueRecord as Record};

@@ -11,7 +11,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
-			(if (i32.eqz (call $bool-to-i32 (call $vid_
+			(if (i32.eqz (call $bool-to-i32 (call $vid
 				(array.get $Tuple (local.get $tuple0) (local.get $i))
 				(array.get $Tuple (local.get $tuple1) (local.get $i))
 			)))
@@ -39,7 +39,7 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
-			(if (i32.eqz (call $bool-to-i32 (call $veq_
+			(if (i32.eqz (call $bool-to-i32 (call $veq
 				(array.get $Tuple (local.get $tuple0) (local.get $i))
 				(array.get $Tuple (local.get $tuple1) (local.get $i))
 			)))

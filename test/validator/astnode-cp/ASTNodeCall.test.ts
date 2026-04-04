@@ -5,7 +5,6 @@ import {
 	AST,
 	VALUE,
 	TYPE,
-	Optimizer,
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -14,6 +13,7 @@ import {
 	assertEqualTypes,
 	assertAssignable,
 } from '../../assert-helpers.ts';
+import {setupScript} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
@@ -257,18 +257,10 @@ describe('ASTNodeCall', () => {
 
 
 	describe('#lower', () => {
-		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			goal.varCheck();
-			goal.typeCheck();
-			'lower' in opts && opts.lower && goal.lower(opt);
-			return {goal, opt};
-		}
 		specify('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.join('\n') }
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DROP (LIST.NEW))
 				(DECL <List> $0 (LIST.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))
@@ -319,7 +311,7 @@ describe('ASTNodeCall', () => {
 		specify('`Dict.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ DICT_CONS.join('\n') }
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DROP (DICT.NEW))
 				(DECL <Dict> $0 (DICT.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))
@@ -420,7 +412,7 @@ describe('ASTNodeCall', () => {
 		specify('`Set.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ SET_CONS.join('\n') }
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DROP (SET.NEW))
 				(DECL <Set> $0 (SET.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))
@@ -471,7 +463,7 @@ describe('ASTNodeCall', () => {
 		specify('`Map.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ MAP_CONS.join('\n') }
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DROP (MAP.NEW))
 				(DECL <Map> $0 (MAP.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))

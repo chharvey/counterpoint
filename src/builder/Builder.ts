@@ -118,7 +118,6 @@ export class Builder {
 		return {
 			type:       typ,
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			packedType: binaryen[packedType],
 			mutable,
 		};
@@ -131,10 +130,8 @@ export class Builder {
 	/** A registry of reference (and reference-null) types. */
 	readonly #reftypeRegistry = new Map<ReftypeKey, binaryen.Type>();
 
-	/** A registry of constant WASM values. */
+	/** A registry of constant WASM expressions. */
 	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
-
-	#typeCount: bigint = 0n;
 
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
@@ -149,22 +146,25 @@ export class Builder {
 		)
 	`) as BinaryenModuleUpdates;
 
-	// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-	// eslint-disable-next-line
-	public readonly typeBuilder: TypeBuilder = new binaryen.TypeBuilder();
-
 	public constructor() {
+		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
+			/* eslint-disable @stylistic/operator-linebreak */
+			binaryen.Features.SIMD128 |
+			binaryen.Features.ReferenceTypes |
+			binaryen.Features.Multivalue |
+			binaryen.Features.GC
+			/* eslint-enable @stylistic/operator-linebreak */
+		));
+
 		this.#setupTypes();
+		this.#setupGlobals();
+		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
 			[BinConst.NULL,  new BinValue(this, new BinVect(this.module))       .value],
 			[BinConst.FALSE, new BinValue(this, new BinVect(this.module, false)).value],
 			[BinConst.TRUE,  new BinValue(this, new BinVect(this.module, true)) .value],
 		]);
-	}
-
-	public nextTypeIndex(): bigint {
-		return this.#typeCount++;
 	}
 
 	public getHeaptype(key: HeaptypeKey): binaryen.Type {
@@ -263,8 +263,6 @@ export class Builder {
 
 	/**
 	 * Return a new `$List` from items.
-	 * The capacity of `$ListInternal` is always the least power of 2 greater than or equal to
-	 * the number of given items (the List’s count) divided by the Load Factor, or 8, whichever is greater.
 	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
 	 * @param items items in the array; must be of type `(ref null $Value)`
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
@@ -289,8 +287,8 @@ export class Builder {
 	 * Return a new `$Dict` from properties.
 	 * This method automatically hashes the property keys and inserts them at the correct indices,
 	 * as well as populates blank slots with the WASM expression `(ref.null $Property)`.
-	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref null $Property)`) are items in the array
-	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...items>))`
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Value)`) are items in the array
+	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
@@ -309,6 +307,24 @@ export class Builder {
 		], this.getHeaptype('$Dict'));
 	}
 
+	/**
+	 * Return a new struct modeling a Set from items.
+	 * It uses a `$Map` implementation, where the cases consist of item–`null` pairs (the Counterpoint `null` value).
+	 * This method automatically populates blank slots with the WASM expression `(ref.null $Case)`.
+	 * @param items items to be used as antecedents in the array of cases; must be of type `(ref null $Value)`
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 */
+	public codegenSet(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(BinConst.NULL)])));
+	}
+
+	/**
+	 * Return a new `$Map` from cases.
+	 * This method automatically hashes the case antecedents and inserts them at the correct indices,
+	 * as well as populates blank slots with the WASM expression `(ref.null $Case)`.
+	 * @param props antecedent–consequent pairs of values (of type `(ref $Value)`) in the array
+	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
+	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		let capacity: number = 8;
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
@@ -354,7 +370,6 @@ export class Builder {
 	 */
 	#setupTypes(): void {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		// eslint-disable-next-line
 		const tb: TypeBuilder = new binaryen.TypeBuilder();
 
 		let type_count: number = 0;
@@ -391,7 +406,6 @@ export class Builder {
 			i_tuple,
 			tb.getTempRefType(tb.getTempHeapType(i_value), false),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			false,
 		);
@@ -403,7 +417,6 @@ export class Builder {
 			i_record,
 			tb.getTempRefType(tb.getTempHeapType(i_property), false),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			false,
 		);
@@ -415,7 +428,6 @@ export class Builder {
 			i_list_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_value), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
@@ -427,7 +439,6 @@ export class Builder {
 			i_dict_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_property), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
@@ -439,7 +450,6 @@ export class Builder {
 			i_map_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_case), true),
 			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			// eslint-disable-next-line
 			binaryen.notPacked,
 			true,
 		);
@@ -503,7 +513,6 @@ export class Builder {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const {getTypeFromHeapType} = binaryen;
 
-		/* eslint-disable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
 		this.#reftypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heaptypes[i_value],         false));
 		this.#reftypeRegistry.set('(ref $Property)',     getTypeFromHeapType(heaptypes[i_property],      false));
 		this.#reftypeRegistry.set('(ref $Case)',         getTypeFromHeapType(heaptypes[i_case],          false));
@@ -520,20 +529,6 @@ export class Builder {
 		this.#reftypeRegistry.set('(ref null $Value)',    getTypeFromHeapType(heaptypes[i_value],    true)); // only used as the fields of `$ListInternal`
 		this.#reftypeRegistry.set('(ref null $Property)', getTypeFromHeapType(heaptypes[i_property], true)); // only used as the fields of `$DictInternal`
 		this.#reftypeRegistry.set('(ref null $Case)',     getTypeFromHeapType(heaptypes[i_case],     true)); // only used as the fields of `$MapInternal`
-		/* eslint-enable @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call */
-	}
-
-	#binOpFunction(
-		name:         string,
-		permutations: (mod: binaryen.Module, vects: readonly [BinVect, BinVect]) => readonly binaryen.ExpressionRef[],
-	): binaryen.FunctionRef {
-		const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
-		const opts: readonly binaryen.ExpressionRef[] = permutations.call(null, this.module, vects);
-		return this.module.addFunction(name, binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], this.module.block(null, [this.module.if(
-			vects[0].isInt,
-			this.module.if(vects[1].isInt, opts[0b00], opts[0b01]),
-			this.module.if(vects[1].isInt, opts[0b10], opts[0b11]),
-		)], binaryen.v128));
 	}
 
 	/** assumes both operands are primitive */
@@ -605,125 +600,6 @@ export class Builder {
 	}
 
 	#setupFunctions(): void {
-		this.module.addFunction('isnull', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => (
-			BinVect.asBool(mod, new BinVect(mod, mod.local.get(0, binaryen.v128)).isSpecial(null))
-		))(this.module)], binaryen.v128));
-		this.module.addFunction('vnot', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
-			const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
-			return BinVect.asBool(mod, mod.i32.or(vect.isSpecial(null), vect.isSpecial(false)));
-		})(this.module)], binaryen.v128));
-		this.module.addFunction('vemp', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
-			const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
-			return mod.if(
-				vect.isSpecial(),
-				mod.call('vnot', [vect.vect], binaryen.v128),
-				mod.if(
-					vect.isInt,
-					BinVect.asBool(mod, mod.i32.eqz(vect.intValue)),
-					mod.if(
-						vect.isFloat,
-						BinVect.asBool(mod, mod.f64.eq(vect.floatValue, mod.f64.const(0.0))), // also takes care of -0.0
-						BinVect.asBool(mod, mod.i32.and(vect.isAddr, mod.i32.eqz(vect.addrValue))),
-					),
-				),
-			);
-		})(this.module)], binaryen.v128));
-		this.module.addFunction('vneg', binaryen.v128, binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
-			const vect = new BinVect(mod, mod.local.get(0, binaryen.v128));
-			return mod.if(
-				vect.isInt,
-				// `-n` in two’s complement is `(n xor -1) + 1`
-				new BinVect(mod, mod.i32.add(mod.i32.xor(vect.intValue, mod.i32.const(-1)), mod.i32.const(1))).vect,
-				new BinVect(mod, mod.f64.neg(vect.floatValue)).vect,
-			);
-		})(this.module)], binaryen.v128));
-		this.#binOpFunction('vexp', (mod, vects) => [
-			new BinVect(mod, mod.call('exp', [vects[0].intValue, vects[1].intValue], binaryen.i32)).vect,
-			mod.unreachable(),
-			mod.unreachable(),
-			mod.unreachable(),
-		]);
-		this.#binOpFunction('vmul', (mod, vects) => [
-			mod.i32.mul(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.mul(mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.mul(                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.mul(                      vects[0].floatValue,                       vects[1].floatValue),
-		].map((opt) => new BinVect(mod, opt).vect));
-		this.#binOpFunction('vdiv', (mod, vects) => [
-			mod.i32.div_s(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.div  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.div  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.div  (                      vects[0].floatValue,                       vects[1].floatValue),
-		].map((opt) => new BinVect(mod, opt).vect));
-		this.#binOpFunction('vadd', (mod, vects) => [
-			mod.i32.add(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.add(mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.add(                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.add(                      vects[0].floatValue,                       vects[1].floatValue),
-		].map((opt) => new BinVect(mod, opt).vect));
-		this.#binOpFunction('vlt', (mod, vects) => [
-			mod.i32.lt_s(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.lt  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.lt  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.lt  (                      vects[0].floatValue,                       vects[1].floatValue),
-		].map((opt) => BinVect.asBool(this.module, opt)));
-		this.#binOpFunction('vgt', (mod, vects) => [
-			mod.i32.gt_s(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.gt  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.gt  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.gt  (                      vects[0].floatValue,                       vects[1].floatValue),
-		].map((opt) => BinVect.asBool(this.module, opt)));
-		this.#binOpFunction('vle', (mod, vects) => [
-			mod.i32.le_s(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.le  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.le  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.le  (                      vects[0].floatValue,                       vects[1].floatValue),
-		].map((opt) => BinVect.asBool(this.module, opt)));
-		this.#binOpFunction('vge', (mod, vects) => [
-			mod.i32.ge_s(                      vects[0].intValue,                         vects[1].intValue),
-			mod.f64.ge  (mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-			mod.f64.ge  (                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-			mod.f64.ge  (                      vects[0].floatValue,                       vects[1].floatValue),
-		].map((opt) => BinVect.asBool(this.module, opt)));
-		this.module.addFunction('vid', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
-			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
-			return mod.if(
-				mod.i32.and(vects[0].isSpecial(), vects[1].isSpecial()),
-				BinVect.asBool(mod, mod.i32.eq(
-					mod.i16x8.extract_lane_s(vects[0].vect, 3), // TODO: hide thie implementation detail
-					mod.i16x8.extract_lane_s(vects[1].vect, 3), // TODO: hide thie implementation detail
-				)),
-				mod.if(
-					mod.i32.and(vects[0].isInt, vects[1].isInt),
-					BinVect.asBool(mod, mod.i32.eq(vects[0].intValue, vects[1].intValue)), // `i32.eq` for ints gives the same result as `ID` operator
-					mod.if(
-						mod.i32.and(vects[0].isFloat, vects[1].isFloat),
-						BinVect.asBool(mod, mod.call('fid', [vects[0].floatValue, vects[1].floatValue], binaryen.i32)),
-						new BinVect(mod, false).vect,
-					),
-				),
-			);
-		})(this.module)], binaryen.v128));
-		this.module.addFunction('veq', binaryen.createType([binaryen.v128, binaryen.v128]), binaryen.v128, [], this.module.block(null, [((mod: binaryen.Module) => {
-			const vects = [0, 1].map((i) => new BinVect(this.module, this.module.local.get(i, binaryen.v128))) as readonly BinVect[] as readonly [BinVect, BinVect];
-			const opts = [
-				mod.i32.eq(                      vects[0].intValue,                         vects[1].intValue),
-				mod.f64.eq(mod.f64.convert_u.i32(vects[0].intValue),                        vects[1].floatValue),
-				mod.f64.eq(                      vects[0].floatValue, mod.f64.convert_u.i32(vects[1].intValue)),
-				mod.f64.eq(                      vects[0].floatValue,                       vects[1].floatValue),
-			].map((opt) => BinVect.asBool(mod, opt));
-			return mod.if(
-				mod.i32.or(vects[0].isSpecial(), vects[1].isSpecial()),
-				mod.call('vid', vects.map((v) => v.vect), binaryen.v128),
-				mod.if(
-					vects[0].isInt,
-					mod.if(vects[1].isInt, opts[0b00], opts[0b01]),
-					mod.if(vects[1].isInt, opts[0b10], opts[0b11]),
-				),
-			);
-		})(this.module)], binaryen.v128));
-
-
 		const mod:       BinaryenModuleUpdates = this.module;
 		const rt_value:  binaryen.Type         = this.getReftype('(ref $Value)');
 		const rt_tuple:  binaryen.Type         = this.getReftype('(ref $Tuple)');
@@ -738,19 +614,19 @@ export class Builder {
 		const local_vects = local_vals.map((binval) => new BinVect(mod, binval.primitiveValue));
 
 		/* Unary Operators */
-		mod.addFunction('isnull_', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+		mod.addFunction('isnull', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
 			local_vals[0].isPrimitive,
 			local_vects[0].isSpecial(null),
 		))).value);
-		mod.addFunction('vnot_', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
+		mod.addFunction('vnot', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
 			local_vals[0].isPrimitive,
 			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
 		))).value);
-		mod.addFunction('vemp_', rt_value, rt_value, [], mod.if(
+		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
 			local_vals[0].isPrimitive,
 			mod.if(
 				local_vects[0].isSpecial(),
-				mod.call('vnot_', [local_vals[0].value], rt_value),
+				mod.call('vnot', [local_vals[0].value], rt_value),
 				/* eslint-disable @stylistic/indent */
 				new BinValue(this, mod.if(
 					local_vects[0].isInt,
@@ -769,7 +645,7 @@ export class Builder {
 			),
 			mod.unreachable(), // TODO: EMP operator on composites
 		));
-		mod.addFunction('vneg_', rt_value, rt_value, [], new BinValue(this, mod.if( // assume operand is primitive
+		mod.addFunction('vneg', rt_value, rt_value, [], new BinValue(this, mod.if( // assume operand is primitive
 			local_vects[0].isInt,
 			// `-n` in two’s complement is `(n xor -1) + 1`
 			new BinVect(mod, mod.i32.add(mod.i32.xor(local_vects[0].intValue, mod.i32.const(-1)), mod.i32.const(1))).vect,
@@ -781,23 +657,23 @@ export class Builder {
 		)).value);
 
 		/* Binary Operators */
-		mod.addFunction('vexp_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if( // TODO: v0.5: will be fixed in 'viexp'
+		mod.addFunction('vexp', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if( // TODO: v0.5: will be fixed in 'viexp'
 			mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
 			new BinValue(this, new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i32))).value,
 			mod.unreachable(),
 		));
 
-		this.#setupBinopPrimitive('vmul_', mod.i32.mul  .bind(null), mod.f64.mul.bind(null));
-		this.#setupBinopPrimitive('vdiv_', mod.i32.div_s.bind(null), mod.f64.div.bind(null));
-		this.#setupBinopPrimitive('vadd_', mod.i32.add  .bind(null), mod.f64.add.bind(null));
-		this.#setupBinopPrimitive('vlt_',  mod.i32.lt_s .bind(null), mod.f64.lt .bind(null), true);
-		this.#setupBinopPrimitive('vgt_',  mod.i32.gt_s .bind(null), mod.f64.gt .bind(null), true);
-		this.#setupBinopPrimitive('vle_',  mod.i32.le_s .bind(null), mod.f64.le .bind(null), true);
-		this.#setupBinopPrimitive('vge_',  mod.i32.ge_s .bind(null), mod.f64.ge .bind(null), true);
-		this.#setupBinopPrimitive('veqn',  mod.i32.eq   .bind(null), mod.f64.eq .bind(null), true);
+		this.#setupBinopPrimitive('vmul', mod.i32.mul  .bind(null), mod.f64.mul.bind(null));
+		this.#setupBinopPrimitive('vdiv', mod.i32.div_s.bind(null), mod.f64.div.bind(null));
+		this.#setupBinopPrimitive('vadd', mod.i32.add  .bind(null), mod.f64.add.bind(null));
+		this.#setupBinopPrimitive('vlt',  mod.i32.lt_s .bind(null), mod.f64.lt .bind(null), true);
+		this.#setupBinopPrimitive('vgt',  mod.i32.gt_s .bind(null), mod.f64.gt .bind(null), true);
+		this.#setupBinopPrimitive('vle',  mod.i32.le_s .bind(null), mod.f64.le .bind(null), true);
+		this.#setupBinopPrimitive('vge',  mod.i32.ge_s .bind(null), mod.f64.ge .bind(null), true);
+		this.#setupBinopPrimitive('veqn', mod.i32.eq   .bind(null), mod.f64.eq .bind(null), true);
 
-		mod.removeFunction('vid_'); // removes stub defined in `stubs.wat`
-		this.module.addFunction('vid_', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
+		mod.removeFunction('vid'); // removes stub defined in `stubs.wat`
+		this.module.addFunction('vid', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
@@ -838,12 +714,12 @@ export class Builder {
 			),
 		)).value);
 
-		mod.removeFunction('veq_'); // removes stub defined in `stubs.wat`
-		this.module.addFunction('veq_', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
+		mod.removeFunction('veq'); // removes stub defined in `stubs.wat`
+		this.module.addFunction('veq', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
 			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
 			mod.if(
 				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value),
+				mod.call('vid',  [local_vals[0].value, local_vals[1].value], rt_value),
 				mod.call('veqn', [local_vals[0].value, local_vals[1].value], rt_value),
 			),
 			mod.if(
@@ -891,7 +767,7 @@ export class Builder {
 									mod.ref.cast(local_vals[0].compositeValue, rt_map),
 									mod.ref.cast(local_vals[1].compositeValue, rt_map),
 								], binaryen.i32))).value,
-								mod.call('vid_', [local_vals[0].value, local_vals[1].value], rt_value),
+								mod.call('vid', [local_vals[0].value, local_vals[1].value], rt_value),
 							),
 						),
 					),
@@ -906,20 +782,11 @@ export class Builder {
 	}
 
 	/**
-	 * Prepare this builder’s module, with optional additional actions/modifications.
-	 * @param main a callback to run after setup but before validation
+	 * Prepare the main function in this binaryen Module, then performs validation.
+	 * The main function should contain generated code for a program.
+	 * @param main a callback to run before validation
 	 */
-	public setupModule(main?: (mod: binaryen.Module) => void): void {
-		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
-			/* eslint-disable @stylistic/operator-linebreak */
-			binaryen.Features.SIMD128 |
-			binaryen.Features.ReferenceTypes |
-			binaryen.Features.Multivalue |
-			binaryen.Features.GC
-			/* eslint-enable @stylistic/operator-linebreak */
-		));
-		this.#setupGlobals();
-		this.#setupFunctions();
+	public setupMain(main?: (mod: binaryen.Module) => void): void {
 		main?.call(null, this.module);
 		if (!this.module.validate()) {
 			throw new Error('Invalid WebAssembly module.');

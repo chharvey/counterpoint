@@ -34,6 +34,8 @@
 
 
 
+;; ## Counterpoint Classes
+
 ;; a Counterpoint object; precursor to the `Object` root class
 (type $Object (sub (struct
 	;; unique id for hashing
@@ -49,7 +51,7 @@
 	;; --- own ---
 	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
 	(field $size (mut i32))
-	;; the array of values; mutable to allow reallocation
+	;; the array of List items; mutable to allow reallocation
 	(field $internal (mut (ref $ListInternal)))
 )))
 
@@ -62,7 +64,7 @@
 	;; --- own ---
 	;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
 	(field $size (mut i32))
-	;; the array of values; mutable to allow reallocation
+	;; the array of Dict properties; mutable to allow reallocation
 	(field $internal (mut (ref $DictInternal)))
 )))
 
@@ -75,6 +77,6 @@
 	;; --- own ---
 	;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
 	(field $size (mut i32))
-	;; the array of values; mutable to allow reallocation
+	;; the array of Map cases; mutable to allow reallocation
 	(field $internal (mut (ref $MapInternal)))
 )))

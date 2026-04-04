@@ -32,4 +32,11 @@ export class Drop extends Opcode implements Instruction {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.module.drop(this.value.codegen(cg));
 	}
+
+	/* eslint-disable */
+	#optimizationStrategy(this: any, cg: Builder): number {
+		if (!this.expr || !!this.expr.fold()) return cg.module.nop();
+		return cg.module.drop(this.expr!.build());
+	}
+	/* eslint-enable */
 }

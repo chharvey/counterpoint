@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
@@ -59,9 +58,5 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	// @runOnceMethod
 	public override lower(): void {
 		return;
-	}
-
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.nop();
 	}
 }

@@ -13,10 +13,7 @@ import {
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.ts';
-import {
-	assertAssignable,
-	assertEqualBins,
-} from '../../assert-helpers.ts';
+import {assertAssignable} from '../../assert-helpers.ts';
 import {typeUnit} from '../../helpers.ts';
 
 
@@ -34,37 +31,6 @@ describe('ASTNodeCP', () => {
 					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
 					assert.strictEqual(expr_accessor.index, index);
 				});
-			});
-		});
-	});
-
-
-
-	describe('ASTNodeStatementExpression', () => {
-		describe('#build', () => {
-			it('returns `(nop)` for empty statement expression.', () => {
-				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource(';');
-				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
-			});
-			it('returns `(nop)` for nonempty foldable statement expression.', () => {
-				const stmt: AST.ASTNodeStatementExpression = AST.ASTNodeStatementExpression.fromSource('42 + 420;');
-				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
-			});
-			it('returns `(drop)` for nonempty non-foldable statement expression.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: int = 42;
-					x * 10;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const stmt: AST.ASTNodeStatement = goal.children[1];
-				assert_instanceof(stmt, AST.ASTNodeStatementExpression);
-				assert.ok(stmt.expr);
-				return assertEqualBins(
-					stmt.build(),
-					goal.builder.module.drop(stmt.expr.build()),
-				);
 			});
 		});
 	});
@@ -224,42 +190,6 @@ describe('ASTNodeCP', () => {
 				});
 			});
 		});
-
-
-		describe('#build', () => {
-			it('always returns `(local.set)`.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut y: float = 4.2;
-					y = y * 10;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				return assertEqualBins(
-					goal.children[1].build(),
-					goal.builder.module.local.set(0, (goal.children[1] as AST.ASTNodeAssignment).assigned.build()),
-				);
-			});
-			it('coerces as necessary.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: float | int = 4.2;
-					val mut y: int | float = 4.2;
-					x = 8.4;
-					x = 16;
-					x = x;
-					x = y;
-					x = 52 + x;
-					x = x + x;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				return assertEqualBins(
-					goal.children.slice(2).map((stmt) => stmt.build()),
-					goal.children.slice(2).map((stmt) => goal.builder.module.local.set(0, (stmt as AST.ASTNodeAssignment).assigned.build())),
-				);
-			});
-		});
 	});
 
 
@@ -374,25 +304,6 @@ describe('ASTNodeCP', () => {
 						],
 					});
 					return true;
-				});
-			});
-		});
-
-
-		describe('#build', () => {
-			it('always returns `(nop)`.', () => {
-				xjs.Array.forEachAggregated([
-					'',
-					'42;',
-					`
-						val x: int = 42;
-						x;
-					`,
-				], (src) => {
-					const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src);
-					goal.varCheck();
-					goal.typeCheck();
-					return assertEqualBins(goal.build(), goal.builder.module.nop());
 				});
 			});
 		});

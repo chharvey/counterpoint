@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
@@ -12,7 +11,6 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
-	type Builder,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -20,13 +18,12 @@ import {
 } from '../../../src/index.ts';
 import {
 	assertEqualTypes,
-	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.ts';
 import {
 	CONFIG_FOLDING_OFF,
+	setupScript,
 	typeUnit,
-	buildConst,
 } from '../../helpers.ts';
 import {
 	extract_tokens,
@@ -37,14 +34,6 @@ import {
 
 describe('ASTNodeExpression', () => {
 	describe('#lower', () => {
-		function setupScript(src: string, opts: object): {goal: AST.ASTNodeGoal, opt: Optimizer} {
-			const opt = new Optimizer();
-			const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(src.slice(1, -1));
-			goal.varCheck();
-			goal.typeCheck();
-			'lower' in opts && opts.lower && goal.lower(opt);
-			return {goal, opt};
-		}
 		it('AST.Constant returns an IR.Const.', () => {
 			const value: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource('42;');
 			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
@@ -74,7 +63,7 @@ describe('ASTNodeExpression', () => {
 				val mut y: int   = 5;
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -91,7 +80,7 @@ describe('ASTNodeExpression', () => {
 				val y: int   = 5;
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -105,7 +94,7 @@ describe('ASTNodeExpression', () => {
 		it('AST.List returns an IR.CollectionIndexedNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -116,7 +105,7 @@ describe('ASTNodeExpression', () => {
 		it('AST.Dict returns an IR.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -127,7 +116,7 @@ describe('ASTNodeExpression', () => {
 		it('AST.Set returns an IR.SetNew.', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -139,7 +128,7 @@ describe('ASTNodeExpression', () => {
 			it('returns an IR.MapNew.', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL <float> $2 (NEG (FLOAT.CONST 1.0)))
@@ -150,7 +139,7 @@ describe('ASTNodeExpression', () => {
 			it('evaluates antecedents and consequents interchangeably in source order.', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
 					(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
 					(DECL <List> $2 (LIST.NEW (INT.CONST 12)))
@@ -250,7 +239,7 @@ describe('ASTNodeExpression', () => {
 				my_dict.[@b]      = 84;
 				my_set.[accessor] = true;
 				my_map.[accessor] = 84;
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 				(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
 				(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
@@ -371,33 +360,6 @@ describe('ASTNodeExpression', () => {
 			});
 		});
 		/* eslint-enable @stylistic/array-element-newline */
-
-
-		specify('#build', () => {
-			xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
-				['null;',    (builder) => buildConst(builder)],
-				['false;',   (builder) => buildConst(builder, false)],
-				['true;',    (builder) => buildConst(builder, true)],
-				['@never;',  (builder) => buildConst(builder, Symbol(0x80))],
-				['@hello;',  (builder) => buildConst(builder, Symbol(0x100))],
-				['0;',       (builder) => buildConst(builder, 0n)],
-				['+0;',      (builder) => buildConst(builder, 0n)],
-				['-0;',      (builder) => buildConst(builder, 0n)],
-				['42;',      (builder) => buildConst(builder, 42n)],
-				['+42;',     (builder) => buildConst(builder, 42n)],
-				['-42;',     (builder) => buildConst(builder, -42n)],
-				['0.0;',     (builder) => buildConst(builder, 0)],
-				['+0.0;',    (builder) => buildConst(builder, 0)],
-				['-0.0;',    (builder) => buildConst(builder, -0)],
-				['-4.2e-2;', (builder) => buildConst(builder, -0.042)],
-			]), (expected_fn, src) => {
-				const constant: AST.ASTNodeConstant = AST.ASTNodeConstant.fromSource(src, CONFIG_FOLDING_OFF);
-				return assertEqualBins(
-					constant.build(),
-					expected_fn.call(null, constant.builder),
-				);
-			});
-		});
 	});
 
 
@@ -508,79 +470,6 @@ describe('ASTNodeExpression', () => {
 						(goal.children[5] as AST.ASTNodeStatementExpression).expr!.fold(),
 					],
 					[null, null],
-				);
-			});
-		});
-
-
-		describe('#build', () => {
-			it('with constant folding on, returns `({i32,f64}.const)` for fixed & foldable variables.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val x: int = 42;
-					val y: float = 4.2 * 10;
-					x;
-					y;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				assertEqualBins(
-					[
-						(goal.children[2] as AST.ASTNodeStatementExpression).expr!.build(),
-						(goal.children[3] as AST.ASTNodeStatementExpression).expr!.build(),
-					],
-					[
-						buildConst(goal.builder, 42n),
-						buildConst(goal.builder, 42.0),
-					],
-				);
-			});
-			it('with constant folding on, returns `(local.get)` for unfixed / non-foldable variables.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val mut x: int = 42;
-					val y: int = x + 10;
-					x;
-					y;
-				`);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map(({type}) => (type));
-				assertEqualBins(
-					[
-						var0.build(),
-						var1.build(),
-					],
-					[
-						goal.builder.module.local.get(0, types[0]),
-						goal.builder.module.local.get(1, types[1]),
-					],
-				);
-			});
-			it('with constant folding off, always returns `(local.get)`.', () => {
-				const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`
-					val x: int = 42;
-					val mut y: float = 4.2;
-					x;
-					y;
-				`, CONFIG_FOLDING_OFF);
-				goal.varCheck();
-				goal.typeCheck();
-				goal.build();
-				const var0 = (goal.children[2] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const var1 = (goal.children[3] as AST.ASTNodeStatementExpression).expr as AST.ASTNodeVariable;
-				const types: readonly binaryen.Type[] = goal.builder.getAllLocals().map(({type}) => (type));
-				assertEqualBins(
-					[
-						var0.build(),
-						var1.build(),
-					],
-					[
-						goal.builder.module.local.get(0, types[0]),
-						goal.builder.module.local.get(1, types[1]),
-					],
 				);
 			});
 		});
