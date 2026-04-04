@@ -105,7 +105,7 @@ test.suite('BinValue', () => {
 		));
 	});
 
-	test.test('#primitiveValue', () => {
+	test.test('#asPrimitive', () => {
 		xjs.Array.forEachAggregated([
 			// `$Value`s with primitive filled
 			new BinValue(cg, new BinVect(mod, null)),
@@ -119,16 +119,16 @@ test.suite('BinValue', () => {
 			new BinValue(cg, cg.codegenList()),
 			new BinValue(cg, cg.codegenDict()),
 		], (binval) => {
-			const {primitiveValue} = binval;
+			const {asPrimitive} = binval;
 			assertEqualBins(
-				primitiveValue,
+				asPrimitive,
 				mod.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, binval.value, binaryen.v128),
 			);
-			return assert.strictEqual(binaryen.getExpressionType(primitiveValue), binaryen.v128);
+			return assert.strictEqual(binaryen.getExpressionType(asPrimitive), binaryen.v128);
 		});
 	});
 
-	test.test('#compositeValue', () => {
+	test.test('#asComposite', () => {
 		xjs.Array.forEachAggregated([
 			// `$Value`s with primitive filled
 			new BinValue(cg, new BinVect(mod, null)),
@@ -142,12 +142,12 @@ test.suite('BinValue', () => {
 			new BinValue(cg, cg.codegenList()),
 			new BinValue(cg, cg.codegenDict()),
 		], (binval) => {
-			const {compositeValue} = binval;
+			const {asComposite} = binval;
 			assertEqualBins(
-				compositeValue,
+				asComposite,
 				mod.struct.get(STRUCT_FIELD.VALUE_COMPOSITE, binval.value, binaryen.eqref),
 			);
-			return assert.strictEqual(binaryen.getExpressionType(compositeValue), binaryen.eqref);
+			return assert.strictEqual(binaryen.getExpressionType(asComposite), binaryen.eqref);
 		});
 	});
 

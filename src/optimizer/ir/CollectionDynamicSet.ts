@@ -74,14 +74,14 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 			case TypeName.LIST: {
 				return cg.module.call('List.set', [
 					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
-					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
+					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('asInt')),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
 			case TypeName.DICT: {
 				return cg.module.call('Dict.set', [
 					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
-					new BinValue(cg, this.accessor.codegen(cg)).interpret('natValue'),
+					new BinValue(cg, this.accessor.codegen(cg)).interpret('asNat'),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
@@ -92,7 +92,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 					base.set(),
 					accessor.set(),
 					cg.module.if(
-						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).primitiveValue).isSpecial(true),
+						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).asPrimitive).isSpecial(true),
 						cg.module.call('Map.set', [
 							base.get(),
 							accessor.get(),

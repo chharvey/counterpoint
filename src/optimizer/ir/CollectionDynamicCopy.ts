@@ -140,7 +140,7 @@ function each_item(
 function two_tuple_to_prop(cg: Builder, pair: binaryen.ExpressionRef): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 	return {
-		key: new BinValue(cg, cg.module.array.get(pair, cg.module.i32.const(0), rt_value)).interpret('natValue'),
+		key: new BinValue(cg, cg.module.array.get(pair, cg.module.i32.const(0), rt_value)).interpret('asNat'),
 		val: cg.module.array.get(pair, cg.module.i32.const(1), rt_value),
 	};
 }
@@ -173,7 +173,7 @@ function two_tuple_to_prop(cg: Builder, pair: binaryen.ExpressionRef): {key: bin
 function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 	return {
-		key: new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_, rt_value)).interpret('natValue'),
+		key: new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, case_, rt_value)).interpret('asNat'),
 		val: cg.module.struct.get(STRUCT_FIELD.CASE_CON, case_, rt_value),
 	};
 }

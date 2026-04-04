@@ -7,7 +7,6 @@ import binaryen from 'binaryen';
  * A Binaryen vector (`v128`) representing one of the following:
  * - one of three primitive special constants, the Counterpoint values `null`, `false`, or `true`, as a value on the stack
  * - a numeric value of Counterpoint type `int`, `nat`, `dec`, or `float`, as a value on the stack
- * - an address of a Counterpoint reference type, as a pointer to an object in the heap
  *
  * # Layout
  * The 128-bit vector has 8 lanes (indexed 0–7, left-to-right), 16 bits each.
@@ -39,7 +38,6 @@ import binaryen from 'binaryen';
  * `\x0042` | The vector holds an `f16` value, representing a floating-point binary value.
  * `\x0044` | The vector holds an `f32` value, representing a floating-point binary value.
  * `\x0048` | The vector holds an `f64` value, representing a floating-point binary value.
- * `\x0058` | The vector holds an `i64` value, representing an address.
  *
  * # Value Types
  * ## Special Constants
@@ -72,9 +70,6 @@ import binaryen from 'binaryen';
  * Lanes 4–7 together form the `f64` value, stored in little-endian format.
  * Header values of `\x0042` and `\x0044` reserved for future use.
  *
- * ## Address Values
- * When the Header is `\x0058`, it represents an address of an object in the heap, indexed by an `i64`, held in Lanes 4–7.
- *
  * The following diagram may prove useful:
  * ```
  *                     Lane 0 Lane 1 Lane 2 Lane 3 | Lane 4 Lane 5 Lane 6 Lane 7
@@ -95,7 +90,6 @@ import binaryen from 'binaryen';
  * f16:                \x0000 \x0000 \x0000 \x0042 | \x???? \x0000 \x0000 \x0000
  * f32:                \x0000 \x0000 \x0000 \x0044 | \x???? \x???? \x0000 \x0000
  * f64:                \x0000 \x0000 \x0000 \x0048 | \x???? \x???? \x???? \x????
- * address:            \x0000 \x0000 \x0000 \x0058 | \x???? \x???? \x???? \x????
  * ```
  */
 export class BinVect {
@@ -108,7 +102,7 @@ export class BinVect {
 	 * @param condition an `i32` that serves as the condition for the `if` expression
 	 * @return          the `if` expression
 	 */
-	public static asBool(mod: binaryen.Module, condition: binaryen.ExpressionRef): binaryen.ExpressionRef {
+	public static boolOf(mod: binaryen.Module, condition: binaryen.ExpressionRef): binaryen.ExpressionRef {
 		if (binaryen.getExpressionType(condition) !== binaryen.i32) {
 			throw new TypeError('Expected `i32`.');
 		}
@@ -135,12 +129,11 @@ export class BinVect {
 	 * @param opts an object:
 	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
 	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
-	 * 	@property `address`  - if `arg` is an `i64`, should it be interpreted as an address? (default `false`)
 	 */
 	public constructor(
 		private readonly mod: binaryen.Module,
 		arg:  null | boolean | binaryen.ExpressionRef = null,
-		opts: {unsigned?: boolean, scale?: bigint, address?: boolean} = {},
+		opts: {unsigned?: boolean, scale?: bigint} = {},
 	) {
 		this.vect = this.mod.v128.const(new Uint8Array(16));
 
@@ -162,11 +155,11 @@ export class BinVect {
 				}
 				/*
 				 * If the arg is an `i64`:
-				 * - Set Lane 3 to `\x0018` if signed (Counterpoint type `int`), `\x0028` if unsigned (Counterpoint type `nat`), `\x0058` if address (heap offset).
+				 * - Set Lane 3 to `\x0018` if signed (Counterpoint type `int`), `\x0028` if unsigned (Counterpoint type `nat`).
 				 * - Set Lane 4–7 (joined) to its `i64` value.
 				 */
 				case binaryen.i64: {
-					this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(opts.unsigned ? 0x0028 : opts.address ? 0x0058 : 0x0018));
+					this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(opts.unsigned ? 0x0028 : 0x0018));
 					this.vect = this.mod.i64x2.replace_lane(this.vect, 1, arg);
 					break;
 				}
@@ -231,63 +224,53 @@ export class BinVect {
 		return this.#checkTypeRange(0x0040n, 0x004fn);
 	}
 
-	/** Whether the value is intended to be interpreted as an address. */
-	public get isAddr(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0050n, 0x005fn);
-	}
-
 	/** The value as interpreted as a special value: null, false, or true. */
-	public get specialValue(): binaryen.ExpressionRef {
+	public get asSpecial(): binaryen.ExpressionRef {
 		return this.#type;
 	}
 
 	/** The value as interpreted as a signed integer. */
-	public get intValue(): binaryen.ExpressionRef {
+	public get asInt(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.vect, 1);
 	}
 
 	/** The value as interpreted as an unsigned integer. */
-	public get natValue(): binaryen.ExpressionRef {
+	public get asNat(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.vect, 1);
 	}
 
 	/** The value as interpreted as a float. */
-	public get floatValue(): binaryen.ExpressionRef {
+	public get asFloat(): binaryen.ExpressionRef {
 		return this.mod.f64x2.extract_lane(this.vect, 1);
-	}
-
-	/** The value as interpreted as an address. */
-	public get addrValue(): binaryen.ExpressionRef {
-		return this.mod.i64x2.extract_lane(this.vect, 1);
 	}
 
 	/** Reinterpretation. Assuming `this.isInt`, return the value interpreted as a `nat`. */
 	public i_to_n(): binaryen.ExpressionRef {
-		return this.natValue; // reinterpretation doesn’t change the bits
+		return this.asNat; // reinterpretation doesn’t change the bits
 	}
 
 	/** Conversion. Assuming `this.isInt`, return a new value representing a `float`. */
 	public i_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_s.i64(this.intValue);
+		return this.mod.f64.convert_s.i64(this.asInt);
 	}
 
 	/** Reinterpretation. Assuming `this.isNat`, return the value interpreted as an `int`. */
 	public n_to_i(): binaryen.ExpressionRef {
-		return this.intValue; // reinterpretation doesn’t change the bits
+		return this.asInt; // reinterpretation doesn’t change the bits
 	}
 
 	/** Conversion. Assuming `this.isNat`, return a new value representing a `float`. */
 	public n_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_u.i64(this.natValue);
+		return this.mod.f64.convert_u.i64(this.asNat);
 	}
 
 	/** Truncation. Assuming `this.isFloat`, return a new value representing an `int`. */
 	public f_to_i(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_s_sat.f64(this.floatValue);
+		return this.mod.i64.trunc_s_sat.f64(this.asFloat);
 	}
 
 	/** Truncation. Assuming `this.isFloat`, return a new value representing a `nat`. */
 	public f_to_n(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_u_sat.f64(this.floatValue);
+		return this.mod.i64.trunc_u_sat.f64(this.asFloat);
 	}
 }
