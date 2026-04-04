@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -29,10 +28,7 @@ import {ASTNodeTemplate} from './ASTNodeTemplate.ts';
 import {ASTNodeTuple} from './ASTNodeTuple.ts';
 import {ASTNodeRecord} from './ASTNodeRecord.ts';
 import {ASTNodeCall} from './ASTNodeCall.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -182,13 +178,5 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
 		}
-	}
-
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
-		return this.assignee
-			? this.builder.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
-			: this.builder.module.drop(value);
 	}
 }

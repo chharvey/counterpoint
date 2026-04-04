@@ -1,10 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import utf8 from 'utf8';
-import type {
-	Builder,
-	BinVect,
-} from '../../index.ts';
+import type {BinVect} from '../../index.ts';
 import type {CodeUnit} from '../../lib/index.ts';
 import {
 	strictEqual,
@@ -57,10 +54,6 @@ class ValueString extends Primitive {
 
 	public override codegen(_: binaryen.Module): BinVect {
 		throw new Error('`ValueString#codegen` not yet supported.');
-	}
-
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return this.codegen(builder.module).vect;
 	}
 
 	/**

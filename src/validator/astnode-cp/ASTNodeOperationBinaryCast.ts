@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import type {
 	VALUE,
 	TYPE,
@@ -18,10 +17,7 @@ import {
 	Operator,
 	type ValidOperatorCast,
 } from '../Operator.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -40,12 +36,6 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, Operator.CAST, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('ASTNodeOperationBinaryCast#build not yet supported.');
 	}
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {

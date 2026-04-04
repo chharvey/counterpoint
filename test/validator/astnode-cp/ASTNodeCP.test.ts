@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	AST,
@@ -11,10 +10,7 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {
-	assertAssignable,
-	assertEqualBins,
-} from '../../assert-helpers.ts';
+import {assertAssignable} from '../../assert-helpers.ts';
 import {setupScript} from '../../helpers.ts';
 
 
@@ -32,32 +28,6 @@ test.suite('ASTNodeCP', () => {
 					assert_instanceof(expr_accessor, AST.ASTNodeIndex);
 					assert.strictEqual(expr_accessor.index, index);
 				});
-			});
-		});
-	});
-
-
-
-	test.suite('ASTNodeBlock', () => {
-		test.suite('#build', () => {
-			test.test('always retuns `(block)`.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					val mut x: int = 42;
-					x;
-				}`);
-				assertEqualBins(goal.block!.build(), mod.block(null, stmts.map((stmt) => stmt.build())));
-			});
-			test.test('nesting scopes.', () => {
-				setupScript(`{
-					val mut x: int = 42;
-					x;
-					if true then {
-						x;
-						val mut y: float = 4.2;
-						y;
-					};
-					x;
-				}`); // assert does not throw
 			});
 		});
 	});
@@ -196,36 +166,7 @@ test.suite('ASTNodeCP', () => {
 					set assignee_e = 43;
 					set assignee_e = 44;
 					set assignee_e = -42;
-				}`, {lower: true, build: false}).opt.instructions.length, 12);
-			});
-		});
-
-
-		test.suite('#build', () => {
-			test.test('always returns `(nop)`.', () => {
-				// empty
-				const empty: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource('');
-				empty.varCheck();
-				empty.typeCheck();
-				assertEqualBins(empty.build(), empty.builder.module.nop());
-
-				// scripts
-				xjs.Array.forEachAggregated([
-					'{;}',
-					`{
-						42;
-					}`,
-					`{
-						val x: int = 42;
-						x;
-					}`,
-				], (src) => {
-					const {goal, mod} = setupScript(src, {build: false});
-					return assertEqualBins(goal.build(), mod.nop());
-				});
-
-				// modules
-				return;
+				}`, {codegen: false}).opt.instructions.length, 12);
 			});
 		});
 	});

@@ -117,7 +117,7 @@
 	(local $item1     (ref null $Value))
 
 	;; Lists that are identical are always equal
-	(if (ref.eq (local.get $list0) (local.get $list1)) ;; using `ref.eq` instead of `vid_` since they’re already unwrapped
+	(if (ref.eq (local.get $list0) (local.get $list1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
 		(then (return (i32.const 1)))
 	)
 
@@ -161,7 +161,7 @@
 						(i32.eqz (ref.is_null (local.get $item0)))
 						(i32.eqz (ref.is_null (local.get $item1)))
 					)
-					(i32.eqz (call $bool-to-i32 (call $veq_
+					(i32.eqz (call $bool-to-i32 (call $veq
 						(ref.cast (ref $Value) (local.get $item0))
 						(ref.cast (ref $Value) (local.get $item1))
 					)))

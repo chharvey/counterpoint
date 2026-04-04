@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -30,7 +29,6 @@ import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {ASTNodeTypeCall} from './ASTNodeTypeCall.ts';
 import {
-	buildDeco,
 	typeDeco,
 	ASTNodeExpression,
 } from './ASTNodeExpression.ts';
@@ -74,12 +72,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 			...this.exprargs,
 		], (arg) => arg.typeCheck());
 		this.type(); // assert does not throw
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeCall#build` not yet supported.');
 	}
 
 	@memoizeMethod

@@ -1,16 +1,11 @@
 import * as xjs from 'extrajs';
-import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Optimizer,
 	type Lowerable,
-	Builder,
 	ParseError01,
 } from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
+import {runOnceMethod} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -24,7 +19,6 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {Buildable} from './Buildable.ts';
 import type {ASTNodeBlock} from './ASTNodeBlock.ts';
 
 
@@ -49,7 +43,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
+export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -65,7 +59,6 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 
 
 	readonly #validator: Validator;
-	readonly #builder:   Builder;
 
 
 	public constructor(
@@ -75,15 +68,10 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	) {
 		super(start_node, {}, (block) ? [block] : []);
 		this.#validator = new Validator(config);
-		this.#builder   = new Builder();
 	}
 
 	public override get validator(): Validator {
 		return this.#validator;
-	}
-
-	public override get builder(): Builder {
-		return this.#builder;
 	}
 
 	/**
@@ -94,25 +82,5 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable, Buildable {
 	public lower(optimizer: Optimizer): void {
 		this.block?.lower(optimizer);
 		return optimizer.validate();
-	}
-
-	/** @implements Buildable */
-	@memoizeMethod
-	public build(): binaryen.ExpressionRef {
-		if (this.block) {
-			const block_build: binaryen.ExpressionRef = this.block.build(); // must build before calling `.getLocals()`
-			this.builder.setupModule((mod) => {
-				const fn_name: string = 'fn0';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					this.builder.getAllLocals().map((local) => local.type),
-					block_build,
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			});
-		}
-		return this.builder.module.nop();
 	}
 }

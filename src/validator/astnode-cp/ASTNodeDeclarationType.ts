@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
@@ -8,7 +7,6 @@ import {
 	assert_instanceof,
 	noopMethod,
 	noopGetter,
-	memoizeMethod,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -20,10 +18,7 @@ import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -75,11 +70,5 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 	@noopMethod(runOnceMethod)
 	public override lower(): void {
 		return;
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');
 	}
 }

@@ -1,5 +1,3 @@
-import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	TYPE,
 	type Optimizer,
@@ -9,7 +7,6 @@ import {
 import {
 	assert_instanceof,
 	noopGetter,
-	memoizeMethod,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -25,10 +22,7 @@ import type {ASTNodeType} from './ASTNodeType.ts';
 import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -94,11 +88,5 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
 		return optimizer.pushInstruction(new IR.Drop(this.assignee.lower(optimizer)));
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
 	}
 }

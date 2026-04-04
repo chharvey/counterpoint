@@ -1,12 +1,8 @@
-import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	drop_then,
-	type Local,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -21,10 +17,7 @@ import {
 	Operator,
 	type ValidOperatorLogical,
 } from '../Operator.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -43,33 +36,6 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		operand1: ASTNodeExpression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const mod:          binaryen.Module          = this.builder.module;
-		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-
-		const t0:     TYPE.Type              = this.operand0.type();
-		const block1: binaryen.ExpressionRef = drop_then(mod, [arg0], arg1);
-		if (t0.isDefinitelyFalsy) {
-			return this.operator === Operator.AND ? arg0 : block1;
-		} else if (t0.isDefinitelyTruthy) {
-			return this.operator === Operator.AND ? block1 : arg0;
-		}
-
-		const local0: Local = this.builder.newLocal(arg0);
-
-		const arg0_truthy: binaryen.ExpressionRef = new BinVect(mod, mod.call(
-			'vnot',
-			[local0.tee()],
-			binaryen.v128,
-		)).isSpecial(false);
-
-		return this.operator === Operator.AND
-			? mod.if(arg0_truthy, arg1,         local0.get())
-			: mod.if(arg0_truthy, local0.get(), arg1);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
