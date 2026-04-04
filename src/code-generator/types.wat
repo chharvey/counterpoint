@@ -42,6 +42,7 @@
 	(field $id i64)
 )))
 
+
 ;; precursor to the `List` class
 (type $List (sub $Object (struct
 	;; --- inherited ---
@@ -55,6 +56,7 @@
 	(field $internal (mut (ref $ListInternal)))
 )))
 
+
 ;; precursor to the `Dict` class
 (type $Dict (sub $Object (struct
 	;; --- inherited ---
@@ -67,6 +69,7 @@
 	;; the array of Dict properties; mutable to allow reallocation
 	(field $internal (mut (ref $DictInternal)))
 )))
+
 
 ;; precursor to the `Map` class
 (type $Map (sub $Object (struct
