@@ -6,20 +6,20 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import {IrNode} from './IrNode.ts';
-import type {Instruction} from './Instruction.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 import type {Label} from './Label.ts';
 
 
 
 /** Transfer control to the given label, but if and only if the given condition is false. */
-export class GotoIfFalse extends IrNode implements Instruction {
+export class GotoIfFalse extends Instruction {
 	public constructor(
 		private readonly condition: Value,
 		private readonly label:     Label,
 	) {
-		super();
+		super(OpCode.UNDEFINED);
 	}
 
 	public override toString(): string {

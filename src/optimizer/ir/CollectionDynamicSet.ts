@@ -15,18 +15,15 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {CollectionDynamicName} from './utils-public.ts';
-import type {Instruction} from './Instruction.ts';
-import {
-	OpCode,
-	Opcode,
-} from './Opcode.ts';
 import {TypeName} from './TypeName.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicSet extends Opcode implements Instruction {
+export class CollectionDynamicSet extends Instruction {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
 		private readonly collection: Value,

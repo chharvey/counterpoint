@@ -8,21 +8,18 @@ import {
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Temp} from '../Optimizer.ts';
-import type {Instruction} from './Instruction.ts';
-import {
-	OpCode,
-	Opcode,
-} from './Opcode.ts';
 import {
 	ast_type_name,
 	stringify_type_name,
 } from './TypeName.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Declare a variable/local without initializing it. */
-export class Decl extends Opcode implements Instruction {
+export class Decl extends Instruction {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(

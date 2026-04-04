@@ -1,4 +1,5 @@
-import {IrNode} from './IrNode.ts';
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
 
 
 
@@ -98,27 +99,38 @@ export enum OpCode {
 	DICT_COPY,
 	SET_COPY,
 	MAP_COPY,
+
+	/** @deprecated --- we’ll convert these to blocks */
+	UNDEFINED,
 }
 
 
 
 /**
- * An Opcode is an IrNode witha an OpCode.
+ * An Opcode is an operation of the virtual machine.
  *
  * Known subclasses:
  * - Value
- * - Drop
- * - Decl
- * - Set
- * - CollectionDynamicSet
- * - CollectionDynamicCopy
+ * - Instruction
  */
-export abstract class Opcode extends IrNode {
+export abstract class Opcode {
 	public constructor(private readonly opCode: OpCode) {
-		super();
 	}
 
-	public override toString(...args: readonly {toString(): string}[]): string {
+	/** Represent this Opcode as a string for inspection. */
+	public toString(...args: readonly {toString(): string}[]): string {
 		return `(${ [OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ') })`;
 	}
+
+	/** Type-validate this Opcode. Throws if invalid. */
+	public validate(): void {
+		return;
+	}
+
+	/**
+	 * Generate assembly code.
+	 * @param  cg code-generator
+	 * @return    a binaryen expression of type `(ref $Value)`
+	 */
+	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
 }

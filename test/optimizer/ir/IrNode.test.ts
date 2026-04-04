@@ -21,7 +21,7 @@ import {
 
 
 
-test.suite('IrNode', () => {
+test.suite('Opcode', () => {
 	test.suite('#codegen', () => {
 		test.test('is not yet supported.', () => {
 			const {opt, cg} = setupScript(`{
