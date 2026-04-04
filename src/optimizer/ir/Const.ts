@@ -16,7 +16,7 @@ import {
 import {
 	TypeName,
 	ast_type_name,
-} from './TypeName.ts';
+} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 

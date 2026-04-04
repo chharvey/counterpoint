@@ -11,7 +11,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import {TypeName} from './TypeName.ts';
+import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 

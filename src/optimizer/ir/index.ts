@@ -1,5 +1,4 @@
 export * from './utils-public.ts';
-export * from './TypeName.ts';
 
 export * from './Opcode.ts';
 
