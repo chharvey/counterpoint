@@ -14,13 +14,13 @@ test.suite('BinVect', () => {
 	const MOD = new binaryen.Module();
 
 
-	test.suite('.asBool', () => {
+	test.suite('.boolOf', () => {
 		test.test('returns `(if)` containing two v128 branches storing boolean values.', () => {
 			xjs.Array.forEachAggregated([
 				MOD.i32.const(0),
 				MOD.i32.const(1),
 			], (expr) => assert_equal_bins(
-				BinVect.asBool(MOD, expr),
+				BinVect.boolOf(MOD, expr),
 				MOD.if(
 					expr,
 					new BinVect(MOD, true).vect,

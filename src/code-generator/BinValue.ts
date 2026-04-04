@@ -114,12 +114,12 @@ export class BinValue {
 	}
 
 	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
-	public get primitiveValue(): binaryen.ExpressionRef {
+	public get asPrimitive(): binaryen.ExpressionRef {
 		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, this.value, binaryen.v128);
 	}
 
 	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
-	public get compositeValue(): binaryen.ExpressionRef {
+	public get asComposite(): binaryen.ExpressionRef {
 		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_COMPOSITE, this.value, binaryen.eqref);
 	}
 
@@ -138,8 +138,8 @@ export class BinValue {
 	 * @param typekey the string key of the type to cast to; accessed on `BinVect`
 	 * @return        `({i64x2,f64x2}.extract_lane 1 (struct.get $Value $primitive <this>))`
 	 */
-	public interpret(typekey: 'specialValue' | 'intValue' | 'natValue' | 'floatValue'): binaryen.ExpressionRef {
-		return new BinVect(this.cg.module, this.primitiveValue)[typekey];
+	public interpret(typekey: 'asSpecial' | 'asInt' | 'asNat' | 'asFloat'): binaryen.ExpressionRef {
+		return new BinVect(this.cg.module, this.asPrimitive)[typekey];
 	}
 
 	/**
@@ -149,6 +149,6 @@ export class BinValue {
 	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
 	 */
 	public cast(reftype: Parameters<Builder['getReftype']>[0]): binaryen.ExpressionRef {
-		return this.cg.module.ref.cast(this.compositeValue, this.cg.getReftype(reftype));
+		return this.cg.module.ref.cast(this.asComposite, this.cg.getReftype(reftype));
 	}
 }

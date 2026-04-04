@@ -108,7 +108,7 @@ export class BinVect {
 	 * @param condition an `i32` that serves as the condition for the `if` expression
 	 * @return          the `if` expression
 	 */
-	public static asBool(mod: binaryen.Module, condition: binaryen.ExpressionRef): binaryen.ExpressionRef {
+	public static boolOf(mod: binaryen.Module, condition: binaryen.ExpressionRef): binaryen.ExpressionRef {
 		if (binaryen.getExpressionType(condition) !== binaryen.i32) {
 			throw new TypeError('Expected `i32`.');
 		}
@@ -237,22 +237,22 @@ export class BinVect {
 	}
 
 	/** The value as interpreted as a special value: null, false, or true. */
-	public get specialValue(): binaryen.ExpressionRef {
+	public get asSpecial(): binaryen.ExpressionRef {
 		return this.#type;
 	}
 
 	/** The value as interpreted as a signed integer. */
-	public get intValue(): binaryen.ExpressionRef {
+	public get asInt(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.vect, 1);
 	}
 
 	/** The value as interpreted as an unsigned integer. */
-	public get natValue(): binaryen.ExpressionRef {
+	public get asNat(): binaryen.ExpressionRef {
 		return this.mod.i64x2.extract_lane(this.vect, 1);
 	}
 
 	/** The value as interpreted as a float. */
-	public get floatValue(): binaryen.ExpressionRef {
+	public get asFloat(): binaryen.ExpressionRef {
 		return this.mod.f64x2.extract_lane(this.vect, 1);
 	}
 
@@ -263,31 +263,31 @@ export class BinVect {
 
 	/** Reinterpretation. Assuming `this.isInt`, return the value interpreted as a `nat`. */
 	public i_to_n(): binaryen.ExpressionRef {
-		return this.natValue; // reinterpretation doesn’t change the bits
+		return this.asNat; // reinterpretation doesn’t change the bits
 	}
 
 	/** Conversion. Assuming `this.isInt`, return a new value representing a `float`. */
 	public i_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_s.i64(this.intValue);
+		return this.mod.f64.convert_s.i64(this.asInt);
 	}
 
 	/** Reinterpretation. Assuming `this.isNat`, return the value interpreted as an `int`. */
 	public n_to_i(): binaryen.ExpressionRef {
-		return this.intValue; // reinterpretation doesn’t change the bits
+		return this.asInt; // reinterpretation doesn’t change the bits
 	}
 
 	/** Conversion. Assuming `this.isNat`, return a new value representing a `float`. */
 	public n_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_u.i64(this.natValue);
+		return this.mod.f64.convert_u.i64(this.asNat);
 	}
 
 	/** Truncation. Assuming `this.isFloat`, return a new value representing an `int`. */
 	public f_to_i(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_s_sat.f64(this.floatValue);
+		return this.mod.i64.trunc_s_sat.f64(this.asFloat);
 	}
 
 	/** Truncation. Assuming `this.isFloat`, return a new value representing a `nat`. */
 	public f_to_n(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_u_sat.f64(this.floatValue);
+		return this.mod.i64.trunc_u_sat.f64(this.asFloat);
 	}
 }

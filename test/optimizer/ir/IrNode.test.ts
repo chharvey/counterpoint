@@ -412,7 +412,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
 							cg.getListInternal(new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)')),
-							mod.i32.wrap(new BinValue(cg, mod.local.get(3, rt_value)).interpret('intValue')),
+							mod.i32.wrap(new BinValue(cg, mod.local.get(3, rt_value)).interpret('asInt')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -424,7 +424,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
 							cg.getListInternal(new BinValue(cg, list_get).cast('(ref $List)')),
-							mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('intValue')),
+							mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('asInt')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -436,7 +436,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
 							cg.getListInternal(new BinValue(cg, list_get).cast('(ref $List)')),
-							mod.i32.wrap(new BinValue(cg, genConst(cg, 3n)).interpret('intValue')),
+							mod.i32.wrap(new BinValue(cg, genConst(cg, 3n)).interpret('asInt')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -448,7 +448,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(7, mod.array.get(
 							cg.getListInternal(new BinValue(cg, list_get).cast('(ref $List)')),
-							mod.i32.wrap(new BinValue(cg, genConst(cg, -1n)).interpret('intValue')),
+							mod.i32.wrap(new BinValue(cg, genConst(cg, -1n)).interpret('asInt')),
 							rt_n_value,
 						)),
 						mod.if(
@@ -475,7 +475,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
 							new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Dict)'),
-							new BinValue(cg, genConst(cg, Symbol(0x104))).interpret('natValue'),
+							new BinValue(cg, genConst(cg, Symbol(0x104))).interpret('asNat'),
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -489,7 +489,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
 							new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-							new BinValue(cg, genConst(cg, Symbol(0x101))).interpret('natValue'),
+							new BinValue(cg, genConst(cg, Symbol(0x101))).interpret('asNat'),
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -503,7 +503,7 @@ test.suite('IrNode', () => {
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
 							new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-							new BinValue(cg, genConst(cg, Symbol(0x102))).interpret('natValue'),
+							new BinValue(cg, genConst(cg, Symbol(0x102))).interpret('asNat'),
 						], binaryen.createType([binaryen.i32, rt_n_property])), 1)),
 						mod.if(
 							mod.i32.or(
@@ -816,17 +816,17 @@ test.suite('IrNode', () => {
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.call('List.set', [
 						new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $List)'),
-						mod.i32.wrap(new BinValue(cg, mod.local.get(3, rt_value)).interpret('intValue')),
+						mod.i32.wrap(new BinValue(cg, mod.local.get(3, rt_value)).interpret('asInt')),
 						genConst(cg, 45n),
 					], binaryen.none),
 					mod.call('List.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
-						mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('intValue')),
+						mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('asInt')),
 						genConst(cg, 46n),
 					], binaryen.none),
 					mod.call('List.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $List)'),
-						mod.i32.wrap(new BinValue(cg, genConst(cg, 2n)).interpret('intValue')),
+						mod.i32.wrap(new BinValue(cg, genConst(cg, 2n)).interpret('asInt')),
 						genConst(cg, 47n),
 					], binaryen.none),
 				]);
@@ -845,17 +845,17 @@ test.suite('IrNode', () => {
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.call('Dict.set', [
 						new BinValue(cg, mod.local.get(2, rt_value)).cast('(ref $Dict)'),
-						new BinValue(cg, genConst(cg, Symbol(0x104))).interpret('natValue'),
+						new BinValue(cg, genConst(cg, Symbol(0x104))).interpret('asNat'),
 						genConst(cg, 45n),
 					], binaryen.none),
 					mod.call('Dict.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-						new BinValue(cg, genConst(cg, Symbol(0x101))).interpret('natValue'),
+						new BinValue(cg, genConst(cg, Symbol(0x101))).interpret('asNat'),
 						genConst(cg, 46n),
 					], binaryen.none),
 					mod.call('Dict.set', [
 						new BinValue(cg, mod.local.get(1, rt_value)).cast('(ref $Dict)'),
-						new BinValue(cg, genConst(cg, Symbol(0x102))).interpret('natValue'),
+						new BinValue(cg, genConst(cg, Symbol(0x102))).interpret('asNat'),
 						genConst(cg, 47n),
 					], binaryen.none),
 				]);
@@ -880,7 +880,7 @@ test.suite('IrNode', () => {
 						mod.local.set(2, new BinValue(cg, base).cast('(ref $Map)')),
 						mod.local.set(3, genConst(cg, 4.2)),
 						mod.if(
-							new BinVect(mod, new BinValue(cg, genConst(cg, false)).primitiveValue).isSpecial(true),
+							new BinVect(mod, new BinValue(cg, genConst(cg, false)).asPrimitive).isSpecial(true),
 							mod.call('Map.set', [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
 							mod.drop(mod.call('Map.delete', [base_get_0, accessor_get_0], rt_n_value)),
 						),
@@ -889,7 +889,7 @@ test.suite('IrNode', () => {
 						mod.local.set(4, new BinValue(cg, base).cast('(ref $Map)')),
 						mod.local.set(5, genConst(cg, 3.3)),
 						mod.if(
-							new BinVect(mod, new BinValue(cg, genConst(cg, true)).primitiveValue).isSpecial(true),
+							new BinVect(mod, new BinValue(cg, genConst(cg, true)).asPrimitive).isSpecial(true),
 							mod.call('Map.set', [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
 							mod.drop(mod.call('Map.delete', [base_get_1, accessor_get_1], rt_n_value)),
 						),
@@ -1034,7 +1034,7 @@ test.suite('IrNode', () => {
 									mod.local.set(9, new BinValue(cg, mod.local.get(8, rt_value)).cast('(ref $Tuple)')),
 									mod.call('Dict.set', [
 										mod.local.get(5, cg.getReftype('(ref $Dict)')),
-										new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('natValue'),
+										new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('asNat'),
 										mod.array.get(pair_get, mod.i32.const(1), rt_value),
 									], binaryen.none),
 									mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
@@ -1098,7 +1098,7 @@ test.suite('IrNode', () => {
 											mod.local.set(9, new BinValue(cg, item_get).cast('(ref $Tuple)')),
 											mod.call('Dict.set', [
 												mod.local.get(5, cg.getReftype('(ref $Dict)')),
-												new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('natValue'),
+												new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('asNat'),
 												mod.array.get(pair_get, mod.i32.const(1), rt_value),
 											], binaryen.none),
 										]),
@@ -1164,7 +1164,7 @@ test.suite('IrNode', () => {
 											mod.local.set(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)')),
 											mod.call('Dict.set', [
 												mod.local.get(6, cg.getReftype('(ref $Dict)')),
-												new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('natValue'),
+												new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('asNat'),
 												mod.array.get(pair_get, mod.i32.const(1), rt_value),
 											], binaryen.none),
 										]),
@@ -1201,7 +1201,7 @@ test.suite('IrNode', () => {
 										mod.block(null, [
 											mod.call('Dict.set', [
 												mod.local.get(3, cg.getReftype('(ref $Dict)')),
-												new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).interpret('natValue'),
+												new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).interpret('asNat'),
 												mod.struct.get(STRUCT_FIELD.CASE_CON, case_get, rt_value),
 											], binaryen.none),
 										]),
