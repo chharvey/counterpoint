@@ -716,7 +716,7 @@ export class Builder {
 						mod.if(
 							local_vects[0].isFloat,
 							mod.f64.eq(local_vects[0].asFloat, mod.f64.const(0.0)), // also takes care of -0.0
-							mod.i32.and(local_vects[0].isAddr, mod.i64.eqz(local_vects[0].addrValue)),
+							mod.unreachable(),
 						),
 					),
 				))).value,

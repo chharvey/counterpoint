@@ -86,14 +86,6 @@ test.suite('BinVect', () => {
 			argument = MOD.i64x2.replace_lane(argument, 1, bigint_to_i64(MOD, 42n));
 			return test_vect<binaryen.ExpressionRef>(argument, (arg) => arg);
 		});
-
-		test.test('with address argument.', () => {
-			test_vect<binaryen.ExpressionRef>(bigint_to_i64(MOD, 42n, true), (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0058));
-				exp = MOD.i64x2.replace_lane(exp, 1, arg);
-				return exp;
-			}, {address: true});
-		});
 	});
 
 
