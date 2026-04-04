@@ -1,6 +1,7 @@
 import binaryen from 'binaryen';
 import {
 	bigint_to_i64,
+	type ReftypeKey,
 	type Builder,
 	BinVect,
 } from '../index.ts';
@@ -148,7 +149,7 @@ export class BinValue {
 	 * @param reftype the string key of the type to cast to
 	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
 	 */
-	public cast(reftype: Parameters<Builder['getReftype']>[0]): binaryen.ExpressionRef {
+	public cast(reftype: ReftypeKey): binaryen.ExpressionRef {
 		return this.cg.module.ref.cast(this.asComposite, this.cg.getReftype(reftype));
 	}
 }

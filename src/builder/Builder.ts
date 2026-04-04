@@ -37,7 +37,7 @@ type HeaptypeKey = (
 	| '$Dict'
 	| '$Map'
 );
-type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' | '$Case' }` })`;
+export type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' | '$Case' }` })`;
 
 export enum BinConst {
 	NULL,
