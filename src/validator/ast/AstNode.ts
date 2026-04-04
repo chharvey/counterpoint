@@ -2,7 +2,6 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type TYPE,
-	type Builder,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {memoizeGetter} from '../../lib/index.ts';
@@ -141,11 +140,6 @@ export class AstNode implements Serializable {
 	@memoizeGetter
 	public get validator(): Validator {
 		return this.parent!.validator;
-	}
-
-	@memoizeGetter
-	public get builder(): Builder {
-		return this.parent!.builder;
 	}
 
 	/** @implements Serializable */

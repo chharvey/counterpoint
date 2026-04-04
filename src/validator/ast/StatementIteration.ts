@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -27,7 +26,6 @@ import type {Type} from './Type.ts';
 import type {Expression} from './Expression.ts';
 import type {Variable} from './Variable.ts';
 import {
-	buildDeco,
 	Statement,
 	StatementBreakable,
 } from './Statement.ts';
@@ -123,11 +121,5 @@ export class StatementIteration extends StatementBreakable {
 		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.OpCode.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
 		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
 		optimizer.pushInstruction(this.labels.endwhile!);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`StatementIteration#build` not yet supported.');
 	}
 }

@@ -57,16 +57,45 @@ export class Unop extends Value {
 		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		if (this.operator === OpCode.TOBOOL) {
-			return cg.module.call('vnot_', [cg.module.call('vnot_', [code], rt_value)], rt_value);
+			return cg.module.call('vnot', [cg.module.call('vnot', [code], rt_value)], rt_value);
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.ISNULL,  'isnull_'],
-			[OpCode.NOT,     'vnot_'],
-			[OpCode.EMP,     'vemp_'],
-			[OpCode.NEG,     'vneg_'],
-			[OpCode.TOINT,   'vtoi_'],
-			[OpCode.TONAT,   'vton_'],
-			[OpCode.TOFLOAT, 'vtof_'],
+			[OpCode.ISNULL,  'isnull'],
+			[OpCode.NOT,     'vnot'],
+			[OpCode.EMP,     'vemp'],
+			[OpCode.NEG,     'vneg'],
+			[OpCode.TOINT,   'vtoi'],
+			[OpCode.TONAT,   'vton'],
+			[OpCode.TOFLOAT, 'vtof'],
 		]).get(this.operator)!, [code], rt_value);
 	}
+
+	/* eslint-disable */
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, BinVect: any, t0: any, arg0: any, drop_then: any, binaryen: any): number {
+		if (this.type().isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(cg.module, [arg0], true);
+		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(cg.module, [arg0], false);
+		}
+		if (this.operator === Operator.NOT) {
+			if (t0.isDefinitelyFalsy) {
+				return cg.module.block(null, [
+					cg.module.drop(arg0),
+					new BinVect(cg.module, true).vect,
+				], binaryen.v128);
+			} else if (t0.isDefinitelyTruthy) {
+				return cg.module.block(null, [
+					cg.module.drop(arg0),
+					new BinVect(cg.module, false).vect,
+				], binaryen.v128);
+			}
+		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
+			return cg.module.block(null, [
+				cg.module.drop(arg0),
+				new BinVect(cg.module, true).vect,
+			], binaryen.v128);
+		}
+		return 0;
+	}
+	/* eslint-enable */
 }

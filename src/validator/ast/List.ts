@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -18,7 +17,6 @@ import {
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -41,12 +39,6 @@ export class List extends CollectionLiteral {
 		public override readonly children: readonly Expression[],
 	) {
 		super(start_node, children);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`List#build` not yet supported.');
 	}
 
 	@memoizeMethod

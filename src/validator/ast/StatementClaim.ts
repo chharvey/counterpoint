@@ -1,5 +1,3 @@
-import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	TYPE,
 	type Optimizer,
@@ -9,7 +7,6 @@ import {
 import {
 	assert_instanceof,
 	noopGetter,
-	memoizeMethod,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -25,10 +22,7 @@ import type {Type} from './Type.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Access} from './Access.ts';
-import {
-	buildDeco,
-	Statement,
-} from './Statement.ts';
+import {Statement} from './Statement.ts';
 
 
 
@@ -94,11 +88,5 @@ export class StatementClaim extends Statement {
 	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
 		return optimizer.pushInstruction(new IR.Drop(this.assignee.lower(optimizer)));
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `StatementClaim#isFoldable` to be true.');
 	}
 }

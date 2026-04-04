@@ -23,7 +23,6 @@ test.suite('BinValue', () => {
 	test.beforeEach(() => {
 		cg  = new Builder();
 		mod = cg.module;
-		cg.setupModule();
 	});
 
 	test.suite('#value', () => {

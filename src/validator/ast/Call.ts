@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -30,7 +29,6 @@ import {typecheck_assign} from './AstNode.ts';
 import type {Type} from './Type.ts';
 import {TypeCall} from './TypeCall.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -74,12 +72,6 @@ export class Call extends Expression {
 			...this.exprargs,
 		], (arg) => arg.typeCheck());
 		this.type(); // assert does not throw
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`Call#build` not yet supported.');
 	}
 
 	@memoizeMethod

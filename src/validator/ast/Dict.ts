@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -22,7 +21,6 @@ import {typecheck_assign} from './AstNode.ts';
 import type {Key} from './Key.ts';
 import type {Property} from './Property.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -56,12 +54,6 @@ export class Dict extends CollectionLiteral {
 			}
 		});
 		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`Dict#build` not yet supported.');
 	}
 
 	@memoizeMethod

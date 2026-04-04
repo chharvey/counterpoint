@@ -1,11 +1,9 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import type {
 	Optimizer,
 	IR,
 	Lowerable,
 } from '../../index.ts';
-import {assert_context_name} from '../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -13,40 +11,21 @@ import {
 import {Block} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Buildable} from './Buildable.ts';
-
-
-
-/**
- * Decorator for {@link Statement#build} method and any overrides.
- * Returns `(nop)` if this node is foldable, else calls the `build()` method.
- * @implements MethodDecorator<Statement, Statement['build']>
- */
-export function buildDeco(
-	method:  Statement['build'],
-	context: ClassMethodDecoratorContext<Statement, typeof method>,
-): typeof method {
-	assert_context_name(context, 'build');
-	return function (this: Statement) {
-		return this.isFoldable ? this.builder.module.nop() : method.call(this);
-	};
-}
 
 
 
 /**
  * A sematic node representing a statement.
+ *
  * Known subclasses:
  * - Declaration
  * - StatementExpression
  * - StatementClaim
  * - StatementReassignment
  * - StatementConditional
- * - StatementLoop
- * - StatementIteration
  * - StatementBreak
  */
-export abstract class Statement extends AstNode implements Foldable, Lowerable, Buildable {
+export abstract class Statement extends AstNode implements Foldable, Lowerable {
 	/**
 	 * Construct a new Statement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -72,16 +51,17 @@ export abstract class Statement extends AstNode implements Foldable, Lowerable, 
 	 * @implements Lowerable
 	 */
 	public abstract lower(optimizer: Optimizer): void;
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	public abstract build(): binaryen.ExpressionRef;
 }
 
 
 
+/**
+ * A statement that is allowed to contain a `StatementBreak`.
+ *
+ * Known subclasses:
+ * - StatementLoop
+ * - StatementIteration
+ */
 export abstract class StatementBreakable extends Statement {
 	#labelWhile?:    IR.Label;
 	#labelEndwhile?: IR.Label;

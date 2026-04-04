@@ -51,4 +51,34 @@ export class Decl extends Opcode implements Instruction {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.teeLocal(this.target, this.value.codegen(cg)).set();
 	}
+
+	/* eslint-disable */
+	#optimizationStrategy(this: any, cg: Builder): number {
+		let VALUE: any;
+		/**
+		 * Foldable cases:
+		 * - `val _:        T = assigned_foldable;`
+		 * - `val assignee: T = assigned_foldable;`
+		 *
+		 * Non-Foldable cases:
+		 * - `val mut assignee?: T;`
+		 * - `val mut assignee:  T = assigned_foldable;`
+		 * - `val     _:         T = assigned_non_foldable;`
+		 * - `val     assignee:  T = assigned_non_foldable;`
+		 * - `val mut assignee:  T = assigned_non_foldable;`
+		 *
+		 * Syntactically impossible cases (for completion):
+		 * - `val _?:        T;`
+		 * - `val assignee?: T;`
+		 * - `val mut _?:    T;`
+		 * - `val mut _:     T = assigned_foldable;`
+		 * - `val mut _:     T = assigned_non_foldable;`
+		 */
+		if (!!this.assigned?.fold() && (!this.assignee || !this.writable)) return cg.module.nop();
+		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(cg);
+		return this.assignee
+			? cg.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
+			: cg.module.drop(value);
+	}
+	/* eslint-enable */
 }

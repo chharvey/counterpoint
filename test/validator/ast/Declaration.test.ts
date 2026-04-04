@@ -16,7 +16,6 @@ import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assert_shallowStrictEqual,
 	assertEqualTypes,
-	assertEqualBins,
 	assertAssignable,
 } from '../../assert-helpers.ts';
 import {
@@ -193,7 +192,7 @@ test.suite('Declaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue,
+					}`, {lower: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -216,7 +215,7 @@ test.suite('Declaration', () => {
 			test.test('checks the assigned expression’s type against the variable assignee’s type.', () => {
 				setupScript(`{
 					val the_answer: nat = +42;
-				}`, {build: false}); // assert does not throw
+				}`, {lower: false}); // assert does not throw
 				const var_: AST.DeclarationVariable = AST.DeclarationVariable.fromSource(`
 					val  the_answer:  int | float =  21  *  2;
 				`);
@@ -233,13 +232,13 @@ test.suite('Declaration', () => {
 					setupScript(`{
 						type Name = str;
 						${ stmt }
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 			});
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					val mut the_answer?: int | float;
-				}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
+				}`, {lower: false}).goal.block!.validator.getSymbol(0x100n), {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
@@ -260,18 +259,18 @@ test.suite('Declaration', () => {
 				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
 						val fixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));
+					}`, {lower: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
 						val mut unfixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, unfixedtype));
+					}`, {lower: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
 					const {goal} = setupScript(`{
 						val     str_tpl_fixed   = """hello"""; % type \`str\`
 						val mut str_tpl_unfixed = """hello"""; % type \`str\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assert_shallowStrictEqual([
 						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
 						(goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar).type,
@@ -281,7 +280,7 @@ test.suite('Declaration', () => {
 					const {goal} = setupScript(`{
 						val     list_fixed   = List.<int>((42, 69));                 % type \`mut List.<int>\`
 						val mut dict_unfixed = Dict.<str>((a= "hello", b= "world")); % type \`mut Dict.<str>\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assertEqualTypes([
 						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
 						(goal.block!.validator.getSymbol(0x103n) as SymbolSchemaVar).type,
@@ -294,7 +293,7 @@ test.suite('Declaration', () => {
 					const {goal} = setupScript(`{
 						val     tup_fixed   = (   42,    (x= "hello"),    Dict.<bool>((x= false, y= true))); % type \`(   42,     (x= "hello"),    Dict.<bool>)\`
 						val mut rec_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type \`(a= int, b= (str,),       c= List.<bool>)\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assertEqualTypes([
 						(goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar).type,
 						(goal.block!.validator.getSymbol(0x106n) as SymbolSchemaVar).type,
@@ -337,7 +336,7 @@ test.suite('Declaration', () => {
 					val immut:  (int, int, int)                   = (42, 420, 4200);
 					val 'mut':  mut [int]                         = [42, 420, 4200];
 					val mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
-				}`, {build: false});
+				}`, {lower: false});
 				const [immut, mut, mutmut] = [
 					goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar,
 					goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar,
@@ -614,7 +613,7 @@ test.suite('Declaration', () => {
 		test.test('DeclarationType has no effect.', () => {
 			assert.strictEqual(setupScript(`{
 				type N = int | nat | float;
-			}`, {lower: true, build: false}).opt.print(), '');
+			}`, {codegen: false}).opt.print(), '');
 		});
 		test.test('DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
 			const {stmts, opt} = setupScript(`{
@@ -636,7 +635,7 @@ test.suite('Declaration', () => {
 				val mut _:       int = 42;
 				val mut _:       int = assignee_c;
 				%%
-			}`, {build: false});
+			}`, {codegen: false});
 			stmts.forEach((stmt) => (stmt as AST.DeclarationVariable).lower(opt));
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (INT.CONST 42))
@@ -647,81 +646,6 @@ test.suite('Declaration', () => {
 				(DECL <int> assignee_d (GET assignee_c))
 				(DECL <int> assignee_e (GET assignee_c))
 			`.join('\n'));
-		});
-	});
-
-
-	test.suite('#build', () => {
-		test.suite('DeclarationType', () => {
-			test.test('always returns `(nop)`.', () => {
-				const {stmts, mod} = setupScript(`{
-					type T = int;
-					type U = T | float;
-				}`);
-				return xjs.Array.forEachAggregated(stmts, (stmt) => assertEqualBins(stmt.build(), mod.nop()));
-			});
-		});
-
-		test.suite('DeclarationVariable', () => {
-			test.test('with constant folding on.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					% Foldable cases:
-					val _:          int = 42; % \`(nop)\`
-					val assignee_a: int = 42; % \`(nop)\`
-
-					% Non-Foldable cases:
-					val mut assignee_b?: int;              % \`(local.set)\`
-					val mut assignee_c:  int = 42;         % \`(local.set)\`
-					val     _:           int = assignee_c; % \`(drop)\`
-					val     assignee_d:  int = assignee_c; % \`(local.set)\`
-					val mut assignee_e:  int = assignee_c; % \`(local.set)\`
-
-					%% Syntactically impossible cases (for completion):
-					val _?:          int;
-					val assignee_f?: int;
-					val mut _?:      int;
-					val mut _:       int = 42;
-					val mut _:       int = assignee_c;
-					%%
-				}`);
-				return assertEqualBins(stmts.map((stmt) => stmt.build()), [
-					mod.nop(),
-					mod.nop(),
-
-					mod.local.set(0, VALUE.NULL.build(goal.builder)),
-					mod.local.set(1, (stmts[3] as AST.DeclarationVariable).assigned!.build()),
-					mod.drop(        (stmts[4] as AST.DeclarationVariable).assigned!.build()),
-					mod.local.set(2, (stmts[5] as AST.DeclarationVariable).assigned!.build()),
-					mod.local.set(3, (stmts[6] as AST.DeclarationVariable).assigned!.build()),
-				]);
-			});
-			test.test('tuples and records.', () => {
-				const {goal, stmts, mod} = setupScript(`{
-					val mut tr: bool = true;
-					val tup: (   int,    float,    (   null,    (   null,    bool))) = (   42,    4.2,    (   null,    (   null,    tr)));
-					val rec: (a: int, b: float, c: (d: null, e: (f: null, g: bool))) = (a= 42, b= 4.2, c= (d= null, e= (f= null, g= tr)));
-				}`);
-				const [tup, rec] = stmts.slice(1).map((stmt) => (stmt as AST.DeclarationVariable).assigned) as [AST.Tuple, AST.Record];
-				assert.deepStrictEqual(goal.builder.getAllLocals().slice(1).map(({value}) => value), [
-					tup.build(),
-					rec.build(),
-				]);
-				return assertEqualBins(
-					stmts.slice(1).map((stmt) => stmt.build()),
-					[
-						mod.local.set(1, tup.build()),
-						mod.local.set(2, rec.build()),
-					],
-				);
-			});
-			test.test('allows tuples and records to contain each other.', () => {
-				xjs.Array.forEachAggregated(extract_lines`
-					val mut tup: (   int,    float,    (   null,    bool),    (g: bool, h: int),    ((j: float),)) = (   42,    4.2,    (   null,    true),    (g= false, h= 42),    ((j= 4.2),));
-					val mut rec: (a: int, b: float, c: (d: null, e: bool), f: (   bool,    int), i: (k: (float,))) = (a= 42, b= 4.2, c= (d= null, e= true), f= (   false,    42), i= (k= (4.2,)));
-				`, (src) => {
-					setupScript(`{ ${ src } }`); // assert does not throw
-				});
-			});
 		});
 	});
 });

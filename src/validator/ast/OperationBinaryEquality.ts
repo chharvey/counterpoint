@@ -1,10 +1,8 @@
-import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	drop_then,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -19,10 +17,7 @@ import {
 	Operator,
 	type ValidOperatorEquality,
 } from '../Operator.ts';
-import {
-	buildDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
 
@@ -41,19 +36,6 @@ export class OperationBinaryEquality extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(this.builder.module, [arg0, arg1], false);
-		}
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.ID, 'vid'],
-			[Operator.EQ, 'veq'],
-		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {

@@ -74,7 +74,7 @@
 			(if (i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
-			(if (i32.eqz (call $bool-to-i32 (call $vid_
+			(if (i32.eqz (call $bool-to-i32 (call $vid
 				(struct.get $Property $val (local.get $prop))
 				(call $Record.get (local.get $record1) (local.get $key))
 			)))
@@ -109,7 +109,7 @@
 			(if (i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
-			(if (i32.eqz (call $bool-to-i32 (call $veq_
+			(if (i32.eqz (call $bool-to-i32 (call $veq
 				(struct.get $Property $val (local.get $prop))
 				(call $Record.get (local.get $record1) (local.get $key))
 			)))

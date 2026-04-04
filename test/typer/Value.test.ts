@@ -8,7 +8,6 @@ import {
 	BinVect,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
-import {buildConst} from '../helpers.ts';
 
 
 
@@ -210,31 +209,30 @@ test.suite('Value', () => {
 	});
 
 
-	test.suite('#build', () => {
+	test.suite('#codegen', () => {
 		test.suite('Null', () => {
 			test.test('returns a v128 with `null` as an argument.', () => {
-				const builder = new Builder();
+				const mod: binaryen.Module = new Builder().module;
 				return assertEqualBins(
-					VALUE.NULL.build(builder),
-					new BinVect(builder.module).vect,
+					VALUE.NULL.codegen(mod).vect,
+					new BinVect(mod).vect,
 				);
 			});
 		});
 
 		test.test('Boolean', () => {
-			const builder = new Builder();
+			const mod: binaryen.Module = new Builder().module;
 			return assertEqualBins(
-				[VALUE.FALSE.build(builder),              VALUE.TRUE.build(builder)],
-				[new BinVect(builder.module, false).vect, new BinVect(builder.module, true).vect],
+				[VALUE.FALSE.codegen(mod).vect, VALUE.TRUE.codegen(mod).vect],
+				[new BinVect(mod, false).vect,  new BinVect(mod, true).vect],
 			);
 		});
 
 		test.test('Symbol', () => {
-			const builder = new Builder();
-			const mod: binaryen.Module = builder.module;
+			const mod: binaryen.Module = new Builder().module;
 			return assertEqualBins(
-				[VALUE.SYM_NOTHING.build(builder),                                         new VALUE.Symbol(0x100n, 'hello').build(builder)],
-				[new BinVect(mod, bigint_to_i64(mod, 0x80n, true), {unsigned: true}).vect, new BinVect(mod, bigint_to_i64(mod, 0x100n, true), {unsigned: true}).vect],
+				[VALUE.SYM_NOTHING.codegen(mod).vect,                                new VALUE.Symbol(0x100n, 'hello').codegen(mod).vect],
+				[new BinVect(mod, bigint_to_i64(mod, 0x80n), {unsigned: true}).vect, new BinVect(mod, bigint_to_i64(mod, 0x100n), {unsigned: true}).vect],
 			);
 		});
 
@@ -255,10 +253,10 @@ test.suite('Value', () => {
 					(42n ** 2n * 420n) % (2n ** 63n),
 					(-5n) ** (2n * 3n),
 				];
-				const builder = new Builder();
+				const mod: binaryen.Module = new Builder().module;
 				return assertEqualBins(
-					data.map((x) => new VALUE.Integer(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x)).vect),
+					data.map((x) => new VALUE.Integer(x).codegen(mod).vect),
+					data.map((x) => new BinVect(mod, bigint_to_i64(mod, x)).vect),
 				);
 			});
 		});
@@ -272,10 +270,10 @@ test.suite('Value', () => {
 					].map((x) => BigInt(Math.trunc(x))),
 					(42n ** 2n * 420n) % (2n ** 64n),
 				];
-				const builder = new Builder();
+				const mod = new Builder().module;
 				return assertEqualBins(
-					data.map((x) => new VALUE.Natural(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x, true), {unsigned: true}).vect),
+					data.map((x) => new VALUE.Natural(x).codegen(mod).vect),
+					data.map((x) => new BinVect(mod, bigint_to_i64(mod, x, true), {unsigned: true}).vect),
 				);
 			});
 		});
@@ -290,30 +288,23 @@ test.suite('Value', () => {
 					3.0 - 2.7,
 				];
 				/* eslint-enable @stylistic/array-element-newline */
-				const builder = new Builder();
+				const mod: binaryen.Module = new Builder().module;
 				return assertEqualBins(
-					data.map((x) => new VALUE.Float(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, builder.module.f64.const(x)).vect),
+					data.map((x) => new VALUE.Float(x).codegen(mod).vect),
+					data.map((x) => new BinVect(mod, mod.f64.const(x)).vect),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
-				const builder = new Builder();
-				const mod: binaryen.Module = builder.module;
+				const mod: binaryen.Module = new Builder().module;
 				return assertEqualBins(
-					[0.0, -0.0].map((x) => new VALUE.Float(x).build(builder)),
+					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(mod).vect),
 					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
 				);
 			});
 		});
 
-		test.suite.todo('String', () => {
-			test.test('#build', () => {
-				const builder = new Builder();
-				return assertEqualBins(
-					new VALUE.String('hello world').build(builder),
-					buildConst(builder, 0n),
-				);
-			});
+		test.test('String', () => {
+			assert.throws(() => new VALUE.String('hello world').codegen(new Builder().module), /not yet supported/);
 		});
 	});
 

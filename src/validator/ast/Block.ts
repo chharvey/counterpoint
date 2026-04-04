@@ -1,12 +1,10 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import type {
 	Optimizer,
 	Lowerable,
 } from '../../index.ts';
 import {
 	type NonemptyArray,
-	memoizeMethod,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -19,14 +17,13 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Goal} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Buildable} from './Buildable.ts';
 import type {ExpressionBlock} from './ExpressionBlock.ts';
 import type {Statement} from './Statement.ts';
 import type {StatementConditional} from './StatementConditional.ts';
 
 
 
-export class Block extends AstNode implements Foldable, Lowerable, Buildable {
+export class Block extends AstNode implements Foldable, Lowerable {
 	/**
 	 * Construct a new Block from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -76,13 +73,5 @@ export class Block extends AstNode implements Foldable, Lowerable, Buildable {
 	@runOnceMethod
 	public lower(optimizer: Optimizer): void {
 		return this.children.forEach((stmt) => stmt.lower(optimizer));
-	}
-
-	/** @implements Buildable */
-	@memoizeMethod
-	public build(): binaryen.ExpressionRef {
-		return this.isFoldable
-			? this.builder.module.nop()
-			: this.builder.module.block(null, this.children.map((stmt) => stmt.build()));
 	}
 }

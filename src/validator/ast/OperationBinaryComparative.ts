@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
@@ -21,10 +20,7 @@ import {
 	type ValidOperatorComparative,
 } from '../Operator.ts';
 import {bothNumbers} from './utils-private.ts';
-import {
-	buildDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
 
@@ -46,17 +42,6 @@ export class OperationBinaryComparative extends OperationBinary {
 		if ([Operator.IS, Operator.ISNT].includes(this.operator)) {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.LT, 'vlt'],
-			[Operator.GT, 'vgt'],
-			[Operator.LE, 'vle'],
-			[Operator.GE, 'vge'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {

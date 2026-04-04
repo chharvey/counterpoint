@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
@@ -23,7 +22,6 @@ import {
 import {Validator} from '../Validator.ts';
 import {valueOfTokenNumber} from './utils-private.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -65,12 +63,6 @@ export class Constant extends Expression {
 		) {
 			this.validator.wordNodeID(this.start_node.children[1]);
 		}
-	}
-
-	@memoizeMethod
-	@noopMethod(buildDeco)
-	public override build(): binaryen.ExpressionRef {
-		return this.fold().build(this.builder);
 	}
 
 	@memoizeMethod

@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
@@ -21,7 +20,6 @@ import {
 	type Block,
 } from './index.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -41,16 +39,6 @@ export class ExpressionBlock extends Expression {
 		public readonly block: Block,
 	) {
 		super(start_node, {}, [block]);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const block_stmts: binaryen.ExpressionRef[] = [
-			...this.block.children.slice(0, -1).map((stmt) => stmt.build()),
-			(this.block.children.at(-1) as StatementExpression).expr!.build(),
-		];
-		return this.builder.module.block(null, block_stmts, binaryen.getExpressionType(block_stmts.at(-1)!));
 	}
 
 	@memoizeMethod

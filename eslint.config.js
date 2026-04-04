@@ -292,6 +292,13 @@ export default [
 			'@typescript-eslint/require-await':                 'off',   // disallow functions to be `async` without containing an `await`, even if they are promise-returning
 			'require-await':                                    'error', // turn eslint’s version back on
 
+			/* ### Disable unsafe checks. These problems are usually already raised as TS errors. */
+			'@typescript-eslint/no-unsafe-argument':      'off',
+			'@typescript-eslint/no-unsafe-assignment':    'off',
+			'@typescript-eslint/no-unsafe-call':          'off',
+			'@typescript-eslint/no-unsafe-member-access': 'off',
+			'@typescript-eslint/no-unsafe-return':        'off',
+
 			/* ## Overrides of `tseslint.configs.stylisticTypeCheckedOnly` */
 			'@typescript-eslint/prefer-regexp-exec': 'off', // `String#match` is more ergonomic
 

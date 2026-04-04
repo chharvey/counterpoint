@@ -67,7 +67,7 @@ test.suite('Type', () => {
 					type A = (int, [float], str);
 					type C = (a: int, b: [float], c: str);
 					type E = ({float}, {float}, {float});
-				}`, {build: false}); // assert does not throw
+				}`, {lower: false}); // assert does not throw
 			});
 		});
 	});

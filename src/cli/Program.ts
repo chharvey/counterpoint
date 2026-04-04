@@ -1,9 +1,11 @@
-import {runOnceMethod} from '../lib/index.ts';
+import {memoizeMethod} from '../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
+import {Optimizer} from '../optimizer/index.ts';
+import {Builder} from '../builder/index.ts';
 
 
 
@@ -22,11 +24,17 @@ export class Program {
 	}
 
 
-	@runOnceMethod
-	#prebuild(): void {
+	@memoizeMethod
+	#precompile(): Builder {
+		const optimizer = new Optimizer();
+		const cg        = new Builder();
+
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
-		this.#astGoal.build();
+		this.#astGoal.lower(optimizer);
+		optimizer.codegen(cg);
+
+		return cg;
 	}
 
 	/**
@@ -34,8 +42,7 @@ export class Program {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	public print(): string {
-		this.#prebuild();
-		return this.#astGoal.builder.module.emitText();
+		return this.#precompile().module.emitText();
 	}
 
 	/**
@@ -43,7 +50,6 @@ export class Program {
 	 * @return a binary output in WASM format, which can be executed
 	 */
 	public compile(): Uint8Array {
-		this.#prebuild();
-		return this.#astGoal.builder.module.emitBinary();
+		return this.#precompile().module.emitBinary();
 	}
 }

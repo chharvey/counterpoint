@@ -1,12 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	drop_then,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 } from '../../index.ts';
@@ -24,7 +22,6 @@ import {
 	type ValidOperatorUnary,
 } from '../Operator.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -46,25 +43,6 @@ export class OperationUnary extends Operation {
 		public  readonly operand:  Expression,
 	) {
 		super(start_node, operator, [operand]);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const arg0: binaryen.ExpressionRef = this.operand.build();
-		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(this.builder.module, [arg0], true);
-		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(this.builder.module, [arg0], false);
-		}
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.NOT,   'vnot'],
-			[Operator.EMP,   'vemp'],
-			[Operator.NEG,   'vneg'],
-			[Operator.INT,   'vtoi'],
-			[Operator.NAT,   'vton'],
-			[Operator.FLOAT, 'vtof'],
-		]).get(this.operator)!, [arg0], binaryen.v128);
 	}
 
 	@memoizeMethod

@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -20,7 +19,6 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
 import type {Case} from './Case.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -43,12 +41,6 @@ class AstMap extends CollectionLiteral {
 		public override readonly children: Readonly<NonemptyArray<Case>>,
 	) {
 		super(start_node, children);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`AstMap#build` not yet supported.');
 	}
 
 	@memoizeMethod

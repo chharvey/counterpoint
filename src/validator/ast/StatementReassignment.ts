@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	type Optimizer,
@@ -23,10 +22,7 @@ import {typecheck_assign} from './AstNode.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Access} from './Access.ts';
-import {
-	buildDeco,
-	Statement,
-} from './Statement.ts';
+import {Statement} from './Statement.ts';
 
 
 
@@ -92,11 +88,5 @@ export class StatementReassignment extends Statement {
 				this.assigned.lower(optimizer).asTac(optimizer),
 			));
 		}
-	}
-
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert_instanceof(this.assignee, Variable, '`StatementReassignment[assignee: Access]#build` not yet supported.');
-		return this.builder.getLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
 	}
 }

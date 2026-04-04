@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
@@ -15,7 +14,6 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -41,12 +39,6 @@ export class Template extends Expression {
 			| readonly Expression[],
 	) {
 		super(start_node, {}, children);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`Template#build` not yet supported.');
 	}
 
 	@memoizeMethod

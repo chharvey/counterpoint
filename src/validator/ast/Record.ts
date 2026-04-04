@@ -1,11 +1,9 @@
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	build_record_like,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -24,7 +22,6 @@ import {typecheck_assign} from './AstNode.ts';
 import type {Key} from './Key.ts';
 import type {Property} from './Property.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -58,15 +55,6 @@ class AstRecord extends CollectionLiteral {
 			}
 		});
 		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return build_record_like(this.builder, this.children.map((prop) => {
-			const value_build: binaryen.ExpressionRef = prop.val.build();
-			return {key: prop.key.id, pair: [value_build, binaryen.getExpressionType(value_build)]};
-		}));
 	}
 
 	@memoizeMethod

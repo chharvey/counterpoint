@@ -1,4 +1,3 @@
-import type binaryen from 'binaryen';
 import type {
 	VALUE,
 	TYPE,
@@ -18,10 +17,7 @@ import {
 	Operator,
 	type ValidOperatorCast,
 } from '../Operator.ts';
-import {
-	buildDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
 
@@ -40,12 +36,6 @@ export class OperationBinaryCast extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, Operator.CAST, operand0, operand1);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('OperationBinaryCast#build not yet supported.');
 	}
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {

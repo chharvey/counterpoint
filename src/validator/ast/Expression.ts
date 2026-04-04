@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
@@ -14,25 +13,6 @@ import {
 } from '../../core/index.ts';
 import {StatementExpression} from './index.ts';
 import {AstNode} from './AstNode.ts';
-import type {Buildable} from './Buildable.ts';
-
-
-
-/**
- * Decorator for {@link Expression#build} method and any overrides.
- * First tries to compute the assessed value, and if successful, builds the assessed value.
- * Otherwise builds this node.
- * @implements MethodDecorator<Expression, Expression['build']>
- */
-export function buildDeco(
-	method:  Expression['build'],
-	context: ClassMethodDecoratorContext<Expression, typeof method>,
-): typeof method {
-	assert_context_name(context, 'build');
-	return function (this: Expression) {
-		return this.fold()?.build(this.builder) ?? method.call(this);
-	};
-}
 
 
 
@@ -83,7 +63,7 @@ export function typeDeco(
  * - Claim
  * - Operation
  */
-export abstract class Expression extends AstNode implements Buildable {
+export abstract class Expression extends AstNode {
 	/**
 	 * Construct a new Expression from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -104,12 +84,6 @@ export abstract class Expression extends AstNode implements Buildable {
 		super.typeCheck();
 		this.type(); // assert does not throw
 	}
-
-	/**
-	 * @inheritdoc
-	 * @implements Buildable
-	 */
-	public abstract build(): binaryen.ExpressionRef;
 
 	/**
 	 * The Type of this expression.

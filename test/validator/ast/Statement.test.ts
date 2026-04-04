@@ -1,6 +1,5 @@
 import * as assert from 'assert';
 import * as test from 'node:test';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
@@ -9,8 +8,6 @@ import {
 	type SymbolSchema,
 	SymbolSchemaVar,
 	TYPE,
-	drop_then,
-	BinVect,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
@@ -19,10 +16,7 @@ import {
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.ts';
-import {
-	assertEqualBins,
-	assertAssignable,
-} from '../../assert-helpers.ts';
+import {assertAssignable} from '../../assert-helpers.ts';
 import {setupScript} from '../../helpers.ts';
 import {extract_lines} from '../../utils.ts';
 
@@ -189,7 +183,7 @@ test.suite('Statement', () => {
 						setupScript(`{
 							val mut x: int | float = 4.2;
 							${ stmt }
-						}`, {build: false}); // assert does not throw
+						}`, {lower: false}); // assert does not throw
 					});
 				});
 				test.test('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
@@ -223,7 +217,7 @@ test.suite('Statement', () => {
 						x;            % type \`int | float\`
 						claim x: int;
 						x;            % type \`int\`
-					}`, {build: false});
+					}`, {lower: false});
 					return assert.deepStrictEqual(
 						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
@@ -234,14 +228,14 @@ test.suite('Statement', () => {
 						val mut x: bool | null = false;
 						set x = true;
 						claim x: null;
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 				test.test('allows reassigning correct type after claim.', () => {
 					setupScript(`{
 						val mut x: bool | null = false;
 						claim x: bool;
 						set x = true;
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 				test.test('disallows reassigning incorrect type after claim.', () => {
 					const {stmts} = setupScript(`{
@@ -278,7 +272,7 @@ test.suite('Statement', () => {
 						claim map.["e"]:   float;
 						claim map.["tau"]: float;
 						%%
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 				test.test('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
@@ -289,7 +283,7 @@ test.suite('Statement', () => {
 						claim record.tuple.0: int;
 						record.value;               % type \`null\`
 						record.tuple.0;             % type \`int\`
-					}`, {build: false});
+					}`, {lower: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
 					return assert.deepStrictEqual(
 						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
@@ -307,8 +301,8 @@ test.suite('Statement', () => {
 						set list.[0] = 1.618;
 						claim list.[0]: int;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, {build: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
+						i === 0 && setupScript(src, {lower: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {lower: false}), /not yet supported/);
 					});
 				});
 				test.test('allows mutating correct type after claim.', () => {
@@ -322,8 +316,8 @@ test.suite('Statement', () => {
 						claim list.[0]: float;
 						set list.[0] = 1.618;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, {build: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
+						i === 0 && setupScript(src, {lower: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {lower: false}), /not yet supported/);
 					});
 				});
 				test.test('disallows mutating incorrect type after claim.', () => {
@@ -374,7 +368,7 @@ test.suite('Statement', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						val mut x?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
+					}`, {lower: false}).goal.block!.validator.getSymbol(0x100n), {
 						isWritable:      true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -401,7 +395,18 @@ test.suite('Statement', () => {
 						set Dict.<int>((i= 42)).[@i]              = 42;
 						set Set.<int>((42,)).[43]                 = false;
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
+				});
+				test.test('widens assignee write type for collection literals.', () => {
+					const {goal} = setupScript(`{
+						set [1.01].[1]                      = 1.02;  %> Expression of type \`1.02\` is not assignable to type \`1.01\`.
+						set [i= 2.03].[@j]                  = 2.04;  %> Expression of type \`2.04\` is not assignable to type \`2.03\`.
+						set {3.05}.[3.05]                   = false; %  no error
+						set {4.07 -> @a, 4.08 -> @b}.[4.07] = @c;    %> Expression of type \`@c\` is not assignable to type \`@a | @b\`.
+						set {3.05}.[3.06]                   = true;  %> Type \`3.06\` is not a subtype of type \`3.05\`.
+						set {4.07 -> @a, 4.08 -> @b}.[4.09] = @a;    %> Type \`4.09\` is not a subtype of type \`4.07 | 4.08\`.
+					}`, {typeCheck: false});
+					return assert.throws(() => goal.typeCheck(), AggregateError); // TODO: use NodeJS `test.expectFailure`
 				});
 				test.test('throws when property assignee type is not supertype.', () => {
 					[
@@ -493,7 +498,7 @@ test.suite('Statement', () => {
 						${ decl }
 						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
 						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -527,7 +532,7 @@ test.suite('Statement', () => {
 						${ decl }
 						while ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
 						until ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -554,7 +559,7 @@ test.suite('Statement', () => {
 						for it: ${ vartype } in ["hello", "world"] do {
 							val greeting: ${ vartype } = it;
 						};
-					}`, {build: false}); // assert does not throw
+					}`, {lower: false}); // assert does not throw
 				});
 			});
 			test.test('throws when iterable is not subtype of List.', () => {
@@ -612,7 +617,7 @@ test.suite('Statement', () => {
 				x;
 				42;
 				;
-			}`, {build: false});
+			}`, {lower: false});
 			assert.strictEqual(opt.instructions.length, 0);
 			(stmts[1] as AST.StatementExpression).lower(opt);
 			assert.strictEqual(opt.instructions.length, 1);
@@ -630,7 +635,7 @@ test.suite('Statement', () => {
 			const {stmts, opt} = setupScript(`{%
 				val mut x: int | float = 42;
 				claim x: int;
-			}`, {build: false});
+			}`, {lower: false});
 			(stmts[1] as AST.StatementClaim).lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
 				(DROP (GET x))
@@ -644,7 +649,7 @@ test.suite('Statement', () => {
 					set x = 43;
 					set x = 44;
 					set x = -42;
-				}`, {build: false});
+				}`, {lower: false});
 				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).lower(opt));
 				return assert.strictEqual(opt.print(), extract_lines`
 					(SET x (INT.CONST 43))
@@ -664,7 +669,7 @@ test.suite('Statement', () => {
 					set my_dict.[@b]      = 84;
 					set my_set.[accessor] = true;
 					set my_map.[accessor] = 84;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
@@ -692,7 +697,7 @@ test.suite('Statement', () => {
 						(6 / (1 + 1));
 						3.3;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					if_false (BOOL.CONST true), goto "block-1".
 					"block-0":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
@@ -712,7 +717,7 @@ test.suite('Statement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					if_false (BOOL.CONST false), goto "block-2".
 					"block-0":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
@@ -727,7 +732,7 @@ test.suite('Statement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					if_false (NOT (BOOL.CONST false)), goto "block-2".
 					"block-0":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
@@ -748,7 +753,7 @@ test.suite('Statement', () => {
 						val y: float = 3.3;
 					};
 					x;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> unknown_cond (BOOL.CONST false))
 					(DECL <int> x (INT.CONST 42))
 					if_false (GET unknown_cond), goto "block-1".
@@ -775,7 +780,7 @@ test.suite('Statement', () => {
 						42;
 						4.2;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
 					if_false (GET cond), goto "block-1".
@@ -791,7 +796,7 @@ test.suite('Statement', () => {
 					until cond do {
 						42;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
 					if_false (NOT (GET cond)), goto "block-1".
@@ -810,7 +815,7 @@ test.suite('Statement', () => {
 					do {
 						42;
 					} until cond;
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
 					(DROP (INT.CONST 42))
@@ -835,7 +840,7 @@ test.suite('Statement', () => {
 				for _: float in [4.4, 5.5, 6.6] do {
 					null;
 				};
-			}`, {lower: true, build: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), extract_lines`
 				(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
 				(DECL <nat> $1 (NAT.CONST +0))
 				"block-0":
@@ -873,7 +878,7 @@ test.suite('Statement', () => {
 						break;
 						30;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					"block-0":
 					if_false (BOOL.CONST true), goto "block-1".
 					(DROP (INT.CONST 41))
@@ -915,7 +920,7 @@ test.suite('Statement', () => {
 						};
 						70;
 					};
-				}`, {lower: true, build: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), extract_lines`
 					"block-0":
 					if_false (BOOL.CONST true), goto "block-1".
 					(DROP (INT.CONST 10))
@@ -937,386 +942,6 @@ test.suite('Statement', () => {
 					goto "block-0".
 					"block-1":
 				`.join('\n'));
-			});
-		});
-	});
-
-
-	test.suite('#build', () => {
-		test.suite('StatementExpression', () => {
-			test.test('returns `(nop)` for empty statement expression.', () => {
-				const stmt: AST.StatementExpression = AST.StatementExpression.fromSource(';');
-				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
-			});
-			test.test('returns `(nop)` for nonempty foldable statement expression.', () => {
-				const stmt: AST.StatementExpression = AST.StatementExpression.fromSource('42 + 420;');
-				return assertEqualBins(stmt.build(), stmt.builder.module.nop());
-			});
-			test.test('returns `(drop)` for nonempty non-foldable statement expression.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut x: int = 42;
-					x * 10;
-				}`);
-				assert_instanceof(stmts[1], AST.StatementExpression);
-				assert.ok(stmts[1].expr);
-				return assertEqualBins(
-					stmts[1].build(),
-					mod.drop(stmts[1].expr.build()),
-				);
-			});
-		});
-
-		test.suite('StatementClaim', () => {
-			test.test('always returns `(nop)`.', () => {
-				const {stmts, mod} = setupScript(`{
-					type T = int;
-					val mut x: int = 42;
-					claim x: T;
-				}`);
-				return assertEqualBins(stmts[2].build(), mod.nop());
-			});
-		});
-
-		test.suite('StatementReassignment', () => {
-			test.test('always returns `(local.set)`.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut y: float = 4.2;
-					set y = y * 10.0;
-				}`);
-				return assertEqualBins(
-					stmts[1].build(),
-					mod.local.set(0, (stmts[1] as AST.StatementReassignment).assigned.build()),
-				);
-			});
-			test.test('allows switching between union members.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut x: float | int = 4.2;
-					val mut y: int | float = 4.2;
-					set x = 8.4;
-					set x = 16;
-					set x = x;
-					set x = y;
-				}`);
-				return assertEqualBins(
-					stmts.slice(2).map((stmt) => stmt.build()),
-					stmts.slice(2).map((stmt) => mod.local.set(0, (stmt as AST.StatementReassignment).assigned.build())),
-				);
-			});
-		});
-
-		test.suite('StatementConditional', () => {
-			test.test('produces `(nop)` for alternative if there is none.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond: bool = false;
-					if cond then {
-						42;
-					};
-				}`);
-				const stmt = stmts[1] as AST.StatementConditional;
-				return assertEqualBins(stmt.build(), mod.if(
-					new BinVect(mod, stmt.condition.build()).isSpecial(true),
-					stmt.consequent.build(),
-					mod.nop(),
-				));
-			});
-			test.suite('produces `(nop)` for entire statement when …', () => {
-				test.test('… condition is foldable and truthy (or falsy for `unless`), and consequent is foldable.', () => {
-					const {stmts, mod} = setupScript(`{
-						val mut value: float = 4.2;
-						val truthy_cond: bool = true;
-						if truthy_cond then {
-							42;
-						} else {
-							set value = 6.9;
-						};
-						unless !truthy_cond then {
-							42;
-						};
-					}`);
-					return assertEqualBins(
-						stmts.slice(2, 4).map((stmt) => (stmt as AST.StatementConditional).build()),
-						[mod.nop(), mod.nop()],
-					);
-				});
-				test.test('… condition is foldable and falsy (or truthy for `unless`), and alternative is foldable (or doesn’t exist).', () => {
-					const {stmts, mod} = setupScript(`{
-						val mut value: float = 4.2;
-						val falsy_cond: bool = !"hello";
-						if falsy_cond then {
-							set value = 6.9;
-						} else {
-							42;
-						};
-						if falsy_cond then {
-							set value = 6.9;
-						};
-						unless !falsy_cond then {
-							set value = 6.9;
-						};
-					}`);
-					return assertEqualBins(
-						stmts.slice(2, 5).map((stmt) => (stmt as AST.StatementConditional).build()),
-						[mod.nop(), mod.nop(), mod.nop()],
-					);
-				});
-			});
-			test.test('produces a simple block if the condition is definitely truthy/falsy.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut TRUE:  true  = true;
-					val mut FALSE: false = false;
-					if TRUE then {
-						42;
-					};
-					if TRUE then {
-						42;
-					} else {
-						69;
-					};
-					if FALSE then {
-						42;
-					};
-					if FALSE then {
-						42;
-					} else {
-						69;
-					};
-				}`);
-				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
-					drop_then(
-						mod,
-						[(stmts[2] as AST.StatementConditional).condition.build()],
-						(stmts[2] as AST.StatementConditional).consequent.build(),
-					),
-					drop_then(
-						mod,
-						[(stmts[3] as AST.StatementConditional).condition.build()],
-						(stmts[3] as AST.StatementConditional).consequent.build(),
-					),
-					drop_then(
-						mod,
-						[(stmts[4] as AST.StatementConditional).condition.build()],
-						mod.nop(),
-					),
-					drop_then(
-						mod,
-						[(stmts[5] as AST.StatementConditional).condition.build()],
-						(stmts[5] as AST.StatementConditional).alternative!.build(),
-					),
-				]);
-			});
-			test.test('if not foldable, retuns `(if)`.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut unknown_cond: bool = false;
-					if unknown_cond then {
-						42;
-					} else {
-						4.2;
-					};
-				}`);
-				const stmt1 = stmts[1] as AST.StatementConditional;
-				return assertEqualBins(stmt1.build(), mod.if(
-					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
-					stmt1.consequent.build(),
-					stmt1.alternative!.build(),
-				));
-			});
-			test.test('negates the condition for `unless` statements.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond: bool = false;
-					unless cond then {
-						42;
-					};
-				}`);
-				const stmt = stmts[1] as AST.StatementConditional;
-				return assertEqualBins(stmt.build(), mod.if(
-					new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(true),
-					stmt.consequent.build(),
-					mod.nop(),
-				));
-			});
-			test.test('nested if–else.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond1: bool = false;
-					val mut cond2: bool = true;
-					if cond1 then {
-						42;
-					} else if cond2 then {
-						4.2;
-					} else {
-						null;
-					};
-				}`);
-				const stmt1 = stmts[2] as AST.StatementConditional;
-				const stmt2 = stmt1.alternative as AST.StatementConditional;
-				assertEqualBins(stmt1.build(), mod.if(
-					new BinVect(mod, stmt1.condition.build()).isSpecial(true),
-					stmt1.consequent.build(),
-					stmt2.build(),
-				));
-				assertEqualBins(stmt2.build(), mod.if(
-					new BinVect(mod, stmt2.condition.build()).isSpecial(true),
-					stmt2.consequent.build(),
-					stmt2.alternative!.build(),
-				));
-			});
-		});
-
-		test.suite('StatementLoop', () => {
-			function makeLoop(
-				mod:          binaryen.Module,
-				label_exit:   string,
-				label_repeat: string,
-				label_body:   string,
-				instrs:       (build_body: (block_build: binaryen.ExpressionRef) => binaryen.ExpressionRef) => binaryen.ExpressionRef[],
-				while_false:  boolean = false,
-			): binaryen.ExpressionRef {
-				return mod.block(label_exit, [mod.loop(label_repeat, mod.block(null, [
-					...instrs.call(null, (block_build) => mod.block(label_body, [block_build])),
-					mod.br(while_false ? label_exit : label_repeat),
-				]))]);
-			}
-			test.test('produces `(nop)` if entire statement is foldable.', () => {
-				const {stmts, mod} = setupScript(`{
-					val cond: bool = true;
-					while cond do {
-						42;
-					};
-				}`);
-				return assertEqualBins(stmts[1].build(), mod.nop());
-			});
-			test.test('if not foldable, retuns `(block (loop (block)))`.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond: bool = false;
-					while cond do {
-						42;
-						4.2;
-					};
-				}`);
-				const stmt = stmts[1] as AST.StatementLoop;
-				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
-					mod.br_if('exit0', new BinVect(mod, stmt.condition.build()).isSpecial(false)),
-					build_body(stmt.block.build()),
-				]));
-			});
-			test.test('skips condition check if condition is definitely truthy/falsy.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut TRUE:  true  = true;
-					val mut FALSE: false = false;
-					while TRUE do {
-						42;
-					};
-					do {
-						42;
-					} while TRUE;
-					while FALSE do {
-						42;
-					};
-					do {
-						42;
-					} while FALSE;
-				}`);
-				return assertEqualBins(stmts.slice(2).map((stmt) => stmt.build()), [
-					makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
-						mod.drop((stmts[2] as AST.StatementLoop).condition.build()),
-						build_body((stmts[2] as AST.StatementLoop).block.build()),
-					]),
-					makeLoop(mod, 'exit1', 'repeat1', 'body1', (build_body) => [
-						build_body((stmts[3] as AST.StatementLoop).block.build()),
-						mod.drop((stmts[3] as AST.StatementLoop).condition.build()),
-					]),
-					makeLoop(mod, 'exit2', 'repeat2', 'body2', (build_body) => [
-						mod.drop((stmts[4] as AST.StatementLoop).condition.build()),
-						build_body((stmts[4] as AST.StatementLoop).block.build()),
-					], true),
-					makeLoop(mod, 'exit3', 'repeat3', 'body3', (build_body) => [
-						build_body((stmts[5] as AST.StatementLoop).block.build()),
-						mod.drop((stmts[5] as AST.StatementLoop).condition.build()),
-					], true),
-				]);
-			});
-			test.test('negates the condition for `until` statements.', () => {
-				const {stmts, mod} = setupScript(`{
-					val mut cond: bool = false;
-					until cond do {
-						42;
-					};
-				}`);
-				const stmt = stmts[1] as AST.StatementLoop;
-				return assertEqualBins(stmt.build(), makeLoop(mod, 'exit0', 'repeat0', 'body0', (build_body) => [
-					mod.br_if('exit0', new BinVect(mod, mod.call('vnot', [stmt.condition.build()], binaryen.v128)).isSpecial(false)),
-					build_body(stmt.block.build()),
-				]));
-			});
-		});
-
-		test.suite('StatementIteration', () => {
-			test.test('produces `(nop)` if entire statement is foldable.', () => {
-				const {stmts, mod} = setupScript(`{
-					for it: int in [10, 20, 30, 40] do {
-						42;
-					};
-				}`);
-				return assertEqualBins(stmts[0].build(), mod.nop());
-			});
-			test.test('if not foldable, is not yet supported.', () => {
-				const {stmts} = setupScript(`{
-					val mut i: int = 42;
-					for it: int in [10, 20, 30, 40] do {
-						set i = it;
-					};
-				}`, {build: false});
-				stmts[0].build(); // assert does not throw
-				return assert.throws(() => stmts[1].build(), /not yet supported/);
-			});
-		});
-
-		test.suite('StatementBreak', () => {
-			test.test('produces (br).', () => {
-				const {stmts, mod} = setupScript(`{
-					while true do {
-						break;
-						skip;
-					};
-				}`);
-				const while_block: AST.Block = (stmts[0] as AST.StatementLoop).block;
-				return assertEqualBins([
-					while_block.children[0].build(),
-					while_block.children[1].build(),
-				], [
-					mod.br('exit0'),
-					mod.br('body0'),
-				]);
-			});
-			test.test('nested loops.', () => {
-				const {stmts, mod} = setupScript(`{
-					while true do {
-						break;
-						if true then {
-							while true do {
-								skip;
-							};
-						};
-					};
-				}`);
-				const outer_block: AST.Block = (stmts[0] as AST.StatementLoop).block;
-				const inner_block: AST.Block = ((outer_block.children[1] as AST.StatementConditional).consequent.children[0] as AST.StatementLoop).block;
-				return assertEqualBins([
-					outer_block.children[0].build(),
-					inner_block.children[0].build(),
-				], [
-					mod.br('exit0'),
-					mod.br('body1'),
-				]);
-			});
-			test.test('throws if the parent block has not been built yet.', () => {
-				const while_block: AST.Block = (setupScript(`{
-					while true do {
-						break;
-						skip;
-					};
-				}`, {build: false}).stmts[0] as AST.StatementLoop).block;
-				assert.throws(() => while_block.children[0].build(), /Expected builder to store/);
-				assert.throws(() => while_block.children[1].build(), /Expected builder to store/);
 			});
 		});
 	});

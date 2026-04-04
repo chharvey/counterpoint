@@ -1,14 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	bigint_to_i64,
-	type Local,
-	BinVect,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -31,10 +27,7 @@ import {
 	bothNats,
 	bothFloats,
 } from './utils-private.ts';
-import {
-	buildDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
 
@@ -55,110 +48,8 @@ export class OperationBinaryArithmetic extends OperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const mod:          binaryen.Module          = this.builder.module;
-		const [t0, t1]:     TYPE.Type[]              = this.children.map((operand) => operand.type());
-		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		const v0:           VALUE.Value | null       = this.operand0.fold();
-
-		// short-circuit by using identity laws
-		// if operand0 is foldable and using identity laws, just return operand1
-		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
-			return arg1;
-		}
-		// if operand0 is not foldable, try short-circuiting at runtime
-		if (!v0) {
-			switch (this.operator) {
-				case Operator.MUL: {
-					const local0: Local = this.builder.newLocal(arg0);
-					const teeer         = new BinVect(mod, local0.tee());
-					const getter        = new BinVect(mod, local0.get());
-					// if arg0 is mathematically 0, return it
-					return mod.if(
-						mod.i32.or(
-							mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
-							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-						),
-						local0.get(),
-						// else if arg0 is mathematically 1, return arg1
-						mod.if(
-							mod.i32.or(
-								mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
-								mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
-							),
-							arg1,
-							// else return a wasm call
-							mod.call(
-								bothInts(t0, t1) || bothNats(t0, t1) ? 'vimul' : (assert.ok(bothFloats(t0, t1)), 'vfmul'),
-								[local0.get(), arg1],
-								binaryen.v128,
-							),
-						),
-					);
-				}
-				case Operator.ADD: {
-					const local0: Local = this.builder.newLocal(arg0);
-					const teeer         = new BinVect(mod, local0.tee());
-					const getter        = new BinVect(mod, local0.get());
-					// if arg0 is mathematically 0, return arg1
-					return mod.if(
-						mod.i32.or(
-							mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
-							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-						),
-						arg1,
-						// else return a wasm call
-						mod.call(
-							bothInts(t0, t1) || bothNats(t0, t1) ? 'viadd' : (assert.ok(bothFloats(t0, t1)), 'vfadd'),
-							[local0.get(), arg1],
-							binaryen.v128,
-						),
-					);
-				}
-			}
-		}
-
-		// if operand0 is foldable and not using identity laws, or if operand0 is not foldable and operation is not short-circuitable, return wasm call
-		switch (true) {
-			case bothInts(t0, t1): {
-				return mod.call(new Map<Operator, string>([
-					[Operator.EXP, 'viexp'],
-					[Operator.MUL, 'vimul'],
-					[Operator.DIV, 'vidiv_s'],
-					[Operator.ADD, 'viadd'],
-					[Operator.SUB, 'visub_s'],
-				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
-			}
-			case bothNats(t0, t1): {
-				return mod.call(new Map<Operator, string>([
-					[Operator.EXP, 'viexp'],
-					[Operator.MUL, 'vimul'],
-					[Operator.DIV, 'vidiv_u'],
-					[Operator.ADD, 'viadd'],
-					[Operator.SUB, 'visub_u'],
-				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
-			}
-			case bothFloats(t0, t1): {
-				if (this.operator === Operator.EXP) {
-					return mod.unreachable();
-				}
-				return mod.call(new Map<Operator, string>([
-					[Operator.MUL, 'vfmul'],
-					[Operator.DIV, 'vfdiv'],
-					[Operator.ADD, 'vfadd'],
-					[Operator.SUB, 'vfsub'],
-				]).get(this.operator)!, [arg0, arg1], binaryen.v128);
-			}
-			default: {
-				return mod.unreachable();
-			}
-		}
-	}
-
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
-		if (t0.isBottomType) {
+		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
 		return (

@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
@@ -29,10 +28,7 @@ import {Template} from './Template.ts';
 import {Tuple as AstTuple} from './Tuple.ts';
 import {Record as AstRecord} from './Record.ts';
 import {Call} from './Call.ts';
-import {
-	buildDeco,
-	Statement,
-} from './Statement.ts';
+import {Statement} from './Statement.ts';
 
 
 
@@ -182,13 +178,5 @@ export class DeclarationVariable extends Statement {
 		} else {
 			optimizer.pushInstruction(new IR.Drop(value));
 		}
-	}
-
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(this.builder);
-		return this.assignee
-			? this.builder.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
-			: this.builder.module.drop(value);
 	}
 }

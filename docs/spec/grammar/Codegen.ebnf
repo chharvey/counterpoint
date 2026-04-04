@@ -58,7 +58,9 @@ Codegen((LIST.NEW `values`)) := (struct.new $Value
 			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const `values.count`)
-		(array.new_fixed $ListInternal `CapacityNeeded(values.count)` `values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`)
+		(array.new_fixed $ListInternal `CapacityNeeded(values.count)`
+			`values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`
+		)
 	)
 );
 
@@ -83,13 +85,44 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 			(i64.sub (global.get $obj-ctr) (i64.const 1))
 		)
 		(i32.const `pairs.count`)
-		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)` `pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
+		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)`
+			`pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property
+				(i64.const `pairs[i].0`)
+				`Codegen(pairs[i].1)`
+			)")`
+		)
 	)
 );
 
 // `Set<T>`s are implemented as `Map<T, null>`s
-Codegen((SET.NEW))          := `Codegen((MAP.NEW))`;
-Codegen((SET.NEW `values`)) := `Codegen((MAP.NEW `values.map(Sequence [values[i], (NULL.CONST null)])`))`;
+Codegen((SET.NEW)) := (struct.new $Value
+	(i32.const 2)
+	(v128.const i64x2 0 0)
+	(struct.new $Map
+		(block (result i64)
+			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+			(i64.sub (global.get $obj-ctr) (i64.const 1))
+		)
+		(i32.const 0)
+		(array.new_default $MapInternal (i32.const 8))
+	)
+);
+Codegen((SET.NEW `values`)) := (struct.new $Value
+	(i32.const 2)
+	(v128.const i64x2 0 0)
+	(block (result (ref $Map))
+		(local.set $map (struct.new $Map
+			(block (result i64)
+				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
+				(i64.sub (global.get $obj-ctr) (i64.const 1))
+			)
+			(i32.const `values.count`)
+			(array.new_default $MapInternal `CapacityNeeded(values.count)`)
+		))
+		`...values.map("(call $Map.set `Codegen(values[i])` `Codegen((NULL.CONST null))`)")`
+		(local.get $map)
+	)
+);
 
 Codegen((MAP.NEW)) := (struct.new $Value
 	(i32.const 2)

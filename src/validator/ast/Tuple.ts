@@ -1,12 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
 	type Optimizer,
 	IR,
-	build_tuple_like,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -21,7 +19,6 @@ import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
 import {
-	buildDeco,
 	typeDeco,
 	Expression,
 } from './Expression.ts';
@@ -44,15 +41,6 @@ class AstTuple extends CollectionLiteral {
 		public override readonly children: readonly Expression[],
 	) {
 		super(start_node, children);
-	}
-
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return build_tuple_like(this.builder, this.children.map((item) => {
-			const item_build: binaryen.ExpressionRef = item.build();
-			return [item_build, binaryen.getExpressionType(item_build)];
-		}));
 	}
 
 	@memoizeMethod
