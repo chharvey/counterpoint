@@ -103,12 +103,12 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		this.labelEndwhile = optimizer.newLabel();
 
 		optimizer.pushInstruction(this.labels.while!);
-		optimizer.pushInstruction(new IR.GotoIfFalse(new IR.Binop(
+		optimizer.pushInstruction(new IR.Goto(this.labels.endwhile!, new IR.Binop(
 			IR.OpCode.LT,
 			get_index,
 			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable),
 			TYPE.BOOL,
-		), this.labels.endwhile!));
+		)));
 		if (this.assignee) {
 			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;

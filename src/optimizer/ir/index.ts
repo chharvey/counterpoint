@@ -28,4 +28,3 @@ export * from './CollectionDynamicSet.ts';
 export * from './CollectionDynamicCopy.ts';
 export * from './Label.ts';
 export * from './Goto.ts';
-export * from './GotoIfFalse.ts';

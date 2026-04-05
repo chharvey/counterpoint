@@ -32,7 +32,7 @@ test.suite('Opcode', () => {
 				...opt.instructions,
 				new IR.Label('label1'),
 				new IR.Goto(new IR.Label('label2')),
-				new IR.GotoIfFalse(new IR.Const(VALUE.NULL), new IR.Label('label2')),
+				new IR.Goto(new IR.Label('label2'), new IR.Const(VALUE.NULL)),
 			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
 		});
 

@@ -9,7 +9,6 @@ import {
 	Phi,
 	type Label,
 	Goto,
-	GotoIfFalse,
 } from './index.ts';
 
 
@@ -109,7 +108,7 @@ export function conditional_expression(
 	const label_else:  Label = optimizer.newLabel();
 	const label_endif: Label = optimizer.newLabel();
 
-	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), label_else));
+	optimizer.pushInstruction(new Goto(label_else, condition.call(null)));
 	optimizer.pushInstruction(label_then);
 	const result_then: Temp = optimizer.newTemp(consequent.call(null));
 	optimizer.pushInstruction(new Goto(label_endif));

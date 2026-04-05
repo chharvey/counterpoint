@@ -13,7 +13,6 @@ import {Opcode} from './Opcode.ts';
  * - CollectionDynamicCopy
  * - Label
  * - Goto
- * - GotoIfFalse
  */
 export abstract class Instruction extends Opcode {
 }
