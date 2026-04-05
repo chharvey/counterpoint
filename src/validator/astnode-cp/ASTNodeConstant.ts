@@ -78,29 +78,25 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	@memoizeMethod
 	public override fold(): VALUE.Primitive {
+		if (isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) {
+			return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
+		}
+		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+		const children: readonly SyntaxNode[] = this.start_node.children;
 		switch (true) {
-			case isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/): {
-				return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
+			case isSyntaxNodeType(children[0], /^(integer|natural|float)$/): {
+				return valueOfTokenNumber(children[0].text);
+			}
+			case isSyntaxNodeType(children[0], 'string'): {
+				return new VALUE.String(Validator.cookTokenString(children[0].text));
+			}
+			case isSyntaxNodeType(children[0], 'keyword_value'): {
+				return ASTNodeConstant.keywordValue(children[0].children[0].text);
 			}
 			default: {
-				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
-				const children: readonly SyntaxNode[] = this.start_node.children;
-				switch (true) {
-					case isSyntaxNodeType(children[0], /^(integer|natural|float)$/): {
-						return valueOfTokenNumber(children[0].text);
-					}
-					case isSyntaxNodeType(children[0], 'string'): {
-						return new VALUE.String(Validator.cookTokenString(children[0].text));
-					}
-					case isSyntaxNodeType(children[0], 'keyword_value'): {
-						return ASTNodeConstant.keywordValue(children[0].children[0].text);
-					}
-					default: {
-						assert.strictEqual(children.length, 2);
-						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
-						return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
-					}
-				}
+				assert.strictEqual(children.length, 2);
+				assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
+				return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
 			}
 		}
 	}
