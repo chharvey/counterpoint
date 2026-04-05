@@ -48,26 +48,32 @@ function is_inferrable(node?: ASTNodeExpression): boolean {
 
 
 function writable_inferred_type(node: ASTNodeExpression): TYPE.Type {
-	if (node instanceof ASTNodeConstant) {
-		const value: VALUE.Primitive = node.fold();
-		return (
-			value instanceof VALUE.Null    ? TYPE.NULL :
-			value instanceof VALUE.Boolean ? TYPE.BOOL :
-			value instanceof VALUE.Symbol  ? TYPE.SYM :
-			value instanceof VALUE.Integer ? TYPE.INT :
-			value instanceof VALUE.Natural ? TYPE.NAT :
-			value instanceof VALUE.Float   ? TYPE.FLOAT :
-			value instanceof VALUE.String  ? TYPE.STR :
-			assert.fail(`Expected ${ value } to be a primitive value.`)
-		);
-	} else if (node instanceof ASTNodeTuple) {
-		return TYPE.Tuple.fromTypes(node.children.map((expr) => writable_inferred_type(expr)));
-	} else if (node instanceof ASTNodeRecord) {
-		return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, writable_inferred_type(prop.val)])));
-	} else if (node instanceof ASTNodeCall) { // TODO: distinguish between constructor calls and function calls
-		return node.type();
-	} else {
-		assert.fail(`${ node.source } should be an instance of ${ ASTNodeConstant.name }, ${ ASTNodeTuple.name }, ${ ASTNodeRecord.name }, or ${ ASTNodeCall.name }.`);
+	switch (true) {
+		case node instanceof ASTNodeConstant: {
+			const value: VALUE.Primitive = node.fold();
+			return (
+				value instanceof VALUE.Null    ? TYPE.NULL :
+				value instanceof VALUE.Boolean ? TYPE.BOOL :
+				value instanceof VALUE.Symbol  ? TYPE.SYM :
+				value instanceof VALUE.Integer ? TYPE.INT :
+				value instanceof VALUE.Natural ? TYPE.NAT :
+				value instanceof VALUE.Float   ? TYPE.FLOAT :
+				value instanceof VALUE.String  ? TYPE.STR :
+				assert.fail(`Expected ${ value } to be a primitive value.`)
+			);
+		}
+		case node instanceof ASTNodeTuple: {
+			return TYPE.Tuple.fromTypes(node.children.map((expr) => writable_inferred_type(expr)));
+		}
+		case node instanceof ASTNodeRecord: {
+			return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, writable_inferred_type(prop.val)])));
+		}
+		case node instanceof ASTNodeCall: { // TODO: distinguish between constructor calls and function calls
+			return node.type();
+		}
+		default: {
+			assert.fail(`${ node.source } should be an instance of ${ ASTNodeConstant.name }, ${ ASTNodeTuple.name }, ${ ASTNodeRecord.name }, or ${ ASTNodeCall.name }.`);
+		}
 	}
 }
 
