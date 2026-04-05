@@ -92,11 +92,11 @@ export function typecheck_assign(
  *
  * Known subinterfaces:
  * - Foldable
- * - Buildable
+ * - Lowerable
  */
 export class AstNode implements Serializable {
 	/** @implements Serializable */
-	public readonly tagname:      string = this.constructor.name.slice('AstNode'.length);
+	public readonly tagname:      string = this.constructor.name;
 	/** @implements Serializable */
 	public readonly source:       string;
 	/** @implements Serializable */

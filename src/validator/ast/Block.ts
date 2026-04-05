@@ -1,8 +1,5 @@
 import * as assert from 'node:assert';
-import type {
-	Optimizer,
-	Lowerable,
-} from '../../index.ts';
+import type {Optimizer} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -17,6 +14,7 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Goal} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
+import type {Lowerable} from './Lowerable.ts';
 import type {ExpressionBlock} from './ExpressionBlock.ts';
 import type {Statement} from './Statement.ts';
 import type {StatementConditional} from './StatementConditional.ts';

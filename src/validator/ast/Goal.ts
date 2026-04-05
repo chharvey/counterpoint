@@ -2,7 +2,6 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Optimizer,
-	type Lowerable,
 	ParseError01,
 } from '../../index.ts';
 import {runOnceMethod} from '../../lib/index.ts';
@@ -19,6 +18,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {AstNode} from './AstNode.ts';
+import type {Lowerable} from './Lowerable.ts';
 import type {Block} from './Block.ts';
 
 

@@ -62,6 +62,9 @@ export function typeDeco(
  * - Call
  * - Claim
  * - Operation
+ *
+ * Known subinterfaces:
+ * - Reassignable
  */
 export abstract class Expression extends AstNode {
 	/**

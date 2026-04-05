@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import type {
 	Optimizer,
 	IR,
-	Lowerable,
 } from '../../index.ts';
 import {
 	type CplConfig,
@@ -11,6 +10,7 @@ import {
 import {Block} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
+import type {Lowerable} from './Lowerable.ts';
 
 
 
