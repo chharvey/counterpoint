@@ -19,10 +19,7 @@ import {
 	ASTNodeStatementExpression,
 	type ASTNodeBlock,
 } from './index.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 
@@ -42,7 +39,6 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.block.hasBottomType) {
 			return TYPE.NOTHING;
