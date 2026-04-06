@@ -20,6 +20,7 @@ export abstract class Primitive extends Value {
 	 */
 	@memoizeMethod
 	public override toType(): TYPE.Unit<this> {
+		// FIXME: use TYPE_CONSTANTS
 		return new TYPE.Unit<this>(this);
 	}
 

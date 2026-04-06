@@ -1,10 +1,9 @@
 import * as assert from 'node:assert';
-import {
+import type {
 	VALUE,
 	TYPE,
-	type Optimizer,
-	type IR,
-	ErrorCode,
+	Optimizer,
+	IR,
 } from '../../index.ts';
 import {assert_context_name} from '../../lib/index.ts';
 import {
@@ -30,20 +29,6 @@ export function typeDeco(
 	assert_context_name(context, 'type');
 	return function (this: ASTNodeExpression) {
 		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
-		let value: VALUE.Value | null = null;
-		try {
-			value = this.fold();
-		} catch (err) {
-			if (err instanceof ErrorCode) {
-				// ignore evaluation errors such as VoidError, NanError, etc.
-				return TYPE.NOTHING;
-			} else {
-				throw err;
-			}
-		}
-		if (!!value && value instanceof VALUE.Primitive) {
-			return value.toType();
-		}
 		return type;
 	};
 }
