@@ -178,7 +178,7 @@ export class Validator {
 
 	/**
 	 * Give the numeric value of a number token.
-	 * If the returned value is a native `bigint`, it represents a Counterpoint Integer language value;
+	 * If the returned value is a native `bigint`, it represents either a Counterpoint Integer or Natural language value;
 	 * if the returned value is a native `number`, it represents a Counterpoint Float language value.
 	 * @param source the token’s text
 	 * @return       the numeric value, cooked
