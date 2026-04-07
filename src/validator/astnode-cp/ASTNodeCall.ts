@@ -28,10 +28,7 @@ import {
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {ASTNodeTypeCall} from './ASTNodeTypeCall.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeTuple} from './ASTNodeTuple.ts';
 import {ASTNodeRecord} from './ASTNodeRecord.ts';
@@ -75,7 +72,6 @@ export class ASTNodeCall extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (!(this.base instanceof ASTNodeVariable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);

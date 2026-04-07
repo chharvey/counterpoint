@@ -29,10 +29,7 @@ import {
 } from './utils-private.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {Reassignable} from './Reassignable.ts';
 
 
@@ -60,7 +57,6 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.base.type().isBottomType) {
 			return TYPE.NOTHING;

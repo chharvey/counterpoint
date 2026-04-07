@@ -16,10 +16,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
 	ASTNodeCollectionLiteral,
@@ -42,7 +39,6 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.children.some((c) => c.type().isBottomType)) {
 			return TYPE.NOTHING;
