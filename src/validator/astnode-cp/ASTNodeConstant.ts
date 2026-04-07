@@ -8,6 +8,7 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -50,6 +51,11 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
+	@memoizeGetter
+	public get interpreterValue(): VALUE.Primitive {
+		return this.fold();
+	}
+
 	public override varCheck(): void {
 		super.varCheck();
 		if (
@@ -63,12 +69,12 @@ export class ASTNodeConstant extends ASTNodeExpression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		return this.fold().toType();
+		return this.interpreterValue.toType();
 	}
 
 	@memoizeMethod
 	public override lower(): IR.Const {
-		return new IR.Const(this.fold());
+		return new IR.Const(this.interpreterValue);
 	}
 
 	@memoizeMethod

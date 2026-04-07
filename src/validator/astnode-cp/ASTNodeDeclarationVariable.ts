@@ -50,7 +50,7 @@ function is_inferrable(node?: ASTNodeExpression): boolean {
 function writable_inferred_type(node: ASTNodeExpression): TYPE.Type {
 	switch (true) {
 		case node instanceof ASTNodeConstant: {
-			const value: VALUE.Primitive = node.fold();
+			const value: VALUE.Primitive = node.interpreterValue;
 			return (
 				value instanceof VALUE.Null    ? TYPE.NULL :
 				value instanceof VALUE.Boolean ? TYPE.BOOL :
@@ -163,13 +163,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		);
 		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
+			// TODO: move these next lines to the interpreter
 			if (!symbol.type.hasMutable && !this.writable) {
 				assert.ok(!symbol.isWritable, `Symbol \`${ symbol.source }\` should not be writable.`);
-				symbol.value = value;
+				symbol.value = this.assigned?.fold() ?? null;
 			}
 		}
 	}
