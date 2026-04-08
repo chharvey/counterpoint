@@ -822,6 +822,18 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_variable)
 			`]],
+
+			['Decorate(SourceFile ::= #x02 #x03) -> SemanticGoal', [AST.ASTNodeGoal, `
+				{
+				}
+				% (source_file)
+			`]],
+			['Decorate(SourceFile ::= #x02 Block #x03) -> SemanticGoal', [AST.ASTNodeGoal, `
+				{
+					"source file";
+				}
+				% (source_file)
+			`]],
 		]).forEach(([klass, text], description) => {
 			test.test(description, {
 				skip: description.startsWith('skip:'),

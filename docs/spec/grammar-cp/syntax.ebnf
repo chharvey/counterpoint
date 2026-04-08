@@ -270,5 +270,5 @@ Declaration<Break> ::=
 
 
 
-Goal
+SourceFile
 	::= #x02 Block<-Break>? #x03;
