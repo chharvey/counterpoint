@@ -144,7 +144,7 @@ test.suite('ASTNodeExpression', () => {
 				`.join('\n'));
 			});
 		});
-		test.suite('AST.ExpressionBlock returns the last expression-statement’s expression.', () => {
+		test.test('AST.ExpressionBlock returns the last expression-statement’s expression.', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				val mut y: int = {

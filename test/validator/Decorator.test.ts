@@ -822,11 +822,23 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_variable)
 			`]],
+
+			['Decorate(SourceFile ::= #x02 #x03) -> SemanticGoal', [AST.ASTNodeGoal, `
+				{
+				}
+				% (source_file)
+			`]],
+			['Decorate(SourceFile ::= #x02 Block #x03) -> SemanticGoal', [AST.ASTNodeGoal, `
+				{
+					"source file";
+				}
+				% (source_file)
+			`]],
 		]).forEach(([klass, text], description) => {
 			test.test(description, {
 				skip: description.startsWith('skip:'),
 				todo: description.startsWith('todo:'),
-				only: description.startsWith('only:'),
+				only: description.startsWith('only:') || undefined, // `only: false` negates `only: true` in parent suite
 			}, () => {
 				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 				return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
