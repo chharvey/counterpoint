@@ -487,8 +487,8 @@ module.exports = grammar({
 
 		/* ## Statements */
 		...parameterize('assignee', ({break: brk}) => $ => choice(
-			$.identifier,
-			seq(call($, '_expression', 'block', {break: brk}), '.', call($, 'property_accessor', {break: brk})),
+			field('identifier_0', $.identifier),
+			seq(field('expression_0', call($, '_expression', 'block', {break: brk})), '.', field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
 		), 'break'),
 
 		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),

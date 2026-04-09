@@ -593,15 +593,17 @@ export class Decorator {
 			)],
 
 			/* ## Statements */
-			[/^assignee(__break)?$/, (node) => (node.children.length === 1
-				? new AST.ASTNodeVariable(node.children[0] as SyntaxNodeType<'identifier'>)
-				: new AST.ASTNodeAccess(
-					node as SyntaxNodeFamily<'assignee', ['break']>,
-					Operator.DOT,
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateTS(node.children[2] as SyntaxNodeFamily<'property_accessor', ['break']>),
-				)
-			)],
+			[/^assignee(__break)?$/, (node) => {
+				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
+				return identifier_0
+					? new AST.ASTNodeVariable(identifier_0)
+					: new AST.ASTNodeAccess(
+						node as SyntaxNodeFamily<'assignee', ['break']>,
+						Operator.DOT,
+						this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+						this.decorateTS(node.childForFieldName('property_accessor_0') as SyntaxNodeFamily<'property_accessor', ['break']>),
+					);
+			}],
 
 			[/^statement_expression(__break)?$/, (node) => new AST.ASTNodeStatementExpression(
 				node as SyntaxNodeFamily<'statement_expression', ['break']>,
