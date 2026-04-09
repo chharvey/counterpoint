@@ -563,8 +563,8 @@ module.exports = grammar({
 	supertypes: $ => [
 		$._type_unit,
 		$._type,
-		...familyNameAll('_expression_unit', ['block']).map((rulename) => $[rulename]),
-		...familyNameAll('_expression',      ['block']).map((rulename) => $[rulename]),
+		...familyNameAll('_expression_unit', ['block', 'break']).map((rulename) => $[rulename]),
+		...familyNameAll('_expression',      ['block', 'break']).map((rulename) => $[rulename]),
 		...familyNameAll('_statement',       ['break']).map((rulename) => $[rulename]),
 		...familyNameAll('_declaration',     ['break']).map((rulename) => $[rulename]),
 	],

@@ -838,7 +838,7 @@ test.suite('Decorator', () => {
 			test.test(description, {
 				skip: description.startsWith('skip:'),
 				todo: description.startsWith('todo:'),
-				only: description.startsWith('only:'),
+				only: description.startsWith('only:') || undefined, // `only: false` negates `only: true` in parent suite
 			}, () => {
 				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 				return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
