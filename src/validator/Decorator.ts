@@ -641,21 +641,25 @@ export class Decorator {
 				this.decorateTS(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['break']>),
 			)],
 
-			['statement_loop', (node) => node.children[0].text === Keyword.DO ? new AST.ASTNodeStatementLoop(
-				// we have `"do" Block ("while" | "until") Expression ";"` (bottom-tested)
-				node as SyntaxNodeType<'statement_loop'>,
-				true,
-				node.children[2].text === Keyword.UNTIL,
-				this.decorateExprNode(node.children[3] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[1] as SyntaxNodeType<'block__break'>),
-			) : new AST.ASTNodeStatementLoop(
-				// we have `("while" | "until") Expression "do" Block ";"` (top-tested)
-				node as SyntaxNodeType<'statement_loop'>,
-				false,
-				node.children[0].text === Keyword.UNTIL,
-				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[3] as SyntaxNodeType<'block__break'>),
-			)],
+			['statement_loop', (node) => {
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>;
+				const block_0      = node.childForFieldName('block_0')      as SyntaxNodeType<'block__break'>;
+				return node.children[0].text === Keyword.DO ? new AST.ASTNodeStatementLoop(
+					// we have `"do" Block ("while" | "until") Expression ";"` (bottom-tested)
+					node as SyntaxNodeType<'statement_loop'>,
+					true,
+					node.children[2].text === Keyword.UNTIL,
+					this.decorateExprNode(expression_0),
+					this.decorateTS(block_0),
+				) : new AST.ASTNodeStatementLoop(
+					// we have `("while" | "until") Expression "do" Block ";"` (top-tested)
+					node as SyntaxNodeType<'statement_loop'>,
+					false,
+					node.children[0].text === Keyword.UNTIL,
+					this.decorateExprNode(expression_0),
+					this.decorateTS(block_0),
+				);
+			}],
 
 			['statement_iteration', (node) => new AST.ASTNodeStatementIteration(
 				node as SyntaxNodeType<'statement_iteration'>,

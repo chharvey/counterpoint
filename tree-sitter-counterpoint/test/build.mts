@@ -1586,11 +1586,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceStatements(
-				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
-				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
-				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
-				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
-				s('statement_loop', s('identifier'), s(
+				s('statement_loop', f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', f('block_0', 'block__break', s('statement_expression__break', s('identifier'))), f('expression_0', 'identifier')),
+				s('statement_loop', f('block_0', 'block__break', s('statement_expression__break', s('identifier'))), f('expression_0', 'identifier')),
+				s('statement_loop', f('expression_0', 'identifier'), f(
+					'block_0',
 					'block__break',
 					s('statement_conditional__break', f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
 				)),
@@ -1619,7 +1620,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					};
 				}
 			`,
-			sourceStatements(s('statement_loop', s('identifier'), s(
+			sourceStatements(s('statement_loop', f('expression_0', 'identifier'), f(
+				'block_0',
 				'block__break',
 				s('statement_break'),
 				s('statement_break'),
@@ -1682,7 +1684,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('expression_block', s('statement_expression', s('identifier'))),
 				),
 				s('statement_conditional',                                   f('expression_0', 'identifier'), f('block_0', 'block',        s('statement_expression',        s('identifier')))),
-				s('statement_loop',                                          s(                'identifier'), s(           'block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop',                                          f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
 				s('statement_iteration',   s('identifier'), s('identifier'), s(                'identifier'), s(           'block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
