@@ -622,27 +622,23 @@ export class Decorator {
 				this.decorateExprNode(node.children[3] as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^statement_conditional(__break)?$/, (node) => node.children.length === 5 ? new AST.ASTNodeStatementConditional(
-				node as SyntaxNodeFamily<'statement_conditional', ['break']>,
-				false,
-				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[3] as SyntaxNodeFamily<'block', ['break']>),
-			) : new AST.ASTNodeStatementConditional(
-				node as SyntaxNodeFamily<'statement_conditional', ['break']>,
-				false,
-				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[3] as SyntaxNodeFamily<'block', ['break']>),
-				(node.children.length === 7
-					? this.decorateTS(node.children[5] as SyntaxNodeFamily<'block', ['break']>)
-					: this.decorateTS(node.children[5] as SyntaxNodeFamily<'statement_conditional', ['break']>)
-				),
-			)],
+			[/^statement_conditional(__break)?$/, (node) => {
+				const block_1                 = node.childForFieldName('block_1')                 as SyntaxNodeFamily<'block', ['break']>                 | null;
+				const statement_conditional_0 = node.childForFieldName('statement_conditional_0') as SyntaxNodeFamily<'statement_conditional', ['break']> | null;
+				return new AST.ASTNodeStatementConditional(
+					node as SyntaxNodeFamily<'statement_conditional', ['break']>,
+					false,
+					this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['break']>),
+					block_1 ? this.decorateTS(block_1) : statement_conditional_0 ? this.decorateTS(statement_conditional_0) : undefined,
+				);
+			}],
 
 			[/^statement_conditional__unless(__break)?$/, (node) => new AST.ASTNodeStatementConditional(
 				node as SyntaxNodeFamily<'statement_conditional__unless', ['break']>,
 				true,
-				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[3] as SyntaxNodeFamily<'block', ['break']>),
+				this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+				this.decorateTS(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['break']>),
 			)],
 
 			['statement_loop', (node) => node.children[0].text === Keyword.DO ? new AST.ASTNodeStatementLoop(

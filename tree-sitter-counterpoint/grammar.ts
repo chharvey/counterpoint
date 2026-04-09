@@ -498,13 +498,13 @@ module.exports = grammar({
 
 		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
 			!unless ? 'if' : 'unless',
-			call($, '_expression', 'block', {break: brk}),
+			field('expression_0', call($, '_expression', 'block', {break: brk})),
 			'then',
-			call($, 'block', {break: brk}),
+			field('block_0', call($, 'block', {break: brk})),
 			!unless
 				? choice(
-					seq(optional(seq('else', call($, 'block', {break: brk}))), ';'),
-					seq('else', call($, 'statement_conditional', {unless}, {break: brk})),
+					seq(optional(seq('else', field('block_1', call($, 'block', {break: brk})))), ';'),
+					seq('else', field('statement_conditional_0', call($, 'statement_conditional', {unless}, {break: brk}))),
 				)
 				: ';',
 		), 'unless', 'break'),
