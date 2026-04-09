@@ -531,8 +531,8 @@ module.exports = grammar({
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
 		...parameterize('declaration_variable', ({break: brk}) => $ => choice(
-			seq('val', choice('_', seq(optional('mut'), $.identifier)),      optional(seq(':', $._type)), '=', call($, '_expression', 'block', {break: brk}), ';'),
-			seq('val',                          'mut',  $.identifier,   '?',              ':', $._type,                                                       ';'),
+			seq('val', choice('_', seq(optional('mut'), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk})), ';'),
+			seq('val',                          'mut',  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                              ';'),
 		), 'break'),
 
 		...parameterize('_declaration', ({break: brk}) => $ => choice(

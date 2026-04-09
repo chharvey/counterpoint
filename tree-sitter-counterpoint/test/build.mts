@@ -1655,9 +1655,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'statement_claim',
@@ -1740,9 +1740,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceStatements(
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s(
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f(
+						'expression_0',
 						'expression_additive',
 						s('identifier'),
 						s(
@@ -1754,8 +1755,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s(
+					f('identifier_0', 'identifier'),
+					f(
+						'type_0',
 						'type_union',
 						s('identifier'),
 						s(
@@ -1764,39 +1766,39 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							s('identifier'),
 						),
 					),
-					s('identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('expression_0', 'identifier'),
 				),
 			),
 		],

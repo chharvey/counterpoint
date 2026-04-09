@@ -688,32 +688,18 @@ export class Decorator {
 				);
 			}],
 
-			[/^declaration_variable(__break)?$/, (node) => (
-				// "val" "mut" IDENTIFIER "?" ":" Type ";"
-				node.children[3].text === '?' ? new AST.ASTNodeDeclarationVariable(
+			[/^declaration_variable(__break)?$/, (node) => {
+				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>      | null;
+				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
+				return new AST.ASTNodeDeclarationVariable(
 					node as SyntaxNodeFamily<'declaration_variable', ['break']>,
-					true,
-					new AST.ASTNodeVariable(node.children[2] as SyntaxNodeType<'identifier'>),
-					this.decorateTypeNode(node.children[5] as SyntaxNodeSupertype<'type'>),
-					null,
-				) :
-				// "val" ("_" | IDENTIFIER) (":" Type)? "=" Expression<+Block><?Break> ";"
-				[5, 7].includes(node.children.length) ? new AST.ASTNodeDeclarationVariable(
-					node as SyntaxNodeFamily<'declaration_variable', ['break']>,
-					false,
-					isSyntaxNodeType(node.children[1], 'identifier') ? new AST.ASTNodeVariable(node.children[1]) : null,
-					node.children.length === 7 ? this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>) : null,
-					this.decorateExprNode(node.children[node.children.length - 2] as SyntaxNodeSupertype<'expression'>),
-				) :
-				// "val" "mut" IDENTIFIER (":" Type)? "=" Expression<+Block><?Break> ";"
-				(assert.ok([6, 8].includes(node.children.length)), new AST.ASTNodeDeclarationVariable(
-					node as SyntaxNodeFamily<'declaration_variable', ['break']>,
-					true,
-					new AST.ASTNodeVariable(node.children[2] as SyntaxNodeType<'identifier'>),
-					node.children.length === 8 ? this.decorateTypeNode(node.children[4] as SyntaxNodeSupertype<'type'>) : null,
-					this.decorateExprNode(node.children[node.children.length - 2] as SyntaxNodeSupertype<'expression'>),
-				))
-			)],
+					node.children[1].text === Keyword.MUTABLE,
+					identifier_0 && new AST.ASTNodeVariable(identifier_0),
+					type_0       && this.decorateTypeNode(type_0),
+					expression_0 && this.decorateExprNode(expression_0),
+				);
+			}],
 		]);
 		return (
 			decorators.get(syntaxnode.type) ??
