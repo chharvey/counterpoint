@@ -679,11 +679,14 @@ export class Decorator {
 
 			[/^block(__break)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break']>)],
 
-			['declaration_type', (node) => new AST.ASTNodeDeclarationType(
-				node as SyntaxNodeType<'declaration_type'>,
-				(isSyntaxNodeType(node.children[1], 'identifier')) ? new AST.ASTNodeTypeAlias(node.children[1]) : null,
-				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
-			)],
+			['declaration_type', (node) => {
+				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
+				return new AST.ASTNodeDeclarationType(
+					node as SyntaxNodeType<'declaration_type'>,
+					identifier_0 && new AST.ASTNodeTypeAlias(identifier_0),
+					this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
+				);
+			}],
 
 			[/^declaration_variable(__break)?$/, (node) => (
 				// "val" "mut" IDENTIFIER "?" ":" Type ";"

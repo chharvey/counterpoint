@@ -528,7 +528,7 @@ module.exports = grammar({
 
 		...parameterize('block', ({break: brk}) => $ => seq('{', repeat1(call($, '_statement', {break: brk})), '}'), 'break'),
 
-		declaration_type: $ => seq('type', choice('_', $.identifier), '=', $._type, ';'),
+		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
 		...parameterize('declaration_variable', ({break: brk}) => $ => choice(
 			seq('val', choice('_', seq(optional('mut'), $.identifier)),      optional(seq(':', $._type)), '=', call($, '_expression', 'block', {break: brk}), ';'),

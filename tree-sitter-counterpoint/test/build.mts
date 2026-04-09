@@ -29,7 +29,7 @@ function sourceStatements(...statements: readonly string[]): string {
 }
 
 function sourceTypes(...types: readonly string[]): string {
-	return sourceStatements(...types.map((typ) => s('declaration_type', s('identifier'), typ)));
+	return sourceStatements(...types.map((typ) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${ typ }`)));
 }
 
 function sourceExpressions(...expressions: readonly string[]): string {
@@ -256,7 +256,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('string'),
 				].map((term) => s('primitive_literal', term));
 				return sourceStatements(
-					...primitive_literals.map((pl) => s('declaration_type', s('identifier'), pl)),
+					...primitive_literals.map((pl) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${ pl }`)),
 					...primitive_literals.map((pl) => s('statement_expression', pl)),
 				);
 			})(),
@@ -1650,8 +1650,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceStatements(
 				s(
 					'declaration_type',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'declaration_variable',
@@ -1700,8 +1700,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceStatements(
 				s(
 					'declaration_type',
-					s('identifier'),
-					s(
+					f('identifier_0', 'identifier'),
+					f(
+						'type_0',
 						'type_union',
 						s('identifier'),
 						s(
@@ -1713,12 +1714,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'declaration_type',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'declaration_type',
-					s('identifier'),
+					f('type_0', 'identifier'),
 				),
 			),
 		],
