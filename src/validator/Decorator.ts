@@ -252,23 +252,20 @@ export class Decorator {
 				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['type_compound', (node) => (
-				(isSyntaxNodeType(node.children[2], 'property_accessor_type')) ? new AST.ASTNodeTypeAccess(
+			['type_compound', (node) => {
+				const type_0                   = node.childForFieldName('type_0')                   as SyntaxNodeSupertype<'type'>;
+				const property_accessor_type_0 = node.childForFieldName('property_accessor_type_0') as SyntaxNodeType<'property_accessor_type'> | null;
+				return property_accessor_type_0 ? new AST.ASTNodeTypeAccess(
 					node as SyntaxNodeType<'type_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].text as Punctuator) as ValidTypeAccessOperator,
-					this.decorateTypeNode(node.children[0] as SyntaxNodeSupertype<'type'>),
-					this.decorateTS(node.children[2]),
-				) : (assert.ok(
-					isSyntaxNodeType(node.children[2], 'generic_arguments'),
-					`Expected ${ node.children[2] } to be a \`SyntaxNodeType<'generic_arguments'>\`.`,
-				), new AST.ASTNodeTypeCall(
+					this.decorateTypeNode(type_0),
+					this.decorateTS(property_accessor_type_0),
+				) : new AST.ASTNodeTypeCall(
 					node as SyntaxNodeType<'type_compound'>,
-					this.decorateTypeNode(node.children[0] as SyntaxNodeSupertype<'type'>),
-					node.children[2].children
-						.filter((c): c is SyntaxNodeSupertype<'type'> => isSyntaxNodeSupertype(c, 'type'))
-						.map((c) => this.decorateTypeNode(c)) as NonemptyArray<AST.ASTNodeType>,
-				))
-			)],
+					this.decorateTypeNode(type_0),
+					node.childForFieldName('generic_arguments_0')!.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) as NonemptyArray<AST.ASTNodeType>,
+				);
+			}],
 
 			['type_unary_symbol', (node) => new AST.ASTNodeTypeOperationUnary(
 				node as SyntaxNodeType<'type_unary_symbol'>,

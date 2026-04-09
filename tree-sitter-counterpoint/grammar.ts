@@ -381,9 +381,9 @@ module.exports = grammar({
 			$.type_map_literal,
 		),
 
-		type_compound: $ => prec(5, seq($._type, choice(
-			seq(choice('.', '?.'), $.property_accessor_type),
-			seq('.',               $.generic_arguments),
+		type_compound: $ => prec(5, seq(field('type_0', $._type), choice(
+			seq(choice('.', '?.'), field('property_accessor_type_0', $.property_accessor_type)),
+			seq('.',               field('generic_arguments_0',      $.generic_arguments)),
 		))),
 
 		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
