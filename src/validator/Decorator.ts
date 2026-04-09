@@ -661,13 +661,16 @@ export class Decorator {
 				);
 			}],
 
-			['statement_iteration', (node) => new AST.ASTNodeStatementIteration(
-				node as SyntaxNodeType<'statement_iteration'>,
-				isSyntaxNodeType(node.children[1], 'identifier') ? new AST.ASTNodeVariable(node.children[1]) : null,
-				this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
-				this.decorateExprNode(node.children[5] as SyntaxNodeSupertype<'expression'>),
-				this.decorateTS(node.children[7] as SyntaxNodeType<'block__break'>),
-			)],
+			['statement_iteration', (node) => {
+				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
+				return new AST.ASTNodeStatementIteration(
+					node as SyntaxNodeType<'statement_iteration'>,
+					identifier_0 && new AST.ASTNodeVariable(identifier_0),
+					this.decorateTypeNode(node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>),
+					this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+					this.decorateTS(node.childForFieldName('block_0')            as SyntaxNodeType<'block__break'>),
+				);
+			}],
 
 			['statement_break', (node) => new AST.ASTNodeStatementBreak(
 				node as SyntaxNodeType<'statement_break'>,
