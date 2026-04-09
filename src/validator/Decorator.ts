@@ -184,27 +184,27 @@ export class Decorator {
 			['entry_type', (node) => new AST.ASTNodeItemType(
 				node as SyntaxNodeType<'entry_type'>,
 				false,
-				this.decorateTypeNode(node.children[0] as SyntaxNodeSupertype<'type'>),
+				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['entry_type__optional', (node) => new AST.ASTNodeItemType(
 				node as SyntaxNodeType<'entry_type__optional'>,
 				true,
-				this.decorateTypeNode(node.children[1] as SyntaxNodeSupertype<'type'>),
+				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['entry_type__named', (node) => new AST.ASTNodePropertyType(
 				node as SyntaxNodeType<'entry_type__named'>,
 				false,
-				this.decorateTS(node.children[0] as SyntaxNodeType<'word'>),
-				this.decorateTypeNode(node.children[2] as SyntaxNodeSupertype<'type'>),
+				this.decorateTS(node.childForFieldName('word_0') as SyntaxNodeType<'word'>),
+				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['entry_type__named__optional', (node) => new AST.ASTNodePropertyType(
 				node as SyntaxNodeType<'entry_type__named__optional'>,
 				true,
-				this.decorateTS(node.children[0] as SyntaxNodeType<'word'>),
-				this.decorateTypeNode(node.children[2] as SyntaxNodeSupertype<'type'>),
+				this.decorateTS(node.childForFieldName('word_0') as SyntaxNodeType<'word'>),
+				this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['property_accessor_type', (node) => (

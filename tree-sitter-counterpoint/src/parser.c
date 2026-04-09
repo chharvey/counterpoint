@@ -13,10 +13,10 @@
 #define ALIAS_COUNT 1
 #define TOKEN_COUNT 84
 #define EXTERNAL_TOKEN_COUNT 0
-#define FIELD_COUNT 0
+#define FIELD_COUNT 2
 #define MAX_ALIAS_SEQUENCE_LENGTH 9
 #define MAX_RESERVED_WORD_SET_SIZE 32
-#define PRODUCTION_ID_COUNT 2
+#define PRODUCTION_ID_COUNT 5
 #define SUPERTYPE_COUNT 14
 
 enum ts_symbol_identifiers {
@@ -1652,6 +1652,33 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
     .visible = true,
     .named = true,
   },
+};
+
+enum ts_field_identifiers {
+  field_type_0 = 1,
+  field_word_0 = 2,
+};
+
+static const char * const ts_field_names[] = {
+  [0] = NULL,
+  [field_type_0] = "type_0",
+  [field_word_0] = "word_0",
+};
+
+static const TSMapSlice ts_field_map_slices[PRODUCTION_ID_COUNT] = {
+  [2] = {.index = 0, .length = 1},
+  [3] = {.index = 1, .length = 1},
+  [4] = {.index = 2, .length = 2},
+};
+
+static const TSFieldMapEntry ts_field_map_entries[] = {
+  [0] =
+    {field_type_0, 0},
+  [1] =
+    {field_type_0, 1},
+  [2] =
+    {field_type_0, 2},
+    {field_word_0, 0},
 };
 
 static const TSSymbol ts_alias_sequences[PRODUCTION_ID_COUNT][MAX_ALIAS_SEQUENCE_LENGTH] = {
@@ -50327,18 +50354,18 @@ static const TSParseActionEntry ts_parse_actions[] = {
   [2213] = {.entry = {.count = 1, .reusable = true}}, SHIFT(305),
   [2215] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_type_unary_symbol, 2, 0, 0),
   [2217] = {.entry = {.count = 1, .reusable = false}}, REDUCE(sym_type_unary_symbol, 2, 0, 0),
-  [2219] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type__optional, 2, 0, 0),
+  [2219] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type__optional, 2, 0, 3),
   [2221] = {.entry = {.count = 1, .reusable = true}}, SHIFT(287),
-  [2223] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type__named, 3, 0, 0),
+  [2223] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type__named, 3, 0, 4),
   [2225] = {.entry = {.count = 1, .reusable = true}}, SHIFT(848),
   [2227] = {.entry = {.count = 1, .reusable = true}}, SHIFT(856),
-  [2229] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type, 1, 0, 0),
+  [2229] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type, 1, 0, 2),
   [2231] = {.entry = {.count = 1, .reusable = true}}, SHIFT(871),
   [2233] = {.entry = {.count = 1, .reusable = true}}, SHIFT(873),
   [2235] = {.entry = {.count = 1, .reusable = true}}, SHIFT(300),
   [2237] = {.entry = {.count = 1, .reusable = true}}, SHIFT(845),
   [2239] = {.entry = {.count = 1, .reusable = true}}, SHIFT(849),
-  [2241] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type__named__optional, 3, 0, 0),
+  [2241] = {.entry = {.count = 1, .reusable = true}}, REDUCE(sym_entry_type__named__optional, 3, 0, 4),
   [2243] = {.entry = {.count = 1, .reusable = true}}, SHIFT(851),
   [2245] = {.entry = {.count = 1, .reusable = true}}, SHIFT(469),
   [2247] = {.entry = {.count = 1, .reusable = true}}, SHIFT(132),
@@ -50527,6 +50554,9 @@ TS_PUBLIC const TSLanguage *tree_sitter_counterpoint(void) {
     .small_parse_table_map = ts_small_parse_table_map,
     .parse_actions = ts_parse_actions,
     .symbol_names = ts_symbol_names,
+    .field_names = ts_field_names,
+    .field_map_slices = ts_field_map_slices,
+    .field_map_entries = ts_field_map_entries,
     .supertype_map_slices = ts_supertype_map_slices,
     .supertype_map_entries = ts_supertype_map_entries,
     .supertype_symbols = ts_supertype_symbols,

@@ -14,6 +14,10 @@ function s(name: string, ...operands: readonly string[]): string {
 	`;
 }
 
+function f(fieldname: string, name: string, ...operands: readonly string[]): string {
+	return `${ fieldname }: ${ s(name, ...operands) }`;
+}
+
 function sourceStatements(...statements: readonly string[]): string {
 	return s(
 		'source_file',
@@ -305,27 +309,28 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('type_tuple_literal'),
 				s(
 					'type_tuple_literal',
-					s('entry_type', s('keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
-					s('entry_type__optional', s('keyword_type')),
+					s('entry_type__optional', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
-					s('entry_type', s('keyword_type')),
-					s('entry_type', s('keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
-					s('entry_type',           s('keyword_type')),
-					s('entry_type__optional', s('keyword_type')),
+					s('entry_type',           f('type_0', 'keyword_type')),
+					s('entry_type__optional', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
 					s(
 						'entry_type',
-						s(
+						f(
+							'type_0',
 							'type_compound',
 							s('identifier'),
 							s('property_accessor_type', s('integer')),
@@ -333,7 +338,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					),
 					s(
 						'entry_type',
-						s(
+						f(
+							'type_0',
 							'type_compound',
 							s('identifier'),
 							s('generic_arguments', s('keyword_type')),
@@ -357,16 +363,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceTypes(
 				s(
 					'type_record_literal',
-					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named',           s('word'),                  s('keyword_type')),
+					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named',           f('word_0', 'word'),                  f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_record_literal',
 					s(
 						'entry_type__named',
-						s('word', s('identifier')),
-						s(
+						f('word_0', 'word', s('identifier')),
+						f(
+							'type_0',
 							'type_compound',
 							s('identifier'),
 							s('property_accessor_type', s('integer')),
@@ -374,8 +381,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					),
 					s(
 						'entry_type__named',
-						s('word', s('identifier')),
-						s(
+						f('word_0', 'word', s('identifier')),
+						f(
+							'type_0',
 							'type_compound',
 							s('identifier'),
 							s('generic_arguments', s('keyword_type')),
@@ -384,10 +392,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'type_record_literal',
-					s('entry_type__named', s('word'),                     s('keyword_type')),
-					s('entry_type__named', s('word', s('keyword_type')),  s('keyword_type')),
-					s('entry_type__named', s('word', s('keyword_value')), s('keyword_type')),
-					s('entry_type__named', s('word', s('identifier')),    s('keyword_type')),
+					s('entry_type__named', f('word_0', 'word'),                     f('type_0', 'keyword_type')),
+					s('entry_type__named', f('word_0', 'word', s('keyword_type')),  f('type_0', 'keyword_type')),
+					s('entry_type__named', f('word_0', 'word', s('keyword_value')), f('type_0', 'keyword_type')),
+					s('entry_type__named', f('word_0', 'word', s('identifier')),    f('type_0', 'keyword_type')),
 				),
 			),
 		],

@@ -343,7 +343,7 @@ module.exports = grammar({
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(...iff(named, seq($.word, ...iff(!optional, ':'))), ...iff(optional, '?:'), $._type)
+			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, '?:'), field('type_0', $._type))
 		), 'named', 'optional'),
 
 		_items_type: $ => {
