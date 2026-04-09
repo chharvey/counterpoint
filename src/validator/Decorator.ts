@@ -369,23 +369,21 @@ export class Decorator {
 				this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break']>),
 			)],
 
-			['expression_compound', (node) => (
-				(isSyntaxNodeFamily(node.children[2], 'property_accessor', ['break'])) ? new AST.ASTNodeAccess(
+			['expression_compound', (node) => {
+				const expression_0        = node.childForFieldName('expression_0')        as SyntaxNodeSupertype<'expression'>;
+				const property_accessor_0 = node.childForFieldName('property_accessor_0') as SyntaxNodeFamily<'property_accessor', ['break']> | null;
+				return property_accessor_0 ? new AST.ASTNodeAccess(
 					node as SyntaxNodeType<'expression_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].text as Punctuator)!,
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateTS(node.children[2]),
+					this.decorateExprNode(expression_0),
+					this.decorateTS(property_accessor_0),
 				) : new AST.ASTNodeCall(
 					node as SyntaxNodeType<'expression_compound'>,
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					isSyntaxNodeType(node.children[2], 'generic_arguments') ? node.children[2].children
-						.filter((c) => isSyntaxNodeSupertype(c, 'type'))
-						.map((c) => this.decorateTypeNode(c)) : [],
-					(isSyntaxNodeType(node.children[2], 'generic_arguments') ? node.children[3] : node.children[2]).children
-						.filter((c) => isSyntaxNodeSupertype(c, 'expression'))
-						.map((c) => this.decorateExprNode(c)),
-				)
-			)],
+					this.decorateExprNode(expression_0),
+					node.childForFieldName('generic_arguments_0') ?.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) ?? [],
+					node.childForFieldName('function_arguments_0')!.namedChildren.map((c) => this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)),
+				);
+			}],
 
 			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF // `+a` is a no-op
 				? this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>)

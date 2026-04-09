@@ -443,9 +443,9 @@ module.exports = grammar({
 			...iff(block, alias(call($, 'block', {break: brk}), $.expression_block)),
 		), 'block', 'break'),
 
-		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(11, seq(call($, '_expression', {block}, {break: brk}), choice(
-			seq(choice('.', '?.', '!.'), call($, 'property_accessor', {break: brk})),
-			seq('.',                     optional($.generic_arguments), call($, 'function_arguments', {break: brk})),
+		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(11, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice(
+			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
+			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}))),
 		))), 'block', 'break'),
 
 		...parameterize('expression_unary_symbol',  ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'),    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
