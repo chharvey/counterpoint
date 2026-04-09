@@ -1061,23 +1061,23 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceExpressions(
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
 				),
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
 				),
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
 				),
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 			),
 		],

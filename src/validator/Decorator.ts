@@ -400,19 +400,22 @@ export class Decorator {
 				this.decorateExprNode(node.children[1] as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			['expression_cast', (node) => (node.children.length === 3
-				? new AST.ASTNodeOperationBinaryCast(
-					node as SyntaxNodeType<'expression_cast'>,
-					Decorator.OPERATORS_BINARY.get(node.children[1].text as Keyword)! as ValidOperatorCast,
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateExprNode(node.children[2] as SyntaxNodeSupertype<'expression'>),
-				)
-				: (assert.strictEqual(node.children.length, 5, `Expected \`${ node }\` to have 5 children.`), new AST.ASTNodeClaim(
-					node as SyntaxNodeType<'expression_cast'>,
-					this.decorateExprNode(node.children[0] as SyntaxNodeSupertype<'expression'>),
-					this.decorateTypeNode(node.children[3] as SyntaxNodeSupertype<'type'>),
-				))
-			)],
+			['expression_cast', (node) => {
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>;
+				const expression_1 = node.childForFieldName('expression_1') as SyntaxNodeSupertype<'expression'> | null;
+				return expression_1
+					? new AST.ASTNodeOperationBinaryCast(
+						node as SyntaxNodeType<'expression_cast'>,
+						Decorator.OPERATORS_BINARY.get(node.children[1].text as Keyword)! as ValidOperatorCast,
+						this.decorateExprNode(expression_0),
+						this.decorateExprNode(expression_1),
+					)
+					: new AST.ASTNodeClaim(
+						node as SyntaxNodeType<'expression_cast'>,
+						this.decorateExprNode(expression_0),
+						this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
+					);
+			}],
 
 			['expression_exponential', (node) => new AST.ASTNodeOperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_exponential'>,
