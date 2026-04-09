@@ -16,9 +16,12 @@ export type SyntaxNodeType<T extends string> = (
 
 
 
-export function isSyntaxNodeType                  (node: SyntaxNode, regex: RegExp):             boolean;
-export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type: T):                   node is SyntaxNodeType<T>;
-export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_regex: T | RegExp): node is SyntaxNodeType<T> {
+export function isSyntaxNodeType                  (node: SyntaxNode | null, regex: RegExp):             boolean;
+export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type: T):                   node is SyntaxNodeType<T>;
+export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type_or_regex: T | RegExp): node is SyntaxNodeType<T> {
+	if (!node) {
+		return false;
+	}
 	return node.isNamed && ((typeof type_or_regex === 'string')
 		? node.type === type_or_regex
 		: type_or_regex.test(node.type));
@@ -56,7 +59,10 @@ function familyNameAll<RuleName extends string>(family_name: string, params: rea
 export function isSyntaxNodeFamily<
 	Name extends string,
 	const Suffices extends Readonly<NonemptyArray<string>>, // `const ‹TypeParam›` prevents the need to pass in `‹expr› as const` every time
->(node: SyntaxNode, name: Name, suffices: Suffices): node is SyntaxNodeFamily<Name, Suffices> {
+>(node: SyntaxNode | null, name: Name, suffices: Suffices): node is SyntaxNodeFamily<Name, Suffices> {
+	if (!node) {
+		return false;
+	}
 	return familyNameAll(name, suffices).some((familyname) => isSyntaxNodeType(node, familyname));
 }
 
@@ -126,7 +132,10 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 
 
 
-export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
+export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode | null, category: C): syntaxnode is SyntaxNodeSupertype<C> {
+	if (!syntaxnode) {
+		return false;
+	}
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
 		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_grouped(__break)?|(tuple|record|list|dict|set|map)_literal(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?)$/)],

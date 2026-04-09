@@ -164,8 +164,8 @@ export class Decorator {
 
 			/* # TERMINALS */
 			['identifier', (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.ASTNodeTypeAlias(node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.ASTNodeVariable (node as SyntaxNodeType<'identifier'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
 			)],
 
@@ -175,8 +175,8 @@ export class Decorator {
 			['word', (node) => new AST.ASTNodeKey(node as SyntaxNodeType<'word'>)],
 
 			['primitive_literal', (node) => (
-				(isSyntaxNodeSupertype(node.parent!, 'type')       || isSyntaxNodeType(node.parent!, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent!, 'expression') || isSyntaxNodeType(node.parent!, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.ASTNodeTypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.ASTNodeConstant    (node as SyntaxNodeType<'primitive_literal'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
 			)],
 
