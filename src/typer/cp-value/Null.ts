@@ -1,8 +1,7 @@
 import type binaryen from 'binaryen';
 import {
-	BinValue,
+	BinConst,
 	type Builder,
-	BinVect,
 } from '../../index.ts';
 import {
 	noopMethod,
@@ -57,6 +56,6 @@ export class Null extends Primitive {
 	}
 
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, new BinVect(cg.module)).value;
+		return cg.getConst(BinConst.NULL);
 	}
 }

@@ -1,16 +1,13 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import {
-	BinConst,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {
+import type {
 	VALUE,
-	type TYPE,
+	TYPE,
 } from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {
@@ -48,11 +45,6 @@ export class Const extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		switch (this.value) {
-			case VALUE.NULL:  { return cg.getConst(BinConst.NULL); }
-			case VALUE.FALSE: { return cg.getConst(BinConst.FALSE); }
-			case VALUE.TRUE:  { return cg.getConst(BinConst.TRUE); }
-		}
 		return this.value.codegen(cg);
 	}
 

@@ -1,8 +1,7 @@
 import type binaryen from 'binaryen';
 import {
-	BinValue,
+	BinConst,
 	type Builder,
-	BinVect,
 } from '../../index.ts';
 import {
 	noopMethod,
@@ -68,7 +67,7 @@ class ValueBoolean extends Primitive {
 	}
 
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, new BinVect(cg.module, this.isTruthy)).value;
+		return cg.getConst(this.data ? BinConst.TRUE : BinConst.FALSE);
 	}
 }
 export {ValueBoolean as Boolean};
