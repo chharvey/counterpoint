@@ -28,6 +28,7 @@ import {
 import {
 	extract_tokens,
 	extract_lines,
+	repeat,
 } from '../../utils.ts';
 
 
@@ -143,7 +144,7 @@ test.suite('ASTNodeExpression', () => {
 				`.join('\n'));
 			});
 		});
-		test.suite('AST.ExpressionBlock returns the last expression-statement’s expression.', () => {
+		test.test('AST.ExpressionBlock returns the last expression-statement’s expression.', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				val mut y: int = {
@@ -414,22 +415,12 @@ test.suite('ASTNodeExpression', () => {
 			];
 		}
 		test.suite('#type', () => {
-			let templates: readonly AST.ASTNodeTemplate[] = [];
-			test.suite('with constant folding on.', () => {
-				let types: TYPE.Type[] = [];
-				test.test.before(() => {
-					templates = initTemplates();
-					types = templates.map((t) => t.type());
-				});
-				test.test('for foldable interpolations, returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-					assertEqualTypes(
-						types.slice(0, 2),
-						templates.slice(0, 2).map((t) => new TYPE.Unit<VALUE.String>(t.fold()!)),
-					);
-				});
-				test.test('for non-foldable interpolations, returns `String`.', () => {
-					assert.strictEqual(types[2], TYPE.STR);
-				});
+			test.test('always returns `String`.', () => {
+				const templates: readonly AST.ASTNodeTemplate[] = initTemplates();
+				assertEqualTypes(
+					templates.map((t) => t.type()),
+					repeat(TYPE.STR, templates.length),
+				);
 			});
 		});
 
@@ -576,7 +567,7 @@ test.suite('ASTNodeExpression', () => {
 						]))),
 						new TYPE.Set(TYPE.Union.all(expected), true),
 						new TYPE.Map(
-							TYPE.Union.all([typeUnit('a'), typeUnit(42n), typeUnit(3.0)]),
+							TYPE.Union.all([typeUnit('a'), TYPE.INT, TYPE.FLOAT]),
 							TYPE.Union.all(expected),
 							true,
 						),

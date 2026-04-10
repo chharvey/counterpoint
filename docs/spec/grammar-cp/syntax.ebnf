@@ -195,8 +195,14 @@ ExpressionEquality       <Block, Break> ::= (ExpressionEquality       <?Block><?
 ExpressionConjunctive    <Block, Break> ::= (ExpressionConjunctive    <?Block><?Break> ("&&" | "!&"))?                                          ExpressionEquality       <?Block><?Break>;
 ExpressionDisjunctive    <Block, Break> ::= (ExpressionDisjunctive    <?Block><?Break> ("||" | "!|"))?                                          ExpressionConjunctive    <?Block><?Break>;
 
-ExpressionConditional<Break>
-	::= "if" Expression<+Block><?Break> "then" Expression<-Block><?Break> "else" Expression<-Block><?Break>;
+ExpressionConditional<Break> ::=
+	& "if"
+	& Expression<+Block><?Break>
+	& "then"
+	& Expression<-Block><?Break>
+	& "else"
+	& Expression<-Block><?Break>
+;
 
 Expression<Block, Break> ::=
 	| ExpressionDisjunctive<?Block><?Break>
@@ -228,8 +234,10 @@ StatementConditional<Unless, Break> ::=
 	& <Unless+>";"
 ;
 
-StatementLoop
-	::= (("while" | "until") Expression<+Block><-Break> && "do" Block<+Break>) ";";
+StatementLoop ::= (
+	&& ("while" | "until") Expression<+Block><-Break>
+	&& "do"                Block<+Break>
+) ";";
 
 StatementIteration
 	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";";
@@ -270,5 +278,5 @@ Declaration<Break> ::=
 
 
 
-Goal
+SourceFile
 	::= #x02 Block<-Break>? #x03;

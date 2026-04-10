@@ -48,26 +48,32 @@ function is_inferrable(node?: ASTNodeExpression): boolean {
 
 
 function writable_inferred_type(node: ASTNodeExpression): TYPE.Type {
-	if (node instanceof ASTNodeConstant) {
-		const value: VALUE.Primitive = node.fold();
-		return (
-			value instanceof VALUE.Null    ? TYPE.NULL :
-			value instanceof VALUE.Boolean ? TYPE.BOOL :
-			value instanceof VALUE.Symbol  ? TYPE.SYM :
-			value instanceof VALUE.Integer ? TYPE.INT :
-			value instanceof VALUE.Natural ? TYPE.NAT :
-			value instanceof VALUE.Float   ? TYPE.FLOAT :
-			value instanceof VALUE.String  ? TYPE.STR :
-			assert.fail(`Expected ${ value } to be a primitive value.`)
-		);
-	} else if (node instanceof ASTNodeTuple) {
-		return TYPE.Tuple.fromTypes(node.children.map((expr) => writable_inferred_type(expr)));
-	} else if (node instanceof ASTNodeRecord) {
-		return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, writable_inferred_type(prop.val)])));
-	} else if (node instanceof ASTNodeCall) { // TODO: distinguish between constructor calls and function calls
-		return node.type();
-	} else {
-		assert.fail(`${ node.source } should be an instance of ${ ASTNodeConstant.name }, ${ ASTNodeTuple.name }, ${ ASTNodeRecord.name }, or ${ ASTNodeCall.name }.`);
+	switch (true) {
+		case node instanceof ASTNodeConstant: {
+			const value: VALUE.Primitive = node.interpreterValue;
+			return (
+				value instanceof VALUE.Null    ? TYPE.NULL :
+				value instanceof VALUE.Boolean ? TYPE.BOOL :
+				value instanceof VALUE.Symbol  ? TYPE.SYM :
+				value instanceof VALUE.Integer ? TYPE.INT :
+				value instanceof VALUE.Natural ? TYPE.NAT :
+				value instanceof VALUE.Float   ? TYPE.FLOAT :
+				value instanceof VALUE.String  ? TYPE.STR :
+				assert.fail(`Expected ${ value } to be a primitive value.`)
+			);
+		}
+		case node instanceof ASTNodeTuple: {
+			return TYPE.Tuple.fromTypes(node.children.map((expr) => writable_inferred_type(expr)));
+		}
+		case node instanceof ASTNodeRecord: {
+			return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, writable_inferred_type(prop.val)])));
+		}
+		case node instanceof ASTNodeCall: { // TODO: distinguish between constructor calls and function calls
+			return node.type();
+		}
+		default: {
+			assert.fail(`${ node.source } should be an instance of ${ ASTNodeConstant.name }, ${ ASTNodeTuple.name }, ${ ASTNodeRecord.name }, or ${ ASTNodeCall.name }.`);
+		}
 	}
 }
 
@@ -157,13 +163,13 @@ export class ASTNodeDeclarationVariable extends ASTNodeStatement {
 		);
 		this.assigned && ASTNodeCP.typeCheckAssign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			const value: VALUE.Value | null = this.assigned?.fold() ?? null; // fold first before checking, to rethrow any errors
 			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.type = assignee_type;
+			// TODO: move these next lines to the interpreter
 			if (!symbol.type.hasMutable && !this.writable) {
 				assert.ok(!symbol.isWritable, `Symbol \`${ symbol.source }\` should not be writable.`);
-				symbol.value = value;
+				symbol.value = this.assigned?.fold() ?? null;
 			}
 		}
 	}

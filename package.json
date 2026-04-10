@@ -31,8 +31,8 @@
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
     "compile": "tsc && tsc --project ./test/tsconfig.json",
     "lint": "eslint",
-    "test": "tsx --test --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
-    "test:only": "tsx --test --test-only -- './test/**/*.test.ts'",
+    "test": "tsx --test --test-reporter='@reporters/mocha' -- './test/**/*.test.ts'",
+    "test:only": "tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
     "justbuild": "npm run postbuild -w ./tree-sitter-counterpoint/ && npm rebuild",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
     "build": "rm -rf ./build/ && npm run compile && npm run lint && npm run test"
@@ -60,7 +60,7 @@
     "typescript-eslint": "^8.18.0"
   },
   "engines": {
-    "node": "^22.12"
+    "node": "^22.22"
   },
   "private": true,
   "workspaces": [
