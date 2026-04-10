@@ -1,5 +1,9 @@
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -52,7 +56,7 @@ export class Null extends Primitive {
 		return TYPE.NULL;
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(mod);
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(cg.module)).value;
 	}
 }

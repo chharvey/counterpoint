@@ -1,6 +1,8 @@
 import type binaryen from 'binaryen';
 import {
+	BinValue,
 	bigint_to_i64,
+	type Builder,
 	BinVect,
 } from '../../index.ts';
 import {noopMethod} from '../../lib/index.ts';
@@ -68,8 +70,8 @@ export class Natural extends ValueNumber<Natural> {
 		return this.toFloat().equal(value);
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(mod, bigint_to_i64(mod, this.data, true), {unsigned: true});
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.data, true), {unsigned: true})).value;
 	}
 
 	public override toInt(): Integer {

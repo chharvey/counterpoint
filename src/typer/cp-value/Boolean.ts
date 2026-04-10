@@ -1,5 +1,9 @@
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -63,8 +67,8 @@ class ValueBoolean extends Primitive {
 		return this.data ? TYPE.TRUE : TYPE.FALSE;
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(mod, this.isTruthy);
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(cg.module, this.isTruthy)).value;
 	}
 }
 export {ValueBoolean as Boolean};

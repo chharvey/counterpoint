@@ -5,7 +5,6 @@ import {
 	VALUE,
 	type TYPE,
 	Optimizer,
-	BinValue,
 	BinConst,
 	Builder,
 } from '../src/index.ts';
@@ -103,14 +102,14 @@ export function genConst(cg: Builder, value: null | boolean | symbol | bigint | 
 		case true:  { return cg.getConst(BinConst.TRUE); }
 	}
 	if (t === 'nat') {
-		return new BinValue(cg, (
+		return (
 			value === 0n              ? VALUE.NAT_0 :
 			value === 1n              ? VALUE.NAT_1 :
 			typeof value === 'bigint' ? new VALUE.Natural(value) :
 			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-		).codegen(cg.module)).value;
+		).codegen(cg);
 	}
-	return new BinValue(cg, (
+	return (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
@@ -120,5 +119,5 @@ export function genConst(cg: Builder, value: null | boolean | symbol | bigint | 
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? assert.fail('String argument to `genConst` is not yet supported.') :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).codegen(cg.module)).value;
+	).codegen(cg);
 }

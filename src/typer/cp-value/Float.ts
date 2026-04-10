@@ -1,6 +1,10 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {BinVect} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {noopMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
@@ -47,13 +51,13 @@ export class Float extends ValueNumber<Float> {
 		return this.data === (value as ValueNumber).toFloat().data;
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(
-			mod,
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(
+			cg.module,
 			Object.is(this.data, -0.0)
-				? mod.f64.ceil(mod.f64.const(-0.5))
-				: mod.f64.const(this.data),
-		);
+				? cg.module.f64.ceil(cg.module.f64.const(-0.5))
+				: cg.module.f64.const(this.data),
+		)).value;
 	}
 
 	public override toInt(): Integer {

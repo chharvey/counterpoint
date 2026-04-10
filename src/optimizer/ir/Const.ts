@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	BinValue,
 	BinConst,
 	type Builder,
 } from '../../index.ts';
@@ -54,7 +53,7 @@ export class Const extends Value {
 			case VALUE.FALSE: { return cg.getConst(BinConst.FALSE); }
 			case VALUE.TRUE:  { return cg.getConst(BinConst.TRUE); }
 		}
-		return new BinValue(cg, this.value.codegen(cg.module)).value;
+		return this.value.codegen(cg);
 	}
 
 	public override asTac(): Const {
