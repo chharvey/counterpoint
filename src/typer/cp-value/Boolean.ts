@@ -1,6 +1,10 @@
 import type binaryen from 'binaryen';
 import {BinVect} from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -51,6 +55,12 @@ class ValueBoolean extends Primitive {
 	@instanceOf(() => ValueBoolean)
 	public override identical(value: Value): boolean {
 		return this.data === (value as ValueBoolean).data;
+	}
+
+	@noopMethod(memoizeMethod)
+	public override toType(): TYPE.Unit<this> {
+		// @ts-expect-error --- this class is final, so type `this` will always be type `ValueBoolean`
+		return this.data ? TYPE.TRUE : TYPE.FALSE;
 	}
 
 	public override codegen(mod: binaryen.Module): BinVect {

@@ -1,6 +1,10 @@
 import type binaryen from 'binaryen';
 import {BinVect} from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -40,6 +44,12 @@ export class Null extends Primitive {
 	@instanceOf(() => Null)
 	public override identical(_value: Value): boolean {
 		return true;
+	}
+
+	@noopMethod(memoizeMethod)
+	public override toType(): TYPE.Unit<this> {
+		// @ts-expect-error --- this class is final, so type `this` will always be type `Null`
+		return TYPE.NULL;
 	}
 
 	public override codegen(mod: binaryen.Module): BinVect {
