@@ -66,6 +66,7 @@ class ValueSymbol extends Primitive {
 		return this.id === 0x80n ? TYPE.SYM_NOTHING : super.toType();
 	}
 
+	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.id, true), {unsigned: true})).value;
 	}

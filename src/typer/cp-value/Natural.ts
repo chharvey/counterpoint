@@ -5,7 +5,10 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -70,6 +73,7 @@ export class Natural extends ValueNumber<Natural> {
 		return this.toFloat().equal(value);
 	}
 
+	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.data, true), {unsigned: true})).value;
 	}

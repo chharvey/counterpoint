@@ -5,7 +5,10 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -51,6 +54,7 @@ export class Float extends ValueNumber<Float> {
 		return this.data === (value as ValueNumber).toFloat().data;
 	}
 
+	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return new BinValue(cg, new BinVect(
 			cg.module,

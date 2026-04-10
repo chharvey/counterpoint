@@ -66,6 +66,7 @@ class ValueBoolean extends Primitive {
 		return this.data ? TYPE.TRUE : TYPE.FALSE;
 	}
 
+	@noopMethod(memoizeMethod)
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.getConst(this.data ? BinConst.TRUE : BinConst.FALSE);
 	}

@@ -6,7 +6,10 @@ import {
 	type Builder,
 	BinVect,
 } from '../../index.ts';
-import type {CodeUnit} from '../../lib/index.ts';
+import {
+	type CodeUnit,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -56,6 +59,7 @@ class ValueString extends Primitive {
 		return this;
 	}
 
+	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		cg;
 		BinValue;

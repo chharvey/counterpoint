@@ -55,6 +55,7 @@ export class Null extends Primitive {
 		return TYPE.NULL;
 	}
 
+	@noopMethod(memoizeMethod)
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.getConst(BinConst.NULL);
 	}
