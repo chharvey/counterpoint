@@ -19,10 +19,11 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(local.set $prop (array.get $DictInternal (local.get $internal) (local.get $i)))
 			;; if the property is “live”, increment the count
-			(if (i32.and
-				(i32.eqz (ref.is_null (local.get $prop)))
-				(i32.eqz (call $Property.is-tombstone (local.get $prop)))
-			)
+			(if
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $prop)))
+					(i32.eqz (call $Property.is-tombstone (local.get $prop)))
+				)
 				(then (local.set $count (i32.add (local.get $count) (i32.const 1))))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -75,18 +76,22 @@
 		;; if the current property is null, the key is definitely not in the Dict.
 		;; if we’ve passed a tombstone, return it and its index.
 		;; otherwise, return the current null property and its index.
-		(if (ref.is_null (local.get $prop))
-			(then (return (if (result i32 (ref null $Property)) (ref.is_null (local.get $tombprop))
+		(if
+			(ref.is_null (local.get $prop))
+			(then (return (if (result i32 (ref null $Property))
+				(ref.is_null (local.get $tombprop))
 				(then (local.get $index)   (local.get $prop))
 				(else (local.get $tombidx) (local.get $tombprop))
 			)))
 		)
 		;; if the keys match, we have our result.
-		(if (i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
+		(if
+			(i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
 			(then (return (local.get $index) (local.get $prop)))
 		)
 		;; if the current property is a tombstone, store it, then continue the search.
-		(if (call $Property.is-tombstone (local.get $prop))
+		(if
+			(call $Property.is-tombstone (local.get $prop))
 			(then
 				(local.set $tombidx  (local.get $index))
 				(local.set $tombprop (local.get $prop))
@@ -128,10 +133,11 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $orig))))
 			(local.set $prop (array.get $DictInternal (local.get $orig) (local.get $i)))
 			;; if the property is “live”, put it in the copy and increment the size
-			(if (i32.and
-				(i32.eqz (ref.is_null (local.get $prop)))
-				(i32.eqz (call $Property.is-tombstone (local.get $prop)))
-			)
+			(if
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $prop)))
+					(i32.eqz (call $Property.is-tombstone (local.get $prop)))
+				)
 				(then
 					(array.set $DictInternal
 						(local.get $copy)
@@ -165,10 +171,12 @@
 
 	;; if prop is null, we’re adding a new entry. update the capacity, reallocate if necessary, then increment the size.
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
-	(if (ref.is_null (local.get $prop))
+	(if
+		(ref.is_null (local.get $prop))
 		(then
 			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
-			(if (i32.lt_u (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
+			(if
+				(i32.lt_u (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
 				(then
 					(call $Dict.adjust-capacity (local.get $dict) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
@@ -207,10 +215,11 @@
 	(local.set $prop)
 	(local.set $index)
 
-	(if (i32.or
-		(ref.is_null (local.get $prop))
-		(call $Property.is-tombstone (local.get $prop))
-	)
+	(if
+		(i32.or
+			(ref.is_null (local.get $prop))
+			(call $Property.is-tombstone (local.get $prop))
+		)
 		(then (return (ref.null $Value)))
 	)
 
@@ -238,12 +247,14 @@
 	(local $key       i64)
 
 	;; Dicts that are identical are always equal
-	(if (ref.eq (local.get $dict0) (local.get $dict1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
+	(if
+		(ref.eq (local.get $dict0) (local.get $dict1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
 		(then (return (i32.const 1)))
 	)
 
 	;; compare $Dict.$size since two equal Dicts may have different internal array lengths
-	(if (i32.ne (struct.get $Dict $size (local.get $dict0)) (struct.get $Dict $size (local.get $dict1)))
+	(if
+		(i32.ne (struct.get $Dict $size (local.get $dict0)) (struct.get $Dict $size (local.get $dict1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -255,23 +266,26 @@
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
 			(local.set $prop0 (array.get $DictInternal (local.get $internal0) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $prop0)))
+			(if
+				(i32.eqz (ref.is_null (local.get $prop0)))
 				(then
 					(local.set $key (struct.get $Property $key (local.get $prop0)))
 
 					;; if $dict1 doesn’t have the key, return false
 					(drop (local.set $prop1 (call $Dict.find (local.get $dict1) (local.get $key))))
-					(if (i32.or
-						(ref.is_null (local.get $prop1))
-						(call $Property.is-tombstone (local.get $prop1))
-					)
+					(if
+						(i32.or
+							(ref.is_null (local.get $prop1))
+							(call $Property.is-tombstone (local.get $prop1))
+						)
 						(then (return (i32.const 0)))
 					)
 
-					(if (i32.eqz (call $bool-to-i32 (call $veq
-						(struct.get $Property $val (local.get $prop0))
-						(struct.get $Property $val (local.get $prop1))
-					)))
+					(if
+						(i32.eqz (call $bool-to-i32 (call $veq
+							(struct.get $Property $val (local.get $prop0))
+							(struct.get $Property $val (local.get $prop1))
+						)))
 						(then (return (i32.const 0)))
 					)
 				)
