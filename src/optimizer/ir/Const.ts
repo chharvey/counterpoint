@@ -20,8 +20,8 @@ import {Value} from './Value.ts';
 
 /** A constant primitive value. */
 export class Const extends Value {
-	public constructor(private readonly value: VALUE.Primitive) {
-		const typ: TYPE.Unit = value.toType();
+	public constructor(private readonly interpreterValue: VALUE.Primitive) {
+		const typ: TYPE.Unit = interpreterValue.toType();
 		super(new Map<TypeName, OpCode>([
 			[TypeName.TRAP,  OpCode.TRAP],
 			[TypeName.NULL,  OpCode.NULL_CONST],
@@ -35,17 +35,17 @@ export class Const extends Value {
 	}
 
 	public override toString(): string {
-		return super.toString(this.value);
+		return super.toString(this.interpreterValue);
 	}
 
 	@runOnceMethod
 	public override validate(): void {
-		return assert.ok(this.value.toType().isSubtypeOf(this.type));
+		return assert.ok(this.interpreterValue.toType().isSubtypeOf(this.type));
 	}
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return this.value.codegen(cg);
+		return this.interpreterValue.codegen(cg);
 	}
 
 	public override asTac(): Const {
