@@ -23,21 +23,25 @@ import type {
 
 
 
-type HeaptypeKey = (
-	| '$Value'
-	| '$Property'
-	| '$Case'
-	| '$Tuple'
-	| '$Record'
-	| '$ListInternal'
-	| '$DictInternal'
-	| '$MapInternal'
-	| '$Object'
-	| '$List'
-	| '$Dict'
-	| '$Map'
+type TypeKey = (
+	| 'Value'
+	| 'Property'
+	| 'Case'
+	| 'Tuple'
+	| 'Record'
+	| 'ListInternal'
+	| 'DictInternal'
+	| 'MapInternal'
+	| 'Object'
+	| 'List'
+	| 'Dict'
+	| 'Map'
 );
-export type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' | '$Case' }` })`;
+export type ReftypeKey = `(ref ${ `$${ TypeKey }` | `null ${ '$Value' | '$Property' | '$Case' }` })`;
+type HeaptypeRegistry = Record<TypeKey, binaryen.Type>;
+type ReftypeRegistry  = Record<TypeKey, binaryen.Type>;
+
+type ReftypeNullRegistry = Record<TypeKey & ('Value' | 'Property' | 'Case'), binaryen.Type>;
 
 export enum BinConst {
 	NULL,
@@ -133,10 +137,13 @@ export class Builder {
 
 
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
-	readonly #heaptypeRegistry = new Map<HeaptypeKey, binaryen.Type>();
+	readonly #heaptypeRegistry: Partial<HeaptypeRegistry> = {};
 
-	/** A registry of reference (and reference-null) types. */
-	readonly #reftypeRegistry = new Map<ReftypeKey, binaryen.Type>();
+	/** A registry of reference types. */
+	readonly #reftypeRegistry: Partial<ReftypeRegistry> = {};
+
+	/** A registry of reference-null types. */
+	readonly #reftypeNullRegistry: Partial<ReftypeNullRegistry> = {};
 
 	/** A registry of constant WASM expressions. */
 	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
@@ -179,15 +186,11 @@ export class Builder {
 		]);
 	}
 
-	public getHeaptype(key: HeaptypeKey): binaryen.Type {
-		assert.ok(this.#heaptypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
-		return this.#heaptypeRegistry.get(key)!;
-	}
-
-	public getReftype(key: ReftypeKey): binaryen.Type {
-		assert.ok(this.#reftypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
-		return this.#reftypeRegistry.get(key)!;
-	}
+	/* eslint-disable @stylistic/brace-style */
+	public get heaptype():    Readonly<HeaptypeRegistry>    { return this.#heaptypeRegistry    as HeaptypeRegistry; }
+	public get reftype():     Readonly<ReftypeRegistry>     { return this.#reftypeRegistry     as ReftypeRegistry; }
+	public get reftypeNull(): Readonly<ReftypeNullRegistry> { return this.#reftypeNullRegistry as ReftypeNullRegistry; }
+	/* eslint-enable @stylistic/brace-style */
 
 	public getConst(key: BinConst): binaryen.ExpressionRef {
 		assert.ok(this.#constRegistry.has(key), `Expected constant registry to have constant \`${ BinConst[key] }\`.`);
@@ -293,7 +296,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.module.array.new_fixed(this.getHeaptype('$Tuple'), items);
+		return this.module.array.new_fixed(this.heaptype.Tuple, items);
 	}
 
 	/**
@@ -305,7 +308,7 @@ export class Builder {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.module.array.new_fixed(this.getHeaptype('$Record'), entries as binaryen.ExpressionRef[]);
+		return this.module.array.new_fixed(this.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -321,13 +324,13 @@ export class Builder {
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
+			(_, i) => items[i] ?? this.module.ref.null(this.reftypeNull.Value),
 		);
 		return this.module.struct.new([
 			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(items.length),
-			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
-		], this.getHeaptype('$List'));
+			this.module.array.new_fixed(this.heaptype.ListInternal, entries),
+		], this.heaptype.List);
 	}
 
 	/**
@@ -348,10 +351,10 @@ export class Builder {
 			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(props.size),
 			this.module.array.new_fixed(
-				this.getHeaptype('$DictInternal'),
-				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)'))),
+				this.heaptype.DictInternal,
+				entries.map((entry) => entry ?? this.module.ref.null(this.reftypeNull.Property)),
 			),
-		], this.getHeaptype('$Dict'));
+		], this.heaptype.Dict);
 	}
 
 	/**
@@ -377,12 +380,12 @@ export class Builder {
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
-		const rt_map: binaryen.Type = this.getReftype('(ref $Map)');
+		const rt_map: binaryen.Type = this.reftype.Map;
 		const map_obj = this.module.struct.new([
 			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(cases.size),
-			this.module.array.new_default(this.getHeaptype('$MapInternal'), this.module.i32.const(capacity)),
-		], this.getHeaptype('$Map'));
+			this.module.array.new_default(this.heaptype.MapInternal, this.module.i32.const(capacity)),
+		], this.heaptype.Map);
 		if (!cases.size) {
 			return map_obj;
 		}
@@ -396,17 +399,17 @@ export class Builder {
 
 	/** @return `(struct.get $List $internal <list>)` */
 	public getListInternal(list: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.LIST_INTERNAL, list, this.getReftype('(ref $ListInternal)'));
+		return this.module.struct.get(STRUCT_FIELD.LIST_INTERNAL, list, this.reftype.ListInternal);
 	}
 
 	/** @return `(struct.get $Dict $internal <dict>)` */
 	public getDictInternal(dict: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.DICT_INTERNAL, dict, this.getReftype('(ref $DictInternal)'));
+		return this.module.struct.get(STRUCT_FIELD.DICT_INTERNAL, dict, this.reftype.DictInternal);
 	}
 
 	/** @return `(struct.get $Map $internal <map>)` */
 	public getMapInternal(map: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.MAP_INTERNAL, map, this.getReftype('(ref $MapInternal)'));
+		return this.module.struct.get(STRUCT_FIELD.MAP_INTERNAL, map, this.reftype.MapInternal);
 	}
 
 	/**
@@ -544,38 +547,38 @@ export class Builder {
 
 		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		this.#heaptypeRegistry.set('$Value',        heaptypes[i_value]);
-		this.#heaptypeRegistry.set('$Property',     heaptypes[i_property]);
-		this.#heaptypeRegistry.set('$Case',         heaptypes[i_case]);
-		this.#heaptypeRegistry.set('$Tuple',        heaptypes[i_tuple]);
-		this.#heaptypeRegistry.set('$Record',       heaptypes[i_record]);
-		this.#heaptypeRegistry.set('$ListInternal', heaptypes[i_list_internal]);
-		this.#heaptypeRegistry.set('$DictInternal', heaptypes[i_dict_internal]);
-		this.#heaptypeRegistry.set('$MapInternal',  heaptypes[i_map_internal]);
-		this.#heaptypeRegistry.set('$Object',       heaptypes[i_object]);
-		this.#heaptypeRegistry.set('$List',         heaptypes[i_list]);
-		this.#heaptypeRegistry.set('$Dict',         heaptypes[i_dict]);
-		this.#heaptypeRegistry.set('$Map',          heaptypes[i_map]);
+		this.#heaptypeRegistry.Value        = heaptypes[i_value];
+		this.#heaptypeRegistry.Property     = heaptypes[i_property];
+		this.#heaptypeRegistry.Case         = heaptypes[i_case];
+		this.#heaptypeRegistry.Tuple        = heaptypes[i_tuple];
+		this.#heaptypeRegistry.Record       = heaptypes[i_record];
+		this.#heaptypeRegistry.ListInternal = heaptypes[i_list_internal];
+		this.#heaptypeRegistry.DictInternal = heaptypes[i_dict_internal];
+		this.#heaptypeRegistry.MapInternal  = heaptypes[i_map_internal];
+		this.#heaptypeRegistry.Object       = heaptypes[i_object];
+		this.#heaptypeRegistry.List         = heaptypes[i_list];
+		this.#heaptypeRegistry.Dict         = heaptypes[i_dict];
+		this.#heaptypeRegistry.Map          = heaptypes[i_map];
 
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const {getTypeFromHeapType} = binaryen;
 
-		this.#reftypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heaptypes[i_value],         false));
-		this.#reftypeRegistry.set('(ref $Property)',     getTypeFromHeapType(heaptypes[i_property],      false));
-		this.#reftypeRegistry.set('(ref $Case)',         getTypeFromHeapType(heaptypes[i_case],          false));
-		this.#reftypeRegistry.set('(ref $Tuple)',        getTypeFromHeapType(heaptypes[i_tuple],         false));
-		this.#reftypeRegistry.set('(ref $Record)',       getTypeFromHeapType(heaptypes[i_record],        false));
-		this.#reftypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heaptypes[i_list_internal], false));
-		this.#reftypeRegistry.set('(ref $DictInternal)', getTypeFromHeapType(heaptypes[i_dict_internal], false));
-		this.#reftypeRegistry.set('(ref $MapInternal)',  getTypeFromHeapType(heaptypes[i_map_internal],  false));
-		this.#reftypeRegistry.set('(ref $Object)',       getTypeFromHeapType(heaptypes[i_object],        false));
-		this.#reftypeRegistry.set('(ref $List)',         getTypeFromHeapType(heaptypes[i_list],          false));
-		this.#reftypeRegistry.set('(ref $Dict)',         getTypeFromHeapType(heaptypes[i_dict],          false));
-		this.#reftypeRegistry.set('(ref $Map)',          getTypeFromHeapType(heaptypes[i_map],           false));
+		this.#reftypeRegistry.Value        = getTypeFromHeapType(heaptypes[i_value],         false);
+		this.#reftypeRegistry.Property     = getTypeFromHeapType(heaptypes[i_property],      false);
+		this.#reftypeRegistry.Case         = getTypeFromHeapType(heaptypes[i_case],          false);
+		this.#reftypeRegistry.Tuple        = getTypeFromHeapType(heaptypes[i_tuple],         false);
+		this.#reftypeRegistry.Record       = getTypeFromHeapType(heaptypes[i_record],        false);
+		this.#reftypeRegistry.ListInternal = getTypeFromHeapType(heaptypes[i_list_internal], false);
+		this.#reftypeRegistry.DictInternal = getTypeFromHeapType(heaptypes[i_dict_internal], false);
+		this.#reftypeRegistry.MapInternal  = getTypeFromHeapType(heaptypes[i_map_internal],  false);
+		this.#reftypeRegistry.Object       = getTypeFromHeapType(heaptypes[i_object],        false);
+		this.#reftypeRegistry.List         = getTypeFromHeapType(heaptypes[i_list],          false);
+		this.#reftypeRegistry.Dict         = getTypeFromHeapType(heaptypes[i_dict],          false);
+		this.#reftypeRegistry.Map          = getTypeFromHeapType(heaptypes[i_map],           false);
 
-		this.#reftypeRegistry.set('(ref null $Value)',    getTypeFromHeapType(heaptypes[i_value],    true)); // only used as the fields of `$ListInternal`
-		this.#reftypeRegistry.set('(ref null $Property)', getTypeFromHeapType(heaptypes[i_property], true)); // only used as the fields of `$DictInternal`
-		this.#reftypeRegistry.set('(ref null $Case)',     getTypeFromHeapType(heaptypes[i_case],     true)); // only used as the fields of `$MapInternal`
+		this.#reftypeNullRegistry.Value    = getTypeFromHeapType(heaptypes[i_value],    true); // only used as the fields of `$ListInternal`
+		this.#reftypeNullRegistry.Property = getTypeFromHeapType(heaptypes[i_property], true); // only used as the fields of `$DictInternal`
+		this.#reftypeNullRegistry.Case     = getTypeFromHeapType(heaptypes[i_case],     true); // only used as the fields of `$MapInternal`
 	}
 
 	/** assumes both operands are primitive */
@@ -585,7 +588,7 @@ export class Builder {
 		typekey: 'asInt' | 'asNat' | 'asFloat',
 	): binaryen.FunctionRef {
 		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
+		const rt_value: binaryen.Type         = this.reftype.Value;
 		const local_vects = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -607,7 +610,7 @@ export class Builder {
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
+		const rt_value: binaryen.Type         = this.reftype.Value;
 		const local_vects = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),
@@ -682,12 +685,12 @@ export class Builder {
 
 	#setupFunctions(): void {
 		const mod:       BinaryenModuleUpdates = this.module;
-		const rt_value:  binaryen.Type         = this.getReftype('(ref $Value)');
-		const rt_tuple:  binaryen.Type         = this.getReftype('(ref $Tuple)');
-		const rt_record: binaryen.Type         = this.getReftype('(ref $Record)');
-		const rt_list:   binaryen.Type         = this.getReftype('(ref $List)');
-		const rt_dict:   binaryen.Type         = this.getReftype('(ref $Dict)');
-		const rt_map:    binaryen.Type         = this.getReftype('(ref $Map)');
+		const rt_value:  binaryen.Type         = this.reftype.Value;
+		const rt_tuple:  binaryen.Type         = this.reftype.Tuple;
+		const rt_record: binaryen.Type         = this.reftype.Record;
+		const rt_list:   binaryen.Type         = this.reftype.List;
+		const rt_dict:   binaryen.Type         = this.reftype.Dict;
+		const rt_map:    binaryen.Type         = this.reftype.Map;
 		const local_vals = [
 			new BinValue(this, mod.local.get(0, rt_value)),
 			new BinValue(this, mod.local.get(1, rt_value)),

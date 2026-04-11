@@ -44,6 +44,6 @@ export class RecordGet extends Value {
 		return cg.module.call('Record.get', [
 			new BinValue(cg, this.record.codegen(cg)).cast('(ref $Record)'),
 			bigint_to_i64(cg.module, this.accessor.keyid, true),
-		], cg.getReftype('(ref $Value)'));
+		], cg.reftype.Value);
 	}
 }

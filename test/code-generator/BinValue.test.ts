@@ -37,7 +37,7 @@ test.suite('BinValue', () => {
 				mod.i32.const(1),
 				binvect.vect,
 				mod.ref.null(binaryen.eqref),
-			], cg.getHeaptype('$Value'))));
+			], cg.heaptype.Value)));
 		});
 		test.test('composite values.', () => {
 			xjs.Array.forEachAggregated([
@@ -54,7 +54,7 @@ test.suite('BinValue', () => {
 					genConst(cg, 1.1),
 					genConst(cg, 2.2),
 					genConst(cg, 3.3),
-					...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 5),
+					...repeat(cg.module.ref.null(cg.reftypeNull.Value), 5),
 				]),
 				cg.codegenDict(new Map([
 					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
@@ -67,7 +67,7 @@ test.suite('BinValue', () => {
 				mod.i32.const(2),
 				mod.v128.const(new Uint8Array(16)),
 				composite,
-			], cg.getHeaptype('$Value'))));
+			], cg.heaptype.Value)));
 		});
 		test.test('reuses `BinValue#value`.', () => {
 			assertEqualBins(
@@ -171,6 +171,6 @@ test.suite('BinValue', () => {
 		] as const).map(([id, code]) => cg.module.struct.new([
 			bigint_to_i64(cg.module, id, true),
 			code,
-		], cg.getHeaptype('$Property'))));
+		], cg.heaptype.Property)));
 	});
 });

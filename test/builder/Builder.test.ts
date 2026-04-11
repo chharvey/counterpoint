@@ -30,21 +30,21 @@ test.suite('Builder', () => {
 		xjs.Map.forEachAggregated(new Map<string, (cg: Builder) => [binaryen.ExpressionRef, binaryen.ExpressionRef]>([
 			['empty `#codegenTuple`.', (cg) => [
 				cg.codegenTuple(),
-				cg.module.array.new_fixed(cg.getHeaptype('$Tuple'), []),
+				cg.module.array.new_fixed(cg.heaptype.Tuple, []),
 			]],
 			['`#codegenTuple` returns (array.new_fixed).', (cg) => [
 				cg.codegenTuple([
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
-				cg.module.array.new_fixed(cg.getHeaptype('$Tuple'), [
+				cg.module.array.new_fixed(cg.heaptype.Tuple, [
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
 			]],
 			['empty `#codegenRecord`.', (cg) => [
 				cg.codegenRecord(),
-				cg.module.array.new_fixed(cg.getHeaptype('$Record'), []),
+				cg.module.array.new_fixed(cg.heaptype.Record, []),
 			]],
 			['`#codegenRecord` returns (array.new_fixed).', (cg) => [
 				cg.codegenRecord(new Map([
@@ -52,7 +52,7 @@ test.suite('Builder', () => {
 					[0x101n, new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n)],
 					[0x102n, new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n)],
 				])),
-				cg.module.array.new_fixed(cg.getHeaptype('$Record'), [
+				cg.module.array.new_fixed(cg.heaptype.Record, [
 					new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n),
 					new BinValue(cg, genConst(cg, true)).toProperty(0x100n),
 					new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n),
@@ -64,10 +64,10 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(0),
 					cg.module.array.new_fixed(
-						cg.getHeaptype('$ListInternal'),
-						repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 8),
+						cg.heaptype.ListInternal,
+						repeat(cg.module.ref.null(cg.reftypeNull.Value), 8),
 					),
-				], cg.getHeaptype('$List')),
+				], cg.heaptype.List),
 			]],
 			['`#codegenList` returns (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenList([
@@ -79,15 +79,15 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(3),
 					cg.module.array.new_fixed(
-						cg.getHeaptype('$ListInternal'),
+						cg.heaptype.ListInternal,
 						[
 							genConst(cg, 1.1),
 							genConst(cg, 2.2),
 							genConst(cg, 3.3),
-							...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 5),
+							...repeat(cg.module.ref.null(cg.reftypeNull.Value), 5),
 						],
 					),
-				], cg.getHeaptype('$List')),
+				], cg.heaptype.List),
 			]],
 			['empty `#codegenDict`.', (cg) => [
 				cg.codegenDict(),
@@ -95,10 +95,10 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(0),
 					cg.module.array.new_fixed(
-						cg.getHeaptype('$DictInternal'),
-						repeat(cg.module.ref.null(cg.getReftype('(ref null $Property)')), 8),
+						cg.heaptype.DictInternal,
+						repeat(cg.module.ref.null(cg.reftypeNull.Property), 8),
 					),
-				], cg.getHeaptype('$Dict')),
+				], cg.heaptype.Dict),
 			]],
 			['`#codegenDict` (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenDict(new Map([
@@ -112,17 +112,17 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(cg.module),
 					cg.module.i32.const(5),
 					cg.module.array.new_fixed(
-						cg.getHeaptype('$DictInternal'),
+						cg.heaptype.DictInternal,
 						[
 							new BinValue(cg, genConst(cg, 3.3)).toProperty(0x108n),
 							new BinValue(cg, genConst(cg, 4.4)).toProperty(0x109n),
 							new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an),
-							...repeat(cg.module.ref.null(cg.getReftype('(ref null $Property)')), 3),
+							...repeat(cg.module.ref.null(cg.reftypeNull.Property), 3),
 							new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n),
 							new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n),
 						],
 					),
-				], cg.getHeaptype('$Dict')),
+				], cg.heaptype.Dict),
 			]],
 			['empty `#codegenSet`.', (cg) => [
 				cg.codegenSet(),
@@ -151,13 +151,13 @@ test.suite('Builder', () => {
 					mod.struct.new([
 						obj_ctr_plus_plus(mod),
 						mod.i32.const(0),
-						mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
-					], cg.getHeaptype('$Map')),
+						mod.array.new_default(cg.heaptype.MapInternal, mod.i32.const(8)),
+					], cg.heaptype.Map),
 				];
 			}],
 			['`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', (cg) => {
 				const mod = cg.module;
-				const rt_map:  binaryen.Type          = cg.getReftype('(ref $Map)');
+				const rt_map:  binaryen.Type          = cg.reftype.Map;
 				const map_get: binaryen.ExpressionRef = mod.local.get(0, rt_map);
 				return [
 					cg.codegenMap(new Map([
@@ -171,8 +171,8 @@ test.suite('Builder', () => {
 						mod.local.set(0, mod.struct.new([
 							obj_ctr_plus_plus(mod),
 							mod.i32.const(5),
-							mod.array.new_default(cg.getHeaptype('$MapInternal'), mod.i32.const(8)),
-						], cg.getHeaptype('$Map'))),
+							mod.array.new_default(cg.heaptype.MapInternal, mod.i32.const(8)),
+						], cg.heaptype.Map)),
 						mod.call('Map.set', [map_get, genConst(cg, 10n), genConst(cg, 1.1)], binaryen.none),
 						mod.call('Map.set', [map_get, genConst(cg, 20n), genConst(cg, 2.2)], binaryen.none),
 						mod.call('Map.set', [map_get, genConst(cg, 30n), genConst(cg, 3.3)], binaryen.none),
@@ -263,7 +263,7 @@ test.suite('Builder', () => {
 					new BinValue(cg, genConst(cg))     .toProperty(262n),
 					new BinValue(cg, genConst(cg, 42n)).toProperty(256n),
 					new BinValue(cg, genConst(cg, 4.2)).toProperty(259n),
-				]].map((entries) => mod.array.new_fixed(cg.getHeaptype('$Record'), entries)),
+				]].map((entries) => mod.array.new_fixed(cg.heaptype.Record, entries)),
 			);
 		});
 
@@ -306,7 +306,7 @@ test.suite('Builder', () => {
 			}`;
 			const cg  = new Builder();
 			const mod = cg.module;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.getReftype('(ref null $Property)'));
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.reftypeNull.Property);
 			return assertEqualBins(
 				[new Map([
 					// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
@@ -357,8 +357,8 @@ test.suite('Builder', () => {
 				]].map((entries) => mod.struct.new([
 					obj_ctr_plus_plus(mod),
 					mod.i32.const(3),
-					mod.array.new_fixed(cg.getHeaptype('$DictInternal'), entries),
-				], cg.getHeaptype('$Dict'))),
+					mod.array.new_fixed(cg.heaptype.DictInternal, entries),
+				], cg.heaptype.Dict)),
 			);
 		});
 	});

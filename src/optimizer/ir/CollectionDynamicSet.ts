@@ -87,7 +87,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 			}
 			case TypeName.SET: {
 				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'));
-				const accessor: Local = cg.newLocal(this.accessor.codegen(cg), cg.getReftype('(ref $Value)'));
+				const accessor: Local = cg.newLocal(this.accessor.codegen(cg), cg.reftype.Value);
 				return cg.module.block(null, [
 					base.set(),
 					accessor.set(),
@@ -101,7 +101,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 						cg.module.drop(cg.module.call('Map.delete', [
 							base.get(),
 							accessor.get(),
-						], cg.getReftype('(ref null $Value)'))),
+						], cg.reftypeNull.Value)),
 					),
 				]);
 			}

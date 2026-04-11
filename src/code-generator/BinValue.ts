@@ -43,12 +43,12 @@ export class BinValue {
 		private readonly cg: Builder,
 		arg: binaryen.ExpressionRef | BinVect | null,
 	) {
-		this.TYPE = cg.getReftype('(ref $Value)');
+		this.TYPE = cg.reftype.Value;
 		if (arg instanceof BinVect) {
 			this.value = new BinValue(cg, arg.vect).value;
 			return;
 		}
-		const ht_value: binaryen.Type = cg.getHeaptype('$Value');
+		const ht_value: binaryen.Type = cg.heaptype.Value;
 		if (arg === null) {
 			this.value = cg.module.struct.new_default(ht_value);
 			return;
@@ -59,10 +59,10 @@ export class BinValue {
 				break;
 			}
 			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			case cg.getReftype('(ref null $Value)') | 4:
-			case cg.getReftype('(ref $Value)')      | 4:
-			case cg.getReftype('(ref null $Value)'):
-			case cg.getReftype('(ref $Value)'): { // if given a (nullish) `$Value`, just use that
+			case cg.reftypeNull.Value | 4:
+			case cg.reftype.Value     | 4:
+			case cg.reftypeNull.Value:
+			case cg.reftype.Value: { // if given a (nullish) `$Value`, just use that
 				this.value = arg;
 				break;
 			}
@@ -75,11 +75,11 @@ export class BinValue {
 				break;
 			}
 			case binaryen.eqref:
-			case cg.getReftype('(ref $Tuple)'):
-			case cg.getReftype('(ref $Record)'):
-			case cg.getReftype('(ref $List)'):
-			case cg.getReftype('(ref $Dict)'):
-			case cg.getReftype('(ref $Object)'):
+			case cg.reftype.Tuple:
+			case cg.reftype.Record:
+			case cg.reftype.List:
+			case cg.reftype.Dict:
+			case cg.reftype.Object:
 			default: { // a composite
 				this.value = cg.module.struct.new([
 					cg.module.i32.const(2),
@@ -129,7 +129,7 @@ export class BinValue {
 		return this.cg.module.struct.new([
 			bigint_to_i64(this.cg.module, keyid, true),
 			this.value,
-		], this.cg.getHeaptype('$Property'));
+		], this.cg.heaptype.Property);
 	}
 
 	/**
@@ -150,6 +150,21 @@ export class BinValue {
 	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
 	 */
 	public cast(reftype: ReftypeKey): binaryen.ExpressionRef {
-		return this.cg.module.ref.cast(this.asComposite, this.cg.getReftype(reftype));
+		// TODO: update the argument to take any `binaryen.Type`
+		const bintype: binaryen.Type = new Map<ReftypeKey, binaryen.Type>([
+			['(ref $Value)',        this.cg.reftype.Value],
+			['(ref $Property)',     this.cg.reftype.Property],
+			['(ref $Case)',         this.cg.reftype.Case],
+			['(ref $Tuple)',        this.cg.reftype.Tuple],
+			['(ref $Record)',       this.cg.reftype.Record],
+			['(ref $ListInternal)', this.cg.reftype.ListInternal],
+			['(ref $DictInternal)', this.cg.reftype.DictInternal],
+			['(ref $MapInternal)',  this.cg.reftype.MapInternal],
+			['(ref $Object)',       this.cg.reftype.Object],
+			['(ref $List)',         this.cg.reftype.List],
+			['(ref $Dict)',         this.cg.reftype.Dict],
+			['(ref $Map)',          this.cg.reftype.Map],
+		]).get(reftype)!;
+		return this.cg.module.ref.cast(this.asComposite, bintype);
 	}
 }
