@@ -15,9 +15,30 @@ Codegen((STR.CONST `v`)) := (struct.new $Value
 	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
 );
 
-Codegen((GET `id`)) := (local.get ‹index› `id.type`);
+Codegen((STR.TEMPLATE `values`)) := (struct.new $Value
+	(i32.const 2)
+	(v128.const i64x2 0 0)
+	(block (result (ref $String))
+		`values.map("(local.set $str_`i` (call $stringify `Codegen(values[i])`))")`
+		(local.set $string
+			(array.new_default $String `values.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
+		)
+		(local.set $offset (i32.const 0))
+		`values.flatMap([
+			"(array.COPY
+				(local.get $string)
+				(local.get $offset)
+				(local.get $str_`i`)
+				(i32.const 0)
+				(array.len (local.get $str_`i`))
+			)",
+			"(local.set $offset (i32.add (local.get $offset) (array.len (local.get $str_`i`))))",
+		]).slice(0, -1)`
+		(local.get $string)
+	)
+);
 
-// Codegen((STR.TEMPLATE `v`));
+Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 
 Codegen((TUPLE.NEW)) := (struct.new $Value
 	(i32.const 2)

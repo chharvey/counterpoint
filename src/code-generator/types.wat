@@ -21,7 +21,7 @@
 
 
 ;; ## Compound Value Types
-(type $String (array i8))
+(type $String (array (mut i8))) ;; mutable to allow construction of templates
 (type $Tuple  (array (ref $Value)))
 (type $Record (array (ref $Property)))
 

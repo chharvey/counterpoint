@@ -24,15 +24,11 @@ import {
 test.suite('IrNode', () => {
 	test.suite('#codegen', () => {
 		test.test('is not yet supported.', () => {
-			const {opt, cg} = setupScript(`{
-				"""hello {{ 42 }}""";
-			}`, {codegen: false});
 			xjs.Array.forEachAggregated([
-				...opt.instructions,
 				new IR.Label('label1'),
 				new IR.Goto(new IR.Label('label2')),
 				new IR.GotoIfFalse(new IR.Const(VALUE.NULL), new IR.Label('label2')),
-			], (instr) => assert.throws(() => instr.codegen(cg), /not yet supported/, instr.toString()));
+			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 
 		test.test('Trap returns (unreachable).', () => {
@@ -59,6 +55,79 @@ test.suite('IrNode', () => {
 					genConst(cg, 4.2),
 					genConst(cg, 'hello'),
 				],
+			);
+		});
+
+		test.test('Template returns (block) containing static repetition of (array.copy).', () => {
+			const {opt, cg} = setupScript(`{
+				val user: (name: str) = (name= "Alan");
+				"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
+			}`);
+			const mod = cg.module;
+			const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
+			const rt_string: binaryen.Type = cg.getReftype('(ref $String)');
+
+			const strings = [
+				genConst(cg, 'Hello, '),
+				mod.local.get(1, rt_value),
+				genConst(cg, ', you have '),
+				mod.local.get(2, rt_value),
+				genConst(cg, ' new messages.'),
+			].map((code) => mod.call('stringify', [code], rt_string));
+
+			const OFFSET_IDX = 9;
+
+			const string_0_get: binaryen.ExpressionRef = mod.local.get(3, rt_string);
+			const string_1_get: binaryen.ExpressionRef = mod.local.get(4, rt_string);
+			const string_2_get: binaryen.ExpressionRef = mod.local.get(5, rt_string);
+			const string_3_get: binaryen.ExpressionRef = mod.local.get(6, rt_string);
+			const string_4_get: binaryen.ExpressionRef = mod.local.get(7, rt_string);
+
+			const string_0_len: binaryen.ExpressionRef = mod.array.len(string_0_get);
+			const string_1_len: binaryen.ExpressionRef = mod.array.len(string_1_get);
+			const string_2_len: binaryen.ExpressionRef = mod.array.len(string_2_get);
+			const string_3_len: binaryen.ExpressionRef = mod.array.len(string_3_get);
+			const string_4_len: binaryen.ExpressionRef = mod.array.len(string_4_get);
+
+			const result_get: binaryen.ExpressionRef = mod.local.get(8, rt_string);
+			const offset_get: binaryen.ExpressionRef = mod.local.get(OFFSET_IDX, binaryen.i32);
+			return assertEqualBins(
+				opt.instructions[3].codegen(cg),
+				mod.drop(new BinValue(cg, mod.block(null, [
+					mod.local.set(3, strings[0]),
+					mod.local.set(4, strings[1]),
+					mod.local.set(5, strings[2]),
+					mod.local.set(6, strings[3]),
+					mod.local.set(7, strings[4]),
+					mod.local.set(8, mod.array.new_default(
+						cg.getHeaptype('$String'),
+						mod.i32.add(
+							mod.i32.add(
+								mod.i32.add(
+									mod.i32.add(
+										string_0_len,
+										string_1_len,
+									),
+									string_2_len,
+								),
+								string_3_len,
+							),
+							string_4_len,
+						),
+					)),
+					mod.local.set(OFFSET_IDX, mod.i32.const(0)),
+					...[
+						[string_0_get, string_0_len],
+						[string_1_get, string_1_len],
+						[string_2_get, string_2_len],
+						[string_3_get, string_3_len],
+					].flatMap(([str_get, str_len]) => [
+						mod.array.copy(result_get, offset_get, str_get, mod.i32.const(0), str_len),
+						mod.local.set(OFFSET_IDX, mod.i32.add(offset_get, str_len)),
+					]),
+					mod.array.copy(result_get, offset_get, string_4_get, mod.i32.const(0), string_4_len),
+					result_get,
+				], rt_string)).value),
 			);
 		});
 
