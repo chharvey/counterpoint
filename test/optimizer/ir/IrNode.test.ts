@@ -7,7 +7,6 @@ import {
 	VALUE,
 	TYPE,
 	IR,
-	STRUCT_FIELD,
 	BinValue,
 	bigint_to_i64,
 	Builder,
@@ -400,7 +399,7 @@ test.suite('IrNode', () => {
 				return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.block(null, [
 						mod.local.set(4, mod.array.get(
-							cg.getListInternal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.List)),
+							cg.structGet.list.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.List)),
 							mod.i32.wrap(new BinValue(cg, mod.local.get(3, cg.reftype.Value)).interpret('asInt')),
 							cg.reftypeNull.Value,
 						)),
@@ -412,7 +411,7 @@ test.suite('IrNode', () => {
 					], cg.reftype.Value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(5, mod.array.get(
-							cg.getListInternal(new BinValue(cg, list_get).cast(cg.reftype.List)),
+							cg.structGet.list.internal(new BinValue(cg, list_get).cast(cg.reftype.List)),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, 0n)).interpret('asInt')),
 							cg.reftypeNull.Value,
 						)),
@@ -424,7 +423,7 @@ test.suite('IrNode', () => {
 					], cg.reftype.Value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(6, mod.array.get(
-							cg.getListInternal(new BinValue(cg, list_get).cast(cg.reftype.List)),
+							cg.structGet.list.internal(new BinValue(cg, list_get).cast(cg.reftype.List)),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, 3n)).interpret('asInt')),
 							cg.reftypeNull.Value,
 						)),
@@ -436,7 +435,7 @@ test.suite('IrNode', () => {
 					], cg.reftype.Value)),
 					mod.drop(mod.block(null, [
 						mod.local.set(7, mod.array.get(
-							cg.getListInternal(new BinValue(cg, list_get).cast(cg.reftype.List)),
+							cg.structGet.list.internal(new BinValue(cg, list_get).cast(cg.reftype.List)),
 							mod.i32.wrap(new BinValue(cg, genConst(cg, -1n)).interpret('asInt')),
 							cg.reftypeNull.Value,
 						)),
@@ -470,7 +469,7 @@ test.suite('IrNode', () => {
 								mod.call('Property.is-tombstone', [mod.local.get(3, cg.reftypeNull.Property)], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.PROPERTY_VAL, mod.local.get(3, cg.reftypeNull.Property), cg.reftype.Value),
+							cg.structGet.property.val(mod.local.get(3, cg.reftypeNull.Property)),
 						),
 					], cg.reftype.Value)),
 					mod.drop(mod.block(null, [
@@ -484,7 +483,7 @@ test.suite('IrNode', () => {
 								mod.call('Property.is-tombstone', [mod.local.get(4, cg.reftypeNull.Property)], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.PROPERTY_VAL, mod.local.get(4, cg.reftypeNull.Property), cg.reftype.Value),
+							cg.structGet.property.val(mod.local.get(4, cg.reftypeNull.Property)),
 						),
 					], cg.reftype.Value)),
 					mod.drop(mod.block(null, [
@@ -498,7 +497,7 @@ test.suite('IrNode', () => {
 								mod.call('Property.is-tombstone', [mod.local.get(5, cg.reftypeNull.Property)], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.PROPERTY_VAL, mod.local.get(5, cg.reftypeNull.Property), cg.reftype.Value),
+							cg.structGet.property.val(mod.local.get(5, cg.reftypeNull.Property)),
 						),
 					], cg.reftype.Value)),
 				]);
@@ -566,7 +565,7 @@ test.suite('IrNode', () => {
 								mod.call('Case.is-tombstone', [maybe_case_0], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.CASE_CON, maybe_case_0, cg.reftype.Value),
+							cg.structGet.case.con(maybe_case_0),
 						),
 					], cg.reftype.Value)),
 					mod.drop(mod.block(null, [
@@ -580,7 +579,7 @@ test.suite('IrNode', () => {
 								mod.call('Case.is-tombstone', [maybe_case_1], binaryen.i32),
 							),
 							genConst(cg),
-							mod.struct.get(STRUCT_FIELD.CASE_CON, maybe_case_1, cg.reftype.Value),
+							cg.structGet.case.con(maybe_case_1),
 						),
 					], cg.reftype.Value)),
 				]);
@@ -906,7 +905,7 @@ test.suite('IrNode', () => {
 								mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
 							], binaryen.none),
 							mod.array.copy(
-								cg.getListInternal(destlist_get),
+								cg.structGet.list.internal(destlist_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -926,13 +925,13 @@ test.suite('IrNode', () => {
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
 							mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.List)),
-							mod.local.set(3, cg.getListInternal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List))),
+							mod.local.set(3, cg.structGet.list.internal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List))),
 							mod.call('List.adjust-capacity', [
 								destlist_get,
 								mod.array.len(srcref_get),
 							], binaryen.none),
 							mod.array.copy(
-								cg.getListInternal(destlist_get),
+								cg.structGet.list.internal(destlist_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -956,7 +955,7 @@ test.suite('IrNode', () => {
 							mod.local.set(5, mod.i32.const(0)),
 							mod.block(null, [
 								mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.List)),
-								mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
+								mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
 								mod.block('exit-0', [
 									mod.local.set(6, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -968,7 +967,7 @@ test.suite('IrNode', () => {
 												mod.call('List.set', [
 													mod.local.get(3, cg.reftype.List),
 													j_get,
-													mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, cg.reftype.Value),
+													cg.structGet.case.ant(case_get),
 												], binaryen.none),
 												mod.local.set(5, mod.i32.add(j_get, mod.i32.const(1))),
 											]),
@@ -1033,7 +1032,7 @@ test.suite('IrNode', () => {
 								mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
 							], binaryen.none),
 							mod.array.copy(
-								cg.getDictInternal(destdict_get),
+								cg.structGet.dict.internal(destdict_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -1054,7 +1053,7 @@ test.suite('IrNode', () => {
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
 							mod.local.set(5, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-							mod.local.set(6, cg.getListInternal(new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.List))),
+							mod.local.set(6, cg.structGet.list.internal(new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.List))),
 							mod.block('exit-0', [
 								mod.local.set(7, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1090,13 +1089,13 @@ test.suite('IrNode', () => {
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
 							mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-							mod.local.set(3, cg.getDictInternal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Dict))),
+							mod.local.set(3, cg.structGet.dict.internal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Dict))),
 							mod.call('Dict.adjust-capacity', [
 								destdict_get,
 								mod.array.len(srcref_get),
 							], binaryen.none),
 							mod.array.copy(
-								cg.getDictInternal(destdict_get),
+								cg.structGet.dict.internal(destdict_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -1117,7 +1116,7 @@ test.suite('IrNode', () => {
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
 							mod.local.set(6, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-							mod.local.set(7, cg.getMapInternal(new BinValue(cg, mod.local.get(5, cg.reftype.Value)).cast(cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
+							mod.local.set(7, cg.structGet.map.internal(new BinValue(cg, mod.local.get(5, cg.reftype.Value)).cast(cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
 							mod.block('exit-0', [
 								mod.local.set(8, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1128,7 +1127,7 @@ test.suite('IrNode', () => {
 										mod.call('Dict.set', [
 											mod.local.get(6, cg.reftype.Dict),
 											new BinValue(cg, mod.array.get(
-												mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, cg.reftype.Value)).cast(cg.reftype.Tuple), cg.reftype.Tuple),
+												mod.local.tee(10, new BinValue(cg, cg.structGet.case.ant(case_get)).cast(cg.reftype.Tuple), cg.reftype.Tuple),
 												mod.i32.const(0),
 												cg.reftype.Value,
 											)).interpret('asNat'),
@@ -1154,7 +1153,7 @@ test.suite('IrNode', () => {
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
 							mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-							mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup
+							mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup
 							mod.block('exit-0', [
 								mod.local.set(5, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1165,8 +1164,8 @@ test.suite('IrNode', () => {
 										mod.block(null, [
 											mod.call('Dict.set', [
 												mod.local.get(3, cg.reftype.Dict),
-												new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, cg.reftype.Value)).interpret('asNat'),
-												mod.struct.get(STRUCT_FIELD.CASE_CON, case_get, cg.reftype.Value),
+												new BinValue(cg, cg.structGet.case.ant(case_get)).interpret('asNat'),
+												cg.structGet.case.con(case_get),
 											], binaryen.none),
 										]),
 									),
@@ -1221,7 +1220,7 @@ test.suite('IrNode', () => {
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
 							mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-							mod.local.set(3, cg.getListInternal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List))),
+							mod.local.set(3, cg.structGet.list.internal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List))),
 							mod.block('exit-0', [
 								mod.local.set(4, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1253,13 +1252,13 @@ test.suite('IrNode', () => {
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
 							mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-							mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
+							mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
 							mod.call('Map.adjust-capacity', [
 								destset_get,
 								mod.array.len(srcref_get),
 							], binaryen.none),
 							mod.array.copy(
-								cg.getMapInternal(destset_get),
+								cg.structGet.map.internal(destset_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),
@@ -1311,7 +1310,7 @@ test.suite('IrNode', () => {
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
 							mod.local.set(5, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-							mod.local.set(6, cg.getListInternal(new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.List))),
+							mod.local.set(6, cg.structGet.list.internal(new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.List))),
 							mod.block('exit-0', [
 								mod.local.set(7, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1344,7 +1343,7 @@ test.suite('IrNode', () => {
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
 							mod.local.set(6, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-							mod.local.set(7, cg.getMapInternal(new BinValue(cg, mod.local.get(5, cg.reftype.Value)).cast(cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
+							mod.local.set(7, cg.structGet.map.internal(new BinValue(cg, mod.local.get(5, cg.reftype.Value)).cast(cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
 							mod.block('exit-0', [
 								mod.local.set(8, mod.i32.const(0)),
 								mod.loop('repeat-0', mod.block(null, [
@@ -1354,7 +1353,7 @@ test.suite('IrNode', () => {
 										mod.i32.eqz(mod.ref.is_null(case_get)),
 										mod.call('Map.set', [
 											mod.local.get(6, cg.reftype.Map),
-											mod.array.get(mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, cg.reftype.Value)).cast(cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
+											mod.array.get(mod.local.tee(10, new BinValue(cg, cg.structGet.case.ant(case_get)).cast(cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
 											mod.array.get(mod.local.get(10, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
 										], binaryen.none),
 									),
@@ -1376,13 +1375,13 @@ test.suite('IrNode', () => {
 						opt.instructions[2].codegen(cg),
 						mod.block(null, [
 							mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-							mod.local.set(4, cg.getMapInternal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
+							mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
 							mod.call('Map.adjust-capacity', [
 								destmap_get,
 								mod.array.len(srcref_get),
 							], binaryen.none),
 							mod.array.copy(
-								cg.getMapInternal(destmap_get),
+								cg.structGet.map.internal(destmap_get),
 								mod.i32.const(0),
 								srcref_get,
 								mod.i32.const(0),

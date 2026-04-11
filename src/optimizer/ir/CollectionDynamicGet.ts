@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	STRUCT_FIELD,
 	BinValue,
 	BinConst,
 	type Builder,
@@ -73,7 +72,7 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(cg.module.array.get(
-					cg.getListInternal(new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.List)),
+					cg.structGet.list.internal(new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.List)),
 					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('asInt')),
 					cg.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
@@ -103,7 +102,7 @@ export class CollectionDynamicGet extends Value {
 							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), cg.reftype.Value),
+						cg.structGet.property.val(maybe_prop.get()),
 					),
 				], cg.reftype.Value);
 			}
@@ -141,7 +140,7 @@ export class CollectionDynamicGet extends Value {
 							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.module.struct.get(STRUCT_FIELD.CASE_CON, maybe_case.get(), cg.reftype.Value),
+						cg.structGet.case.con(maybe_case.get()),
 					),
 				], cg.reftype.Value);
 			}

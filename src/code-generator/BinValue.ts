@@ -4,7 +4,6 @@ import {
 	type Builder,
 	BinVect,
 } from '../index.ts';
-import {STRUCT_FIELD} from './utils-public.ts';
 
 
 
@@ -104,22 +103,22 @@ export class BinValue {
 
 	/** Whether the value is primitive (tag == 1). */
 	public get isPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eq(this.cg.module.struct.get(STRUCT_FIELD.VALUE_TAG, this.value, binaryen.i32, false), this.cg.module.i32.const(1));
+		return this.cg.module.i32.eq(this.cg.structGet.value.tag(this.value), this.cg.module.i32.const(1));
 	}
 
 	/** Whether the value is composite (tag == 2). */
 	public get isComposite(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eq(this.cg.module.struct.get(STRUCT_FIELD.VALUE_TAG, this.value, binaryen.i32, false), this.cg.module.i32.const(2));
+		return this.cg.module.i32.eq(this.cg.structGet.value.tag(this.value), this.cg.module.i32.const(2));
 	}
 
 	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
 	public get asPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, this.value, binaryen.v128);
+		return this.cg.structGet.value.primitive(this.value);
 	}
 
 	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
 	public get asComposite(): binaryen.ExpressionRef {
-		return this.cg.module.struct.get(STRUCT_FIELD.VALUE_COMPOSITE, this.value, binaryen.eqref);
+		return this.cg.structGet.value.composite(this.value);
 	}
 
 	/** Wrap this `$Value` in a `$Property`, given a key id. */

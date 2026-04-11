@@ -8,7 +8,6 @@ import type {
 } from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
 import {
-	STRUCT_FIELD,
 	Global,
 	BinValue,
 } from '../code-generator/index.ts';
@@ -91,6 +90,54 @@ function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: n
 
 
 
+/** Struct field constant indices. */
+const STRUCT = {
+	VALUE: {
+		/** `$Value.$tag` */
+		TAG:       0,
+		/** `$Value.$primitive` */
+		PRIMITIVE: 1,
+		/** `$Value.$composite` */
+		COMPOSITE: 2,
+	},
+	PROPERTY: {
+		/** `$Property.$key` */
+		KEY: 0,
+		/** `$Property.$val` */
+		VAL: 1,
+	},
+	CASE: {
+		/** `$Case.$ant` */
+		ANT: 0,
+		/** `$Case.$con` */
+		CON: 1,
+	},
+	OBJECT: {
+		/** `$Object.$id` */
+		ID: 0,
+	},
+	LIST: {
+		/** `$List.$size` */
+		SIZE:     1,
+		/** `$List.$internal` */
+		INTERNAL: 2,
+	},
+	DICT: {
+		/** `$Dict.$size` */
+		SIZE:     1,
+		/** `$Dict.$internal` */
+		INTERNAL: 2,
+	},
+	MAP: {
+		/** `$Map.$size` */
+		SIZE:     1,
+		/** `$Map.$internal` */
+		INTERNAL: 2,
+	},
+} as const;
+
+
+
 /**
  * The Builder generates assembly code.
  */
@@ -163,6 +210,53 @@ export class Builder {
 			${ Builder.IMPORTS.join('') }
 		)
 	`) as BinaryenModuleUpdates;
+
+	/** Utilities for getting fields of WASM structs. */
+	public readonly structGet = {
+		value: {
+			/** @return `(struct.get $Value $tag       <ref>)` */
+			tag:       (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.VALUE.TAG,       ref, binaryen.i32, false),
+			/** @return `(struct.get $Value $primitive <ref>)` */
+			primitive: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.VALUE.PRIMITIVE, ref, binaryen.v128),
+			/** @return `(struct.get $Value $primitive <ref>)` */
+			composite: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.VALUE.COMPOSITE, ref, binaryen.eqref),
+		},
+		property: {
+			/** @return `(struct.get $Property $key <ref>)` */
+			key: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.PROPERTY.KEY, ref, binaryen.i64),
+			/** @return `(struct.get $Property $val <ref>)` */
+			val: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.PROPERTY.VAL, ref, this.reftype.Value),
+		},
+		case: {
+			/** @return `(struct.get $Case $ant <ref>)` */
+			ant: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.CASE.ANT, ref, this.reftype.Value),
+			/** @return `(struct.get $Case $con <ref>)` */
+			con: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.CASE.CON, ref, this.reftype.Value),
+		},
+		object: {
+			/** @return `(struct.get $Object $id <ref>)` */
+			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
+		},
+		list: {
+			/** @return `(struct.get $List $size     <ref>)` */
+			size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.LIST.SIZE,     ref, binaryen.i32),
+			/** @return `(struct.get $List $internal <ref>)` */
+			internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.LIST.INTERNAL, ref, this.reftype.ListInternal),
+		},
+		dict: {
+			/** @return `(struct.get $Dict $size     <ref>)` */
+			size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.DICT.SIZE,     ref, binaryen.i32),
+			/** @return `(struct.get $Dict $internal <ref>)` */
+			internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.DICT.INTERNAL, ref, this.reftype.DictInternal),
+		},
+		map: {
+			/** @return `(struct.get $Map $size     <ref>)` */
+			size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.MAP.SIZE,     ref, binaryen.i32),
+			/** @return `(struct.get $Map $internal <ref>)` */
+			internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.MAP.INTERNAL, ref, this.reftype.MapInternal),
+		},
+	} as const;
+
 
 	public constructor() {
 		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
@@ -394,21 +488,6 @@ export class Builder {
 			...[...cases].map(([ant, con]) => this.module.call('Map.set', [local.get(), ant, con], binaryen.none)),
 			local.get(),
 		], this.reftype.Map);
-	}
-
-	/** @return `(struct.get $List $internal <list>)` */
-	public getListInternal(list: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.LIST_INTERNAL, list, this.reftype.ListInternal);
-	}
-
-	/** @return `(struct.get $Dict $internal <dict>)` */
-	public getDictInternal(dict: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.DICT_INTERNAL, dict, this.reftype.DictInternal);
-	}
-
-	/** @return `(struct.get $Map $internal <map>)` */
-	public getMapInternal(map: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.MAP_INTERNAL, map, this.reftype.MapInternal);
 	}
 
 	/**
