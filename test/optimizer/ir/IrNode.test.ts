@@ -1020,7 +1020,6 @@ test.suite('IrNode', () => {
 					const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
 					const pairs_get: binaryen.ExpressionRef = mod.local.get(6, rt_tuple);
 					const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
-					const pair_get:  binaryen.ExpressionRef = mod.local.get(9, rt_tuple);
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
@@ -1031,11 +1030,14 @@ test.suite('IrNode', () => {
 								mod.loop('repeat-0', mod.block(null, [
 									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(pairs_get))),
 									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_value)),
-									mod.local.set(9, new BinValue(cg, mod.local.get(8, rt_value)).cast('(ref $Tuple)')),
 									mod.call('Dict.set', [
 										mod.local.get(5, cg.getReftype('(ref $Dict)')),
-										new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('asNat'),
-										mod.array.get(pair_get, mod.i32.const(1), rt_value),
+										new BinValue(cg, mod.array.get(
+											mod.local.tee(9, new BinValue(cg, mod.local.get(8, rt_value)).cast('(ref $Tuple)'), rt_tuple),
+											mod.i32.const(0),
+											rt_value,
+										)).interpret('asNat'),
+										mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
 									], binaryen.none),
 									mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
 									mod.br('repeat-0'),
@@ -1078,10 +1080,10 @@ test.suite('IrNode', () => {
 					const mod = cg.module;
 					const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
+					const rt_tuple:   binaryen.Type = cg.getReftype('(ref $Tuple)');
 					const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.getReftype('(ref $ListInternal)'));
 					const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 					const item_get:  binaryen.ExpressionRef = mod.local.get(8, rt_n_value);
-					const pair_get:  binaryen.ExpressionRef = mod.local.get(9, cg.getReftype('(ref $Tuple)'));
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
@@ -1095,11 +1097,14 @@ test.suite('IrNode', () => {
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(item_get)),
 										mod.block(null, [
-											mod.local.set(9, new BinValue(cg, item_get).cast('(ref $Tuple)')),
 											mod.call('Dict.set', [
 												mod.local.get(5, cg.getReftype('(ref $Dict)')),
-												new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('asNat'),
-												mod.array.get(pair_get, mod.i32.const(1), rt_value),
+												new BinValue(cg, mod.array.get(
+													mod.local.tee(9, new BinValue(cg, item_get).cast('(ref $Tuple)'), rt_tuple),
+													mod.i32.const(0),
+													rt_value,
+												)).interpret('asNat'),
+												mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
 											], binaryen.none),
 										]),
 									),
@@ -1144,10 +1149,10 @@ test.suite('IrNode', () => {
 					const mod = cg.module;
 					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
+					const rt_tuple:  binaryen.Type = cg.getReftype('(ref $Tuple)');
 					const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.getReftype('(ref $MapInternal)'));
 					const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
 					const case_get:  binaryen.ExpressionRef = mod.local.get(9, rt_n_case);
-					const pair_get:  binaryen.ExpressionRef = mod.local.get(10, cg.getReftype('(ref $Tuple)'));
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
@@ -1161,11 +1166,14 @@ test.suite('IrNode', () => {
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(case_get)),
 										mod.block(null, [
-											mod.local.set(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)')),
 											mod.call('Dict.set', [
 												mod.local.get(6, cg.getReftype('(ref $Dict)')),
-												new BinValue(cg, mod.array.get(pair_get, mod.i32.const(0), rt_value)).interpret('asNat'),
-												mod.array.get(pair_get, mod.i32.const(1), rt_value),
+												new BinValue(cg, mod.array.get(
+													mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)'), rt_tuple),
+													mod.i32.const(0),
+													rt_value,
+												)).interpret('asNat'),
+												mod.array.get(mod.local.get(10, rt_tuple), mod.i32.const(1), rt_value),
 											], binaryen.none),
 										]),
 									),
@@ -1318,7 +1326,6 @@ test.suite('IrNode', () => {
 					const rt_tuple: binaryen.Type = cg.getReftype('(ref $Tuple)');
 					const pairs_get: binaryen.ExpressionRef = mod.local.get(6, rt_tuple);
 					const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
-					const pair_get:  binaryen.ExpressionRef = mod.local.get(9, rt_tuple);
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
@@ -1329,11 +1336,10 @@ test.suite('IrNode', () => {
 								mod.loop('repeat-0', mod.block(null, [
 									mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(pairs_get))),
 									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_value)),
-									mod.local.set(9, new BinValue(cg, mod.local.get(8, rt_value)).cast('(ref $Tuple)')),
 									mod.call('Map.set', [
 										mod.local.get(5, cg.getReftype('(ref $Map)')),
-										mod.array.get(pair_get, mod.i32.const(0), rt_value),
-										mod.array.get(pair_get, mod.i32.const(1), rt_value),
+										mod.array.get(mod.local.tee(9, new BinValue(cg, mod.local.get(8, rt_value)).cast('(ref $Tuple)'), rt_tuple), mod.i32.const(0), rt_value),
+										mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
 									], binaryen.none),
 									mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
 									mod.br('repeat-0'),
@@ -1349,10 +1355,10 @@ test.suite('IrNode', () => {
 					const mod = cg.module;
 					const rt_value:   binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_value: binaryen.Type = cg.getReftype('(ref null $Value)');
+					const rt_tuple:   binaryen.Type = cg.getReftype('(ref $Tuple)');
 					const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.getReftype('(ref $ListInternal)'));
 					const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 					const item_get:  binaryen.ExpressionRef = mod.local.get(8, rt_n_value);
-					const pair_get:  binaryen.ExpressionRef = mod.local.get(9, cg.getReftype('(ref $Tuple)'));
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
@@ -1366,11 +1372,10 @@ test.suite('IrNode', () => {
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(item_get)),
 										mod.block(null, [
-											mod.local.set(9, new BinValue(cg, item_get).cast('(ref $Tuple)')),
 											mod.call('Map.set', [
 												mod.local.get(5, cg.getReftype('(ref $Map)')),
-												mod.array.get(pair_get, mod.i32.const(0), rt_value),
-												mod.array.get(pair_get, mod.i32.const(1), rt_value),
+												mod.array.get(mod.local.tee(9, new BinValue(cg, item_get).cast('(ref $Tuple)'), rt_tuple), mod.i32.const(0), rt_value),
+												mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
 											], binaryen.none),
 										]),
 									),
@@ -1388,10 +1393,10 @@ test.suite('IrNode', () => {
 					const mod = cg.module;
 					const rt_value:  binaryen.Type = cg.getReftype('(ref $Value)');
 					const rt_n_case: binaryen.Type = cg.getReftype('(ref null $Case)');
+					const rt_tuple:  binaryen.Type = cg.getReftype('(ref $Tuple)');
 					const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.getReftype('(ref $MapInternal)'));
 					const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
 					const case_get:  binaryen.ExpressionRef = mod.local.get(9, rt_n_case);
-					const pair_get:  binaryen.ExpressionRef = mod.local.get(10, cg.getReftype('(ref $Tuple)'));
 					return assertEqualBins(
 						opt.instructions[5].codegen(cg),
 						mod.block(null, [
@@ -1405,11 +1410,10 @@ test.suite('IrNode', () => {
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(case_get)),
 										mod.block(null, [
-											mod.local.set(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)')),
 											mod.call('Map.set', [
 												mod.local.get(6, cg.getReftype('(ref $Map)')),
-												mod.array.get(pair_get, mod.i32.const(0), rt_value),
-												mod.array.get(pair_get, mod.i32.const(1), rt_value),
+												mod.array.get(mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)'), rt_tuple), mod.i32.const(0), rt_value),
+												mod.array.get(mod.local.get(10, rt_tuple), mod.i32.const(1), rt_value),
 											], binaryen.none),
 										]),
 									),
