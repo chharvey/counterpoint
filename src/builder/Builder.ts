@@ -27,6 +27,7 @@ type HeaptypeKey = (
 	| '$Value'
 	| '$Property'
 	| '$Case'
+	| '$String'
 	| '$Tuple'
 	| '$Record'
 	| '$ListInternal'
@@ -446,6 +447,17 @@ export class Builder {
 			/* $con */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		]);
 
+		/* (type $String ...) */
+		const i_string: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_string,
+			binaryen.i32,
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.i8,
+			false,
+		);
+
 		/* (type $Tuple ...) */
 		const i_tuple: number = type_count++;
 		tb.grow(1);
@@ -547,6 +559,7 @@ export class Builder {
 		this.#heaptypeRegistry.set('$Value',        heaptypes[i_value]);
 		this.#heaptypeRegistry.set('$Property',     heaptypes[i_property]);
 		this.#heaptypeRegistry.set('$Case',         heaptypes[i_case]);
+		this.#heaptypeRegistry.set('$String',       heaptypes[i_string]);
 		this.#heaptypeRegistry.set('$Tuple',        heaptypes[i_tuple]);
 		this.#heaptypeRegistry.set('$Record',       heaptypes[i_record]);
 		this.#heaptypeRegistry.set('$ListInternal', heaptypes[i_list_internal]);
@@ -563,6 +576,7 @@ export class Builder {
 		this.#reftypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heaptypes[i_value],         false));
 		this.#reftypeRegistry.set('(ref $Property)',     getTypeFromHeapType(heaptypes[i_property],      false));
 		this.#reftypeRegistry.set('(ref $Case)',         getTypeFromHeapType(heaptypes[i_case],          false));
+		this.#reftypeRegistry.set('(ref $String)',       getTypeFromHeapType(heaptypes[i_string],        false));
 		this.#reftypeRegistry.set('(ref $Tuple)',        getTypeFromHeapType(heaptypes[i_tuple],         false));
 		this.#reftypeRegistry.set('(ref $Record)',       getTypeFromHeapType(heaptypes[i_record],        false));
 		this.#reftypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heaptypes[i_list_internal], false));

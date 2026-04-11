@@ -75,6 +75,7 @@ export class BinValue {
 				break;
 			}
 			case binaryen.eqref:
+			case cg.getReftype('(ref $String)'):
 			case cg.getReftype('(ref $Tuple)'):
 			case cg.getReftype('(ref $Record)'):
 			case cg.getReftype('(ref $List)'):

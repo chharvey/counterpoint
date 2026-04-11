@@ -20,7 +20,8 @@
 
 
 
-;; ## Compound Value Types: tuples and records
+;; ## Compound Value Types
+(type $String (array i8))
 (type $Tuple  (array (ref $Value)))
 (type $Record (array (ref $Property)))
 
