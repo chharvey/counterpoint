@@ -87,7 +87,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 			}
 			case TypeName.SET: {
 				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'));
-				const accessor: Local = cg.newLocal(this.accessor.codegen(cg));
+				const accessor: Local = cg.newLocal(this.accessor.codegen(cg), cg.getReftype('(ref $Value)'));
 				return cg.module.block(null, [
 					base.set(),
 					accessor.set(),
