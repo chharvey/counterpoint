@@ -52,7 +52,6 @@ import binaryen from 'binaryen';
  * Currently, only `i64` values are used.
  * Lanes 4–7 together form the `i64` value, stored in little-endian format.
  * Header values of `\x0012` and `\x0014` reserved for future use.
- * Lane 2, the scaling factor, will be applicable for this type. Currently it is unused.
  *
  * ## Unsigned Integer Values
  * When the Header is `\x0022`, `\x0024`, or `\x0028`, it represents an `i16`, `i32`, or `i64` value respectively,
@@ -63,6 +62,7 @@ import binaryen from 'binaryen';
 
  * ## Decimal Values
  * Header values `\x0030`–`\x003f` are reserved. Decimal values are not yet supported.
+ * Lane 2, the scaling factor, will be applicable for this type. Currently it is unused.
  *
  * ## Float Values
  * When the Header is `\x0042`, `\x0044`, or `\x0048`, it represents an `f16`, `f32`, or `f64` value respectively.
