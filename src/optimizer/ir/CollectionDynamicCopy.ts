@@ -60,7 +60,7 @@ function each_item(
 	srcref:     Local,
 	itemtype:   binaryen.Type,
 	check_null: true,
-	when_item_is_non_null: (item_get: binaryen.ExpressionRef) => binaryen.ExpressionRef,
+	when_item_is_non_null: (dest_get: binaryen.ExpressionRef, item_get: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 ): binaryen.ExpressionRef;
 function each_item(
 	cg:         Builder,
@@ -68,7 +68,7 @@ function each_item(
 	srcref:     Local,
 	itemtype:   binaryen.Type,
 	check_null: false,
-	when_item_is_non_null: (item_get: binaryen.ExpressionRef) => binaryen.ExpressionRef | binaryen.ExpressionRef[],
+	when_item_is_non_null: (dest_get: binaryen.ExpressionRef, item_get: binaryen.ExpressionRef) => binaryen.ExpressionRef | binaryen.ExpressionRef[],
 ): binaryen.ExpressionRef;
 function each_item(
 	cg:         Builder,
@@ -76,7 +76,7 @@ function each_item(
 	srcref:     Local,
 	itemtype:   binaryen.Type,
 	check_null: boolean,
-	when_item_is_non_null: (item_get: binaryen.ExpressionRef) => binaryen.ExpressionRef | binaryen.ExpressionRef[],
+	when_item_is_non_null: (dest_get: binaryen.ExpressionRef, item_get: binaryen.ExpressionRef) => binaryen.ExpressionRef | binaryen.ExpressionRef[],
 ): binaryen.ExpressionRef {
 	// HACK: Temporary counter until we get CodeGenerator blocks.
 	if (!('blockCount' in cg)) {
@@ -88,7 +88,7 @@ function each_item(
 	const i:    Local = cg.newLocal(cg.module.i32.const(0));
 	const item: Local = cg.newLocal(cg.module.array.get(srcref.get(), i.get(), itemtype));
 
-	const non_null_item: binaryen.ExpressionRef | binaryen.ExpressionRef[] = when_item_is_non_null(item.get());
+	const non_null_item: binaryen.ExpressionRef | binaryen.ExpressionRef[] = when_item_is_non_null(destobj.get(), item.get());
 
 	return cg.module.block(null, [
 		destobj.set(),
@@ -302,9 +302,9 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						const j:      Local = cg.newLocal(cg.module.i32.const(0));
 						return cg.module.block(null, [
 							j.set(),
-							each_item(cg, destlist, srcref, cg.getReftype('(ref null $Case)'), true, (item_get) => cg.module.block(null, [
+							each_item(cg, destlist, srcref, cg.getReftype('(ref null $Case)'), true, (dest_get, item_get) => cg.module.block(null, [
 								cg.module.call('List.set', [
-									destlist.get(),
+									dest_get,
 									j.get(),
 									cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item_get, rt_value),
 								], binaryen.none),
@@ -323,12 +323,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
-						return each_item(cg, destdict, srcref, cg.getReftype('(ref $Value)'), false, (item_get) => {
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref $Value)'), false, (dest_get, item_get) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)'));
 							const {key, val} = two_tuple_to_prop(cg, pair.get());
 							return [
 								pair.set(),
-								cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none),
+								cg.module.call('Dict.set', [dest_get, key, val], binaryen.none),
 							];
 						});
 					}
@@ -348,12 +348,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
-						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Value)'), true, (item_get) => {
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Value)'), true, (dest_get, item_get) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)'));
 							const {key, val} = two_tuple_to_prop(cg, pair.get());
 							return cg.module.block(null, [
 								pair.set(),
-								cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none),
+								cg.module.call('Dict.set', [dest_get, key, val], binaryen.none),
 							]);
 						});
 					}
@@ -374,12 +374,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (item_get) => {
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (dest_get, item_get) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item_get, rt_value)).cast('(ref $Tuple)'));
 							const {key, val} = two_tuple_to_prop(cg, pair.get());
 							return cg.module.block(null, [
 								pair.set(),
-								cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none),
+								cg.module.call('Dict.set', [dest_get, key, val], binaryen.none),
 							]);
 						});
 					}
@@ -387,9 +387,9 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					case this.source.type instanceof TYPE.Map: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (item_get) => {
+						return each_item(cg, destdict, srcref, cg.getReftype('(ref null $Case)'), true, (dest_get, item_get) => {
 							const {key, val} = case_to_prop(cg, item_get);
-							return cg.module.call('Dict.set', [destdict.get(), key, val], binaryen.none);
+							return cg.module.call('Dict.set', [dest_get, key, val], binaryen.none);
 						});
 					}
 					default: {
@@ -403,8 +403,8 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Set.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
-						return each_item(cg, destset, srcref, cg.getReftype('(ref $Value)'), false, (item_get) => cg.module.call('Map.set', [
-							destset.get(),
+						return each_item(cg, destset, srcref, cg.getReftype('(ref $Value)'), false, (dest_get, item_get) => cg.module.call('Map.set', [
+							dest_get,
 							item_get,
 							cg.getConst(BinConst.NULL),
 						], binaryen.none));
@@ -413,8 +413,8 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Set.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
-						return each_item(cg, destset, srcref, cg.getReftype('(ref null $Value)'), true, (item_get) => cg.module.call('Map.set', [
-							destset.get(),
+						return each_item(cg, destset, srcref, cg.getReftype('(ref null $Value)'), true, (dest_get, item_get) => cg.module.call('Map.set', [
+							dest_get,
 							cg.module.ref.as_non_null(item_get),
 							cg.getConst(BinConst.NULL),
 						], binaryen.none));
@@ -443,12 +443,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
-						return each_item(cg, destmap, srcref, cg.getReftype('(ref $Value)'), false, (item_get) => {
+						return each_item(cg, destmap, srcref, cg.getReftype('(ref $Value)'), false, (dest_get, item_get) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)'));
 							const {ant, con} = two_tuple_to_case(cg, pair.get());
 							return [
 								pair.set(),
-								cg.module.call('Map.set', [destmap.get(), ant, con], binaryen.none),
+								cg.module.call('Map.set', [dest_get, ant, con], binaryen.none),
 							];
 						});
 					}
@@ -456,12 +456,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')));
-						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Value)'), true, (item_get) => {
+						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Value)'), true, (dest_get, item_get) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)'));
 							const {ant, con} = two_tuple_to_case(cg, pair.get());
 							return cg.module.block(null, [
 								pair.set(),
-								cg.module.call('Map.set', [destmap.get(), ant, con], binaryen.none),
+								cg.module.call('Map.set', [dest_get, ant, con], binaryen.none),
 							]);
 						});
 					}
@@ -469,12 +469,12 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')));
-						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Case)'), true, (item_get) => {
+						return each_item(cg, destmap, srcref, cg.getReftype('(ref null $Case)'), true, (dest_get, item_get) => {
 							const pair: Local = cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item_get, rt_value)).cast('(ref $Tuple)'));
 							const {ant, con} = two_tuple_to_case(cg, pair.get());
 							return cg.module.block(null, [
 								pair.set(),
-								cg.module.call('Map.set', [destmap.get(), ant, con], binaryen.none),
+								cg.module.call('Map.set', [dest_get, ant, con], binaryen.none),
 							]);
 						});
 					}
