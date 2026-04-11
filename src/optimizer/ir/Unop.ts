@@ -54,10 +54,9 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const rt_value: binaryen.Type = cg.reftype.Value;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		if (this.operator === OpCode.TOBOOL) {
-			return cg.module.call('vnot', [cg.module.call('vnot', [code], rt_value)], rt_value);
+			return cg.module.call('vnot', [cg.module.call('vnot', [code], cg.reftype.Value)], cg.reftype.Value);
 		}
 		return cg.module.call(new Map<OpCode, string>([
 			[OpCode.ISNULL,  'isnull'],
@@ -67,7 +66,7 @@ export class Unop extends Value {
 			[OpCode.TOINT,   'vtoi'],
 			[OpCode.TONAT,   'vton'],
 			[OpCode.TOFLOAT, 'vtof'],
-		]).get(this.operator)!, [code], rt_value);
+		]).get(this.operator)!, [code], cg.reftype.Value);
 	}
 
 	/* eslint-disable */

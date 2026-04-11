@@ -48,9 +48,8 @@ export class BinValue {
 			this.value = new BinValue(cg, arg.vect).value;
 			return;
 		}
-		const ht_value: binaryen.Type = cg.heaptype.Value;
 		if (arg === null) {
-			this.value = cg.module.struct.new_default(ht_value);
+			this.value = cg.module.struct.new_default(cg.heaptype.Value);
 			return;
 		}
 		switch (binaryen.getExpressionType(arg)) {
@@ -71,7 +70,7 @@ export class BinValue {
 					cg.module.i32.const(1),
 					arg,
 					cg.module.ref.null(binaryen.eqref),
-				], ht_value);
+				], cg.heaptype.Value);
 				break;
 			}
 			case binaryen.eqref:
@@ -85,7 +84,7 @@ export class BinValue {
 					cg.module.i32.const(2),
 					cg.module.v128.const(new Uint8Array(16)),
 					arg,
-				], ht_value);
+				], cg.heaptype.Value);
 				break;
 			}
 			/*

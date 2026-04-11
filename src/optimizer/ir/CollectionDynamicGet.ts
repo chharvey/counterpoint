@@ -66,7 +66,6 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const rt_value: binaryen.Type = cg.reftype.Value;
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
 		 * But we still need to check for nullish values in the collection.
@@ -87,7 +86,7 @@ export class CollectionDynamicGet extends Value {
 						cg.getConst(BinConst.NULL),
 						cg.module.ref.as_non_null(item.get()),
 					),
-				], rt_value);
+				], cg.reftype.Value);
 			}
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
@@ -104,9 +103,9 @@ export class CollectionDynamicGet extends Value {
 							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), rt_value),
+						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), cg.reftype.Value),
 					),
-				], rt_value);
+				], cg.reftype.Value);
 			}
 			case TypeName.SET: {
 				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
@@ -125,7 +124,7 @@ export class CollectionDynamicGet extends Value {
 						cg.getConst(BinConst.FALSE),
 						cg.getConst(BinConst.TRUE),
 					),
-				], rt_value);
+				], cg.reftype.Value);
 			}
 			case TypeName.MAP: {
 				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
@@ -142,9 +141,9 @@ export class CollectionDynamicGet extends Value {
 							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.module.struct.get(STRUCT_FIELD.CASE_CON, maybe_case.get(), rt_value),
+						cg.module.struct.get(STRUCT_FIELD.CASE_CON, maybe_case.get(), cg.reftype.Value),
 					),
-				], rt_value);
+				], cg.reftype.Value);
 			}
 		}
 	}

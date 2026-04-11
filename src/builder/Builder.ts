@@ -380,7 +380,6 @@ export class Builder {
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
-		const rt_map: binaryen.Type = this.reftype.Map;
 		const map_obj = this.module.struct.new([
 			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.module.i32.const(cases.size),
@@ -389,12 +388,12 @@ export class Builder {
 		if (!cases.size) {
 			return map_obj;
 		}
-		const local: Local = this.newLocal(map_obj, rt_map);
+		const local: Local = this.newLocal(map_obj, this.reftype.Map);
 		return this.module.block(null, [
 			local.set(),
 			...[...cases].map(([ant, con]) => this.module.call('Map.set', [local.get(), ant, con], binaryen.none)),
 			local.get(),
-		], rt_map);
+		], this.reftype.Map);
 	}
 
 	/** @return `(struct.get $List $internal <list>)` */
@@ -587,16 +586,15 @@ export class Builder {
 		method:  (num0: binaryen.ExpressionRef, num1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 		typekey: 'asInt' | 'asNat' | 'asFloat',
 	): binaryen.FunctionRef {
-		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.reftype.Value;
+		const mod: BinaryenModuleUpdates = this.module;
 		const local_vects = [
-			new BinValue(this, mod.local.get(0, rt_value)),
-			new BinValue(this, mod.local.get(1, rt_value)),
+			new BinValue(this, mod.local.get(0, this.reftype.Value)),
+			new BinValue(this, mod.local.get(1, this.reftype.Value)),
 		].map((binval) => new BinVect(mod, binval.asPrimitive));
 		return mod.addFunction(
 			name,
-			binaryen.createType([rt_value, rt_value]),
-			rt_value,
+			binaryen.createType([this.reftype.Value, this.reftype.Value]),
+			this.reftype.Value,
 			[],
 			new BinValue(this, new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect).value,
 		);
@@ -609,11 +607,10 @@ export class Builder {
 		method_nats: (nat0:   binaryen.ExpressionRef, nat1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
-		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.reftype.Value;
+		const mod: BinaryenModuleUpdates = this.module;
 		const local_vects = [
-			new BinValue(this, mod.local.get(0, rt_value)),
-			new BinValue(this, mod.local.get(1, rt_value)),
+			new BinValue(this, mod.local.get(0, this.reftype.Value)),
+			new BinValue(this, mod.local.get(1, this.reftype.Value)),
 		].map((binval) => new BinVect(mod, binval.asPrimitive));
 
 		const int_int: binaryen.ExpressionRef = method_ints.call(null, local_vects[0].asInt,    local_vects[1].asInt);
@@ -626,7 +623,7 @@ export class Builder {
 		const flt_nat: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].n_to_f());
 		const flt_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].asFloat);
 
-		return mod.addFunction(name, binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, BinVect.boolOf(mod, mod.if(
+		return mod.addFunction(name, binaryen.createType([this.reftype.Value, this.reftype.Value]), this.reftype.Value, [], new BinValue(this, BinVect.boolOf(mod, mod.if(
 			local_vects[0].isInt,
 			mod.if(
 				local_vects[1].isInt,

@@ -101,16 +101,15 @@ export class Binop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const rt_value: binaryen.Type = cg.reftype.Value;
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
 			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }
 
-			case OpCode.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, rt_value)], rt_value); }
-			case OpCode.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, rt_value)], rt_value); }
+			case OpCode.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, cg.reftype.Value)], cg.reftype.Value); }
+			case OpCode.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, cg.reftype.Value)], cg.reftype.Value); }
 
-			case OpCode.NID: { return cg.module.call('vnot', [cg.module.call('vid', codes, rt_value)], rt_value); }
-			case OpCode.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, rt_value)], rt_value); }
+			case OpCode.NID: { return cg.module.call('vnot', [cg.module.call('vid', codes, cg.reftype.Value)], cg.reftype.Value); }
+			case OpCode.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, cg.reftype.Value)], cg.reftype.Value); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
 			[OpCode.INT_ADD, 'viadd'],
@@ -137,7 +136,7 @@ export class Binop extends Value {
 
 			[OpCode.ID, 'vid'],
 			[OpCode.EQ, 'veq'],
-		]).get(this.operator)!, codes, rt_value);
+		]).get(this.operator)!, codes, cg.reftype.Value);
 	}
 
 	/* eslint-disable */

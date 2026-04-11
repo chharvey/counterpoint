@@ -157,8 +157,7 @@ test.suite('Builder', () => {
 			}],
 			['`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', (cg) => {
 				const mod = cg.module;
-				const rt_map:  binaryen.Type          = cg.reftype.Map;
-				const map_get: binaryen.ExpressionRef = mod.local.get(0, rt_map);
+				const map_get: binaryen.ExpressionRef = mod.local.get(0, cg.reftype.Map);
 				return [
 					cg.codegenMap(new Map([
 						[genConst(cg, 10n), genConst(cg, 1.1)],
@@ -179,7 +178,7 @@ test.suite('Builder', () => {
 						mod.call('Map.set', [map_get, genConst(cg, 40n), genConst(cg, 4.4)], binaryen.none),
 						mod.call('Map.set', [map_get, genConst(cg, 50n), genConst(cg, 5.5)], binaryen.none),
 						map_get,
-					], rt_map),
+					], cg.reftype.Map),
 				];
 			}],
 		]), (bins, description) => {
