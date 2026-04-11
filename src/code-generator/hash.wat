@@ -124,20 +124,16 @@
 	(local.set $tag       (struct.get $Value $tag       (local.get $value)))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
-	(if (i32.eq (local.get $tag) (i32.const 1))
+	(if
+		(i32.eq (local.get $tag) (i32.const 1))
 		(then (return (call $hash-v128 (struct.get $Value $primitive (local.get $value)))))
 	)
-	(if (i32.eq (local.get $tag) (i32.const 2))
+	(if
+		(i32.eq (local.get $tag) (i32.const 2))
 		(then
-			(if (ref.test (ref $Tuple) (local.get $composite))
-				(then (return (call $hash-Tuple (ref.cast (ref $Tuple) (local.get $composite)))))
-			)
-			(if (ref.test (ref $Record) (local.get $composite))
-				(then (return (call $hash-Record (ref.cast (ref $Record) (local.get $composite)))))
-			)
-			(if (ref.test (ref $Object) (local.get $composite))
-				(then (return (call $hash-Object (ref.cast (ref $Object) (local.get $composite)))))
-			)
+			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (call $hash-Tuple  (ref.cast (ref $Tuple)  (local.get $composite))))))
+			(if (ref.test (ref $Record) (local.get $composite)) (then (return (call $hash-Record (ref.cast (ref $Record) (local.get $composite))))))
+			(if (ref.test (ref $Object) (local.get $composite)) (then (return (call $hash-Object (ref.cast (ref $Object) (local.get $composite))))))
 		)
 	)
 	(unreachable)

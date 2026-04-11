@@ -168,7 +168,8 @@ Codegen((LIST.GET `obj` `accessor`)) := (block (result (ref $Value))
 		(struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`)))
 		(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
 	))
-	(if (result (ref $Value)) (ref.is_null (local.get $item))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $item))
 		(then `Codegen((NULL.CONST null))`)
 		(else (ref.as_non_null (local.get $item)))
 	)
@@ -183,10 +184,11 @@ Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
 			)
 		)
 	)
-	(if (result (ref $Value)) (i32.or
-		(ref.is_null (local.get $maybe-prop))
-		(call $Property.is-tombstone (local.get $maybe-prop))
-	)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $maybe-prop))
+			(call $Property.is-tombstone (local.get $maybe-prop))
+		)
 		(then `Codegen((NULL.CONST null))`)
 		(else (struct.get $Property $val (local.get $maybe-prop)))
 	)
@@ -201,10 +203,11 @@ Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
 			)
 		)
 	)
-	(if (result (ref $Value)) (i32.or
-		(ref.is_null (local.get $maybe-case))
-		(call $Case.is-tombstone (local.get $maybe-case))
-	)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $maybe-case))
+			(call $Case.is-tombstone (local.get $maybe-case))
+		)
 		(then `Codegen((BOOL.CONST false))`)
 		(else `Codegen((BOOL.CONST true))`)
 	)
@@ -219,10 +222,11 @@ Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
 			)
 		)
 	)
-	(if (result (ref $Value)) (i32.or
-		(ref.is_null (local.get $maybe-case))
-		(call $Case.is-tombstone (local.get $maybe-case))
-	)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $maybe-case))
+			(call $Case.is-tombstone (local.get $maybe-case))
+		)
 		(then `Codegen((NULL.CONST null))`)
 		(else (struct.get $Case $con (local.get $maybe-case)))
 	)
@@ -354,8 +358,9 @@ Codegen((LIST.COPY `dest` `src:Set`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
 			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $case)))
-				(block
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then
 					(call $List.set
 						(local.get $list)
 						(local.get $j)
@@ -378,10 +383,11 @@ Codegen((DICT.COPY `dest` `src:Tuple`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
 			(local.set $item (array.get $Tuple (local.get $pairs) (local.get $i)))
-			(local.set $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
 			(call $Dict.set
 				(local.get $dict)
-				(i64x2.extract_lane 1 (struct.get $Value $primitive (array.get $Tuple (local.get $pair) (i32.const 0))))
+				(i64x2.extract_lane 1 (struct.get $Value $primitive
+					(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
+				))
 				(array.get $Tuple (local.get $pair) (i32.const 1))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -412,13 +418,15 @@ Codegen((DICT.COPY `dest` `src:List`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
 			(local.set $item (array.get $ListInternal (local.get $pairs) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $item)))
-				(local.set $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
-				(call $Dict.set
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Dict.set
 					(local.get $dict)
-					(i64x2.extract_lane 1 (struct.get $Value $primitive (array.get $Tuple (local.get $pair) (i32.const 0))))
+					(i64x2.extract_lane 1 (struct.get $Value $primitive
+						(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
+					))
 					(array.get $Tuple (local.get $pair) (i32.const 1))
-				)
+				))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -448,13 +456,15 @@ Codegen((DICT.COPY `dest` `src:Set`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
 			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $case)))
-				(local.set $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $case)))))
-				(call $Dict.set
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then (call $Dict.set
 					(local.get $dict)
-					(i64x2.extract_lane 1 (struct.get $Value $primitive (array.get $Tuple (local.get $pair) (i32.const 0))))
+					(i64x2.extract_lane 1 (struct.get $Value $primitive
+						(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $case))))) (i32.const 0))
+					))
 					(array.get $Tuple (local.get $pair) (i32.const 1))
-				)
+				))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -469,12 +479,13 @@ Codegen((DICT.COPY `dest` `src:Map`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
 			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $case)))
-				(call $Dict.set
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then (call $Dict.set
 					(local.get $dict)
 					(i64x2.extract_lane 1 (struct.get $Value $primitive (struct.get $Case $ant (local.get $case))))
 					(struct.get $Case $con (local.get $case))
-				)
+				))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -508,12 +519,13 @@ Codegen((SET.COPY `dest` `src:List`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $items))))
 			(local.set $item (array.get $ListInternal (local.get $items) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $item)))
-				(call $Map.set
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Map.set
 					(local.get $set)
 					(ref.as_non_null (local.get $item))
 					`Codegen((NULL.CONST null))`
-				)
+				))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -544,10 +556,9 @@ Codegen((MAP.COPY `dest` `src:Tuple`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
 			(local.set $item (array.get $Tuple (local.get $pairs) (local.get $i)))
-			(local.set $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
 			(call $Map.set
 				(local.get $map)
-				(array.get $Tuple (local.get $pair) (i32.const 0))
+				(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
 				(array.get $Tuple (local.get $pair) (i32.const 1))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -563,13 +574,13 @@ Codegen((MAP.COPY `dest` `src:List`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
 			(local.set $item (array.get $ListInternal (local.get $pairs) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $item)))
-				(local.set $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item))))
-				(call $Dict.set
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Dict.set
 					(local.get $map)
-					(array.get $Tuple (local.get $pair) (i32.const 0))
+					(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
 					(array.get $Tuple (local.get $pair) (i32.const 1))
-				)
+				))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -584,13 +595,13 @@ Codegen((MAP.COPY `dest` `src:Set`)) := (block
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
 			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $case)))
-				(local.set $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $case)))))
-				(call $Map.set
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then (call $Map.set
 					(local.get $map)
-					(array.get $Tuple (local.get $pair) (i32.const 0))
+					(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $case))))) (i32.const 0))
 					(array.get $Tuple (local.get $pair) (i32.const 1))
-				)
+				))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)

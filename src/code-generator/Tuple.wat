@@ -3,7 +3,8 @@
 (func $Tuple.identical (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
 	(local $i i32)
 
-	(if (i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
+	(if
+		(i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -11,10 +12,11 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
-			(if (i32.eqz (call $bool-to-i32 (call $vid
-				(array.get $Tuple (local.get $tuple0) (local.get $i))
-				(array.get $Tuple (local.get $tuple1) (local.get $i))
-			)))
+			(if
+				(i32.eqz (call $bool-to-i32 (call $vid
+					(array.get $Tuple (local.get $tuple0) (local.get $i))
+					(array.get $Tuple (local.get $tuple1) (local.get $i))
+				)))
 				(then (return (i32.const 0)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -31,7 +33,8 @@
 (func $Tuple.equal (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
 	(local $i i32)
 
-	(if (i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
+	(if
+		(i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -39,10 +42,11 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
-			(if (i32.eqz (call $bool-to-i32 (call $veq
-				(array.get $Tuple (local.get $tuple0) (local.get $i))
-				(array.get $Tuple (local.get $tuple1) (local.get $i))
-			)))
+			(if
+				(i32.eqz (call $bool-to-i32 (call $veq
+					(array.get $Tuple (local.get $tuple0) (local.get $i))
+					(array.get $Tuple (local.get $tuple1) (local.get $i))
+				)))
 				(then (return (i32.const 0)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
