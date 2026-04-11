@@ -37,7 +37,7 @@ type TypeKey = (
 	| 'Dict'
 	| 'Map'
 );
-export type ReftypeKey = `(ref ${ `$${ TypeKey }` | `null ${ '$Value' | '$Property' | '$Case' }` })`;
+
 type HeaptypeRegistry = Record<TypeKey, binaryen.Type>;
 type ReftypeRegistry  = Record<TypeKey, binaryen.Type>;
 

@@ -238,11 +238,11 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 
 		switch (this.name) {
 			case TypeName.LIST: {
-				const destlist: Local = cg.newLocal(new BinValue(cg, code_dest).cast('(ref $List)'));
+				const destlist: Local = cg.newLocal(new BinValue(cg, code_dest).cast(cg.reftype.List));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast(cg.reftype.Tuple));
 						return copy_array(
 							cg.module,
 							destlist,
@@ -255,7 +255,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// List.<T>(List.<T>((t, t, t)));
 					// List.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast(cg.reftype.List)), cg.reftype.ListInternal);
 						return copy_array(
 							cg.module,
 							destlist,
@@ -274,7 +274,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 						 * This may be surprising to programmers who expect the copy to preserve order;
 						 * however, Set semantics explicitly state that programmers should not expect iteration to occur in any particular order.
 						 */
-						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast(cg.reftype.Map)), cg.reftype.MapInternal);
 						const j:      Local = cg.newLocal(cg.module.i32.const(0));
 						return cg.module.block(null, [
 							j.set(),
@@ -294,19 +294,19 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 				}
 			}
 			case TypeName.DICT: {
-				const destdict: Local = cg.newLocal(new BinValue(cg, code_dest).cast('(ref $Dict)'));
+				const destdict: Local = cg.newLocal(new BinValue(cg, code_dest).cast(cg.reftype.Dict));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast(cg.reftype.Tuple));
 						return each_item(cg, destdict, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)')));
+							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(new BinValue(cg, item_get).cast(cg.reftype.Tuple)));
 							return cg.module.call('Dict.set', [dest_get, key, val], binaryen.none);
 						});
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
-						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Record)'));
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast(cg.reftype.Record));
 						return copy_array(
 							cg.module,
 							destdict,
@@ -319,16 +319,16 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast(cg.reftype.List)), cg.reftype.ListInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)')));
+							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(new BinValue(cg, item_get).cast(cg.reftype.Tuple)));
 							return cg.module.call('Dict.set', [dest_get, key, val], binaryen.none);
 						});
 					}
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					// Dict.<T>([a= t, b= t, c= t]);
 					case this.source.type instanceof TYPE.Dict: {
-						const srcref: Local = cg.newLocal(cg.getDictInternal(new BinValue(cg, code_src).cast('(ref $Dict)')), cg.reftype.DictInternal);
+						const srcref: Local = cg.newLocal(cg.getDictInternal(new BinValue(cg, code_src).cast(cg.reftype.Dict)), cg.reftype.DictInternal);
 						return copy_array(
 							cg.module,
 							destdict,
@@ -341,16 +341,16 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast(cg.reftype.Map)), cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item_get, cg.reftype.Value)).cast('(ref $Tuple)')));
+							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item_get, cg.reftype.Value)).cast(cg.reftype.Tuple)));
 							return cg.module.call('Dict.set', [dest_get, key, val], binaryen.none);
 						});
 					}
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					case this.source.type instanceof TYPE.Map: {
-						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast(cg.reftype.Map)), cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
 							const {key, val} = case_to_prop(cg, item_get);
 							return cg.module.call('Dict.set', [dest_get, key, val], binaryen.none);
@@ -362,11 +362,11 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 				}
 			}
 			case TypeName.SET: {
-				const destset: Local = cg.newLocal(new BinValue(cg, code_dest).cast('(ref $Map)'));
+				const destset: Local = cg.newLocal(new BinValue(cg, code_dest).cast(cg.reftype.Map));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Set.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast(cg.reftype.Tuple));
 						return each_item(cg, destset, srcref, cg.reftype.Value, false, (dest_get, item_get) => cg.module.call('Map.set', [
 							dest_get,
 							item_get,
@@ -376,7 +376,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Set.<T>(List.<T>((t, t, t)));
 					// Set.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast(cg.reftype.List)), cg.reftype.ListInternal);
 						return each_item(cg, destset, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => cg.module.call('Map.set', [
 							dest_get,
 							cg.module.ref.as_non_null(item_get),
@@ -386,7 +386,7 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 					// Set.<T>(Set.<T>((t, t, t)));
 					// Set.<T>({t, t, t});
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast(cg.reftype.Map)), cg.reftype.MapInternal);
 						return copy_array(
 							cg.module,
 							destset,
@@ -402,38 +402,38 @@ export class CollectionDynamicCopy extends Opcode implements Instruction {
 				}
 			}
 			case TypeName.MAP: {
-				const destmap: Local = cg.newLocal(new BinValue(cg, code_dest).cast('(ref $Map)'));
+				const destmap: Local = cg.newLocal(new BinValue(cg, code_dest).cast(cg.reftype.Map));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast('(ref $Tuple)'));
+						const srcref: Local = cg.newLocal(new BinValue(cg, code_src).cast(cg.reftype.Tuple));
 						return each_item(cg, destmap, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)')));
+							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(new BinValue(cg, item_get).cast(cg.reftype.Tuple)));
 							return cg.module.call('Map.set', [dest_get, ant, con], binaryen.none);
 						});
 					}
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast('(ref $List)')), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(cg.getListInternal(new BinValue(cg, code_src).cast(cg.reftype.List)), cg.reftype.ListInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(new BinValue(cg, item_get).cast('(ref $Tuple)')));
+							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(new BinValue(cg, item_get).cast(cg.reftype.Tuple)));
 							return cg.module.call('Map.set', [dest_get, ant, con], binaryen.none);
 						});
 					}
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast(cg.reftype.Map)), cg.reftype.MapInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item_get, cg.reftype.Value)).cast('(ref $Tuple)')));
+							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(new BinValue(cg, cg.module.struct.get(STRUCT_FIELD.CASE_ANT, item_get, cg.reftype.Value)).cast(cg.reftype.Tuple)));
 							return cg.module.call('Map.set', [dest_get, ant, con], binaryen.none);
 						});
 					}
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					case this.source.type instanceof TYPE.Map: {
-						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast('(ref $Map)')), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(cg.getMapInternal(new BinValue(cg, code_src).cast(cg.reftype.Map)), cg.reftype.MapInternal);
 						return copy_array(
 							cg.module,
 							destmap,

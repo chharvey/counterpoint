@@ -73,7 +73,7 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(cg.module.array.get(
-					cg.getListInternal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)')),
+					cg.getListInternal(new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.List)),
 					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('asInt')),
 					cg.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
@@ -90,7 +90,7 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
+					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Dict),
 					new BinValue(cg, this.accessor.codegen(cg)).interpret('asNat'),
 				], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1));
 
@@ -109,7 +109,7 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.SET: {
 				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map),
 					this.accessor.codegen(cg),
 				], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1));
 
@@ -128,7 +128,7 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.MAP: {
 				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map),
 					this.accessor.codegen(cg),
 				], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1));
 

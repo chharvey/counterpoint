@@ -1,7 +1,6 @@
 import binaryen from 'binaryen';
 import {
 	bigint_to_i64,
-	type ReftypeKey,
 	type Builder,
 	BinVect,
 } from '../index.ts';
@@ -148,22 +147,7 @@ export class BinValue {
 	 * @param reftype the string key of the type to cast to
 	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
 	 */
-	public cast(reftype: ReftypeKey): binaryen.ExpressionRef {
-		// TODO: update the argument to take any `binaryen.Type`
-		const bintype: binaryen.Type = new Map<ReftypeKey, binaryen.Type>([
-			['(ref $Value)',        this.cg.reftype.Value],
-			['(ref $Property)',     this.cg.reftype.Property],
-			['(ref $Case)',         this.cg.reftype.Case],
-			['(ref $Tuple)',        this.cg.reftype.Tuple],
-			['(ref $Record)',       this.cg.reftype.Record],
-			['(ref $ListInternal)', this.cg.reftype.ListInternal],
-			['(ref $DictInternal)', this.cg.reftype.DictInternal],
-			['(ref $MapInternal)',  this.cg.reftype.MapInternal],
-			['(ref $Object)',       this.cg.reftype.Object],
-			['(ref $List)',         this.cg.reftype.List],
-			['(ref $Dict)',         this.cg.reftype.Dict],
-			['(ref $Map)',          this.cg.reftype.Map],
-		]).get(reftype)!;
-		return this.cg.module.ref.cast(this.asComposite, bintype);
+	public cast(reftype: binaryen.Type): binaryen.ExpressionRef {
+		return this.cg.module.ref.cast(this.asComposite, reftype);
 	}
 }
