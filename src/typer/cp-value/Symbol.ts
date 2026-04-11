@@ -1,9 +1,15 @@
 import type binaryen from 'binaryen';
 import {
+	BinValue,
 	bigint_to_i64,
+	type Builder,
 	BinVect,
 } from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -54,8 +60,15 @@ class ValueSymbol extends Primitive {
 		return this.id === (value as ValueSymbol).id;
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(mod, bigint_to_i64(mod, this.id, true), {unsigned: true});
+	@memoizeMethod
+	public override toType(): TYPE.Unit<this> {
+		// @ts-expect-error --- this class is final, so type `this` will always be type `ValueSymbol`
+		return this.id === 0x80n ? TYPE.SYM_NOTHING : super.toType();
+	}
+
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.id, true), {unsigned: true})).value;
 	}
 }
 export {ValueSymbol as Symbol};

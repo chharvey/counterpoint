@@ -9,11 +9,36 @@ Codegen((INT.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_la
 Codegen((NAT.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
 Codegen((FLOAT.CONST `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0048 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
 
-// Codegen((STR.CONST `v`));
+Codegen((STR.CONST `v`)) := (struct.new $Value
+	(i32.const 2)
+	(v128.const i64x2 0 0)
+	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
+);
+
+Codegen((STR.TEMPLATE `values`)) := (struct.new $Value
+	(i32.const 2)
+	(v128.const i64x2 0 0)
+	(block (result (ref $String))
+		`values.map("(local.set $str_`i` (call $stringify `Codegen(values[i])`))")`
+		(local.set $string
+			(array.new_default $String `values.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
+		)
+		(local.set $offset (i32.const 0))
+		`values.flatMap([
+			"(array.COPY
+				(local.get $string)
+				(local.get $offset)
+				(local.get $str_`i`)
+				(i32.const 0)
+				(array.len (local.get $str_`i`))
+			)",
+			"(local.set $offset (i32.add (local.get $offset) (array.len (local.get $str_`i`))))",
+		]).slice(0, -1)`
+		(local.get $string)
+	)
+);
 
 Codegen((GET `id`)) := (local.get ‹index› `id.type`);
-
-// Codegen((STR.TEMPLATE `v`));
 
 Codegen((TUPLE.NEW)) := (struct.new $Value
 	(i32.const 2)

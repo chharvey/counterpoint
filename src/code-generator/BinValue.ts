@@ -35,7 +35,7 @@ export class BinValue {
 	 * @param  arg a Binaryen value of WASM type `v128`,
 	 *               `(ref $Object)` or a subtype, `(ref $Tuple)`, `(ref $Record)`,
 	 *               `(ref $Value)`, or `(ref null $Value)`, or a BinVect object,
-	 *               or `null`
+	 *               or `null` (to create a `(struct.new_default)`)
 	 */
 	public constructor(
 		private readonly cg: Builder,
@@ -72,6 +72,7 @@ export class BinValue {
 				break;
 			}
 			case binaryen.eqref:
+			case cg.reftype.String:
 			case cg.reftype.Tuple:
 			case cg.reftype.Record:
 			case cg.reftype.List:

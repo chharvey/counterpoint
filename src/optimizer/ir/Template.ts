@@ -1,6 +1,10 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import {
+	BinValue,
+	type Builder,
+	type Local,
+} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -27,7 +31,28 @@ export class Template extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(cg.module.call('stringify', [item.codegen(cg)], cg.reftype.String)));
+		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => cg.module.array.len(strarr.get()));
+
+		const result: Local = cg.newLocal(cg.module.array.new_default(cg.heaptype.String, lengths.reduce((a, b) => cg.module.i32.add(a, b))), cg.reftype.String);
+		const offset: Local = cg.newLocal(cg.module.i32.const(0));
+
+		return new BinValue(cg, cg.module.block(null, [
+			...strings.map((strarr) => strarr.set()),
+			result.set(),
+			offset.set(),
+			...strings.flatMap((strarr, i) => [
+				cg.module.array.copy(
+					result.get(),
+					offset.get(),
+					strarr.get(),
+					cg.module.i32.const(0),
+					lengths[i],
+				),
+				offset.set(cg.module.i32.add(offset.get(), lengths[i])),
+			]).slice(0, -1), // slice off the last `offset.set`
+			result.get(),
+		], cg.reftype.String)).value;
 	}
 }

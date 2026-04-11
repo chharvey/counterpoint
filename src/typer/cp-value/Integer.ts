@@ -1,9 +1,14 @@
 import type binaryen from 'binaryen';
 import {
+	BinValue,
 	bigint_to_i64,
+	type Builder,
 	BinVect,
 } from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -70,8 +75,9 @@ export class Integer extends ValueNumber<Integer> {
 		return this.toFloat().equal(value);
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(mod, bigint_to_i64(mod, this.data));
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.data))).value;
 	}
 
 	public override toInt(): Integer {

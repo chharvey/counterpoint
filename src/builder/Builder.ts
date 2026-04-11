@@ -26,6 +26,7 @@ type TypeKey = (
 	| 'Value'
 	| 'Property'
 	| 'Case'
+	| 'String'
 	| 'Tuple'
 	| 'Record'
 	| 'ListInternal'
@@ -160,6 +161,7 @@ export class Builder {
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
+		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stringify.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
 		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
@@ -385,6 +387,15 @@ export class Builder {
 	}
 
 	/**
+	 * Return a new `$String` from UTF-8-encoded code units.
+	 * @param units items in the array; must be of type `i32`
+	 * @return      `(array.new_fixed $String <...items>)`
+	 */
+	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.module.array.new_fixed(this.heaptype.String, units);
+	}
+
+	/**
 	 * Return a new `$Tuple` from items.
 	 * @param items items in the array; must be of type `(ref $Value)`
 	 * @return      `(array.new_fixed $Tuple <...items>)`
@@ -527,6 +538,17 @@ export class Builder {
 			/* $con */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 		]);
 
+		/* (type $String ...) */
+		const i_string: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_string,
+			binaryen.i32,
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.i8,
+			true,
+		);
+
 		/* (type $Tuple ...) */
 		const i_tuple: number = type_count++;
 		tb.grow(1);
@@ -628,6 +650,7 @@ export class Builder {
 		this.#heaptypeRegistry.Value        = heaptypes[i_value];
 		this.#heaptypeRegistry.Property     = heaptypes[i_property];
 		this.#heaptypeRegistry.Case         = heaptypes[i_case];
+		this.#heaptypeRegistry.String       = heaptypes[i_string];
 		this.#heaptypeRegistry.Tuple        = heaptypes[i_tuple];
 		this.#heaptypeRegistry.Record       = heaptypes[i_record];
 		this.#heaptypeRegistry.ListInternal = heaptypes[i_list_internal];
@@ -644,6 +667,7 @@ export class Builder {
 		this.#reftypeRegistry.Value        = getTypeFromHeapType(heaptypes[i_value],         false);
 		this.#reftypeRegistry.Property     = getTypeFromHeapType(heaptypes[i_property],      false);
 		this.#reftypeRegistry.Case         = getTypeFromHeapType(heaptypes[i_case],          false);
+		this.#reftypeRegistry.String       = getTypeFromHeapType(heaptypes[i_string],        false);
 		this.#reftypeRegistry.Tuple        = getTypeFromHeapType(heaptypes[i_tuple],         false);
 		this.#reftypeRegistry.Record       = getTypeFromHeapType(heaptypes[i_record],        false);
 		this.#reftypeRegistry.ListInternal = getTypeFromHeapType(heaptypes[i_list_internal], false);

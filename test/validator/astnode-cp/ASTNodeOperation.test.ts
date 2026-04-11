@@ -1123,22 +1123,20 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#type', () => {
 			test.test('with constant folding on.', () => {
 				typeOperations(new Map<string, TYPE.Type>([
-					// `assertEqualTypes` checks for reference-equality when the expected type is a common constant (e.g. `TYPE.NULL`), so constructing new `TYPE.Unit`s here
-					// FIXME: `Primitive#toType()` should check against `TYPE_CONSTANTS`
-					['null     && false',    new TYPE.Unit(VALUE.NULL)],
-					['false    && null',     new TYPE.Unit(VALUE.FALSE)],
-					['true     && null',     new TYPE.Unit(VALUE.NULL)],
+					['null     && false',    TYPE.NULL],
+					['false    && null',     TYPE.FALSE],
+					['true     && null',     TYPE.NULL],
 					['@nothing && @x',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'x'))],
-					['@x       && @nothing', new TYPE.Unit(VALUE.SYM_NOTHING)],
-					['@nothing || @y',       new TYPE.Unit(VALUE.SYM_NOTHING)],
+					['@x       && @nothing', TYPE.SYM_NOTHING],
+					['@nothing || @y',       TYPE.SYM_NOTHING],
 					['@y       || @nothing', new TYPE.Unit(new VALUE.Symbol(0x100n, 'y'))],
-					['@z       && false',    new TYPE.Unit(VALUE.FALSE)],
+					['@z       && false',    TYPE.FALSE],
 					['true     && @z',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'z'))],
-					['false    && 42',       new TYPE.Unit(VALUE.FALSE)],
-					['4.2      && true',     new TYPE.Unit(VALUE.TRUE)],
-					['null     || false',    new TYPE.Unit(VALUE.FALSE)],
-					['false    || null',     new TYPE.Unit(VALUE.NULL)],
-					['true     || null',     new TYPE.Unit(VALUE.TRUE)],
+					['false    && 42',       TYPE.FALSE],
+					['4.2      && true',     TYPE.TRUE],
+					['null     || false',    TYPE.FALSE],
+					['false    || null',     TYPE.NULL],
+					['true     || null',     TYPE.TRUE],
 					['false    || 42',       new TYPE.Unit(new VALUE.Integer(42n))],
 					['4.2      || true',     new TYPE.Unit(new VALUE.Float(4.2))],
 				]));

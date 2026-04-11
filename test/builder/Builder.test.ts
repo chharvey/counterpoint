@@ -28,6 +28,17 @@ test.suite('Builder', () => {
 			], binaryen.i64);
 		}
 		xjs.Map.forEachAggregated(new Map<string, (cg: Builder) => [binaryen.ExpressionRef, binaryen.ExpressionRef]>([
+			['empty `#codegenString`.', (cg) => [
+				cg.codegenString(),
+				cg.module.array.new_fixed(cg.heaptype.String, []),
+			]],
+			['`#codegenTuple` returns (array.new_fixed).', (cg) => {
+				const codeunits = [0x68, 0x65, 0x6c, 0x6c, 0x6f] as const; // 'hello' in UTF-8
+				return [
+					cg.codegenString(codeunits.map((c) => cg.module.i32.const(c))),
+					cg.module.array.new_fixed(cg.heaptype.String, codeunits.map((c) => cg.module.i32.const(c))),
+				];
+			}],
 			['empty `#codegenTuple`.', (cg) => [
 				cg.codegenTuple(),
 				cg.module.array.new_fixed(cg.heaptype.Tuple, []),
