@@ -25,7 +25,6 @@ test.suite('IrNode', () => {
 	test.suite('#codegen', () => {
 		test.test('is not yet supported.', () => {
 			const {opt, cg} = setupScript(`{
-				"hello";
 				"""hello {{ 42 }}""";
 			}`, {codegen: false});
 			xjs.Array.forEachAggregated([
@@ -41,13 +40,14 @@ test.suite('IrNode', () => {
 			return assertEqualBins(new IR.Trap().codegen(cg), cg.module.unreachable());
 		});
 
-		test.test('Const returns (v128.const).', () => {
+		test.test('Const returns (struct.new $Value).', () => {
 			const {stmts, opt, cg} = setupScript(`{
 				null;
 				false;
 				@hello;
 				42;
 				4.2;
+				"hello";
 			}`, {codegen: false});
 			return assertEqualBins(
 				stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
@@ -57,6 +57,7 @@ test.suite('IrNode', () => {
 					genConst(cg, Symbol(0x100)),
 					genConst(cg, 42n),
 					genConst(cg, 4.2),
+					genConst(cg, 'hello'),
 				],
 			);
 		});

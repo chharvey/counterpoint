@@ -289,6 +289,15 @@ export class Builder {
 	}
 
 	/**
+	 * Return a new `$String` from UTF-8-encoded code units.
+	 * @param units items in the array; must be of type `i32`
+	 * @return      `(array.new_fixed $String <...items>)`
+	 */
+	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.module.array.new_fixed(this.getHeaptype('$String'), units);
+	}
+
+	/**
 	 * Return a new `$Tuple` from items.
 	 * @param items items in the array; must be of type `(ref $Value)`
 	 * @return      `(array.new_fixed $Tuple <...items>)`

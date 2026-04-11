@@ -306,7 +306,11 @@ test.suite('Value', () => {
 		});
 
 		test.test('String', () => {
-			assert.throws(() => new VALUE.String('hello world').codegen(new Builder()), /not yet supported/);
+			const cg = new Builder();
+			return assertEqualBins(
+				new VALUE.String('hello').codegen(cg),
+				new BinValue(cg, cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => cg.module.i32.const(c)))).value,
+			);
 		});
 	});
 

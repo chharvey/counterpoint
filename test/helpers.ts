@@ -117,7 +117,7 @@ export function genConst(cg: Builder, value: null | boolean | symbol | bigint | 
 		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
-		typeof value === 'string' ? assert.fail('String argument to `genConst` is not yet supported.') :
+		typeof value === 'string' ? new VALUE.String(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
 	).codegen(cg);
 }

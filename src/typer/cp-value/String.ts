@@ -4,7 +4,6 @@ import utf8 from 'utf8';
 import {
 	BinValue,
 	type Builder,
-	BinVect,
 } from '../../index.ts';
 import {
 	type CodeUnit,
@@ -61,10 +60,7 @@ class ValueString extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		cg;
-		BinValue;
-		BinVect;
-		throw new Error('`ValueString#codegen` not yet supported.');
+		return new BinValue(cg, cg.codegenString(this.codeunits.map((c) => cg.module.i32.const(c)))).value;
 	}
 
 	/**
