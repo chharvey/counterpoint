@@ -1096,17 +1096,15 @@ test.suite('IrNode', () => {
 									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_n_value)),
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(item_get)),
-										mod.block(null, [
-											mod.call('Dict.set', [
-												mod.local.get(5, cg.getReftype('(ref $Dict)')),
-												new BinValue(cg, mod.array.get(
-													mod.local.tee(9, new BinValue(cg, item_get).cast('(ref $Tuple)'), rt_tuple),
-													mod.i32.const(0),
-													rt_value,
-												)).interpret('asNat'),
-												mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
-											], binaryen.none),
-										]),
+										mod.call('Dict.set', [
+											mod.local.get(5, cg.getReftype('(ref $Dict)')),
+											new BinValue(cg, mod.array.get(
+												mod.local.tee(9, new BinValue(cg, item_get).cast('(ref $Tuple)'), rt_tuple),
+												mod.i32.const(0),
+												rt_value,
+											)).interpret('asNat'),
+											mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
+										], binaryen.none),
 									),
 									mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
 									mod.br('repeat-0'),
@@ -1165,17 +1163,15 @@ test.suite('IrNode', () => {
 									mod.local.set(9, mod.array.get(cases_get, i_get, rt_n_case)),
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(case_get)),
-										mod.block(null, [
-											mod.call('Dict.set', [
-												mod.local.get(6, cg.getReftype('(ref $Dict)')),
-												new BinValue(cg, mod.array.get(
-													mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)'), rt_tuple),
-													mod.i32.const(0),
-													rt_value,
-												)).interpret('asNat'),
-												mod.array.get(mod.local.get(10, rt_tuple), mod.i32.const(1), rt_value),
-											], binaryen.none),
-										]),
+										mod.call('Dict.set', [
+											mod.local.get(6, cg.getReftype('(ref $Dict)')),
+											new BinValue(cg, mod.array.get(
+												mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)'), rt_tuple),
+												mod.i32.const(0),
+												rt_value,
+											)).interpret('asNat'),
+											mod.array.get(mod.local.get(10, rt_tuple), mod.i32.const(1), rt_value),
+										], binaryen.none),
 									),
 									mod.local.set(8, mod.i32.add(i_get, mod.i32.const(1))),
 									mod.br('repeat-0'),
@@ -1371,13 +1367,11 @@ test.suite('IrNode', () => {
 									mod.local.set(8, mod.array.get(pairs_get, i_get, rt_n_value)),
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(item_get)),
-										mod.block(null, [
-											mod.call('Map.set', [
-												mod.local.get(5, cg.getReftype('(ref $Map)')),
-												mod.array.get(mod.local.tee(9, new BinValue(cg, item_get).cast('(ref $Tuple)'), rt_tuple), mod.i32.const(0), rt_value),
-												mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
-											], binaryen.none),
-										]),
+										mod.call('Map.set', [
+											mod.local.get(5, cg.getReftype('(ref $Map)')),
+											mod.array.get(mod.local.tee(9, new BinValue(cg, item_get).cast('(ref $Tuple)'), rt_tuple), mod.i32.const(0), rt_value),
+											mod.array.get(mod.local.get(9, rt_tuple), mod.i32.const(1), rt_value),
+										], binaryen.none),
 									),
 									mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
 									mod.br('repeat-0'),
@@ -1409,13 +1403,11 @@ test.suite('IrNode', () => {
 									mod.local.set(9, mod.array.get(cases_get, i_get, rt_n_case)),
 									mod.if(
 										mod.i32.eqz(mod.ref.is_null(case_get)),
-										mod.block(null, [
-											mod.call('Map.set', [
-												mod.local.get(6, cg.getReftype('(ref $Map)')),
-												mod.array.get(mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)'), rt_tuple), mod.i32.const(0), rt_value),
-												mod.array.get(mod.local.get(10, rt_tuple), mod.i32.const(1), rt_value),
-											], binaryen.none),
-										]),
+										mod.call('Map.set', [
+											mod.local.get(6, cg.getReftype('(ref $Map)')),
+											mod.array.get(mod.local.tee(10, new BinValue(cg, mod.struct.get(STRUCT_FIELD.CASE_ANT, case_get, rt_value)).cast('(ref $Tuple)'), rt_tuple), mod.i32.const(0), rt_value),
+											mod.array.get(mod.local.get(10, rt_tuple), mod.i32.const(1), rt_value),
+										], binaryen.none),
 									),
 									mod.local.set(8, mod.i32.add(i_get, mod.i32.const(1))),
 									mod.br('repeat-0'),
