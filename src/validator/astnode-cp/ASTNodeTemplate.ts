@@ -13,10 +13,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeConstant} from './ASTNodeConstant.ts';
 
 
@@ -42,7 +39,6 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.STR;
 	}

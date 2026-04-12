@@ -1,9 +1,14 @@
 import type binaryen from 'binaryen';
 import {
+	BinValue,
 	bigint_to_i64,
+	type Builder,
 	BinVect,
 } from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -39,8 +44,7 @@ export class Integer extends ValueNumber<Integer> {
 	 */
 	public constructor(data: bigint = 0n) {
 		super();
-		const internal = new BigInt64Array(1);
-		internal[0] = data; // need to store in BigInt64Array first to ensure 64-bit and signed
+		const internal = new BigInt64Array([data]); // need to store in BigInt64Array first to ensure 64-bit and signed
 		this.data = internal[0];
 	}
 
@@ -70,8 +74,9 @@ export class Integer extends ValueNumber<Integer> {
 		return this.toFloat().equal(value);
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(mod, bigint_to_i64(mod, this.data));
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.data))).value;
 	}
 
 	public override toInt(): Integer {

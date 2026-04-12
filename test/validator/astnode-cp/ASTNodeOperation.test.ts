@@ -28,10 +28,10 @@ import {
 
 
 
-function typeOperations(tests: ReadonlyMap<string, VALUE.Primitive>, config: CPConfig = CONFIG_DEFAULT): void {
+function typeOperations(tests: ReadonlyMap<string, TYPE.Type>, config: CPConfig = CONFIG_DEFAULT): void {
 	return assertEqualTypes(
 		[...tests.keys()].map((src) => AST.ASTNodeOperation.fromSource(src, config).type()),
-		[...tests.values()].map((expected) => new TYPE.Unit(expected)),
+		[...tests.values()],
 	);
 }
 function foldOperations(tests: Map<string, VALUE.Value>, config: CPConfig = CONFIG_DEFAULT): void {
@@ -52,16 +52,6 @@ test.suite('ASTNodeOperation', () => {
 
 
 	test.suite('#type', () => {
-		test.test('returns `nothing` for NanErrors.', () => {
-			[
-				AST.ASTNodeOperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').type(),
-				AST.ASTNodeOperationBinaryArithmetic.fromSource('1.5 / 0.0').type(),
-			].forEach((typ) => {
-				assert.ok(typ.isBottomType);
-			});
-		});
-
-
 		test.suite('ASTNodeOperationUnary', () => {
 			test.suite('[operator=EMP]', () => {
 				test.test('without constant folding: returns type `bool` for anything else.', () => {
@@ -491,32 +481,32 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#type', () => {
 			test.suite('with constant folding on.', () => {
 				test.test('returns a constant Boolean type for boolean unary operation of anything.', () => {
-					typeOperations(new Map<string, VALUE.Boolean>([
-						['!null',   VALUE.TRUE],
-						['!false',  VALUE.TRUE],
-						['!true',   VALUE.FALSE],
-						['!@hello', VALUE.FALSE],
-						['!42',     VALUE.FALSE],
-						['!4.2e+1', VALUE.FALSE],
-						['?null',   VALUE.TRUE],
-						['?false',  VALUE.TRUE],
-						['?true',   VALUE.FALSE],
-						['?@hello', VALUE.FALSE],
-						['?42',     VALUE.FALSE],
-						['?4.2e+1', VALUE.FALSE],
+					typeOperations(new Map<string, TYPE.Type>([
+						['!null',   TYPE.TRUE],
+						['!false',  TYPE.TRUE],
+						['!true',   TYPE.FALSE],
+						['!@hello', TYPE.FALSE],
+						['!42',     TYPE.FALSE],
+						['!4.2e+1', TYPE.FALSE],
+						['?null',   TYPE.TRUE],
+						['?false',  TYPE.TRUE],
+						['?true',   TYPE.BOOL],
+						['?@hello', TYPE.BOOL],
+						['?42',     TYPE.BOOL],
+						['?4.2e+1', TYPE.BOOL],
 
-						['!()',         VALUE.FALSE],
-						['!(42,)',      VALUE.FALSE],
-						['!(a= 42)',    VALUE.FALSE],
-						['!{}',         VALUE.FALSE],
-						['!{42}',       VALUE.FALSE],
-						['!{41 -> 42}', VALUE.FALSE],
-						['?()',         VALUE.TRUE],
-						['?(42,)',      VALUE.FALSE],
-						['?(a= 42)',    VALUE.FALSE],
-						['?{}',         VALUE.TRUE],
-						['?{42}',       VALUE.FALSE],
-						['?{41 -> 42}', VALUE.FALSE],
+						['!()',         TYPE.FALSE],
+						['!(42,)',      TYPE.FALSE],
+						['!(a= 42)',    TYPE.FALSE],
+						['!{}',         TYPE.FALSE],
+						['!{42}',       TYPE.FALSE],
+						['!{41 -> 42}', TYPE.FALSE],
+						['?()',         TYPE.BOOL],
+						['?(42,)',      TYPE.BOOL],
+						['?(a= 42)',    TYPE.BOOL],
+						['?{}',         TYPE.BOOL],
+						['?{42}',       TYPE.BOOL],
+						['?{41 -> 42}', TYPE.BOOL],
 					]));
 				});
 				test.test('[operator=NEG] throws for Natural number literals (foldable).', () => {
@@ -722,19 +712,12 @@ test.suite('ASTNodeOperation', () => {
 
 	test.suite('ASTNodeOperationBinaryArithmetic', () => {
 		test.suite('#type', () => {
-			test.suite('with constant folding on.', () => {
-				test.test('returns a constant Integer type for any operation of integers.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7 * 3 * 2').type(), typeUnit(7n * 3n * 2n));
-				});
-				test.test('returns a constant Natural type for any operation of naturals.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+7 * +3 * +2').type(), typeUnit(7n * 3n * 2n, 'nat'));
-				});
-				test.test('returns a constant Float type for any operation of floats.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('7.1 * 3.1 * 2.1').type(), typeUnit(7.1 * 3.1 * 2.1));
-				});
-				test.test('[operator=SUB] caps at `+0` for subtraction of naturals.', () => {
-					assertEqualTypes(AST.ASTNodeOperationBinaryArithmetic.fromSource('+5 - +9').type(), typeUnit(0n, 'nat'));
-				});
+			test.test('returns the respective type.', () => {
+				typeOperations(new Map<string, TYPE.Type>([
+					['7 * 3 * 2',       TYPE.INT],
+					['+7 * +3 * +2',    TYPE.NAT],
+					['7.1 * 3.1 * 2.1', TYPE.FLOAT],
+				]));
 			});
 			test.test('throws for any operation of mix of numeric types.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryArithmetic.fromSource('+3 * 2')      .type(), TypeErrorInvalidOperation);
@@ -839,26 +822,26 @@ test.suite('ASTNodeOperation', () => {
 		});
 		test.suite('#type', () => {
 			test.test('with folding on, returns a constant value.', () => {
-				typeOperations(new Map<string, VALUE.Boolean>([
-					['2   <  3',   VALUE.TRUE],
-					['2   >  3',   VALUE.FALSE],
-					['2   <= 3',   VALUE.TRUE],
-					['2   >= 3',   VALUE.FALSE],
-					['2   !< 3',   VALUE.FALSE],
-					['2   !> 3',   VALUE.TRUE],
-					['2.0 <  3',   VALUE.TRUE],
-					['2.0 >  3',   VALUE.FALSE],
-					['2.0 <= 3',   VALUE.TRUE],
-					['2.0 >= 3',   VALUE.FALSE],
-					['2.0 !< 3',   VALUE.FALSE],
-					['2.0 !> 3',   VALUE.TRUE],
-					['2   <  3.0', VALUE.TRUE],
-					['2   >  3.0', VALUE.FALSE],
-					['2   <= 3.0', VALUE.TRUE],
-					['2   >= 3.0', VALUE.FALSE],
-					['2   !< 3.0', VALUE.FALSE],
-					['2   !> 3.0', VALUE.TRUE],
-				]));
+				xjs.Array.forEachAggregated(extract_lines`
+					2   <  3
+					2   >  3
+					2   <= 3
+					2   >= 3
+					2   !< 3
+					2   !> 3
+					2.0 <  3
+					2.0 >  3
+					2.0 <= 3
+					2.0 >= 3
+					2.0 !< 3
+					2.0 !> 3
+					2   <  3.0
+					2   >  3.0
+					2   <= 3.0
+					2   >= 3.0
+					2   !< 3.0
+					2   !> 3.0
+				`, (src) => assert.strictEqual(AST.ASTNodeOperation.fromSource(src).type(), TYPE.BOOL));
 			});
 			test.test('throws for comparative operation of non-numbers.', () => {
 				assert.throws(() => AST.ASTNodeOperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
@@ -940,25 +923,25 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#type', () => {
 			test.suite('with folding on.', () => {
 				test.test('for numeric literals.', () => {
-					typeOperations(new Map<string, VALUE.Boolean>([
-						['0   === -0',   VALUE.TRUE],
-						['0.0 === -0.0', VALUE.FALSE],
-						['0   === 0.0',  VALUE.FALSE],
-						['0   === -0.0', VALUE.FALSE],
-						['-0  === 0.0',  VALUE.FALSE],
-						['-0  === -0.0', VALUE.FALSE],
-						['3   === 3.0',  VALUE.FALSE],
+					typeOperations(new Map<string, TYPE.Type>([
+						['0   === -0',   TYPE.BOOL],
+						['0.0 === -0.0', TYPE.FALSE],
+						['0   === 0.0',  TYPE.FALSE],
+						['0   === -0.0', TYPE.FALSE],
+						['-0  === 0.0',  TYPE.FALSE],
+						['-0  === -0.0', TYPE.FALSE],
+						['3   === 3.0',  TYPE.FALSE],
 
-						['0   == -0',   VALUE.TRUE],
-						['0.0 == -0.0', VALUE.TRUE],
-						['0   == 0.0',  VALUE.TRUE],
-						['0   == -0.0', VALUE.TRUE],
-						['-0  == 0.0',  VALUE.TRUE],
-						['-0  == -0.0', VALUE.TRUE],
-						['3   == 3.0',  VALUE.TRUE],
+						['0   == -0',   TYPE.BOOL],
+						['0.0 == -0.0', TYPE.BOOL],
+						['0   == 0.0',  TYPE.BOOL],
+						['0   == -0.0', TYPE.BOOL],
+						['-0  == 0.0',  TYPE.BOOL],
+						['-0  == -0.0', TYPE.BOOL],
+						['3   == 3.0',  TYPE.BOOL],
 					]));
 				});
-				test.test('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
+				test.test('returns type `bool`.', () => {
 					setupScript(`{
 						val a: anything = ();
 						val b: anything = (42,);
@@ -981,15 +964,10 @@ test.suite('ASTNodeOperation', () => {
 						c != (y= 42);
 						d != {41 -> 43};
 						d != {43 -> 42};
-					}`, {lower: false}).stmts.slice(4).forEach((stmt) => {
-						const expr: AST.ASTNodeOperationBinaryEquality = (stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality;
-						const fold: VALUE.Value | null = expr.fold();
-						assert_instanceof(fold, VALUE.Boolean);
-						assertEqualTypes(
-							expr.type(),
-							new TYPE.Unit<VALUE.Boolean>(fold),
-						);
-					});
+					}`, {lower: false}).stmts.slice(4).forEach((stmt) => assert.strictEqual(
+						((stmt as AST.ASTNodeStatementExpression).expr as AST.ASTNodeOperationBinaryEquality).type(),
+						TYPE.BOOL,
+					));
 				});
 			});
 		});
@@ -1144,23 +1122,23 @@ test.suite('ASTNodeOperation', () => {
 	test.suite('ASTNodeOperationBinaryLogical', () => {
 		test.suite('#type', () => {
 			test.test('with constant folding on.', () => {
-				typeOperations(new Map<string, VALUE.Primitive>([
-					['null     && false',    VALUE.NULL],
-					['false    && null',     VALUE.FALSE],
-					['true     && null',     VALUE.NULL],
-					['@nothing && @x',       new VALUE.Symbol(0x100n, 'x')],
-					['@x       && @nothing', VALUE.SYM_NOTHING],
-					['@nothing || @y',       VALUE.SYM_NOTHING],
-					['@y       || @nothing', new VALUE.Symbol(0x100n, 'y')],
-					['@z       && false',    VALUE.FALSE],
-					['true     && @z',       new VALUE.Symbol(0x100n, 'z')],
-					['false    && 42',       VALUE.FALSE],
-					['4.2      && true',     VALUE.TRUE],
-					['null     || false',    VALUE.FALSE],
-					['false    || null',     VALUE.NULL],
-					['true     || null',     VALUE.TRUE],
-					['false    || 42',       new VALUE.Integer(42n)],
-					['4.2      || true',     new VALUE.Float(4.2)],
+				typeOperations(new Map<string, TYPE.Type>([
+					['null     && false',    TYPE.NULL],
+					['false    && null',     TYPE.FALSE],
+					['true     && null',     TYPE.NULL],
+					['@nothing && @x',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'x'))],
+					['@x       && @nothing', TYPE.SYM_NOTHING],
+					['@nothing || @y',       TYPE.SYM_NOTHING],
+					['@y       || @nothing', new TYPE.Unit(new VALUE.Symbol(0x100n, 'y'))],
+					['@z       && false',    TYPE.FALSE],
+					['true     && @z',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'z'))],
+					['false    && 42',       TYPE.FALSE],
+					['4.2      && true',     TYPE.TRUE],
+					['null     || false',    TYPE.FALSE],
+					['false    || null',     TYPE.NULL],
+					['true     || null',     TYPE.TRUE],
+					['false    || 42',       new TYPE.Unit(new VALUE.Integer(42n))],
+					['4.2      || true',     new TYPE.Unit(new VALUE.Float(4.2))],
 				]));
 			});
 			test.suite('with constant folding off.', () => {
@@ -1280,11 +1258,11 @@ test.suite('ASTNodeOperation', () => {
 		test.suite('#type', () => {
 			test.suite('with constant folding on.', () => {
 				test.test('computes type for for conditionals.', () => {
-					typeOperations(new Map<string, VALUE.Primitive>([
-						['if true then false else 2',          VALUE.FALSE],
-						['if false then 3.0 else null',        VALUE.NULL],
-						['if true then 2 else 3.0',            new VALUE.Integer(2n)],
-						['if false then 2 + 3 else 1.0 * 2.0', new VALUE.Float(2.0)],
+					typeOperations(new Map<string, TYPE.Type>([
+						['if true then false else 2',          TYPE.FALSE],
+						['if false then 3.0 else null',        TYPE.NULL],
+						['if true then 2 else 3.0',            new TYPE.Unit(new VALUE.Integer(2n))],
+						['if false then 2 + 3 else 1.0 * 2.0', TYPE.FLOAT],
 					]));
 				});
 			});

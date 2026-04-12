@@ -9,10 +9,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {ValidOperatorBinary} from '../Operator.ts';
-import {
-	ASTNodeExpression,
-	typeDeco,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
@@ -46,7 +43,6 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @final
 	 */
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		return this.type_do(
 			this.operand0.type(),

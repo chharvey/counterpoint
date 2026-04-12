@@ -490,16 +490,16 @@ test.suite('ASTNodeAccess', () => {
 						val     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
 						val mut rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
 
-						tup_fixed.0;    % type \`1\`
-						tup_fixed.1;    % type \`2.0\`
-						tup_fixed.2;    % type \`"three"\`
+						tup_fixed.0;    % type \`int\`
+						tup_fixed.1;    % type \`float\`
+						tup_fixed.2;    % type \`str\`
 						tup_unfixed.0;  % type \`int\`
 						tup_unfixed.1;  % type \`float\`
 						tup_unfixed.2;  % type \`str\`
 
-						rec_fixed.a;   % type \`1\`
-						rec_fixed.b;   % type \`2.0\`
-						rec_fixed._;   % type \`"three"\`
+						rec_fixed.a;   % type \`int\`
+						rec_fixed.b;   % type \`float\`
+						rec_fixed._;   % type \`str\`
 						rec_unfixed.a; % type \`int\`
 						rec_unfixed.b; % type \`float\`
 						rec_unfixed._; % type \`str\`
@@ -517,20 +517,11 @@ test.suite('ASTNodeAccess', () => {
 						rec_a?.z;
 						rec_b?.z;
 					}`, [
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-						TYPE.INT,
-						TYPE.FLOAT,
-						TYPE.STR,
-
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-						TYPE.INT,
-						TYPE.FLOAT,
-						TYPE.STR,
-
+						...repeat([
+							TYPE.INT,
+							TYPE.FLOAT,
+							TYPE.STR,
+						], 4).flat(),
 						...repeat(TypeErrorInvalidOperation, 4),
 					]);
 				});
@@ -557,21 +548,16 @@ test.suite('ASTNodeAccess', () => {
 						val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
 						val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-						tupo1_f?.2; % type \`"three"\`
+						tupo1_f?.2; % type \`str?\`
 						tupo1_u?.2; % type \`str?\`
 						tupo2_u?.2; % type \`str?\`
 
-						reco1_f?.b; % type \`"three"\`
+						reco1_f?.b; % type \`str?\`
 						reco1_u?.b; % type \`str?\`
 						reco2_u?.b; % type \`str?\`
 					}`, [
 						...repeat(TypeErrorInvalidOperation, 4),
-
-						typeUnit('three'),
-						...repeat(TYPE.STR.union(TYPE.NULL), 2),
-
-						typeUnit('three'),
-						...repeat(TYPE.STR.union(TYPE.NULL), 2),
+						...repeat(TYPE.STR.union(TYPE.NULL), 6),
 					]);
 				});
 				test.test('throws when base object is of incorrect type.', () => {
@@ -767,26 +753,21 @@ test.suite('ASTNodeAccess', () => {
 				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
 			test.test('returns individual entry types for folded objects, union types for unfolded objects.', () => {
-				const N_TYPES = [
-					typeUnit(1n),
-					typeUnit(2.0),
-					typeUnit('three'),
-				] as const;
-				return testExprTypes(`{
+				testExprTypes(`{
 					${ DECLS }
 
-					list_fixed.[0];      % type \`1\`
-					list_fixed.[1];      % type \`2.0\`
-					list_fixed.[2];      % type \`"three"\`
-					dict_fixed.[@a];     % type \`1\`
-					dict_fixed.[@b];     % type \`2.0\`
-					dict_fixed.[@c];     % type \`"three"\`
-					set_fixed.[1];       % type \`true\`
-					set_fixed.[2.0];     % type \`true\`
-					set_fixed.["three"]; % type \`true\`
-					map_fixed.["a"];     % type \`1\`
-					map_fixed.["b"];     % type \`2.0\`
-					map_fixed.["c"];     % type \`"three"\`
+					list_fixed.[0];      % type \`int | float | str\`
+					list_fixed.[1];      % type \`int | float | str\`
+					list_fixed.[2];      % type \`int | float | str\`
+					dict_fixed.[@a];     % type \`int | float | str\`
+					dict_fixed.[@b];     % type \`int | float | str\`
+					dict_fixed.[@c];     % type \`int | float | str\`
+					set_fixed.[1];       % type \`bool\`
+					set_fixed.[2.0];     % type \`bool\`
+					set_fixed.["three"]; % type \`bool\`
+					map_fixed.["a"];     % type \`int | float | str\`
+					map_fixed.["b"];     % type \`int | float | str\`
+					map_fixed.["c"];     % type \`int | float | str\`
 
 					list_unfixed.[0];      % type \`int | float | str\`
 					list_unfixed.[1];      % type \`int | float | str\`
@@ -801,15 +782,15 @@ test.suite('ASTNodeAccess', () => {
 					map_unfixed.["b"];     % type \`int | float | str\`
 					map_unfixed.["c"];     % type \`int | float | str\`
 
-					list_fixed?.[0];  % type \`1\`
-					list_fixed?.[1];  % type \`2.0\`
-					list_fixed?.[2];  % type \`"three"\`
-					dict_fixed?.[@a]; % type \`1\`
-					dict_fixed?.[@b]; % type \`2.0\`
-					dict_fixed?.[@c]; % type \`"three"\`
-					map_fixed?.["a"]; % type \`1\`
-					map_fixed?.["b"]; % type \`2.0\`
-					map_fixed?.["c"]; % type \`"three"\`
+					list_fixed?.[0];  % type \`int | float | str | null\`
+					list_fixed?.[1];  % type \`int | float | str | null\`
+					list_fixed?.[2];  % type \`int | float | str | null\`
+					dict_fixed?.[@a]; % type \`int | float | str | null\`
+					dict_fixed?.[@b]; % type \`int | float | str | null\`
+					dict_fixed?.[@c]; % type \`int | float | str | null\`
+					map_fixed?.["a"]; % type \`int | float | str | null\`
+					map_fixed?.["b"]; % type \`int | float | str | null\`
+					map_fixed?.["c"]; % type \`int | float | str | null\`
 
 					list_unfixed?.[0];  % type \`int | float | str | null\`
 					list_unfixed?.[1];  % type \`int | float | str | null\`
@@ -821,20 +802,12 @@ test.suite('ASTNodeAccess', () => {
 					map_unfixed?.["b"]; % type \`int | float | str | null\`
 					map_unfixed?.["c"]; % type \`int | float | str | null\`
 				}`, [
-					...N_TYPES,
-					...N_TYPES,
-					...repeat(TYPE.TRUE, 3),
-					...N_TYPES,
-
-					...repeat(TYPE_INT_FLOAT_STR, 6),
-					...repeat(TYPE.BOOL, 3),
-					...repeat(TYPE_INT_FLOAT_STR, 3),
-
-					...N_TYPES,
-					...N_TYPES,
-					...N_TYPES,
-
-					...repeat(TYPE_INT_FLOAT_STR_NULL, 9),
+					...repeat([
+						...repeat(TYPE_INT_FLOAT_STR, 6),
+						...repeat(TYPE.BOOL, 3),
+						...repeat(TYPE_INT_FLOAT_STR, 3),
+					], 2).flat(),
+					...repeat(TYPE_INT_FLOAT_STR_NULL, 18),
 				]);
 			});
 			test.test('unsupported: throws for string access of dict.', () => {
@@ -898,26 +871,24 @@ test.suite('ASTNodeAccess', () => {
 				testExprTypes(`{
 					${ DECLS }
 
-					list_fixed.[3];    % type \`nothing\`
-					list_fixed.[-4];   % type \`nothing\`
-					dict_fixed.[@d];   % type \`nothing\`
+					list_fixed.[3];    % type \`int | float | str\`
+					list_fixed.[-4];   % type \`int | float | str\`
+					dict_fixed.[@d];   % type \`int | float | str\`
 
 					list_unfixed.[3];  % type \`int | float | str\`
 					list_unfixed.[-4]; % type \`int | float | str\`
 					dict_unfixed.[@d]; % type \`int | float | str\`
 
-					list_fixed?.[3];  % type \`null\`
-					list_fixed?.[-4]; % type \`null\`
-					dict_fixed?.[@d]; % type \`null\`
+					list_fixed?.[3];  % type \`int | float | str | null\`
+					list_fixed?.[-4]; % type \`int | float | str | null\`
+					dict_fixed?.[@d]; % type \`int | float | str | null\`
 
 					list_unfixed?.[3];  % type \`int | float | str | null\`
 					list_unfixed?.[-4]; % type \`int | float | str | null\`
 					dict_unfixed?.[@d]; % type \`int | float | str | null\`
 				}`, [
-					...repeat(TYPE.NOTHING, 3),
-					...repeat(TYPE_INT_FLOAT_STR, 3),
-					...repeat(TYPE.NULL, 3),
-					...repeat(TYPE_INT_FLOAT_STR_NULL, 3),
+					...repeat(TYPE_INT_FLOAT_STR, 6),
+					...repeat(TYPE_INT_FLOAT_STR_NULL, 6),
 				]);
 			});
 			test.test('for Lists/Dicts: throws when accessor expression is of incorrect type.', () => {
@@ -937,56 +908,41 @@ test.suite('ASTNodeAccess', () => {
 					val mut map_mut_unfixed: Map .<str, int | float | str> = map_fixed;
 
 					% correct type, but out of range
-					set_fixed      .[42.0]; % type \`false\`
-					map_fixed      .["d"];  % type \`null\`
+					set_fixed      .[42.0]; % type \`bool\`
+					map_fixed      .["d"];  % type \`int | float | str\`
 					set_unfixed    .[42.0]; % type \`bool\`
 					map_unfixed    .["d"];  % type \`int | float | str\`
-					set_mut_fixed  .[42.0]; % type \`false\`
-					map_mut_fixed  .["d"];  % type \`null\`
+					set_mut_fixed  .[42.0]; % type \`bool\`
+					map_mut_fixed  .["d"];  % type \`int | float | str\`
 					set_mut_unfixed.[42.0]; % type \`bool\`
 					map_mut_unfixed.["d"];  % type \`int | float | str\`
 
-					map_fixed      ?.["d"];  % type \`null\`
+					map_fixed      ?.["d"];  % type \`int | float | str | null\`
 					map_unfixed    ?.["d"];  % type \`int | float | str | null\`
-					map_mut_fixed  ?.["d"];  % type \`null\`
+					map_mut_fixed  ?.["d"];  % type \`int | float | str | null\`
 					map_mut_unfixed?.["d"];  % type \`int | float | str | null\`
 
 					% incorrect type
-					set_fixed      .[true]; % type \`false\`
-					map_fixed      .[true]; % type \`null\`
+					set_fixed      .[true]; % type \`bool\`
+					map_fixed      .[true]; % type \`int | float | str\`
 					set_unfixed    .[true]; % type \`bool\`
 					map_unfixed    .[true]; % type \`int | float | str\`
-					set_mut_fixed  .[true]; % type \`false\`
-					map_mut_fixed  .[true]; % type \`null\`
+					set_mut_fixed  .[true]; % type \`bool\`
+					map_mut_fixed  .[true]; % type \`int | float | str\`
 					set_mut_unfixed.[true]; % type \`bool\`
 					map_mut_unfixed.[true]; % type \`int | float | str\`
 
-					map_fixed      ?.[true]; % type \`null\`
+					map_fixed      ?.[true]; % type \`int | float | str | null\`
 					map_unfixed    ?.[true]; % type \`int | float | str | null\`
-					map_mut_fixed  ?.[true]; % type \`null\`
+					map_mut_fixed  ?.[true]; % type \`int | float | str | null\`
 					map_mut_unfixed?.[true]; % type \`int | float | str | null\`
-				}`, [
+				}`, repeat([
 					...repeat([
-						TYPE.FALSE,
-						TYPE.NULL,
 						TYPE.BOOL,
 						TYPE_INT_FLOAT_STR,
-					], 2).flat(),
-					TYPE.NULL,
-					TYPE_INT_FLOAT_STR_NULL,
-					TYPE.NULL,
-					TYPE_INT_FLOAT_STR_NULL,
-					...repeat([
-						TYPE.FALSE,
-						TYPE.NULL,
-						TYPE.BOOL,
-						TYPE_INT_FLOAT_STR,
-					], 2).flat(),
-					TYPE.NULL,
-					TYPE_INT_FLOAT_STR_NULL,
-					TYPE.NULL,
-					TYPE_INT_FLOAT_STR_NULL,
-				]);
+					], 4).flat(),
+					...repeat(TYPE_INT_FLOAT_STR_NULL, 4),
+				], 2).flat());
 			});
 		});
 	});

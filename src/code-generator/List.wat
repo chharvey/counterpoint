@@ -42,16 +42,19 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(if (i32.gt_u (local.get $index) (struct.get $List $size (local.get $list)))
+	(if
+		(i32.gt_u (local.get $index) (struct.get $List $size (local.get $list)))
 		(then (unreachable))
 	)
 
 	(local.set $item (array.get $ListInternal (struct.get $List $internal (local.get $list)) (local.get $index)))
 
-	(if (ref.is_null (local.get $item))
+	(if
+		(ref.is_null (local.get $item))
 		(then
 			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $List $size (local.get $list)) (i32.const 1))))
-			(if (i32.lt_u (array.len (struct.get $List $internal (local.get $list))) (local.get $new-capacity))
+			(if
+				(i32.lt_u (array.len (struct.get $List $internal (local.get $list))) (local.get $new-capacity))
 				(then (call $List.adjust-capacity (local.get $list) (local.get $new-capacity)))
 			)
 			;; set this after adjusting, to mirror `$Dict.set`
@@ -79,7 +82,8 @@
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)
 
-	(if (i32.ge_u (local.get $index) (struct.get $List $size (local.get $list)))
+	(if
+		(i32.ge_u (local.get $index) (struct.get $List $size (local.get $list)))
 		(then (unreachable))
 	)
 
@@ -117,12 +121,14 @@
 	(local $item1     (ref null $Value))
 
 	;; Lists that are identical are always equal
-	(if (ref.eq (local.get $list0) (local.get $list1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
+	(if
+		(ref.eq (local.get $list0) (local.get $list1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
 		(then (return (i32.const 1)))
 	)
 
 	;; compare $List.$size since two equal Lists may have different internal array lengths
-	(if (i32.ne (struct.get $List $size (local.get $list0)) (struct.get $List $size (local.get $list1)))
+	(if
+		(i32.ne (struct.get $List $size (local.get $list0)) (struct.get $List $size (local.get $list1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -137,36 +143,38 @@
 			(local.set $item1 (array.get $ListInternal (local.get $internal1) (local.get $i)))
 
 			;; if they’re both null, we’ve reached the end of all live items; the Lists are equal; return true
-			(if (i32.and
-				(ref.is_null (local.get $item0))
-				(ref.is_null (local.get $item1))
-			)
+			(if
+				(i32.and
+					(ref.is_null (local.get $item0))
+					(ref.is_null (local.get $item1))
+				)
 				(then (return (i32.const 1)))
 			)
 
 			;; if exactly one of them is null, or neither of them is null and they’re not equal, return false
-			(if (i32.or
+			(if
 				(i32.or
-					(i32.and
-						(ref.is_null (local.get $item0))
-						(i32.eqz (ref.is_null (local.get $item1)))
+					(i32.or
+						(i32.and
+							(ref.is_null (local.get $item0))
+							(i32.eqz (ref.is_null (local.get $item1)))
+						)
+						(i32.and
+							(i32.eqz (ref.is_null (local.get $item0)))
+							(ref.is_null (local.get $item1))
+						)
 					)
 					(i32.and
-						(i32.eqz (ref.is_null (local.get $item0)))
-						(ref.is_null (local.get $item1))
+						(i32.and
+							(i32.eqz (ref.is_null (local.get $item0)))
+							(i32.eqz (ref.is_null (local.get $item1)))
+						)
+						(i32.eqz (call $bool-to-i32 (call $veq
+							(ref.cast (ref $Value) (local.get $item0))
+							(ref.cast (ref $Value) (local.get $item1))
+						)))
 					)
 				)
-				(i32.and
-					(i32.and
-						(i32.eqz (ref.is_null (local.get $item0)))
-						(i32.eqz (ref.is_null (local.get $item1)))
-					)
-					(i32.eqz (call $bool-to-i32 (call $veq
-						(ref.cast (ref $Value) (local.get $item0))
-						(ref.cast (ref $Value) (local.get $item1))
-					)))
-				)
-			)
 				(then (return (i32.const 0)))
 			)
 

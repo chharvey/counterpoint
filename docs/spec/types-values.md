@@ -319,7 +319,7 @@ The **String** type represents textual data and is stored as an immutable sequen
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 They are instances of [`String`](./intrinsics.md#string).
 
-Conceptually, strings are treated as immutable lists of [mathematical integers](#real-integer-numbers),
+Conceptually, strings are thought of immutable lists of [mathematical integers](#real-integer-numbers),
 where each integer represents a Unicode code point.
 A String’s **count** indicates the number of code points in the String, that is,
 the number of characters in its unencoded form.
@@ -328,13 +328,14 @@ encoded in memory (see UTF-8 for details).
 String length is limited to a maximum of *65,535* bytes,
 but it is not directly observable within any Counterpoint program.
 
-Though `String` objects are treated conceptually as lists, they are considered
-[primitive values](./intrinsics.md#primitive-and-composite-values),
-because the “items” of these lists are not directly observable —
-accessing an index of a string yields another string.
-As primitive values, they are also [data values](./intrinsics.md#data-values) —
-because the string values themselves are copied when assigned
-(though the compiler may make any optimizations necessary).
+Semantically, the String type is considered to be a [primitive type](./intrinsics.md#primitive-and-composite-values)
+because it cannot be decomposed into other types —
+the characters of a string value are themselves string values.
+As primitive values, strings are also [data values](./intrinsics.md#data-values),
+abiding by value-identity and pass-by-value semantics.
+
+That said, strings are implemented as arrays of bytes in the virtual machine,
+which makes them composite values under the hood.
 
 #### Object
 The **Object** type contains all references to Counterpoint Language Values.

@@ -6,10 +6,11 @@
 		(local.set $i (i32.const 0))
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record))))
-			(if (i64.eq
-				(struct.get $Property $key (array.get $Record (local.get $record) (local.get $i)))
-				(local.get $key)
-			)
+			(if
+				(i64.eq
+					(struct.get $Property $key (array.get $Record (local.get $record) (local.get $i)))
+					(local.get $key)
+				)
 				(then (return (i32.const 1)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -38,13 +39,15 @@
 
 	(loop $repeat
 		(local.set $prop (array.get $Record (local.get $record) (local.get $index)))
-		(if (i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
+		(if
+			(i64.eq (struct.get $Property $key (local.get $prop)) (local.get $key))
 			(then (return (struct.get $Property $val (local.get $prop))))
 		)
 		(local.set $loop-count (i32.add (local.get $loop-count) (i32.const 1)))
-		(if (i32.gt_u (local.get $loop-count) (local.get $ARRLEN))
+		(if
 			;; there are no empty slots in records, so we it’s possible for a given key to collide with all entries
 			;; after exhausting all entries, trap
+			(i32.gt_u (local.get $loop-count) (local.get $ARRLEN))
 			(then (unreachable))
 		)
 		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
@@ -61,7 +64,8 @@
 	(local $prop (ref $Property))
 	(local $key  i64)
 
-	(if (i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
+	(if
+		(i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -71,13 +75,15 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record0))))
 			(local.set $prop (array.get $Record (local.get $record0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
-			(if (i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
+			(if
+				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
-			(if (i32.eqz (call $bool-to-i32 (call $vid
-				(struct.get $Property $val (local.get $prop))
-				(call $Record.get (local.get $record1) (local.get $key))
-			)))
+			(if
+				(i32.eqz (call $bool-to-i32 (call $vid
+					(struct.get $Property $val (local.get $prop))
+					(call $Record.get (local.get $record1) (local.get $key))
+				)))
 				(then (return (i32.const 0)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -96,7 +102,8 @@
 	(local $prop (ref $Property))
 	(local $key  i64)
 
-	(if (i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
+	(if
+		(i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -106,13 +113,15 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record0))))
 			(local.set $prop (array.get $Record (local.get $record0) (local.get $i)))
 			(local.set $key  (struct.get $Property $key (local.get $prop)))
-			(if (i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
+			(if
+				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
 				(then (return (i32.const 0)))
 			)
-			(if (i32.eqz (call $bool-to-i32 (call $veq
-				(struct.get $Property $val (local.get $prop))
-				(call $Record.get (local.get $record1) (local.get $key))
-			)))
+			(if
+				(i32.eqz (call $bool-to-i32 (call $veq
+					(struct.get $Property $val (local.get $prop))
+					(call $Record.get (local.get $record1) (local.get $key))
+				)))
 				(then (return (i32.const 0)))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))

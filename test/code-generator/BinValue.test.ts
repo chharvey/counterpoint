@@ -3,7 +3,6 @@ import * as test from 'node:test';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	STRUCT_FIELD,
 	BinValue,
 	bigint_to_i64,
 	Builder,
@@ -37,7 +36,7 @@ test.suite('BinValue', () => {
 				mod.i32.const(1),
 				binvect.vect,
 				mod.ref.null(binaryen.eqref),
-			], cg.getHeaptype('$Value'))));
+			], cg.heaptype.Value)));
 		});
 		test.test('composite values.', () => {
 			xjs.Array.forEachAggregated([
@@ -54,7 +53,7 @@ test.suite('BinValue', () => {
 					genConst(cg, 1.1),
 					genConst(cg, 2.2),
 					genConst(cg, 3.3),
-					...repeat(cg.module.ref.null(cg.getReftype('(ref null $Value)')), 5),
+					...repeat(cg.module.ref.null(cg.reftypeNull.Value), 5),
 				]),
 				cg.codegenDict(new Map([
 					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
@@ -67,7 +66,7 @@ test.suite('BinValue', () => {
 				mod.i32.const(2),
 				mod.v128.const(new Uint8Array(16)),
 				composite,
-			], cg.getHeaptype('$Value'))));
+			], cg.heaptype.Value)));
 		});
 		test.test('reuses `BinValue#value`.', () => {
 			assertEqualBins(
@@ -87,7 +86,7 @@ test.suite('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isPrimitive,
-			mod.i32.eq(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false), mod.i32.const(1)),
+			mod.i32.eq(cg.structGet.value.tag(binval.value), mod.i32.const(1)),
 		));
 	});
 
@@ -101,7 +100,7 @@ test.suite('BinValue', () => {
 			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
 		], (binval) => assertEqualBins(
 			binval.isComposite,
-			mod.i32.eq(mod.struct.get(STRUCT_FIELD.VALUE_TAG, binval.value, binaryen.i32, false), mod.i32.const(2)),
+			mod.i32.eq(cg.structGet.value.tag(binval.value), mod.i32.const(2)),
 		));
 	});
 
@@ -122,7 +121,7 @@ test.suite('BinValue', () => {
 			const {asPrimitive} = binval;
 			assertEqualBins(
 				asPrimitive,
-				mod.struct.get(STRUCT_FIELD.VALUE_PRIMITIVE, binval.value, binaryen.v128),
+				cg.structGet.value.primitive(binval.value),
 			);
 			return assert.strictEqual(binaryen.getExpressionType(asPrimitive), binaryen.v128);
 		});
@@ -145,7 +144,7 @@ test.suite('BinValue', () => {
 			const {asComposite} = binval;
 			assertEqualBins(
 				asComposite,
-				mod.struct.get(STRUCT_FIELD.VALUE_COMPOSITE, binval.value, binaryen.eqref),
+				cg.structGet.value.composite(binval.value),
 			);
 			return assert.strictEqual(binaryen.getExpressionType(asComposite), binaryen.eqref);
 		});
@@ -171,6 +170,6 @@ test.suite('BinValue', () => {
 		] as const).map(([id, code]) => cg.module.struct.new([
 			bigint_to_i64(cg.module, id, true),
 			code,
-		], cg.getHeaptype('$Property'))));
+		], cg.heaptype.Property)));
 	});
 });
