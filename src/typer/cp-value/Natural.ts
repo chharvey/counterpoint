@@ -42,8 +42,7 @@ export class Natural extends ValueNumber<Natural> {
 	 */
 	public constructor(data: bigint = 0n) {
 		super();
-		const internal = new BigUint64Array(1);
-		internal[0] = data; // need to store in BigUint64Array first to ensure 64-bit and unsigned
+		const internal = new BigUint64Array([data]); // need to store in BigUint64Array first to ensure 64-bit and signed
 		this.data = internal[0];
 	}
 
