@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {CodeUnit} from '../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -27,6 +26,14 @@ type RadixType = 2n | 4n | 6n | 8n | 10n | 16n | 36n;
  * the index of a character in the Unicode Universal Character Set.
  */
 type CodePoint = number;
+
+
+
+/**
+ * A code unit is an integer within the closed interval [0, 0xff] that represents
+ * a byte of an encoded Unicode code point.
+ */
+type CodeUnit = number;
 
 
 
@@ -245,8 +252,8 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenString(source: string): CodeUnit[] {
-		return tokenWorthString(source.slice(DELIM_STRING.length, -DELIM_STRING.length));
+	public static cookTokenString(source: string): Uint8Array {
+		return new Uint8Array(tokenWorthString(source.slice(DELIM_STRING.length, -DELIM_STRING.length)));
 	}
 
 	/**
@@ -254,7 +261,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenTemplate(source: string): CodeUnit[] {
+	public static cookTokenTemplate(source: string): Uint8Array {
 		const delim_start = (
 			source.startsWith(DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
 			source.startsWith(DELIM_INTERP_END) ? DELIM_INTERP_END :
@@ -265,7 +272,7 @@ export class Validator {
 			source.endsWith(DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
-		return [...new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length))];
+		return new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length));
 	}
 
 

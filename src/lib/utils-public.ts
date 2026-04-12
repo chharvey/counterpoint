@@ -5,12 +5,6 @@ import * as assert from 'node:assert';
 /** A non-empty array. */
 export type NonemptyArray<T> = [T, ...T[]];
 
-/**
- * A code unit is an integer within the closed interval [0, 0xff] that represents
- * a byte of an encoded Unicode code point.
- */
-export type CodeUnit = number;
-
 
 
 /** Returns the constructor type or any possible subtype of the given type. */

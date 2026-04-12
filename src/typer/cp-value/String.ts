@@ -1,13 +1,10 @@
+import * as util from 'node:util';
 import type binaryen from 'binaryen';
-import * as xjs from 'extrajs';
 import {
 	BinValue,
 	type Builder,
 } from '../../index.ts';
-import {
-	type CodeUnit,
-	memoizeMethod,
-} from '../../lib/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -27,11 +24,11 @@ const DELIM_STRING = '"';
  * @final
  */
 class ValueString extends Primitive {
-	private readonly codeunits: readonly CodeUnit[];
-	public constructor(data: string | readonly CodeUnit[] = []) {
+	private readonly codeunits: Readonly<Uint8Array>;
+	public constructor(data: string | Uint8Array = new Uint8Array()) {
 		super();
 		this.codeunits = (typeof data === 'string')
-			? [...new TextEncoder().encode(data)]
+			? new TextEncoder().encode(data)
 			: data;
 	}
 
@@ -43,14 +40,14 @@ class ValueString extends Primitive {
 	}
 
 	public override toString(): string {
-		return `${ DELIM_STRING }${ new TextDecoder().decode(new Uint8Array(this.codeunits)) }${ DELIM_STRING }`;
+		return `${ DELIM_STRING }${ new TextDecoder().decode(this.codeunits) }${ DELIM_STRING }`;
 	}
 
 	@strictEqual
 	@memoizeBinOp(true, true)
 	@instanceOf(() => ValueString)
 	public override identical(value: Value): boolean {
-		return xjs.Array.is<CodeUnit>(this.codeunits, (value as ValueString).codeunits);
+		return util.isDeepStrictEqual(this.codeunits, (value as ValueString).codeunits);
 	}
 
 	public override toCPString(): ValueString {
@@ -59,7 +56,7 @@ class ValueString extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, cg.codegenString(this.codeunits.map((c) => cg.module.i32.const(c)))).value;
+		return new BinValue(cg, cg.codegenString([...this.codeunits].map((c) => cg.module.i32.const(c)))).value;
 	}
 
 	/**
@@ -68,10 +65,10 @@ class ValueString extends Primitive {
 	 * @returns   a new String whose code units are this string’s concatenated with the argument’s
 	 */
 	public concatenate(str: ValueString): ValueString {
-		return new ValueString([
+		return new ValueString(new Uint8Array([
 			...this.codeunits,
 			...str.codeunits,
-		]);
+		]));
 	}
 }
 export {ValueString as String};
