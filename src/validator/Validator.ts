@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import type {CodeUnit} from '../lib/index.ts';
 import {
 	type CPConfig,
@@ -13,12 +14,32 @@ import type {SymbolSchema} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-	utf8Encode,
 } from './utils-private.ts';
 
 
 
 type RadixType = 2n | 4n | 6n | 8n | 10n | 16n | 36n;
+
+
+
+/**
+ * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
+ * the index of a character in the Unicode Universal Character Set.
+ */
+type CodePoint = number;
+
+
+
+/**
+ * An encoded character is a sequence of code units
+ * that corresponds to a single code point in the UTF-8 encoding.
+ */
+type EncodedChar = (
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+);
 
 
 
@@ -33,6 +54,18 @@ const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 const COMMENTER_MULTI    = '%%';
+
+
+
+/**
+ * The UTF-8 encoding of a numeric code point value.
+ * @param   codepoint a Unicode code point
+ * @returns           a code unit sequence representing the code point
+ */
+export function utf8Encode(codepoint: CodePoint): EncodedChar {
+	xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
+	return [...new TextEncoder().encode(String.fromCodePoint(codepoint))] as EncodedChar;
+}
 
 
 

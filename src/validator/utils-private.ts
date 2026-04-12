@@ -1,9 +1,5 @@
-import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
-import type {
-	NonemptyArray,
-	CodeUnit,
-} from '../lib/index.ts';
+import type {NonemptyArray} from '../lib/index.ts';
 
 
 
@@ -141,37 +137,4 @@ export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode
 		['statement',   (node) => isSyntaxNodeType(node, /^declaration|statement_(expression(__break)?|claim(__break)?|reassignment(__break)?|conditional(__unless)?(__break)?|loop|iteration|break)$/) || isSyntaxNodeSupertype(node, 'declaration')],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?)$/)],
 	]).get(category)!(syntaxnode);
-}
-
-
-
-/**
- * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
- * the index of a character in the Unicode Universal Character Set.
- */
-type CodePoint = number;
-
-
-
-/**
- * An encoded character is a sequence of code units
- * that corresponds to a single code point in the UTF-8 encoding.
- */
-type EncodedChar = (
-	| [CodeUnit]
-	| [CodeUnit, CodeUnit]
-	| [CodeUnit, CodeUnit, CodeUnit]
-	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-);
-
-
-
-/**
- * The UTF-8 encoding of a numeric code point value.
- * @param   codepoint a Unicode code point
- * @returns           a code unit sequence representing the code point
- */
-export function utf8Encode(codepoint: CodePoint): EncodedChar {
-	xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
-	return [...new TextEncoder().encode(String.fromCodePoint(codepoint))] as EncodedChar;
 }

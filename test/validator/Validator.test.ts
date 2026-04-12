@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
-	type CodeUnit,
 	KEYWORDS,
 	Validator,
 } from '../../src/index.ts';
@@ -10,16 +9,6 @@ import {
 
 
 test.suite('Validator', () => {
-	/**
-	 * Decode a stream of numeric UTF-8 code units into a string.
-	 * @param   codeunits a stream of numeric code units, each conforming to the UTF-8 specification
-	 * @returns           a decoded string
-	 */
-	function utf8Decode(codeunits: readonly CodeUnit[]): string {
-		return new TextDecoder().decode(new Uint8Array(codeunits));
-	}
-
-
 	test.suite('.cookTokenKeyword', () => {
 		test.test('assigns values 0x80n–0x100n to reserved keywords.', () => {
 			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
@@ -139,7 +128,7 @@ test.suite('Validator', () => {
 
 	test.suite('.cookTokenString', () => {
 		function decodeCooked(source: string): string {
-			return utf8Decode(Validator.cookTokenString(source));
+			return new TextDecoder().decode(new Uint8Array(Validator.cookTokenString(source)));
 		}
 		test.test('produces the cooked string value.', () => {
 			assert.deepStrictEqual([
@@ -231,7 +220,7 @@ test.suite('Validator', () => {
 
 	test.suite('.cookTokenTemplate', () => {
 		function decodeCooked(source: string): string {
-			return utf8Decode(Validator.cookTokenTemplate(source));
+			return new TextDecoder().decode(new Uint8Array(Validator.cookTokenTemplate(source)));
 		}
 		test.test('produces the cooked template value.', () => {
 			assert.deepStrictEqual(
