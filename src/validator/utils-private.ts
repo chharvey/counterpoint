@@ -1,6 +1,5 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
-import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import type {
 	NonemptyArray,
 	CodeUnit,
@@ -174,5 +173,5 @@ type EncodedChar = (
  */
 export function utf8Encode(codepoint: CodePoint): EncodedChar {
 	xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
-	return [...utf8.encode(String.fromCodePoint(codepoint))].map((ch) => ch.codePointAt(0)!) as EncodedChar;
+	return [...new TextEncoder().encode(String.fromCodePoint(codepoint))] as EncodedChar;
 }

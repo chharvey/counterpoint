@@ -1,6 +1,5 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import utf8 from 'utf8';
 import {
 	BinValue,
 	type Builder,
@@ -32,7 +31,7 @@ class ValueString extends Primitive {
 	public constructor(data: string | readonly CodeUnit[] = []) {
 		super();
 		this.codeunits = (typeof data === 'string')
-			? [...utf8.encode(data)].map((ch) => ch.codePointAt(0)!)
+			? [...new TextEncoder().encode(data)]
 			: data;
 	}
 
@@ -44,7 +43,7 @@ class ValueString extends Primitive {
 	}
 
 	public override toString(): string {
-		return `${ DELIM_STRING }${ utf8.decode(String.fromCodePoint(...this.codeunits)) }${ DELIM_STRING }`;
+		return `${ DELIM_STRING }${ new TextDecoder().decode(new Uint8Array(this.codeunits)) }${ DELIM_STRING }`;
 	}
 
 	@strictEqual

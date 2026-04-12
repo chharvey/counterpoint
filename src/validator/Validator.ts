@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import type {CodeUnit} from '../lib/index.ts';
 import {
 	type CPConfig,
@@ -233,7 +232,7 @@ export class Validator {
 			source.endsWith(DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
-		return [...utf8.encode(source.slice(delim_start.length, -delim_end.length))].map((ch) => ch.codePointAt(0)!);
+		return [...new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length))];
 	}
 
 

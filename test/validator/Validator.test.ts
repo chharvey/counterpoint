@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
-import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
 import {
 	type CodeUnit,
 	KEYWORDS,
@@ -17,7 +16,7 @@ test.suite('Validator', () => {
 	 * @returns           a decoded string
 	 */
 	function utf8Decode(codeunits: readonly CodeUnit[]): string {
-		return utf8.decode(String.fromCodePoint(...codeunits));
+		return new TextDecoder().decode(new Uint8Array(codeunits));
 	}
 
 
