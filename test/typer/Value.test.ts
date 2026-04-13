@@ -147,6 +147,7 @@ test.suite('Value', () => {
 				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
 			});
 			test.test.todo('Lists may contain circular references.', () => {
+				// TODO: need an interpreter to test this
 				`
 					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
 					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
@@ -171,6 +172,7 @@ test.suite('Value', () => {
 				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
 			});
 			test.test.todo('Dicts may contain circular references.', () => {
+				// TODO: need an interpreter to test this
 				`
 					val a: mut Dict.<anything> = [x= null];
 					val b: mut Dict.<anything> = [x= null];
