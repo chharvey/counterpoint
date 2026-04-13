@@ -11,7 +11,6 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	forEither,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
@@ -267,7 +266,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 	 * @param resolved_generic_args the resolved type arguments, returned by {@link ASTNodeTypeCall.checkGenericArgs}
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
-		forEither(constructor_schema.overloads, (func_params) => {
+		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {
 			/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 			const expected_function = {
 				min: BigInt(func_params.filter((param) => !param.optional).length),
