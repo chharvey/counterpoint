@@ -1,8 +1,10 @@
+import * as util from 'node:util';
 import type binaryen from 'binaryen';
-import * as xjs from 'extrajs';
-import utf8 from 'utf8';
-import type {BinVect} from '../../index.ts';
-import type {CodeUnit} from '../../lib/index.ts';
+import {
+	BinValue,
+	type Builder,
+} from '../../index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -22,11 +24,16 @@ const DELIM_STRING = '"';
  * @final
  */
 class ValueString extends Primitive {
-	private readonly codeunits: readonly CodeUnit[];
-	public constructor(data: string | readonly CodeUnit[] = []) {
+	/**
+	 * Internal implementation of this ValueString.
+	 * A sequence of bytes stored in a Uint8Array.
+	 */
+	private readonly data: Readonly<Uint8Array>;
+
+	public constructor(data: string | Uint8Array = new Uint8Array()) {
 		super();
-		this.codeunits = (typeof data === 'string')
-			? [...utf8.encode(data)].map((ch) => ch.codePointAt(0)!)
+		this.data = typeof data === 'string'
+			? new TextEncoder().encode(data)
 			: data;
 	}
 
@@ -34,26 +41,27 @@ class ValueString extends Primitive {
 	 * @implements Value
 	 */
 	public override get isEmpty(): boolean {
-		return this.codeunits.length === 0;
+		return this.data.length === 0;
 	}
 
 	public override toString(): string {
-		return `${ DELIM_STRING }${ utf8.decode(String.fromCodePoint(...this.codeunits)) }${ DELIM_STRING }`;
+		return `${ DELIM_STRING }${ new TextDecoder().decode(this.data) }${ DELIM_STRING }`;
 	}
 
 	@strictEqual
 	@memoizeBinOp(true, true)
 	@instanceOf(() => ValueString)
 	public override identical(value: Value): boolean {
-		return xjs.Array.is<CodeUnit>(this.codeunits, (value as ValueString).codeunits);
+		return util.isDeepStrictEqual(this.data, (value as ValueString).data);
 	}
 
 	public override toCplString(): ValueString {
 		return this;
 	}
 
-	public override codegen(_: binaryen.Module): BinVect {
-		throw new Error('`ValueString#codegen` not yet supported.');
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, cg.codegenString([...this.data].map((c) => cg.module.i32.const(c)))).value;
 	}
 
 	/**
@@ -62,10 +70,10 @@ class ValueString extends Primitive {
 	 * @returns   a new String whose code units are this string’s concatenated with the argument’s
 	 */
 	public concatenate(str: ValueString): ValueString {
-		return new ValueString([
-			...this.codeunits,
-			...str.codeunits,
-		]);
+		return new ValueString(new Uint8Array([
+			...this.data,
+			...str.data,
+		]));
 	}
 }
 export {ValueString as String};

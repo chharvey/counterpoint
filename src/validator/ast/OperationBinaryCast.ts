@@ -44,7 +44,7 @@ export class OperationBinaryCast extends OperationBinary {
 
 	@memoizeMethod
 	public override lower(_: Optimizer): IR.Value {
-		throw new Error('`ASTNodeOperationBinaryCast#lower` not yet supported.');
+		throw new Error('`OperationBinaryCast#lower` not yet supported.');
 	}
 
 	@memoizeMethod

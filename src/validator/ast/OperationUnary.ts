@@ -21,10 +21,7 @@ import {
 	Operator,
 	type ValidOperatorUnary,
 } from '../Operator.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {Operation} from './Operation.ts';
 
 
@@ -46,7 +43,6 @@ export class OperationUnary extends Operation {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		const t: TYPE.Type = this.operand.type();
 		if (t.isBottomType) {

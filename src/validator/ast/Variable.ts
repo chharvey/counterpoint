@@ -22,10 +22,7 @@ import {
 	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import type {Reassignable} from './Reassignable.ts';
 
 
@@ -58,7 +55,6 @@ export class Variable extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;

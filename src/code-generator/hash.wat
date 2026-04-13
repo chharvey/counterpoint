@@ -48,6 +48,36 @@
 
 
 
+;; hash a $String.
+;; ```
+;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_u(b)) * PRIME);
+;; ```
+(func $hash-String (param $string (ref $String)) (result i64)
+	(local $result i64)
+	(local $i      i32)
+
+	(local.set $result (global.get $SEED))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $string))))
+			(local.set $result (i64.mul
+				(i64.xor
+					(local.get $result)
+					(i64.extend_i32_u (array.get_u $String (local.get $string) (local.get $i)))
+				)
+				(global.get $PRIME)
+			))
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(local.get $result)
+)
+
+
+
 ;; hash a $Tuple.
 ;; ```
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
@@ -124,20 +154,17 @@
 	(local.set $tag       (struct.get $Value $tag       (local.get $value)))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
-	(if (i32.eq (local.get $tag) (i32.const 1))
+	(if
+		(i32.eq (local.get $tag) (i32.const 1))
 		(then (return (call $hash-v128 (struct.get $Value $primitive (local.get $value)))))
 	)
-	(if (i32.eq (local.get $tag) (i32.const 2))
+	(if
+		(i32.eq (local.get $tag) (i32.const 2))
 		(then
-			(if (ref.test (ref $Tuple) (local.get $composite))
-				(then (return (call $hash-Tuple (ref.cast (ref $Tuple) (local.get $composite)))))
-			)
-			(if (ref.test (ref $Record) (local.get $composite))
-				(then (return (call $hash-Record (ref.cast (ref $Record) (local.get $composite)))))
-			)
-			(if (ref.test (ref $Object) (local.get $composite))
-				(then (return (call $hash-Object (ref.cast (ref $Object) (local.get $composite)))))
-			)
+			(if (ref.test (ref $String) (local.get $composite)) (then (return (call $hash-String (ref.cast (ref $String) (local.get $composite))))))
+			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (call $hash-Tuple  (ref.cast (ref $Tuple)  (local.get $composite))))))
+			(if (ref.test (ref $Record) (local.get $composite)) (then (return (call $hash-Record (ref.cast (ref $Record) (local.get $composite))))))
+			(if (ref.test (ref $Object) (local.get $composite)) (then (return (call $hash-Object (ref.cast (ref $Object) (local.get $composite))))))
 		)
 	)
 	(unreachable)

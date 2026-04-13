@@ -1,52 +1,16 @@
 import * as assert from 'node:assert';
-import {
+import type {
 	VALUE,
 	TYPE,
-	type Optimizer,
-	type IR,
-	ErrorCode,
+	Optimizer,
+	IR,
 } from '../../index.ts';
-import {assert_context_name} from '../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {StatementExpression} from './index.ts';
 import {AstNode} from './AstNode.ts';
-
-
-
-/**
- * Decorator for {@link Expression#type} method and any overrides.
- * Type-checks and re-throws any type errors first,
- * then computes assessed value (if applicable), and if successful,
- * returns a constant type equal to that assessed value.
- * @implements MethodDecorator<Expression, Expression['type']>
- */
-export function typeDeco(
-	method:  Expression['type'],
-	context: ClassMethodDecoratorContext<Expression, typeof method>,
-): typeof method {
-	assert_context_name(context, 'type');
-	return function (this: Expression) {
-		const type: TYPE.Type = method.call(this); // type-check first, to re-throw any TypeErrors
-		let value: VALUE.Value | null = null;
-		try {
-			value = this.fold();
-		} catch (err) {
-			if (err instanceof ErrorCode) {
-				// ignore evaluation errors such as VoidError, NanError, etc.
-				return TYPE.NOTHING;
-			} else {
-				throw err;
-			}
-		}
-		if (!!value && value instanceof VALUE.Primitive) {
-			return value.toType();
-		}
-		return type;
-	};
-}
 
 
 

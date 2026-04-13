@@ -13,10 +13,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import type {Constant} from './Constant.ts';
 
 
@@ -42,7 +39,6 @@ export class Template extends Expression {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		return TYPE.STR;
 	}

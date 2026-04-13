@@ -13,7 +13,8 @@
 ;; they are counted when determining when a Dict’s array should be grown or shrunk.
 ;; When growing/shrinking an array, tombstones are not copied over to the new array.
 (func $Property.is-tombstone (param $prop (ref null $Property)) (result i32)
-	(if (result i32) (ref.is_null (local.get $prop))
+	(if (result i32)
+		(ref.is_null (local.get $prop))
 		(then (i32.const 0))
 		(else (i64.lt_u (struct.get $Property $key (local.get $prop)) (i64.const 0x100)))
 	)
@@ -36,7 +37,8 @@
 ;; they are counted when determining when a Map’s array should be grown or shrunk.
 ;; When growing/shrinking an array, tombstones are not copied over to the new array.
 (func $Case.is-tombstone (param $case (ref null $Case)) (result i32)
-	(if (result i32) (ref.is_null (local.get $case))
+	(if (result i32)
+		(ref.is_null (local.get $case))
 		(then (i32.const 0))
 		(else (i32.and
 			(i32.eqz (struct.get $Value $tag (struct.get $Case $ant (local.get $case))))

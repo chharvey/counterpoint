@@ -18,10 +18,7 @@ import {
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
 import type {Case} from './Case.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {
 	assignToDeco,
 	CollectionLiteral,
@@ -44,7 +41,6 @@ class AstMap extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.children.some((c) => c.antecedent.type().isBottomType || c.consequent.type().isBottomType)) {
 			return TYPE.NOTHING;

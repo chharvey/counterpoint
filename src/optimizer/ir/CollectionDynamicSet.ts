@@ -73,26 +73,26 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 		switch (this.name) {
 			case TypeName.LIST: {
 				return cg.module.call('List.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
-					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
+					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.List),
+					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('asInt')),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
 			case TypeName.DICT: {
 				return cg.module.call('Dict.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
-					new BinValue(cg, this.accessor.codegen(cg)).interpret('natValue'),
+					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Dict),
+					new BinValue(cg, this.accessor.codegen(cg)).interpret('asNat'),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
 			case TypeName.SET: {
-				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'));
-				const accessor: Local = cg.newLocal(this.accessor.codegen(cg));
+				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map));
+				const accessor: Local = cg.newLocal(this.accessor.codegen(cg), cg.reftype.Value);
 				return cg.module.block(null, [
 					base.set(),
 					accessor.set(),
 					cg.module.if(
-						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).primitiveValue).isSpecial(true),
+						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).asPrimitive).isSpecial(true),
 						cg.module.call('Map.set', [
 							base.get(),
 							accessor.get(),
@@ -101,13 +101,13 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 						cg.module.drop(cg.module.call('Map.delete', [
 							base.get(),
 							accessor.get(),
-						], cg.getReftype('(ref null $Value)'))),
+						], cg.reftypeNull.Value)),
 					),
 				]);
 			}
 			case TypeName.MAP: {
 				return cg.module.call('Map.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
+					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map),
 					this.accessor.codegen(cg),
 					this.value.codegen(cg),
 				], binaryen.none);

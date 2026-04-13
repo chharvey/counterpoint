@@ -316,7 +316,7 @@ after syntactic analysis, but before the program is executed at run-time.
 The productions of the decoration grammar are listed in the chapters
 [Counterpoint Programming Language: Expressions](./language-expressions.md),
 [Counterpoint Programming Language: Statements](./language-statements.md), and
-[Counterpoint Programming Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Source File](./language-source-file.md)
 
 
 ### Notation: Attribute Grammar
@@ -851,7 +851,7 @@ which in turn generates compiled code to be executed at runtime.
 The runtime instructions of static semantics are listed in the chapters
 [Counterpoint Programming Language: Expressions](./language-expressions.md),
 [Counterpoint Programming Language: Statements](./language-statements.md), and
-[Counterpoint Programming Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Source File](./language-source-file.md)
 
 
 ### Notation: Algorithms

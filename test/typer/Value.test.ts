@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import type binaryen from 'binaryen';
 import {
 	VALUE,
+	BinValue,
 	bigint_to_i64,
 	Builder,
 	BinVect,
@@ -210,72 +211,72 @@ test.suite('Value', () => {
 
 
 	test.suite('#codegen', () => {
-		test.suite('Null', () => {
-			test.test('returns a v128 with `null` as an argument.', () => {
-				const mod: binaryen.Module = new Builder().module;
-				return assertEqualBins(
-					VALUE.NULL.codegen(mod).vect,
-					new BinVect(mod).vect,
-				);
-			});
+		test.test('Null', () => {
+			const cg = new Builder();
+			return assertEqualBins(
+				VALUE.NULL.codegen(cg),
+				new BinValue(cg, new BinVect(cg.module).vect).value,
+			);
 		});
 
 		test.test('Boolean', () => {
-			const mod: binaryen.Module = new Builder().module;
-			return assertEqualBins(
-				[VALUE.FALSE.codegen(mod).vect, VALUE.TRUE.codegen(mod).vect],
-				[new BinVect(mod, false).vect,  new BinVect(mod, true).vect],
-			);
+			const cg = new Builder();
+			return assertEqualBins([
+				VALUE.FALSE.codegen(cg),
+				VALUE.TRUE .codegen(cg),
+			], [
+				new BinValue(cg, new BinVect(cg.module, false)).value,
+				new BinValue(cg, new BinVect(cg.module, true)) .value,
+			]);
 		});
 
 		test.test('Symbol', () => {
-			const mod: binaryen.Module = new Builder().module;
+			const cg = new Builder();
+			return assertEqualBins([
+				VALUE.SYM_NOTHING.codegen(cg),
+				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
+			], [
+				new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, 0x80n),  {unsigned: true})).value,
+				new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, 0x100n), {unsigned: true})).value,
+			]);
+		});
+
+		test.test('Integer', () => {
+			const data: bigint[] = [
+				42n + -420n,
+				...[
+					+126 /  3,
+					-126 /  3,
+					+126 / -3,
+					-126 / -3,
+					+200 /  3,
+					+200 / -3,
+					-200 /  3,
+					-200 / -3,
+				].map((x) => BigInt(Math.trunc(x))),
+				(42n ** 2n * 420n) % (2n ** 63n),
+				(-5n) ** (2n * 3n),
+			];
+			const cg = new Builder();
 			return assertEqualBins(
-				[VALUE.SYM_NOTHING.codegen(mod).vect,                                new VALUE.Symbol(0x100n, 'hello').codegen(mod).vect],
-				[new BinVect(mod, bigint_to_i64(mod, 0x80n), {unsigned: true}).vect, new BinVect(mod, bigint_to_i64(mod, 0x100n), {unsigned: true}).vect],
+				data.map((x) => new VALUE.Integer(x).codegen(cg)),
+				data.map((x) => new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, x))).value),
 			);
 		});
 
-		test.suite('Integer', () => {
-			test.test('generates `(i64.const)`.', () => {
-				const data: bigint[] = [
-					42n + -420n,
-					...[
-						+126 /  3,
-						-126 /  3,
-						+126 / -3,
-						-126 / -3,
-						+200 /  3,
-						+200 / -3,
-						-200 /  3,
-						-200 / -3,
-					].map((x) => BigInt(Math.trunc(x))),
-					(42n ** 2n * 420n) % (2n ** 63n),
-					(-5n) ** (2n * 3n),
-				];
-				const mod: binaryen.Module = new Builder().module;
-				return assertEqualBins(
-					data.map((x) => new VALUE.Integer(x).codegen(mod).vect),
-					data.map((x) => new BinVect(mod, bigint_to_i64(mod, x)).vect),
-				);
-			});
-		});
-
-		test.suite('Natural', () => {
-			test.test('generates `(i64.const)`.', () => {
-				const data: bigint[] = [
-					...[
-						+126 / +3,
-						+200 / +3,
-					].map((x) => BigInt(Math.trunc(x))),
-					(42n ** 2n * 420n) % (2n ** 64n),
-				];
-				const mod = new Builder().module;
-				return assertEqualBins(
-					data.map((x) => new VALUE.Natural(x).codegen(mod).vect),
-					data.map((x) => new BinVect(mod, bigint_to_i64(mod, x, true), {unsigned: true}).vect),
-				);
-			});
+		test.test('Natural', () => {
+			const data: bigint[] = [
+				...[
+					+126 / +3,
+					+200 / +3,
+				].map((x) => BigInt(Math.trunc(x))),
+				(42n ** 2n * 420n) % (2n ** 64n),
+			];
+			const cg = new Builder();
+			return assertEqualBins(
+				data.map((x) => new VALUE.Natural(x).codegen(cg)),
+				data.map((x) => new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, x, true), {unsigned: true})).value),
+			);
 		});
 
 		test.suite('Float', () => {
@@ -288,23 +289,28 @@ test.suite('Value', () => {
 					3.0 - 2.7,
 				];
 				/* eslint-enable @stylistic/array-element-newline */
-				const mod: binaryen.Module = new Builder().module;
+				const cg = new Builder();
 				return assertEqualBins(
-					data.map((x) => new VALUE.Float(x).codegen(mod).vect),
-					data.map((x) => new BinVect(mod, mod.f64.const(x)).vect),
+					data.map((x) => new VALUE.Float(x).codegen(cg)),
+					data.map((x) => new BinValue(cg, new BinVect(cg.module, cg.module.f64.const(x))).value),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
-				const mod: binaryen.Module = new Builder().module;
+				const cg = new Builder();
+				const mod: binaryen.Module = cg.module;
 				return assertEqualBins(
-					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(mod).vect),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
+					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinValue(cg, new BinVect(mod, c)).value),
 				);
 			});
 		});
 
 		test.test('String', () => {
-			assert.throws(() => new VALUE.String('hello world').codegen(new Builder().module), /not yet supported/);
+			const cg = new Builder();
+			return assertEqualBins(
+				new VALUE.String('hello').codegen(cg),
+				new BinValue(cg, cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => cg.module.i32.const(c)))).value,
+			);
 		});
 	});
 

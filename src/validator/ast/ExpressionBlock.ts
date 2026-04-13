@@ -19,10 +19,7 @@ import {
 	StatementExpression,
 	type Block,
 } from './index.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 
 
 
@@ -42,7 +39,6 @@ export class ExpressionBlock extends Expression {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.block.hasBottomType) {
 			return TYPE.NOTHING;

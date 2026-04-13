@@ -14,13 +14,13 @@ test.suite('BinVect', () => {
 	const MOD = new binaryen.Module();
 
 
-	test.suite('.asBool', () => {
+	test.suite('.boolOf', () => {
 		test.test('returns `(if)` containing two v128 branches storing boolean values.', () => {
 			xjs.Array.forEachAggregated([
 				MOD.i32.const(0),
 				MOD.i32.const(1),
 			], (expr) => assert_equal_bins(
-				BinVect.asBool(MOD, expr),
+				BinVect.boolOf(MOD, expr),
 				MOD.if(
 					expr,
 					new BinVect(MOD, true).vect,
@@ -85,14 +85,6 @@ test.suite('BinVect', () => {
 			argument = MOD.i16x8.replace_lane(argument, 3, MOD.i32.const(0x0018));
 			argument = MOD.i64x2.replace_lane(argument, 1, bigint_to_i64(MOD, 42n));
 			return test_vect<binaryen.ExpressionRef>(argument, (arg) => arg);
-		});
-
-		test.test('with address argument.', () => {
-			test_vect<binaryen.ExpressionRef>(bigint_to_i64(MOD, 42n, true), (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0058));
-				exp = MOD.i64x2.replace_lane(exp, 1, arg);
-				return exp;
-			}, {address: true});
 		});
 	});
 

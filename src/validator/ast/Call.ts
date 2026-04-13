@@ -28,10 +28,7 @@ import {
 import {typecheck_assign} from './AstNode.ts';
 import type {Type} from './Type.ts';
 import {TypeCall} from './TypeCall.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Tuple as AstTuple} from './Tuple.ts';
 import {Record as AstRecord} from './Record.ts';
@@ -75,7 +72,6 @@ export class Call extends Expression {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (!(this.base instanceof Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);

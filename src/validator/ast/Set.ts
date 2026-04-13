@@ -16,10 +16,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {
 	assignToDeco,
 	CollectionLiteral,
@@ -42,7 +39,6 @@ class AstSet extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.children.some((c) => c.type().isBottomType)) {
 			return TYPE.NOTHING;

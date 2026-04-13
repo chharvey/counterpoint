@@ -850,9 +850,9 @@ Decorate(Declaration<Break> ::= DeclarationVariable<?Break>) -> SemanticDeclarat
 
 
 
-Decorate(Goal ::= #x02 #x03) -> SemanticGoal
+Decorate(SourceFile ::= #x02 #x03) -> SemanticGoal
 	:= (SemanticGoal);
-Decorate(Goal ::= #x02 Block #x03) -> SemanticGoal
+Decorate(SourceFile ::= #x02 Block #x03) -> SemanticGoal
 	:= (SemanticGoal
 		Decorate(Block)
 	);

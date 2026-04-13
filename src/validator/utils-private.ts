@@ -1,10 +1,5 @@
-import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
-import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import type {
-	NonemptyArray,
-	CodeUnit,
-} from '../lib/index.ts';
+import type {NonemptyArray} from '../lib/index.ts';
 
 
 
@@ -16,9 +11,12 @@ export type SyntaxNodeType<T extends string> = (
 
 
 
-export function isSyntaxNodeType                  (node: SyntaxNode, regex: RegExp):             boolean;
-export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type: T):                   node is SyntaxNodeType<T>;
-export function isSyntaxNodeType<T extends string>(node: SyntaxNode, type_or_regex: T | RegExp): node is SyntaxNodeType<T> {
+export function isSyntaxNodeType                  (node: SyntaxNode | null, regex: RegExp):             boolean;
+export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type: T):                   node is SyntaxNodeType<T>;
+export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type_or_regex: T | RegExp): node is SyntaxNodeType<T> {
+	if (!node) {
+		return false;
+	}
 	return node.isNamed && ((typeof type_or_regex === 'string')
 		? node.type === type_or_regex
 		: type_or_regex.test(node.type));
@@ -56,7 +54,10 @@ function familyNameAll<RuleName extends string>(family_name: string, params: rea
 export function isSyntaxNodeFamily<
 	Name extends string,
 	const Suffices extends Readonly<NonemptyArray<string>>, // `const ‹TypeParam›` prevents the need to pass in `‹expr› as const` every time
->(node: SyntaxNode, name: Name, suffices: Suffices): node is SyntaxNodeFamily<Name, Suffices> {
+>(node: SyntaxNode | null, name: Name, suffices: Suffices): node is SyntaxNodeFamily<Name, Suffices> {
+	if (!node) {
+		return false;
+	}
 	return familyNameAll(name, suffices).some((familyname) => isSyntaxNodeType(node, familyname));
 }
 
@@ -126,44 +127,14 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 
 
 
-export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode, category: C): syntaxnode is SyntaxNodeSupertype<C> {
+export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode | null, category: C): syntaxnode is SyntaxNodeSupertype<C> {
+	if (!syntaxnode) {
+		return false;
+	}
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
 		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_grouped(__break)?|(tuple|record|list|dict|set|map)_literal(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?)$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^declaration|statement_(expression(__break)?|claim(__break)?|reassignment(__break)?|conditional(__unless)?(__break)?|loop|iteration|break)$/) || isSyntaxNodeSupertype(node, 'declaration')],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?)$/)],
 	]).get(category)!(syntaxnode);
-}
-
-
-
-/**
- * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
- * the index of a character in the Unicode Universal Character Set.
- */
-type CodePoint = number;
-
-
-
-/**
- * An encoded character is a sequence of code units
- * that corresponds to a single code point in the UTF-8 encoding.
- */
-type EncodedChar = (
-	| [CodeUnit]
-	| [CodeUnit, CodeUnit]
-	| [CodeUnit, CodeUnit, CodeUnit]
-	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
-);
-
-
-
-/**
- * The UTF-8 encoding of a numeric code point value.
- * @param   codepoint a Unicode code point
- * @returns           a code unit sequence representing the code point
- */
-export function utf8Encode(codepoint: CodePoint): EncodedChar {
-	xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
-	return [...utf8.encode(String.fromCodePoint(codepoint))].map((ch) => ch.codePointAt(0)!) as EncodedChar;
 }

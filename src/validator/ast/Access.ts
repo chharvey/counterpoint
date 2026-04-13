@@ -29,10 +29,7 @@ import {
 } from './utils-private.ts';
 import {Index} from './Index-.ts';
 import {Key} from './Key.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import type {Reassignable} from './Reassignable.ts';
 
 
@@ -60,7 +57,6 @@ export class Access extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.base.type().isBottomType) {
 			return TYPE.NOTHING;

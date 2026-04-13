@@ -9,10 +9,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {ValidOperatorBinary} from '../Operator.ts';
-import {
-	Expression,
-	typeDeco,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {Operation} from './Operation.ts';
 
 
@@ -46,7 +43,6 @@ export abstract class OperationBinary extends Operation {
 	 * @final
 	 */
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		return this.type_do(
 			this.operand0.type(),

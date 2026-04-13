@@ -15,10 +15,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
-import {
-	typeDeco,
-	Expression,
-} from './Expression.ts';
+import {Expression} from './Expression.ts';
 import {Operation} from './Operation.ts';
 
 
@@ -41,7 +38,6 @@ export class OperationTernary extends Operation {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		// compute types early to rethrow any errors
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
