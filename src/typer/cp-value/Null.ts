@@ -1,6 +1,13 @@
 import type binaryen from 'binaryen';
-import {BinVect} from '../../index.ts';
-import {noopMethod} from '../../lib/index.ts';
+import {
+	BinConst,
+	type Builder,
+} from '../../index.ts';
+import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -42,7 +49,14 @@ export class Null extends Primitive {
 		return true;
 	}
 
-	public override codegen(mod: binaryen.Module): BinVect {
-		return new BinVect(mod);
+	@noopMethod(memoizeMethod)
+	public override toType(): TYPE.Unit<this> {
+		// @ts-expect-error --- this class is final, so type `this` will always be type `Null`
+		return TYPE.NULL;
+	}
+
+	@noopMethod(memoizeMethod)
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return cg.getConst(BinConst.NULL);
 	}
 }

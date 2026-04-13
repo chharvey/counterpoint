@@ -19,10 +19,11 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal))))
 			(local.set $case (array.get $MapInternal (local.get $internal) (local.get $i)))
 			;; if the case is “live”, increment the count
-			(if (i32.and
-				(i32.eqz (ref.is_null (local.get $case)))
-				(i32.eqz (call $Case.is-tombstone (local.get $case)))
-			)
+			(if
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $case)))
+					(i32.eqz (call $Case.is-tombstone (local.get $case)))
+				)
 				(then (local.set $count (i32.add (local.get $count) (i32.const 1))))
 			)
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
@@ -75,18 +76,22 @@
 		;; if the current case is null, the key is definitely not in the Map.
 		;; if we’ve passed a tombstone, return it and its index.
 		;; otherwise, return the current null case and its index.
-		(if (ref.is_null (local.get $case))
-			(then (return (if (result i32 (ref null $Case)) (ref.is_null (local.get $tombcase))
+		(if
+			(ref.is_null (local.get $case))
+			(then (return (if (result i32 (ref null $Case))
+				(ref.is_null (local.get $tombcase))
 				(then (local.get $index)   (local.get $case))
 				(else (local.get $tombidx) (local.get $tombcase))
 			)))
 		)
 		;; if the antecedents match, we have our result.
-		(if (call $bool-to-i32 (call $vid (struct.get $Case $ant (local.get $case)) (local.get $ant)))
+		(if
+			(call $bool-to-i32 (call $vid (struct.get $Case $ant (local.get $case)) (local.get $ant)))
 			(then (return (local.get $index) (local.get $case)))
 		)
 		;; if the current case is a tombstone, store it, then continue the search.
-		(if (call $Case.is-tombstone (local.get $case))
+		(if
+			(call $Case.is-tombstone (local.get $case))
 			(then
 				(local.set $tombidx  (local.get $index))
 				(local.set $tombcase (local.get $case))
@@ -128,10 +133,11 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $orig))))
 			(local.set $case (array.get $MapInternal (local.get $orig) (local.get $i)))
 			;; if the case is “live”, put it in the copy and increment the size
-			(if (i32.and
-				(i32.eqz (ref.is_null (local.get $case)))
-				(i32.eqz (call $Case.is-tombstone (local.get $case)))
-			)
+			(if
+				(i32.and
+					(i32.eqz (ref.is_null (local.get $case)))
+					(i32.eqz (call $Case.is-tombstone (local.get $case)))
+				)
 				(then
 					(array.set $MapInternal
 						(local.get $copy)
@@ -165,10 +171,12 @@
 
 	;; if prop is null, we’re adding a new entry. update the capacity, reallocate if necessary, then increment the size.
 	;; else if prop is a tombstone or alive, just replace it without incrementing the size.
-	(if (ref.is_null (local.get $case))
+	(if
+		(ref.is_null (local.get $case))
 		(then
 			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1))))
-			(if (i32.lt_u (array.len (struct.get $Map $internal (local.get $map))) (local.get $new-capacity))
+			(if
+				(i32.lt_u (array.len (struct.get $Map $internal (local.get $map))) (local.get $new-capacity))
 				(then
 					(call $Map.adjust-capacity (local.get $map) (local.get $new-capacity))
 					;; if adjusting the array, local index pointer needs to be reset
@@ -207,10 +215,11 @@
 	(local.set $case)
 	(local.set $index)
 
-	(if (i32.or
-		(ref.is_null (local.get $case))
-		(call $Case.is-tombstone (local.get $case))
-	)
+	(if
+		(i32.or
+			(ref.is_null (local.get $case))
+			(call $Case.is-tombstone (local.get $case))
+		)
 		(then (return (ref.null $Case)))
 	)
 
@@ -238,12 +247,14 @@
 	(local $ant       (ref $Value))
 
 	;; Maps that are identical are always equal
-	(if (ref.eq (local.get $map0) (local.get $map1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
+	(if
+		(ref.eq (local.get $map0) (local.get $map1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
 		(then (return (i32.const 1)))
 	)
 
 	;; compare $Map.$size since two equal Maps may have different internal array lengths
-	(if (i32.ne (struct.get $Map $size (local.get $map0)) (struct.get $Map $size (local.get $map1)))
+	(if
+		(i32.ne (struct.get $Map $size (local.get $map0)) (struct.get $Map $size (local.get $map1)))
 		(then (return (i32.const 0)))
 	)
 
@@ -255,23 +266,26 @@
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
 			(local.set $case0 (array.get $MapInternal (local.get $internal0) (local.get $i)))
-			(if (i32.eqz (ref.is_null (local.get $case0)))
+			(if
+				(i32.eqz (ref.is_null (local.get $case0)))
 				(then
 					(local.set $ant (struct.get $Case $ant (local.get $case0)))
 
 					;; if $map1 doesn’t have the key, return false
 					(drop (local.set $case1 (call $Map.find (local.get $map1) (local.get $ant))))
-					(if (i32.or
-						(ref.is_null (local.get $case1))
-						(call $Case.is-tombstone (local.get $case1))
-					)
+					(if
+						(i32.or
+							(ref.is_null (local.get $case1))
+							(call $Case.is-tombstone (local.get $case1))
+						)
 						(then (return (i32.const 0)))
 					)
 
-					(if (i32.eqz (call $bool-to-i32 (call $veq
-						(struct.get $Case $con (local.get $case0))
-						(struct.get $Case $con (local.get $case1))
-					)))
+					(if
+						(i32.eqz (call $bool-to-i32 (call $veq
+							(struct.get $Case $con (local.get $case0))
+							(struct.get $Case $con (local.get $case1))
+						)))
 						(then (return (i32.const 0)))
 					)
 				)
