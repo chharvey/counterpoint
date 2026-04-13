@@ -458,8 +458,7 @@ test.suite('ASTNodeDeclaration', () => {
 						val x: (   bool,    int) | (   int,    bool) = (   true,    false);
 						val x: (a: bool, b: int) | (a: int, b: bool) = (a= true, b= false);
 					`.split('\n'), (err) => {
-						assert_instanceof(err, AggregateError);
-						assertAssignable(err, {
+						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
 								{cons: TypeErrorNotAssignable, message: 'Expression `false` is not assignable to type `int`.'},
@@ -488,8 +487,7 @@ test.suite('ASTNodeDeclaration', () => {
 						);
 						val bob: Employee | Volunteer = ${ BOB };
 					}`, (err) => {
-						assert_instanceof(err, AggregateError);
-						assertAssignable(err, {
+						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
 								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 257: int, 258: str, 259: float)\`.`},
@@ -541,8 +539,7 @@ test.suite('ASTNodeDeclaration', () => {
 						val m3_4: mut {str -> bool} = {7 -> 8.0};
 						val m3_5: mut {str -> bool} = {9 -> "a", 10.0 -> "b"};
 					}`, (err) => {
-						assert_instanceof(err, AggregateError);
-						assertAssignable(err, {
+						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
 								{

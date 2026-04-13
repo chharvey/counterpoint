@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
@@ -335,8 +335,7 @@ test.suite('ASTNodeStatement', () => {
 						if (i === 0) {
 							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
 							return assert.throws(() => stmts.at(-1)!.typeCheck(), (err) => {
-								assert_instanceof(err, AggregateError);
-								assertAssignable(err, {
+								assertAssignable(err as Error, {
 									cons:   AggregateError,
 									errors: [
 										{cons: TypeErrorNotAssignable, message: 'Expression `null` is not assignable to type `int`.'},

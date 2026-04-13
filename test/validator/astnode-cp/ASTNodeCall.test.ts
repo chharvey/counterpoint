@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
-	assert_instanceof,
 	AST,
 	VALUE,
 	TYPE,
@@ -242,8 +241,7 @@ test.suite('ASTNodeCall', () => {
 			]), ([argexpr, allowed_types], src) => assert.throws(
 				() => AST.ASTNodeCall.fromSource(src).type(),
 				(err) => {
-					assert_instanceof(err, AggregateError);
-					assertAssignable(err, {
+					assertAssignable(err as Error, {
 						cons:   AggregateError,
 						errors: [
 							{cons: TypeErrorArgCount, message: 'Got `1` arguments, but expected `0`.'},
