@@ -522,8 +522,7 @@ test.suite('ASTNodeExpression', () => {
 						[AST.ASTNodeDict       .fromSource('[c= 1, d= 2.0, c= "three", d= false]'), ['c', 'd']],
 						[AST.ASTNodeDict       .fromSource('[e= 1, f= 2.0, e= "three", e= false]'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
-						assert_instanceof(err, AggregateError);
-						assertAssignable(err, {
+						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentErrorDuplicateKey,

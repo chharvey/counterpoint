@@ -203,12 +203,18 @@ test.suite('ASTNodeOperation', () => {
 
 
 	test.suite('#lower', () => {
-		test.test.todo('with block-expressions.', () => {
-			setupScript(`{
+		test.test('with block-expressions.', () => {
+			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				val mut y: int = 69;
-				x + { x; y; };
-			}`);
+				x + { x; x * y; };
+			}`).opt.print(), extract_lines`
+				(DECL <int> x (INT.CONST 42))
+				(DECL <int> y (INT.CONST 69))
+				(DROP (GET x))
+				(DECL <int> $0 (INT.MUL (GET x) (GET y)))
+				(DROP (INT.ADD (GET x) (GET $0)))
+			`.join('\n'));
 		});
 
 		test.test('AST.OperationUnary[operator=NOT]', () => {
@@ -262,8 +268,8 @@ test.suite('ASTNodeOperation', () => {
 				(DROP (NEG (GET z)))
 			`.join('\n'));
 		});
-		test.test.todo('AST.OperationUnary[operator=INT | NAT | FLOAT]', () => {
-			setupScript(`{
+		test.test('AST.OperationUnary[operator=INT | NAT | FLOAT]', () => {
+			assert.strictEqual(setupScript(`{
 				val mut my_int: int   = -7;
 				val mut my_nat: nat   = +42;
 				val mut my_flt: float = -3.5;
@@ -277,7 +283,20 @@ test.suite('ASTNodeOperation', () => {
 				float my_int;
 				float my_nat;
 				float my_flt;
-			}`);
+			}`, {codegen: false}).opt.print(), extract_lines`
+				(DECL <int> my_int (INT.CONST -7))
+				(DECL <nat> my_nat (NAT.CONST +42))
+				(DECL <float> my_flt (FLOAT.CONST -3.5))
+				(DROP (TOINT (GET my_int)))
+				(DROP (TOINT (GET my_nat)))
+				(DROP (TOINT (GET my_flt)))
+				(DROP (TONAT (GET my_int)))
+				(DROP (TONAT (GET my_nat)))
+				(DROP (TONAT (GET my_flt)))
+				(DROP (TOFLOAT (GET my_int)))
+				(DROP (TOFLOAT (GET my_nat)))
+				(DROP (TOFLOAT (GET my_flt)))
+			`.join('\n'));
 		});
 
 		test.test('AST.OperationBinaryArithmetic', () => {

@@ -51,7 +51,7 @@
     }
   },
   "devDependencies": {
-    "extrajs": "^0.26.0",
+    "extrajs": "^0.27.0",
     "prebuildify": "^6.0.0",
     "tree-sitter-cli": "^0.26.0",
     "tsx": "^4.19.3",
