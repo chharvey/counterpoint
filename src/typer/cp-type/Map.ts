@@ -32,7 +32,7 @@ class TypeMap extends ReferenceType {
 		public readonly typearg_con: Type,
 		is_mutable: boolean = false,
 	) {
-		super(new Set([new VALUE.Map()]), is_mutable);
+		super(new Set<VALUE.Map>([new VALUE.Map()]), is_mutable);
 	}
 
 	public override get hasMutable(): boolean {

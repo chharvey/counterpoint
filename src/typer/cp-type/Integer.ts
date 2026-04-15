@@ -11,7 +11,7 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
  */
 export class Integer extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(new Set([VALUE.INT_0, VALUE.INT_1]));
+		super(new Set<VALUE.Integer>([VALUE.INT_0, VALUE.INT_1]));
 	}
 
 	public override toString(): string {

@@ -11,7 +11,7 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
  */
 class TypeSymbol extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(new Set([VALUE.SYM_NOTHING]));
+		super(new Set<VALUE.Symbol>([VALUE.SYM_NOTHING]));
 	}
 
 	public override toString(): string {
