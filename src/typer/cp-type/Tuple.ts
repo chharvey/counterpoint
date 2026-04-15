@@ -40,7 +40,7 @@ class TypeTuple extends ValueType {
 	 * @param typeargs this type’s item types
 	 */
 	public constructor(public readonly typeargs: readonly EntryType[] = []) {
-		super(new Set<VALUE.Tuple>([new VALUE.Tuple()]));
+		super(new Set<VALUE.Tuple>([VALUE.TUPLE_EMPTY]));
 	}
 
 	public override get hasMutable(): boolean {

@@ -6,6 +6,8 @@ import {Integer} from './Integer.ts';
 import {Natural} from './Natural.ts';
 import {Float} from './Float.ts';
 import {String as ValueString} from './String.ts';
+import {Tuple as ValueTuple} from './Tuple.ts';
+import {Record as ValueRecord} from './Record.ts';
 
 
 
@@ -21,3 +23,6 @@ import {String as ValueString} from './String.ts';
 /** The Counterpoint Language Float   Value `-0.0`.     */ export const FLOAT_N0:    Float        = new Float(-0.0);
 /** The Counterpoint Language Float   Value `1.0`.      */ export const FLOAT_1:     Float        = new Float(1.0);
 /** The Counterpoint Language String  Value `''`.       */ export const STR_EMPTY:   ValueString  = new ValueString();
+
+/** The Counterpoint Language Empty Tuple  Value. */ export const TUPLE_EMPTY:  ValueTuple  = new ValueTuple();
+/** The Counterpoint Language Empty Record Value. */ export const RECORD_EMPTY: ValueRecord = new ValueRecord();
