@@ -33,10 +33,9 @@
     "dev": "tsc && npm run generate",
     "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
-    "build": "npm run compile && npm run generate && npm run test",
-    "postbuild": "npm run prebuildify",
-    "install": "node-gyp-build",
-    "prebuildify": "prebuildify --napi --strip"
+    "prebuild": "npm run compile && npm run generate && npm run test",
+    "build": "prebuildify --napi --strip",
+    "install": "node-gyp-build"
   },
   "dependencies": {
     "node-addon-api": "^8.3.0",
