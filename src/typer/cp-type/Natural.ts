@@ -11,7 +11,7 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
  */
 export class Natural extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(false, new Set([VALUE.NAT_0, VALUE.NAT_1]));
+		super(new Set([VALUE.NAT_0, VALUE.NAT_1]));
 	}
 
 	public override toString(): string {

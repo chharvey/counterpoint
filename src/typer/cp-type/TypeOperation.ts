@@ -45,6 +45,6 @@ export abstract class TypeOperation extends Type {
 		values: ReadonlySet<VALUE.Value>,
 		public readonly operands: ReadonlyArrayOfAtLeast2<Type>,
 	) {
-		super(false, values);
+		super(values);
 	}
 }

@@ -22,7 +22,7 @@ export class Unit<T extends VALUE.Primitive = VALUE.Primitive> extends ValueType
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
 	public constructor(public readonly value: T) {
-		super(false, new Set<T>([value]));
+		super(new Set<T>([value]));
 	}
 
 	public override toString(): string {

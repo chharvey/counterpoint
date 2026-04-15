@@ -17,7 +17,7 @@ import {ReferenceType} from './ReferenceType.ts';
  */
 class TypeObject extends ReferenceType {
 	public constructor() {
-		super(false, new Set([
+		super(new Set([
 			new VALUE.List(),
 			new VALUE.Dict(),
 			new VALUE.Set(),
