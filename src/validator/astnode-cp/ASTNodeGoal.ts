@@ -29,13 +29,13 @@ function report_syntax_errors(node: SyntaxNode): void {
 			throw new ParseError01(to_serializable(n));
 		} else if (n.type === 'MISSING' || n.text === '') {
 			const serializable: Serializable = to_serializable(n);
-			const err = new ParseError01(to_serializable(n));
+			const err = new ParseError01(serializable);
 			// @ts-expect-error --- TODO: write class for `ParseError02`
 			err.message = (n.type === 'MISSING')
 				? err.message.replace(/Unexpected/, 'Expected')
 				: `Expected token: \`${ n.type }\` at line ${ serializable.line_index + 1 } col ${ serializable.col_index + 1 }.`;
 			throw err;
-		} else if (n.childCount > 0) {
+		} else if (n.childCount) {
 			report_syntax_errors(n);
 		}
 	});

@@ -251,6 +251,21 @@ module.exports = grammar({
 	rules: {
 		source_file: $ => optional($.block),
 
+		/*
+		 * TODO: Implement the doc-comment system.
+		 * 1. Rename `$._comment` to `$.comment` here and in `extras` to make them queryable.
+		 * 2. To prevent these new nodes from cluttering existing logic, update `AST.Goal.fromSource` to use a Proxy.
+		 * 3. The Proxy must intercept the following getters to filter out `'comment'` types:
+		 * 	- `.children` & `.namedChildren`: Should return `.filter((n) => !n.isExtra)`
+		 * 	- `.childCount` & `.namedChildCount`: Should return the length of the filtered arrays.
+		 * This preserves an “optimized” view for the Decorator while allowing a documentation generator
+		 * to extract comments via Tree-Sitter queries.
+		 */
+		_comment: _$ => token(choice(
+			/%([^%\n][^\n]*)?\n/, // line comment
+			/%%(%?[^%])*%%/,      // block comment
+		)),
+
 
 
 		/* # LEXICON */
@@ -551,12 +566,9 @@ module.exports = grammar({
 		), 'break'),
 	},
 
-	extras: _$ => [
-		/(\u0020|\t|\n)+/, // whitespace
-		token(choice(
-			/%([^%\n][^\n]*)?\n/, // line comment
-			/%%(%?[^%])*%%/,      // multiline comment
-		)),
+	extras: $ => [
+		/[ \t\n]+/, // whitespace
+		$._comment,
 	],
 
 	/**
