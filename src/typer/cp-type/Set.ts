@@ -30,7 +30,7 @@ class TypeSet extends ReferenceType {
 		public readonly typearg: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Set()]));
+		super(new Set<VALUE.Set>([new VALUE.Set()]), is_mutable);
 	}
 
 	public override get hasMutable(): boolean {

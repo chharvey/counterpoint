@@ -10,6 +10,7 @@ export * from './Natural.ts';
 export * from './Float.ts';
 export * from './String.ts';
 
+export * from './Collection.ts';
 export * from './CollectionIndexed.ts';
 export * from './CollectionKeyed.ts';
 
