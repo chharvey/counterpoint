@@ -13,13 +13,12 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import type {CollectionDynamicName} from './utils-public.ts';
-import type {Instruction} from './Instruction.ts';
 import {
-	OpCode,
-	Opcode,
-} from './Opcode.ts';
-import {TypeName} from './TypeName.ts';
+	TypeName,
+	type CollectionDynamicName,
+} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
 
@@ -189,7 +188,7 @@ function two_tuple_to_case(cg: Builder, pair: Local): {ant: binaryen.ExpressionR
 
 
 /** Copy an existing collection into a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicCopy extends Opcode implements Instruction {
+export class CollectionDynamicCopy extends Instruction {
 	public constructor(
 		private readonly name:        CollectionDynamicName,
 		private readonly destination: Value,

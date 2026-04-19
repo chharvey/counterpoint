@@ -1,9 +1,11 @@
-import type {IrNode} from './IrNode.ts';
+import {Opcode} from './Opcode.ts';
 
 
 
 /**
- * Known implementers:
+ * An Instruction is what can be pushed to an Optimizer’s instruction array.
+ *
+ * Known subclasses:
  * - Drop
  * - Decl
  * - Set
@@ -11,7 +13,6 @@ import type {IrNode} from './IrNode.ts';
  * - CollectionDynamicCopy
  * - Label
  * - Goto
- * - GotoIfFalse
  */
-export interface Instruction extends IrNode { // eslint-disable-line @typescript-eslint/no-empty-object-type
+export abstract class Instruction extends Opcode {
 }

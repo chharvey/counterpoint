@@ -781,6 +781,35 @@ test.suite('ASTNodeStatement', () => {
 					(DROP (GET x))
 				`.join('\n'));
 			});
+			test.test('if–else chains.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut cond?: bool;
+					set cond = true;
+					if cond == true then {
+						10;
+					} else if cond == false then {
+						20;
+					} else {
+						30;
+					};
+				}`, {codegen: false}).opt.print(), extract_lines`
+					(DECL <null> cond (NULL.CONST null))
+					(SET cond (BOOL.CONST true))
+					if_false (EQ (GET cond) (BOOL.CONST true)), goto "block-1".
+					"block-0":
+					(DROP (INT.CONST 10))
+					goto "block-2".
+					"block-1":
+					if_false (EQ (GET cond) (BOOL.CONST false)), goto "block-4".
+					"block-3":
+					(DROP (INT.CONST 20))
+					goto "block-5".
+					"block-4":
+					(DROP (INT.CONST 30))
+					"block-5":
+					"block-2":
+				`.join('\n'));
+			});
 		});
 
 		test.suite('StatementLoop', () => {

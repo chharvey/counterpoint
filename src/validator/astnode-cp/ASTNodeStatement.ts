@@ -23,6 +23,7 @@ import type {Foldable} from './Foldable.ts';
  * - ASTNodeStatementClaim
  * - ASTNodeStatementReassignment
  * - ASTNodeStatementConditional
+ * - ASTNodeStatementBreakable
  * - ASTNodeStatementBreak
  */
 export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lowerable {

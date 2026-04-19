@@ -1,16 +1,35 @@
+import {TYPE} from '../../typer/index.ts';
 import type {
 	Temp,
 	Optimizer,
 } from '../Optimizer.ts';
 import {
-	type TypeName,
 	type Value,
 	Get,
 	Phi,
 	type Label,
 	Goto,
-	GotoIfFalse,
 } from './index.ts';
+
+
+
+export enum TypeName {
+	TRAP,
+	NULL,
+	BOOL,
+	SYM,
+	INT,
+	NAT,
+	FLOAT,
+	STR,
+	TUPLE,
+	RECORD,
+	LIST,
+	DICT,
+	SET,
+	MAP,
+	ANY,
+}
 
 
 
@@ -20,6 +39,39 @@ export type CollectionDynamicName = (
 	| TypeName.SET
 	| TypeName.MAP
 );
+
+
+
+export function ast_type_name(typ: TYPE.Type): TypeName {
+	switch (true) {
+		case typ.isSubtypeOf(TYPE.NULL):  { return TypeName.NULL; }
+		case typ.isSubtypeOf(TYPE.BOOL):  { return TypeName.BOOL; }
+		case typ.isSubtypeOf(TYPE.SYM):   { return TypeName.SYM; }
+		case typ.isSubtypeOf(TYPE.INT):   { return TypeName.INT; }
+		case typ.isSubtypeOf(TYPE.NAT):   { return TypeName.NAT; }
+		case typ.isSubtypeOf(TYPE.FLOAT): { return TypeName.FLOAT; }
+		case typ.isSubtypeOf(TYPE.STR):   { return TypeName.STR; }
+
+		case typ instanceof TYPE.Tuple:  { return TypeName.TUPLE; }
+		case typ instanceof TYPE.Record: { return TypeName.RECORD; }
+		case typ instanceof TYPE.List:   { return TypeName.LIST; }
+		case typ instanceof TYPE.Dict:   { return TypeName.DICT; }
+		case typ instanceof TYPE.Set:    { return TypeName.SET; }
+		case typ instanceof TYPE.Map:    { return TypeName.MAP; }
+	}
+
+	if (typ instanceof TYPE.Union || typ instanceof TYPE.Intersection) {
+		switch (true) {
+			case typ.operands.every((op) => op instanceof TYPE.Tuple):  { return TypeName.TUPLE; }
+			case typ.operands.every((op) => op instanceof TYPE.Record): { return TypeName.RECORD; }
+			case typ.operands.every((op) => op instanceof TYPE.List):   { return TypeName.LIST; }
+			case typ.operands.every((op) => op instanceof TYPE.Dict):   { return TypeName.DICT; }
+			case typ.operands.every((op) => op instanceof TYPE.Set):    { return TypeName.SET; }
+			case typ.operands.every((op) => op instanceof TYPE.Map):    { return TypeName.MAP; }
+		}
+	}
+	return TypeName.ANY;
+}
 
 
 
@@ -56,7 +108,7 @@ export function conditional_expression(
 	const label_else:  Label = optimizer.newLabel();
 	const label_endif: Label = optimizer.newLabel();
 
-	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), label_else));
+	optimizer.pushInstruction(new Goto(label_else, condition.call(null)));
 	optimizer.pushInstruction(label_then);
 	const result_then: Temp = optimizer.newTemp(consequent.call(null));
 	optimizer.pushInstruction(new Goto(label_endif));

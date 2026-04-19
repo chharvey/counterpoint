@@ -8,17 +8,14 @@ import {
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {Temp} from '../Optimizer.ts';
-import type {Instruction} from './Instruction.ts';
-import {
-	OpCode,
-	Opcode,
-} from './Opcode.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Write a value to a variable/local. */
-class IrSet extends Opcode implements Instruction {
+class IrSet extends Instruction {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(

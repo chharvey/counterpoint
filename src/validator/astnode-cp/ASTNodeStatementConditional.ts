@@ -76,7 +76,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
 		}
 
-		optimizer.pushInstruction(new IR.GotoIfFalse(condition(), this.alternative ? label_else : label_endif));
+		optimizer.pushInstruction(new IR.Goto(this.alternative ? label_else : label_endif, condition()));
 		optimizer.pushInstruction(label_then);
 		this.consequent.lower(optimizer);
 		if (this.alternative) {
