@@ -100,6 +100,9 @@ export enum OpCode {
 	SET_COPY,
 	MAP_COPY,
 
+	GOTO,
+	GOTO_IF,
+
 	/** @deprecated --- we’ll convert these to blocks */
 	UNDEFINED,
 }

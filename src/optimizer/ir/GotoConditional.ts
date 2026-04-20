@@ -28,11 +28,11 @@ export class GotoConditional extends Instruction {
 		private readonly labelIfTrue:  Label,
 		private readonly labelIfFalse: Label,
 	) {
-		super(OpCode.UNDEFINED);
+		super(OpCode.GOTO_IF);
 	}
 
 	public override toString(): string {
-		return `goto_if ${ this.condition }: "${ this.labelIfTrue.name }"/"${ this.labelIfFalse.name }".`;
+		return super.toString(this.condition, `"${ this.labelIfTrue.name }"`, `"${ this.labelIfFalse.name }"`);
 	}
 
 	@runOnceMethod

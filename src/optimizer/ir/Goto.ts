@@ -10,11 +10,11 @@ import type {Label} from './Label.ts';
 /** Transfer control to the given label, conditionally if specified. */
 export class Goto extends Instruction {
 	public constructor(private readonly label: Label) {
-		super(OpCode.UNDEFINED);
+		super(OpCode.GOTO);
 	}
 
 	public override toString(): string {
-		return `goto "${ this.label.name }".`;
+		return super.toString(`"${ this.label.name }"`);
 	}
 
 	@memoizeMethod

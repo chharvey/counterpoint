@@ -1075,15 +1075,15 @@ test.suite('ASTNodeAccess', () => {
 					return `(DECL <${ res_val === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ res_name } ${ res_val })`;
 				}
 				return extract_lines`
-					goto_if (ISNULL (GET ${ base_name })): "${ block_then }"/"${ block_else }".
+					(GOTO.IF (ISNULL (GET ${ base_name })) "${ block_then }" "${ block_else }")
 					"${ block_then }":
 					${ decl_result(result_then_name) }
-					goto "${ block_endif }".
+					(GOTO "${ block_endif }")
 					"${ block_else }":
 					${ typeof result_value === 'string'
 						? decl_result(result_else_name, result_value)
 						: result_value((value) => decl_result(result_else_name, value)) }
-					goto "${ block_endif }".
+					(GOTO "${ block_endif }")
 					"${ block_endif }":
 					(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
 				`;
@@ -1203,13 +1203,13 @@ test.suite('ASTNodeAccess', () => {
 						${ decl('(LIST.GET (GET my_list) (GET $2))') }
 					`),
 					...maybe_access_output(3, 'my_dict', [4, 8], (decl) => `
-						goto_if (TOBOOL (SYM.CONST @b)): "block-6"/"block-7".
+						(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-6" "block-7")
 						"block-6":
 						(DECL <sym> $5 (SYM.CONST @a))
-						goto "block-8".
+						(GOTO "block-8")
 						"block-7":
 						(DECL <sym> $6 (SYM.CONST @b))
-						goto "block-8".
+						(GOTO "block-8")
 						"block-8":
 						(DECL <sym> $7 (PHI "block-6"->(GET $5) "block-7"->(GET $6)))
 						${ decl('(DICT.GET (GET my_dict) (GET $7))') }

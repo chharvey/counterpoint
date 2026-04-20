@@ -83,10 +83,10 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  * ```
  * IR Outline:
  * ```
- * goto_if ‹condition›: "then"/"else".
+ * (GOTO.IF ‹condition› "then" "else")
  * "then":
  * (DECL ‹result_type› $result_then ‹consequent›) ;; evaluate consequent and set to result
- * goto "endif".
+ * (GOTO "endif")
  * "else":
  * (DECL ‹result_type› $result_else ‹alternative›) ;; evaluate alternative and set to result
  * "endif":
