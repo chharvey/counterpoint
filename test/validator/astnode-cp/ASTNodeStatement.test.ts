@@ -883,17 +883,13 @@ test.suite('ASTNodeStatement', () => {
 					"block-1":
 					(DROP (INT.CONST 42))
 					(DROP (FLOAT.CONST 4.2))
-					(GOTO "block-2")
+					(GOTO.IF (GET cond) "block-1" "block-2")
 					"block-2":
-					(GOTO.IF (GET cond) "block-1" "block-3")
+					(GOTO "block-3")
 					"block-3":
-					(GOTO "block-4")
-					"block-4":
 					(DROP (INT.CONST 42))
-					(GOTO "block-5")
-					"block-5":
-					(GOTO.IF (NOT (GET cond)) "block-4" "block-6")
-					"block-6":
+					(GOTO.IF (NOT (GET cond)) "block-3" "block-4")
+					"block-4":
 				`.join('\n'));
 			});
 		});
