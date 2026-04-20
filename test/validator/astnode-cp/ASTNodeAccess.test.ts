@@ -1075,7 +1075,7 @@ test.suite('ASTNodeAccess', () => {
 					return `(DECL <${ res_val === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ res_name } ${ res_val })`;
 				}
 				return extract_lines`
-					if_false (ISNULL (GET ${ base_name })), goto "${ block_else }".
+					goto_if (ISNULL (GET ${ base_name })): "${ block_then }"/"${ block_else }".
 					"${ block_then }":
 					${ decl_result(result_then_name) }
 					goto "${ block_endif }".
@@ -1202,7 +1202,7 @@ test.suite('ASTNodeAccess', () => {
 						${ decl('(LIST.GET (GET my_list) (GET $2))') }
 					`),
 					...maybe_access_output(3, 'my_dict', [4, 8], (decl) => `
-						if_false (TOBOOL (SYM.CONST @b)), goto "block-7".
+						goto_if (TOBOOL (SYM.CONST @b)): "block-6"/"block-7".
 						"block-6":
 						(DECL <sym> $5 (SYM.CONST @a))
 						goto "block-8".

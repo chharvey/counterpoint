@@ -1,37 +1,20 @@
-import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {memoizeMethod} from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
-import type {Value} from './Value.ts';
 import type {Label} from './Label.ts';
 
 
 
 /** Transfer control to the given label, conditionally if specified. */
 export class Goto extends Instruction {
-	public constructor(
-		private readonly label:             Label,
-		private readonly conditionIfFalse?: Value,
-	) {
+	public constructor(private readonly label: Label) {
 		super(OpCode.UNDEFINED);
 	}
 
 	public override toString(): string {
-		return `${ this.conditionIfFalse ? `if_false ${ this.conditionIfFalse }, ` : '' }goto "${ this.label.name }".`;
-	}
-
-	@runOnceMethod
-	public override validate(): void {
-		if (this.conditionIfFalse) {
-			this.conditionIfFalse.validate();
-			return assert.ok(this.conditionIfFalse.type.isSubtypeOf(TYPE.BOOL));
-		}
+		return `goto "${ this.label.name }".`;
 	}
 
 	@memoizeMethod

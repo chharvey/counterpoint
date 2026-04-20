@@ -26,7 +26,7 @@ test.suite('Opcode', () => {
 			xjs.Array.forEachAggregated([
 				new IR.Label('label1'),
 				new IR.Goto(new IR.Label('label2')),
-				new IR.Goto(new IR.Label('label2'), new IR.Const(VALUE.NULL)),
+				new IR.GotoConditional(new IR.Const(VALUE.NULL), new IR.Label('label3'), new IR.Label('label4')),
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 

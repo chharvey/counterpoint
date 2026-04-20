@@ -9,6 +9,7 @@ import {
 	Phi,
 	type Label,
 	Goto,
+	GotoConditional,
 } from './index.ts';
 
 
@@ -82,7 +83,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  * ```
  * IR Outline:
  * ```
- * if_false ‹condition›, goto "else".
+ * goto_if ‹condition›: "then"/"else".
  * "then":
  * (DECL ‹result_type› $result_then ‹consequent›) ;; evaluate consequent and set to result
  * goto "endif".
@@ -108,7 +109,7 @@ export function conditional_expression(
 	const label_else:  Label = optimizer.newLabel();
 	const label_endif: Label = optimizer.newLabel();
 
-	optimizer.pushInstruction(new Goto(label_else, condition.call(null)));
+	optimizer.pushInstruction(new GotoConditional(condition.call(null), label_then, label_else));
 	optimizer.pushInstruction(label_then);
 	const result_then: Temp = optimizer.newTemp(consequent.call(null));
 	optimizer.pushInstruction(new Goto(label_endif));

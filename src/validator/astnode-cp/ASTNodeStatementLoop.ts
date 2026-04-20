@@ -80,9 +80,9 @@ export class ASTNodeStatementLoop extends StatementBreakable {
 		if (this.doFirst) {
 			optimizer.pushInstruction(this.labels.do!);
 			this.block.lower(optimizer);
-			optimizer.pushInstruction(new IR.Goto(this.labels.endwhile!, condition()));
+			optimizer.pushInstruction(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 		} else {
-			optimizer.pushInstruction(new IR.Goto(this.labels.endwhile!, condition()));
+			optimizer.pushInstruction(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 			optimizer.pushInstruction(this.labels.do!);
 			this.block.lower(optimizer);
 		}

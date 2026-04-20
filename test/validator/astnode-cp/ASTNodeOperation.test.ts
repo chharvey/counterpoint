@@ -257,7 +257,7 @@ test.suite('ASTNodeOperation', () => {
 				(DECL <float> y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
 				(DECL <float> $0 (FLOAT.ADD (FLOAT.CONST 3.0) (GET y)))
 				(DROP (NEG (GET $0)))
-				if_false (BOOL.CONST false), goto "block-1".
+				goto_if (BOOL.CONST false): "block-0"/"block-1".
 				"block-0":
 				(DECL <int> $1 (INT.CONST 42))
 				goto "block-2".
@@ -374,7 +374,7 @@ test.suite('ASTNodeOperation', () => {
 				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
-					if_false (TOBOOL (GET a)), goto "block-1".
+					goto_if (TOBOOL (GET a)): "block-0"/"block-1".
 					"block-0":
 					(DECL <bool> $0 (GET b))
 					goto "block-2".
@@ -383,7 +383,7 @@ test.suite('ASTNodeOperation', () => {
 					"block-2":
 					(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
 					(DECL <bool> $2 (NOT (GET a)))
-					if_false (TOBOOL (GET $2)), goto "block-4".
+					goto_if (TOBOOL (GET $2)): "block-3"/"block-4".
 					"block-3":
 					(DECL <bool> $3 (NOT (GET b)))
 					goto "block-5".
@@ -402,7 +402,7 @@ test.suite('ASTNodeOperation', () => {
 				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> c (INT.CONST 10))
 					(DECL <float> d (FLOAT.CONST 0.1))
-					if_false (TOBOOL (GET c)), goto "block-1".
+					goto_if (TOBOOL (GET c)): "block-0"/"block-1".
 					"block-0":
 					(DECL <int> $0 (GET c))
 					goto "block-2".
@@ -412,7 +412,7 @@ test.suite('ASTNodeOperation', () => {
 					(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
 					(DECL <int> $2 (NEG (GET c)))
 					(DECL <int> $3 (INT.ADD (GET $2) (INT.CONST 1)))
-					if_false (TOBOOL (GET $3)), goto "block-4".
+					goto_if (TOBOOL (GET $3)): "block-3"/"block-4".
 					"block-3":
 					(DECL <int> $4 (GET $3))
 					goto "block-5".
@@ -430,7 +430,7 @@ test.suite('ASTNodeOperation', () => {
 				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
-					if_false (TOBOOL (GET a)), goto "block-1".
+					goto_if (TOBOOL (GET a)): "block-0"/"block-1".
 					"block-0":
 					(DECL <bool> $0 (GET b))
 					goto "block-2".
@@ -449,7 +449,7 @@ test.suite('ASTNodeOperation', () => {
 				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <int> c (INT.CONST 10))
 					(DECL <float> d (FLOAT.CONST 0.1))
-					if_false (TOBOOL (GET c)), goto "block-1".
+					goto_if (TOBOOL (GET c)): "block-0"/"block-1".
 					"block-0":
 					(DECL <int> $0 (GET c))
 					goto "block-2".
@@ -472,7 +472,7 @@ test.suite('ASTNodeOperation', () => {
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <float> y (FLOAT.CONST 0.5))
 				(DECL <float> z (FLOAT.CONST 0.2))
-				if_false (GET x), goto "block-1".
+				goto_if (GET x): "block-0"/"block-1".
 				"block-0":
 				(DECL <float> $0 (GET y))
 				goto "block-2".
@@ -480,7 +480,7 @@ test.suite('ASTNodeOperation', () => {
 				(DECL <float> $1 (GET z))
 				"block-2":
 				(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
-				if_false (LT (GET y) (GET z)), goto "block-4".
+				goto_if (LT (GET y) (GET z)): "block-3"/"block-4".
 				"block-3":
 				(DECL <float> $2 (FLOAT.MUL (GET y) (FLOAT.CONST 2.0)))
 				(DECL <float> $3 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
