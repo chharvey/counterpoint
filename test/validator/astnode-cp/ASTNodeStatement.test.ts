@@ -823,11 +823,12 @@ test.suite('ASTNodeStatement', () => {
 				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
-					if_false (GET cond), goto "block-1".
+					if_false (GET cond), goto "block-2".
+					"block-1":
 					(DROP (INT.CONST 42))
 					(DROP (FLOAT.CONST 4.2))
 					goto "block-0".
-					"block-1":
+					"block-2":
 				`.join('\n'));
 			});
 			test.test('negates the condition for `until` statements.', () => {
@@ -839,10 +840,11 @@ test.suite('ASTNodeStatement', () => {
 				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
-					if_false (NOT (GET cond)), goto "block-1".
+					if_false (NOT (GET cond)), goto "block-2".
+					"block-1":
 					(DROP (INT.CONST 42))
 					goto "block-0".
-					"block-1":
+					"block-2":
 				`.join('\n'));
 			});
 			test.test('bottom-tested conditions.', () => {
@@ -858,16 +860,18 @@ test.suite('ASTNodeStatement', () => {
 				}`, {codegen: false}).opt.print(), extract_lines`
 					(DECL <bool> cond (BOOL.CONST false))
 					"block-0":
+					"block-1":
 					(DROP (INT.CONST 42))
 					(DROP (FLOAT.CONST 4.2))
-					if_false (GET cond), goto "block-1".
+					if_false (GET cond), goto "block-2".
 					goto "block-0".
-					"block-1":
 					"block-2":
-					(DROP (INT.CONST 42))
-					if_false (NOT (GET cond)), goto "block-3".
-					goto "block-2".
 					"block-3":
+					"block-4":
+					(DROP (INT.CONST 42))
+					if_false (NOT (GET cond)), goto "block-5".
+					goto "block-3".
+					"block-5":
 				`.join('\n'));
 			});
 		});
@@ -884,20 +888,22 @@ test.suite('ASTNodeStatement', () => {
 				(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
 				(DECL <nat> $1 (NAT.CONST +0))
 				"block-0":
-				if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-1".
+				if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-2".
+				"block-1":
 				(DECL <int> item (LIST.GET (GET $0) (GET $1)))
 				(DROP (INT.ADD (GET item) (INT.CONST 5)))
 				(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
 				goto "block-0".
-				"block-1":
+				"block-2":
 				(DECL <List> $2 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
 				(DECL <nat> $3 (NAT.CONST +0))
-				"block-2":
-				if_false (LT (GET $3) (LIST.COUNT (GET $2))), goto "block-3".
+				"block-3":
+				if_false (LT (GET $3) (LIST.COUNT (GET $2))), goto "block-5".
+				"block-4":
 				(DROP (NULL.CONST null))
 				(SET $3 (NAT.ADD (GET $3) (NAT.CONST +1)))
-				goto "block-2".
-				"block-3":
+				goto "block-3".
+				"block-5":
 			`.join('\n'));
 		});
 
@@ -920,27 +926,29 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
 					"block-0":
-					if_false (BOOL.CONST true), goto "block-1".
+					if_false (BOOL.CONST true), goto "block-2".
+					"block-1":
 					(DROP (INT.CONST 41))
-					goto "block-1".
+					goto "block-2".
 					(DROP (INT.CONST 42))
 					goto "block-0".
 					(DROP (INT.CONST 43))
 					goto "block-0".
-					"block-1":
+					"block-2":
 					(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
 					(DECL <nat> $1 (NAT.CONST +0))
-					"block-2":
-					if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-3".
+					"block-3":
+					if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-5".
+					"block-4":
 					(DECL <str> word (LIST.GET (GET $0) (GET $1)))
 					(DROP (INT.CONST 10))
-					goto "block-2".
-					(DROP (INT.CONST 20))
 					goto "block-3".
+					(DROP (INT.CONST 20))
+					goto "block-5".
 					(DROP (INT.CONST 30))
 					(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-					goto "block-2".
-					"block-3":
+					goto "block-3".
+					"block-5":
 				`.join('\n'));
 			});
 			test.test('nested loops.', () => {
@@ -962,25 +970,27 @@ test.suite('ASTNodeStatement', () => {
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
 					"block-0":
-					if_false (BOOL.CONST true), goto "block-1".
+					if_false (BOOL.CONST true), goto "block-2".
+					"block-1":
 					(DROP (INT.CONST 10))
-					goto "block-1".
+					goto "block-2".
 					(DROP (INT.CONST 20))
-					if_false (BOOL.CONST true), goto "block-4".
-					"block-2":
+					if_false (BOOL.CONST true), goto "block-5".
+					"block-3":
 					(DROP (INT.CONST 30))
-					"block-5":
-					if_false (BOOL.CONST true), goto "block-6".
-					(DROP (INT.CONST 40))
-					goto "block-5".
-					(DROP (INT.CONST 50))
-					goto "block-5".
 					"block-6":
+					if_false (BOOL.CONST true), goto "block-8".
+					"block-7":
+					(DROP (INT.CONST 40))
+					goto "block-6".
+					(DROP (INT.CONST 50))
+					goto "block-6".
+					"block-8":
 					(DROP (INT.CONST 60))
-					"block-4":
+					"block-5":
 					(DROP (INT.CONST 70))
 					goto "block-0".
-					"block-1":
+					"block-2":
 				`.join('\n'));
 			});
 		});

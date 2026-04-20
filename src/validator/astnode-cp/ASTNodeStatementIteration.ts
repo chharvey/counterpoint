@@ -100,6 +100,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		assert_instanceof(iterable.type, TYPE.List);
 
 		this.labelWhile    = optimizer.newLabel();
+		this.labelDo       = optimizer.newLabel();
 		this.labelEndwhile = optimizer.newLabel();
 
 		optimizer.pushInstruction(this.labels.while!);
@@ -109,6 +110,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable),
 			TYPE.BOOL,
 		)));
+		optimizer.pushInstruction(this.labels.do!);
 		if (this.assignee) {
 			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;

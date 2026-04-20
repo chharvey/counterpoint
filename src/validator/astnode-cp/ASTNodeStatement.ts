@@ -65,16 +65,30 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lo
  */
 export abstract class StatementBreakable extends ASTNodeStatement {
 	#labelWhile?:    IR.Label;
+	#labelDo?:       IR.Label;
 	#labelEndwhile?: IR.Label;
 
 	/** @final */
-	public get labels(): {while: IR.Label | undefined, endwhile: IR.Label | undefined} {
-		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
+	public get labels(): {
+		while:    IR.Label | undefined,
+		do:       IR.Label | undefined,
+		endwhile: IR.Label | undefined,
+	} {
+		return {
+			while:    this.#labelWhile,
+			do:       this.#labelDo,
+			endwhile: this.#labelEndwhile,
+		};
 	}
 
 	/** @final */
 	protected set labelWhile(label: IR.Label) {
 		this.#labelWhile = label;
+	}
+
+	/** @final */
+	protected set labelDo(label: IR.Label) {
+		this.#labelDo = label;
 	}
 
 	/** @final */

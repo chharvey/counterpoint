@@ -68,6 +68,7 @@ export class ASTNodeStatementLoop extends StatementBreakable {
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
 		this.labelWhile    = optimizer.newLabel();
+		this.labelDo       = optimizer.newLabel();
 		this.labelEndwhile = optimizer.newLabel();
 
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
@@ -77,10 +78,12 @@ export class ASTNodeStatementLoop extends StatementBreakable {
 
 		optimizer.pushInstruction(this.labels.while!);
 		if (this.doFirst) {
+			optimizer.pushInstruction(this.labels.do!);
 			this.block.lower(optimizer);
 			optimizer.pushInstruction(new IR.Goto(this.labels.endwhile!, condition()));
 		} else {
 			optimizer.pushInstruction(new IR.Goto(this.labels.endwhile!, condition()));
+			optimizer.pushInstruction(this.labels.do!);
 			this.block.lower(optimizer);
 		}
 		optimizer.pushInstruction(new IR.Goto(this.labels.while!));

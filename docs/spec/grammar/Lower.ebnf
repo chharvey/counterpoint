@@ -163,11 +163,11 @@ Lower(SemanticExpressionBlock blex) := [
 
 Lower(SemanticAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $tuple `Lower(access.0)`)
-	if_false (ISNULL (GET $tuple)), goto "nonnull".
-	"isnull":
+	if_false (ISNULL (GET $tuple)), goto "else".
+	"then":
 	(DECL ‹type› $result_null (NULL.CONST null))
 	goto "endif".
-	"nonnull":
+	"else":
 	(DECL ‹type› $result_nonnull `Lower(access[kind=NORMAL])`)
 	"endif":
 	return (PHI "isnull"->(GET $result_null) "nonnull"->(GET $result_nonnull)).
@@ -338,6 +338,7 @@ Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression Semantic
 Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression SemanticBlock) := [
 	"while":
 	if_false `Lower(SemanticExpression)`, goto "endwhile".
+	"do":
 	...`Lower(SemanticBlock)`
 	goto "while".
 	"endwhile":
@@ -345,12 +346,14 @@ Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression S
 Lower(SemanticStatementLoop[doFirst=false][until=true] ::= SemanticExpression SemanticBlock) := [
 	"while":
 	if_false (NOT `Lower(SemanticExpression)`), goto "endwhile".
+	"do":
 	...`Lower(SemanticBlock)`
 	goto "while".
 	"endwhile":
 ];
 Lower(SemanticStatementLoop[doFirst=true][until=false] ::= SemanticExpression SemanticBlock) := [
 	"while":
+	"do":
 	...`Lower(SemanticBlock)`
 	if_false `Lower(SemanticExpression)`, goto "endwhile".
 	goto "while".
@@ -358,6 +361,7 @@ Lower(SemanticStatementLoop[doFirst=true][until=false] ::= SemanticExpression Se
 ];
 Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression SemanticBlock) := [
 	"while":
+	"do":
 	...`Lower(SemanticBlock)`
 	if_false (NOT `Lower(SemanticExpression)`), goto "endwhile".
 	goto "while".
@@ -369,17 +373,19 @@ Lower(SemanticStatementIteration ::= SemanticVariable SemanticType SemanticExpre
 	(DECL <nat> $index (NAT.CONST +0))
 	"while":
 	if_false (LT (GET $index) (LIST.COUNT (GET $iterable))), goto "endwhile".
+	"do":
 	(DECL ‹type› `GetSymbolSchema(SemanticVariable)` (LIST.GET (GET $iterable) (GET $index)))
 	...`Lower(SemanticBlock)`
 	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
 	goto "while".
 	"endwhile":
 ];
-Lower(SemanticStatementIteration ::= SemanticVariable? SemanticType SemanticExpression SemanticBlock) := [
+Lower(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlock) := [
 	(DECL <List> $iterable `Lower(SemanticExpression)`)
 	(DECL <nat> $index (NAT.CONST +0))
 	"while":
 	if_false (LT (GET $index) (LIST.COUNT (GET $iterable))), goto "endwhile".
+	"do":
 	...`Lower(SemanticBlock)`
 	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
 	goto "while".
