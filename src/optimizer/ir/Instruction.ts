@@ -11,8 +11,6 @@ import {Opcode} from './Opcode.ts';
  * - Set
  * - CollectionDynamicSet
  * - CollectionDynamicCopy
- * - Goto
- * - GotoConditional
  */
 export abstract class Instruction extends Opcode {
 }

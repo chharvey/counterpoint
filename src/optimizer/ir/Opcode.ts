@@ -112,6 +112,7 @@ export enum OpCode {
  * Known subclasses:
  * - Value
  * - Instruction
+ * - Terminator
  */
 export abstract class Opcode {
 	public constructor(private readonly opCode: OpCode) {

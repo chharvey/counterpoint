@@ -2,12 +2,12 @@ import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
-import {Instruction} from './Instruction.ts';
+import {Terminator} from './Terminator.ts';
 
 
 
 /** Transfer control to the given label, conditionally if specified. */
-export class Goto extends Instruction {
+export class Goto extends Terminator {
 	public constructor(private readonly label: string) {
 		super(OpCode.GOTO);
 	}

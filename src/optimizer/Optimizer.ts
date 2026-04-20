@@ -47,10 +47,11 @@ export class Optimizer {
 		this.currentBlock = new CfgNode(label);
 	}
 
-	public terminateBlock(): void {
+	public terminateBlock(instr?: IR.Terminator): void { // TODO: create EndProgram terminator and make required
 		if (!this.currentBlock) {
 			throw new Error('Optimizer does not have an active block to terminate. Try calling `Optimizer#initiateBlock` first.');
 		}
+		instr && this.currentBlock.terminate(instr);
 		this.#blocks.push(this.currentBlock);
 		delete this.currentBlock;
 	}

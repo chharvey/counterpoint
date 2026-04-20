@@ -7,13 +7,13 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
-import {Instruction} from './Instruction.ts';
+import {Terminator} from './Terminator.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Transfer control to the given label, conditionally if specified. */
-export class GotoConditional extends Instruction {
+export class GotoConditional extends Terminator {
 	/**
 	 * Construct a new Goto object.
 	 * Represents a conditional jump based on a given boolean condition.

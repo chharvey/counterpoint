@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import type {IR} from './index.ts';
 
 
@@ -9,7 +10,7 @@ import type {IR} from './index.ts';
 export class CfgNode {
 	readonly #instructions: IR.Instruction[] = [];
 
-	public terminator?: IR.Instruction;
+	#terminator?: IR.Terminator;
 
 	public constructor(private readonly label: string) {}
 
@@ -21,10 +22,19 @@ export class CfgNode {
 		return [
 			`"${ this.label }":`,
 			...this.#instructions.map((instr) => instr.toString()),
+			...(this.#terminator ? [this.#terminator.toString()] : []),
 		].join('\n\t');
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {
+		if (this.#terminator) {
+			throw new Error('Unreachable instruction.');
+		}
 		this.#instructions.push(instr);
+	}
+
+	public terminate(term: IR.Terminator): void {
+		assert.ok(!this.#terminator, 'Block should not already be terminated.');
+		this.#terminator = term;
 	}
 }
