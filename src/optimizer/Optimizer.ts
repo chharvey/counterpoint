@@ -36,6 +36,10 @@ export class Optimizer {
 		return this.#blocks.flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
 	}
 
+	public newLabel(): string {
+		return `block-${ this.#labelCounter++ }`;
+	}
+
 	public initiateBlock(label: string): void {
 		if (this.currentBlock) {
 			throw new Error('Cannot initiate a new block in an Optimizer with an active block. Try calling `Optimizer#terminateBlock` first.');
@@ -61,10 +65,6 @@ export class Optimizer {
 		};
 		this.pushInstruction(new IR.Decl(local, value));
 		return local;
-	}
-
-	public newLabel(): string {
-		return `block-${ this.#labelCounter++ }`;
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {
@@ -100,6 +100,9 @@ export class Optimizer {
 	}
 
 	public print(): string {
-		return this.#blocks.map((block) => block.toString()).concat(this.currentBlock ? [this.currentBlock.toString()] : []).join('\n');
+		return [
+			...this.#blocks,
+			...(this.currentBlock ? [this.currentBlock] : []),
+		].map((block) => block.toString()).join('\n');
 	}
 }

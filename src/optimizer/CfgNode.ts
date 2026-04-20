@@ -21,7 +21,7 @@ export class CfgNode {
 		return [
 			`"${ this.label }":`,
 			...this.#instructions.map((instr) => instr.toString()),
-		].join('\n');
+		].join('\n\t');
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {

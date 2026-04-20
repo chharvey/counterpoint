@@ -634,16 +634,16 @@ test.suite('ASTNodeDeclaration', () => {
 				%%
 			}`, {codegen: false});
 			stmts.forEach((stmt) => (stmt as AST.ASTNodeDeclarationVariable).lower(opt));
-			return assert.strictEqual(opt.print(), extract_lines`
+			return assert.strictEqual(opt.print(), xjs.String.dedent`
 				"block-0":
-				(DROP (INT.CONST 42))
-				(DECL <int> assignee_a (INT.CONST 42))
-				(DECL <null> assignee_b (NULL.CONST null))
-				(DECL <int> assignee_c (INT.CONST 42))
-				(DROP (GET assignee_c))
-				(DECL <int> assignee_d (GET assignee_c))
-				(DECL <int> assignee_e (GET assignee_c))
-			`.join('\n'));
+					(DROP (INT.CONST 42))
+					(DECL <int> assignee_a (INT.CONST 42))
+					(DECL <null> assignee_b (NULL.CONST null))
+					(DECL <int> assignee_c (INT.CONST 42))
+					(DROP (GET assignee_c))
+					(DECL <int> assignee_d (GET assignee_c))
+					(DECL <int> assignee_e (GET assignee_c))
+			`.trim());
 		});
 	});
 });

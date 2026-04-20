@@ -208,14 +208,14 @@ test.suite('ASTNodeOperation', () => {
 				val mut x: int = 42;
 				val mut y: int = 69;
 				x + { x; x * y; };
-			}`).opt.print(), extract_lines`
+			}`).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <int> x (INT.CONST 42))
-				(DECL <int> y (INT.CONST 69))
-				(DROP (GET x))
-				(DECL <int> $0 (INT.MUL (GET x) (GET y)))
-				(DROP (INT.ADD (GET x) (GET $0)))
-			`.join('\n'));
+					(DECL <int> x (INT.CONST 42))
+					(DECL <int> y (INT.CONST 69))
+					(DROP (GET x))
+					(DECL <int> $0 (INT.MUL (GET x) (GET y)))
+					(DROP (INT.ADD (GET x) (GET $0)))
+			`.trim());
 		});
 
 		test.test('AST.OperationUnary[operator=NOT]', () => {
@@ -223,13 +223,13 @@ test.suite('ASTNodeOperation', () => {
 				!42;
 				val y: int = 42 / 7;
 				!(42 + y);
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DROP (NOT (INT.CONST 42)))
-				(DECL <int> y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
-				(DECL <int> $0 (INT.ADD (INT.CONST 42) (GET y)))
-				(DROP (NOT (GET $0)))
-			`.join('\n'));
+					(DROP (NOT (INT.CONST 42)))
+					(DECL <int> y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
+					(DECL <int> $0 (INT.ADD (INT.CONST 42) (GET y)))
+					(DROP (NOT (GET $0)))
+			`.trim());
 		});
 		test.test('AST.OperationUnary[operator=EMP]', () => {
 			assert.strictEqual(setupScript(`{
@@ -237,14 +237,14 @@ test.suite('ASTNodeOperation', () => {
 				?x;
 				val y: int = x / 7;
 				?(x + y);
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <int> x (INT.CONST 42))
-				(DROP (EMP (GET x)))
-				(DECL <int> y (INT.DIV (GET x) (INT.CONST 7)))
-				(DECL <int> $0 (INT.ADD (GET x) (GET y)))
-				(DROP (EMP (GET $0)))
-			`.join('\n'));
+					(DECL <int> x (INT.CONST 42))
+					(DROP (EMP (GET x)))
+					(DECL <int> y (INT.DIV (GET x) (INT.CONST 7)))
+					(DECL <int> $0 (INT.ADD (GET x) (GET y)))
+					(DROP (EMP (GET $0)))
+			`.trim());
 		});
 		test.test('AST.OperationUnary[operator=NEG]', () => {
 			assert.strictEqual(setupScript(`{
@@ -254,24 +254,24 @@ test.suite('ASTNodeOperation', () => {
 				-(3.0 + y);
 				val mut z: int | float = if false then 42 else 4.2;
 				-z;
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <int> x (INT.CONST 42))
-				(DROP (NEG (GET x)))
-				(DECL <float> y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
-				(DECL <float> $0 (FLOAT.ADD (FLOAT.CONST 3.0) (GET y)))
-				(DROP (NEG (GET $0)))
-				(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
+					(DECL <int> x (INT.CONST 42))
+					(DROP (NEG (GET x)))
+					(DECL <float> y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
+					(DECL <float> $0 (FLOAT.ADD (FLOAT.CONST 3.0) (GET y)))
+					(DROP (NEG (GET $0)))
+					(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
 				"block-1":
-				(DECL <int> $1 (INT.CONST 42))
-				(GOTO "block-3")
+					(DECL <int> $1 (INT.CONST 42))
+					(GOTO "block-3")
 				"block-2":
-				(DECL <float> $2 (FLOAT.CONST 4.2))
-				(GOTO "block-3")
+					(DECL <float> $2 (FLOAT.CONST 4.2))
+					(GOTO "block-3")
 				"block-3":
-				(DECL <anything> z (PHI "block-1"->(GET $1) "block-2"->(GET $2)))
-				(DROP (NEG (GET z)))
-			`.join('\n'));
+					(DECL <anything> z (PHI "block-1"->(GET $1) "block-2"->(GET $2)))
+					(DROP (NEG (GET z)))
+			`.trim());
 		});
 		test.test('AST.OperationUnary[operator=INT | NAT | FLOAT]', () => {
 			assert.strictEqual(setupScript(`{
@@ -288,35 +288,35 @@ test.suite('ASTNodeOperation', () => {
 				float my_int;
 				float my_nat;
 				float my_flt;
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <int> my_int (INT.CONST -7))
-				(DECL <nat> my_nat (NAT.CONST +42))
-				(DECL <float> my_flt (FLOAT.CONST -3.5))
-				(DROP (TOINT (GET my_int)))
-				(DROP (TOINT (GET my_nat)))
-				(DROP (TOINT (GET my_flt)))
-				(DROP (TONAT (GET my_int)))
-				(DROP (TONAT (GET my_nat)))
-				(DROP (TONAT (GET my_flt)))
-				(DROP (TOFLOAT (GET my_int)))
-				(DROP (TOFLOAT (GET my_nat)))
-				(DROP (TOFLOAT (GET my_flt)))
-			`.join('\n'));
+					(DECL <int> my_int (INT.CONST -7))
+					(DECL <nat> my_nat (NAT.CONST +42))
+					(DECL <float> my_flt (FLOAT.CONST -3.5))
+					(DROP (TOINT (GET my_int)))
+					(DROP (TOINT (GET my_nat)))
+					(DROP (TOINT (GET my_flt)))
+					(DROP (TONAT (GET my_int)))
+					(DROP (TONAT (GET my_nat)))
+					(DROP (TONAT (GET my_flt)))
+					(DROP (TOFLOAT (GET my_int)))
+					(DROP (TOFLOAT (GET my_nat)))
+					(DROP (TOFLOAT (GET my_flt)))
+			`.trim());
 		});
 
 		test.test('AST.OperationBinaryArithmetic', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				3 + x^2 / 2^3;
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <int> x (INT.CONST 42))
-				(DECL <int> $0 (INT.EXP (GET x) (INT.CONST 2)))
-				(DECL <int> $1 (INT.EXP (INT.CONST 2) (INT.CONST 3)))
-				(DECL <int> $2 (INT.DIV (GET $0) (GET $1)))
-				(DROP (INT.ADD (INT.CONST 3) (GET $2)))
-			`.join('\n'));
+					(DECL <int> x (INT.CONST 42))
+					(DECL <int> $0 (INT.EXP (GET x) (INT.CONST 2)))
+					(DECL <int> $1 (INT.EXP (INT.CONST 2) (INT.CONST 3)))
+					(DECL <int> $2 (INT.DIV (GET $0) (GET $1)))
+					(DROP (INT.ADD (INT.CONST 3) (GET $2)))
+			`.trim());
 		});
 
 		test.test('AST.OperationBinaryComparative', () => {
@@ -331,21 +331,21 @@ test.suite('ASTNodeOperation', () => {
 				c >= d;
 				a !< d;
 				b !> c;
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <int> a (INT.CONST 10))
-				(DECL <int> b (INT.CONST 100))
-				(DECL <float> c (FLOAT.CONST 0.1))
-				(DECL <float> d (FLOAT.CONST 0.01))
-				(DROP (LT (GET a) (GET b)))
-				(DROP (GT (GET c) (GET d)))
-				(DROP (LE (GET a) (GET b)))
-				(DROP (GE (GET c) (GET d)))
-				(DECL <bool> $0 (LT (GET a) (GET d)))
-				(DROP (NOT (GET $0)))
-				(DECL <bool> $1 (GT (GET b) (GET c)))
-				(DROP (NOT (GET $1)))
-			`.join('\n'));
+					(DECL <int> a (INT.CONST 10))
+					(DECL <int> b (INT.CONST 100))
+					(DECL <float> c (FLOAT.CONST 0.1))
+					(DECL <float> d (FLOAT.CONST 0.01))
+					(DROP (LT (GET a) (GET b)))
+					(DROP (GT (GET c) (GET d)))
+					(DROP (LE (GET a) (GET b)))
+					(DROP (GE (GET c) (GET d)))
+					(DECL <bool> $0 (LT (GET a) (GET d)))
+					(DROP (NOT (GET $0)))
+					(DECL <bool> $1 (GT (GET b) (GET c)))
+					(DROP (NOT (GET $1)))
+			`.trim());
 		});
 
 		test.test('AST.OperationBinaryEquality', () => {
@@ -358,19 +358,19 @@ test.suite('ASTNodeOperation', () => {
 				c ==  d;
 				c !== a;
 				d !=  b;
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <null> a (NULL.CONST null))
-				(DECL <bool> b (BOOL.CONST false))
-				(DECL <int> c (INT.CONST 10))
-				(DECL <float> d (FLOAT.CONST 0.1))
-				(DROP (ID (GET a) (GET b)))
-				(DROP (EQ (GET c) (GET d)))
-				(DECL <bool> $0 (ID (GET c) (GET a)))
-				(DROP (NOT (GET $0)))
-				(DECL <bool> $1 (EQ (GET d) (GET b)))
-				(DROP (NOT (GET $1)))
-			`.join('\n'));
+					(DECL <null> a (NULL.CONST null))
+					(DECL <bool> b (BOOL.CONST false))
+					(DECL <int> c (INT.CONST 10))
+					(DECL <float> d (FLOAT.CONST 0.1))
+					(DROP (ID (GET a) (GET b)))
+					(DROP (EQ (GET c) (GET d)))
+					(DECL <bool> $0 (ID (GET c) (GET a)))
+					(DROP (NOT (GET $0)))
+					(DECL <bool> $1 (EQ (GET d) (GET b)))
+					(DROP (NOT (GET $1)))
+			`.trim());
 		});
 
 		test.suite('AST.OperationBinaryLogical', () => {
@@ -380,30 +380,30 @@ test.suite('ASTNodeOperation', () => {
 					val mut b: bool  = false;
 					a && b;
 					!a && !b;
-				}`, {codegen: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <null> a (NULL.CONST null))
-					(DECL <bool> b (BOOL.CONST false))
-					(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
+						(DECL <null> a (NULL.CONST null))
+						(DECL <bool> b (BOOL.CONST false))
+						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
 					"block-1":
-					(DECL <bool> $0 (GET b))
-					(GOTO "block-3")
+						(DECL <bool> $0 (GET b))
+						(GOTO "block-3")
 					"block-2":
-					(DECL <null> $1 (GET a))
-					(GOTO "block-3")
+						(DECL <null> $1 (GET a))
+						(GOTO "block-3")
 					"block-3":
-					(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-					(DECL <bool> $2 (NOT (GET a)))
-					(GOTO.IF (TOBOOL (GET $2)) "block-4" "block-5")
+						(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
+						(DECL <bool> $2 (NOT (GET a)))
+						(GOTO.IF (TOBOOL (GET $2)) "block-4" "block-5")
 					"block-4":
-					(DECL <bool> $3 (NOT (GET b)))
-					(GOTO "block-6")
+						(DECL <bool> $3 (NOT (GET b)))
+						(GOTO "block-6")
 					"block-5":
-					(DECL <bool> $4 (GET $2))
-					(GOTO "block-6")
+						(DECL <bool> $4 (GET $2))
+						(GOTO "block-6")
 					"block-6":
-					(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $4)))
-				`.join('\n'));
+						(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $4)))
+				`.trim());
 			});
 			test.test('[operator=OR]', () => {
 				assert.strictEqual(setupScript(`{
@@ -411,73 +411,73 @@ test.suite('ASTNodeOperation', () => {
 					val mut d: float = 0.1;
 					c || d;
 					-c + 1 || 1.0 - d;
-				}`, {codegen: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <int> c (INT.CONST 10))
-					(DECL <float> d (FLOAT.CONST 0.1))
-					(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
+						(DECL <int> c (INT.CONST 10))
+						(DECL <float> d (FLOAT.CONST 0.1))
+						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
 					"block-1":
-					(DECL <int> $0 (GET c))
-					(GOTO "block-3")
+						(DECL <int> $0 (GET c))
+						(GOTO "block-3")
 					"block-2":
-					(DECL <float> $1 (GET d))
-					(GOTO "block-3")
+						(DECL <float> $1 (GET d))
+						(GOTO "block-3")
 					"block-3":
-					(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-					(DECL <int> $2 (NEG (GET c)))
-					(DECL <int> $3 (INT.ADD (GET $2) (INT.CONST 1)))
-					(GOTO.IF (TOBOOL (GET $3)) "block-4" "block-5")
+						(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
+						(DECL <int> $2 (NEG (GET c)))
+						(DECL <int> $3 (INT.ADD (GET $2) (INT.CONST 1)))
+						(GOTO.IF (TOBOOL (GET $3)) "block-4" "block-5")
 					"block-4":
-					(DECL <int> $4 (GET $3))
-					(GOTO "block-6")
+						(DECL <int> $4 (GET $3))
+						(GOTO "block-6")
 					"block-5":
-					(DECL <float> $5 (FLOAT.SUB (FLOAT.CONST 1.0) (GET d)))
-					(GOTO "block-6")
+						(DECL <float> $5 (FLOAT.SUB (FLOAT.CONST 1.0) (GET d)))
+						(GOTO "block-6")
 					"block-6":
-					(DROP (PHI "block-4"->(GET $4) "block-5"->(GET $5)))
-				`.join('\n'));
+						(DROP (PHI "block-4"->(GET $4) "block-5"->(GET $5)))
+				`.trim());
 			});
 			test.test('[operator=NAND]', () => {
 				assert.strictEqual(setupScript(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					a !& b;
-				}`, {codegen: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <null> a (NULL.CONST null))
-					(DECL <bool> b (BOOL.CONST false))
-					(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
+						(DECL <null> a (NULL.CONST null))
+						(DECL <bool> b (BOOL.CONST false))
+						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
 					"block-1":
-					(DECL <bool> $0 (GET b))
-					(GOTO "block-3")
+						(DECL <bool> $0 (GET b))
+						(GOTO "block-3")
 					"block-2":
-					(DECL <null> $1 (GET a))
-					(GOTO "block-3")
+						(DECL <null> $1 (GET a))
+						(GOTO "block-3")
 					"block-3":
-					(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-					(DROP (NOT (GET $2)))
-				`.join('\n'));
+						(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
+						(DROP (NOT (GET $2)))
+				`.trim());
 			});
 			test.test('[operator=NOR]', () => {
 				assert.strictEqual(setupScript(`{
 					val mut c: int   = 10;
 					val mut d: float = 0.1;
 					c !| d;
-				}`, {codegen: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <int> c (INT.CONST 10))
-					(DECL <float> d (FLOAT.CONST 0.1))
-					(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
+						(DECL <int> c (INT.CONST 10))
+						(DECL <float> d (FLOAT.CONST 0.1))
+						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
 					"block-1":
-					(DECL <int> $0 (GET c))
-					(GOTO "block-3")
+						(DECL <int> $0 (GET c))
+						(GOTO "block-3")
 					"block-2":
-					(DECL <float> $1 (GET d))
-					(GOTO "block-3")
+						(DECL <float> $1 (GET d))
+						(GOTO "block-3")
 					"block-3":
-					(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-					(DROP (NOT (GET $2)))
-				`.join('\n'));
+						(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
+						(DROP (NOT (GET $2)))
+				`.trim());
 			});
 		});
 		test.test('AST.OperationTernary', () => {
@@ -487,32 +487,32 @@ test.suite('ASTNodeOperation', () => {
 				val mut z: float = 0.2;
 				if x then y else z;
 				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
-			}`, {codegen: false}).opt.print(), extract_lines`
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				(DECL <bool> x (BOOL.CONST false))
-				(DECL <float> y (FLOAT.CONST 0.5))
-				(DECL <float> z (FLOAT.CONST 0.2))
-				(GOTO.IF (GET x) "block-1" "block-2")
+					(DECL <bool> x (BOOL.CONST false))
+					(DECL <float> y (FLOAT.CONST 0.5))
+					(DECL <float> z (FLOAT.CONST 0.2))
+					(GOTO.IF (GET x) "block-1" "block-2")
 				"block-1":
-				(DECL <float> $0 (GET y))
-				(GOTO "block-3")
+					(DECL <float> $0 (GET y))
+					(GOTO "block-3")
 				"block-2":
-				(DECL <float> $1 (GET z))
-				(GOTO "block-3")
+					(DECL <float> $1 (GET z))
+					(GOTO "block-3")
 				"block-3":
-				(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-				(GOTO.IF (LT (GET y) (GET z)) "block-4" "block-5")
+					(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
+					(GOTO.IF (LT (GET y) (GET z)) "block-4" "block-5")
 				"block-4":
-				(DECL <float> $2 (FLOAT.MUL (GET y) (FLOAT.CONST 2.0)))
-				(DECL <float> $3 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
-				(GOTO "block-6")
+					(DECL <float> $2 (FLOAT.MUL (GET y) (FLOAT.CONST 2.0)))
+					(DECL <float> $3 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
+					(GOTO "block-6")
 				"block-5":
-				(DECL <float> $4 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(DECL <float> $5 (FLOAT.ADD (GET $4) (FLOAT.CONST 0.02)))
-				(GOTO "block-6")
+					(DECL <float> $4 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+					(DECL <float> $5 (FLOAT.ADD (GET $4) (FLOAT.CONST 0.02)))
+					(GOTO "block-6")
 				"block-6":
-				(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $5)))
-			`.join('\n'));
+					(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $5)))
+			`.trim());
 		});
 	});
 
