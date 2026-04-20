@@ -3,18 +3,17 @@ import type {Builder} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
-import type {Label} from './Label.ts';
 
 
 
 /** Transfer control to the given label, conditionally if specified. */
 export class Goto extends Instruction {
-	public constructor(private readonly label: Label) {
+	public constructor(private readonly label: string) {
 		super(OpCode.GOTO);
 	}
 
 	public override toString(): string {
-		return super.toString(`"${ this.label.name }"`);
+		return super.toString(`"${ this.label }"`);
 	}
 
 	@memoizeMethod

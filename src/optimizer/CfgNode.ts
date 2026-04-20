@@ -11,7 +11,7 @@ export class CfgNode {
 
 	public terminator?: IR.Instruction;
 
-	public constructor(private readonly label: IR.Label) {}
+	public constructor(private readonly label: string) {}
 
 	public get instructions(): IR.Instruction[] {
 		return [...this.#instructions];
@@ -19,7 +19,7 @@ export class CfgNode {
 
 	public toString(): string {
 		return [
-			this.label.toString(),
+			`"${ this.label }":`,
 			...this.#instructions.map((instr) => instr.toString()),
 		].join('\n');
 	}

@@ -24,9 +24,8 @@ test.suite('Opcode', () => {
 	test.suite('#codegen', () => {
 		test.test('is not yet supported.', () => {
 			xjs.Array.forEachAggregated([
-				new IR.Label('label1'),
-				new IR.Goto(new IR.Label('label2')),
-				new IR.GotoConditional(new IR.Const(VALUE.NULL), new IR.Label('label3'), new IR.Label('label4')),
+				new IR.Goto('label2'),
+				new IR.GotoConditional(new IR.Const(VALUE.NULL), 'label3', 'label4'),
 			], (instr) => assert.throws(() => instr.codegen(new Builder()), /not yet supported/, instr.toString()));
 		});
 

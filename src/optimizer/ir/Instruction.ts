@@ -11,7 +11,6 @@ import {Opcode} from './Opcode.ts';
  * - Set
  * - CollectionDynamicSet
  * - CollectionDynamicCopy
- * - Label
  * - Goto
  * - GotoConditional
  */

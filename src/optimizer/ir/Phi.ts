@@ -8,7 +8,6 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {Label} from './index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 
@@ -19,14 +18,14 @@ import {Value} from './Value.ts';
  * @see https://en.wikipedia.org/wiki/Static_single-assignment_form
  */
 export class Phi extends Value {
-	private readonly labelThen: Label;
-	private readonly labelElse: Label;
+	private readonly labelThen: string;
+	private readonly labelElse: string;
 	private readonly valueThen: Value;
 	private readonly valueElse: Value;
 
 	public constructor(
-		[then_label, then_value]: readonly [Label, Value],
-		[else_label, else_value]: readonly [Label, Value],
+		[then_label, then_value]: readonly [string, Value],
+		[else_label, else_value]: readonly [string, Value],
 	) {
 		super(OpCode.PHI, then_value.type.union(else_value.type));
 		this.labelThen = then_label;
@@ -37,8 +36,8 @@ export class Phi extends Value {
 
 	public override toString(): string {
 		return super.toString(
-			`"${ this.labelThen.name }"->${ this.valueThen }`,
-			`"${ this.labelElse.name }"->${ this.valueElse }`,
+			`"${ this.labelThen }"->${ this.valueThen }`,
+			`"${ this.labelElse }"->${ this.valueElse }`,
 		);
 	}
 

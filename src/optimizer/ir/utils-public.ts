@@ -7,7 +7,6 @@ import {
 	type Value,
 	Get,
 	Phi,
-	type Label,
 	Goto,
 	GotoConditional,
 } from './index.ts';
@@ -105,9 +104,9 @@ export function conditional_expression(
 	consequent:  () => Value,
 	alternative: () => Value,
 ): Phi {
-	const label_then:  Label = optimizer.newLabel();
-	const label_else:  Label = optimizer.newLabel();
-	const label_endif: Label = optimizer.newLabel();
+	const label_then:  string = optimizer.newLabel();
+	const label_else:  string = optimizer.newLabel();
+	const label_endif: string = optimizer.newLabel();
 
 	optimizer.pushInstruction(new GotoConditional(condition.call(null), label_then, label_else));
 	optimizer.terminateBlock();

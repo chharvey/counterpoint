@@ -102,9 +102,6 @@ export enum OpCode {
 
 	GOTO,
 	GOTO_IF,
-
-	/** @deprecated --- we’ll convert these to blocks */
-	UNDEFINED,
 }
 
 
