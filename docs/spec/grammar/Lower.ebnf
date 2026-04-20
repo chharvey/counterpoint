@@ -407,7 +407,10 @@ Lower(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
 Lower(SemanticBlock block) := block.children.map(Lower);
 
-Lower(SemanticGoal goal) := Lower(goal.0);
+Lower(SemanticGoal goal) := [
+	"start":
+	`Lower(goal.0)`
+];
 
 
 

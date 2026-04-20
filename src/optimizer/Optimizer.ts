@@ -24,6 +24,10 @@ export type Temp = {
  * the CFG represents execution order. The CFG assumes the AST is already validated.
  */
 export class Optimizer {
+	public constructor() {
+		this.currentBlock && (this.currentBlock.label = this.newLabel()); // HACK: temporary
+	}
+
 	#tempCounter:  bigint = 0n;
 	#labelCounter: bigint = 0n;
 
@@ -100,6 +104,6 @@ export class Optimizer {
 	}
 
 	public print(): string {
-		return this.instructions.map((instr) => instr.toString()).join('\n');
+		return this.#blocks.map((block) => block.toString()).concat(this.currentBlock ? [this.currentBlock.toString()] : []).join('\n');
 	}
 }

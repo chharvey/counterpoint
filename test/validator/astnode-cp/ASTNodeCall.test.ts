@@ -270,6 +270,7 @@ test.suite('ASTNodeCall', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DROP (LIST.NEW))
 				(DECL <List> $0 (LIST.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))
@@ -321,6 +322,7 @@ test.suite('ASTNodeCall', () => {
 			assert.strictEqual(setupScript(`{
 				${ DICT_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DROP (DICT.NEW))
 				(DECL <Dict> $0 (DICT.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))
@@ -422,6 +424,7 @@ test.suite('ASTNodeCall', () => {
 			assert.strictEqual(setupScript(`{
 				${ SET_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DROP (SET.NEW))
 				(DECL <Set> $0 (SET.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))
@@ -473,6 +476,7 @@ test.suite('ASTNodeCall', () => {
 			assert.strictEqual(setupScript(`{
 				${ MAP_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DROP (MAP.NEW))
 				(DECL <Map> $0 (MAP.NEW))
 				(DECL <tuple> $1 (TUPLE.NEW))

@@ -63,6 +63,7 @@ test.suite('ASTNodeExpression', () => {
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -79,6 +80,7 @@ test.suite('ASTNodeExpression', () => {
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DECL <bool> x (BOOL.CONST false))
 				(DECL <int> y (INT.CONST 5))
 				(DECL <float> z (FLOAT.CONST 0.2))
@@ -92,6 +94,7 @@ test.suite('ASTNodeExpression', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -102,6 +105,7 @@ test.suite('ASTNodeExpression', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -112,6 +116,7 @@ test.suite('ASTNodeExpression', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -123,6 +128,7 @@ test.suite('ASTNodeExpression', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
 				}`, {codegen: false}).opt.print(), extract_lines`
+					"block-0":
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
@@ -133,6 +139,7 @@ test.suite('ASTNodeExpression', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
 				}`, {codegen: false}).opt.print(), extract_lines`
+					"block-0":
 					(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
 					(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
 					(DECL <List> $2 (LIST.NEW (INT.CONST 12)))
@@ -157,6 +164,7 @@ test.suite('ASTNodeExpression', () => {
 					y * 2;
 				} + y;
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DECL <int> x (INT.CONST 42))
 				(SET x (INT.ADD (GET x) (INT.CONST 2)))
 				(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))

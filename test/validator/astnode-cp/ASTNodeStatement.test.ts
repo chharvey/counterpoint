@@ -637,6 +637,7 @@ test.suite('ASTNodeStatement', () => {
 			(stmts[3] as AST.ASTNodeStatementExpression).lower(opt);
 			assert.strictEqual(opt.instructions.length, 2);
 			return assert.strictEqual(opt.print(), extract_lines`
+				"block-0":
 				(DROP (GET x))
 				(DROP (INT.CONST 42))
 			`.join('\n'));
@@ -649,6 +650,7 @@ test.suite('ASTNodeStatement', () => {
 			}`, {lower: false});
 			(stmts[1] as AST.ASTNodeStatementClaim).lower(opt);
 			return assert.strictEqual(opt.print(), extract_lines`
+				"block-0":
 				(DROP (GET x))
 			`.join('\n'));
 		});
@@ -663,6 +665,7 @@ test.suite('ASTNodeStatement', () => {
 				}`, {lower: false});
 				stmts.slice(1).forEach((stmt) => (stmt as AST.ASTNodeStatementReassignment).lower(opt));
 				return assert.strictEqual(opt.print(), extract_lines`
+					"block-0":
 					(SET x (INT.CONST 43))
 					(SET x (INT.CONST 44))
 					(SET x (INT.CONST -42))
@@ -681,6 +684,7 @@ test.suite('ASTNodeStatement', () => {
 					set my_set.[accessor] = true;
 					set my_map.[accessor] = 84;
 				}`, {codegen: false}).opt.print(), extract_lines`
+					"block-0":
 					(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
 					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
@@ -709,18 +713,19 @@ test.suite('ASTNodeStatement', () => {
 						3.3;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(GOTO.IF (BOOL.CONST true) "block-0" "block-1")
 					"block-0":
+					(GOTO.IF (BOOL.CONST true) "block-1" "block-2")
+					"block-1":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
 					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
 					(DROP (FLOAT.CONST 2.2))
-					(GOTO "block-2")
-					"block-1":
+					(GOTO "block-3")
+					"block-2":
 					(DECL <int> $1 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
 					(DROP (INT.DIV (INT.CONST 6) (GET $1)))
 					(DROP (FLOAT.CONST 3.3))
-					(GOTO "block-2")
-					"block-2":
+					(GOTO "block-3")
+					"block-3":
 				`.join('\n'));
 			});
 			test.test('with no alternative.', () => {
@@ -730,13 +735,14 @@ test.suite('ASTNodeStatement', () => {
 						2.2;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(GOTO.IF (BOOL.CONST false) "block-0" "block-1")
 					"block-0":
+					(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
+					"block-1":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
 					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
 					(DROP (FLOAT.CONST 2.2))
-					(GOTO "block-1")
-					"block-1":
+					(GOTO "block-2")
+					"block-2":
 				`.join('\n'));
 			});
 			test.test('negates the condition for `unless` statements.', () => {
@@ -746,13 +752,14 @@ test.suite('ASTNodeStatement', () => {
 						2.2;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(GOTO.IF (NOT (BOOL.CONST false)) "block-0" "block-1")
 					"block-0":
+					(GOTO.IF (NOT (BOOL.CONST false)) "block-1" "block-2")
+					"block-1":
 					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
 					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
 					(DROP (FLOAT.CONST 2.2))
-					(GOTO "block-1")
-					"block-1":
+					(GOTO "block-2")
+					"block-2":
 				`.join('\n'));
 			});
 			test.test('SSA.', () => {
@@ -768,20 +775,21 @@ test.suite('ASTNodeStatement', () => {
 					};
 					x;
 				}`, {codegen: false}).opt.print(), extract_lines`
+					"block-0":
 					(DECL <bool> unknown_cond (BOOL.CONST false))
 					(DECL <int> x (INT.CONST 42))
-					(GOTO.IF (GET unknown_cond) "block-0" "block-1")
-					"block-0":
+					(GOTO.IF (GET unknown_cond) "block-1" "block-2")
+					"block-1":
 					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
 					(SET x (INT.MUL (GET x) (GET $0)))
 					(DECL <float> y (FLOAT.CONST 2.2))
-					(GOTO "block-2")
-					"block-1":
+					(GOTO "block-3")
+					"block-2":
 					(DECL <int> $1 (INT.DIV (INT.CONST 6) (INT.CONST 2)))
 					(SET x (INT.SUB (GET x) (GET $1)))
 					(DECL <float> y (FLOAT.CONST 3.3))
-					(GOTO "block-2")
-					"block-2":
+					(GOTO "block-3")
+					"block-3":
 					(DROP (GET x))
 				`.join('\n'));
 			});
@@ -797,23 +805,24 @@ test.suite('ASTNodeStatement', () => {
 						30;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
+					"block-0":
 					(DECL <null> cond (NULL.CONST null))
 					(SET cond (BOOL.CONST true))
-					(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-0" "block-1")
-					"block-0":
-					(DROP (INT.CONST 10))
-					(GOTO "block-2")
+					(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":
-					(GOTO.IF (EQ (GET cond) (BOOL.CONST false)) "block-3" "block-4")
-					"block-3":
-					(DROP (INT.CONST 20))
-					(GOTO "block-5")
-					"block-4":
-					(DROP (INT.CONST 30))
-					(GOTO "block-5")
-					"block-5":
-					(GOTO "block-2")
+					(DROP (INT.CONST 10))
+					(GOTO "block-3")
 					"block-2":
+					(GOTO.IF (EQ (GET cond) (BOOL.CONST false)) "block-4" "block-5")
+					"block-4":
+					(DROP (INT.CONST 20))
+					(GOTO "block-6")
+					"block-5":
+					(DROP (INT.CONST 30))
+					(GOTO "block-6")
+					"block-6":
+					(GOTO "block-3")
+					"block-3":
 				`.join('\n'));
 			});
 		});
@@ -827,15 +836,16 @@ test.suite('ASTNodeStatement', () => {
 						4.2;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <bool> cond (BOOL.CONST false))
-					(GOTO "block-0")
 					"block-0":
-					(GOTO.IF (GET cond) "block-1" "block-2")
+					(DECL <bool> cond (BOOL.CONST false))
+					(GOTO "block-1")
 					"block-1":
+					(GOTO.IF (GET cond) "block-2" "block-3")
+					"block-2":
 					(DROP (INT.CONST 42))
 					(DROP (FLOAT.CONST 4.2))
-					(GOTO "block-0")
-					"block-2":
+					(GOTO "block-1")
+					"block-3":
 				`.join('\n'));
 			});
 			test.test('negates the condition for `until` statements.', () => {
@@ -845,14 +855,15 @@ test.suite('ASTNodeStatement', () => {
 						42;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <bool> cond (BOOL.CONST false))
-					(GOTO "block-0")
 					"block-0":
-					(GOTO.IF (NOT (GET cond)) "block-1" "block-2")
+					(DECL <bool> cond (BOOL.CONST false))
+					(GOTO "block-1")
 					"block-1":
-					(DROP (INT.CONST 42))
-					(GOTO "block-0")
+					(GOTO.IF (NOT (GET cond)) "block-2" "block-3")
 					"block-2":
+					(DROP (INT.CONST 42))
+					(GOTO "block-1")
+					"block-3":
 				`.join('\n'));
 			});
 			test.test('bottom-tested conditions.', () => {
@@ -866,22 +877,23 @@ test.suite('ASTNodeStatement', () => {
 						42;
 					} until cond;
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <bool> cond (BOOL.CONST false))
-					(GOTO "block-0")
 					"block-0":
-					(DROP (INT.CONST 42))
-					(DROP (FLOAT.CONST 4.2))
+					(DECL <bool> cond (BOOL.CONST false))
 					(GOTO "block-1")
 					"block-1":
-					(GOTO.IF (GET cond) "block-0" "block-2")
-					"block-2":
-					(GOTO "block-3")
-					"block-3":
 					(DROP (INT.CONST 42))
+					(DROP (FLOAT.CONST 4.2))
+					(GOTO "block-2")
+					"block-2":
+					(GOTO.IF (GET cond) "block-1" "block-3")
+					"block-3":
 					(GOTO "block-4")
 					"block-4":
-					(GOTO.IF (NOT (GET cond)) "block-3" "block-5")
+					(DROP (INT.CONST 42))
+					(GOTO "block-5")
 					"block-5":
+					(GOTO.IF (NOT (GET cond)) "block-4" "block-6")
+					"block-6":
 				`.join('\n'));
 			});
 		});
@@ -895,27 +907,28 @@ test.suite('ASTNodeStatement', () => {
 					null;
 				};
 			}`, {codegen: false}).opt.print(), extract_lines`
+				"block-0":
 				(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
 				(DECL <nat> $1 (NAT.CONST +0))
-				(GOTO "block-0")
-				"block-0":
-				(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-1" "block-2")
+				(GOTO "block-1")
 				"block-1":
+				(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-2" "block-3")
+				"block-2":
 				(DECL <int> item (LIST.GET (GET $0) (GET $1)))
 				(DROP (INT.ADD (GET item) (INT.CONST 5)))
 				(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-				(GOTO "block-0")
-				"block-2":
+				(GOTO "block-1")
+				"block-3":
 				(DECL <List> $2 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
 				(DECL <nat> $3 (NAT.CONST +0))
-				(GOTO "block-3")
-				"block-3":
-				(GOTO.IF (LT (GET $3) (LIST.COUNT (GET $2))) "block-4" "block-5")
+				(GOTO "block-4")
 				"block-4":
+				(GOTO.IF (LT (GET $3) (LIST.COUNT (GET $2))) "block-5" "block-6")
+				"block-5":
 				(DROP (NULL.CONST null))
 				(SET $3 (NAT.ADD (GET $3) (NAT.CONST +1)))
-				(GOTO "block-3")
-				"block-5":
+				(GOTO "block-4")
+				"block-6":
 			`.join('\n'));
 		});
 
@@ -937,32 +950,33 @@ test.suite('ASTNodeStatement', () => {
 						30;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(GOTO "block-0")
 					"block-0":
-					(GOTO.IF (BOOL.CONST true) "block-1" "block-2")
+					(GOTO "block-1")
 					"block-1":
-					(DROP (INT.CONST 41))
-					(GOTO "block-2")
-					(DROP (INT.CONST 42))
-					(GOTO "block-0")
-					(DROP (INT.CONST 43))
-					(GOTO "block-0")
+					(GOTO.IF (BOOL.CONST true) "block-2" "block-3")
 					"block-2":
+					(DROP (INT.CONST 41))
+					(GOTO "block-3")
+					(DROP (INT.CONST 42))
+					(GOTO "block-1")
+					(DROP (INT.CONST 43))
+					(GOTO "block-1")
+					"block-3":
 					(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
 					(DECL <nat> $1 (NAT.CONST +0))
-					(GOTO "block-3")
-					"block-3":
-					(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-4" "block-5")
+					(GOTO "block-4")
 					"block-4":
+					(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-5" "block-6")
+					"block-5":
 					(DECL <str> word (LIST.GET (GET $0) (GET $1)))
 					(DROP (INT.CONST 10))
-					(GOTO "block-3")
+					(GOTO "block-4")
 					(DROP (INT.CONST 20))
-					(GOTO "block-5")
+					(GOTO "block-6")
 					(DROP (INT.CONST 30))
 					(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-					(GOTO "block-3")
-					"block-5":
+					(GOTO "block-4")
+					"block-6":
 				`.join('\n'));
 			});
 			test.test('nested loops.', () => {
@@ -983,31 +997,32 @@ test.suite('ASTNodeStatement', () => {
 						70;
 					};
 				}`, {codegen: false}).opt.print(), extract_lines`
-					(GOTO "block-0")
 					"block-0":
-					(GOTO.IF (BOOL.CONST true) "block-1" "block-2")
+					(GOTO "block-1")
 					"block-1":
+					(GOTO.IF (BOOL.CONST true) "block-2" "block-3")
+					"block-2":
 					(DROP (INT.CONST 10))
-					(GOTO "block-2")
+					(GOTO "block-3")
 					(DROP (INT.CONST 20))
-					(GOTO.IF (BOOL.CONST true) "block-3" "block-4")
-					"block-3":
+					(GOTO.IF (BOOL.CONST true) "block-4" "block-5")
+					"block-4":
 					(DROP (INT.CONST 30))
+					(GOTO "block-6")
+					"block-6":
+					(GOTO.IF (BOOL.CONST true) "block-7" "block-8")
+					"block-7":
+					(DROP (INT.CONST 40))
+					(GOTO "block-6")
+					(DROP (INT.CONST 50))
+					(GOTO "block-6")
+					"block-8":
+					(DROP (INT.CONST 60))
 					(GOTO "block-5")
 					"block-5":
-					(GOTO.IF (BOOL.CONST true) "block-6" "block-7")
-					"block-6":
-					(DROP (INT.CONST 40))
-					(GOTO "block-5")
-					(DROP (INT.CONST 50))
-					(GOTO "block-5")
-					"block-7":
-					(DROP (INT.CONST 60))
-					(GOTO "block-4")
-					"block-4":
 					(DROP (INT.CONST 70))
-					(GOTO "block-0")
-					"block-2":
+					(GOTO "block-1")
+					"block-3":
 				`.join('\n'));
 			});
 		});
