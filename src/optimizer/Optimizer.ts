@@ -24,14 +24,10 @@ export type Temp = {
  * the CFG represents execution order. The CFG assumes the AST is already validated.
  */
 export class Optimizer {
-	public constructor() {
-		this.currentBlock && (this.currentBlock.label = this.newLabel()); // HACK: temporary
-	}
-
 	#tempCounter:  bigint = 0n;
 	#labelCounter: bigint = 0n;
 
-	private currentBlock?: CfgNode = new CfgNode();
+	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 
 	readonly #blocks: CfgNode[] = [];
 
@@ -40,11 +36,11 @@ export class Optimizer {
 		return this.#blocks.flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
 	}
 
-	public initiateBlock(): void {
+	public initiateBlock(label: IR.Label): void {
 		if (this.currentBlock) {
 			throw new Error('Cannot initiate a new block in an Optimizer with an active block. Try calling `Optimizer#terminateBlock` first.');
 		}
-		this.currentBlock = new CfgNode();
+		this.currentBlock = new CfgNode(label);
 	}
 
 	public terminateBlock(): void {
@@ -74,6 +70,9 @@ export class Optimizer {
 	public pushInstruction(instr: IR.Instruction): void {
 		if (!this.currentBlock) {
 			throw new Error('Optimizer does not have an active block to push to. Try calling `Optimizer#initiateBlock` first.');
+		}
+		if (instr instanceof IR.Label) {
+			throw new Error('Labels as instructions are deprecated.');
 		}
 		this.currentBlock.pushInstruction(instr);
 	}

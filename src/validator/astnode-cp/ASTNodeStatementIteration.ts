@@ -106,8 +106,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
 		optimizer.terminateBlock();
 
-		optimizer.initiateBlock();
-		optimizer.pushInstruction(this.labels.while!);
+		optimizer.initiateBlock(this.labels.while!);
 		optimizer.pushInstruction(new IR.GotoConditional(new IR.Binop(
 			IR.OpCode.LT,
 			get_index,
@@ -116,8 +115,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		), this.labels.do!, this.labels.endwhile!));
 		optimizer.terminateBlock();
 
-		optimizer.initiateBlock();
-		optimizer.pushInstruction(this.labels.do!);
+		optimizer.initiateBlock(this.labels.do!);
 		if (this.assignee) {
 			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
@@ -131,7 +129,6 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
 		optimizer.terminateBlock();
 
-		optimizer.initiateBlock();
-		optimizer.pushInstruction(this.labels.endwhile!);
+		optimizer.initiateBlock(this.labels.endwhile!);
 	}
 }

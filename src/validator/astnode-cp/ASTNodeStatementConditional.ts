@@ -79,21 +79,18 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		optimizer.pushInstruction(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
 		optimizer.terminateBlock();
 
-		optimizer.initiateBlock();
-		optimizer.pushInstruction(label_then);
+		optimizer.initiateBlock(label_then);
 		this.consequent.lower(optimizer);
 		optimizer.pushInstruction(new IR.Goto(label_endif));
 		optimizer.terminateBlock();
 
 		if (this.alternative) {
-			optimizer.initiateBlock();
-			optimizer.pushInstruction(label_else);
+			optimizer.initiateBlock(label_else);
 			this.alternative.lower(optimizer);
 			optimizer.pushInstruction(new IR.Goto(label_endif));
 			optimizer.terminateBlock();
 		}
 
-		optimizer.initiateBlock();
-		optimizer.pushInstruction(label_endif);
+		optimizer.initiateBlock(label_endif);
 	}
 }

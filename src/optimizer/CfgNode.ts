@@ -7,18 +7,21 @@ import type {IR} from './index.ts';
  * Also known as a “block” (but not the same as a “statement block”).
  */
 export class CfgNode {
-	public label?: IR.Label; // HACK: temporary
-
 	readonly #instructions: IR.Instruction[] = [];
 
 	public terminator?: IR.Instruction;
+
+	public constructor(private readonly label: IR.Label) {}
 
 	public get instructions(): IR.Instruction[] {
 		return [...this.#instructions];
 	}
 
 	public toString(): string {
-		return (this.label ? [this.label.toString()] : []).concat(this.#instructions.map((instr) => instr.toString())).join('\n');
+		return [
+			this.label.toString(),
+			...this.#instructions.map((instr) => instr.toString()),
+		].join('\n');
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {
