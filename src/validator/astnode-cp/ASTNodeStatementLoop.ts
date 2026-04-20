@@ -67,26 +67,40 @@ export class ASTNodeStatementLoop extends StatementBreakable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		this.labelWhile    = optimizer.newLabel();
-		this.labelDo       = optimizer.newLabel();
-		this.labelEndwhile = optimizer.newLabel();
-
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.until) {
 			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
 		}
 
-		optimizer.pushInstruction(this.labels.while!);
+		this.labelWhile    = optimizer.newLabel();
+		this.labelDo       = optimizer.newLabel();
+		this.labelEndwhile = optimizer.newLabel();
+
+		const block_condition = (): void => {
+			optimizer.pushInstruction(this.labels.while!);
+			optimizer.pushInstruction(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
+		};
+
+		const block_loop = (): void => {
+			optimizer.pushInstruction(this.labels.do!);
+			this.block.lower(optimizer);
+			optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+		};
+
 		if (this.doFirst) {
-			optimizer.pushInstruction(this.labels.do!);
-			this.block.lower(optimizer);
-			optimizer.pushInstruction(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
+			[this.labelDo, this.labelWhile] = [this.labels.while!, this.labels.do!];
+			optimizer.pushInstruction(new IR.Goto(this.labels.do!));
+
+			block_loop();
+			block_condition();
 		} else {
-			optimizer.pushInstruction(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
-			optimizer.pushInstruction(this.labels.do!);
-			this.block.lower(optimizer);
+			optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+
+			block_condition();
+			block_loop();
 		}
-		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+
+		// merge block
 		optimizer.pushInstruction(this.labels.endwhile!);
 	}
 }

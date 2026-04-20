@@ -115,6 +115,7 @@ export function conditional_expression(
 	optimizer.pushInstruction(new Goto(label_endif));
 	optimizer.pushInstruction(label_else);
 	const result_else: Temp = optimizer.newTemp(alternative.call(null));
+	optimizer.pushInstruction(new Goto(label_endif));
 	optimizer.pushInstruction(label_endif);
 	return new Phi(
 		[label_then, new Get(result_then)],

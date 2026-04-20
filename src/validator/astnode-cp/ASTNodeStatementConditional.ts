@@ -67,23 +67,31 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		const label_then:  IR.Label = optimizer.newLabel();
-		const label_else:  IR.Label = optimizer.newLabel();
-		const label_endif: IR.Label = optimizer.newLabel();
-
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.unless) {
 			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
 		}
 
+		const label_then:  IR.Label = optimizer.newLabel();
+		const label_else:  IR.Label = optimizer.newLabel();
+		const label_endif: IR.Label = this.alternative ? optimizer.newLabel() : label_else;
+
+		// condition block
 		optimizer.pushInstruction(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
+
+		// then block
 		optimizer.pushInstruction(label_then);
 		this.consequent.lower(optimizer);
+		optimizer.pushInstruction(new IR.Goto(label_endif));
+
+		// else block
 		if (this.alternative) {
-			optimizer.pushInstruction(new IR.Goto(label_endif));
 			optimizer.pushInstruction(label_else);
 			this.alternative.lower(optimizer);
+			optimizer.pushInstruction(new IR.Goto(label_endif));
 		}
+
+		// merge block
 		optimizer.pushInstruction(label_endif);
 	}
 }

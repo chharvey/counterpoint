@@ -308,12 +308,14 @@ Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression Semantic
 	goto_if `Lower(SemanticExpression)`: "then"/"endif".
 	"then":
 	...`Lower(SemanticBlock)`
+	goto "endif".
 	"endif":
 ];
 Lower(SemanticStatementConditional[unless=true] ::= SemanticExpression SemanticBlock) := [
 	goto_if (NOT `Lower(SemanticExpression)`): "then"/"endif".
 	"then":
 	...`Lower(SemanticBlock)`
+	goto "endif".
 	"endif":
 ];
 Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock__0 SemanticBlock__1) := [
@@ -323,6 +325,7 @@ Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression Semantic
 	goto "endif".
 	"else":
 	...`Lower(SemanticBlock__1)`
+	goto "endif".
 	"endif":
 ];
 Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock SemanticStatementConditional) := [
@@ -332,10 +335,12 @@ Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression Semantic
 	goto "endif".
 	"else":
 	...`Lower(SemanticStatementConditional)`
+	goto "endif".
 	"endif":
 ];
 
 Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression SemanticBlock) := [
+	goto "while".
 	"while":
 	goto_if `Lower(SemanticExpression)`: "do"/"endwhile".
 	"do":
@@ -344,6 +349,7 @@ Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression S
 	"endwhile":
 ];
 Lower(SemanticStatementLoop[doFirst=false][until=true] ::= SemanticExpression SemanticBlock) := [
+	goto "while".
 	"while":
 	goto_if (NOT `Lower(SemanticExpression)`): "do"/"endwhile".
 	"do":
@@ -352,25 +358,28 @@ Lower(SemanticStatementLoop[doFirst=false][until=true] ::= SemanticExpression Se
 	"endwhile":
 ];
 Lower(SemanticStatementLoop[doFirst=true][until=false] ::= SemanticExpression SemanticBlock) := [
-	"while":
+	goto "do".
 	"do":
 	...`Lower(SemanticBlock)`
-	goto_if `Lower(SemanticExpression)`: "do"/"endwhile".
 	goto "while".
+	"while":
+	goto_if `Lower(SemanticExpression)`: "do"/"endwhile".
 	"endwhile":
 ];
 Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression SemanticBlock) := [
-	"while":
+	goto "do".
 	"do":
 	...`Lower(SemanticBlock)`
-	goto_if (NOT `Lower(SemanticExpression)`): "do"/"endwhile".
 	goto "while".
+	"while":
+	goto_if (NOT `Lower(SemanticExpression)`): "do"/"endwhile".
 	"endwhile":
 ];
 
 Lower(SemanticStatementIteration ::= SemanticVariable SemanticType SemanticExpression SemanticBlock) := [
 	(DECL <List> $iterable `Lower(SemanticExpression)`)
 	(DECL <nat> $index (NAT.CONST +0))
+	goto "while".
 	"while":
 	goto_if (LT (GET $index) (LIST.COUNT (GET $iterable))): "do"/"endwhile".
 	"do":
@@ -383,6 +392,7 @@ Lower(SemanticStatementIteration ::= SemanticVariable SemanticType SemanticExpre
 Lower(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlock) := [
 	(DECL <List> $iterable `Lower(SemanticExpression)`)
 	(DECL <nat> $index (NAT.CONST +0))
+	goto "while".
 	"while":
 	goto_if (LT (GET $index) (LIST.COUNT (GET $iterable))): "do"/"endwhile".
 	"do":

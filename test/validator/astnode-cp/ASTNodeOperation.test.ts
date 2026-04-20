@@ -263,6 +263,7 @@ test.suite('ASTNodeOperation', () => {
 				goto "block-2".
 				"block-1":
 				(DECL <float> $2 (FLOAT.CONST 4.2))
+				goto "block-2".
 				"block-2":
 				(DECL <anything> z (PHI "block-0"->(GET $1) "block-1"->(GET $2)))
 				(DROP (NEG (GET z)))
@@ -380,6 +381,7 @@ test.suite('ASTNodeOperation', () => {
 					goto "block-2".
 					"block-1":
 					(DECL <null> $1 (GET a))
+					goto "block-2".
 					"block-2":
 					(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
 					(DECL <bool> $2 (NOT (GET a)))
@@ -389,6 +391,7 @@ test.suite('ASTNodeOperation', () => {
 					goto "block-5".
 					"block-4":
 					(DECL <bool> $4 (GET $2))
+					goto "block-5".
 					"block-5":
 					(DROP (PHI "block-3"->(GET $3) "block-4"->(GET $4)))
 				`.join('\n'));
@@ -408,6 +411,7 @@ test.suite('ASTNodeOperation', () => {
 					goto "block-2".
 					"block-1":
 					(DECL <float> $1 (GET d))
+					goto "block-2".
 					"block-2":
 					(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
 					(DECL <int> $2 (NEG (GET c)))
@@ -418,6 +422,7 @@ test.suite('ASTNodeOperation', () => {
 					goto "block-5".
 					"block-4":
 					(DECL <float> $5 (FLOAT.SUB (FLOAT.CONST 1.0) (GET d)))
+					goto "block-5".
 					"block-5":
 					(DROP (PHI "block-3"->(GET $4) "block-4"->(GET $5)))
 				`.join('\n'));
@@ -436,6 +441,7 @@ test.suite('ASTNodeOperation', () => {
 					goto "block-2".
 					"block-1":
 					(DECL <null> $1 (GET a))
+					goto "block-2".
 					"block-2":
 					(DECL <anything> $2 (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
 					(DROP (NOT (GET $2)))
@@ -455,6 +461,7 @@ test.suite('ASTNodeOperation', () => {
 					goto "block-2".
 					"block-1":
 					(DECL <float> $1 (GET d))
+					goto "block-2".
 					"block-2":
 					(DECL <anything> $2 (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
 					(DROP (NOT (GET $2)))
@@ -478,6 +485,7 @@ test.suite('ASTNodeOperation', () => {
 				goto "block-2".
 				"block-1":
 				(DECL <float> $1 (GET z))
+				goto "block-2".
 				"block-2":
 				(DROP (PHI "block-0"->(GET $0) "block-1"->(GET $1)))
 				goto_if (LT (GET y) (GET z)): "block-3"/"block-4".
@@ -488,6 +496,7 @@ test.suite('ASTNodeOperation', () => {
 				"block-4":
 				(DECL <float> $4 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
 				(DECL <float> $5 (FLOAT.ADD (GET $4) (FLOAT.CONST 0.02)))
+				goto "block-5".
 				"block-5":
 				(DROP (PHI "block-3"->(GET $3) "block-4"->(GET $5)))
 			`.join('\n'));

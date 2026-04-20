@@ -1083,6 +1083,7 @@ test.suite('ASTNodeAccess', () => {
 					${ typeof result_value === 'string'
 						? decl_result(result_else_name, result_value)
 						: result_value((value) => decl_result(result_else_name, value)) }
+					goto "${ block_endif }".
 					"${ block_endif }":
 					(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
 				`;
@@ -1208,6 +1209,7 @@ test.suite('ASTNodeAccess', () => {
 						goto "block-8".
 						"block-7":
 						(DECL <sym> $6 (SYM.CONST @b))
+						goto "block-8".
 						"block-8":
 						(DECL <sym> $7 (PHI "block-6"->(GET $5) "block-7"->(GET $6)))
 						${ decl('(DICT.GET (GET my_dict) (GET $7))') }
