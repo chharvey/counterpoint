@@ -953,8 +953,10 @@ test.suite('ASTNodeStatement', () => {
 					"block-2":
 						(DROP (INT.CONST 41))
 						(GOTO "block-3")
+					"unreachable":
 						(DROP (INT.CONST 42))
 						(GOTO "block-1")
+					"unreachable":
 						(DROP (INT.CONST 43))
 						(GOTO "block-1")
 					"block-3":
@@ -967,8 +969,10 @@ test.suite('ASTNodeStatement', () => {
 						(DECL <str> word (LIST.GET (GET $0) (GET $1)))
 						(DROP (INT.CONST 10))
 						(GOTO "block-4")
+					"unreachable":
 						(DROP (INT.CONST 20))
 						(GOTO "block-6")
+					"unreachable":
 						(DROP (INT.CONST 30))
 						(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
 						(GOTO "block-4")
@@ -1000,6 +1004,7 @@ test.suite('ASTNodeStatement', () => {
 					"block-2":
 						(DROP (INT.CONST 10))
 						(GOTO "block-3")
+					"unreachable":
 						(DROP (INT.CONST 20))
 						(GOTO.IF (BOOL.CONST true) "block-4" "block-5")
 					"block-4":
@@ -1010,6 +1015,7 @@ test.suite('ASTNodeStatement', () => {
 					"block-7":
 						(DROP (INT.CONST 40))
 						(GOTO "block-6")
+					"unreachable":
 						(DROP (INT.CONST 50))
 						(GOTO "block-6")
 					"block-8":
