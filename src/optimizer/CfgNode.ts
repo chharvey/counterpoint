@@ -1,4 +1,6 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
+import {runOnceMethod} from '../lib/index.ts';
 import type {IR} from './index.ts';
 
 
@@ -36,5 +38,13 @@ export class CfgNode {
 	public terminate(term: IR.Terminator): void {
 		assert.ok(!this.#terminator, 'Block should not already be terminated.');
 		this.#terminator = term;
+	}
+
+	@runOnceMethod
+	public validate(): void {
+		xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
+
+		assert.ok(this.#terminator, 'Block should already be terminated.');
+		return this.#terminator.validate();
 	}
 }

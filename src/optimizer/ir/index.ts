@@ -30,3 +30,4 @@ export * from './CollectionDynamicCopy.ts';
 export * from './Terminator.ts';
 export * from './Goto.ts';
 export * from './GotoConditional.ts';
+export * from './EndProgram.ts';

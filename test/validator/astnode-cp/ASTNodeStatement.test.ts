@@ -698,6 +698,7 @@ test.suite('ASTNodeStatement', () => {
 						(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
 						(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
 						(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
+						(ENDPROGRAM)
 				`.trim());
 			});
 		});
@@ -726,6 +727,7 @@ test.suite('ASTNodeStatement', () => {
 						(DROP (FLOAT.CONST 3.3))
 						(GOTO "block-3")
 					"block-3":
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('with no alternative.', () => {
@@ -743,6 +745,7 @@ test.suite('ASTNodeStatement', () => {
 						(DROP (FLOAT.CONST 2.2))
 						(GOTO "block-2")
 					"block-2":
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('negates the condition for `unless` statements.', () => {
@@ -760,6 +763,7 @@ test.suite('ASTNodeStatement', () => {
 						(DROP (FLOAT.CONST 2.2))
 						(GOTO "block-2")
 					"block-2":
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('SSA.', () => {
@@ -791,6 +795,7 @@ test.suite('ASTNodeStatement', () => {
 						(GOTO "block-3")
 					"block-3":
 						(DROP (GET x))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('if–else chains.', () => {
@@ -823,6 +828,7 @@ test.suite('ASTNodeStatement', () => {
 					"block-6":
 						(GOTO "block-3")
 					"block-3":
+						(ENDPROGRAM)
 				`.trim());
 			});
 		});
@@ -846,6 +852,7 @@ test.suite('ASTNodeStatement', () => {
 						(DROP (FLOAT.CONST 4.2))
 						(GOTO "block-1")
 					"block-3":
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('negates the condition for `until` statements.', () => {
@@ -864,6 +871,7 @@ test.suite('ASTNodeStatement', () => {
 						(DROP (INT.CONST 42))
 						(GOTO "block-1")
 					"block-3":
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('bottom-tested conditions.', () => {
@@ -890,6 +898,7 @@ test.suite('ASTNodeStatement', () => {
 						(DROP (INT.CONST 42))
 						(GOTO.IF (NOT (GET cond)) "block-3" "block-4")
 					"block-4":
+						(ENDPROGRAM)
 				`.trim());
 			});
 		});
@@ -925,6 +934,7 @@ test.suite('ASTNodeStatement', () => {
 					(SET $3 (NAT.ADD (GET $3) (NAT.CONST +1)))
 					(GOTO "block-4")
 				"block-6":
+					(ENDPROGRAM)
 			`.trim());
 		});
 
@@ -977,6 +987,7 @@ test.suite('ASTNodeStatement', () => {
 						(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
 						(GOTO "block-4")
 					"block-6":
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('nested loops.', () => {
@@ -1025,6 +1036,7 @@ test.suite('ASTNodeStatement', () => {
 						(DROP (INT.CONST 70))
 						(GOTO "block-1")
 					"block-3":
+						(ENDPROGRAM)
 				`.trim());
 			});
 		});

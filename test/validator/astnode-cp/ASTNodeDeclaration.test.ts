@@ -610,7 +610,7 @@ test.suite('ASTNodeDeclaration', () => {
 		test.test('AST.DeclarationType has no effect.', () => {
 			assert.strictEqual(setupScript(`{
 				type N = int | nat | float;
-			}`, {codegen: false}).opt.print(), '"block-0":');
+			}`, {codegen: false}).opt.print(), '"block-0":\n\t(ENDPROGRAM)');
 		});
 		test.test('AST.DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
 			const {stmts, opt} = setupScript(`{
@@ -643,6 +643,7 @@ test.suite('ASTNodeDeclaration', () => {
 					(DROP (GET assignee_c))
 					(DECL <int> assignee_d (GET assignee_c))
 					(DECL <int> assignee_e (GET assignee_c))
+					(ENDPROGRAM)
 			`.trim());
 		});
 	});

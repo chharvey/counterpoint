@@ -70,6 +70,7 @@ test.suite('ASTNodeExpression', () => {
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
 					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 					(DROP (TUPLE.NEW (GET x) (GET $0) (GET $2)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('AST.Record returns an IR.RecordNew.', () => {
@@ -87,6 +88,7 @@ test.suite('ASTNodeExpression', () => {
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
 					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 					(DROP (RECORD.NEW @a->(GET x) @b->(GET $0) @c->(GET $2)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('AST.List returns an IR.CollectionLinearNew.', () => {
@@ -98,6 +100,7 @@ test.suite('ASTNodeExpression', () => {
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 					(DROP (LIST.NEW (BOOL.CONST false) (GET $0) (GET $2)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('AST.Dict returns an IR.DictNew.', () => {
@@ -109,6 +112,7 @@ test.suite('ASTNodeExpression', () => {
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 					(DROP (DICT.NEW @a->(BOOL.CONST false) @b->(GET $0) @c->(GET $2)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('AST.Set returns an IR.CollectionLinearNew.', () => {
@@ -120,6 +124,7 @@ test.suite('ASTNodeExpression', () => {
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 					(DROP (SET.NEW (BOOL.CONST false) (GET $0) (GET $2)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.suite('AST.Map', () => {
@@ -132,6 +137,7 @@ test.suite('ASTNodeExpression', () => {
 						(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
 						(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
 						(DROP (MAP.NEW (STR.CONST "a")->(BOOL.CONST false) (STR.CONST "b")->(GET $0) (STR.CONST "c")->(GET $2)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('evaluates antecedents and consequents interchangeably in source order.', () => {
@@ -147,6 +153,7 @@ test.suite('ASTNodeExpression', () => {
 						(DECL <int> $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
 						(DECL <List> $6 (LIST.NEW (GET $5)))
 						(DROP (MAP.NEW (GET $0)->(GET $1) (GET $2)->(GET $4) (GET $6)->(INT.CONST 15)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 		});
@@ -171,6 +178,7 @@ test.suite('ASTNodeExpression', () => {
 					(SET y (INT.ADD (GET y) (GET x)))
 					(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
 					(SET y (INT.ADD (GET $0) (GET y)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.suite('AST.Claim', () => {

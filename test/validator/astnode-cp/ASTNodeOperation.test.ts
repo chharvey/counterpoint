@@ -215,6 +215,7 @@ test.suite('ASTNodeOperation', () => {
 					(DROP (GET x))
 					(DECL <int> $0 (INT.MUL (GET x) (GET y)))
 					(DROP (INT.ADD (GET x) (GET $0)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 
@@ -229,6 +230,7 @@ test.suite('ASTNodeOperation', () => {
 					(DECL <int> y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
 					(DECL <int> $0 (INT.ADD (INT.CONST 42) (GET y)))
 					(DROP (NOT (GET $0)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('AST.OperationUnary[operator=EMP]', () => {
@@ -244,6 +246,7 @@ test.suite('ASTNodeOperation', () => {
 					(DECL <int> y (INT.DIV (GET x) (INT.CONST 7)))
 					(DECL <int> $0 (INT.ADD (GET x) (GET y)))
 					(DROP (EMP (GET $0)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('AST.OperationUnary[operator=NEG]', () => {
@@ -271,6 +274,7 @@ test.suite('ASTNodeOperation', () => {
 				"block-3":
 					(DECL <anything> z (PHI "block-1"->(GET $1) "block-2"->(GET $2)))
 					(DROP (NEG (GET z)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('AST.OperationUnary[operator=INT | NAT | FLOAT]', () => {
@@ -302,6 +306,7 @@ test.suite('ASTNodeOperation', () => {
 					(DROP (TOFLOAT (GET my_int)))
 					(DROP (TOFLOAT (GET my_nat)))
 					(DROP (TOFLOAT (GET my_flt)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 
@@ -316,6 +321,7 @@ test.suite('ASTNodeOperation', () => {
 					(DECL <int> $1 (INT.EXP (INT.CONST 2) (INT.CONST 3)))
 					(DECL <int> $2 (INT.DIV (GET $0) (GET $1)))
 					(DROP (INT.ADD (INT.CONST 3) (GET $2)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 
@@ -345,6 +351,7 @@ test.suite('ASTNodeOperation', () => {
 					(DROP (NOT (GET $0)))
 					(DECL <bool> $1 (GT (GET b) (GET c)))
 					(DROP (NOT (GET $1)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 
@@ -370,6 +377,7 @@ test.suite('ASTNodeOperation', () => {
 					(DROP (NOT (GET $0)))
 					(DECL <bool> $1 (EQ (GET d) (GET b)))
 					(DROP (NOT (GET $1)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 
@@ -403,6 +411,7 @@ test.suite('ASTNodeOperation', () => {
 						(GOTO "block-6")
 					"block-6":
 						(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $4)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('[operator=OR]', () => {
@@ -435,6 +444,7 @@ test.suite('ASTNodeOperation', () => {
 						(GOTO "block-6")
 					"block-6":
 						(DROP (PHI "block-4"->(GET $4) "block-5"->(GET $5)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('[operator=NAND]', () => {
@@ -456,6 +466,7 @@ test.suite('ASTNodeOperation', () => {
 					"block-3":
 						(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
 						(DROP (NOT (GET $2)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('[operator=NOR]', () => {
@@ -477,6 +488,7 @@ test.suite('ASTNodeOperation', () => {
 					"block-3":
 						(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
 						(DROP (NOT (GET $2)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 		});
@@ -512,6 +524,7 @@ test.suite('ASTNodeOperation', () => {
 					(GOTO "block-6")
 				"block-6":
 					(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $5)))
+					(ENDPROGRAM)
 			`.trim());
 		});
 	});

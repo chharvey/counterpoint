@@ -8,6 +8,7 @@ import {Opcode} from './Opcode.ts';
  * Known subclasses:
  * - Goto
  * - GotoConditional
+ * - EndProgram
  */
 export abstract class Terminator extends Opcode {
 }

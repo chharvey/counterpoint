@@ -102,6 +102,7 @@ export enum OpCode {
 
 	GOTO,
 	GOTO_IF,
+	ENDPROGRAM,
 }
 
 

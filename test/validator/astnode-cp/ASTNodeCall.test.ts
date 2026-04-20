@@ -316,6 +316,7 @@ test.suite('ASTNodeCall', () => {
 					(DECL <Set> $21 (SET.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
 					(LIST.COPY (GET $20) (GET $21))
 					(DROP (GET $20))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('`Dict.(‹…›)`', () => {
@@ -418,6 +419,7 @@ test.suite('ASTNodeCall', () => {
 					(DECL <Map> $55 (MAP.NEW (SYM.CONST @a)->(INT.CONST 1) (SYM.CONST @b)->(INT.CONST 2) (SYM.CONST @c)->(INT.CONST 3)))
 					(DICT.COPY (GET $54) (GET $55))
 					(DROP (GET $54))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('`Set.(‹…›)`', () => {
@@ -470,6 +472,7 @@ test.suite('ASTNodeCall', () => {
 					(DECL <Set> $21 (SET.NEW (INT.CONST 1) (INT.CONST 2) (INT.CONST 3)))
 					(SET.COPY (GET $20) (GET $21))
 					(DROP (GET $20))
+					(ENDPROGRAM)
 			`.trim());
 		});
 		test.test('`Map.(‹…›)`', () => {
@@ -554,6 +557,7 @@ test.suite('ASTNodeCall', () => {
 					(DECL <Map> $46 (MAP.NEW (INT.CONST 1)->(FLOAT.CONST 0.1) (INT.CONST 2)->(FLOAT.CONST 0.2) (INT.CONST 3)->(FLOAT.CONST 0.4)))
 					(MAP.COPY (GET $45) (GET $46))
 					(DROP (GET $45))
+					(ENDPROGRAM)
 			`.trim());
 		});
 	});

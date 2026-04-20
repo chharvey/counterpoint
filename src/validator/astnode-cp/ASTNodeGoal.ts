@@ -3,6 +3,7 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Optimizer,
 	type Lowerable,
+	IR,
 	ParseError01,
 } from '../../index.ts';
 import {runOnceMethod} from '../../lib/index.ts';
@@ -81,7 +82,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 	@runOnceMethod
 	public lower(optimizer: Optimizer): void {
 		this.block?.lower(optimizer);
-		optimizer.terminateBlock();
+		optimizer.terminateBlock(new IR.EndProgram());
 		return optimizer.validate();
 	}
 }

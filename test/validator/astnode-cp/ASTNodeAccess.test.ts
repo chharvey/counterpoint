@@ -961,6 +961,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
 						(DECL <tuple> $3 (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
 						(DROP (TUPLE.GET 1 (GET $3)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('record access returns an IR.RecordGet.', () => {
@@ -973,6 +974,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
 						(DECL <record> $3 (RECORD.NEW @a->(GET $0) @b->(GET $1) @c->(GET $2)))
 						(DROP (RECORD.GET @b (GET $3)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('List access returns an IR.CollectionDynamicGet.', () => {
@@ -985,6 +987,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
 						(DECL <List> $3 (LIST.NEW (GET $0) (GET $1) (GET $2)))
 						(DROP (LIST.GET (GET $3) (INT.CONST 1)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('Dict access returns an IR.CollectionDynamicGet.', () => {
@@ -997,6 +1000,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
 						(DECL <Dict> $3 (DICT.NEW @a->(GET $0) @b->(GET $1) @c->(GET $2)))
 						(DROP (DICT.GET (GET $3) (SYM.CONST @b)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('Set access returns an IR.CollectionDynamicGet.', () => {
@@ -1009,6 +1013,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
 						(DECL <Set> $3 (SET.NEW (GET $0) (GET $1) (GET $2)))
 						(DROP (SET.GET (GET $3) (INT.CONST 21)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('Map access returns an IR.CollectionDynamicGet.', () => {
@@ -1021,6 +1026,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
 						(DECL <Map> $3 (MAP.NEW (INT.CONST 21)->(GET $0) (INT.CONST 22)->(GET $1) (INT.CONST 23)->(GET $2)))
 						(DROP (MAP.GET (GET $3) (INT.CONST 22)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('nested access.', () => {
@@ -1034,6 +1040,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <tuple> $3 (LIST.GET (GET $2) (INT.CONST 0)))
 						(DECL <Set> $4 (TUPLE.GET 1 (GET $3)))
 						(DROP (SET.GET (GET $4) (INT.CONST 42)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 			test.test('union access.', () => {
@@ -1064,6 +1071,7 @@ test.suite('ASTNodeAccess', () => {
 						(DROP (DICT.GET (GET dict) (SYM.CONST @a)))
 						(DROP (SET.GET (GET 'set') (INT.CONST 42)))
 						(DROP (MAP.GET (GET map) (INT.CONST 42)))
+						(ENDPROGRAM)
 				`.trim());
 			});
 		});
@@ -1117,6 +1125,7 @@ test.suite('ASTNodeAccess', () => {
 						(DROP (GET my_tupleB))
 						${ decl('(NULL.CONST null)') }
 					`.join('\n\t')),
+					'\n\t(ENDPROGRAM)',
 				));
 			});
 			test.test('record access.', () => {
@@ -1140,6 +1149,7 @@ test.suite('ASTNodeAccess', () => {
 						(DROP (GET my_recordY))
 						${ decl('(NULL.CONST null)') }
 					`.join('\n\t')),
+					'\n\t(ENDPROGRAM)',
 				));
 			});
 			test.test('List access.', () => {
@@ -1149,7 +1159,7 @@ test.suite('ASTNodeAccess', () => {
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-				`.trim().concat(maybe_access_output(1, 'my_list', [0], '(LIST.GET (GET my_list) (INT.CONST 2))')));
+				`.trim().concat(maybe_access_output(1, 'my_list', [0], '(LIST.GET (GET my_list) (INT.CONST 2))'), '\n\t(ENDPROGRAM)'));
 			});
 			test.test('Dict access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1158,7 +1168,7 @@ test.suite('ASTNodeAccess', () => {
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @c->(INT.CONST 42)))
-				`.trim().concat(maybe_access_output(1, 'my_dict', [0], '(DICT.GET (GET my_dict) (SYM.CONST @b))')));
+				`.trim().concat(maybe_access_output(1, 'my_dict', [0], '(DICT.GET (GET my_dict) (SYM.CONST @b))'), '\n\t(ENDPROGRAM)'));
 			});
 			test.test('Map access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1168,7 +1178,7 @@ test.suite('ASTNodeAccess', () => {
 					"block-0":
 						(DECL <int> accessor (INT.CONST 22))
 						(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
-				`.trim().concat(maybe_access_output(1, '$0', [1], '(MAP.GET (GET $0) (GET accessor))')));
+				`.trim().concat(maybe_access_output(1, '$0', [1], '(MAP.GET (GET $0) (GET accessor))'), '\n\t(ENDPROGRAM)'));
 			});
 			test.test('returns null when base is null.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1195,6 +1205,7 @@ test.suite('ASTNodeAccess', () => {
 					maybe_access_output( 7, 'my_list', [4], '(NULL.CONST null)'),
 					maybe_access_output(10, 'my_dict', [6], '(NULL.CONST null)'),
 					maybe_access_output(13, 'my_map',  [8], '(NULL.CONST null)'),
+					'\n\t(ENDPROGRAM)',
 				));
 			});
 			test.test('short-circuits evaluation of dynamic accessor when base is non-null.', () => {
@@ -1232,6 +1243,7 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $11 (INT.ADD (INT.CONST 5) (GET $10)))
 						${ decl('(MAP.GET (GET my_map) (GET $11))') }
 					`.join('\n\t')),
+					'\n\t(ENDPROGRAM)',
 				));
 			});
 			/* eslint-enable @stylistic/indent */
