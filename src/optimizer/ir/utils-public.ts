@@ -110,12 +110,21 @@ export function conditional_expression(
 	const label_endif: Label = optimizer.newLabel();
 
 	optimizer.pushInstruction(new GotoConditional(condition.call(null), label_then, label_else));
+	optimizer.terminateBlock();
+
+	optimizer.initiateBlock();
 	optimizer.pushInstruction(label_then);
 	const result_then: Temp = optimizer.newTemp(consequent.call(null));
 	optimizer.pushInstruction(new Goto(label_endif));
+	optimizer.terminateBlock();
+
+	optimizer.initiateBlock();
 	optimizer.pushInstruction(label_else);
 	const result_else: Temp = optimizer.newTemp(alternative.call(null));
 	optimizer.pushInstruction(new Goto(label_endif));
+	optimizer.terminateBlock();
+
+	optimizer.initiateBlock();
 	optimizer.pushInstruction(label_endif);
 	return new Phi(
 		[label_then, new Get(result_then)],

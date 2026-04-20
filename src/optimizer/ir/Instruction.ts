@@ -3,7 +3,7 @@ import {Opcode} from './Opcode.ts';
 
 
 /**
- * An Instruction is what can be pushed to an Optimizer’s instruction array.
+ * An Instruction is what can be pushed to a CFG Node’s instruction array.
  *
  * Known subclasses:
  * - Drop

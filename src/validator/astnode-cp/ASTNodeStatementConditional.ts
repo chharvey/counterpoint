@@ -76,22 +76,24 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 		const label_else:  IR.Label = optimizer.newLabel();
 		const label_endif: IR.Label = this.alternative ? optimizer.newLabel() : label_else;
 
-		// condition block
 		optimizer.pushInstruction(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
+		optimizer.terminateBlock();
 
-		// then block
+		optimizer.initiateBlock();
 		optimizer.pushInstruction(label_then);
 		this.consequent.lower(optimizer);
 		optimizer.pushInstruction(new IR.Goto(label_endif));
+		optimizer.terminateBlock();
 
-		// else block
 		if (this.alternative) {
+			optimizer.initiateBlock();
 			optimizer.pushInstruction(label_else);
 			this.alternative.lower(optimizer);
 			optimizer.pushInstruction(new IR.Goto(label_endif));
+			optimizer.terminateBlock();
 		}
 
-		// merge block
+		optimizer.initiateBlock();
 		optimizer.pushInstruction(label_endif);
 	}
 }

@@ -77,30 +77,36 @@ export class ASTNodeStatementLoop extends StatementBreakable {
 		this.labelEndwhile = optimizer.newLabel();
 
 		const block_condition = (): void => {
+			optimizer.initiateBlock();
 			optimizer.pushInstruction(this.labels.while!);
 			optimizer.pushInstruction(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
+			optimizer.terminateBlock();
 		};
 
 		const block_loop = (): void => {
+			optimizer.initiateBlock();
 			optimizer.pushInstruction(this.labels.do!);
 			this.block.lower(optimizer);
 			optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+			optimizer.terminateBlock();
 		};
 
 		if (this.doFirst) {
 			[this.labelDo, this.labelWhile] = [this.labels.while!, this.labels.do!];
 			optimizer.pushInstruction(new IR.Goto(this.labels.do!));
+			optimizer.terminateBlock();
 
 			block_loop();
 			block_condition();
 		} else {
 			optimizer.pushInstruction(new IR.Goto(this.labels.while!));
+			optimizer.terminateBlock();
 
 			block_condition();
 			block_loop();
 		}
 
-		// merge block
+		optimizer.initiateBlock();
 		optimizer.pushInstruction(this.labels.endwhile!);
 	}
 }

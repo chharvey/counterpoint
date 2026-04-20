@@ -1,8 +1,10 @@
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
+import {CfgNode} from './CfgNode.ts';
 import {IR} from './index.ts';
 
 
@@ -25,10 +27,28 @@ export class Optimizer {
 	#tempCounter:  bigint = 0n;
 	#labelCounter: bigint = 0n;
 
-	readonly #instructions: IR.Instruction[] = [];
+	private currentBlock?: CfgNode = new CfgNode();
+
+	readonly #blocks: CfgNode[] = [];
+
 
 	public get instructions(): IR.Instruction[] {
-		return [...this.#instructions];
+		return this.#blocks.flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
+	}
+
+	public initiateBlock(): void {
+		if (this.currentBlock) {
+			throw new Error('Cannot initiate a new block in an Optimizer with an active block. Try calling `Optimizer#terminateBlock` first.');
+		}
+		this.currentBlock = new CfgNode();
+	}
+
+	public terminateBlock(): void {
+		if (!this.currentBlock) {
+			throw new Error('Optimizer does not have an active block to terminate. Try calling `Optimizer#initiateBlock` first.');
+		}
+		this.#blocks.push(this.currentBlock);
+		delete this.currentBlock;
 	}
 
 	public newTemp(value: IR.Value): Temp {
@@ -48,18 +68,24 @@ export class Optimizer {
 	}
 
 	public pushInstruction(instr: IR.Instruction): void {
-		this.#instructions.push(instr);
+		if (!this.currentBlock) {
+			throw new Error('Optimizer does not have an active block to push to. Try calling `Optimizer#initiateBlock` first.');
+		}
+		this.currentBlock.pushInstruction(instr);
 	}
 
 	@runOnceMethod
 	public validate(): void {
-		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
+		assert.ok(!this.currentBlock, 'Should not validate Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
+		return xjs.Array.forEachAggregated(this.instructions, (instr) => instr.validate());
 	}
 
 	public codegen(cg: Builder): void {
+		assert.ok(!this.currentBlock, 'Should not codegen Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
+		const instrs: readonly IR.Instruction[] = this.instructions;
 		return cg.setupMain((mod) => {
-			if (this.#instructions.length) {
-				const codes:   binaryen.ExpressionRef[] = this.#instructions.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
+			if (instrs.length) {
+				const codes:   binaryen.ExpressionRef[] = instrs.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
 				const fn_name: string                   = 'main';
 				mod.addFunction(
 					fn_name,
@@ -74,6 +100,6 @@ export class Optimizer {
 	}
 
 	public print(): string {
-		return this.#instructions.map((instr) => instr.toString()).join('\n');
+		return this.instructions.map((instr) => instr.toString()).join('\n');
 	}
 }
