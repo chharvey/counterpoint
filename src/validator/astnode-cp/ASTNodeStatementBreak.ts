@@ -61,6 +61,6 @@ export class ASTNodeStatementBreak extends ASTNodeStatement {
 		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementLoop.');
 		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementLoop to have its labels already created.');
 		optimizer.terminateBlock(new IR.Goto(this.skip ? labels.while : labels.endwhile));
-		optimizer.initiateBlock('unreachable');
+		optimizer.initiateBlock(optimizer.newLabel(true));
 	}
 }

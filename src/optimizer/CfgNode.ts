@@ -14,7 +14,7 @@ export class CfgNode {
 
 	#terminator?: IR.Terminator;
 
-	public constructor(private readonly label: string) {}
+	public constructor(public readonly label: string) {}
 
 	public get instructions(): IR.Instruction[] {
 		return [...this.#instructions];

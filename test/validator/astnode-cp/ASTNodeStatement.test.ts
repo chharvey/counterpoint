@@ -963,30 +963,30 @@ test.suite('ASTNodeStatement', () => {
 					"block-2":
 						(DROP (INT.CONST 41))
 						(GOTO "block-3")
-					"unreachable":
+					"unreachable-4":
 						(DROP (INT.CONST 42))
 						(GOTO "block-1")
-					"unreachable":
+					"unreachable-5":
 						(DROP (INT.CONST 43))
 						(GOTO "block-1")
 					"block-3":
 						(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
 						(DECL <nat> $1 (NAT.CONST +0))
-						(GOTO "block-4")
-					"block-4":
-						(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-5" "block-6")
-					"block-5":
+						(GOTO "block-6")
+					"block-6":
+						(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-7" "block-8")
+					"block-7":
 						(DECL <str> word (LIST.GET (GET $0) (GET $1)))
 						(DROP (INT.CONST 10))
-						(GOTO "block-4")
-					"unreachable":
-						(DROP (INT.CONST 20))
 						(GOTO "block-6")
-					"unreachable":
+					"unreachable-9":
+						(DROP (INT.CONST 20))
+						(GOTO "block-8")
+					"unreachable-10":
 						(DROP (INT.CONST 30))
 						(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-						(GOTO "block-4")
-					"block-6":
+						(GOTO "block-6")
+					"block-8":
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -1015,24 +1015,24 @@ test.suite('ASTNodeStatement', () => {
 					"block-2":
 						(DROP (INT.CONST 10))
 						(GOTO "block-3")
-					"unreachable":
+					"unreachable-4":
 						(DROP (INT.CONST 20))
-						(GOTO.IF (BOOL.CONST true) "block-4" "block-5")
-					"block-4":
+						(GOTO.IF (BOOL.CONST true) "block-5" "block-6")
+					"block-5":
 						(DROP (INT.CONST 30))
+						(GOTO "block-7")
+					"block-7":
+						(GOTO.IF (BOOL.CONST true) "block-8" "block-9")
+					"block-8":
+						(DROP (INT.CONST 40))
+						(GOTO "block-7")
+					"unreachable-10":
+						(DROP (INT.CONST 50))
+						(GOTO "block-7")
+					"block-9":
+						(DROP (INT.CONST 60))
 						(GOTO "block-6")
 					"block-6":
-						(GOTO.IF (BOOL.CONST true) "block-7" "block-8")
-					"block-7":
-						(DROP (INT.CONST 40))
-						(GOTO "block-6")
-					"unreachable":
-						(DROP (INT.CONST 50))
-						(GOTO "block-6")
-					"block-8":
-						(DROP (INT.CONST 60))
-						(GOTO "block-5")
-					"block-5":
 						(DROP (INT.CONST 70))
 						(GOTO "block-1")
 					"block-3":

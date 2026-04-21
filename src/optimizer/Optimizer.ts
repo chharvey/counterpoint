@@ -29,15 +29,18 @@ export class Optimizer {
 
 	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 
-	readonly #blocks: CfgNode[] = [];
+	readonly #blocks = new Map<string, CfgNode>();
 
 
 	public get instructions(): IR.Instruction[] {
-		return this.#blocks.flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
+		return [...this.#blocks.values()].flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
 	}
 
-	public newLabel(): string {
-		return `block-${ this.#labelCounter++ }`;
+	public newLabel(unreachable: boolean = false): string {
+		return [
+			unreachable ? 'unreachable' : 'block',
+			this.#labelCounter++,
+		].join('-');
 	}
 
 	public initiateBlock(label: string): void {
@@ -52,7 +55,7 @@ export class Optimizer {
 			throw new Error('Optimizer does not have an active block to terminate. Try calling `Optimizer#initiateBlock` first.');
 		}
 		this.currentBlock.terminate(instr);
-		this.#blocks.push(this.currentBlock);
+		this.#blocks.set(this.currentBlock.label, this.currentBlock);
 		delete this.currentBlock;
 	}
 
@@ -78,7 +81,7 @@ export class Optimizer {
 	@runOnceMethod
 	public validate(): void {
 		assert.ok(!this.currentBlock, 'Should not validate Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
-		return xjs.Array.forEachAggregated(this.#blocks, (block) => block.validate());
+		return xjs.Map.forEachAggregated(this.#blocks, (block) => block.validate());
 	}
 
 	public codegen(cg: Builder): void {
@@ -102,7 +105,7 @@ export class Optimizer {
 
 	public print(): string {
 		return [
-			...this.#blocks,
+			...this.#blocks.values(),
 			...(this.currentBlock ? [this.currentBlock] : []),
 		].map((block) => block.toString()).join('\n');
 	}
