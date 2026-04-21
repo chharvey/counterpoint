@@ -1,6 +1,12 @@
 import type {TYPE} from '../../typer/index.ts';
-import type {Optimizer} from '../Optimizer.ts';
-import {Get} from './index.ts';
+import type {
+	Temp,
+	Optimizer,
+} from '../Optimizer.ts';
+import {
+	Get,
+	Decl,
+} from './index.ts';
 import {
 	type OpCode,
 	Opcode,
@@ -64,6 +70,8 @@ export abstract class Value extends Opcode {
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
 	public asTac(optimizer: Optimizer): Value {
-		return new Get(optimizer.newTemp(this));
+		const temp: Temp = optimizer.newTemp(this);
+		optimizer.pushInstruction(new Decl(temp, temp.value));
+		return new Get(temp);
 	}
 }

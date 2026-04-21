@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Temp,
 	type Optimizer,
 	IR,
 	TypeErrorNotNarrow,
@@ -202,9 +203,11 @@ export class ASTNodeCall extends ASTNodeExpression {
 		if (!this.exprargs.length) {
 			return new_obj;
 		}
-		const get_obj = new IR.Get(optimizer.newTemp(new_obj));
-		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_obj, this.exprargs[0].lower(optimizer).asTac(optimizer)));
-		return get_obj;
+		const dest: Temp = optimizer.newTemp(new_obj);
+		const get_dest = new IR.Get(dest);
+		optimizer.pushInstruction(new IR.Decl(dest, dest.value));
+		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_dest, this.exprargs[0].lower(optimizer).asTac(optimizer)));
+		return get_dest;
 	}
 
 	@memoizeMethod

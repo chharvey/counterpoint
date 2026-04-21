@@ -5,7 +5,7 @@ import type {Builder} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import {CfgNode} from './CfgNode.ts';
-import {IR} from './index.ts';
+import type {IR} from './index.ts';
 
 
 
@@ -43,6 +43,17 @@ export class Optimizer {
 		].join('-');
 	}
 
+	public newTemp(value: IR.Value): Temp {
+		const id:   bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
+		const temp: Temp   = {
+			id,
+			value,
+			name: `$${ -id }`, // appears positive
+			type: value.type,
+		};
+		return temp;
+	}
+
 	public initiateBlock(label: string): void {
 		if (this.currentBlock) {
 			throw new Error('Cannot initiate a new block in an Optimizer with an active block. Try calling `Optimizer#terminateBlock` first.');
@@ -59,17 +70,6 @@ export class Optimizer {
 		delete this.currentBlock;
 	}
 
-	public newTemp(value: IR.Value): Temp {
-		const id:    bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
-		const local: Temp   = {
-			id,
-			value,
-			name: `$${ -id }`, // appears positive
-			type: value.type,
-		};
-		this.pushInstruction(new IR.Decl(local, value));
-		return local;
-	}
 
 	public pushInstruction(instr: IR.Instruction): void {
 		if (!this.currentBlock) {
