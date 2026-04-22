@@ -103,7 +103,7 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		this.labelDo       = optimizer.newLabel();
 		this.labelEndwhile = optimizer.newLabel();
 
-		optimizer.pushInstruction(new IR.Decl(index, index.value));
+		optimizer.pushInstruction(new IR.Decl(index));
 		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
 
 		optimizer.initiateBlock(this.labels.while!);

@@ -71,7 +71,7 @@ export abstract class Value extends Opcode {
 	 */
 	public asTac(optimizer: Optimizer): Value {
 		const temp: Temp = optimizer.newTemp(this);
-		optimizer.pushInstruction(new Decl(temp, temp.value));
+		optimizer.pushInstruction(new Decl(temp));
 		return new Get(temp);
 	}
 }

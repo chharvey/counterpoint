@@ -5,15 +5,15 @@ import type {Builder} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import {CfgNode} from './CfgNode.ts';
-import type {IR} from './index.ts';
+import {IR} from './index.ts';
 
 
 
 export type Temp = {
-	readonly id:    bigint,
-	readonly name:  string,
-	readonly type:  TYPE.Type,
-	readonly value: IR.Value,
+	readonly id:     bigint,
+	readonly name:   string,
+	readonly type:   TYPE.Type,
+	readonly value?: IR.Value,
 };
 
 
@@ -43,13 +43,21 @@ export class Optimizer {
 		].join('-');
 	}
 
-	public newTemp(value: IR.Value): Temp {
+	/**
+	 * Create a new IR temporary given a value; or a type, if uninitialized with a value.
+	 * If a value is given, the type is read from that value.
+	 * @return a new Temp with newly-generated id & name, the given value (or `undefined`), and the type
+	 */
+	public newTemp(value_or_type: IR.Value | TYPE.Type): Temp {
 		const id:   bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
+		const name: string = `$${ -id }`; // appears positive
 		const temp: Temp   = {
 			id,
-			value,
-			name: `$${ -id }`, // appears positive
-			type: value.type,
+			name,
+			...(value_or_type instanceof IR.Value
+				? {value: value_or_type, type: value_or_type.type}
+				: {type: value_or_type}
+			),
 		};
 		return temp;
 	}

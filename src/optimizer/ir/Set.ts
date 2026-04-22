@@ -36,7 +36,7 @@ class IrSet extends Instruction {
 	@runOnceMethod
 	public override validate(): void {
 		this.value.validate();
-		return assert.ok(this.value.type.isSubtypeOf(this.targetType));
+		return assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
 	}
 
 	@memoizeMethod

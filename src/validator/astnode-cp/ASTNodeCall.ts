@@ -205,7 +205,7 @@ export class ASTNodeCall extends ASTNodeExpression {
 		}
 		const dest: Temp = optimizer.newTemp(new_obj);
 		const get_dest = new IR.Get(dest);
-		optimizer.pushInstruction(new IR.Decl(dest, dest.value));
+		optimizer.pushInstruction(new IR.Decl(dest));
 		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_dest, this.exprargs[0].lower(optimizer).asTac(optimizer)));
 		return get_dest;
 	}

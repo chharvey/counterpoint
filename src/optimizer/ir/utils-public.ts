@@ -113,12 +113,12 @@ export function conditional_expression(
 
 	optimizer.initiateBlock(label_then);
 	const result_then: Temp = optimizer.newTemp(consequent.call(null));
-	optimizer.pushInstruction(new Decl(result_then, result_then.value));
+	optimizer.pushInstruction(new Decl(result_then));
 	optimizer.terminateBlock(new Goto(label_endif));
 
 	optimizer.initiateBlock(label_else);
 	const result_else: Temp = optimizer.newTemp(alternative.call(null));
-	optimizer.pushInstruction(new Decl(result_else, result_else.value));
+	optimizer.pushInstruction(new Decl(result_else));
 	optimizer.terminateBlock(new Goto(label_endif));
 
 	optimizer.initiateBlock(label_endif);
