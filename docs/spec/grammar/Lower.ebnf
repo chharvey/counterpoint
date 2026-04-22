@@ -163,14 +163,16 @@ Lower(SemanticExpressionBlock blex) := [
 
 Lower(SemanticAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $tuple `Lower(access.0)`)
+	(DECL ‹type› $result)
 	(GOTO.IF (ISNULL (GET $tuple)) "then" "else")
 	"then":
-	(DECL ‹type› $result_null (NULL.CONST null))
+	(SET $result (NULL.CONST null))
 	(GOTO "endif")
 	"else":
-	(DECL ‹type› $result_nonnull `Lower(access[kind=NORMAL])`)
+	(SET $result `Lower(access[kind=NORMAL])`)
+	(GOTO "endif")
 	"endif":
-	return (PHI "isnull"->(GET $result_null) "nonnull"->(GET $result_nonnull)).
+	return (GET $result).
 ];
 
 Lower(SemanticCall:has(SemanticVariable ::= "List") call) := (LIST.NEW);
@@ -242,37 +244,43 @@ Lower(SemanticOperation[operator=NEQ] op) := (NEQ [`op.0` `op.1`]);
 
 Lower(SemanticOperation[operator=AND] op) := [
 	(DECL ‹type› $left `Lower(op.0)`)
+	(DECL ‹type› $result)
 	(GOTO.IF (GET $left) "then" "else")
 	"then":
-	(DECL ‹type› $result_then `Lower(op.1)`)
+	(SET $result `Lower(op.1)`)
 	(GOTO "endif")
 	"else":
-	(DECL ‹type› $result_else (GET $left))
+	(SET $result (GET $left))
+	(GOTO "endif")
 	"endif":
-	return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
+	return (GET $result).
 ];
 
 Lower(SemanticOperation[operator=OR] op) := [
 	(DECL ‹type› $left `Lower(op.0)`)
+	(DECL ‹type› $result)
 	(GOTO.IF (GET $left) "then" "else")
 	"then":
-	(DECL ‹type› $result_then (GET $left))
+	(SET $result (GET $left))
 	(GOTO "endif")
 	"else":
-	(DECL ‹type› $result_else `Lower(op.1)`)
+	(SET $result `Lower(op.1)`)
+	(GOTO "endif")
 	"endif":
-	return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
+	return (GET $result).
 ];
 
 Lower(SemanticOperation[operator=COND] op) := [
+	(DECL ‹type› $result)
 	(GOTO.IF `Lower(op.0)` "then" "else")
 	"then":
-	(DECL ‹type› $result_then `Lower(op.1)`)
+	(SET $result `Lower(op.1)`)
 	(GOTO "endif")
 	"else":
-	(DECL ‹type› $result_else `Lower(op.2)`)
+	(SET $result `Lower(op.2)`)
+	(GOTO "endif")
 	"endif":
-	return (PHI "then"->(GET $result_then) "then"->(GET $result_else)).
+	return (GET $result).
 ];
 
 Lower(SemanticDeclarationType decl) := [];
