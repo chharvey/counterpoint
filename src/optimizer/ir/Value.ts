@@ -4,6 +4,7 @@ import type {
 	Optimizer,
 } from '../Optimizer.ts';
 import {
+	type ValueTac,
 	Get,
 	Decl,
 } from './index.ts';
@@ -16,10 +17,8 @@ import {
 
 /**
  * Known subclasses:
- * - Trap
- * - Const
+ * - ValueTac
  * - Template
- * - Get
  * - CollectionLinearNew
  * - RecordNew
  * - DictNew
@@ -61,6 +60,7 @@ export abstract class Value extends Opcode {
 	 * (SET $3 (SUB (GET $2) 3)) ;; t3 := t2 - 3
 	 * (GET $3)                  ;; t3
 	 * ```
+	 * Similarly, any compound objects (tuples, templates, etc.) should only contain TAC-formatted values.
 	 *
 	 * If this value is already a unit (constant or variable), override this method to return that value;
 	 * otherwise, store the value in a local and return a {@link Get}.
@@ -69,7 +69,7 @@ export abstract class Value extends Opcode {
 	 * @return          this value, or a GET of this value
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
-	public asTac(optimizer: Optimizer): Value {
+	public asTac(optimizer: Optimizer): ValueTac {
 		const temp: Temp = optimizer.newTemp(this);
 		optimizer.pushInstruction(new Decl(temp));
 		return new Get(temp);
