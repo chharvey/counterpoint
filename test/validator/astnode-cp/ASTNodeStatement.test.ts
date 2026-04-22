@@ -917,21 +917,23 @@ test.suite('ASTNodeStatement', () => {
 					(DECL <nat> $1 (NAT.CONST +0))
 					(GOTO "block-1")
 				"block-1":
-					(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-2" "block-3")
+					(DECL <nat> $2 (LIST.COUNT (GET $0)))
+					(GOTO.IF (LT (GET $1) (GET $2)) "block-2" "block-3")
 				"block-2":
 					(DECL <int> item (LIST.GET (GET $0) (GET $1)))
 					(DROP (INT.ADD (GET item) (INT.CONST 5)))
 					(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
 					(GOTO "block-1")
 				"block-3":
-					(DECL <List> $2 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
-					(DECL <nat> $3 (NAT.CONST +0))
+					(DECL <List> $3 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
+					(DECL <nat> $4 (NAT.CONST +0))
 					(GOTO "block-4")
 				"block-4":
-					(GOTO.IF (LT (GET $3) (LIST.COUNT (GET $2))) "block-5" "block-6")
+					(DECL <nat> $5 (LIST.COUNT (GET $3)))
+					(GOTO.IF (LT (GET $4) (GET $5)) "block-5" "block-6")
 				"block-5":
 					(DROP (NULL.CONST null))
-					(SET $3 (NAT.ADD (GET $3) (NAT.CONST +1)))
+					(SET $4 (NAT.ADD (GET $4) (NAT.CONST +1)))
 					(GOTO "block-4")
 				"block-6":
 					(ENDPROGRAM)
@@ -974,7 +976,8 @@ test.suite('ASTNodeStatement', () => {
 						(DECL <nat> $1 (NAT.CONST +0))
 						(GOTO "block-6")
 					"block-6":
-						(GOTO.IF (LT (GET $1) (LIST.COUNT (GET $0))) "block-7" "block-8")
+						(DECL <nat> $2 (LIST.COUNT (GET $0)))
+						(GOTO.IF (LT (GET $1) (GET $2)) "block-7" "block-8")
 					"block-7":
 						(DECL <str> word (LIST.GET (GET $0) (GET $1)))
 						(DROP (INT.CONST 10))

@@ -75,7 +75,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		 * if !!left then left else ‹v1›
 		 * ```
 		 */
-		const left: IR.Value = this.operand0.lower(optimizer).asTac(optimizer);
+		const left: IR.ValueTac = this.operand0.lower(optimizer).asTac(optimizer);
 
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
 		let conseq = (): IR.Value => this.operand1.lower(optimizer);

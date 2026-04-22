@@ -68,8 +68,8 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ:        TYPE.Type = this.type();
-		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
+		const typ:        TYPE.Type   = this.type();
+		const base_value: IR.ValueTac = this.base.lower(optimizer).asTac(optimizer);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {

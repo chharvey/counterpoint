@@ -69,7 +69,7 @@ export class ASTNodeStatementLoop extends StatementBreakable {
 	public override lower(optimizer: Optimizer): void {
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.until) {
-			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
+			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer).asTac(optimizer), TYPE.BOOL);
 		}
 
 		this.labelWhile    = optimizer.newLabel();

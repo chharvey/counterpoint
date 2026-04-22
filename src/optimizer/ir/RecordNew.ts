@@ -12,13 +12,14 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Create a record. */
 export class RecordNew extends Value {
 	public constructor(
-		private readonly props: ReadonlyMap<bigint, {readonly keysrc?: string, readonly value: Value}>,
+		private readonly props: ReadonlyMap<bigint, {readonly keysrc?: string, readonly value: ValueTac}>,
 		typ: TYPE.Type,
 	) {
 		super(OpCode.RECORD_NEW, typ);

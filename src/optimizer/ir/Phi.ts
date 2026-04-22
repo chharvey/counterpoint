@@ -10,6 +10,7 @@ import {
 } from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -20,12 +21,12 @@ import {Value} from './Value.ts';
 export class Phi extends Value {
 	private readonly labelThen: string;
 	private readonly labelElse: string;
-	private readonly valueThen: Value;
-	private readonly valueElse: Value;
+	private readonly valueThen: ValueTac;
+	private readonly valueElse: ValueTac;
 
 	public constructor(
-		[then_label, then_value]: readonly [string, Value],
-		[else_label, else_value]: readonly [string, Value],
+		[then_label, then_value]: readonly [string, ValueTac],
+		[else_label, else_value]: readonly [string, ValueTac],
 	) {
 		super(OpCode.PHI, then_value.type.union(else_value.type));
 		this.labelThen = then_label;

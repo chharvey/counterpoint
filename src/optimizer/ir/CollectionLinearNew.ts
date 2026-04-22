@@ -14,6 +14,7 @@ import {TYPE} from '../../typer/index.ts';
 import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -21,7 +22,7 @@ import {Value} from './Value.ts';
 export class CollectionLinearNew extends Value {
 	public constructor(
 		private readonly name:  TypeName.TUPLE | TypeName.LIST | TypeName.SET,
-		private readonly items: readonly Value[],
+		private readonly items: readonly ValueTac[],
 		typ: TYPE.Type,
 	) {
 		super(new Map<TypeName, OpCode>([
