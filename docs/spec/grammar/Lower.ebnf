@@ -340,7 +340,7 @@ Lower(SemanticStatementConditional[unless=false] ::= SemanticExpression Semantic
 ];
 
 Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression SemanticBlock) := [
-	goto "while".
+	(GOTO "while")
 	"while":
 	(GOTO.IF `Lower(SemanticExpression)` "do" "endwhile")
 	"do":
@@ -349,7 +349,7 @@ Lower(SemanticStatementLoop[doFirst=false][until=false] ::= SemanticExpression S
 	"endwhile":
 ];
 Lower(SemanticStatementLoop[doFirst=false][until=true] ::= SemanticExpression SemanticBlock) := [
-	goto "while".
+	(GOTO "while")
 	"while":
 	(GOTO.IF (NOT `Lower(SemanticExpression)`) "do" "endwhile")
 	"do":
@@ -358,7 +358,7 @@ Lower(SemanticStatementLoop[doFirst=false][until=true] ::= SemanticExpression Se
 	"endwhile":
 ];
 Lower(SemanticStatementLoop[doFirst=true][until=false] ::= SemanticExpression SemanticBlock) := [
-	goto "do".
+	(GOTO "do")
 	"do":
 	...`Lower(SemanticBlock)`
 	(GOTO "while")
@@ -367,7 +367,7 @@ Lower(SemanticStatementLoop[doFirst=true][until=false] ::= SemanticExpression Se
 	"endwhile":
 ];
 Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression SemanticBlock) := [
-	goto "do".
+	(GOTO "do")
 	"do":
 	...`Lower(SemanticBlock)`
 	(GOTO "while")
@@ -379,7 +379,7 @@ Lower(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression Sem
 Lower(SemanticStatementIteration ::= SemanticVariable SemanticType SemanticExpression SemanticBlock) := [
 	(DECL <List> $iterable `Lower(SemanticExpression)`)
 	(DECL <nat> $index (NAT.CONST +0))
-	goto "while".
+	(GOTO "while")
 	"while":
 	(GOTO.IF (LT (GET $index) (LIST.COUNT (GET $iterable))) "do" "endwhile")
 	"do":
@@ -392,7 +392,7 @@ Lower(SemanticStatementIteration ::= SemanticVariable SemanticType SemanticExpre
 Lower(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlock) := [
 	(DECL <List> $iterable `Lower(SemanticExpression)`)
 	(DECL <nat> $index (NAT.CONST +0))
-	goto "while".
+	(GOTO "while")
 	"while":
 	(GOTO.IF (LT (GET $index) (LIST.COUNT (GET $iterable))) "do" "endwhile")
 	"do":
