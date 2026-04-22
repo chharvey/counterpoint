@@ -6,6 +6,7 @@ import {
 	type AST,
 	VALUE,
 	TYPE,
+	Optimizer,
 	IR,
 	BinValue,
 	bigint_to_i64,
@@ -845,6 +846,15 @@ test.suite('Opcode', () => {
 					mod.local.set(3, genConst(cg, 43n)),
 					mod.local.set(4, genConst(cg, 4.3)),
 				],
+			);
+		});
+
+		test.test('uninitialized Decl returns (local.set) with (struct.new_default).', () => {
+			// there exists no syntax for empty Decls, so constructing it manually
+			const cg = new Builder();
+			assertEqualBins(
+				new IR.Decl(new Optimizer().newTemp(TYPE.INT)).codegen(cg),
+				cg.module.local.set(0, cg.module.struct.new_default(cg.reftype.Value)),
 			);
 		});
 
