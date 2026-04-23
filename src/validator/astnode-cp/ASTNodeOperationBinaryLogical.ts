@@ -61,7 +61,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Phi {
+	public override lower(optimizer: Optimizer): IR.Get {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```
@@ -86,6 +86,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 		return IR.conditional_expression(
 			optimizer,
+			this.operand0.type().union(this.operand1.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
 			() => new IR.Unop(IR.OpCode.TOBOOL, left, TYPE.BOOL),
 			conseq,
 			altern,

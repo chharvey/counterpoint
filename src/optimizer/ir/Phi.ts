@@ -17,8 +17,10 @@ import type {ValueTac} from './ValueTac.ts';
 /**
  * A Phi function merges branches of control flow in SSA form.
  * @see https://en.wikipedia.org/wiki/Static_single-assignment_form
+ * @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later.
  */
-export class Phi extends Value {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class Phi extends Value {
 	private readonly labelThen: string;
 	private readonly labelElse: string;
 	private readonly valueThen: ValueTac;
@@ -53,19 +55,7 @@ export class Phi extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, TYPE: any, BinVect: any, t0: any, arg0: any, arg1: any, arg2: any, binaryen: any): number {
-		// Binary Logical Operator:
-		const block1: binaryen.ExpressionRef = cg.module.block(null, [
-			cg.module.drop(arg0),
-			arg1,
-		], binaryen.v128);
-		if (t0.isDefinitelyFalsy) {
-			return this.operator === Operator.AND ? arg0 : block1;
-		} else if (t0.isDefinitelyTruthy) {
-			return this.operator === Operator.AND ? block1 : arg0;
-		}
-
-
+	#optimizationStrategy(this: any, cg: Builder, TYPE: any, BinVect: any, t0: any, arg0: any, arg1: any, arg2: any): number {
 		// Ternary Operator:
 		if (t0.isSubtypeOf(TYPE.TRUE)) {
 			return drop_then(this.builder.module, [arg0], arg1);

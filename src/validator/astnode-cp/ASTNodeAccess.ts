@@ -145,6 +145,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		if (this.kind === Operator.DOT_MAY) {
 			return IR.conditional_expression(
 				optimizer,
+				this.type(),
 				() => new IR.Unop(IR.OpCode.ISNULL, base_value, TYPE.BOOL),
 				() => new IR.Const(VALUE.NULL),
 				non_nullish_base,

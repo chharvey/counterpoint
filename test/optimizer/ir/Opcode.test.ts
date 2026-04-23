@@ -56,6 +56,33 @@ test.suite('Opcode', () => {
 			);
 		});
 
+		test.test('Get returns (local.get).', () => {
+			const {stmts, opt, cg} = setupScript(`{
+				val mut a: null  = null;
+				val mut b: bool  = false;
+				val mut c: sym   = @hello;
+				val mut d: int   = 42;
+				val mut e: float = 4.2;
+
+				a;
+				b;
+				c;
+				d;
+				e;
+			}`);
+			const mod = cg.module;
+			return assertEqualBins(
+				stmts.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+				[
+					mod.local.get(0, cg.reftype.Value),
+					mod.local.get(1, cg.reftype.Value),
+					mod.local.get(2, cg.reftype.Value),
+					mod.local.get(3, cg.reftype.Value),
+					mod.local.get(4, cg.reftype.Value),
+				],
+			);
+		});
+
 		test.test('Template returns (block) containing static repetition of (array.copy).', () => {
 			const {opt, cg} = setupScript(`{
 				val user: (name: str) = (name= "Alan");
@@ -124,33 +151,6 @@ test.suite('Opcode', () => {
 					mod.array.copy(result_get, offset_get, string_4_get, mod.i32.const(0), string_4_len),
 					result_get,
 				], cg.reftype.String)).value),
-			);
-		});
-
-		test.test('Get returns (local.get).', () => {
-			const {stmts, opt, cg} = setupScript(`{
-				val mut a: null  = null;
-				val mut b: bool  = false;
-				val mut c: sym   = @hello;
-				val mut d: int   = 42;
-				val mut e: float = 4.2;
-
-				a;
-				b;
-				c;
-				d;
-				e;
-			}`);
-			const mod = cg.module;
-			return assertEqualBins(
-				stmts.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-				[
-					mod.local.get(0, cg.reftype.Value),
-					mod.local.get(1, cg.reftype.Value),
-					mod.local.get(2, cg.reftype.Value),
-					mod.local.get(3, cg.reftype.Value),
-					mod.local.get(4, cg.reftype.Value),
-				],
 			);
 		});
 
@@ -1479,6 +1479,9 @@ test.suite('Opcode', () => {
 				c;
 				d;
 				e;
+
+				val user: (name: str) = (name= "Alan");
+				"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
 
 				();
 

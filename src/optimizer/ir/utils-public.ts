@@ -6,8 +6,8 @@ import type {
 import {
 	type Value,
 	Get,
-	Phi,
 	Decl,
+	Set as IrSet,
 	Goto,
 	GotoConditional,
 } from './index.ts';
@@ -83,47 +83,47 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  * ```
  * IR Outline:
  * ```
+ * (DECL ‹result_type› $result)
  * (GOTO.IF ‹condition› "then" "else")
  * "then":
- * (DECL ‹result_type› $result_then ‹consequent›) ;; evaluate consequent and set to result
+ * (SET $result ‹consequent›)
  * (GOTO "endif")
  * "else":
- * (DECL ‹result_type› $result_else ‹alternative›) ;; evaluate alternative and set to result
+ * (SET $result ‹alternative›)
+ * (GOTO "endif")
  * "endif":
- * return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
+ * return (GET $result).
  * ```
  * @param optimizer
  * @param result_type the type of the expression’s value
  * @param condition
  * @param consequent
  * @param alternative
- * @return            a (PHI) of the results based on the condition
+ * @return            a (GET) of the results based on the condition
  */
 export function conditional_expression(
 	optimizer:   Optimizer,
+	result_type: TYPE.Type,
 	condition:   () => Value,
 	consequent:  () => Value,
 	alternative: () => Value,
-): Phi {
+): Get {
 	const label_then:  string = optimizer.newLabel();
 	const label_else:  string = optimizer.newLabel();
 	const label_endif: string = optimizer.newLabel();
 
+	const result: Temp = optimizer.newTemp(result_type);
+	optimizer.pushInstruction(new Decl(result));
 	optimizer.terminateBlock(new GotoConditional(condition.call(null), label_then, label_else));
 
 	optimizer.initiateBlock(label_then);
-	const result_then: Temp = optimizer.newTemp(consequent.call(null));
-	optimizer.pushInstruction(new Decl(result_then));
+	optimizer.pushInstruction(new IrSet(result, consequent.call(null)));
 	optimizer.terminateBlock(new Goto(label_endif));
 
 	optimizer.initiateBlock(label_else);
-	const result_else: Temp = optimizer.newTemp(alternative.call(null));
-	optimizer.pushInstruction(new Decl(result_else));
+	optimizer.pushInstruction(new IrSet(result, alternative.call(null)));
 	optimizer.terminateBlock(new Goto(label_endif));
 
 	optimizer.initiateBlock(label_endif);
-	return new Phi(
-		[label_then, new Get(result_then)],
-		[label_else, new Get(result_else)],
-	);
+	return new Get(result);
 }

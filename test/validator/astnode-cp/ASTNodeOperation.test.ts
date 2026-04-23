@@ -264,15 +264,16 @@ test.suite('ASTNodeOperation', () => {
 					(DECL <float> y (FLOAT.DIV (FLOAT.CONST 42.0) (FLOAT.CONST 7.0)))
 					(DECL <float> $0 (FLOAT.ADD (FLOAT.CONST 3.0) (GET y)))
 					(DROP (NEG (GET $0)))
+					(DECL <anything> $1)
 					(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
 				"block-1":
-					(DECL <int> $1 (INT.CONST 42))
+					(SET $1 (INT.CONST 42))
 					(GOTO "block-3")
 				"block-2":
-					(DECL <float> $2 (FLOAT.CONST 4.2))
+					(SET $1 (FLOAT.CONST 4.2))
 					(GOTO "block-3")
 				"block-3":
-					(DECL <anything> z (PHI "block-1"->(GET $1) "block-2"->(GET $2)))
+					(DECL <anything> z (GET $1))
 					(DROP (NEG (GET z)))
 					(ENDPROGRAM)
 			`.trim());
@@ -392,25 +393,27 @@ test.suite('ASTNodeOperation', () => {
 					"block-0":
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
+						(DECL <anything> $0)
 						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
 					"block-1":
-						(DECL <bool> $0 (GET b))
+						(SET $0 (GET b))
 						(GOTO "block-3")
 					"block-2":
-						(DECL <null> $1 (GET a))
+						(SET $0 (GET a))
 						(GOTO "block-3")
 					"block-3":
-						(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-						(DECL <bool> $2 (NOT (GET a)))
-						(GOTO.IF (TOBOOL (GET $2)) "block-4" "block-5")
+						(DROP (GET $0))
+						(DECL <bool> $1 (NOT (GET a)))
+						(DECL <bool> $2)
+						(GOTO.IF (TOBOOL (GET $1)) "block-4" "block-5")
 					"block-4":
-						(DECL <bool> $3 (NOT (GET b)))
+						(SET $2 (NOT (GET b)))
 						(GOTO "block-6")
 					"block-5":
-						(DECL <bool> $4 (GET $2))
+						(SET $2 (GET $1))
 						(GOTO "block-6")
 					"block-6":
-						(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $4)))
+						(DROP (GET $2))
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -424,26 +427,28 @@ test.suite('ASTNodeOperation', () => {
 					"block-0":
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
+						(DECL <anything> $0)
 						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
 					"block-1":
-						(DECL <int> $0 (GET c))
+						(SET $0 (GET c))
 						(GOTO "block-3")
 					"block-2":
-						(DECL <float> $1 (GET d))
+						(SET $0 (GET d))
 						(GOTO "block-3")
 					"block-3":
-						(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-						(DECL <int> $2 (NEG (GET c)))
-						(DECL <int> $3 (INT.ADD (GET $2) (INT.CONST 1)))
-						(GOTO.IF (TOBOOL (GET $3)) "block-4" "block-5")
+						(DROP (GET $0))
+						(DECL <int> $1 (NEG (GET c)))
+						(DECL <int> $2 (INT.ADD (GET $1) (INT.CONST 1)))
+						(DECL <anything> $3)
+						(GOTO.IF (TOBOOL (GET $2)) "block-4" "block-5")
 					"block-4":
-						(DECL <int> $4 (GET $3))
+						(SET $3 (GET $2))
 						(GOTO "block-6")
 					"block-5":
-						(DECL <float> $5 (FLOAT.SUB (FLOAT.CONST 1.0) (GET d)))
+						(SET $3 (FLOAT.SUB (FLOAT.CONST 1.0) (GET d)))
 						(GOTO "block-6")
 					"block-6":
-						(DROP (PHI "block-4"->(GET $4) "block-5"->(GET $5)))
+						(DROP (GET $3))
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -456,16 +461,16 @@ test.suite('ASTNodeOperation', () => {
 					"block-0":
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
+						(DECL <anything> $0)
 						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
 					"block-1":
-						(DECL <bool> $0 (GET b))
+						(SET $0 (GET b))
 						(GOTO "block-3")
 					"block-2":
-						(DECL <null> $1 (GET a))
+						(SET $0 (GET a))
 						(GOTO "block-3")
 					"block-3":
-						(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-						(DROP (NOT (GET $2)))
+						(DROP (NOT (GET $0)))
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -478,16 +483,16 @@ test.suite('ASTNodeOperation', () => {
 					"block-0":
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
+						(DECL <anything> $0)
 						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
 					"block-1":
-						(DECL <int> $0 (GET c))
+						(SET $0 (GET c))
 						(GOTO "block-3")
 					"block-2":
-						(DECL <float> $1 (GET d))
+						(SET $0 (GET d))
 						(GOTO "block-3")
 					"block-3":
-						(DECL <anything> $2 (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
-						(DROP (NOT (GET $2)))
+						(DROP (NOT (GET $0)))
 						(ENDPROGRAM)
 				`.trim());
 			});
@@ -504,26 +509,28 @@ test.suite('ASTNodeOperation', () => {
 					(DECL <bool> x (BOOL.CONST false))
 					(DECL <float> y (FLOAT.CONST 0.5))
 					(DECL <float> z (FLOAT.CONST 0.2))
+					(DECL <float> $0)
 					(GOTO.IF (GET x) "block-1" "block-2")
 				"block-1":
-					(DECL <float> $0 (GET y))
+					(SET $0 (GET y))
 					(GOTO "block-3")
 				"block-2":
-					(DECL <float> $1 (GET z))
+					(SET $0 (GET z))
 					(GOTO "block-3")
 				"block-3":
-					(DROP (PHI "block-1"->(GET $0) "block-2"->(GET $1)))
+					(DROP (GET $0))
+					(DECL <float> $1)
 					(GOTO.IF (LT (GET y) (GET z)) "block-4" "block-5")
 				"block-4":
 					(DECL <float> $2 (FLOAT.MUL (GET y) (FLOAT.CONST 2.0)))
-					(DECL <float> $3 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
+					(SET $1 (FLOAT.ADD (FLOAT.CONST 0.03) (GET $2)))
 					(GOTO "block-6")
 				"block-5":
-					(DECL <float> $4 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-					(DECL <float> $5 (FLOAT.ADD (GET $4) (FLOAT.CONST 0.02)))
+					(DECL <float> $3 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+					(SET $1 (FLOAT.ADD (GET $3) (FLOAT.CONST 0.02)))
 					(GOTO "block-6")
 				"block-6":
-					(DROP (PHI "block-4"->(GET $3) "block-5"->(GET $5)))
+					(DROP (GET $1))
 					(ENDPROGRAM)
 			`.trim());
 		});
