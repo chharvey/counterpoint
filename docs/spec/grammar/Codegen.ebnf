@@ -299,8 +299,6 @@ Codegen((EQ  `v0` `v1`)) := (call $veq `Codegen(v0)` `Codegen(v1)`);
 Codegen((NID `v0` `v1`)) := `Codegen((NOT (ID `v0` `v1`)))`;
 Codegen((NEQ `v0` `v1`)) := `Codegen((NOT (EQ `v0` `v1`)))`;
 
-// Codegen((PHI `pairs`));
-
 Codegen((DROP `v`)) := (drop `Codegen(v)`);
 
 Codegen((DECL `id` `type` `v`)) := (local.set ‹index› `id` `Codegen(v)`);

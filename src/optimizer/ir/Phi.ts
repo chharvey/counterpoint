@@ -17,8 +17,10 @@ import type {ValueTac} from './ValueTac.ts';
 /**
  * A Phi function merges branches of control flow in SSA form.
  * @see https://en.wikipedia.org/wiki/Static_single-assignment_form
+ * @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later.
  */
-export class Phi extends Value {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class Phi extends Value {
 	private readonly labelThen: string;
 	private readonly labelElse: string;
 	private readonly valueThen: ValueTac;

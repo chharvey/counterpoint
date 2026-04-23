@@ -21,7 +21,6 @@ export * from './CollectionDynamicCount.ts';
 export * from './Call.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
-export * from './Phi.ts';
 
 export * from './Instruction.ts';
 export * from './Drop.ts';

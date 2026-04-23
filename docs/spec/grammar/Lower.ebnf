@@ -97,8 +97,6 @@ EQ ([Value Value]) -> Boolean;
 NID([Value Value]) -> Boolean;
 NEQ([Value Value]) -> Boolean;
 
-PHI(‹label› -> Value, ‹label› -> Value) -> Value;
-
 DROP([Value]);
 
 DECL(SymbolSchemaVar|native-string Type [Value]);
