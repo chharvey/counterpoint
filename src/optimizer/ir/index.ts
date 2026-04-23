@@ -3,10 +3,13 @@ export * from './utils-public.ts';
 export * from './Opcode.ts';
 
 export * from './Value.ts';
+
+export * from './ValueTac.ts';
 export * from './Trap.ts';
 export * from './Const.ts';
-export * from './Template.ts';
 export * from './Get.ts';
+
+export * from './Template.ts';
 export * from './CollectionLinearNew.ts';
 export * from './RecordNew.ts';
 export * from './DictNew.ts';
@@ -18,7 +21,6 @@ export * from './CollectionDynamicCount.ts';
 export * from './Call.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
-export * from './Phi.ts';
 
 export * from './Instruction.ts';
 export * from './Drop.ts';

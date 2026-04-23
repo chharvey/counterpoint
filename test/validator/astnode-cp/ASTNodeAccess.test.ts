@@ -1079,29 +1079,30 @@ test.suite('ASTNodeAccess', () => {
 			function maybe_access_output(
 				block_n:      number,
 				base_name:    string,
-				result_ns:    [number, number] | [number],
+				result_n:     number,
 				result_value: string | ((decl: (value: string) => string) => string),
 			): string {
-				const block_then:       string = `block-${ block_n }`;
-				const block_else:       string = `block-${ block_n + 1 }`;
-				const block_endif:      string = `block-${ block_n + 2 }`;
-				const result_then_name: string = `$${ result_ns[0] }`;
-				const result_else_name: string = `$${ result_ns[1] ?? result_ns[0] + 1 }`;
-				function decl_result(res_name: string, res_val: string = '(NULL.CONST null)'): string {
-					return `(DECL <${ res_val === '(NULL.CONST null)' ? 'null' : 'anything' }> ${ res_name } ${ res_val })`;
+				const block_then:  string = `block-${ block_n }`;
+				const block_else:  string = `block-${ block_n + 1 }`;
+				const block_endif: string = `block-${ block_n + 2 }`;
+				const result_name: string = `$${ result_n }`;
+				function set_result(res_val: string = '(NULL.CONST null)'): string {
+					return `(SET ${ result_name } ${ res_val })`;
 				}
-				return `\n\t(GOTO.IF (ISNULL (GET ${ base_name })) "${ block_then }" "${ block_else }")\n`.concat(xjs.String.dedent`
+				return xjs.String.dedent`
+					${ '\t' }(DECL <anything> ${ result_name })
+					${ '\t' }(GOTO.IF (ISNULL (GET ${ base_name })) "${ block_then }" "${ block_else }")
 					"${ block_then }":
-						${ decl_result(result_then_name) }
+						${ set_result() }
 						(GOTO "${ block_endif }")
 					"${ block_else }":
 						${ typeof result_value === 'string'
-							? decl_result(result_else_name, result_value)
-							: result_value((value) => decl_result(result_else_name, value)) }
+							? set_result(result_value)
+							: result_value((value) => set_result(value)) }
 						(GOTO "${ block_endif }")
 					"${ block_endif }":
-						(DROP (PHI "${ block_then }"->(GET ${ result_then_name }) "${ block_else }"->(GET ${ result_else_name })))
-				`.trim());
+						(DROP (GET ${ result_name }))
+				`.trimEnd();
 			}
 			/* eslint-disable @stylistic/indent */
 			test.test('tuple access.', () => {
@@ -1120,8 +1121,8 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 						(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
 				`.trim().concat(
-					maybe_access_output(1, 'my_tupleA', [5], '(TUPLE.GET 2 (GET my_tupleA))'),
-					maybe_access_output(4, 'my_tupleB', [7], (decl) => extract_lines`
+					maybe_access_output(1, 'my_tupleA', 5, '(TUPLE.GET 2 (GET my_tupleA))'),
+					maybe_access_output(4, 'my_tupleB', 6, (decl) => extract_lines`
 						(DROP (GET my_tupleB))
 						${ decl('(NULL.CONST null)') }
 					`.join('\n\t')),
@@ -1144,8 +1145,8 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
 						(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
 				`.trim().concat(
-					maybe_access_output(1, 'my_recordX', [5], '(RECORD.GET @b (GET my_recordX))'),
-					maybe_access_output(4, 'my_recordY', [7], (decl) => extract_lines`
+					maybe_access_output(1, 'my_recordX', 5, '(RECORD.GET @b (GET my_recordX))'),
+					maybe_access_output(4, 'my_recordY', 6, (decl) => extract_lines`
 						(DROP (GET my_recordY))
 						${ decl('(NULL.CONST null)') }
 					`.join('\n\t')),
@@ -1159,7 +1160,7 @@ test.suite('ASTNodeAccess', () => {
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-				`.trim().concat(maybe_access_output(1, 'my_list', [0], '(LIST.GET (GET my_list) (INT.CONST 2))'), '\n\t(ENDPROGRAM)'));
+				`.trim().concat(maybe_access_output(1, 'my_list', 0, '(LIST.GET (GET my_list) (INT.CONST 2))'), '\n\t(ENDPROGRAM)'));
 			});
 			test.test('Dict access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1168,7 +1169,7 @@ test.suite('ASTNodeAccess', () => {
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @c->(INT.CONST 42)))
-				`.trim().concat(maybe_access_output(1, 'my_dict', [0], '(DICT.GET (GET my_dict) (SYM.CONST @b))'), '\n\t(ENDPROGRAM)'));
+				`.trim().concat(maybe_access_output(1, 'my_dict', 0, '(DICT.GET (GET my_dict) (SYM.CONST @b))'), '\n\t(ENDPROGRAM)'));
 			});
 			test.test('Map access.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1178,7 +1179,7 @@ test.suite('ASTNodeAccess', () => {
 					"block-0":
 						(DECL <int> accessor (INT.CONST 22))
 						(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
-				`.trim().concat(maybe_access_output(1, '$0', [1], '(MAP.GET (GET $0) (GET accessor))'), '\n\t(ENDPROGRAM)'));
+				`.trim().concat(maybe_access_output(1, '$0', 1, '(MAP.GET (GET $0) (GET accessor))'), '\n\t(ENDPROGRAM)'));
 			});
 			test.test('returns null when base is null.', () => {
 				assert.strictEqual(setupScript(`{
@@ -1200,11 +1201,11 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <null> my_dict (NULL.CONST null))
 						(DECL <null> my_map (NULL.CONST null))
 				`.trim().concat(
-					maybe_access_output( 1, 'my_tup',  [0], '(NULL.CONST null)'),
-					maybe_access_output( 4, 'my_rec',  [2], '(NULL.CONST null)'),
-					maybe_access_output( 7, 'my_list', [4], '(NULL.CONST null)'),
-					maybe_access_output(10, 'my_dict', [6], '(NULL.CONST null)'),
-					maybe_access_output(13, 'my_map',  [8], '(NULL.CONST null)'),
+					maybe_access_output( 1, 'my_tup',  0, '(NULL.CONST null)'),
+					maybe_access_output( 4, 'my_rec',  1, '(NULL.CONST null)'),
+					maybe_access_output( 7, 'my_list', 2, '(NULL.CONST null)'),
+					maybe_access_output(10, 'my_dict', 3, '(NULL.CONST null)'),
+					maybe_access_output(13, 'my_map',  4, '(NULL.CONST null)'),
 					'\n\t(ENDPROGRAM)',
 				));
 			});
@@ -1222,26 +1223,27 @@ test.suite('ASTNodeAccess', () => {
 						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 42)))
 						(DECL <Map> my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
 				`.trim().concat(
-					maybe_access_output(1, 'my_list', [0, 3], (decl) => extract_lines`
+					maybe_access_output(1, 'my_list', 0, (decl) => extract_lines`
 						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
 						(DECL <int> $2 (INT.SUB (GET $1) (INT.CONST 3)))
 						${ decl('(LIST.GET (GET my_list) (GET $2))') }
 					`.join('\n\t')),
-					maybe_access_output(4, 'my_dict', [4, 8], (decl) => '(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-7" "block-8")\n'.concat(xjs.String.dedent`
+					maybe_access_output(4, 'my_dict', 3, (decl) => xjs.String.dedent`
+						${ '\t' }(DECL <sym> $4)
+						${ '\t' }(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-7" "block-8")
 						"block-7":
-							(DECL <sym> $5 (SYM.CONST @a))
+							(SET $4 (SYM.CONST @a))
 							(GOTO "block-9")
 						"block-8":
-							(DECL <sym> $6 (SYM.CONST @b))
+							(SET $4 (SYM.CONST @b))
 							(GOTO "block-9")
 						"block-9":
-							(DECL <sym> $7 (PHI "block-7"->(GET $5) "block-8"->(GET $6)))
-							${ decl('(DICT.GET (GET my_dict) (GET $7))') }
-					`.trim())),
-					maybe_access_output(10, 'my_map', [9, 12], (decl) => extract_lines`
-						(DECL <int> $10 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
-						(DECL <int> $11 (INT.ADD (INT.CONST 5) (GET $10)))
-						${ decl('(MAP.GET (GET my_map) (GET $11))') }
+							${ decl('(DICT.GET (GET my_dict) (GET $4))') }
+					`.trim()),
+					maybe_access_output(10, 'my_map', 5, (decl) => extract_lines`
+						(DECL <int> $6 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL <int> $7 (INT.ADD (INT.CONST 5) (GET $6)))
+						${ decl('(MAP.GET (GET my_map) (GET $7))') }
 					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));

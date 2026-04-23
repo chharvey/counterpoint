@@ -10,10 +10,10 @@ import {IR} from './index.ts';
 
 
 export type Temp = {
-	readonly id:    bigint,
-	readonly name:  string,
-	readonly type:  TYPE.Type,
-	readonly value: IR.Value,
+	readonly id:     bigint,
+	readonly name:   string,
+	readonly type:   TYPE.Type,
+	readonly value?: IR.Value,
 };
 
 
@@ -43,6 +43,25 @@ export class Optimizer {
 		].join('-');
 	}
 
+	/**
+	 * Create a new IR temporary given a value; or a type, if uninitialized with a value.
+	 * If a value is given, the type is read from that value.
+	 * @return a new Temp with newly-generated id & name, the given value (or `undefined`), and the type
+	 */
+	public newTemp(value_or_type: IR.Value | TYPE.Type): Temp {
+		const id:   bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
+		const name: string = `$${ -id }`; // appears positive
+		const temp: Temp   = {
+			id,
+			name,
+			...(value_or_type instanceof IR.Value
+				? {value: value_or_type, type: value_or_type.type}
+				: {type: value_or_type}
+			),
+		};
+		return temp;
+	}
+
 	public initiateBlock(label: string): void {
 		if (this.currentBlock) {
 			throw new Error('Cannot initiate a new block in an Optimizer with an active block. Try calling `Optimizer#terminateBlock` first.');
@@ -59,17 +78,6 @@ export class Optimizer {
 		delete this.currentBlock;
 	}
 
-	public newTemp(value: IR.Value): Temp {
-		const id:    bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
-		const local: Temp   = {
-			id,
-			value,
-			name: `$${ -id }`, // appears positive
-			type: value.type,
-		};
-		this.pushInstruction(new IR.Decl(local, value));
-		return local;
-	}
 
 	public pushInstruction(instr: IR.Instruction): void {
 		if (!this.currentBlock) {

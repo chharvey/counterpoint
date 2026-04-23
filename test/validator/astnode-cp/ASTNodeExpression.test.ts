@@ -9,7 +9,6 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
-	Optimizer,
 	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -49,11 +48,23 @@ test.suite('ASTNodeExpression', () => {
 			return assert.deepStrictEqual(expr.lower(), new IR.Get(symbol));
 		});
 		test.test('AST.Template returns an IR.Template.', () => {
-			const opt = new Optimizer();
-			const tpl: AST.ASTNodeTemplate = AST.ASTNodeTemplate.fromSource('"""hello {{ 42 }} world"""');
-			const value: IR.Template = tpl.lower(opt);
-			assert.deepStrictEqual(value, new IR.Template(tpl.children.map((c) => c.lower(opt))));
-			return assert.strictEqual(value.toString(), '(STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world"))');
+			assert.strictEqual(setupScript(`{
+				"""hello {{ 42 }} world""";
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world")))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('three-address code format.', () => {
+			assert.strictEqual(setupScript(`{
+				"""hello {{ """great {{ 42 }} big""" }} world""";
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <str> $0 (STR.TEMPLATE (STR.CONST "great ") (INT.CONST 42) (STR.CONST " big")))
+					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $0) (STR.CONST " world")))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.test('AST.Tuple returns an IR.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{

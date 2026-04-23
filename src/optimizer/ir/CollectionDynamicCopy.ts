@@ -19,7 +19,7 @@ import {
 } from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
-import type {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -191,8 +191,8 @@ function two_tuple_to_case(cg: Builder, pair: Local): {ant: binaryen.ExpressionR
 export class CollectionDynamicCopy extends Instruction {
 	public constructor(
 		private readonly name:        CollectionDynamicName,
-		private readonly destination: Value,
-		private readonly source:      Value,
+		private readonly destination: ValueTac,
+		private readonly source:      ValueTac,
 	) {
 		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_COPY],

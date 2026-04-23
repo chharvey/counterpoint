@@ -94,22 +94,23 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		const iterable: IR.Value = this.iterable.lower(optimizer).asTac(optimizer);
-		const index:    Temp     = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
-		const get_index          = new IR.Get(index);
+		const iterable: IR.ValueTac = this.iterable.lower(optimizer).asTac(optimizer);
+		const index:    Temp        = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
+		const get_index             = new IR.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 
 		this.labelWhile    = optimizer.newLabel();
 		this.labelDo       = optimizer.newLabel();
 		this.labelEndwhile = optimizer.newLabel();
 
+		optimizer.pushInstruction(new IR.Decl(index));
 		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
 
 		optimizer.initiateBlock(this.labels.while!);
 		optimizer.terminateBlock(new IR.GotoConditional(new IR.Binop(
 			IR.OpCode.LT,
 			get_index,
-			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable),
+			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable).asTac(optimizer),
 			TYPE.BOOL,
 		), this.labels.do!, this.labels.endwhile!));
 

@@ -69,7 +69,7 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	public override lower(optimizer: Optimizer): void {
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.unless) {
-			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
+			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer).asTac(optimizer), TYPE.BOOL);
 		}
 
 		const label_then:  string = optimizer.newLabel();

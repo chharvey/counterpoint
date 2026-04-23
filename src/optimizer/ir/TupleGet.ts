@@ -11,13 +11,14 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Read an entry of a tuple. */
 export class TupleGet extends Value {
 	public constructor(
-		private readonly tuple:    Value,
+		private readonly tuple:    ValueTac,
 		private readonly accessor: bigint,
 		entry_type: TYPE.Type,
 	) {
