@@ -917,13 +917,14 @@ test.suite('Opcode', () => {
 						val 'set': mut {float} = {4.2, 2.4};
 						set 'set'.[4.2] = false;
 						set 'set'.[3.3] = true;
-					}`);
+					}`, {codegen: false});
 					const mod = cg.module;
 					const base:           binaryen.ExpressionRef = mod.local.get(1, cg.reftype.Value); // index 0 = nonempty map setup (implementation of Set)
 					const base_get_0:     binaryen.ExpressionRef = mod.local.get(2, cg.reftype.Map);
 					const accessor_get_0: binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Value);
 					const base_get_1:     binaryen.ExpressionRef = mod.local.get(4, cg.reftype.Map);
 					const accessor_get_1: binaryen.ExpressionRef = mod.local.get(5, cg.reftype.Value);
+					opt.instructions[0].codegen(cg);
 					return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						mod.block(null, [
 							mod.local.set(2, new BinValue(cg, base).cast(cg.reftype.Map)),
@@ -965,10 +966,11 @@ test.suite('Opcode', () => {
 					test.test('tuple argument.', () => {
 						const {opt, cg} = setupScript(`{
 							List.<int>((2, 3, 5));
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.List);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Tuple);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -991,10 +993,11 @@ test.suite('Opcode', () => {
 					test.test('List argument.', () => {
 						const {opt, cg} = setupScript(`{
 							List.<int>([2, 3, 5]);
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.List);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.ListInternal);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1017,12 +1020,13 @@ test.suite('Opcode', () => {
 					test.test('Set argument.', () => {
 						const {opt, cg} = setupScript(`{
 							List.<int>({2, 3, 5});
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.reftype.MapInternal);
 						const j_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(6, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(7, cg.reftypeNull.Case);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1059,10 +1063,11 @@ test.suite('Opcode', () => {
 					test.test('tuple argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.Tuple);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
+						opt.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
@@ -1092,10 +1097,11 @@ test.suite('Opcode', () => {
 					test.test('record argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>((a= 2, b= 3, c= 5));
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.Dict);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Record);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1118,11 +1124,12 @@ test.suite('Opcode', () => {
 					test.test('List argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.reftypeNull.Value);
+						opt.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
@@ -1155,10 +1162,11 @@ test.suite('Opcode', () => {
 					test.test('Dict argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>([a= 2, b= 3, c= 5]);
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.Dict);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.DictInternal);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1181,11 +1189,12 @@ test.suite('Opcode', () => {
 					test.test('Set argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(9, cg.reftypeNull.Case);
+						opt.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
@@ -1218,11 +1227,12 @@ test.suite('Opcode', () => {
 					test.test('Map argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(6, cg.reftypeNull.Case);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1255,11 +1265,12 @@ test.suite('Opcode', () => {
 					test.test('tuple argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Set.<int>((2, 3, 5));
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const items_get: binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Tuple);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(4, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(5, cg.reftype.Value);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1285,11 +1296,12 @@ test.suite('Opcode', () => {
 					test.test('List argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Set.<int>([2, 3, 5]);
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const items_get: binaryen.ExpressionRef = mod.local.get(3, cg.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(4, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(5, cg.reftype.Value);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1318,10 +1330,11 @@ test.suite('Opcode', () => {
 					test.test('Set argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Set.<int>({2, 3, 5});
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const destset_get: binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Map);
 						const srcref_get:  binaryen.ExpressionRef = mod.local.get(4, cg.reftype.MapInternal);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
@@ -1346,10 +1359,11 @@ test.suite('Opcode', () => {
 					test.test('tuple argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.Tuple);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
+						opt.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
@@ -1375,11 +1389,12 @@ test.suite('Opcode', () => {
 					test.test('List argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.reftypeNull.Value);
+						opt.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
@@ -1408,11 +1423,12 @@ test.suite('Opcode', () => {
 					test.test('Set argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(9, cg.reftypeNull.Case);
+						opt.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
@@ -1441,10 +1457,11 @@ test.suite('Opcode', () => {
 					test.test('Map argument.', () => {
 						const {opt, cg} = setupScript(`{
 							Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
-						}`);
+						}`, {codegen: false});
 						const mod = cg.module;
 						const destmap_get: binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Map);
 						const srcref_get:  binaryen.ExpressionRef = mod.local.get(4, cg.reftype.MapInternal);
+						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
