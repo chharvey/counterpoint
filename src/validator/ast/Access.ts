@@ -68,8 +68,8 @@ export class Access extends Expression implements Reassignable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ:        TYPE.Type = this.type();
-		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
+		const typ:        TYPE.Type   = this.type();
+		const base_value: IR.ValueTac = this.base.lower(optimizer).asTac(optimizer);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {
@@ -145,6 +145,7 @@ export class Access extends Expression implements Reassignable {
 		if (this.kind === Operator.DOT_MAY) {
 			return IR.conditional_expression(
 				optimizer,
+				this.type(),
 				() => new IR.Unop(IR.OpCode.ISNULL, base_value, TYPE.BOOL),
 				() => new IR.Const(VALUE.NULL),
 				non_nullish_base,

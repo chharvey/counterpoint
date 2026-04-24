@@ -6,10 +6,13 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import type {CollectionDynamicName} from './utils-public.ts';
+import {
+	TypeName,
+	type CollectionDynamicName,
+} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
-import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -17,7 +20,7 @@ import {Value} from './Value.ts';
 export class CollectionDynamicCount extends Value {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
-		private readonly collection: Value,
+		private readonly collection: ValueTac,
 	) {
 		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_COUNT],

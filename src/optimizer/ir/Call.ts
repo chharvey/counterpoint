@@ -8,14 +8,15 @@ import {
 import type {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Call a function or constructor. */
 export class Call extends Value {
 	public constructor(
-		private readonly callable: Value,
-		private readonly args:     readonly Value[],
+		private readonly callable: ValueTac,
+		private readonly args:     readonly ValueTac[],
 		return_type: TYPE.Type,
 	) {
 		super(OpCode.CALL, return_type);

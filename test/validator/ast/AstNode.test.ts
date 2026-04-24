@@ -48,8 +48,7 @@ test.suite('AstNode', () => {
 					val z: x = null;
 					val z: int = T;
 				}`).varCheck(), (err) => {
-					assert_instanceof(err, AggregateError);
-					assertAssignable(err, {
+					assertAssignable(err as Error, {
 						cons:   AggregateError,
 						errors: [
 							{
@@ -121,8 +120,7 @@ test.suite('AstNode', () => {
 				}`);
 				goal.varCheck();
 				assert.throws(() => goal.typeCheck(), (err) => {
-					assert_instanceof(err, AggregateError);
-					assertAssignable(err, {
+					assertAssignable(err as Error, {
 						cons:   AggregateError,
 						errors: [
 							{

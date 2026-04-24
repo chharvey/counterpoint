@@ -15,7 +15,7 @@ import {ValueType} from './ValueType.ts';
  */
 export class Nothing extends ValueType {
 	public constructor() {
-		super(false);
+		super();
 	}
 
 	public override get isBottomType(): boolean {

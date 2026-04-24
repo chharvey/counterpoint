@@ -2,10 +2,7 @@ import * as assert from 'node:assert';
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
-import type {
-	AST,
-	SymbolSchemaVar,
-} from '../validator/index.ts';
+import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
 import {
 	Global,
@@ -48,16 +45,6 @@ export enum BinConst {
 	FALSE,
 	TRUE,
 }
-
-
-
-/**
- * A type modeling the Binaryen `module.block`.
- */
-type Block = {
-	readonly index: number,
-	readonly node:  AST.AstNode,
-};
 
 
 
@@ -203,9 +190,6 @@ export class Builder {
 	/** A map containing data of WASM local variables, indexed by their name. */
 	readonly #globals = new Map<string, Global>();
 
-	/** A set containing blocks. */
-	private readonly blocks = new Set<Block>();
-
 	/** The Binaryen module to build upon building. */
 	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
 		(module
@@ -350,40 +334,6 @@ export class Builder {
 	 */
 	public getAllLocals(): Local[] {
 		return [...this.#locals];
-	}
-
-	/**
-	 * Set a new block, given an AstNode.
-	 * @param node node that builds the block
-	 * @return     Was the operation performed?
-	 */
-	public setBlock(node: AST.AstNode): boolean {
-		let did: boolean = false;
-		if (!this.getBlock(node)) {
-			this.blocks.add({node, index: this.blocks.size});
-			did = true;
-		}
-		return did;
-	}
-
-	/**
-	 * Get the block with the given node in this Builder’s list, if it’s been added; else, return `undefined`.
-	 * @param  node the node of the block to get
-	 * @return      the block or `undefined`
-	 */
-	public getBlock(node: AST.AstNode): Block | undefined {
-		return [...this.blocks].find((block) => block.node === node);
-	}
-
-	/**
-	 * Set a block to the given node and return it.
-	 * If a block with that node has already been added, this Builder’s state is not changed.
-	 * @param node the node of the block to set
-	 * @return     the block set (or retreived)
-	 */
-	public teeBlock(node: AST.AstNode): Block {
-		this.setBlock(node);
-		return this.getBlock(node)!;
 	}
 
 	/**
@@ -1011,8 +961,8 @@ export class Builder {
 	 * The main function should contain generated code for a program.
 	 * @param main a callback to run before validation
 	 */
-	public setupMain(main?: (mod: binaryen.Module) => void): void {
-		main?.call(null, this.module);
+	public setupMain(main?: () => void): void {
+		main?.call(null);
 		if (!this.module.validate()) {
 			throw new Error('Invalid WebAssembly module.');
 		}

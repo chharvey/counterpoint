@@ -458,8 +458,7 @@ test.suite('Declaration', () => {
 						val x: (   bool,    int) | (   int,    bool) = (   true,    false);
 						val x: (a: bool, b: int) | (a: int, b: bool) = (a= true, b= false);
 					`.split('\n'), (err) => {
-						assert_instanceof(err, AggregateError);
-						assertAssignable(err, {
+						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
 								{cons: TypeErrorNotAssignable, message: 'Expression `false` is not assignable to type `int`.'},
@@ -488,8 +487,7 @@ test.suite('Declaration', () => {
 						);
 						val bob: Employee | Volunteer = ${ BOB };
 					}`, (err) => {
-						assert_instanceof(err, AggregateError);
-						assertAssignable(err, {
+						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
 								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 257: int, 258: str, 259: float)\`.`},
@@ -541,8 +539,7 @@ test.suite('Declaration', () => {
 						val m3_4: mut {str -> bool} = {7 -> 8.0};
 						val m3_5: mut {str -> bool} = {9 -> "a", 10.0 -> "b"};
 					}`, (err) => {
-						assert_instanceof(err, AggregateError);
-						assertAssignable(err, {
+						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
 								{
@@ -613,7 +610,7 @@ test.suite('Declaration', () => {
 		test.test('DeclarationType has no effect.', () => {
 			assert.strictEqual(setupScript(`{
 				type N = int | nat | float;
-			}`, {codegen: false}).opt.print(), '');
+			}`, {codegen: false}).opt.print(), '"block-0":\n\t(ENDPROGRAM)');
 		});
 		test.test('DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
 			const {stmts, opt} = setupScript(`{
@@ -637,15 +634,17 @@ test.suite('Declaration', () => {
 				%%
 			}`, {codegen: false});
 			stmts.forEach((stmt) => (stmt as AST.DeclarationVariable).lower(opt));
-			return assert.strictEqual(opt.print(), extract_lines`
-				(DROP (INT.CONST 42))
-				(DECL <int> assignee_a (INT.CONST 42))
-				(DECL <null> assignee_b (NULL.CONST null))
-				(DECL <int> assignee_c (INT.CONST 42))
-				(DROP (GET assignee_c))
-				(DECL <int> assignee_d (GET assignee_c))
-				(DECL <int> assignee_e (GET assignee_c))
-			`.join('\n'));
+			return assert.strictEqual(opt.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (INT.CONST 42))
+					(DECL <int> assignee_a (INT.CONST 42))
+					(DECL <null> assignee_b (NULL.CONST null))
+					(DECL <int> assignee_c (INT.CONST 42))
+					(DROP (GET assignee_c))
+					(DECL <int> assignee_d (GET assignee_c))
+					(DECL <int> assignee_e (GET assignee_c))
+					(ENDPROGRAM)
+			`.trim());
 		});
 	});
 });

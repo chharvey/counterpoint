@@ -78,7 +78,7 @@ export class StatementReassignment extends Statement {
 			return optimizer.pushInstruction(new IR.Set(symbol, value));
 		} else {
 			assert_instanceof(this.assignee.accessor, Expression);
-			const base_value:    IR.Value    = this.assignee.base.lower(optimizer).asTac(optimizer);
+			const base_value:    IR.ValueTac = this.assignee.base.lower(optimizer).asTac(optimizer);
 			const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
 			assert.ok([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename), `Expected ${ IR.TypeName[base_typename] } to be a dynamic collection.`);
 			return optimizer.pushInstruction(new IR.CollectionDynamicSet(

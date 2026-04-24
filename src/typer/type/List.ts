@@ -30,7 +30,7 @@ export class List extends ReferenceType {
 		public readonly typearg: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.List()]));
+		super(new Set<VALUE.List>([new VALUE.List()]), is_mutable);
 	}
 
 	public override get hasMutable(): boolean {

@@ -14,24 +14,23 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import type {CollectionDynamicName} from './utils-public.ts';
-import type {Instruction} from './Instruction.ts';
 import {
-	OpCode,
-	Opcode,
-} from './Opcode.ts';
-import {TypeName} from './TypeName.ts';
-import type {Value} from './Value.ts';
+	TypeName,
+	type CollectionDynamicName,
+} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicSet extends Opcode implements Instruction {
+export class CollectionDynamicSet extends Instruction {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
-		private readonly collection: Value,
-		private readonly accessor:   Value,
-		private readonly value:      Value,
+		private readonly collection: ValueTac,
+		private readonly accessor:   ValueTac,
+		private readonly value:      ValueTac,
 	) {
 		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_SET],

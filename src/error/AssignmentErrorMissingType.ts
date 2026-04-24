@@ -7,8 +7,8 @@ import {AssignmentError} from './AssignmentError.ts';
  * An AssignmentErrorMissingType is thrown when a variable/parameter/field is declared without a type annotation
  * and it is not eligible for type inference.
  * @example
- * let a = 42 + 1;                     % AssignmentErrorMissingType: Variable `a` is missing a type annotation.
- * function f(b ?= 42 + 1): int => -b; % AssignmentErrorMissingType: Parameter `b` is missing a type annotation.
+ * val a = 42 + 1;                 % AssignmentErrorMissingType: Variable `a` is missing a type annotation.
+ * func f(b? = 42 + 1): int => -b; % AssignmentErrorMissingType: Parameter `b` is missing a type annotation.
  * class Foo {
  * 	public c = 42 + 1; % AssignmentErrorMissingType: Field `c` is missing a type annotation.
  * }

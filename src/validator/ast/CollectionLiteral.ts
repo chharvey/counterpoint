@@ -1,9 +1,6 @@
 import * as xjs from 'extrajs';
 import {TYPE} from '../../index.ts';
-import {
-	assert_context_name,
-	forEither,
-} from '../../lib/index.ts';
+import {assert_context_name} from '../../lib/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {AstNode} from './AstNode.ts';
 import {Expression} from './Expression.ts';
@@ -28,7 +25,7 @@ export function assignToDeco(
 		} else if (assignee instanceof TYPE.Union) {
 			/* A value is assignable to a type union if and only if
 			it is assignable to any operand of that union. */
-			return forEither(assignee.operands, (s) => this.assignTo(s));
+			return xjs.Array.forEither(assignee.operands, (s) => this.assignTo(s));
 		} else {
 			return method.call(this, assignee);
 		}

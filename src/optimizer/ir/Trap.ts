@@ -6,12 +6,12 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
-import {Value} from './Value.ts';
+import {ValueTac} from './ValueTac.ts';
 
 
 
 /** Immediately halt the runtime program. */
-export class Trap extends Value {
+export class Trap extends ValueTac {
 	public constructor() {
 		super(OpCode.TRAP, TYPE.NOTHING);
 	}
@@ -21,7 +21,7 @@ export class Trap extends Value {
 		return cg.module.unreachable();
 	}
 
-	public override asTac(): Trap {
+	public override asTac(): this {
 		return this;
 	}
 }

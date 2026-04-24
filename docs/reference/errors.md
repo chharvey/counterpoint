@@ -114,8 +114,8 @@ Solution(s): Remove the reassignment, or declare the variable with `mut`.
 #### 2220: AssignmentErrorMissingType
 Cause: A variable, parameter, or field was declared without a type annotation when it is not eligible for type inference.
 ```cpl
-let a = 42 + 1;                     % AssignmentErrorMissingType: Variable `a` is missing a type annotation.
-function f(b ?= 42 + 1): int => -b; % AssignmentErrorMissingType: Parameter `b` is missing a type annotation.
+val a = 42 + 1;                 % AssignmentErrorMissingType: Variable `a` is missing a type annotation.
+func f(b? = 42 + 1): int => -b; % AssignmentErrorMissingType: Parameter `b` is missing a type annotation.
 class Foo {
 	public c = 42 + 1; % AssignmentErrorMissingType: Field `c` is missing a type annotation.
 }

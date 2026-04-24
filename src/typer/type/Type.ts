@@ -269,8 +269,8 @@ export abstract class Type {
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
 	public constructor(
-		public readonly isMutable: boolean,
 		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
+		public readonly isMutable: boolean = false,
 	) {
 	}
 
@@ -480,7 +480,7 @@ export class TypeInterface extends Type {
 		is_mutable: boolean = false,
 		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
-		super(is_mutable);
+		super(new Set<VALUE.Value>(), is_mutable);
 	}
 
 	@memoizeGetter

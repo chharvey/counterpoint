@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Optimizer,
+	IR,
 	ParseError01,
 } from '../../index.ts';
 import {runOnceMethod} from '../../lib/index.ts';
@@ -29,13 +30,13 @@ function report_syntax_errors(node: SyntaxNode): void {
 			throw new ParseError01(to_serializable(n));
 		} else if (n.type === 'MISSING' || n.text === '') {
 			const serializable: Serializable = to_serializable(n);
-			const err = new ParseError01(to_serializable(n));
+			const err = new ParseError01(serializable);
 			// @ts-expect-error --- TODO: write class for `ParseError02`
 			err.message = (n.type === 'MISSING')
 				? err.message.replace(/Unexpected/, 'Expected')
 				: `Expected token: \`${ n.type }\` at line ${ serializable.line_index + 1 } col ${ serializable.col_index + 1 }.`;
 			throw err;
-		} else if (n.childCount > 0) {
+		} else if (n.childCount) {
 			report_syntax_errors(n);
 		}
 	});
@@ -81,6 +82,7 @@ export class Goal extends AstNode implements Lowerable {
 	@runOnceMethod
 	public lower(optimizer: Optimizer): void {
 		this.block?.lower(optimizer);
+		optimizer.terminateBlock(new IR.EndProgram());
 		return optimizer.validate();
 	}
 }

@@ -12,13 +12,14 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Create a Map. */
 export class MapNew extends Value {
 	public constructor(
-		private readonly cases: ReadonlyMap<Value, Value>,
+		private readonly cases: ReadonlyMap<ValueTac, ValueTac>,
 		typ: TYPE.Type,
 	) {
 		super(OpCode.MAP_NEW, typ);

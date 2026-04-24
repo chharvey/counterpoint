@@ -9,17 +9,17 @@ import type {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import {OpCode} from './Opcode.ts';
 import {
 	TypeName,
 	ast_type_name,
-} from './TypeName.ts';
-import {Value} from './Value.ts';
+} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
+import {ValueTac} from './ValueTac.ts';
 
 
 
 /** A constant primitive value. */
-export class Const extends Value {
+export class Const extends ValueTac {
 	public constructor(private readonly interpreterValue: VALUE.Primitive) {
 		const typ: TYPE.Unit = interpreterValue.toType();
 		super(new Map<TypeName, OpCode>([
@@ -48,7 +48,7 @@ export class Const extends Value {
 		return this.interpreterValue.codegen(cg);
 	}
 
-	public override asTac(): Const {
+	public override asTac(): this {
 		return this;
 	}
 }

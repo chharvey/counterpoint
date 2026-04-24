@@ -1,8 +1,5 @@
 import * as assert from 'node:assert';
-import type {
-	Optimizer,
-	IR,
-} from '../../index.ts';
+import type {Optimizer} from '../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -23,6 +20,7 @@ import type {Lowerable} from './Lowerable.ts';
  * - StatementClaim
  * - StatementReassignment
  * - StatementConditional
+ * - StatementBreakable
  * - StatementBreak
  */
 export abstract class Statement extends AstNode implements Foldable, Lowerable {
@@ -63,21 +61,35 @@ export abstract class Statement extends AstNode implements Foldable, Lowerable {
  * - StatementIteration
  */
 export abstract class StatementBreakable extends Statement {
-	#labelWhile?:    IR.Label;
-	#labelEndwhile?: IR.Label;
+	#labelWhile?:    string;
+	#labelDo?:       string;
+	#labelEndwhile?: string;
 
 	/** @final */
-	public get labels(): {while: IR.Label | undefined, endwhile: IR.Label | undefined} {
-		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
+	public get labels(): {
+		while:    string | undefined,
+		do:       string | undefined,
+		endwhile: string | undefined,
+	} {
+		return {
+			while:    this.#labelWhile,
+			do:       this.#labelDo,
+			endwhile: this.#labelEndwhile,
+		};
 	}
 
 	/** @final */
-	protected set labelWhile(label: IR.Label) {
+	protected set labelWhile(label: string) {
 		this.#labelWhile = label;
 	}
 
 	/** @final */
-	protected set labelEndwhile(label: IR.Label) {
+	protected set labelDo(label: string) {
+		this.#labelDo = label;
+	}
+
+	/** @final */
+	protected set labelEndwhile(label: string) {
 		this.#labelEndwhile = label;
 	}
 }

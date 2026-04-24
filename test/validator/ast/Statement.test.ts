@@ -1,4 +1,4 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
@@ -335,8 +335,7 @@ test.suite('Statement', () => {
 						if (i === 0) {
 							xjs.Array.forEachAggregated(stmts.slice(0, -1), (stmt) => stmt.typeCheck()); // assert does not throw
 							return assert.throws(() => stmts.at(-1)!.typeCheck(), (err) => {
-								assert_instanceof(err, AggregateError);
-								assertAssignable(err, {
+								assertAssignable(err as Error, {
 									cons:   AggregateError,
 									errors: [
 										{cons: TypeErrorNotAssignable, message: 'Expression `null` is not assignable to type `int`.'},
@@ -397,16 +396,28 @@ test.suite('Statement', () => {
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
 					}`, {lower: false}); // assert does not throw
 				});
-				test.test('widens assignee write type for collection literals.', () => {
+				test.test('widens assignee write type for collection literals.', () => { // TODO: use NodeJS v25.5 `test.expectFailure()`
 					const {goal} = setupScript(`{
-						set [1.01].[1]                      = 1.02;  %> Expression of type \`1.02\` is not assignable to type \`1.01\`.
-						set [i= 2.03].[@j]                  = 2.04;  %> Expression of type \`2.04\` is not assignable to type \`2.03\`.
+						set [1.01].[1]                      = 1.02;  %> TypeErrorNotAssignable
+						set [i= 2.03].[@j]                  = 2.04;  %> TypeErrorNotAssignable
 						set {3.05}.[3.05]                   = false; %  no error
-						set {4.07 -> @a, 4.08 -> @b}.[4.07] = @c;    %> Expression of type \`@c\` is not assignable to type \`@a | @b\`.
-						set {3.05}.[3.06]                   = true;  %> Type \`3.06\` is not a subtype of type \`3.05\`.
-						set {4.07 -> @a, 4.08 -> @b}.[4.09] = @a;    %> Type \`4.09\` is not a subtype of type \`4.07 | 4.08\`.
+						set {4.07 -> @a, 4.08 -> @b}.[4.07] = @c;    %> TypeErrorNotAssignable
+						set {3.05}.[3.06]                   = true;  %> TypeErrorNotNarrow
+						set {4.07 -> @a, 4.08 -> @b}.[4.09] = @a;    %> TypeErrorNotNarrow
 					}`, {typeCheck: false});
-					return assert.throws(() => goal.typeCheck(), AggregateError); // TODO: use NodeJS `test.expectFailure`
+					return assert.throws(() => goal.typeCheck(), (err) => {
+						assertAssignable(err as Error, {
+							cons:   AggregateError,
+							errors: [
+								{cons: TypeErrorNotAssignable, message: 'Expression `1.02` is not assignable to type `1.01`.'},
+								{cons: TypeErrorNotAssignable, message: 'Expression `2.04` is not assignable to type `2.03`.'},
+								{cons: TypeErrorNotAssignable, message: 'Expression `@c` is not assignable to type `@a | @b`.'},
+								{cons: TypeErrorNotNarrow,     message: 'Type `3.06` is not a subtype of type `3.05`.'},
+								{cons: TypeErrorNotNarrow,     message: 'Type `4.09` is not a subtype of type `4.07 | 4.08`.'},
+							],
+						});
+						return true;
+					});
 				});
 				test.test('throws when property assignee type is not supertype.', () => {
 					[
@@ -611,7 +622,7 @@ test.suite('Statement', () => {
 
 
 	test.suite('#lower', () => {
-		test.test('StatementExpression pushes DROP instruction if expression exists.', () => {
+		test.test('StatementExpression pushes IR.Drop instruction if expression exists.', () => {
 			const {stmts, opt} = setupScript(`{
 				val mut x: int = 42;
 				x;
@@ -625,25 +636,27 @@ test.suite('Statement', () => {
 			assert.strictEqual(opt.instructions.length, 2);
 			(stmts[3] as AST.StatementExpression).lower(opt);
 			assert.strictEqual(opt.instructions.length, 2);
-			return assert.strictEqual(opt.print(), extract_lines`
-				(DROP (GET x))
-				(DROP (INT.CONST 42))
-			`.join('\n'));
+			return assert.strictEqual(opt.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (GET x))
+					(DROP (INT.CONST 42))
+			`.trim());
 		});
 
-		test.test('StatementClaim pushes DROP.', () => {
+		test.test('StatementClaim pushes IR.Drop.', () => {
 			const {stmts, opt} = setupScript(`{%
 				val mut x: int | float = 42;
 				claim x: int;
 			}`, {lower: false});
 			(stmts[1] as AST.StatementClaim).lower(opt);
-			return assert.strictEqual(opt.print(), extract_lines`
-				(DROP (GET x))
-			`.join('\n'));
+			return assert.strictEqual(opt.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (GET x))
+			`.trim());
 		});
 
 		test.suite('StatementReassignment', () => {
-			test.test('for variables: pushes SET instruction.', () => {
+			test.test('for variables: pushes IR.Set instruction.', () => {
 				const {stmts, opt} = setupScript(`{
 					val mut x: int = 42;
 					set x = 43;
@@ -651,11 +664,12 @@ test.suite('Statement', () => {
 					set x = -42;
 				}`, {lower: false});
 				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).lower(opt));
-				return assert.strictEqual(opt.print(), extract_lines`
-					(SET x (INT.CONST 43))
-					(SET x (INT.CONST 44))
-					(SET x (INT.CONST -42))
-				`.join('\n'));
+				return assert.strictEqual(opt.print(), xjs.String.dedent`
+					"block-0":
+						(SET x (INT.CONST 43))
+						(SET x (INT.CONST 44))
+						(SET x (INT.CONST -42))
+				`.trim());
 			});
 			test.test('for collections: pushes IR.CollectionDynamicSet.', () => {
 				assert.strictEqual(setupScript(`{
@@ -669,26 +683,28 @@ test.suite('Statement', () => {
 					set my_dict.[@b]      = 84;
 					set my_set.[accessor] = true;
 					set my_map.[accessor] = 84;
-				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
-					(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
-					(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
-					(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
-					(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
-					(DECL <Set> my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
-					(DECL <Map> my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
-					(DECL <int> accessor (INT.CONST 22))
-					(DECL <int> $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
-					(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
-					(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
-					(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
-					(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
-				`.join('\n'));
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+						(DECL <Set> my_set (SET.NEW (GET $0) (GET $1) (GET $2)))
+						(DECL <Map> my_map (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
+						(DECL <int> accessor (INT.CONST 22))
+						(DECL <int> $3 (INT.ADD (INT.CONST 0) (INT.CONST 1)))
+						(LIST.SET (GET my_list) (GET $3) (INT.CONST 84))
+						(DICT.SET (GET my_dict) (SYM.CONST @b) (INT.CONST 84))
+						(SET.SET (GET my_set) (GET accessor) (BOOL.CONST true))
+						(MAP.SET (GET my_map) (GET accessor) (INT.CONST 84))
+						(ENDPROGRAM)
+				`.trim());
 			});
 		});
 
 		test.suite('StatementConditional', () => {
-			test.test('pushes an if_false block.', () => {
+			test.test('pushes IR.GotoConditional.', () => {
 				assert.strictEqual(setupScript(`{
 					if true then {
 						(2 * 1 + 0);
@@ -697,19 +713,22 @@ test.suite('Statement', () => {
 						(6 / (1 + 1));
 						3.3;
 					};
-				}`, {codegen: false}).opt.print(), extract_lines`
-					if_false (BOOL.CONST true), goto "block-1".
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
-					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
-					(DROP (FLOAT.CONST 2.2))
-					goto "block-2".
+						(GOTO.IF (BOOL.CONST true) "block-1" "block-2")
 					"block-1":
-					(DECL <int> $1 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
-					(DROP (INT.DIV (INT.CONST 6) (GET $1)))
-					(DROP (FLOAT.CONST 3.3))
+						(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+						(DROP (INT.ADD (GET $0) (INT.CONST 0)))
+						(DROP (FLOAT.CONST 2.2))
+						(GOTO "block-3")
 					"block-2":
-				`.join('\n'));
+						(DECL <int> $1 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
+						(DROP (INT.DIV (INT.CONST 6) (GET $1)))
+						(DROP (FLOAT.CONST 3.3))
+						(GOTO "block-3")
+					"block-3":
+						(ENDPROGRAM)
+				`.trim());
 			});
 			test.test('with no alternative.', () => {
 				assert.strictEqual(setupScript(`{
@@ -717,14 +736,17 @@ test.suite('Statement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {codegen: false}).opt.print(), extract_lines`
-					if_false (BOOL.CONST false), goto "block-2".
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
-					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
-					(DROP (FLOAT.CONST 2.2))
+						(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
+					"block-1":
+						(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+						(DROP (INT.ADD (GET $0) (INT.CONST 0)))
+						(DROP (FLOAT.CONST 2.2))
+						(GOTO "block-2")
 					"block-2":
-				`.join('\n'));
+						(ENDPROGRAM)
+				`.trim());
 			});
 			test.test('negates the condition for `unless` statements.', () => {
 				assert.strictEqual(setupScript(`{
@@ -732,14 +754,17 @@ test.suite('Statement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {codegen: false}).opt.print(), extract_lines`
-					if_false (NOT (BOOL.CONST false)), goto "block-2".
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
-					(DROP (INT.ADD (GET $0) (INT.CONST 0)))
-					(DROP (FLOAT.CONST 2.2))
+						(GOTO.IF (NOT (BOOL.CONST false)) "block-1" "block-2")
+					"block-1":
+						(DECL <int> $0 (INT.MUL (INT.CONST 2) (INT.CONST 1)))
+						(DROP (INT.ADD (GET $0) (INT.CONST 0)))
+						(DROP (FLOAT.CONST 2.2))
+						(GOTO "block-2")
 					"block-2":
-				`.join('\n'));
+						(ENDPROGRAM)
+				`.trim());
 			});
 			test.test('SSA.', () => {
 				assert.strictEqual(setupScript(`{
@@ -753,42 +778,82 @@ test.suite('Statement', () => {
 						val y: float = 3.3;
 					};
 					x;
-				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <bool> unknown_cond (BOOL.CONST false))
-					(DECL <int> x (INT.CONST 42))
-					if_false (GET unknown_cond), goto "block-1".
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
-					(SET x (INT.MUL (GET x) (GET $0)))
-					(DECL <float> y (FLOAT.CONST 2.2))
-					goto "block-2".
+						(DECL <bool> unknown_cond (BOOL.CONST false))
+						(DECL <int> x (INT.CONST 42))
+						(GOTO.IF (GET unknown_cond) "block-1" "block-2")
 					"block-1":
-					(DECL <int> $1 (INT.DIV (INT.CONST 6) (INT.CONST 2)))
-					(SET x (INT.SUB (GET x) (GET $1)))
-					(DECL <float> y (FLOAT.CONST 3.3))
+						(DECL <int> $0 (INT.ADD (INT.CONST 1) (INT.CONST 1)))
+						(SET x (INT.MUL (GET x) (GET $0)))
+						(DECL <float> y (FLOAT.CONST 2.2))
+						(GOTO "block-3")
 					"block-2":
-					(DROP (GET x))
-				`.join('\n'));
+						(DECL <int> $1 (INT.DIV (INT.CONST 6) (INT.CONST 2)))
+						(SET x (INT.SUB (GET x) (GET $1)))
+						(DECL <float> y (FLOAT.CONST 3.3))
+						(GOTO "block-3")
+					"block-3":
+						(DROP (GET x))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('if–else chains.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut cond?: bool;
+					set cond = true;
+					if cond == true then {
+						10;
+					} else if cond == false then {
+						20;
+					} else {
+						30;
+					};
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <null> cond (NULL.CONST null))
+						(SET cond (BOOL.CONST true))
+						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
+					"block-1":
+						(DROP (INT.CONST 10))
+						(GOTO "block-3")
+					"block-2":
+						(GOTO.IF (EQ (GET cond) (BOOL.CONST false)) "block-4" "block-5")
+					"block-4":
+						(DROP (INT.CONST 20))
+						(GOTO "block-6")
+					"block-5":
+						(DROP (INT.CONST 30))
+						(GOTO "block-6")
+					"block-6":
+						(GOTO "block-3")
+					"block-3":
+						(ENDPROGRAM)
+				`.trim());
 			});
 		});
 
 		test.suite('StatementLoop', () => {
-			test.test('pushes an if_false block.', () => {
+			test.test('pushes IR.GotoConditional.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut cond: bool = false;
 					while cond do {
 						42;
 						4.2;
 					};
-				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <bool> cond (BOOL.CONST false))
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					if_false (GET cond), goto "block-1".
-					(DROP (INT.CONST 42))
-					(DROP (FLOAT.CONST 4.2))
-					goto "block-0".
+						(DECL <bool> cond (BOOL.CONST false))
+						(GOTO "block-1")
 					"block-1":
-				`.join('\n'));
+						(GOTO.IF (GET cond) "block-2" "block-3")
+					"block-2":
+						(DROP (INT.CONST 42))
+						(DROP (FLOAT.CONST 4.2))
+						(GOTO "block-1")
+					"block-3":
+						(ENDPROGRAM)
+				`.trim());
 			});
 			test.test('negates the condition for `until` statements.', () => {
 				assert.strictEqual(setupScript(`{
@@ -796,14 +861,18 @@ test.suite('Statement', () => {
 					until cond do {
 						42;
 					};
-				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <bool> cond (BOOL.CONST false))
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					if_false (NOT (GET cond)), goto "block-1".
-					(DROP (INT.CONST 42))
-					goto "block-0".
+						(DECL <bool> cond (BOOL.CONST false))
+						(GOTO "block-1")
 					"block-1":
-				`.join('\n'));
+						(GOTO.IF (NOT (GET cond)) "block-2" "block-3")
+					"block-2":
+						(DROP (INT.CONST 42))
+						(GOTO "block-1")
+					"block-3":
+						(ENDPROGRAM)
+				`.trim());
 			});
 			test.test('bottom-tested conditions.', () => {
 				assert.strictEqual(setupScript(`{
@@ -815,20 +884,22 @@ test.suite('Statement', () => {
 					do {
 						42;
 					} until cond;
-				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <bool> cond (BOOL.CONST false))
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					(DROP (INT.CONST 42))
-					(DROP (FLOAT.CONST 4.2))
-					if_false (GET cond), goto "block-1".
-					goto "block-0".
+						(DECL <bool> cond (BOOL.CONST false))
+						(GOTO "block-1")
 					"block-1":
+						(DROP (INT.CONST 42))
+						(DROP (FLOAT.CONST 4.2))
+						(GOTO.IF (GET cond) "block-1" "block-2")
 					"block-2":
-					(DROP (INT.CONST 42))
-					if_false (NOT (GET cond)), goto "block-3".
-					goto "block-2".
+						(GOTO "block-3")
 					"block-3":
-				`.join('\n'));
+						(DROP (INT.CONST 42))
+						(GOTO.IF (NOT (GET cond)) "block-3" "block-4")
+					"block-4":
+						(ENDPROGRAM)
+				`.trim());
 			});
 		});
 
@@ -840,25 +911,33 @@ test.suite('Statement', () => {
 				for _: float in [4.4, 5.5, 6.6] do {
 					null;
 				};
-			}`, {codegen: false}).opt.print(), extract_lines`
-				(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
-				(DECL <nat> $1 (NAT.CONST +0))
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
 				"block-0":
-				if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-1".
-				(DECL <int> item (LIST.GET (GET $0) (GET $1)))
-				(DROP (INT.ADD (GET item) (INT.CONST 5)))
-				(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-				goto "block-0".
+					(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
+					(DECL <nat> $1 (NAT.CONST +0))
+					(GOTO "block-1")
 				"block-1":
-				(DECL <List> $2 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
-				(DECL <nat> $3 (NAT.CONST +0))
+					(DECL <nat> $2 (LIST.COUNT (GET $0)))
+					(GOTO.IF (LT (GET $1) (GET $2)) "block-2" "block-3")
 				"block-2":
-				if_false (LT (GET $3) (LIST.COUNT (GET $2))), goto "block-3".
-				(DROP (NULL.CONST null))
-				(SET $3 (NAT.ADD (GET $3) (NAT.CONST +1)))
-				goto "block-2".
+					(DECL <int> item (LIST.GET (GET $0) (GET $1)))
+					(DROP (INT.ADD (GET item) (INT.CONST 5)))
+					(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
+					(GOTO "block-1")
 				"block-3":
-			`.join('\n'));
+					(DECL <List> $3 (LIST.NEW (FLOAT.CONST 4.4) (FLOAT.CONST 5.5) (FLOAT.CONST 6.6)))
+					(DECL <nat> $4 (NAT.CONST +0))
+					(GOTO "block-4")
+				"block-4":
+					(DECL <nat> $5 (LIST.COUNT (GET $3)))
+					(GOTO.IF (LT (GET $4) (GET $5)) "block-5" "block-6")
+				"block-5":
+					(DROP (NULL.CONST null))
+					(SET $4 (NAT.ADD (GET $4) (NAT.CONST +1)))
+					(GOTO "block-4")
+				"block-6":
+					(ENDPROGRAM)
+			`.trim());
 		});
 
 		test.suite('StatementBreak', () => {
@@ -878,30 +957,41 @@ test.suite('Statement', () => {
 						break;
 						30;
 					};
-				}`, {codegen: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					if_false (BOOL.CONST true), goto "block-1".
-					(DROP (INT.CONST 41))
-					goto "block-1".
-					(DROP (INT.CONST 42))
-					goto "block-0".
-					(DROP (INT.CONST 43))
-					goto "block-0".
+						(GOTO "block-1")
 					"block-1":
-					(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
-					(DECL <nat> $1 (NAT.CONST +0))
+						(GOTO.IF (BOOL.CONST true) "block-2" "block-3")
 					"block-2":
-					if_false (LT (GET $1) (LIST.COUNT (GET $0))), goto "block-3".
-					(DECL <str> word (LIST.GET (GET $0) (GET $1)))
-					(DROP (INT.CONST 10))
-					goto "block-2".
-					(DROP (INT.CONST 20))
-					goto "block-3".
-					(DROP (INT.CONST 30))
-					(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
-					goto "block-2".
+						(DROP (INT.CONST 41))
+						(GOTO "block-3")
+					"unreachable-4":
+						(DROP (INT.CONST 42))
+						(GOTO "block-1")
+					"unreachable-5":
+						(DROP (INT.CONST 43))
+						(GOTO "block-1")
 					"block-3":
-				`.join('\n'));
+						(DECL <List> $0 (LIST.NEW (STR.CONST "alpha") (STR.CONST "beta") (STR.CONST "gamma")))
+						(DECL <nat> $1 (NAT.CONST +0))
+						(GOTO "block-6")
+					"block-6":
+						(DECL <nat> $2 (LIST.COUNT (GET $0)))
+						(GOTO.IF (LT (GET $1) (GET $2)) "block-7" "block-8")
+					"block-7":
+						(DECL <str> word (LIST.GET (GET $0) (GET $1)))
+						(DROP (INT.CONST 10))
+						(GOTO "block-6")
+					"unreachable-9":
+						(DROP (INT.CONST 20))
+						(GOTO "block-8")
+					"unreachable-10":
+						(DROP (INT.CONST 30))
+						(SET $1 (NAT.ADD (GET $1) (NAT.CONST +1)))
+						(GOTO "block-6")
+					"block-8":
+						(ENDPROGRAM)
+				`.trim());
 			});
 			test.test('nested loops.', () => {
 				assert.strictEqual(setupScript(`{
@@ -920,28 +1010,37 @@ test.suite('Statement', () => {
 						};
 						70;
 					};
-				}`, {codegen: false}).opt.print(), extract_lines`
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
 					"block-0":
-					if_false (BOOL.CONST true), goto "block-1".
-					(DROP (INT.CONST 10))
-					goto "block-1".
-					(DROP (INT.CONST 20))
-					if_false (BOOL.CONST true), goto "block-4".
-					"block-2":
-					(DROP (INT.CONST 30))
-					"block-5":
-					if_false (BOOL.CONST true), goto "block-6".
-					(DROP (INT.CONST 40))
-					goto "block-5".
-					(DROP (INT.CONST 50))
-					goto "block-5".
-					"block-6":
-					(DROP (INT.CONST 60))
-					"block-4":
-					(DROP (INT.CONST 70))
-					goto "block-0".
+						(GOTO "block-1")
 					"block-1":
-				`.join('\n'));
+						(GOTO.IF (BOOL.CONST true) "block-2" "block-3")
+					"block-2":
+						(DROP (INT.CONST 10))
+						(GOTO "block-3")
+					"unreachable-4":
+						(DROP (INT.CONST 20))
+						(GOTO.IF (BOOL.CONST true) "block-5" "block-6")
+					"block-5":
+						(DROP (INT.CONST 30))
+						(GOTO "block-7")
+					"block-7":
+						(GOTO.IF (BOOL.CONST true) "block-8" "block-9")
+					"block-8":
+						(DROP (INT.CONST 40))
+						(GOTO "block-7")
+					"unreachable-10":
+						(DROP (INT.CONST 50))
+						(GOTO "block-7")
+					"block-9":
+						(DROP (INT.CONST 60))
+						(GOTO "block-6")
+					"block-6":
+						(DROP (INT.CONST 70))
+						(GOTO "block-1")
+					"block-3":
+						(ENDPROGRAM)
+				`.trim());
 			});
 		});
 	});

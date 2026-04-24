@@ -15,7 +15,7 @@ import {ReferenceType} from './ReferenceType.ts';
  */
 export class Anything extends ReferenceType {
 	public constructor() {
-		super(false, new Set<VALUE.Value>([
+		super(new Set<VALUE.Value>([
 			VALUE.NULL,
 			VALUE.FALSE,
 			VALUE.TRUE,

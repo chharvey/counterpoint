@@ -12,6 +12,7 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -54,8 +55,8 @@ export type OpCodeBin = (
 export class Binop extends Value {
 	public constructor(
 		private readonly operator: OpCodeBin,
-		private readonly operand0: Value,
-		private readonly operand1: Value,
+		private readonly operand0: ValueTac,
+		private readonly operand1: ValueTac,
 		typ: TYPE.Type,
 	) {
 		super(operator, typ);

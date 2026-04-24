@@ -3,6 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Temp,
 	type Optimizer,
 	IR,
 	TypeErrorNotNarrow,
@@ -11,7 +12,6 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	forEither,
 	memoizeMethod,
 } from '../../lib/index.ts';
 import {
@@ -203,9 +203,11 @@ export class Call extends Expression {
 		if (!this.exprargs.length) {
 			return new_obj;
 		}
-		const get_obj = new IR.Get(optimizer.newTemp(new_obj));
-		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_obj, this.exprargs[0].lower(optimizer).asTac(optimizer)));
-		return get_obj;
+		const dest: Temp = optimizer.newTemp(new_obj);
+		const get_dest = new IR.Get(dest);
+		optimizer.pushInstruction(new IR.Decl(dest));
+		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_dest, this.exprargs[0].lower(optimizer).asTac(optimizer)));
+		return get_dest;
 	}
 
 	@memoizeMethod
@@ -267,7 +269,7 @@ export class Call extends Expression {
 	 * @param resolved_generic_args the resolved type arguments, returned by {@link TypeCall.checkGenericArgs}
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
-		forEither(constructor_schema.overloads, (func_params) => {
+		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {
 			/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 			const expected_function = {
 				min: BigInt(func_params.filter((param) => !param.optional).length),
