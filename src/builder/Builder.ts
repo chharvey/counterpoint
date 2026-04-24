@@ -961,8 +961,8 @@ export class Builder {
 	 * The main function should contain generated code for a program.
 	 * @param main a callback to run before validation
 	 */
-	public setupMain(main?: (mod: binaryen.Module) => void): void {
-		main?.call(null, this.module);
+	public setupMain(main?: () => void): void {
+		main?.call(null);
 		if (!this.module.validate()) {
 			throw new Error('Invalid WebAssembly module.');
 		}

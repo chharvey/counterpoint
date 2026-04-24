@@ -92,23 +92,9 @@ export class Optimizer {
 		return xjs.Map.forEachAggregated(this.#blocks, (block) => block.validate());
 	}
 
-	public codegen(cg: Builder): void {
+	public codegen(cg: Builder): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
-		const instrs: readonly IR.Instruction[] = this.instructions;
-		return cg.setupMain((mod) => {
-			if (instrs.length) {
-				const codes:   binaryen.ExpressionRef[] = instrs.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
-				const fn_name: string                   = 'main';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					cg.getAllLocals().map((local) => local.type),
-					mod.block(null, codes),
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			}
-		});
+		return this.instructions.length ? cg.module.block(null, this.instructions.map((instr) => instr.codegen(cg))) : cg.module.nop();
 	}
 
 	public print(): string {
