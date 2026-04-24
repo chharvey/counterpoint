@@ -1,12 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type VALUE,
 	TYPE,
-	bigint_to_i64,
-	type Local,
-	BinVect,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -26,12 +24,10 @@ import {
 } from '../Operator.ts';
 import {
 	bothInts,
+	bothNats,
 	bothFloats,
 } from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -52,71 +48,45 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const mod:          binaryen.Module          = this.builder.module;
-		const [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-		const v0:           VALUE.Value | null       = this.operand0.fold();
-
-		// if operand0 is not foldable, short-circuit by using identity laws
-		if (!v0) {
-			const local0: Local = this.builder.addLocal(arg0);
-			const teeer         = new BinVect(mod, local0.tee());
-			const getter        = new BinVect(mod, local0.get());
-			if (this.operator === Operator.MUL) {
-				// if arg0 is mathematically 0, return it
-				return mod.if(
-					mod.i32.or(
-						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
-						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-					),
-					local0.get(),
-					// else if arg0 is mathematically 1, return arg1
-					mod.if(
-						mod.i32.or(
-							mod.i32.and(getter.isInt,   mod.i64.eq(getter.intValue,   bigint_to_i64(mod, 1n))),
-							mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(1.0))),
-						),
-						arg1,
-						// else return a `vmul` call
-						mod.call('vmul', [local0.get(), arg1], binaryen.v128),
-					),
-				);
-			} else if (this.operator === Operator.ADD) {
-				// if arg0 is mathematically 0, return arg1
-				return mod.if(
-					mod.i32.or(
-						mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.intValue)),
-						mod.i32.and(getter.isFloat, mod.f64.eq(getter.floatValue, mod.f64.const(0.0))), // also takes care of the `-0.0` case
-					),
-					arg1,
-					// else return a `vadd` call
-					mod.call('vadd', [local0.get(), arg1], binaryen.v128),
-				);
-			}
-		}
-
-		if (v0 && (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0())) {
-			return arg1;
-		}
-
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.EXP, 'vexp'],
-			[Operator.MUL, 'vmul'],
-			[Operator.DIV, 'vdiv'],
-			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [arg0, arg1], binaryen.v128);
-	}
-
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
-		if (t0.isBottomType) {
+		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
 		return (
 			bothInts  (t0, t1) ? TYPE.INT :
+			bothNats  (t0, t1) ? TYPE.NAT :
 			bothFloats(t0, t1) ? TYPE.FLOAT :
 			assert.fail(new TypeErrorInvalidOperation(this))
+		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		const typ: TYPE.Type = this.type();
+		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
+		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
+		return (
+			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.INT_EXP],
+				[Operator.MUL, IR.OpCode.INT_MUL],
+				[Operator.DIV, IR.OpCode.INT_DIV],
+				[Operator.ADD, IR.OpCode.INT_ADD],
+				[Operator.SUB, IR.OpCode.INT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			bothNats(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.NAT_EXP],
+				[Operator.MUL, IR.OpCode.NAT_MUL],
+				[Operator.DIV, IR.OpCode.NAT_DIV],
+				[Operator.ADD, IR.OpCode.NAT_ADD],
+				[Operator.SUB, IR.OpCode.NAT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.FLOAT_EXP],
+				[Operator.MUL, IR.OpCode.FLOAT_MUL],
+				[Operator.DIV, IR.OpCode.FLOAT_DIV],
+				[Operator.ADD, IR.OpCode.FLOAT_ADD],
+				[Operator.SUB, IR.OpCode.FLOAT_SUB],
+			]).get(this.operator)!, v0, v1, typ))
 		);
 	}
 
@@ -140,8 +110,8 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 			throw new NanErrorDivZero(this.operand1);
 		}
 		return this.foldNumeric(
-			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
-			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
 		);
 	}
 
@@ -152,7 +122,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.MUL, (x, y) => x.times(y)],
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
-				// [Operator.SUB, (x, y) => x.minus(y)],
+				[Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(v0, v1);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;

@@ -1,10 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	drop_then,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 } from '../../index.ts';
@@ -21,11 +21,7 @@ import {
 	Operator,
 	type ValidOperatorUnary,
 } from '../Operator.ts';
-import {
-	buildDeco,
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
@@ -47,27 +43,7 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const arg0: binaryen.ExpressionRef = this.operand.build();
-		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(this.builder.module, [arg0], true);
-		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(this.builder.module, [arg0], false);
-		}
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.NOT,   'vnot'],
-			[Operator.EMP,   'vemp'],
-			[Operator.NEG,   'vneg'],
-			[Operator.INT,   'vtoi'],
-			[Operator.FLOAT, 'vtof'],
-		]).get(this.operator)!, [arg0], binaryen.v128);
-	}
-
-	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
-		const TYPE_NUMBER = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
 		const t: TYPE.Type = this.operand.type();
 		if (t.isBottomType) {
 			return TYPE.NOTHING;
@@ -84,18 +60,34 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
-				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
 				return t;
 			}
 			case Operator.INT: {
-				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
 				return TYPE.INT;
 			}
+			case Operator.NAT: {
+				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
+				return TYPE.NAT;
+			}
 			case Operator.FLOAT: {
-				assert.ok(t.isSubtypeOf(TYPE_NUMBER), new TypeErrorInvalidOperation(this));
+				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
 				return TYPE.FLOAT;
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Unop {
+		return new IR.Unop(new Map<Operator, IR.OpCodeUn>([
+			[Operator.NOT,   IR.OpCode.NOT],
+			[Operator.EMP,   IR.OpCode.EMP],
+			[Operator.NEG,   IR.OpCode.NEG],
+			[Operator.INT,   IR.OpCode.TOINT],
+			[Operator.NAT,   IR.OpCode.TONAT],
+			[Operator.FLOAT, IR.OpCode.TOFLOAT],
+		]).get(this.operator)!, this.operand.lower(optimizer).asTac(optimizer), this.type());
 	}
 
 	@memoizeMethod
@@ -112,10 +104,13 @@ export class ASTNodeOperationUnary extends ASTNodeOperation {
 				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
 			}
 			case Operator.NEG: {
-				return this.foldNumeric(v as VALUE.Number<any>); // eslint-disable-line @typescript-eslint/no-explicit-any --- cyclical types
+				return this.foldNumeric(v as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>);
 			}
 			case Operator.INT: {
 				return (v as VALUE.Number).toInt();
+			}
+			case Operator.NAT: {
+				return (v as VALUE.Number).toNat();
 			}
 			case Operator.FLOAT: {
 				return (v as VALUE.Number).toFloat();

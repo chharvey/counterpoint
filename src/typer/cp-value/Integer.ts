@@ -1,24 +1,28 @@
 import type binaryen from 'binaryen';
 import {
+	BinValue,
 	bigint_to_i64,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
 import {
+	noopMethod,
+	memoizeMethod,
+} from '../../lib/index.ts';
+import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import {Float} from './index.ts';
+import {
+	Natural,
+	Float,
+} from './index.ts';
 import {
 	identical,
 	type Value,
 } from './Value.ts';
 import {Number as ValueNumber} from './Number.ts';
-
-
-
-const BITS_PER_BYTE = 8;
 
 
 
@@ -28,7 +32,7 @@ const BITS_PER_BYTE = 8;
  */
 export class Integer extends ValueNumber<Integer> {
 	/**
-	 * Internal implementation of this Int16.
+	 * Internal implementation of this Integer.
 	 * A 64-bit integer stored in a BigInt64Array.
 	 */
 	private readonly data: bigint;
@@ -39,72 +43,68 @@ export class Integer extends ValueNumber<Integer> {
 	 * @returns the value represented as a 64-bit signed integer
 	 */
 	public constructor(data: bigint = 0n) {
-		const internal = new BigInt64Array(1);
-		internal[0] = data; // need to store in BigInt64Array first to ensure 64-bit
 		super();
+		const internal = new BigInt64Array([data]); // need to store in BigInt64Array first to ensure 64-bit and signed
 		this.data = internal[0];
 	}
 
 	public override toString(): string {
-		return `${ this.toNumber() }`;
+		return `${ this.data }`;
 	}
 
 	@strictEqual
+	@noopMethod(memoizeBinOp(true, true))
 	@instanceOf(() => Integer)
-	// @memoizeBinOp(true, true) // memoizing takes longer than a simple comparison
 	public override identical(value: Value): boolean {
 		return this.data === (value as Integer).data;
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueNumber)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueNumber)
 	public override equal(value: Value): boolean {
 		if (value instanceof Integer) {
-			// non-identical integers will never be equal
+			// non-identical Integers will never be equal
 			return false;
+		}
+		if (value instanceof Natural) {
+			return this.toNat().equal(value);
 		}
 		return this.toFloat().equal(value);
 	}
 
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return new BinVect(builder.module, bigint_to_i64(builder.module, this.data)).vect;
+	@memoizeMethod
+	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.data))).value;
 	}
 
 	public override toInt(): Integer {
 		return this;
 	}
 
+	public override toNat(): Natural {
+		return new Natural(this.data);
+	}
+
 	public override toFloat(): Float {
-		return new Float(this.toNumber());
+		return new Float(Number(this.data));
 	}
 
 	/**
-	 * Return the signed or unsigned interpretation of this integer.
-	 * @param  u Interpret as unsigned?
+	 * Return the signed interpretation of this Integer.
 	 * @return   the numeric value
 	 */
-	private toBigInt(u: boolean = false): bigint {
-		return u && this.data < 0n ? this.data + 2n ** BigInt(BigInt64Array.BYTES_PER_ELEMENT * BITS_PER_BYTE) : this.data;
-	}
-
-	/**
-	 * Return the signed or unsigned interpretation of this integer as a number.
-	 * Note: Some precision may be lost, especially for integers larger than 2^53.
-	 * @param  u Interpret as unsigned?
-	 * @return   the numeric value as a number
-	 */
-	public toNumber(u: boolean = false): number {
-		return Number(this.toBigInt(u));
+	public toBigInt(): bigint {
+		return this.data;
 	}
 
 	public override plus(addend: Integer): Integer {
-		return new Integer(BigInt(this.data + addend.data));
+		return new Integer(this.data + addend.data);
 	}
 
 	public override minus(subtrahend: Integer): Integer {
-		return new Integer(BigInt(this.data - subtrahend.data));
+		return new Integer(this.data - subtrahend.data);
 	}
 
 	/**
@@ -138,7 +138,7 @@ export class Integer extends ValueNumber<Integer> {
 	 * ```
 	 */
 	public override times(multiplier: Integer): Integer {
-		return new Integer(BigInt(this.data * multiplier.data));
+		return new Integer(this.data * multiplier.data);
 	}
 
 	/**
@@ -223,14 +223,14 @@ export class Integer extends ValueNumber<Integer> {
 	 * @see https://stackoverflow.com/a/101613/877703
 	 */
 	public override exp(exponent: Integer): Integer {
-		return new Integer(BigInt(this.data ** exponent.data));
+		return new Integer(this.data ** exponent.data);
 	}
 
 	/**
 	 * Equivalently, this is the “two’s complement” of the integer.
 	 */
 	public override neg(): Integer {
-		return new Integer(BigInt(-this.data));
+		return new Integer(-this.data);
 	}
 
 	public override eq0(): boolean {
@@ -244,6 +244,9 @@ export class Integer extends ValueNumber<Integer> {
 	public override lt(y: ValueNumber): boolean {
 		if (y instanceof Integer) {
 			return this.data < y.data;
+		}
+		if (y instanceof Natural) {
+			return this.toNat().lt(y);
 		}
 		return this.toFloat().lt(y);
 	}

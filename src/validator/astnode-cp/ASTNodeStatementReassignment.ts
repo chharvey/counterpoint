@@ -1,14 +1,16 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type TYPE,
+	type Optimizer,
+	IR,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
+	noopGetter,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -17,14 +19,10 @@ import {
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import {if_constant_folding} from './Foldable.ts';
-import type {ASTNodeExpression} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -43,8 +41,7 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 		super(start_node, {}, [assignee, assigned]);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
-	@if_constant_folding
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return false;
 	}
@@ -56,7 +53,7 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 
 	public override varCheck(): void {
 		super.varCheck();
-		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isUnfixed) {
+		if (this.assignee instanceof ASTNodeVariable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
 			throw new AssignmentErrorReassignment(this.assignee);
 		}
 	}
@@ -72,10 +69,24 @@ export class ASTNodeStatementReassignment extends ASTNodeStatement {
 		ASTNodeCP.typeCheckAssign(this.assigned, this.assignee.writeType(), this);
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert_instanceof(this.assignee, ASTNodeVariable, '`ASTNodeStatementReassignment[assignee: ASTNodeAccess]#build` not yet supported.');
-		return this.builder.getLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar)?.set(this.assigned.build()) ?? assert.fail(new ReferenceError(`Variable with id ${ this.assignee.id } not found.`));
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		if (this.assignee instanceof ASTNodeVariable) {
+			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			const value: IR.Value = this.assigned.lower(optimizer);
+			symbol.irType = value.type;
+			return optimizer.pushInstruction(new IR.Set(symbol, value));
+		} else {
+			assert_instanceof(this.assignee.accessor, ASTNodeExpression);
+			const base_value:    IR.ValueTac = this.assignee.base.lower(optimizer).asTac(optimizer);
+			const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
+			assert.ok([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename), `Expected ${ IR.TypeName[base_typename] } to be a dynamic collection.`);
+			return optimizer.pushInstruction(new IR.CollectionDynamicSet(
+				base_typename as IR.CollectionDynamicName,
+				base_value,
+				this.assignee.accessor.lower(optimizer).asTac(optimizer),
+				this.assigned.lower(optimizer).asTac(optimizer),
+			));
+		}
 	}
 }

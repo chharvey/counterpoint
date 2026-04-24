@@ -1,13 +1,14 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	VALUE,
 	type TYPE,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
+	memoizeGetter,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -50,45 +51,53 @@ export class ASTNodeConstant extends ASTNodeExpression {
 		super(start_node);
 	}
 
-	@memoizeMethod
-	// @buildDeco // explicitly leaving off for performance
-	public override build(): binaryen.ExpressionRef {
-		return this.fold().build(this.builder);
+	@memoizeGetter
+	public get interpreterValue(): VALUE.Primitive {
+		return this.fold();
+	}
+
+	public override varCheck(): void {
+		super.varCheck();
+		if (
+			isSyntaxNodeType(this.start_node, 'primitive_literal') &&
+			this.start_node.children.length === 2 &&
+			isSyntaxNodeType(this.start_node.children[1], 'word')
+		) {
+			this.validator.wordNodeID(this.start_node.children[1]);
+		}
 	}
 
 	@memoizeMethod
-	// @typeDeco // explicitly leaving off for performance
 	public override type(): TYPE.Type {
-		return this.fold().toType();
+		return this.interpreterValue.toType();
+	}
+
+	@memoizeMethod
+	public override lower(): IR.Const {
+		return new IR.Const(this.interpreterValue);
 	}
 
 	@memoizeMethod
 	public override fold(): VALUE.Primitive {
+		if (isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) {
+			return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
+		}
+		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+		const children: readonly SyntaxNode[] = this.start_node.children;
 		switch (true) {
-			case isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/): {
-				return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
+			case isSyntaxNodeType(children[0], /^(integer|natural|float)$/): {
+				return valueOfTokenNumber(children[0].text);
+			}
+			case isSyntaxNodeType(children[0], 'string'): {
+				return new VALUE.String(Validator.cookTokenString(children[0].text));
+			}
+			case isSyntaxNodeType(children[0], 'keyword_value'): {
+				return ASTNodeConstant.keywordValue(children[0].children[0].text);
 			}
 			default: {
-				assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
-				const children: readonly SyntaxNode[] = this.start_node.children;
-				switch (true) {
-					case isSyntaxNodeType(children[0], 'integer'): {
-						return valueOfTokenNumber(children[0].text);
-					}
-					case isSyntaxNodeType(children[0], 'float'): {
-						return valueOfTokenNumber(children[0].text);
-					}
-					case isSyntaxNodeType(children[0], 'string'): {
-						return new VALUE.String(Validator.cookTokenString(children[0].text));
-					}
-					case isSyntaxNodeType(children[0], 'keyword_value'): {
-						return ASTNodeConstant.keywordValue(children[0].children[0].text);
-					}
-					default: {
-						assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
-						return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
-					}
-				}
+				assert.strictEqual(children.length, 2);
+				assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
+				return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
 			}
 		}
 	}

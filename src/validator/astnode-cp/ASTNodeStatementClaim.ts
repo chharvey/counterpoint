@@ -1,27 +1,28 @@
-import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	noopGetter,
+	memoizeGetter,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {if_constant_folding} from './Foldable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {ASTNodeAccess} from './ASTNodeAccess.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -40,13 +41,12 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
-	@if_constant_folding
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return true;
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
 	}
@@ -85,8 +85,8 @@ export class ASTNodeStatementClaim extends ASTNodeStatement {
 		}
 	}
 
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeStatementClaim#isFoldable` to be true.');
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		return optimizer.pushInstruction(new IR.Drop(this.assignee.lower(optimizer)));
 	}
 }

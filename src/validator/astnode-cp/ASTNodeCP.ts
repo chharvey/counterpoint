@@ -2,7 +2,6 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type TYPE,
-	type Builder,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {memoizeGetter} from '../../lib/index.ts';
@@ -39,14 +38,14 @@ export abstract class ASTNodeCP extends ASTNode {
 	 * We want to be able to assign mutable collection literals to wider mutable types
 	 * so that we can mutate them with different values:
 	 * ```
-	 * let my_ints: mut int{} = {42}; % <-- assignment should not fail
-	 * set my_ints.[43] = true;
+	 * val my_ints: mut Set.<int> = {42}; % <-- assignment should not fail
+	 * my_ints.put(43);
 	 * ```
 	 *
 	 * Normally, mutable Set types are invariant — that is, if `A` is a subtype of `B`,
 	 * then `mut Set.<A>` would be unassignable to `mut Set.<B>`.
-	 * However, when a Set *literal* such as `{a1, a2}` is assigned to a wider mutable type `mut B{}`,
-	 * it’s too conservative to infer too narrow a type `mut A{}`,
+	 * However, when a Set *literal* such as `{a1, a2}` is assigned to a wider mutable type `mut Set.<B>`,
+	 * it’s too conservative to infer too narrow a type `mut Set.<A>`,
 	 * since we can predict it will be mutated later with elements of type `B`.
 	 * Therefore we want to allow the assignment, bypassing invariance.
 	 *
@@ -93,16 +92,11 @@ export abstract class ASTNodeCP extends ASTNode {
 		return (this.parent as ASTNodeCP).validator;
 	}
 
-	@memoizeGetter
-	public get builder(): Builder {
-		return (this.parent as ASTNodeCP).builder;
-	}
-
 	/**
 	 * Perform definite assignment phase of semantic analysis:
 	 * - Check that all variables have been assigned before being used.
 	 * - Check that no varaible is declared more than once.
-	 * - Check that fixed variables are not reassigned.
+	 * - Check that read-only variables are not reassigned.
 	 */
 	public varCheck(): void {
 		return xjs.Array.forEachAggregated(this.children, (c) => c.varCheck());

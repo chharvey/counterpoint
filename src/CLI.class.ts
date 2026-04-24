@@ -48,7 +48,6 @@ type CustomArgsType = {
 	// Language Features
 
 	// Compiler Options
-	constantFolding: null | boolean,
 };
 
 
@@ -106,7 +105,6 @@ export class CLI {
 		Language Features:
 
 		Compiler Options:
-		--[no-]constantFolding         (on by default)
 	`.trimStart();
 
 	/** Options argument to `minimist` function. */
@@ -118,7 +116,6 @@ export class CLI {
 			'config',
 			// Language Features
 			// Compiler Options
-			'constantFolding',
 		],
 		string: [
 			// CLI Options
@@ -140,7 +137,6 @@ export class CLI {
 			// Language Features
 
 			// Compiler Options
-			constantFolding: null,
 		},
 		unknown(arg) {
 			if (arg.startsWith('-')) { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
@@ -210,10 +206,6 @@ export class CLI {
 				...config.compilerOptions,
 			},
 		};
-
-		/* eslint-disable curly */
-		if (this.argv.constantFolding   !== null) returned.compilerOptions.constantFolding    = this.argv.constantFolding;
-		/* eslint-enable curly */
 
 		return returned;
 	}

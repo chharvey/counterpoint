@@ -1,17 +1,8 @@
-import * as assert from 'node:assert';
 import {
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import * as VALUE from '../cp-value/index.ts';
-import {
-	NULL,
-	BOOL,
-	SYM,
-	INT,
-	FLOAT,
-	STR,
-} from './index.ts';
+import type * as VALUE from '../cp-value/index.ts';
 import {
 	subtypeRules,
 	type Type,
@@ -31,7 +22,7 @@ export class Unit<T extends VALUE.Primitive = VALUE.Primitive> extends ValueType
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
 	public constructor(public readonly value: T) {
-		super(false, new Set<T>([value]));
+		super(new Set<T>([value]));
 	}
 
 	public override toString(): string {
@@ -47,21 +38,5 @@ export class Unit<T extends VALUE.Primitive = VALUE.Primitive> extends ValueType
 	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
-	}
-
-	/**
-	 * Return the narrowest primitive type containing this type unit.
-	 * @return a Counterpoint type `null`, `bool`, `sym`, `int`, `float`, or `str`
-	 */
-	public primitiveType(): Type {
-		return (
-			this.value instanceof VALUE.Null    ? NULL :
-			this.value instanceof VALUE.Boolean ? BOOL :
-			this.value instanceof VALUE.Symbol  ? SYM :
-			this.value instanceof VALUE.Integer ? INT :
-			this.value instanceof VALUE.Float   ? FLOAT :
-			this.value instanceof VALUE.String  ? STR :
-			assert.fail(`Expected ${ this.value } to be a primitive value.`)
-		);
 	}
 }

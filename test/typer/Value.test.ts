@@ -1,17 +1,14 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	VALUE,
+	BinValue,
 	bigint_to_i64,
 	Builder,
 	BinVect,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
-import {
-	buildConst,
-	singletonTuple,
-} from '../helpers.ts';
 
 
 
@@ -150,9 +147,10 @@ test.suite('Value', () => {
 				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
 			});
 			test.test.todo('Lists may contain circular references.', () => {
+				// TODO: need an interpreter to test this
 				`
-					let a: mut List.<List.<Object>> = List.<List.<Object>>(());
-					let b: mut List.<List.<Object>> = List.<List.<Object>>(());
+					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
+					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
 					a.append.(b);
 					b.append.(a);
 					assert.equal.(a, b);
@@ -174,9 +172,10 @@ test.suite('Value', () => {
 				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
 			});
 			test.test.todo('Dicts may contain circular references.', () => {
+				// TODO: need an interpreter to test this
 				`
-					let a: mut Dict.<anything> = [x= null];
-					let b: mut Dict.<anything> = [x= null];
+					val a: mut Dict.<anything> = [x= null];
+					val b: mut Dict.<anything> = [x= null];
 					a.set.(@x, b);
 					b.set.(@x, a);
 					assert.equal.(a, b);
@@ -213,57 +212,73 @@ test.suite('Value', () => {
 	});
 
 
-	test.suite('#build', () => {
-		test.suite('Null', () => {
-			test.test('returns a v128 with `null` as an argument.', () => {
-				const builder = new Builder();
-				return assertEqualBins(
-					VALUE.NULL.build(builder),
-					new BinVect(builder.module).vect,
-				);
-			});
+	test.suite('#codegen', () => {
+		test.test('Null', () => {
+			const cg = new Builder();
+			return assertEqualBins(
+				VALUE.NULL.codegen(cg),
+				new BinValue(cg, new BinVect(cg.module).vect).value,
+			);
 		});
 
 		test.test('Boolean', () => {
-			const builder = new Builder();
-			return assertEqualBins(
-				[VALUE.FALSE.build(builder),              VALUE.TRUE.build(builder)],
-				[new BinVect(builder.module, false).vect, new BinVect(builder.module, true).vect],
-			);
+			const cg = new Builder();
+			return assertEqualBins([
+				VALUE.FALSE.codegen(cg),
+				VALUE.TRUE .codegen(cg),
+			], [
+				new BinValue(cg, new BinVect(cg.module, false)).value,
+				new BinValue(cg, new BinVect(cg.module, true)) .value,
+			]);
 		});
 
 		test.test('Symbol', () => {
-			const builder = new Builder();
-			const mod: binaryen.Module = builder.module;
+			const cg = new Builder();
+			return assertEqualBins([
+				VALUE.SYM_NOTHING.codegen(cg),
+				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
+			], [
+				new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, 0x80n),  {unsigned: true})).value,
+				new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, 0x100n), {unsigned: true})).value,
+			]);
+		});
+
+		test.test('Integer', () => {
+			const data: bigint[] = [
+				42n + -420n,
+				...[
+					+126 /  3,
+					-126 /  3,
+					+126 / -3,
+					-126 / -3,
+					+200 /  3,
+					+200 / -3,
+					-200 /  3,
+					-200 / -3,
+				].map((x) => BigInt(Math.trunc(x))),
+				(42n ** 2n * 420n) % (2n ** 63n),
+				(-5n) ** (2n * 3n),
+			];
+			const cg = new Builder();
 			return assertEqualBins(
-				[VALUE.SYM_NOTHING.build(builder),              new VALUE.Symbol(0x100n, 'hello').build(builder)],
-				[new BinVect(mod, mod.i64.const(0x80, 0)).vect, new BinVect(mod, mod.i64.const(0x100, 0)).vect],
+				data.map((x) => new VALUE.Integer(x).codegen(cg)),
+				data.map((x) => new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, x))).value),
 			);
 		});
 
-		test.suite('Integer', () => {
-			test.test('generates `(i64.const)`.', () => {
-				const data: bigint[] = [
-					42n + -420n,
-					...[
-						+126 /  3,
-						-126 /  3,
-						+126 / -3,
-						-126 / -3,
-						+200 /  3,
-						+200 / -3,
-						-200 /  3,
-						-200 / -3,
-					].map((x) => BigInt(Math.trunc(x))),
-					(42n ** 2n * 420n) % (2n ** 16n),
-					(-5n) ** (2n * 3n),
-				];
-				const builder = new Builder();
-				return assertEqualBins(
-					data.map((x) => new VALUE.Integer(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, bigint_to_i64(builder.module, x)).vect),
-				);
-			});
+		test.test('Natural', () => {
+			const data: bigint[] = [
+				...[
+					+126 / +3,
+					+200 / +3,
+				].map((x) => BigInt(Math.trunc(x))),
+				(42n ** 2n * 420n) % (2n ** 64n),
+			];
+			const cg = new Builder();
+			return assertEqualBins(
+				data.map((x) => new VALUE.Natural(x).codegen(cg)),
+				data.map((x) => new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, x, true), {unsigned: true})).value),
+			);
 		});
 
 		test.suite('Float', () => {
@@ -276,333 +291,28 @@ test.suite('Value', () => {
 					3.0 - 2.7,
 				];
 				/* eslint-enable @stylistic/array-element-newline */
-				const builder = new Builder();
+				const cg = new Builder();
 				return assertEqualBins(
-					data.map((x) => new VALUE.Float(x).build(builder)),
-					data.map((x) => new BinVect(builder.module, builder.module.f64.const(x)).vect),
+					data.map((x) => new VALUE.Float(x).codegen(cg)),
+					data.map((x) => new BinValue(cg, new BinVect(cg.module, cg.module.f64.const(x))).value),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
-				const builder = new Builder();
-				const mod: binaryen.Module = builder.module;
+				const cg = new Builder();
+				const mod: binaryen.Module = cg.module;
 				return assertEqualBins(
-					[0.0, -0.0].map((x) => new VALUE.Float(x).build(builder)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinVect(mod, c).vect),
+					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => new BinValue(cg, new BinVect(mod, c)).value),
 				);
 			});
 		});
 
-		test.suite.todo('String', () => {
-			test.test('#build', () => {
-				const builder = new Builder();
-				return assertEqualBins(
-					new VALUE.String('hello world').build(builder),
-					buildConst(builder, 0n),
-				);
-			});
-		});
-
-		test.suite('Collection', () => {
-			const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
-			const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
-
-			test.suite('Tuple', () => {
-				let builder: Builder = new Builder();
-				test.test.beforeEach(() => {
-					builder = new Builder();
-				});
-				test.test('returns `(tuple.make)`.', () => {
-					assertEqualBins(
-						new VALUE.Tuple([VALUE.INT_1, new VALUE.Float(2.0)]).build(builder),
-						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
-						'(1, 2.0)',
-					);
-				});
-				test.test('empty tuple returns unique BinVect representation.', () => {
-					assertEqualBins(
-						new VALUE.Tuple().build(builder),
-						new BinVect(builder.module, [0n]).vect,
-						'()',
-					);
-				});
-				test.test('tuple of length 1 returns a `(tuple.make)` with 1 item.', () => {
-					assertEqualBins(
-						new VALUE.Tuple([new VALUE.Float(3.4)]).build(builder),
-						singletonTuple(builder, buildConst(builder, 3.4)),
-						'(3.4,)',
-					);
-				});
-				test.test('boxed empty tuple returns `(tuple.make)` containing a BinVect.', () => {
-					assertEqualBins(
-						new VALUE.Tuple([new VALUE.Tuple()]).build(builder),
-						singletonTuple(builder, new BinVect(builder.module, [0n]).vect),
-						'((),)',
-					);
-				});
-				test.test('doubly boxed empty tuple returns `(tuple.make)` containing a `(tuple.extract)`.', () => {
-					assertEqualBins(
-						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Tuple()])]).build(builder),
-						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, new BinVect(builder.module, [0n]).vect), 0)),
-						'(((),),)',
-					);
-				});
-				test.test('boxed tuple with 1 item.', () => {
-					assertEqualBins(
-						new VALUE.Tuple([new VALUE.Tuple([new VALUE.Float(3.4)])]).build(builder),
-						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
-						'((3.4,),)',
-					);
-				});
-				test.test('boxed tuple with many items.', () => {
-					const mod:   binaryen.Module        = builder.module;
-					const inner: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 1n),
-						buildConst(builder, 2.0),
-						buildConst(builder, true),
-					]);
-					return assertEqualBins(
-						new VALUE.Tuple([new VALUE.Tuple([
-							VALUE.INT_1,
-							new VALUE.Float(2.0),
-							VALUE.TRUE,
-						])]).build(builder),
-						mod.tuple.make([
-							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
-							mod.tuple.extract(mod.local.get(0, bintype3), 1),
-							mod.tuple.extract(mod.local.get(0, bintype3), 2),
-						]),
-						'((1, 2.0, true),)',
-					);
-				});
-				test.test('nested tuples.', () => {
-					const mod:    binaryen.Module        = builder.module;
-					const inner2: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 3n),
-						mod.tuple.extract(singletonTuple(builder, buildConst(builder, 4.0)), 0),
-					]);
-					return assertEqualBins(
-						new VALUE.Tuple([
-							VALUE.INT_1,
-							new VALUE.Tuple([new VALUE.Float(2.0)]),
-							new VALUE.Tuple([
-								new VALUE.Integer(3n),
-								new VALUE.Tuple([new VALUE.Float(4.0)]),
-							]),
-						]).build(builder),
-						mod.tuple.make([
-							buildConst(builder, 1n),
-							mod.tuple.extract(singletonTuple(builder, buildConst(builder, 2.0)), 0),
-							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
-							mod.tuple.extract(mod.local.get(0, bintype2), 1),
-						]),
-						'(1, (2.0,), (3, (4.0,)))',
-					);
-				});
-				test.test('multiple entries.', () => {
-					const mod:     binaryen.Module        = builder.module;
-					const inner01: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 2.0),
-						buildConst(builder, 3n),
-					]);
-					const inner11: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 5n),
-						buildConst(builder, 6.0),
-					]);
-					const inner0: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 1n),
-						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
-						mod.tuple.extract(mod.local.get(0, bintype2), 1),
-					]);
-					const inner1: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 4.0),
-						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
-						mod.tuple.extract(mod.local.get(2, bintype2), 1),
-					]);
-					const inner2: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 7n),
-						buildConst(builder, []),
-					]);
-					return assertEqualBins(
-						new VALUE.Tuple([
-							new VALUE.Tuple([
-								VALUE.INT_1,
-								new VALUE.Tuple([
-									new VALUE.Float(2.0),
-									new VALUE.Integer(3n),
-								]),
-							]),
-							new VALUE.Tuple([
-								new VALUE.Float(4.0),
-								new VALUE.Tuple([
-									new VALUE.Integer(5n),
-									new VALUE.Float(6.0),
-								]),
-							]),
-							new VALUE.Tuple([
-								new VALUE.Integer(7n),
-								new VALUE.Tuple(),
-							]),
-						]).build(builder),
-						mod.tuple.make([
-							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
-							mod.tuple.extract(mod.local.get(1, bintype3), 1),
-							mod.tuple.extract(mod.local.get(1, bintype3), 2),
-							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
-							mod.tuple.extract(mod.local.get(3, bintype3), 1),
-							mod.tuple.extract(mod.local.get(3, bintype3), 2),
-							mod.tuple.extract(mod.local.tee(4, inner2, bintype2), 0),
-							mod.tuple.extract(mod.local.get(4, bintype2), 1),
-						]),
-						'((1, (2.0, 3)), (4.0, (5, 6.0)), (7, ()))',
-					);
-				});
-			});
-
-			test.suite('Record', () => {
-				let builder: Builder = new Builder();
-				test.test.beforeEach(() => {
-					builder = new Builder();
-				});
-				test.test('returns `(tuple.make)`.', () => {
-					assertEqualBins(
-						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, VALUE.INT_1],
-							[0x101n, new VALUE.Float(2.0)],
-						])).build(builder),
-						builder.module.tuple.make([buildConst(builder, 1n), buildConst(builder, 2.0)]),
-						'(a= 1, b= 2.0)',
-					);
-				});
-				test.test('record of size 1 returns a `(tuple.make)` with 1 item.', () => {
-					assertEqualBins(
-						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]])).build(builder),
-						singletonTuple(builder, buildConst(builder, 3.4)),
-						'(a= 3.4)',
-					);
-				});
-				test.test('boxed record with 1 prop.', () => {
-					assertEqualBins(
-						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(3.4)]]))]])).build(builder),
-						singletonTuple(builder, builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 3.4)), 0)),
-						'(a= (a= 3.4))',
-					);
-				});
-				test.test('boxed record with many props.', () => {
-					const mod:   binaryen.Module        = builder.module;
-					const inner: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 1n),
-						buildConst(builder, 2.0),
-						buildConst(builder, true),
-					]);
-					return assertEqualBins(
-						new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, VALUE.INT_1],
-							[0x101n, new VALUE.Float(2.0)],
-							[0x102n, VALUE.TRUE],
-						]))]])).build(builder),
-						mod.tuple.make([
-							mod.tuple.extract(mod.local.tee(0, inner, bintype3), 0),
-							mod.tuple.extract(mod.local.get(0, bintype3), 1),
-							mod.tuple.extract(mod.local.get(0, bintype3), 2),
-						]),
-						'(a= (a= 1, b= 2.0, c= true))',
-					);
-				});
-				test.test('nested records.', () => {
-					const mod:    binaryen.Module        = builder.module;
-					const inner2: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 3n),
-						mod.tuple.extract(singletonTuple(builder, buildConst(builder, 4.0)), 0),
-					]);
-					return assertEqualBins(
-						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, VALUE.INT_1],
-							[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(2.0)]]))],
-							[0x102n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-								[0x100n, new VALUE.Integer(3n)],
-								[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([[0x100n, new VALUE.Float(4.0)]]))],
-							]))],
-						])).build(builder),
-						mod.tuple.make([
-							buildConst(builder, 1n),
-							mod.tuple.extract(singletonTuple(builder, buildConst(builder, 2.0)), 0),
-							mod.tuple.extract(mod.local.tee(0, inner2, bintype2), 0),
-							mod.tuple.extract(mod.local.get(0, bintype2), 1),
-						]),
-						`(
-							a= 1,
-							b= (a= 2.0),
-							c= (a= 3, b= (a= 4.0)),
-						)`,
-					);
-				});
-				test.test('multiple entries.', () => {
-					const mod:     binaryen.Module        = builder.module;
-					const inner01: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 2.0),
-						buildConst(builder, 3n),
-					]);
-					const inner11: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 5n),
-						buildConst(builder, 6.0),
-					]);
-					const inner0: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 1n),
-						mod.tuple.extract(mod.local.tee(0, inner01, bintype2), 0),
-						mod.tuple.extract(mod.local.get(0, bintype2), 1),
-					]);
-					const inner1: binaryen.ExpressionRef = mod.tuple.make([
-						buildConst(builder, 4.0),
-						mod.tuple.extract(mod.local.tee(2, inner11, bintype2), 0),
-						mod.tuple.extract(mod.local.get(2, bintype2), 1),
-					]);
-					const inner2: binaryen.ExpressionRef = mod.block(null, [
-						mod.local.set(4, buildConst(builder, 7n)),
-						mod.local.set(5, new BinVect(mod, true).vect),
-						mod.tuple.make([
-							mod.local.get(5, binaryen.v128),
-							mod.local.get(4, binaryen.v128),
-						]),
-					], bintype2);
-					return assertEqualBins(
-						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-								[0x100n, VALUE.INT_1],
-								[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-									[0x100n, new VALUE.Float(2.0)],
-									[0x101n, new VALUE.Integer(3n)],
-								]))],
-							]))],
-							[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-								[0x100n, new VALUE.Float(4.0)],
-								[0x101n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-									[0x100n, new VALUE.Integer(5n)],
-									[0x101n, new VALUE.Float(6.0)],
-								]))],
-							]))],
-							[0x102n, new VALUE.Record(new Map<bigint, VALUE.Value>([
-								[0x101n, new VALUE.Integer(7n)],
-								[0x100n, VALUE.TRUE],
-							]))],
-						])).build(builder),
-						mod.tuple.make([
-							mod.tuple.extract(mod.local.tee(1, inner0, bintype3), 0),
-							mod.tuple.extract(mod.local.get(1, bintype3), 1),
-							mod.tuple.extract(mod.local.get(1, bintype3), 2),
-							mod.tuple.extract(mod.local.tee(3, inner1, bintype3), 0),
-							mod.tuple.extract(mod.local.get(3, bintype3), 1),
-							mod.tuple.extract(mod.local.get(3, bintype3), 2),
-							mod.tuple.extract(mod.local.tee(6, inner2, bintype2), 0),
-							mod.tuple.extract(mod.local.get(6, bintype2), 1),
-						]),
-						`(
-							a= (a= 1,   b= (a= 2.0, b= 3)),
-							b= (a= 4.0, b= (a= 5, b= 6.0)),
-							c= (b= 7,   a= true),
-						)`,
-					);
-				});
-			});
+		test.test('String', () => {
+			const cg = new Builder();
+			return assertEqualBins(
+				new VALUE.String('hello').codegen(cg),
+				new BinValue(cg, cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => cg.module.i32.const(c)))).value,
+			);
 		});
 	});
 
@@ -649,20 +359,51 @@ test.suite('Value', () => {
 		test.suite('#toInt', () => {
 			test.test('Integer', () => {
 				const i = new VALUE.Integer(42n);
-				assert.strictEqual(i.toInt(), i, '`Integer#toInt` should return self.');
+				assert.strictEqual(i.toInt(), i, 'should return self.');
+			});
+			test.test('Natural', () => {
+				assert.deepStrictEqual(new VALUE.Natural(42n).toInt(), new VALUE.Integer(42n), 'for values less than *2 ^ 63 - 1*, should return equal value.');
+				assert.deepStrictEqual(new VALUE.Natural(2n ** 63n + 1n).toInt(), new VALUE.Integer(-(2n ** 63n) + 1n), 'for values *2 ^ 63* or greater, should overflow.');
 			});
 			test.test('Float', () => {
-				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), '`Float#toInt` should truncate (round-to-zero).');
+				assert.deepStrictEqual(new VALUE.Float(42.69).toInt(), new VALUE.Integer(42n), 'should truncate (round-to-zero).');
+			});
+		});
+
+		test.suite('#toNat', () => {
+			test.test('Integer', () => {
+				assert.deepStrictEqual(new VALUE.Integer(42n).toNat(), new VALUE.Natural(42n), 'for positive values, should return equal value.');
+				assert.deepStrictEqual(new VALUE.Integer(-69n).toNat(), new VALUE.Natural(-69n + 2n ** 64n), 'for negative values, should underflow.');
+			});
+			test.test('Natural', () => {
+				const n = new VALUE.Natural(42n);
+				assert.strictEqual(n.toNat(), n, 'should return self.');
+			});
+			test.test('Float', () => {
+				assert.deepStrictEqual(new VALUE.Float(42.69).toNat(), new VALUE.Natural(42n), 'for positive values, should truncate (round-to-zero).');
+				assert.deepStrictEqual(new VALUE.Float(-42.69).toNat(), new VALUE.Natural(0n), 'for negative values, should return zero.');
 			});
 		});
 
 		test.suite('#toFloat', () => {
 			test.test('Integer', () => {
-				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), '`Integer#toFloat` should return an equivalent value.');
+				assert.deepStrictEqual(new VALUE.Integer(42n).toFloat(), new VALUE.Float(42), 'should return an equal value.');
+			});
+			test.test('Natural', () => {
+				assert.deepStrictEqual(new VALUE.Natural(42n).toFloat(), new VALUE.Float(42), 'should return an equal value.');
 			});
 			test.test('Float', () => {
 				const f = new VALUE.Float(42.69);
-				assert.strictEqual(f.toFloat(), f, '`Float#toFloat` should return self.');
+				assert.strictEqual(f.toFloat(), f, 'should return self.');
+			});
+		});
+	});
+
+
+	test.suite('Natural', () => {
+		test.suite('.constructor', () => {
+			test.test('underflows when argument is negative.', () => {
+				assert.strictEqual(new VALUE.Natural(-3n).toBigInt(), 2n ** 64n - 3n);
 			});
 		});
 	});

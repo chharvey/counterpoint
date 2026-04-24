@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.4.3-beta.0",
+  "version": "0.4.4",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -29,39 +29,37 @@
     "cplc:d-p": "npx cplc d ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
     "cplc:r": "npx cplc r ./sample/test-v0.5.wasm",
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
-    "dist": "tsc",
-    "postdist": "eslint",
-    "pretest": "tsc --project ./test/tsconfig.json",
-    "test": "npx tsx --test --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
-    "test:only": "npx tsx --test --test-only --test-reporter @reporters/mocha -- './test/**/*.test.ts'",
-    "justbuild": "npm run postbuild -w ./tree-sitter-counterpoint/ && npm rebuild",
+    "compile": "tsc && tsc --project ./test/tsconfig.json",
+    "lint": "eslint",
+    "test": "n exec 24 tsx --test --test-isolation=none -- './test/**/*.test.ts'",
+    "test:only": "n exec 24 tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
+    "justbuild": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
-    "build": "rm -rf ./build/ && npm run dist && npm run test"
+    "build": "rm -rf ./build/ && npm run compile && npm run lint && npm run test"
   },
   "dependencies": {
     "binaryen": "^124.0.0",
-    "extrajs": "^0.26.0",
+    "extrajs": "^0.27.0",
     "fast-deep-equal": "^3.1.3",
     "minimist": "^1.2.6",
-    "tree-sitter": "^0.25.0",
-    "utf8": "^3.0.0"
+    "tree-sitter": "^0.25.0"
   },
   "devDependencies": {
     "@eslint/js": "^9.8.0",
-    "@reporters/mocha": "^1.1.1",
     "@stylistic/eslint-plugin": "^5.2.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^24.0.14",
     "@types/utf8": "^3.0.0",
     "eslint": "^9.16.0",
     "eslint-plugin-import": "^2.31.0",
-    "globals": "^16.0.0",
+    "globals": "^17.0.0",
+    "n": "^10.2.0",
     "tsx": "^4.19.3",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.18.0"
   },
   "engines": {
-    "node": "^22.12"
+    "node": "^22.22"
   },
   "private": true,
   "workspaces": [

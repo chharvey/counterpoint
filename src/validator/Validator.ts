@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
-import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import type {CodeUnit} from '../lib/index.ts';
+import * as xjs from 'extrajs';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -14,12 +13,40 @@ import type {SymbolSchema} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-	utf8Encode,
 } from './utils-private.ts';
 
 
 
 type RadixType = 2n | 4n | 6n | 8n | 10n | 16n | 36n;
+
+
+
+/**
+ * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
+ * the index of a character in the Unicode Universal Character Set.
+ */
+type CodePoint = number;
+
+
+
+/**
+ * A code unit is an integer within the closed interval [0, 0xff] that represents
+ * a byte of an encoded Unicode code point.
+ */
+type CodeUnit = number;
+
+
+
+/**
+ * An encoded character is a sequence of code units
+ * that corresponds to a single code point in the UTF-8 encoding.
+ */
+type EncodedChar = (
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+);
 
 
 
@@ -34,6 +61,18 @@ const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 const COMMENTER_MULTI    = '%%';
+
+
+
+/**
+ * The UTF-8 encoding of a numeric code point value.
+ * @param   codepoint a Unicode code point
+ * @returns           a code unit sequence representing the code point
+ */
+export function utf8Encode(codepoint: CodePoint): EncodedChar {
+	xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
+	return [...new TextEncoder().encode(String.fromCodePoint(codepoint))] as EncodedChar;
+}
 
 
 
@@ -178,12 +217,12 @@ export class Validator {
 
 	/**
 	 * Give the numeric value of a number token.
-	 * If the returned value is a native `bigint`, it represents a Counterpoint Integer language value;
+	 * If the returned value is a native `bigint`, it represents either a Counterpoint Integer or Natural language value;
 	 * if the returned value is a native `number`, it represents a Counterpoint Float language value.
 	 * @param source the token’s text
 	 * @return       the numeric value, cooked
 	 */
-	public static cookTokenNumber(source: string): bigint | number {
+	public static cookTokenNumber(source: string): {type: 'int' | 'nat', value: bigint} | {type: 'float', value: number} {
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
 		const multiplier: number    = (has_unary && source.startsWith(Punctuator.NEG)) ? -1 : 1;
 		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source.startsWith(ESCAPER);
@@ -196,13 +235,16 @@ export class Validator {
 			['x', 16n],
 			['z', 36n],
 		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
+
+		const typ: 'int' | 'nat' | 'float' = source.includes(POINT) ? 'float' : has_unary && multiplier === 1 ? 'nat' : 'int';
+
 		/* eslint-disable curly */
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any
 		/* eslint-enable curly */
-		return source.indexOf(POINT) > 0
-			?        multiplier  * tokenWorthFloat (source)
-			: BigInt(multiplier) * tokenWorthInt   (source, radix);
+		return typ === 'float'
+			? {type: typ, value:        multiplier  * tokenWorthFloat(source)}
+			: {type: typ, value: BigInt(multiplier) * tokenWorthInt  (source, radix)};
 	}
 
 	/**
@@ -210,8 +252,8 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenString(source: string): CodeUnit[] {
-		return tokenWorthString(source.slice(DELIM_STRING.length, -DELIM_STRING.length));
+	public static cookTokenString(source: string): Uint8Array {
+		return new Uint8Array(tokenWorthString(source.slice(DELIM_STRING.length, -DELIM_STRING.length)));
 	}
 
 	/**
@@ -219,7 +261,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenTemplate(source: string): CodeUnit[] {
+	public static cookTokenTemplate(source: string): Uint8Array {
 		const delim_start = (
 			source.startsWith(DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
 			source.startsWith(DELIM_INTERP_END) ? DELIM_INTERP_END :
@@ -230,7 +272,7 @@ export class Validator {
 			source.endsWith(DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
-		return [...utf8.encode(source.slice(delim_start.length, -delim_end.length))].map((ch) => ch.codePointAt(0)!);
+		return new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length));
 	}
 
 

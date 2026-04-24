@@ -1,7 +1,8 @@
-import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -12,11 +13,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {
-	buildDeco,
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeConstant} from './ASTNodeConstant.ts';
 
 
@@ -42,15 +39,13 @@ export class ASTNodeTemplate extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeTemplate#build` not yet supported.');
+	public override type(): TYPE.Type {
+		return TYPE.STR;
 	}
 
 	@memoizeMethod
-	@typeDeco
-	public override type(): TYPE.Type {
-		return TYPE.STR;
+	public override lower(optimizer: Optimizer): IR.Template {
+		return new IR.Template(this.children.map((c) => c.lower(optimizer).asTac(optimizer)));
 	}
 
 	@memoizeMethod

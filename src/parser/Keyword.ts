@@ -1,10 +1,10 @@
 export enum Keyword {
 	// type literal
 	NOTHING  = 'nothing',
-	VOID     = 'void',
 	BOOL     = 'bool',
 	SYM      = 'sym',
 	INT      = 'int',
+	NAT      = 'nat',
 	FLOAT    = 'float',
 	STR      = 'str',
 	ANYTHING = 'anything',
@@ -27,14 +27,15 @@ export enum Keyword {
 
 	// storage
 	TYPE  = 'type',
-	LET   = 'let',
+	LET   = 'val',
 	CLAIM = 'claim',
 	SET   = 'set',
 	BLANK = '_',
+	VOID  = 'void',
 
 	// modifier
-	NOMINAL = 'nominal',
-	UNFIXED = 'var',
+	NOMINAL  = 'nominal',
+	WRITABLE = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 
 	// control
 	UNLESS = 'unless',

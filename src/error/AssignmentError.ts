@@ -3,6 +3,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorDuplicateKey,
 	AssignmentErrorReassignment,
+	AssignmentErrorMissingType,
 } from './index.ts';
 import {ErrorCode} from './ErrorCode.ts';
 
@@ -15,6 +16,7 @@ import {ErrorCode} from './ErrorCode.ts';
  * - AssignmentErrorDuplicateDeclaration
  * - AssignmentErrorDuplicateKey
  * - AssignmentErrorReassignment
+ * - AssignmentErrorMissingType
  */
 export class AssignmentError extends ErrorCode {
 	static readonly #CODE = 2200;
@@ -24,6 +26,7 @@ export class AssignmentError extends ErrorCode {
 			[AssignmentErrorDuplicateDeclaration,  1],
 			[AssignmentErrorDuplicateKey,          2],
 			[AssignmentErrorReassignment,         10],
+			[AssignmentErrorMissingType,          20],
 		]);
 	}
 

@@ -1,6 +1,4 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -53,8 +51,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueMap)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueMap)
 	public override equal(value: Value): boolean {
 		return (
 			this.cases.size === (value as ValueMap).cases.size &&
@@ -71,10 +69,6 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 			TYPE.Union.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
 			TYPE.Union.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
-	}
-
-	public override build(_: Builder): binaryen.ExpressionRef {
-		throw new Error('`ValueMap#build` not yet supported.');
 	}
 
 	public get(ant: Value): V | Null {

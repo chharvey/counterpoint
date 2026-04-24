@@ -36,17 +36,6 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 
 
-/**
- * Either a bigint, or a half-closed range of integers from min (inclusive) to max (exclusive).
- * @example
- * const r: ArgCount = [3n, 7n]; % a range of integers including 3, 4, 5, and 6, but not 7.
- * @index 0 the minimum, inclusive
- * @index 1 the maximum, exclusive
- */
-export type ArgCount = bigint | readonly [bigint, bigint];
-
-
-
 export enum ValidIntrinsicName {
 	OBJECT = 'Object',
 }
@@ -211,30 +200,50 @@ export function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
 }
 
+export function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
+}
+
 export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
 	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
 }
 
 export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	const NUMBER: TYPE.Type = TYPE.Union.all(TYPE.INT, TYPE.FLOAT);
-	return t0.isSubtypeOf(NUMBER) && t1.isSubtypeOf(NUMBER);
+	return t0.isSubtypeOf(TYPE.NUMBER) && t1.isSubtypeOf(TYPE.NUMBER);
 }
 
 
 
-export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Float {
-	const cooked: bigint | number = Validator.cookTokenNumber(source);
-	return (typeof cooked === 'bigint') ? new VALUE.Integer(cooked) : new VALUE.Float(cooked);
+export function valueOfTokenNumber(source: string): VALUE.Integer | VALUE.Natural | VALUE.Float {
+	const {type: typ, value: cooked} = Validator.cookTokenNumber(source);
+	switch (typ) {
+		case 'int':   return new VALUE.Integer(cooked);
+		case 'nat':   return new VALUE.Natural(cooked);
+		case 'float': return new VALUE.Float(cooked);
+	}
 }
 
 
+
+function decombine(t: TYPE.Type): TYPE.Type[] {
+	return t instanceof TYPE.Combinable ? t.operands.flatMap((comp) => decombine(comp)) : [t];
+}
 
 export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAccess | AST.ASTNodeAccess, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
-	if (base_type.isTopType && accessor_maybe) {
-		return {type: TYPE.ANYTHING, optional: true};
+	if (base_type.isBottomType) {
+		return {type: TYPE.NOTHING, optional: accessor_maybe};
+	}
+	if (TYPE.NULL.isSubtypeOf(base_type)) {
+		return {type: get_entry_info(base_type.subtract(TYPE.NULL), access, is_writing).type.union(TYPE.NULL), optional: true};
 	}
 	if (base_type instanceof TYPE.Combinable) {
+		const constituents: readonly TYPE.Type[] = decombine(base_type);
+		constituents.slice(0, -1).forEach((comp, i) => {
+			if (comp.constructor !== constituents[i + 1].constructor) {
+				throw new TypeErrorInvalidOperation(access);
+			}
+		});
 		const entry_infos: readonly (EntryType | TypeErrorNoEntry | TypeErrorNotNarrow)[] = base_type.operands.map((comp) => {
 			try {
 				return get_entry_info(comp, access, is_writing);
@@ -247,12 +256,12 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 		});
 		const errors:  readonly Error[]     = entry_infos.filter((info)                    =>   info instanceof TypeErrorNoEntry || info instanceof TypeErrorNotNarrow);
 		const entries: readonly EntryType[] = entry_infos.filter((info): info is EntryType => !(info instanceof TypeErrorNoEntry || info instanceof TypeErrorNotNarrow));
-		/* Throw an error if *all* of the intersection/union constituents do not have the accessed entry. */
-		if (!entries.length) {
-			throw errors.length === 1 ? errors[0] : new AggregateError(errors, errors.map((err) => err.message).join('\n'));
-		}
 		switch (true) {
 			case base_type instanceof TYPE.Intersection: {
+				/* Throw an error if *all* of the intersection constituents do not have the accessed entry. */
+				if (!entries.length) {
+					throw errors.length === 1 ? errors[0] : new AggregateError(errors, errors.map((err) => err.message).join('\n'));
+				}
 				/*
 				 * For intersections:
 				 * The accessed entry’s type is the intersection of the constituents’ corresponding entry on any types, and
@@ -265,16 +274,19 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 				};
 			}
 			case base_type instanceof TYPE.Union: {
+				/* Throw an error if *any* of the union constituents do not have the accessed entry. */
+				if (errors.length) {
+					throw errors.length === 1 ? errors[0] : new AggregateError(errors, errors.map((err) => err.message).join('\n'));
+				}
 				/*
 				 * For unions:
 				 * The accessed entry’s type is the union of the constituents’ corresponding entry on any types, and
 				 * the accessed entry’s optionality is the disjunction of the constituents’ corresponding optionalities.
 				 * (In other words, *any* of them may be optional/missing for maybe access to be valid.)
-				 * Also: If all of them are not optional, but some are missing (i.e. error(s) were caught), then maybe access is required.
 				 */
 				return {
 					type:     TYPE.Union.all(entries.map((entry) => entry.type)),
-					optional: entries.some((entry) => entry.optional) || !!errors.length,
+					optional: entries.some((entry) => entry.optional),
 				};
 			}
 			default: {
@@ -301,14 +313,15 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.ASTNodeTypeAcce
 			assert_instanceof(access, AST.ASTNodeAccess);
 			assert_instanceof(access.accessor, AST.ASTNodeExpression);
 			const accessor_type: TYPE.Type = access.accessor.type();
+			if (accessor_type.isBottomType) {
+				return {type: TYPE.NOTHING, optional: accessor_maybe};
+			}
 			switch (true) {
-				case base_type === TYPE.NULL: {
-					return {type: TYPE.NULL, optional: true};
-				}
 				case base_type instanceof TYPE.List: {
-					return accessor_type.isSubtypeOf(TYPE.INT)
+					const INTEGRAL: TYPE.Type = TYPE.INT.union(TYPE.NAT);
+					return accessor_type.isSubtypeOf(INTEGRAL)
 						? {type: base_type.typearg, optional: accessor_maybe}
-						: throwWrongSubtypeError(access.accessor, TYPE.INT);
+						: throwWrongSubtypeError(access.accessor, INTEGRAL);
 				}
 				case base_type instanceof TYPE.Dict: {
 					return accessor_type.isSubtypeOf(TYPE.SYM)

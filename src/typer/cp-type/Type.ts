@@ -130,7 +130,7 @@ export function differenceRules(
 	assert_context_name(context, 'subtract');
 	return function (this: Type, t) {
 		/* 4-1 | `A - B == A  <->  A & B == nothing` */
-		if (this.intersect(t).isBottomType) {
+		if (this.isDisjointWith(t)) {
 			return this;
 		}
 
@@ -245,7 +245,7 @@ export function subtypeRules(
 		}
 		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` */
 		if (t instanceof Difference) {
-			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
+			return this.isSubtypeOf(t.left) && this.isDisjointWith(t.right);
 		}
 
 		return method.call(this, t);
@@ -269,8 +269,8 @@ export abstract class Type {
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
 	public constructor(
-		public readonly isMutable: boolean,
 		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
+		public readonly isMutable: boolean = false,
 	) {
 	}
 
@@ -442,6 +442,18 @@ export abstract class Type {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
 	}
 
+	/**
+	 * Return whether the intersection of this type with the given type is empty (the Bottom Type).
+	 * If true, there is no overlap between the types.
+	 * @param t the type to compare
+	 * @return  Is this type disjoint with `t`?
+	 * @final
+	 */
+	@memoizeBinOp(true)
+	public isDisjointWith(t: Type): boolean {
+		return this.intersect(t).isBottomType;
+	}
+
 	public mutableOf(): Type {
 		return this;
 	}
@@ -468,7 +480,7 @@ export class TypeInterface extends Type {
 		is_mutable: boolean = false,
 		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
-		super(is_mutable);
+		super(new Set<VALUE.Value>(), is_mutable);
 	}
 
 	@memoizeGetter

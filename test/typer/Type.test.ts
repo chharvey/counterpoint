@@ -35,6 +35,7 @@ test.suite('Type', () => {
 		TYPE.BOOL,
 		TYPE.SYM,
 		TYPE.INT,
+		TYPE.NAT,
 		TYPE.FLOAT,
 		TYPE.STR,
 		TYPE.OBJ,
@@ -82,6 +83,7 @@ test.suite('Type', () => {
 				TYPE.BOOL,
 				TYPE.SYM,
 				TYPE.INT,
+				TYPE.NAT,
 				TYPE.FLOAT,
 				TYPE.STR,
 				TYPE.NULL.union(TYPE.FLOAT),
@@ -114,6 +116,7 @@ test.suite('Type', () => {
 				TYPE.TRUE,
 				TYPE.SYM,
 				TYPE.INT,
+				TYPE.NAT,
 				TYPE.FLOAT,
 				TYPE.STR,
 			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
@@ -144,6 +147,7 @@ test.suite('Type', () => {
 			[TYPE.BOOL,     TYPE.FALSE],
 			[TYPE.SYM,      TYPE.NOTHING],
 			[TYPE.INT,      TYPE.NOTHING],
+			[TYPE.NAT,      TYPE.NOTHING],
 			[TYPE.FLOAT,    TYPE.NOTHING],
 			[TYPE.STR,      TYPE.NOTHING],
 			[TYPE.OBJ,      TYPE.NOTHING],
@@ -158,6 +162,7 @@ test.suite('Type', () => {
 			[TYPE.BOOL,    TYPE.TRUE],
 			[TYPE.SYM,     TYPE.SYM],
 			[TYPE.INT,     TYPE.INT],
+			[TYPE.NAT,     TYPE.NAT],
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
 			[TYPE.OBJ,     TYPE.OBJ],
@@ -510,6 +515,7 @@ test.suite('Type', () => {
 				TYPE.BOOL,
 				TYPE.SYM,
 				TYPE.INT,
+				TYPE.NAT,
 				TYPE.FLOAT,
 				TYPE.STR,
 			].forEach((t, _, arr) => {
@@ -981,57 +987,4 @@ test.suite('Type', () => {
 		});
 	});
 	/* eslint-enable no-useless-escape */
-
-
-	test.suite('Tuple', () => {
-		test.test('#test_getBuiltIndices', () => {
-			TYPE.Tuple.fromTypes([
-				typeUnit('a'),
-				TYPE.Tuple.fromTypes([typeUnit('b')]),
-				TYPE.Tuple.fromTypes([
-					typeUnit('c'),
-					TYPE.Tuple.fromTypes([typeUnit('d')]),
-				]),
-			]).test_getBuiltIndices(
-				[0, [1], [2, 3]],
-				'[A, [B], [C, [D]]] => [0, [1], [2, 3]]',
-			);
-			return TYPE.Tuple.fromTypes([
-				typeUnit('a'),
-				TYPE.Tuple.fromTypes([
-					typeUnit('b'),
-					typeUnit('bb'),
-				]),
-				TYPE.Tuple.fromTypes([
-					typeUnit('c'),
-					TYPE.Tuple.fromTypes([
-						typeUnit('d'),
-						typeUnit('dd'),
-					]),
-					typeUnit('cc'),
-				]),
-				typeUnit('aa'),
-			]).test_getBuiltIndices(
-				[0, [1, 2], [3, 4, 5, 6], 7],
-				'[A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]',
-			);
-		});
-	});
-
-
-	test.suite('TypeUnit', () => {
-		test.suite('#primitiveType', () => {
-			test.test('returns the narrowest primitive type containing the unit.', () => {
-				new Map<TYPE.Unit, TYPE.Type>([
-					[TYPE.NULL,               TYPE.NULL],
-					[TYPE.FALSE,              TYPE.BOOL],
-					[TYPE.TRUE,               TYPE.BOOL],
-					[typeUnit(Symbol(0x100)), TYPE.SYM],
-					[typeUnit(42n),           TYPE.INT],
-					[typeUnit(6.28),          TYPE.FLOAT],
-					[typeUnit('hello'),       TYPE.STR],
-				]).forEach((expected, actual) => assert.strictEqual(actual.primitiveType(), expected));
-			});
-		});
-	});
 });

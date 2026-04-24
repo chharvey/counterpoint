@@ -1,27 +1,18 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	type CPConfig,
-	CONFIG_DEFAULT,
 	AST,
 	VALUE,
 	type TYPE,
-	type Builder,
+	Optimizer,
+	BinConst,
+	Builder,
 } from '../src/index.ts';
 
 
 
 const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
-
-
-
-export const CONFIG_FOLDING_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-	},
-};
+const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
 
 
 
@@ -32,48 +23,66 @@ export const CONFIG_FOLDING_OFF: CPConfig = {
  * @param opts           various options for compiling
  * @param opts.varCheck  Should the VarCheck  algorithm be performed? (defaults true)
  * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
- * @param opts.build     Should the Build     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
+ * @param opts.lower     Should the Lower     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
+ * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `varCheck`, `typeCheck`, and `lower` are true)
  * @param config         compiler config options
  * @return               the `ASTNodeGoal` instance and some properties of it
  */
 export function setupScript(
 	source: string,
-	config: CPConfig | null = CONFIG_DEFAULT,
-	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean} = {},
+	opts:   {varCheck?: boolean, typeCheck?: boolean, lower?: boolean, codegen?: boolean} = {},
 ): {
-	goal:  AST.ASTNodeGoal,
-	stmts: NonNullable<typeof goal.block>['children'],
-	mod:   typeof goal.builder.module,
+	readonly goal:  AST.ASTNodeGoal,
+	readonly stmts: NonNullable<typeof goal.block>['children'],
+	readonly opt:   Optimizer,
+	readonly cg:    Builder,
+	readonly mod:   Builder['module'],
 } {
-	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source, config ?? CONFIG_DEFAULT);
+	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+	const opt = new Optimizer();
+	const cg  = new Builder();
 	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
-	opts.build     ??= true;
-	opts.varCheck &&                                 goal.varCheck();
-	opts.varCheck && opts.typeCheck &&               goal.typeCheck();
-	opts.varCheck && opts.typeCheck && opts.build && goal.build();
+	opts.lower     ??= true;
+	opts.codegen   ??= true;
+	opts.varCheck &&                                                 goal.varCheck();
+	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
+	opts.varCheck && opts.typeCheck && opts.lower &&                 goal.lower(opt);
+	opts.varCheck && opts.typeCheck && opts.lower && opts.codegen && opt.codegen(cg);
 	return {
 		goal,
+		opt,
+		cg,
 		stmts: goal.block.children,
-		mod:   goal.builder.module,
+		mod:   cg.module,
 	};
 }
 
 
 
-export function typeUnit(value: symbol): TYPE.Unit<VALUE.Symbol>;
+export function typeUnit(value: symbol, name?: string): TYPE.Unit<VALUE.Symbol>;
 export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
+export function typeUnit(value: bigint, t: 'nat'): TYPE.Unit<VALUE.Natural>;
 export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
 export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
-export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String> {
+export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
+	if (typeof value === 'bigint' && tag === 'nat') {
+		TYPE_UNIT_MEMO_NAT.has(value) || TYPE_UNIT_MEMO_NAT.set(value, (
+			value === 0n              ? VALUE.NAT_0 :
+			value === 1n              ? VALUE.NAT_1 :
+			typeof value === 'bigint' ? new VALUE.Natural(value) :
+			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		).toType());
+		return TYPE_UNIT_MEMO_NAT.get(value)!;
+	}
 	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
 		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
 		value === ''              ? VALUE.STR_EMPTY :
-		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :
@@ -84,11 +93,23 @@ export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VA
 
 
 
-export function buildConst(builder: Builder, value: null | boolean | symbol | bigint | number | string | [] = null): binaryen.ExpressionRef {
+export function genConst(cg: Builder, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
+export function genConst(cg: Builder, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
+export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
+	switch (value) {
+		case null:  { return cg.getConst(BinConst.NULL); }
+		case false: { return cg.getConst(BinConst.FALSE); }
+		case true:  { return cg.getConst(BinConst.TRUE); }
+	}
+	if (t === 'nat') {
+		return (
+			value === 0n              ? VALUE.NAT_0 :
+			value === 1n              ? VALUE.NAT_1 :
+			typeof value === 'bigint' ? new VALUE.Natural(value) :
+			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		).codegen(cg);
+	}
 	return (
-		value === null            ? VALUE.NULL :
-		value === false           ? VALUE.FALSE :
-		value === true            ? VALUE.TRUE :
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
@@ -96,14 +117,7 @@ export function buildConst(builder: Builder, value: null | boolean | symbol | bi
 		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
-		typeof value === 'string' ? assert.fail('String argument to `buildConst` is not yet supported.') :
-		Array.isArray(value)      ? new VALUE.Tuple() :
+		typeof value === 'string' ? new VALUE.String(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).build(builder);
-}
-
-
-
-export function singletonTuple(builder: Builder, item: binaryen.ExpressionRef): binaryen.ExpressionRef {
-	return builder.module.tuple.make([item, buildConst(builder)]);
+	).codegen(cg);
 }

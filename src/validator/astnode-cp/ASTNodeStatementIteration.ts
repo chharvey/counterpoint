@@ -1,8 +1,11 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
+	VALUE,
 	TYPE,
+	type Temp,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
@@ -19,18 +22,17 @@ import {
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
 import type {ASTNodeVariable} from './ASTNodeVariable.ts';
 import {
-	buildDeco,
 	ASTNodeStatement,
+	StatementBreakable,
 } from './ASTNodeStatement.ts';
 
 
 
-export class ASTNodeStatementIteration extends ASTNodeStatement {
+export class ASTNodeStatementIteration extends StatementBreakable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatementIteration {
 		const statement: ASTNodeStatement = ASTNodeStatement.fromSource(src, config);
 		assert_instanceof(statement, ASTNodeStatementIteration);
@@ -48,7 +50,6 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	}
 
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !!this.iterable.fold() && this.block.isFoldable;
 	}
@@ -92,8 +93,40 @@ export class ASTNodeStatementIteration extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeStatementIteration#build` not yet supported.');
+	public override lower(optimizer: Optimizer): void {
+		const iterable: IR.ValueTac = this.iterable.lower(optimizer).asTac(optimizer);
+		const index:    Temp        = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
+		const get_index             = new IR.Get(index);
+		assert_instanceof(iterable.type, TYPE.List);
+
+		this.labelWhile    = optimizer.newLabel();
+		this.labelDo       = optimizer.newLabel();
+		this.labelEndwhile = optimizer.newLabel();
+
+		optimizer.pushInstruction(new IR.Decl(index));
+		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+
+		optimizer.initiateBlock(this.labels.while!);
+		optimizer.terminateBlock(new IR.GotoConditional(new IR.Binop(
+			IR.OpCode.LT,
+			get_index,
+			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable).asTac(optimizer),
+			TYPE.BOOL,
+		), this.labels.do!, this.labels.endwhile!));
+
+		optimizer.initiateBlock(this.labels.do!);
+		if (this.assignee) {
+			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			symbol.irType = iterable.type.typearg;
+			optimizer.pushInstruction(new IR.Decl(
+				symbol,
+				new IR.CollectionDynamicGet(IR.TypeName.LIST, iterable, get_index, iterable.type.typearg),
+			));
+		}
+		this.block.lower(optimizer);
+		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.OpCode.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
+		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+
+		optimizer.initiateBlock(this.labels.endwhile!);
 	}
 }

@@ -6,9 +6,11 @@ export * from './Boolean.ts';
 export * from './Symbol.ts';
 export * from './Number.ts';
 export * from './Integer.ts';
+export * from './Natural.ts';
 export * from './Float.ts';
 export * from './String.ts';
 
+export * from './Collection.ts';
 export * from './CollectionIndexed.ts';
 export * from './CollectionKeyed.ts';
 

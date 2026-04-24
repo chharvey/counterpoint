@@ -1,8 +1,9 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -19,11 +20,7 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeKey} from './ASTNodeKey.ts';
 import type {ASTNodeProperty} from './ASTNodeProperty.ts';
-import {
-	ASTNodeExpression,
-	buildDeco,
-	typeDeco,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
 	ASTNodeCollectionLiteral,
@@ -46,23 +43,17 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 	}
 
 	public override varCheck(): void {
-		super.varCheck();
 		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
-		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
-			if (ids.slice(0, i).includes(id)) {
-				throw new AssignmentErrorDuplicateKey(keys[i]);
+		xjs.Array.forEachAggregated(keys, (key, i) => {
+			key.varCheck();
+			if (keys.slice(0, i).find((k) => k.id === key.id)) {
+				throw new AssignmentErrorDuplicateKey(key);
 			}
 		});
+		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeDict#build` not yet supported.');
-	}
-
-	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.children.some((c) => c.val.type().isBottomType)) {
 			return TYPE.NOTHING;
@@ -71,6 +62,14 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			TYPE.Union.all(this.children.map((c) => c.val.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.DictNew {
+		return new IR.DictNew(new Map(this.children.map((c) => [
+			new VALUE.Symbol(c.key.id, c.key.source),
+			c.val.lower(optimizer).asTac(optimizer),
+		])), this.type());
 	}
 
 	@memoizeMethod

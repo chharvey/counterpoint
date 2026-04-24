@@ -1,5 +1,3 @@
-import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_equal,
@@ -26,8 +24,8 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 
 	@strictEqual
 	@identical
-	@instanceOf(() => List)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => List)
 	public override equal(value: Value): boolean {
 		return CollectionIndexed.samenessDfn<T>(this, value as List<T>, language_values_equal);
 	}
@@ -38,9 +36,5 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	 */
 	public override toType(): TYPE.List {
 		return new TYPE.List(TYPE.Union.all(this.items.map<TYPE.Type>((it) => it.toType())));
-	}
-
-	public override build(_: Builder): binaryen.ExpressionRef {
-		throw new Error('`List#build` not yet supported.');
 	}
 }

@@ -1,8 +1,7 @@
-import binaryen from 'binaryen';
 import {
 	TYPE,
-	drop_then,
-	BinVect,
+	type Optimizer,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -16,12 +15,8 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeBlock} from './index.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -43,7 +38,6 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		const condition_type:   TYPE.Type = this.condition.type();
 		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
@@ -72,31 +66,28 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const condition_build:   binaryen.ExpressionRef = this.condition.build();
-		const consequent_build:  binaryen.ExpressionRef = this.consequent.build();
-		const alternative_build: binaryen.ExpressionRef = this.alternative?.build() ?? this.builder.module.nop();
-
-		const condition_type:   TYPE.Type = this.condition.type();
-		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
-		const condition_falsy:  boolean   = condition_type.isSubtypeOf(TYPE.FALSE);
-
-		if (!this.unless && condition_truthy || this.unless && condition_falsy) {
-			// `if true…` or `unless false…` -> just return the consequent
-			return drop_then(this.builder.module, [condition_build], consequent_build);
-		} else if (!this.unless && condition_falsy || this.unless && condition_truthy) {
-			// `if false…` or `unless true…` -> just return the alternative
-			return drop_then(this.builder.module, [condition_build], alternative_build);
+	public override lower(optimizer: Optimizer): void {
+		let condition: () => IR.Value = () => this.condition.lower(optimizer);
+		if (this.unless) {
+			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer).asTac(optimizer), TYPE.BOOL);
 		}
 
-		return this.builder.module.if(
-			new BinVect(
-				this.builder.module,
-				this.unless ? this.builder.module.call('vnot', [condition_build], binaryen.v128) : condition_build,
-			).isSpecial(true),
-			consequent_build,
-			alternative_build,
-		);
+		const label_then:  string = optimizer.newLabel();
+		const label_else:  string = optimizer.newLabel();
+		const label_endif: string = this.alternative ? optimizer.newLabel() : label_else;
+
+		optimizer.terminateBlock(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
+
+		optimizer.initiateBlock(label_then);
+		this.consequent.lower(optimizer);
+		optimizer.terminateBlock(new IR.Goto(label_endif));
+
+		if (this.alternative) {
+			optimizer.initiateBlock(label_else);
+			this.alternative.lower(optimizer);
+			optimizer.terminateBlock(new IR.Goto(label_endif));
+		}
+
+		optimizer.initiateBlock(label_endif);
 	}
 }

@@ -15,7 +15,7 @@ Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (
 
 Snippets of program code (be it a Counterpoint program or another kind of program such as a context-free grammar)
 are written in `monospace font`.
-> The Counterpoint code `let x: int = X.value;` is a statement
+> The Counterpoint code `val x: int = X.value;` is a statement
 > that assigns the `value` property of `X` to the newly declared variable `x`.
 >
 > The grammar production `N ::= A B` defines the nonterminal `N` as a concatenation of nonterminals `A` and `B`.
@@ -60,7 +60,7 @@ then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which
 [Counterpoint Language Values](./types-values.md#counterpoint-language-types) are displayed with a `monospace typeface`.
 Examples include `true`, `42.0`, and `"hello"`.
 There is no notational distinction between Counterpoint Language Values and longer code snippets
-such as `let n: int = 42;`; however, the semantics will be apparent in context.
+such as `val n: int = 42;`; however, the semantics will be apparent in context.
 
 
 
@@ -1047,7 +1047,7 @@ after syntactic analysis, but before the program is executed at run-time.
 The productions of the decoration grammar are listed in the chapters
 [Counterpoint Programming Language: Expressions](./language-expressions.md),
 [Counterpoint Programming Language: Statements](./language-statements.md), and
-[Counterpoint Programming Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Source File](./language-source-file.md)
 
 
 ### Notation: Attribute Grammar
@@ -1582,7 +1582,7 @@ which in turn generates compiled code to be executed at runtime.
 The runtime instructions of static semantics are listed in the chapters
 [Counterpoint Programming Language: Expressions](./language-expressions.md),
 [Counterpoint Programming Language: Statements](./language-statements.md), and
-[Counterpoint Programming Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Source File](./language-source-file.md)
 
 
 ### Notation: Algorithms

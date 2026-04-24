@@ -1,10 +1,10 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
-	build_tuple_like,
+	type Optimizer,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -18,11 +18,7 @@ import {
 import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import {
-	buildDeco,
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
 	ASTNodeCollectionLiteral,
@@ -45,23 +41,16 @@ export class ASTNodeTuple extends ASTNodeCollectionLiteral {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return build_tuple_like<ASTNodeExpression>(
-			this.children,
-			this.builder,
-			(expr) => expr.type(),
-			(expr) => expr.build(),
-		);
-	}
-
-	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.children.some((c) => c.type().isBottomType)) {
 			return TYPE.NOTHING;
 		}
 		return TYPE.Tuple.fromTypes(this.children.map((c) => c.type()));
+	}
+
+	@memoizeMethod
+	public lower(optimizer: Optimizer): IR.CollectionLinearNew {
+		return new IR.CollectionLinearNew(IR.TypeName.TUPLE, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod

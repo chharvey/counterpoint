@@ -1,11 +1,12 @@
 import * as xjs from 'extrajs';
-import binaryen from 'binaryen';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	Builder,
+	type Optimizer,
+	type Lowerable,
+	IR,
 	ParseError01,
 } from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {runOnceMethod} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -19,7 +20,6 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {Buildable} from './Buildable.ts';
 import type {ASTNodeBlock} from './ASTNodeBlock.ts';
 
 
@@ -30,13 +30,13 @@ function report_syntax_errors(node: SyntaxNode): void {
 			throw new ParseError01(to_serializable(n));
 		} else if (n.type === 'MISSING' || n.text === '') {
 			const serializable: Serializable = to_serializable(n);
-			const err = new ParseError01(to_serializable(n));
+			const err = new ParseError01(serializable);
 			// @ts-expect-error --- TODO: write class for `ParseError02`
 			err.message = (n.type === 'MISSING')
 				? err.message.replace(/Unexpected/, 'Expected')
 				: `Expected token: \`${ n.type }\` at line ${ serializable.line_index + 1 } col ${ serializable.col_index + 1 }.`;
 			throw err;
-		} else if (n.childCount > 0) {
+		} else if (n.childCount) {
 			report_syntax_errors(n);
 		}
 	});
@@ -44,7 +44,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class ASTNodeGoal extends ASTNodeCP implements Buildable {
+export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 	/**
 	 * Construct a new ASTNodeGoal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -60,7 +60,6 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 
 
 	readonly #validator: Validator;
-	readonly #builder:   Builder;
 
 
 	public constructor(
@@ -70,34 +69,20 @@ export class ASTNodeGoal extends ASTNodeCP implements Buildable {
 	) {
 		super(start_node, {}, (block) ? [block] : []);
 		this.#validator = new Validator(config);
-		this.#builder   = new Builder();
 	}
 
 	public override get validator(): Validator {
 		return this.#validator;
 	}
 
-	public override get builder(): Builder {
-		return this.#builder;
-	}
-
-	/** @implements Buildable */
-	@memoizeMethod
-	public build(): binaryen.ExpressionRef {
-		if (this.block) {
-			const block_build: binaryen.ExpressionRef = this.block.build(); // must build before calling `.getLocals()`
-			this.builder.setupModule((mod) => {
-				const fn_name: string = 'fn0';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					this.builder.getAllLocals().map((var_) => var_.type),
-					block_build,
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			});
-		}
-		return this.builder.module.nop();
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@runOnceMethod
+	public lower(optimizer: Optimizer): void {
+		this.block?.lower(optimizer);
+		optimizer.terminateBlock(new IR.EndProgram());
+		return optimizer.validate();
 	}
 }

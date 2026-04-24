@@ -1,7 +1,8 @@
-import type binaryen from 'binaryen';
 import {
 	type VALUE,
 	type TYPE,
+	type Optimizer,
+	type IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -14,10 +15,7 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 
@@ -38,18 +36,11 @@ export class ASTNodeClaim extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.operand.build();
-	}
-
-	@memoizeMethod
-	// @typeDeco // explicitly leaving off to omit folding logic
 	public override type(): TYPE.Type {
 		const computed_type: TYPE.Type = this.operand.type();
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		/* If the types are disjoint and neither of the types are the Bottom Type, throw an error. */
-		if (computed_type.intersect(claimed_type).isBottomType && !computed_type.isBottomType && !claimed_type.isBottomType) {
+		if (computed_type.isDisjointWith(claimed_type) && !computed_type.isBottomType && !claimed_type.isBottomType) {
 			/*
 				`Conversion of type \`${ computed_type }\` to type \`${ claimed_type }\` may be a mistake
 				because neither type sufficiently overlaps with the other.
@@ -58,6 +49,11 @@ export class ASTNodeClaim extends ASTNodeExpression {
 			throw new TypeErrorNotAssignable(this.operand, claimed_type, this);
 		}
 		return claimed_type;
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		return this.operand.lower(optimizer);
 	}
 
 	@memoizeMethod

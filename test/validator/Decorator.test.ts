@@ -155,6 +155,12 @@ test.suite('Decorator', () => {
 				}
 				% (property_accessor_type)
 			`]],
+			['Decorate(PropertyAccessorType ::= NATURAL) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					type T = U.+1;
+				}
+				% (property_accessor_type)
+			`]],
 			['Decorate(PropertyAccessorType ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
 					type T = U.p;
@@ -316,6 +322,12 @@ test.suite('Decorator', () => {
 				}
 				% (property_accessor)
 			`]],
+			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= NATURAL) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					v.+1;
+				}
+				% (property_accessor)
+			`]],
 			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= Word) -> SemanticKey', [AST.ASTNodeKey, `
 				{
 					v.p;
@@ -332,6 +344,12 @@ test.suite('Decorator', () => {
 			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex', [AST.ASTNodeIndex, `
 				{
 					set v.1 = false;
+				}
+				% (property_accessor)
+			`]],
+			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= NATURAL) -> SemanticIndex', [AST.ASTNodeIndex, `
+				{
+					set v.-1 = false;
 				}
 				% (property_accessor)
 			`]],
@@ -418,7 +436,7 @@ test.suite('Decorator', () => {
 			['Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBlock', [AST.ASTNodeExpressionBlock, `
 				{
 					type T = U;
-					let a: T = b;
+					val a: T = b;
 					claim a: U;
 					set a = b;
 					a;
@@ -488,6 +506,12 @@ test.suite('Decorator', () => {
 			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
 				{
 					int v;
+				}
+				% (expression_unary_keyword)
+			`]],
+			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.ASTNodeOperation, `
+				{
+					nat v;
 				}
 				% (expression_unary_keyword)
 			`]],
@@ -629,7 +653,6 @@ test.suite('Decorator', () => {
 				% (assignee)
 			`]],
 
-
 			['Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression', [AST.ASTNodeStatementExpression, `
 				{
 					a;
@@ -730,7 +753,7 @@ test.suite('Decorator', () => {
 			['Decorate(Block<Break> ::= "{" Statement<?Break>+ "}") -> SemanticBlock', [AST.ASTNodeBlock, `
 				{
 					type T = U;
-					let a: T = b;
+					val a: T = b;
 					claim a: U;
 					set a = b;
 					a;
@@ -757,47 +780,65 @@ test.suite('Decorator', () => {
 				% (declaration_type)
 			`]],
 
-			['Decorate(DeclarationVariable<Break> ::= "let" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "_" "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let _: T = b;
+					val _ = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let a: T = b;
+					val _: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var _: T = b;
+					val a = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var a: T = b;
+					val a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" "_" "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var _?: T;
+					val mut a = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "let" "var" IDENTIFIER "?:" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
 				{
-					let var a?: T;
+					val mut a: T = b;
 				}
 				% (declaration_variable)
+			`]],
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.ASTNodeDeclarationVariable, `
+				{
+					val mut a?: T;
+				}
+				% (declaration_variable)
+			`]],
+
+			['Decorate(SourceFile ::= #x02 #x03) -> SemanticGoal', [AST.ASTNodeGoal, `
+				{
+				}
+				% (source_file)
+			`]],
+			['Decorate(SourceFile ::= #x02 Block #x03) -> SemanticGoal', [AST.ASTNodeGoal, `
+				{
+					"source file";
+				}
+				% (source_file)
 			`]],
 		]).forEach(([klass, text], description) => {
 			test.test(description, {
 				skip: description.startsWith('skip:'),
 				todo: description.startsWith('todo:'),
-				only: description.startsWith('only:'),
+				only: description.startsWith('only:') || undefined, // `only: false` negates `only: true` in parent suite
 			}, () => {
 				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
 				return assert_instanceof(new Decorator().decorateTS(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);

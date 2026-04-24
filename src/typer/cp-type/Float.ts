@@ -11,7 +11,7 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
  */
 export class Float extends UnenumeratedPrimitiveType {
 	public constructor() {
-		super(false, new Set([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
+		super(new Set<VALUE.Float>([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
 	}
 
 	public override toString(): string {

@@ -1,8 +1,9 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
+	type Optimizer,
+	type IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -18,11 +19,7 @@ import {
 	ASTNodeStatementExpression,
 	type ASTNodeBlock,
 } from './index.ts';
-import {
-	buildDeco,
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
 
 
@@ -42,17 +39,6 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		const block_stmts: binaryen.ExpressionRef[] = [
-			...this.block.children.slice(0, -1).map((stmt) => stmt.build()),
-			(this.block.children.at(-1) as ASTNodeStatementExpression).expr!.build(),
-		];
-		return this.builder.module.block(null, block_stmts, binaryen.getExpressionType(block_stmts.at(-1)!));
-	}
-
-	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.block.hasBottomType) {
 			return TYPE.NOTHING;
@@ -70,6 +56,12 @@ export class ASTNodeExpressionBlock extends ASTNodeExpression {
 			throw new Error('The determining expression-statement of a block-expression must be nonempty.');
 		}
 		return expr.type();
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Value {
+		this.block.children.slice(0, -1).forEach((stmt) => stmt.lower(optimizer));
+		return (this.block.children.at(-1) as ASTNodeStatementExpression).expr!.lower(optimizer);
 	}
 
 	@memoizeMethod

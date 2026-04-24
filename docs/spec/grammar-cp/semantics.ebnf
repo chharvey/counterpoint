@@ -70,8 +70,8 @@ SemanticTypeOperation[operator: AND | OR]
 
 SemanticExpression =:=
 	| SemanticConstant
-	| SemanticVariable
 	| SemanticTemplate
+	| SemanticVariable
 	| SemanticCollectionLiteral
 	| SemanticExpressionBlock
 	| SemanticAccess
@@ -85,11 +85,11 @@ SemanticExpression =:=
 SemanticConstant[value: Null | Boolean | Symbol | Number | String]
 	::= ();
 
-SemanticVariable[id: RealNumber]
-	::= ();
-
 SemanticTemplate
 	::= (SemanticConstant SemanticExpression?)* SemanticConstant;
+
+SemanticVariable[id: RealNumber]
+	::= ();
 
 SemanticTemplatePartial
 	::= (SemanticConstant SemanticExpression?)+;
@@ -124,11 +124,11 @@ SemanticClaim
 
 SemanticOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-SemanticOperation[operator: NEG | INT | FLOAT]
+SemanticOperation[operator: NEG | INT | NAT | FLOAT]
 	::= SemanticExpression[type: Number];
 SemanticOperation[operator: CAST | MAYBE | RESULT | IS]
 	::= SemanticExpression SemanticExpression[type: Class];
-SemanticOperation[operator: EXP | MUL | DIV | ADD | LT | LE | GT | GE]
+SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
 SemanticOperation[operator: ID | EQ | AND | OR]
 	::= SemanticExpression SemanticExpression;
@@ -147,6 +147,19 @@ SemanticStatement =:=
 	| SemanticStatementIteration
 	| SemanticStatementBreak
 ;
+
+
+
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+;
+
+SemanticDeclarationType
+	::= SemanticTypeAlias? SemanticType;
+
+SemanticDeclarationVariable[writable: Boolean]
+	::= SemanticVariable? SemanticType? SemanticExpression?;
 
 
 
@@ -175,19 +188,6 @@ SemanticStatementBreak[skip: Boolean]
 
 SemanticBlock
 	::= SemanticStatement+;
-
-
-
-SemanticDeclaration =:=
-	| SemanticDeclarationType
-	| SemanticDeclarationVariable
-;
-
-SemanticDeclarationType
-	::= SemanticTypeAlias? SemanticType;
-
-SemanticDeclarationVariable[unfixed: Boolean]
-	::= SemanticVariable? SemanticType SemanticExpression?;
 
 
 

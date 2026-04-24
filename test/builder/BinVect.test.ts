@@ -14,13 +14,13 @@ test.suite('BinVect', () => {
 	const MOD = new binaryen.Module();
 
 
-	test.suite('.asBool', () => {
+	test.suite('.boolOf', () => {
 		test.test('returns `(if)` containing two v128 branches storing boolean values.', () => {
 			xjs.Array.forEachAggregated([
 				MOD.i32.const(0),
 				MOD.i32.const(1),
 			], (expr) => assert_equal_bins(
-				BinVect.asBool(MOD, expr),
+				BinVect.boolOf(MOD, expr),
 				MOD.if(
 					expr,
 					new BinVect(MOD, true).vect,
@@ -32,9 +32,8 @@ test.suite('BinVect', () => {
 
 
 	test.suite('.constructor', () => {
-		test.test('throws when any ExpressionRef address component is not an `i64`.', () => {
-			assert.throws(() => new BinVect(MOD, [42]), TypeError);
-			assert.throws(() => new BinVect(MOD, [MOD.f64.const(42)]), TypeError);
+		test.test('throws when ExpressionRef arg is not an accepted type.', () => {
+			assert.throws(() => new BinVect(MOD, MOD.i32.const(42)), TypeError);
 		});
 	});
 
@@ -43,9 +42,10 @@ test.suite('BinVect', () => {
 		function test_vect<Arg extends ConstructorParameters<typeof BinVect>[1]>(
 			argument:    Arg,
 			expected_fn: (arg: Arg, exp: binaryen.ExpressionRef) => typeof exp,
+			opts?:       ConstructorParameters<typeof BinVect>[2],
 		): void {
 			return assert_equal_bins(
-				new BinVect(MOD, argument).vect,
+				new BinVect(MOD, argument, opts).vect,
 				expected_fn.call(null, argument, MOD.v128.const(new Uint8Array(16))),
 			);
 		}
@@ -57,16 +57,24 @@ test.suite('BinVect', () => {
 		});
 
 		test.test('with `binaryen.ExpressionRef` argument representing an `int`.', () => {
-			test_vect<binaryen.ExpressionRef>(MOD.i64.const(42, 0), (arg, exp) => {
+			test_vect<binaryen.ExpressionRef>(bigint_to_i64(MOD, -42n), (arg, exp) => {
 				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0018));
 				exp = MOD.i64x2.replace_lane(exp, 1, arg);
 				return exp;
 			});
 		});
 
+		test.test('with `binaryen.ExpressionRef` argument representing a `nat`.', () => {
+			test_vect<binaryen.ExpressionRef>(bigint_to_i64(MOD, 42n, true), (arg, exp) => {
+				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0028));
+				exp = MOD.i64x2.replace_lane(exp, 1, arg);
+				return exp;
+			}, {unsigned: true});
+		});
+
 		test.test('with `binaryen.ExpressionRef` argument representing a `float`.', () => {
 			test_vect<binaryen.ExpressionRef>(MOD.f64.const(4.2), (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0028));
+				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0048));
 				exp = MOD.f64x2.replace_lane(exp, 1, arg);
 				return exp;
 			});
@@ -75,24 +83,8 @@ test.suite('BinVect', () => {
 		test.test('with `binaryen.ExpressionRef` argument representing any `v128`.', () => {
 			let argument: binaryen.ExpressionRef = MOD.v128.const(new Uint8Array(16));
 			argument = MOD.i16x8.replace_lane(argument, 3, MOD.i32.const(0x0018));
-			argument = MOD.i64x2.replace_lane(argument, 1, MOD.i64.const(42, 0));
+			argument = MOD.i64x2.replace_lane(argument, 1, bigint_to_i64(MOD, 42n));
 			return test_vect<binaryen.ExpressionRef>(argument, (arg) => arg);
-		});
-
-		test.test('with address bigint argument.', () => {
-			test_vect<[bigint]>([42n], (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0038));
-				exp = MOD.i64x2.replace_lane(exp, 1, bigint_to_i64(MOD, arg[0], true));
-				return exp;
-			});
-		});
-
-		test.test('with address ExpressionRef argument.', () => {
-			test_vect<[binaryen.ExpressionRef]>([bigint_to_i64(MOD, 42n, true)], (arg, exp) => {
-				exp = MOD.i16x8.replace_lane(exp, 3, MOD.i32.const(0x0038));
-				exp = MOD.i64x2.replace_lane(exp, 1, arg[0]);
-				return exp;
-			});
 		});
 	});
 
@@ -104,12 +96,12 @@ test.suite('BinVect', () => {
 			[true,  0x0003],
 		]).forEach((value, key) => {
 			const vect                              = new BinVect(MOD, key);
-			const vectLane3: binaryen.ExpressionRef = MOD.i16x8.extract_lane_s(vect.vect, 3);
+			const vectLane3: binaryen.ExpressionRef = MOD.i16x8.extract_lane_u(vect.vect, 3);
 			assert_equal_bins(
 				vect.isSpecial(),
 				MOD.i32.and(
-					MOD.i32.le_s(MOD.i32.const(Number(0x0001n)), vectLane3),
-					MOD.i32.le_s(vectLane3,                      MOD.i32.const(Number(0x000fn))),
+					MOD.i32.le_u(MOD.i32.const(Number(0x0001n)), vectLane3),
+					MOD.i32.le_u(vectLane3,                      MOD.i32.const(Number(0x000fn))),
 				),
 			);
 			return assert_equal_bins(

@@ -3,21 +3,6 @@ import type {ASTNodeCP} from './ASTNodeCP.ts';
 
 
 /**
- * Check if constant folding is on before calling the getter.
- * @implements GetterDecorator<Foldable, boolean>
- */
-export function if_constant_folding(
-	getter:   (this: Foldable) => boolean,
-	_context: ClassGetterDecoratorContext<Foldable, boolean>,
-): typeof getter {
-	return function () {
-		return this.validator.config.compilerOptions.constantFolding && getter.call(this);
-	};
-}
-
-
-
-/**
  * Known implementers:
  * - ASTNodeStatement
  * - ASTNodeBlock

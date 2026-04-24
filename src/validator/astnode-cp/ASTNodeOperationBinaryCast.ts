@@ -1,7 +1,8 @@
-import type binaryen from 'binaryen';
 import type {
 	VALUE,
 	TYPE,
+	Optimizer,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -16,10 +17,7 @@ import {
 	Operator,
 	type ValidOperatorCast,
 } from '../Operator.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -40,14 +38,13 @@ export class ASTNodeOperationBinaryCast extends ASTNodeOperationBinary {
 		super(start_node, Operator.CAST, operand0, operand1);
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('ASTNodeOperationBinaryCast#build not yet supported.');
-	}
-
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
 		throw new Error('ASTNodeOperationBinaryCast#type not yet supported.');
+	}
+
+	@memoizeMethod
+	public override lower(_: Optimizer): IR.Value {
+		throw new Error('`ASTNodeOperationBinaryCast#lower` not yet supported.');
 	}
 
 	@memoizeMethod

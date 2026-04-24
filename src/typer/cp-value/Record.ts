@@ -1,8 +1,3 @@
-import type binaryen from 'binaryen';
-import {
-	build_record_like,
-	type Builder,
-} from '../../index.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -29,16 +24,16 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	}
 
 	@strictEqual
-	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueRecord)
 	public override identical(value: Value): boolean {
 		return CollectionKeyed.samenessDfn<T>(this, value as ValueRecord<T>, language_values_identical);
 	}
 
 	@strictEqual
 	@identical
-	@instanceOf(() => ValueRecord)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueRecord)
 	public override equal(value: Value): boolean {
 		return CollectionKeyed.samenessDfn<T>(this, value as ValueRecord<T>, language_values_equal);
 	}
@@ -49,15 +44,6 @@ class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
 	 */
 	public override toType(): TYPE.Record {
 		return TYPE.Record.fromTypes(new Map([...this.properties].map<[bigint, TYPE.Type]>(([key, val]) => [key, val.toType()])));
-	}
-
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return build_record_like<T>(
-			this.properties,
-			builder,
-			(value) => value.toType(),
-			(value) => value.build(builder),
-		);
 	}
 }
 export {ValueRecord as Record};

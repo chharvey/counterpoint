@@ -6,33 +6,34 @@ import {
 	Builder,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
-import {buildConst} from '../helpers.ts';
+import {genConst} from '../helpers.ts';
 
 
 
 test.suite('drop_then', () => {
 	test.test('returns a (block) containing `n - 1` (drop) exprs followed by a last expr.', () => {
-		const builder = new Builder();
-		const expr1: binaryen.ExpressionRef = buildConst(builder, 1n);
-		const expr2: binaryen.ExpressionRef = buildConst(builder, 2n);
-		const expr3: binaryen.ExpressionRef = buildConst(builder, 3n);
-		assert.strictEqual(binaryen.getExpressionType(expr3), binaryen.v128);
+		const cg = new Builder();
+		const rt_e_value: binaryen.Type = cg.reftype.Value | 4; // HACK: “exact” type, i.e. `(ref (exact $Value))`
+		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
+		const expr2: binaryen.ExpressionRef = genConst(cg, 2n);
+		const expr3: binaryen.ExpressionRef = genConst(cg, 3n);
+		assert.strictEqual(binaryen.getExpressionType(expr3), rt_e_value);
 		return assertEqualBins(
-			drop_then(builder.module, [expr1, expr2], expr3),
-			builder.module.block(null, [builder.module.drop(expr1), builder.module.drop(expr2), expr3], binaryen.v128),
+			drop_then(cg.module, [expr1, expr2], expr3),
+			cg.module.block(null, [cg.module.drop(expr1), cg.module.drop(expr2), expr3], rt_e_value),
 		);
 	});
 	test.test('type of (block) is `binaryen.none` if last item is a Counterpoint block.', () => {
-		const builder = new Builder();
-		const expr1: binaryen.ExpressionRef = buildConst(builder, 1n);
-		const block: binaryen.ExpressionRef = builder.module.block(null, [
-			builder.module.drop(buildConst(builder, 2n)),
-			builder.module.drop(buildConst(builder, 3n)),
+		const cg = new Builder();
+		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
+		const block: binaryen.ExpressionRef = cg.module.block(null, [
+			cg.module.drop(genConst(cg, 2n)),
+			cg.module.drop(genConst(cg, 3n)),
 		]); // result of building ASTNodeBlock
 		assert.strictEqual(binaryen.getExpressionType(block), binaryen.none);
 		return assertEqualBins(
-			drop_then(builder.module, [expr1], block),
-			builder.module.block(null, [builder.module.drop(expr1), block]),
+			drop_then(cg.module, [expr1], block),
+			cg.module.block(null, [cg.module.drop(expr1), block]), // defaults to `binaryen.none`
 		);
 	});
 });

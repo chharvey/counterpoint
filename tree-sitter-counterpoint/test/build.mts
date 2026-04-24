@@ -14,6 +14,10 @@ function s(name: string, ...operands: readonly string[]): string {
 	`;
 }
 
+function f(fieldname: string, name: string, ...operands: readonly string[]): string {
+	return `${ fieldname }: ${ s(name, ...operands) }`;
+}
+
 function sourceStatements(...statements: readonly string[]): string {
 	return s(
 		'source_file',
@@ -25,7 +29,7 @@ function sourceStatements(...statements: readonly string[]): string {
 }
 
 function sourceTypes(...types: readonly string[]): string {
-	return sourceStatements(...types.map((typ) => s('declaration_type', s('identifier'), typ)));
+	return sourceStatements(...types.map((typ) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${ typ }`)));
 }
 
 function sourceExpressions(...expressions: readonly string[]): string {
@@ -61,6 +65,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					\\b01000101;
 					4_2;
 					\\b0100_0101;
+					-42;
+					-\\b01000101;
+					-4_2;
+					-\\b0100_0101;
 				}
 			`,
 			sourceExpressions(
@@ -68,6 +76,27 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+				s('primitive_literal', s('integer')),
+			),
+		],
+
+		NATURAL: [
+			xjs.String.dedent`
+				{
+					+42;
+					+\\b01000101;
+					+4_2;
+					+\\b0100_0101;
+				}
+			`,
+			sourceExpressions(
+				s('primitive_literal', s('natural')),
+				s('primitive_literal', s('natural')),
+				s('primitive_literal', s('natural')),
+				s('primitive_literal', s('natural')),
 			),
 		],
 
@@ -148,12 +177,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = bool;
 					type T = sym;
 					type T = int;
+					type T = nat;
 					type T = float;
 					type T = str;
 					type T = anything;
 				}
 			`,
 			sourceTypes(
+				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
 				s('keyword_type'),
@@ -190,17 +221,21 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = @true;
 					type T = @hello;
 					type T = 42;
+					type T = -42;
+					type T = +42;
 					type T = 4.2;
 					type T = "hello";
 
 					null;
 					false;
 					true;
-					@let;
+					@type;
 					@bool;
 					@true;
 					@hello;
 					42;
+					-42;
+					+42;
 					4.2;
 					"hello";
 				}
@@ -215,11 +250,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('word', s('keyword_value')),
 					s('word', s('identifier')),
 					s('integer'),
+					s('integer'),
+					s('natural'),
 					s('float'),
 					s('string'),
 				].map((term) => s('primitive_literal', term));
 				return sourceStatements(
-					...primitive_literals.map((pl) => s('declaration_type', s('identifier'), pl)),
+					...primitive_literals.map((pl) => s('declaration_type', f('identifier_0', 'identifier'), `type_0: ${ pl }`)),
 					...primitive_literals.map((pl) => s('statement_expression', pl)),
 				);
 			})(),
@@ -272,38 +309,40 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('type_tuple_literal'),
 				s(
 					'type_tuple_literal',
-					s('entry_type', s('keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
-					s('entry_type__optional', s('keyword_type')),
+					s('entry_type__optional', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
-					s('entry_type', s('keyword_type')),
-					s('entry_type', s('keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
-					s('entry_type',           s('keyword_type')),
-					s('entry_type__optional', s('keyword_type')),
+					s('entry_type',           f('type_0', 'keyword_type')),
+					s('entry_type__optional', f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_tuple_literal',
 					s(
 						'entry_type',
-						s(
+						f(
+							'type_0',
 							'type_compound',
-							s('identifier'),
-							s('property_accessor_type', s('integer')),
+							f('type_0', 'identifier'),
+							f('property_accessor_type_0', 'property_accessor_type', s('integer')),
 						),
 					),
 					s(
 						'entry_type',
-						s(
+						f(
+							'type_0',
 							'type_compound',
-							s('identifier'),
-							s('generic_arguments', s('keyword_type')),
+							f('type_0', 'identifier'),
+							f('generic_arguments_0', 'generic_arguments', s('keyword_type')),
 						),
 					),
 				),
@@ -318,43 +357,45 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						a: V.0,
 						b: W.<float>,
 					);
-					type V = (let: str, bool: str, true: str, foo: str);
+					type V = (type: str, bool: str, true: str, foo: str);
 				}
 			`,
 			sourceTypes(
 				s(
 					'type_record_literal',
-					s('entry_type__named',           s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named__optional', s('word', s('identifier')), s('keyword_type')),
-					s('entry_type__named',           s('word'),                  s('keyword_type')),
+					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named',           f('word_0', 'word'),                  f('type_0', 'keyword_type')),
 				),
 				s(
 					'type_record_literal',
 					s(
 						'entry_type__named',
-						s('word', s('identifier')),
-						s(
+						f('word_0', 'word', s('identifier')),
+						f(
+							'type_0',
 							'type_compound',
-							s('identifier'),
-							s('property_accessor_type', s('integer')),
+							f('type_0', 'identifier'),
+							f('property_accessor_type_0', 'property_accessor_type', s('integer')),
 						),
 					),
 					s(
 						'entry_type__named',
-						s('word', s('identifier')),
-						s(
+						f('word_0', 'word', s('identifier')),
+						f(
+							'type_0',
 							'type_compound',
-							s('identifier'),
-							s('generic_arguments', s('keyword_type')),
+							f('type_0', 'identifier'),
+							f('generic_arguments_0', 'generic_arguments', s('keyword_type')),
 						),
 					),
 				),
 				s(
 					'type_record_literal',
-					s('entry_type__named', s('word'),                     s('keyword_type')),
-					s('entry_type__named', s('word', s('keyword_type')),  s('keyword_type')),
-					s('entry_type__named', s('word', s('keyword_value')), s('keyword_type')),
-					s('entry_type__named', s('word', s('identifier')),    s('keyword_type')),
+					s('entry_type__named', f('word_0', 'word'),                     f('type_0', 'keyword_type')),
+					s('entry_type__named', f('word_0', 'word', s('keyword_type')),  f('type_0', 'keyword_type')),
+					s('entry_type__named', f('word_0', 'word', s('keyword_value')), f('type_0', 'keyword_type')),
+					s('entry_type__named', f('word_0', 'word', s('identifier')),    f('type_0', 'keyword_type')),
 				),
 			),
 		],
@@ -418,13 +459,15 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					type T = TupleType.0;
+					type T = TupleType.-1;
+					type T = TupleType.+1;
 					type T = RecordType.prop;
 					type T = RecordType._;
 					type T = TupleType?.0;
 					type T = RecordType?.prop;
 					type T = RecordType?._;
 					type T = Set.<T>;
-					type T = SomeType.let;
+					type T = SomeType.type;
 					type T = SomeType.bool;
 					type T = SomeType.true;
 					type T = SomeType.foo;
@@ -433,58 +476,68 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceTypes(
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('integer')),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word', s('identifier'))),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word')),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('natural')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('integer')),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word', s('identifier'))),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word', s('identifier'))),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word')),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('integer')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('generic_arguments', s('identifier')),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word', s('identifier'))),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word')),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word', s('keyword_type'))),
+					f('type_0', 'identifier'),
+					f('generic_arguments_0', 'generic_arguments', s('identifier')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word', s('keyword_value'))),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word')),
 				),
 				s(
 					'type_compound',
-					s('identifier'),
-					s('property_accessor_type', s('word', s('identifier'))),
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word', s('keyword_type'))),
+				),
+				s(
+					'type_compound',
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word', s('keyword_value'))),
+				),
+				s(
+					'type_compound',
+					f('type_0', 'identifier'),
+					f('property_accessor_type_0', 'property_accessor_type', s('word', s('identifier'))),
 				),
 			),
 		],
@@ -650,7 +703,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		RecordLiteral: [
 			xjs.String.dedent`
 				{
-					(a= 1, b= (x= 2), _= (y= (k= 3)), let= 4, bool= 5, true= 6);
+					(a= 1, b= (x= 2), _= (y= (k= 3)), type= 4, bool= 5, true= 6);
 				}
 			`,
 			sourceExpressions(s(
@@ -726,7 +779,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		DictLiteral: [
 			xjs.String.dedent`
 				{
-					[a= 1, b= [x= 2], _= [y= [k= 3]], let= 4, bool= 5, true= 6];
+					[a= 1, b= [x= 2], _= [y= [k= 3]], type= 4, bool= 5, true= 6];
 				}
 			`,
 			sourceExpressions(s(
@@ -838,6 +891,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					tuple.0;
+					tuple.-1;
+					tuple.+1;
 					tuple?.0;
 					tuple!.0;
 					record.prop;
@@ -850,7 +905,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					List.();
 					Dict.(record);
 					Set.<T>();
-					record.let;
+					record.type;
 					record.bool;
 					record.true;
 				}
@@ -858,84 +913,94 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceExpressions(
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('integer')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('integer')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('integer')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('integer')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('integer')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('natural')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('word', s('identifier'))),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('integer')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('word', s('identifier'))),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('integer')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('word', s('identifier'))),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('word')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('identifier')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('identifier')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('word')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('identifier')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('identifier')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('function_arguments'),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('identifier')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('function_arguments', s('identifier')),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('identifier')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('generic_arguments', s('identifier')),
-					s('function_arguments'),
+					f('expression_0', 'identifier'),
+					f('function_arguments_0', 'function_arguments'),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('word')),
+					f('expression_0', 'identifier'),
+					f('function_arguments_0', 'function_arguments', s('identifier')),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('word', s('keyword_type'))),
+					f('expression_0', 'identifier'),
+					f('generic_arguments_0', 'generic_arguments', s('identifier')),
+					f('function_arguments_0', 'function_arguments'),
 				),
 				s(
 					'expression_compound',
-					s('identifier'),
-					s('property_accessor', s('word', s('keyword_value'))),
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('word')),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('word', s('keyword_type'))),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
+					f('property_accessor_0', 'property_accessor', s('word', s('keyword_value'))),
 				),
 			),
 		],
@@ -973,18 +1038,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					int   value;
+					nat   value;
 					float value;
 				}
 			`,
 			sourceExpressions(
-				s(
-					'expression_unary_keyword',
-					s('identifier'),
-				),
-				s(
-					'expression_unary_keyword',
-					s('identifier'),
-				),
+				s('expression_unary_keyword', s('identifier')),
+				s('expression_unary_keyword', s('identifier')),
+				s('expression_unary_keyword', s('identifier')),
 			),
 		],
 
@@ -1000,23 +1061,23 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceExpressions(
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
 				),
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
 				),
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
 				),
 				s(
 					'expression_cast',
-					s('identifier'),
-					s('identifier'),
+					f('expression_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 			),
 		],
@@ -1292,7 +1353,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					claim record.prop:  V;
 					claim record._:     X;
 					claim list.[index]: W;
-					claim record.let:   Y;
+					claim record.type:  Y;
 					claim record.bool:  Z;
 					claim record.true:  S;
 				}
@@ -1302,7 +1363,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
+						f('identifier_0', 'identifier'),
 					),
 					s('identifier'),
 				),
@@ -1310,8 +1371,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('integer')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('integer')),
 					),
 					s('identifier'),
 				),
@@ -1319,8 +1380,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('identifier'))),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
 					),
 					s('identifier'),
 				),
@@ -1328,8 +1389,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word')),
 					),
 					s('identifier'),
 				),
@@ -1337,8 +1398,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('identifier')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('identifier')),
 					),
 					s('identifier'),
 				),
@@ -1346,8 +1407,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word')),
 					),
 					s('identifier'),
 				),
@@ -1355,8 +1416,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_type'))),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('keyword_type'))),
 					),
 					s('identifier'),
 				),
@@ -1364,8 +1425,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_value'))),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('keyword_value'))),
 					),
 					s('identifier'),
 				),
@@ -1380,7 +1441,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					set record.prop  = c;
 					set record._     = c;
 					set list.[index] = d;
-					set record.let   = 1;
+					set record.type  = 1;
 					set record.bool  = 2;
 					set record.true  = 3;
 				}
@@ -1390,7 +1451,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
+						f('identifier_0', 'identifier'),
 					),
 					s('identifier'),
 				),
@@ -1398,8 +1459,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('integer')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('integer')),
 					),
 					s('identifier'),
 				),
@@ -1407,8 +1468,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('identifier'))),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
 					),
 					s('identifier'),
 				),
@@ -1416,8 +1477,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word')),
 					),
 					s('identifier'),
 				),
@@ -1425,8 +1486,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('identifier')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('identifier')),
 					),
 					s('identifier'),
 				),
@@ -1434,8 +1495,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word')),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word')),
 					),
 					s('primitive_literal', s('integer')),
 				),
@@ -1443,8 +1504,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_type'))),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('keyword_type'))),
 					),
 					s('primitive_literal', s('integer')),
 				),
@@ -1452,8 +1513,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
-						s('property_accessor', s('word', s('keyword_value'))),
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('keyword_value'))),
 					),
 					s('primitive_literal', s('integer')),
 				),
@@ -1471,38 +1532,41 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceStatements(
-				s('statement_conditional',         s('identifier'), s('block', s('statement_expression', s('identifier')))),
-				s('statement_conditional__unless', s('identifier'), s('block', s('statement_expression', s('identifier')))),
+				s('statement_conditional',         f('expression_0', 'identifier'), f('block_0', 'block', s('statement_expression', s('identifier')))),
+				s('statement_conditional__unless', f('expression_0', 'identifier'), f('block_0', 'block', s('statement_expression', s('identifier')))),
 				s(
 					'statement_conditional',
-					s('identifier'),
-					s('block', s('statement_expression', s('identifier'))),
-					s('block', s('statement_expression', s('identifier'))),
+					f('expression_0', 'identifier'),
+					f('block_0', 'block', s('statement_expression', s('identifier'))),
+					f('block_1', 'block', s('statement_expression', s('identifier'))),
 				),
 				s(
 					'statement_conditional',
-					s('identifier'),
-					s('block', s('statement_expression', s('identifier'))),
-					s(
+					f('expression_0', 'identifier'),
+					f('block_0', 'block', s('statement_expression', s('identifier'))),
+					f(
+						'statement_conditional_0',
 						'statement_conditional',
-						s('identifier'),
-						s('block', s('statement_expression', s('identifier'))),
-						s('block', s('statement_expression', s('identifier'))),
+						f('expression_0', 'identifier'),
+						f('block_0', 'block', s('statement_expression', s('identifier'))),
+						f('block_1', 'block', s('statement_expression', s('identifier'))),
 					),
 				),
 				s(
 					'statement_conditional',
-					s('identifier'),
-					s('block', s('statement_expression', s('identifier'))),
-					s(
+					f('expression_0', 'identifier'),
+					f('block_0', 'block', s('statement_expression', s('identifier'))),
+					f(
+						'statement_conditional_0',
 						'statement_conditional',
-						s('identifier'),
-						s('block', s('statement_expression', s('identifier'))),
-						s(
+						f('expression_0', 'identifier'),
+						f('block_0', 'block', s('statement_expression', s('identifier'))),
+						f(
+							'statement_conditional_0',
 							'statement_conditional',
-							s('identifier'),
-							s('block', s('statement_expression', s('identifier'))),
-							s('block', s('statement_expression', s('identifier'))),
+							f('expression_0', 'identifier'),
+							f('block_0', 'block', s('statement_expression', s('identifier'))),
+							f('block_1', 'block', s('statement_expression', s('identifier'))),
 						),
 					),
 				),
@@ -1522,13 +1586,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceStatements(
-				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
-				s('statement_loop', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
-				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
-				s('statement_loop', s('block__break', s('statement_expression__break', s('identifier'))), s('identifier')),
-				s('statement_loop', s('identifier'), s(
+				s('statement_loop', f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_loop', f('block_0', 'block__break', s('statement_expression__break', s('identifier'))), f('expression_0', 'identifier')),
+				s('statement_loop', f('block_0', 'block__break', s('statement_expression__break', s('identifier'))), f('expression_0', 'identifier')),
+				s('statement_loop', f('expression_0', 'identifier'), f(
+					'block_0',
 					'block__break',
-					s('statement_conditional__break', s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+					s('statement_conditional__break', f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
 				)),
 			),
 		],
@@ -1541,8 +1606,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceStatements(
-				s('statement_iteration',                  s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
-				s('statement_iteration', s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration',                                  f('type_0', 'identifier'), f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration', f('identifier_0', 'identifier'), f('type_0', 'identifier'), f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
 
@@ -1555,7 +1620,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					};
 				}
 			`,
-			sourceStatements(s('statement_loop', s('identifier'), s(
+			sourceStatements(s('statement_loop', f('expression_0', 'identifier'), f(
+				'block_0',
 				'block__break',
 				s('statement_break'),
 				s('statement_break'),
@@ -1569,7 +1635,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					type T = U;
-					let a: T = b;
+					val a: T = b;
 					claim a: U;
 					set a = b;
 					a;
@@ -1584,20 +1650,20 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceStatements(
 				s(
 					'declaration_type',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'statement_claim',
 					s(
 						'assignee',
-						s('identifier'),
+						f('identifier_0', 'identifier'),
 					),
 					s('identifier'),
 				),
@@ -1605,7 +1671,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_reassignment',
 					s(
 						'assignee',
-						s('identifier'),
+						f('identifier_0', 'identifier'),
 					),
 					s('identifier'),
 				),
@@ -1617,9 +1683,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'statement_expression',
 					s('expression_block', s('statement_expression', s('identifier'))),
 				),
-				s('statement_conditional',                                   s('identifier'), s('block',        s('statement_expression',        s('identifier')))),
-				s('statement_loop',                                          s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
-				s('statement_iteration',   s('identifier'), s('identifier'), s('identifier'), s('block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_conditional',                                                             f('expression_0', 'identifier'), f('block_0', 'block',        s('statement_expression',        s('identifier')))),
+				s('statement_loop',                                                                    f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
+				s('statement_iteration',   f('identifier_0', 'identifier'), f('type_0', 'identifier'), f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
 
@@ -1634,8 +1700,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceStatements(
 				s(
 					'declaration_type',
-					s('identifier'),
-					s(
+					f('identifier_0', 'identifier'),
+					f(
+						'type_0',
 						'type_union',
 						s('identifier'),
 						s(
@@ -1647,12 +1714,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'declaration_type',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'declaration_type',
-					s('identifier'),
+					f('type_0', 'identifier'),
 				),
 			),
 		],
@@ -1660,22 +1727,23 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		DeclarationVariable: [
 			xjs.String.dedent`
 				{
-					let v: T = a + b * c;
-					let var u: A | B & C = v;
-					let 'å': A = a;
-					let var 'é': E = e;
-					let _: T = v;
-					let var _: T = v;
-					let var uninit?: T;
-					let var _?: T;
+					val v: T = a + b * c;
+					val mut u: A | B & C = v;
+					val 'å': A = a;
+					val mut 'é': E = e;
+					val _: T = v;
+					val mut uninit?: T;
+					val v = f;
+					val mut v = g;
 				}
 			`,
 			sourceStatements(
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s(
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f(
+						'expression_0',
 						'expression_additive',
 						s('identifier'),
 						s(
@@ -1687,8 +1755,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s(
+					f('identifier_0', 'identifier'),
+					f(
+						'type_0',
 						'type_union',
 						s('identifier'),
 						s(
@@ -1697,38 +1766,39 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							s('identifier'),
 						),
 					),
-					s('identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
+					f('type_0',       'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'declaration_variable',
-					s('identifier'),
+					f('identifier_0', 'identifier'),
+					f('expression_0', 'identifier'),
 				),
 			),
 		],

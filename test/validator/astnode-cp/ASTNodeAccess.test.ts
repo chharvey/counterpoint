@@ -1,30 +1,20 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
-	assert_instanceof,
 	AST,
 	VALUE,
 	TYPE,
-	type Builder,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
 	VoidErrorOutOfBounds,
 } from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
 import {
-	assertEqualTypes,
-	assertEqualBins,
-	assertAssignable,
-} from '../../assert-helpers.ts';
-import {
-	CONFIG_FOLDING_OFF,
 	setupScript,
 	typeUnit,
-	buildConst,
-	singletonTuple,
 } from '../../helpers.ts';
 import {
 	extract_lines,
@@ -113,12 +103,6 @@ test.suite('ASTNodeAccess', () => {
 				null.four
 				null.[((((),),),)]
 			`;
-			test.test('#type: throws when base is a subtype of null.', () => {
-				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), [
-					...repeat(TypeErrorNoEntry, 2),
-					TypeErrorInvalidOperation,
-				][i], `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
-			});
 			test.test('#fold: throws when base is null.', () => {
 				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).fold(), Error, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
@@ -126,24 +110,18 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: by index / by key', () => {
 			const SRC = `{
-				let     tup_fixed:   (int, float, str) = (1, 2.0, "three");
-				let var tup_unfixed: (int, float, str) = (1, 2.0, "three");
+				val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
+				val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
-				let     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
-				let var rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+				val     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+				val mut rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
 
-				tup_fixed.0;   % type \`1\`       % value \`1\`
-				tup_fixed.1;   % type \`2.0\`     % value \`2.0\`
-				tup_fixed.2;   % type \`"three"\` % value \`"three"\`
-				tup_unfixed.0; % type \`int\`     % non-foldable value
-				tup_unfixed.1; % type \`float\`   % non-foldable value
-				tup_unfixed.2; % type \`str\`     % non-foldable value
-				tup_fixed.-3;   % type \`1\`       % value \`1\`
-				tup_fixed.-2;   % type \`2.0\`     % value \`2.0\`
-				tup_fixed.-1;   % type \`"three"\` % value \`"three"\`
-				tup_unfixed.-3; % type \`int\`     % non-foldable value
-				tup_unfixed.-2; % type \`float\`   % non-foldable value
-				tup_unfixed.-1; % type \`str\`     % non-foldable value
+				tup_fixed.0;    % type \`1\`       % value \`1\`
+				tup_fixed.1;    % type \`2.0\`     % value \`2.0\`
+				tup_fixed.+2;   % type \`"three"\` % value \`"three"\`
+				tup_unfixed.0;  % type \`int\`     % non-foldable value
+				tup_unfixed.1;  % type \`float\`   % non-foldable value
+				tup_unfixed.+2; % type \`str\`     % non-foldable value
 
 				rec_fixed.a;   % type \`1\`       % value \`1\`
 				rec_fixed.b;   % type \`2.0\`     % value \`2.0\`
@@ -154,194 +132,13 @@ test.suite('ASTNodeAccess', () => {
 			}`;
 			const THROWS = extract_lines`
 				(1, 2.0, "three").3
+				(1, 2.0, "three").-1
 				(1, 2.0, "three").-4
 				(a= 1, b= 2.0, c= "three").d
 			`;
-			test.suite('#type', () => {
-				test.test('return individual entry types.', () => {
-					testExprTypes(SRC, [
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-						TYPE.INT,
-						TYPE.FLOAT,
-						TYPE.STR,
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-						TYPE.INT,
-						TYPE.FLOAT,
-						TYPE.STR,
-
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-						TYPE.INT,
-						TYPE.FLOAT,
-						TYPE.STR,
-					]);
-				});
-				test.test('throws when base object is of type `anything`.', () => {
-					testExprTypes(`{
-						let var a:                    anything = (   10,    20);
-						let var b: (int, int)       | anything = (   10,    20);
-						let var c:                    anything = (x= 10, y= 20);
-						let var d: (x: int, y: int) | anything = (x= 10, y= 20);
-
-						a.0;
-						b.1;
-						c.x;
-						d.y;
-					}`, repeat(TypeErrorNoEntry, 4));
-				});
-				test.test('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						(4).2
-						[10, 20, 30].1
-
-						(4).c
-						[a= 10, b= 20, c= 30].b
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
-				});
-				test.test('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
-				});
-				test.test('throws when entry is optional.', () => {
-					testExprTypes(`{
-						let tup_a: (int, int, ?: int) = (10, 20);
-						let tup_b: (int, int, ?: int) = (10, 20, 30);
-
-						let rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
-						let rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
-
-						tup_a.2;
-						tup_b.2;
-
-						rec_a.y;
-						rec_b.y;
-					}`, repeat(TypeErrorInvalidOperation, 4));
-				});
-				test.suite('if base is an intersection type.', () => {
-					const DECLS = `
-						type A = (a: str);
-						type B = (b: str);
-						type C = (c: str);
-						type D = (d: str);
-						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
-						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
-					`;
-					const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
-					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
-					const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x104n, TYPE.STR]]));
-					const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
-					test.test('if any constituent has the entry and it’s required, returns the intersection of those.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							tup.0; % required & required % type \`A & C\`
-							rec.x; % required & required % type \`A & C\`
-							tup.1; % required & optional % type \`B & D\`
-							tup.2; % required & missing  % type \`int\`
-						}`, [
-							...repeat(A.intersect(C), 2),
-							B.intersect(D),
-							TYPE.INT,
-						]);
-					});
-					test.test('throws when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							rec.y; % optional & missing
-							rec.z; % optional & optional
-						}`, repeat(TypeErrorInvalidOperation, 2));
-					});
-					test.test('an intersection with union constituents.', () => {
-						testExprTypes(`{
-							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
-							collection.bravo; % type \`3 | 4\`
-						}`, [typeUnit(3n).union(typeUnit(4n))]);
-					});
-				});
-				test.suite('if base is a union type.', () => {
-					const DECLS = `
-						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
-					`;
-					test.test('throws when one but not all constituents are of incorrect type.', () => {
-						testExprTypes(`{
-							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
-
-							mixed_tup.a;
-							mixed_rec.0;
-						}`, repeat(TypeErrorInvalidOperation, 2));
-					});
-					test.test('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-							${ DECLS }
-
-							tup.3;
-							rec.d;
-						}`);
-						goal.varCheck();
-						return assert.throws(() => goal.typeCheck(), (err) => {
-							assert_instanceof(err, AggregateError);
-							assertAssignable(err, {
-								cons:   AggregateError,
-								errors: [
-									{
-										cons:   AggregateError,
-										errors: [
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(null, bool, sym)`.'},
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(int, ?: float)`.'},
-										],
-									},
-									{
-										cons:   AggregateError,
-										errors: [
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: null, 258?: bool, 259?: sym)`.'},
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: int, 259?: str)`.'},
-										],
-									},
-								],
-							});
-							return true;
-						});
-					});
-					test.test('if every constituent has the entry and it’s required, returns the union of those.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							tup.0; % type \`null | int\`
-							rec.a; % type \`null | int\`
-						}`, repeat(TYPE.NULL.union(TYPE.INT), 2));
-					});
-					test.test('throws when some constituent (but not all) does not have the entry, or has it but it is optional.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							tup.1; % required | optional
-							tup.2; % required | missing
-							rec.b; % optional | missing
-							rec.c; % optional | optional
-						}`, repeat(TypeErrorInvalidOperation, 4));
-					});
-					test.test('a union with intersection constituents.', () => {
-						testExprTypes(`{
-							let var collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
-							collection.bravo;
-						}`, [TypeErrorInvalidOperation]);
-					});
-				});
-			});
 			test.suite('#fold', () => {
 				test.test('return individual entries.', () => {
 					testExprValues(SRC, [
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-						...repeat(null, 3),
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
@@ -367,21 +164,21 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: access by expression.', () => {
 			const DECLS = `
-				let     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
-				let     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
-				let     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
-				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				let var list_unfixed: List.<     int | float | str> = list_fixed;
-				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
-				let var set_unfixed:  Set .<     int | float | str> = set_fixed;
-				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
+				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
+				val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				val mut list_unfixed: List.<     int | float | str> = list_fixed;
+				val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				val mut set_unfixed:  Set .<     int | float | str> = set_fixed;
+				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
 			const SRC = `{
 				${ DECLS }
 
 				list_fixed.[0];      % type \`1\`       % value \`1\`
 				list_fixed.[1];      % type \`2.0\`     % value \`2.0\`
-				list_fixed.[2];      % type \`"three"\` % value \`"three"\`
+				list_fixed.[+2];     % type \`"three"\` % value \`"three"\`
 				dict_fixed.[@a];     % type \`1\`       % value \`1\`
 				dict_fixed.[@b];     % type \`2.0\`     % value \`2.0\`
 				dict_fixed.[@c];     % type \`"three"\` % value \`"three"\`
@@ -394,7 +191,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_unfixed.[0];      % type \`int | float | str\` % non-foldable value
 				list_unfixed.[1];      % type \`int | float | str\` % non-foldable value
-				list_unfixed.[2];      % type \`int | float | str\` % non-foldable value
+				list_unfixed.[+2];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@a];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@b];     % type \`int | float | str\` % non-foldable value
 				dict_unfixed.[@c];     % type \`int | float | str\` % non-foldable value
@@ -417,10 +214,10 @@ test.suite('ASTNodeAccess', () => {
 			}`;
 			const ALLOWS = `{
 				${ DECLS }
-				let     set_mut_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
-				let     map_mut_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				let var set_mut_unfixed:  Set .<     int | float | str> = set_fixed;
-				let var map_mut_unfixed:  Map .<str, int | float | str> = map_fixed;
+				val     set_mut_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				val     map_mut_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				val mut set_mut_unfixed:  Set .<     int | float | str> = set_fixed;
+				val mut map_mut_unfixed:  Map .<str, int | float | str> = map_fixed;
 
 				% correct type, but out of range
 				set_fixed      .[42.0]; % type \`false\`             % value \`false\`
@@ -442,71 +239,6 @@ test.suite('ASTNodeAccess', () => {
 				set_mut_unfixed.[true]; % type \`bool\`              % non-foldable value
 				map_mut_unfixed.[true]; % type \`int | float | str\` % non-foldable value
 			}`;
-			test.suite('#type', () => {
-				test.test('throws when one but not all constituents are of incorrect type.', () => {
-					testExprTypes(`{
-						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
-
-						let var nullish_map: {int -> bool} | null = {42 -> false};
-
-						mixed_list.[@a];
-						mixed_dict.[0];
-
-						nullish_map.[42];
-					}`, repeat(TypeErrorInvalidOperation, 3));
-				});
-				test.test('returns individual entry types for folded objects, union types for unfolded objects.', () => {
-					const N_TYPES = [
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-					] as const;
-					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
-					return testExprTypes(SRC, [
-						...N_TYPES,
-						...N_TYPES,
-						...repeat(TYPE.TRUE, 3),
-						...N_TYPES,
-
-						...repeat(TYPE_INT_FLOAT_STR, 6),
-						...repeat(TYPE.BOOL, 3),
-						...repeat(TYPE_INT_FLOAT_STR, 3),
-					]);
-				});
-				test.test('unsupported: throws for string access of dict.', () => {
-					assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
-				});
-				test.test('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						(4).[2]
-						(10, 20, 30).[1]
-						(a= 10, b= 20, c= 30).[@b]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
-				});
-				test.test('for Lists/Dicts: when accessor expression is correct type but out of bounds/range, returns `nothing` for folded objects, returns union type for unfolded objects.', () => {
-					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
-					return testExprTypes(ERRS, [
-						...repeat(TYPE.NOTHING, 3),
-						...repeat(TYPE_INT_FLOAT_STR, 3),
-					]);
-				});
-				test.test('for Lists/Dicts: throws when accessor expression is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						[1, 2.0, "three"].["3"]
-						[a= 1, b= 2.0, c= "three"].[3]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
-				});
-				test.test('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns entry type.', () => {
-					const TYPE_INT_FLOAT_STR = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
-					return testExprTypes(ALLOWS, repeat([
-						TYPE.FALSE,
-						TYPE.NULL,
-						TYPE.BOOL,
-						TYPE_INT_FLOAT_STR,
-					], 4).flat());
-				});
-			});
 			test.suite('#fold', () => {
 				test.test('returns individual entries for folded objects.', () => {
 					testExprValues(SRC, [
@@ -543,35 +275,6 @@ test.suite('ASTNodeAccess', () => {
 				null?.four;
 				null?.[((((),),),)];
 			}`;
-			test.suite('#type', () => {
-				test.test('throws when base is a subtype of null.', () => {
-					testExprTypes(SRC, [
-						...repeat(TypeErrorNoEntry, 2),
-						TYPE.NULL,
-					]);
-				});
-				test.test('chained maybe access.', () => {
-					const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
-					const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
-					return testExprTypes(`{
-						let var bound1: (prop?: (bool,)) = (prop= (true,));
-						let var bound2: (prop?: (?: bool)) = (prop= ());
-						bound1;
-						bound1?.prop;
-						bound1?.prop?.0;
-						bound2;
-						bound2?.prop;
-						bound2?.prop?.0;
-					}`, [
-						new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // (prop?: (bool,))
-						prop1.union(TYPE.NULL),                                              // (bool,) | null
-						TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
-						new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // (prop?: (?: bool))
-						prop2.union(TYPE.NULL),                                              // (?: bool) | null
-						TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
-					]);
-				});
-			});
 			test.suite('#fold', () => {
 				test.test('returns base when it is null.', () => {
 					testExprValues(SRC, repeat(VALUE.NULL, 3));
@@ -580,8 +283,8 @@ test.suite('ASTNodeAccess', () => {
 					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // (true,)
 					const prop2 = new VALUE.Tuple();             // ()
 					return testExprValues(`{
-						let bound1: (prop?: (bool,)) = (prop= (true,));
-						let bound2: (prop?: (?: bool)) = (prop= ());
+						val bound1: (prop?: (bool,)) = (prop= (true,));
+						val bound2: (prop?: (?: bool)) = (prop= ());
 						bound1;
 						bound1?.prop;
 						bound1?.prop?.0;
@@ -606,17 +309,17 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: access by index / by key.', () => {
 			const SRC = `{
-				let     tupo1_f: (int, float, ?: str) = (1, 2.0, "three");
-				let var tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
-				let var tupo2_u: (int, float, ?: str) = (1, 2.0);
+				val     tupo1_f: (int, float, ?: str) = (1, 2.0, "three");
+				val mut tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
+				val mut tupo2_u: (int, float, ?: str) = (1, 2.0);
 
-				let     reco1_f: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
-				let var reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
-				let var reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
+				val     reco1_f: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+				val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+				val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-				tupo1_f?.2; % type \`"three"\` % value \`"three"\`
-				tupo1_u?.2; % type \`str?\`    % non-foldable value
-				tupo2_u?.2; % type \`str?\`    % non-foldable value
+				tupo1_f?.+2; % type \`"three"\` % value \`"three"\`
+				tupo1_u?.+2; % type \`str?\`    % non-foldable value
+				tupo2_u?.2;  % type \`str?\`    % non-foldable value
 
 				reco1_f?.b; % type \`"three"\` % value \`"three"\`
 				reco1_u?.b; % type \`str?\`    % non-foldable value
@@ -627,175 +330,6 @@ test.suite('ASTNodeAccess', () => {
 				(1, 2.0, "three")?.-4
 				(a= 1, b= 2.0, c= "three")?.d
 			`;
-			test.suite('#type', () => {
-				test.test('unions with null if entry is optional.', () => {
-					testExprTypes(SRC, [
-						typeUnit('three'),
-						...repeat(TYPE.STR.union(TYPE.NULL), 2),
-
-						typeUnit('three'),
-						...repeat(TYPE.STR.union(TYPE.NULL), 2),
-					]);
-				});
-				test.test('returns `anything` when base object is of type `anything`.', () => {
-					testExprTypes(`{
-						let var a:                    anything = (   10,    20);
-						let var b: (int, int)       | anything = (   10,    20);
-						let var c:                    anything = (x= 10, y= 20);
-						let var d: (x: int, y: int) | anything = (x= 10, y= 20);
-
-						a?.0;
-						b?.1;
-						c?.x;
-						d?.y;
-					}`, repeat(TYPE.ANYTHING, 4));
-				});
-				test.test('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						(4)?.2
-						[10, 20, 30]?.1
-
-						(4)?.c
-						[a= 10, b= 20, c= 30]?.b
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry, src));
-				});
-				test.test('throws when index is out of bounds / when key is out of range.', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNoEntry));
-				});
-				test.test('throws when entry is not optional and base is not nullish.', () => {
-					testExprTypes(`{
-						let tup_a: (int, int, ?: int) = (10, 20);
-						let tup_b: (int, int, ?: int) = (10, 20, 30);
-
-						let rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
-						let rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
-
-						tup_a?.1;
-						tup_b?.1;
-
-						rec_a?.z;
-						rec_b?.z;
-					}`, repeat(TypeErrorInvalidOperation, 4));
-				});
-				test.suite('if base is an intersection type.', () => {
-					const DECLS = `
-						type A = (a: str);
-						type B = (b: str);
-						type C = (c: str);
-						type D = (d: str);
-						let var tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
-						let var rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
-					`;
-					const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
-					const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
-					test.test('throws if any constituent has the entry and it’s required.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							tup?.0; % required & required
-							rec?.x; % required & required
-							tup?.1; % required & optional
-							tup?.2; % required & missing
-						}`, repeat(TypeErrorInvalidOperation, 4));
-					});
-					test.test('if some constituent (but not all) does not have the entry, or has it but it is optional, returns the intersection of all such constituents’ entries, unioned with null.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							rec?.y; % optional & missing  % type \`int   | null\`
-							rec?.z; % optional & optional % type \`B & D | null\`
-						}`, [
-							TYPE.INT.union(TYPE.NULL),
-							B.intersect(D).union(TYPE.NULL),
-						]);
-					});
-					test.test('an intersection with union constituents.', () => {
-						testExprTypes(`{
-							let var collection: ((alpha: bool) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
-							collection?.bravo;
-						}`, [TypeErrorInvalidOperation]);
-					});
-				});
-				test.suite('if base is a union type.', () => {
-					const DECLS = `
-						let var tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-						let var rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
-					`;
-					test.test('unions with null when one but not all constituents are of incorrect type.', () => {
-						testExprTypes(`{
-							let var mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
-							let var mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
-
-							mixed_tup?.a; % type \`null | str\`
-							mixed_rec?.0; % type \`int  | null\`
-						}`, [
-							TYPE.NULL.union(TYPE.STR),
-							TYPE.INT.union(TYPE.NULL),
-						]);
-					});
-					test.test('throws when every constituent does not have the entry (index out of bounds / key out of range).', () => {
-						const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(`{
-							${ DECLS }
-
-							tup?.3;
-							rec?.d;
-						}`);
-						goal.varCheck();
-						return assert.throws(() => goal.typeCheck(), (err) => {
-							assert_instanceof(err, AggregateError);
-							assertAssignable(err, {
-								cons:   AggregateError,
-								errors: [
-									{
-										cons:   AggregateError,
-										errors: [
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(null, bool, sym)`.'},
-											{cons: TypeErrorNoEntry, message: 'Index `3` does not exist on type `(int, ?: float)`.'},
-										],
-									},
-									{
-										cons:   AggregateError,
-										errors: [
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: null, 258?: bool, 259?: sym)`.'},
-											{cons: TypeErrorNoEntry, message: 'Key `d` does not exist on type `(257: int, 259?: str)`.'},
-										],
-									},
-								],
-							});
-							return true;
-						});
-					});
-					test.test('throws when every constituent has the entry and it’s required.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							tup?.0;
-							rec?.a;
-						}`, repeat(TypeErrorInvalidOperation, 2));
-					});
-					test.test('if some constituent (but not all) has the entry and it is required, or if some constituent (and maybe all) has the entry and it is optional, returns the union of all such constituents’ entries, unioned with null.', () => {
-						testExprTypes(`{
-							${ DECLS }
-
-							tup?.1; % type \`bool | float | null\` % required | optional
-							tup?.2; % type \`sym          | null\` % required | missing
-							rec?.b; % type \`bool         | null\` % optional | missing
-							rec?.c; % type \`sym  | str   | null\` % optional | optional
-						}`, [
-							TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT, TYPE.NULL),
-							TYPE.Union.all(TYPE.SYM,              TYPE.NULL),
-							TYPE.Union.all(TYPE.BOOL,             TYPE.NULL),
-							TYPE.Union.all(TYPE.SYM,  TYPE.STR,   TYPE.NULL),
-						]);
-					});
-					test.test('a union with intersection constituents.', () => {
-						testExprTypes(`{
-							let var collection: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | () = ();
-							collection?.bravo; % type \`3 | 4 | null\`
-						}`, [typeUnit(3n).union(typeUnit(4n)).union(TYPE.NULL)]);
-					});
-				});
-			});
 			test.suite('#fold', () => {
 				test.test('returns folded values as normal.', () => {
 					testExprValues(SRC, [
@@ -820,19 +354,19 @@ test.suite('ASTNodeAccess', () => {
 
 		test.suite('access manner: access by expression.', () => {
 			const DECLS = `
-				let     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
-				let     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
-				let     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				let var list_unfixed: List.<     int | float | str> = list_fixed;
-				let var dict_unfixed: Dict.<     int | float | str> = dict_fixed;
-				let var map_unfixed:  Map .<str, int | float | str> = map_fixed;
+				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
+				val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				val mut list_unfixed: List.<     int | float | str> = list_fixed;
+				val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
 			const SRC = `{
 				${ DECLS }
 
 				list_fixed?.[0];  % type \`1\`       % value \`1\`
 				list_fixed?.[1];  % type \`2.0\`     % value \`2.0\`
-				list_fixed?.[2];  % type \`"three"\` % value \`"three"\`
+				list_fixed?.[+2]; % type \`"three"\` % value \`"three"\`
 				dict_fixed?.[@a]; % type \`1\`       % value \`1\`
 				dict_fixed?.[@b]; % type \`2.0\`     % value \`2.0\`
 				dict_fixed?.[@c]; % type \`"three"\` % value \`"three"\`
@@ -842,7 +376,7 @@ test.suite('ASTNodeAccess', () => {
 
 				list_unfixed?.[0];  % type \`int | float | str | null\` % non-foldable value
 				list_unfixed?.[1];  % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[2];  % type \`int | float | str | null\` % non-foldable value
+				list_unfixed?.[+2]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@a]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@b]; % type \`int | float | str | null\` % non-foldable value
 				dict_unfixed?.[@c]; % type \`int | float | str | null\` % non-foldable value
@@ -863,84 +397,14 @@ test.suite('ASTNodeAccess', () => {
 				dict_unfixed?.[@d]; % type \`int | float | str | null\` % non-foldable value
 				map_unfixed?.["d"]; % type \`int | float | str | null\` % non-foldable value
 			}`;
-			test.suite('#type', () => {
-				test.test('unions with null when one but not all constituents are of incorrect type.', () => {
-					testExprTypes(`{
-						let var mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
-						let var mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
-
-						let var nullish_map: {int -> bool} | null = {42 -> false};
-
-						mixed_list?.[@a]; % type \`null | (str | bool | sym)\`
-						mixed_dict?.[0];  % type \`(int | float) | null\`
-
-						nullish_map?.[42]; % type \`bool | null\`
-					}`, [
-						TYPE.Union.all(TYPE.NULL, TYPE.STR, TYPE.BOOL, TYPE.SYM),
-						TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.NULL),
-						TYPE.Union.all(TYPE.BOOL, TYPE.NULL),
-					]);
-				});
-				test.test('returns individual entry types for folded objects, union types for unfolded objects.', () => {
-					const N_TYPES = [
-						typeUnit(1n),
-						typeUnit(2.0),
-						typeUnit('three'),
-					] as const;
-					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
-					return testExprTypes(SRC, [
-						...N_TYPES,
-						...N_TYPES,
-						...N_TYPES,
-
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 9),
-					]);
-				});
-				test.test('throws when base object is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						(4)?.[2]
-						(10, 20, 30)?.[1]
-						(a= 10, b= 20, c= 30)?.[@b]
-						Set.<int>((10, 20, 30))?.[20]
-						{10, 20, 30}?.[20]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorInvalidOperation, src));
-					return testExprTypes(`{
-						let     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
-						let var set_unfixed: Set.<int | float | str> = set_fixed;
-
-						set_fixed?.[1];
-						set_fixed?.[2.0];
-						set_fixed?.["three"];
-						set_fixed?.[42.0];
-
-						set_unfixed?.[1];
-						set_unfixed?.[2.0];
-						set_unfixed?.["three"];
-						set_unfixed?.[42.0];
-					}`, repeat(TypeErrorInvalidOperation, 8));
-				});
-				test.test('when accessor expression is correct type but out of bounds/range, returns `null` for folded objects, union types for unfolded objects.', () => {
-					const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
-					return testExprTypes(ERRS, [
-						...repeat(TYPE.NULL, 4),
-						...repeat(TYPE_INT_FLOAT_STR_NULL, 4),
-					]);
-				});
-				test.test('throws when accessor expression is of incorrect type.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						[1, 2.0, "three"]?.["3"]
-						[a= 1, b= 2.0, c= "three"]?.[3]
-					`, (src) => assert.throws(() => AST.ASTNodeAccess.fromSource(src).type(), TypeErrorNotNarrow, src));
-				});
-			});
 			test.suite('#fold', () => {
 				test.test('short-circuits evaluation of accessor expression when base is null.', () => {
 					testExprValues(`{
-						let list: List.<int> | null = null;
-						let dict: Dict.<int> | null = [a= 42];
+						val list: List.<int> | null = null;
+						val dict: Dict.<int> | null = [a= 42];
 
-						let var index: int = 0;
-						let var key:   sym = @a;
+						val mut index: int = 0;
+						val mut key:   sym = @a;
 
 						list?.[index]; % value \`null\`     (\`index\` is never attempted to be folded because \`list\` is null)
 						dict?.[key];   % non-foldable value (\`key\` is attempted to be folded because \`dict\` is not null)
@@ -969,154 +433,822 @@ test.suite('ASTNodeAccess', () => {
 	});
 
 
-	test.test.todo('access kind: result access (`a!.‹b›`).', () => {
-		assert.ok('TODO:');
+
+	test.test.todo('access kind: result access (`a!.‹b›`) is unsupported.', () => { // TODO: Maybe & Result types (#100)
+		assert.throws(() => AST.ASTNodeAccess.fromSource('(42,)!.0;'), TypeError);
 	});
 
-	test.suite('#build', () => {
-		const bintype2: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128]);
-		const bintype3: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128]);
-		const bintype6: binaryen.Type = binaryen.createType([binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128, binaryen.v128]);
 
-		test.test('tuple access.', () => {
-			const BASE_SRC = '((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)))';
 
-			function make_tuple(builder: Builder): binaryen.ExpressionRef {
-				const inner01: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 2.2),
-					buildConst(builder, 3.3),
+	test.suite('#type', () => {
+		test.suite('when base is null.', () => {
+			test.test('normal access throws.', () => {
+				testExprTypes(`{
+					null.3;
+					null.four;
+					null.[((((),),),)];
+				}`, repeat(TypeErrorInvalidOperation, 3));
+			});
+			test.test('maybe access returns null.', () => {
+				testExprTypes(`{
+					null?.3;
+					null?.four;
+					null?.[((((),),),)];
+				}`, repeat(TYPE.NULL, 3));
+			});
+			test.test('chained maybe access.', () => {
+				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
+				const prop2 = new TYPE.Tuple([{type: TYPE.BOOL, optional: true}]); // (?: bool)
+				return testExprTypes(`{
+					val mut bound1: (prop?: (bool,)) = (prop= (true,));
+					val mut bound2: (prop?: (?: bool)) = (prop= ());
+					bound1;
+					bound1?.prop;
+					bound1?.prop?.0;
+					bound2;
+					bound2?.prop;
+					bound2?.prop?.0;
+				}`, [
+					new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // (prop?: (bool,))
+					prop1.union(TYPE.NULL),                                              // (bool,) | null
+					TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
+					new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // (prop?: (?: bool))
+					prop2.union(TYPE.NULL),                                              // (?: bool) | null
+					TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
 				]);
-				const inner11: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 5.5),
-					buildConst(builder, 6.6),
-				]);
-				const inner0: binaryen.ExpressionRef = builder.module.tuple.make([
-					buildConst(builder, 1.1),
-					builder.module.tuple.extract(builder.module.local.tee(0, inner01, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(0, bintype2), 1),
-				]);
-				const inner1: binaryen.ExpressionRef = builder.module.tuple.make([
-					builder.module.tuple.extract(singletonTuple(builder, buildConst(builder, 4.4)), 0),
-					builder.module.tuple.extract(builder.module.local.tee(2, inner11, bintype2), 0),
-					builder.module.tuple.extract(builder.module.local.get(2, bintype2), 1),
-				]);
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(1, inner0, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(1, bintype3), 2),
-					builder.module.tuple.extract(builder.module.local.tee(3, inner1, bintype3), 0),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(3, bintype3), 2),
-				]);
-			}
-			function make_tuple_0(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 0),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 1),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 2),
-				]);
-			}
-			function make_tuple_1(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(4, make_tuple(builder), bintype6), 3),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 4),
-					builder.module.tuple.extract(builder.module.local.get(4, bintype6), 5),
-				]);
-			}
-			function make_tuple_0_1(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_0(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
-				]);
-			}
-			function make_tuple_1_0(builder: Builder): binaryen.ExpressionRef {
-				return singletonTuple(builder, builder.module.tuple.extract(make_tuple_1(builder), 0));
-			}
-			function make_tuple_1_1(builder: Builder): binaryen.ExpressionRef {
-				return builder.module.tuple.make([
-					builder.module.tuple.extract(builder.module.local.tee(5, make_tuple_1(builder), bintype3), 1),
-					builder.module.tuple.extract(builder.module.local.get(5, bintype3), 2),
-				]);
-			}
-
-			return xjs.Map.forEachAggregated(new Map<string, (builder: Builder) => binaryen.ExpressionRef>([
-				['.0',     (builder) => make_tuple_0(builder)],
-				['.1',     (builder) => make_tuple_1(builder)],
-				['.0.0',   (builder) => builder.module.tuple.extract(make_tuple_0(builder), 0)],
-				['.0.1',   (builder) => make_tuple_0_1(builder)],
-				['.1.0',   (builder) => make_tuple_1_0(builder)],
-				['.1.1',   (builder) => make_tuple_1_1(builder)],
-				['.0.1.0', (builder) => builder.module.tuple.extract(make_tuple_0_1(builder), 0)],
-				['.0.1.1', (builder) => builder.module.tuple.extract(make_tuple_0_1(builder), 1)],
-				['.1.0.0', (builder) => builder.module.tuple.extract(make_tuple_1_0(builder), 0)],
-				['.1.1.0', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 0)],
-				['.1.1.1', (builder) => builder.module.tuple.extract(make_tuple_1_1(builder), 1)],
-			]), (expected_fn, access_src) => {
-				const access: AST.ASTNodeAccess = AST.ASTNodeAccess.fromSource(`${ BASE_SRC }${ access_src }`, CONFIG_FOLDING_OFF);
-				return assertEqualBins(
-					access.build(),
-					expected_fn.call(null, access.builder),
-				);
 			});
 		});
 
-		test.test('accessing tuple pointers.', () => {
-			const {goal, stmts, mod} = setupScript(`{
-				let tuple: ((float, (float, float)), ((float,), (float, float))) = ((1.1, (2.2, 3.3)), ((4.4,), (5.5, 6.6)));
-				tuple.0;
-				tuple.1;
-				tuple.0.0;
-				tuple.0.1;
-				tuple.1.0;
-				tuple.1.1;
-				tuple.0.1.0;
-				tuple.0.1.1;
-				tuple.1.0.0;
-				tuple.1.1.0;
-				tuple.1.1.1;
-			}`, CONFIG_FOLDING_OFF);
-			let tee_idx: number = 5;
-			const inner0: binaryen.ExpressionRef = mod.tuple.make([
-				mod.tuple.extract(mod.local.get(4, bintype6), 0),
-				mod.tuple.extract(mod.local.get(4, bintype6), 1),
-				mod.tuple.extract(mod.local.get(4, bintype6), 2),
-			]);
-			const inner1: binaryen.ExpressionRef = mod.tuple.make([
-				mod.tuple.extract(mod.local.get(4, bintype6), 3),
-				mod.tuple.extract(mod.local.get(4, bintype6), 4),
-				mod.tuple.extract(mod.local.get(4, bintype6), 5),
-			]);
-			function make_tuple_0_1(): binaryen.ExpressionRef {
-				const i = tee_idx++;
-				return mod.tuple.make([
-					mod.tuple.extract(mod.local.tee(i, inner0, bintype3), 1),
-					mod.tuple.extract(mod.local.get(i, bintype3), 2),
+
+		test.suite('access manner: by index / by key', () => {
+			test.suite('simple base types.', () => {
+				test.test('entry is not optional and base is not nullish.', () => {
+					testExprTypes(`{
+						val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
+						val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
+
+						val     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+						val mut rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+
+						tup_fixed.0;    % type \`int\`
+						tup_fixed.1;    % type \`float\`
+						tup_fixed.2;    % type \`str\`
+						tup_unfixed.0;  % type \`int\`
+						tup_unfixed.1;  % type \`float\`
+						tup_unfixed.2;  % type \`str\`
+
+						rec_fixed.a;   % type \`int\`
+						rec_fixed.b;   % type \`float\`
+						rec_fixed._;   % type \`str\`
+						rec_unfixed.a; % type \`int\`
+						rec_unfixed.b; % type \`float\`
+						rec_unfixed._; % type \`str\`
+
+
+						val tup_a: (int, int, ?: int) = (10, 20);
+						val tup_b: (int, int, ?: int) = (10, 20, 30);
+
+						val rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
+						val rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
+
+						tup_a?.1;
+						tup_b?.1;
+
+						rec_a?.z;
+						rec_b?.z;
+					}`, [
+						...repeat([
+							TYPE.INT,
+							TYPE.FLOAT,
+							TYPE.STR,
+						], 4).flat(),
+						...repeat(TypeErrorInvalidOperation, 4),
+					]);
+				});
+				test.test('entry is optional.', () => {
+					testExprTypes(`{
+						val tup_a: (int, int, ?: int) = (10, 20);
+						val tup_b: (int, int, ?: int) = (10, 20, 30);
+
+						val rec_a: (x: int, y?: int, z: int) = (x= 10, z= 20);
+						val rec_b: (x: int, y?: int, z: int) = (x= 10, z= 20, y= 30);
+
+						tup_a.2;
+						tup_b.2;
+
+						rec_a.y;
+						rec_b.y;
+
+
+						val     tupo1_f: (int, float, ?: str) = (1, 2.0, "three");
+						val mut tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
+						val mut tupo2_u: (int, float, ?: str) = (1, 2.0);
+
+						val     reco1_f: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+						val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
+						val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
+
+						tupo1_f?.2; % type \`str?\`
+						tupo1_u?.2; % type \`str?\`
+						tupo2_u?.2; % type \`str?\`
+
+						reco1_f?.b; % type \`str?\`
+						reco1_u?.b; % type \`str?\`
+						reco2_u?.b; % type \`str?\`
+					}`, [
+						...repeat(TypeErrorInvalidOperation, 4),
+						...repeat(TYPE.STR.union(TYPE.NULL), 6),
+					]);
+				});
+				test.test('throws when base object is of incorrect type.', () => {
+					testExprTypes(`{
+						val mut a:                    anything = (   10,    20);
+						val mut b: (int, int)       | anything = (   10,    20);
+						val mut c:                    anything = (x= 10, y= 20);
+						val mut d: (x: int, y: int) | anything = (x= 10, y= 20);
+
+						a.0;
+						b.1;
+						c.x;
+						d.y;
+
+						(4).2;
+						[10, 20, 30].1;
+
+						(4).c;
+						[a= 10, b= 20, c= 30].b;
+
+						a?.0;
+						b?.1;
+						c?.x;
+						d?.y;
+
+						(4)?.2;
+						[10, 20, 30]?.1;
+
+						(4)?.c;
+						[a= 10, b= 20, c= 30]?.b;
+					}`, repeat(TypeErrorNoEntry, 16));
+				});
+				test.test('throws when index is out of bounds / when key is out of range.', () => {
+					testExprTypes(`{
+						(1, 2.0, "three").3;
+						(1, 2.0, "three").-4;
+						(a= 1, b= 2.0, c= "three").d;
+						(1, 2.0, "three")?.3;
+						(1, 2.0, "three")?.-4;
+						(a= 1, b= 2.0, c= "three")?.d;
+					}`, repeat(TypeErrorNoEntry, 6));
+				});
+			});
+
+			test.suite('intersection base types.', () => {
+				const DECLS = `
+					type A = (a: str);
+					type B = (b: str);
+					type C = (c: str);
+					type D = (d: str);
+					val mut tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
+					val mut rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
+				`;
+				const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
+				const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
+				const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x104n, TYPE.STR]]));
+				const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
+				test.test('every constituent has the entry and it’s required in some constituent.', () => {
+					testExprTypes(`{
+						${ DECLS }
+						tup.0;  % required & required % type \`A & C\`
+						rec.x;  % required & required % type \`A & C\`
+						tup.1;  % required & optional % type \`B & D\`
+						tup?.0; % required & required
+						rec?.x; % required & required
+						tup?.1; % required & optional
+					}`, [
+						...repeat(A.intersect(C), 2),
+						B.intersect(D),
+						...repeat(TypeErrorInvalidOperation, 3),
+					]);
+				});
+				test.test('every constituent has the entry and it’s optional in every constituent.', () => {
+					testExprTypes(`{
+						${ DECLS }
+						rec.z;  % optional & optional
+						rec?.z; % optional & optional % type \`B & D | null\`
+					}`, [
+						TypeErrorInvalidOperation,
+						B.intersect(D).union(TYPE.NULL),
+					]);
+				});
+				test.test('some constituent does not have the entry.', () => {
+					testExprTypes(`{
+						${ DECLS }
+						tup.2;  % required & missing
+						tup.3;  % missing  & missing
+						rec.y;  % optional & missing
+						tup?.2; % required & missing
+						tup?.3; % missing  & missing
+						rec?.y; % optional & missing
+					}`, [
+						TYPE.INT,
+						AggregateError,
+						TypeErrorInvalidOperation,
+						TypeErrorInvalidOperation,
+						AggregateError,
+						TYPE.INT.union(TYPE.NULL),
+					]);
+				});
+				test.test('an intersection with union constituents.', () => {
+					testExprTypes(`{
+						val mut collectionA: ((alpha: bool, bravo: 1) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
+						val mut collectionB: ((alpha: bool, bravo?: 1) | (bravo?: 2 | 3 | 4)) & (bravo?: 3 | 4 | 5) = (alpha= true);
+						collectionA.bravo;  % type \`3 | 4\`
+						collectionB?.bravo; % type \`3 | 4 | null\`
+					}`, [
+						typeUnit(3n).union(typeUnit(4n)),
+						typeUnit(3n).union(typeUnit(4n).union(TYPE.NULL)),
+					]);
+				});
+			});
+
+			test.suite('union base types.', () => {
+				const DECLS = `
+					val mut tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
+					val mut rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
+				`;
+				test.test('throws when some constituent is of incorrect type.', () => { // test only needed for unions (invalid for intersections)
+					testExprTypes(`{
+						val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
+						val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
+
+						mixed_tup.a;
+						mixed_rec.0;
+						mixed_tup?.a;
+						mixed_rec?.0;
+					}`, repeat(TypeErrorInvalidOperation, 4));
+				});
+				test.test('every constituent has the entry and it’s required in every constituent.', () => {
+					testExprTypes(`{
+						${ DECLS }
+						tup.0; % type \`null | int\`
+						rec.a; % type \`null | int\`
+						tup?.0;
+						rec?.a;
+					}`, [
+						...repeat(TYPE.NULL.union(TYPE.INT), 2),
+						...repeat(TypeErrorInvalidOperation, 2),
+					]);
+				});
+				test.test('every constituent has the entry and it’s optional in some constituent.', () => {
+					testExprTypes(`{
+						${ DECLS }
+						tup.1;  % required | optional
+						rec.c;  % optional | optional
+						tup?.1; % required | optional % type \`bool | float | null\`
+						rec?.c; % optional | optional % type \`sym  | str   | null\`
+					}`, [
+						...repeat(TypeErrorInvalidOperation, 2),
+						TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT, TYPE.NULL),
+						TYPE.Union.all(TYPE.SYM,  TYPE.STR,   TYPE.NULL),
+					]);
+				});
+				test.test('some constituent does not have the entry.', () => {
+					testExprTypes(`{
+						${ DECLS }
+						tup.2;  % required | missing
+						rec.b;  % optional | missing
+						tup?.2; % required | missing
+						rec?.b; % optional | missing
+					}`, repeat(TypeErrorNoEntry, 4));
+				});
+				test.test('a union with intersection constituents.', () => {
+					testExprTypes(`{
+						val mut collectionA: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | (bravo: 6) = (bravo= 6);
+						val mut collectionB: (alpha: bool, bravo?: 2 | 3 | 4) & (bravo?: 3 | 4 | 5, charlie: str) | (bravo?: 6) = (bravo= 6);
+						collectionA.bravo;  % type \`3 | 4 | 6\`
+						collectionB?.bravo; % type \`3 | 4 | 6 | null\`
+					}`, [
+						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)),
+						// FIXME: compiler thinks `(alpha: bool, bravo?: 2 | 3 | 4) & (bravo?: 3 | 4 | 5, charlie: str)`
+						// is a subtype of `(bravo?: 6)`, therefore returning type `6 | null`
+						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+						typeUnit(6n).union(TYPE.NULL) ??
+						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)).union(TYPE.NULL),
+					]);
+				});
+			});
+		});
+
+		test.suite('access manner: access by expression.', () => {
+			const TYPE_INT_FLOAT_STR      = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
+			const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
+			const DECLS = `
+				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
+				val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+				val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+				val mut list_unfixed: List.<     int | float | str> = list_fixed;
+				val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+				val mut set_unfixed:  Set .<     int | float | str> = set_fixed;
+				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
+			`;
+			test.test('returns individual entry types for folded objects, union types for unfolded objects.', () => {
+				testExprTypes(`{
+					${ DECLS }
+
+					list_fixed.[0];      % type \`int | float | str\`
+					list_fixed.[1];      % type \`int | float | str\`
+					list_fixed.[2];      % type \`int | float | str\`
+					dict_fixed.[@a];     % type \`int | float | str\`
+					dict_fixed.[@b];     % type \`int | float | str\`
+					dict_fixed.[@c];     % type \`int | float | str\`
+					set_fixed.[1];       % type \`bool\`
+					set_fixed.[2.0];     % type \`bool\`
+					set_fixed.["three"]; % type \`bool\`
+					map_fixed.["a"];     % type \`int | float | str\`
+					map_fixed.["b"];     % type \`int | float | str\`
+					map_fixed.["c"];     % type \`int | float | str\`
+
+					list_unfixed.[0];      % type \`int | float | str\`
+					list_unfixed.[1];      % type \`int | float | str\`
+					list_unfixed.[2];      % type \`int | float | str\`
+					dict_unfixed.[@a];     % type \`int | float | str\`
+					dict_unfixed.[@b];     % type \`int | float | str\`
+					dict_unfixed.[@c];     % type \`int | float | str\`
+					set_unfixed.[1];       % type \`bool\`
+					set_unfixed.[2.0];     % type \`bool\`
+					set_unfixed.["three"]; % type \`bool\`
+					map_unfixed.["a"];     % type \`int | float | str\`
+					map_unfixed.["b"];     % type \`int | float | str\`
+					map_unfixed.["c"];     % type \`int | float | str\`
+
+					list_fixed?.[0];  % type \`int | float | str | null\`
+					list_fixed?.[1];  % type \`int | float | str | null\`
+					list_fixed?.[2];  % type \`int | float | str | null\`
+					dict_fixed?.[@a]; % type \`int | float | str | null\`
+					dict_fixed?.[@b]; % type \`int | float | str | null\`
+					dict_fixed?.[@c]; % type \`int | float | str | null\`
+					map_fixed?.["a"]; % type \`int | float | str | null\`
+					map_fixed?.["b"]; % type \`int | float | str | null\`
+					map_fixed?.["c"]; % type \`int | float | str | null\`
+
+					list_unfixed?.[0];  % type \`int | float | str | null\`
+					list_unfixed?.[1];  % type \`int | float | str | null\`
+					list_unfixed?.[2];  % type \`int | float | str | null\`
+					dict_unfixed?.[@a]; % type \`int | float | str | null\`
+					dict_unfixed?.[@b]; % type \`int | float | str | null\`
+					dict_unfixed?.[@c]; % type \`int | float | str | null\`
+					map_unfixed?.["a"]; % type \`int | float | str | null\`
+					map_unfixed?.["b"]; % type \`int | float | str | null\`
+					map_unfixed?.["c"]; % type \`int | float | str | null\`
+				}`, [
+					...repeat([
+						...repeat(TYPE_INT_FLOAT_STR, 6),
+						...repeat(TYPE.BOOL, 3),
+						...repeat(TYPE_INT_FLOAT_STR, 3),
+					], 2).flat(),
+					...repeat(TYPE_INT_FLOAT_STR_NULL, 18),
 				]);
-			}
-			const inner10: binaryen.ExpressionRef = singletonTuple(goal.builder, mod.tuple.extract(inner1, 0));
-			function make_tuple_1_1(): binaryen.ExpressionRef {
-				const i = tee_idx++;
-				return mod.tuple.make([
-					mod.tuple.extract(mod.local.tee(i, inner1, bintype3), 1),
-					mod.tuple.extract(mod.local.get(i, bintype3), 2),
+			});
+			test.test('unsupported: throws for string access of dict.', () => {
+				assert.throws(() => AST.ASTNodeAccess.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
+			});
+			test.test('throws when base object is of incorrect type.', () => {
+				testExprTypes(`{
+					(4).[2];
+					(10, 20, 30).[1];
+					(a= 10, b= 20, c= 30).[@b];
+
+					(4)?.[2];
+					(10, 20, 30)?.[1];
+					(a= 10, b= 20, c= 30)?.[@b];
+					Set.<int>((10, 20, 30))?.[20];
+					{10, 20, 30}?.[20];
+				}`, repeat(TypeErrorInvalidOperation, 8));
+				return testExprTypes(`{
+					val     set_fixed:   Set.<int | float | str> = {1, 2.0, "three"};
+					val mut set_unfixed: Set.<int | float | str> = set_fixed;
+
+					set_fixed?.[1];
+					set_fixed?.[2.0];
+					set_fixed?.["three"];
+					set_fixed?.[42.0];
+
+					set_unfixed?.[1];
+					set_unfixed?.[2.0];
+					set_unfixed?.["three"];
+					set_unfixed?.[42.0];
+				}`, repeat(TypeErrorInvalidOperation, 8));
+			});
+			test.test('throws when constituents are of different types (allowing null).', () => {
+				testExprTypes(`{
+					val mut mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
+					val mut mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
+
+					val mut mixed_set:   {int} | {int -> int} = {42, 43};
+					val mut mixed_map:   {int} | {int -> int} = {42 -> 43};
+					val mut nullish_map: {int -> bool} | null = {42 -> false};
+
+					mixed_list.[@a];
+					mixed_dict.[0];
+
+					mixed_set.[21];
+					mixed_map.[21];
+					nullish_map.[42];
+
+					mixed_list?.[@a];
+					mixed_dict?.[0];
+
+					mixed_set?.[21];
+					mixed_map?.[21];
+					nullish_map?.[42]; % type \`bool | null\`
+				}`, [
+					...repeat(TypeErrorInvalidOperation, 9),
+					TYPE.BOOL.union(TYPE.NULL),
 				]);
+			});
+			test.test('for Lists/Dicts/Maps: when accessor expression is correct type but out of bounds/range, returns `never`/`null` for folded objects, returns union type for unfolded objects.', () => {
+				testExprTypes(`{
+					${ DECLS }
+
+					list_fixed.[3];    % type \`int | float | str\`
+					list_fixed.[-4];   % type \`int | float | str\`
+					dict_fixed.[@d];   % type \`int | float | str\`
+
+					list_unfixed.[3];  % type \`int | float | str\`
+					list_unfixed.[-4]; % type \`int | float | str\`
+					dict_unfixed.[@d]; % type \`int | float | str\`
+
+					list_fixed?.[3];  % type \`int | float | str | null\`
+					list_fixed?.[-4]; % type \`int | float | str | null\`
+					dict_fixed?.[@d]; % type \`int | float | str | null\`
+
+					list_unfixed?.[3];  % type \`int | float | str | null\`
+					list_unfixed?.[-4]; % type \`int | float | str | null\`
+					dict_unfixed?.[@d]; % type \`int | float | str | null\`
+				}`, [
+					...repeat(TYPE_INT_FLOAT_STR, 6),
+					...repeat(TYPE_INT_FLOAT_STR_NULL, 6),
+				]);
+			});
+			test.test('for Lists/Dicts: throws when accessor expression is of incorrect type.', () => {
+				testExprTypes(`{
+					[1, 2.0, "three"].["3"];
+					[a= 1, b= 2.0, c= "three"].[3];
+					[1, 2.0, "three"]?.["3"];
+					[a= 1, b= 2.0, c= "three"]?.[3];
+				}`, repeat(TypeErrorNotNarrow, 4));
+			});
+			test.test('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns entry type.', () => {
+				testExprTypes(`{
+					${ DECLS }
+					val     set_mut_fixed:   Set .<     int | float | str> = {1, 2.0, "three"};
+					val     map_mut_fixed:   Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+					val mut set_mut_unfixed: Set .<     int | float | str> = set_fixed;
+					val mut map_mut_unfixed: Map .<str, int | float | str> = map_fixed;
+
+					% correct type, but out of range
+					set_fixed      .[42.0]; % type \`bool\`
+					map_fixed      .["d"];  % type \`int | float | str\`
+					set_unfixed    .[42.0]; % type \`bool\`
+					map_unfixed    .["d"];  % type \`int | float | str\`
+					set_mut_fixed  .[42.0]; % type \`bool\`
+					map_mut_fixed  .["d"];  % type \`int | float | str\`
+					set_mut_unfixed.[42.0]; % type \`bool\`
+					map_mut_unfixed.["d"];  % type \`int | float | str\`
+
+					map_fixed      ?.["d"];  % type \`int | float | str | null\`
+					map_unfixed    ?.["d"];  % type \`int | float | str | null\`
+					map_mut_fixed  ?.["d"];  % type \`int | float | str | null\`
+					map_mut_unfixed?.["d"];  % type \`int | float | str | null\`
+
+					% incorrect type
+					set_fixed      .[true]; % type \`bool\`
+					map_fixed      .[true]; % type \`int | float | str\`
+					set_unfixed    .[true]; % type \`bool\`
+					map_unfixed    .[true]; % type \`int | float | str\`
+					set_mut_fixed  .[true]; % type \`bool\`
+					map_mut_fixed  .[true]; % type \`int | float | str\`
+					set_mut_unfixed.[true]; % type \`bool\`
+					map_mut_unfixed.[true]; % type \`int | float | str\`
+
+					map_fixed      ?.[true]; % type \`int | float | str | null\`
+					map_unfixed    ?.[true]; % type \`int | float | str | null\`
+					map_mut_fixed  ?.[true]; % type \`int | float | str | null\`
+					map_mut_unfixed?.[true]; % type \`int | float | str | null\`
+				}`, repeat([
+					...repeat([
+						TYPE.BOOL,
+						TYPE_INT_FLOAT_STR,
+					], 4).flat(),
+					...repeat(TYPE_INT_FLOAT_STR_NULL, 4),
+				], 2).flat());
+			});
+		});
+	});
+
+
+
+	test.suite('#lower', () => {
+		test.suite('access kind: normal access (`a.‹b›`).', () => {
+			test.test('tuple access returns an IR.TupleGet.', () => {
+				assert.strictEqual(setupScript(`{
+					(41 + 1, 42 / 2, 43 - 3).1;
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+						(DECL <tuple> $3 (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+						(DROP (TUPLE.GET 1 (GET $3)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('record access returns an IR.RecordGet.', () => {
+				assert.strictEqual(setupScript(`{
+					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+						(DECL <record> $3 (RECORD.NEW @a->(GET $0) @b->(GET $1) @c->(GET $2)))
+						(DROP (RECORD.GET @b (GET $3)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('List access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					[41 + 1, 42 / 2, 43 - 3].[1];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+						(DECL <List> $3 (LIST.NEW (GET $0) (GET $1) (GET $2)))
+						(DROP (LIST.GET (GET $3) (INT.CONST 1)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('Dict access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+						(DECL <Dict> $3 (DICT.NEW @a->(GET $0) @b->(GET $1) @c->(GET $2)))
+						(DROP (DICT.GET (GET $3) (SYM.CONST @b)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('Set access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					{41 + 1, 42 / 2, 43 - 3}.[21];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+						(DECL <Set> $3 (SET.NEW (GET $0) (GET $1) (GET $2)))
+						(DROP (SET.GET (GET $3) (INT.CONST 21)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('Map access returns an IR.CollectionDynamicGet.', () => {
+				assert.strictEqual(setupScript(`{
+					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.SUB (INT.CONST 43) (INT.CONST 3)))
+						(DECL <Map> $3 (MAP.NEW (INT.CONST 21)->(GET $0) (INT.CONST 22)->(GET $1) (INT.CONST 23)->(GET $2)))
+						(DROP (MAP.GET (GET $3) (INT.CONST 22)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('nested access.', () => {
+				assert.strictEqual(setupScript(`{
+					[("hello", {41, 42, 43})].[0].1.[42];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <Set> $0 (SET.NEW (INT.CONST 41) (INT.CONST 42) (INT.CONST 43)))
+						(DECL <tuple> $1 (TUPLE.NEW (STR.CONST "hello") (GET $0)))
+						(DECL <List> $2 (LIST.NEW (GET $1)))
+						(DECL <tuple> $3 (LIST.GET (GET $2) (INT.CONST 0)))
+						(DECL <Set> $4 (TUPLE.GET 1 (GET $3)))
+						(DROP (SET.GET (GET $4) (INT.CONST 42)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('union access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut tup:   (int, ?: float)     | (int, ?: str)     = (42,);
+					val mut rec:   (a: int, b?: float) | (a: int, c?: str) = (a= 42);
+					val mut list:  [int]               | [float]           = [42];
+					val mut dict:  [:int]              | [:float]          = [a= 42];
+					val mut 'set': {int}               | {float}           = {42};
+					val mut map:   {int -> str}        | {float -> str}    = {42 -> "hello"};
+					tup.0;
+					rec.a;
+					list.[0];
+					dict.[@a];
+					'set'.[42];
+					map.[42];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <tuple> tup (TUPLE.NEW (INT.CONST 42)))
+						(DECL <record> rec (RECORD.NEW @a->(INT.CONST 42)))
+						(DECL <List> list (LIST.NEW (INT.CONST 42)))
+						(DECL <Dict> dict (DICT.NEW @a->(INT.CONST 42)))
+						(DECL <Set> 'set' (SET.NEW (INT.CONST 42)))
+						(DECL <Map> map (MAP.NEW (INT.CONST 42)->(STR.CONST "hello")))
+						(DROP (TUPLE.GET 0 (GET tup)))
+						(DROP (RECORD.GET @a (GET rec)))
+						(DROP (LIST.GET (GET list) (INT.CONST 0)))
+						(DROP (DICT.GET (GET dict) (SYM.CONST @a)))
+						(DROP (SET.GET (GET 'set') (INT.CONST 42)))
+						(DROP (MAP.GET (GET map) (INT.CONST 42)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+		});
+		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
+			function maybe_access_output(
+				block_n:      number,
+				base_name:    string,
+				result_n:     number,
+				result_value: string | ((decl: (value: string) => string) => string),
+			): string {
+				const block_then:  string = `block-${ block_n }`;
+				const block_else:  string = `block-${ block_n + 1 }`;
+				const block_endif: string = `block-${ block_n + 2 }`;
+				const result_name: string = `$${ result_n }`;
+				function set_result(res_val: string = '(NULL.CONST null)'): string {
+					return `(SET ${ result_name } ${ res_val })`;
+				}
+				return xjs.String.dedent`
+					${ '\t' }(DECL <anything> ${ result_name })
+					${ '\t' }(GOTO.IF (ISNULL (GET ${ base_name })) "${ block_then }" "${ block_else }")
+					"${ block_then }":
+						${ set_result() }
+						(GOTO "${ block_endif }")
+					"${ block_else }":
+						${ typeof result_value === 'string'
+							? set_result(result_value)
+							: result_value((value) => set_result(value)) }
+						(GOTO "${ block_endif }")
+					"${ block_endif }":
+						(DROP (GET ${ result_name }))
+				`.trimEnd();
 			}
-			return assertEqualBins(
-				stmts.slice(1).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.build()),
-				[
-					inner0,
-					inner1,
-					mod.tuple.extract(inner0, 0),
-					make_tuple_0_1(),
-					inner10,
-					make_tuple_1_1(),
-					mod.tuple.extract(make_tuple_0_1(), 0),
-					mod.tuple.extract(make_tuple_0_1(), 1),
-					mod.tuple.extract(inner10, 0),
-					mod.tuple.extract(make_tuple_1_1(), 0),
-					mod.tuple.extract(make_tuple_1_1(), 1),
-				],
-			);
+			/* eslint-disable @stylistic/indent */
+			test.test('tuple access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_tupleA: (int, int, ?:int) = (41 + 1, 42 / 2, 43 ^ 3);
+					val mut my_tupleB: (int, int, ?:int) = (41 + 1, 42 / 2);
+					my_tupleA?.2;
+					my_tupleB?.2;
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+						(DECL <tuple> my_tupleA (TUPLE.NEW (GET $0) (GET $1) (GET $2)))
+						(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
+				`.trim().concat(
+					maybe_access_output(1, 'my_tupleA', 5, '(TUPLE.GET 2 (GET my_tupleA))'),
+					maybe_access_output(4, 'my_tupleB', 6, (decl) => extract_lines`
+						(DROP (GET my_tupleB))
+						${ decl('(NULL.CONST null)') }
+					`.join('\n\t')),
+					'\n\t(ENDPROGRAM)',
+				));
+			});
+			test.test('record access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_recordX: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2, b= 43 ^ 3);
+					val mut my_recordY: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
+					my_recordX?.b;
+					my_recordY?.b;
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <int> $2 (INT.EXP (INT.CONST 43) (INT.CONST 3)))
+						(DECL <record> my_recordX (RECORD.NEW @a->(GET $0) @c->(GET $1) @b->(GET $2)))
+						(DECL <int> $3 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
+						(DECL <int> $4 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
+						(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
+				`.trim().concat(
+					maybe_access_output(1, 'my_recordX', 5, '(RECORD.GET @b (GET my_recordX))'),
+					maybe_access_output(4, 'my_recordY', 6, (decl) => extract_lines`
+						(DROP (GET my_recordY))
+						${ decl('(NULL.CONST null)') }
+					`.join('\n\t')),
+					'\n\t(ENDPROGRAM)',
+				));
+			});
+			test.test('List access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: [int] = [41, 42];
+					my_list?.[2];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
+				`.trim().concat(maybe_access_output(1, 'my_list', 0, '(LIST.GET (GET my_list) (INT.CONST 2))'), '\n\t(ENDPROGRAM)'));
+			});
+			test.test('Dict access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_dict: [:int] = [a= 41, c= 42];
+					my_dict?.[@b];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @c->(INT.CONST 42)))
+				`.trim().concat(maybe_access_output(1, 'my_dict', 0, '(DICT.GET (GET my_dict) (SYM.CONST @b))'), '\n\t(ENDPROGRAM)'));
+			});
+			test.test('Map access.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut accessor: int = 22;
+					{21 -> 41, 22 -> 42, 23 -> 43}?.[accessor];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> accessor (INT.CONST 22))
+						(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
+				`.trim().concat(maybe_access_output(1, '$0', 1, '(MAP.GET (GET $0) (GET accessor))'), '\n\t(ENDPROGRAM)'));
+			});
+			test.test('returns null when base is null.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_tup:  (int, bool)  | null = null;
+					val mut my_rec:  (a: int)     | null = null;
+					val mut my_list: [int]        | null = null;
+					val mut my_dict: [:int]       | null = null;
+					val mut my_map:  {int -> int} | null = null;
+					my_tup?.1;
+					my_rec?.a;
+					my_list?.[2 * 2 - 3];
+					my_dict?.[@b && @a];
+					my_map?.[5 + 3 * 2];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <null> my_tup (NULL.CONST null))
+						(DECL <null> my_rec (NULL.CONST null))
+						(DECL <null> my_list (NULL.CONST null))
+						(DECL <null> my_dict (NULL.CONST null))
+						(DECL <null> my_map (NULL.CONST null))
+				`.trim().concat(
+					maybe_access_output( 1, 'my_tup',  0, '(NULL.CONST null)'),
+					maybe_access_output( 4, 'my_rec',  1, '(NULL.CONST null)'),
+					maybe_access_output( 7, 'my_list', 2, '(NULL.CONST null)'),
+					maybe_access_output(10, 'my_dict', 3, '(NULL.CONST null)'),
+					maybe_access_output(13, 'my_map',  4, '(NULL.CONST null)'),
+					'\n\t(ENDPROGRAM)',
+				));
+			});
+			test.test('short-circuits evaluation of dynamic accessor when base is non-null.', () => {
+				assert.strictEqual(setupScript(`{
+					val mut my_list: [int]        | null = [42];
+					val mut my_dict: [:int]       | null = [a= 42];
+					val mut my_map:  {int -> int} | null = {42 -> 11};
+					my_list?.[2 * 2 - 3];
+					my_dict?.[@b && @a];
+					my_map?.[5 + 3 * 2];
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <List> my_list (LIST.NEW (INT.CONST 42)))
+						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 42)))
+						(DECL <Map> my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
+				`.trim().concat(
+					maybe_access_output(1, 'my_list', 0, (decl) => extract_lines`
+						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
+						(DECL <int> $2 (INT.SUB (GET $1) (INT.CONST 3)))
+						${ decl('(LIST.GET (GET my_list) (GET $2))') }
+					`.join('\n\t')),
+					maybe_access_output(4, 'my_dict', 3, (decl) => xjs.String.dedent`
+						${ '\t' }(DECL <sym> $4)
+						${ '\t' }(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-7" "block-8")
+						"block-7":
+							(SET $4 (SYM.CONST @a))
+							(GOTO "block-9")
+						"block-8":
+							(SET $4 (SYM.CONST @b))
+							(GOTO "block-9")
+						"block-9":
+							${ decl('(DICT.GET (GET my_dict) (GET $4))') }
+					`.trim()),
+					maybe_access_output(10, 'my_map', 5, (decl) => extract_lines`
+						(DECL <int> $6 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL <int> $7 (INT.ADD (INT.CONST 5) (GET $6)))
+						${ decl('(MAP.GET (GET my_map) (GET $7))') }
+					`.join('\n\t')),
+					'\n\t(ENDPROGRAM)',
+				));
+			});
+			/* eslint-enable @stylistic/indent */
 		});
 	});
 });

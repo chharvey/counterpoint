@@ -1,9 +1,12 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import type {
+	Optimizer,
+	Lowerable,
+} from '../../index.ts';
 import {
 	type NonemptyArray,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
@@ -13,18 +16,14 @@ import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeGoal} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import {
-	if_constant_folding,
-	type Foldable,
-} from './Foldable.ts';
-import type {Buildable} from './Buildable.ts';
+import type {Foldable} from './Foldable.ts';
 import type {ASTNodeExpressionBlock} from './ASTNodeExpressionBlock.ts';
 import type {ASTNodeStatement} from './ASTNodeStatement.ts';
 import type {ASTNodeStatementConditional} from './ASTNodeStatementConditional.ts';
 
 
 
-export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
+export class ASTNodeBlock extends ASTNodeCP implements Foldable, Lowerable {
 	/**
 	 * Construct a new ASTNodeBlock from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -57,7 +56,6 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 
 	/** @implements Foldable */
 	@memoizeGetter
-	@if_constant_folding
 	public get isFoldable(): boolean {
 		return this.children.every((stmt) => stmt.isFoldable);
 	}
@@ -68,11 +66,12 @@ export class ASTNodeBlock extends ASTNodeCP implements Foldable, Buildable {
 		return this.children.some((c) => c.hasBottomType);
 	}
 
-	/** @implements Buildable */
-	@memoizeMethod
-	public build(): binaryen.ExpressionRef {
-		return this.isFoldable
-			? this.builder.module.nop()
-			: this.builder.module.block(null, this.children.map((stmt) => stmt.build()));
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@runOnceMethod
+	public lower(optimizer: Optimizer): void {
+		return this.children.forEach((stmt) => stmt.lower(optimizer));
 	}
 }

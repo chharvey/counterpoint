@@ -1,23 +1,24 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type TYPE,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../index.ts';
-import {assert_instanceof} from '../../lib/index.ts';
+import {
+	assert_instanceof,
+	noopMethod,
+	noopGetter,
+	memoizeGetter,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeType} from './ASTNodeType.ts';
 import type {ASTNodeTypeAlias} from './ASTNodeTypeAlias.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -36,13 +37,12 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
-	@if_constant_folding
+	@noopGetter(memoizeGetter)
 	public override get isFoldable(): boolean {
 		return true;
 	}
 
-	// @memoizeGetter // memoizing takes longer than returning a constant
+	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
 	}
@@ -67,8 +67,8 @@ export class ASTNodeDeclarationType extends ASTNodeStatement {
 		}
 	}
 
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		assert.fail('Expected `ASTNodeDeclarationType#isFoldable` to be true.');
+	@noopMethod(runOnceMethod)
+	public override lower(): void {
+		return;
 	}
 }

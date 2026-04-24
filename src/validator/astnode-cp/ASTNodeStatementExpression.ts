@@ -1,21 +1,19 @@
-import type binaryen from 'binaryen';
-import {VALUE} from '../../index.ts';
+import {
+	type Optimizer,
+	IR,
+} from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {if_constant_folding} from './Foldable.ts';
 import type {ASTNodeExpression} from './ASTNodeExpression.ts';
-import {
-	buildDeco,
-	ASTNodeStatement,
-} from './ASTNodeStatement.ts';
+import {ASTNodeStatement} from './ASTNodeStatement.ts';
 
 
 
@@ -34,7 +32,6 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 	}
 
 	@memoizeGetter
-	@if_constant_folding
 	public override get isFoldable(): boolean {
 		return !this.expr || !!this.expr.fold();
 	}
@@ -44,9 +41,10 @@ export class ASTNodeStatementExpression extends ASTNodeStatement {
 		return this.expr?.type().isBottomType ?? false;
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.drop(this.validator.config.compilerOptions.constantFolding ? this.expr!.build() : this.expr?.build() ?? VALUE.NULL.build(this.builder));
+	@runOnceMethod
+	public override lower(optimizer: Optimizer): void {
+		if (this.expr) {
+			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+		}
 	}
 }

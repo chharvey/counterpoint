@@ -1,8 +1,9 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -19,10 +20,7 @@ import {
 	type ValidOperatorComparative,
 } from '../Operator.ts';
 import {bothNumbers} from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -46,17 +44,6 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.LT, 'vlt'],
-			[Operator.GT, 'vgt'],
-			[Operator.LE, 'vle'],
-			[Operator.GE, 'vge'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
-	}
-
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
@@ -65,6 +52,18 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			bothNumbers(t0, t1) ? TYPE.BOOL :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+			[Operator.LT,  IR.OpCode.LT],
+			[Operator.GT,  IR.OpCode.GT],
+			[Operator.LE,  IR.OpCode.LE],
+			[Operator.GE,  IR.OpCode.GE],
+			[Operator.NLT, IR.OpCode.NLT],
+			[Operator.NGT, IR.OpCode.NGT],
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
 	}
 
 	@memoizeMethod
@@ -89,8 +88,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],
 			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
-			// [Operator.NLT, (x, y) => !x.lt(y)],
-			// [Operator.NGT, (x, y) => !y.lt(x)],
+			[Operator.NLT, (x, y) => !x.lt(y)],
+			[Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(v0, v1));
 	}
 }

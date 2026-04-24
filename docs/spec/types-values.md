@@ -156,10 +156,10 @@ A **SymbolSchemaVar** represents a variable referencing a Counterpoint Language 
 Property            | Read-Only? | Description
 ------------------- | ---------- | -----------
 \`id\`              | yes        | the unique identifier of the declared symbol
-\`isUnfixed\`       | yes        | a Boolean, whether the variable may be reassigned
+\`isWritable\`      | yes        | a Boolean, whether the variable may be reassigned
 \`isUninitialized\` | yes        | a Boolean, whether the variable was declared without an initial value
 \`type\`            | no         | the Counterpoint Language Type of the variable
-\`value\`           | no         | if \`isUnfixed\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
+\`value\`           | no         | if \`isWritable\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes
@@ -204,6 +204,7 @@ Simple types do not comprise other types.
 - [Boolean](#boolean)
 - [Symbol](#symbol)
 - [Integer](#integer)
+- [Natural](#natural)
 - [Float](#float)
 - [String](#string)
 - [Object](#object)
@@ -243,12 +244,12 @@ The meaning of each Symbol value may be specified by the programmer.
 
 #### Number
 The **Number** type represents numerical values.
-The Number type is partitioned into two disjoint subtypes: Integer and Float,
-instances of [`Integer`](./intrinsics.md#integer) and [`Float`](./intrinsics.md#float), respectively.
+The Number type is partitioned into disjoint subtypes, described in the subsections below.
 
 ##### Integer
 The **Integer** type represents [mathematical integers](#real-integer-numbers).
 The Counterpoint compiler represents Integers as 64-bit signed two’s complement values.
+They are instances of [`Integer`](./intrinsics.md#integer).
 
 The Integers `0` and `-0` represent the same mathematical value, *0*.
 The maximum possible value of an Integer is *9,223,372,036,854,775,807* and the minimum value is *&minus;9,223,372,036,854,775,808*.
@@ -289,19 +290,36 @@ The behavior of performing arithmetic operations that are invalid in the integer
 (such as dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
 The result of division is rounded towards zero. Dividing by zero results in an error.
 
+##### Natural
+The **Natural** type represents [non-negative mathematical integers](#real-integer-numbers), also known as “natural numbers”.
+The Counterpoint compiler represents Naturals as 64-bit unsigned binary values.
+They are instances of [`Natural`](./intrinsics.md#integer).
+
+The maximum possible value of a Natural is *18,446,744,073,709,551,615* (*FFFF,FFFF,FFFF,FFFF<sub>16</sub>* = *2<sup>64</sup> &minus; 1*)
+and the minimum value is *0*.
+
+When performing arithmetic operations such as addition and multiplication,
+computed values that are out of range will overflow as if doing modular arithmetic modulus *2<sup>64</sup>*.
+For example, the sum represented by *18,446,744,073,709,551,615 + 1* will overflow and produce the value *0*.
+The behavior of performing arithmetic operations that are invalid in the naturals
+(such as subtracting a larger number, dividing by a non-factor, or raising to a negative exponent) are defined in each respective operation.
+The result of division is rounded towards zero. Dividing by zero results in an error.
+The result of subtracting a larger number from a smaller number is zero; no underflow occurs.
+
 ##### Float
 The **Float** type represents [mathematical rational numbers](#real-rational-numbers)
 whose decimals terminate in base 10.
 (That is, numbers that can be expressed as a finite sum of multiples of powers of 10.)
 The Float type contains “floating-point numbers”, which are 64-bit format values as specified in the
 *IEEE Standard for Binary Floating-Point Arithmetic ([IEEE 754-2019](https://standards.ieee.org/standard/754-2019.html))*.
+They are instances of [`Float`](./intrinsics.md#float).
 
 #### String
 The **String** type represents textual data and is stored as an immutable sequence of bytes.
 Strings are encoded by the [UTF-8 encoding](./algorithms.md#utf8encoding) algorithm.
 They are instances of [`String`](./intrinsics.md#string).
 
-Conceptually, strings are treated as immutable lists of [mathematical integers](#real-integer-numbers),
+Conceptually, strings are thought of immutable lists of [mathematical integers](#real-integer-numbers),
 where each integer represents a Unicode code point.
 A String’s **count** indicates the number of code points in the String, that is,
 the number of characters in its unencoded form.
@@ -310,13 +328,14 @@ encoded in memory (see UTF-8 for details).
 String length is limited to a maximum of *65,535* bytes,
 but it is not directly observable within any Counterpoint program.
 
-Though `String` objects are treated conceptually as lists, they are considered
-[primitive values](./intrinsics.md#primitive-and-composite-values),
-because the “items” of these lists are not directly observable —
-accessing an index of a string yields another string.
-As primitive values, they are also [data values](./intrinsics.md#data-values) —
-because the string values themselves are copied when assigned
-(though the compiler may make any optimizations necessary).
+Semantically, the String type is considered to be a [primitive type](./intrinsics.md#primitive-and-composite-values)
+because it cannot be decomposed into other types —
+the characters of a string value are themselves string values.
+As primitive values, strings are also [data values](./intrinsics.md#data-values),
+abiding by value-identity and pass-by-value semantics.
+
+That said, strings are implemented as arrays of bytes in the virtual machine,
+which makes them composite values under the hood.
 
 #### Object
 The **Object** type contains all references to Counterpoint Language Values.
@@ -340,7 +359,7 @@ A **Tuple** type describes instances of [`Tuple`](./intrinsics.md#tuple) and is 
 a [Sequence](#sequence) of [EntryTypeSchema](#entrytypeschema) items, called *type arguments*.
 The objects that any given Tuple type describes are `Tuple` objects whose
 items’ types match up with the type arguments in the Sequence in order.
-Tuples have a static size, are ordered, and are 0-origin indexable by Integers.
+Tuples have a static size, are ordered, and are 0-origin indexable by real integer numbers.
 
 #### Record Types
 A **Record** type describes instances of [`Record`](./intrinsics.md#record) and is parameterized by
@@ -354,7 +373,7 @@ A **List** type describes instances of [`List`](./intrinsics.md#list) and is par
 called a *type argument*, representing items.
 The objects that any given List type describes are `List` objects whose
 items are assignable to the type argument of the List type.
-Lists have a dynamic size, are ordered, and are 0-origin indexable by Integers.
+Lists have a dynamic size, are ordered, and are 0-origin indexable by real integer numbers.
 
 #### Dict Types
 A **Dict** type describes instances of [`Dict`](./intrinsics.md#dict) and is parameterized by a single type,
@@ -583,7 +602,6 @@ that is, by the formula \`Or< Minus<‹T›, ‹U›>, Minus<‹U›, ‹T›> >
 The symmetric difference is equal to to the disjunctive union.
 
 
-
 ### Subtype
 A type \`‹T›\` is a **subtype** of type \`‹U›\` iff every value assignable to \`‹T›\` is also assignable to \`‹U›\`.
 
@@ -716,6 +734,12 @@ Boolean Equal(Type a, Type b) :=
 A type \`‹T›\` is **disjoint** with type \`‹U›\` iff \`‹T›\` and \`‹U›\` have no values in common.
 That is, their intersection is empty, or equal to the [Bottom Type](#nothing).
 
+```
+Boolean AreDisjoint(Type a, Type b) :=
+	1. *Let* `intersection` be *UnwrapAffirm:* `Intersection(a, b)`.
+	2. *Return:* `IsBottomType(intersection)`.
+;
+```
 
 
 ## Type Laws

@@ -27,6 +27,7 @@ Punctuator :::=
 		| "[" | "]"
 		| "{" | "}"
 		| "," | "->"
+		| "?:"
 	// compound
 		| "." | "?." | "!."
 	// unary
@@ -38,7 +39,7 @@ Punctuator :::=
 		| "&&" | "!&" | "||" | "!|"
 		| "&" | "|"
 	// statement
-		| ";" | ":" | "?:" | "="
+		| ";" | ":" | "="
 ;
 
 
@@ -48,6 +49,7 @@ KeywordType :::=
 	| "bool"
 	| "sym"
 	| "int"
+	| "nat"
 	| "float"
 	| "str"
 	| "anything"
@@ -72,14 +74,13 @@ KeywordOther :::=
 		| "else"
 	// storage
 		| "type"
-		| "let"
+		| "val"
 		| "claim"
 		| "set"
 		| "_"
 		| "void"
 	// modifier
 		| "nominal"
-		| "var"
 	// control
 		| "unless"
 		| "while"
@@ -102,8 +103,8 @@ Identifier
 
 
 
-Integer
-	:::= ("+" | "-")? WholeDigits;
+Integer :::= "-"? WholeDigits;
+Natural :::= "+"  WholeDigits;
 
 WholeDigits :::=
 	| "\b"  DigitSequenceBin
@@ -124,13 +125,13 @@ ExponentPart
 SignedDigitSequenceDec
 	:::= ("+" | "-")? DigitSequenceDec;
 
-DigitSequenceBin :::= ( DigitSequenceBin "_"? )? [0-1];
-DigitSequenceQua :::= ( DigitSequenceQua "_"? )? [0-3];
-DigitSequenceSex :::= ( DigitSequenceSex "_"? )? [0-5];
-DigitSequenceOct :::= ( DigitSequenceOct "_"? )? [0-7];
-DigitSequenceDec :::= ( DigitSequenceDec "_"? )? [0-9];
-DigitSequenceHex :::= ( DigitSequenceHex "_"? )? [0-9a-f];
-DigitSequenceNif :::= ( DigitSequenceNif "_"? )? [0-9a-z];
+DigitSequenceBin :::= (DigitSequenceBin "_"?)? [0-1];
+DigitSequenceQua :::= (DigitSequenceQua "_"?)? [0-3];
+DigitSequenceSex :::= (DigitSequenceSex "_"?)? [0-5];
+DigitSequenceOct :::= (DigitSequenceOct "_"?)? [0-7];
+DigitSequenceDec :::= (DigitSequenceDec "_"?)? [0-9];
+DigitSequenceHex :::= (DigitSequenceHex "_"?)? [0-9a-f];
+DigitSequenceNif :::= (DigitSequenceNif "_"?)? [0-9a-z];
 
 
 
