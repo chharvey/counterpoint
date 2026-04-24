@@ -1,3 +1,4 @@
+import {runOnceSetter} from '../../lib/index.ts';
 import {Opcode} from './Opcode.ts';
 
 
@@ -11,4 +12,10 @@ import {Opcode} from './Opcode.ts';
  * - EndProgram
  */
 export abstract class Terminator extends Opcode {
+	protected _containerLabel?: string;
+
+	@runOnceSetter
+	public set containerLabel(label: string) {
+		this._containerLabel = label;
+	}
 }

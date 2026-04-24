@@ -37,7 +37,8 @@ export class CfgNode {
 
 	public terminate(term: IR.Terminator): void {
 		assert.ok(!this.#terminator, 'Block should not already be terminated.');
-		this.#terminator = term;
+		this.#terminator    = term;
+		term.containerLabel = this.label;
 	}
 
 	@runOnceMethod
