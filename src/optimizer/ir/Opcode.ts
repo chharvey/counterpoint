@@ -1,8 +1,3 @@
-import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
-
-
-
 /**
  * An abstract operation code.
  * Models the concept of opcodes in a VM, but for the high-level IR instead.
@@ -129,11 +124,4 @@ export abstract class Opcode {
 	public validate(): void {
 		return;
 	}
-
-	/**
-	 * Generate assembly code.
-	 * @param  cg code-generator
-	 * @return    a binaryen expression of type `(ref $Value)`
-	 */
-	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
 }

@@ -17,26 +17,12 @@ export class Goto extends Terminator {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
-		// Loops:
-		/*
-			;; if `doFirst`:
-			(block $exit
-				(loop $repeat
-					(block $body ‹body›) ;; `break;` --> `(br $exit)`, `skip;` --> `(br $body)`
-					(br_if $exit (not ‹cond›))
-					(br $repeat)
-				)
-			)
-			;; else:
-			(block $exit
-				(loop $repeat
-					(br_if $exit (not ‹cond›))
-					(block $body ‹body›) ;; `break;` --> `(br $exit)`, `skip;` --> `(br $body)`
-					(br $repeat)
-				)
-			)
-		*/
-		throw new Error('not yet supported.');
+	public override codegen(_: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+		relooper.addBranch(
+			blockrefs.get(this._containerLabel!)!,
+			blockrefs.get(this.label)!,
+			0, // unconditional
+			0,
+		);
 	}
 }

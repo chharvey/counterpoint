@@ -1,6 +1,11 @@
 import * as assert from 'node:assert';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {runOnceMethod} from '../lib/index.ts';
+import type {Builder} from '../index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../lib/index.ts';
 import type {IR} from './index.ts';
 
 
@@ -20,6 +25,10 @@ export class CfgNode {
 		return [...this.#instructions];
 	}
 
+	public get terminator(): IR.Terminator | undefined {
+		return this.#terminator;
+	}
+
 	public toString(): string {
 		return [
 			`"${ this.label }":`,
@@ -37,7 +46,8 @@ export class CfgNode {
 
 	public terminate(term: IR.Terminator): void {
 		assert.ok(!this.#terminator, 'Block should not already be terminated.');
-		this.#terminator = term;
+		this.#terminator    = term;
+		term.containerLabel = this.label;
 	}
 
 	@runOnceMethod
@@ -46,5 +56,10 @@ export class CfgNode {
 
 		assert.ok(this.#terminator, 'Block should already be terminated.');
 		return this.#terminator.validate();
+	}
+
+	@memoizeMethod
+	public codegen(cg: Builder, relooper: binaryen.Relooper): binaryen.RelooperBlockRef {
+		return relooper.addBlock(cg.module.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
 	}
 }

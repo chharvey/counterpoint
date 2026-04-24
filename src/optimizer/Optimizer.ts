@@ -92,23 +92,12 @@ export class Optimizer {
 		return xjs.Map.forEachAggregated(this.#blocks, (block) => block.validate());
 	}
 
-	public codegen(cg: Builder): void {
+	public codegen(cg: Builder): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
-		const instrs: readonly IR.Instruction[] = this.instructions;
-		return cg.setupMain((mod) => {
-			if (instrs.length) {
-				const codes:   binaryen.ExpressionRef[] = instrs.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
-				const fn_name: string                   = 'main';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					cg.getAllLocals().map((local) => local.type),
-					mod.block(null, codes),
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			}
-		});
+		const relooper = new binaryen.Relooper(cg.module);
+		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map([...this.#blocks.values()].map((block) => [block.label, block.codegen(cg, relooper)]));
+		this.#blocks.forEach((block) => block.terminator!.codegen(cg, relooper, blockrefs));
+		return relooper.renderAndDispose(blockrefs.get('block-0')!, cg.getAllLocals().length);
 	}
 
 	public print(): string {

@@ -1,3 +1,5 @@
+import type binaryen from 'binaryen';
+import type {Builder} from '../../index.ts';
 import {Opcode} from './Opcode.ts';
 
 
@@ -13,4 +15,10 @@ import {Opcode} from './Opcode.ts';
  * - CollectionDynamicCopy
  */
 export abstract class Instruction extends Opcode {
+	/**
+	 * Generate assembly code.
+	 * @param  cg code-generator
+	 * @return    a binaryen expression of empty type (“`binaryen.none`”, not the WASM `none` heap type)
+	 */
+	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
 }
