@@ -17,7 +17,9 @@ export class Goto extends Terminator {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
+	public override codegen(_: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+		relooper;
+		blockrefs;
 		// Loops:
 		/*
 			;; if `doFirst`:
