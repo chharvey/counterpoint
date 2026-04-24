@@ -41,9 +41,18 @@ export class GotoConditional extends Terminator {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
-		relooper;
-		blockrefs;
-		throw new Error('not yet supported.');
+	public override codegen(cg: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+		relooper.addBranch(
+			blockrefs.get(this._containerLabel!)!,
+			blockrefs.get(this.labelIfTrue)!,
+			this.condition.codegen(cg),
+			0,
+		);
+		relooper.addBranch(
+			blockrefs.get(this._containerLabel!)!,
+			blockrefs.get(this.labelIfFalse)!,
+			0, // else (default)
+			0,
+		);
 	}
 }

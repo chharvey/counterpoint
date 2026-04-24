@@ -94,7 +94,10 @@ export class Optimizer {
 
 	public codegen(cg: Builder): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
-		return this.instructions.length ? cg.module.block(null, this.instructions.map((instr) => instr.codegen(cg))) : cg.module.nop();
+		const relooper = new binaryen.Relooper(cg.module);
+		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map([...this.#blocks.values()].map((block) => [block.label, block.codegen(cg, relooper)]));
+		this.#blocks.forEach((block) => block.terminator!.codegen(cg, relooper, blockrefs));
+		return relooper.renderAndDispose(blockrefs.get('block-0')!, cg.getAllLocals().length);
 	}
 
 	public print(): string {

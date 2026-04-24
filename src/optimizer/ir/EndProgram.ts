@@ -1,5 +1,3 @@
-import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
@@ -13,9 +11,7 @@ export class EndProgram extends Terminator {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
-		relooper;
-		blockrefs;
-		throw new Error('not yet supported.');
+	public override codegen(): void {
+		return; // no-op
 	}
 }

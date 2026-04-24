@@ -16,13 +16,28 @@ test.suite('Optimizer', () => {
 			5 * x;
 		}`, {codegen: false});
 		return assertEqualBins(opt.codegen(cg), mod.block(null, [
-			mod.local.set(0, genConst(cg, true)),
-			mod.local.set(1, genConst(cg, 1n)),
-			mod.local.set(2, mod.struct.new_default(cg.reftype.Value)),
-			mod.local.set(2, genConst(cg, 3n)),
-			mod.local.set(2, genConst(cg, 2n)),
-			mod.local.set(1, mod.local.get(2, cg.reftype.Value)),
-			mod.drop(mod.call('vimul', [genConst(cg, 5n), mod.local.get(1, cg.reftype.Value)], cg.reftype.Value)),
+			mod.block('block$4$break', [
+				mod.block(null, [
+					mod.local.set(0, genConst(cg, true)),
+					mod.local.set(1, genConst(cg, 1n)),
+					mod.local.set(2, mod.struct.new_default(cg.reftype.Value)),
+				]),
+				mod.if(
+					mod.local.get(0, cg.reftype.Value),
+					mod.block(null, [mod.block(null, [
+						mod.local.set(2, genConst(cg, 3n)),
+						mod.block(null, [mod.br('block$4$break')]),
+					])]),
+					mod.block(null, [mod.block(null, [
+						mod.local.set(2, genConst(cg, 2n)),
+						mod.block(null, [mod.br('block$4$break')]),
+					])]),
+				),
+			]),
+			mod.block(null, [mod.block(null, [
+				mod.local.set(1, mod.local.get(2, cg.reftype.Value)),
+				mod.drop(mod.call('vimul', [genConst(cg, 5n), mod.local.get(1, cg.reftype.Value)], cg.reftype.Value)),
+			])]),
 		]));
 	});
 });
