@@ -1,8 +1,3 @@
-import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
-
-
-
 /**
  * An abstract operation code.
  * Models the concept of opcodes in a VM, but for the high-level IR instead.
@@ -84,6 +79,7 @@ export enum OpCode {
 	NID,
 	NEQ,
 
+	/** @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later. */
 	PHI,
 
 	DROP,
@@ -100,8 +96,9 @@ export enum OpCode {
 	SET_COPY,
 	MAP_COPY,
 
-	/** @deprecated --- we’ll convert these to blocks */
-	UNDEFINED,
+	GOTO,
+	GOTO_IF,
+	ENDPROGRAM,
 }
 
 
@@ -112,6 +109,7 @@ export enum OpCode {
  * Known subclasses:
  * - Value
  * - Instruction
+ * - Terminator
  */
 export abstract class Opcode {
 	public constructor(private readonly opCode: OpCode) {
@@ -126,11 +124,4 @@ export abstract class Opcode {
 	public validate(): void {
 		return;
 	}
-
-	/**
-	 * Generate assembly code.
-	 * @param  cg code-generator
-	 * @return    a binaryen expression of type `(ref $Value)`
-	 */
-	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
 }

@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
 import type {
 	Optimizer,
-	IR,
 	Lowerable,
 } from '../../index.ts';
 import {
@@ -64,21 +63,35 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lo
  * - ASTNodeStatementIteration
  */
 export abstract class StatementBreakable extends ASTNodeStatement {
-	#labelWhile?:    IR.Label;
-	#labelEndwhile?: IR.Label;
+	#labelWhile?:    string;
+	#labelDo?:       string;
+	#labelEndwhile?: string;
 
 	/** @final */
-	public get labels(): {while: IR.Label | undefined, endwhile: IR.Label | undefined} {
-		return {while: this.#labelWhile, endwhile: this.#labelEndwhile};
+	public get labels(): {
+		while:    string | undefined,
+		do:       string | undefined,
+		endwhile: string | undefined,
+	} {
+		return {
+			while:    this.#labelWhile,
+			do:       this.#labelDo,
+			endwhile: this.#labelEndwhile,
+		};
 	}
 
 	/** @final */
-	protected set labelWhile(label: IR.Label) {
+	protected set labelWhile(label: string) {
 		this.#labelWhile = label;
 	}
 
 	/** @final */
-	protected set labelEndwhile(label: IR.Label) {
+	protected set labelDo(label: string) {
+		this.#labelDo = label;
+	}
+
+	/** @final */
+	protected set labelEndwhile(label: string) {
 		this.#labelEndwhile = label;
 	}
 }

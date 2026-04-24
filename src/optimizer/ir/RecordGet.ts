@@ -12,13 +12,14 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Read an entry of a record. */
 export class RecordGet extends Value {
 	public constructor(
-		private readonly record:   Value,
+		private readonly record:   ValueTac,
 		private readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
 		entry_type: TYPE.Type,
 	) {

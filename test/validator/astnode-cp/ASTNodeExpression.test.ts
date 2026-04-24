@@ -9,7 +9,6 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
-	Optimizer,
 	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
@@ -27,7 +26,6 @@ import {
 } from '../../helpers.ts';
 import {
 	extract_tokens,
-	extract_lines,
 	repeat,
 } from '../../utils.ts';
 
@@ -50,11 +48,23 @@ test.suite('ASTNodeExpression', () => {
 			return assert.deepStrictEqual(expr.lower(), new IR.Get(symbol));
 		});
 		test.test('AST.Template returns an IR.Template.', () => {
-			const opt = new Optimizer();
-			const tpl: AST.ASTNodeTemplate = AST.ASTNodeTemplate.fromSource('"""hello {{ 42 }} world"""');
-			const value: IR.Template = tpl.lower(opt);
-			assert.deepStrictEqual(value, new IR.Template(tpl.children.map((c) => c.lower(opt))));
-			return assert.strictEqual(value.toString(), '(STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world"))');
+			assert.strictEqual(setupScript(`{
+				"""hello {{ 42 }} world""";
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world")))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('three-address code format.', () => {
+			assert.strictEqual(setupScript(`{
+				"""hello {{ """great {{ 42 }} big""" }} world""";
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <str> $0 (STR.TEMPLATE (STR.CONST "great ") (INT.CONST 42) (STR.CONST " big")))
+					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $0) (STR.CONST " world")))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.test('AST.Tuple returns an IR.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
@@ -62,15 +72,17 @@ test.suite('ASTNodeExpression', () => {
 				val mut y: int   = 5;
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
-			}`, {codegen: false}).opt.print(), extract_lines`
-				(DECL <bool> x (BOOL.CONST false))
-				(DECL <int> y (INT.CONST 5))
-				(DECL <float> z (FLOAT.CONST 0.2))
-				(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
-				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-				(DROP (TUPLE.NEW (GET x) (GET $0) (GET $2)))
-			`.join('\n'));
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <bool> x (BOOL.CONST false))
+					(DECL <int> y (INT.CONST 5))
+					(DECL <float> z (FLOAT.CONST 0.2))
+					(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
+					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+					(DROP (TUPLE.NEW (GET x) (GET $0) (GET $2)))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.test('AST.Record returns an IR.RecordNew.', () => {
 			assert.strictEqual(setupScript(`{
@@ -78,70 +90,82 @@ test.suite('ASTNodeExpression', () => {
 				val y: int   = 5;
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
-			}`, {codegen: false}).opt.print(), extract_lines`
-				(DECL <bool> x (BOOL.CONST false))
-				(DECL <int> y (INT.CONST 5))
-				(DECL <float> z (FLOAT.CONST 0.2))
-				(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
-				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
-				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-				(DROP (RECORD.NEW @a->(GET x) @b->(GET $0) @c->(GET $2)))
-			`.join('\n'));
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <bool> x (BOOL.CONST false))
+					(DECL <int> y (INT.CONST 5))
+					(DECL <float> z (FLOAT.CONST 0.2))
+					(DECL <int> $0 (INT.ADD (GET y) (INT.CONST 2)))
+					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (GET z)))
+					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+					(DROP (RECORD.NEW @a->(GET x) @b->(GET $0) @c->(GET $2)))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.test('AST.List returns an IR.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).opt.print(), extract_lines`
-				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-				(DROP (LIST.NEW (BOOL.CONST false) (GET $0) (GET $2)))
-			`.join('\n'));
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+					(DROP (LIST.NEW (BOOL.CONST false) (GET $0) (GET $2)))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.test('AST.Dict returns an IR.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).opt.print(), extract_lines`
-				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-				(DROP (DICT.NEW @a->(BOOL.CONST false) @b->(GET $0) @c->(GET $2)))
-			`.join('\n'));
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+					(DROP (DICT.NEW @a->(BOOL.CONST false) @b->(GET $0) @c->(GET $2)))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.test('AST.Set returns an IR.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
-			}`, {codegen: false}).opt.print(), extract_lines`
-				(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-				(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-				(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-				(DROP (SET.NEW (BOOL.CONST false) (GET $0) (GET $2)))
-			`.join('\n'));
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+					(DROP (SET.NEW (BOOL.CONST false) (GET $0) (GET $2)))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.suite('AST.Map', () => {
 			test.test('returns an IR.MapNew.', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
-				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
-					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
-					(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
-					(DROP (MAP.NEW (STR.CONST "a")->(BOOL.CONST false) (STR.CONST "b")->(GET $0) (STR.CONST "c")->(GET $2)))
-				`.join('\n'));
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
+						(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
+						(DECL <float> $2 (FLOAT.SUB (GET $1) (FLOAT.CONST 1.0)))
+						(DROP (MAP.NEW (STR.CONST "a")->(BOOL.CONST false) (STR.CONST "b")->(GET $0) (STR.CONST "c")->(GET $2)))
+						(ENDPROGRAM)
+				`.trim());
 			});
 			test.test('evaluates antecedents and consequents interchangeably in source order.', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
-				}`, {codegen: false}).opt.print(), extract_lines`
-					(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
-					(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
-					(DECL <List> $2 (LIST.NEW (INT.CONST 12)))
-					(DECL <int> $3 (INT.MUL (INT.CONST 5) (INT.CONST 2)))
-					(DECL <int> $4 (INT.ADD (GET $3) (INT.CONST 3)))
-					(DECL <int> $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
-					(DECL <List> $6 (LIST.NEW (GET $5)))
-					(DROP (MAP.NEW (GET $0)->(GET $1) (GET $2)->(GET $4) (GET $6)->(INT.CONST 15)))
-				`.join('\n'));
+				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
+						(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
+						(DECL <List> $2 (LIST.NEW (INT.CONST 12)))
+						(DECL <int> $3 (INT.MUL (INT.CONST 5) (INT.CONST 2)))
+						(DECL <int> $4 (INT.ADD (GET $3) (INT.CONST 3)))
+						(DECL <int> $5 (INT.MUL (INT.CONST 7) (INT.CONST 2)))
+						(DECL <List> $6 (LIST.NEW (GET $5)))
+						(DROP (MAP.NEW (GET $0)->(GET $1) (GET $2)->(GET $4) (GET $6)->(INT.CONST 15)))
+						(ENDPROGRAM)
+				`.trim());
 			});
 		});
 		test.test('AST.ExpressionBlock returns the last expression-statement’s expression.', () => {
@@ -156,15 +180,17 @@ test.suite('ASTNodeExpression', () => {
 					set y = y + x;
 					y * 2;
 				} + y;
-			}`, {codegen: false}).opt.print(), extract_lines`
-				(DECL <int> x (INT.CONST 42))
-				(SET x (INT.ADD (GET x) (INT.CONST 2)))
-				(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
-				(DROP (GET y))
-				(SET y (INT.ADD (GET y) (GET x)))
-				(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
-				(SET y (INT.ADD (GET $0) (GET y)))
-			`.join('\n'));
+			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> x (INT.CONST 42))
+					(SET x (INT.ADD (GET x) (INT.CONST 2)))
+					(DECL <int> y (INT.DIV (GET x) (INT.CONST 2)))
+					(DROP (GET y))
+					(SET y (INT.ADD (GET y) (GET x)))
+					(DECL <int> $0 (INT.MUL (GET y) (INT.CONST 2)))
+					(SET y (INT.ADD (GET $0) (GET y)))
+					(ENDPROGRAM)
+			`.trim());
 		});
 		test.suite('AST.Claim', () => {
 			test.test('returns the operand.', () => {

@@ -94,21 +94,27 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		const iterable: IR.Value = this.iterable.lower(optimizer).asTac(optimizer);
-		const index:    Temp     = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
-		const get_index          = new IR.Get(index);
+		const iterable: IR.ValueTac = this.iterable.lower(optimizer).asTac(optimizer);
+		const index:    Temp        = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
+		const get_index             = new IR.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 
 		this.labelWhile    = optimizer.newLabel();
+		this.labelDo       = optimizer.newLabel();
 		this.labelEndwhile = optimizer.newLabel();
 
-		optimizer.pushInstruction(this.labels.while!);
-		optimizer.pushInstruction(new IR.Goto(this.labels.endwhile!, new IR.Binop(
+		optimizer.pushInstruction(new IR.Decl(index));
+		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+
+		optimizer.initiateBlock(this.labels.while!);
+		optimizer.terminateBlock(new IR.GotoConditional(new IR.Binop(
 			IR.OpCode.LT,
 			get_index,
-			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable),
+			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable).asTac(optimizer),
 			TYPE.BOOL,
-		)));
+		), this.labels.do!, this.labels.endwhile!));
+
+		optimizer.initiateBlock(this.labels.do!);
 		if (this.assignee) {
 			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
@@ -119,7 +125,8 @@ export class ASTNodeStatementIteration extends StatementBreakable {
 		}
 		this.block.lower(optimizer);
 		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.OpCode.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
-		optimizer.pushInstruction(new IR.Goto(this.labels.while!));
-		optimizer.pushInstruction(this.labels.endwhile!);
+		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+
+		optimizer.initiateBlock(this.labels.endwhile!);
 	}
 }

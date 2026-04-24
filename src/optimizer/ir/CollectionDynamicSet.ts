@@ -20,7 +20,7 @@ import {
 } from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
-import type {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -28,9 +28,9 @@ import type {Value} from './Value.ts';
 export class CollectionDynamicSet extends Instruction {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
-		private readonly collection: Value,
-		private readonly accessor:   Value,
-		private readonly value:      Value,
+		private readonly collection: ValueTac,
+		private readonly accessor:   ValueTac,
+		private readonly value:      ValueTac,
 	) {
 		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_SET],

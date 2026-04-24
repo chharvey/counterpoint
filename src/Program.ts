@@ -1,3 +1,4 @@
+import binaryen from 'binaryen';
 import {
 	memoizeMethod,
 	type CPConfig,
@@ -32,7 +33,19 @@ export class Program {
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
 		this.#astGoal.lower(optimizer);
-		optimizer.codegen(cg);
+
+		const body: binaryen.ExpressionRef = optimizer.codegen(cg); // must codegen before calling `.getAllLocals()`
+		cg.setupMain(() => {
+			const fn_name: string = 'main';
+			cg.module.addFunction(
+				fn_name,
+				binaryen.none,
+				binaryen.none,
+				cg.getAllLocals().map((local) => local.type),
+				body,
+			);
+			cg.module.addFunctionExport(fn_name, fn_name);
+		});
 
 		return cg;
 	}

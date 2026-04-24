@@ -8,6 +8,7 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -31,7 +32,7 @@ export type OpCodeUn = (
 export class Unop extends Value {
 	public constructor(
 		private readonly operator: OpCodeUn,
-		private readonly operand:  Value,
+		private readonly operand:  ValueTac,
 		typ: TYPE.Type,
 	) {
 		super(operator, typ);

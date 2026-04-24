@@ -15,13 +15,14 @@ import {
 } from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Create a Dict. */
 export class DictNew extends Value {
 	public constructor(
-		private readonly props: ReadonlyMap<VALUE.Symbol, Value>,
+		private readonly props: ReadonlyMap<VALUE.Symbol, ValueTac>,
 		typ: TYPE.Type,
 	) {
 		super(OpCode.DICT_NEW, typ);

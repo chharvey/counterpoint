@@ -5,12 +5,12 @@ import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {Temp} from '../Optimizer.ts';
 import {OpCode} from './Opcode.ts';
-import {Value} from './Value.ts';
+import {ValueTac} from './ValueTac.ts';
 
 
 
 /** Read the value of a variable/local. */
-export class Get extends Value {
+export class Get extends ValueTac {
 	public constructor(private readonly target: SymbolSchemaVar | Temp) {
 		super(OpCode.GET, target instanceof SymbolSchemaVar ? target.irType : target.type);
 	}
@@ -24,7 +24,7 @@ export class Get extends Value {
 		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 
-	public override asTac(): Get {
+	public override asTac(): this {
 		return this;
 	}
 }

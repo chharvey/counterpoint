@@ -67,23 +67,27 @@ export class ASTNodeStatementConditional extends ASTNodeStatement {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		const label_then:  IR.Label = optimizer.newLabel();
-		const label_else:  IR.Label = optimizer.newLabel();
-		const label_endif: IR.Label = optimizer.newLabel();
-
 		let condition: () => IR.Value = () => this.condition.lower(optimizer);
 		if (this.unless) {
-			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer), TYPE.BOOL);
+			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer).asTac(optimizer), TYPE.BOOL);
 		}
 
-		optimizer.pushInstruction(new IR.Goto(this.alternative ? label_else : label_endif, condition()));
-		optimizer.pushInstruction(label_then);
+		const label_then:  string = optimizer.newLabel();
+		const label_else:  string = optimizer.newLabel();
+		const label_endif: string = this.alternative ? optimizer.newLabel() : label_else;
+
+		optimizer.terminateBlock(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
+
+		optimizer.initiateBlock(label_then);
 		this.consequent.lower(optimizer);
+		optimizer.terminateBlock(new IR.Goto(label_endif));
+
 		if (this.alternative) {
-			optimizer.pushInstruction(new IR.Goto(label_endif));
-			optimizer.pushInstruction(label_else);
+			optimizer.initiateBlock(label_else);
 			this.alternative.lower(optimizer);
+			optimizer.terminateBlock(new IR.Goto(label_endif));
 		}
-		optimizer.pushInstruction(label_endif);
+
+		optimizer.initiateBlock(label_endif);
 	}
 }
