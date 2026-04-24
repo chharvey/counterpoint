@@ -307,7 +307,7 @@ without finishing the evaluation of it.
 Specifically, `break` or `skip` statements will apply to the containing loop,
 and `return`/`throw` statements will apply to the containing function.
 ```cpl
-function f(var i: int): str {
+func f(mut i: int): str {
 	while true do {
 		set i += 1;
 		val is_threeven: bool = mod.(i, 3) == 0 && {
@@ -328,14 +328,14 @@ whereas it knows that block-expressions with abrupt statements will never even f
 
 This table highlights some exceptional cases.
 
-| Case  | Block Type | Runtime Behavior | Is Assignable |
-| ----- | ---------- | ---------------- | ------------- |
-| last statement is an expression-statement with type `T` | `T` | completes execution | yes, to type `T` or wider |
-| last statement is a void expression-statement | void | completes execution | no |
-| last statement is not an expression-statement | void | completes execution | no |
-| contains an expression of type `nothing` | `nothing` | fails to complete execution | yes, to any type |
-| contains an abrupt statement | `nothing` | fails to complete execution | yes, to any type |
-| contains an infinite loop or infinite recursive call | `T` | fails to complete execution | yes, to type `T` or wider |
+| Case                                                    | Block Type | Runtime Behavior            | Is Assignable             |
+| ------------------------------------------------------- | ---------- | --------------------------- | ------------------------- |
+| last statement is an expression-statement with type `T` | `T`        | completes execution         | yes, to type `T` or wider |
+| last statement is a void expression-statement           | void       | completes execution         | no                        |
+| last statement is not an expression-statement           | void       | completes execution         | no                        |
+| contains an expression of type `nothing`                | `nothing`  | fails to complete execution | yes, to any type          |
+| contains an abrupt statement                            | `nothing`  | fails to complete execution | yes, to any type          |
+| contains an infinite loop or infinite recursive call    | `T`        | fails to complete execution | yes, to type `T` or wider |
 
 
 ### Property Access
