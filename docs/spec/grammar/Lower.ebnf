@@ -47,11 +47,6 @@ DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
 
-LIST.COUNT([Value]) -> Value;
-DICT.COUNT([Value]) -> Value;
-SET.COUNT([Value])  -> Value;
-MAP.COUNT([Value])  -> Value;
-
 CALL([Value*]) -> Value;
 
 ISNULL([Value]) -> Boolean;
@@ -66,6 +61,11 @@ NEG([Number])  -> Number;
 TOINT([Number])   -> Integer;
 TONAT([Number])   -> Natural;
 TOFLOAT([Number]) -> Float;
+
+LIST.COUNT([Value]) -> Value;
+DICT.COUNT([Value]) -> Value;
+SET.COUNT([Value])  -> Value;
+MAP.COUNT([Value])  -> Value;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;

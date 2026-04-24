@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -24,6 +25,11 @@ export type OpCodeUn = (
 	| OpCode.TOINT
 	| OpCode.TONAT
 	| OpCode.TOFLOAT
+
+	| OpCode.LIST_COUNT
+	| OpCode.DICT_COUNT
+	| OpCode.SET_COUNT
+	| OpCode.MAP_COUNT
 );
 
 
@@ -46,15 +52,40 @@ export class Unop extends Value {
 	public override validate(): void {
 		this.operand.validate();
 		switch (this.operator) {
-			case OpCode.TOINT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-			case OpCode.TONAT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.NEG:
+			case OpCode.TOINT:
+			case OpCode.TONAT:
 			case OpCode.TOFLOAT: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-			case OpCode.NEG:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+
+			case OpCode.LIST_COUNT: {
+				assert_instanceof(this.operand.type, TYPE.List);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
+			case OpCode.DICT_COUNT: {
+				assert_instanceof(this.operand.type, TYPE.Dict);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
+			case OpCode.SET_COUNT:  {
+				assert_instanceof(this.operand.type, TYPE.Set);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
+			case OpCode.MAP_COUNT:  {
+				assert_instanceof(this.operand.type, TYPE.Map);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
 		}
 	}
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		if ([
+			OpCode.LIST_COUNT,
+			OpCode.DICT_COUNT,
+			OpCode.SET_COUNT,
+			OpCode.MAP_COUNT,
+		].includes(this.operator)) {
+			throw new Error('not yet supported.');
+		}
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		if (this.operator === OpCode.TOBOOL) {
 			return cg.module.call('vnot', [cg.module.call('vnot', [code], cg.reftype.Value)], cg.reftype.Value);

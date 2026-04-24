@@ -646,65 +646,80 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.test('Unop returns custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
-				const {stmts, opt, cg} = setupScript(`{
-					!null;
-					!false;
-					!@hello;
-					!42;
-					!4.2;
+			test.suite('Unop', () => {
+				test.test('Primitive unary operators return custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
+					const {stmts, opt, cg} = setupScript(`{
+						!null;
+						!false;
+						!@hello;
+						!42;
+						!4.2;
 
-					?null;
-					?false;
-					?@hello;
-					?42;
-					?4.2;
+						?null;
+						?false;
+						?@hello;
+						?42;
+						?4.2;
 
-					-(42);
-					-(4.2);
+						-(42);
+						-(4.2);
 
-					int   +42;
-					int   4.2;
-					nat   42;
-					nat   4.2;
-					float +42;
-					float 42;
-				}`, {codegen: false});
-				const mod = cg.module;
-				const CALL = {
-					vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], cg.reftype.Value),
-					vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], cg.reftype.Value),
-					vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], cg.reftype.Value),
-					vtoi: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], cg.reftype.Value),
-					vton: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], cg.reftype.Value),
-					vtof: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], cg.reftype.Value),
-				} as const;
-				return assertEqualBins(
-					stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-					[
-						CALL.vnot(genConst(cg)),
-						CALL.vnot(genConst(cg, false)),
-						CALL.vnot(genConst(cg, Symbol(0x100))),
-						CALL.vnot(genConst(cg, 42n)),
-						CALL.vnot(genConst(cg, 4.2)),
+						int   +42;
+						int   4.2;
+						nat   42;
+						nat   4.2;
+						float +42;
+						float 42;
+					}`, {codegen: false});
+					const mod = cg.module;
+					const CALL = {
+						vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], cg.reftype.Value),
+						vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], cg.reftype.Value),
+						vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], cg.reftype.Value),
+						vtoi: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], cg.reftype.Value),
+						vton: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], cg.reftype.Value),
+						vtof: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], cg.reftype.Value),
+					} as const;
+					return assertEqualBins(
+						stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
+						[
+							CALL.vnot(genConst(cg)),
+							CALL.vnot(genConst(cg, false)),
+							CALL.vnot(genConst(cg, Symbol(0x100))),
+							CALL.vnot(genConst(cg, 42n)),
+							CALL.vnot(genConst(cg, 4.2)),
 
-						CALL.vemp(genConst(cg)),
-						CALL.vemp(genConst(cg, false)),
-						CALL.vemp(genConst(cg, Symbol(0x100))),
-						CALL.vemp(genConst(cg, 42n)),
-						CALL.vemp(genConst(cg, 4.2)),
+							CALL.vemp(genConst(cg)),
+							CALL.vemp(genConst(cg, false)),
+							CALL.vemp(genConst(cg, Symbol(0x100))),
+							CALL.vemp(genConst(cg, 42n)),
+							CALL.vemp(genConst(cg, 4.2)),
 
-						CALL.vneg(genConst(cg, 42n)),
-						CALL.vneg(genConst(cg, 4.2)),
+							CALL.vneg(genConst(cg, 42n)),
+							CALL.vneg(genConst(cg, 4.2)),
 
-						CALL.vtoi(genConst(cg, 42n, 'nat')),
-						CALL.vtoi(genConst(cg, 4.2)),
-						CALL.vton(genConst(cg, 42n)),
-						CALL.vton(genConst(cg, 4.2)),
-						CALL.vtof(genConst(cg, 42n, 'nat')),
-						CALL.vtof(genConst(cg, 42n)),
-					],
-				);
+							CALL.vtoi(genConst(cg, 42n, 'nat')),
+							CALL.vtoi(genConst(cg, 4.2)),
+							CALL.vton(genConst(cg, 42n)),
+							CALL.vton(genConst(cg, 4.2)),
+							CALL.vtof(genConst(cg, 42n, 'nat')),
+							CALL.vtof(genConst(cg, 42n)),
+						],
+					);
+				});
+				test.test('LIST.COUNT', () => {
+					const {stmts, opt, cg} = setupScript(`{
+						val mut x: int = 42;
+						val list: [int] = [x, 43, 44];
+						list;
+					}`);
+					const unop = new IR.Unop(
+						IR.OpCode.LIST_COUNT,
+						(stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get,
+						TYPE.NAT,
+					);
+					return assert.throws(() => unop.codegen(cg), /not yet supported/);
+				});
 			});
 
 			test.test('Binop returns custom WASM functions `viadd`, `vfmul`, etc.', () => {
