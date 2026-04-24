@@ -1,6 +1,10 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import binaryen from 'binaryen';
+import {
+	BinValue,
+	type Builder,
+	BinVect,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -78,17 +82,15 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		if ([
-			OpCode.LIST_COUNT,
-			OpCode.DICT_COUNT,
-			OpCode.SET_COUNT,
-			OpCode.MAP_COUNT,
-		].includes(this.operator)) {
-			throw new Error('not yet supported.');
-		}
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		if (this.operator === OpCode.TOBOOL) {
 			return cg.module.call('vnot', [cg.module.call('vnot', [code], cg.reftype.Value)], cg.reftype.Value);
+		}
+		switch (this.operator) {
+			case OpCode.LIST_COUNT: { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)), {unsigned: true})).value; }
+			case OpCode.DICT_COUNT: { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)), {unsigned: true})).value; }
+			case OpCode.SET_COUNT:  { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})).value; }
+			case OpCode.MAP_COUNT:  { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})).value; }
 		}
 		return cg.module.call(new Map<OpCode, string>([
 			[OpCode.ISNULL,  'isnull'],

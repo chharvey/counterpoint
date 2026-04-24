@@ -713,12 +713,87 @@ test.suite('Opcode', () => {
 						val list: [int] = [x, 43, 44];
 						list;
 					}`);
+					// there exists no syntax for List count, so constructing it manually
+					const list = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
 					const unop = new IR.Unop(
 						IR.OpCode.LIST_COUNT,
-						(stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get,
+						list,
 						TYPE.NAT,
 					);
-					return assert.throws(() => unop.codegen(cg), /not yet supported/);
+					return assertEqualBins(
+						unop.codegen(cg),
+						new BinValue(cg, new BinVect(
+							cg.module,
+							cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)),
+							{unsigned: true},
+						)).value,
+					);
+				});
+				test.test('DICT.COUNT', () => {
+					const {stmts, opt, cg} = setupScript(`{
+						val mut x: int = 42;
+						val dict: [:int] = [a= x, b= 43, c= 44];
+						dict;
+					}`);
+					// there exists no syntax for Dict count, so constructing it manually
+					const dict = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
+					const unop = new IR.Unop(
+						IR.OpCode.DICT_COUNT,
+						dict,
+						TYPE.NAT,
+					);
+					return assertEqualBins(
+						unop.codegen(cg),
+						new BinValue(cg, new BinVect(
+							cg.module,
+							cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)),
+							{unsigned: true},
+						)).value,
+					);
+				});
+				test.test('SET.COUNT', () => {
+					const {stmts, opt, cg} = setupScript(`{
+						val mut x: int = 42;
+						val 'set': {int} = {x, 43, 44};
+						'set';
+					}`);
+					// there exists no syntax for Set count, so constructing it manually
+					const set = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
+					const unop = new IR.Unop(
+						IR.OpCode.SET_COUNT,
+						set,
+						TYPE.NAT,
+					);
+					return assertEqualBins(
+						unop.codegen(cg),
+						new BinValue(cg, new BinVect(
+							cg.module,
+							cg.module.i64.extend_u(cg.module.call('Map.count', [set.codegen(cg)], binaryen.i32)),
+							{unsigned: true},
+						)).value,
+					);
+				});
+				test.test('MAP.COUNT', () => {
+					const {stmts, opt, cg} = setupScript(`{
+						val mut x: int = 42;
+						val map: {float -> int} = {1.1 -> x, 2.2 -> 43, 3.3 -> 44};
+						map;
+					}`);
+					// there exists no syntax for Map count, so constructing it manually
+					const map = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
+					const unop = new IR.Unop(
+						IR.OpCode.MAP_COUNT,
+						map,
+						TYPE.NAT,
+					);
+					return assertEqualBins(
+						unop.codegen(cg),
+						new BinValue(cg, new BinVect(
+							cg.module,
+							cg.module.i64.extend_u(cg.module.call('Map.count', [map.codegen(cg)], binaryen.i32)),
+							{unsigned: true},
+						)).value,
+					);
 				});
 			});
 

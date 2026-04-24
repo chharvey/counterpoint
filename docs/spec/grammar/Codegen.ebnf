@@ -269,6 +269,39 @@ Codegen((TOINT `v`))   := (call $vtoi `Codegen(v)`);
 Codegen((TONAT `v`))   := (call $vton `Codegen(v)`);
 Codegen((TOFLOAT `v`)) := (call $vtof `Codegen(v)`);
 
+Codegen((LIST.COUNT `list`)) := (struct.new $Value
+	(i32.const 1)
+	(i64x2.replace_lane 1
+		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+		(i64.extend_i32_u (call $List.count `Codegen(list)`))
+	)
+	(ref.null eq)
+);
+Codegen((DICT.COUNT `dict`)) := (struct.new $Value
+	(i32.const 1)
+	(i64x2.replace_lane 1
+		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+		(i64.extend_i32_u (call $Dict.count `Codegen(dict)`))
+	)
+	(ref.null eq)
+);
+Codegen((SET.COUNT `set`)) := (struct.new $Value
+	(i32.const 1)
+	(i64x2.replace_lane 1
+		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+		(i64.extend_i32_u (call $Map.count `Codegen(set)`))
+	)
+	(ref.null eq)
+);
+Codegen((MAP.COUNT `map`)) := (struct.new $Value
+	(i32.const 1)
+	(i64x2.replace_lane 1
+		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+		(i64.extend_i32_u (call $Map.count `Codegen(map)`))
+	)
+	(ref.null eq)
+);
+
 Codegen((INT.ADD `v0` `v1`)) := (call $viadd   `Codegen(v0)` `Codegen(v1)`);
 Codegen((INT.SUB `v0` `v1`)) := (call $visub_s `Codegen(v0)` `Codegen(v1)`);
 Codegen((INT.MUL `v0` `v1`)) := (call $vimul   `Codegen(v0)` `Codegen(v1)`);
