@@ -1,26 +1,26 @@
 import {
-	SolidConfig,
+	type CPConfig,
 	CONFIG_DEFAULT,
-	Builder,
-} from './index.js';
+} from './index.ts';
+import {Program} from './Program.ts';
 
 
 /**
- * Compile Solid source code into a readable text format for development purposes.
+ * Compile Counterpoint source code into a readable text format for development purposes.
  * Output text is in [WAT](https://webassembly.org/) format.
- * @param sourcecode - the Solid source text
+ * @param sourcecode - the Counterpoint source text
  * @return the output text
  */
-export function print(sourcecode: string, config: SolidConfig = CONFIG_DEFAULT): string {
-	return new Builder(sourcecode, config).print();
+export function print(sourcecode: string, config: CPConfig = CONFIG_DEFAULT): string {
+	return new Program(sourcecode, config).print();
 }
 
 /**
- * Compile Solid source code into an executable binary format.
+ * Compile Counterpoint source code into an executable binary format.
  * Output text is in [WASM](https://webassembly.org/) format.
- * @param sourcecode - the Solid source text
+ * @param sourcecode - the Counterpoint source text
  * @return the output as a binary format
  */
-export function compile(sourcecode: string, config: SolidConfig = CONFIG_DEFAULT): Promise<Uint8Array> {
-	return new Builder(sourcecode, config).compile();
+export function compile(sourcecode: string, config: CPConfig = CONFIG_DEFAULT): Uint8Array {
+	return new Program(sourcecode, config).compile();
 }

@@ -1,12 +1,9 @@
-export * from './OperatorEbnf.js';
-export * from './OperatorSolid.js';
+export * from './Operator.ts';
 
-export * from './ASTNode.js';
-export * as ASTNODE_EBNF from './astnode-ebnf/index.js';
-export * as ASTNODE_SOLID from './astnode-solid/index.js';
+export * from './Decorator.ts';
+export * from './Validator.ts';
 
-export {DECORATOR as DECORATOR_EBNF} from './DecoratorEbnf.js';
-export {DECORATOR as DECORATOR_SOLID} from './DecoratorSolid.js';
-export * from './Validator.js';
+export * from './ASTNode.ts';
+export * as AST from './astnode-cp/index.ts';
 
-export * from './SymbolStructure.js';
+export * from './SymbolSchema.ts';

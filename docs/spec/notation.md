@@ -9,63 +9,63 @@ Below is an example of
 prose that might appear in this specification; the double-angle quotes refer to wording used in the
 steps of a hypothetical [specification algorithm](#algorithms).
 > In an algorithm, a step that reads «*Let* \`x\` be the value of \`X\`.» means to say
-«If \`X\` is a completion structure, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
+> «If \`X\` is a CompletionSchema, then let \`x\` be \`X.value\`; otherwise let \`x\` be \`X\`.»
 
 Algorithm variables, values, and identifiers are delimited with \`back-ticks\` (**U+0060**) as illustrated above.
 
-Snippets of program code (be it a Solid program or another kind of program such as a context-free grammar)
+Snippets of program code (be it a Counterpoint program or another kind of program such as a context-free grammar)
 are written in `monospace font`.
-> The Solid code `let x: int = X.value;` is a statement
-that assigns the `value` property of `X` to the newly declared variable `x`.
+> The Counterpoint code `val x: int = X.value;` is a statement
+> that assigns the `value` property of `X` to the newly declared variable `x`.
 >
 > The grammar production `N ::= A B` defines the nonterminal `N` as a concatenation of nonterminals `A` and `B`.
 
 Metavariables are variables used within this specification as placeholder values.
 They are delimited with single-angle quotes (**U+2039**, **U+203A**).
-In the following example, \`‹T›\` and \`‹U›\` are not actual Solid Language Types,
+In the following example, \`‹T›\` and \`‹U›\` are not actual Counterpoint Language Types,
 but placeholders for such types.
-> If \`‹T›\` and \`‹U›\` are Solid Language Types, then \`Or<‹T›, ‹U›>\` is the Solid Language Type
-that contains values of either type \`‹T›\` or type \`‹U›\` (or both).
+> If \`‹T›\` and \`‹U›\` are Counterpoint Language Types, then \`Or<‹T›, ‹U›>\` is the Counterpoint Language Type
+> that contains values of either type \`‹T›\` or type \`‹U›\` (or both).
 
 
-### Solid Specification Values
-[Solid Specification Values](./data-types.md#solid-specification-types) are indicated with an *italic typeface*.
-For instance, a sequence of real numbers can be written as *[2, 4, 6]*.
+### Counterpoint Specification Values
+[Counterpoint Specification Values](./types-values.md#counterpoint-specification-types) are indicated with an *italic typeface*.
+For instance, a Sequence of real numbers can be written as *[2, 4, 6]*.
 
 #### Sequences
 Sequences are denoted within square brackets (**U+005B**, **U+005D**), with comma-separated (**U+002C**) entries.
-The notation *[`1685`, `'Bach'`]* represents a sequence containing two items:
-the [Integer](./data-types.md#integer) representing the real number *1685*,
-and the [String value](./data-types.md#string) `'Bach'`.
+The notation *[`1685`, `"Bach"`]* represents a Sequence containing two items:
+the [Integer](./types-values.md#integer) representing the real number *1685*,
+and the [String value](./types-values.md#string) `"Bach"`.
 
-Fixed entries of a sequence may be accessed using 0-origin dot notation (**U+002E**).
-If the example sequence above were assigned to the specification variable \`bach\`,
+Fixed entries of a Sequence may be accessed using 0-origin dot notation (**U+002E**).
+If the example Sequence above were assigned to the specification variable \`bach\`,
 then \`bach.0\` is shorthand for «the 0th entry of \`bach\`», which is the value `1685`.
 
-Variable entries of a sequence may be accessed using bracket notation.
+Variable entries of a Sequence may be accessed using bracket notation.
 For example, using a variable index \`i\` we may access «the *i*th entry of \`bach\`» via \`bach\[i\]\`.
 
-#### Structures
-Structures are denoted with left and right square brackets,
+#### Schemata
+Schemata (“Schemas”) are denoted with left and right square brackets,
 and name–value pairs are delimited with equals signs (**U+003D**).
-For example, a structure with a \`name\` property of `'Bach'` and a \`yob\` property of `1685`
-would be written as *[name= `'Bach'`, yob= `1685`]*.
+For example, a Schema with a \`name\` property of `"Bach"` and a \`yob\` property of `1685`
+would be written as *[name= `"Bach"`, yob= `1685`]*.
 
-Entries of a structure can be accessed using dot notation.
-If the example structure above were assigned to the specification variable \`bach\`,
-then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `'Bach'`.
+Entries of a Schema can be accessed using dot notation.
+If the example Schema above were assigned to the specification variable \`bach\`,
+then \`bach.name\` is shorthand for «the \`name\` property of \`bach\`», which is the value `"Bach"`.
 
 
-### Solid Language Values
-[Solid Language Values](./data-types.md#solid-language-types) are displayed with a `monospace typeface`.
-Examples include `true`, `42.0`, and `'hello'`.
-There is no notational distinction between Solid Language Values and longer code snippets
-such as `let n: int = 42;`; however, the semantics will be apparent in context.
+### Counterpoint Language Values
+[Counterpoint Language Values](./types-values.md#counterpoint-language-types) are displayed with a `monospace typeface`.
+Examples include `true`, `42.0`, and `"hello"`.
+There is no notational distinction between Counterpoint Language Values and longer code snippets
+such as `val n: int = 42;`; however, the semantics will be apparent in context.
 
 
 
 ## Context-Free Grammars
-Context-free grammars define the lexical and syntactic composition of Solid programs.
+Context-free grammars define the lexical and syntactic composition of Counterpoint programs.
 
 A context-free grammar consists of a number of **productions**, each of which
 defines an abstract symbol called a **nonterminal** by
@@ -106,7 +106,7 @@ would be a well-formed instance of the language.
 
 
 ### The Lexical Grammar
-A lexical grammar for the Solid programming language is a formal context-free grammar that has
+A lexical grammar for the Counterpoint Programming Language is a formal context-free grammar that has
 as its terminal symbols the characters of the Unicode character set.
 The lexical grammar is a set of productions that describes
 how sequences of Unicode characters are translated into a sequence of input elements, called **tokens**.
@@ -125,10 +125,10 @@ The screener is also responsible for deciding which tokens get sent to the parse
 
 
 ### The Syntactic Grammar
-The syntactic context-free grammar for the Solid programming language has as its terminal symbols
+The syntactic context-free grammar for the Counterpoint Programming Language has as its terminal symbols
 the tokens defined by the lexical grammar, excluding certain tokens such as comments.
 The syntactic grammar is a set of productions that describes
-how sequences of tokens can form syntactically correct components of Solid programs.
+how sequences of tokens can form syntactically correct components of Counterpoint programs.
 
 A parser is a mechanism that performs syntactic analysis, or “parsing”: It reads a stream of token inputs,
 and arranges them into a **parse tree** according to the rules of the syntactic grammar.
@@ -286,14 +286,14 @@ The following table is an informative summary of the operators described below.
 		</tr>
 		<tr>
 			<td>Ordered Concatenation (Explicit)</td>
-			<td><code>… . …</code></td>
+			<td><code>… & …</code></td>
 		</tr>
 		<tr>
 			<th>5</th>
 			<td>Unordered Concatenation</td>
 			<td>binary infix</td>
 			<td>left-to-right</td>
-			<td><code>… & …</code></td>
+			<td><code>… && …</code></td>
 		</tr>
 		<tr>
 			<th>6</th>
@@ -317,10 +317,10 @@ N
 ##### Ordered Concatenation
 Ordered Concatenation is exactly the same as a sequence of symbols as described above.
 
-Ordered Concatenation syntax uses the optional symbol `.`, but it is equivalent to whitespace.
+Ordered Concatenation syntax uses the optional symbol `&`, but it is equivalent to whitespace.
 ```
 N
-	::= A . B;
+	::= A & B;
 ```
 is equivalent to
 ```
@@ -333,10 +333,10 @@ Usage of an explicit operator can help control grouping and separation of items 
 ##### Unordered Concatenation
 Unordered Concatenation of symbols is concatenation where the order is not important.
 
-Unordered Concatenation syntax uses the symbol `&` and is shorthand for an alternative choice with concatenation:
+Unordered Concatenation syntax uses the symbol `&&` and is shorthand for an alternative choice of concatenation:
 ```
 N
-	::= A & B;
+	::= A && B;
 ```
 transforms to
 ```
@@ -346,17 +346,17 @@ N ::=
 ;
 ```
 
-Unordered Concatenation is evaluated left-to-right, so the EBNF expression `A & B & C`
-is equivalent to `(A & B) & C`.
+Unordered Concatenation is evaluated left-to-right, so the EBNF expression `A && B && C`
+is equivalent to `(A && B) && C`.
 ```
 N
-	::= A & B & C;
+	::= A && B && C;
 ```
 transforms to
 ```
 N ::=
-	| (A & B) C
-	| C (A & B)
+	| (A && B) C
+	| C (A && B)
 ;
 ```
 which in turn transforms to
@@ -370,8 +370,65 @@ N ::=
 ```
 **(Notice that not all permutations are available here — namely, `A C B` and `B C A` are missing.)**
 
-Unordered Concatenation is weaker than concatenation:
-`A & B C` is equivalent to `A & (B C)`.
+Unordered Concatenation is weaker than Ordered Concatenation:
+`A && B C` is equivalent to `A && (B C)`.
+`A && B & C` is equivalent to `A && (B & C)`.
+
+##### Unordered Alternation
+Unordered Alternation of symbols is Unordered Concatenation, where only at least one symbol is required.
+
+Unordered Alternation syntax uses the symbol `||` and is shorthand for an alternative choice of concatenation with optional operands:
+```
+N
+	::= A || B;
+```
+transforms to
+```
+N ::=
+	| A
+	| B
+	| A B
+	| B A
+;
+```
+
+Unordered Alternation is evaluated left-to-right, so the EBNF expression `A || B || C`
+is equivalent to `(A || B) || C`.
+```
+N
+	::= A || B || C;
+```
+transforms to
+```
+N ::=
+	| A || B
+	| C
+	| (A || B) C
+	| C (A || B)
+;
+```
+which in turn transforms to
+```
+N ::=
+	| A
+	| B
+	| A B
+	| B A
+	| C
+	| A C
+	| B C
+	| A B C
+	| B A C
+	| C A
+	| C B
+	| C A B
+	| C B A
+;
+```
+**(Notice that not all permutations are available here — namely, `A C B` and `B C A` are missing.)**
+
+Unordered Alternation is weaker than Unordered Concatenation:
+`A || B && C` is equivalent to `A || (B && C)`.
 
 ##### Alternation
 Alternation of symbols indicates an alternative choice of those symbols in the formal grammar.
@@ -411,8 +468,8 @@ N ::=
 ;
 ```
 
-Alternation is weaker than Unordered Concatenation:
-`A | B & C` is equivalent to `A | (B & C)`.
+Alternation is weaker than Unordered Alternation:
+`A | B && C` is equivalent to `A | (B && C)`.
 
 Alternation on its own is not that interesting, but it can be useful when combined with other operations:
 ```
@@ -553,14 +610,22 @@ Therefore, a nonterminal on the left-hand side `P<F, G>` is equivalent to `P<F><
 ##### Production Arguments
 When a parameterized production is referenced as a nonterminal on the right-hand side,
 identifiers are sent as arguments, which determine the production used.
+
+- `<+F>`: definitely include the suffix `F`
+- `<-F>`: definitely exclude the suffix `F`
+- `<?F>`: include the suffix `F` if and only if it appears in the nonterminal
+- `<!F>`: include the suffix `F` exactly when it does not appear in the nonterminal
+
 ```
 N ::=
 	| A<+X>
 	| B<-X>
 ;
 
-M<Y>
-	::= C<?Y>;
+M<Y> ::=
+	| C<?Y>
+	| D<!Y>
+;
 ```
 transforms to
 ```
@@ -569,16 +634,26 @@ N ::=
 	| B
 ;
 
-M   ::= C;
-M_Y ::= C_Y;
+M ::=
+	| C
+	| D_Y
+;
+M_Y ::=
+	| C_Y
+	| D
+;
 ```
 Production arguments expand combinatorially, the same way parameters do.
+
+- `<∓F>`: shorthand for the argument `<-F, +F>`
+
 ```
 N ::=
 	| I<-X, +X>
 	| J<+Y, -Y>
 	| K<-X><+X>
 	| L<+Y><-Y>
+	| II<∓X>
 ;
 
 M ::=
@@ -594,7 +669,13 @@ M ::=
 
 O<Z, W> ::=
 	| P<?Z, ?W>
-	| Q<?Z><?W>
+	| Q<?Z, !W>
+	| R<!Z, ?W>
+	| S<!Z, !W>
+	| T<?Z><?W>
+	| U<?Z><!W>
+	| V<!Z><?W>
+	| W<!Z><!W>
 ;
 ```
 transforms to
@@ -606,6 +687,8 @@ N ::=
 	| J
 	| K_X
 	| L_Y
+	| II
+	| II_X
 ;
 
 M ::=
@@ -625,19 +708,43 @@ M ::=
 
 O ::=
 	| P
-	| Q
+	| Q_W
+	| R_Z
+	| S_Z_W
+	| T
+	| U_W
+	| V_Z
+	| W_Z_W
 ;
 O_Z ::=
 	| P_Z
-	| Q_Z
+	| Q_Z_W
+	| R
+	| S_W
+	| T_Z
+	| U_Z_W
+	| V
+	| W_W
 ;
 O_W ::=
 	| P_W
-	| Q_W
+	| Q
+	| R_Z_W
+	| S_Z
+	| T_W
+	| U
+	| V_Z_W
+	| W_Z
 ;
 O_Z_W ::=
 	| P_Z_W
-	| Q_Z_W
+	| Q_Z
+	| R_W
+	| S
+	| T_Z_W
+	| U_Z
+	| V_W
+	| W
 ;
 ```
 Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equivalent to `P<⊛F><⊗G>`.
@@ -645,7 +752,8 @@ Notice that a nonterminal on the right-hand side `P<⊛F, ⊗G>` is *not* equiva
 The former (`P<⊛F, ⊗G>`) acts like a disjunction (`P<⊛F> | P<⊗G> | P<⊛F><⊗G>`), while
 the latter (`P<⊛F><⊗G>`) acts like a conjunction (only `P<⊛F><⊗G>`).
 
-However, a nonterminal on the right-hand side `P<?F, ?G>` *is* equivalent to `P<?F><?G>`.
+However, a nonterminal on the right-hand side `P<⊛F, ⊗G>` *is* equivalent to `P<⊛F><⊗G>`,
+where `⊛` and `⊗` are metavariables representing one of the symbols `?` and `!`.
 
 ##### Production Conditionals
 A production conditional determines whether or not an item appears in the sequence of a production.
@@ -848,7 +956,8 @@ Notation for the TNSG is almost exactly the same as that of [CFGs](#notation-con
 with exceptions described above.
 
 #### Formal Grammar (TNSG)
-The grammar below (which is a CFG) describes the formal Tree Node Schema Grammar that describes the Solid language.
+The grammar below (which is a CFG) describes the formal Tree Node Schema Grammar
+that describes the Counterpoint Programming Language.
 ```
 TypeUnit ::=
 	| NUMBER
@@ -895,8 +1004,8 @@ In an attribute grammar, attributes are defined on nodes of a parse tree via the
 of a context-free grammar.
 In this specification, attributes are “synthesized” and thus propagate in a bottom-up manner:
 given a parse node, computing an attribute of that node might require looking at its children.
-Attributes are always [normal completion structures](/.data-types.md#completionstructure).
-For notational convenience, only the value of the completion structure is written.
+Attributes are always [normal CompletionSchemata](/.types-values.md#completionschema).
+For notational convenience, only the value of the CompletionSchema is written.
 
 
 ### Example
@@ -912,7 +1021,7 @@ Quantity([0-9] :::= "9") -> Integer := 9;
 ```
 This example illustrates a hypothetical attribute grammar that defines an attribute
 called `Quantity` on an `INT` token.
-The attributes themselves are [completion structures](./data-types.md#completionstructure)
+The attributes themselves are [CompletionSchemata](./types-values.md#completionschema)
 whose \`type\` properties are *normal* and whose \`value\` properties are of type `Integer`.
 Each rule defines the attribute on the token matching a different pattern defined by a CFG,
 and then denotes that the returned object will be an integer.
@@ -922,10 +1031,10 @@ The first line could be read aloud as,
 
 ### Token Worth
 The token worth grammar is an attribute grammar that determines the semantic value of the various token types.
-It assigns a [Solid Specification Value](./data-types.md#solid-specification-types)
-to a Token produced by the Tokenizer piece of the Solid compiler.
+It assigns a [Counterpoint Specification Value](./types-values.md#counterpoint-specification-types)
+to a Token produced by the Tokenizer piece of the Counterpoint compiler.
 This grammar is described further in detail in the chapter
-[Solid Language: Lexicon](./language-lexicon.md).
+[Counterpoint Programming Language: Lexicon](./language-lexicon.md).
 
 
 ### Decoration
@@ -936,9 +1045,9 @@ These semantics are called “static semantics” because they are performed
 after syntactic analysis, but before the program is executed at run-time.
 
 The productions of the decoration grammar are listed in the chapters
-[Solid Language: Expressions](./language-expressions.md),
-[Solid Language: Statements](./language-statements.md), and
-[Solid Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Expressions](./language-expressions.md),
+[Counterpoint Programming Language: Statements](./language-statements.md), and
+[Counterpoint Programming Language: Source File](./language-source-file.md)
 
 
 ### Notation: Attribute Grammar
@@ -951,7 +1060,7 @@ as an argument and “returning” a value.
 of the specified lexical/syntactic production.)
 The “return type” of the attribute production is indicated after a thin arrow `->`
 following the attribute production name, and the “return value” is
-a [Solid Specification Value](./data-types.md#solid-specification-types) followed by the definition symbol `:=`.
+a [Counterpoint Specification Value](./types-values.md#counterpoint-specification-types) followed by the definition symbol `:=`.
 ```
 ‹AttributeName›(‹CFGProduction›) -> ‹ReturnType›
 	:= ‹ReturnValue›;
@@ -986,12 +1095,12 @@ which can then be referenced in the return value.
 
 AG productions may also invoke each other, and they may do so recursively.
 ```
-TokenWorth(TemplateFull :::= "'''" TemplateChars__EndDelim "'''") -> Sequence<RealNumber>
+TokenWorth(TemplateFull :::= #x22 #x22 #x22 TemplateChars__EndDelim #x22 #x22 #x22) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim)
-TokenWorth(TemplateChars__EndDelim :::= [^'{#x03]) -> Sequence<RealNumber>
-	:= [UTF8Encoding(CodePoint([^'{#x03]))]
-TokenWorth(TemplateChars__EndDelim :::= [^'{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
-	:= [UTF8Encoding(CodePoint([^'{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
+TokenWorth(TemplateChars__EndDelim :::= [^"{#x03]) -> Sequence<RealNumber>
+	:= [UTF8Encoding(CodePoint([^"{#x03]))]
+TokenWorth(TemplateChars__EndDelim :::= [^"{#x03] TemplateChars__EndDelim) -> Sequence<RealNumber>
+	:= [UTF8Encoding(CodePoint([^"{#x03])), ...TokenWorth(TemplateChars__EndDelim)]
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartDelim) -> Sequence<RealNumber>
 	:= TokenWorth(TemplateChars__EndDelim__StartDelim)
 TokenWorth(TemplateChars__EndDelim :::= TemplateChars__EndDelim__StartInterp) -> Sequence<RealNumber>
@@ -1002,10 +1111,10 @@ The TokenWorth attribute is computed by invoking itself on children elements.
 Other than its functional behavior, the attribute grammar is much simpler
 than its context-free counterpart. There are no operations or expansions.
 The complexity lies within the values the productions return, which are further described
-in the chapter [Data Types and Values](./data-types.md).
+in the [Types and Values](./types-values.md) chapter.
 
 #### Formal Grammar (AG)
-The grammar below (which is a CFG) describes the formal AGs that describe the Solid language.
+The grammar below (which is a CFG) describes the formal AGs that describe the Counterpoint Programming Language.
 ```
 Item ::=
 	| STRING
@@ -1045,18 +1154,18 @@ An algorithm consists of a name, an output type, zero or more parameters, and a 
 The steps are formatted as an ordered list;
 the list is *ordered* in that the outcome could change if the steps were not performed in the order given.
 
-An algorithm must always output a [CompletionStructure](/.data-types.md#completionstructure) object,
+An algorithm must always output a [CompletionSchema](/.types-values.md#completionschema) object,
 which is returned by the algorithm to its invoker.
-The completion structure might or might not have a \`value\`.
+The CompletionSchema might or might not have a \`value\`.
 
 The output type of an algorithm is the type of the \`value\` (if it exists) of
-a returned normal completion structure, and it is specified before
+a returned normal completion, and it is specified before
 the name of the algorithm in its header.
-If an algorithm outputs a normal completion structure without a \`value\`,
-the output type is specified as [None](./data-types.md#none).
+If an algorithm outputs a normal CompletionSchema without a \`value\`,
+the output type is specified as [None](./types-values.md#none).
 
-If an algorithm outputs an *abrupt* completion structure, its \`value\`, if it exists,
-though it is still included in the returned structure, is *not* indicated in the output type,
+If an algorithm outputs an *abrupt* completion, its \`value\`, if it exists,
+though it is still included in the returned CompletionSchema, is *not* indicated in the output type,
 however, an exclamation point `!` is appended to the return type.
 For example, an algorithm with return type `Boolean!` will return a normal completion with
 a \`value\` of type `Boolean`, or an abrupt completion.
@@ -1103,12 +1212,6 @@ each containing the substeps respective to that branch.
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
 A loop step begins with «*While* …:».
 
-#### Continue
-A step within the substeps of a loop may direct the algorithm to **continue**,
-which is to say the rest of the substeps within the current iteration should be skipped,
-and the loop should proceed to the next iteration.
-Such a step says «*Continue.*».
-
 #### Break
 A step within the substeps of a loop may direct the algorithm to **break**,
 which is to say the rest of the loop should be skipped,
@@ -1116,43 +1219,44 @@ and the algorithm should proceed to the next step after the loop, if that step e
 If that next step does not exist, the algorithm should complete.
 Such a step says «*Break.*».
 
-A step that begins with «*Break:* …» may contain a positive integer, which indicates
-the number of nested loops to terminate. For example, if such a step is nested within 2 loops,
-then «*Break:* 1.» would indicate that only the inner loop be terminated, but that the algorithm
-continue with the outer loop. «*Break:* 2.» would indicate both loops terminate.
-A step that says «*Break.*» (with no number) implies «*Break:* 1.».
+#### Skip
+A step within the substeps of a loop may direct the algorithm to **skip**,
+which is to say the rest of the substeps within the current iteration should be skipped,
+and the algorithm should proceed to the next iteration in the loop, assuming the loop’s condition still holds.
+(If it does not, this step is equivalent to [Break](#break).)
+Such a step says «*Skip.*».
 
 #### Return
 An algorithm step that reads «*Return:* ‹v›.» (where ‹v› is a metavariable representing a completion value)
-is shorthand for «*Return:* [type= normal, value= ‹v›].», meaning
-the algorithm outputs a normal completion structure with a \`value\` of ‹v›.
+is shorthand for «*Return:* [kind= *normal*, value= ‹v›].», meaning
+the algorithm outputs a normal completion with a \`value\` of ‹v›.
 
-However, an algorithm step that reads «*Return:* [type= ‹type›, value= ‹v›].» is to be interpreted as-is,
-as returning the completion structure itself, not “wrapped” in a new normal completion.
+However, an algorithm step that reads «*Return:* [kind= ‹type›, value= ‹v›].» is to be interpreted as-is,
+as returning the CompletionSchema itself, not “wrapped” in a new normal completion.
 Similarly, an algorithm step that reads «*Return:* ‹CS›.»,
-where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
-is also to be interpreted as-is, as returning the completion structure itself.
+where ‹CS› represents an actual CompletionSchema object (such as the result of an algorithm call),
+is also to be interpreted as-is, as returning the CompletionSchema itself.
 
-An algorithm step that reads «*Return*.» is shorthand for «*Return:* [type= normal].», that is,
-it outputs a normal completion structure without a \`value\` (thus the output type is None).
+An algorithm step that reads «*Return.*» is shorthand for «*Return:* [kind= *normal*].», that is,
+it outputs a normal completion without a \`value\` (thus the output type is None).
 
 An algorithm with no Return statement is implied to return a normal completion with no value.
 
 #### Throw
 When an algorithm step reads «*Throw:* ‹v›.» (where ‹v› is a metavariable representing a completion value),
-a throw completion structure whose \`value\` is ‹v› is returned.
-That is, the step is shorthand for «*Return:* [type= throw, value= ‹v›].».
-Note that such a completion structure is “abrupt”.
+a CompletionSchema whose \`value\` is ‹v› is returned.
+That is, the step is shorthand for «*Return:* [kind= *throw*, value= ‹v›].».
+Note that such a completion is “abrupt”.
 
-An algorithm step that reads «*Throw:* [type= ‹type›, value= ‹v›].» is to be interpreted
-as «*Return:* [type= throw, value= ‹v›]», not the original completion “wrapped” in a new *throw* completion.
+An algorithm step that reads «*Throw:* [kind= ‹kind›, value= ‹v›].» is to be interpreted
+as «*Return:* [kind= *throw*, value= ‹v›]», not the original CompletionSchema “wrapped” in a new CompletionSchema.
 Similarly, an algorithm step that reads «*Throw:* ‹CS›.»,
-where ‹CS› represents an actual CompletionStructure object (such as the result of an algorithm call),
-is also to be interpreted in the same manner, as returning a *throw* completion structure
+where ‹CS› represents an actual CompletionSchema object (such as the result of an algorithm call),
+is also to be interpreted in the same manner, as returning a *throw*-typed CompletionSchema
 whose value is the value of ‹CS›.
 
 #### Unwrap
-An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a completion structure or algorithm call)
+An algorithm step that contains «*Unwrap:* ‹s›» (where ‹s› is a CompletionSchema or algorithm call)
 returns ‹s› if it is an abrupt completion, but otherwise replaces ‹s› with its value.
 The step is shorthand for the following steps:
 ```
@@ -1160,9 +1264,9 @@ The step is shorthand for the following steps:
 	1. *Return:* ‹s›.
 2. *Assert:* ‹s› is a normal completion.
 3. *If* ‹s› has a `value` property:
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `‹s›.value`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «`‹s›.value`».
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing ‹s› with `none`.
+	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «*none*».
 ```
 
 For example, setting a variable to an unwrap step …
@@ -1179,19 +1283,19 @@ For example, setting a variable to an unwrap step …
 4. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 5. *Else:*
-	1. *Let* `v` be `none`.
+	1. *Let* `v` be *none*.
 ```
 
 #### UnwrapAffirm
-An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a completion structure or algorithm call)
+An algorithm step that contains «*UnwrapAffirm:* ‹s›» (where ‹s› is a CompletionSchema or algorithm call)
 assumes ‹s› is a normal completion and replaces ‹s› with its value.
 The step is shorthand for the following steps:
 ```
 1. *Assert:* ‹s› is a normal completion.
 2. *If* ‹s› has a `value` property:
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `‹s›.value`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «`‹s›.value`».
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing ‹s› with `none`.
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «*none*».
 ```
 
 For example, setting a variable to an unwrap-affirm step …
@@ -1206,7 +1310,7 @@ For example, setting a variable to an unwrap-affirm step …
 3. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 4. *Else:*
-	1. *Let* `v` be `none`.
+	1. *Let* `v` be *none*.
 ```
 
 #### Shorthand Notation
@@ -1214,23 +1318,23 @@ Algorithm steps may contain shorthand notation that desugar to the types of step
 The metavariables ‹x›, ‹y›, ‹A›, ‹B›, and ‹C› represent any snippets of algorithm prose.
 
 ##### Else If
-A step that begins with «*Else If* …:» desugars to an ‘else' step with an ‘if’ substep.
+A step that begins with «*Else If* …:» desugars to an ‘else’ step with an ‘if’ substep.
 ```
 1. *If* ‹x›:
 	1. ‹A›.
 2. *Else If* ‹y›:
 	1. ‹B›.
-3. *Else*:
+3. *Else:*
 	1. ‹C›.
 ```
 is shorthand for
 ```
 1. *If* ‹x›:
 	1. ‹A›.
-2. *Else*:
+2. *Else:*
 	1. *If* ‹y›:
 		1. ‹B›.
-	2. *Else*:
+	2. *Else:*
 		1. ‹C›.
 ```
 
@@ -1239,7 +1343,7 @@ A step that begins with «*If* … *and* …:» desugars to an ‘if’ step wit
 ```
 1. *If* ‹x› *and* ‹y›:
 	1. ‹A›.
-2. *Else*:
+2. *Else:*
 	1. ‹B›.
 ```
 is shorthand for
@@ -1247,9 +1351,9 @@ is shorthand for
 1. *If* ‹x›:
 	1. *If* ‹y›:
 		1. ‹A›.
-	2. *Else*:
+	2. *Else:*
 		1. ‹B›.
-2. *Else*:
+2. *Else:*
 	1. ‹B›.
 ```
 
@@ -1258,7 +1362,7 @@ A step that begins with «*If* … *or* …:» desugars to two ‘if’ steps wi
 ```
 1. *If* ‹x› *or* ‹y›:
 	1. ‹A›.
-2. *Else*:
+2. *Else:*
 	1. ‹B›.
 ```
 is shorthand for
@@ -1267,12 +1371,12 @@ is shorthand for
 	1. ‹A›.
 2. *Else If* ‹y›:
 	1. ‹A›.
-3. *Else*:
+3. *Else:*
 	1. ‹B›.
 ```
 
 ##### For
-A step that reads «*For index* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a sequence)
+A step that reads «*For index* ‹i› in ‹s›:» (where ‹i› is a variable and ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *Let* `‹i›` be 0.
@@ -1281,7 +1385,7 @@ is shorthand for the following steps:
 	2. Increment `‹i›`.
 ```
 
-A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a structure)
+A step that reads «*For key* ‹k› in ‹s›:» (where ‹k› is a variable and ‹s› is a Schema)
 is shorthand for the following steps:
 ```
 1. *Let* `i` be 0.
@@ -1292,14 +1396,14 @@ is shorthand for the following steps:
 ```
 Note that this algorithm does not require the keys in ‹s› to be iterated over in any particular order.
 
-A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a sequence)
+A step that reads «*For each* ‹it› in ‹s›:» (where ‹it› is a variable and ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *For index* `i` in `‹s›`:
 	1. Perform the substeps listed under the *For each* step, replacing `‹it›` with `‹s›[i]`.
 ```
 
-A step that reads «*For each* ‹val› in ‹s›:» (where ‹val› is a variable and ‹s› is a structure)
+A step that reads «*For each* ‹val› in ‹s›:» (where ‹val› is a variable and ‹s› is a Schema)
 is shorthand for the following steps:
 ```
 1. *For key* `k` in `‹s›`:
@@ -1307,7 +1411,7 @@ is shorthand for the following steps:
 ```
 
 ##### Spread
-An algorithm step that contains «...‹s›» (where ‹s› is a sequence)
+An algorithm step that contains «...‹s›» (where ‹s› is a Sequence)
 is shorthand for the following steps:
 ```
 1. *For each* `it` in ‹s›:
@@ -1316,18 +1420,18 @@ is shorthand for the following steps:
 
 ##### Mappings
 A step that contains «a mapping of ‹s› indexed by ‹i› to ‹e›» is shorthand for a *For* loop
-that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+that populates a new Sequence, where ‹s› is a starting Sequence, ‹i› is an index variable,
 and ‹e› is an expression possibly containing ‹s› and ‹i›.
-The new sequence is the result of mapping each item in the starting sequence to
+The new Sequence is the result of mapping each item in the starting Sequence to
 a value prescribed by the expression ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a mapping of `sequence` indexed by `i` to `sequence[i] + 1`.
 ```
 is shorthand for
 ```
-1. *Let* `result` be an empty sequence.
+1. *Let* `result` be an empty Sequence.
 2. *For index* `i` in `sequence`:
 	1. Push `sequence[i] + 1` to `result`.
 ```
@@ -1339,60 +1443,60 @@ replacing the *For index* step with a *For each* step.
 ```
 is shorthand for
 ```
-1. *Let* `result` be an empty sequence.
+1. *Let* `result` be an empty Sequence.
 2. *For each* `it` in `sequence`:
 	1. Push `it + 1` to `result`.
 ```
 
 ##### Flattened Mappings
 A step that contains «a flattened mapping of ‹s› indexed by ‹i› to ‹e›» is similar to a [Mapping](#mappings) step,
-except that the expression ‹e› must be a sequence, and the resulting sequence,
-rather than being a sequence of sequences, is instead a sequence of values perscribed by items of ‹e›.
+except that the expression ‹e› must be a Sequence, and the resulting Sequence,
+rather than being a Sequence of Sequences, is instead a Sequence of values perscribed by items of ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result` be a flattened mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
 ```
 is shorthand for
 ```
 1. *Let* `map` be a mapping of `sequence` indexed by `i` to `[sequence[i], sequence[i] + 1]`.
-2. *Let* `result` be an empty sequence.
+2. *Let* `result` be an empty Sequence.
 3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
 
 A step that contains «a flattened mapping of ‹s› for each ‹it› to ‹e›» is like an indexed mapping
-except instead of indices the mapping iterates over sequence items.
+except instead of indices the mapping iterates over Sequence items.
 ```
 1. *Let* `result` be a flattened mapping of `sequence` for each `it` to `[it, it + 1]`.
 ```
 is shorthand for
 ```
 1. *Let* `map` be a mapping of `sequence` for each `it` to `[it, it + 1]`.
-2. *Let* `result` be an empty sequence.
+2. *Let* `result` be an empty Sequence.
 3. *For index* `i` in `map`:
 	1. Push `...map` to `result`.
 ```
 
 ##### Filterings
 A step that contains «a filtering of ‹s› indexed by ‹i› such that ‹e›» is shorthand for a *For* loop
-that populates a new sequence, where ‹s› is a starting sequence, ‹i› is an index variable,
+that populates a new Sequence, where ‹s› is a starting Sequence, ‹i› is an index variable,
 and ‹e› is a predicate, possibly containing ‹s› and ‹i›, to be satisfied.
-The new sequence is the result of finding only the items in the starting sequence
+The new Sequence is the result of finding only the items in the starting Sequence
 that satisfy the predicate ‹e›.
 
-(In the example below, assume `sequence` is a sequence of RealNumber values.)
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
 ```
 1. *Let* `result1` be a filtering of `sequence` indexed by `i` such that `sequence[i] > 0`.
-1. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
+2. *Let* `result2` be a filtering of `sequence` indexed by `i` such that `sequence[i]` is even.
 ```
 is shorthand for
 ```
-1. *Let* `result1` be an empty sequence.
+1. *Let* `result1` be an empty Sequence.
 2. *For index* `i` in `sequence`:
 	1. *If* `sequence[i] > 0`:
 		1. Push `sequence[i]` to `result1`.
-3. *Let* `result2` be an empty sequence.
+3. *Let* `result2` be an empty Sequence.
 4. *For index* `i` in `sequence`:
 	1. *If* `sequence[i]` is even:
 		1. Push `sequence[i]` to `result2`.
@@ -1401,19 +1505,71 @@ is shorthand for
 A step that contains «a filtering of ‹s› for each ‹it› such that ‹e›» is shorthand for an indexed filtering,
 replacing the *For index* step with a *For each* step.
 ```
-1. *Let* `result1` be a filering of `sequence` for each `it` such that `it > 0`.
-2. *Let* `result2` be a filering of `sequence` for each `it` such that `it` is an integer.
+1. *Let* `result1` be a filtering of `sequence` for each `it` such that `it > 0`.
+2. *Let* `result2` be a filtering of `sequence` for each `it` such that `it` is an integer.
 ```
 is shorthand for
 ```
-1. *Let* `result1` be an empty sequence.
+1. *Let* `result1` be an empty Sequence.
 2. *For each* `it` in `sequence`:
 	1. *If* `it > 0` is `true`:
 		1. Push `it` to `result1`.
-3. *Let* `result2` be an empty sequence.
+3. *Let* `result2` be an empty Sequence.
 4. *For each* `it` in `sequence`:
 	1. *If* `it` is an integer:
 		1. Push `it` to `result2`.
+```
+
+##### Find
+A step that contains «an item ‹it› in ‹s› such that ‹e›» is shorthand for
+the first item of a filtering of ‹s› satisfying the predicate ‹e›, else *none*.
+
+(In the example below, assume `sequence` is a sequence of RealNumber values.)
+```
+1. *Let* `result1` be an item `it` in `sequence` such that `it > 0`.
+2. *Let* `result2` be an item `it` in `sequence` such that `it` is even.
+```
+is shorthand for
+```
+1. *Let* `result1` be *none*.
+2. *Let* `result1_filter` be a filtering of `sequence` for each `it` such that `it > 0`.
+3. *If* `result1_filter.count` is greater than 0:
+	1. *Set* `result1` to `result1_filter.0`.
+4. *Let* `result2` be *none*.
+5. *Let* `result2_filter` be a filtering of `sequence` for each `it` such that `it` is even.
+6. *If* `result2_filter.count` is greater than 0:
+	1. *Set* `result2` to `result2_filter.0`.
+```
+
+##### Reductions
+A step that contains «a reduction of ‹s› with ‹accum› for each ‹it› to ‹e› starting with ‹p›» is shorthand for
+a *For* loop that updates a result; where ‹s› is a starting Sequence; ‹accum› is an accumulator value; ‹it› is an item in ‹s›;
+‹e› is an expression possibly containing ‹s›, ‹accum›, and ‹it›; and ‹p› is the initial value of ‹accum›.
+The updated result is the result of setting ‹accum› to the evaluation of ‹e›, for each ‹it› in ‹s›.
+
+(In the example below, assume `sequence` is a Sequence of Schemata with a \`prop\` property.)
+```
+1. *Let* `result` be a reduction of `sequence` with `accum` for each `it` to `[...accum, it.prop]` starting with `[]`.
+```
+is shorthand for
+```
+1. *Let* `result` be `[]`.
+2. *For each* `it` in `sequence`:
+	1. *Set* `result` to `[...result, it.prop]`.
+```
+
+A step that contains «a reduction of ‹s› for each ‹a› and ‹b› to ‹e›» assumes the Sequence is nonempty,
+uses ‹a› as the accumulator value, ‹b› as the iterated item in ‹s›, and the item at index 0 in ‹s› as the initial value.
+It skips the first iteration.
+
+(In the example below, assume `sequence` is a Sequence of RealNumber values.)
+```
+1. *Let* `result` be a reduction of `sequence` for each `a` and `b` to `a + b`.
+```
+is shorthand for
+```
+1. *Assert:* `sequence` is not empty.
+2. *Let* `result` be a reduction of `sequence[1 ..]` with `accum` for each `it` to `accum + it` starting with `sequence.0`.
 ```
 
 
@@ -1424,9 +1580,9 @@ They pass instructions to the code generator,
 which in turn generates compiled code to be executed at runtime.
 
 The runtime instructions of static semantics are listed in the chapters
-[Solid Language: Expressions](./language-expressions.md),
-[Solid Language: Statements](./language-statements.md), and
-[Solid Language: Goal Symbols](./language-goal.md).
+[Counterpoint Programming Language: Expressions](./language-expressions.md),
+[Counterpoint Programming Language: Statements](./language-statements.md), and
+[Counterpoint Programming Language: Source File](./language-source-file.md)
 
 
 ### Notation: Algorithms
@@ -1457,85 +1613,3 @@ None AlgorithmName(RealNumber param) :=
 	3. Step 3.
 		1. Substep 3.1.
 ```
-
-
-
-## Syntax Errors (1xxx)
-Syntax Errors arise when a Solid source text does not adhere to the language’s
-formal lexical or syntactic grammar rules.
-If this is the case, the code is said to be “ill-formed” (“not well-formed”).
-
-There are two main types of syntax errors: lexical errors and parse errors.
-
-
-### Lexical Errors (11xx)
-A lexical error is raised when the Solid source text fails to produce a token per
-the [lexical grammar](#the-lexical-grammar) rules.
-
-1100. A general lexical error not covered by one of the following cases.
-1101. The lexer reached a character that it does not recognize.
-1102. The lexer reached the end of the file before it found the end of the current token.
-1103. The lexer found an escape sequence of an invalid format.
-1104. The lexer found a numeric separator where it is not allowed.
-1105. The lexer found a float literal in an invalid format.
-
-
-### Parse Errors (12xx)
-A parse error is raised when the Solid source text fails to parse correctly per
-the [syntactic grammar](#the-syntactic-grammar) rules.
-
-1200. A general parse error not covered by one of the following cases.
-1201. The parser reached a token that the syntax does not allow.
-
-
-
-## Semantic Errors (2xxx)
-Semantic Errors arise when a Solid source text does not adhere to the language’s
-formal validation rules.
-If this is the case, the code is said to be “invalid” (“not valid”).
-
-
-### Reference Errors (21xx)
-A reference error is raised when the compiler fails to dereference an identifier.
-
-2100. A general reference error not covered by one of the following cases.
-2101. The validator encountered a variable that was never declared.
-2102. The validator encountered a variable that was used before it was declared.
-2103. The validator encountered a symbol of the wrong kind.
-
-
-### Assignment Errors (22xx)
-An assignment error is raised when the compiler detects an illegal declaration or assignment.
-
-2200. A general assignment error not covered by one of the following cases.
-2201. The validator encountered a duplicate declaration.
-2210. A reassignment of a fixed variable was attempted.
-
-
-### Type Errors (23xx)
-A type error is raised when the compiler recognizes a type mismatch.
-
-2300. A general type error not covered by one of the following cases.
-2301. The validator encountered an operation with an invalid operand.
-2302. One type is expected to be a subtype of another, but is not.
-2303. An expression was assigned to a type to which it is not assignable.
-2304. The validator encountered a non-existent index/property/argument access.
-2305. The validator encountered an attempt to call a non-callable object.
-2306. An incorrect number of arguments is passed to a callable object.
-
-
-### Mutability Errors (24xx)
-A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.
-
-2400. A general mutability error not covered by one of the following cases.
-2401. An item or property of an immutable object was reassigned.
-
-
-
-## Runtime Errors (3xxx)
-Runtime Errors arise when the program compiles successfully but fails to complete execution
-as a result of some internal process.
-
-
-### Void Errors (31xx)
-A void error is raised when an expression that has no value is used in some way.

@@ -1,5 +1,5 @@
-# Solid Language: Statements
-This chapter defines the syntax, semantics, and behavior of statements in the Solid programming language.
+# Counterpoint Programming Language: Statements
+This chapter defines the syntax, semantics, and behavior of statements in the Counterpoint Programming Language.
 
 
 
@@ -11,4 +11,24 @@ This chapter defines the syntax, semantics, and behavior of statements in the So
 
 
 
-## Variable Assignment
+## Variable/Property Claim
+
+
+
+## Variable/Property Reassignment
+
+
+
+## Conditional Statement
+
+
+
+## Loop
+
+
+
+## Iteration
+
+
+
+# Break & Skip

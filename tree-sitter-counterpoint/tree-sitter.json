@@ -1,0 +1,36 @@
+{
+  "$schema": "https://tree-sitter.github.io/tree-sitter/assets/schemas/config.schema.json",
+  "grammars": [
+    {
+      "name": "counterpoint",
+      "camelcase": "Counterpoint",
+      "scope": "source.counterpoint",
+      "path": ".",
+      "file-types": null,
+      "injection-regex": "^counterpoint$"
+    }
+  ],
+  "metadata": {
+    "version": "3.7.0",
+    "license": "GPL-3.0-or-later",
+    "description": "Tree-sitter parser for the Counterpoint Programming Language.",
+    "authors": [
+      {
+        "name": "Chris Harvey",
+        "email": "1362083+chharvey@users.noreply.github.com"
+      }
+    ],
+    "links": {
+      "repository": "https://github.com/chharvey/counterpoint"
+    }
+  },
+  "bindings": {
+    "c": true,
+    "go": true,
+    "node": true,
+    "python": true,
+    "rust": true,
+    "swift": true,
+    "zig": false
+  }
+}

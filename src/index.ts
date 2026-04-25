@@ -1,13 +1,16 @@
-export * from './core/index.js';
-export * from './parser/index.js';
-export * from './validator/index.js';
-export * from './typer/index.js';
-export * from './builder/index.js';
+export * from './lib/index.ts';
+export * from './core/index.ts';
+export * from './parser/index.ts';
+export * from './validator/index.ts';
+export * from './typer/index.ts';
+export * from './optimizer/index.ts';
+export * from './code-generator/index.ts';
+export * from './builder/index.ts';
 export {
 	Stack,
-	Instruction as VMInstruction,
+	type Instruction as VMInstruction,
 	InstructionTable,
 	Builder as VMBuilder,
 	Machine,
 } from './vm/index.js';
-export * from './error/index.js';
+export * from './error/index.ts';

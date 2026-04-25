@@ -1,24 +1,54 @@
 export enum Keyword {
-	// literal
-		VOID  = 'void',
-		NULL  = 'null',
-		BOOL  = 'bool',
-		FALSE = 'false',
-		TRUE  = 'true',
-		INT   = 'int',
-		FLOAT = 'float',
-		STR   = 'str',
-		OBJ   = 'obj',
+	// type literal
+	NOTHING  = 'nothing',
+	BOOL     = 'bool',
+	SYM      = 'sym',
+	INT      = 'int',
+	NAT      = 'nat',
+	FLOAT    = 'float',
+	STR      = 'str',
+	ANYTHING = 'anything',
+
+	// value literal
+	NULL  = 'null',
+	FALSE = 'false',
+	TRUE  = 'true',
+
 	// operator
-		MUTABLE = 'mutable',
-		IS      = 'is',
-		ISNT    = 'isnt',
-		IF      = 'if',
-		THEN    = 'then',
-		ELSE    = 'else',
+	MUTABLE = 'mut',
+	AS      = 'as',
+	AS_MAY  = 'as?',
+	AS_RES  = 'as!',
+	IS      = 'is',
+	ISNT    = '!is',
+	IF      = 'if',
+	THEN    = 'then',
+	ELSE    = 'else',
+
 	// storage
-		LET  = 'let',
-		TYPE = 'type',
+	TYPE  = 'type',
+	LET   = 'val',
+	CLAIM = 'claim',
+	SET   = 'set',
+	BLANK = '_',
+	VOID  = 'void',
+
 	// modifier
-		UNFIXED = 'unfixed',
+	NOMINAL  = 'nominal',
+	WRITABLE = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+
+	// control
+	UNLESS = 'unless',
+	WHILE  = 'while',
+	UNTIL  = 'until',
+	FOR    = 'for',
+	IN     = 'in',
+	DO     = 'do',
+	BREAK  = 'break',
+	SKIP   = 'skip',
 }
+
+
+
+/** An iterable list of unique keywords. */
+export const KEYWORDS: readonly Keyword[] = [...new Set<Keyword>(Object.values(Keyword))];

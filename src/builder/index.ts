@@ -1,4 +1,5 @@
-export {Instruction} from './Instruction.js';
-export * as INST from './Instruction.js';
+export * from './utils-public.ts';
 
-export {Builder} from './Builder.js';
+export * from './Builder.ts';
+export type * from './Local.ts';
+export * from './BinVect.ts';

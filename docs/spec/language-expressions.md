@@ -1,5 +1,5 @@
-# Solid Language: Expressions
-This chapter defines the syntax, semantics, and behavior of expressions in the Solid programming language.
+# Counterpoint Programming Language: Expressions
+This chapter defines the syntax, semantics, and behavior of expressions in the Counterpoint Programming Language.
 
 
 
@@ -12,6 +12,10 @@ This chapter defines the syntax, semantics, and behavior of expressions in the S
 
 
 ## Unary Operators
+
+
+
+## Casting and Claiming
 
 
 
@@ -43,4 +47,4 @@ This chapter defines the syntax, semantics, and behavior of expressions in the S
 
 
 
-## Conditional
+## Conditional Expression

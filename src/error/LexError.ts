@@ -1,16 +1,38 @@
-import {ErrorCode} from './ErrorCode.js';
+import type {ConstructorType} from '../lib/index.ts';
+import {
+	LexError01,
+	LexError02,
+	LexError03,
+	LexError04,
+	LexError05,
+} from './index.ts';
+import {ErrorCode} from './ErrorCode.ts';
 
 
 
 /**
  * A LexError is thrown when a span of source code fails to
  * produce a valid token per the rules of the defined lexical grammar.
+ *
+ * Known subclasses:
+ * - LexError01
+ * - LexError02
+ * - LexError03
+ * - LexError04
+ * - LexError05
  */
 export class LexError extends ErrorCode {
-	/** The name of this class of errors. */
-	static override readonly NAME = 'LexError';
-	/** The number series of this class of errors. */
-	static readonly CODE: number = 1100;
+	static readonly #CODE = 1100;
+
+	protected static get CODES(): ReadonlyMap<ConstructorType<LexError>, number> {
+		return new Map<ConstructorType<LexError>, number>([
+			[LexError01, 1],
+			[LexError02, 2],
+			[LexError03, 3],
+			[LexError04, 4],
+			[LexError05, 5],
+		]);
+	}
 
 
 	/**
@@ -20,11 +42,11 @@ export class LexError extends ErrorCode {
 	 * @param line    the line index in source code
 	 * @param col     the column index in source code
 	 */
-	constructor (message: string, code: number = 0, line?: number, col?: number) {
+	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: LexError.NAME,
-			code: LexError.CODE + code,
+			name: LexError.name,
+			code: LexError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
