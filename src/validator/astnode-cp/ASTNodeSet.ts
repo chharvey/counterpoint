@@ -1,8 +1,9 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -13,13 +14,9 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import {
-	ASTNodeExpression,
-	buildDeco,
-	typeDeco,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
 	ASTNodeCollectionLiteral,
@@ -35,25 +32,26 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'set_literal'>,
+		start_node: SyntaxNodeFamily<'set_literal', ['break']>,
 		public override readonly children: readonly ASTNodeExpression[],
 	) {
 		super(start_node, children);
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeSet#build` not yet supported.');
-	}
-
-	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return new TYPE.Set(
 			TYPE.Union.all(this.children.map((c) => c.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.CollectionLinearNew {
+		return new IR.CollectionLinearNew(IR.TypeName.SET, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod
@@ -67,9 +65,9 @@ export class ASTNodeSet extends ASTNodeCollectionLiteral {
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Set) {
-			// better error reporting to check entry-by-entry instead of checking `this.type().invariant`
-			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.invariant, expr));
+			// better error reporting to check entry-by-entry instead of checking `this.type().typearg`
+			return xjs.Array.forEachAggregated(this.children, (expr) => ASTNodeCP.typeCheckAssign(expr, assignee.typearg, expr));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

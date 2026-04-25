@@ -1,15 +1,6 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
-import {
-	type Local,
-	type Builder,
-	BinVect,
-	TypeErrorNoEntry,
-} from '../../index.ts';
-import type {
-	ValidAccessOperator,
-	AST,
-} from '../../validator/index.ts';
+import {TypeErrorNoEntry} from '../../index.ts';
+import type {AST} from '../../validator/index.ts';
 import type {EntryType} from '../utils-public.ts';
 import {
 	strictEqual,
@@ -17,7 +8,6 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {updateAccessedStaticType} from './utils-private.ts';
 import {
 	subtypeRules,
 	type Type,
@@ -46,32 +36,24 @@ class TypeTuple extends ValueType {
 
 
 	/**
-	 * An index or list of indices corresponding to the tree structure of this type.
-	 * @example
-	 * [A, [B], [C, [D]]]                 => [0, [1], [2, 3]]
-	 * [A, [B, Bb], [C, [D, Dd], Cc], Aa] => [0, [1, 2], [3, 4, 5, 6], 7]
-	 */
-	#builtIndices?: readonly (number | readonly number[])[];
-
-	/**
 	 * Construct a new TypeTuple object.
-	 * @param invariants this type’s item types
+	 * @param typeargs this type’s item types
 	 */
-	public constructor(public readonly invariants: readonly EntryType[] = []) {
-		super(false, new Set([new VALUE.Tuple()]));
+	public constructor(public readonly typeargs: readonly EntryType[] = []) {
+		super(new Set<VALUE.Tuple>([VALUE.TUPLE_EMPTY]));
 	}
 
 	public override get hasMutable(): boolean {
-		return super.hasMutable || this.invariants.some((t) => t.type.hasMutable);
+		return super.hasMutable || this.typeargs.some((t) => t.type.hasMutable);
 	}
 
 	/** The minimum possible number of items in this tuple type. */
 	public get minCount(): bigint {
-		return BigInt(this.invariants.filter((it) => !it.optional).length);
+		return BigInt(this.typeargs.filter((it) => !it.optional).length);
 	}
 
 	public override toString(): string {
-		return `[${ this.invariants.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }]`;
+		return `(${ this.typeargs.map((it) => `${ it.optional ? '?: ' : '' }${ it.type }`).join(', ') }${ this.typeargs.length === 1 ? ',' : '' })`;
 	}
 
 	@instanceOf(() => VALUE.Tuple)
@@ -86,92 +68,40 @@ class TypeTuple extends ValueType {
 	public override isSubtypeOf(t: Type): boolean {
 		return (
 			this.minCount >= (t as TypeTuple).minCount &&
-			(t as TypeTuple).invariants.every((thattype, i) => {
-				/* eslint-disable @typescript-eslint/no-unnecessary-condition */
-				const thistype: EntryType | undefined = this.invariants[i];
+			(t as TypeTuple).typeargs.every((thattype, i) => {
+				const thistype: EntryType | undefined = this.typeargs.at(i);
 				if (!thattype.optional) {
 					/* NOTE: We can assert `thistype` exists and is not optional because of item ordering.
 						We cannot do so with record types since properties are not ordered. */
-					assert.strictEqual(thistype?.optional, false, `${ thistype.type } should exist and not be optional.`);
+					assert.strictEqual(thistype?.optional, false, `${ thistype!.type } should exist and not be optional.`);
 				}
 				return thistype?.type.isSubtypeOf(thattype.type) ?? true; // Covariance for tuples: `A <: B --> Tuple.<A> <: Tuple.<B>`.
 			})
 		);
 	}
 
-	public get(index: VALUE.Integer, access_kind: ValidAccessOperator, accessor: AST.ASTNodeIndexType | AST.ASTNodeIndex | AST.ASTNodeExpression): Type {
-		const n: number = this.invariants.length;
-		const i: number = index.toNumber();
-		return updateAccessedStaticType(
-			(
-				(-n <= i && i < 0) ? this.invariants[i + n] :
-				(0  <= i && i < n) ? this.invariants[i]     :
-				assert.fail(new TypeErrorNoEntry('index', this, accessor))
-			),
-			access_kind,
-		);
+	public get(index: bigint, accessor: AST.ASTNodeIndex): EntryType {
+		return this.isIndexCanonical(index)
+			? this.typeargs.at(Number(index))!
+			: assert.fail(new TypeErrorNoEntry('index', this, accessor));
+	}
+
+	public set(index: bigint, typ: Type, accessor: AST.ASTNodeIndex): void {
+		const i: number = Number(index);
+		const entrytype: EntryType | undefined = this.typeargs.at(i);
+		if (entrytype) {
+			(this.typeargs as EntryType[])[i] = {...entrytype, type: typ};
+		} else {
+			throw new TypeErrorNoEntry('index', this, accessor);
+		}
 	}
 
 	public itemTypes(): Type {
-		return Union.all(this.invariants.map((t) => t.type));
+		return Union.all(this.typeargs.map((t) => t.type));
 	}
 
-	#getBuiltIndices(index: number): number | readonly number[] {
-		if (!this.#builtIndices) {
-			let counter: number = 0;
-			function walk(entries: readonly EntryType[]): typeof indices {
-				const indices: Array<number | readonly number[]> = [];
-				entries.forEach((entry) => {
-					if (entry.type instanceof TypeTuple) {
-						indices.push(walk(entry.type.invariants).flat()); // only need to flatten once, due to recursion
-					} else {
-						indices.push(counter);
-						counter += 1;
-					}
-				});
-				return indices;
-			}
-			this.#builtIndices = walk(this.invariants);
-		}
-		return this.#builtIndices[index];
-	}
-
-	public buildAccess(builder: Builder, base_build: binaryen.ExpressionRef, accessor_index: number): binaryen.ExpressionRef {
-		const builtIndex: number | readonly number[] = this.#getBuiltIndices(accessor_index);
-		/*
-		 * If the built index is a single number, return an extract of the build at that index.
-		 * If the built index array has length 1, return a singleton tuple containing that extract.
-		 * If the built index array length is > 1, return a tuple of extracts whose first entry is a `tee` and the rest are `get`s.
-		 */
-		if (typeof builtIndex === 'number') {
-			return builder.module.tuple.extract(base_build, builtIndex);
-		} else if (builtIndex.length === 1) {
-			// Binaryen does not allow `module.tuple.make` to be called with only 1 argument,
-			// so if there is only 1 item then we add an additional unused item.
-			return builder.module.tuple.make([
-				builder.module.tuple.extract(base_build, builtIndex[0]),
-				new BinVect(builder.module).vect,
-			]);
-		} else {
-			const expr_info = binaryen.getExpressionInfo(base_build);
-			if (expr_info.id === binaryen.ExpressionIds.LocalGet) {
-				return builder.module.tuple.make(builtIndex.map((n) => builder.module.tuple.extract(base_build, n)));
-			}
-			const local: Local = builder.addLocal(base_build)[1];
-			return builder.module.tuple.make([
-				                                  builder.module.tuple.extract(local.tee(), builtIndex[0]), // eslint-disable-line @stylistic/indent
-				...builtIndex.slice(1).map((n) => builder.module.tuple.extract(local.get(), n)),
-			]);
-		}
-	}
-
-
-	public test_getBuiltIndices(expected: readonly (number | readonly number[])[], message?: string | Error): void {
-		return assert.deepStrictEqual(
-			this.invariants.map((_, i) => this.#getBuiltIndices(i)),
-			expected,
-			message,
-		);
+	public isIndexCanonical(index: bigint): boolean {
+		return 0 <= index && index < this.typeargs.length;
 	}
 }
 export {TypeTuple as Tuple};

@@ -1,27 +1,31 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
-import {
-	TYPE,
-	BinVect,
+import type {
+	Optimizer,
+	Lowerable,
 } from '../../index.ts';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {ASTNodeGoal} from './index.ts';
-import type {Buildable} from './Buildable.ts';
+import {ASTNodeBlock} from './index.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
+import type {Foldable} from './Foldable.ts';
 
 
 
 /**
  * A sematic node representing a statement.
+ *
  * Known subclasses:
  * - ASTNodeDeclaration
  * - ASTNodeStatementExpression
- * - ASTNodeAssignment
+ * - ASTNodeStatementClaim
+ * - ASTNodeStatementReassignment
+ * - ASTNodeStatementConditional
+ * - ASTNodeStatementBreakable
+ * - ASTNodeStatementBreak
  */
-export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
+export abstract class ASTNodeStatement extends ASTNodeCP implements Foldable, Lowerable {
 	/**
 	 * Construct a new ASTNodeStatement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -30,30 +34,64 @@ export abstract class ASTNodeStatement extends ASTNodeCP implements Buildable {
 	 * @returns      a new ASTNodeStatement representing the given source
 	 */
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeStatement {
-		const goal: ASTNodeGoal = ASTNodeGoal.fromSource(src, config);
-		assert.strictEqual(goal.children.length, 1, 'semantic goal should have 1 child');
-		return goal.children[0];
-	}
-
-	protected static coerceAssignment(
-		mod:           binaryen.Module,
-		assignee_type: TYPE.Type,
-		assigned_type: TYPE.Type,
-		value:         binaryen.ExpressionRef,
-		int_coercion:  boolean = true,
-	): binaryen.ExpressionRef {
-		if ( // TODO: remove this; we only want to allow assigning ints to floats if they have been explicitly coerced/casted first
-			int_coercion &&
-			assigned_type.isSubtypeOf(TYPE.INT) &&
-			TYPE.FLOAT.isSubtypeOf(assignee_type) &&
-			!TYPE.INT.isSubtypeOf(assignee_type)
-		) {
-			return new BinVect(mod, mod.f64.convert_u.i32(value)).vect;
-		}
-		return value;
+		const block: ASTNodeBlock = ASTNodeBlock.fromSource(`{ ${ src } }`, config);
+		assert.strictEqual(block.children.length, 1, 'semantic block should have 1 child');
+		return block.children[0];
 	}
 
 
-	/** @implements Buildable */
-	public abstract build(): binaryen.ExpressionRef;
+	/** @implements Foldable */
+	public abstract get isFoldable(): boolean;
+
+	/** @implements Foldable */
+	public abstract get hasBottomType(): boolean;
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	public abstract lower(optimizer: Optimizer): void;
+}
+
+
+
+/**
+ * A statement that is allowed to contain a `StatementBreak`.
+ *
+ * Known subclasses:
+ * - ASTNodeStatementLoop
+ * - ASTNodeStatementIteration
+ */
+export abstract class StatementBreakable extends ASTNodeStatement {
+	#labelWhile?:    string;
+	#labelDo?:       string;
+	#labelEndwhile?: string;
+
+	/** @final */
+	public get labels(): {
+		while:    string | undefined,
+		do:       string | undefined,
+		endwhile: string | undefined,
+	} {
+		return {
+			while:    this.#labelWhile,
+			do:       this.#labelDo,
+			endwhile: this.#labelEndwhile,
+		};
+	}
+
+	/** @final */
+	protected set labelWhile(label: string) {
+		this.#labelWhile = label;
+	}
+
+	/** @final */
+	protected set labelDo(label: string) {
+		this.#labelDo = label;
+	}
+
+	/** @final */
+	protected set labelEndwhile(label: string) {
+		this.#labelEndwhile = label;
+	}
 }

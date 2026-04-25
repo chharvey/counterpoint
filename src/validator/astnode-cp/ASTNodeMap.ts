@@ -1,8 +1,9 @@
-import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -14,14 +15,10 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeCase} from './ASTNodeCase.ts';
-import {
-	ASTNodeExpression,
-	buildDeco,
-	typeDeco,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
 	ASTNodeCollectionLiteral,
@@ -37,26 +34,30 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'map_literal'>,
+		start_node: SyntaxNodeFamily<'map_literal', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		throw new Error('`ASTNodeMap#build` not yet supported.');
-	}
-
-	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.antecedent.type().isBottomType || c.consequent.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return new TYPE.Map(
 			TYPE.Union.all(this.children.map((c) => c.antecedent.type())),
 			TYPE.Union.all(this.children.map((c) => c.consequent.type())),
 			true,
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.MapNew {
+		return new IR.MapNew(new Map(this.children.map((c) => [
+			c.antecedent.lower(optimizer).asTac(optimizer),
+			c.consequent.lower(optimizer).asTac(optimizer),
+		])), this.type());
 	}
 
 	@memoizeMethod
@@ -73,13 +74,13 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Map) {
-			// better error reporting to check entry-by-entry instead of checking `this.type().invariant_{ant,con}`
+			// better error reporting to check entry-by-entry instead of checking `this.type().typearg_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
 				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (
-					ASTNodeCP.typeCheckAssign(expr, [assignee.invariant_ant, assignee.invariant_con][i], expr)
+					ASTNodeCP.typeCheckAssign(expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
 				))
 			));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

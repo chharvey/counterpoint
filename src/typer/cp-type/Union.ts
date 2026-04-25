@@ -1,21 +1,14 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {EntryType} from '../utils-public.ts';
 import {
-	languageValuesIdentical,
+	language_types_equal,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
-import {
-	Tuple as TypeTuple,
-	Record as TypeRecord,
-	NEVER,
-} from './index.ts';
-import {
-	type ReadonlyArrayOfAtLeast2,
-	language_types_equal,
-} from './utils-private.ts';
+import {NOTHING} from './index.ts';
+import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
 	unionRules,
@@ -37,7 +30,7 @@ import {Combinable} from './Combinable.ts';
 export class Union extends Combinable {
 	/**
 	 * Unions all the given types.
-	 * If an empty array is given, return type `never`.
+	 * If an empty array is given, return type `nothing`.
 	 * @param types the types to union
 	 * @returns the union
 	 */
@@ -48,43 +41,7 @@ export class Union extends Combinable {
 			? Union.all(...arg0)
 			: arg0
 				? [arg0, ...args].reduce((a, b) => a.union(b))
-				: NEVER;
-	}
-
-	/**
-	 * When accessing the *union* of tuple types `S` and `T`,
-	 * the set of items available is the *intersection* of the set of items on `S` with the set of items on `T`.
-	 * For any overlapping items, their type union is taken, as well as the disjunction of their optionality.
-	 */
-	private static unionTuples(s: TypeTuple, t: TypeTuple): TypeTuple {
-		const items: EntryType[] = [];
-		t.invariants.forEach((typ, i) => {
-			if (s.invariants[i]) {
-				items[i] = {
-					type:     s.invariants[i].type.union(typ.type),
-					optional: s.invariants[i].optional || typ.optional,
-				};
-			}
-		});
-		return new TypeTuple(items);
-	}
-
-	/**
-	 * When accessing the *union* of record types `S` and `T`,
-	 * the set of properties available is the *intersection* of the set of properties on `S` with the set of properties on `T`.
-	 * For any overlapping properties, their type union is taken, as well as the disjunction of their optionality.
-	 */
-	private static unionRecords(s: TypeRecord, t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, EntryType>();
-		[...t.invariants].forEach(([id, typ]) => {
-			if (s.invariants.has(id)) {
-				props.set(id, {
-					type:     s.invariants.get(id)!.type.union(typ.type),
-					optional: s.invariants.get(id)!.optional || typ.optional,
-				});
-			}
-		});
-		return new TypeRecord(props);
+				: NOTHING;
 	}
 
 
@@ -100,8 +57,8 @@ export class Union extends Combinable {
 	) {
 		super(
 			operands.reduce(
-				(accum, next) => xjs.Set.union(accum, next.values, languageValuesIdentical),
-				xjs.Set.union(operand0.values, operand1.values, languageValuesIdentical),
+				(accum, next) => xjs.Set.union(accum, next.values, language_values_identical),
+				xjs.Set.union(operand0.values, operand1.values, language_values_identical),
 			),
 			[
 				...(operand0 instanceof Union ? operand0.operands : [operand0] as const),
@@ -115,23 +72,15 @@ export class Union extends Combinable {
 	 * We can assert that this is never bottom because
 	 * the only case in which it could be bottom is
 	 * if both the left and the right are bottom,
-	 * which is impossible because the algorithm would have already produced the `never` type.
+	 * which is impossible because the algorithm would have already produced the `nothing` type.
 	 */
 
 	/*
 	 * We can assert that this is never top because
 	 * the only case in which it could be top is
 	 * if either the left or the right is top,
-	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
-
-	public override get isReference(): boolean {
-		return this.operands.some((s) => s.isReference);
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.operands.some((s) => s.hasMutable);
-	}
 
 	@botOrTopString
 	public override toString(): string {
@@ -214,7 +163,7 @@ export class Union extends Combinable {
 		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
 		 *     | `(B  & C) \| A == (B \| A)  & (C \| A)`
 		 */
-		const intersection: Intersection | null = this.operands.find((s): s is Intersection => s instanceof Intersection) ?? null;
+		const intersection: Intersection | undefined = this.operands.find((s): s is Intersection => s instanceof Intersection);
 		if (intersection) {
 			const not_intersection: readonly Type[] = this.operands.filter((s) => s !== intersection);
 			const right: Type = not_intersection.length >= 2
@@ -224,13 +173,5 @@ export class Union extends Combinable {
 		} else {
 			return this;
 		}
-	}
-
-	public override combineTuplesOrRecords(): Type {
-		return (
-			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as ReadonlyArrayOfAtLeast2<TypeTuple>) .reduce((a, b) => Union.unionTuples (a, b)) :
-			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as ReadonlyArrayOfAtLeast2<TypeRecord>).reduce((a, b) => Union.unionRecords(a, b)) :
-			this
-		);
 	}
 }

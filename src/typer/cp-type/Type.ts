@@ -4,7 +4,7 @@ import {
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	languageValuesIdentical,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -13,19 +13,15 @@ import {
 	Intersection,
 	Union,
 	Difference,
-	NEVER,
-	VOID,
-	UNKNOWN,
-	NULL,
-	BOOL,
-	INT,
-	FLOAT,
-	STR,
-	OBJ,
-	FALSE,
-	TRUE,
+	NOTHING,
+	ANYTHING,
 	FALSY_TYPES,
+	TYPE_CONSTANTS,
 } from './index.ts';
+import {
+	Variance,
+	type GenericParameter,
+} from './utils-private.ts';
 
 
 
@@ -41,19 +37,9 @@ export function typeConstant(
 	return function (this: Type, t) {
 		const returned: Type = method.call(this, t);
 		return (
-			returned.isBottomType ? NEVER :
-			returned.isTopType    ? UNKNOWN :
-			[
-				VOID,
-				NULL,
-				BOOL,
-				INT,
-				FLOAT,
-				STR,
-				OBJ,
-				FALSE,
-				TRUE,
-			].find((c) => returned.equals(c)) ?? returned
+			returned.isBottomType ? NOTHING :
+			returned.isTopType    ? ANYTHING :
+			TYPE_CONSTANTS.find((c) => returned.equals(c)) ?? returned
 		);
 	};
 }
@@ -71,11 +57,11 @@ export function intersectionRules(
 ): typeof method {
 	assert_context_name(context, 'intersect');
 	return function (this: Type, t) {
-		/* 1-5 | `T  & never   == never` */
+		/* 1-5 | `T  & nothing  == nothing` */
 		if (this.isBottomType || t.isBottomType) {
-			return NEVER;
+			return NOTHING;
 		}
-		/* 1-6 | `T  & unknown == T` */
+		/* 1-6 | `T  & anything == T` */
 		if (this.isTopType) {
 			return t;
 		}
@@ -107,16 +93,16 @@ export function unionRules(
 ): typeof method {
 	assert_context_name(context, 'union');
 	return function (this: Type, t) {
-		/* 1-7 | `T \| never   == T` */
+		/* 1-7 | `T \| nothing  == T` */
 		if (this.isBottomType) {
 			return t;
 		}
 		if (t.isBottomType) {
 			return this;
 		}
-		/* 1-8 | `T \| unknown == unknown` */
+		/* 1-8 | `T \| anything == anything` */
 		if (this.isTopType || t.isTopType) {
-			return UNKNOWN;
+			return ANYTHING;
 		}
 		/* 3-4 | `A <: B  <->  A \| B == B` */
 		if (this.isSubtypeOf(t)) {
@@ -143,14 +129,14 @@ export function differenceRules(
 ): typeof method {
 	assert_context_name(context, 'subtract');
 	return function (this: Type, t) {
-		/* 4-1 | `A - B == A  <->  A & B == never` */
-		if (this.intersect(t).isBottomType) {
+		/* 4-1 | `A - B == A  <->  A & B == nothing` */
+		if (this.isDisjointWith(t)) {
 			return this;
 		}
 
-		/* 4-2 | `A - B == never  <->  A <: B` */
+		/* 4-2 | `A - B == nothing  <->  A <: B` */
 		if (this.isSubtypeOf(t)) {
-			return NEVER;
+			return NOTHING;
 		}
 
 		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
@@ -179,21 +165,26 @@ export function subtypeRules(
 		if (this === t) {
 			return true;
 		}
-		/* 1-1 | `never <: T` */
+
+		/* 1-1 | `nothing  <: T` */
 		if (this.isBottomType) {
 			return true;
 		}
-		/* 1-3 | `T       <: never  <->  T == never` */
+		/* 1-3 | `T        <: nothing  <->  T == nothing` */
 		if (t.isBottomType) {
 			return this.isBottomType;
 		}
-		/* 1-4 | `unknown <: T      <->  T == unknown` */
+		/* 1-4 | `anything <: T        <->  T == anything` */
 		if (this.isTopType) {
 			return t.isTopType;
 		}
-		/* 1-2 | `T     <: unknown` */
+		/* 1-2 | `T        <: anything` */
 		if (t.isTopType) {
 			return true;
+		}
+
+		if (!this.isMutable && t.isMutable) {
+			return false;
 		}
 
 		/*
@@ -252,9 +243,9 @@ export function subtypeRules(
 				return true;
 			}
 		}
-		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == never` */
+		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` */
 		if (t instanceof Difference) {
-			return this.isSubtypeOf(t.left) && this.intersect(t.right).isBottomType;
+			return this.isSubtypeOf(t.left) && this.isDisjointWith(t.right);
 		}
 
 		return method.call(this, t);
@@ -278,14 +269,14 @@ export abstract class Type {
 	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
 	public constructor(
-		public readonly isMutable: boolean,
 		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
+		public readonly isMutable: boolean = false,
 	) {
 	}
 
 	/**
 	 * Return whether this type has no values assignable to it,
-	 * i.e., it is equal to the type `never`.
+	 * i.e., it is equal to the type `nothing`.
 	 * Used internally for special cases of computations.
 	 * @return `true if this type is the bottom type
 	 */
@@ -296,7 +287,7 @@ export abstract class Type {
 
 	/**
 	 * Return whether this type has all values assignable to it,
-	 * i.e., it is equal to the type `unknown`.
+	 * i.e., it is equal to the type `anything`.
 	 * Used internally for special cases of computations.
 	 * @return `true if this type is the top type
 	 */
@@ -326,7 +317,7 @@ export abstract class Type {
 
 	/**
 	 * Is this type definitely a ”falsy” type?
-	 * @return  whether this is a subtype of `void | null | false`
+	 * @return  whether this is a subtype of `null | false`
 	 * @final
 	 */
 	@memoizeGetter
@@ -336,12 +327,12 @@ export abstract class Type {
 
 	/**
 	 * Is this type definitely a “truthy” type?
-	 * @return  `false` if this is the Bottom Type or is a supertype of any of `void` or `null` or `false`; otherwise `true`
+	 * @return `false` if this is the Bottom Type or is definitely “falsy” or is a supertype of any of `null` or `false`; otherwise `true`
 	 * @final
 	 */
 	@memoizeGetter
 	public get isDefinitelyTruthy(): boolean {
-		return !this.isBottomType && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
+		return !this.isBottomType && !this.isDefinitelyFalsy && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
 	}
 
 	/**
@@ -353,7 +344,7 @@ export abstract class Type {
 	public get falsySide(): Type {
 		return (
 			this.isDefinitelyFalsy  ? this :
-			this.isDefinitelyTruthy ? NEVER :
+			this.isDefinitelyTruthy ? NOTHING :
 			this.intersect(Union.all(...FALSY_TYPES))
 		);
 	}
@@ -366,7 +357,7 @@ export abstract class Type {
 	@memoizeGetter
 	public get truthySide(): Type {
 		return (
-			this.isDefinitelyFalsy  ? NEVER :
+			this.isDefinitelyFalsy  ? NOTHING :
 			this.isDefinitelyTruthy ? this :
 			this.subtract(Union.all(...FALSY_TYPES))
 		);
@@ -379,7 +370,7 @@ export abstract class Type {
 	 * @returns Is `v` assignable to this type?
 	 */
 	public includes(v: VALUE.Value): boolean {
-		return xjs.Set.has(this.values, v, languageValuesIdentical);
+		return xjs.Set.has(this.values, v, language_values_identical);
 	}
 
 	/**
@@ -434,8 +425,7 @@ export abstract class Type {
 	@memoizeBinOp()
 	@subtypeRules
 	public isSubtypeOf(t: Type): boolean {
-		return !this.isBottomType && !!this.values.size && // these checks are needed in cases of `void`, which doesn’t store values
-			[...this.values].every((v) => t.includes(v));
+		return [...this.values].every((v) => t.includes(v));
 	}
 
 	/**
@@ -450,6 +440,18 @@ export abstract class Type {
 	@memoizeBinOp(true)
 	public equals(t: Type): boolean {
 		return this.isMutable === t.isMutable && this.isSubtypeOf(t) && t.isSubtypeOf(this);
+	}
+
+	/**
+	 * Return whether the intersection of this type with the given type is empty (the Bottom Type).
+	 * If true, there is no overlap between the types.
+	 * @param t the type to compare
+	 * @return  Is this type disjoint with `t`?
+	 * @final
+	 */
+	@memoizeBinOp(true)
+	public isDisjointWith(t: Type): boolean {
+		return this.intersect(t).isBottomType;
 	}
 
 	public mutableOf(): Type {
@@ -476,10 +478,12 @@ export class TypeInterface extends Type {
 	public constructor(
 		private readonly properties: ReadonlyMap<string, Type>,
 		is_mutable: boolean = false,
+		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
-		super(is_mutable);
+		super(new Set<VALUE.Value>(), is_mutable);
 	}
 
+	@memoizeGetter
 	public override get isBottomType(): boolean {
 		return [...this.properties.values()].some((value) => value.isBottomType);
 	}
@@ -554,6 +558,28 @@ export class TypeInterface extends Type {
 	@subtypeRules
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {
+			if (![...this.typeparams.entries()].every(([name, this_param]) => {
+				const that_param: GenericParameter | undefined = t.typeparams.get(name);
+				if (!that_param) {
+					return true;
+				}
+				switch (t.isMutable ? that_param.variance.whenMutable : that_param.variance.normally) {
+					case Variance.INVARIANT: {
+						return this_param.assigned.equals(that_param.assigned);
+					}
+					case Variance.COVARIANT: {
+						return this_param.assigned.isSubtypeOf(that_param.assigned);
+					}
+					case Variance.CONTRAVARIANT: {
+						return that_param.assigned.isSubtypeOf(this_param.assigned);
+					}
+					case Variance.BIVARIANT: {
+						return true;
+					}
+				}
+			})) {
+				return false;
+			}
 			return [...t.properties].every(([name, type_]) => (
 				this.properties.has(name) && this.properties.get(name)!.isSubtypeOf(type_)
 			));

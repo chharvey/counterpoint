@@ -7,7 +7,7 @@ import {ReferenceError} from './ReferenceError.ts';
  * A ReferenceErrorDeadZone is thrown when the validator encounters a not-yet-declared variable.
  * @example
  * my_var;               % ReferenceErrorDeadZone: `my_var` is used before it is declared.
- * let my_var: int = 42;
+ * val my_var: int = 42;
  */
 export class ReferenceErrorDeadZone extends ReferenceError {
 	/**

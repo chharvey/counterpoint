@@ -2,7 +2,10 @@
 	"extends": "../tsconfig.json",
 	"compilerOptions": {
 		// Modules
-		"rootDir": "./",
+		"rootDir": "../",
+
+		// Emit
+		"noEmit": true,
 	},
 	"include": ["./"],
 }

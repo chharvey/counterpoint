@@ -1,17 +1,15 @@
-import type binaryen from 'binaryen';
-import * as xjs from 'extrajs';
 import {TYPE} from '../index.ts';
 import {
-	build_tuple_like,
-	type Builder,
-} from '../../index.ts';
-import {
-	languageValuesIdentical,
+	language_values_identical,
+	language_values_equal,
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import type {Value} from './Value.ts';
+import {
+	identical,
+	type Value,
+} from './Value.ts';
 import {CollectionIndexed} from './CollectionIndexed.ts';
 
 
@@ -21,11 +19,23 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
+	public override toString(): string {
+		return `(${ super.toString() }${ this.items.length === 1 ? ',' : '' })`;
+	}
+
 	@strictEqual
-	@instanceOf(() => ValueTuple)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueTuple)
 	public override identical(value: Value): boolean {
-		return xjs.Array.is<Value>(this.items, (value as ValueTuple).items, languageValuesIdentical);
+		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, language_values_identical);
+	}
+
+	@strictEqual
+	@identical
+	@memoizeBinOp(true, true)
+	@instanceOf(() => ValueTuple)
+	public override equal(value: Value): boolean {
+		return CollectionIndexed.samenessDfn<T>(this, value as ValueTuple<T>, language_values_equal);
 	}
 
 	/**
@@ -34,15 +44,6 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 	 */
 	public override toType(): TYPE.Tuple {
 		return TYPE.Tuple.fromTypes(this.items.map<TYPE.Type>((it) => it.toType()));
-	}
-
-	public override build(builder: Builder): binaryen.ExpressionRef {
-		return build_tuple_like<T>(
-			this.items,
-			builder,
-			(value) => value.toType(),
-			(value) => value.build(builder),
-		);
 	}
 }
 export {ValueTuple as Tuple};

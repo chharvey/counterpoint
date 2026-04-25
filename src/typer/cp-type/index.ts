@@ -1,4 +1,7 @@
-export * from './Type.ts';
+export {
+	Type,
+	TypeInterface,
+} from './Type.ts';
 
 export * from './Combinable.ts';
 export * from './Intersection.ts';

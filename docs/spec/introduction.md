@@ -200,7 +200,7 @@ The approach is to use lightweight objects that have short lifespans;
 if properties need to change, objects can be killed and replaced with new objects
 with updated properties, a practice that can help reduce memory leaks.
 This default immutable behavior can be overridden
-by declaring objects as unfixed and/or mutable.
+by declaring objects as writable and/or mutable.
 
 
 ### Asynchronous

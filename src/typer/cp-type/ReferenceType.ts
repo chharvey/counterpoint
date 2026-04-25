@@ -24,7 +24,7 @@ export function isObjectType(
 /**
  * Parent class for reference types (types of objects that are passed by reference).
  * Known subclasses:
- * - Unknown
+ * - Anything
  * - TypeObject
  * - List
  * - Dict

@@ -1,9 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	VALUE,
+	type VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -22,15 +23,11 @@ import {
 	type ValidOperatorArithmetic,
 } from '../Operator.ts';
 import {
-	bothNumeric,
-	eitherFloats,
 	bothInts,
+	bothNats,
 	bothFloats,
 } from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -51,27 +48,45 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.EXP, 'vexp'],
-			[Operator.MUL, 'vmul'],
-			[Operator.DIV, 'vdiv'],
-			[Operator.ADD, 'vadd'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
+		if (t0.isBottomType || t1.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		return (
+			bothInts  (t0, t1) ? TYPE.INT :
+			bothNats  (t0, t1) ? TYPE.NAT :
+			bothFloats(t0, t1) ? TYPE.FLOAT :
+			assert.fail(new TypeErrorInvalidOperation(this))
+		);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
-		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NEVER;
-		}
-		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		const typ: TYPE.Type = this.type();
+		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
+		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
 		return (
-			bothInts(t0, t1)   ? TYPE.INT :
-			bothFloats(t0, t1) ? TYPE.FLOAT :
-			int_coercion       ? eitherFloats(t0, t1) ? TYPE.FLOAT : t0.union(t1) :
-			assert.fail(new TypeErrorInvalidOperation(this))
+			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.INT_EXP],
+				[Operator.MUL, IR.OpCode.INT_MUL],
+				[Operator.DIV, IR.OpCode.INT_DIV],
+				[Operator.ADD, IR.OpCode.INT_ADD],
+				[Operator.SUB, IR.OpCode.INT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			bothNats(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.NAT_EXP],
+				[Operator.MUL, IR.OpCode.NAT_MUL],
+				[Operator.DIV, IR.OpCode.NAT_DIV],
+				[Operator.ADD, IR.OpCode.NAT_ADD],
+				[Operator.SUB, IR.OpCode.NAT_SUB],
+			]).get(this.operator)!, v0, v1, typ) :
+			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+				[Operator.EXP, IR.OpCode.FLOAT_EXP],
+				[Operator.MUL, IR.OpCode.FLOAT_MUL],
+				[Operator.DIV, IR.OpCode.FLOAT_DIV],
+				[Operator.ADD, IR.OpCode.FLOAT_ADD],
+				[Operator.SUB, IR.OpCode.FLOAT_SUB],
+			]).get(this.operator)!, v0, v1, typ))
 		);
 	}
 
@@ -81,19 +96,23 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 		if (!v0) {
 			return v0;
 		}
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq0()) {
+			return v0;
+		}
 		const v1: VALUE.Value | null = this.operand1.fold();
 		if (!v1) {
 			return v1;
 		}
-		if (this.operator === Operator.DIV && v1 instanceof VALUE.Number && v1.eq0()) {
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0()) {
+			return v1;
+		}
+		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {
 			throw new NanErrorDivZero(this.operand1);
 		}
-		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
-			? this.foldNumeric(v0, v1)
-			: this.foldNumeric(
-				(v0 as VALUE.Number).toFloat(),
-				(v1 as VALUE.Number).toFloat(),
-			);
+		return this.foldNumeric(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
+		);
 	}
 
 	private foldNumeric<T extends VALUE.Number<T>>(v0: T, v1: T): T {
@@ -103,7 +122,7 @@ export class ASTNodeOperationBinaryArithmetic extends ASTNodeOperationBinary {
 				[Operator.MUL, (x, y) => x.times(y)],
 				[Operator.DIV, (x, y) => x.divide(y)],
 				[Operator.ADD, (x, y) => x.plus(y)],
-				// [Operator.SUB, (x, y) => x.minus(y)],
+				[Operator.SUB, (x, y) => x.minus(y)],
 			]).get(this.operator)!(v0, v1);
 		} catch (err) {
 			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;

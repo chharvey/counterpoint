@@ -1,20 +1,25 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="../node_modules/tree-sitter-cli/dsl.d.ts"/>
+/**
+ * @file Tree-sitter parser for the Counterpoint Programming Language.
+ * @author Chris Harvey <1362083+chharvey@users.noreply.github.com>
+ * @license GPL-3.0-or-later
+ */
+
+/// <reference types="tree-sitter-cli/dsl.d.ts"/>
 
 
 
-function argsArr(nth: number, params: readonly string[]): readonly string[] {
+function argsArr(nth: number, params: readonly string[]): string[] {
 	// e.g. `['await', 'static', 'instance', 'method']`
-	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `[0, 1, 0, 1]`
+	return [...nth.toString(2).padStart(params.length, '0')] // e.g. (if `nth` is 5 out of 15) `['0', '1', '0', '1']`
 		.map<[string, boolean]>((bit, i) => [params[i], !!+bit]) // `[['await', false],  ['static', true],  ['instance', false],  ['method', true]]`
 		.filter(([_param, to_include]) => !!to_include)          // `[['static', true],  ['method', true]]`
 		.map(([param, _to_include]) => param);                   // `['static', 'method']`
 }
-function familyName<RuleName extends string>(family_name: string, ...suffices: readonly string[]): RuleName {
+function familyName<RuleName extends string>(family_name: string, suffices: readonly string[]): RuleName {
 	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
-	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, ...argsArr(nth, params)));
+	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, argsArr(nth, params)));
 }
 
 /**
@@ -29,9 +34,9 @@ function familyNameAll<RuleName extends string>(family_name: string, params: rea
  * 	'non_terminal',
  * 	({param_a, param_b, param_c}) => $ => seq(
  * 		$.item_a,
- * 		$[call('item_b', 'param_a')],
- * 		$[call('item_c', 'param_a')],                       // ignore false arguments
- * 		$[call('item_d', {param_c}, 'param_a', 'param_b')], // `param_c` is inherited
+ * 		call($, 'item_b', 'param_a'),
+ * 		call($, 'item_c', 'param_a'),                       // ignore false arguments
+ * 		call($, 'item_d', {param_c}, 'param_a', 'param_b'), // `param_c` is inherited
  * 	),
  * 	'param_a', 'param_b', 'param_c',
  * )
@@ -54,7 +59,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 			args_obj[arg] = true;
 		});
 		return [
-			familyName(family_name, ...args_arr),
+			familyName(family_name, args_arr),
 			parameterized_rule.call(null, args_obj),
 		];
 	})).forEach((rule, name) => {
@@ -67,70 +72,82 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
  * References a production with arguments. Arguments must be provided in order.
  * E.g., to generate the following EBNF item:
  * ```ebnf
- * Item<+ParamA><+ParamB><-ParamC><?ParamD>
+ * Item<+ParamA><+ParamB, +ParamC><-ParamD, +ParamD><?ParamE><!ParamF>
  * ```
  * we can call:
  * ```js
- * $[call('item', 'param_a', 'param_b', {param_d})]
+ * call($, 'item', 'param_a', ['param_b', 'param_c'], ['', 'param_d'], {param_e}, {param_f: !param_f})
  * ```
+ * @param $           the grammar symbols object
  * @param family_name the name of the production without parameters
  * @param args        argument names or objects of inherited argument values from the containing production
  * @returns           a property name of the `$` object
  */
-function call<RuleName extends string>(family_name: string, ...args: readonly (string | Readonly<Record<string, boolean>>)[]): RuleName {
-	return familyName(family_name, ...args.flatMap((arg) => ((typeof arg === 'string')
-		? [arg]
+function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name: string, ...args: readonly (string | readonly string[] | Readonly<Record<string, boolean>>)[]): Rule {
+	if (args.some((arg) => Array.isArray(arg))) {
+		const [index, opts] = args.entries().find(([_, arg]) => Array.isArray(arg)) as [number, readonly string[]];
+		return choice(...opts.map((opt) => call<RuleName>(
+			$,
+			family_name,
+			...args.slice(0, index),
+			opt,
+			...args.slice(index + 1),
+		)));
+	}
+	return $[familyName(family_name, args.flatMap((arg) => ((typeof arg === 'string')
+		? arg.length ? [arg] : []
 		: Object.entries(arg)
 			.filter(([_,    is_true]) => is_true)
 			.map   (([name, _])       => name)
-	)));
+	)))];
 }
 
 
 
 /* # LEXER HELPERS */
+function rg(s: string | RegExp): RegExp { // s -> (s)
+	return new RegExp(`(${ typeof s === 'string' ? s.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&') : s.source })`); // TODO: in Node 24, use `RegExp.escape()`
+}
+function ro(s: string | RegExp): RegExp { // s -> (s)?
+	return new RegExp(rg(s).source.concat('?'));
+}
+function rr0(s: string | RegExp): RegExp { // s -> (s)*
+	return new RegExp(rg(s).source.concat('*'));
+}
+function rr1(s: string | RegExp): RegExp { // s -> (s)+
+	return new RegExp(rg(s).source.concat('+'));
+}
+function rs(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)(t)
+	return new RegExp(ss.map((s) => rg(s).source).join(''));
+}
+function rc(...ss: readonly (string | RegExp)[]): RegExp { // s,t -> (s)|(t)
+	return new RegExp(ss.map((s) => rg(s).source).join('|'));
+}
+
 const WORD_BASIC   = /[A-Za-z][A-Za-z0-9_]*|_[A-Za-z0-9_]+/;
 const WORD_UNICODE = /'[^']*'/;
 
-const DIGIT_SEQ_BIN            = /[0-1]+/;
-const DIGIT_SEQ_BIN__SEPARATOR = /([0-1]_?)*[0-1]/;
-const DIGIT_SEQ_QUA            = /[0-3]+/;
-const DIGIT_SEQ_QUA__SEPARATOR = /([0-3]_?)*[0-3]/;
-const DIGIT_SEQ_SEX            = /[0-5]+/;
-const DIGIT_SEQ_SEX__SEPARATOR = /([0-5]_?)*[0-5]/;
-const DIGIT_SEQ_OCT            = /[0-7]+/;
-const DIGIT_SEQ_OCT__SEPARATOR = /([0-7]_?)*[0-7]/;
-const DIGIT_SEQ_DEC            = /[0-9]+/;
-const DIGIT_SEQ_DEC__SEPARATOR = /([0-9]_?)*[0-9]/;
-const DIGIT_SEQ_HEX            = /[0-9a-f]+/;
-const DIGIT_SEQ_HEX__SEPARATOR = /([0-9a-f]_?)*[0-9a-f]/;
-const DIGIT_SEQ_NIF            = /[0-9a-z]+/;
-const DIGIT_SEQ_NIF__SEPARATOR = /([0-9a-z]_?)*[0-9a-z]/;
+const DIGIT_SEQ_BIN = /([0-1]_?)*[0-1]/;
+const DIGIT_SEQ_QUA = /([0-3]_?)*[0-3]/;
+const DIGIT_SEQ_SEX = /([0-5]_?)*[0-5]/;
+const DIGIT_SEQ_OCT = /([0-7]_?)*[0-7]/;
+const DIGIT_SEQ_DEC = /([0-9]_?)*[0-9]/;
+const DIGIT_SEQ_HEX = /([0-9a-f]_?)*[0-9a-f]/;
+const DIGIT_SEQ_NIF = /([0-9a-z]_?)*[0-9a-z]/;
 
-const INTEGER_DIGITS_RADIX = choice(
-	seq('\\b',           DIGIT_SEQ_BIN),
-	seq('\\q',           DIGIT_SEQ_QUA),
-	seq('\\s',           DIGIT_SEQ_SEX),
-	seq('\\o',           DIGIT_SEQ_OCT),
-	seq(optional('\\d'), DIGIT_SEQ_DEC),
-	seq('\\x',           DIGIT_SEQ_HEX),
-	seq('\\z',           DIGIT_SEQ_NIF),
-);
-const INTEGER_DIGITS_RADIX__SEPARATOR = choice(
-	seq('\\b',           DIGIT_SEQ_BIN__SEPARATOR),
-	seq('\\q',           DIGIT_SEQ_QUA__SEPARATOR),
-	seq('\\s',           DIGIT_SEQ_SEX__SEPARATOR),
-	seq('\\o',           DIGIT_SEQ_OCT__SEPARATOR),
-	seq(optional('\\d'), DIGIT_SEQ_DEC__SEPARATOR),
-	seq('\\x',           DIGIT_SEQ_HEX__SEPARATOR),
-	seq('\\z',           DIGIT_SEQ_NIF__SEPARATOR),
+const WHOLE_DIGITS = rc(
+	rs('\\b',     DIGIT_SEQ_BIN),
+	rs('\\q',     DIGIT_SEQ_QUA),
+	rs('\\s',     DIGIT_SEQ_SEX),
+	rs('\\o',     DIGIT_SEQ_OCT),
+	rs(ro('\\d'), DIGIT_SEQ_DEC),
+	rs('\\x',     DIGIT_SEQ_HEX),
+	rs('\\z',     DIGIT_SEQ_NIF),
 );
 
-const SIGNED_DIGIT_SEQ_DEC            = seq(/[+-]?/, DIGIT_SEQ_DEC);
-const SIGNED_DIGIT_SEQ_DEC__SEPARATOR = seq(/[+-]?/, DIGIT_SEQ_DEC__SEPARATOR);
+const SIGNED_DIGIT_SEQ_DEC = rs(/[+-]?/, DIGIT_SEQ_DEC);
 
-const EXPONENT_PART            = seq('e', SIGNED_DIGIT_SEQ_DEC);
-const EXPONENT_PART__SEPARATOR = seq('e', SIGNED_DIGIT_SEQ_DEC__SEPARATOR);
+const EXPONENT_PART = rs('e', SIGNED_DIGIT_SEQ_DEC);
 
 const ESCAPER            = '\\';
 const DELIM_STRING       = '"';
@@ -139,95 +156,47 @@ const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 
-/* eslint-disable @stylistic/function-call-argument-newline */
-const STRING_ESCAPE = choice(
-	DELIM_STRING,
-	ESCAPER,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
-	'\n',
-	/[^"\\stnru\n]/,
-);
-const STRING_ESCAPE__COMMENT = choice(
+const STRING_ESCAPE = rc(
 	DELIM_STRING,
 	ESCAPER,
 	COMMENTER_LINE,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX), '}'),
+	's', 't', 'n', 'r', // eslint-disable-line @stylistic/function-call-argument-newline
+	rs('u{', ro(DIGIT_SEQ_HEX), '}'),
 	'\n',
 	/[^"\\%stnru\n]/,
 );
-const STRING_ESCAPE__SEPARATOR = choice(
-	DELIM_STRING,
-	ESCAPER,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
-	'\n',
-	/[^"\\stnru\n]/,
-);
-const STRING_ESCAPE__COMMENT_SEPARATOR = choice(
-	DELIM_STRING,
-	ESCAPER,
-	COMMENTER_LINE,
-	's', 't', 'n', 'r',
-	seq('u{', optional(DIGIT_SEQ_HEX__SEPARATOR), '}'),
-	'\n',
-	/[^"\\%stnru\n]/,
-);
-/* eslint-enable @stylistic/function-call-argument-newline */
 
-const STRING_CHAR = choice(
-	/[^"\\]/,
-	seq(ESCAPER, STRING_ESCAPE),
-	/\\u[^"{]/,
-);
-const STRING_CHAR__COMMENT = choice(
+const STRING_CHAR = rc(
 	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE__COMMENT),
-	/\\u[^"{]/,
-	/%([^"%\n][^"\n]*)?\n/,
-	/%%(%?[^"%])*%%/,
-);
-const STRING_CHAR__SEPARATOR = choice(
-	/[^"\\]/,
-	seq(ESCAPER, STRING_ESCAPE__SEPARATOR),
-	/\\u[^"{]/,
-);
-const STRING_CHAR__COMMENT__SEPARATOR = choice(
-	/[^"\\%]/,
-	seq(ESCAPER, STRING_ESCAPE__COMMENT_SEPARATOR),
+	rs(ESCAPER, STRING_ESCAPE),
 	/\\u[^"{]/,
 	/%([^"%\n][^"\n]*)?\n/,
 	/%%(%?[^"%])*%%/,
 );
 
-const STRING_CHARS                     = repeat1(STRING_CHAR);
-const STRING_CHARS__COMMENT            = repeat1(STRING_CHAR__COMMENT);
-const STRING_CHARS__SEPARATOR          = repeat1(STRING_CHAR__SEPARATOR);
-const STRING_CHARS__COMMENT__SEPARATOR = repeat1(STRING_CHAR__COMMENT__SEPARATOR);
+const STRING_CHARS = rr1(STRING_CHAR);
 
-const STRING_UNFINISHED          = '\\u';
-const STRING_UNFINISHED__COMMENT = choice(
+const STRING_UNFINISHED = rc(
 	'\\u',
 	/%([^"%\n][^"\n]*)?/,
 	/%%(%?[^"%])*/,
 );
 
-const TEMPLATE_CHARS_NO_END = choice(
+const TEMPLATE_CHARS_NO_END = rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]/,
 	/("\{|""\{)+[^"{]/,
 	/(\{"|\{"")*\{[^"{]/,
 	/(\{"|\{"")+[^"{]/,
 );
-const TEMPLATE_CHARS_END_DELIM = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
+const TEMPLATE_CHARS_END_DELIM = rs(rr0(TEMPLATE_CHARS_NO_END), rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]/,
 	/("\{|""\{)+[^"{]?/,
 	/(\{"|\{"")*\{[^"{]?/,
 	/(\{"|\{"")+[^"{]/,
 ));
-const TEMPLATE_CHARS_END_INTERP = seq(repeat(TEMPLATE_CHARS_NO_END), choice(
+const TEMPLATE_CHARS_END_INTERP = rs(rr0(TEMPLATE_CHARS_NO_END), rc(
 	/[^"{]/,
 	/("\{|""\{)*("|"")[^"{]?/,
 	/("\{|""\{)+[^"{]/,
@@ -245,18 +214,19 @@ const OPT_COM = optional(',');
  *
  * If needing an alternative, use a simple ternary operator:
  * ```
- * (condition) ? consequent : alternative
+ * condition ? consequent : alternative
  * ```
+ * Otherwise, spread it into a rule:
+ * @example
+ * {
+ * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?:', $._type), 'named'),
+ * }
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
- * @returns           either `consequent` or `blank()` based on `condition`
+ * @returns           if `condition`, then `[consequent]`; else `[]`
  */
-function iff(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral {
-	return (condition) ? consequent : blank();
-}
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function ifSpread(condition: boolean, consequent: RuleOrLiteral): RuleOrLiteral[] {
-	return (condition) ? [consequent] : [];
+function iff(condition: boolean, consequent: RuleOrLiteral): [RuleOrLiteral] | [] {
+	return condition ? [consequent] : [];
 }
 function repCom1(production: RuleOrLiteral): SeqRule {
 	return seq(repeat(seq(production, ',')), production);
@@ -264,6 +234,12 @@ function repCom1(production: RuleOrLiteral): SeqRule {
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 function repCom(production: RuleOrLiteral): ChoiceRule {
 	return optional(repCom1(production));
+}
+function uSeq(left: RuleOrLiteral, right: RuleOrLiteral): ChoiceRule {
+	return choice(
+		seq(left, right),
+		seq(right, left),
+	);
 }
 
 
@@ -273,290 +249,393 @@ module.exports = grammar({
 	name: 'counterpoint',
 
 	rules: {
-		source_file: $ => repeat($._statement),
+		source_file: $ => optional($.block),
+
+		/*
+		 * TODO: Implement the doc-comment system.
+		 * 1. Rename `$._comment` to `$.comment` here and in `extras` to make them queryable.
+		 * 2. To prevent these new nodes from cluttering existing logic, update `AST.Goal.fromSource` to use a Proxy.
+		 * 3. The Proxy must intercept the following getters to filter out `'comment'` types:
+		 * 	- `.children` & `.namedChildren`: Should return `.filter((n) => !n.isExtra)`
+		 * 	- `.childCount` & `.namedChildCount`: Should return the length of the filtered arrays.
+		 * This preserves an “optimized” view for the Decorator while allowing a documentation generator
+		 * to extract comments via Tree-Sitter queries.
+		 */
+		_comment: _$ => token(choice(
+			/%([^%\n][^\n]*)?\n/, // line comment
+			/%%(%?[^%])*%%/,      // block comment
+		)),
 
 
 
 		/* # LEXICON */
-		keyword_type: _$ => token(choice(
-			'never',
-			'void',
-			'bool',
-			'int',
-			'float',
-			'str',
-			'unknown',
-		)),
-		keyword_value: _$ => token(choice(
-			'null',
-			'false',
-			'true',
-		)),
-
-		identifier: _$ => token(choice(
+		identifier: _$ => token(rc(
 			WORD_BASIC,
 			WORD_UNICODE,
 		)),
 
-		...parameterize('integer', ({radix, separator}) => (
-			_$ => token(seq(/[+-]?/, ((!radix)
-				? (!separator) ? DIGIT_SEQ_DEC        : DIGIT_SEQ_DEC__SEPARATOR
-				: (!separator) ? INTEGER_DIGITS_RADIX : INTEGER_DIGITS_RADIX__SEPARATOR
-			)))
-		), 'radix', 'separator'),
+		integer: _$ => token(rs(/-?/, WHOLE_DIGITS)),
+		natural: _$ => token(rs('+',  WHOLE_DIGITS)),
 
-		...parameterize('float', ({separator}) => (
-			_$ => token(seq(
-				(!separator) ? SIGNED_DIGIT_SEQ_DEC : SIGNED_DIGIT_SEQ_DEC__SEPARATOR,
-				'.',
-				         (!separator) ? DIGIT_SEQ_DEC : DIGIT_SEQ_DEC__SEPARATOR, // eslint-disable-line @stylistic/indent
-				optional((!separator) ? EXPONENT_PART : EXPONENT_PART__SEPARATOR),
-			))
-		), 'separator'),
+		float: _$ => token(rs(
+			SIGNED_DIGIT_SEQ_DEC,
+			'.',
+			DIGIT_SEQ_DEC,
+			ro(EXPONENT_PART),
+		)),
 
-		...parameterize('string', ({comment, separator}) => (
-			_$ => token(seq(
-				DELIM_STRING,
-				optional(((!comment)
-					? (!separator) ? STRING_CHARS          : STRING_CHARS__SEPARATOR
-					: (!separator) ? STRING_CHARS__COMMENT : STRING_CHARS__COMMENT__SEPARATOR
-				)),
-				optional((!comment) ? STRING_UNFINISHED : STRING_UNFINISHED__COMMENT),
-				DELIM_STRING,
-			))
-		), 'comment', 'separator'),
+		string: _$ => token(rs(
+			DELIM_STRING,
+			ro(STRING_CHARS),
+			ro(STRING_UNFINISHED),
+			DELIM_STRING,
+		)),
 
-		template_full:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
-		template_head:   _$ => token(seq(DELIM_TEMPLATE,   optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
-		template_middle: _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
-		template_tail:   _$ => token(seq(DELIM_INTERP_END, optional(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_full:   _$ => token(rs(DELIM_TEMPLATE,   ro(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
+		template_head:   _$ => token(rs(DELIM_TEMPLATE,   ro(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_middle: _$ => token(rs(DELIM_INTERP_END, ro(TEMPLATE_CHARS_END_INTERP), DELIM_INTERP_START)),
+		template_tail:   _$ => token(rs(DELIM_INTERP_END, ro(TEMPLATE_CHARS_END_DELIM),  DELIM_TEMPLATE)),
 
 
 
 		/* # SYNTAX */
+		keyword_type: _$ => choice(
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'nat',
+			'float',
+			'str',
+			'anything',
+		),
+		keyword_value: _$ => choice(
+			'null',
+			'false',
+			'true',
+		),
+
 		word: $ => choice(
 			// operator
 			'mut',
+			'as',
 			'is',
-			'isnt',
 			'if',
 			'then',
 			'else',
 			// storage
 			'type',
-			'let',
+			'val',
+			'claim',
+			'set',
 			'_',
+			'void',
 			// modifier
-			'var',
+			'nominal',
+			// control
+			'unless',
+			'while',
+			'until',
+			'for',
+			'in',
+			'do',
+			'break',
+			'skip',
+			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
-			$.identifier,
 		),
 
 		primitive_literal: $ => choice(
-			$.keyword_value,
 			$.integer,
-			$.integer__radix,
-			$.integer__separator,
-			$.integer__radix__separator,
+			$.natural,
 			$.float,
-			$.float__separator,
 			$.string,
-			$.string__comment,
-			$.string__separator,
-			$.string__comment__separator,
+			$.keyword_value,
+			seq('@', $.word),
 		),
 
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(iff(named, seq($.word, iff(!optional, ':'))), iff(optional, '?:'), $._type)
+			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, '?:'), field('type_0', $._type))
 		), 'named', 'optional'),
 
-		_items_type: $ => choice(
-			             seq(repCom1($.entry_type), OPT_COM), // eslint-disable-line @stylistic/indent
-			seq(optional(seq(repCom1($.entry_type), ','    )), repCom1($[call('entry_type', 'optional')]), OPT_COM),
-		),
+		_items_type: $ => {
+			const LIST_ENT_OPT: SeqRule = repCom1(call($, 'entry_type', 'optional'));
+			return choice(
+				seq(                                                                 OPT_COM,              LIST_ENT_OPT,   OPT_COM),
+				seq(         $.entry_type,                                           ',',     optional(seq(LIST_ENT_OPT,   OPT_COM))),
+				seq(optional($.entry_type), ',', repCom1($.entry_type), optional(seq(',',                  LIST_ENT_OPT)), OPT_COM),
+			);
+		},
 
-		_properties_type: $ => seq(repCom1(choice($[call('entry_type', 'named')], $[call('entry_type', 'named', 'optional')])), OPT_COM),
+		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
 
-		type_grouped:        $ => seq('(',                       $._type,            ')'),
-		type_tuple_literal:  $ => seq('[', optional(seq(OPT_COM, $._items_type)),    ']'),
-		type_record_literal: $ => seq('[',              OPT_COM, $._properties_type, ']'),
-		type_dict_literal:   $ => seq('[', ':', $._type,                             ']'),
-		type_map_literal:    $ => seq('{', $._type, '->', $._type,                   '}'),
-		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM,       '>'),
+		property_accessor_type: $ => choice($.integer, $.natural, $.word),
+
+		type_grouped:        $ => seq('(', $._type,                            ')'),
+		type_tuple_literal:  $ => seq('(', optional($._items_type),            ')'),
+		type_record_literal: $ => seq('(', $._properties_type,                 ')'),
+		type_list_literal:   $ => seq('[', $._type,                            ']'),
+		type_dict_literal:   $ => seq('[', ':', $._type,                       ']'),
+		type_set_literal:    $ => seq('{', $._type,                            '}'),
+		type_map_literal:    $ => seq('{', $._type, '->', $._type,             '}'),
+		generic_arguments:   $ => seq('<', OPT_COM, repCom1($._type), OPT_COM, '>'),
 
 		_type_unit: $ => choice(
-			$.keyword_type,
 			$.identifier,
+			$.keyword_type,
 			$.primitive_literal,
 			$.type_grouped,
 			$.type_tuple_literal,
 			$.type_record_literal,
+			$.type_list_literal,
 			$.type_dict_literal,
+			$.type_set_literal,
 			$.type_map_literal,
 		),
 
-		property_access_type: $ => seq('.', choice($.integer, $.word)),
-		generic_call:         $ => seq('.', $.generic_arguments),
+		type_compound: $ => prec(5, seq(field('type_0', $._type), choice(
+			seq(choice('.', '?.'), field('property_accessor_type_0', $.property_accessor_type)),
+			seq('.',               field('generic_arguments_0',      $.generic_arguments)),
+		))),
 
-		_type_compound: $ => choice(
-			$._type_unit,
-			alias($.type_compound_dfn, $.type_compound),
-		),
-		type_compound_dfn: $ => seq($._type_compound, choice($.property_access_type, $.generic_call)),
+		type_unary_symbol:  $ => prec(4, seq($._type, choice('?', '!'))),
+		type_unary_keyword: $ => prec(3, seq('mut', $._type)),
 
-		_type_unary_symbol: $ => choice(
-			$._type_compound,
-			alias($.type_unary_symbol_dfn, $.type_unary_symbol),
-		),
-		type_unary_symbol_dfn: $ => seq($._type_unary_symbol, choice(
-			'?',
-			'!',
-			seq('[', optional($.integer), ']'),
-			seq('{', '}'),
-		)),
+		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
+		type_union:        $ => prec.left(1, seq($._type, '|', $._type)),
 
-		_type_unary_keyword: $ => choice(
-			$._type_unary_symbol,
-			alias($.type_unary_keyword_dfn, $.type_unary_keyword),
-		),
-		type_unary_keyword_dfn: $ => seq('mut', $._type_unary_keyword),
-
-		_type_intersection: $ => choice($._type_unary_keyword, alias($.type_intersection_dfn, $.type_intersection)),
-		_type_union:        $ => choice($._type_intersection,  alias($.type_union_dfn,        $.type_union)),
-
-		type_intersection_dfn: $ => seq($._type_intersection, '&', $._type_unary_keyword),
-		type_union_dfn:        $ => seq($._type_union,        '|', $._type_intersection),
-
-		/* eslint-disable @stylistic/function-paren-newline */
 		_type: $ => choice(
-			$._type_union,
+			$._type_unit,
+
+			// once parameterized, alias these:
+			$.type_compound,
+			$.type_unary_symbol,
+			$.type_unary_keyword,
+			$.type_intersection,
+			$.type_union,
 		),
-		/* eslint-enable @stylistic/function-paren-newline */
 
 
 		/* ## Expressions */
-		string_template: $ => choice(
+		...parameterize('string_template', ({break: brk}) => $ => choice(
 			$.template_full,
-			seq($.template_head, optional($._expression), repeat(seq($.template_middle, optional($._expression))), $.template_tail),
-		),
+			seq($.template_head, optional(call($, '_expression', 'block', {break: brk})), repeat(seq($.template_middle, optional(call($, '_expression', 'block', {break: brk})))), $.template_tail),
+		), 'break'),
 
-		property: $ => seq($.word,        '=',  $._expression),
-		case:     $ => seq($._expression, '->', $._expression),
+		...parameterize('_items', ({break: brk}) => $ => choice(
+			seq(         call($, '_expression', 'block', {break: brk}),  ','),
+			seq(optional(call($, '_expression', 'block', {break: brk})), ',', repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM),
+		), 'break'),
 
-		expression_grouped: $ => seq('(',                               $._expression,             ')'),
-		tuple_literal:      $ => seq('[', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ']'),
-		record_literal:     $ => seq('[',              OPT_COM, repCom1($.property),    OPT_COM,   ']'),
-		set_literal:        $ => seq('{', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), '}'),
-		map_literal:        $ => seq('{',              OPT_COM, repCom1($.case),        OPT_COM,   '}'),
-		function_arguments: $ => seq('(', optional(seq(OPT_COM, repCom1($._expression), OPT_COM)), ')'),
+		...parameterize('property', ({break: brk}) => $ => seq($.word,                                        '=',  call($, '_expression', 'block', {break: brk})), 'break'),
+		...parameterize('case',     ({break: brk}) => $ => seq(call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
 
-		_expression_unit: $ => choice(
+		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
+
+		...parameterize('expression_grouped', ({break: brk}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}),             ')'), 'break'),
+		...parameterize('tuple_literal',      ({break: brk}) => $ => seq('(', optional(                     call($, '_items',               {break: brk})           ), ')'), 'break'),
+		...parameterize('record_literal',     ({break: brk}) => $ => seq('(',              OPT_COM, repCom1(call($, 'property',             {break: brk})), OPT_COM,   ')'), 'break'),
+		...parameterize('list_literal',       ({break: brk}) => $ => seq('[', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ']'), 'break'),
+		...parameterize('dict_literal',       ({break: brk}) => $ => seq('[',              OPT_COM, repCom1(call($, 'property',             {break: brk})), OPT_COM,   ']'), 'break'),
+		...parameterize('set_literal',        ({break: brk}) => $ => seq('{', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), '}'), 'break'),
+		...parameterize('map_literal',        ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case',                 {break: brk})), OPT_COM,   '}'), 'break'),
+		...parameterize('function_arguments', ({break: brk}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ')'), 'break'),
+
+		...parameterize('_expression_unit', ({block, break: brk}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
-			$.string_template,
-			$.expression_grouped,
-			$.tuple_literal,
-			$.record_literal,
-			$.set_literal,
-			$.map_literal,
-		),
+			call($, 'string_template',    {break: brk}),
+			call($, 'expression_grouped', {break: brk}),
+			call($, 'tuple_literal',      {break: brk}),
+			call($, 'record_literal',     {break: brk}),
+			call($, 'list_literal',       {break: brk}),
+			call($, 'dict_literal',       {break: brk}),
+			call($, 'set_literal',        {break: brk}),
+			call($, 'map_literal',        {break: brk}),
+			...iff(block, alias(call($, 'block', {break: brk}), $.expression_block)),
+		), 'block', 'break'),
 
-		property_access: $ => seq(choice('.', '?.', '!.'), choice($.integer, $.word, seq('[', $._expression, ']'))),
-		property_assign: $ => seq('.',                     choice($.integer, $.word, seq('[', $._expression, ']'))),
-		function_call:   $ => seq('.',                     optional($.generic_arguments), $.function_arguments),
+		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(11, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice(
+			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
+			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}))),
+		))), 'block', 'break'),
 
-		_expression_compound: $ => choice(
-			$._expression_unit,
-			alias($.expression_compound_dfn, $.expression_compound),
-		),
-		expression_compound_dfn: $ => seq($._expression_compound, choice($.property_access, $.function_call)),
+		...parameterize('expression_unary_symbol',  ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'),    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_keyword', ({block, break: brk}) => $ => prec( 9, seq(choice('int', 'nat', 'float'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
-		assignee: $ => choice(
-			$.identifier,
-			seq($._expression_compound, $.property_assign),
-		),
+		...parameterize('expression_cast', ({block, break: brk}) => $ => choice(
+			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
+			prec(8,      seq(field('expression_0', call($, '_expression', {block}, {break: brk})), 'as',                       '<', field('type_0', $._type), '>')),
+		), 'block', 'break'),
 
-		_expression_unary_symbol: $ => choice(
-			$._expression_compound,
-			alias($.expression_unary_symbol_dfn, $.expression_unary_symbol),
-		),
+		...parameterize('expression_exponential',    ({block, break: brk}) => $ => prec.right(7, seq(call($, '_expression', {block}, {break: brk}), '^',                                                   call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_multiplicative', ({block, break: brk}) => $ => prec.left (6, seq(call($, '_expression', {block}, {break: brk}), choice('*', '/'),                                      call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_additive',       ({block, break: brk}) => $ => prec.left (5, seq(call($, '_expression', {block}, {break: brk}), choice('+', '-'),                                      call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_comparative',    ({block, break: brk}) => $ => prec.left (4, seq(call($, '_expression', {block}, {break: brk}), choice('<', '>', '<=', '>=', '!<', '!>', 'is', '!is'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_equality',       ({block, break: brk}) => $ => prec.left (3, seq(call($, '_expression', {block}, {break: brk}), choice('===', '!==', '==', '!='),                      call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_conjunctive',    ({block, break: brk}) => $ => prec.left (2, seq(call($, '_expression', {block}, {break: brk}), choice('&&', '!&'),                                    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_disjunctive',    ({block, break: brk}) => $ => prec.left (1, seq(call($, '_expression', {block}, {break: brk}), choice('||', '!|'),                                    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
-		expression_unary_symbol_dfn: $ => seq(choice('!', '?', '+', '-'), $._expression_unary_symbol),
+		...parameterize('expression_conditional', ({break: brk}) => $ => seq(
+			'if',
+			call($, '_expression', 'block', {break: brk}),
+			'then',
+			call($, '_expression', {break: brk}),
+			'else',
+			call($, '_expression', {break: brk}),
+		), 'break'),
 
-		_expression_exponential:    $ => choice($._expression_unary_symbol,   alias($.expression_exponential_dfn,    $.expression_exponential)),
-		_expression_multiplicative: $ => choice($._expression_exponential,    alias($.expression_multiplicative_dfn, $.expression_multiplicative)),
-		_expression_additive:       $ => choice($._expression_multiplicative, alias($.expression_additive_dfn,       $.expression_additive)),
-		_expression_comparative:    $ => choice($._expression_additive,       alias($.expression_comparative_dfn,    $.expression_comparative)),
-		_expression_equality:       $ => choice($._expression_comparative,    alias($.expression_equality_dfn,       $.expression_equality)),
-		_expression_conjunctive:    $ => choice($._expression_equality,       alias($.expression_conjunctive_dfn,    $.expression_conjunctive)),
-		_expression_disjunctive:    $ => choice($._expression_conjunctive,    alias($.expression_disjunctive_dfn,    $.expression_disjunctive)),
+		...parameterize('_expression', ({block, break: brk}) => $ => choice(
+			call($, '_expression_unit', {block}, {break: brk}),
 
-		expression_exponential_dfn:    $ => seq($._expression_unary_symbol,   '^',                                                    $._expression_exponential),
-		expression_multiplicative_dfn: $ => seq($._expression_multiplicative, choice('*', '/'),                                       $._expression_exponential),
-		expression_additive_dfn:       $ => seq($._expression_additive,       choice('+', '-'),                                       $._expression_multiplicative),
-		expression_comparative_dfn:    $ => seq($._expression_comparative,    choice('<', '>', '<=', '>=', '!<', '!>', 'is', 'isnt'), $._expression_additive),
-		expression_equality_dfn:       $ => seq($._expression_equality,       choice('===', '!==', '==', '!='),                       $._expression_comparative),
-		expression_conjunctive_dfn:    $ => seq($._expression_conjunctive,    choice('&&', '!&'),                                     $._expression_equality),
-		expression_disjunctive_dfn:    $ => seq($._expression_disjunctive,    choice('||', '!|'),                                     $._expression_conjunctive),
+			alias(call($, 'expression_compound',       {block}, {break: brk}), $.expression_compound),
+			alias(call($, 'expression_unary_symbol',   {block}, {break: brk}), $.expression_unary_symbol),
+			alias(call($, 'expression_unary_keyword',  {block}, {break: brk}), $.expression_unary_keyword),
+			alias(call($, 'expression_cast',           {block}, {break: brk}), $.expression_cast),
+			alias(call($, 'expression_exponential',    {block}, {break: brk}), $.expression_exponential),
+			alias(call($, 'expression_multiplicative', {block}, {break: brk}), $.expression_multiplicative),
+			alias(call($, 'expression_additive',       {block}, {break: brk}), $.expression_additive),
+			alias(call($, 'expression_comparative',    {block}, {break: brk}), $.expression_comparative),
+			alias(call($, 'expression_equality',       {block}, {break: brk}), $.expression_equality),
+			alias(call($, 'expression_conjunctive',    {block}, {break: brk}), $.expression_conjunctive),
+			alias(call($, 'expression_disjunctive',    {block}, {break: brk}), $.expression_disjunctive),
 
-		expression_conditional: $ => seq('if', $._expression, 'then', $._expression, 'else', $._expression),
-
-		_expression: $ => choice(
-			$._expression_disjunctive,
-			$.expression_conditional,
-		),
+			call($, 'expression_conditional', {break: brk}),
+		), 'block', 'break'),
 
 
 		/* ## Statements */
-		declaration_type:     $ => seq('type', choice('_',                      $.identifier ), '=', $._type,                     ';'),
-		declaration_variable: $ => seq('let',  choice('_', seq(optional('var'), $.identifier)), ':', $._type, '=', $._expression, ';'),
+		...parameterize('assignee', ({break: brk}) => $ => choice(
+			field('identifier_0', $.identifier),
+			seq(field('expression_0', call($, '_expression', 'block', {break: brk})), '.', field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
+		), 'break'),
 
-		_declaration: $ => choice(
+		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
+
+		...parameterize('statement_claim',        ({break: brk}) => $ => seq('claim', call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
+		...parameterize('statement_reassignment', ({break: brk}) => $ => seq('set',   call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
+
+		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
+			!unless ? 'if' : 'unless',
+			field('expression_0', call($, '_expression', 'block', {break: brk})),
+			'then',
+			field('block_0', call($, 'block', {break: brk})),
+			!unless
+				? choice(
+					seq(optional(seq('else', field('block_1', call($, 'block', {break: brk})))), ';'),
+					seq('else', field('statement_conditional_0', call($, 'statement_conditional', {unless}, {break: brk}))),
+				)
+				: ';',
+		), 'unless', 'break'),
+
+		statement_loop: $ => seq(uSeq(
+			seq(choice('while', 'until'), field('expression_0', call($, '_expression', 'block'))),
+			seq('do',                     field('block_0',      call($, 'block', 'break'))),
+		), ';'),
+
+		statement_iteration: $ => seq('for', choice('_', field('identifier_0', $.identifier)), ':', field('type_0', $._type), 'in', field('expression_0', call($, '_expression', 'block')), 'do', field('block_0', call($, 'block', 'break')), ';'),
+
+		statement_break: _$ => seq(choice('break', 'skip'), ';'),
+
+		...parameterize('_statement', ({break: brk}) => $ => choice(
+			call($, '_declaration',                             {break: brk}),
+			call($, 'statement_expression',                     {break: brk}),
+			call($, 'statement_claim',                          {break: brk}),
+			call($, 'statement_reassignment',                   {break: brk}),
+			call($, 'statement_conditional',    ['', 'unless'], {break: brk}),
+			$.statement_loop,
+			$.statement_iteration,
+			...iff(brk, $.statement_break),
+		), 'break'),
+
+		...parameterize('block', ({break: brk}) => $ => seq('{', repeat1(call($, '_statement', {break: brk})), '}'), 'break'),
+
+		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
+
+		...parameterize('declaration_variable', ({break: brk}) => $ => choice(
+			seq('val', choice('_', seq(optional('mut'), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk})), ';'),
+			seq('val',                          'mut',  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                              ';'),
+		), 'break'),
+
+		...parameterize('_declaration', ({break: brk}) => $ => choice(
 			$.declaration_type,
-			$.declaration_variable,
-		),
-
-		statement_expression: $ => seq(optional($._expression), ';'),
-
-		statement_assignment: $ => seq($.assignee, '=', $._expression, ';'),
-
-		_statement: $ => choice(
-			$._declaration,
-			$.statement_expression,
-			$.statement_assignment,
-		),
+			call($, 'declaration_variable', {break: brk}),
+		), 'break'),
 	},
 
-	extras: _$ => [
-		/(\u0020|\t|\n)+/, // whitespace
-		token(choice(
-			/%([^%\n][^\n]*)?\n/, // line comment
-			/%%(%?[^%])*%%/,      // multiline comment
-		)),
+	extras: $ => [
+		/[ \t\n]+/, // whitespace
+		$._comment,
+	],
+
+	/**
+	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
+	 */
+	conflicts: _$ => [
+		// example:
+		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => _$[rulename]),
 	],
 
 	/**
 	 * Tries to match `$.identifier` first before matching any keyword literals in the grammar.
-	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers#keyword-extraction
+	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/3-writing-the-grammar.html#keyword-extraction
 	 */
 	word: $ => $.identifier,
-
-	conflicts: $ => [
-		familyNameAll('integer', ['radix', 'separator']),
-		familyNameAll('float',   ['separator']),
-		familyNameAll('string',  ['comment', 'separator']),
-	].map((familyname) => familyname.map((rulename) => $[rulename])),
 
 	supertypes: $ => [
 		$._type_unit,
 		$._type,
-		$._expression_unit,
-		$._expression,
-		$._declaration,
-		$._statement,
+		...familyNameAll('_expression_unit', ['block', 'break']).map((rulename) => $[rulename]),
+		...familyNameAll('_expression',      ['block', 'break']).map((rulename) => $[rulename]),
+		...familyNameAll('_statement',       ['break']).map((rulename) => $[rulename]),
+		...familyNameAll('_declaration',     ['break']).map((rulename) => $[rulename]),
 	],
+
+	reserved: {
+		global: _$ => [
+			// operator
+			'mut',
+			'as',
+			'is',
+			'if',
+			'then',
+			'else',
+			// storage
+			'type',
+			'val',
+			'claim',
+			'set',
+			'_',
+			'void',
+			// modifier
+			'nominal',
+			// control
+			'unless',
+			'while',
+			'until',
+			'for',
+			'in',
+			'do',
+			'break',
+			'skip',
+			// type keyword
+			'nothing',
+			'bool',
+			'sym',
+			'int',
+			'nat',
+			'float',
+			'str',
+			'anything',
+			// value keyword
+			'null',
+			'false',
+			'true',
+		],
+	},
 });
 /* eslint-enable @stylistic/arrow-parens */

@@ -1,9 +1,8 @@
-import binaryen from 'binaryen';
 import {
 	type VALUE,
 	TYPE,
-	type Local,
-	BinVect,
+	type Optimizer,
+	IR,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -18,10 +17,7 @@ import {
 	Operator,
 	type ValidOperatorLogical,
 } from '../Operator.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -42,39 +38,9 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		// eslint-disable-next-line prefer-const --- one of them is reassigned
-		let [arg0, arg1]: binaryen.ExpressionRef[] = this.children.map((operand) => operand.build());
-
-		const t0:     TYPE.Type              = this.operand0.type();
-		const block1: binaryen.ExpressionRef = this.builder.module.block(null, [
-			this.builder.module.drop(arg0),
-			arg1,
-		], binaryen.v128);
-		if (t0.isDefinitelyFalsy) {
-			return this.operator === Operator.AND ? arg0 : block1;
-		} else if (t0.isDefinitelyTruthy) {
-			return this.operator === Operator.AND ? block1 : arg0;
-		}
-
-		const local: Local = this.builder.addLocal(arg0)[1];
-
-		const condition: binaryen.ExpressionRef = new BinVect(this.builder.module, this.builder.module.call(
-			'vnot',
-			[local.tee()],
-			binaryen.v128,
-		)).isSpecial(false);
-		arg0 = local.get();
-
-		const [if_true, if_false] = (this.operator === Operator.AND) ? [arg1, arg0] : [arg0, arg1];
-		return this.builder.module.if(condition, if_true, if_false);
-	}
-
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
 			case Operator.AND: {
@@ -92,6 +58,39 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 				);
 			}
 		}
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Get {
+		/*
+		 * `‹v0› && ‹v1›` desugars to:
+		 * ```
+		 * val left = ‹v0›;
+		 * if !!left then ‹v1› else left
+		 * ```
+		 *
+		 * `‹v0› || ‹v1›` desugars to:
+		 * ```
+		 * val left = ‹v0›;
+		 * if !!left then left else ‹v1›
+		 * ```
+		 */
+		const left: IR.ValueTac = this.operand0.lower(optimizer).asTac(optimizer);
+
+		// Assume `Operator.AND` first, then switch if `Operator.OR`.
+		let conseq = (): IR.Value => this.operand1.lower(optimizer);
+		let altern = (): IR.Value => left;
+		if (this.operator === Operator.OR) {
+			[conseq, altern] = [altern, conseq];
+		}
+
+		return IR.conditional_expression(
+			optimizer,
+			this.operand0.type().union(this.operand1.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
+			() => new IR.Unop(IR.OpCode.TOBOOL, left, TYPE.BOOL),
+			conseq,
+			altern,
+		);
 	}
 
 	@memoizeMethod

@@ -36,27 +36,24 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 	}
 
 	public override varCheck(): void {
-		super.varCheck();
-		const keys: ASTNodeKey[] = this.children.map((proptype) => proptype.key);
-		xjs.Array.forEachAggregated(keys.map((key) => key.id), (id, i, ids) => {
-			if (ids.slice(0, i).includes(id)) {
-				throw new AssignmentErrorDuplicateKey(keys[i]);
+		const keys: ASTNodeKey[] = this.children.map((prop) => prop.key);
+		xjs.Array.forEachAggregated(keys, (key, i) => {
+			key.varCheck();
+			if (keys.slice(0, i).find((k) => k.id === key.id)) {
+				throw new AssignmentErrorDuplicateKey(key);
 			}
 		});
+		return xjs.Array.forEachAggregated(this.children, (prop) => prop.typevalue.varCheck());
 	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entries: ReadonlyMap<bigint, EntryType> = new Map<bigint, EntryType>(this.children.map((c) => {
-			const valuetype: TYPE.Type = c.val.eval();
-			return [
-				c.key.id,
-				{
-					type:     valuetype,
-					optional: c.optional,
-				},
-			];
-		}));
-		return new TYPE.Record(entries);
+		return new TYPE.Record(new Map<bigint, EntryType>(this.children.map((c) => [
+			c.key.id,
+			{
+				type:     c.typevalue.eval(),
+				optional: c.optional,
+			},
+		])));
 	}
 }

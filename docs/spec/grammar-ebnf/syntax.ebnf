@@ -5,9 +5,9 @@
 
 
 
-ParameterSet ::= "<"                    IDENTIFIER             # ">";
-ArgumentSet  ::= "<" (("+" | "-" | "?") IDENTIFIER            )# ">";
-ConditionSet ::= "<" (                  IDENTIFIER ("+" | "-"))# ">";
+ParameterSet ::= "<"                                IDENTIFIER             # ">";
+ArgumentSet  ::= "<" (("+" | "-" | "∓" | "?" | "!") IDENTIFIER            )# ">";
+ConditionSet ::= "<" (                              IDENTIFIER ("+" | "-"))# ">";
 
 
 
@@ -38,14 +38,15 @@ Item ::=
 ;
 
 
-Order  ::= ( Order  "."? )? Item;
-Concat ::= ( Concat "&"  )? Order;
-Altern ::= ( Altern "|"  )? Concat;
+Seq      ::= (Seq      "&"?)? Item;
+UnSeq    ::= (UnSeq    "&&")? Seq;
+UnChoice ::= (UnChoice "||")? Unseq;
+Choice   ::= (Choice   "|" )? UnChoice;
 
 
 
 Definition
-	::= ("." | "&" | "|")? Altern;
+	::= ("&" | "&&" | "||" | "|")? Choice;
 
 
 

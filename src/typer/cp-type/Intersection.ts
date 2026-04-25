@@ -1,22 +1,18 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
-import type {EntryType} from '../utils-public.ts';
+import {memoizeGetter} from '../../lib/index.ts';
 import {
-	languageValuesIdentical,
+	language_types_equal,
+	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
 import {
 	Union,
-	Tuple as TypeTuple,
-	Record as TypeRecord,
-	NEVER,
+	NOTHING,
 } from './index.ts';
-import {
-	type ReadonlyArrayOfAtLeast2,
-	language_types_equal,
-} from './utils-private.ts';
+import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
 	intersectionRules,
@@ -36,7 +32,7 @@ import {Combinable} from './Combinable.ts';
 export class Intersection extends Combinable {
 	/**
 	 * Intersect all the given types.
-	 * If an empty array is given, return type `never`.
+	 * If an empty array is given, return type `nothing`.
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
@@ -47,39 +43,7 @@ export class Intersection extends Combinable {
 			? Intersection.all(...arg0)
 			: arg0
 				? [arg0, ...args].reduce((a, b) => a.intersect(b))
-				: NEVER;
-	}
-
-	/**
-	 * When accessing the *intersection* of tuple types `S` and `T`,
-	 * the set of items available is the *union* of the set of items on `S` with the set of items on `T`.
-	 * For any overlapping items, their type intersection is taken, as well as the conjunction of their optionality.
-	 */
-	private static intersectTuples(s: TypeTuple, t: TypeTuple): TypeTuple {
-		const items: EntryType[] = [...s.invariants];
-		t.invariants.forEach((typ, i) => {
-			items[i] = s.invariants[i] ? {
-				type:     s.invariants[i].type.intersect(typ.type),
-				optional: s.invariants[i].optional && typ.optional,
-			} : typ;
-		});
-		return new TypeTuple(items);
-	}
-
-	/**
-	 * When accessing the *intersection* of record types `S` and `T`,
-	 * the set of properties available is the *union* of the set of properties on `S` with the set of properties on `T`.
-	 * For any overlapping properties, their type intersection is taken, as well as the conjunction of their optionality.
-	 */
-	private static intersectRecords(s: TypeRecord, t: TypeRecord): TypeRecord {
-		const props = new Map<bigint, EntryType>([...s.invariants]);
-		[...t.invariants].forEach(([id, typ]) => {
-			props.set(id, s.invariants.has(id) ? {
-				type:     s.invariants.get(id)!.type.intersect(typ.type),
-				optional: s.invariants.get(id)!.optional && typ.optional,
-			} : typ);
-		});
-		return new TypeRecord(props);
+				: NOTHING;
 	}
 
 
@@ -95,8 +59,8 @@ export class Intersection extends Combinable {
 	) {
 		super(
 			operands.reduce(
-				(accum, next) => xjs.Set.intersection(accum, next.values, languageValuesIdentical),
-				xjs.Set.intersection(operand0.values, operand1.values, languageValuesIdentical),
+				(accum, next) => xjs.Set.intersection(accum, next.values, language_values_identical),
+				xjs.Set.intersection(operand0.values, operand1.values, language_values_identical),
 			),
 			[
 				...(operand0 instanceof Intersection ? operand0.operands : [operand0] as const),
@@ -106,6 +70,7 @@ export class Intersection extends Combinable {
 		);
 	}
 
+	@memoizeGetter
 	public override get isBottomType(): boolean {
 		/* This could be bottom if the operands are disjoint. */
 		return this.operands.some((s) => s.isBottomType) || this.values.size === 0;
@@ -115,16 +80,8 @@ export class Intersection extends Combinable {
 	 * We can assert that this is never top because
 	 * the only case in which it could be top is
 	 * if both the left and the right are top,
-	 * which is impossible because the algorithm would have already produced the `unknown` type.
+	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
-
-	public override get isReference(): boolean {
-		return this.operands.some((s) => s.isReference);
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.operands.some((s) => s.hasMutable);
-	}
 
 	@botOrTopString
 	public override toString(): string {
@@ -207,7 +164,7 @@ export class Intersection extends Combinable {
 		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     | `(B \| C)  & A == (B  & A) \| (C  & A)`
 		 */
-		const union: Union | null = this.operands.find((s): s is Union => s instanceof Union) ?? null;
+		const union: Union | undefined = this.operands.find((s): s is Union => s instanceof Union);
 		if (union) {
 			const not_union: readonly Type[] = this.operands.filter((s) => s !== union);
 			const right: Type = not_union.length >= 2
@@ -217,13 +174,5 @@ export class Intersection extends Combinable {
 		} else {
 			return this;
 		}
-	}
-
-	public override combineTuplesOrRecords(): Type {
-		return (
-			this.operands.every((s) => s instanceof TypeTuple)  ? (this.operands as ReadonlyArrayOfAtLeast2<TypeTuple>) .reduce((a, b) => Intersection.intersectTuples (a, b)) :
-			this.operands.every((s) => s instanceof TypeRecord) ? (this.operands as ReadonlyArrayOfAtLeast2<TypeRecord>).reduce((a, b) => Intersection.intersectRecords(a, b)) :
-			this
-		);
 	}
 }

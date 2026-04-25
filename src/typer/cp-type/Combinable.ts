@@ -9,9 +9,17 @@ import {TypeOperation} from './TypeOperation.ts';
  * - Union
  */
 export abstract class Combinable extends TypeOperation {
+	/** @final */
+	public override get isReference(): boolean {
+		return this.operands.some((s) => s.isReference);
+	}
+
+	/** @final */
+	public override get hasMutable(): boolean {
+		return super.hasMutable || this.operands.some((s) => s.hasMutable);
+	}
+
 	public abstract normalize(): Type;
 
 	public abstract denormalize(): Type;
-
-	public abstract combineTuplesOrRecords(): Type;
 }

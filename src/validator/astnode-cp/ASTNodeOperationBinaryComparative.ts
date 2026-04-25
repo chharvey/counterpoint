@@ -1,8 +1,9 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
 import {
 	VALUE,
 	TYPE,
+	type Optimizer,
+	IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -18,15 +19,8 @@ import {
 	Operator,
 	type ValidOperatorComparative,
 } from '../Operator.ts';
-import {
-	bothNumeric,
-	bothFloats,
-	neitherFloats,
-} from './utils-private.ts';
-import {
-	buildDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {bothNumbers} from './utils-private.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperationBinary} from './ASTNodeOperationBinary.ts';
 
 
@@ -50,26 +44,26 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		}
 	}
 
-	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.module.call(new Map<Operator, string>([
-			[Operator.LT, 'vlt'],
-			[Operator.GT, 'vgt'],
-			[Operator.LE, 'vle'],
-			[Operator.GE, 'vge'],
-		]).get(this.operator)!, [this.operand0.build(), this.operand1.build()], binaryen.v128);
-	}
-
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type {
+	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType || t1.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
-		assert.ok(bothNumeric(t0, t1), new TypeErrorInvalidOperation(this));
 		return (
-			int_coercion || bothFloats(t0, t1) || neitherFloats(t0, t1) ? TYPE.BOOL :
+			bothNumbers(t0, t1) ? TYPE.BOOL :
 			assert.fail(new TypeErrorInvalidOperation(this))
 		);
+	}
+
+	@memoizeMethod
+	public override lower(optimizer: Optimizer): IR.Binop {
+		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
+			[Operator.LT,  IR.OpCode.LT],
+			[Operator.GT,  IR.OpCode.GT],
+			[Operator.LE,  IR.OpCode.LE],
+			[Operator.GE,  IR.OpCode.GE],
+			[Operator.NLT, IR.OpCode.NLT],
+			[Operator.NGT, IR.OpCode.NGT],
+		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
 	}
 
 	@memoizeMethod
@@ -82,12 +76,10 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 		if (!v1) {
 			return v1;
 		}
-		return (v0 instanceof VALUE.Integer && v1 instanceof VALUE.Integer)
-			? this.foldComparative(v0, v1)
-			: this.foldComparative(
-				(v0 as VALUE.Number).toFloat(),
-				(v1 as VALUE.Number).toFloat(),
-			);
+		return this.foldComparative(
+			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
+		);
 	}
 
 	private foldComparative<T extends VALUE.Number<T>>(v0: T, v1: T): VALUE.Boolean {
@@ -96,8 +88,8 @@ export class ASTNodeOperationBinaryComparative extends ASTNodeOperationBinary {
 			[Operator.GT, (x, y) => y.lt(x)],
 			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],
 			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
-			// [Operator.NLT, (x, y) => !x.lt(y)],
-			// [Operator.NGT, (x, y) => !y.lt(x)],
+			[Operator.NLT, (x, y) => !x.lt(y)],
+			[Operator.NGT, (x, y) => !y.lt(x)],
 		]).get(this.operator)!(v0, v1));
 	}
 }

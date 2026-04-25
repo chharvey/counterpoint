@@ -1,7 +1,5 @@
 import * as assert from 'node:assert';
-import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import {LexError01} from '../index.ts';
-import type {CodeUnit} from '../lib/index.ts';
+import * as xjs from 'extrajs';
 import {
 	type CPConfig,
 	CONFIG_DEFAULT,
@@ -10,14 +8,45 @@ import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
-	type Serializable,
 } from '../parser/index.ts';
 import type {SymbolSchema} from './index.ts';
-import {utf8Encode} from './utils-private.ts';
+import {
+	type SyntaxNodeType,
+	isSyntaxNodeType,
+} from './utils-private.ts';
 
 
 
 type RadixType = 2n | 4n | 6n | 8n | 10n | 16n | 36n;
+
+
+
+/**
+ * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
+ * the index of a character in the Unicode Universal Character Set.
+ */
+type CodePoint = number;
+
+
+
+/**
+ * A code unit is an integer within the closed interval [0, 0xff] that represents
+ * a byte of an encoded Unicode code point.
+ */
+type CodeUnit = number;
+
+
+
+/**
+ * An encoded character is a sequence of code units
+ * that corresponds to a single code point in the UTF-8 encoding.
+ */
+type EncodedChar = (
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+);
 
 
 
@@ -35,15 +64,26 @@ const COMMENTER_MULTI    = '%%';
 
 
 
+/**
+ * The UTF-8 encoding of a numeric code point value.
+ * @param   codepoint a Unicode code point
+ * @returns           a code unit sequence representing the code point
+ */
+export function utf8Encode(codepoint: CodePoint): EncodedChar {
+	xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
+	return [...new TextEncoder().encode(String.fromCodePoint(codepoint))] as EncodedChar;
+}
+
+
+
 function tokenWorthInt(
 	text: string,
 	radix: RadixType = RADIX_DEFAULT,
-	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-): number {
+): bigint {
 	if (text.length === 0) {
 		throw new Error('Cannot compute mathematical value of empty string.');
 	}
-	if (allow_separators && text.endsWith(SEPARATOR)) {
+	if (text.endsWith(SEPARATOR)) {
 		text = text.slice(0, -1);
 	}
 	if (text.length === 1) {
@@ -51,42 +91,35 @@ function tokenWorthInt(
 		if (Number.isNaN(digitvalue)) {
 			throw new Error(`Invalid number format: \`${ text }\``);
 		}
-		return digitvalue;
+		return BigInt(digitvalue);
 	}
-	const tens: number = tokenWorthInt(text.slice(0, -1),     radix, allow_separators);
-	const ones: number = tokenWorthInt(text[text.length - 1], radix, allow_separators);
-	return Number(radix) * tens + ones;
+	const tens: bigint = tokenWorthInt(text.slice(0, -1),     radix);
+	const ones: bigint = tokenWorthInt(text[text.length - 1], radix);
+	return radix * tens + ones;
 }
 
 
 
-function tokenWorthFloat(
-	text: string,
-	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-): number {
+function tokenWorthFloat(text: string): number {
 	const base:       number = Number(RADIX_DEFAULT);
 	const pointindex: number = text.indexOf(POINT);
 	const expindex:   number = text.indexOf(EXPONENT);
 	const wholepart:  string = text.slice(0, pointindex);
 	const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
 	const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
-	const wholevalue: number = tokenWorthInt(wholepart, RADIX_DEFAULT, allow_separators);
-	const fracvalue:  number = tokenWorthInt(fracpart,  RADIX_DEFAULT, allow_separators) * base ** -fracpart.length;
+	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT));
+	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT)) * base ** -fracpart.length;
 	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
-		exppart.startsWith(Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
-		exppart.startsWith(Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT, allow_separators) }` :
-		                                     `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT, allow_separators) }` // eslint-disable-line @stylistic/indent
+		exppart.startsWith(Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
+		exppart.startsWith(Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
+		                                     `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT) }` // eslint-disable-line @stylistic/indent
 	));
 	return (wholevalue + fracvalue) * expvalue;
 }
 
 
 
-function tokenWorthString(
-	text: string,
-	allow_comments:   CPConfig['languageFeatures']['comments']          = CONFIG_DEFAULT.languageFeatures.comments,
-	allow_separators: CPConfig['languageFeatures']['numericSeparators'] = CONFIG_DEFAULT.languageFeatures.numericSeparators,
-): CodeUnit[] {
+function tokenWorthString(text: string): CodeUnit[] {
 	if (text.length === 0) {
 		return [];
 	}
@@ -109,43 +142,43 @@ function tokenWorthString(
 					['n',            utf8Encode(0x0a)],
 					['r',            utf8Encode(0x0d)],
 				]).get(text[1])!,
-				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+				...tokenWorthString(text.slice(2)),
 			];
 		} else if (`${ text[1] }${ text[2] }` === 'u{') {
 			/* an escape sequence */
 			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/)!;
 			return [
-				...utf8Encode(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n, allow_separators)),
-				...tokenWorthString(text.slice(sequence[0].length), allow_comments, allow_separators),
+				...utf8Encode(Number(tokenWorthInt(sequence[0].slice(3, -1) || '0', 16n))),
+				...tokenWorthString(text.slice(sequence[0].length)),
 			];
 		} else if (text[1] === '\n') {
 			/* a line continuation (LF) */
 			return [
 				...utf8Encode(0x20),
-				...tokenWorthString(text.slice(2), allow_comments, allow_separators),
+				...tokenWorthString(text.slice(2)),
 			];
 		} else {
 			/* a backslash escapes the following character */
 			return [
 				...utf8Encode(text.codePointAt(1)!),
-				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */, allow_comments, allow_separators),
+				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */),
 			];
 		}
-	} else if (allow_comments && `${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
+	} else if (`${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
 		/* an in-string multiline comment */
 		const match: string = text.match(/%%(?:%?[^'%])*(?:%%)?/)![0];
-		return tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
-	} else if (allow_comments && text.startsWith(COMMENTER_LINE)) {
+		return tokenWorthString(text.slice(match.length));
+	} else if (text.startsWith(COMMENTER_LINE)) {
 		/* an in-string line comment */
 		const match: string = text.match(/%[^'\n]*\n?/)![0];
-		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length), allow_comments, allow_separators);
+		const rest: CodeUnit[] = tokenWorthString(text.slice(match.length));
 		return match.endsWith('\n')
 			? [...utf8Encode(0x0a), ...rest]
 			: rest;
 	} else {
 		return [
 			...utf8Encode(text.codePointAt(0)!),
-			...tokenWorthString([...text].slice(1).join('')/* UTF-16 */, allow_comments, allow_separators),
+			...tokenWorthString([...text].slice(1).join('')/* UTF-16 */),
 		];
 	}
 }
@@ -184,12 +217,12 @@ export class Validator {
 
 	/**
 	 * Give the numeric value of a number token.
+	 * If the returned value is a native `bigint`, it represents either a Counterpoint Integer or Natural language value;
+	 * if the returned value is a native `number`, it represents a Counterpoint Float language value.
 	 * @param source the token’s text
-	 * @param config configuration settings
-	 * @return       the numeric value, cooked, along with whether the cooked value is a float
+	 * @return       the numeric value, cooked
 	 */
-	public static cookTokenNumber(source: string, config: CPConfig): [number, boolean] {
-		const is_float:   boolean   = source.indexOf(POINT) > 0;
+	public static cookTokenNumber(source: string): {type: 'int' | 'nat', value: bigint} | {type: 'float', value: number} {
 		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
 		const multiplier: number    = (has_unary && source.startsWith(Punctuator.NEG)) ? -1 : 1;
 		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source.startsWith(ESCAPER);
@@ -202,38 +235,25 @@ export class Validator {
 			['x', 16n],
 			['z', 36n],
 		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
-		if (has_radix && !config.languageFeatures.integerRadices) {
-			throw new LexError01({
-				source,
-				line_index: -1,
-				col_index:  -1,
-			} as Serializable);
-		}
+
+		const typ: 'int' | 'nat' | 'float' = source.includes(POINT) ? 'float' : has_unary && multiplier === 1 ? 'nat' : 'int';
+
 		/* eslint-disable curly */
 		if (has_unary) source = source.slice(1); // cut off unary, if any
 		if (has_radix) source = source.slice(2); // cut off radix, if any
 		/* eslint-enable curly */
-		return [
-			multiplier * ((is_float)
-				? tokenWorthFloat(source,        config.languageFeatures.numericSeparators)
-				: tokenWorthInt  (source, radix, config.languageFeatures.numericSeparators)
-			),
-			is_float,
-		];
+		return typ === 'float'
+			? {type: typ, value:        multiplier  * tokenWorthFloat(source)}
+			: {type: typ, value: BigInt(multiplier) * tokenWorthInt  (source, radix)};
 	}
 
 	/**
 	 * Give the text value of a string token.
 	 * @param source the token’s text
-	 * @param config configuration settings
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenString(source: string, config: CPConfig): CodeUnit[] {
-		return tokenWorthString(
-			source.slice(DELIM_STRING.length, -DELIM_STRING.length),
-			config.languageFeatures.comments,
-			config.languageFeatures.numericSeparators,
-		);
+	public static cookTokenString(source: string): Uint8Array {
+		return new Uint8Array(tokenWorthString(source.slice(DELIM_STRING.length, -DELIM_STRING.length)));
 	}
 
 	/**
@@ -241,7 +261,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenTemplate(source: string): CodeUnit[] {
+	public static cookTokenTemplate(source: string): Uint8Array {
 		const delim_start = (
 			source.startsWith(DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
 			source.startsWith(DELIM_INTERP_END) ? DELIM_INTERP_END :
@@ -252,24 +272,25 @@ export class Validator {
 			source.endsWith(DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
-		return [...utf8.encode(source.slice(delim_start.length, -delim_end.length))].map((ch) => ch.codePointAt(0)!);
+		return new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length));
 	}
 
 
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table = new Map<bigint, SymbolSchema>();
 
-	/**
-	 * A bank of unique identifier names.
-	 * COMBAK: Note that this is only temporary, until we have identifiers bound to object and lexical environments.
-	 */
+	/** A bank of unique identifier names. */
 	private readonly identifiers = new Set<string>();
 
 	/**
 	 * Construct a new Validator object.
 	 * @param config - The configuration settings for an instance program.
+	 * @param parent - a parent validator from which to inherit symbols
 	 */
-	public constructor(public readonly config: CPConfig = CONFIG_DEFAULT) {
+	public constructor(
+		public  readonly config:  CPConfig = CONFIG_DEFAULT,
+		private readonly parent?: Validator,
+	) {
 	}
 
 	/**
@@ -298,24 +319,24 @@ export class Validator {
 	 * @returns Does the symbol table have a symbol with the given id?
 	 */
 	public hasSymbol(id: bigint): boolean {
-		return this.symbol_table.has(id);
+		return this.symbol_table.has(id) || (this.parent?.hasSymbol(id) ?? false);
 	}
 
 	/**
 	 * Return the information of a symbol in this Validator’s symbol table.
 	 * @param id the symbol id to check
-	 * @returns the symbol information of `id`, or `null` if there is no corresponding entry
+	 * @returns the symbol information of `id`, or `undefined` if there is no corresponding entry
 	 */
-	public getSymbolInfo(id: bigint): SymbolSchema | null {
-		return this.symbol_table.get(id) ?? null;
+	public getSymbol(id: bigint): SymbolSchema | undefined {
+		return this.symbol_table.get(id) ?? this.parent?.getSymbol(id);
 	}
 
 	/**
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
-	public getSymbols(): Map<bigint, SymbolSchema> {
-		return new Map([...this.symbol_table]);
+	public getAllSymbols(): Map<bigint, SymbolSchema> {
+		return new Map([...(this.parent?.symbol_table ?? []), ...this.symbol_table]);
 	}
 
 	/**
@@ -328,12 +349,29 @@ export class Validator {
 	}
 
 	/**
-	 * Give a uniquely-generated integer identifier of a custom identifier token.
+	 * Give a uniquely-generated integer identifier of a custom language identifier token.
 	 * @param source the token’s text
 	 * @return       the unique id identifying the token
 	 */
 	public cookTokenIdentifier(source: string): bigint {
+		if (this.parent) {
+			return this.parent.cookTokenIdentifier(source);
+		}
 		this.identifiers.add(source);
 		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+	}
+
+	/**
+	 * Return the integer identifier (ID) of a given word,
+	 * whether it be a reserved keyword, the name of a constant, or a language identifier.
+	 * @param word the SyntaxNode to get the ID of
+	 * @return     if the word is reserved or has already been cooked, its existing ID; else a new ID
+	 */
+	public wordNodeID(word: SyntaxNodeType<'word'>): bigint {
+		return isSyntaxNodeType(word.children[0], 'identifier')
+			? this.cookTokenIdentifier(word.children[0].text)
+			: isSyntaxNodeType(word.children[0], 'keyword_type') || isSyntaxNodeType(word.children[0], 'keyword_value')
+				? Validator.cookTokenKeyword(word.children[0].children[0].text as Keyword)
+				: Validator.cookTokenKeyword(word.children[0].text as Keyword);
 	}
 }

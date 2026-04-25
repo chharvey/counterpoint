@@ -1,8 +1,10 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "2.1.0",
+  "version": "3.7.0",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
+    "incremental",
+    "parsing",
     "tree-sitter",
     "Counterpoint",
     "language",
@@ -26,31 +28,32 @@
     "url": "git+https://github.com/chharvey/counterpoint.git"
   },
   "scripts": {
-    "dist": "tsc",
-    "postdist": "tree-sitter generate",
+    "compile": "tsc && tsc --project ./test/tsconfig.json",
+    "generate": "tree-sitter generate",
+    "dev": "tsc && npm run generate",
     "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
-    "build": "npm run dist && npm run test && npm run prebuildify",
-    "install": "node-gyp-build",
-    "prebuildify": "prebuildify --napi --strip"
+    "prebuild": "npm run compile && npm run generate && npm run test",
+    "build": "prebuildify --napi --strip",
+    "install": "node-gyp-build"
   },
   "dependencies": {
     "node-addon-api": "^8.3.0",
     "node-gyp-build": "^4.8.0"
   },
   "peerDependencies": {
-    "tree-sitter": "^0.22.0"
+    "tree-sitter": "^0.25.0"
   },
   "peerDependenciesMeta": {
-    "tree_sitter": {
+    "tree-sitter": {
       "optional": true
     }
   },
   "devDependencies": {
-    "extrajs": "^0.26.0",
+    "extrajs": "^0.27.0",
     "prebuildify": "^6.0.0",
-    "tree-sitter-cli": "~0.24.5",
+    "tree-sitter-cli": "^0.26.0",
     "tsx": "^4.19.3",
-    "typescript": "~5.8.0"
+    "typescript": "~5.9.0"
   }
 }

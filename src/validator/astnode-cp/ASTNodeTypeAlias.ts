@@ -53,8 +53,9 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaVar) {
+		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaVar) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
+			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 
@@ -66,7 +67,7 @@ export class ASTNodeTypeAlias extends ASTNodeType {
 			]).get(this.source)!;
 		}
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaType);
 		return symbol.typevalue;
 	}

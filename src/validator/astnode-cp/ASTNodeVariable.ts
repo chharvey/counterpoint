@@ -1,8 +1,8 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
 import {
 	type VALUE,
-	type TYPE,
+	TYPE,
+	IR,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -22,15 +22,12 @@ import {
 	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {
-	buildDeco,
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
+import type {Reassignable} from './Reassignable.ts';
 
 
 
-export class ASTNodeVariable extends ASTNodeExpression {
+export class ASTNodeVariable extends ASTNodeExpression implements Reassignable {
 	public static override fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeVariable {
 		const expression: ASTNodeExpression = ASTNodeExpression.fromSource(src, config);
 		assert_instanceof(expression, ASTNodeVariable);
@@ -51,35 +48,43 @@ export class ASTNodeVariable extends ASTNodeExpression {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbolInfo(this.id) instanceof SymbolSchemaType) {
+		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
 	}
 
 	@memoizeMethod
-	@buildDeco
-	public override build(): binaryen.ExpressionRef {
-		return this.builder.getLocal(this.id)?.get() ?? assert.fail(new ReferenceError(`Variable with id ${ this.id } not found.`));
+	public override type(): TYPE.Type {
+		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
+		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
+		assert_instanceof(symbol, SymbolSchemaVar);
+		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
 	}
 
 	@memoizeMethod
-	@typeDeco
-	public override type(): TYPE.Type {
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
-		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.type;
+	public override lower(): IR.Get {
+		return new IR.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
 	}
 
 	@memoizeMethod
 	public override fold(): VALUE.Value | null {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbolInfo(this.id)!;
+		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
-		if (!symbol.unfixed) {
+		if (!symbol.isWritable) {
 			return symbol.value;
 		}
 		return null;
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Reassignable
+	 */
+	@memoizeMethod
+	public writeType(): TYPE.Type {
+		this.type(); // re-assert any assumptions and re-throw any errors
+		return (this.validator.getSymbol(this.id) as SymbolSchemaVar).type;
 	}
 }

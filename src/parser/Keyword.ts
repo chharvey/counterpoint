@@ -1,12 +1,13 @@
 export enum Keyword {
 	// type literal
-	NEVER   = 'never',
-	VOID    = 'void',
-	BOOL    = 'bool',
-	INT     = 'int',
-	FLOAT   = 'float',
-	STR     = 'str',
-	UNKNOWN = 'unknown',
+	NOTHING  = 'nothing',
+	BOOL     = 'bool',
+	SYM      = 'sym',
+	INT      = 'int',
+	NAT      = 'nat',
+	FLOAT    = 'float',
+	STR      = 'str',
+	ANYTHING = 'anything',
 
 	// value literal
 	NULL  = 'null',
@@ -15,19 +16,36 @@ export enum Keyword {
 
 	// operator
 	MUTABLE = 'mut',
+	AS      = 'as',
+	AS_MAY  = 'as?',
+	AS_RES  = 'as!',
 	IS      = 'is',
-	ISNT    = 'isnt',
+	ISNT    = '!is',
 	IF      = 'if',
 	THEN    = 'then',
 	ELSE    = 'else',
 
 	// storage
 	TYPE  = 'type',
-	LET   = 'let',
+	LET   = 'val',
+	CLAIM = 'claim',
+	SET   = 'set',
 	BLANK = '_',
+	VOID  = 'void',
 
 	// modifier
-	UNFIXED = 'var',
+	NOMINAL  = 'nominal',
+	WRITABLE = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+
+	// control
+	UNLESS = 'unless',
+	WHILE  = 'while',
+	UNTIL  = 'until',
+	FOR    = 'for',
+	IN     = 'in',
+	DO     = 'do',
+	BREAK  = 'break',
+	SKIP   = 'skip',
 }
 
 

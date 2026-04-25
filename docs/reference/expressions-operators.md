@@ -45,19 +45,19 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… .[ … ]</code></td>
 		</tr>
 		<tr>
-			<td>Optional Access</td>
+			<td>Maybe Access</td>
 			<td><code>… ?. …</code></td>
 		</tr>
 		<tr>
-			<td>Computed Optional Access</td>
+			<td>Computed Maybe Access</td>
 			<td><code>… ?.[ … ]</code></td>
 		</tr>
 		<tr>
-			<td>Claim Access</td>
+			<td>Result Access</td>
 			<td><code>… !. …</code></td>
 		</tr>
 		<tr>
-			<td>Computed Claim Access</td>
+			<td>Computed Result Access</td>
 			<td><code>… !.[ … ]</code></td>
 		</tr>
 		<tr>
@@ -80,14 +80,46 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>4</th>
+			<th rowspan="3">4</th>
+			<td>Integer Conversion</td>
+			<td rowspan="3">unary prefix</td>
+			<td rowspan="3">right-to-left</td>
+			<td><code>int …</code></td>
+		</tr>
+		<tr>
+			<td>Natural Conversion</td>
+			<td><code>nat …</code></td>
+		</tr>
+		<tr>
+			<td>Float Conversion</td>
+			<td><code>float …</code></td>
+		</tr>
+		<tr>
+			<th rowspan="4">5</th>
+			<td rowspan="3">Type Cast</td>
+			<td rowspan="4">binary infix</td>
+			<td rowspan="4">left-to-right</td>
+			<td><code>… as …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as? …</code></td>
+		</tr>
+		<tr>
+			<td><code>… as! …</code></td>
+		</tr>
+		<tr>
+			<td>Type Claim</td>
+			<td><code>… as &lt; … &gt;</code></td>
+		</tr>
+		<tr>
+			<th>6</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">5</th>
+			<th rowspan="2">7</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -98,7 +130,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">6</th>
+			<th rowspan="2">8</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -109,7 +141,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">7</th>
+			<th rowspan="8">9</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -141,10 +173,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<td>TBA</td>
-			<td><code>… isnt …</code></td>
+			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">8</th>
+			<th rowspan="4">10</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -163,7 +195,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">9</th>
+			<th rowspan="2">11</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -174,7 +206,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">10</th>
+			<th rowspan="2">12</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -185,7 +217,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>11</th>
+			<th>13</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -213,22 +245,112 @@ Operations that are associative are indicated as so in their respective sections
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
+
+#### Block-Expressions
+```
+`{` Statement+ `}`
+```
+Block-expressions are blocks of statements that produce expressions.
+A block-expression *is* an expression — its value has a type and can be passed around and operated on like any other expression.
+```cpl
+val blex: int = {
+	print.("evaluates to 42");
+	42;
+};
+blex == 42; %== true
+```
+Like all [blocks](./statements.md#blocks-and-scoping), a block-expression must contain at least one statement.
+Furthermore, if the last statement in a block-expression is an [expression-statement](./statements.md#expression-statements),
+then it has a special name: the **determinant** — as it determines the block-expression’s value.
+In the example above, the determinant is `42;`.
+
+If the last statement of a block-expression is not an expression-statement, then the expression has no value, and it has a void type.
+```cpl
+val blex: int = {
+	print.("evaluates, but does not have a value");
+	val value: int = 42;
+}; %> TypeError
+```
+An expression with a void type is like a void function call. These types of expressions cannot be passed around or operated on.
+(“Void” is not a real type in the type system; it’s just a marker given to expressions that execute but do not have a value.)
+
+We run into a similar situation when block-expression *has* a determinant, but that determinant itself is void.
+```cpl
+val blex: int = {
+	print.("evaluates, but does not have a value");
+	val value: int = 42;
+	print.(value); % <-- determinant
+}; %> TypeError
+```
+Because the `print` is a void function, the block-expression has a void type, thus can’t be assigned to the variable.
+(The only exception is when a void block-expression is returned from a void function.
+See the [Functions](./functions.md) chapter for details.)
+
+A block-expression might never finish execution!
+```cpl
+val mut count: int = 0;
+val blex: int = {
+	while count >= 0 do {
+		set count += 1;
+	};
+	42; % <-- determinant
+}; % no type error
+```
+In this example, static control flow analysis can reach the determinant and determine the block’s type, so the assignment is valid.
+At runtime however, the [`while` loop](./statements.md#loops) runs indefinitely, so the variable never actually gets assigned.
+While this program compiles successfully, it’ll crash when run.
+
+Block-expressions may contain `break`, `skip`, `return`, and `throw` statements (depending on lexical context).
+These are called **abrupt completions**, because they abruptly transfer control out of the block
+without finishing the evaluation of it.
+Specifically, `break` or `skip` statements will apply to the containing loop,
+and `return`/`throw` statements will apply to the containing function.
+```cpl
+func f(mut i: int): str {
+	while true do {
+		set i += 1;
+		val is_threeven: bool = mod.(i, 3) == 0 && {
+			skip; % restarts the `while` loop, not this block-expression
+		}; % no type error
+		val is_divisble_by_7: bool = mod.(i, 7) == 0 && {
+			return "exit"; % returns from the function, not this block-expression
+		}; % no type error
+	};
+	return "done";
+}
+```
+Because these statements are abrupt, the end of the block-expression is unreachable via control flow analysis;
+therefore the block-expression is of type `nothing`, the bottom type (a subtype of every type).
+That’s why these block-expressions are assignable to `bool` variables, and we don’t get type errors as we did in the examples above.
+The difference is that the compiler can determine that a *void* block-expression will finish evaluation but will not produce a value;
+whereas it knows that block-expressions with abrupt statements will never even finish evaluation.
+
+This table highlights some exceptional cases.
+
+| Case                                                    | Block Type | Runtime Behavior            | Is Assignable             |
+| ------------------------------------------------------- | ---------- | --------------------------- | ------------------------- |
+| last statement is an expression-statement with type `T` | `T`        | completes execution         | yes, to type `T` or wider |
+| last statement is a void expression-statement           | void       | completes execution         | no                        |
+| last statement is not an expression-statement           | void       | completes execution         | no                        |
+| contains an expression of type `nothing`                | `nothing`  | fails to complete execution | yes, to any type          |
+| contains an abrupt statement                            | `nothing`  | fails to complete execution | yes, to any type          |
+| contains an infinite loop or infinite recursive call    | `T`        | fails to complete execution | yes, to type `T` or wider |
 
 
 ### Property Access
 ```
-<Tuple  | List> `.` int-literal
-<Record | Dict> `.` word
-<Object>        `.` `[` <Object> `]`
+<Tuple>  `.` int-literal
+<Record> `.` word
+<Object> `.` `[` <Object> `]`
 
-<Tuple  | List> `?.` int-literal
-<Record | Dict> `?.` word
-<Object>        `?.` `[` <Object> `]`
+<Tuple>  `?.` int-literal
+<Record> `?.` word
+<Object> `?.` `[` <Object> `]`
 
-<Tuple  | List> `!.` int-literal
-<Record | Dict> `!.` word
-<Object>        `!.` `[` <Object> `]`
+<Tuple>  `!.` int-literal
+<Record> `!.` word
+<Object> `!.` `[` <Object> `]`
 ```
 The **property accesss** syntax is a unary operator on an object.
 The object it operates on is called the **binding object** and
@@ -236,40 +358,46 @@ the property it accesses is called the **bound property** (or index, field, memb
 There are two flavors of the operator: literal access and computed access.
 
 Literal access requires a literal (integer or word) and can be used to access a literal bound property.
-Tuples/lists take integer literal properties and records/dicts take word (key) properties.
+Tuples take integer literal properties and records take word (key) properties.
 For example: `tuple.3` and `record.prop`.
 
 Computed access must be used when the bound property name is computed,
 such as an operation of expressions, e.g., `map.[expr]`.
-The expression in the brackets evaluates to an item index, element, or case antecedent
+The expression in the brackets evaluates to an index, key, element, or antecedent
 of the binding object and must be of the correct type.
 
 More information about property access when used on collections
 can be found in the [Types](./types) chapter.
 
-#### Optional Access
-The **optional access** syntax is almost the same as property access, except that
+#### Maybe Access
+The **maybe access** syntax is almost the same as property access, except that
 the operator produces the `null` value if and when there is no such bound property
 on the binding object at runtime. This operator is designed to work with
-optional entries on types, such as optional properties on a record type.
+optional entries on types, such as optional properties on a record type, as well as
+[the `Maybe` algeraic sum type] (link pending).
 
-Given a record `record` of type `[a: bool, b?: int]`,
-the expression `record.b` will produce that value if it exists,
-but will result in a runtime error if there’s no actual value at that location.
-Using the optional access operator though, `record?.b` will produce `record.b`
-if it exists, but otherwise will produce `null` and avoid the error.
+Given a record `record` of type `(a: bool, b?: int)`,
+the expression `record.b` would result in a crash if there’s no actual value at that location,
+so the compiler raises an error when using that syntax.
+Using the maybe access operator though, `record?.b` will produce the value at `record.b`
+if it exists, but otherwise will produce `null` and avoid the crash.
 An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
+
+Conversely, maybe access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
 
 Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
 or that there’s no value for the `bar` property bound to `foo`,
-and the optional access operator is doing its job.
+and the maybe access operator is doing its job.
+Thus the recommended approach is to use
+[the `Maybe` discriminated union type] (link pending)
+for all entries in a collection that may contain `null`.
 
-If the *binding object is `null`*, then the optional access operator also produces `null`.
+If the *binding object is `null`*, then the maybe access operator also produces `null`.
 For example, `null.property` is a type error (and if the compiler were bypassed,
 it would cause a runtime error), but `null?.property` will simply produce `null`.
-This facet makes optional access safe to use when chained.
+This facet makes maybe access safe to use when chained.
 
-When the optional access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
+When the maybe access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
 This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `null`,
 then the whole expression also results in `null`.
 However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
@@ -278,53 +406,33 @@ and will result in a runtime error if `x?.y` is `null`.
 **Type-Checking Note:**
 
 For static types (e.g., tuples and records),
-if the property is required, both regular and optional access operators do not modify the property’s declared type.
-If the property is optional,
-the regular access operator unions the property type with `void` and
-the optional access operator unions the property type with `null`.
+either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
+When the maybe access operator is used for an optional entry, the entry type is unioned with `null`.
 ```
-let record: [required: bool, optional?: int] = my_record;
+claim record: (required: bool, optional?: int);
 record.required;  %: bool
-record?.required; %: bool
-record.optional;  %: int | void
+record?.required; %> TypeErrorInvalidOperation
+record.optional;  %> TypeErrorInvalidOperation
 record?.optional; %: int | null
 ```
 For dynamic types (e.g., lists and dicts),
-the regular access operator treats all properties as required (does not modify the declared type), but
-the optional access operator treats all properties as optional (unions the property type with `null`).
+both normal and maybe access operators are allowed.
+The normal access operator treats all entries as required (does not modify the declared type), and
+the maybe access operator treats all entries as optional (unions the property type with `null`).
 ```
-let dict: [: float] = my_dict;
-dict.prop;  %: float
-dict?.prop; %: float | null
+claim dict: [: float];
+dict.[@prop];  %: float
+dict?.[@prop]; %: float | null
 ```
 
-#### Claim Access
-The **claim access** syntax is just like regular property access, except that
-it makes a **claim** (a compile-time type assertion) that the accessed property
-is not of type `void`. This is useful when accessing optional entries of compound types.
-
-Claim access has the same runtime behavior of regular property access.
-Its purpose is to tell the type-checker,
-“I know what I’m doing; This property exists and its type is not type `void`.”
-```
-let item: [str, ?: int] = ["apples", 42];
-let quantity: int = item!.1;
-```
-The expression `item!.1` has type `int`, despite being an optional entry.
-It will produce the value `42` at runtime.
-Note that bypassing the compiler’s type-checking process should be done carefully.
-If not used correctly, it could lead to runtime errors.
-```
-let item: [str, ?: int] = ["apples"];
-let quantity: int = item!.1; % runtime error!
-```
-An equivalent syntax exists for dynamic access: `item!.[expr]`, etc.
+#### Result Access
+// TODO: v0.5.0
 
 
 ### Logical Negation, Emptiness
 ```
-`!` <unknown>
-`?` <unknown>
+`!` <anything>
+`?` <anything>
 ```
 The **logical negation** operator, `!`, returns the opposite boolean value of the operand’s “logical value”.
 
@@ -338,21 +446,23 @@ The **emptiness operator**, `?`, determines whether a value is considered “emp
 A value is “empty” if it’s “falsy”, if it’s a zero numeric value (`0`, `0.0`, or `-0.0`),
 or if it’s an empty string or empty collection (such as an array or set).
 
-| “Falsy” Values | “Empty” Values | “Truthy” Values |
-| -------------- | -------------- | --------------- |
-| `null`         | `null`         |                 |
-| `false`        | `false`        | `true`          |
-|                | `0`            | all integers    |
-|                | `0.0`, `-0.0`  | all floats      |
-|                | `""`           | all strings     |
-|                | `[]`, `{}`     | all collections |
-|                |                | any other value |
+| “Falsy” Values | “Empty” Values   | “Truthy” Values |
+| -------------- | ---------------- | --------------- |
+| `null`         | `null`           |                 |
+| `false`        | `false`          | `true`          |
+|                |                  | all symbols     |
+|                | `0`              | all integers    |
+|                | `+0`             | all naturals    |
+|                | `0.0`, `-0.0`    | all floats      |
+|                | `""`             | all strings     |
+|                | `()`, `[]`, `{}` | all collections |
+|                |                  | any other value |
 
 
 ### Mathematical Affirmation, Mathematical Negation
 ```
-`+` <int | float>
-`-` <int | float>
+`+` <Number>
+`-` <Number>
 ```
 The **mathematical affirmation** operator, `+`, and
 the **mathematical negation** operator, `-`,
@@ -365,8 +475,8 @@ These operators can be chained, and when done so, are grouped right-to-left.
 For example, `-+-8` is equivalent to `-(+(-8))`.
 
 ```
-let int_p = 512;
-let int_n = -\x200;
+val int_p = 512;
+val int_n = -\x200;
 
 +int_p; %== 512
 +int_n; %== -512
@@ -377,21 +487,166 @@ let int_n = -\x200;
 
 Recognize that number tokens can begin with **U+002B PLUS SIGN** or **U+002D HYPHEN-MINUS**,
 even if they’re prefixed with a radix.
-For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`.
-The same is true for `+\x200`.
-Even though these tokens’ values are the same as the computed values of
-the expressions `-(\x200)` and `+(\x200)`,
-this is important to mention because it could affect how we write
+For example, `-\x200` is lexed as a single token, and not two tokens `-` and `\x200`,
+even though its value is equivalent to the result of the operation `-(\x200)`.
+The same is true for `+\x200`, but instead this is lexed as a natural number literal,
+which is a completely different type than the result of applying `+` to `\x200`.
+For that, we’d need to insert either parentheses or whitespace (`+(\x200)` or `+ \x200`).
+This is important to mention because it could also affect how we write
 [additive expressions](#parsing-additive-expressions).
+
+
+### Numeric Conversions
+```
+int   <Number>
+nat   <Number>
+float <Number>
+```
+The keywords `int`, `nat`, and `float` can also be used as unary prefix operators.
+They convert their numeric operand into their respective type. If the operand is not numeric, a type error is raised.
+```cpl
+val my_int: int   = 7;
+val my_nat: nat   = +4;
+val my_flt: float = -3.5;
+
+2 * int my_flt;     % converts -3.5 to -3; result is same as `2 * -3`
+float my_int / 3.5; % converts 7 to 7.0; result is same as `7.0 / 3.5`
+2 - int my_nat;     % converts +4 to 4; result is same as `2 - 4`
+nat my_flt;         % negative floats are converted to `+0`
+```
+When converting floats to integers/naturals, the “round-toward-zero” (truncation) method is used.
+Both `-0.0` and `0.0` convert to `0`/`+0`.
+When converting to integers, if the floating-point number is greater than the maximal integer *2^63 &minus; 1*, the maximal integer is returned;
+likewise for less than the minimal integer *&minus;2^63*.
+When converting to naturals, if the floating-point number is greater than the maximal natural *2^64 &minus; 1*, the maximal natural is returned;
+if the float is negative, the natural number `+0` is returned.
+For NaN and other unrepresentable values, an error is raised.
+
+When converting integers/naturals to floats, some precision will be lost for numbers greater than *2^53*
+and for numbers less than *&minus;2^53*, as per the *IEEE 754* specification.
+
+Integer conversion to and from natural numbers does not change bitwise representation, just reinterpretation.
+Any (signed) integer value between *-(2^63)* and *-1* is just added mathematically to *2^64* to get its (unsigned) natural interpretation
+(that is, underflow occurs).
+Conversely, natural numbers *2^63* or larger are reinterpreted as negative integers by subtracting *2^64* from their value (overflow occurs).
+
+
+### Type Cast/Claim
+```
+<Object>   as  <Class>
+<Object>   as? <Class>
+<Object>   as! <Class>
+<anything> as  `<` <Type> `>`
+```
+The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
+This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
+and the object to which `expr` evaluates is converted to a `Klass` instance at runtime.
+If the runtime conversion is not possible, than an error is thrown.
+
+`expr as? Klass` always returns a `Maybe` object and never throws.
+If `expr` is a `Klass` instance, a `Some` is returned; otherwise it returns a `None`.
+
+`expr as! Klass` always returns a `Result` object and never throws.
+If `expr` is a `Klass` instance, an `Ok` is returned; otherwise it returns a `Fail`.
+
+The expression `expr as <T>` tells the type system to treat `expr` as type `T`,
+even though it might have been computed as a different type.
+This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
+(We say “claim” instead of “assert”, because no runtime error is thrown.)
+
+Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
+or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
+We can use a claim to tell the compiler, “I know what I’m doing and the type should be *that*.”
+
+Type claims are a general form of [non-null assertions] (link pending).
+For example, we could use non-null assertion to say that an optional entry exists on an object:
+```
+val mut item: (str, ?: int) = ("apples", 42);
+val quantity: int = item?.1~?;
+```
+Since `item.1` is optional, `item?.1` is of type `int | null`.
+By using the non-null assertion `~?`, we can subtract type null.
+
+The more general form of this is simply claiming that `item?.1` is of type `int`:
+```
+val mut item: (str, ?: int) = ("apples", 42);
+val quantity: int = item?.1 as <int>;
+```
+
+Type claims can be used in situations where non-null assertion cannot.
+Whereas non-null assertions can only tell the compiler that a property *exists*,
+type claims can widen, narrow, or shift the type of an expression.
+```
+val mut item: (str, int | str) = ("apples", 42);
+val ingredient: anything   = item.0 as <anything>;   % widening
+val quantity:   int        = item.1 as <int>;        % narrowing
+val in_stock:   int | bool = item.1 as <int | bool>; % shifting
+```
+
+The compiler will throw an error when encountering a type claim if its operand’s computed type
+and its claimed type are disjoint (i.e. if there’s no overlap).
+```
+42 as <str>; %> TypeError
+```
+
+#### Cast vs Claim
+A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
+if not, then the program throws. This operator is preferred in such circumstances.
+```
+val animal: Animal = Cat.();
+val cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
+cat.meow.();                  % calls `meow` on the `Cat` instance
+
+val dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
+dog.woof.();                  % unreachable
+```
+The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+```
+val cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
+cat_m?.meow.();                          % calls `meow`
+
+val dog_m: Maybe.<Dog> = animal as? Dog; %== None
+dog_m?.woof.();                          %== None
+
+val cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
+cat_r!.meow.();                           % calls `meow`
+
+val dog_r: Result.<Dog> = animal as! Dog; %== Fail
+dog_r?.woof.();                           %== Fail
+```
+
+A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
+but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
+That means that if it’s *not* such an instance, an error could be thrown down the line,
+for example, when attempting to access a nonexistent method.
+```
+val animal: Animal = Cat.();
+val cat: Cat = animal as <Cat>; % claim is allowed (`Animal` and `Cat` overlap)
+cat.meow.();                    % calls `meow` on the `Cat` instance
+
+val dog: Dog = animal as <Dog>; % claim is allowed (`Animal` and `Dog` overlap)
+dog.woof.();                    % throws error: method `woof` not found on `Cat` instance
+```
+
+The benefits that type claim over type cast include the following, as demonstrated in the last section.
+- We can narrow types that would otherwise be too wide.
+- We can use type operator syntax like intersections and unions.
+- We can reference non-class types and type aliases by name.
+
+A note of caution: **Type claims should never be used to “hack” the compiler**.
+Using type claims to “just get your code to compile” is never recommended,
+because it won’t prevent runtime errors and it will most likely cause more problems down the road.
+But there are cases in which human reasoning about type safety outsmarts the compiler,
+so in those cases we may use type claims to write good code.
 
 
 ### Exponentiation
 ```
-<int | float> `^` <int | float>
+<Number> `^` <Number>
 ```
 The **exponentiation** operator is valid only on number types.
 It produces the result of raising the left-hand operand to the power of the right-hand operand.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 ```
 3 ^ 2;    %== 9
@@ -439,14 +694,14 @@ and then negate, the expression should be written `-(3 ^ 2)` or `-1 * 3 ^ 2`.
 
 ### Multiplicative
 ```
-<int | float> `*` <int | float>
-<int | float> `/` <int | float>
+<Number> `*` <Number>
+<Number> `/` <Number>
 ```
 The **multiplication** operator, `*`, and
 the **division** operator, `/`,
 are valid only on number types.
 They produce the respective mathematical product and quotient of the operands.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 Multiplication is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -457,25 +712,25 @@ for any numbers `‹a›`, `‹b›`, and `‹c›`:
 ```
 
 Multiplication and division perform the standard arithmetic operations,
-keeping in mind that the result of division `/` on integers are truncated,
+keeping in mind that the result of division `/` on integers or naturals is truncated,
 and division by `0` will result in an error.
-```
-\o12 / \q11; % produces `2`
-3 / 2;       % produces `1`, since 1.5 gets truncated
-4 / 0;       % runtime error
+```cpl
++\o12 / +\q11; % produces `+2`
+3 / 2;         % produces `1`, since 1.5 gets truncated
+4 / 0;         % runtime error
 ```
 
 
 ### Additive
 ```
-<int | float> `+` <int | float>
-<int | float> `-` <int | float>
+<Number> `+` <Number>
+<Number> `-` <Number>
 ```
 The **addition** operator, `+`, and
 the **subtraction** operator, `-`,
 are valid only on number types.
 They produce the respective mathematical sum and difference of the operands.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices can be mixed, but numeric types cannot.
 
 Addition is **associative**, which means the following expressions produce the same result,
 for any numbers `‹a›`, `‹b›`, and `‹c›`:
@@ -488,6 +743,11 @@ for any numbers `‹a›`, `‹b›`, and `‹c›`:
 Addition and subtraction perform the standard arithmetic operations,
 keeping in mind that integer overflow is possible
 when going beyond the maximum/minimum integer values.
+Subtraction of naturals bounds to zero.
+```cpl
++\o12 - +\q11; % produces `+5`
++5 - +10;      % produces `+0`, since -5 gets bound from below
+```
 
 #### Parsing Additive Expressions
 [Previously in this chapter](#mathematical-affirmation-mathematical-negation)
@@ -504,7 +764,7 @@ since it thinks `+1` is a single token.
 This will lead the parser to fail, since a number token cannot follow another number token
 in the formal grammar.
 
-To fix the error, we must use whitespace indicate token boundaries.
+To fix the error, we can use whitespace indicate token boundaries.
 ```
 3 + 1
 ```
@@ -515,15 +775,15 @@ The parser receives these tokens and produces the correct expression.
 
 ### Comparative
 ```
-<int | float> `<`  <int | float>
-<int | float> `>`  <int | float>
-<int | float> `<=` <int | float>
-<int | float> `>=` <int | float>
-<int | float> `!<` <int | float>
-<int | float> `!>` <int | float>
+<Number> `<`  <Number>
+<Number> `>`  <Number>
+<Number> `<=` <Number>
+<Number> `>=` <Number>
+<Number> `!<` <Number>
+<Number> `!>` <Number>
 
-<Object> `is`   <Object>
-<Object> `isnt` <Object>
+<Object> `is`  <Class>
+<Object> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -535,7 +795,7 @@ The numerical comparative operators,
 - **not greater than** `!>`
 
 compare number types in the usual sense. The result is a boolean value.
-Integer bases as well as integers and floats can be mixed.
+Whole-number radices as well as different numeric types can be mixed.
 
 In numerical uses, `!<` is equivalent to `>=`, and `!>` is equivalent to `<=`.
 In general, however, this might not hold for future operator overloads.
@@ -543,16 +803,27 @@ For instance, if the relational operators were overloaded to mean “subset” f
 then `a !< b` (“`a` is not a strict subset of `b`”) does not necessarily mean
 that `a >= b` (“`a` is a superset of ”).
 
-The object comparative operators `is` and `isnt` are not currently available,
+When comparing mixed types in the numeric comparison operations,
+values are “promoted” to the type that encompasses the greater number of values.
+Specifically, when mixing `int` and `nat`, the `int` is converted to `nat`,
+and when mixing `int` and `float` or `nat` and `float`, the non-float value is converted to `float`.
+The order of promotion precedence:
+```
+int --> nat --> float
+```
+Conversions are made only for determining mathematical inequality; the value of the operand does not change.
+Note that conversions may be lossy; see [Numeric Conversions](#numeric-conversions) for details.
+
+The object comparative operators `is` and `!is` are not currently available,
 but they are reserved for future semantics.
 
 
 ### Equality
 ```
-<unknown> `===`  <unknown>
-<unknown> `!==`  <unknown>
-<unknown> `==`   <unknown>
-<unknown> `!=`   <unknown>
+<anything> `===`  <anything>
+<anything> `!==`  <anything>
+<anything> `==`   <anything>
+<anything> `!=`   <anything>
 ```
 These operators compare two values.
 Any type of operands are valid. The result is a boolean value.
@@ -572,9 +843,12 @@ Floating-point values and integer values are never identical, so the expression 
 
 The **equality** operator `==` determines whether two operands are considered “equal” by some definition,
 based on the type of the operands.
-For `null`, boolean, and string values, equality is one in the same with identity.
+For `null`, boolean, symbol, and string values, equality is one in the same with identity.
 For number values, equality is determined by mathematical quantity, thus `0.0 == -0.0` is `true`.
 Mixed number types of the same quantity are equal, so `42 == 42.0` is also `true`.
+Mixed-type values are converted to a common type using the “promotion” rules explained above.
+Conversions are made only for determining mathematical equality; the value of the operand does not change.
+Note that conversions may be lossy; see [Numeric Conversions](#numeric-conversions) for details.
 
 The non-identity operator `!==` is simply the logical negation of `===`, and
 the non-equality operator `!=` is simply the logical negation of `==`.
@@ -589,8 +863,8 @@ All four of these operators are **commutative**, meaning the order of operands d
 Remember: Expressions are always evaluated from left to right, so side-effects could still be observed.
 
 #### Equality by Composition
-The equality operator `==` compares compound objects by their entries.
-Two compound objects are equal if they contain equal values.
+The equality operator `==` compares compound objects by their type and entries.
+Two compound objects are equal if they have the same constructor and contain equal values.
 For tuples and lists, entries are compared index by index; for records and dicts, key by key;
 and for maps, antecedent–consequent pairs are compared recursively (as they may be objects themselves).
 Sets are equal if they contain each others’ elements.
@@ -603,13 +877,13 @@ If it can’t, it’ll just return true instead of diving down an infinitely lon
 
 Of course, the identity operator (`===`) *always* compares reference objects by reference,
 but compound data values are still compared compositionally, and the same principle applies —
-assume equal until determined otherwise.
+assume identical until determined otherwise.
 
 
 ### Conjunctive
 ```
-<unknown> `&&` <unknown>
-<unknown> `!&` <unknown>
+<anything> `&&` <anything>
+<anything> `!&` <anything>
 ```
 The **logical conjunction** operator `&&` (”and”) produces the left-hand operand if it is “falsy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -635,8 +909,8 @@ a !& b; % sugar for `!(a && b)`
 
 ### Disjunctive
 ```
-<unknown> `||` <unknown>
-<unknown> `!|` <unknown>
+<anything> `||` <anything>
+<anything> `!|` <anything>
 ```
 The **logical disjunction** operator `||` (“or”) produces the left-hand operand if it is “truthy”;
 otherwise it produces the right-hand operand. The operands may be of any type.
@@ -662,7 +936,7 @@ a !| b; % sugar for `!(a || b)`
 
 ### Conditional
 ```
-`if` <bool> `then` <unknown> `else` <unknown>
+`if` <bool> `then` <anything> `else` <anything>
 ```
 The conditional operator is a ternary operator that takes three operand expressions:
 a condition, a consequent, and an alternative.
@@ -767,25 +1041,27 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 
 
 ### Grouping
-Read about Tuples, Records, Sets, and Maps in the [Types](./types.md) chapter.
+Read about Tuples, Records, Lists, Dicts, Sets, and Maps in the [Types](./types.md) chapter.
 
 
 ### Type Property Access
 ```
-<Type> `.` int-literal
-<Type> `.` word
+<Type> `.`  int-literal
+<Type> `.`  word
+<Type> `?.` int-literal
+<Type> `?.` word
 ```
 The **type property accesss** syntax for types is analogous to the property access syntax of values.
 It accesses the index or key of a tuple or record type respectively.
 ```
-type T = [bool, int, str];
+type T = (bool, int, str);
 type T1 = T.1;             %== int
 type T_1 = T.-1;           %== str
 type T3 = T.3;             %> TypeError
 
-type R = [a: bool, b?: int, c: str];
+type R = (a: bool, b?: int, c: str);
 type Ra = R.a;                       %== bool
-type Rc = R.b;                       %== int | void
+type Rc = R?.b;                      %== int | null
 type Rd = R.d;                       %> TypeError
 ```
 
@@ -800,8 +1076,8 @@ type T = int?; % equivalent to `type T = int | null;`
 ```
 This operator is useful for describing values that might be null.
 ```
-let var hello: str? = null;
-hello = "world";
+val mut hello: str? = null;
+set hello = "world";
 ```
 
 
@@ -812,28 +1088,6 @@ hello = "world";
 To be announced.
 
 
-### List
-```
-<Type> `[]`
-```
-The **List** operator `T[]` is shorthand for `List.<T>`.
-
-
-### Tuple
-```
-<Type> `[` <Integer> `]`
-```
-The **Tuple** operator `T[‹n›]` (where `‹n›` is 0 or greater) is shorthand for a tuple type with repeated entries of `T`.
-E.g., `int[3]` is shorthand for `[int, int, int]`.
-
-
-### Set
-```
-<Type> `{}`
-```
-The **Set** operator `T{}` is shorthand for `Set.<T>`.
-
-
 ### Mutable
 ```
 `mut` <Type>
@@ -842,7 +1096,7 @@ The `mut` type operator allows properties in a complex type to be reassigned.
 It allows us to modify composite objects by adding, removing, and changing entries.
 It will also allow us to reassign fields and call mutating methods on class instances.
 ```
-let elements: mut str{} = {"water", "earth", "fire", "wind"};
+val elements: mut str{} = {"water", "earth", "fire", "wind"};
 elements.["wind"] = false;
 elements.["air"]  = true;
 elements; %== {"water", "earth", "fire", "air"}
@@ -857,27 +1111,27 @@ then attempting to modify it would result in a [Mutability Error](./errors.md#mu
 ```
 The **intersection** operator creates a strict combination of the operands.
 ```
-type T = [foo: bool] & [bar: int];
-let v: T = [
+type T = (foo: bool) & (bar: int);
+val v: T = (
 	foo= false,
 	bar= 42,
-];
+);
 ```
 
 When accessing an *intersection* of record types, we can access the *union* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
-% claim alice: Employee & Volunteer;
+);
+claim alice: Employee & Volunteer;
 alice.name;        %: str
 alice.id;          %: int
 alice.jobTitle;    %: str
@@ -889,16 +1143,16 @@ so we’re guaranteed it will have the properties that are present in *either* t
 
 Overlapping properties in an intersection are themselves intersected.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
-% claim data: A & B;
-data.key;    %: 2 | 3 % `(1 | 2 | 3) & (2 | 3 | 4)`
+);
+claim data: A & B;
+data.key;    %: 2 | 3 % gotten by `(1 | 2 | 3) & (2 | 3 | 4)`
 data.valueA; %: int
 data.valueB; %: float
 ```
@@ -913,24 +1167,24 @@ This holds for tuple types as well, accounting for indices rather than keys.
 The **union** operator creates a type that is either one operand, or the other, or some combination of both.
 ```
 type T = bool | int;
-let var v: T = false;
-v = 42;
+val mut v: T = false;
+set v = 42;
 ```
 
 When accessing a *union* of record types, we can only access the *intersection* of the properties of each type.
 ```
-type Employee = [
+type Employee = (
 	name:        str,
 	id:          int,
 	jobTitle:    str,
 	hoursWorked: float,
-];
-type Volunteer = [
+);
+type Volunteer = (
 	name:        str,
 	agency:      str,
 	hoursWorked: float,
-];
-% claim bob: Employee | Volunteer;
+);
+claim bob: Employee | Volunteer;
 bob.name;        %: str
 bob.hoursWorked; %: float
 bob.id;          %> TypeError
@@ -939,19 +1193,28 @@ bob.agency;      %> TypeError
 ```
 Type `Employee | Volunteer` is *either* an employee *or* a volunteer,
 so we’re only guaranteed it will have the properties that are present in *both* types.
-We can’t access properties that are in one type but not the other.
+With normal access, we can’t access properties that are in one type but not the other.
+
+But with [maybe access](#maybe-access), we can access a property that exists on one type but not the other,
+noting that the resulting type is unioned with `null`.
+The maybe access operator will return the property value if it exists, else `null`.
+```
+bob?.id;       %: int | null
+bob?.jobTitle; %: str | null
+bob?.agency;   %: str | null
+```
 
 Overlapping properties in a union are themselves unioned.
 ```
-type A = [
+type A = (
 	key:    1 | 2 | 3,
 	valueA: int,
-];
-type B = [
+);
+type B = (
 	key:    2 | 3 | 4,
 	valueB: float,
-];
-% claim data: A | B;
+);
+claim data: A | B;
 data.key; %: 1 | 2 | 3 | 4 % `(1 | 2 | 3) | (2 | 3 | 4)`
 ```
 

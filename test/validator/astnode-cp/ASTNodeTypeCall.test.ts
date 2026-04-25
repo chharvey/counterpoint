@@ -1,17 +1,33 @@
 import * as assert from 'node:assert';
+import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import {
 	AST,
 	TYPE,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
+import {assertEqualTypes} from '../../assert-helpers.ts';
+import {extract_lines} from '../../utils.ts';
 
 
 
-describe('ASTNodeTypeCall', () => {
-	describe('#eval', () => {
-		it('evaluates List, Dict, Set, and Map.', () => {
-			assert.deepStrictEqual(
+test.suite('ASTNodeTypeCall', () => {
+	test.suite('#varCheck', () => {
+		test.test('throws if base is not one of the allowed strings.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				SET.<str>
+				Mapping.<bool>
+			`, (src) => {
+				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).varCheck(), SyntaxError);
+			});
+		});
+	});
+
+
+	test.suite('#eval', () => {
+		test.test('evaluates List, Dict, Set, and Map.', () => {
+			assertEqualTypes(
 				[
 					'List.<null>',
 					'Dict.<bool>',
@@ -26,37 +42,25 @@ describe('ASTNodeTypeCall', () => {
 				],
 			);
 		});
-		it('Map has a default type parameter.', () => {
-			assert.deepStrictEqual(
+		test.test('Map has a default type parameter.', () => {
+			assertEqualTypes(
 				AST.ASTNodeTypeCall.fromSource('Map.<int>').eval(),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);
 		});
-		it('throws if base is not an ASTNodeTypeAlias.', () => {
-			[
-				'int.<str>',
-				'(int | float).<bool>',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable);
-			});
+		test.test('throws if base is not an ASTNodeTypeAlias.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				int.<str>
+				(int | float).<bool>
+			`, (src) => assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorNotCallable));
 		});
-		it('throws if base is not one of the allowed strings.', () => {
-			[
-				'SET.<str>',
-				'Mapping.<bool>',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), SyntaxError);
-			});
-		});
-		it('throws when providing incorrect number of arguments.', () => {
-			[
-				'List.<null, null>',
-				'Dict.<bool, bool, bool>',
-				'Set.<str, str, str, str>',
-				'Map.<int, int, int, int, int>',
-			].forEach((src) => {
-				assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorArgCount);
-			});
+		test.test('throws when providing incorrect number of arguments.', () => {
+			xjs.Array.forEachAggregated(extract_lines`
+				List.<null, null>
+				Dict.<bool, bool, bool>
+				Set.<str, str, str, str>
+				Map.<int, int, int, int, int>
+			`, (src) => assert.throws(() => AST.ASTNodeTypeCall.fromSource(src).eval(), TypeErrorArgCount));
 		});
 	});
 });

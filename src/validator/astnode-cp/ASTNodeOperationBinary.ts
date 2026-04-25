@@ -9,16 +9,14 @@ import {
 } from '../../core/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import type {ValidOperatorBinary} from '../Operator.ts';
-import {
-	ASTNodeExpression,
-	typeDeco,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
 
 /**
  * Known subclasses:
+ * - ASTNodeOperationBinaryCast
  * - ASTNodeOperationBinaryArithmetic
  * - ASTNodeOperationBinaryComparative
  * - ASTNodeOperationBinaryEquality
@@ -45,14 +43,12 @@ export abstract class ASTNodeOperationBinary extends ASTNodeOperation {
 	 * @final
 	 */
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		return this.type_do(
 			this.operand0.type(),
 			this.operand1.type(),
-			this.validator.config.compilerOptions.intCoercion,
 		);
 	}
 
-	protected abstract type_do(t0: TYPE.Type, t1: TYPE.Type, int_coercion: boolean): TYPE.Type;
+	protected abstract type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type;
 }
