@@ -1,3 +1,3 @@
-export * from './InstructionTable.js';
-export * from './Builder.js';
-export * from './Machine.js';
+export * from './InstructionTable.ts';
+export * from './Builder.ts';
+export * from './Machine.ts';

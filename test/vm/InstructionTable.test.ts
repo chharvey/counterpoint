@@ -3,7 +3,7 @@ import * as test from 'node:test';
 import {
 	type VmInstruction,
 	InstructionTable,
-} from '../../src/index.js';
+} from '../../src/vm/index.ts';
 
 
 

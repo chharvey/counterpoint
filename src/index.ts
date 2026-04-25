@@ -6,10 +6,4 @@ export * from './typer/index.ts';
 export * from './optimizer/index.ts';
 export * from './code-generator/index.ts';
 export * from './builder/index.ts';
-export {
-	type VmInstruction,
-	InstructionTable,
-	VmBuilder,
-	Machine,
-} from './vm/index.js';
 export * from './error/index.ts';

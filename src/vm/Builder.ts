@@ -1,8 +1,8 @@
-import type {Opcode} from './utils-private.js';
+import type {Opcode} from './utils-private.ts';
 import type {
 	VmInstruction,
 	InstructionTable,
-} from './InstructionTable.js';
+} from './InstructionTable.ts';
 
 
 

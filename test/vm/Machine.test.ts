@@ -4,7 +4,7 @@ import {
 	InstructionTable,
 	VmBuilder,
 	Machine,
-} from '../../src/index.js';
+} from '../../src/vm/index.ts';
 
 
 

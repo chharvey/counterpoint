@@ -1,10 +1,10 @@
 import * as xjs from 'extrajs';
-import type {Opcode} from './utils-private.js';
+import type {Opcode} from './utils-private.ts';
 import type {
 	VmInstruction,
 	InstructionTable,
-} from './InstructionTable.js';
-import type {Code} from './Builder.js';
+} from './InstructionTable.ts';
+import type {Code} from './Builder.ts';
 
 
 

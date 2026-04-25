@@ -1,5 +1,5 @@
-import type {Opcode} from './utils-private.js';
-import type {Machine} from './Machine.js';
+import type {Opcode} from './utils-private.ts';
+import type {Machine} from './Machine.ts';
 
 
 

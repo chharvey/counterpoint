@@ -4,7 +4,7 @@ import {
 	type VmInstruction,
 	InstructionTable,
 	VmBuilder,
-} from '../../src/index.js';
+} from '../../src/vm/index.ts';
 
 
 
