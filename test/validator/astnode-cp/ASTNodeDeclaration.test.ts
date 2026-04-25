@@ -11,17 +11,17 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
-} from '../../../src/index.js';
-import {assert_instanceof} from '../../../src/lib/index.js';
+} from '../../../src/index.ts';
+import {assert_instanceof} from '../../../src/lib/index.ts';
 import {
 	assert_shallowStrictEqual,
 	assertEqualTypes,
 	assertAssignable,
-} from '../../assert-helpers.js';
+} from '../../assert-helpers.ts';
 import {
 	setupScript,
 	typeUnit,
-} from '../../helpers.js';
+} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
