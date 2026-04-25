@@ -47,10 +47,10 @@ is the least multiple of 8 greater than or equal to the actual number of bytes i
 An object can have no padding (0 bytes) if its `body` length is already a multiple of 8 bytes.
 
 Below are some equivalent formulae computing the number of padding bytes needed for a given `payload_length`.
-```cp
-function padding1(payload_length: int): int => mod.(8 - mod.(payload_length, 8), 8);
-function padding2(payload_length: int): int => 8 * ceiling.(float payload_length / 8.0) - payload_length;
-function padding3(payload_length: int): int => 8 * (payload_length / 8 + 1) - payload_length;
+```cpl
+func padding1(payload_length: int): int => mod.(8 - mod.(payload_length, 8), 8);
+func padding2(payload_length: int): int => 8 * ceiling.(float payload_length / 8.0) - payload_length;
+func padding3(payload_length: int): int => 8 * (payload_length / 8 + 1) - payload_length;
 ```
 
 The layout of each object encoding in the heap is as follows:
@@ -72,16 +72,16 @@ The validation schemes are notated by an [attribute grammar](./notation.md#attri
 All validation productions for a given type should be mutually exclusive and collectively exhausted;
 if not, the validation productions must be interpreted in order of precedence.
 
-`objtype` Byte | Type   | Name                       | Length   | Mutable? | Payload Data
--------------- | ------ | -------------------------- | -------- | -------- | ------------
-`\x0{0-3}`     | Type 0 | [Special](#type-0-special) | fixed    | no       | none
-`\x1{2,4,8}`   | Type 1 | [Integer](#type-1-integer) | fixed    | no       | 2 bytes of i16 / 4 bytes of i32 / 8 bytes of i64
-`\x2{2,4,8}`   | Type 2 | [Float](#type-2-float)     | fixed    | no       | 2 bytes of f16 / 4 bytes of f32 / 8 bytes of f64
-`\x38`         | Type 3 | [Address](#type-3-address) | fixed    | yes      | 8 bytes of i64
-`\x40`         | Type 4 | [String](#type-4-string)   | variable | no       | UTF-8 string encoding
-`\x50`         | Type 5 | [Binary](#type-5-binary)   | variable | yes      | any sequence of bytes
-`\x60`         | Type 6 | [Struct](#type-6-struct)   | variable | yes      | sequence of objects
-`\x70`         | Type 7 | [Array](#type-7-array)     | variable | yes      | 1 byte of i8 metadata; then array data
+| `objtype` Byte | Type   | Name                       | Length   | Mutable? | Payload Data                                     |
+| -------------- | ------ | -------------------------- | -------- | -------- | ------------------------------------------------ |
+| `\x0{0-3}`     | Type 0 | [Special](#type-0-special) | fixed    | no       | none                                             |
+| `\x1{2,4,8}`   | Type 1 | [Integer](#type-1-integer) | fixed    | no       | 2 bytes of i16 / 4 bytes of i32 / 8 bytes of i64 |
+| `\x2{2,4,8}`   | Type 2 | [Float](#type-2-float)     | fixed    | no       | 2 bytes of f16 / 4 bytes of f32 / 8 bytes of f64 |
+| `\x38`         | Type 3 | [Address](#type-3-address) | fixed    | yes      | 8 bytes of i64                                   |
+| `\x40`         | Type 4 | [String](#type-4-string)   | variable | no       | UTF-8 string encoding                            |
+| `\x50`         | Type 5 | [Binary](#type-5-binary)   | variable | yes      | any sequence of bytes                            |
+| `\x60`         | Type 6 | [Struct](#type-6-struct)   | variable | yes      | sequence of objects                              |
+| `\x70`         | Type 7 | [Array](#type-7-array)     | variable | yes      | 1 byte of i8 metadata; then array data           |
 
 
 ### Type 0: Special
@@ -90,12 +90,12 @@ There exists no `body` for this type.
 The following table describes special bytes and their values.
 Unlisted bytes are reserved for future use.
 
-`objtype` Byte | Value
--------------- | -----
-`\x00`         | default
-`\x01`         | the `null` value
-`\x02`         | the `false` value
-`\x03`         | the `true` value
+| `objtype` Byte | Value             |
+| -------------- | ----------------- |
+| `\x00`         | default           |
+| `\x01`         | the `null` value  |
+| `\x02`         | the `false` value |
+| `\x03`         | the `true` value  |
 
 The byte `\x00` is the initial value of each byte and may be used as a filler for sparse [arrays](#type-7-array).
 Bytes `\x04`–`\x0f` are reserved for future special values.
