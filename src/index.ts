@@ -7,7 +7,6 @@ export * from './optimizer/index.ts';
 export * from './code-generator/index.ts';
 export * from './builder/index.ts';
 export {
-	Stack,
 	type Instruction as VMInstruction,
 	InstructionTable,
 	Builder as VMBuilder,

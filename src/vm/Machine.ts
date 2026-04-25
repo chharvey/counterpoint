@@ -1,5 +1,5 @@
+import * as xjs from 'extrajs';
 import type {Opcode} from './utils-private.js';
-import {Stack} from './Stack.js';
 import type {
 	Instruction,
 	InstructionTable,
@@ -24,9 +24,9 @@ export class Machine<T> {
 	/** Pointer to current instruction. */
 	private instruction_pointer: bigint = 0n;
 	/** Operand stack. */
-	private readonly operand_stack = new Stack<T>();
+	private readonly operand_stack = new xjs.Stack<T>();
 	/** Call stack. */
-	private readonly call_stack = new Stack<Frame>();
+	private readonly call_stack = new xjs.Stack<Frame>();
 
 	/**
 	 * Construct a new Machine object.
