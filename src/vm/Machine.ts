@@ -4,7 +4,7 @@ import type {
 	VmInstruction,
 	InstructionTable,
 } from './InstructionTable.ts';
-import type {Code} from './Builder.ts';
+import type {Code} from './VmBuilder.ts';
 
 
 
