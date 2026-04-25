@@ -9,3 +9,4 @@
 1. [Counterpoint Programming Language: Statements](./language-statements.md)
 1. [Counterpoint Programming Language: Source File](./language-source-file.md)
 1. [Intrinsics](./intrinsics.md)
+1. [The Heap](./heap.md)
