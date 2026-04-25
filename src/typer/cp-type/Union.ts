@@ -147,11 +147,11 @@ export class Union extends Combinable {
 		// (A1 & A2 & B1 & B2 & E & F) | (A1 & A2 & C1 & C2 & F & G) | (A1 & A2 & D1 & D2 & E & G)
 		// == (A1 & A2) & ((B1 & B2 & E & F) | (C1 & C2 & F & G) | (D1 & D2 & E & G))
 		if (this.operands.every((s) => s instanceof Intersection)) {
-			const intersections: readonly ReadonlySet<Type>[] = (this.operands as ReadonlyArrayOfAtLeast2<Intersection>).map((s) => new Set<Type>(s.operands));
-			const common:        ReadonlySet<Type>            = intersections.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
+			const intersections_data = (this.operands as ReadonlyArrayOfAtLeast2<Intersection>).map((intersection) => new Set<Type>(intersection.operands)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
+			const common: ReadonlySet<Type> = intersections_data.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
 
 			if (common.size) {
-				const differing: readonly ReadonlySet<Type>[] = intersections.map((intersection) => xjs.Set.difference(intersection, common, language_types_equal));
+				const differing = intersections_data.map((intersection_data) => xjs.Set.difference(intersection_data, common, language_types_equal)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
 				return Intersection.all(...common, Union.all(differing.map((types) => Intersection.all(...types))));
 			}
 		}
