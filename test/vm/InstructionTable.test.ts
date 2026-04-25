@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
-	type VMInstruction as Instruction,
+	type VmInstruction,
 	InstructionTable,
 } from '../../src/index.js';
 
@@ -11,7 +11,7 @@ test.suite('InstructionTable', () => {
 	// eslint-disable-next-line @typescript-eslint/init-declarations
 	let table: InstructionTable<number>;
 
-	const mock_instruction: Instruction<number> = {
+	const mock_instruction: VmInstruction<number> = {
 		opcode: 0n,
 		name:   'noop',
 		arity:  0n,

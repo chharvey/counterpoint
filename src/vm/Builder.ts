@@ -1,6 +1,6 @@
 import type {Opcode} from './utils-private.js';
 import type {
-	Instruction,
+	VmInstruction,
 	InstructionTable,
 } from './InstructionTable.js';
 
@@ -28,7 +28,7 @@ export type Code<T> = {
  * An assembly code generator.
  * @typeparam T the type of items in an operand {@link Stack}
  */
-export class Builder<T> {
+export class VmBuilder<T> {
 	/** A list of constant operands. */
 	private readonly _data: T[] = [];
 
@@ -66,7 +66,7 @@ export class Builder<T> {
 	 */
 	public push(name: string, args: T[] = []): this {
 		// Look up the instruction in the instruction table.
-		const instr: Instruction<T> | null = this.instruction_table.getByName(name);
+		const instr: VmInstruction<T> | null = this.instruction_table.getByName(name);
 		if (!instr) {
 			throw new Error(`Unable to find instruction with name \`${ name }\`.`);
 		}

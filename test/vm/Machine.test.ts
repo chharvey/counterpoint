@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	InstructionTable,
-	VMBuilder as Builder,
+	VmBuilder,
 	Machine,
 } from '../../src/index.js';
 
@@ -32,7 +32,7 @@ test.suite('Machine', () => {
 					},
 				});
 			const machine = new Machine<Operand>(
-				new Builder<Operand>(table)
+				new VmBuilder<Operand>(table)
 					.push('push', [2])
 					.push('push', [3])
 					.push('add')
@@ -81,7 +81,7 @@ test.suite('Machine', () => {
 					},
 				});
 			const machine = new Machine<Operand>(
-				new Builder<Operand>(table)
+				new VmBuilder<Operand>(table)
 					.push('push', [2])
 					.push('push', [3])
 					.push('call', ['add_fun'])

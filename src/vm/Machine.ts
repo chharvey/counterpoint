@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import type {Opcode} from './utils-private.js';
 import type {
-	Instruction,
+	VmInstruction,
 	InstructionTable,
 } from './InstructionTable.js';
 import type {Code} from './Builder.js';
@@ -98,7 +98,7 @@ export class Machine<T> {
 		while (this.instruction_pointer < this.code.code.length) {
 			// read the current opcode and arity
 			const [opcode, arity]: [Opcode, bigint] = [this.nextCode(), this.nextCode()];
-			const instr: Instruction<T> | null = this.instruction_table.getByOpcode(opcode);
+			const instr: VmInstruction<T> | null = this.instruction_table.getByOpcode(opcode);
 			if (!instr) {
 				throw new Error(`Unable to find instruction with opcode ${ opcode }`);
 			}

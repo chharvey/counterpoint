@@ -1,22 +1,22 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
-	type VMInstruction as Instruction,
+	type VmInstruction,
 	InstructionTable,
-	VMBuilder as Builder,
+	VmBuilder,
 } from '../../src/index.js';
 
 
 
-test.suite('Builder', () => {
+test.suite('VmBuilder', () => {
 	// eslint-disable-next-line @typescript-eslint/init-declarations
-	let builder: Builder<number>;
+	let builder: VmBuilder<number>;
 
-	const noop: Instruction<number>['action'] = (_machine, _args) => undefined;
+	const noop: VmInstruction<number>['action'] = (_machine, _args) => undefined;
 
 
 	test.beforeEach(() => {
-		builder = new Builder<number>(new InstructionTable<number>().add({
+		builder = new VmBuilder<number>(new InstructionTable<number>().add({
 			opcode: 0n,
 			name:   'noop',
 			arity:  0n,
