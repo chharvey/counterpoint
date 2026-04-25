@@ -36,14 +36,8 @@ export class Intersection extends Combinable {
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
-	public static all(types: readonly Type[]): Type;
-	public static all(...types: readonly Type[]): Type;
-	public static all(arg0?: readonly Type[] | Type, ...args: readonly Type[]): Type {
-		return arg0 instanceof Array
-			? Intersection.all(...arg0)
-			: arg0
-				? [arg0, ...args].reduce((a, b) => a.intersect(b))
-				: ANYTHING;
+	public static all(...types: readonly Type[]): Type {
+		return types.reduce((a, b) => a.intersect(b), ANYTHING);
 	}
 
 
@@ -153,7 +147,7 @@ export class Intersection extends Combinable {
 
 			if (common.size) {
 				const differing = unions_data.map((union_data) => xjs.Set.difference(union_data, common, language_types_equal)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
-				return Union.all(...common, Intersection.all(differing.map((types) => Union.all(...types))));
+				return Union.all(...common, Intersection.all(...differing.map((types) => Union.all(...types))));
 			}
 		}
 		return this;

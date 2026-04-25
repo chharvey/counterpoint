@@ -590,10 +590,10 @@ test.suite('ASTNodeExpression', () => {
 							c.key.id,
 							expected[i],
 						]))),
-						new TYPE.Set(TYPE.Union.all(expected), true),
+						new TYPE.Set(TYPE.Union.all(...expected), true),
 						new TYPE.Map(
-							TYPE.Union.all([typeUnit('a'), TYPE.INT, TYPE.FLOAT]),
-							TYPE.Union.all(expected),
+							TYPE.Union.all(typeUnit('a'), TYPE.INT, TYPE.FLOAT),
+							TYPE.Union.all(...expected),
 							true,
 						),
 					],

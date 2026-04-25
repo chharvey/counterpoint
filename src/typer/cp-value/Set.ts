@@ -65,7 +65,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	 * Returns a TYPE.Set whose type argument is the union of the types of this ValueSet’s elements.
 	 */
 	public override toType(): TYPE.Set {
-		return new TYPE.Set(TYPE.Union.all([...this.elements].map<TYPE.Type>((el) => el.toType())));
+		return new TYPE.Set(TYPE.Union.all(...[...this.elements].map<TYPE.Type>((el) => el.toType())));
 	}
 
 	public get(el: Value): ValueBoolean {

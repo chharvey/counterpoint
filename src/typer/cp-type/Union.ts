@@ -34,14 +34,8 @@ export class Union extends Combinable {
 	 * @param types the types to union
 	 * @returns the union
 	 */
-	public static all(types: readonly Type[]): Type;
-	public static all(...types: readonly Type[]): Type;
-	public static all(arg0?: readonly Type[] | Type, ...args: readonly Type[]): Type {
-		return arg0 instanceof Array
-			? Union.all(...arg0)
-			: arg0
-				? [arg0, ...args].reduce((a, b) => a.union(b))
-				: NOTHING;
+	public static all(...types: readonly Type[]): Type {
+		return types.reduce((a, b) => a.union(b), NOTHING);
 	}
 
 
@@ -120,7 +114,7 @@ export class Union extends Combinable {
 	@differenceRules
 	public override subtract(t: Type): Type {
 		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
-		return Union.all(this.operands.map((s) => s.subtract(t)));
+		return Union.all(...this.operands.map((s) => s.subtract(t)));
 	}
 
 	@strictEqual
@@ -152,7 +146,7 @@ export class Union extends Combinable {
 
 			if (common.size) {
 				const differing = intersections_data.map((intersection_data) => xjs.Set.difference(intersection_data, common, language_types_equal)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
-				return Intersection.all(...common, Union.all(differing.map((types) => Intersection.all(...types))));
+				return Intersection.all(...common, Union.all(...differing.map((types) => Intersection.all(...types))));
 			}
 		}
 		return this;
