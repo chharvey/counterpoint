@@ -12,9 +12,9 @@ export type Instruction<T> = {
 	/** A unique identifying number for this Instruction. */
 	readonly opcode: Opcode,
 	/** Readable name for this Instruction. */
-	readonly name: string,
+	readonly name:   string,
 	/** Number of arguments this Instruction takes. */
-	readonly arity: bigint,
+	readonly arity:  bigint,
 	/** The action that this Instruction will perform. */
 	readonly action: (machine: Machine<T>, args: bigint[]) => void,
 };
@@ -33,7 +33,7 @@ export class InstructionTable<T> {
 	 * Is this InstructionTable empty?
 	 * @return `true` if this InstructionTable contains no items
 	 */
-	get isEmpty(): boolean {
+	public get isEmpty(): boolean {
 		return this.map.size === 0;
 	}
 
@@ -42,7 +42,7 @@ export class InstructionTable<T> {
 	 * @param  opcode the opcode of the Instruction to get
 	 * @return        the Instruction with the given opcode, or `null`
 	 */
-	getByOpcode(opcode: Opcode): Instruction<T> | null {
+	public getByOpcode(opcode: Opcode): Instruction<T> | null {
 		return this.map.get(opcode) ?? null;
 	}
 
@@ -51,7 +51,7 @@ export class InstructionTable<T> {
 	 * @param  name the name of the Instruction to get
 	 * @return      the Instruction with the given name, or `null`
 	 */
-	getByName(name: string): Instruction<T> | null {
+	public getByName(name: string): Instruction<T> | null {
 		return [...this.map.values()].find((inst) => inst.name === name) ?? null;
 	}
 
@@ -59,7 +59,7 @@ export class InstructionTable<T> {
 	 * Returns a list of symbols for use in the `Code` struct.
 	 * @return a list of pairs of opcode and name of each instruction in this InstructionTable
 	 */
-	getSymbols(): Map<Opcode, string> {
+	public getSymbols(): Map<Opcode, string> {
 		return new Map([...this.map.values()].map((instr) => [instr.opcode, instr.name])); // using `instr.opcode` instead of map keys for robustness
 	}
 
@@ -68,7 +68,7 @@ export class InstructionTable<T> {
 	 * @param  instruction the Instruction to add
 	 * @return             `this`
 	 */
-	add(instruction: Instruction<T>): this {
+	public add(instruction: Instruction<T>): this {
 		this.map.set(instruction.opcode, instruction);
 		return this;
 	}

@@ -1,4 +1,5 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import * as test from 'node:test';
 import {
 	InstructionTable,
 	VMBuilder as Builder,
@@ -7,9 +8,9 @@ import {
 
 
 
-describe('Machine', () => {
-	describe('#run', () => {
-		it('basic operations.', () => {
+test.suite('Machine', () => {
+	test.suite('#run', () => {
+		test.test('basic operations.', () => {
 			type Operand = number;
 			const table = new InstructionTable<Operand>()
 				.add({
@@ -42,7 +43,7 @@ describe('Machine', () => {
 			assert.strictEqual(machine.operandPop(), 5);
 		});
 
-		it('function calls.', () => {
+		test.test('function calls.', () => {
 			type Operand = number | string;
 			const table = new InstructionTable<Operand>()
 				.add({

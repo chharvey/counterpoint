@@ -1,19 +1,21 @@
-import * as assert from 'assert';
+import * as assert from 'node:assert';
+import * as test from 'node:test';
 import {
-	VMInstruction as Instruction,
+	type VMInstruction as Instruction,
 	InstructionTable,
 	VMBuilder as Builder,
 } from '../../src/index.js';
 
 
 
-describe('Builder', () => {
+test.suite('Builder', () => {
+	// eslint-disable-next-line @typescript-eslint/init-declarations
 	let builder: Builder<number>;
 
-	const noop: Instruction<number>['action'] = (_machine, _args) => {};
+	const noop: Instruction<number>['action'] = (_machine, _args) => undefined;
 
 
-	beforeEach(() => {
+	test.beforeEach(() => {
 		builder = new Builder<number>(new InstructionTable<number>().add({
 			opcode: 0n,
 			name:   'noop',
@@ -33,15 +35,15 @@ describe('Builder', () => {
 	});
 
 
-	describe('.constructor', () => {
-		it('constructs a new empty builder.', () => {
+	test.suite('.constructor', () => {
+		test.test('constructs a new empty builder.', () => {
 			assert.deepStrictEqual(builder.instructions, []);
 		});
 	});
 
 
-	describe('#push', () => {
-		it('pushes an instruction to the builder.', () => {
+	test.suite('#push', () => {
+		test.test('pushes an instruction to the builder.', () => {
 			builder.push('noop', []);
 			assert.deepStrictEqual(builder.instructions, [
 				0n, // opcode
@@ -49,7 +51,7 @@ describe('Builder', () => {
 			]);
 		});
 
-		it('pushses an instruction and arguments to the builder.', () => {
+		test.test('pushses an instruction and arguments to the builder.', () => {
 			builder.push('push', [123]);
 			assert.deepStrictEqual(builder.instructions, [
 				1n, // opcode
@@ -58,14 +60,14 @@ describe('Builder', () => {
 			]);
 		});
 
-		it('should throw when pushing an incorrect arity.', () => {
+		test.test('should throw when pushing an incorrect arity.', () => {
 			assert.throws(() => builder.push('pop', [1]));
 		});
 	});
 
 
-	describe('#label', () => {
-		it('sets a label to the current number of instructions.', () => {
+	test.suite('#label', () => {
+		test.test('sets a label to the current number of instructions.', () => {
 			builder.push('noop', []);
 			builder.label('wow');
 			assert.strictEqual(builder.labels['wow'], 2n);
@@ -73,8 +75,8 @@ describe('Builder', () => {
 	});
 
 
-	describe('#data', () => {
-		it('data is deduped.', () => {
+	test.suite('#data', () => {
+		test.test('data is deduped.', () => {
 			builder.push('push', [123]);
 			builder.push('push', [123]);
 			builder.push('push', [123]);
@@ -83,8 +85,8 @@ describe('Builder', () => {
 	});
 
 
-	describe('#toCode', () => {
-		it('builds a Code object.', () => {
+	test.suite('#toCode', () => {
+		test.test('builds a Code object.', () => {
 			builder.push('noop', []);
 			builder.push('push', [123]);
 			builder.push('pop', []);

@@ -15,7 +15,7 @@ export class Stack<T> {
 	 * Is this Stack empty?
 	 * @return `true` if this Stack contains no items
 	 */
-	get isEmpty(): boolean {
+	public get isEmpty(): boolean {
 		return this.array.length === 0;
 	}
 
@@ -24,7 +24,7 @@ export class Stack<T> {
 	 * @return the item at the end of this Stack
 	 * @throws if this Stack is empty
 	 */
-	peek(): T {
+	public peek(): T {
 		if (this.isEmpty) {
 			throw new Error('Cannot peek empty stack.');
 		}
@@ -36,7 +36,7 @@ export class Stack<T> {
 	 * @param  item the item to push
 	 * @return      `this`
 	 */
-	push(item: T): this {
+	public push(item: T): this {
 		this.array.push(item);
 		return this;
 	}
@@ -46,7 +46,7 @@ export class Stack<T> {
 	 * @return a tuple of 2 items: (1) this Stack, minus the popped item, and (2) the popped item
 	 * @throws if this Stack is empty
 	 */
-	pop(): [this, T] {
+	public pop(): [this, T] {
 		if (this.isEmpty) {
 			throw new Error('Cannot pop empty stack.');
 		}

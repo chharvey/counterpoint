@@ -13,11 +13,11 @@ import type {
  */
 export type Code<T> = {
 	/** A list of constant operands. */
-	readonly data: readonly T[],
+	readonly data:    readonly T[],
 	/** A list of instruction opcodes and indexes into the data section. */
-	readonly code: readonly Opcode[],
+	readonly code:    readonly Opcode[],
 	/** A mapping of labels to instruction pointers (or indexes into the program section). */
-	readonly labels: ReadonlyMap<Opcode, string>,
+	readonly labels:  ReadonlyMap<Opcode, string>,
 	/** A list of instruction names (symbols) stored by opcode for easier debugging. */
 	readonly symbols: ReadonlyMap<Opcode, string>,
 };
@@ -42,20 +42,20 @@ export class Builder<T> {
 	 * Construct a new Builder object.
 	 * @param instruction_table Gives access to labels, opcodes and instruction arities.
 	 */
-	constructor(private readonly instruction_table: InstructionTable<T>) {}
+	public constructor(private readonly instruction_table: InstructionTable<T>) {}
 
 	/** A list of constant operands. */
-	get data(): T[] {
+	public get data(): T[] {
 		return [...this._data];
 	}
 
 	/** A list of instruction opcodes and indexes into the data section. */
-	get instructions(): Opcode[] {
+	public get instructions(): Opcode[] {
 		return [...this._instructions];
 	}
 
 	/** A mapping of labels to instruction pointers (or indexes into the program section). */
-	get labels(): Record<string, Opcode> {
+	public get labels(): Record<string, Opcode> {
 		return {...this._labels};
 	}
 
@@ -64,7 +64,7 @@ export class Builder<T> {
 	 * @param name the name of the instruction to add
 	 * @param args the arguments to the instruction
 	 */
-	push(name: string, args: T[] = []): this {
+	public push(name: string, args: T[] = []): this {
 		// Look up the instruction in the instruction table.
 		const instr: Instruction<T> | null = this.instruction_table.getByName(name);
 		if (!instr) {
@@ -80,10 +80,10 @@ export class Builder<T> {
 		this._instructions.push(instr.arity);
 		// Push each argument into the data section and push its index into the program.
 		args.forEach((arg) => {
-			this._instructions.push(BigInt((this._data.includes(arg))
+			this._instructions.push(BigInt((this._data.includes(arg)
 				? this._data.indexOf(arg)
 				: this._data.push(arg) - 1
-			));
+			)));
 		});
 		return this;
 	}
@@ -92,7 +92,7 @@ export class Builder<T> {
 	 * Look up the number of instructions currently in the program and store the name pointing to it.
 	 * @param name the name to give the new label
 	 */
-	label(name: string): this {
+	public label(name: string): this {
 		this._labels[name] = BigInt(this._instructions.length);
 		return this;
 	}
@@ -101,7 +101,7 @@ export class Builder<T> {
 	 * Convert this Builder into a `Code` object.
 	 * @return a `Code` object
 	 */
-	toCode(): Code<T> {
+	public toCode(): Code<T> {
 		return {
 			data:    this.data,
 			code:    this.instructions,

@@ -33,7 +33,7 @@ export class Machine<T> {
 	 * @param code              Code for program to be run.
 	 * @param instruction_table Gives access to labels, opcodes and instruction arities.
 	 */
-	constructor(
+	public constructor(
 		private readonly code: Code<T>,
 		private readonly instruction_table: InstructionTable<T>,
 	) {
@@ -45,7 +45,7 @@ export class Machine<T> {
 	 * @param  value the operand to push
 	 * @return       `this`
 	 */
-	operandPush(value: T): this {
+	public operandPush(value: T): this {
 		this.operand_stack.push(value);
 		return this;
 	}
@@ -54,7 +54,7 @@ export class Machine<T> {
 	 * Pop an operand from the operand stack.
 	 * @return the popped operand
 	 */
-	operandPop(): T {
+	public operandPop(): T {
 		return this.operand_stack.pop()[1];
 	}
 
@@ -63,7 +63,7 @@ export class Machine<T> {
 	 * @param  index the index of the operand to get
 	 * @return       the operand at the given index
 	 */
-	getData(index: bigint): T {
+	public getData(index: bigint): T {
 		return this.code.data[Number(index)] ?? (() => {
 			// TODO use `throw_expression`
 			throw new Error(`Constant data is not present at index ${ index }.`);
@@ -75,7 +75,7 @@ export class Machine<T> {
 	 * @param  label the label of the function to call
 	 * @return       `this`
 	 */
-	call(label: string): this {
+	public call(label: string): this {
 		this.call_stack.push({returnAddress: this.instruction_pointer});
 		this.jump(label);
 		return this;
@@ -85,7 +85,7 @@ export class Machine<T> {
 	 * Return from a called function.
 	 * @return `this`
 	 */
-	return(): this {
+	public return(): this {
 		this.instruction_pointer = this.call_stack.pop()[1].returnAddress;
 		return this;
 	}
@@ -93,7 +93,7 @@ export class Machine<T> {
 	/**
 	 * Main run function.
 	 */
-	run(): void {
+	public run(): void {
 		// keep looping until we’ve run out of program
 		while (this.instruction_pointer < this.code.code.length) {
 			// read the current opcode and arity
