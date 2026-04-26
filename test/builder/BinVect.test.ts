@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
 	bigint_to_i64,
@@ -12,23 +11,6 @@ import {assertEqualBins as assert_equal_bins} from '../assert-helpers.ts';
 
 test.suite('BinVect', () => {
 	const MOD = new binaryen.Module();
-
-
-	test.suite('.boolOf', () => {
-		test.test('returns `(if)` containing two v128 branches storing boolean values.', () => {
-			xjs.Array.forEachAggregated([
-				MOD.i32.const(0),
-				MOD.i32.const(1),
-			], (expr) => assert_equal_bins(
-				BinVect.boolOf(MOD, expr),
-				MOD.if(
-					expr,
-					new BinVect(MOD, true).vect,
-					new BinVect(MOD, false).vect,
-				),
-			));
-		});
-	});
 
 
 	test.suite('.constructor', () => {

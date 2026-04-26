@@ -1,4 +1,5 @@
 import binaryen from 'binaryen';
+import {BinVect} from '../../index.ts';
 import {runOnceMethod} from '../../lib/decorators.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 
@@ -114,6 +115,11 @@ export class Value {
 		return this.vm.mod.call('Value.is-composite', [param0], binaryen.i32);
 	};
 
+	/** Converts an i32 value to a $Value with a boolean primitive. */
+	public boolFromI32(param0: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.bool-from-i32', [param0], this.vm.reftype.Value);
+	}
+
 	@runOnceMethod
 	public setupFunctions(): void {
 		const {mod, reftype} = this.vm;
@@ -128,6 +134,16 @@ export class Value {
 				[],
 				mod.i32.eq(this.field(param0).tag, mod.i32.const(names.indexOf(name) + 1)),
 			));
+		})();
+
+		/** $Value.bool-from-i32 */
+		(() => {
+			const param0: binaryen.ExpressionRef /* i32 */ = mod.local.get(0, binaryen.i32);
+			mod.addFunction('Value.bool-from-i32', binaryen.i32, reftype.Value, [], this.vm.Value.new(mod.if(
+				param0,
+				new BinVect(mod, true).vect,
+				new BinVect(mod, false).vect,
+			)));
 		})();
 	}
 }
