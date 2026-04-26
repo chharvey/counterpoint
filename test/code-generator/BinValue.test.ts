@@ -1,7 +1,4 @@
-import * as assert from 'node:assert';
 import * as test from 'node:test';
-import binaryen from 'binaryen';
-import * as xjs from 'extrajs';
 import {
 	BinValue,
 	bigint_to_i64,
@@ -21,29 +18,6 @@ test.suite('BinValue', () => {
 	test.beforeEach(() => {
 		cg  = new Builder();
 		mod = cg.module;
-	});
-
-	test.test('#asComposite', () => {
-		xjs.Array.forEachAggregated([
-			// `$Value`s with primitive filled
-			new BinValue(cg, new BinVect(mod, null)),
-			new BinValue(cg, new BinVect(mod, false)),
-			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 0x100n))),
-			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 42n))),
-			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
-			// `$Value`s with composite filled
-			new BinValue(cg, cg.codegenTuple()),
-			new BinValue(cg, cg.codegenRecord()),
-			new BinValue(cg, cg.codegenList()),
-			new BinValue(cg, cg.codegenDict()),
-		], (binval) => {
-			const {asComposite} = binval;
-			assertEqualBins(
-				asComposite,
-				cg.structGet.value.composite(binval.value),
-			);
-			return assert.strictEqual(binaryen.getExpressionType(asComposite), binaryen.eqref);
-		});
 	});
 
 	test.test('#toProperty', () => {

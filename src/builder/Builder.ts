@@ -373,6 +373,8 @@ export class Builder {
 	}
 
 	#setupFunctions(): void {
+		const as_composite = (bv: BinValue): binaryen.ExpressionRef /* eqref */ => this.vm.structGet.value.composite(bv.value);
+
 		const mod:       BinaryenModuleUpdates = this.module;
 		const rt_value:  binaryen.Type         = this.reftype.Value;
 		const rt_tuple:  binaryen.Type         = this.reftype.Tuple;
@@ -411,7 +413,7 @@ export class Builder {
 					),
 				))),
 			),
-			this.vm.Value.new(BinVect.boolOf(mod, mod.call('cemp', [mod.ref.as_non_null(local_vals[0].asComposite)], binaryen.i32))),
+			this.vm.Value.new(BinVect.boolOf(mod, mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32))),
 		));
 		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			local_vects[0].isInt,
@@ -507,23 +509,26 @@ export class Builder {
 			),
 			mod.if(
 				mod.i32.and(
-					mod.ref.test(local_vals[0].asComposite, rt_tuple),
-					mod.ref.test(local_vals[1].asComposite, rt_tuple),
+					mod.ref.test(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.test(as_composite(local_vals[1]), rt_tuple),
 				),
 				mod.call('Tuple.identical', [
-					mod.ref.cast(local_vals[0].asComposite, rt_tuple),
-					mod.ref.cast(local_vals[1].asComposite, rt_tuple),
+					mod.ref.cast(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.cast(as_composite(local_vals[1]), rt_tuple),
 				], binaryen.i32),
 				mod.if(
 					mod.i32.and(
-						mod.ref.test(local_vals[0].asComposite, rt_record),
-						mod.ref.test(local_vals[1].asComposite, rt_record),
+						mod.ref.test(as_composite(local_vals[0]), rt_record),
+						mod.ref.test(as_composite(local_vals[1]), rt_record),
 					),
 					mod.call('Record.identical', [
-						mod.ref.cast(local_vals[0].asComposite, rt_record),
-						mod.ref.cast(local_vals[1].asComposite, rt_record),
+						mod.ref.cast(as_composite(local_vals[0]), rt_record),
+						mod.ref.cast(as_composite(local_vals[1]), rt_record),
 					], binaryen.i32),
-					mod.ref.eq(local_vals[0].asComposite, local_vals[1].asComposite),
+					mod.ref.eq(
+						as_composite(local_vals[0]),
+						as_composite(local_vals[1]),
+					),
 				),
 			),
 		))));
@@ -541,48 +546,48 @@ export class Builder {
 			),
 			mod.if(
 				mod.i32.and(
-					mod.ref.test(local_vals[0].asComposite, rt_tuple),
-					mod.ref.test(local_vals[1].asComposite, rt_tuple),
+					mod.ref.test(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.test(as_composite(local_vals[1]), rt_tuple),
 				),
 				this.vm.Value.new(BinVect.boolOf(mod, mod.call('Tuple.equal', [
-					mod.ref.cast(local_vals[0].asComposite, rt_tuple),
-					mod.ref.cast(local_vals[1].asComposite, rt_tuple),
+					mod.ref.cast(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.cast(as_composite(local_vals[1]), rt_tuple),
 				], binaryen.i32))),
 				mod.if(
 					mod.i32.and(
-						mod.ref.test(local_vals[0].asComposite, rt_record),
-						mod.ref.test(local_vals[1].asComposite, rt_record),
+						mod.ref.test(as_composite(local_vals[0]), rt_record),
+						mod.ref.test(as_composite(local_vals[1]), rt_record),
 					),
 					this.vm.Value.new(BinVect.boolOf(mod, mod.call('Record.equal', [
-						mod.ref.cast(local_vals[0].asComposite, rt_record),
-						mod.ref.cast(local_vals[1].asComposite, rt_record),
+						mod.ref.cast(as_composite(local_vals[0]), rt_record),
+						mod.ref.cast(as_composite(local_vals[1]), rt_record),
 					], binaryen.i32))),
 					mod.if(
 						mod.i32.and(
-							mod.ref.test(local_vals[0].asComposite, rt_list),
-							mod.ref.test(local_vals[1].asComposite, rt_list),
+							mod.ref.test(as_composite(local_vals[0]), rt_list),
+							mod.ref.test(as_composite(local_vals[1]), rt_list),
 						),
 						this.vm.Value.new(BinVect.boolOf(mod, mod.call('List.equal', [
-							mod.ref.cast(local_vals[0].asComposite, rt_list),
-							mod.ref.cast(local_vals[1].asComposite, rt_list),
+							mod.ref.cast(as_composite(local_vals[0]), rt_list),
+							mod.ref.cast(as_composite(local_vals[1]), rt_list),
 						], binaryen.i32))),
 						mod.if(
 							mod.i32.and(
-								mod.ref.test(local_vals[0].asComposite, rt_dict),
-								mod.ref.test(local_vals[1].asComposite, rt_dict),
+								mod.ref.test(as_composite(local_vals[0]), rt_dict),
+								mod.ref.test(as_composite(local_vals[1]), rt_dict),
 							),
 							this.vm.Value.new(BinVect.boolOf(mod, mod.call('Dict.equal', [
-								mod.ref.cast(local_vals[0].asComposite, rt_dict),
-								mod.ref.cast(local_vals[1].asComposite, rt_dict),
+								mod.ref.cast(as_composite(local_vals[0]), rt_dict),
+								mod.ref.cast(as_composite(local_vals[1]), rt_dict),
 							], binaryen.i32))),
 							mod.if(
 								mod.i32.and(
-									mod.ref.test(local_vals[0].asComposite, rt_map),
-									mod.ref.test(local_vals[1].asComposite, rt_map),
+									mod.ref.test(as_composite(local_vals[0]), rt_map),
+									mod.ref.test(as_composite(local_vals[1]), rt_map),
 								),
 								this.vm.Value.new(BinVect.boolOf(mod, mod.call('Map.equal', [
-									mod.ref.cast(local_vals[0].asComposite, rt_map),
-									mod.ref.cast(local_vals[1].asComposite, rt_map),
+									mod.ref.cast(as_composite(local_vals[0]), rt_map),
+									mod.ref.cast(as_composite(local_vals[1]), rt_map),
 								], binaryen.i32))),
 								mod.call('vid', [local_vals[0].value, local_vals[1].value], rt_value),
 							),

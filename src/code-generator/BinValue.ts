@@ -53,19 +53,9 @@ export class BinValue {
 		this.value = cg.vm.Value.new(arg);
 	}
 
-	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
-	private get asPrimitive(): binaryen.ExpressionRef {
-		return this.cg.structGet.value.primitive(this.value);
-	}
-
-	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
-	public get asComposite(): binaryen.ExpressionRef {
-		return this.cg.structGet.value.composite(this.value);
-	}
-
 	/** Return a new BinVect containing this Value’s primitive value. */
 	public toBinVect(): BinVect {
-		return new BinVect(this.cg.module, this.asPrimitive);
+		return new BinVect(this.cg.module, this.cg.vm.structGet.value.primitive(this.value));
 	}
 
 	/** Wrap this `$Value` in a `$Property`, given a key id. */
@@ -94,6 +84,6 @@ export class BinValue {
 	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
 	 */
 	public cast(reftype: binaryen.Type): binaryen.ExpressionRef {
-		return this.cg.module.ref.cast(this.asComposite, reftype);
+		return this.cg.module.ref.cast(this.cg.structGet.value.composite(this.value), reftype);
 	}
 }
