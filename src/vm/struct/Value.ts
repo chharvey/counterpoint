@@ -73,20 +73,25 @@ export class Value {
 		return this.vm.mod.call('Value.is-primitive', [param0], binaryen.i32);
 	};
 
+	/** Whether the value is composite (tag == 2). */
+	public isComposite(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.is-composite', [param0], binaryen.i32);
+	};
+
 	@runOnceMethod
 	public setupFunctions(): void {
 		const {mod, reftype} = this.vm;
 
-		/** $Value.is-primitive */
+		/** $Value.{is-primitive,is-composite} */
 		(() => {
 			const param0: binaryen.ExpressionRef /* (ref $Value) */ = mod.local.get(0, reftype.Value);
-			mod.addFunction(
-				'Value.is-primitive',
+			['is-primitive', 'is-composite'].map((name, _, names) => mod.addFunction(
+				`Value.${ name }`,
 				reftype.Value,
 				binaryen.i32,
 				[],
-				mod.i32.eq(this.vm.structGet.value.tag(param0), mod.i32.const(1)),
-			);
+				mod.i32.eq(this.vm.structGet.value.tag(param0), mod.i32.const(names.indexOf(name) + 1)),
+			));
 		})();
 	}
 }

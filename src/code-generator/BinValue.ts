@@ -53,11 +53,6 @@ export class BinValue {
 		this.value = cg.vm.Value.new(arg);
 	}
 
-	/** Whether the value is composite (tag == 2). */
-	public get isComposite(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eq(this.cg.structGet.value.tag(this.value), this.cg.module.i32.const(2));
-	}
-
 	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
 	private get asPrimitive(): binaryen.ExpressionRef {
 		return this.cg.structGet.value.primitive(this.value);

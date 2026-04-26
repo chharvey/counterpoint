@@ -23,20 +23,6 @@ test.suite('BinValue', () => {
 		mod = cg.module;
 	});
 
-	test.test('#isComposite', () => {
-		xjs.Array.forEachAggregated([
-			new BinValue(cg, null),
-			new BinValue(cg, new BinVect(mod, null)),
-			new BinValue(cg, new BinVect(mod, false)),
-			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 0x100n))),
-			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 42n))),
-			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
-		], (binval) => assertEqualBins(
-			binval.isComposite,
-			mod.i32.eq(cg.structGet.value.tag(binval.value), mod.i32.const(2)),
-		));
-	});
-
 	test.test('#asComposite', () => {
 		xjs.Array.forEachAggregated([
 			// `$Value`s with primitive filled
