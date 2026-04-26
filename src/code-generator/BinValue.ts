@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	bigint_to_i64,
 	type Builder,
@@ -43,63 +43,14 @@ export class BinValue {
 	) {
 		this.TYPE = cg.reftype.Value;
 		if (arg instanceof BinVect) {
-			this.value = new BinValue(cg, arg.vect).value;
+			this.value = cg.vm.Value.new(arg.vect);
 			return;
 		}
 		if (arg === null) {
-			this.value = cg.module.struct.new_default(cg.heaptype.Value);
+			this.value = cg.vm.Value.new(arg);
 			return;
 		}
-		switch (binaryen.getExpressionType(arg)) {
-			case binaryen.unreachable: {
-				this.value = arg;
-				break;
-			}
-			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			case cg.reftypeNull.Value | 4:
-			case cg.reftype.Value     | 4:
-			case cg.reftypeNull.Value:
-			case cg.reftype.Value: { // if given a (nullish) `$Value`, just use that
-				this.value = arg;
-				break;
-			}
-			case binaryen.v128: { // a primitive
-				this.value = cg.module.struct.new([
-					cg.module.i32.const(1),
-					arg,
-					cg.module.ref.null(binaryen.eqref),
-				], cg.heaptype.Value);
-				break;
-			}
-			case binaryen.eqref:
-			case cg.reftype.String:
-			case cg.reftype.Tuple:
-			case cg.reftype.Record:
-			case cg.reftype.List:
-			case cg.reftype.Dict:
-			case cg.reftype.Object:
-			default: { // a composite
-				this.value = cg.module.struct.new([
-					cg.module.i32.const(2),
-					cg.module.v128.const(new Uint8Array(16)),
-					arg,
-				], cg.heaptype.Value);
-				break;
-			}
-			/*
-			default: {
-				const expected_types = [
-					'`v128`',
-					'`(ref $Tuple)`',
-					'`(ref $Record)`',
-					'`(ref $Object)` or a subtype',
-					'`(ref $Value)`',
-					'`(ref null $Value)`',
-				];
-				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ expected_types.join('\n\t') }`);
-			}
-			*/
-		}
+		this.value = cg.vm.Value.new(arg);
 	}
 
 	/** Whether the value is primitive (tag == 1). */

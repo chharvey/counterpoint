@@ -10,7 +10,6 @@ import {
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
 import {genConst} from '../helpers.ts';
-import {repeat} from '../utils.ts';
 
 
 
@@ -22,58 +21,6 @@ test.suite('BinValue', () => {
 	test.beforeEach(() => {
 		cg  = new Builder();
 		mod = cg.module;
-	});
-
-	test.suite('#value', () => {
-		test.test('primitive values.', () => {
-			xjs.Array.forEachAggregated([
-				new BinVect(mod, null),
-				new BinVect(mod, false),
-				new BinVect(mod, bigint_to_i64(mod, 0x100n)),
-				new BinVect(mod, bigint_to_i64(mod, 42n)),
-				new BinVect(mod, mod.f64.const(4.2)),
-			], (binvect) => assertEqualBins(new BinValue(cg, binvect).value, mod.struct.new([
-				mod.i32.const(1),
-				binvect.vect,
-				mod.ref.null(binaryen.eqref),
-			], cg.heaptype.Value)));
-		});
-		test.test('composite values.', () => {
-			xjs.Array.forEachAggregated([
-				cg.codegenTuple([
-					genConst(cg, true),
-					genConst(cg, 42n),
-				]),
-				cg.codegenRecord(new Map([
-					[0x100n, new BinValue(cg, genConst(cg, true)).toProperty(0x100n)],
-					[0x101n, new BinValue(cg, genConst(cg, 42n)) .toProperty(0x101n)],
-					[0x102n, new BinValue(cg, genConst(cg, 4.2)) .toProperty(0x102n)],
-				])),
-				cg.codegenList([
-					genConst(cg, 1.1),
-					genConst(cg, 2.2),
-					genConst(cg, 3.3),
-					...repeat(cg.module.ref.null(cg.reftypeNull.Value), 5),
-				]),
-				cg.codegenDict(new Map([
-					[0x106n, new BinValue(cg, genConst(cg, 1.1)).toProperty(0x106n)],
-					[0x107n, new BinValue(cg, genConst(cg, 2.2)).toProperty(0x107n)],
-					[0x108n, new BinValue(cg, genConst(cg, 3.3)).toProperty(0x108n)],
-					[0x109n, new BinValue(cg, genConst(cg, 4.4)).toProperty(0x109n)],
-					[0x10an, new BinValue(cg, genConst(cg, 5.5)).toProperty(0x10an)],
-				])),
-			], (composite) => assertEqualBins(new BinValue(cg, composite).value, mod.struct.new([
-				mod.i32.const(2),
-				mod.v128.const(new Uint8Array(16)),
-				composite,
-			], cg.heaptype.Value)));
-		});
-		test.test('reuses `BinValue#value`.', () => {
-			assertEqualBins(
-				new BinValue(cg, genConst(cg, 42n)).value,
-				genConst(cg, 42n),
-			);
-		});
 	});
 
 	test.test('#isPrimitive', () => {
@@ -129,20 +76,20 @@ test.suite('BinValue', () => {
 
 	test.test('#toProperty', () => {
 		assertEqualBins([
-			new BinValue(cg, new BinVect(mod))                                    .toProperty(0x100n),
-			new BinValue(cg, new BinVect(mod, true).vect)                         .toProperty(0x101n),
-			new BinValue(cg, genConst(cg))                                        .toProperty(0x102n),
-			new BinValue(cg, genConst(cg, 42n))                                   .toProperty(0x103n),
-			new BinValue(cg, new BinValue(cg, new BinVect(mod, false).vect).value).toProperty(0x104n),
-			new BinValue(cg, new BinValue(cg, genConst(cg, 4.2)).value)           .toProperty(0x105n),
-			new BinValue(cg, new BinValue(cg, genConst(cg, 4.2)).value)           .toProperty(0x106n),
+			new BinValue(cg, new BinVect(mod))                              .toProperty(0x100n),
+			new BinValue(cg, new BinVect(mod, true).vect)                   .toProperty(0x101n),
+			new BinValue(cg, genConst(cg))                                  .toProperty(0x102n),
+			new BinValue(cg, genConst(cg, 42n))                             .toProperty(0x103n),
+			new BinValue(cg, cg.vm.Value.new(new BinVect(mod, false).vect)) .toProperty(0x104n),
+			new BinValue(cg, cg.vm.Value.new(genConst(cg, 4.2)))            .toProperty(0x105n),
+			new BinValue(cg, cg.vm.Value.new(genConst(cg, 4.2)))            .toProperty(0x106n),
 		], ([
-			[0x100n, new BinValue(cg, new BinVect(mod)).value],
-			[0x101n, new BinValue(cg, new BinVect(mod, true).vect).value],
+			[0x100n, cg.vm.Value.new(new BinVect(mod).vect)],
+			[0x101n, cg.vm.Value.new(new BinVect(mod, true).vect)],
 			[0x102n, genConst(cg)],
 			[0x103n, genConst(cg, 42n)],
-			[0x104n, new BinValue(cg, new BinVect(mod, false).vect).value],
-			[0x105n, new BinValue(cg, genConst(cg, 4.2)).value],
+			[0x104n, cg.vm.Value.new(new BinVect(mod, false).vect)],
+			[0x105n, cg.vm.Value.new(genConst(cg, 4.2))],
 			[0x106n, genConst(cg, 4.2)],
 		] as const).map(([id, code]) => cg.module.struct.new([
 			bigint_to_i64(cg.module, id, true),

@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {
-	BinValue,
 	type Builder,
 	BinVect,
 } from '../../index.ts';
@@ -87,10 +86,10 @@ export class Unop extends Value {
 			return cg.module.call('vnot', [cg.module.call('vnot', [code], cg.reftype.Value)], cg.reftype.Value);
 		}
 		switch (this.operator) {
-			case OpCode.LIST_COUNT: { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)), {unsigned: true})).value; }
-			case OpCode.DICT_COUNT: { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)), {unsigned: true})).value; }
-			case OpCode.SET_COUNT:  { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})).value; }
-			case OpCode.MAP_COUNT:  { return new BinValue(cg, new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})).value; }
+			case OpCode.LIST_COUNT: { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)), {unsigned: true}).vect); }
+			case OpCode.DICT_COUNT: { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)), {unsigned: true}).vect); }
+			case OpCode.SET_COUNT:  { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true}).vect); }
+			case OpCode.MAP_COUNT:  { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true}).vect); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
 			[OpCode.ISNULL,  'isnull'],

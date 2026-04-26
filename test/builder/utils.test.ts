@@ -13,7 +13,8 @@ import {genConst} from '../helpers.ts';
 test.suite('drop_then', () => {
 	test.test('returns a (block) containing `n - 1` (drop) exprs followed by a last expr.', () => {
 		const cg = new Builder();
-		const rt_e_value: binaryen.Type = cg.reftype.Value | 4; // HACK: “exact” type, i.e. `(ref (exact $Value))`
+		// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+		const rt_e_value: binaryen.Type = cg.reftype.Value | 4;
 		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
 		const expr2: binaryen.ExpressionRef = genConst(cg, 2n);
 		const expr3: binaryen.ExpressionRef = genConst(cg, 3n);

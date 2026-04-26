@@ -7,6 +7,7 @@ import type {
 	Field,
 	TypeBuilder,
 } from '../builder/-types.d.ts';
+import {Value} from './struct/Value.ts';
 
 
 
@@ -201,6 +202,8 @@ export class VirtualMachine {
 			/** @return `(struct.get $Map $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.INTERNAL, ref, val),
 		},
 	} as const;
+
+	public Value = new Value(this);
 
 
 	public constructor() {
