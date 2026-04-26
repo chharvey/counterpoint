@@ -1,0 +1,416 @@
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import binaryen from 'binaryen';
+import {runOnceMethod} from '../lib/decorators.ts';
+import type {
+	BinaryenModuleUpdates,
+	Field,
+	TypeBuilder,
+} from '../builder/-types.d.ts';
+
+
+
+type TypeKey = (
+	| 'Value'
+	| 'Property'
+	| 'Case'
+	| 'String'
+	| 'Tuple'
+	| 'Record'
+	| 'ListInternal'
+	| 'DictInternal'
+	| 'MapInternal'
+	| 'Object'
+	| 'List'
+	| 'Dict'
+	| 'Map'
+);
+
+
+
+type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.Type>>;
+type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
+
+type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case'), binaryen.Type>>;
+
+
+
+/**
+ * Create a new struct field for a `TypeBuilder`.
+ * @param typ        the field type
+ * @param packedType one of `'notPacked' | 'i8' | 'i16'` @default `'notPacked'`
+ * @param mutable    Can the field be reassigned?        @default `false`
+ */
+function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
+	return {
+		type:       typ,
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		packedType: binaryen[packedType],
+		mutable,
+	};
+}
+
+
+
+const IMPORTS: readonly string[] = [
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stubs.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/isub_u.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/cemp.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stringify.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Map.wat'), 'utf8'),
+];
+
+/** Struct field constant indices. */
+const STRUCT = {
+	VALUE: {
+		/** `$Value.$tag` */
+		TAG:       0,
+		/** `$Value.$primitive` */
+		PRIMITIVE: 1,
+		/** `$Value.$composite` */
+		COMPOSITE: 2,
+	},
+	PROPERTY: {
+		/** `$Property.$key` */
+		KEY: 0,
+		/** `$Property.$val` */
+		VAL: 1,
+	},
+	CASE: {
+		/** `$Case.$ant` */
+		ANT: 0,
+		/** `$Case.$con` */
+		CON: 1,
+	},
+	OBJECT: {
+		/** `$Object.$id` */
+		ID: 0,
+	},
+	LIST: {
+		/** `$List.$size` */
+		SIZE:     1,
+		/** `$List.$internal` */
+		INTERNAL: 2,
+	},
+	DICT: {
+		/** `$Dict.$size` */
+		SIZE:     1,
+		/** `$Dict.$internal` */
+		INTERNAL: 2,
+	},
+	MAP: {
+		/** `$Map.$size` */
+		SIZE:     1,
+		/** `$Map.$internal` */
+		INTERNAL: 2,
+	},
+} as const;
+
+
+
+export class VirtualMachine {
+	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
+	#heaptypeRegistry!: HeaptypeRegistry;
+
+	/** A registry of reference types. */
+	#reftypeRegistry!: ReftypeRegistry;
+
+	/** A registry of reference-null types. */
+	#reftypeNullRegistry!: ReftypeNullRegistry;
+
+	/** The Binaryen module that holds static types and functions, independent of any source program. */
+	public readonly mod = binaryen.parseText(`
+		(module
+			${ IMPORTS.join('') }
+		)
+	`) as BinaryenModuleUpdates;
+
+	/** Utilities for getting fields of WASM structs. */
+	public readonly structGet = {
+		value: {
+			/** @return `(struct.get $Value $tag       <ref>)` */ tag:       (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.VALUE.TAG,       ref, binaryen.i32, false),
+			/** @return `(struct.get $Value $primitive <ref>)` */ primitive: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.VALUE.PRIMITIVE, ref, binaryen.v128),
+			/** @return `(struct.get $Value $primitive <ref>)` */ composite: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.VALUE.COMPOSITE, ref, binaryen.eqref),
+		},
+		property: {
+			/** @return `(struct.get $Property $key <ref>)` */ key: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.PROPERTY.KEY, ref, binaryen.i64),
+			/** @return `(struct.get $Property $val <ref>)` */ val: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.PROPERTY.VAL, ref, this.reftype.Value),
+		},
+		case: {
+			/** @return `(struct.get $Case $ant <ref>)` */ ant: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.CASE.ANT, ref, this.reftype.Value),
+			/** @return `(struct.get $Case $con <ref>)` */ con: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.CASE.CON, ref, this.reftype.Value),
+		},
+		object: {
+			/** @return `(struct.get $Object $id <ref>)` */
+			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
+		},
+		list: {
+			/** @return `(struct.get $List $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.LIST.SIZE,     ref, binaryen.i32),
+			/** @return `(struct.get $List $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.LIST.INTERNAL, ref, this.reftype.ListInternal),
+		},
+		dict: {
+			/** @return `(struct.get $Dict $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.DICT.SIZE,     ref, binaryen.i32),
+			/** @return `(struct.get $Dict $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.DICT.INTERNAL, ref, this.reftype.DictInternal),
+		},
+		map: {
+			/** @return `(struct.get $Map $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.SIZE,     ref, binaryen.i32),
+			/** @return `(struct.get $Map $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.INTERNAL, ref, this.reftype.MapInternal),
+		},
+	} as const;
+
+	/** Utilities for setting fields of WASM structs. */
+	public readonly structSet = {
+		value: {
+			/** @return `(struct.set $Value $tag       <ref> <val>)` */ tag:       (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.VALUE.TAG,       ref, val),
+			/** @return `(struct.set $Value $primitive <ref> <val>)` */ primitive: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.VALUE.PRIMITIVE, ref, val),
+			/** @return `(struct.set $Value $primitive <ref> <val>)` */ composite: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.VALUE.COMPOSITE, ref, val),
+		},
+		property: {
+			/** @return `(struct.get $Property $key <ref> <val>)` */ key: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.PROPERTY.KEY, ref, val),
+			/** @return `(struct.get $Property $val <ref> <val>)` */ val: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.PROPERTY.VAL, ref, val),
+		},
+		case: {
+			/** @return `(struct.get $Case $ant <ref> <val>)` */ ant: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.CASE.ANT, ref, val),
+			/** @return `(struct.get $Case $con <ref> <val>)` */ con: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.CASE.CON, ref, val),
+		},
+		object: {
+			/** @return `(struct.get $Object $id <ref> <val>)` */
+			id: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.OBJECT.ID, ref, val),
+		},
+		list: {
+			/** @return `(struct.get $List $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.LIST.SIZE,     ref, val),
+			/** @return `(struct.get $List $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.LIST.INTERNAL, ref, val),
+		},
+		dict: {
+			/** @return `(struct.get $Dict $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.DICT.SIZE,     ref, val),
+			/** @return `(struct.get $Dict $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.DICT.INTERNAL, ref, val),
+		},
+		map: {
+			/** @return `(struct.get $Map $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.SIZE,     ref, val),
+			/** @return `(struct.get $Map $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.INTERNAL, ref, val),
+		},
+	} as const;
+
+
+	public constructor() {
+		this.mod.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
+			/* eslint-disable @stylistic/operator-linebreak */
+			binaryen.Features.NontrappingFPToInt |
+			binaryen.Features.SIMD128 |
+			binaryen.Features.ReferenceTypes |
+			binaryen.Features.Multivalue |
+			binaryen.Features.GC
+			/* eslint-enable @stylistic/operator-linebreak */
+		));
+
+		this.#setupTypes();
+	}
+
+
+	/* eslint-disable @stylistic/brace-style */
+	public get heaptype():    HeaptypeRegistry    { return this.#heaptypeRegistry; }
+	public get reftype():     ReftypeRegistry     { return this.#reftypeRegistry; }
+	public get reftypeNull(): ReftypeNullRegistry { return this.#reftypeNullRegistry; }
+	/* eslint-enable @stylistic/brace-style */
+
+
+	/**
+	 * Set up common types.
+	 * We’ve defined these in a static `types.wat` file,
+	 * but there’s currently no way to access them dynamically with Binaryen,
+	 * so we repeat them here.
+	 */
+	@runOnceMethod
+	#setupTypes(): void {
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		const tb: TypeBuilder = new binaryen.TypeBuilder();
+
+		let type_count: number = 0;
+
+		/* (type $Value ...) */
+		const i_value: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_value, [
+			/* $tag */       TypeBuilder_makeField(binaryen.i32, 'i8'),
+			/* $primitive */ TypeBuilder_makeField(binaryen.v128),
+			/* $composite */ TypeBuilder_makeField(binaryen.eqref),
+		]);
+
+		/* (type $Property ...) */
+		const i_property: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_property, [
+			/* $key */ TypeBuilder_makeField(binaryen.i64),
+			/* $val */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		]);
+
+		/* (type $Case ...) */
+		const i_case: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_case, [
+			/* $ant */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+			/* $con */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
+		]);
+
+		/* (type $String ...) */
+		const i_string: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_string,
+			binaryen.i32,
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.i8,
+			true,
+		);
+
+		/* (type $Tuple ...) */
+		const i_tuple: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_tuple,
+			tb.getTempRefType(tb.getTempHeapType(i_value), false),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.notPacked,
+			false,
+		);
+
+		/* (type $Record ...) */
+		const i_record: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_record,
+			tb.getTempRefType(tb.getTempHeapType(i_property), false),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.notPacked,
+			false,
+		);
+
+		/* (type $ListInternal ...) */
+		const i_list_internal: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_list_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_value), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.notPacked,
+			true,
+		);
+
+		/* (type $DictInternal ...) */
+		const i_dict_internal: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_dict_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_property), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.notPacked,
+			true,
+		);
+
+		/* (type $MapInternal ...) */
+		const i_map_internal: number = type_count++;
+		tb.grow(1);
+		tb.setArrayType(
+			i_map_internal,
+			tb.getTempRefType(tb.getTempHeapType(i_case), true),
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			binaryen.notPacked,
+			true,
+		);
+
+		/* (type $Object ...) */
+		const i_object: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_object, [
+			/* $id */ TypeBuilder_makeField(binaryen.i64),
+		]);
+		tb.setOpen(i_object);
+
+		/* (type $List ...) */
+		const i_list: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_list, [
+			/* $id */       TypeBuilder_makeField(binaryen.i64),
+			/* $size */     TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
+			/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_list, tb.getTempHeapType(i_object));
+		tb.setOpen(i_list);
+
+		/* (type $Dict ...) */
+		const i_dict: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_dict, [
+			/* $id */       TypeBuilder_makeField(binaryen.i64),
+			/* $size */     TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
+			/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
+		tb.setOpen(i_dict);
+
+		/* (type $Map ...) */
+		const i_map: number = type_count++;
+		tb.grow(1);
+		tb.setStructType(i_map, [
+			/* $id */       TypeBuilder_makeField(binaryen.i64),
+			/* $size */     TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
+			/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
+		]);
+		tb.setSubType(i_map, tb.getTempHeapType(i_object));
+		tb.setOpen(i_map);
+
+		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
+
+		this.#heaptypeRegistry = {
+			Value:        heaptypes[i_value],
+			Property:     heaptypes[i_property],
+			Case:         heaptypes[i_case],
+			String:       heaptypes[i_string],
+			Tuple:        heaptypes[i_tuple],
+			Record:       heaptypes[i_record],
+			ListInternal: heaptypes[i_list_internal],
+			DictInternal: heaptypes[i_dict_internal],
+			MapInternal:  heaptypes[i_map_internal],
+			Object:       heaptypes[i_object],
+			List:         heaptypes[i_list],
+			Dict:         heaptypes[i_dict],
+			Map:          heaptypes[i_map],
+		};
+
+		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+		const {getTypeFromHeapType} = binaryen;
+
+		this.#reftypeRegistry = {
+			Value:        getTypeFromHeapType(heaptypes[i_value],         false),
+			Property:     getTypeFromHeapType(heaptypes[i_property],      false),
+			Case:         getTypeFromHeapType(heaptypes[i_case],          false),
+			String:       getTypeFromHeapType(heaptypes[i_string],        false),
+			Tuple:        getTypeFromHeapType(heaptypes[i_tuple],         false),
+			Record:       getTypeFromHeapType(heaptypes[i_record],        false),
+			ListInternal: getTypeFromHeapType(heaptypes[i_list_internal], false),
+			DictInternal: getTypeFromHeapType(heaptypes[i_dict_internal], false),
+			MapInternal:  getTypeFromHeapType(heaptypes[i_map_internal],  false),
+			Object:       getTypeFromHeapType(heaptypes[i_object],        false),
+			List:         getTypeFromHeapType(heaptypes[i_list],          false),
+			Dict:         getTypeFromHeapType(heaptypes[i_dict],          false),
+			Map:          getTypeFromHeapType(heaptypes[i_map],           false),
+		};
+
+		this.#reftypeNullRegistry = {
+			Value:    getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal`
+			Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
+			Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
+		};
+	}
+}

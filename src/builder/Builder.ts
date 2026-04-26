@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import binaryen from 'binaryen';
+import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
 import {
@@ -11,34 +10,9 @@ import {
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
-import type {
-	BinaryenModuleUpdates,
-	Field,
-	TypeBuilder,
-} from './-types.d.ts';
+import type {BinaryenModuleUpdates} from './-types.d.ts';
 
 
-
-type TypeKey = (
-	| 'Value'
-	| 'Property'
-	| 'Case'
-	| 'String'
-	| 'Tuple'
-	| 'Record'
-	| 'ListInternal'
-	| 'DictInternal'
-	| 'MapInternal'
-	| 'Object'
-	| 'List'
-	| 'Dict'
-	| 'Map'
-);
-
-type HeaptypeRegistry = Record<TypeKey, binaryen.Type>;
-type ReftypeRegistry  = Record<TypeKey, binaryen.Type>;
-
-type ReftypeNullRegistry = Record<TypeKey & ('Value' | 'Property' | 'Case'), binaryen.Type>;
 
 export enum BinConst {
 	NULL,
@@ -78,52 +52,6 @@ function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: n
 
 
 
-/** Struct field constant indices. */
-const STRUCT = {
-	VALUE: {
-		/** `$Value.$tag` */
-		TAG:       0,
-		/** `$Value.$primitive` */
-		PRIMITIVE: 1,
-		/** `$Value.$composite` */
-		COMPOSITE: 2,
-	},
-	PROPERTY: {
-		/** `$Property.$key` */
-		KEY: 0,
-		/** `$Property.$val` */
-		VAL: 1,
-	},
-	CASE: {
-		/** `$Case.$ant` */
-		ANT: 0,
-		/** `$Case.$con` */
-		CON: 1,
-	},
-	OBJECT: {
-		/** `$Object.$id` */
-		ID: 0,
-	},
-	LIST: {
-		/** `$List.$size` */
-		SIZE:     1,
-		/** `$List.$internal` */
-		INTERNAL: 2,
-	},
-	DICT: {
-		/** `$Dict.$size` */
-		SIZE:     1,
-		/** `$Dict.$internal` */
-		INTERNAL: 2,
-	},
-	MAP: {
-		/** `$Map.$size` */
-		SIZE:     1,
-		/** `$Map.$internal` */
-		INTERNAL: 2,
-	},
-} as const;
-
 
 
 /**
@@ -137,49 +65,6 @@ export class Builder {
 	 */
 	static readonly #LOAD_FACTOR = 7 / 8;
 
-	private static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stubs.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/isub_u.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/cemp.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stringify.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Map.wat'), 'utf8'),
-	];
-
-	/**
-	 * Create a new struct field for a `TypeBuilder`.
-	 * @param typ        the field type
-	 * @param packedType one of `'notPacked' | 'i8' | 'i16'` @default `'notPacked'`
-	 * @param mutable    Can the field be reassigned?        @default `false`
-	 */
-	private static newField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
-		return {
-			type:       typ,
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			packedType: binaryen[packedType],
-			mutable,
-		};
-	}
-
-
-	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
-	readonly #heaptypeRegistry: Partial<HeaptypeRegistry> = {};
-
-	/** A registry of reference types. */
-	readonly #reftypeRegistry: Partial<ReftypeRegistry> = {};
-
-	/** A registry of reference-null types. */
-	readonly #reftypeNullRegistry: Partial<ReftypeNullRegistry> = {};
 
 	/** A registry of constant WASM expressions. */
 	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
@@ -190,72 +75,20 @@ export class Builder {
 	/** A map containing data of WASM local variables, indexed by their name. */
 	readonly #globals = new Map<string, Global>();
 
-	/** The Binaryen module to build upon building. */
-	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
-		(module
-			${ Builder.IMPORTS.join('') }
-		)
-	`) as BinaryenModuleUpdates;
-
-	/** Utilities for getting fields of WASM structs. */
-	public readonly structGet = {
-		value: {
-			/** @return `(struct.get $Value $tag       <ref>)` */
-			tag:       (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.VALUE.TAG,       ref, binaryen.i32, false),
-			/** @return `(struct.get $Value $primitive <ref>)` */
-			primitive: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.VALUE.PRIMITIVE, ref, binaryen.v128),
-			/** @return `(struct.get $Value $primitive <ref>)` */
-			composite: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.VALUE.COMPOSITE, ref, binaryen.eqref),
-		},
-		property: {
-			/** @return `(struct.get $Property $key <ref>)` */
-			key: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.PROPERTY.KEY, ref, binaryen.i64),
-			/** @return `(struct.get $Property $val <ref>)` */
-			val: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.PROPERTY.VAL, ref, this.reftype.Value),
-		},
-		case: {
-			/** @return `(struct.get $Case $ant <ref>)` */
-			ant: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.CASE.ANT, ref, this.reftype.Value),
-			/** @return `(struct.get $Case $con <ref>)` */
-			con: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.CASE.CON, ref, this.reftype.Value),
-		},
-		object: {
-			/** @return `(struct.get $Object $id <ref>)` */
-			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
-		},
-		list: {
-			/** @return `(struct.get $List $size     <ref>)` */
-			size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.LIST.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $List $internal <ref>)` */
-			internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.LIST.INTERNAL, ref, this.reftype.ListInternal),
-		},
-		dict: {
-			/** @return `(struct.get $Dict $size     <ref>)` */
-			size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.DICT.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $Dict $internal <ref>)` */
-			internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.DICT.INTERNAL, ref, this.reftype.DictInternal),
-		},
-		map: {
-			/** @return `(struct.get $Map $size     <ref>)` */
-			size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.MAP.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $Map $internal <ref>)` */
-			internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.module.struct.get(STRUCT.MAP.INTERNAL, ref, this.reftype.MapInternal),
-		},
-	} as const;
+	/** Alias for `this.vm.mod`.         */ public readonly module:      VirtualMachine['mod'];
+	/** Alias for `this.vm.heaptype`.    */ public readonly heaptype:    VirtualMachine['heaptype'];
+	/** Alias for `this.vm.reftype`.     */ public readonly reftype:     VirtualMachine['reftype'];
+	/** Alias for `this.vm.reftypeNull`. */ public readonly reftypeNull: VirtualMachine['reftypeNull'];
+	/** Alias for `this.vm.structGet`.   */ public readonly structGet:   VirtualMachine['structGet'];
 
 
-	public constructor() {
-		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
-			/* eslint-disable @stylistic/operator-linebreak */
-			binaryen.Features.NontrappingFPToInt |
-			binaryen.Features.SIMD128 |
-			binaryen.Features.ReferenceTypes |
-			binaryen.Features.Multivalue |
-			binaryen.Features.GC
-			/* eslint-enable @stylistic/operator-linebreak */
-		));
+	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
+		this.module      = this.vm.mod;
+		this.heaptype    = this.vm.heaptype;
+		this.reftype     = this.vm.reftype;
+		this.reftypeNull = this.vm.reftypeNull;
+		this.structGet   = this.vm.structGet;
 
-		this.#setupTypes();
 		this.#setupGlobals();
 		this.#setupFunctions();
 
@@ -265,12 +98,6 @@ export class Builder {
 			[BinConst.TRUE,  new BinValue(this, new BinVect(this.module, true)) .value],
 		]);
 	}
-
-	/* eslint-disable @stylistic/brace-style */
-	public get heaptype():    Readonly<HeaptypeRegistry>    { return this.#heaptypeRegistry    as HeaptypeRegistry; }
-	public get reftype():     Readonly<ReftypeRegistry>     { return this.#reftypeRegistry     as ReftypeRegistry; }
-	public get reftypeNull(): Readonly<ReftypeNullRegistry> { return this.#reftypeNullRegistry as ReftypeNullRegistry; }
-	/* eslint-enable @stylistic/brace-style */
 
 	public getConst(key: BinConst): binaryen.ExpressionRef {
 		assert.ok(this.#constRegistry.has(key), `Expected constant registry to have constant \`${ BinConst[key] }\`.`);
@@ -449,188 +276,6 @@ export class Builder {
 			...[...cases].map(([ant, con]) => this.module.call('Map.set', [local.get(), ant, con], binaryen.none)),
 			local.get(),
 		], this.reftype.Map);
-	}
-
-	/**
-	 * Set up common types.
-	 * We’ve defined these in a static `types.wat` file,
-	 * but there’s currently no way to access them dynamically with Binaryen,
-	 * so we repeat them here.
-	 */
-	#setupTypes(): void {
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		const tb: TypeBuilder = new binaryen.TypeBuilder();
-
-		let type_count: number = 0;
-
-		/* (type $Value ...) */
-		const i_value: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_value, [
-			/* $tag */       Builder.newField(binaryen.i32, 'i8'),
-			/* $primitive */ Builder.newField(binaryen.v128),
-			/* $composite */ Builder.newField(binaryen.eqref),
-		]);
-
-		/* (type $Property ...) */
-		const i_property: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_property, [
-			/* $key */ Builder.newField(binaryen.i64),
-			/* $val */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-		]);
-
-		/* (type $Case ...) */
-		const i_case: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_case, [
-			/* $ant */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-			/* $con */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-		]);
-
-		/* (type $String ...) */
-		const i_string: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_string,
-			binaryen.i32,
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.i8,
-			true,
-		);
-
-		/* (type $Tuple ...) */
-		const i_tuple: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_tuple,
-			tb.getTempRefType(tb.getTempHeapType(i_value), false),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			false,
-		);
-
-		/* (type $Record ...) */
-		const i_record: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_record,
-			tb.getTempRefType(tb.getTempHeapType(i_property), false),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			false,
-		);
-
-		/* (type $ListInternal ...) */
-		const i_list_internal: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_list_internal,
-			tb.getTempRefType(tb.getTempHeapType(i_value), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			true,
-		);
-
-		/* (type $DictInternal ...) */
-		const i_dict_internal: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_dict_internal,
-			tb.getTempRefType(tb.getTempHeapType(i_property), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			true,
-		);
-
-		/* (type $MapInternal ...) */
-		const i_map_internal: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_map_internal,
-			tb.getTempRefType(tb.getTempHeapType(i_case), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			true,
-		);
-
-		/* (type $Object ...) */
-		const i_object: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_object, [
-			/* $id */ Builder.newField(binaryen.i64),
-		]);
-		tb.setOpen(i_object);
-
-		/* (type $List ...) */
-		const i_list: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_list, [
-			/* $id */       Builder.newField(binaryen.i64),
-			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
-		]);
-		tb.setSubType(i_list, tb.getTempHeapType(i_object));
-		tb.setOpen(i_list);
-
-		/* (type $Dict ...) */
-		const i_dict: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_dict, [
-			/* $id */       Builder.newField(binaryen.i64),
-			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
-		]);
-		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
-		tb.setOpen(i_dict);
-
-		/* (type $Map ...) */
-		const i_map: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_map, [
-			/* $id */       Builder.newField(binaryen.i64),
-			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
-		]);
-		tb.setSubType(i_map, tb.getTempHeapType(i_object));
-		tb.setOpen(i_map);
-
-		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
-
-		this.#heaptypeRegistry.Value        = heaptypes[i_value];
-		this.#heaptypeRegistry.Property     = heaptypes[i_property];
-		this.#heaptypeRegistry.Case         = heaptypes[i_case];
-		this.#heaptypeRegistry.String       = heaptypes[i_string];
-		this.#heaptypeRegistry.Tuple        = heaptypes[i_tuple];
-		this.#heaptypeRegistry.Record       = heaptypes[i_record];
-		this.#heaptypeRegistry.ListInternal = heaptypes[i_list_internal];
-		this.#heaptypeRegistry.DictInternal = heaptypes[i_dict_internal];
-		this.#heaptypeRegistry.MapInternal  = heaptypes[i_map_internal];
-		this.#heaptypeRegistry.Object       = heaptypes[i_object];
-		this.#heaptypeRegistry.List         = heaptypes[i_list];
-		this.#heaptypeRegistry.Dict         = heaptypes[i_dict];
-		this.#heaptypeRegistry.Map          = heaptypes[i_map];
-
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		const {getTypeFromHeapType} = binaryen;
-
-		this.#reftypeRegistry.Value        = getTypeFromHeapType(heaptypes[i_value],         false);
-		this.#reftypeRegistry.Property     = getTypeFromHeapType(heaptypes[i_property],      false);
-		this.#reftypeRegistry.Case         = getTypeFromHeapType(heaptypes[i_case],          false);
-		this.#reftypeRegistry.String       = getTypeFromHeapType(heaptypes[i_string],        false);
-		this.#reftypeRegistry.Tuple        = getTypeFromHeapType(heaptypes[i_tuple],         false);
-		this.#reftypeRegistry.Record       = getTypeFromHeapType(heaptypes[i_record],        false);
-		this.#reftypeRegistry.ListInternal = getTypeFromHeapType(heaptypes[i_list_internal], false);
-		this.#reftypeRegistry.DictInternal = getTypeFromHeapType(heaptypes[i_dict_internal], false);
-		this.#reftypeRegistry.MapInternal  = getTypeFromHeapType(heaptypes[i_map_internal],  false);
-		this.#reftypeRegistry.Object       = getTypeFromHeapType(heaptypes[i_object],        false);
-		this.#reftypeRegistry.List         = getTypeFromHeapType(heaptypes[i_list],          false);
-		this.#reftypeRegistry.Dict         = getTypeFromHeapType(heaptypes[i_dict],          false);
-		this.#reftypeRegistry.Map          = getTypeFromHeapType(heaptypes[i_map],           false);
-
-		this.#reftypeNullRegistry.Value    = getTypeFromHeapType(heaptypes[i_value],    true); // only used as the fields of `$ListInternal`
-		this.#reftypeNullRegistry.Property = getTypeFromHeapType(heaptypes[i_property], true); // only used as the fields of `$DictInternal`
-		this.#reftypeNullRegistry.Case     = getTypeFromHeapType(heaptypes[i_case],     true); // only used as the fields of `$MapInternal`
 	}
 
 	/** assumes both operands are primitive */
