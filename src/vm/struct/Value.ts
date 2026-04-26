@@ -82,12 +82,12 @@ export class Value {
 		readonly primitive: binaryen.ExpressionRef /* v128  */,
 		readonly composite: binaryen.ExpressionRef /* eqref */,
 	} {
-		const vm = this.vm;
+		const mod = this.vm.mod;
 		/* eslint-disable @stylistic/brace-style */
 		return {
-			/** @return `(struct.get $Value $tag       <ref>)` */ get tag():       binaryen.ExpressionRef /* i32   */ { return vm.mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
-			/** @return `(struct.get $Value $primitive <ref>)` */ get primitive(): binaryen.ExpressionRef /* v128  */ { return vm.mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
-			/** @return `(struct.get $Value $primitive <ref>)` */ get composite(): binaryen.ExpressionRef /* eqref */ { return vm.mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
+			/** @return `(struct.get $Value $tag       <ref>)` */ get tag():       binaryen.ExpressionRef /* i32   */ { return mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
+			/** @return `(struct.get $Value $primitive <ref>)` */ get primitive(): binaryen.ExpressionRef /* v128  */ { return mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
+			/** @return `(struct.get $Value $primitive <ref>)` */ get composite(): binaryen.ExpressionRef /* eqref */ { return mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
 		};
 		/* eslint-enable @stylistic/brace-style */
 	}
@@ -115,7 +115,7 @@ export class Value {
 				reftype.Value,
 				binaryen.i32,
 				[],
-				mod.i32.eq(this.vm.Value.field(param0).tag, mod.i32.const(names.indexOf(name) + 1)),
+				mod.i32.eq(this.field(param0).tag, mod.i32.const(names.indexOf(name) + 1)),
 			));
 		})();
 	}
