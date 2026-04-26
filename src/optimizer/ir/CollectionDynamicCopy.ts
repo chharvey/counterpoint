@@ -6,6 +6,7 @@ import {
 	BinConst,
 	type Builder,
 	type Local,
+	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -117,7 +118,7 @@ function each_item(
  */
 function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: new BinValue(cg, cg.module.array.get(pair.tee(), cg.module.i32.const(0), cg.reftype.Value)).interpret('asNat'),
+		key: BinVect.fromValue(cg.vm, cg.module.array.get(pair.tee(), cg.module.i32.const(0), cg.reftype.Value)).asNat,
 		val: cg.module.array.get(pair.get(), cg.module.i32.const(1), cg.reftype.Value),
 	};
 }
@@ -149,7 +150,7 @@ function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionR
  */
 function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: new BinValue(cg, cg.structGet.case.ant(case_)).interpret('asNat'),
+		key: BinVect.fromValue(cg.vm, cg.structGet.case.ant(case_)).asNat,
 		val: cg.structGet.case.con(case_),
 	};
 }

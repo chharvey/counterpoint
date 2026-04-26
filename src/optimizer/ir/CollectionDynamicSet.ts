@@ -73,14 +73,14 @@ export class CollectionDynamicSet extends Instruction {
 			case TypeName.LIST: {
 				return cg.module.call('List.set', [
 					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.List),
-					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('asInt')),
+					cg.module.i32.wrap(BinVect.fromValue(cg.vm, this.accessor.codegen(cg)).asInt),
 					this.value.codegen(cg),
 				], binaryen.none);
 			}
 			case TypeName.DICT: {
 				return cg.module.call('Dict.set', [
 					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Dict),
-					new BinValue(cg, this.accessor.codegen(cg)).interpret('asNat'),
+					BinVect.fromValue(cg.vm, this.accessor.codegen(cg)).asNat,
 					this.value.codegen(cg),
 				], binaryen.none);
 			}

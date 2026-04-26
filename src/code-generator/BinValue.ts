@@ -62,17 +62,6 @@ export class BinValue {
 	}
 
 	/**
-	 * Extracts this value’s `$primitive` field
-	 * and interprets it as an `int`, `nat`, or `float`, depending on the argument.
-	 * This method does not test the value’s `$tag` field — it assumes its `$primitive` field is filled.
-	 * @param typekey the string key of the type to cast to; accessed on `BinVect`
-	 * @return        `({i64x2,f64x2}.extract_lane 1 (struct.get $Value $primitive <this>))`
-	 */
-	public interpret(typekey: 'asSpecial' | 'asInt' | 'asNat' | 'asFloat'): binaryen.ExpressionRef {
-		return BinVect.fromValue(this.cg.vm, this.value)[typekey];
-	}
-
-	/**
 	 * Extracts this value’s `$composite` field and returns a `(ref.cast)` to the given reference type.
 	 * This method does not test the value’s `$tag` field — it assumes its `$composite` field is filled.
 	 * @param reftype the string key of the type to cast to
