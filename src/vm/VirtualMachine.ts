@@ -218,6 +218,7 @@ export class VirtualMachine {
 		));
 
 		this.#setupTypes();
+		this.#setupFunctions();
 	}
 
 
@@ -415,5 +416,10 @@ export class VirtualMachine {
 			Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
 			Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
 		};
+	}
+
+	@runOnceMethod
+	#setupFunctions(): void {
+		this.Value.setupFunctions();
 	}
 }

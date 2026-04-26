@@ -385,15 +385,15 @@ export class Builder {
 
 		/* Unary Operators */
 		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.new(BinVect.boolOf(mod, mod.i32.and(
-			local_vals[0].isPrimitive,
+			this.vm.Value.isPrimitive(local_vals[0].value),
 			local_vects[0].isSpecial(null),
 		))));
 		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.new(BinVect.boolOf(mod, mod.i32.and(
-			local_vals[0].isPrimitive,
+			this.vm.Value.isPrimitive(local_vals[0].value),
 			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
 		))));
 		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
-			local_vals[0].isPrimitive,
+			this.vm.Value.isPrimitive(local_vals[0].value),
 			mod.if(
 				local_vects[0].isSpecial(),
 				mod.call('vnot', [local_vals[0].value], rt_value),
@@ -484,7 +484,10 @@ export class Builder {
 
 		mod.removeFunction('vid'); // removes stub defined in `stubs.wat`
 		mod.addFunction('vid', binaryen.createType([rt_value, rt_value]), rt_value, [], this.vm.Value.new(BinVect.boolOf(mod, mod.if(
-			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
+			mod.i32.and(
+				this.vm.Value.isPrimitive(local_vals[0].value),
+				this.vm.Value.isPrimitive(local_vals[1].value),
+			),
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
 				mod.i32.eq(local_vects[0].asSpecial, local_vects[1].asSpecial),
@@ -527,7 +530,10 @@ export class Builder {
 
 		mod.removeFunction('veq'); // removes stub defined in `stubs.wat`
 		mod.addFunction('veq', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
-			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
+			mod.i32.and(
+				this.vm.Value.isPrimitive(local_vals[0].value),
+				this.vm.Value.isPrimitive(local_vals[1].value),
+			),
 			mod.if(
 				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
 				mod.call('vid',  [local_vals[0].value, local_vals[1].value], rt_value),

@@ -1,4 +1,5 @@
 import binaryen from 'binaryen';
+import {runOnceMethod} from '../../lib/decorators.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 
 
@@ -65,5 +66,27 @@ export class Value {
 			}
 			*/
 		}
+	}
+
+	/** Whether the value is primitive (tag == 1). */
+	public isPrimitive(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.is-primitive', [param0], binaryen.i32);
+	};
+
+	@runOnceMethod
+	public setupFunctions(): void {
+		const {mod, reftype} = this.vm;
+
+		/** $Value.is-primitive */
+		(() => {
+			const param0: binaryen.ExpressionRef /* (ref $Value) */ = mod.local.get(0, reftype.Value);
+			mod.addFunction(
+				'Value.is-primitive',
+				reftype.Value,
+				binaryen.i32,
+				[],
+				mod.i32.eq(this.vm.structGet.value.tag(param0), mod.i32.const(1)),
+			);
+		})();
 	}
 }
