@@ -373,7 +373,7 @@ export class Builder {
 	}
 
 	#setupFunctions(): void {
-		const as_composite = (bv: BinValue): binaryen.ExpressionRef /* eqref */ => this.vm.structGet.value.composite(bv.value);
+		const as_composite = (bv: BinValue): binaryen.ExpressionRef /* eqref */ => this.vm.Value.field(bv.value).composite;
 
 		const mod:       BinaryenModuleUpdates = this.module;
 		const rt_value:  binaryen.Type         = this.reftype.Value;

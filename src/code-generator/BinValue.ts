@@ -55,7 +55,7 @@ export class BinValue {
 
 	/** Return a new BinVect containing this Value’s primitive value. */
 	public toBinVect(): BinVect {
-		return new BinVect(this.cg.module, this.cg.vm.structGet.value.primitive(this.value));
+		return new BinVect(this.cg.module, this.cg.vm.Value.field(this.value).primitive);
 	}
 
 	/** Wrap this `$Value` in a `$Property`, given a key id. */
@@ -84,6 +84,6 @@ export class BinValue {
 	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
 	 */
 	public cast(reftype: binaryen.Type): binaryen.ExpressionRef {
-		return this.cg.module.ref.cast(this.cg.structGet.value.composite(this.value), reftype);
+		return this.cg.module.ref.cast(this.cg.vm.Value.field(this.value).composite, reftype);
 	}
 }

@@ -4,6 +4,15 @@ import type {VirtualMachine} from '../VirtualMachine.ts';
 
 
 
+/** Struct field constant indices. */
+const FIELD = {
+	/** `$Value.$tag` */       TAG:       0,
+	/** `$Value.$primitive` */ PRIMITIVE: 1,
+	/** `$Value.$composite` */ COMPOSITE: 2,
+} as const;
+
+
+
 export class Value {
 	public constructor(private readonly vm: VirtualMachine) {}
 
@@ -68,6 +77,22 @@ export class Value {
 		}
 	}
 
+	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
+		readonly tag:       binaryen.ExpressionRef /* i32   */,
+		readonly primitive: binaryen.ExpressionRef /* v128  */,
+		readonly composite: binaryen.ExpressionRef /* eqref */,
+	} {
+		const vm = this.vm;
+		/* eslint-disable @stylistic/brace-style */
+		return {
+			/** @return `(struct.get $Value $tag       <ref>)` */ get tag():       binaryen.ExpressionRef /* i32   */ { return vm.mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
+			/** @return `(struct.get $Value $primitive <ref>)` */ get primitive(): binaryen.ExpressionRef /* v128  */ { return vm.mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
+			/** @return `(struct.get $Value $primitive <ref>)` */ get composite(): binaryen.ExpressionRef /* eqref */ { return vm.mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
+		};
+		/* eslint-enable @stylistic/brace-style */
+	}
+
+
 	/** Whether the value is primitive (tag == 1). */
 	public isPrimitive(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Value.is-primitive', [param0], binaryen.i32);
@@ -90,7 +115,7 @@ export class Value {
 				reftype.Value,
 				binaryen.i32,
 				[],
-				mod.i32.eq(this.vm.structGet.value.tag(param0), mod.i32.const(names.indexOf(name) + 1)),
+				mod.i32.eq(this.vm.Value.field(param0).tag, mod.i32.const(names.indexOf(name) + 1)),
 			));
 		})();
 	}
