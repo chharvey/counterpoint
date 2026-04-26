@@ -396,17 +396,17 @@ test.suite('Opcode', () => {
 				const mod = cg.module;
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.array.get(
-						new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Tuple),
+						cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Tuple),
 						mod.i32.const(2),
 						cg.reftype.Value,
 					)),
 					mod.drop(mod.array.get(
-						new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Tuple),
+						cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Tuple),
 						mod.i32.const(0),
 						cg.reftype.Value,
 					)),
 					mod.drop(mod.array.get(
-						new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Tuple),
+						cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Tuple),
 						mod.i32.const(1),
 						cg.reftype.Value,
 					)),
@@ -425,15 +425,15 @@ test.suite('Opcode', () => {
 				const mod = cg.module;
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.call('Record.get', [
-						new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Record),
+						cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Record),
 						bigint_to_i64(mod, 0x103n, true),
 					], cg.reftype.Value)),
 					mod.drop(mod.call('Record.get', [
-						new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Record),
+						cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Record),
 						bigint_to_i64(mod, 0x101n, true),
 					], cg.reftype.Value)),
 					mod.drop(mod.call('Record.get', [
-						new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Record),
+						cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Record),
 						bigint_to_i64(mod, 0x102n, true),
 					], cg.reftype.Value)),
 				]);
@@ -459,7 +459,7 @@ test.suite('Opcode', () => {
 					return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
 							mod.local.set(4, mod.array.get(
-								cg.structGet.list.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.List)),
+								cg.structGet.list.internal(cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.List)),
 								mod.i32.wrap(BinVect.fromValue(cg.vm, mod.local.get(3, cg.reftype.Value)).asInt),
 								cg.reftypeNull.Value,
 							)),
@@ -471,7 +471,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(5, mod.array.get(
-								cg.structGet.list.internal(new BinValue(cg, list_get).cast(cg.reftype.List)),
+								cg.structGet.list.internal(cg.vm.Value.cast(list_get, cg.reftype.List)),
 								mod.i32.wrap(BinVect.fromValue(cg.vm, genConst(cg, 0n)).asInt),
 								cg.reftypeNull.Value,
 							)),
@@ -483,7 +483,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(6, mod.array.get(
-								cg.structGet.list.internal(new BinValue(cg, list_get).cast(cg.reftype.List)),
+								cg.structGet.list.internal(cg.vm.Value.cast(list_get, cg.reftype.List)),
 								mod.i32.wrap(BinVect.fromValue(cg.vm, genConst(cg, 3n)).asInt),
 								cg.reftypeNull.Value,
 							)),
@@ -495,7 +495,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(7, mod.array.get(
-								cg.structGet.list.internal(new BinValue(cg, list_get).cast(cg.reftype.List)),
+								cg.structGet.list.internal(cg.vm.Value.cast(list_get, cg.reftype.List)),
 								mod.i32.wrap(BinVect.fromValue(cg.vm, genConst(cg, -1n)).asInt),
 								cg.reftypeNull.Value,
 							)),
@@ -520,7 +520,7 @@ test.suite('Opcode', () => {
 					return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
 							mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
-								new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Dict),
+								cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Dict),
 								BinVect.fromValue(cg.vm, genConst(cg, Symbol(0x104))).asNat,
 							], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1)),
 							mod.if(
@@ -534,7 +534,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
-								new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Dict),
+								cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 								BinVect.fromValue(cg.vm, genConst(cg, Symbol(0x101))).asNat,
 							], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1)),
 							mod.if(
@@ -548,7 +548,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
-								new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Dict),
+								cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 								BinVect.fromValue(cg.vm, genConst(cg, Symbol(0x102))).asNat,
 							], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1)),
 							mod.if(
@@ -575,7 +575,7 @@ test.suite('Opcode', () => {
 					return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
 							mod.local.set(2, mod.tuple.extract(mod.call('Map.find', [
-								new BinValue(cg, base).cast(cg.reftype.Map),
+								cg.vm.Value.cast(base, cg.reftype.Map),
 								genConst(cg, 4.2),
 							], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1)),
 							mod.if(
@@ -589,7 +589,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(3, mod.tuple.extract(mod.call('Map.find', [
-								new BinValue(cg, base).cast(cg.reftype.Map),
+								cg.vm.Value.cast(base, cg.reftype.Map),
 								genConst(cg, 3.3),
 							], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1)),
 							mod.if(
@@ -616,7 +616,7 @@ test.suite('Opcode', () => {
 					return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
 							mod.local.set(2, mod.tuple.extract(mod.call('Map.find', [
-								new BinValue(cg, base).cast(cg.reftype.Map),
+								cg.vm.Value.cast(base, cg.reftype.Map),
 								genConst(cg, 4.2),
 							], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1)),
 							mod.if(
@@ -630,7 +630,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(3, mod.tuple.extract(mod.call('Map.find', [
-								new BinValue(cg, base).cast(cg.reftype.Map),
+								cg.vm.Value.cast(base, cg.reftype.Map),
 								genConst(cg, 3.3),
 							], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1)),
 							mod.if(
@@ -958,17 +958,17 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						mod.call('List.set', [
-							new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.List),
+							cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.List),
 							mod.i32.wrap(BinVect.fromValue(cg.vm, mod.local.get(3, cg.reftype.Value)).asInt),
 							genConst(cg, 45n),
 						], binaryen.none),
 						mod.call('List.set', [
-							new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List),
+							cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List),
 							mod.i32.wrap(BinVect.fromValue(cg.vm, genConst(cg, 0n)).asInt),
 							genConst(cg, 46n),
 						], binaryen.none),
 						mod.call('List.set', [
-							new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List),
+							cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List),
 							mod.i32.wrap(BinVect.fromValue(cg.vm, genConst(cg, 2n)).asInt),
 							genConst(cg, 47n),
 						], binaryen.none),
@@ -986,17 +986,17 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						mod.call('Dict.set', [
-							new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Dict),
+							cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Dict),
 							BinVect.fromValue(cg.vm, genConst(cg, Symbol(0x104))).asNat,
 							genConst(cg, 45n),
 						], binaryen.none),
 						mod.call('Dict.set', [
-							new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Dict),
+							cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 							BinVect.fromValue(cg.vm, genConst(cg, Symbol(0x101))).asNat,
 							genConst(cg, 46n),
 						], binaryen.none),
 						mod.call('Dict.set', [
-							new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Dict),
+							cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 							BinVect.fromValue(cg.vm, genConst(cg, Symbol(0x102))).asNat,
 							genConst(cg, 47n),
 						], binaryen.none),
@@ -1017,7 +1017,7 @@ test.suite('Opcode', () => {
 					opt.instructions[0].codegen(cg);
 					return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						mod.block(null, [
-							mod.local.set(2, new BinValue(cg, base).cast(cg.reftype.Map)),
+							mod.local.set(2, cg.vm.Value.cast(base, cg.reftype.Map)),
 							mod.local.set(3, genConst(cg, 4.2)),
 							mod.if(
 								BinVect.fromValue(cg.vm, genConst(cg, false)).isSpecial(true),
@@ -1026,7 +1026,7 @@ test.suite('Opcode', () => {
 							),
 						]),
 						mod.block(null, [
-							mod.local.set(4, new BinValue(cg, base).cast(cg.reftype.Map)),
+							mod.local.set(4, cg.vm.Value.cast(base, cg.reftype.Map)),
 							mod.local.set(5, genConst(cg, 3.3)),
 							mod.if(
 								BinVect.fromValue(cg.vm, genConst(cg, true)).isSpecial(true),
@@ -1045,8 +1045,8 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					const base: binaryen.ExpressionRef = mod.local.get(1, cg.reftype.Value); // index 0 = nonempty map setup
 					return assertEqualBins(opt.instructions.slice(1).map((instr) => instr.codegen(cg)), [
-						mod.call('Map.set', [new BinValue(cg, base).cast(cg.reftype.Map), genConst(cg, 4.2), genConst(cg, 21n)], binaryen.none),
-						mod.call('Map.set', [new BinValue(cg, base).cast(cg.reftype.Map), genConst(cg, 3.3), genConst(cg, 21n)], binaryen.none),
+						mod.call('Map.set', [cg.vm.Value.cast(base, cg.reftype.Map), genConst(cg, 4.2), genConst(cg, 21n)], binaryen.none),
+						mod.call('Map.set', [cg.vm.Value.cast(base, cg.reftype.Map), genConst(cg, 3.3), genConst(cg, 21n)], binaryen.none),
 					]);
 				});
 			});
@@ -1064,8 +1064,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.List)),
-								mod.local.set(3, new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Tuple)),
+								mod.local.set(2, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.List)),
+								mod.local.set(3, cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Tuple)),
 								mod.call('List.adjust-capacity', [
 									destlist_get,
 									mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
@@ -1091,8 +1091,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.List)),
-								mod.local.set(3, cg.structGet.list.internal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List))),
+								mod.local.set(2, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.List)),
+								mod.local.set(3, cg.structGet.list.internal(cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List))),
 								mod.call('List.adjust-capacity', [
 									destlist_get,
 									mod.array.len(srcref_get),
@@ -1122,8 +1122,8 @@ test.suite('Opcode', () => {
 							mod.block(null, [
 								mod.local.set(5, mod.i32.const(0)),
 								mod.block(null, [
-									mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.List)),
-									mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
+									mod.local.set(3, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.List)),
+									mod.local.set(4, cg.structGet.map.internal(cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
 									mod.block('exit-0', [
 										mod.local.set(6, mod.i32.const(0)),
 										mod.loop('repeat-0', mod.block(null, [
@@ -1161,8 +1161,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
-								mod.local.set(5, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-								mod.local.set(6, new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.Tuple)),
+								mod.local.set(5, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
+								mod.local.set(6, cg.vm.Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.Tuple)),
 								mod.block('exit-0', [
 									mod.local.set(7, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1171,7 +1171,7 @@ test.suite('Opcode', () => {
 										mod.call('Dict.set', [
 											mod.local.get(5, cg.reftype.Dict),
 											BinVect.fromValue(cg.vm, mod.array.get(
-												mod.local.tee(9, new BinValue(cg, mod.local.get(8, cg.reftype.Value)).cast(cg.reftype.Tuple), cg.reftype.Tuple),
+												mod.local.tee(9, cg.vm.Value.cast(mod.local.get(8, cg.reftype.Value), cg.reftype.Tuple), cg.reftype.Tuple),
 												mod.i32.const(0),
 												cg.reftype.Value,
 											)).asNat,
@@ -1195,8 +1195,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-								mod.local.set(3, new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Record)),
+								mod.local.set(2, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
+								mod.local.set(3, cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Record)),
 								mod.call('Dict.adjust-capacity', [
 									destdict_get,
 									mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
@@ -1223,8 +1223,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
-								mod.local.set(5, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-								mod.local.set(6, cg.structGet.list.internal(new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.List))),
+								mod.local.set(5, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
+								mod.local.set(6, cg.structGet.list.internal(cg.vm.Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.List))),
 								mod.block('exit-0', [
 									mod.local.set(7, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1235,7 +1235,7 @@ test.suite('Opcode', () => {
 											mod.call('Dict.set', [
 												mod.local.get(5, cg.reftype.Dict),
 												BinVect.fromValue(cg.vm, mod.array.get(
-													mod.local.tee(9, new BinValue(cg, item_get).cast(cg.reftype.Tuple), cg.reftype.Tuple),
+													mod.local.tee(9, cg.vm.Value.cast(item_get, cg.reftype.Tuple), cg.reftype.Tuple),
 													mod.i32.const(0),
 													cg.reftype.Value,
 												)).asNat,
@@ -1260,8 +1260,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-								mod.local.set(3, cg.structGet.dict.internal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Dict))),
+								mod.local.set(2, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
+								mod.local.set(3, cg.structGet.dict.internal(cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict))),
 								mod.call('Dict.adjust-capacity', [
 									destdict_get,
 									mod.array.len(srcref_get),
@@ -1288,8 +1288,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
-								mod.local.set(6, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-								mod.local.set(7, cg.structGet.map.internal(new BinValue(cg, mod.local.get(5, cg.reftype.Value)).cast(cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
+								mod.local.set(6, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
+								mod.local.set(7, cg.structGet.map.internal(cg.vm.Value.cast(mod.local.get(5, cg.reftype.Value), cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
 								mod.block('exit-0', [
 									mod.local.set(8, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1300,7 +1300,7 @@ test.suite('Opcode', () => {
 											mod.call('Dict.set', [
 												mod.local.get(6, cg.reftype.Dict),
 												BinVect.fromValue(cg.vm, mod.array.get(
-													mod.local.tee(10, new BinValue(cg, cg.structGet.case.ant(case_get)).cast(cg.reftype.Tuple), cg.reftype.Tuple),
+													mod.local.tee(10, cg.vm.Value.cast(cg.structGet.case.ant(case_get), cg.reftype.Tuple), cg.reftype.Tuple),
 													mod.i32.const(0),
 													cg.reftype.Value,
 												)).asNat,
@@ -1326,8 +1326,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Dict)),
-								mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup
+								mod.local.set(3, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
+								mod.local.set(4, cg.structGet.map.internal(cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Map))), // index 1 = nonempty map setup
 								mod.block('exit-0', [
 									mod.local.set(5, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1364,8 +1364,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-								mod.local.set(3, new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.Tuple)),
+								mod.local.set(2, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
+								mod.local.set(3, cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Tuple)),
 								mod.block('exit-0', [
 									mod.local.set(4, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1395,8 +1395,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(2, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-								mod.local.set(3, cg.structGet.list.internal(new BinValue(cg, mod.local.get(1, cg.reftype.Value)).cast(cg.reftype.List))),
+								mod.local.set(2, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
+								mod.local.set(3, cg.structGet.list.internal(cg.vm.Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List))),
 								mod.block('exit-0', [
 									mod.local.set(4, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1428,8 +1428,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-								mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
+								mod.local.set(3, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
+								mod.local.set(4, cg.structGet.map.internal(cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
 								mod.call('Map.adjust-capacity', [
 									destset_get,
 									mod.array.len(srcref_get),
@@ -1457,8 +1457,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
-								mod.local.set(5, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-								mod.local.set(6, new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.Tuple)),
+								mod.local.set(5, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
+								mod.local.set(6, cg.vm.Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.Tuple)),
 								mod.block('exit-0', [
 									mod.local.set(7, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1466,7 +1466,7 @@ test.suite('Opcode', () => {
 										mod.local.set(8, mod.array.get(pairs_get, i_get, cg.reftype.Value)),
 										mod.call('Map.set', [
 											mod.local.get(5, cg.reftype.Map),
-											mod.array.get(mod.local.tee(9, new BinValue(cg, mod.local.get(8, cg.reftype.Value)).cast(cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
+											mod.array.get(mod.local.tee(9, cg.vm.Value.cast(mod.local.get(8, cg.reftype.Value), cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
 											mod.array.get(mod.local.get(9, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
 										], binaryen.none),
 										mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
@@ -1488,8 +1488,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
-								mod.local.set(5, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-								mod.local.set(6, cg.structGet.list.internal(new BinValue(cg, mod.local.get(4, cg.reftype.Value)).cast(cg.reftype.List))),
+								mod.local.set(5, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
+								mod.local.set(6, cg.structGet.list.internal(cg.vm.Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.List))),
 								mod.block('exit-0', [
 									mod.local.set(7, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1499,7 +1499,7 @@ test.suite('Opcode', () => {
 											mod.i32.eqz(mod.ref.is_null(item_get)),
 											mod.call('Map.set', [
 												mod.local.get(5, cg.reftype.Map),
-												mod.array.get(mod.local.tee(9, new BinValue(cg, item_get).cast(cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
+												mod.array.get(mod.local.tee(9, cg.vm.Value.cast(item_get, cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
 												mod.array.get(mod.local.get(9, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
 											], binaryen.none),
 										),
@@ -1522,8 +1522,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
-								mod.local.set(6, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-								mod.local.set(7, cg.structGet.map.internal(new BinValue(cg, mod.local.get(5, cg.reftype.Value)).cast(cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
+								mod.local.set(6, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
+								mod.local.set(7, cg.structGet.map.internal(cg.vm.Value.cast(mod.local.get(5, cg.reftype.Value), cg.reftype.Map))), // index 4 = nonempty map setup (implementation of Set)
 								mod.block('exit-0', [
 									mod.local.set(8, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1533,7 +1533,7 @@ test.suite('Opcode', () => {
 											mod.i32.eqz(mod.ref.is_null(case_get)),
 											mod.call('Map.set', [
 												mod.local.get(6, cg.reftype.Map),
-												mod.array.get(mod.local.tee(10, new BinValue(cg, cg.structGet.case.ant(case_get)).cast(cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
+												mod.array.get(mod.local.tee(10, cg.vm.Value.cast(cg.structGet.case.ant(case_get), cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
 												mod.array.get(mod.local.get(10, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
 											], binaryen.none),
 										),
@@ -1555,8 +1555,8 @@ test.suite('Opcode', () => {
 						return assertEqualBins(
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
-								mod.local.set(3, new BinValue(cg, mod.local.get(0, cg.reftype.Value)).cast(cg.reftype.Map)),
-								mod.local.set(4, cg.structGet.map.internal(new BinValue(cg, mod.local.get(2, cg.reftype.Value)).cast(cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
+								mod.local.set(3, cg.vm.Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
+								mod.local.set(4, cg.structGet.map.internal(cg.vm.Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Map))), // index 1 = nonempty map setup (implementation of Set)
 								mod.call('Map.adjust-capacity', [
 									destmap_get,
 									mod.array.len(srcref_get),

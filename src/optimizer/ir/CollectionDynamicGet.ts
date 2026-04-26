@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	BinValue,
 	BinConst,
 	type Builder,
 	type Local,
@@ -69,6 +68,9 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
+		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
+		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => cg.vm.Value.cast(collection, reftype);
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
 		 * But we still need to check for nullish values in the collection.
@@ -76,8 +78,8 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(cg.module.array.get(
-					cg.structGet.list.internal(new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.List)),
-					cg.module.i32.wrap(BinVect.fromValue(cg.vm, this.accessor.codegen(cg)).asInt),
+					cg.structGet.list.internal(cast_collection(cg.reftype.List)),
+					cg.module.i32.wrap(BinVect.fromValue(cg.vm, accessor).asInt),
 					cg.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
 
@@ -93,8 +95,8 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Dict),
-					BinVect.fromValue(cg.vm, this.accessor.codegen(cg)).asNat,
+					cast_collection(cg.reftype.Dict),
+					BinVect.fromValue(cg.vm, accessor).asNat,
 				], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1));
 
 				return cg.module.block(null, [
@@ -112,8 +114,8 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.SET: {
 				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map),
-					this.accessor.codegen(cg),
+					cast_collection(cg.reftype.Map),
+					accessor,
 				], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1));
 
 				return cg.module.block(null, [
@@ -131,8 +133,8 @@ export class CollectionDynamicGet extends Value {
 			}
 			case TypeName.MAP: {
 				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map),
-					this.accessor.codegen(cg),
+					cast_collection(cg.reftype.Map),
+					accessor,
 				], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1));
 
 				return cg.module.block(null, [

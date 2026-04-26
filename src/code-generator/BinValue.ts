@@ -60,14 +60,4 @@ export class BinValue {
 			this.value,
 		], this.cg.heaptype.Property);
 	}
-
-	/**
-	 * Extracts this value’s `$composite` field and returns a `(ref.cast)` to the given reference type.
-	 * This method does not test the value’s `$tag` field — it assumes its `$composite` field is filled.
-	 * @param reftype the string key of the type to cast to
-	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
-	 */
-	public cast(reftype: binaryen.Type): binaryen.ExpressionRef {
-		return this.cg.module.ref.cast(this.cg.vm.Value.field(this.value).composite, reftype);
-	}
 }

@@ -92,6 +92,17 @@ export class Value {
 		/* eslint-enable @stylistic/brace-style */
 	}
 
+	/**
+	 * Extracts a `$Value`’s `$composite` field and returns a `(ref.cast)` to the given reference type.
+	 * This method does not test the value’s `$tag` field — it assumes its `$composite` field is filled.
+	 * @param value   the expression to cast
+	 * @param reftype the type to cast to
+	 * @return        `(ref.cast (struct.get $Value $composite <value>) <reftype>)`
+	 */
+	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef {
+		return this.vm.mod.ref.cast(this.field(value).composite, reftype);
+	}
+
 
 	/** Whether the value is primitive (tag == 1). */
 	public isPrimitive(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
