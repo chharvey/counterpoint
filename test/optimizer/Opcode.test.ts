@@ -529,7 +529,7 @@ test.suite('Opcode', () => {
 									mod.call('Property.is-tombstone', [mod.local.get(3, cg.reftypeNull.Property)], binaryen.i32),
 								),
 								genConst(cg),
-								cg.structGet.property.val(mod.local.get(3, cg.reftypeNull.Property)),
+								cg.vm.Property.field(mod.local.get(3, cg.reftypeNull.Property)).val,
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
@@ -543,7 +543,7 @@ test.suite('Opcode', () => {
 									mod.call('Property.is-tombstone', [mod.local.get(4, cg.reftypeNull.Property)], binaryen.i32),
 								),
 								genConst(cg),
-								cg.structGet.property.val(mod.local.get(4, cg.reftypeNull.Property)),
+								cg.vm.Property.field(mod.local.get(4, cg.reftypeNull.Property)).val,
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
@@ -557,7 +557,7 @@ test.suite('Opcode', () => {
 									mod.call('Property.is-tombstone', [mod.local.get(5, cg.reftypeNull.Property)], binaryen.i32),
 								),
 								genConst(cg),
-								cg.structGet.property.val(mod.local.get(5, cg.reftypeNull.Property)),
+								cg.vm.Property.field(mod.local.get(5, cg.reftypeNull.Property)).val,
 							),
 						], cg.reftype.Value)),
 					]);
