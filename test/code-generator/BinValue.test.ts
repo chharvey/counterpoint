@@ -104,29 +104,6 @@ test.suite('BinValue', () => {
 		));
 	});
 
-	test.test('#asPrimitive', () => {
-		xjs.Array.forEachAggregated([
-			// `$Value`s with primitive filled
-			new BinValue(cg, new BinVect(mod, null)),
-			new BinValue(cg, new BinVect(mod, false)),
-			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 0x100n))),
-			new BinValue(cg, new BinVect(mod, bigint_to_i64(mod, 42n))),
-			new BinValue(cg, new BinVect(mod, mod.f64.const(4.2))),
-			// `$Value`s with composite filled
-			new BinValue(cg, cg.codegenTuple()),
-			new BinValue(cg, cg.codegenRecord()),
-			new BinValue(cg, cg.codegenList()),
-			new BinValue(cg, cg.codegenDict()),
-		], (binval) => {
-			const {asPrimitive} = binval;
-			assertEqualBins(
-				asPrimitive,
-				cg.structGet.value.primitive(binval.value),
-			);
-			return assert.strictEqual(binaryen.getExpressionType(asPrimitive), binaryen.v128);
-		});
-	});
-
 	test.test('#asComposite', () => {
 		xjs.Array.forEachAggregated([
 			// `$Value`s with primitive filled

@@ -1020,7 +1020,7 @@ test.suite('Opcode', () => {
 							mod.local.set(2, new BinValue(cg, base).cast(cg.reftype.Map)),
 							mod.local.set(3, genConst(cg, 4.2)),
 							mod.if(
-								new BinVect(mod, new BinValue(cg, genConst(cg, false)).asPrimitive).isSpecial(true),
+								new BinValue(cg, genConst(cg, false)).toBinVect().isSpecial(true),
 								mod.call('Map.set', [base_get_0, accessor_get_0, genConst(cg)], binaryen.none),
 								mod.drop(mod.call('Map.delete', [base_get_0, accessor_get_0], cg.reftypeNull.Value)),
 							),
@@ -1029,7 +1029,7 @@ test.suite('Opcode', () => {
 							mod.local.set(4, new BinValue(cg, base).cast(cg.reftype.Map)),
 							mod.local.set(5, genConst(cg, 3.3)),
 							mod.if(
-								new BinVect(mod, new BinValue(cg, genConst(cg, true)).asPrimitive).isSpecial(true),
+								new BinValue(cg, genConst(cg, true)).toBinVect().isSpecial(true),
 								mod.call('Map.set', [base_get_1, accessor_get_1, genConst(cg)], binaryen.none),
 								mod.drop(mod.call('Map.delete', [base_get_1, accessor_get_1], cg.reftypeNull.Value)),
 							),

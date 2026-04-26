@@ -285,10 +285,7 @@ export class Builder {
 		typekey: 'asInt' | 'asNat' | 'asFloat',
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [
-			new BinValue(this, mod.local.get(0, this.reftype.Value)),
-			new BinValue(this, mod.local.get(1, this.reftype.Value)),
-		].map((binval) => new BinVect(mod, binval.asPrimitive));
+		const local_vects = [0, 1].map((i) => new BinValue(this, mod.local.get(i, this.reftype.Value)).toBinVect());
 		return mod.addFunction(
 			name,
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
@@ -306,10 +303,7 @@ export class Builder {
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [
-			new BinValue(this, mod.local.get(0, this.reftype.Value)),
-			new BinValue(this, mod.local.get(1, this.reftype.Value)),
-		].map((binval) => new BinVect(mod, binval.asPrimitive));
+		const local_vects = [0, 1].map((i) => new BinValue(this, mod.local.get(i, this.reftype.Value)).toBinVect());
 
 		const int_int: binaryen.ExpressionRef = method_ints.call(null, local_vects[0].asInt,    local_vects[1].asInt);
 		const int_nat: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].i_to_n(), local_vects[1].asNat);
@@ -386,11 +380,8 @@ export class Builder {
 		const rt_list:   binaryen.Type         = this.reftype.List;
 		const rt_dict:   binaryen.Type         = this.reftype.Dict;
 		const rt_map:    binaryen.Type         = this.reftype.Map;
-		const local_vals = [
-			new BinValue(this, mod.local.get(0, rt_value)),
-			new BinValue(this, mod.local.get(1, rt_value)),
-		] as const;
-		const local_vects = local_vals.map((binval) => new BinVect(mod, binval.asPrimitive));
+		const local_vals  = [0, 1].map((i) => new BinValue(this, mod.local.get(i, rt_value)));
+		const local_vects = local_vals.map((binval) => binval.toBinVect());
 
 		/* Unary Operators */
 		mod.addFunction('isnull', rt_value, rt_value, [], new BinValue(this, BinVect.boolOf(mod, mod.i32.and(
@@ -598,7 +589,7 @@ export class Builder {
 
 		/* Utilities */
 		mod.removeFunction('bool-to-i32'); // removes stub defined in `stubs.wat`
-		mod.addFunction('bool-to-i32', rt_value, binaryen.i32, [], new BinVect(mod, local_vals[0].asPrimitive).isSpecial(true));
+		mod.addFunction('bool-to-i32', rt_value, binaryen.i32, [], local_vects[0].isSpecial(true));
 	}
 
 	/**

@@ -113,13 +113,18 @@ export class BinValue {
 	}
 
 	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
-	public get asPrimitive(): binaryen.ExpressionRef {
+	private get asPrimitive(): binaryen.ExpressionRef {
 		return this.cg.structGet.value.primitive(this.value);
 	}
 
 	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
 	public get asComposite(): binaryen.ExpressionRef {
 		return this.cg.structGet.value.composite(this.value);
+	}
+
+	/** Return a new BinVect containing this Value’s primitive value. */
+	public toBinVect(): BinVect {
+		return new BinVect(this.cg.module, this.asPrimitive);
 	}
 
 	/** Wrap this `$Value` in a `$Property`, given a key id. */
@@ -138,7 +143,7 @@ export class BinValue {
 	 * @return        `({i64x2,f64x2}.extract_lane 1 (struct.get $Value $primitive <this>))`
 	 */
 	public interpret(typekey: 'asSpecial' | 'asInt' | 'asNat' | 'asFloat'): binaryen.ExpressionRef {
-		return new BinVect(this.cg.module, this.asPrimitive)[typekey];
+		return this.toBinVect()[typekey];
 	}
 
 	/**
