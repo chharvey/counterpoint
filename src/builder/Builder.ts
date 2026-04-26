@@ -285,7 +285,7 @@ export class Builder {
 		typekey: 'asInt' | 'asNat' | 'asFloat',
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [0, 1].map((i) => new BinValue(this, mod.local.get(i, this.reftype.Value)).toBinVect());
+		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
 		return mod.addFunction(
 			name,
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
@@ -303,7 +303,7 @@ export class Builder {
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [0, 1].map((i) => new BinValue(this, mod.local.get(i, this.reftype.Value)).toBinVect());
+		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
 
 		const int_int: binaryen.ExpressionRef = method_ints.call(null, local_vects[0].asInt,    local_vects[1].asInt);
 		const int_nat: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].i_to_n(), local_vects[1].asNat);
@@ -383,7 +383,7 @@ export class Builder {
 		const rt_dict:   binaryen.Type         = this.reftype.Dict;
 		const rt_map:    binaryen.Type         = this.reftype.Map;
 		const local_vals  = [0, 1].map((i) => new BinValue(this, mod.local.get(i, rt_value)));
-		const local_vects = local_vals.map((binval) => binval.toBinVect());
+		const local_vects = local_vals.map((binval) => BinVect.fromValue(this.vm, binval.value));
 
 		/* Unary Operators */
 		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.new(BinVect.boolOf(mod, mod.i32.and(

@@ -6,6 +6,7 @@ import {
 	BinConst,
 	type Builder,
 	type Local,
+	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -90,7 +91,7 @@ export class CollectionDynamicSet extends Instruction {
 					base.set(),
 					accessor.set(),
 					cg.module.if(
-						new BinValue(cg, this.value.codegen(cg)).toBinVect().isSpecial(true),
+						BinVect.fromValue(cg.vm, this.value.codegen(cg)).isSpecial(true),
 						cg.module.call('Map.set', [
 							base.get(),
 							accessor.get(),

@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import type {VirtualMachine} from '../vm/index.ts';
 
 
 
@@ -111,6 +112,11 @@ export class BinVect {
 			new BinVect(mod, true).vect,
 			new BinVect(mod, false).vect,
 		);
+	}
+
+	/** Return a new BinVect containing a `$Value`’s primitive value. */
+	public static fromValue(vm: VirtualMachine, value: binaryen.ExpressionRef /* (ref $Value) */): BinVect {
+		return new BinVect(vm.mod, vm.Value.field(value).primitive);
 	}
 
 

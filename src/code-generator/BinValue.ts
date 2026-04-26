@@ -53,11 +53,6 @@ export class BinValue {
 		this.value = cg.vm.Value.new(arg);
 	}
 
-	/** Return a new BinVect containing this Value’s primitive value. */
-	public toBinVect(): BinVect {
-		return new BinVect(this.cg.module, this.cg.vm.Value.field(this.value).primitive);
-	}
-
 	/** Wrap this `$Value` in a `$Property`, given a key id. */
 	public toProperty(keyid: bigint): binaryen.ExpressionRef {
 		return this.cg.module.struct.new([
@@ -74,7 +69,7 @@ export class BinValue {
 	 * @return        `({i64x2,f64x2}.extract_lane 1 (struct.get $Value $primitive <this>))`
 	 */
 	public interpret(typekey: 'asSpecial' | 'asInt' | 'asNat' | 'asFloat'): binaryen.ExpressionRef {
-		return this.toBinVect()[typekey];
+		return BinVect.fromValue(this.cg.vm, this.value)[typekey];
 	}
 
 	/**
