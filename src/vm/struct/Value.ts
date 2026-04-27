@@ -79,11 +79,11 @@ export class Value {
 	}
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
-		readonly tag:       binaryen.ExpressionRef /* i32   */,
-		readonly primitive: binaryen.ExpressionRef /* v128  */,
+		readonly tag:       binaryen.ExpressionRef /* i32 */,
+		readonly primitive: binaryen.ExpressionRef /* v128 */,
 		readonly composite: binaryen.ExpressionRef /* eqref */,
 	} {
-		const mod = this.vm.mod;
+		const {mod} = this.vm;
 		/* eslint-disable @stylistic/brace-style */
 		return {
 			/** @return `(struct.get $Value $tag       <ref>)` */ get tag():       binaryen.ExpressionRef /* i32   */ { return mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
@@ -108,12 +108,12 @@ export class Value {
 	/** Whether the value is primitive (tag == 1). */
 	public isPrimitive(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Value.is-primitive', [param0], binaryen.i32);
-	};
+	}
 
 	/** Whether the value is composite (tag == 2). */
 	public isComposite(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Value.is-composite', [param0], binaryen.i32);
-	};
+	}
 
 	/** Converts this value (assuming it’s primitive and boolean) to i32. */
 	public boolToI32(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {

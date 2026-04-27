@@ -149,8 +149,8 @@ function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionR
  */
 function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: BinVect.fromValue(cg.vm, cg.structGet.case.ant(case_)).asNat,
-		val: cg.structGet.case.con(case_),
+		key: BinVect.fromValue(cg.vm, cg.vm.Case.field(case_).ant).asNat,
+		val: cg.vm.Case.field(case_).con,
 	};
 }
 
@@ -281,7 +281,7 @@ export class CollectionDynamicCopy extends Instruction {
 								cg.module.call('List.set', [
 									dest_get,
 									j.get(),
-									cg.structGet.case.ant(item_get),
+									cg.vm.Case.field(item_get).ant,
 								], binaryen.none),
 								j.inc(),
 							])),
@@ -342,7 +342,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.structGet.map.internal(cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(cast(cg.structGet.case.ant(item_get), cg.reftype.Tuple)));
+							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(cast(cg.vm.Case.field(item_get).ant, cg.reftype.Tuple)));
 							return cg.module.call('Dict.set', [dest_get, key, val], binaryen.none);
 						});
 					}
@@ -425,7 +425,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(cg.structGet.map.internal(cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(cast(cg.structGet.case.ant(item_get), cg.reftype.Tuple)));
+							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(cast(cg.vm.Case.field(item_get).ant, cg.reftype.Tuple)));
 							return cg.module.call('Map.set', [dest_get, ant, con], binaryen.none);
 						});
 					}

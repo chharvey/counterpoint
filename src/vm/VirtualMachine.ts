@@ -8,6 +8,8 @@ import type {
 	TypeBuilder,
 } from '../builder/-types.d.ts';
 import {Value} from './struct/Value.ts';
+import {Property} from './struct/Property.ts';
+import {Case} from './struct/Case.ts';
 
 
 
@@ -62,7 +64,6 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/cemp.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stringify.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
@@ -74,18 +75,6 @@ const IMPORTS: readonly string[] = [
 
 /** Struct field constant indices. */
 const STRUCT = {
-	PROPERTY: {
-		/** `$Property.$key` */
-		KEY: 0,
-		/** `$Property.$val` */
-		VAL: 1,
-	},
-	CASE: {
-		/** `$Case.$ant` */
-		ANT: 0,
-		/** `$Case.$con` */
-		CON: 1,
-	},
 	OBJECT: {
 		/** `$Object.$id` */
 		ID: 0,
@@ -131,14 +120,6 @@ export class VirtualMachine {
 
 	/** Utilities for getting fields of WASM structs. */
 	public readonly structGet = {
-		property: {
-			/** @return `(struct.get $Property $key <ref>)` */ key: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.PROPERTY.KEY, ref, binaryen.i64),
-			/** @return `(struct.get $Property $val <ref>)` */ val: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.PROPERTY.VAL, ref, this.reftype.Value),
-		},
-		case: {
-			/** @return `(struct.get $Case $ant <ref>)` */ ant: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.CASE.ANT, ref, this.reftype.Value),
-			/** @return `(struct.get $Case $con <ref>)` */ con: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.CASE.CON, ref, this.reftype.Value),
-		},
 		object: {
 			/** @return `(struct.get $Object $id <ref>)` */
 			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
@@ -159,14 +140,6 @@ export class VirtualMachine {
 
 	/** Utilities for setting fields of WASM structs. */
 	public readonly structSet = {
-		property: {
-			/** @return `(struct.get $Property $key <ref> <val>)` */ key: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.PROPERTY.KEY, ref, val),
-			/** @return `(struct.get $Property $val <ref> <val>)` */ val: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.PROPERTY.VAL, ref, val),
-		},
-		case: {
-			/** @return `(struct.get $Case $ant <ref> <val>)` */ ant: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.CASE.ANT, ref, val),
-			/** @return `(struct.get $Case $con <ref> <val>)` */ con: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.CASE.CON, ref, val),
-		},
 		object: {
 			/** @return `(struct.get $Object $id <ref> <val>)` */
 			id: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.OBJECT.ID, ref, val),
@@ -185,7 +158,9 @@ export class VirtualMachine {
 		},
 	} as const;
 
-	public Value = new Value(this);
+	public Value    = new Value(this);
+	public Property = new Property(this);
+	public Case     = new Case(this);
 
 
 	public constructor() {
@@ -403,5 +378,7 @@ export class VirtualMachine {
 	@runOnceMethod
 	#setupFunctions(): void {
 		this.Value.setupFunctions();
+		this.Property.setupFunctions();
+		this.Case.setupFunctions();
 	}
 }

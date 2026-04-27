@@ -1,6 +1,5 @@
 import type binaryen from 'binaryen';
 import {
-	bigint_to_i64,
 	type Builder,
 	BinVect,
 } from '../index.ts';
@@ -51,13 +50,5 @@ export class BinValue {
 			return;
 		}
 		this.value = cg.vm.Value.new(arg);
-	}
-
-	/** Wrap this `$Value` in a `$Property`, given a key id. */
-	public toProperty(keyid: bigint): binaryen.ExpressionRef {
-		return this.cg.module.struct.new([
-			bigint_to_i64(this.cg.module, keyid, true),
-			this.value,
-		], this.cg.heaptype.Property);
 	}
 }

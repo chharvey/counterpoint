@@ -105,10 +105,10 @@ export class CollectionDynamicGet extends Value {
 					cg.module.if(
 						cg.module.i32.or(
 							cg.module.ref.is_null(maybe_prop.get()),
-							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
+							cg.vm.Property.isTombstone(maybe_prop.get()),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.structGet.property.val(maybe_prop.get()),
+						cg.vm.Property.field(maybe_prop.get()).val,
 					),
 				], cg.reftype.Value);
 			}
@@ -146,7 +146,7 @@ export class CollectionDynamicGet extends Value {
 							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.structGet.case.con(maybe_case.get()),
+						cg.vm.Case.field(maybe_case.get()).con,
 					),
 				], cg.reftype.Value);
 			}

@@ -6,7 +6,6 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
-	BinValue,
 	bigint_to_i64,
 	Builder,
 	BinVect,
@@ -244,11 +243,11 @@ test.suite('Opcode', () => {
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 						cg.vm.Value.new(cg.codegenRecord(new Map([
-							[257n, new BinValue(cg, mod.local.get(0, cg.reftype.Value)) .toProperty(257n)],
-							[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
-							[259n, new BinValue(cg, mod.local.get(1, cg.reftype.Value)) .toProperty(259n)],
-							[260n, new BinValue(cg, mod.local.get(2, cg.reftype.Value)) .toProperty(260n)], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-							[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
+							[257n, cg.vm.Property.new(257n, mod.local.get(0, cg.reftype.Value))],
+							[258n, cg.vm.Property.new(258n, genConst(cg, 4.2))],
+							[259n, cg.vm.Property.new(259n, mod.local.get(1, cg.reftype.Value))],
+							[260n, cg.vm.Property.new(260n, mod.local.get(2, cg.reftype.Value))], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+							[261n, cg.vm.Property.new(261n, genConst(cg, Symbol(0x105)))],
 						]))),
 					);
 				});
@@ -273,19 +272,19 @@ test.suite('Opcode', () => {
 						stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 						[new Map([
 							// (a= 42, aa= false, b= 4.2);  % (258, 261, 256)
-							[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
-							[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
-							[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
+							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
+							[261n, cg.vm.Property.new(261n, genConst(cg, false))],
+							[256n, cg.vm.Property.new(256n, genConst(cg, 4.2))],
 						]), new Map([
 							// (aa= true, c= null, a= 42);  % (261, 257, 258)
-							[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
-							[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
-							[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
+							[261n, cg.vm.Property.new(261n, genConst(cg, true))],
+							[257n, cg.vm.Property.new(257n, genConst(cg))],
+							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
 						]), new Map([
 							// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
-							[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
-							[259n, new BinValue(cg, genConst(cg, 4.2)).toProperty(259n)],
-							[262n, new BinValue(cg, genConst(cg))     .toProperty(262n)],
+							[256n, cg.vm.Property.new(256n, genConst(cg, 42n))],
+							[259n, cg.vm.Property.new(259n, genConst(cg, 4.2))],
+							[262n, cg.vm.Property.new(262n, genConst(cg))],
 						])].map((props) => cg.vm.Value.new(cg.codegenRecord(props))),
 					);
 				});
@@ -309,11 +308,11 @@ test.suite('Opcode', () => {
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 						cg.vm.Value.new(cg.codegenDict(new Map([
-							[257n, new BinValue(cg, mod.local.get(0, cg.reftype.Value)) .toProperty(257n)],
-							[258n, new BinValue(cg, genConst(cg, 4.2))                  .toProperty(258n)],
-							[259n, new BinValue(cg, mod.local.get(1, cg.reftype.Value)) .toProperty(259n)],
-							[260n, new BinValue(cg, mod.local.get(2, cg.reftype.Value)) .toProperty(260n)],
-							[261n, new BinValue(cg, genConst(cg, Symbol(0x105)))        .toProperty(261n)],
+							[257n, cg.vm.Property.new(257n, mod.local.get(0, cg.reftype.Value))],
+							[258n, cg.vm.Property.new(258n, genConst(cg, 4.2))],
+							[259n, cg.vm.Property.new(259n, mod.local.get(1, cg.reftype.Value))],
+							[260n, cg.vm.Property.new(260n, mod.local.get(2, cg.reftype.Value))],
+							[261n, cg.vm.Property.new(261n, genConst(cg, Symbol(0x105)))],
 						]))),
 					);
 				});
@@ -338,19 +337,19 @@ test.suite('Opcode', () => {
 						stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 						[new Map([
 							// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
-							[258n, new BinValue(cg, genConst(cg, 42n))  .toProperty(258n)],
-							[261n, new BinValue(cg, genConst(cg, false)).toProperty(261n)],
-							[256n, new BinValue(cg, genConst(cg, 4.2))  .toProperty(256n)],
+							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
+							[261n, cg.vm.Property.new(261n, genConst(cg, false))],
+							[256n, cg.vm.Property.new(256n, genConst(cg, 4.2))],
 						]), new Map([
 							// [aa= true, c= null, a= 42]; % (261, 257, 258)
-							[261n, new BinValue(cg, genConst(cg, true)).toProperty(261n)],
-							[257n, new BinValue(cg, genConst(cg))      .toProperty(257n)],
-							[258n, new BinValue(cg, genConst(cg, 42n)) .toProperty(258n)],
+							[261n, cg.vm.Property.new(261n, genConst(cg, true))],
+							[257n, cg.vm.Property.new(257n, genConst(cg))],
+							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
 						]), new Map([
 							// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
-							[256n, new BinValue(cg, genConst(cg, 42n)).toProperty(256n)],
-							[257n, new BinValue(cg, genConst(cg, 4.2)).toProperty(257n)],
-							[264n, new BinValue(cg, genConst(cg))     .toProperty(264n)],
+							[256n, cg.vm.Property.new(256n, genConst(cg, 42n))],
+							[257n, cg.vm.Property.new(257n, genConst(cg, 4.2))],
+							[264n, cg.vm.Property.new(264n, genConst(cg))],
 						])].map((props) => cg.vm.Value.new(cg.codegenDict(props))),
 					);
 				});
@@ -526,10 +525,10 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(3, cg.reftypeNull.Property)),
-									mod.call('Property.is-tombstone', [mod.local.get(3, cg.reftypeNull.Property)], binaryen.i32),
+									cg.vm.Property.isTombstone(mod.local.get(3, cg.reftypeNull.Property)),
 								),
 								genConst(cg),
-								cg.structGet.property.val(mod.local.get(3, cg.reftypeNull.Property)),
+								cg.vm.Property.field(mod.local.get(3, cg.reftypeNull.Property)).val,
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
@@ -540,10 +539,10 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(4, cg.reftypeNull.Property)),
-									mod.call('Property.is-tombstone', [mod.local.get(4, cg.reftypeNull.Property)], binaryen.i32),
+									cg.vm.Property.isTombstone(mod.local.get(4, cg.reftypeNull.Property)),
 								),
 								genConst(cg),
-								cg.structGet.property.val(mod.local.get(4, cg.reftypeNull.Property)),
+								cg.vm.Property.field(mod.local.get(4, cg.reftypeNull.Property)).val,
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
@@ -554,10 +553,10 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(5, cg.reftypeNull.Property)),
-									mod.call('Property.is-tombstone', [mod.local.get(5, cg.reftypeNull.Property)], binaryen.i32),
+									cg.vm.Property.isTombstone(mod.local.get(5, cg.reftypeNull.Property)),
 								),
 								genConst(cg),
-								cg.structGet.property.val(mod.local.get(5, cg.reftypeNull.Property)),
+								cg.vm.Property.field(mod.local.get(5, cg.reftypeNull.Property)).val,
 							),
 						], cg.reftype.Value)),
 					]);
@@ -625,7 +624,7 @@ test.suite('Opcode', () => {
 									mod.call('Case.is-tombstone', [maybe_case_0], binaryen.i32),
 								),
 								genConst(cg),
-								cg.structGet.case.con(maybe_case_0),
+								cg.vm.Case.field(maybe_case_0).con,
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
@@ -639,7 +638,7 @@ test.suite('Opcode', () => {
 									mod.call('Case.is-tombstone', [maybe_case_1], binaryen.i32),
 								),
 								genConst(cg),
-								cg.structGet.case.con(maybe_case_1),
+								cg.vm.Case.field(maybe_case_1).con,
 							),
 						], cg.reftype.Value)),
 					]);
@@ -1135,7 +1134,7 @@ test.suite('Opcode', () => {
 													mod.call('List.set', [
 														mod.local.get(3, cg.reftype.List),
 														j_get,
-														cg.structGet.case.ant(case_get),
+														cg.vm.Case.field(case_get).ant,
 													], binaryen.none),
 													mod.local.set(5, mod.i32.add(j_get, mod.i32.const(1))),
 												]),
@@ -1300,7 +1299,7 @@ test.suite('Opcode', () => {
 											mod.call('Dict.set', [
 												mod.local.get(6, cg.reftype.Dict),
 												BinVect.fromValue(cg.vm, mod.array.get(
-													mod.local.tee(10, cg.vm.Value.cast(cg.structGet.case.ant(case_get), cg.reftype.Tuple), cg.reftype.Tuple),
+													mod.local.tee(10, cg.vm.Value.cast(cg.vm.Case.field(case_get).ant, cg.reftype.Tuple), cg.reftype.Tuple),
 													mod.i32.const(0),
 													cg.reftype.Value,
 												)).asNat,
@@ -1338,8 +1337,8 @@ test.suite('Opcode', () => {
 											mod.block(null, [
 												mod.call('Dict.set', [
 													mod.local.get(3, cg.reftype.Dict),
-													BinVect.fromValue(cg.vm, cg.structGet.case.ant(case_get)).asNat,
-													cg.structGet.case.con(case_get),
+													BinVect.fromValue(cg.vm, cg.vm.Case.field(case_get).ant).asNat,
+													cg.vm.Case.field(case_get).con,
 												], binaryen.none),
 											]),
 										),
@@ -1533,7 +1532,7 @@ test.suite('Opcode', () => {
 											mod.i32.eqz(mod.ref.is_null(case_get)),
 											mod.call('Map.set', [
 												mod.local.get(6, cg.reftype.Map),
-												mod.array.get(mod.local.tee(10, cg.vm.Value.cast(cg.structGet.case.ant(case_get), cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
+												mod.array.get(mod.local.tee(10, cg.vm.Value.cast(cg.vm.Case.field(case_get).ant, cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
 												mod.array.get(mod.local.get(10, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
 											], binaryen.none),
 										),
