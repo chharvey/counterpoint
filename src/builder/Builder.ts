@@ -3,10 +3,7 @@ import binaryen from 'binaryen';
 import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {
-	Global,
-	BinValue,
-} from '../code-generator/index.ts';
+import {Global} from '../code-generator/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 import {BinVect} from './BinVect.ts';
@@ -373,7 +370,7 @@ export class Builder {
 	}
 
 	#setupFunctions(): void {
-		const as_composite = (bv: BinValue): binaryen.ExpressionRef /* eqref */ => this.vm.Value.field(bv.value).composite;
+		const as_composite = (v: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* eqref */ => this.vm.Value.field(v).composite;
 
 		const mod:       BinaryenModuleUpdates = this.module;
 		const rt_value:  binaryen.Type         = this.reftype.Value;
@@ -382,23 +379,23 @@ export class Builder {
 		const rt_list:   binaryen.Type         = this.reftype.List;
 		const rt_dict:   binaryen.Type         = this.reftype.Dict;
 		const rt_map:    binaryen.Type         = this.reftype.Map;
-		const local_vals  = [0, 1].map((i) => new BinValue(this, mod.local.get(i, rt_value)));
-		const local_vects = local_vals.map((binval) => BinVect.fromValue(this.vm, binval.value));
+		const local_vals  = [0, 1].map((i) => mod.local.get(i, rt_value));
+		const local_vects = local_vals.map((valuestruct) => BinVect.fromValue(this.vm, valuestruct));
 
 		/* Unary Operators */
 		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
-			this.vm.Value.isPrimitive(local_vals[0].value),
+			this.vm.Value.isPrimitive(local_vals[0]),
 			local_vects[0].isSpecial(null),
 		)));
 		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
-			this.vm.Value.isPrimitive(local_vals[0].value),
+			this.vm.Value.isPrimitive(local_vals[0]),
 			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
 		)));
 		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
-			this.vm.Value.isPrimitive(local_vals[0].value),
+			this.vm.Value.isPrimitive(local_vals[0]),
 			mod.if(
 				local_vects[0].isSpecial(),
-				mod.call('vnot', [local_vals[0].value], rt_value),
+				mod.call('vnot', [local_vals[0]], rt_value),
 				this.vm.Value.boolFromI32(mod.if(
 					local_vects[0].isInt,
 					mod.i64.eqz(local_vects[0].asInt),
@@ -487,8 +484,8 @@ export class Builder {
 		mod.removeFunction('vid'); // removes stub defined in `stubs.wat`
 		mod.addFunction('vid', binaryen.createType([rt_value, rt_value]), rt_value, [], this.vm.Value.boolFromI32(mod.if(
 			mod.i32.and(
-				this.vm.Value.isPrimitive(local_vals[0].value),
-				this.vm.Value.isPrimitive(local_vals[1].value),
+				this.vm.Value.isPrimitive(local_vals[0]),
+				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
@@ -536,13 +533,13 @@ export class Builder {
 		mod.removeFunction('veq'); // removes stub defined in `stubs.wat`
 		mod.addFunction('veq', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
 			mod.i32.and(
-				this.vm.Value.isPrimitive(local_vals[0].value),
-				this.vm.Value.isPrimitive(local_vals[1].value),
+				this.vm.Value.isPrimitive(local_vals[0]),
+				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
 				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				mod.call('vid',  [local_vals[0].value, local_vals[1].value], rt_value),
-				mod.call('veqn', [local_vals[0].value, local_vals[1].value], rt_value),
+				mod.call('vid',  [local_vals[0], local_vals[1]], rt_value),
+				mod.call('veqn', [local_vals[0], local_vals[1]], rt_value),
 			),
 			mod.if(
 				mod.i32.and(
@@ -589,7 +586,7 @@ export class Builder {
 									mod.ref.cast(as_composite(local_vals[0]), rt_map),
 									mod.ref.cast(as_composite(local_vals[1]), rt_map),
 								], binaryen.i32)),
-								mod.call('vid', [local_vals[0].value, local_vals[1].value], rt_value),
+								mod.call('vid', [local_vals[0], local_vals[1]], rt_value),
 							),
 						),
 					),
