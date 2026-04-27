@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type ConstructorType,
 	assert_instanceof,
@@ -49,15 +46,9 @@ export class CollectionLinearNew extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		switch (this.name) {
-			case TypeName.TUPLE: {
-				return new BinValue(cg, cg.codegenTuple(this.items.map((item) => item.codegen(cg)))).value;
-			}
-			case TypeName.LIST: {
-				return new BinValue(cg, cg.codegenList(this.items.map((item) => item.codegen(cg)))).value;
-			}
-			case TypeName.SET: {
-				return new BinValue(cg, cg.codegenSet(this.items.map((item) => item.codegen(cg)))).value;
-			}
+			case TypeName.TUPLE: { return cg.vm.Value.new(cg.codegenTuple (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.LIST:  { return cg.vm.Value.new(cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.SET:   { return cg.vm.Value.new(cg.codegenSet   (this.items.map((item) => item.codegen(cg)))); }
 		}
 	}
 }

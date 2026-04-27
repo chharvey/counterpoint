@@ -93,9 +93,9 @@ export class Builder {
 		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  new BinValue(this, new BinVect(this.module))       .value],
-			[BinConst.FALSE, new BinValue(this, new BinVect(this.module, false)).value],
-			[BinConst.TRUE,  new BinValue(this, new BinVect(this.module, true)) .value],
+			[BinConst.NULL,  this.vm.Value.new(new BinVect(this.module)        .vect)],
+			[BinConst.FALSE, this.vm.Value.new(new BinVect(this.module, false) .vect)],
+			[BinConst.TRUE,  this.vm.Value.new(new BinVect(this.module, true)  .vect)],
 		]);
 	}
 
@@ -285,13 +285,13 @@ export class Builder {
 		typekey: 'asInt' | 'asNat' | 'asFloat',
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [0, 1].map((i) => new BinValue(this, mod.local.get(i, this.reftype.Value)).toBinVect());
+		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
 		return mod.addFunction(
 			name,
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
 			this.reftype.Value,
 			[],
-			new BinValue(this, new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect).value,
+			this.vm.Value.new(new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect),
 		);
 	}
 
@@ -303,7 +303,7 @@ export class Builder {
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [0, 1].map((i) => new BinValue(this, mod.local.get(i, this.reftype.Value)).toBinVect());
+		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
 
 		const int_int: binaryen.ExpressionRef = method_ints.call(null, local_vects[0].asInt,    local_vects[1].asInt);
 		const int_nat: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].i_to_n(), local_vects[1].asNat);
@@ -315,7 +315,7 @@ export class Builder {
 		const flt_nat: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].n_to_f());
 		const flt_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].asFloat);
 
-		return mod.addFunction(name, binaryen.createType([this.reftype.Value, this.reftype.Value]), this.reftype.Value, [], new BinValue(this, BinVect.boolOf(mod, mod.if(
+		return mod.addFunction(name, binaryen.createType([this.reftype.Value, this.reftype.Value]), this.reftype.Value, [], this.vm.Value.boolFromI32(mod.if(
 			local_vects[0].isInt,
 			mod.if(
 				local_vects[1].isInt,
@@ -363,7 +363,7 @@ export class Builder {
 					mod.unreachable(),
 				),
 			),
-		))).value);
+		)));
 	}
 
 	#setupGlobals(): void {
@@ -373,6 +373,8 @@ export class Builder {
 	}
 
 	#setupFunctions(): void {
+		const as_composite = (bv: BinValue): binaryen.ExpressionRef /* eqref */ => this.vm.Value.field(bv.value).composite;
+
 		const mod:       BinaryenModuleUpdates = this.module;
 		const rt_value:  binaryen.Type         = this.reftype.Value;
 		const rt_tuple:  binaryen.Type         = this.reftype.Tuple;
@@ -381,23 +383,23 @@ export class Builder {
 		const rt_dict:   binaryen.Type         = this.reftype.Dict;
 		const rt_map:    binaryen.Type         = this.reftype.Map;
 		const local_vals  = [0, 1].map((i) => new BinValue(this, mod.local.get(i, rt_value)));
-		const local_vects = local_vals.map((binval) => binval.toBinVect());
+		const local_vects = local_vals.map((binval) => BinVect.fromValue(this.vm, binval.value));
 
 		/* Unary Operators */
-		mod.addFunction('isnull', rt_value, rt_value, [], new BinValue(this, BinVect.boolOf(mod, mod.i32.and(
-			local_vals[0].isPrimitive,
+		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
+			this.vm.Value.isPrimitive(local_vals[0].value),
 			local_vects[0].isSpecial(null),
-		))).value);
-		mod.addFunction('vnot', rt_value, rt_value, [], new BinValue(this, BinVect.boolOf(mod, mod.i32.and(
-			local_vals[0].isPrimitive,
+		)));
+		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
+			this.vm.Value.isPrimitive(local_vals[0].value),
 			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
-		))).value);
+		)));
 		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
-			local_vals[0].isPrimitive,
+			this.vm.Value.isPrimitive(local_vals[0].value),
 			mod.if(
 				local_vects[0].isSpecial(),
 				mod.call('vnot', [local_vals[0].value], rt_value),
-				new BinValue(this, BinVect.boolOf(mod, mod.if(
+				this.vm.Value.boolFromI32(mod.if(
 					local_vects[0].isInt,
 					mod.i64.eqz(local_vects[0].asInt),
 					mod.if(
@@ -409,11 +411,11 @@ export class Builder {
 							mod.unreachable(),
 						),
 					),
-				))).value,
+				)),
 			),
-			new BinValue(this, BinVect.boolOf(mod, mod.call('cemp', [mod.ref.as_non_null(local_vals[0].asComposite)], binaryen.i32))).value,
+			this.vm.Value.boolFromI32(mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32)),
 		));
-		mod.addFunction('vneg', rt_value, rt_value, [], new BinValue(this, mod.if( // assume operand is primitive
+		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			local_vects[0].isInt,
 			// `-n` in two’s complement is `(n xor -1) + 1`
 			new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].asInt, bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
@@ -422,46 +424,46 @@ export class Builder {
 				new BinVect(mod, mod.f64.neg(local_vects[0].asFloat)).vect,
 				mod.unreachable(), // cannot call NEG on other primitives
 			),
-		)).value);
-		mod.addFunction('vtoi', rt_value, rt_value, [], mod.if( // assume operand is primitive
+		)));
+		mod.addFunction('vtoi', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			local_vects[0].isInt,
-			new BinValue(this, local_vects[0].vect).value,
+			local_vects[0].vect,
 			mod.if(
 				local_vects[0].isNat,
-				new BinValue(this, new BinVect(mod, local_vects[0].n_to_i(), {unsigned: false}).vect).value,
+				new BinVect(mod, local_vects[0].n_to_i(), {unsigned: false}).vect,
 				mod.if(
 					local_vects[0].isFloat,
-					new BinValue(this, new BinVect(mod, local_vects[0].f_to_i()).vect).value,
+					new BinVect(mod, local_vects[0].f_to_i()).vect,
 					mod.unreachable(),
 				),
 			),
-		));
-		mod.addFunction('vton', rt_value, rt_value, [], mod.if( // assume operand is primitive
+		)));
+		mod.addFunction('vton', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			local_vects[0].isInt,
-			new BinValue(this, new BinVect(mod, local_vects[0].i_to_n(), {unsigned: true}).vect).value,
+			new BinVect(mod, local_vects[0].i_to_n(), {unsigned: true}).vect,
 			mod.if(
 				local_vects[0].isNat,
-				new BinValue(this, local_vects[0].vect).value,
+				local_vects[0].vect,
 				mod.if(
 					local_vects[0].isFloat,
-					new BinValue(this, new BinVect(mod, local_vects[0].f_to_n()).vect).value,
+					new BinVect(mod, local_vects[0].f_to_n()).vect,
 					mod.unreachable(),
 				),
 			),
-		));
-		mod.addFunction('vtof', rt_value, rt_value, [], mod.if( // assume operand is primitive
+		)));
+		mod.addFunction('vtof', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			local_vects[0].isInt,
-			new BinValue(this, new BinVect(mod, local_vects[0].i_to_f()).vect).value,
+			new BinVect(mod, local_vects[0].i_to_f()).vect,
 			mod.if(
 				local_vects[0].isNat,
-				new BinValue(this, new BinVect(mod, local_vects[0].n_to_f()).vect).value,
+				new BinVect(mod, local_vects[0].n_to_f()).vect,
 				mod.if(
 					local_vects[0].isFloat,
-					new BinValue(this, local_vects[0].vect).value,
+					local_vects[0].vect,
 					mod.unreachable(),
 				),
 			),
-		));
+		)));
 
 		/* Binary Operators */
 		this.#setupBinopArithmetic('viadd',   mod.i64.add  .bind(null), 'asInt');
@@ -483,8 +485,11 @@ export class Builder {
 		this.#setupBinopComparative('veqn', mod.i64.eq  .bind(null), mod.i64.eq  .bind(null), mod.f64.eq.bind(null));
 
 		mod.removeFunction('vid'); // removes stub defined in `stubs.wat`
-		mod.addFunction('vid', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, BinVect.boolOf(mod, mod.if(
-			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
+		mod.addFunction('vid', binaryen.createType([rt_value, rt_value]), rt_value, [], this.vm.Value.boolFromI32(mod.if(
+			mod.i32.and(
+				this.vm.Value.isPrimitive(local_vals[0].value),
+				this.vm.Value.isPrimitive(local_vals[1].value),
+			),
 			mod.if(
 				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
 				mod.i32.eq(local_vects[0].asSpecial, local_vects[1].asSpecial),
@@ -504,30 +509,36 @@ export class Builder {
 			),
 			mod.if(
 				mod.i32.and(
-					mod.ref.test(local_vals[0].asComposite, rt_tuple),
-					mod.ref.test(local_vals[1].asComposite, rt_tuple),
+					mod.ref.test(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.test(as_composite(local_vals[1]), rt_tuple),
 				),
 				mod.call('Tuple.identical', [
-					mod.ref.cast(local_vals[0].asComposite, rt_tuple),
-					mod.ref.cast(local_vals[1].asComposite, rt_tuple),
+					mod.ref.cast(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.cast(as_composite(local_vals[1]), rt_tuple),
 				], binaryen.i32),
 				mod.if(
 					mod.i32.and(
-						mod.ref.test(local_vals[0].asComposite, rt_record),
-						mod.ref.test(local_vals[1].asComposite, rt_record),
+						mod.ref.test(as_composite(local_vals[0]), rt_record),
+						mod.ref.test(as_composite(local_vals[1]), rt_record),
 					),
 					mod.call('Record.identical', [
-						mod.ref.cast(local_vals[0].asComposite, rt_record),
-						mod.ref.cast(local_vals[1].asComposite, rt_record),
+						mod.ref.cast(as_composite(local_vals[0]), rt_record),
+						mod.ref.cast(as_composite(local_vals[1]), rt_record),
 					], binaryen.i32),
-					mod.ref.eq(local_vals[0].asComposite, local_vals[1].asComposite),
+					mod.ref.eq(
+						as_composite(local_vals[0]),
+						as_composite(local_vals[1]),
+					),
 				),
 			),
-		))).value);
+		)));
 
 		mod.removeFunction('veq'); // removes stub defined in `stubs.wat`
 		mod.addFunction('veq', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
-			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
+			mod.i32.and(
+				this.vm.Value.isPrimitive(local_vals[0].value),
+				this.vm.Value.isPrimitive(local_vals[1].value),
+			),
 			mod.if(
 				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
 				mod.call('vid',  [local_vals[0].value, local_vals[1].value], rt_value),
@@ -535,49 +546,49 @@ export class Builder {
 			),
 			mod.if(
 				mod.i32.and(
-					mod.ref.test(local_vals[0].asComposite, rt_tuple),
-					mod.ref.test(local_vals[1].asComposite, rt_tuple),
+					mod.ref.test(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.test(as_composite(local_vals[1]), rt_tuple),
 				),
-				new BinValue(this, BinVect.boolOf(mod, mod.call('Tuple.equal', [
-					mod.ref.cast(local_vals[0].asComposite, rt_tuple),
-					mod.ref.cast(local_vals[1].asComposite, rt_tuple),
-				], binaryen.i32))).value,
+				this.vm.Value.boolFromI32(mod.call('Tuple.equal', [
+					mod.ref.cast(as_composite(local_vals[0]), rt_tuple),
+					mod.ref.cast(as_composite(local_vals[1]), rt_tuple),
+				], binaryen.i32)),
 				mod.if(
 					mod.i32.and(
-						mod.ref.test(local_vals[0].asComposite, rt_record),
-						mod.ref.test(local_vals[1].asComposite, rt_record),
+						mod.ref.test(as_composite(local_vals[0]), rt_record),
+						mod.ref.test(as_composite(local_vals[1]), rt_record),
 					),
-					new BinValue(this, BinVect.boolOf(mod, mod.call('Record.equal', [
-						mod.ref.cast(local_vals[0].asComposite, rt_record),
-						mod.ref.cast(local_vals[1].asComposite, rt_record),
-					], binaryen.i32))).value,
+					this.vm.Value.boolFromI32(mod.call('Record.equal', [
+						mod.ref.cast(as_composite(local_vals[0]), rt_record),
+						mod.ref.cast(as_composite(local_vals[1]), rt_record),
+					], binaryen.i32)),
 					mod.if(
 						mod.i32.and(
-							mod.ref.test(local_vals[0].asComposite, rt_list),
-							mod.ref.test(local_vals[1].asComposite, rt_list),
+							mod.ref.test(as_composite(local_vals[0]), rt_list),
+							mod.ref.test(as_composite(local_vals[1]), rt_list),
 						),
-						new BinValue(this, BinVect.boolOf(mod, mod.call('List.equal', [
-							mod.ref.cast(local_vals[0].asComposite, rt_list),
-							mod.ref.cast(local_vals[1].asComposite, rt_list),
-						], binaryen.i32))).value,
+						this.vm.Value.boolFromI32(mod.call('List.equal', [
+							mod.ref.cast(as_composite(local_vals[0]), rt_list),
+							mod.ref.cast(as_composite(local_vals[1]), rt_list),
+						], binaryen.i32)),
 						mod.if(
 							mod.i32.and(
-								mod.ref.test(local_vals[0].asComposite, rt_dict),
-								mod.ref.test(local_vals[1].asComposite, rt_dict),
+								mod.ref.test(as_composite(local_vals[0]), rt_dict),
+								mod.ref.test(as_composite(local_vals[1]), rt_dict),
 							),
-							new BinValue(this, BinVect.boolOf(mod, mod.call('Dict.equal', [
-								mod.ref.cast(local_vals[0].asComposite, rt_dict),
-								mod.ref.cast(local_vals[1].asComposite, rt_dict),
-							], binaryen.i32))).value,
+							this.vm.Value.boolFromI32(mod.call('Dict.equal', [
+								mod.ref.cast(as_composite(local_vals[0]), rt_dict),
+								mod.ref.cast(as_composite(local_vals[1]), rt_dict),
+							], binaryen.i32)),
 							mod.if(
 								mod.i32.and(
-									mod.ref.test(local_vals[0].asComposite, rt_map),
-									mod.ref.test(local_vals[1].asComposite, rt_map),
+									mod.ref.test(as_composite(local_vals[0]), rt_map),
+									mod.ref.test(as_composite(local_vals[1]), rt_map),
 								),
-								new BinValue(this, BinVect.boolOf(mod, mod.call('Map.equal', [
-									mod.ref.cast(local_vals[0].asComposite, rt_map),
-									mod.ref.cast(local_vals[1].asComposite, rt_map),
-								], binaryen.i32))).value,
+								this.vm.Value.boolFromI32(mod.call('Map.equal', [
+									mod.ref.cast(as_composite(local_vals[0]), rt_map),
+									mod.ref.cast(as_composite(local_vals[1]), rt_map),
+								], binaryen.i32)),
 								mod.call('vid', [local_vals[0].value, local_vals[1].value], rt_value),
 							),
 						),
@@ -585,11 +596,6 @@ export class Builder {
 				),
 			),
 		));
-
-
-		/* Utilities */
-		mod.removeFunction('bool-to-i32'); // removes stub defined in `stubs.wat`
-		mod.addFunction('bool-to-i32', rt_value, binaryen.i32, [], local_vects[0].isSpecial(true));
 	}
 
 	/**

@@ -1,8 +1,5 @@
 import type binaryen from 'binaryen';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -38,7 +35,7 @@ export class TupleGet extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.module.array.get(
-			new BinValue(cg, this.tuple.codegen(cg)).cast(cg.reftype.Tuple),
+			cg.vm.Value.cast(this.tuple.codegen(cg), cg.reftype.Tuple),
 			cg.module.i32.const(Number(this.accessor)),
 			cg.reftype.Value,
 		);

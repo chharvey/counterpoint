@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
+import type {VirtualMachine} from '../vm/index.ts';
 
 
 
@@ -93,24 +94,9 @@ import binaryen from 'binaryen';
  * ```
  */
 export class BinVect {
-	/**
-	 * Re-interprets an `i32` as a `v128` storing a boolean value.
-	 *
-	 * Returns a Binaryen `if` expression with the given condition and
-	 * branches containing `v128`s having Lane 3 of `\x0003` and `\x0002` respectively.
-	 * @param mod       a module to create the instance in
-	 * @param condition an `i32` that serves as the condition for the `if` expression
-	 * @return          the `if` expression
-	 */
-	public static boolOf(mod: binaryen.Module, condition: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		if (binaryen.getExpressionType(condition) !== binaryen.i32) {
-			throw new TypeError('Expected `i32`.');
-		}
-		return mod.if(
-			condition,
-			new BinVect(mod, true).vect,
-			new BinVect(mod, false).vect,
-		);
+	/** Return a new BinVect containing a `$Value`’s primitive value. */
+	public static fromValue(vm: VirtualMachine, value: binaryen.ExpressionRef /* (ref $Value) */): BinVect {
+		return new BinVect(vm.mod, vm.Value.field(value).primitive);
 	}
 
 

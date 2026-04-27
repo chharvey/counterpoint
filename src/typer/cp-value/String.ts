@@ -1,9 +1,6 @@
 import * as util from 'node:util';
 import type binaryen from 'binaryen';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {
 	strictEqual,
@@ -61,7 +58,7 @@ class ValueString extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, cg.codegenString([...this.data].map((c) => cg.module.i32.const(c)))).value;
+		return cg.vm.Value.new(cg.codegenString([...this.data].map((c) => cg.module.i32.const(c))));
 	}
 
 	/**

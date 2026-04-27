@@ -16,6 +16,6 @@
 
 
 
-(func $bool-to-i32 (param $arg0 (ref $Value)) (result i32)
+(func $Value.bool-to-i32 (param $arg0 (ref $Value)) (result i32)
 	(unreachable)
 )

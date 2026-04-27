@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	bigint_to_i64,
 	type Builder,
@@ -43,88 +43,14 @@ export class BinValue {
 	) {
 		this.TYPE = cg.reftype.Value;
 		if (arg instanceof BinVect) {
-			this.value = new BinValue(cg, arg.vect).value;
+			this.value = cg.vm.Value.new(arg.vect);
 			return;
 		}
 		if (arg === null) {
-			this.value = cg.module.struct.new_default(cg.heaptype.Value);
+			this.value = cg.vm.Value.new(arg);
 			return;
 		}
-		switch (binaryen.getExpressionType(arg)) {
-			case binaryen.unreachable: {
-				this.value = arg;
-				break;
-			}
-			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			case cg.reftypeNull.Value | 4:
-			case cg.reftype.Value     | 4:
-			case cg.reftypeNull.Value:
-			case cg.reftype.Value: { // if given a (nullish) `$Value`, just use that
-				this.value = arg;
-				break;
-			}
-			case binaryen.v128: { // a primitive
-				this.value = cg.module.struct.new([
-					cg.module.i32.const(1),
-					arg,
-					cg.module.ref.null(binaryen.eqref),
-				], cg.heaptype.Value);
-				break;
-			}
-			case binaryen.eqref:
-			case cg.reftype.String:
-			case cg.reftype.Tuple:
-			case cg.reftype.Record:
-			case cg.reftype.List:
-			case cg.reftype.Dict:
-			case cg.reftype.Object:
-			default: { // a composite
-				this.value = cg.module.struct.new([
-					cg.module.i32.const(2),
-					cg.module.v128.const(new Uint8Array(16)),
-					arg,
-				], cg.heaptype.Value);
-				break;
-			}
-			/*
-			default: {
-				const expected_types = [
-					'`v128`',
-					'`(ref $Tuple)`',
-					'`(ref $Record)`',
-					'`(ref $Object)` or a subtype',
-					'`(ref $Value)`',
-					'`(ref null $Value)`',
-				];
-				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ expected_types.join('\n\t') }`);
-			}
-			*/
-		}
-	}
-
-	/** Whether the value is primitive (tag == 1). */
-	public get isPrimitive(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eq(this.cg.structGet.value.tag(this.value), this.cg.module.i32.const(1));
-	}
-
-	/** Whether the value is composite (tag == 2). */
-	public get isComposite(): binaryen.ExpressionRef {
-		return this.cg.module.i32.eq(this.cg.structGet.value.tag(this.value), this.cg.module.i32.const(2));
-	}
-
-	/** The primitive value if it exists, otherwise a `(v128.const i64x2 0 0)`. */
-	private get asPrimitive(): binaryen.ExpressionRef {
-		return this.cg.structGet.value.primitive(this.value);
-	}
-
-	/** The composite value if it exists, otherwise a `(ref.null eq)`. */
-	public get asComposite(): binaryen.ExpressionRef {
-		return this.cg.structGet.value.composite(this.value);
-	}
-
-	/** Return a new BinVect containing this Value’s primitive value. */
-	public toBinVect(): BinVect {
-		return new BinVect(this.cg.module, this.asPrimitive);
+		this.value = cg.vm.Value.new(arg);
 	}
 
 	/** Wrap this `$Value` in a `$Property`, given a key id. */
@@ -133,26 +59,5 @@ export class BinValue {
 			bigint_to_i64(this.cg.module, keyid, true),
 			this.value,
 		], this.cg.heaptype.Property);
-	}
-
-	/**
-	 * Extracts this value’s `$primitive` field
-	 * and interprets it as an `int`, `nat`, or `float`, depending on the argument.
-	 * This method does not test the value’s `$tag` field — it assumes its `$primitive` field is filled.
-	 * @param typekey the string key of the type to cast to; accessed on `BinVect`
-	 * @return        `({i64x2,f64x2}.extract_lane 1 (struct.get $Value $primitive <this>))`
-	 */
-	public interpret(typekey: 'asSpecial' | 'asInt' | 'asNat' | 'asFloat'): binaryen.ExpressionRef {
-		return this.toBinVect()[typekey];
-	}
-
-	/**
-	 * Extracts this value’s `$composite` field and returns a `(ref.cast)` to the given reference type.
-	 * This method does not test the value’s `$tag` field — it assumes its `$composite` field is filled.
-	 * @param reftype the string key of the type to cast to
-	 * @return        `(ref.cast (struct.get $Value $composite <this>) <reftype>)`
-	 */
-	public cast(reftype: binaryen.Type): binaryen.ExpressionRef {
-		return this.cg.module.ref.cast(this.asComposite, reftype);
 	}
 }

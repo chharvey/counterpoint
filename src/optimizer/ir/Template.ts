@@ -1,9 +1,8 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinValue,
-	type Builder,
-	type Local,
+import type {
+	Builder,
+	Local,
 } from '../../index.ts';
 import {
 	memoizeMethod,
@@ -39,7 +38,7 @@ export class Template extends Value {
 		const result: Local = cg.newLocal(cg.module.array.new_default(cg.heaptype.String, lengths.reduce((a, b) => cg.module.i32.add(a, b))), cg.reftype.String);
 		const offset: Local = cg.newLocal(cg.module.i32.const(0));
 
-		return new BinValue(cg, cg.module.block(null, [
+		return cg.vm.Value.new(cg.module.block(null, [
 			...strings.map((strarr) => strarr.set()),
 			result.set(),
 			offset.set(),
@@ -54,6 +53,6 @@ export class Template extends Value {
 				offset.set(cg.module.i32.add(offset.get(), lengths[i])),
 			]).slice(0, -1), // slice off the last `offset.set`
 			result.get(),
-		], cg.reftype.String)).value;
+		], cg.reftype.String));
 	}
 }

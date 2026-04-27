@@ -40,9 +40,9 @@ export class DictNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
+		return cg.vm.Value.new(cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
 			id,
 			new BinValue(cg, value.codegen(cg)).toProperty(id),
-		])))).value;
+		]))));
 	}
 }

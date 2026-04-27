@@ -7,6 +7,7 @@ import type {
 	Field,
 	TypeBuilder,
 } from '../builder/-types.d.ts';
+import {Value} from './struct/Value.ts';
 
 
 
@@ -73,14 +74,6 @@ const IMPORTS: readonly string[] = [
 
 /** Struct field constant indices. */
 const STRUCT = {
-	VALUE: {
-		/** `$Value.$tag` */
-		TAG:       0,
-		/** `$Value.$primitive` */
-		PRIMITIVE: 1,
-		/** `$Value.$composite` */
-		COMPOSITE: 2,
-	},
 	PROPERTY: {
 		/** `$Property.$key` */
 		KEY: 0,
@@ -138,11 +131,6 @@ export class VirtualMachine {
 
 	/** Utilities for getting fields of WASM structs. */
 	public readonly structGet = {
-		value: {
-			/** @return `(struct.get $Value $tag       <ref>)` */ tag:       (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.VALUE.TAG,       ref, binaryen.i32, false),
-			/** @return `(struct.get $Value $primitive <ref>)` */ primitive: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.VALUE.PRIMITIVE, ref, binaryen.v128),
-			/** @return `(struct.get $Value $primitive <ref>)` */ composite: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.VALUE.COMPOSITE, ref, binaryen.eqref),
-		},
 		property: {
 			/** @return `(struct.get $Property $key <ref>)` */ key: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.PROPERTY.KEY, ref, binaryen.i64),
 			/** @return `(struct.get $Property $val <ref>)` */ val: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.PROPERTY.VAL, ref, this.reftype.Value),
@@ -171,11 +159,6 @@ export class VirtualMachine {
 
 	/** Utilities for setting fields of WASM structs. */
 	public readonly structSet = {
-		value: {
-			/** @return `(struct.set $Value $tag       <ref> <val>)` */ tag:       (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.VALUE.TAG,       ref, val),
-			/** @return `(struct.set $Value $primitive <ref> <val>)` */ primitive: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.VALUE.PRIMITIVE, ref, val),
-			/** @return `(struct.set $Value $primitive <ref> <val>)` */ composite: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.VALUE.COMPOSITE, ref, val),
-		},
 		property: {
 			/** @return `(struct.get $Property $key <ref> <val>)` */ key: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.PROPERTY.KEY, ref, val),
 			/** @return `(struct.get $Property $val <ref> <val>)` */ val: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.PROPERTY.VAL, ref, val),
@@ -202,6 +185,8 @@ export class VirtualMachine {
 		},
 	} as const;
 
+	public Value = new Value(this);
+
 
 	public constructor() {
 		this.mod.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
@@ -215,6 +200,7 @@ export class VirtualMachine {
 		));
 
 		this.#setupTypes();
+		this.#setupFunctions();
 	}
 
 
@@ -412,5 +398,10 @@ export class VirtualMachine {
 			Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
 			Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
 		};
+	}
+
+	@runOnceMethod
+	#setupFunctions(): void {
+		this.Value.setupFunctions();
 	}
 }

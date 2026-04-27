@@ -1,6 +1,5 @@
 import type binaryen from 'binaryen';
 import {
-	BinValue,
 	bigint_to_i64,
 	type Builder,
 	BinVect,
@@ -74,7 +73,7 @@ export class Natural extends ValueNumber<Natural> {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.data, true), {unsigned: true})).value;
+		return cg.vm.Value.new(new BinVect(cg.module, bigint_to_i64(cg.module, this.data, true), {unsigned: true}).vect);
 	}
 
 	public override toInt(): Integer {
