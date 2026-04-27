@@ -22,6 +22,12 @@
 
 
 
+(func $Property.new-tombstone (result (ref $Property))
+	(unreachable)
+)
+
+
+
 (func $Property.is-tombstone (param $prop (ref null $Property)) (result i32)
 	(unreachable)
 )

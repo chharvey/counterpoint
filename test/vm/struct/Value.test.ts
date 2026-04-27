@@ -35,6 +35,12 @@ test.suite('Value', () => {
 				arg,
 			));
 		});
+		test.test('returns `(struct.new_default $Value)` with native `null` argument.', () => {
+			assertEqualBins(
+				vm.Value.new(null),
+				mod.struct.new_default(vm.heaptype.Value),
+			);
+		});
 		test.test('returns `unreachable` arg.', () => {
 			assertEqualBins(
 				vm.Value.new(mod.unreachable()),

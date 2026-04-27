@@ -29,7 +29,7 @@ test.suite('Property', () => {
 				mod.unreachable(),
 			);
 		});
-		test.test('returns a (struct.new $Property).', () => {
+		test.test('returns `(struct.new $Property)`.', () => {
 			const cg = new Builder(vm);
 			assertEqualBins([
 				vm.Property.new(0x102n, genConst(cg)),

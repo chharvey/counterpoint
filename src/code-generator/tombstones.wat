@@ -25,16 +25,6 @@
 
 
 
-;; Create and return a new Property tombstone.
-(func $Property.new-tombstone (result (ref $Property))
-	(struct.new $Property
-		(i64.const 0xff)
-		(struct.new_default $Value)
-	)
-)
-
-
-
 ;; Create and return a new Case tombstone.
 (func $Case.new-tombstone (result (ref $Case))
 	(struct.new $Case
