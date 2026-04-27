@@ -596,11 +596,6 @@ export class Builder {
 				),
 			),
 		));
-
-
-		/* Utilities */
-		mod.removeFunction('bool-to-i32'); // removes stub defined in `stubs.wat`
-		mod.addFunction('bool-to-i32', rt_value, binaryen.i32, [], local_vects[0].isSpecial(true));
 	}
 
 	/**

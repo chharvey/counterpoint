@@ -1,5 +1,4 @@
 import * as test from 'node:test';
-import binaryen from 'binaryen';
 import {assertEqualBins} from '../assert-helpers.ts';
 import {
 	setupScript,
@@ -24,7 +23,7 @@ test.suite('Optimizer', () => {
 					mod.local.set(2, mod.struct.new_default(cg.reftype.Value)),
 				]),
 				mod.if(
-					mod.call('bool-to-i32', [mod.local.get(0, cg.reftype.Value)], binaryen.i32),
+					cg.vm.Value.boolToI32(mod.local.get(0, cg.reftype.Value)),
 					mod.block(null, [mod.block(null, [
 						mod.local.set(2, genConst(cg, 3n)),
 						mod.block(null, [mod.br('block$4$break')]),

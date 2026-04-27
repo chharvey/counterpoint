@@ -115,6 +115,11 @@ export class Value {
 		return this.vm.mod.call('Value.is-composite', [param0], binaryen.i32);
 	};
 
+	/** Converts this value (assuming it’s primitive and boolean) to i32. */
+	public boolToI32(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.bool-to-i32', [param0], binaryen.i32);
+	}
+
 	/** Converts an i32 value to a $Value with a boolean primitive. */
 	public boolFromI32(param0: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.call('Value.bool-from-i32', [param0], this.vm.reftype.Value);
@@ -134,6 +139,13 @@ export class Value {
 				[],
 				mod.i32.eq(this.field(param0).tag, mod.i32.const(names.indexOf(name) + 1)),
 			));
+		})();
+
+		/** $Value.bool-to-i32 */
+		(() => {
+			const param0: binaryen.ExpressionRef /* (ref $Value) */ = mod.local.get(0, reftype.Value);
+			mod.removeFunction('Value.bool-to-i32'); // removes stub defined in `stubs.wat`
+			mod.addFunction('Value.bool-to-i32', reftype.Value, binaryen.i32, [], BinVect.fromValue(this.vm, param0).isSpecial(true));
 		})();
 
 		/** $Value.bool-from-i32 */

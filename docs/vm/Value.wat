@@ -10,6 +10,15 @@
 
 
 
+(func $Value.bool-to-i32 (param $value (ref $Value)) (result i32)
+	(i32.eq
+		(i16x8.extract_lane_u 3 (struct.get $Value $primitive (local.get $value)))
+		(i32.const 0x0003)
+	)
+)
+
+
+
 (func $Value.bool-from-i32 (param $bool i32) (result (ref $Value))
 	(if (result (ref $Value))
 		(local.get $bool)
