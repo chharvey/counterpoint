@@ -105,7 +105,7 @@ export class CollectionDynamicGet extends Value {
 					cg.module.if(
 						cg.module.i32.or(
 							cg.module.ref.is_null(maybe_prop.get()),
-							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
+							cg.vm.Property.isTombstone(maybe_prop.get()),
 						),
 						cg.getConst(BinConst.NULL),
 						cg.vm.Property.field(maybe_prop.get()).val,

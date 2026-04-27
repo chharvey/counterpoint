@@ -1,0 +1,7 @@
+(func $Property.is-tombstone (param $prop (ref null $Property)) (result i32)
+	(if (result i32)
+		(ref.is_null (local.get $prop))
+		(then (i32.const 0))
+		(else (i64.lt_u (struct.get $Property $key (local.get $prop)) (i64.const 0x100)))
+	)
+)

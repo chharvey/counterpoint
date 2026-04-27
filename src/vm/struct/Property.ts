@@ -1,5 +1,6 @@
 import binaryen from 'binaryen';
 import {bigint_to_i64} from '../../index.ts';
+import {runOnceMethod} from '../../lib/decorators.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 
 
@@ -52,5 +53,48 @@ export class Property {
 			/** @return `(struct.get $Property $val <ref>)` */ get val() { return mod.struct.get(FIELD.VAL, ref, reftype.Value); },
 		};
 		/* eslint-enable @stylistic/brace-style */
+	}
+
+
+	/**
+	 * Returns whether a Property is a “tombstone”, that is, whether it represents a deletion in a Dict.
+	 *
+	 * Property tombstones are used when deleting Dict entries so as not to break linear probing chains.
+	 * They may be returned when looking up a key for which an entry has since been deleted.
+	 * Application code should treat tombstones as non-entries —
+	 * they should be treated the same as null when getting, and should be replaced when setting.
+	 *
+	 * A Property tombstone is implemented as a Property with a key of `\xff`.
+	 * This will not conflict with real Properties, whose keys are all at least `\x100`
+	 * per the Counterpoint spec (see **TokenWorth** algorithm).
+	 *
+	 * Property tombstones contribute to the load factor of a Dict:
+	 * they are counted when determining when a Dict’s array should be grown or shrunk.
+	 * When growing/shrinking an array, tombstones are not copied over to the new array.
+	 */
+	public isTombstone(param0: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Property.is-tombstone', [param0], binaryen.i32);
+	}
+
+	@runOnceMethod
+	public setupFunctions(): void {
+		const {mod, reftypeNull} = this.vm;
+
+		/** $Property.is-tombstone */
+		(() => {
+			const param0: binaryen.ExpressionRef /* (ref null $Property) */ = mod.local.get(0, reftypeNull.Property);
+			mod.removeFunction('Property.is-tombstone'); // removes stub defined in `stubs.wat`
+			mod.addFunction(
+				'Property.is-tombstone',
+				reftypeNull.Property,
+				binaryen.i32,
+				[],
+				mod.if(
+					mod.ref.is_null(param0),
+					mod.i32.const(0),
+					mod.i64.lt_u(this.field(param0).key, bigint_to_i64(mod, 0x100n)),
+				),
+			);
+		})();
 	}
 }

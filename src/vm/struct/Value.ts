@@ -107,12 +107,12 @@ export class Value {
 	/** Whether the value is primitive (tag == 1). */
 	public isPrimitive(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Value.is-primitive', [param0], binaryen.i32);
-	};
+	}
 
 	/** Whether the value is composite (tag == 2). */
 	public isComposite(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Value.is-composite', [param0], binaryen.i32);
-	};
+	}
 
 	@runOnceMethod
 	public setupFunctions(): void {

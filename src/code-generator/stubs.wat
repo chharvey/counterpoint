@@ -19,3 +19,9 @@
 (func $bool-to-i32 (param $arg0 (ref $Value)) (result i32)
 	(unreachable)
 )
+
+
+
+(func $Property.is-tombstone (param $prop (ref null $Property)) (result i32)
+	(unreachable)
+)

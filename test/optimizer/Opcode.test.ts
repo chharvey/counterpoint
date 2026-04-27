@@ -525,7 +525,7 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(3, cg.reftypeNull.Property)),
-									mod.call('Property.is-tombstone', [mod.local.get(3, cg.reftypeNull.Property)], binaryen.i32),
+									cg.vm.Property.isTombstone(mod.local.get(3, cg.reftypeNull.Property)),
 								),
 								genConst(cg),
 								cg.vm.Property.field(mod.local.get(3, cg.reftypeNull.Property)).val,
@@ -539,7 +539,7 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(4, cg.reftypeNull.Property)),
-									mod.call('Property.is-tombstone', [mod.local.get(4, cg.reftypeNull.Property)], binaryen.i32),
+									cg.vm.Property.isTombstone(mod.local.get(4, cg.reftypeNull.Property)),
 								),
 								genConst(cg),
 								cg.vm.Property.field(mod.local.get(4, cg.reftypeNull.Property)).val,
@@ -553,7 +553,7 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(5, cg.reftypeNull.Property)),
-									mod.call('Property.is-tombstone', [mod.local.get(5, cg.reftypeNull.Property)], binaryen.i32),
+									cg.vm.Property.isTombstone(mod.local.get(5, cg.reftypeNull.Property)),
 								),
 								genConst(cg),
 								cg.vm.Property.field(mod.local.get(5, cg.reftypeNull.Property)).val,

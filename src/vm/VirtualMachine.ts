@@ -391,5 +391,6 @@ export class VirtualMachine {
 	@runOnceMethod
 	#setupFunctions(): void {
 		this.Value.setupFunctions();
+		this.Property.setupFunctions();
 	}
 }
