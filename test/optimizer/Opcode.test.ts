@@ -624,7 +624,7 @@ test.suite('Opcode', () => {
 									mod.call('Case.is-tombstone', [maybe_case_0], binaryen.i32),
 								),
 								genConst(cg),
-								cg.structGet.case.con(maybe_case_0),
+								cg.vm.Case.field(maybe_case_0).con,
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
@@ -638,7 +638,7 @@ test.suite('Opcode', () => {
 									mod.call('Case.is-tombstone', [maybe_case_1], binaryen.i32),
 								),
 								genConst(cg),
-								cg.structGet.case.con(maybe_case_1),
+								cg.vm.Case.field(maybe_case_1).con,
 							),
 						], cg.reftype.Value)),
 					]);
@@ -1134,7 +1134,7 @@ test.suite('Opcode', () => {
 													mod.call('List.set', [
 														mod.local.get(3, cg.reftype.List),
 														j_get,
-														cg.structGet.case.ant(case_get),
+														cg.vm.Case.field(case_get).ant,
 													], binaryen.none),
 													mod.local.set(5, mod.i32.add(j_get, mod.i32.const(1))),
 												]),
@@ -1299,7 +1299,7 @@ test.suite('Opcode', () => {
 											mod.call('Dict.set', [
 												mod.local.get(6, cg.reftype.Dict),
 												BinVect.fromValue(cg.vm, mod.array.get(
-													mod.local.tee(10, cg.vm.Value.cast(cg.structGet.case.ant(case_get), cg.reftype.Tuple), cg.reftype.Tuple),
+													mod.local.tee(10, cg.vm.Value.cast(cg.vm.Case.field(case_get).ant, cg.reftype.Tuple), cg.reftype.Tuple),
 													mod.i32.const(0),
 													cg.reftype.Value,
 												)).asNat,
@@ -1337,8 +1337,8 @@ test.suite('Opcode', () => {
 											mod.block(null, [
 												mod.call('Dict.set', [
 													mod.local.get(3, cg.reftype.Dict),
-													BinVect.fromValue(cg.vm, cg.structGet.case.ant(case_get)).asNat,
-													cg.structGet.case.con(case_get),
+													BinVect.fromValue(cg.vm, cg.vm.Case.field(case_get).ant).asNat,
+													cg.vm.Case.field(case_get).con,
 												], binaryen.none),
 											]),
 										),
@@ -1532,7 +1532,7 @@ test.suite('Opcode', () => {
 											mod.i32.eqz(mod.ref.is_null(case_get)),
 											mod.call('Map.set', [
 												mod.local.get(6, cg.reftype.Map),
-												mod.array.get(mod.local.tee(10, cg.vm.Value.cast(cg.structGet.case.ant(case_get), cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
+												mod.array.get(mod.local.tee(10, cg.vm.Value.cast(cg.vm.Case.field(case_get).ant, cg.reftype.Tuple), cg.reftype.Tuple), mod.i32.const(0), cg.reftype.Value),
 												mod.array.get(mod.local.get(10, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
 											], binaryen.none),
 										),

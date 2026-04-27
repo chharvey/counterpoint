@@ -146,7 +146,7 @@ export class CollectionDynamicGet extends Value {
 							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.structGet.case.con(maybe_case.get()),
+						cg.vm.Case.field(maybe_case.get()).con,
 					),
 				], cg.reftype.Value);
 			}
