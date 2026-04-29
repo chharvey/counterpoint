@@ -11,7 +11,7 @@ export type SyntaxNodeType<T extends string> = (
 
 
 
-export function isSyntaxNodeType                  (node: SyntaxNode | null, regex: RegExp):             boolean;
+export function isSyntaxNodeType                  (node: SyntaxNode | null, regex: RegExp):             boolean; // eslint-disable-line @stylistic/space-before-function-paren
 export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type: T):                   node is SyntaxNodeType<T>;
 export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type_or_regex: T | RegExp): node is SyntaxNodeType<T> {
 	if (!node) {

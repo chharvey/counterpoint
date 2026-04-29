@@ -266,11 +266,9 @@ export class Builder {
 		]);
 	}
 
-	/* eslint-disable @stylistic/brace-style */
 	public get heaptype():    Readonly<HeaptypeRegistry>    { return this.#heaptypeRegistry    as HeaptypeRegistry; }
 	public get reftype():     Readonly<ReftypeRegistry>     { return this.#reftypeRegistry     as ReftypeRegistry; }
 	public get reftypeNull(): Readonly<ReftypeNullRegistry> { return this.#reftypeNullRegistry as ReftypeNullRegistry; }
-	/* eslint-enable @stylistic/brace-style */
 
 	public getConst(key: BinConst): binaryen.ExpressionRef {
 		assert.ok(this.#constRegistry.has(key), `Expected constant registry to have constant \`${ BinConst[key] }\`.`);
