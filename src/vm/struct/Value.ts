@@ -84,13 +84,11 @@ export class Value {
 		readonly composite: binaryen.ExpressionRef /* eqref */,
 	} {
 		const {mod} = this.vm;
-		/* eslint-disable @stylistic/brace-style */
 		return {
 			/** @return `(struct.get $Value $tag       <ref>)` */ get tag():       binaryen.ExpressionRef /* i32   */ { return mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
 			/** @return `(struct.get $Value $primitive <ref>)` */ get primitive(): binaryen.ExpressionRef /* v128  */ { return mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
 			/** @return `(struct.get $Value $primitive <ref>)` */ get composite(): binaryen.ExpressionRef /* eqref */ { return mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
 		};
-		/* eslint-enable @stylistic/brace-style */
 	}
 
 	/**

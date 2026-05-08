@@ -21,12 +21,10 @@ export class Case {
 		readonly con: binaryen.ExpressionRef /* (ref $Value) */,
 	} {
 		const {mod, reftype} = this.vm;
-		/* eslint-disable @stylistic/brace-style */
 		return {
 			/** @return `(struct.get $Case $ant <ref>)` */ get ant(): binaryen.ExpressionRef /* (ref $Value) */ { return mod.struct.get(FIELD.ANT, ref, reftype.Value); },
 			/** @return `(struct.get $Case $con <ref>)` */ get con(): binaryen.ExpressionRef /* (ref $Value) */ { return mod.struct.get(FIELD.CON, ref, reftype.Value); },
 		};
-		/* eslint-enable @stylistic/brace-style */
 	}
 
 

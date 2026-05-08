@@ -71,9 +71,9 @@ test.suite('Type', () => {
 		test.test('only a combination of `nothing`, `null`, and `false` are definitely falsy.', () => {
 			[
 				TYPE.NOTHING,
-				TYPE.Union.all([           TYPE.FALSE]),
-				TYPE.Union.all([TYPE.NULL            ]),
-				TYPE.Union.all([TYPE.NULL, TYPE.FALSE]),
+				TYPE.Union.all(           TYPE.FALSE),
+				TYPE.Union.all(TYPE.NULL            ),
+				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
 			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${ t }\` to be definitely falsy.`));
 		});
 		test.test('any other types are not definitely falsy.', () => {
@@ -98,9 +98,9 @@ test.suite('Type', () => {
 		test.test('all definitely falsy types are not definitely truthy.', () => {
 			[
 				TYPE.NOTHING,
-				TYPE.Union.all([           TYPE.FALSE]),
-				TYPE.Union.all([TYPE.NULL            ]),
-				TYPE.Union.all([TYPE.NULL, TYPE.FALSE]),
+				TYPE.Union.all(           TYPE.FALSE),
+				TYPE.Union.all(TYPE.NULL            ),
+				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
 			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
 		});
 		test.test('unions of falsy types are not definitely truthy.', () => {
@@ -173,10 +173,10 @@ test.suite('Type', () => {
 	test.suite('#includes', () => {
 		test.test('uses `Object#identical` to compare values.', () => {
 			function unionOfInts(ns: readonly bigint[]): TYPE.Type {
-				return TYPE.Union.all(ns.map((v) => typeUnit(v)));
+				return TYPE.Union.all(...ns.map((v) => typeUnit(v)));
 			}
 			function unionOfFloats(ns: readonly number[]): TYPE.Type {
-				return TYPE.Union.all(ns.map((v) => typeUnit(v)));
+				return TYPE.Union.all(...ns.map((v) => typeUnit(v)));
 			}
 			const u1: TYPE.Type = unionOfFloats([4.2, 4.3, 4.4]);
 			const u2: TYPE.Type = unionOfFloats([4.3, 4.4, 4.5]);

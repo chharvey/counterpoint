@@ -179,11 +179,9 @@ export class VirtualMachine {
 	}
 
 
-	/* eslint-disable @stylistic/brace-style */
 	public get heaptype():    HeaptypeRegistry    { return this.#heaptypeRegistry; }
 	public get reftype():     ReftypeRegistry     { return this.#reftypeRegistry; }
 	public get reftypeNull(): ReftypeNullRegistry { return this.#reftypeNullRegistry; }
-	/* eslint-enable @stylistic/brace-style */
 
 
 	/**

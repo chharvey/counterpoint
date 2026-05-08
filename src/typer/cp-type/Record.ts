@@ -98,7 +98,7 @@ class TypeRecord extends ValueType {
 	}
 
 	public valueTypes(): Type {
-		return Union.all([...this.typeargs.values()].map((t) => t.type));
+		return Union.all(...[...this.typeargs.values()].map((t) => t.type));
 	}
 
 	public isKeyCanonical(key: bigint): boolean {

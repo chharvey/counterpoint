@@ -97,7 +97,7 @@ class TypeTuple extends ValueType {
 	}
 
 	public itemTypes(): Type {
-		return Union.all(this.typeargs.map((t) => t.type));
+		return Union.all(...this.typeargs.map((t) => t.type));
 	}
 
 	public isIndexCanonical(index: bigint): boolean {

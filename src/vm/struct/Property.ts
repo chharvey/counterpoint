@@ -47,12 +47,10 @@ export class Property {
 		readonly val: binaryen.ExpressionRef /* (ref $Value) */,
 	} {
 		const {mod, reftype} = this.vm;
-		/* eslint-disable @stylistic/brace-style */
 		return {
 			/** @return `(struct.get $Property $key <ref>)` */ get key() { return mod.struct.get(FIELD.KEY, ref, binaryen.i64); },
 			/** @return `(struct.get $Property $val <ref>)` */ get val() { return mod.struct.get(FIELD.VAL, ref, reftype.Value); },
 		};
-		/* eslint-enable @stylistic/brace-style */
 	}
 
 
