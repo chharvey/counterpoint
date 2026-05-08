@@ -35,6 +35,6 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	 * Returns a TYPE.List whose type argument is the union of the types of this List’s items.
 	 */
 	public override toType(): TYPE.List {
-		return new TYPE.List(TYPE.Union.all(this.items.map<TYPE.Type>((it) => it.toType())));
+		return new TYPE.List(TYPE.Union.all(...this.items.map<TYPE.Type>((it) => it.toType())));
 	}
 }
