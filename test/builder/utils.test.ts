@@ -20,7 +20,7 @@ test.suite('drop_then', () => {
 		const expr3: binaryen.ExpressionRef = genConst(cg, 3n);
 		assert.strictEqual(binaryen.getExpressionType(expr3), rt_e_value);
 		return assertEqualBins(
-			drop_then(cg.module, [expr1, expr2], expr3),
+			drop_then(cg, [expr1, expr2], expr3),
 			cg.module.block(null, [cg.module.drop(expr1), cg.module.drop(expr2), expr3], rt_e_value),
 		);
 	});
@@ -33,7 +33,7 @@ test.suite('drop_then', () => {
 		]); // result of building ASTNodeBlock
 		assert.strictEqual(binaryen.getExpressionType(block), binaryen.none);
 		return assertEqualBins(
-			drop_then(cg.module, [expr1], block),
+			drop_then(cg, [expr1], block),
 			cg.module.block(null, [cg.module.drop(expr1), block]), // defaults to `binaryen.none`
 		);
 	});

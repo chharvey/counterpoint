@@ -141,9 +141,9 @@ export class Binop extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, BinVect: any, t0: any, t1: any, arg0: any, arg1: any, binaryen: any): number {
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, t1: any, arg0: any, arg1: any, binaryen: any): number {
 		type Local = any;
-		let mod: any;
+		let mod = cg.module;
 		let bothInts: any;
 		let bothNats: any;
 		let bothFloats: any;
@@ -152,8 +152,8 @@ export class Binop extends Value {
 		// Operator Addition
 		if (this.operator === Operator.ADD) {
 			const local0: Local = cg.newLocal(arg0);
-			const teeer         = new BinVect(mod, local0.tee()).vect;
-			const getter        = new BinVect(mod, local0.get()).vect;
+			const teeer         = cg.vm.Vect.new(local0.tee());
+			const getter        = cg.vm.Vect.new(local0.get());
 			// if arg0 is mathematically 0, return arg1
 			return mod.if(
 				mod.i32.or(
@@ -173,8 +173,8 @@ export class Binop extends Value {
 		// Operator Multiplication
 		if (this.operator === Operator.MUL) {
 			const local0: Local = cg.newLocal(arg0);
-			const teeer         = new BinVect(mod, local0.tee()).vect;
-			const getter        = new BinVect(mod, local0.get()).vect;
+			const teeer         = cg.vm.Vect.new(local0.tee());
+			const getter        = cg.vm.Vect.new(local0.get());
 			// if arg0 is mathematically 0, return it
 			return mod.if(
 				mod.i32.or(
@@ -201,16 +201,16 @@ export class Binop extends Value {
 
 		// Operator Equality
 		if (this.type().equals(TYPE.FALSE)) {
-			drop_then(this.builder.module, [arg0, arg1], false);
+			drop_then(this.builder, [arg0, arg1], false);
 			return cg.module.block(null, [
 				cg.module.drop(arg0),
 				cg.module.drop(arg1),
-				new BinVect(cg.module, false).vect,
+				cg.vm.Vect.new(false),
 			], binaryen.v128);
 		}
 
 		// Operator Logical
-		const block1: binaryen.ExpressionRef = drop_then(mod, [arg0], arg1);
+		const block1: binaryen.ExpressionRef = drop_then(cg, [arg0], arg1);
 		if (t0.isDefinitelyFalsy) {
 			return this.operator === Operator.AND ? arg0 : block1;
 		} else if (t0.isDefinitelyTruthy) {

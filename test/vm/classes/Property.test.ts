@@ -3,7 +3,6 @@ import {
 	VirtualMachine,
 	bigint_to_i64,
 	Builder,
-	BinVect,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {genConst} from '../../helpers.ts';
@@ -34,13 +33,13 @@ test.suite('Property', () => {
 			assertEqualBins([
 				vm.Property.new(0x102n, genConst(cg)),
 				vm.Property.new(0x103n, genConst(cg, 42n)),
-				vm.Property.new(0x104n, cg.vm.Value.new(new BinVect(mod, false).vect)),
+				vm.Property.new(0x104n, cg.vm.Value.new(cg.vm.Vect.new(false))),
 				vm.Property.new(0x105n, cg.vm.Value.new(genConst(cg, 4.2))),
 				vm.Property.new(0x106n, cg.vm.Value.new(genConst(cg, 4.2))),
 			], ([
 				[0x102n, genConst(cg)],
 				[0x103n, genConst(cg, 42n)],
-				[0x104n, cg.vm.Value.new(new BinVect(mod, false).vect)],
+				[0x104n, cg.vm.Value.new(cg.vm.Vect.new(false))],
 				[0x105n, cg.vm.Value.new(genConst(cg, 4.2))],
 				[0x106n, genConst(cg, 4.2)],
 			] as const).map(([id, code]) => cg.module.struct.new([

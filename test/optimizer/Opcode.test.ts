@@ -8,7 +8,6 @@ import {
 	IR,
 	bigint_to_i64,
 	Builder,
-	BinVect,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
 import {
@@ -721,11 +720,10 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(new BinVect(
-							cg.module,
+						cg.vm.Value.new(cg.vm.Vect.new(
 							cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
-						).vect),
+						)),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -743,11 +741,10 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(new BinVect(
-							cg.module,
+						cg.vm.Value.new(cg.vm.Vect.new(
 							cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
-						).vect),
+						)),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -765,11 +762,10 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(new BinVect(
-							cg.module,
+						cg.vm.Value.new(cg.vm.Vect.new(
 							cg.module.i64.extend_u(cg.module.call('Map.count', [set.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
-						).vect),
+						)),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -787,11 +783,10 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(new BinVect(
-							cg.module,
+						cg.vm.Value.new(cg.vm.Vect.new(
 							cg.module.i64.extend_u(cg.module.call('Map.count', [map.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
-						).vect),
+						)),
 					);
 				});
 			});

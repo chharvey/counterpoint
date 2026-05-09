@@ -6,7 +6,6 @@ import type {Temp} from '../optimizer/index.ts';
 import {Global} from '../code-generator/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
-import {BinVect} from './BinVect.ts';
 import type {BinaryenModuleUpdates} from './-types.d.ts';
 
 
@@ -90,9 +89,9 @@ export class Builder {
 		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.vm.Value.new(new BinVect(this.module)        .vect)],
-			[BinConst.FALSE, this.vm.Value.new(new BinVect(this.module, false) .vect)],
-			[BinConst.TRUE,  this.vm.Value.new(new BinVect(this.module, true)  .vect)],
+			[BinConst.NULL,  this.vm.Value.new(this.vm.Vect.new())],
+			[BinConst.FALSE, this.vm.Value.new(this.vm.Vect.new(false))],
+			[BinConst.TRUE,  this.vm.Value.new(this.vm.Vect.new(true))],
 		]);
 	}
 
@@ -287,10 +286,10 @@ export class Builder {
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
 			this.reftype.Value,
 			[],
-			this.vm.Value.new(new BinVect(mod, method(
+			this.vm.Value.new(this.vm.Vect.new(method(
 				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(0, this.reftype.Value)).primitive),
 				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(1, this.reftype.Value)).primitive),
-			)).vect),
+			))),
 		);
 	}
 
@@ -419,10 +418,10 @@ export class Builder {
 		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			// `-n` in two’s complement is `(n xor -1) + 1`
-			new BinVect(mod, mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
+			Vect.new(mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))),
 			mod.if(
 				Vect.isFloat(local_vects[0]),
-				new BinVect(mod, mod.f64.neg(Vect.asFloat(local_vects[0]))).vect,
+				Vect.new(mod.f64.neg(Vect.asFloat(local_vects[0]))),
 				mod.unreachable(), // cannot call NEG on other primitives
 			),
 		)));
@@ -431,33 +430,33 @@ export class Builder {
 			local_vects[0],
 			mod.if(
 				Vect.isNat(local_vects[0]),
-				new BinVect(mod, Vect.natToInt(local_vects[0]), {unsigned: false}).vect,
+				Vect.new(Vect.natToInt(local_vects[0]), {unsigned: false}),
 				mod.if(
 					Vect.isFloat(local_vects[0]),
-					new BinVect(mod, Vect.floatToInt(local_vects[0])).vect,
+					Vect.new(Vect.floatToInt(local_vects[0])),
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vton', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
-			new BinVect(mod, Vect.intToNat(local_vects[0]), {unsigned: true}).vect,
+			Vect.new(Vect.intToNat(local_vects[0]), {unsigned: true}),
 			mod.if(
 				Vect.isNat(local_vects[0]),
 				local_vects[0],
 				mod.if(
 					Vect.isFloat(local_vects[0]),
-					new BinVect(mod, Vect.floatToNat(local_vects[0])).vect,
+					Vect.new(Vect.floatToNat(local_vects[0])),
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vtof', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
-			new BinVect(mod, Vect.intToFloat(local_vects[0])).vect,
+			Vect.new(Vect.intToFloat(local_vects[0])),
 			mod.if(
 				Vect.isNat(local_vects[0]),
-				new BinVect(mod, Vect.natToFloat(local_vects[0])).vect,
+				Vect.new(Vect.natToFloat(local_vects[0])),
 				mod.if(
 					Vect.isFloat(local_vects[0]),
 					local_vects[0],

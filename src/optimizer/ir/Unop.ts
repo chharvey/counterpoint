@@ -1,9 +1,6 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
-import {
-	type Builder,
-	BinVect,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -86,10 +83,10 @@ export class Unop extends Value {
 			return cg.module.call('vnot', [cg.module.call('vnot', [code], cg.reftype.Value)], cg.reftype.Value);
 		}
 		switch (this.operator) {
-			case OpCode.LIST_COUNT: { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)), {unsigned: true}).vect); }
-			case OpCode.DICT_COUNT: { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)), {unsigned: true}).vect); }
-			case OpCode.SET_COUNT:  { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true}).vect); }
-			case OpCode.MAP_COUNT:  { return cg.vm.Value.new(new BinVect(cg.module, cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true}).vect); }
+			case OpCode.LIST_COUNT: { return cg.vm.Value.new(cg.vm.Vect.new(cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)), {unsigned: true})); }
+			case OpCode.DICT_COUNT: { return cg.vm.Value.new(cg.vm.Vect.new(cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)), {unsigned: true})); }
+			case OpCode.SET_COUNT:  { return cg.vm.Value.new(cg.vm.Vect.new(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})); }
+			case OpCode.MAP_COUNT:  { return cg.vm.Value.new(cg.vm.Vect.new(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
 			[OpCode.ISNULL,  'isnull'],
@@ -103,7 +100,7 @@ export class Unop extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, BinVect: any, t0: any, arg0: any, drop_then: any, binaryen: any): number {
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any, binaryen: any): number {
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
 			return drop_then(cg.module, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
@@ -113,18 +110,18 @@ export class Unop extends Value {
 			if (t0.isDefinitelyFalsy) {
 				return cg.module.block(null, [
 					cg.module.drop(arg0),
-					new BinVect(cg.module, true).vect,
+					cg.vm.Vect.new(true),
 				], binaryen.v128);
 			} else if (t0.isDefinitelyTruthy) {
 				return cg.module.block(null, [
 					cg.module.drop(arg0),
-					new BinVect(cg.module, false).vect,
+					cg.vm.Vect.new(false),
 				], binaryen.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
 			return cg.module.block(null, [
 				cg.module.drop(arg0),
-				new BinVect(cg.module, true).vect,
+				cg.vm.Vect.new(true),
 			], binaryen.v128);
 		}
 		return 0;

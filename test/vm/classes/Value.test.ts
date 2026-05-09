@@ -5,7 +5,6 @@ import {
 	VirtualMachine,
 	bigint_to_i64,
 	Builder,
-	BinVect,
 } from '../../../src/index.ts';
 import {assertEqualBins} from '../../assert-helpers.ts';
 import {genConst} from '../../helpers.ts';
@@ -29,7 +28,7 @@ test.suite('Value', () => {
 		test.test('returns (nullish) `$Value` arg.', () => {
 			xjs.Array.forEachAggregated([
 				mod.ref.null(vm.reftypeNull.Value), // BUG: `ref.null` should only take heap types
-				vm.Value.new(new BinVect(mod, bigint_to_i64(mod, 42n)).vect),
+				vm.Value.new(vm.Vect.new(bigint_to_i64(mod, 42n))),
 			], (arg) => assertEqualBins(
 				vm.Value.new(arg),
 				arg,
@@ -49,11 +48,11 @@ test.suite('Value', () => {
 		});
 		test.test('primitive values.', () => {
 			xjs.Array.forEachAggregated([
-				new BinVect(mod, null).vect,
-				new BinVect(mod, false).vect,
-				new BinVect(mod, bigint_to_i64(mod, 0x100n)).vect,
-				new BinVect(mod, bigint_to_i64(mod, 42n)).vect,
-				new BinVect(mod, mod.f64.const(4.2)).vect,
+				vm.Vect.new(null),
+				vm.Vect.new(false),
+				vm.Vect.new(bigint_to_i64(mod, 0x100n)),
+				vm.Vect.new(bigint_to_i64(mod, 42n)),
+				vm.Vect.new(mod.f64.const(4.2)),
 			], (arg) => assertEqualBins(vm.Value.new(arg), mod.struct.new([
 				mod.i32.const(1),
 				arg,
