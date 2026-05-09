@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import type {VirtualMachine} from '../vm/index.ts';
 
@@ -103,9 +102,6 @@ export class BinVect {
 	/** Internal implementation of the `v128`. */
 	public readonly vect: binaryen.ExpressionRef;
 
-	/** The Header Lane’s value, indicating the type of data stored. */
-	readonly #type!: binaryen.ExpressionRef;
-
 	/**
 	 * Construct a new BinVect object given a value.
 	 * @param  mod a module to create the instance in
@@ -169,94 +165,5 @@ export class BinVect {
 				}
 			}
 		}
-
-		this.#type = this.mod.i16x8.extract_lane_u(this.vect, 3);
-	}
-
-	/** Whether the Header Lane is within a given range (inclusive). */
-	#checkTypeRange(min: bigint, max: bigint): binaryen.ExpressionRef {
-		const lower: binaryen.ExpressionRef = this.mod.i32.const(Number(min));
-		const upper: binaryen.ExpressionRef = this.mod.i32.const(Number(max));
-		return this.mod.i32.and(this.mod.i32.le_u(lower, this.#type), this.mod.i32.le_u(this.#type, upper));
-	}
-
-	/** Whether the value does not exist. */
-	public get isVoid(): binaryen.ExpressionRef {
-		return this.mod.i32.eqz(this.#type);
-	}
-
-	/** Whether the value is intended to be interpreted as a special value: null, false, or true. */
-	public isSpecial(value?: null | boolean): binaryen.ExpressionRef {
-		return (
-			value === null  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0001)) :
-			value === false ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0002)) :
-			value === true  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0003)) :
-			(assert.strictEqual(value, undefined), this.#checkTypeRange(0x0001n, 0x000fn))
-		);
-	}
-
-	/** Whether the value is intended to be interpreted as a signed integer. */
-	public get isInt(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0010n, 0x001fn);
-	}
-
-	/** Whether the value is intended to be interpreted as an unsigned integer. */
-	public get isNat(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0020n, 0x002fn);
-	}
-
-	/** Whether the value is intended to be interpreted as a float. */
-	public get isFloat(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0040n, 0x004fn);
-	}
-
-	/** The value as interpreted as a special value: null, false, or true. */
-	public get asSpecial(): binaryen.ExpressionRef {
-		return this.#type;
-	}
-
-	/** The value as interpreted as a signed integer. */
-	public get asInt(): binaryen.ExpressionRef {
-		return this.mod.i64x2.extract_lane(this.vect, 1);
-	}
-
-	/** The value as interpreted as an unsigned integer. */
-	public get asNat(): binaryen.ExpressionRef {
-		return this.mod.i64x2.extract_lane(this.vect, 1);
-	}
-
-	/** The value as interpreted as a float. */
-	public get asFloat(): binaryen.ExpressionRef {
-		return this.mod.f64x2.extract_lane(this.vect, 1);
-	}
-
-	/** Reinterpretation. Assuming `this.isInt`, return the value interpreted as a `nat`. */
-	public i_to_n(): binaryen.ExpressionRef {
-		return this.asNat; // reinterpretation doesn’t change the bits
-	}
-
-	/** Conversion. Assuming `this.isInt`, return a new value representing a `float`. */
-	public i_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_s.i64(this.asInt);
-	}
-
-	/** Reinterpretation. Assuming `this.isNat`, return the value interpreted as an `int`. */
-	public n_to_i(): binaryen.ExpressionRef {
-		return this.asInt; // reinterpretation doesn’t change the bits
-	}
-
-	/** Conversion. Assuming `this.isNat`, return a new value representing a `float`. */
-	public n_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_u.i64(this.asNat);
-	}
-
-	/** Truncation. Assuming `this.isFloat`, return a new value representing an `int`. */
-	public f_to_i(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_s_sat.f64(this.asFloat);
-	}
-
-	/** Truncation. Assuming `this.isFloat`, return a new value representing a `nat`. */
-	public f_to_n(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_u_sat.f64(this.asFloat);
 	}
 }

@@ -69,27 +69,4 @@ test.suite('BinVect', () => {
 			return test_vect<binaryen.ExpressionRef>(argument, (arg) => arg);
 		});
 	});
-
-
-	test.test('#isSpecial', () => {
-		new Map([
-			[null,  0x0001],
-			[false, 0x0002],
-			[true,  0x0003],
-		]).forEach((value, key) => {
-			const vect                              = new BinVect(MOD, key);
-			const vectLane3: binaryen.ExpressionRef = MOD.i16x8.extract_lane_u(vect.vect, 3);
-			assert_equal_bins(
-				vect.isSpecial(),
-				MOD.i32.and(
-					MOD.i32.le_u(MOD.i32.const(Number(0x0001n)), vectLane3),
-					MOD.i32.le_u(vectLane3,                      MOD.i32.const(Number(0x000fn))),
-				),
-			);
-			return assert_equal_bins(
-				vect.isSpecial(key),
-				MOD.i32.eq(vectLane3, MOD.i32.const(value)),
-			);
-		});
-	});
 });

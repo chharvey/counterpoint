@@ -288,7 +288,7 @@ export class Builder {
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
 			this.reftype.Value,
 			[],
-			this.vm.Value.new(new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect),
+			this.vm.Value.new(new BinVect(mod, method.call(null, this.vm.Vect[typekey](local_vects[0].vect), this.vm.Vect[typekey](local_vects[1].vect))).vect),
 		);
 	}
 
@@ -300,58 +300,59 @@ export class Builder {
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
+		const {Vect} = this.vm;
 		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
 
-		const int_int: binaryen.ExpressionRef = method_ints.call(null, local_vects[0].asInt,    local_vects[1].asInt);
-		const int_nat: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].i_to_n(), local_vects[1].asNat);
-		const int_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].i_to_f(), local_vects[1].asFloat);
-		const nat_int: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].asNat,    local_vects[1].i_to_n());
-		const nat_nat: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].asNat,    local_vects[1].asNat);
-		const nat_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].n_to_f(), local_vects[1].asFloat);
-		const flt_int: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].i_to_f());
-		const flt_nat: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].n_to_f());
-		const flt_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].asFloat);
+		const int_int: binaryen.ExpressionRef = method_ints.call(null, Vect.asInt(local_vects[0].vect),      Vect.asInt(local_vects[1].vect));
+		const int_nat: binaryen.ExpressionRef = method_nats.call(null, Vect.intToNat(local_vects[0].vect),   Vect.asNat(local_vects[1].vect));
+		const int_flt: binaryen.ExpressionRef = method_flts.call(null, Vect.intToFloat(local_vects[0].vect), Vect.asFloat(local_vects[1].vect));
+		const nat_int: binaryen.ExpressionRef = method_nats.call(null, Vect.asNat(local_vects[0].vect),      Vect.intToNat(local_vects[1].vect));
+		const nat_nat: binaryen.ExpressionRef = method_nats.call(null, Vect.asNat(local_vects[0].vect),      Vect.asNat(local_vects[1].vect));
+		const nat_flt: binaryen.ExpressionRef = method_flts.call(null, Vect.natToFloat(local_vects[0].vect), Vect.asFloat(local_vects[1].vect));
+		const flt_int: binaryen.ExpressionRef = method_flts.call(null, Vect.asFloat(local_vects[0].vect),    Vect.intToFloat(local_vects[1].vect));
+		const flt_nat: binaryen.ExpressionRef = method_flts.call(null, Vect.asFloat(local_vects[0].vect),    Vect.natToFloat(local_vects[1].vect));
+		const flt_flt: binaryen.ExpressionRef = method_flts.call(null, Vect.asFloat(local_vects[0].vect),    Vect.asFloat(local_vects[1].vect));
 
 		return mod.addFunction(name, binaryen.createType([this.reftype.Value, this.reftype.Value]), this.reftype.Value, [], this.vm.Value.boolFromI32(mod.if(
-			local_vects[0].isInt,
+			Vect.isInt(local_vects[0].vect),
 			mod.if(
-				local_vects[1].isInt,
+				Vect.isInt(local_vects[1].vect),
 				int_int,
 				mod.if(
-					local_vects[1].isNat,
+					Vect.isNat(local_vects[1].vect),
 					int_nat,
 					mod.if(
-						local_vects[1].isFloat,
+						Vect.isFloat(local_vects[1].vect),
 						int_flt,
 						mod.unreachable(),
 					),
 				),
 			),
 			mod.if(
-				local_vects[0].isNat,
+				Vect.isNat(local_vects[0].vect),
 				mod.if(
-					local_vects[1].isInt,
+					Vect.isInt(local_vects[1].vect),
 					nat_int,
 					mod.if(
-						local_vects[1].isNat,
+						Vect.isNat(local_vects[1].vect),
 						nat_nat,
 						mod.if(
-							local_vects[1].isFloat,
+							Vect.isFloat(local_vects[1].vect),
 							nat_flt,
 							mod.unreachable(),
 						),
 					),
 				),
 				mod.if(
-					local_vects[0].isFloat,
+					Vect.isFloat(local_vects[0].vect),
 					mod.if(
-						local_vects[1].isInt,
+						Vect.isInt(local_vects[1].vect),
 						flt_int,
 						mod.if(
-							local_vects[1].isNat,
+							Vect.isNat(local_vects[1].vect),
 							flt_nat,
 							mod.if(
-								local_vects[1].isFloat,
+								Vect.isFloat(local_vects[1].vect),
 								flt_flt,
 								mod.unreachable(),
 							),
@@ -379,32 +380,33 @@ export class Builder {
 		const rt_list:   binaryen.Type         = this.reftype.List;
 		const rt_dict:   binaryen.Type         = this.reftype.Dict;
 		const rt_map:    binaryen.Type         = this.reftype.Map;
+		const {Vect}      = this.vm;
 		const local_vals  = [0, 1].map((i) => mod.local.get(i, rt_value));
 		const local_vects = local_vals.map((valuestruct) => BinVect.fromValue(this.vm, valuestruct));
 
 		/* Unary Operators */
 		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
 			this.vm.Value.isPrimitive(local_vals[0]),
-			local_vects[0].isSpecial(null),
+			Vect.isConst(local_vects[0].vect, null),
 		)));
 		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
 			this.vm.Value.isPrimitive(local_vals[0]),
-			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
+			mod.i32.or(Vect.isConst(local_vects[0].vect, null), Vect.isConst(local_vects[0].vect, false)),
 		)));
 		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
 			this.vm.Value.isPrimitive(local_vals[0]),
 			mod.if(
-				local_vects[0].isSpecial(),
+				Vect.isSpecial(local_vects[0].vect),
 				mod.call('vnot', [local_vals[0]], rt_value),
 				this.vm.Value.boolFromI32(mod.if(
-					local_vects[0].isInt,
-					mod.i64.eqz(local_vects[0].asInt),
+					Vect.isInt(local_vects[0].vect),
+					mod.i64.eqz(Vect.asInt(local_vects[0].vect)),
 					mod.if(
-						local_vects[0].isNat,
-						mod.i64.eqz(local_vects[0].asNat),
+						Vect.isNat(local_vects[0].vect),
+						mod.i64.eqz(Vect.asNat(local_vects[0].vect)),
 						mod.if(
-							local_vects[0].isFloat,
-							mod.f64.eq(local_vects[0].asFloat, mod.f64.const(0.0)), // also takes care of -0.0
+							Vect.isFloat(local_vects[0].vect),
+							mod.f64.eq(Vect.asFloat(local_vects[0].vect), mod.f64.const(0.0)), // also takes care of -0.0
 							mod.unreachable(),
 						),
 					),
@@ -413,49 +415,49 @@ export class Builder {
 			this.vm.Value.boolFromI32(mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32)),
 		));
 		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
+			Vect.isInt(local_vects[0].vect),
 			// `-n` in two’s complement is `(n xor -1) + 1`
-			new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].asInt, bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
+			new BinVect(mod, mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0].vect), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
 			mod.if(
-				local_vects[0].isFloat,
-				new BinVect(mod, mod.f64.neg(local_vects[0].asFloat)).vect,
+				Vect.isFloat(local_vects[0].vect),
+				new BinVect(mod, mod.f64.neg(Vect.asFloat(local_vects[0].vect))).vect,
 				mod.unreachable(), // cannot call NEG on other primitives
 			),
 		)));
 		mod.addFunction('vtoi', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
+			Vect.isInt(local_vects[0].vect),
 			local_vects[0].vect,
 			mod.if(
-				local_vects[0].isNat,
-				new BinVect(mod, local_vects[0].n_to_i(), {unsigned: false}).vect,
+				Vect.isNat(local_vects[0].vect),
+				new BinVect(mod, Vect.natToInt(local_vects[0].vect), {unsigned: false}).vect,
 				mod.if(
-					local_vects[0].isFloat,
-					new BinVect(mod, local_vects[0].f_to_i()).vect,
+					Vect.isFloat(local_vects[0].vect),
+					new BinVect(mod, Vect.floatToInt(local_vects[0].vect)).vect,
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vton', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
-			new BinVect(mod, local_vects[0].i_to_n(), {unsigned: true}).vect,
+			Vect.isInt(local_vects[0].vect),
+			new BinVect(mod, Vect.intToNat(local_vects[0].vect), {unsigned: true}).vect,
 			mod.if(
-				local_vects[0].isNat,
+				Vect.isNat(local_vects[0].vect),
 				local_vects[0].vect,
 				mod.if(
-					local_vects[0].isFloat,
-					new BinVect(mod, local_vects[0].f_to_n()).vect,
+					Vect.isFloat(local_vects[0].vect),
+					new BinVect(mod, Vect.floatToNat(local_vects[0].vect)).vect,
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vtof', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
-			new BinVect(mod, local_vects[0].i_to_f()).vect,
+			Vect.isInt(local_vects[0].vect),
+			new BinVect(mod, Vect.intToFloat(local_vects[0].vect)).vect,
 			mod.if(
-				local_vects[0].isNat,
-				new BinVect(mod, local_vects[0].n_to_f()).vect,
+				Vect.isNat(local_vects[0].vect),
+				new BinVect(mod, Vect.natToFloat(local_vects[0].vect)).vect,
 				mod.if(
-					local_vects[0].isFloat,
+					Vect.isFloat(local_vects[0].vect),
 					local_vects[0].vect,
 					mod.unreachable(),
 				),
@@ -488,17 +490,17 @@ export class Builder {
 				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
-				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				mod.i32.eq(local_vects[0].asSpecial, local_vects[1].asSpecial),
+				mod.i32.and(Vect.isSpecial(local_vects[0].vect), Vect.isSpecial(local_vects[1].vect)),
+				mod.i32.eq(Vect.type(local_vects[0].vect), Vect.type(local_vects[1].vect)),
 				mod.if(
-					mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-					mod.i64.eq(local_vects[0].asInt, local_vects[1].asInt), // `i64.eq` for ints gives the same result as `ID` operator
+					mod.i32.and(Vect.isInt(local_vects[0].vect), Vect.isInt(local_vects[1].vect)),
+					mod.i64.eq(Vect.asInt(local_vects[0].vect), Vect.asInt(local_vects[1].vect)), // `i64.eq` for ints gives the same result as `ID` operator
 					mod.if(
-						mod.i32.and(local_vects[0].isNat, local_vects[1].isNat),
-						mod.i64.eq(local_vects[0].asNat, local_vects[1].asNat), // `i64.eq` for nats gives the same result as `ID` operator
+						mod.i32.and(Vect.isNat(local_vects[0].vect), Vect.isNat(local_vects[1].vect)),
+						mod.i64.eq(Vect.asNat(local_vects[0].vect), Vect.asNat(local_vects[1].vect)), // `i64.eq` for nats gives the same result as `ID` operator
 						mod.if(
-							mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-							mod.call('fid', [local_vects[0].asFloat, local_vects[1].asFloat], binaryen.i32),
+							mod.i32.and(Vect.isFloat(local_vects[0].vect), Vect.isFloat(local_vects[1].vect)),
+							mod.call('fid', [Vect.asFloat(local_vects[0].vect), Vect.asFloat(local_vects[1].vect)], binaryen.i32),
 							mod.i32.const(0),
 						),
 					),
@@ -537,7 +539,7 @@ export class Builder {
 				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
-				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
+				mod.i32.or(Vect.isSpecial(local_vects[0].vect), Vect.isSpecial(local_vects[1].vect)),
 				mod.call('vid',  [local_vals[0], local_vals[1]], rt_value),
 				mod.call('veqn', [local_vals[0], local_vals[1]], rt_value),
 			),

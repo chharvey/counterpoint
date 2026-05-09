@@ -152,13 +152,13 @@ export class Binop extends Value {
 		// Operator Addition
 		if (this.operator === Operator.ADD) {
 			const local0: Local = cg.newLocal(arg0);
-			const teeer         = new BinVect(mod, local0.tee());
-			const getter        = new BinVect(mod, local0.get());
+			const teeer         = new BinVect(mod, local0.tee()).vect;
+			const getter        = new BinVect(mod, local0.get()).vect;
 			// if arg0 is mathematically 0, return arg1
 			return mod.if(
 				mod.i32.or(
-					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.asInt)),
-					mod.i32.and(getter.isFloat, mod.f64.eq(getter.asFloat, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+					mod.i32.and(cg.vm.Vect.isInt(teeer),    mod.i64.eqz(cg.vm.Vect.asInt(getter))),
+					mod.i32.and(cg.vm.Vect.isFloat(getter), mod.f64.eq(cg.vm.Vect.asFloat(getter), mod.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				arg1,
 				// else return a wasm call
@@ -173,20 +173,20 @@ export class Binop extends Value {
 		// Operator Multiplication
 		if (this.operator === Operator.MUL) {
 			const local0: Local = cg.newLocal(arg0);
-			const teeer         = new BinVect(mod, local0.tee());
-			const getter        = new BinVect(mod, local0.get());
+			const teeer         = new BinVect(mod, local0.tee()).vect;
+			const getter        = new BinVect(mod, local0.get()).vect;
 			// if arg0 is mathematically 0, return it
 			return mod.if(
 				mod.i32.or(
-					mod.i32.and(teeer.isInt,    mod.i64.eqz(getter.asInt)),
-					mod.i32.and(getter.isFloat, mod.f64.eq(getter.asFloat, mod.f64.const(0.0))), // also takes care of the `-0.0` case
+					mod.i32.and(cg.vm.Vect.isInt(teeer),    mod.i64.eqz(cg.vm.Vect.asInt(getter))),
+					mod.i32.and(cg.vm.Vect.isFloat(getter), mod.f64.eq(cg.vm.Vect.asFloat(getter), mod.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				local0.get(),
 				// else if arg0 is mathematically 1, return arg1
 				mod.if(
 					mod.i32.or(
-						mod.i32.and(getter.isInt,   mod.i64.eq(getter.asInt,   bigint_to_i64(mod, 1n))),
-						mod.i32.and(getter.isFloat, mod.f64.eq(getter.asFloat, mod.f64.const(1.0))),
+						mod.i32.and(cg.vm.Vect.isInt(getter),   mod.i64.eq(cg.vm.Vect.asInt(getter),   bigint_to_i64(mod, 1n))),
+						mod.i32.and(cg.vm.Vect.isFloat(getter), mod.f64.eq(cg.vm.Vect.asFloat(getter), mod.f64.const(1.0))),
 					),
 					arg1,
 					// else return a wasm call

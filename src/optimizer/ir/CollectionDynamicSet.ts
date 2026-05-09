@@ -76,14 +76,14 @@ export class CollectionDynamicSet extends Instruction {
 			case TypeName.LIST: {
 				return cg.module.call('List.set', [
 					cast_collection(cg.reftype.List),
-					cg.module.i32.wrap(BinVect.fromValue(cg.vm, accessor).asInt),
+					cg.module.i32.wrap(cg.vm.Vect.asInt(BinVect.fromValue(cg.vm, accessor).vect)),
 					value,
 				], binaryen.none);
 			}
 			case TypeName.DICT: {
 				return cg.module.call('Dict.set', [
 					cast_collection(cg.reftype.Dict),
-					BinVect.fromValue(cg.vm, accessor).asNat,
+					cg.vm.Vect.asNat(BinVect.fromValue(cg.vm, accessor).vect),
 					value,
 				], binaryen.none);
 			}
@@ -94,7 +94,7 @@ export class CollectionDynamicSet extends Instruction {
 					base.set(),
 					xsor.set(),
 					cg.module.if(
-						BinVect.fromValue(cg.vm, value).isSpecial(true),
+						cg.vm.Vect.isConst(BinVect.fromValue(cg.vm, value).vect, true),
 						cg.module.call('Map.set', [
 							base.get(),
 							xsor.get(),

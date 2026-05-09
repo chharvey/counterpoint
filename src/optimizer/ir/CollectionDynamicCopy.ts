@@ -117,7 +117,7 @@ function each_item(
  */
 function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: BinVect.fromValue(cg.vm, cg.module.array.get(pair.tee(), cg.module.i32.const(0), cg.reftype.Value)).asNat,
+		key: cg.vm.Vect.asNat(BinVect.fromValue(cg.vm, cg.module.array.get(pair.tee(), cg.module.i32.const(0), cg.reftype.Value)).vect),
 		val: cg.module.array.get(pair.get(), cg.module.i32.const(1), cg.reftype.Value),
 	};
 }
@@ -149,7 +149,7 @@ function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionR
  */
 function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: BinVect.fromValue(cg.vm, cg.vm.Case.field(case_).ant).asNat,
+		key: cg.vm.Vect.asNat(BinVect.fromValue(cg.vm, cg.vm.Case.field(case_).ant).vect),
 		val: cg.vm.Case.field(case_).con,
 	};
 }

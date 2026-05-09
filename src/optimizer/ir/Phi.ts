@@ -63,7 +63,7 @@ class Phi extends Value {
 			return drop_then(this.builder.module, [arg0], arg2);
 		}
 
-		return cg.module.if(new BinVect(cg.module, arg0).isSpecial(true), arg1, arg2);
+		return cg.module.if(cg.vm.Vect.isConst(new BinVect(cg.module, arg0).vect, true), arg1, arg2);
 	}
 	/* eslint-enable */
 }
