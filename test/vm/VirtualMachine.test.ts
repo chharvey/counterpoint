@@ -7,7 +7,7 @@ import {VirtualMachine} from '../../src/index.ts';
 test.suite('VirtualMachine', () => {
 	test.suite('.constructor', () => {
 		test.test('validates successfully.', () => {
-			const vm = new VirtualMachine();
+			const vm = new VirtualMachine(); // assert does not throw
 			assert.ok(vm.mod.validate());
 		});
 	});
