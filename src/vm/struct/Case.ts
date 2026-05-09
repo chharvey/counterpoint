@@ -1,5 +1,4 @@
 import binaryen from 'binaryen';
-import {runOnceMethod} from '../../lib/decorators.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 
 
@@ -51,42 +50,5 @@ export class Case {
 	/** Returns whether a Case is a “tombstone”, that is, whether it represents a deletion in a Map. */
 	public isTombstone(param0: binaryen.ExpressionRef /* (ref null $Case) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Case.is-tombstone', [param0], binaryen.i32);
-	}
-
-	@runOnceMethod
-	public setupFunctions(): void {
-		const {mod, heaptype, reftype, reftypeNull} = this.vm;
-
-		/** $Case.new-tombstone */
-		(() => {
-			mod.removeFunction('Case.new-tombstone'); // removes stub defined in `stubs.wat`
-			mod.addFunction(
-				'Case.new-tombstone',
-				binaryen.none,
-				reftype.Case,
-				[],
-				mod.struct.new([this.vm.Value.new(null), this.vm.Value.new(null)], heaptype.Case),
-			);
-		})();
-
-		/** $Case.is-tombstone */
-		(() => {
-			const param0: binaryen.ExpressionRef /* (ref null $Case) */ = mod.local.get(0, reftypeNull.Case);
-			mod.removeFunction('Case.is-tombstone'); // removes stub defined in `stubs.wat`
-			mod.addFunction(
-				'Case.is-tombstone',
-				reftypeNull.Case,
-				binaryen.i32,
-				[],
-				mod.if(
-					mod.ref.is_null(param0),
-					mod.i32.const(0),
-					mod.i32.and(
-						mod.i32.eqz(this.vm.Value.field(this.field(param0).ant).tag),
-						mod.i32.eqz(this.vm.Value.field(this.field(param0).con).tag),
-					),
-				),
-			);
-		})();
 	}
 }

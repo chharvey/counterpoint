@@ -1,6 +1,5 @@
 import binaryen from 'binaryen';
 import {bigint_to_i64} from '../../index.ts';
-import {runOnceMethod} from '../../lib/decorators.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 
 
@@ -77,39 +76,5 @@ export class Property {
 	/** Returns whether a Property is a “tombstone”, that is, whether it represents a deletion in a Dict. */
 	public isTombstone(param0: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Property.is-tombstone', [param0], binaryen.i32);
-	}
-
-	@runOnceMethod
-	public setupFunctions(): void {
-		const {mod, reftype, reftypeNull} = this.vm;
-
-		/** $Property.new-tombstone */
-		(() => {
-			mod.removeFunction('Property.new-tombstone'); // removes stub defined in `stubs.wat`
-			mod.addFunction(
-				'Property.new-tombstone',
-				binaryen.none,
-				reftype.Property,
-				[],
-				this.new(0xffn, this.vm.Value.new(null)),
-			);
-		})();
-
-		/** $Property.is-tombstone */
-		(() => {
-			const param0: binaryen.ExpressionRef /* (ref null $Property) */ = mod.local.get(0, reftypeNull.Property);
-			mod.removeFunction('Property.is-tombstone'); // removes stub defined in `stubs.wat`
-			mod.addFunction(
-				'Property.is-tombstone',
-				reftypeNull.Property,
-				binaryen.i32,
-				[],
-				mod.if(
-					mod.ref.is_null(param0),
-					mod.i32.const(0),
-					mod.i64.lt_u(this.field(param0).key, bigint_to_i64(mod, 0x100n)),
-				),
-			);
-		})();
 	}
 }

@@ -66,6 +66,9 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),       'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),         'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),      'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),          'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Tuple.wat'),         'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),        'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),          'utf8'),
@@ -175,7 +178,6 @@ export class VirtualMachine {
 		));
 
 		this.#setupTypes();
-		this.#setupFunctions();
 	}
 
 
@@ -371,12 +373,5 @@ export class VirtualMachine {
 			Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
 			Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
 		};
-	}
-
-	@runOnceMethod
-	#setupFunctions(): void {
-		this.Value.setupFunctions();
-		this.Property.setupFunctions();
-		this.Case.setupFunctions();
 	}
 }
