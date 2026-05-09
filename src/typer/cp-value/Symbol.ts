@@ -2,7 +2,6 @@ import type binaryen from 'binaryen';
 import {
 	bigint_to_i64,
 	type Builder,
-	BinVect,
 } from '../../index.ts';
 import {
 	noopMethod,
@@ -67,7 +66,7 @@ class ValueSymbol extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.Value.new(new BinVect(cg.module, bigint_to_i64(cg.module, this.id, true), {unsigned: true}).vect);
+		return cg.newValue(cg.newVect(bigint_to_i64(cg.module, this.id, true), {unsigned: true}));
 	}
 }
 export {ValueSymbol as Symbol};

@@ -6,7 +6,6 @@ import type {Temp} from '../optimizer/index.ts';
 import {Global} from '../code-generator/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
-import {BinVect} from './BinVect.ts';
 import type {BinaryenModuleUpdates} from './-types.d.ts';
 
 
@@ -90,9 +89,9 @@ export class Builder {
 		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.vm.Value.new(new BinVect(this.module)        .vect)],
-			[BinConst.FALSE, this.vm.Value.new(new BinVect(this.module, false) .vect)],
-			[BinConst.TRUE,  this.vm.Value.new(new BinVect(this.module, true)  .vect)],
+			[BinConst.NULL,  this.newValue(this.newVect())],
+			[BinConst.FALSE, this.newValue(this.newVect(false))],
+			[BinConst.TRUE,  this.newValue(this.newVect(true))],
 		]);
 	}
 
@@ -158,6 +157,152 @@ export class Builder {
 	 */
 	public getAllLocals(): Local[] {
 		return [...this.#locals];
+	}
+
+	/**
+	 * Return a `v128` representing the argument.
+	 * @param arg one of the following:
+	 *            - the native value `null`, `false`, or `true` (corresponding to its representation)
+	 *            - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
+	 *            - an `unreachable`, which is directly returned
+	 * @param opts an object:
+	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
+	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
+	 * @returns a `v128` value encoding the argument (or `unreachable` if given)
+	 */
+	public newVect(
+		arg:  null | boolean | binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */ = null,
+		opts: {unsigned?: boolean, scale?: bigint} = {},
+	): binaryen.ExpressionRef /* v128 */ {
+		const {mod} = this.vm;
+		switch (arg) {
+			case null:  { return mod.global.get('Vect.NULL',  binaryen.v128); }
+			case false: { return mod.global.get('Vect.FALSE', binaryen.v128); }
+			case true:  { return mod.global.get('Vect.TRUE',  binaryen.v128); }
+		}
+		switch (binaryen.getExpressionType(arg)) {
+			case binaryen.v128: {
+				return arg;
+			}
+			case binaryen.unreachable: {
+				return arg;
+			}
+			case binaryen.i64: {
+				return opts.unsigned
+					? mod.call('Vect.new-nat', [arg], binaryen.v128)
+					: mod.call('Vect.new-int', [arg], binaryen.v128);
+			}
+			case binaryen.f64: {
+				return mod.call('Vect.new-float', [arg], binaryen.v128);
+			}
+			default: {
+				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
+					'`unreachable`',
+					'`i64`',
+					'`f64`',
+				].join('\n\t') }.`);
+			}
+		}
+	}
+
+	/**
+	 * Create a `$Value` struct containing the argument.
+	 * @param arg one of the following:
+	 *            - the native value `null`, which returns `(struct.new_default $Value)` (valid only in tombstones)
+	 *            - a Binaryen `v128`, `eqref`, `(ref $Value)`, or `(ref null $Value)`
+	 *            - an `unreachable`, which is directly returned
+	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
+	 */
+	public newValue(arg: binaryen.ExpressionRef /* unreachable | v128 | eqref | (ref $Value) | (ref null $Value) */ | null): binaryen.ExpressionRef /* (ref $Value) */ {
+		const {mod, heaptype, reftype, reftypeNull} = this.vm;
+		if (arg === null) {
+			return mod.struct.new_default(heaptype.Value);
+		}
+		switch (binaryen.getExpressionType(arg)) {
+			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
+			case reftypeNull.Value | 4:
+			case reftype.Value     | 4:
+			case reftypeNull.Value:
+			case reftype.Value: { // if given a (nullish) `$Value`, just use that
+				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
+				But in case a `(ref null $Property)`, etc. is given, a `(struct.new_default $Value)` should be returned, since those aren’t valid in a `$Value` struct.
+				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
+				return arg;
+			}
+			case binaryen.unreachable: {
+				return arg;
+			}
+			case binaryen.v128: { // a primitive
+				return mod.struct.new([
+					mod.i32.const(1),
+					arg,
+					mod.ref.null(binaryen.eqref),
+				], heaptype.Value);
+			}
+			case binaryen.eqref:
+			case reftype.String:
+			case reftype.Tuple:
+			case reftype.Record:
+			case reftype.Object:
+			case reftype.List:
+			case reftype.Dict:
+			case reftype.Map:
+			default: { // a composite
+				return mod.struct.new([
+					mod.i32.const(2),
+					mod.v128.const(new Uint8Array(16)),
+					arg,
+				], heaptype.Value);
+			}
+			/*
+			default: {
+				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
+					'`unreachable`',
+					'`v128`',
+					'`(ref $Tuple)`',
+					'`(ref $Record)`',
+					'`(ref $Object)` or a subtype',
+					'`(ref $Value)`',
+					'`(ref null $Value)`',
+				].join('\n\t') }.`);
+			}
+			*/
+		}
+	}
+
+	/**
+	 * Create a `$Property` struct containing the given key and `$Value`.
+	 * Note that a `$Property` may only contain a “default” `$Value` (a `(struct.new_default)`)
+	 * if its key is less than `\x100` — in which case it is a tombstone property.
+	 * @param arg one of the following:
+	 *            - a Binaryen `(ref $Value)`, or `(ref null $Value)`
+	 *            - an `unreachable`, which is directly returned
+	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
+	 */
+	public newProperty(key: bigint, arg: binaryen.ExpressionRef /* unreachable | (ref $Value) | (ref null $Value) */): binaryen.ExpressionRef /* (ref $Property) */ {
+		switch (binaryen.getExpressionType(arg)) {
+			case binaryen.unreachable: {
+				return arg;
+			}
+			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
+			case this.vm.reftypeNull.Value | 4:
+			case this.vm.reftype.Value     | 4:
+			case this.vm.reftypeNull.Value:
+			case this.vm.reftype.Value:
+			default: {
+				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
+				But in case a `(ref null $Case)`, etc. is given, an `(unreachable)` should be returned, since those aren’t valid in a `$Property` struct.
+				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
+				return this.vm.mod.struct.new([
+					bigint_to_i64(this.vm.mod, key, true),
+					arg,
+				], this.vm.heaptype.Property);
+			}
+		}
 	}
 
 	/**
@@ -282,13 +427,15 @@ export class Builder {
 		typekey: 'asInt' | 'asNat' | 'asFloat',
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
 		return mod.addFunction(
 			name,
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
 			this.reftype.Value,
 			[],
-			this.vm.Value.new(new BinVect(mod, method.call(null, local_vects[0][typekey], local_vects[1][typekey])).vect),
+			this.newValue(this.newVect(method(
+				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(0, this.reftype.Value)).primitive),
+				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(1, this.reftype.Value)).primitive),
+			))),
 		);
 	}
 
@@ -300,58 +447,59 @@ export class Builder {
 		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
+		const {Vect} = this.vm;
+		const local_vects = [0, 1].map((i) => this.vm.Value.field(mod.local.get(i, this.reftype.Value)).primitive);
 
-		const int_int: binaryen.ExpressionRef = method_ints.call(null, local_vects[0].asInt,    local_vects[1].asInt);
-		const int_nat: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].i_to_n(), local_vects[1].asNat);
-		const int_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].i_to_f(), local_vects[1].asFloat);
-		const nat_int: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].asNat,    local_vects[1].i_to_n());
-		const nat_nat: binaryen.ExpressionRef = method_nats.call(null, local_vects[0].asNat,    local_vects[1].asNat);
-		const nat_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].n_to_f(), local_vects[1].asFloat);
-		const flt_int: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].i_to_f());
-		const flt_nat: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].n_to_f());
-		const flt_flt: binaryen.ExpressionRef = method_flts.call(null, local_vects[0].asFloat,  local_vects[1].asFloat);
+		const int_int: binaryen.ExpressionRef = method_ints(Vect.asInt(local_vects[0]),      Vect.asInt(local_vects[1]));
+		const int_nat: binaryen.ExpressionRef = method_nats(Vect.intToNat(local_vects[0]),   Vect.asNat(local_vects[1]));
+		const int_flt: binaryen.ExpressionRef = method_flts(Vect.intToFloat(local_vects[0]), Vect.asFloat(local_vects[1]));
+		const nat_int: binaryen.ExpressionRef = method_nats(Vect.asNat(local_vects[0]),      Vect.intToNat(local_vects[1]));
+		const nat_nat: binaryen.ExpressionRef = method_nats(Vect.asNat(local_vects[0]),      Vect.asNat(local_vects[1]));
+		const nat_flt: binaryen.ExpressionRef = method_flts(Vect.natToFloat(local_vects[0]), Vect.asFloat(local_vects[1]));
+		const flt_int: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.intToFloat(local_vects[1]));
+		const flt_nat: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.natToFloat(local_vects[1]));
+		const flt_flt: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.asFloat(local_vects[1]));
 
 		return mod.addFunction(name, binaryen.createType([this.reftype.Value, this.reftype.Value]), this.reftype.Value, [], this.vm.Value.boolFromI32(mod.if(
-			local_vects[0].isInt,
+			Vect.isInt(local_vects[0]),
 			mod.if(
-				local_vects[1].isInt,
+				Vect.isInt(local_vects[1]),
 				int_int,
 				mod.if(
-					local_vects[1].isNat,
+					Vect.isNat(local_vects[1]),
 					int_nat,
 					mod.if(
-						local_vects[1].isFloat,
+						Vect.isFloat(local_vects[1]),
 						int_flt,
 						mod.unreachable(),
 					),
 				),
 			),
 			mod.if(
-				local_vects[0].isNat,
+				Vect.isNat(local_vects[0]),
 				mod.if(
-					local_vects[1].isInt,
+					Vect.isInt(local_vects[1]),
 					nat_int,
 					mod.if(
-						local_vects[1].isNat,
+						Vect.isNat(local_vects[1]),
 						nat_nat,
 						mod.if(
-							local_vects[1].isFloat,
+							Vect.isFloat(local_vects[1]),
 							nat_flt,
 							mod.unreachable(),
 						),
 					),
 				),
 				mod.if(
-					local_vects[0].isFloat,
+					Vect.isFloat(local_vects[0]),
 					mod.if(
-						local_vects[1].isInt,
+						Vect.isInt(local_vects[1]),
 						flt_int,
 						mod.if(
-							local_vects[1].isNat,
+							Vect.isNat(local_vects[1]),
 							flt_nat,
 							mod.if(
-								local_vects[1].isFloat,
+								Vect.isFloat(local_vects[1]),
 								flt_flt,
 								mod.unreachable(),
 							),
@@ -379,32 +527,33 @@ export class Builder {
 		const rt_list:   binaryen.Type         = this.reftype.List;
 		const rt_dict:   binaryen.Type         = this.reftype.Dict;
 		const rt_map:    binaryen.Type         = this.reftype.Map;
+		const {Vect}      = this.vm;
 		const local_vals  = [0, 1].map((i) => mod.local.get(i, rt_value));
-		const local_vects = local_vals.map((valuestruct) => BinVect.fromValue(this.vm, valuestruct));
+		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Unary Operators */
 		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
 			this.vm.Value.isPrimitive(local_vals[0]),
-			local_vects[0].isSpecial(null),
+			Vect.isConst(local_vects[0], null),
 		)));
 		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
 			this.vm.Value.isPrimitive(local_vals[0]),
-			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
+			mod.i32.or(Vect.isConst(local_vects[0], null), Vect.isConst(local_vects[0], false)),
 		)));
 		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
 			this.vm.Value.isPrimitive(local_vals[0]),
 			mod.if(
-				local_vects[0].isSpecial(),
+				Vect.isSpecial(local_vects[0]),
 				mod.call('vnot', [local_vals[0]], rt_value),
 				this.vm.Value.boolFromI32(mod.if(
-					local_vects[0].isInt,
-					mod.i64.eqz(local_vects[0].asInt),
+					Vect.isInt(local_vects[0]),
+					mod.i64.eqz(Vect.asInt(local_vects[0])),
 					mod.if(
-						local_vects[0].isNat,
-						mod.i64.eqz(local_vects[0].asNat),
+						Vect.isNat(local_vects[0]),
+						mod.i64.eqz(Vect.asNat(local_vects[0])),
 						mod.if(
-							local_vects[0].isFloat,
-							mod.f64.eq(local_vects[0].asFloat, mod.f64.const(0.0)), // also takes care of -0.0
+							Vect.isFloat(local_vects[0]),
+							mod.f64.eq(Vect.asFloat(local_vects[0]), mod.f64.const(0.0)), // also takes care of -0.0
 							mod.unreachable(),
 						),
 					),
@@ -412,51 +561,51 @@ export class Builder {
 			),
 			this.vm.Value.boolFromI32(mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32)),
 		));
-		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
+		mod.addFunction('vneg', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
+			Vect.isInt(local_vects[0]),
 			// `-n` in two’s complement is `(n xor -1) + 1`
-			new BinVect(mod, mod.i64.add(mod.i64.xor(local_vects[0].asInt, bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
+			this.newVect(mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))),
 			mod.if(
-				local_vects[0].isFloat,
-				new BinVect(mod, mod.f64.neg(local_vects[0].asFloat)).vect,
+				Vect.isFloat(local_vects[0]),
+				this.newVect(mod.f64.neg(Vect.asFloat(local_vects[0]))),
 				mod.unreachable(), // cannot call NEG on other primitives
 			),
 		)));
-		mod.addFunction('vtoi', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
-			local_vects[0].vect,
+		mod.addFunction('vtoi', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
+			Vect.isInt(local_vects[0]),
+			local_vects[0],
 			mod.if(
-				local_vects[0].isNat,
-				new BinVect(mod, local_vects[0].n_to_i(), {unsigned: false}).vect,
+				Vect.isNat(local_vects[0]),
+				this.newVect(Vect.natToInt(local_vects[0]), {unsigned: false}),
 				mod.if(
-					local_vects[0].isFloat,
-					new BinVect(mod, local_vects[0].f_to_i()).vect,
+					Vect.isFloat(local_vects[0]),
+					this.newVect(Vect.floatToInt(local_vects[0])),
 					mod.unreachable(),
 				),
 			),
 		)));
-		mod.addFunction('vton', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
-			new BinVect(mod, local_vects[0].i_to_n(), {unsigned: true}).vect,
+		mod.addFunction('vton', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
+			Vect.isInt(local_vects[0]),
+			this.newVect(Vect.intToNat(local_vects[0]), {unsigned: true}),
 			mod.if(
-				local_vects[0].isNat,
-				local_vects[0].vect,
+				Vect.isNat(local_vects[0]),
+				local_vects[0],
 				mod.if(
-					local_vects[0].isFloat,
-					new BinVect(mod, local_vects[0].f_to_n()).vect,
+					Vect.isFloat(local_vects[0]),
+					this.newVect(Vect.floatToNat(local_vects[0])),
 					mod.unreachable(),
 				),
 			),
 		)));
-		mod.addFunction('vtof', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			local_vects[0].isInt,
-			new BinVect(mod, local_vects[0].i_to_f()).vect,
+		mod.addFunction('vtof', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
+			Vect.isInt(local_vects[0]),
+			this.newVect(Vect.intToFloat(local_vects[0])),
 			mod.if(
-				local_vects[0].isNat,
-				new BinVect(mod, local_vects[0].n_to_f()).vect,
+				Vect.isNat(local_vects[0]),
+				this.newVect(Vect.natToFloat(local_vects[0])),
 				mod.if(
-					local_vects[0].isFloat,
-					local_vects[0].vect,
+					Vect.isFloat(local_vects[0]),
+					local_vects[0],
 					mod.unreachable(),
 				),
 			),
@@ -488,17 +637,17 @@ export class Builder {
 				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
-				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				mod.i32.eq(local_vects[0].asSpecial, local_vects[1].asSpecial),
+				mod.i32.and(Vect.isSpecial(local_vects[0]), Vect.isSpecial(local_vects[1])),
+				mod.i32.eq(Vect.type(local_vects[0]), Vect.type(local_vects[1])),
 				mod.if(
-					mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-					mod.i64.eq(local_vects[0].asInt, local_vects[1].asInt), // `i64.eq` for ints gives the same result as `ID` operator
+					mod.i32.and(Vect.isInt(local_vects[0]), Vect.isInt(local_vects[1])),
+					mod.i64.eq(Vect.asInt(local_vects[0]), Vect.asInt(local_vects[1])), // `i64.eq` for ints gives the same result as `ID` operator
 					mod.if(
-						mod.i32.and(local_vects[0].isNat, local_vects[1].isNat),
-						mod.i64.eq(local_vects[0].asNat, local_vects[1].asNat), // `i64.eq` for nats gives the same result as `ID` operator
+						mod.i32.and(Vect.isNat(local_vects[0]), Vect.isNat(local_vects[1])),
+						mod.i64.eq(Vect.asNat(local_vects[0]), Vect.asNat(local_vects[1])), // `i64.eq` for nats gives the same result as `ID` operator
 						mod.if(
-							mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-							mod.call('fid', [local_vects[0].asFloat, local_vects[1].asFloat], binaryen.i32),
+							mod.i32.and(Vect.isFloat(local_vects[0]), Vect.isFloat(local_vects[1])),
+							mod.call('fid', [Vect.asFloat(local_vects[0]), Vect.asFloat(local_vects[1])], binaryen.i32),
 							mod.i32.const(0),
 						),
 					),
@@ -537,7 +686,7 @@ export class Builder {
 				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
-				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
+				mod.i32.or(Vect.isSpecial(local_vects[0]), Vect.isSpecial(local_vects[1])),
 				mod.call('vid',  [local_vals[0], local_vals[1]], rt_value),
 				mod.call('veqn', [local_vals[0], local_vals[1]], rt_value),
 			),

@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	type Builder,
-	BinVect,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -55,12 +52,10 @@ export class Float extends ValueNumber<Float> {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.Value.new(new BinVect(
-			cg.module,
-			Object.is(this.data, -0.0)
-				? cg.module.f64.ceil(cg.module.f64.const(-0.5))
-				: cg.module.f64.const(this.data),
-		).vect);
+		return cg.newValue(cg.newVect((Object.is(this.data, -0.0)
+			? cg.module.f64.ceil(cg.module.f64.const(-0.5))
+			: cg.module.f64.const(this.data)
+		)));
 	}
 
 	public override toInt(): Integer {

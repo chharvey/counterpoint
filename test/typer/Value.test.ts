@@ -5,7 +5,6 @@ import {
 	VALUE,
 	bigint_to_i64,
 	Builder,
-	BinVect,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
 
@@ -216,7 +215,7 @@ test.suite('Value', () => {
 			const cg = new Builder();
 			return assertEqualBins(
 				VALUE.NULL.codegen(cg),
-				cg.vm.Value.new(new BinVect(cg.module).vect),
+				cg.newValue(cg.newVect()),
 			);
 		});
 
@@ -226,8 +225,8 @@ test.suite('Value', () => {
 				VALUE.FALSE.codegen(cg),
 				VALUE.TRUE .codegen(cg),
 			], [
-				cg.vm.Value.new(new BinVect(cg.module, false) .vect),
-				cg.vm.Value.new(new BinVect(cg.module, true)  .vect),
+				cg.newValue(cg.newVect(false)),
+				cg.newValue(cg.newVect(true)),
 			]);
 		});
 
@@ -237,8 +236,8 @@ test.suite('Value', () => {
 				VALUE.SYM_NOTHING.codegen(cg),
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
 			], [
-				cg.vm.Value.new(new BinVect(cg.module, bigint_to_i64(cg.module, 0x80n),  {unsigned: true}).vect),
-				cg.vm.Value.new(new BinVect(cg.module, bigint_to_i64(cg.module, 0x100n), {unsigned: true}).vect),
+				cg.newValue(cg.newVect(bigint_to_i64(cg.module, 0x80n),  {unsigned: true})),
+				cg.newValue(cg.newVect(bigint_to_i64(cg.module, 0x100n), {unsigned: true})),
 			]);
 		});
 
@@ -261,7 +260,7 @@ test.suite('Value', () => {
 			const cg = new Builder();
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => cg.vm.Value.new(new BinVect(cg.module, bigint_to_i64(cg.module, x)).vect)),
+				data.map((x) => cg.newValue(cg.newVect(bigint_to_i64(cg.module, x)))),
 			);
 		});
 
@@ -276,7 +275,7 @@ test.suite('Value', () => {
 			const cg = new Builder();
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => cg.vm.Value.new(new BinVect(cg.module, bigint_to_i64(cg.module, x, true), {unsigned: true}).vect)),
+				data.map((x) => cg.newValue(cg.newVect(bigint_to_i64(cg.module, x, true), {unsigned: true}))),
 			);
 		});
 
@@ -293,7 +292,7 @@ test.suite('Value', () => {
 				const cg = new Builder();
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
-					data.map((x) => cg.vm.Value.new(new BinVect(cg.module, cg.module.f64.const(x)).vect)),
+					data.map((x) => cg.newValue(cg.newVect(cg.module.f64.const(x)))),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
@@ -301,7 +300,7 @@ test.suite('Value', () => {
 				const mod: binaryen.Module = cg.module;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => cg.vm.Value.new(new BinVect(mod, c).vect)),
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => cg.newValue(cg.newVect(c))),
 				);
 			});
 		});
@@ -310,7 +309,7 @@ test.suite('Value', () => {
 			const cg = new Builder();
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),
-				cg.vm.Value.new(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => cg.module.i32.const(c)))),
+				cg.newValue(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => cg.module.i32.const(c)))),
 			);
 		});
 	});

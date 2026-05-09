@@ -7,9 +7,10 @@ import type {
 	Field,
 	TypeBuilder,
 } from '../builder/-types.d.ts';
-import {Value} from './struct/Value.ts';
-import {Property} from './struct/Property.ts';
-import {Case} from './struct/Case.ts';
+import {Vect} from './classes/Vect.ts';
+import {Value} from './classes/Value.ts';
+import {Property} from './classes/Property.ts';
+import {Case} from './classes/Case.ts';
 
 
 
@@ -56,21 +57,25 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 
 
 const IMPORTS: readonly string[] = [
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stubs.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/iexp.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/isub_u.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/cemp.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stringify.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Map.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/types.wat'),                 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/stubs.wat'),                 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/iexp.wat'),              'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/isub_u.wat'),            'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/fid.wat'),               'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/cemp.wat'),              'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/mod.wat'),               'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),       'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Vect.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),         'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),      'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Tuple.wat'),         'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),        'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),           'utf8'),
 ];
 
 /** Struct field constant indices. */
@@ -158,6 +163,7 @@ export class VirtualMachine {
 		},
 	} as const;
 
+	public Vect     = new Vect(this);
 	public Value    = new Value(this);
 	public Property = new Property(this);
 	public Case     = new Case(this);
@@ -175,7 +181,6 @@ export class VirtualMachine {
 		));
 
 		this.#setupTypes();
-		this.#setupFunctions();
 	}
 
 
@@ -371,12 +376,5 @@ export class VirtualMachine {
 			Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
 			Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
 		};
-	}
-
-	@runOnceMethod
-	#setupFunctions(): void {
-		this.Value.setupFunctions();
-		this.Property.setupFunctions();
-		this.Case.setupFunctions();
 	}
 }

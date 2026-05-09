@@ -55,15 +55,15 @@ class Phi extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, TYPE: any, BinVect: any, t0: any, arg0: any, arg1: any, arg2: any): number {
+	#optimizationStrategy(this: any, cg: Builder, TYPE: any, t0: any, arg0: any, arg1: any, arg2: any): number {
 		// Ternary Operator:
 		if (t0.isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(this.builder.module, [arg0], arg1);
+			return drop_then(this.builder, [arg0], arg1);
 		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(this.builder.module, [arg0], arg2);
+			return drop_then(this.builder, [arg0], arg2);
 		}
 
-		return cg.module.if(new BinVect(cg.module, arg0).isSpecial(true), arg1, arg2);
+		return cg.module.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
 	}
 	/* eslint-enable */
 }

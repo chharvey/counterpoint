@@ -11,6 +11,7 @@
 
 
 (func $Value.bool-to-i32 (param $value (ref $Value)) (result i32)
+	;; TODO: call $Vect.is-true
 	(i32.eq
 		(i16x8.extract_lane_u 3 (struct.get $Value $primitive (local.get $value)))
 		(i32.const 0x0003)
@@ -22,7 +23,8 @@
 (func $Value.bool-from-i32 (param $bool i32) (result (ref $Value))
 	(if (result (ref $Value))
 		(local.get $bool)
-		(else (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0003 0 0 0 0) (ref.null eq)))
-		(then (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0002 0 0 0 0) (ref.null eq)))
+		;; TODO: use $Vect consts
+		(then (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0003 0 0 0 0) (ref.null eq)))
+		(else (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0002 0 0 0 0) (ref.null eq)))
 	)
 )

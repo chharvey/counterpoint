@@ -1,6 +1,5 @@
-import * as assert from 'node:assert';
 import binaryen from 'binaryen';
-import type {VirtualMachine} from '../vm/index.ts';
+import type {VirtualMachine} from '../VirtualMachine.ts';
 
 
 
@@ -93,170 +92,97 @@ import type {VirtualMachine} from '../vm/index.ts';
  * f64:                \x0000 \x0000 \x0000 \x0048 | \x???? \x???? \x???? \x????
  * ```
  */
-export class BinVect {
-	/** Return a new BinVect containing a `$Value`’s primitive value. */
-	public static fromValue(vm: VirtualMachine, value: binaryen.ExpressionRef /* (ref $Value) */): BinVect {
-		return new BinVect(vm.mod, vm.Value.field(value).primitive);
-	}
+export class Vect {
+	public constructor(private readonly vm: VirtualMachine) {}
 
-
-	/** Internal implementation of the `v128`. */
-	public readonly vect: binaryen.ExpressionRef;
 
 	/** The Header Lane’s value, indicating the type of data stored. */
-	readonly #type!: binaryen.ExpressionRef;
-
-	/**
-	 * Construct a new BinVect object given a value.
-	 * @param  mod a module to create the instance in
-	 * @param  arg one of the following:
-	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
-	 *             - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
-	 * @param opts an object:
-	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
-	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
-	 */
-	public constructor(
-		private readonly mod: binaryen.Module,
-		arg:  null | boolean | binaryen.ExpressionRef = null,
-		opts: {unsigned?: boolean, scale?: bigint} = {},
-	) {
-		this.vect = this.mod.v128.const(new Uint8Array(16));
-
-		if (arg === null) {
-			// the arg represents the Counterpoint `null` value
-			this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0001));
-		} else if (arg === false) {
-			// the arg represents the Counterpoint `false` value
-			this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0002));
-		} else if (arg === true) {
-			// the arg represents the Counterpoint `true` value
-			this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0003));
-		} else if (typeof arg === 'number') {
-			// the arg represents a dynamic Binaryen expression
-			switch (binaryen.getExpressionType(arg)) {
-				case binaryen.unreachable: {
-					this.vect = arg;
-					break;
-				}
-				/*
-				 * If the arg is an `i64`:
-				 * - Set Lane 3 to `\x0018` if signed (Counterpoint type `int`), `\x0028` if unsigned (Counterpoint type `nat`).
-				 * - Set Lane 4–7 (joined) to its `i64` value.
-				 */
-				case binaryen.i64: {
-					this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(opts.unsigned ? 0x0028 : 0x0018));
-					this.vect = this.mod.i64x2.replace_lane(this.vect, 1, arg);
-					break;
-				}
-				/*
-				 * If the arg is an `f64` (Counterpoint type `float`), set Lane 3 to `\x0048` and set Lanes 4–7 (joined) to its `f64` value.
-				 */
-				case binaryen.f64: {
-					this.vect = this.mod.i16x8.replace_lane(this.vect, 3, this.mod.i32.const(0x0048));
-					this.vect = this.mod.f64x2.replace_lane(this.vect, 1, arg);
-					break;
-				}
-				/*
-				 * If the arg is a `v128` (unspecified type), set all lanes to those lanes.
-				 */
-				case binaryen.v128: {
-					this.vect = arg;
-					break;
-				}
-				default: {
-					throw new TypeError('Expected either `i64`, `f64`, or `v128`.');
-				}
-			}
-		}
-
-		this.#type = this.mod.i16x8.extract_lane_u(this.vect, 3);
+	public type(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.type', [param0], binaryen.i32);
 	}
 
 	/** Whether the Header Lane is within a given range (inclusive). */
-	#checkTypeRange(min: bigint, max: bigint): binaryen.ExpressionRef {
-		const lower: binaryen.ExpressionRef = this.mod.i32.const(Number(min));
-		const upper: binaryen.ExpressionRef = this.mod.i32.const(Number(max));
-		return this.mod.i32.and(this.mod.i32.le_u(lower, this.#type), this.mod.i32.le_u(this.#type, upper));
+	public checkTypeRange(param0: binaryen.ExpressionRef /* v128 */, param1: binaryen.ExpressionRef /* i32 */, param2: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef {
+		return this.vm.mod.call('Vect.check-type-range', [param0, param1, param2], binaryen.i32);
 	}
 
-	/** Whether the value does not exist. */
-	public get isVoid(): binaryen.ExpressionRef {
-		return this.mod.i32.eqz(this.#type);
+	/** Whether the value does not exist */
+	public isVoid(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-void', [param0], binaryen.i32);
+	}
+
+	/**
+	 * Whether the value contains the encoding for one of the Counterpoint values `null`, `false`, or `true`.
+	 * @param param0 the parameter to send into the WASM function
+	 * @param tag    determines which WASM function to call
+	 * @returns      the result of calling `$Vect.is-{null,false,true}` based on the given tag
+	 */
+	public isConst(param0: binaryen.ExpressionRef /* v128 */, tag: boolean | null): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call(`Vect.is-${ tag }`, [param0], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a special value: null, false, or true. */
-	public isSpecial(value?: null | boolean): binaryen.ExpressionRef {
-		return (
-			value === null  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0001)) :
-			value === false ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0002)) :
-			value === true  ? this.mod.i32.eq(this.#type, this.mod.i32.const(0x0003)) :
-			(assert.strictEqual(value, undefined), this.#checkTypeRange(0x0001n, 0x000fn))
-		);
+	public isSpecial(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-special', [param0], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a signed integer. */
-	public get isInt(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0010n, 0x001fn);
+	public isInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-int', [param0], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as an unsigned integer. */
-	public get isNat(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0020n, 0x002fn);
+	public isNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-nat', [param0], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a float. */
-	public get isFloat(): binaryen.ExpressionRef {
-		return this.#checkTypeRange(0x0040n, 0x004fn);
-	}
-
-	/** The value as interpreted as a special value: null, false, or true. */
-	public get asSpecial(): binaryen.ExpressionRef {
-		return this.#type;
+	public isFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-float', [param0], binaryen.i32);
 	}
 
 	/** The value as interpreted as a signed integer. */
-	public get asInt(): binaryen.ExpressionRef {
-		return this.mod.i64x2.extract_lane(this.vect, 1);
+	public asInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.as-int', [param0], binaryen.i64);
 	}
 
 	/** The value as interpreted as an unsigned integer. */
-	public get asNat(): binaryen.ExpressionRef {
-		return this.mod.i64x2.extract_lane(this.vect, 1);
+	public asNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.as-nat', [param0], binaryen.i64);
 	}
 
 	/** The value as interpreted as a float. */
-	public get asFloat(): binaryen.ExpressionRef {
-		return this.mod.f64x2.extract_lane(this.vect, 1);
+	public asFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
+		return this.vm.mod.call('Vect.as-float', [param0], binaryen.f64);
 	}
 
-	/** Reinterpretation. Assuming `this.isInt`, return the value interpreted as a `nat`. */
-	public i_to_n(): binaryen.ExpressionRef {
-		return this.asNat; // reinterpretation doesn’t change the bits
+	/** Reinterpretation. Return the `int` value, reinterpreted as `nat`. */
+	public intToNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.int-to-nat', [param0], binaryen.i64);
 	}
 
-	/** Conversion. Assuming `this.isInt`, return a new value representing a `float`. */
-	public i_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_s.i64(this.asInt);
+	/** Conversion. Return the `int` value, converted to `float`. */
+	public intToFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
+		return this.vm.mod.call('Vect.int-to-float', [param0], binaryen.f64);
 	}
 
-	/** Reinterpretation. Assuming `this.isNat`, return the value interpreted as an `int`. */
-	public n_to_i(): binaryen.ExpressionRef {
-		return this.asInt; // reinterpretation doesn’t change the bits
+	/** Reinterpretation. Return the `nat` value, reinterpreted as `int`. */
+	public natToInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.nat-to-int', [param0], binaryen.i64);
 	}
 
-	/** Conversion. Assuming `this.isNat`, return a new value representing a `float`. */
-	public n_to_f(): binaryen.ExpressionRef {
-		return this.mod.f64.convert_u.i64(this.asNat);
+	/** Conversion. Return the `nat` value, converted to `float`. */
+	public natToFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
+		return this.vm.mod.call('Vect.nat-to-float', [param0], binaryen.f64);
 	}
 
-	/** Truncation. Assuming `this.isFloat`, return a new value representing an `int`. */
-	public f_to_i(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_s_sat.f64(this.asFloat);
+	/** Truncation. Return the `float` value, truncated to `int`. */
+	public floatToInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.float-to-int', [param0], binaryen.i64);
 	}
 
-	/** Truncation. Assuming `this.isFloat`, return a new value representing a `nat`. */
-	public f_to_n(): binaryen.ExpressionRef {
-		return this.mod.i64.trunc_u_sat.f64(this.asFloat);
+	/** Truncation. Return the `float` value, truncated to `nat`. */
+	public floatToNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.float-to-nat', [param0], binaryen.i64);
 	}
 }
