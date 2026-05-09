@@ -54,6 +54,84 @@ test.suite('Builder', () => {
 	});
 
 
+	test.suite('#newValue', () => {
+		test.test('returns (nullish) `$Value` arg.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			xjs.Array.forEachAggregated([
+				mod.ref.null(cg.vm.reftypeNull.Value), // BUG: `ref.null` should only take heap types
+				cg.newValue(cg.newVect(bigint_to_i64(mod, 42n))),
+			], (arg) => assertEqualBins(
+				cg.newValue(arg),
+				arg,
+			));
+		});
+		test.test('returns `(struct.new_default $Value)` with native `null` argument.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			assertEqualBins(
+				cg.newValue(null),
+				mod.struct.new_default(cg.vm.heaptype.Value),
+			);
+		});
+		test.test('returns `unreachable` arg.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			assertEqualBins(
+				cg.newValue(mod.unreachable()),
+				mod.unreachable(),
+			);
+		});
+		test.test('primitive values.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			xjs.Array.forEachAggregated([
+				cg.newVect(null),
+				cg.newVect(false),
+				cg.newVect(bigint_to_i64(mod, 0x100n)),
+				cg.newVect(bigint_to_i64(mod, 42n)),
+				cg.newVect(mod.f64.const(4.2)),
+			], (arg) => assertEqualBins(cg.newValue(arg), mod.struct.new([
+				mod.i32.const(1),
+				arg,
+				mod.ref.null(binaryen.eqref),
+			], cg.vm.heaptype.Value)));
+		});
+		test.test('composite values.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			xjs.Array.forEachAggregated([
+				cg.codegenTuple([
+					genConst(cg, true),
+					genConst(cg, 42n),
+				]),
+				cg.codegenRecord(new Map([
+					[0x100n, cg.vm.Property.new(0x100n, genConst(cg, true))],
+					[0x101n, cg.vm.Property.new(0x101n, genConst(cg, 42n))],
+					[0x102n, cg.vm.Property.new(0x102n, genConst(cg, 4.2))],
+				])),
+				cg.codegenList([
+					genConst(cg, 1.1),
+					genConst(cg, 2.2),
+					genConst(cg, 3.3),
+					...repeat(cg.module.ref.null(cg.reftypeNull.Value), 5),
+				]),
+				cg.codegenDict(new Map([
+					[0x106n, cg.vm.Property.new(0x106n, genConst(cg, 1.1))],
+					[0x107n, cg.vm.Property.new(0x107n, genConst(cg, 2.2))],
+					[0x108n, cg.vm.Property.new(0x108n, genConst(cg, 3.3))],
+					[0x109n, cg.vm.Property.new(0x109n, genConst(cg, 4.4))],
+					[0x10an, cg.vm.Property.new(0x10an, genConst(cg, 5.5))],
+				])),
+			], (arg) => assertEqualBins(cg.newValue(arg), mod.struct.new([
+				mod.i32.const(2),
+				mod.v128.const(new Uint8Array(16)),
+				arg,
+			], cg.heaptype.Value)));
+		});
+	});
+
+
 	test.suite('#codegen*', () => {
 		function obj_ctr_plus_plus(mod: Builder['module']): binaryen.ExpressionRef {
 			return mod.block(null, [

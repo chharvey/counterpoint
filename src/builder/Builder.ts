@@ -89,9 +89,9 @@ export class Builder {
 		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.vm.Value.new(this.newVect())],
-			[BinConst.FALSE, this.vm.Value.new(this.newVect(false))],
-			[BinConst.TRUE,  this.vm.Value.new(this.newVect(true))],
+			[BinConst.NULL,  this.newValue(this.newVect())],
+			[BinConst.FALSE, this.newValue(this.newVect(false))],
+			[BinConst.TRUE,  this.newValue(this.newVect(true))],
 		]);
 	}
 
@@ -202,6 +202,73 @@ export class Builder {
 					'`f64`',
 				].join('\n\t') }.`);
 			}
+		}
+	}
+
+	/**
+	 * Create a `$Value` struct containing the argument.
+	 * @param arg one of the following:
+	 *            - the native value `null`, which returns `(struct.new_default $Value)` (valid only in tombstones)
+	 *            - a Binaryen `v128`, `eqref`, `(ref $Value)`, or `(ref null $Value)`
+	 *            - an `unreachable`, which is directly returned
+	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
+	 */
+	public newValue(arg: binaryen.ExpressionRef /* unreachable | v128 | eqref | (ref $Value) | (ref null $Value) */ | null): binaryen.ExpressionRef /* (ref $Value) */ {
+		const {mod, heaptype, reftype, reftypeNull} = this.vm;
+		if (arg === null) {
+			return mod.struct.new_default(heaptype.Value);
+		}
+		switch (binaryen.getExpressionType(arg)) {
+			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
+			case reftypeNull.Value | 4:
+			case reftype.Value     | 4:
+			case reftypeNull.Value:
+			case reftype.Value: { // if given a (nullish) `$Value`, just use that
+				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
+				But in case a `(ref null $Property)`, etc. is given, a `(struct.new_default $Value)` should be returned, since those aren’t valid in a `$Value` struct.
+				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
+				return arg;
+			}
+			case binaryen.unreachable: {
+				return arg;
+			}
+			case binaryen.v128: { // a primitive
+				return mod.struct.new([
+					mod.i32.const(1),
+					arg,
+					mod.ref.null(binaryen.eqref),
+				], heaptype.Value);
+			}
+			case binaryen.eqref:
+			case reftype.String:
+			case reftype.Tuple:
+			case reftype.Record:
+			case reftype.Object:
+			case reftype.List:
+			case reftype.Dict:
+			case reftype.Map:
+			default: { // a composite
+				return mod.struct.new([
+					mod.i32.const(2),
+					mod.v128.const(new Uint8Array(16)),
+					arg,
+				], heaptype.Value);
+			}
+			/*
+			default: {
+				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
+					'`unreachable`',
+					'`v128`',
+					'`(ref $Tuple)`',
+					'`(ref $Record)`',
+					'`(ref $Object)` or a subtype',
+					'`(ref $Value)`',
+					'`(ref null $Value)`',
+				].join('\n\t') }.`);
+			}
+			*/
 		}
 	}
 
@@ -332,7 +399,7 @@ export class Builder {
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
 			this.reftype.Value,
 			[],
-			this.vm.Value.new(this.newVect(method(
+			this.newValue(this.newVect(method(
 				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(0, this.reftype.Value)).primitive),
 				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(1, this.reftype.Value)).primitive),
 			))),
@@ -461,7 +528,7 @@ export class Builder {
 			),
 			this.vm.Value.boolFromI32(mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32)),
 		));
-		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
+		mod.addFunction('vneg', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			// `-n` in two’s complement is `(n xor -1) + 1`
 			this.newVect(mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))),
@@ -471,7 +538,7 @@ export class Builder {
 				mod.unreachable(), // cannot call NEG on other primitives
 			),
 		)));
-		mod.addFunction('vtoi', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
+		mod.addFunction('vtoi', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			local_vects[0],
 			mod.if(
@@ -484,7 +551,7 @@ export class Builder {
 				),
 			),
 		)));
-		mod.addFunction('vton', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
+		mod.addFunction('vton', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			this.newVect(Vect.intToNat(local_vects[0]), {unsigned: true}),
 			mod.if(
@@ -497,7 +564,7 @@ export class Builder {
 				),
 			),
 		)));
-		mod.addFunction('vtof', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
+		mod.addFunction('vtof', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			this.newVect(Vect.intToFloat(local_vects[0])),
 			mod.if(
