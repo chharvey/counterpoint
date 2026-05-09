@@ -67,39 +67,41 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const {mod, Vect, Value} = cg.vm;
+
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
 		const value:      binaryen.ExpressionRef = this.value.codegen(cg);
-		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => cg.vm.Value.cast(collection, reftype);
+		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, reftype);
 		switch (this.name) {
 			case TypeName.LIST: {
-				return cg.module.call('List.set', [
+				return mod.call('List.set', [
 					cast_collection(cg.reftype.List),
-					cg.module.i32.wrap(cg.vm.Vect.asInt(cg.vm.Value.field(accessor).primitive)),
+					mod.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
 					value,
 				], binaryen.none);
 			}
 			case TypeName.DICT: {
-				return cg.module.call('Dict.set', [
+				return mod.call('Dict.set', [
 					cast_collection(cg.reftype.Dict),
-					cg.vm.Vect.asNat(cg.vm.Value.field(accessor).primitive),
+					Vect.asNat(Value.field(accessor).primitive),
 					value,
 				], binaryen.none);
 			}
 			case TypeName.SET: {
 				const base: Local = cg.newLocal(cast_collection(cg.reftype.Map));
 				const xsor: Local = cg.newLocal(accessor, cg.reftype.Value);
-				return cg.module.block(null, [
+				return mod.block(null, [
 					base.set(),
 					xsor.set(),
-					cg.module.if(
-						cg.vm.Vect.isConst(cg.vm.Value.field(value).primitive, true),
-						cg.module.call('Map.set', [
+					mod.if(
+						Vect.isConst(Value.field(value).primitive, true),
+						mod.call('Map.set', [
 							base.get(),
 							xsor.get(),
 							cg.getConst(BinConst.NULL),
 						], binaryen.none),
-						cg.module.drop(cg.module.call('Map.delete', [
+						mod.drop(mod.call('Map.delete', [
 							base.get(),
 							xsor.get(),
 						], cg.reftypeNull.Value)),
@@ -107,7 +109,7 @@ export class CollectionDynamicSet extends Instruction {
 				]);
 			}
 			case TypeName.MAP: {
-				return cg.module.call('Map.set', [
+				return mod.call('Map.set', [
 					cast_collection(cg.reftype.Map),
 					accessor,
 					value,
