@@ -1,5 +1,4 @@
 import binaryen from 'binaryen';
-import type {VirtualMachine} from '../vm/index.ts';
 
 
 
@@ -93,12 +92,6 @@ import type {VirtualMachine} from '../vm/index.ts';
  * ```
  */
 export class BinVect {
-	/** Return a new BinVect containing a `$Value`’s primitive value. */
-	public static fromValue(vm: VirtualMachine, value: binaryen.ExpressionRef /* (ref $Value) */): BinVect {
-		return new BinVect(vm.mod, vm.Value.field(value).primitive);
-	}
-
-
 	/** Internal implementation of the `v128`. */
 	public readonly vect: binaryen.ExpressionRef;
 

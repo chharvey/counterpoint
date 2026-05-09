@@ -5,7 +5,6 @@ import {
 	BinConst,
 	type Builder,
 	type Local,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -79,7 +78,7 @@ export class CollectionDynamicGet extends Value {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(cg.module.array.get(
 					cg.structGet.list.internal(cast_collection(cg.reftype.List)),
-					cg.module.i32.wrap(cg.vm.Vect.asInt(BinVect.fromValue(cg.vm, accessor).vect)),
+					cg.module.i32.wrap(cg.vm.Vect.asInt(cg.vm.Value.field(accessor).primitive)),
 					cg.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
 
@@ -96,7 +95,7 @@ export class CollectionDynamicGet extends Value {
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
 					cast_collection(cg.reftype.Dict),
-					cg.vm.Vect.asNat(BinVect.fromValue(cg.vm, accessor).vect),
+					cg.vm.Vect.asNat(cg.vm.Value.field(accessor).primitive),
 				], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1));
 
 				return cg.module.block(null, [

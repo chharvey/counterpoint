@@ -282,13 +282,15 @@ export class Builder {
 		typekey: 'asInt' | 'asNat' | 'asFloat',
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
-		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
 		return mod.addFunction(
 			name,
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
 			this.reftype.Value,
 			[],
-			this.vm.Value.new(new BinVect(mod, method.call(null, this.vm.Vect[typekey](local_vects[0].vect), this.vm.Vect[typekey](local_vects[1].vect))).vect),
+			this.vm.Value.new(new BinVect(mod, method(
+				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(0, this.reftype.Value)).primitive),
+				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(1, this.reftype.Value)).primitive),
+			)).vect),
 		);
 	}
 
@@ -301,58 +303,58 @@ export class Builder {
 	): binaryen.FunctionRef {
 		const mod: BinaryenModuleUpdates = this.module;
 		const {Vect} = this.vm;
-		const local_vects = [0, 1].map((i) => BinVect.fromValue(this.vm, mod.local.get(i, this.reftype.Value)));
+		const local_vects = [0, 1].map((i) => this.vm.Value.field(mod.local.get(i, this.reftype.Value)).primitive);
 
-		const int_int: binaryen.ExpressionRef = method_ints.call(null, Vect.asInt(local_vects[0].vect),      Vect.asInt(local_vects[1].vect));
-		const int_nat: binaryen.ExpressionRef = method_nats.call(null, Vect.intToNat(local_vects[0].vect),   Vect.asNat(local_vects[1].vect));
-		const int_flt: binaryen.ExpressionRef = method_flts.call(null, Vect.intToFloat(local_vects[0].vect), Vect.asFloat(local_vects[1].vect));
-		const nat_int: binaryen.ExpressionRef = method_nats.call(null, Vect.asNat(local_vects[0].vect),      Vect.intToNat(local_vects[1].vect));
-		const nat_nat: binaryen.ExpressionRef = method_nats.call(null, Vect.asNat(local_vects[0].vect),      Vect.asNat(local_vects[1].vect));
-		const nat_flt: binaryen.ExpressionRef = method_flts.call(null, Vect.natToFloat(local_vects[0].vect), Vect.asFloat(local_vects[1].vect));
-		const flt_int: binaryen.ExpressionRef = method_flts.call(null, Vect.asFloat(local_vects[0].vect),    Vect.intToFloat(local_vects[1].vect));
-		const flt_nat: binaryen.ExpressionRef = method_flts.call(null, Vect.asFloat(local_vects[0].vect),    Vect.natToFloat(local_vects[1].vect));
-		const flt_flt: binaryen.ExpressionRef = method_flts.call(null, Vect.asFloat(local_vects[0].vect),    Vect.asFloat(local_vects[1].vect));
+		const int_int: binaryen.ExpressionRef = method_ints(Vect.asInt(local_vects[0]),      Vect.asInt(local_vects[1]));
+		const int_nat: binaryen.ExpressionRef = method_nats(Vect.intToNat(local_vects[0]),   Vect.asNat(local_vects[1]));
+		const int_flt: binaryen.ExpressionRef = method_flts(Vect.intToFloat(local_vects[0]), Vect.asFloat(local_vects[1]));
+		const nat_int: binaryen.ExpressionRef = method_nats(Vect.asNat(local_vects[0]),      Vect.intToNat(local_vects[1]));
+		const nat_nat: binaryen.ExpressionRef = method_nats(Vect.asNat(local_vects[0]),      Vect.asNat(local_vects[1]));
+		const nat_flt: binaryen.ExpressionRef = method_flts(Vect.natToFloat(local_vects[0]), Vect.asFloat(local_vects[1]));
+		const flt_int: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.intToFloat(local_vects[1]));
+		const flt_nat: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.natToFloat(local_vects[1]));
+		const flt_flt: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.asFloat(local_vects[1]));
 
 		return mod.addFunction(name, binaryen.createType([this.reftype.Value, this.reftype.Value]), this.reftype.Value, [], this.vm.Value.boolFromI32(mod.if(
-			Vect.isInt(local_vects[0].vect),
+			Vect.isInt(local_vects[0]),
 			mod.if(
-				Vect.isInt(local_vects[1].vect),
+				Vect.isInt(local_vects[1]),
 				int_int,
 				mod.if(
-					Vect.isNat(local_vects[1].vect),
+					Vect.isNat(local_vects[1]),
 					int_nat,
 					mod.if(
-						Vect.isFloat(local_vects[1].vect),
+						Vect.isFloat(local_vects[1]),
 						int_flt,
 						mod.unreachable(),
 					),
 				),
 			),
 			mod.if(
-				Vect.isNat(local_vects[0].vect),
+				Vect.isNat(local_vects[0]),
 				mod.if(
-					Vect.isInt(local_vects[1].vect),
+					Vect.isInt(local_vects[1]),
 					nat_int,
 					mod.if(
-						Vect.isNat(local_vects[1].vect),
+						Vect.isNat(local_vects[1]),
 						nat_nat,
 						mod.if(
-							Vect.isFloat(local_vects[1].vect),
+							Vect.isFloat(local_vects[1]),
 							nat_flt,
 							mod.unreachable(),
 						),
 					),
 				),
 				mod.if(
-					Vect.isFloat(local_vects[0].vect),
+					Vect.isFloat(local_vects[0]),
 					mod.if(
-						Vect.isInt(local_vects[1].vect),
+						Vect.isInt(local_vects[1]),
 						flt_int,
 						mod.if(
-							Vect.isNat(local_vects[1].vect),
+							Vect.isNat(local_vects[1]),
 							flt_nat,
 							mod.if(
-								Vect.isFloat(local_vects[1].vect),
+								Vect.isFloat(local_vects[1]),
 								flt_flt,
 								mod.unreachable(),
 							),
@@ -382,31 +384,31 @@ export class Builder {
 		const rt_map:    binaryen.Type         = this.reftype.Map;
 		const {Vect}      = this.vm;
 		const local_vals  = [0, 1].map((i) => mod.local.get(i, rt_value));
-		const local_vects = local_vals.map((valuestruct) => BinVect.fromValue(this.vm, valuestruct));
+		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Unary Operators */
 		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
 			this.vm.Value.isPrimitive(local_vals[0]),
-			Vect.isConst(local_vects[0].vect, null),
+			Vect.isConst(local_vects[0], null),
 		)));
 		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
 			this.vm.Value.isPrimitive(local_vals[0]),
-			mod.i32.or(Vect.isConst(local_vects[0].vect, null), Vect.isConst(local_vects[0].vect, false)),
+			mod.i32.or(Vect.isConst(local_vects[0], null), Vect.isConst(local_vects[0], false)),
 		)));
 		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
 			this.vm.Value.isPrimitive(local_vals[0]),
 			mod.if(
-				Vect.isSpecial(local_vects[0].vect),
+				Vect.isSpecial(local_vects[0]),
 				mod.call('vnot', [local_vals[0]], rt_value),
 				this.vm.Value.boolFromI32(mod.if(
-					Vect.isInt(local_vects[0].vect),
-					mod.i64.eqz(Vect.asInt(local_vects[0].vect)),
+					Vect.isInt(local_vects[0]),
+					mod.i64.eqz(Vect.asInt(local_vects[0])),
 					mod.if(
-						Vect.isNat(local_vects[0].vect),
-						mod.i64.eqz(Vect.asNat(local_vects[0].vect)),
+						Vect.isNat(local_vects[0]),
+						mod.i64.eqz(Vect.asNat(local_vects[0])),
 						mod.if(
-							Vect.isFloat(local_vects[0].vect),
-							mod.f64.eq(Vect.asFloat(local_vects[0].vect), mod.f64.const(0.0)), // also takes care of -0.0
+							Vect.isFloat(local_vects[0]),
+							mod.f64.eq(Vect.asFloat(local_vects[0]), mod.f64.const(0.0)), // also takes care of -0.0
 							mod.unreachable(),
 						),
 					),
@@ -415,50 +417,50 @@ export class Builder {
 			this.vm.Value.boolFromI32(mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32)),
 		));
 		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0].vect),
+			Vect.isInt(local_vects[0]),
 			// `-n` in two’s complement is `(n xor -1) + 1`
-			new BinVect(mod, mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0].vect), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
+			new BinVect(mod, mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))).vect,
 			mod.if(
-				Vect.isFloat(local_vects[0].vect),
-				new BinVect(mod, mod.f64.neg(Vect.asFloat(local_vects[0].vect))).vect,
+				Vect.isFloat(local_vects[0]),
+				new BinVect(mod, mod.f64.neg(Vect.asFloat(local_vects[0]))).vect,
 				mod.unreachable(), // cannot call NEG on other primitives
 			),
 		)));
 		mod.addFunction('vtoi', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0].vect),
-			local_vects[0].vect,
+			Vect.isInt(local_vects[0]),
+			local_vects[0],
 			mod.if(
-				Vect.isNat(local_vects[0].vect),
-				new BinVect(mod, Vect.natToInt(local_vects[0].vect), {unsigned: false}).vect,
+				Vect.isNat(local_vects[0]),
+				new BinVect(mod, Vect.natToInt(local_vects[0]), {unsigned: false}).vect,
 				mod.if(
-					Vect.isFloat(local_vects[0].vect),
-					new BinVect(mod, Vect.floatToInt(local_vects[0].vect)).vect,
+					Vect.isFloat(local_vects[0]),
+					new BinVect(mod, Vect.floatToInt(local_vects[0])).vect,
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vton', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0].vect),
-			new BinVect(mod, Vect.intToNat(local_vects[0].vect), {unsigned: true}).vect,
+			Vect.isInt(local_vects[0]),
+			new BinVect(mod, Vect.intToNat(local_vects[0]), {unsigned: true}).vect,
 			mod.if(
-				Vect.isNat(local_vects[0].vect),
-				local_vects[0].vect,
+				Vect.isNat(local_vects[0]),
+				local_vects[0],
 				mod.if(
-					Vect.isFloat(local_vects[0].vect),
-					new BinVect(mod, Vect.floatToNat(local_vects[0].vect)).vect,
+					Vect.isFloat(local_vects[0]),
+					new BinVect(mod, Vect.floatToNat(local_vects[0])).vect,
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vtof', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0].vect),
-			new BinVect(mod, Vect.intToFloat(local_vects[0].vect)).vect,
+			Vect.isInt(local_vects[0]),
+			new BinVect(mod, Vect.intToFloat(local_vects[0])).vect,
 			mod.if(
-				Vect.isNat(local_vects[0].vect),
-				new BinVect(mod, Vect.natToFloat(local_vects[0].vect)).vect,
+				Vect.isNat(local_vects[0]),
+				new BinVect(mod, Vect.natToFloat(local_vects[0])).vect,
 				mod.if(
-					Vect.isFloat(local_vects[0].vect),
-					local_vects[0].vect,
+					Vect.isFloat(local_vects[0]),
+					local_vects[0],
 					mod.unreachable(),
 				),
 			),
@@ -490,17 +492,17 @@ export class Builder {
 				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
-				mod.i32.and(Vect.isSpecial(local_vects[0].vect), Vect.isSpecial(local_vects[1].vect)),
-				mod.i32.eq(Vect.type(local_vects[0].vect), Vect.type(local_vects[1].vect)),
+				mod.i32.and(Vect.isSpecial(local_vects[0]), Vect.isSpecial(local_vects[1])),
+				mod.i32.eq(Vect.type(local_vects[0]), Vect.type(local_vects[1])),
 				mod.if(
-					mod.i32.and(Vect.isInt(local_vects[0].vect), Vect.isInt(local_vects[1].vect)),
-					mod.i64.eq(Vect.asInt(local_vects[0].vect), Vect.asInt(local_vects[1].vect)), // `i64.eq` for ints gives the same result as `ID` operator
+					mod.i32.and(Vect.isInt(local_vects[0]), Vect.isInt(local_vects[1])),
+					mod.i64.eq(Vect.asInt(local_vects[0]), Vect.asInt(local_vects[1])), // `i64.eq` for ints gives the same result as `ID` operator
 					mod.if(
-						mod.i32.and(Vect.isNat(local_vects[0].vect), Vect.isNat(local_vects[1].vect)),
-						mod.i64.eq(Vect.asNat(local_vects[0].vect), Vect.asNat(local_vects[1].vect)), // `i64.eq` for nats gives the same result as `ID` operator
+						mod.i32.and(Vect.isNat(local_vects[0]), Vect.isNat(local_vects[1])),
+						mod.i64.eq(Vect.asNat(local_vects[0]), Vect.asNat(local_vects[1])), // `i64.eq` for nats gives the same result as `ID` operator
 						mod.if(
-							mod.i32.and(Vect.isFloat(local_vects[0].vect), Vect.isFloat(local_vects[1].vect)),
-							mod.call('fid', [Vect.asFloat(local_vects[0].vect), Vect.asFloat(local_vects[1].vect)], binaryen.i32),
+							mod.i32.and(Vect.isFloat(local_vects[0]), Vect.isFloat(local_vects[1])),
+							mod.call('fid', [Vect.asFloat(local_vects[0]), Vect.asFloat(local_vects[1])], binaryen.i32),
 							mod.i32.const(0),
 						),
 					),
@@ -539,7 +541,7 @@ export class Builder {
 				this.vm.Value.isPrimitive(local_vals[1]),
 			),
 			mod.if(
-				mod.i32.or(Vect.isSpecial(local_vects[0].vect), Vect.isSpecial(local_vects[1].vect)),
+				mod.i32.or(Vect.isSpecial(local_vects[0]), Vect.isSpecial(local_vects[1])),
 				mod.call('vid',  [local_vals[0], local_vals[1]], rt_value),
 				mod.call('veqn', [local_vals[0], local_vals[1]], rt_value),
 			),
