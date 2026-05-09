@@ -106,9 +106,9 @@ test.suite('Builder', () => {
 					genConst(cg, 42n),
 				]),
 				cg.codegenRecord(new Map([
-					[0x100n, cg.vm.Property.new(0x100n, genConst(cg, true))],
-					[0x101n, cg.vm.Property.new(0x101n, genConst(cg, 42n))],
-					[0x102n, cg.vm.Property.new(0x102n, genConst(cg, 4.2))],
+					[0x100n, cg.newProperty(0x100n, genConst(cg, true))],
+					[0x101n, cg.newProperty(0x101n, genConst(cg, 42n))],
+					[0x102n, cg.newProperty(0x102n, genConst(cg, 4.2))],
 				])),
 				cg.codegenList([
 					genConst(cg, 1.1),
@@ -117,17 +117,49 @@ test.suite('Builder', () => {
 					...repeat(cg.module.ref.null(cg.reftypeNull.Value), 5),
 				]),
 				cg.codegenDict(new Map([
-					[0x106n, cg.vm.Property.new(0x106n, genConst(cg, 1.1))],
-					[0x107n, cg.vm.Property.new(0x107n, genConst(cg, 2.2))],
-					[0x108n, cg.vm.Property.new(0x108n, genConst(cg, 3.3))],
-					[0x109n, cg.vm.Property.new(0x109n, genConst(cg, 4.4))],
-					[0x10an, cg.vm.Property.new(0x10an, genConst(cg, 5.5))],
+					[0x106n, cg.newProperty(0x106n, genConst(cg, 1.1))],
+					[0x107n, cg.newProperty(0x107n, genConst(cg, 2.2))],
+					[0x108n, cg.newProperty(0x108n, genConst(cg, 3.3))],
+					[0x109n, cg.newProperty(0x109n, genConst(cg, 4.4))],
+					[0x10an, cg.newProperty(0x10an, genConst(cg, 5.5))],
 				])),
 			], (arg) => assertEqualBins(cg.newValue(arg), mod.struct.new([
 				mod.i32.const(2),
 				mod.v128.const(new Uint8Array(16)),
 				arg,
 			], cg.heaptype.Value)));
+		});
+	});
+
+
+	test.suite('#newProperty', () => {
+		test.test('returns `unreachable` arg.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			assertEqualBins(
+				cg.newProperty(0x10n, mod.unreachable()),
+				mod.unreachable(),
+			);
+		});
+		test.test('returns `(struct.new $Property)`.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			assertEqualBins([
+				cg.newProperty(0x102n, genConst(cg)),
+				cg.newProperty(0x103n, genConst(cg, 42n)),
+				cg.newProperty(0x104n, cg.newValue(cg.newVect(false))),
+				cg.newProperty(0x105n, cg.newValue(genConst(cg, 4.2))),
+				cg.newProperty(0x106n, cg.newValue(genConst(cg, 4.2))),
+			], ([
+				[0x102n, genConst(cg)],
+				[0x103n, genConst(cg, 42n)],
+				[0x104n, cg.newValue(cg.newVect(false))],
+				[0x105n, cg.newValue(genConst(cg, 4.2))],
+				[0x106n, genConst(cg, 4.2)],
+			] as const).map(([id, code]) => mod.struct.new([
+				bigint_to_i64(mod, id, true),
+				code,
+			], cg.heaptype.Property)));
 		});
 	});
 
@@ -171,14 +203,14 @@ test.suite('Builder', () => {
 			]],
 			['`#codegenRecord` returns (array.new_fixed).', (cg) => [
 				cg.codegenRecord(new Map([
-					[0x100n, cg.vm.Property.new(0x100n, genConst(cg, true))],
-					[0x101n, cg.vm.Property.new(0x101n, genConst(cg, 42n))],
-					[0x102n, cg.vm.Property.new(0x102n, genConst(cg, 4.2))],
+					[0x100n, cg.newProperty(0x100n, genConst(cg, true))],
+					[0x101n, cg.newProperty(0x101n, genConst(cg, 42n))],
+					[0x102n, cg.newProperty(0x102n, genConst(cg, 4.2))],
 				])),
 				cg.module.array.new_fixed(cg.heaptype.Record, [
-					cg.vm.Property.new(0x102n, genConst(cg, 4.2)),
-					cg.vm.Property.new(0x100n, genConst(cg, true)),
-					cg.vm.Property.new(0x101n, genConst(cg, 42n)),
+					cg.newProperty(0x102n, genConst(cg, 4.2)),
+					cg.newProperty(0x100n, genConst(cg, true)),
+					cg.newProperty(0x101n, genConst(cg, 42n)),
 				]),
 			]],
 			['empty `#codegenList`.', (cg) => [
@@ -225,11 +257,11 @@ test.suite('Builder', () => {
 			]],
 			['`#codegenDict` (struct.new) with id, count, and internal array.', (cg) => [
 				cg.codegenDict(new Map([
-					[0x106n, cg.vm.Property.new(0x106n, genConst(cg, 1.1))],
-					[0x107n, cg.vm.Property.new(0x107n, genConst(cg, 2.2))],
-					[0x108n, cg.vm.Property.new(0x108n, genConst(cg, 3.3))],
-					[0x109n, cg.vm.Property.new(0x109n, genConst(cg, 4.4))],
-					[0x10an, cg.vm.Property.new(0x10an, genConst(cg, 5.5))],
+					[0x106n, cg.newProperty(0x106n, genConst(cg, 1.1))],
+					[0x107n, cg.newProperty(0x107n, genConst(cg, 2.2))],
+					[0x108n, cg.newProperty(0x108n, genConst(cg, 3.3))],
+					[0x109n, cg.newProperty(0x109n, genConst(cg, 4.4))],
+					[0x10an, cg.newProperty(0x10an, genConst(cg, 5.5))],
 				])),
 				cg.module.struct.new([
 					obj_ctr_plus_plus(cg.module),
@@ -237,12 +269,12 @@ test.suite('Builder', () => {
 					cg.module.array.new_fixed(
 						cg.heaptype.DictInternal,
 						[
-							cg.vm.Property.new(0x108n, genConst(cg, 3.3)),
-							cg.vm.Property.new(0x109n, genConst(cg, 4.4)),
-							cg.vm.Property.new(0x10an, genConst(cg, 5.5)),
+							cg.newProperty(0x108n, genConst(cg, 3.3)),
+							cg.newProperty(0x109n, genConst(cg, 4.4)),
+							cg.newProperty(0x10an, genConst(cg, 5.5)),
 							...repeat(cg.module.ref.null(cg.reftypeNull.Property), 3),
-							cg.vm.Property.new(0x106n, genConst(cg, 1.1)),
-							cg.vm.Property.new(0x107n, genConst(cg, 2.2)),
+							cg.newProperty(0x106n, genConst(cg, 1.1)),
+							cg.newProperty(0x107n, genConst(cg, 2.2)),
 						],
 					),
 				], cg.heaptype.Dict),
@@ -356,35 +388,35 @@ test.suite('Builder', () => {
 			return assertEqualBins(
 				[new Map([
 					// (a= 42, aa= false, b= 4.2); % (258, 261, 256)
-					[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
-					[261n, cg.vm.Property.new(261n, genConst(cg, false))],
-					[256n, cg.vm.Property.new(256n, genConst(cg, 4.2))],
+					[258n, cg.newProperty(258n, genConst(cg, 42n))],
+					[261n, cg.newProperty(261n, genConst(cg, false))],
+					[256n, cg.newProperty(256n, genConst(cg, 4.2))],
 				]), new Map([
 					// (aa= true, c= null, a= 42); % (261, 257, 258)
-					[261n, cg.vm.Property.new(261n, genConst(cg, true))],
-					[257n, cg.vm.Property.new(257n, genConst(cg))],
-					[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
+					[261n, cg.newProperty(261n, genConst(cg, true))],
+					[257n, cg.newProperty(257n, genConst(cg))],
+					[258n, cg.newProperty(258n, genConst(cg, 42n))],
 				]), new Map([
 					// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
-					[256n, cg.vm.Property.new(256n, genConst(cg, 42n))],
-					[259n, cg.vm.Property.new(259n, genConst(cg, 4.2))],
-					[262n, cg.vm.Property.new(262n, genConst(cg))],
+					[256n, cg.newProperty(256n, genConst(cg, 42n))],
+					[259n, cg.newProperty(259n, genConst(cg, 4.2))],
+					[262n, cg.newProperty(262n, genConst(cg))],
 				])].map((props) => cg.codegenRecord(props)),
 				[[
 					// (258,         261,         256) % (a, aa, b)
-					cg.vm.Property.new(258n, genConst(cg, 42n)),
-					cg.vm.Property.new(261n, genConst(cg, false)),
-					cg.vm.Property.new(256n, genConst(cg, 4.2)),
+					cg.newProperty(258n, genConst(cg, 42n)),
+					cg.newProperty(261n, genConst(cg, false)),
+					cg.newProperty(256n, genConst(cg, 4.2)),
 				], [
 					// (261,         258,         257) % (aa, a, c)
-					cg.vm.Property.new(261n, genConst(cg, true)),
-					cg.vm.Property.new(258n, genConst(cg, 42n)),
-					cg.vm.Property.new(257n, genConst(cg)),
+					cg.newProperty(261n, genConst(cg, true)),
+					cg.newProperty(258n, genConst(cg, 42n)),
+					cg.newProperty(257n, genConst(cg)),
 				], [
 					// (262,         256,         259)         % (bbb, b, bb)
-					cg.vm.Property.new(262n, genConst(cg)),
-					cg.vm.Property.new(256n, genConst(cg, 42n)),
-					cg.vm.Property.new(259n, genConst(cg, 4.2)),
+					cg.newProperty(262n, genConst(cg)),
+					cg.newProperty(256n, genConst(cg, 42n)),
+					cg.newProperty(259n, genConst(cg, 4.2)),
 				]].map((entries) => mod.array.new_fixed(cg.heaptype.Record, entries)),
 			);
 		});
@@ -432,45 +464,45 @@ test.suite('Builder', () => {
 			return assertEqualBins(
 				[new Map([
 					// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
-					[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
-					[261n, cg.vm.Property.new(261n, genConst(cg, false))],
-					[256n, cg.vm.Property.new(256n, genConst(cg, 4.2))],
+					[258n, cg.newProperty(258n, genConst(cg, 42n))],
+					[261n, cg.newProperty(261n, genConst(cg, false))],
+					[256n, cg.newProperty(256n, genConst(cg, 4.2))],
 				]), new Map([
 					// [aa= true, c= null, a= 42]; % (261, 257, 258)
-					[261n, cg.vm.Property.new(261n, genConst(cg, true))],
-					[257n, cg.vm.Property.new(257n, genConst(cg))],
-					[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
+					[261n, cg.newProperty(261n, genConst(cg, true))],
+					[257n, cg.newProperty(257n, genConst(cg))],
+					[258n, cg.newProperty(258n, genConst(cg, 42n))],
 				]), new Map([
 					// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
-					[256n, cg.vm.Property.new(256n, genConst(cg, 42n))],
-					[257n, cg.vm.Property.new(257n, genConst(cg, 4.2))],
-					[264n, cg.vm.Property.new(264n, genConst(cg))],
+					[256n, cg.newProperty(256n, genConst(cg, 42n))],
+					[257n, cg.newProperty(257n, genConst(cg, 4.2))],
+					[264n, cg.newProperty(264n, genConst(cg))],
 				])].map((props) => cg.codegenDict(props)),
 				[[
 					// (256,         ???,         258,         ???,         ???,         261,         ???,         ???) % (b, -, a, -, -, aa, -, -)
-					cg.vm.Property.new(256n, genConst(cg, 4.2)),
+					cg.newProperty(256n, genConst(cg, 4.2)),
 					WASM_NULL,
-					cg.vm.Property.new(258n, genConst(cg, 42n)),
+					cg.newProperty(258n, genConst(cg, 42n)),
 					WASM_NULL,
 					WASM_NULL,
-					cg.vm.Property.new(261n, genConst(cg, false)),
+					cg.newProperty(261n, genConst(cg, false)),
 					WASM_NULL,
 					WASM_NULL,
 				], [
 					// (???,         257,         258,         ???,         ???,         261,         ???,         ???) % (-, c, a, -, -, aa, -, -)
 					WASM_NULL,
-					cg.vm.Property.new(257n, genConst(cg)),
-					cg.vm.Property.new(258n, genConst(cg, 42n)),
+					cg.newProperty(257n, genConst(cg)),
+					cg.newProperty(258n, genConst(cg, 42n)),
 					WASM_NULL,
 					WASM_NULL,
-					cg.vm.Property.new(261n, genConst(cg, true)),
+					cg.newProperty(261n, genConst(cg, true)),
 					WASM_NULL,
 					WASM_NULL,
 				], [
 					// (256,         257,         264,         ???,         ???,         ???,         ???,         ???) % (b, c, aaa, -, -, -, -, -)
-					cg.vm.Property.new(256n, genConst(cg, 42n)),
-					cg.vm.Property.new(257n, genConst(cg, 4.2)),
-					cg.vm.Property.new(264n, genConst(cg)),
+					cg.newProperty(256n, genConst(cg, 42n)),
+					cg.newProperty(257n, genConst(cg, 4.2)),
+					cg.newProperty(264n, genConst(cg)),
 					WASM_NULL,
 					WASM_NULL,
 					WASM_NULL,

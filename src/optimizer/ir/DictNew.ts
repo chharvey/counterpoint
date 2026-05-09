@@ -39,7 +39,7 @@ export class DictNew extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.newValue(cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
 			id,
-			cg.vm.Property.new(id, value.codegen(cg)),
+			cg.newProperty(id, value.codegen(cg)),
 		]))));
 	}
 }

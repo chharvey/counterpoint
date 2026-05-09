@@ -242,11 +242,11 @@ test.suite('Opcode', () => {
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 						cg.newValue(cg.codegenRecord(new Map([
-							[257n, cg.vm.Property.new(257n, mod.local.get(0, cg.reftype.Value))],
-							[258n, cg.vm.Property.new(258n, genConst(cg, 4.2))],
-							[259n, cg.vm.Property.new(259n, mod.local.get(1, cg.reftype.Value))],
-							[260n, cg.vm.Property.new(260n, mod.local.get(2, cg.reftype.Value))], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-							[261n, cg.vm.Property.new(261n, genConst(cg, Symbol(0x105)))],
+							[257n, cg.newProperty(257n, mod.local.get(0, cg.reftype.Value))],
+							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
+							[259n, cg.newProperty(259n, mod.local.get(1, cg.reftype.Value))],
+							[260n, cg.newProperty(260n, mod.local.get(2, cg.reftype.Value))], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+							[261n, cg.newProperty(261n, genConst(cg, Symbol(0x105)))],
 						]))),
 					);
 				});
@@ -271,19 +271,19 @@ test.suite('Opcode', () => {
 						stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 						[new Map([
 							// (a= 42, aa= false, b= 4.2);  % (258, 261, 256)
-							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
-							[261n, cg.vm.Property.new(261n, genConst(cg, false))],
-							[256n, cg.vm.Property.new(256n, genConst(cg, 4.2))],
+							[258n, cg.newProperty(258n, genConst(cg, 42n))],
+							[261n, cg.newProperty(261n, genConst(cg, false))],
+							[256n, cg.newProperty(256n, genConst(cg, 4.2))],
 						]), new Map([
 							// (aa= true, c= null, a= 42);  % (261, 257, 258)
-							[261n, cg.vm.Property.new(261n, genConst(cg, true))],
-							[257n, cg.vm.Property.new(257n, genConst(cg))],
-							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
+							[261n, cg.newProperty(261n, genConst(cg, true))],
+							[257n, cg.newProperty(257n, genConst(cg))],
+							[258n, cg.newProperty(258n, genConst(cg, 42n))],
 						]), new Map([
 							// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
-							[256n, cg.vm.Property.new(256n, genConst(cg, 42n))],
-							[259n, cg.vm.Property.new(259n, genConst(cg, 4.2))],
-							[262n, cg.vm.Property.new(262n, genConst(cg))],
+							[256n, cg.newProperty(256n, genConst(cg, 42n))],
+							[259n, cg.newProperty(259n, genConst(cg, 4.2))],
+							[262n, cg.newProperty(262n, genConst(cg))],
 						])].map((props) => cg.newValue(cg.codegenRecord(props))),
 					);
 				});
@@ -307,11 +307,11 @@ test.suite('Opcode', () => {
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
 						cg.newValue(cg.codegenDict(new Map([
-							[257n, cg.vm.Property.new(257n, mod.local.get(0, cg.reftype.Value))],
-							[258n, cg.vm.Property.new(258n, genConst(cg, 4.2))],
-							[259n, cg.vm.Property.new(259n, mod.local.get(1, cg.reftype.Value))],
-							[260n, cg.vm.Property.new(260n, mod.local.get(2, cg.reftype.Value))],
-							[261n, cg.vm.Property.new(261n, genConst(cg, Symbol(0x105)))],
+							[257n, cg.newProperty(257n, mod.local.get(0, cg.reftype.Value))],
+							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
+							[259n, cg.newProperty(259n, mod.local.get(1, cg.reftype.Value))],
+							[260n, cg.newProperty(260n, mod.local.get(2, cg.reftype.Value))],
+							[261n, cg.newProperty(261n, genConst(cg, Symbol(0x105)))],
 						]))),
 					);
 				});
@@ -336,19 +336,19 @@ test.suite('Opcode', () => {
 						stmts.slice(9).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 						[new Map([
 							// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
-							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
-							[261n, cg.vm.Property.new(261n, genConst(cg, false))],
-							[256n, cg.vm.Property.new(256n, genConst(cg, 4.2))],
+							[258n, cg.newProperty(258n, genConst(cg, 42n))],
+							[261n, cg.newProperty(261n, genConst(cg, false))],
+							[256n, cg.newProperty(256n, genConst(cg, 4.2))],
 						]), new Map([
 							// [aa= true, c= null, a= 42]; % (261, 257, 258)
-							[261n, cg.vm.Property.new(261n, genConst(cg, true))],
-							[257n, cg.vm.Property.new(257n, genConst(cg))],
-							[258n, cg.vm.Property.new(258n, genConst(cg, 42n))],
+							[261n, cg.newProperty(261n, genConst(cg, true))],
+							[257n, cg.newProperty(257n, genConst(cg))],
+							[258n, cg.newProperty(258n, genConst(cg, 42n))],
 						]), new Map([
 							// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
-							[256n, cg.vm.Property.new(256n, genConst(cg, 42n))],
-							[257n, cg.vm.Property.new(257n, genConst(cg, 4.2))],
-							[264n, cg.vm.Property.new(264n, genConst(cg))],
+							[256n, cg.newProperty(256n, genConst(cg, 42n))],
+							[257n, cg.newProperty(257n, genConst(cg, 4.2))],
+							[264n, cg.newProperty(264n, genConst(cg))],
 						])].map((props) => cg.newValue(cg.codegenDict(props))),
 					);
 				});

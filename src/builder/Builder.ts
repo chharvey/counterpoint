@@ -273,6 +273,39 @@ export class Builder {
 	}
 
 	/**
+	 * Create a `$Property` struct containing the given key and `$Value`.
+	 * Note that a `$Property` may only contain a “default” `$Value` (a `(struct.new_default)`)
+	 * if its key is less than `\x100` — in which case it is a tombstone property.
+	 * @param arg one of the following:
+	 *            - a Binaryen `(ref $Value)`, or `(ref null $Value)`
+	 *            - an `unreachable`, which is directly returned
+	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
+	 */
+	public newProperty(key: bigint, arg: binaryen.ExpressionRef /* unreachable | (ref $Value) | (ref null $Value) */): binaryen.ExpressionRef /* (ref $Property) */ {
+		switch (binaryen.getExpressionType(arg)) {
+			case binaryen.unreachable: {
+				return arg;
+			}
+			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
+			case this.vm.reftypeNull.Value | 4:
+			case this.vm.reftype.Value     | 4:
+			case this.vm.reftypeNull.Value:
+			case this.vm.reftype.Value:
+			default: {
+				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
+				But in case a `(ref null $Case)`, etc. is given, an `(unreachable)` should be returned, since those aren’t valid in a `$Property` struct.
+				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
+				return this.vm.mod.struct.new([
+					bigint_to_i64(this.vm.mod, key, true),
+					arg,
+				], this.vm.heaptype.Property);
+			}
+		}
+	}
+
+	/**
 	 * Return a new `$String` from UTF-8-encoded code units.
 	 * @param units items in the array; must be of type `i32`
 	 * @return      `(array.new_fixed $String <...items>)`
