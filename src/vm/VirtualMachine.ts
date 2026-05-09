@@ -7,9 +7,9 @@ import type {
 	Field,
 	TypeBuilder,
 } from '../builder/-types.d.ts';
-import {Value} from './struct/Value.ts';
-import {Property} from './struct/Property.ts';
-import {Case} from './struct/Case.ts';
+import {Value} from './classes/Value.ts';
+import {Property} from './classes/Property.ts';
+import {Case} from './classes/Case.ts';
 
 
 
