@@ -152,8 +152,8 @@ export class Binop extends Value {
 		// Operator Addition
 		if (this.operator === Operator.ADD) {
 			const local0: Local = cg.newLocal(arg0);
-			const teeer         = cg.vm.Vect.new(local0.tee());
-			const getter        = cg.vm.Vect.new(local0.get());
+			const teeer         = cg.newVect(local0.tee());
+			const getter        = cg.newVect(local0.get());
 			// if arg0 is mathematically 0, return arg1
 			return mod.if(
 				mod.i32.or(
@@ -173,8 +173,8 @@ export class Binop extends Value {
 		// Operator Multiplication
 		if (this.operator === Operator.MUL) {
 			const local0: Local = cg.newLocal(arg0);
-			const teeer         = cg.vm.Vect.new(local0.tee());
-			const getter        = cg.vm.Vect.new(local0.get());
+			const teeer         = cg.newVect(local0.tee());
+			const getter        = cg.newVect(local0.get());
 			// if arg0 is mathematically 0, return it
 			return mod.if(
 				mod.i32.or(
@@ -205,7 +205,7 @@ export class Binop extends Value {
 			return cg.module.block(null, [
 				cg.module.drop(arg0),
 				cg.module.drop(arg1),
-				cg.vm.Vect.new(false),
+				cg.newVect(false),
 			], binaryen.v128);
 		}
 

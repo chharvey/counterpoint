@@ -96,51 +96,6 @@ export class Vect {
 	public constructor(private readonly vm: VirtualMachine) {}
 
 
-	/**
-	 * Return a `v128` representing the argument.
-	 * @param arg one of the following:
-	 *             - the native value `null`, `false`, or `true` (corresponding to its representation)
-	 *             - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
-	 * @param opts an object:
-	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
-	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
-	 */
-	public new(
-		arg:  null | boolean | binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */ = null,
-		opts: {unsigned?: boolean, scale?: bigint} = {},
-	): binaryen.ExpressionRef /* v128 */ {
-		const {mod} = this.vm;
-		switch (arg) {
-			case null:  { return mod.global.get('Vect.NULL',  binaryen.v128); }
-			case false: { return mod.global.get('Vect.FALSE', binaryen.v128); }
-			case true:  { return mod.global.get('Vect.TRUE',  binaryen.v128); }
-		}
-		switch (binaryen.getExpressionType(arg)) {
-			case binaryen.v128: {
-				return arg;
-			}
-			case binaryen.unreachable: {
-				return arg;
-			}
-			case binaryen.i64: {
-				return opts.unsigned
-					? mod.call('Vect.new-nat', [arg], binaryen.v128)
-					: mod.call('Vect.new-int', [arg], binaryen.v128);
-			}
-			case binaryen.f64: {
-				return mod.call('Vect.new-float', [arg], binaryen.v128);
-			}
-			default: {
-				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
-					'`unreachable`',
-					'`i64`',
-					'`f64`',
-				].join('\n\t') }.`);
-			}
-		}
-	}
-
-
 	/** The Header Lane’s value, indicating the type of data stored. */
 	public type(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Vect.type', [param0], binaryen.i32);

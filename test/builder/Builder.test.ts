@@ -19,6 +19,41 @@ test.suite('Builder', () => {
 	});
 
 
+	test.suite('#newVect', () => {
+		test.test('returns `unreachable` arg.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			assertEqualBins(
+				cg.newVect(mod.unreachable()),
+				mod.unreachable(),
+			);
+		});
+		test.test('returns v128.', () => {
+			const cg = new Builder();
+			const {mod} = cg.vm;
+			assertEqualBins([
+				cg.newVect(null),
+				cg.newVect(false),
+				cg.newVect(true),
+				cg.newVect(bigint_to_i64(mod, 42n)),
+				cg.newVect(bigint_to_i64(mod, 42n, true), {unsigned: true}),
+				cg.newVect(mod.f64.const(4.2)),
+				mod.global.get('Vect.TRUE', binaryen.v128),
+				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
+			], ([
+				mod.global.get('Vect.NULL', binaryen.v128),
+				mod.global.get('Vect.FALSE', binaryen.v128),
+				mod.global.get('Vect.TRUE', binaryen.v128),
+				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
+				mod.call('Vect.new-nat', [bigint_to_i64(mod, 42n, true)], binaryen.v128),
+				mod.call('Vect.new-float', [mod.f64.const(4.2)], binaryen.v128),
+				mod.global.get('Vect.TRUE', binaryen.v128),
+				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
+			]));
+		});
+	});
+
+
 	test.suite('#codegen*', () => {
 		function obj_ctr_plus_plus(mod: Builder['module']): binaryen.ExpressionRef {
 			return mod.block(null, [

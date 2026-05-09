@@ -720,7 +720,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(cg.vm.Vect.new(
+						cg.vm.Value.new(cg.newVect(
 							cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
 						)),
@@ -741,7 +741,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(cg.vm.Vect.new(
+						cg.vm.Value.new(cg.newVect(
 							cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
 						)),
@@ -762,7 +762,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(cg.vm.Vect.new(
+						cg.vm.Value.new(cg.newVect(
 							cg.module.i64.extend_u(cg.module.call('Map.count', [set.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
 						)),
@@ -783,7 +783,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.new(cg.vm.Vect.new(
+						cg.vm.Value.new(cg.newVect(
 							cg.module.i64.extend_u(cg.module.call('Map.count', [map.codegen(cg)], binaryen.i32)),
 							{unsigned: true},
 						)),

@@ -74,7 +74,7 @@ export class Integer extends ValueNumber<Integer> {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.Value.new(cg.vm.Vect.new(bigint_to_i64(cg.module, this.data)));
+		return cg.vm.Value.new(cg.newVect(bigint_to_i64(cg.module, this.data)));
 	}
 
 	public override toInt(): Integer {

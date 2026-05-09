@@ -26,9 +26,10 @@ test.suite('Value', () => {
 
 	test.suite('#new', () => {
 		test.test('returns (nullish) `$Value` arg.', () => {
+			const cg = new Builder(vm);
 			xjs.Array.forEachAggregated([
 				mod.ref.null(vm.reftypeNull.Value), // BUG: `ref.null` should only take heap types
-				vm.Value.new(vm.Vect.new(bigint_to_i64(mod, 42n))),
+				vm.Value.new(cg.newVect(bigint_to_i64(mod, 42n))),
 			], (arg) => assertEqualBins(
 				vm.Value.new(arg),
 				arg,
@@ -47,12 +48,13 @@ test.suite('Value', () => {
 			);
 		});
 		test.test('primitive values.', () => {
+			const cg = new Builder(vm);
 			xjs.Array.forEachAggregated([
-				vm.Vect.new(null),
-				vm.Vect.new(false),
-				vm.Vect.new(bigint_to_i64(mod, 0x100n)),
-				vm.Vect.new(bigint_to_i64(mod, 42n)),
-				vm.Vect.new(mod.f64.const(4.2)),
+				cg.newVect(null),
+				cg.newVect(false),
+				cg.newVect(bigint_to_i64(mod, 0x100n)),
+				cg.newVect(bigint_to_i64(mod, 42n)),
+				cg.newVect(mod.f64.const(4.2)),
 			], (arg) => assertEqualBins(vm.Value.new(arg), mod.struct.new([
 				mod.i32.const(1),
 				arg,

@@ -89,9 +89,9 @@ export class Builder {
 		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.vm.Value.new(this.vm.Vect.new())],
-			[BinConst.FALSE, this.vm.Value.new(this.vm.Vect.new(false))],
-			[BinConst.TRUE,  this.vm.Value.new(this.vm.Vect.new(true))],
+			[BinConst.NULL,  this.vm.Value.new(this.newVect())],
+			[BinConst.FALSE, this.vm.Value.new(this.newVect(false))],
+			[BinConst.TRUE,  this.vm.Value.new(this.newVect(true))],
 		]);
 	}
 
@@ -157,6 +157,52 @@ export class Builder {
 	 */
 	public getAllLocals(): Local[] {
 		return [...this.#locals];
+	}
+
+	/**
+	 * Return a `v128` representing the argument.
+	 * @param arg one of the following:
+	 *            - the native value `null`, `false`, or `true` (corresponding to its representation)
+	 *            - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
+	 *            - an `unreachable`, which is directly returned
+	 * @param opts an object:
+	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
+	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
+	 * @returns a `v128` value encoding the argument (or `unreachable` if given)
+	 */
+	public newVect(
+		arg:  null | boolean | binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */ = null,
+		opts: {unsigned?: boolean, scale?: bigint} = {},
+	): binaryen.ExpressionRef /* v128 */ {
+		const {mod} = this.vm;
+		switch (arg) {
+			case null:  { return mod.global.get('Vect.NULL',  binaryen.v128); }
+			case false: { return mod.global.get('Vect.FALSE', binaryen.v128); }
+			case true:  { return mod.global.get('Vect.TRUE',  binaryen.v128); }
+		}
+		switch (binaryen.getExpressionType(arg)) {
+			case binaryen.v128: {
+				return arg;
+			}
+			case binaryen.unreachable: {
+				return arg;
+			}
+			case binaryen.i64: {
+				return opts.unsigned
+					? mod.call('Vect.new-nat', [arg], binaryen.v128)
+					: mod.call('Vect.new-int', [arg], binaryen.v128);
+			}
+			case binaryen.f64: {
+				return mod.call('Vect.new-float', [arg], binaryen.v128);
+			}
+			default: {
+				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
+					'`unreachable`',
+					'`i64`',
+					'`f64`',
+				].join('\n\t') }.`);
+			}
+		}
 	}
 
 	/**
@@ -286,7 +332,7 @@ export class Builder {
 			binaryen.createType([this.reftype.Value, this.reftype.Value]),
 			this.reftype.Value,
 			[],
-			this.vm.Value.new(this.vm.Vect.new(method(
+			this.vm.Value.new(this.newVect(method(
 				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(0, this.reftype.Value)).primitive),
 				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(1, this.reftype.Value)).primitive),
 			))),
@@ -418,10 +464,10 @@ export class Builder {
 		mod.addFunction('vneg', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			// `-n` in two’s complement is `(n xor -1) + 1`
-			Vect.new(mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))),
+			this.newVect(mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))),
 			mod.if(
 				Vect.isFloat(local_vects[0]),
-				Vect.new(mod.f64.neg(Vect.asFloat(local_vects[0]))),
+				this.newVect(mod.f64.neg(Vect.asFloat(local_vects[0]))),
 				mod.unreachable(), // cannot call NEG on other primitives
 			),
 		)));
@@ -430,33 +476,33 @@ export class Builder {
 			local_vects[0],
 			mod.if(
 				Vect.isNat(local_vects[0]),
-				Vect.new(Vect.natToInt(local_vects[0]), {unsigned: false}),
+				this.newVect(Vect.natToInt(local_vects[0]), {unsigned: false}),
 				mod.if(
 					Vect.isFloat(local_vects[0]),
-					Vect.new(Vect.floatToInt(local_vects[0])),
+					this.newVect(Vect.floatToInt(local_vects[0])),
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vton', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
-			Vect.new(Vect.intToNat(local_vects[0]), {unsigned: true}),
+			this.newVect(Vect.intToNat(local_vects[0]), {unsigned: true}),
 			mod.if(
 				Vect.isNat(local_vects[0]),
 				local_vects[0],
 				mod.if(
 					Vect.isFloat(local_vects[0]),
-					Vect.new(Vect.floatToNat(local_vects[0])),
+					this.newVect(Vect.floatToNat(local_vects[0])),
 					mod.unreachable(),
 				),
 			),
 		)));
 		mod.addFunction('vtof', rt_value, rt_value, [], this.vm.Value.new(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
-			Vect.new(Vect.intToFloat(local_vects[0])),
+			this.newVect(Vect.intToFloat(local_vects[0])),
 			mod.if(
 				Vect.isNat(local_vects[0]),
-				Vect.new(Vect.natToFloat(local_vects[0])),
+				this.newVect(Vect.natToFloat(local_vects[0])),
 				mod.if(
 					Vect.isFloat(local_vects[0]),
 					local_vects[0],
