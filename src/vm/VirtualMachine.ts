@@ -7,6 +7,7 @@ import type {
 	Field,
 	TypeBuilder,
 } from '../builder/-types.d.ts';
+import {Vect} from './classes/Vect.ts';
 import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
@@ -66,6 +67,7 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),       'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Vect.wat'),          'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),         'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),      'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),          'utf8'),
@@ -161,6 +163,7 @@ export class VirtualMachine {
 		},
 	} as const;
 
+	public Vect     = new Vect(this);
 	public Value    = new Value(this);
 	public Property = new Property(this);
 	public Case     = new Case(this);
