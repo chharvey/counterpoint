@@ -55,21 +55,17 @@
 	(local $primitive v128)
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 
-	(struct.new $Value
-		(i32.const 1)
-		(if (result v128)
-			(call $Vect.is-int (local.get $primitive))
-			;; `-n` in two’s complement is `(n xor -1) + 1`
-			(then (call $Vect.new-int (i64.add
-				(i64.xor (call $Vect.as-int (local.get $primitive)) (i64.const -1))
-				(i64.const 1)
-			)))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (call $Vect.new-float (f64.neg (call $Vect.as-float (local.get $primitive)))))
-				(else (unreachable))
-			))
-		)
-		(ref.null eq)
-	)
+	(call $Value.new-primitive (if (result v128)
+		(call $Vect.is-int (local.get $primitive))
+		;; `-n` in two’s complement is `(n xor -1) + 1`
+		(then (call $Vect.new-int (i64.add
+			(i64.xor (call $Vect.as-int (local.get $primitive)) (i64.const -1))
+			(i64.const 1)
+		)))
+		(else (if (result v128)
+			(call $Vect.is-float (local.get $primitive))
+			(then (call $Vect.new-float (f64.neg (call $Vect.as-float (local.get $primitive)))))
+			(else (unreachable))
+		))
+	))
 )

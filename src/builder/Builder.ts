@@ -234,12 +234,8 @@ export class Builder {
 			case binaryen.unreachable: {
 				return arg;
 			}
-			case binaryen.v128: { // a primitive
-				return mod.struct.new([
-					mod.i32.const(1),
-					arg,
-					mod.ref.null(binaryen.eqref),
-				], heaptype.Value);
+			case binaryen.v128: {
+				return mod.call('Value.new-primitive', [arg], reftype.Value);
 			}
 			case binaryen.eqref:
 			case reftype.String:
@@ -249,12 +245,8 @@ export class Builder {
 			case reftype.List:
 			case reftype.Dict:
 			case reftype.Map:
-			default: { // a composite
-				return mod.struct.new([
-					mod.i32.const(2),
-					mod.v128.const(new Uint8Array(16)),
-					arg,
-				], heaptype.Value);
+			default: {
+				return mod.call('Value.new-composite', [arg], reftype.Value);
 			}
 			/*
 			default: {
