@@ -86,18 +86,16 @@ export class Unop extends Value {
 			case OpCode.EMP: { return cg.vm.op.isEmpty(code); }
 			case OpCode.NEG: { return cg.vm.op.negate(code); }
 
-			case OpCode.TOBOOL: { return cg.vm.op.not(cg.vm.op.not(code)); }
+			case OpCode.TOBOOL:  { return cg.vm.op.not(cg.vm.op.not(code)); }
+			case OpCode.TOINT:   { return cg.vm.op.toInt(code); }
+			case OpCode.TONAT:   { return cg.vm.op.toNat(code); }
+			case OpCode.TOFLOAT: { return cg.vm.op.toFloat(code); }
 
 			case OpCode.LIST_COUNT: { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)), {unsigned: true})); }
 			case OpCode.DICT_COUNT: { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)), {unsigned: true})); }
 			case OpCode.SET_COUNT:  { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})); }
 			case OpCode.MAP_COUNT:  { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})); }
 		}
-		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.TOINT,   'vtoi'],
-			[OpCode.TONAT,   'vton'],
-			[OpCode.TOFLOAT, 'vtof'],
-		]).get(this.operator)!, [code], cg.reftype.Value);
 	}
 
 	/* eslint-disable */

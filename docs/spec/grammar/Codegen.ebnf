@@ -265,10 +265,10 @@ Codegen((NOT `v`)) := (call $cpl:not      `Codegen(v)`);
 Codegen((EMP `v`)) := (call $cpl:is-empty `Codegen(v)`);
 Codegen((NEG `v`)) := (call $cpl:negate   `Codegen(v)`);
 
-Codegen((TOBOOL `v`))  := (call $cpl:not (call $cpl:not `Codegen(v)`))
-Codegen((TOINT `v`))   := (call $vtoi `Codegen(v)`);
-Codegen((TONAT `v`))   := (call $vton `Codegen(v)`);
-Codegen((TOFLOAT `v`)) := (call $vtof `Codegen(v)`);
+Codegen((TOBOOL  `v`)) := (call $cpl:not (call $cpl:not `Codegen(v)`));
+Codegen((TOINT   `v`)) := (call $cpl:to-int   `Codegen(v)`);
+Codegen((TONAT   `v`)) := (call $cpl:to-nat   `Codegen(v)`);
+Codegen((TOFLOAT `v`)) := (call $cpl:to-float `Codegen(v)`);
 
 Codegen((LIST.COUNT `list`)) := (struct.new $Value
 	(i32.const 1)

@@ -521,47 +521,6 @@ export class Builder {
 		const local_vals  = [0, 1].map((i) => mod.local.get(i, rt_value));
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
-		/* Unary Operators */
-		mod.addFunction('vtoi', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			local_vects[0],
-			mod.if(
-				Vect.isNat(local_vects[0]),
-				this.newVect(Vect.natToInt(local_vects[0]), {unsigned: false}),
-				mod.if(
-					Vect.isFloat(local_vects[0]),
-					this.newVect(Vect.floatToInt(local_vects[0])),
-					mod.unreachable(),
-				),
-			),
-		)));
-		mod.addFunction('vton', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			this.newVect(Vect.intToNat(local_vects[0]), {unsigned: true}),
-			mod.if(
-				Vect.isNat(local_vects[0]),
-				local_vects[0],
-				mod.if(
-					Vect.isFloat(local_vects[0]),
-					this.newVect(Vect.floatToNat(local_vects[0])),
-					mod.unreachable(),
-				),
-			),
-		)));
-		mod.addFunction('vtof', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			this.newVect(Vect.intToFloat(local_vects[0])),
-			mod.if(
-				Vect.isNat(local_vects[0]),
-				this.newVect(Vect.natToFloat(local_vects[0])),
-				mod.if(
-					Vect.isFloat(local_vects[0]),
-					local_vects[0],
-					mod.unreachable(),
-				),
-			),
-		)));
-
 		/* Binary Operators */
 		this.#setupBinopArithmetic('viadd',   mod.i64.add  .bind(null), 'asInt');
 		this.#setupBinopArithmetic('vfadd',   mod.f64.add  .bind(null), 'asFloat');

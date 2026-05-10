@@ -398,5 +398,20 @@ export class VirtualMachine {
 		negate: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:negate', [param0], this.reftype.Value)
 		),
+
+		/** Cast the argument to type `int`. */
+		toInt: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:to-int', [param0], this.reftype.Value)
+		),
+
+		/** Cast the argument to type `nat`. */
+		toNat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:to-nat', [param0], this.reftype.Value)
+		),
+
+		/** Cast the argument to type `float`. */
+		toFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:to-float', [param0], this.reftype.Value)
+		),
 	} as const;
 }

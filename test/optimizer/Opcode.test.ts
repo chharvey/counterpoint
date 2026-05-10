@@ -686,12 +686,6 @@ test.suite('Opcode', () => {
 						float +42;
 						float 42;
 					}`, {codegen: false});
-					const mod = cg.module;
-					const CALL = {
-						vtoi: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], cg.reftype.Value),
-						vton: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], cg.reftype.Value),
-						vtof: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], cg.reftype.Value),
-					} as const;
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 						[
@@ -710,12 +704,12 @@ test.suite('Opcode', () => {
 							cg.vm.op.negate(genConst(cg, 42n)),
 							cg.vm.op.negate(genConst(cg, 4.2)),
 
-							CALL.vtoi(genConst(cg, 42n, 'nat')),
-							CALL.vtoi(genConst(cg, 4.2)),
-							CALL.vton(genConst(cg, 42n)),
-							CALL.vton(genConst(cg, 4.2)),
-							CALL.vtof(genConst(cg, 42n, 'nat')),
-							CALL.vtof(genConst(cg, 42n)),
+							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toInt(genConst(cg, 4.2)),
+							cg.vm.op.toNat(genConst(cg, 42n)),
+							cg.vm.op.toNat(genConst(cg, 4.2)),
+							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toFloat(genConst(cg, 42n)),
 						],
 					);
 				});

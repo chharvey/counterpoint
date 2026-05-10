@@ -69,3 +69,66 @@
 		))
 	))
 )
+
+
+
+(func $cpl:to-int (param $value (ref $Value)) (result (ref $Value))
+	(local $primitive v128)
+	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+
+	(call $Value.new-primitive (if (result v128)
+		(call $Vect.is-int (local.get $primitive))
+		(then (local.get $primitive))
+		(else (if (result v128)
+			(call $Vect.is-nat (local.get $primitive))
+			(then (call $Vect.new-int (call $Vect.nat-to-int (local.get $primitive))))
+			(else (if (result v128)
+				(call $Vect.is-float (local.get $primitive))
+				(then (call $Vect.new-int (call $Vect.float-to-int (local.get $primitive))))
+				(else (unreachable))
+			))
+		))
+	))
+)
+
+
+
+(func $cpl:to-nat (param $value (ref $Value)) (result (ref $Value))
+	(local $primitive v128)
+	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+
+	(call $Value.new-primitive (if (result v128)
+		(call $Vect.is-int (local.get $primitive))
+		(then (call $Vect.new-nat (call $Vect.int-to-nat (local.get $primitive))))
+		(else (if (result v128)
+			(call $Vect.is-nat (local.get $primitive))
+			(then (local.get $primitive))
+			(else (if (result v128)
+				(call $Vect.is-float (local.get $primitive))
+				(then (call $Vect.new-nat (call $Vect.float-to-nat (local.get $primitive))))
+				(else (unreachable))
+			))
+		))
+	))
+)
+
+
+
+(func $cpl:to-float (param $value (ref $Value)) (result (ref $Value))
+	(local $primitive v128)
+	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+
+	(call $Value.new-primitive (if (result v128)
+		(call $Vect.is-int (local.get $primitive))
+		(then (call $Vect.new-float (call $Vect.int-to-float (local.get $primitive))))
+		(else (if (result v128)
+			(call $Vect.is-nat (local.get $primitive))
+			(then (call $Vect.new-float (call $Vect.nat-to-float (local.get $primitive))))
+			(else (if (result v128)
+				(call $Vect.is-float (local.get $primitive))
+				(then (local.get $primitive))
+				(else (unreachable))
+			))
+		))
+	))
+)
