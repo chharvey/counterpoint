@@ -174,7 +174,7 @@ export class Builder {
 		arg:  null | boolean | binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */ = null,
 		opts: {unsigned?: boolean, scale?: bigint} = {},
 	): binaryen.ExpressionRef /* v128 */ {
-		const {mod} = this.vm;
+		const {mod, Vect} = this.vm;
 		switch (arg) {
 			case null:  { return mod.global.get('Vect.NULL',  binaryen.v128); }
 			case false: { return mod.global.get('Vect.FALSE', binaryen.v128); }
@@ -188,12 +188,10 @@ export class Builder {
 				return arg;
 			}
 			case binaryen.i64: {
-				return opts.unsigned
-					? mod.call('Vect.new-nat', [arg], binaryen.v128)
-					: mod.call('Vect.new-int', [arg], binaryen.v128);
+				return opts.unsigned ? Vect.newNat(arg) : Vect.newInt(arg);
 			}
 			case binaryen.f64: {
-				return mod.call('Vect.new-float', [arg], binaryen.v128);
+				return Vect.newFloat(arg);
 			}
 			default: {
 				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
@@ -214,7 +212,7 @@ export class Builder {
 	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
 	 */
 	public newValue(arg: binaryen.ExpressionRef /* unreachable | v128 | eqref | (ref $Value) | (ref null $Value) */ | null): binaryen.ExpressionRef /* (ref $Value) */ {
-		const {mod, heaptype, reftype, reftypeNull} = this.vm;
+		const {mod, heaptype, reftype, reftypeNull, Value} = this.vm;
 		if (arg === null) {
 			return mod.struct.new_default(heaptype.Value);
 		}
@@ -235,7 +233,7 @@ export class Builder {
 				return arg;
 			}
 			case binaryen.v128: {
-				return mod.call('Value.new-primitive', [arg], reftype.Value);
+				return Value.newPrimitive(arg);
 			}
 			case binaryen.eqref:
 			case reftype.String:
@@ -246,7 +244,7 @@ export class Builder {
 			case reftype.Dict:
 			case reftype.Map:
 			default: {
-				return mod.call('Value.new-composite', [arg], reftype.Value);
+				return Value.newComposite(arg);
 			}
 			/*
 			default: {

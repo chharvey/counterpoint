@@ -41,6 +41,16 @@ export class Value {
 	}
 
 
+	/** Creates a new Value struct storing the given v128 in its primitive slot. */
+	public newPrimitive(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.new-primitive', [param0], this.vm.reftype.Value);
+	}
+
+	/** Creates a new Value struct storing the given reference in its composite slot. */
+	public newComposite(param0: binaryen.ExpressionRef /* (ref eq) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.new-composite', [param0], this.vm.reftype.Value);
+	}
+
 	/** Whether the value is primitive (tag == 1). */
 	public isPrimitive(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Value.is-primitive', [param0], binaryen.i32);

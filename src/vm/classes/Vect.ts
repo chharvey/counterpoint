@@ -96,6 +96,21 @@ export class Vect {
 	public constructor(private readonly vm: VirtualMachine) {}
 
 
+	/** Returns a v128 encoding the given i64 as signed. */
+	public newInt(param0: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
+		return this.vm.mod.call('Vect.new-int', [param0], binaryen.v128);
+	}
+
+	/** Returns a v128 encoding the given i64 as unsigned. */
+	public newNat(param0: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
+		return this.vm.mod.call('Vect.new-nat', [param0], binaryen.v128);
+	}
+
+	/** Returns a v128 encoding the given f64. */
+	public newFloat(param0: binaryen.ExpressionRef /* f64 */): binaryen.ExpressionRef /* v128 */ {
+		return this.vm.mod.call('Vect.new-float', [param0], binaryen.v128);
+	}
+
 	/** The Header Lane’s value, indicating the type of data stored. */
 	public type(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Vect.type', [param0], binaryen.i32);
