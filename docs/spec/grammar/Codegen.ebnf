@@ -263,7 +263,7 @@ Codegen((ISNULL `v`)) := (call $cpl:is-null `Codegen(v)`);
 
 Codegen((NOT `v`)) := (call $cpl:not      `Codegen(v)`);
 Codegen((EMP `v`)) := (call $cpl:is-empty `Codegen(v)`);
-Codegen((NEG `v`)) := (call $vneg `Codegen(v)`);
+Codegen((NEG `v`)) := (call $cpl:negate   `Codegen(v)`);
 
 Codegen((TOBOOL `v`))  := (call $cpl:not (call $cpl:not `Codegen(v)`))
 Codegen((TOINT `v`))   := (call $vtoi `Codegen(v)`);

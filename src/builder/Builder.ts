@@ -532,16 +532,6 @@ export class Builder {
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Unary Operators */
-		mod.addFunction('vneg', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			// `-n` in two’s complement is `(n xor -1) + 1`
-			this.newVect(mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))),
-			mod.if(
-				Vect.isFloat(local_vects[0]),
-				this.newVect(mod.f64.neg(Vect.asFloat(local_vects[0]))),
-				mod.unreachable(), // cannot call NEG on other primitives
-			),
-		)));
 		mod.addFunction('vtoi', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			local_vects[0],
