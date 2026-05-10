@@ -384,5 +384,10 @@ export class VirtualMachine {
 		isNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:is-null', [param0], this.reftype.Value)
 		),
+
+		/** Is the value falsy? */
+		not: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:not', [param0], this.reftype.Value)
+		),
 	} as const;
 }

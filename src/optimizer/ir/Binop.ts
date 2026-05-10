@@ -106,11 +106,11 @@ export class Binop extends Value {
 		switch (this.operator) {
 			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }
 
-			case OpCode.NLT: { return cg.module.call('vnot', [cg.module.call('vlt', codes, cg.reftype.Value)], cg.reftype.Value); }
-			case OpCode.NGT: { return cg.module.call('vnot', [cg.module.call('vgt', codes, cg.reftype.Value)], cg.reftype.Value); }
+			case OpCode.NLT: { return cg.vm.op.not(cg.module.call('vlt', codes, cg.reftype.Value)); }
+			case OpCode.NGT: { return cg.vm.op.not(cg.module.call('vgt', codes, cg.reftype.Value)); }
 
-			case OpCode.NID: { return cg.module.call('vnot', [cg.module.call('vid', codes, cg.reftype.Value)], cg.reftype.Value); }
-			case OpCode.NEQ: { return cg.module.call('vnot', [cg.module.call('veq', codes, cg.reftype.Value)], cg.reftype.Value); }
+			case OpCode.NID: { return cg.vm.op.not(cg.module.call('vid', codes, cg.reftype.Value)); }
+			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
 			[OpCode.INT_ADD, 'viadd'],

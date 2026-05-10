@@ -243,7 +243,7 @@ Lower(SemanticOperation[operator=NEQ] op) := (NEQ [`op.0` `op.1`]);
 Lower(SemanticOperation[operator=AND] op) := [
 	(DECL ‹type› $left `Lower(op.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (GET $left) "then" "else")
+	(GOTO.IF (TOBOOL (GET $left)) "then" "else")
 	"then":
 	(SET $result `Lower(op.1)`)
 	(GOTO "endif")
@@ -257,7 +257,7 @@ Lower(SemanticOperation[operator=AND] op) := [
 Lower(SemanticOperation[operator=OR] op) := [
 	(DECL ‹type› $left `Lower(op.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (GET $left) "then" "else")
+	(GOTO.IF (TOBOOL (GET $left)) "then" "else")
 	"then":
 	(SET $result (GET $left))
 	(GOTO "endif")

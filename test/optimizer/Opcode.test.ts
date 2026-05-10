@@ -654,7 +654,15 @@ test.suite('Opcode', () => {
 						cg.vm.op.isNull(genConst(cg)),
 					);
 				});
-				test.test('Primitive unary operators return custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
+				test.test('TOBOOL operator returns custom WASM function `$cpl:not` applied twice.', () => {
+					// there exists no syntax for “to bool” operator, so constructing it manually
+					const cg = new Builder();
+					assertEqualBins(
+						new IR.Unop(IR.OpCode.TOBOOL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
+					);
+				});
+				test.test('Primitive unary operators return custom WASM functions.', () => {
 					const {stmts, opt, cg} = setupScript(`{
 						!null;
 						!false;
@@ -680,7 +688,6 @@ test.suite('Opcode', () => {
 					}`, {codegen: false});
 					const mod = cg.module;
 					const CALL = {
-						vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], cg.reftype.Value),
 						vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], cg.reftype.Value),
 						vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], cg.reftype.Value),
 						vtoi: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], cg.reftype.Value),
@@ -690,11 +697,11 @@ test.suite('Opcode', () => {
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 						[
-							CALL.vnot(genConst(cg)),
-							CALL.vnot(genConst(cg, false)),
-							CALL.vnot(genConst(cg, Symbol(0x100))),
-							CALL.vnot(genConst(cg, 42n)),
-							CALL.vnot(genConst(cg, 4.2)),
+							cg.vm.op.not(genConst(cg)),
+							cg.vm.op.not(genConst(cg, false)),
+							cg.vm.op.not(genConst(cg, Symbol(0x100))),
+							cg.vm.op.not(genConst(cg, 42n)),
+							cg.vm.op.not(genConst(cg, 4.2)),
 
 							CALL.vemp(genConst(cg)),
 							CALL.vemp(genConst(cg, false)),
