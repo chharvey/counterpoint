@@ -64,6 +64,7 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/fid.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/cemp.wat'),              'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/mod.wat'),               'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),       'utf8'),
@@ -377,4 +378,11 @@ export class VirtualMachine {
 			Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
 		};
 	}
+
+	public readonly op = {
+		/** Is the value equal to the counterpoint value `null`? */
+		isNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:is-null', [param0], this.reftype.Value)
+		),
+	} as const;
 }

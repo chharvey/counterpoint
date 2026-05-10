@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import binaryen from 'binaryen';
 import {
 	type AST,
+	VALUE,
 	TYPE,
 	Optimizer,
 	IR,
@@ -645,6 +646,14 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
+				test.test('ISNULL operator returns custom WASM function `$cpl:is-null`.', () => {
+					// there exists no syntax for “is null” operator, so constructing it manually
+					const cg = new Builder();
+					assertEqualBins(
+						new IR.Unop(IR.OpCode.ISNULL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						cg.vm.op.isNull(genConst(cg)),
+					);
+				});
 				test.test('Primitive unary operators return custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
 					const {stmts, opt, cg} = setupScript(`{
 						!null;

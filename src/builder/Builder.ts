@@ -532,10 +532,6 @@ export class Builder {
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Unary Operators */
-		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
-			this.vm.Value.isPrimitive(local_vals[0]),
-			Vect.isConst(local_vects[0], null),
-		)));
 		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
 			this.vm.Value.isPrimitive(local_vals[0]),
 			mod.i32.or(Vect.isConst(local_vects[0], null), Vect.isConst(local_vects[0], false)),

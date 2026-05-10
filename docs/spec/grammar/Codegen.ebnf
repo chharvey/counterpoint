@@ -259,7 +259,7 @@ Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
 
 // Codegen((CALL `values`));
 
-Codegen((ISNULL `v`)) := (call $isnull `Codegen(v)`);
+Codegen((ISNULL `v`)) := (call $cpl:is-null `Codegen(v)`);
 
 Codegen((NOT `v`)) := (call $vnot `Codegen(v)`);
 Codegen((EMP `v`)) := (call $vemp `Codegen(v)`);
