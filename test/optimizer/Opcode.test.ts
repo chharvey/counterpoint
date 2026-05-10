@@ -688,7 +688,6 @@ test.suite('Opcode', () => {
 					}`, {codegen: false});
 					const mod = cg.module;
 					const CALL = {
-						vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], cg.reftype.Value),
 						vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], cg.reftype.Value),
 						vtoi: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], cg.reftype.Value),
 						vton: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], cg.reftype.Value),
@@ -703,11 +702,11 @@ test.suite('Opcode', () => {
 							cg.vm.op.not(genConst(cg, 42n)),
 							cg.vm.op.not(genConst(cg, 4.2)),
 
-							CALL.vemp(genConst(cg)),
-							CALL.vemp(genConst(cg, false)),
-							CALL.vemp(genConst(cg, Symbol(0x100))),
-							CALL.vemp(genConst(cg, 42n)),
-							CALL.vemp(genConst(cg, 4.2)),
+							cg.vm.op.isEmpty(genConst(cg)),
+							cg.vm.op.isEmpty(genConst(cg, false)),
+							cg.vm.op.isEmpty(genConst(cg, Symbol(0x100))),
+							cg.vm.op.isEmpty(genConst(cg, 42n)),
+							cg.vm.op.isEmpty(genConst(cg, 4.2)),
 
 							CALL.vneg(genConst(cg, 42n)),
 							CALL.vneg(genConst(cg, 4.2)),

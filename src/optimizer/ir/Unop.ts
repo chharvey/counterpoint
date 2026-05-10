@@ -83,6 +83,7 @@ export class Unop extends Value {
 			case OpCode.ISNULL: { return cg.vm.op.isNull(code); }
 
 			case OpCode.NOT: { return cg.vm.op.not(code); }
+			case OpCode.EMP: { return cg.vm.op.isEmpty(code); }
 
 			case OpCode.TOBOOL: { return cg.vm.op.not(cg.vm.op.not(code)); }
 
@@ -92,7 +93,6 @@ export class Unop extends Value {
 			case OpCode.MAP_COUNT:  { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.EMP,     'vemp'],
 			[OpCode.NEG,     'vneg'],
 			[OpCode.TOINT,   'vtoi'],
 			[OpCode.TONAT,   'vton'],

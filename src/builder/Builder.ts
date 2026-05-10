@@ -532,27 +532,6 @@ export class Builder {
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Unary Operators */
-		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
-			this.vm.Value.isPrimitive(local_vals[0]),
-			mod.if(
-				Vect.isSpecial(local_vects[0]),
-				this.vm.op.not(local_vals[0]),
-				this.vm.Value.boolFromI32(mod.if(
-					Vect.isInt(local_vects[0]),
-					mod.i64.eqz(Vect.asInt(local_vects[0])),
-					mod.if(
-						Vect.isNat(local_vects[0]),
-						mod.i64.eqz(Vect.asNat(local_vects[0])),
-						mod.if(
-							Vect.isFloat(local_vects[0]),
-							mod.f64.eq(Vect.asFloat(local_vects[0]), mod.f64.const(0.0)), // also takes care of -0.0
-							mod.unreachable(),
-						),
-					),
-				)),
-			),
-			this.vm.Value.boolFromI32(mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32)),
-		));
 		mod.addFunction('vneg', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
 			Vect.isInt(local_vects[0]),
 			// `-n` in two’s complement is `(n xor -1) + 1`

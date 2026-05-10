@@ -389,5 +389,10 @@ export class VirtualMachine {
 		not: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:not', [param0], this.reftype.Value)
 		),
+
+		/** Is the value empty? */
+		isEmpty: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:is-empty', [param0], this.reftype.Value)
+		),
 	} as const;
 }
