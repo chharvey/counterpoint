@@ -174,7 +174,7 @@ export class Builder {
 		arg:  null | boolean | binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */ = null,
 		opts: {unsigned?: boolean, scale?: bigint} = {},
 	): binaryen.ExpressionRef /* v128 */ {
-		const {mod} = this.vm;
+		const {mod, Vect} = this.vm;
 		switch (arg) {
 			case null:  { return mod.global.get('Vect.NULL',  binaryen.v128); }
 			case false: { return mod.global.get('Vect.FALSE', binaryen.v128); }
@@ -188,12 +188,10 @@ export class Builder {
 				return arg;
 			}
 			case binaryen.i64: {
-				return opts.unsigned
-					? mod.call('Vect.new-nat', [arg], binaryen.v128)
-					: mod.call('Vect.new-int', [arg], binaryen.v128);
+				return opts.unsigned ? Vect.newNat(arg) : Vect.newInt(arg);
 			}
 			case binaryen.f64: {
-				return mod.call('Vect.new-float', [arg], binaryen.v128);
+				return Vect.newFloat(arg);
 			}
 			default: {
 				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
@@ -214,7 +212,7 @@ export class Builder {
 	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
 	 */
 	public newValue(arg: binaryen.ExpressionRef /* unreachable | v128 | eqref | (ref $Value) | (ref null $Value) */ | null): binaryen.ExpressionRef /* (ref $Value) */ {
-		const {mod, heaptype, reftype, reftypeNull} = this.vm;
+		const {mod, heaptype, reftype, reftypeNull, Value} = this.vm;
 		if (arg === null) {
 			return mod.struct.new_default(heaptype.Value);
 		}
@@ -234,12 +232,8 @@ export class Builder {
 			case binaryen.unreachable: {
 				return arg;
 			}
-			case binaryen.v128: { // a primitive
-				return mod.struct.new([
-					mod.i32.const(1),
-					arg,
-					mod.ref.null(binaryen.eqref),
-				], heaptype.Value);
+			case binaryen.v128: {
+				return Value.newPrimitive(arg);
 			}
 			case binaryen.eqref:
 			case reftype.String:
@@ -249,12 +243,8 @@ export class Builder {
 			case reftype.List:
 			case reftype.Dict:
 			case reftype.Map:
-			default: { // a composite
-				return mod.struct.new([
-					mod.i32.const(2),
-					mod.v128.const(new Uint8Array(16)),
-					arg,
-				], heaptype.Value);
+			default: {
+				return Value.newComposite(arg);
 			}
 			/*
 			default: {
@@ -530,86 +520,6 @@ export class Builder {
 		const {Vect}      = this.vm;
 		const local_vals  = [0, 1].map((i) => mod.local.get(i, rt_value));
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
-
-		/* Unary Operators */
-		mod.addFunction('isnull', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
-			this.vm.Value.isPrimitive(local_vals[0]),
-			Vect.isConst(local_vects[0], null),
-		)));
-		mod.addFunction('vnot', rt_value, rt_value, [], this.vm.Value.boolFromI32(mod.i32.and(
-			this.vm.Value.isPrimitive(local_vals[0]),
-			mod.i32.or(Vect.isConst(local_vects[0], null), Vect.isConst(local_vects[0], false)),
-		)));
-		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
-			this.vm.Value.isPrimitive(local_vals[0]),
-			mod.if(
-				Vect.isSpecial(local_vects[0]),
-				mod.call('vnot', [local_vals[0]], rt_value),
-				this.vm.Value.boolFromI32(mod.if(
-					Vect.isInt(local_vects[0]),
-					mod.i64.eqz(Vect.asInt(local_vects[0])),
-					mod.if(
-						Vect.isNat(local_vects[0]),
-						mod.i64.eqz(Vect.asNat(local_vects[0])),
-						mod.if(
-							Vect.isFloat(local_vects[0]),
-							mod.f64.eq(Vect.asFloat(local_vects[0]), mod.f64.const(0.0)), // also takes care of -0.0
-							mod.unreachable(),
-						),
-					),
-				)),
-			),
-			this.vm.Value.boolFromI32(mod.call('cemp', [mod.ref.as_non_null(as_composite(local_vals[0]))], binaryen.i32)),
-		));
-		mod.addFunction('vneg', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			// `-n` in two’s complement is `(n xor -1) + 1`
-			this.newVect(mod.i64.add(mod.i64.xor(Vect.asInt(local_vects[0]), bigint_to_i64(mod, -1n)), bigint_to_i64(mod, 1n))),
-			mod.if(
-				Vect.isFloat(local_vects[0]),
-				this.newVect(mod.f64.neg(Vect.asFloat(local_vects[0]))),
-				mod.unreachable(), // cannot call NEG on other primitives
-			),
-		)));
-		mod.addFunction('vtoi', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			local_vects[0],
-			mod.if(
-				Vect.isNat(local_vects[0]),
-				this.newVect(Vect.natToInt(local_vects[0]), {unsigned: false}),
-				mod.if(
-					Vect.isFloat(local_vects[0]),
-					this.newVect(Vect.floatToInt(local_vects[0])),
-					mod.unreachable(),
-				),
-			),
-		)));
-		mod.addFunction('vton', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			this.newVect(Vect.intToNat(local_vects[0]), {unsigned: true}),
-			mod.if(
-				Vect.isNat(local_vects[0]),
-				local_vects[0],
-				mod.if(
-					Vect.isFloat(local_vects[0]),
-					this.newVect(Vect.floatToNat(local_vects[0])),
-					mod.unreachable(),
-				),
-			),
-		)));
-		mod.addFunction('vtof', rt_value, rt_value, [], this.newValue(mod.if( // assume operand is primitive
-			Vect.isInt(local_vects[0]),
-			this.newVect(Vect.intToFloat(local_vects[0])),
-			mod.if(
-				Vect.isNat(local_vects[0]),
-				this.newVect(Vect.natToFloat(local_vects[0])),
-				mod.if(
-					Vect.isFloat(local_vects[0]),
-					local_vects[0],
-					mod.unreachable(),
-				),
-			),
-		)));
 
 		/* Binary Operators */
 		this.#setupBinopArithmetic('viadd',   mod.i64.add  .bind(null), 'asInt');

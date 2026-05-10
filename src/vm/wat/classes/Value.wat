@@ -1,3 +1,23 @@
+(func $Value.new-primitive (param $primitive v128) (result (ref $Value))
+	(struct.new $Value
+		(i32.const 1)
+		(local.get $primitive)
+		(ref.null eq)
+	)
+)
+
+
+
+(func $Value.new-composite (param $composite (ref eq)) (result (ref $Value))
+	(struct.new $Value
+		(i32.const 2)
+		(global.get $Vect.VOID)
+		(local.get $composite)
+	)
+)
+
+
+
 (func $Value.is-primitive (param $value (ref $Value)) (result i32)
 	(i32.eq (struct.get $Value $tag (local.get $value)) (i32.const 1))
 )

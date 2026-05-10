@@ -90,11 +90,10 @@ test.suite('Builder', () => {
 				cg.newVect(bigint_to_i64(mod, 0x100n)),
 				cg.newVect(bigint_to_i64(mod, 42n)),
 				cg.newVect(mod.f64.const(4.2)),
-			], (arg) => assertEqualBins(cg.newValue(arg), mod.struct.new([
-				mod.i32.const(1),
-				arg,
-				mod.ref.null(binaryen.eqref),
-			], cg.vm.heaptype.Value)));
+			], (arg) => assertEqualBins(
+				cg.newValue(arg),
+				mod.call('Value.new-primitive', [arg], cg.vm.reftype.Value),
+			));
 		});
 		test.test('composite values.', () => {
 			xjs.Array.forEachAggregated([
@@ -120,11 +119,10 @@ test.suite('Builder', () => {
 					[0x109n, cg.newProperty(0x109n, genConst(cg, 4.4))],
 					[0x10an, cg.newProperty(0x10an, genConst(cg, 5.5))],
 				])),
-			], (arg) => assertEqualBins(cg.newValue(arg), mod.struct.new([
-				mod.i32.const(2),
-				mod.v128.const(new Uint8Array(16)),
-				arg,
-			], cg.heaptype.Value)));
+			], (arg) => assertEqualBins(
+				cg.newValue(arg),
+				mod.call('Value.new-composite', [arg], cg.vm.reftype.Value),
+			));
 		});
 	});
 

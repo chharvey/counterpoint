@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import binaryen from 'binaryen';
 import {
 	type AST,
+	VALUE,
 	TYPE,
 	Optimizer,
 	IR,
@@ -645,7 +646,23 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
-				test.test('Primitive unary operators return custom WASM functions `vnot`, `vemp`, `vneg`.', () => {
+				test.test('ISNULL operator returns custom WASM function `$cpl:is-null`.', () => {
+					// there exists no syntax for “is null” operator, so constructing it manually
+					const cg = new Builder();
+					assertEqualBins(
+						new IR.Unop(IR.OpCode.ISNULL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						cg.vm.op.isNull(genConst(cg)),
+					);
+				});
+				test.test('TOBOOL operator returns custom WASM function `$cpl:not` applied twice.', () => {
+					// there exists no syntax for “to bool” operator, so constructing it manually
+					const cg = new Builder();
+					assertEqualBins(
+						new IR.Unop(IR.OpCode.TOBOOL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
+					);
+				});
+				test.test('Primitive unary operators return custom WASM functions.', () => {
 					const {stmts, opt, cg} = setupScript(`{
 						!null;
 						!false;
@@ -669,39 +686,30 @@ test.suite('Opcode', () => {
 						float +42;
 						float 42;
 					}`, {codegen: false});
-					const mod = cg.module;
-					const CALL = {
-						vnot: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vnot', [arg], cg.reftype.Value),
-						vemp: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vemp', [arg], cg.reftype.Value),
-						vneg: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vneg', [arg], cg.reftype.Value),
-						vtoi: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtoi', [arg], cg.reftype.Value),
-						vton: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vton', [arg], cg.reftype.Value),
-						vtof: (arg: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vtof', [arg], cg.reftype.Value),
-					} as const;
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 						[
-							CALL.vnot(genConst(cg)),
-							CALL.vnot(genConst(cg, false)),
-							CALL.vnot(genConst(cg, Symbol(0x100))),
-							CALL.vnot(genConst(cg, 42n)),
-							CALL.vnot(genConst(cg, 4.2)),
+							cg.vm.op.not(genConst(cg)),
+							cg.vm.op.not(genConst(cg, false)),
+							cg.vm.op.not(genConst(cg, Symbol(0x100))),
+							cg.vm.op.not(genConst(cg, 42n)),
+							cg.vm.op.not(genConst(cg, 4.2)),
 
-							CALL.vemp(genConst(cg)),
-							CALL.vemp(genConst(cg, false)),
-							CALL.vemp(genConst(cg, Symbol(0x100))),
-							CALL.vemp(genConst(cg, 42n)),
-							CALL.vemp(genConst(cg, 4.2)),
+							cg.vm.op.isEmpty(genConst(cg)),
+							cg.vm.op.isEmpty(genConst(cg, false)),
+							cg.vm.op.isEmpty(genConst(cg, Symbol(0x100))),
+							cg.vm.op.isEmpty(genConst(cg, 42n)),
+							cg.vm.op.isEmpty(genConst(cg, 4.2)),
 
-							CALL.vneg(genConst(cg, 42n)),
-							CALL.vneg(genConst(cg, 4.2)),
+							cg.vm.op.negate(genConst(cg, 42n)),
+							cg.vm.op.negate(genConst(cg, 4.2)),
 
-							CALL.vtoi(genConst(cg, 42n, 'nat')),
-							CALL.vtoi(genConst(cg, 4.2)),
-							CALL.vton(genConst(cg, 42n)),
-							CALL.vton(genConst(cg, 4.2)),
-							CALL.vtof(genConst(cg, 42n, 'nat')),
-							CALL.vtof(genConst(cg, 42n)),
+							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toInt(genConst(cg, 4.2)),
+							cg.vm.op.toNat(genConst(cg, 42n)),
+							cg.vm.op.toNat(genConst(cg, 4.2)),
+							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toFloat(genConst(cg, 42n)),
 						],
 					);
 				});
