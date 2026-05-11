@@ -60,7 +60,6 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/types.wat'),                 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/stubs.wat'),                 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/iexp.wat'),              'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/isub_u.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/fid.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/mod.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
@@ -427,6 +426,21 @@ export class VirtualMachine {
 		/** Adds two `float`s. */
 		floatAdd: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-add', [param0, param1], this.reftype.Value)
+		),
+
+		/** Subtracts two `int`s. */
+		intSub: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:int-sub', [param0, param1], this.reftype.Value)
+		),
+
+		/** Subtracts two `nat`s. */
+		natSub: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:nat-sub', [param0, param1], this.reftype.Value)
+		),
+
+		/** Subtracts two `float`s. */
+		floatSub: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:float-sub', [param0, param1], this.reftype.Value)
 		),
 	} as const;
 }

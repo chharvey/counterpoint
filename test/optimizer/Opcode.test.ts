@@ -829,9 +829,6 @@ test.suite('Opcode', () => {
 				}`, {codegen: false});
 				const mod = cg.module;
 				const CALL = {
-					visub_s: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_s', [arg0, arg1], cg.reftype.Value),
-					visub_u: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_u', [arg0, arg1], cg.reftype.Value),
-					vfsub:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfsub',   [arg0, arg1], cg.reftype.Value),
 					vimul:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vimul',   [arg0, arg1], cg.reftype.Value),
 					vfmul:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfmul',   [arg0, arg1], cg.reftype.Value),
 					vidiv_s: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_s', [arg0, arg1], cg.reftype.Value),
@@ -849,19 +846,19 @@ test.suite('Opcode', () => {
 					stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
 						cg.vm.op.intAdd(genConst(cg, 2n), genConst(cg, 3n)),
-						CALL.visub_s(genConst(cg, 2n), genConst(cg, 3n)),
+						cg.vm.op.intSub(genConst(cg, 2n), genConst(cg, 3n)),
 						CALL.vimul  (genConst(cg, 2n), genConst(cg, 3n)),
 						CALL.vidiv_s(genConst(cg, 2n), genConst(cg, 3n)),
 						CALL.viexp  (genConst(cg, 2n), genConst(cg, 3n)),
 
 						cg.vm.op.natAdd(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-						CALL.visub_u(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+						cg.vm.op.natSub(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
 						CALL.vimul  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
 						CALL.vidiv_u(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
 						CALL.viexp  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
 
 						cg.vm.op.floatAdd(genConst(cg, 2.0), genConst(cg, 3.0)),
-						CALL.vfsub(genConst(cg, 2.0), genConst(cg, 3.0)),
+						cg.vm.op.floatSub(genConst(cg, 2.0), genConst(cg, 3.0)),
 						CALL.vfmul(genConst(cg, 2.0), genConst(cg, 3.0)),
 						CALL.vfdiv(genConst(cg, 2.0), genConst(cg, 3.0)),
 						mod.unreachable(),

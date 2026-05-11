@@ -105,10 +105,13 @@ export class Binop extends Value {
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
 			case OpCode.INT_ADD: { return cg.vm.op.intAdd(...codes); }
+			case OpCode.INT_SUB: { return cg.vm.op.intSub(...codes); }
 
 			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(...codes); }
+			case OpCode.NAT_SUB: { return cg.vm.op.natSub(...codes); }
 
 			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(...codes); }
+			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(...codes); }
 			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }
 
 			case OpCode.NLT: { return cg.vm.op.not(cg.module.call('vlt', codes, cg.reftype.Value)); }
@@ -118,17 +121,14 @@ export class Binop extends Value {
 			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.INT_SUB, 'visub_s'],
 			[OpCode.INT_MUL, 'vimul'],
 			[OpCode.INT_DIV, 'vidiv_s'],
 			[OpCode.INT_EXP, 'viexp'],
 
-			[OpCode.NAT_SUB, 'visub_u'],
 			[OpCode.NAT_MUL, 'vimul'],
 			[OpCode.NAT_DIV, 'vidiv_u'],
 			[OpCode.NAT_EXP, 'viexp'],
 
-			[OpCode.FLOAT_SUB, 'vfsub'],
 			[OpCode.FLOAT_MUL, 'vfmul'],
 			[OpCode.FLOAT_DIV, 'vfdiv'],
 
