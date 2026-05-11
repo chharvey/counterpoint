@@ -411,25 +411,6 @@ export class Builder {
 	}
 
 	/** assumes both operands are primitive */
-	#setupBinopArithmetic(
-		name:    string,
-		method:  (num0: binaryen.ExpressionRef, num1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		typekey: 'asInt' | 'asNat' | 'asFloat',
-	): binaryen.FunctionRef {
-		const mod: BinaryenModuleUpdates = this.module;
-		return mod.addFunction(
-			name,
-			binaryen.createType([this.reftype.Value, this.reftype.Value]),
-			this.reftype.Value,
-			[],
-			this.newValue(this.newVect(method(
-				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(0, this.reftype.Value)).primitive),
-				this.vm.Vect[typekey](this.vm.Value.field(mod.local.get(1, this.reftype.Value)).primitive),
-			))),
-		);
-	}
-
-	/** assumes both operands are primitive */
 	#setupBinopComparative(
 		name:        string,
 		method_ints: (int0:   binaryen.ExpressionRef, int1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
