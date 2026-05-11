@@ -427,17 +427,17 @@ export class VirtualMachine {
 			this.mod.call('cpl:float-add', [param0, param1], this.reftype.Value)
 		),
 
-		/** Subtracts two `int`s. */
+		/** Subtracts the second `int` argument from the first (`param0 - param1`). */
 		intSub: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:int-sub', [param0, param1], this.reftype.Value)
 		),
 
-		/** Subtracts two `nat`s. */
+		/** Subtracts the second `nat` argument from the first (`param0 - param1`). */
 		natSub: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:nat-sub', [param0, param1], this.reftype.Value)
 		),
 
-		/** Subtracts two `float`s. */
+		/** Subtracts the second `float` argument from the first (`param0 - param1`). */
 		floatSub: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-sub', [param0, param1], this.reftype.Value)
 		),
@@ -457,32 +457,32 @@ export class VirtualMachine {
 			this.mod.call('cpl:float-mul', [param0, param1], this.reftype.Value)
 		),
 
-		/** Divides two `int`s. */
+		/** Divides the first `int` argument by the second (`param0 / param1`). */
 		intDiv: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:int-div', [param0, param1], this.reftype.Value)
 		),
 
-		/** Divides two `nat`s. */
+		/** Divides the first `nat` argument by the second (`param0 / param1`). */
 		natDiv: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:nat-div', [param0, param1], this.reftype.Value)
 		),
 
-		/** Divides two `float`s. */
+		/** Divides the first `float` argument by the second (`param0 / param1`). */
 		floatDiv: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-div', [param0, param1], this.reftype.Value)
 		),
 
-		/** Exponentiates two `int`s. */
+		/** Exponentiates the first `int` argument by the second (`param0 ^ param1`). */
 		intExp: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:int-exp', [param0, param1], this.reftype.Value)
 		),
 
-		/** Exponentiates two `nat`s. */
+		/** Exponentiates the first `nat` argument by the second (`param0 ^ param1`). */
 		natExp: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:nat-exp', [param0, param1], this.reftype.Value)
 		),
 
-		/** Exponentiates two `float`s. */
+		/** Exponentiates the first `float` argument by the second (`param0 ^ param1`). */
 		floatExp: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-exp', [param0, param1], this.reftype.Value)
 		),

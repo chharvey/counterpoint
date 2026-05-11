@@ -129,38 +129,38 @@
 
 
 
-(func $cpl:int-add (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:int-add (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.add
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-add (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:nat-add (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-nat (i64.add
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-add (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:float-add (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.add
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
 	)))
 )
 
 
 
-(func $cpl:int-sub (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:int-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.sub
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-sub (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:nat-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $nat0 i64)
 	(local $nat1 i64)
-	(local.set $nat0 (call $Vect.as-nat (struct.get $Value $primitive (local.get $arg0))))
-	(local.set $nat1 (call $Vect.as-nat (struct.get $Value $primitive (local.get $arg1))))
+	(local.set $nat0 (call $Vect.as-nat (struct.get $Value $primitive (local.get 0))))
+	(local.set $nat1 (call $Vect.as-nat (struct.get $Value $primitive (local.get 1))))
 
 	(call $Value.new-primitive (call $Vect.new-nat (if (result i64)
 		(i64.lt_u (local.get $nat0) (local.get $nat1))
@@ -168,73 +168,73 @@
 		(else (i64.sub (local.get $nat0) (local.get $nat1)))
 	)))
 )
-(func $cpl:float-sub (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:float-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.sub
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
 	)))
 )
 
 
 
-(func $cpl:int-mul (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:int-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.mul
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-mul (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:nat-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-nat (i64.mul
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-mul (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:float-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.mul
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
 	)))
 )
 
 
 
-(func $cpl:int-div (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:int-div (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.div_s
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-div (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:nat-div (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-nat (i64.div_u
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-div (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:float-div (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.div
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
 	)))
 )
 
 
 
-(func $cpl:int-exp (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:int-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (call $i64.exp
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-exp (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:nat-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-nat (call $i64.exp
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-exp (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+(func $cpl:float-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (unreachable
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg0)))
-		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg1)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
 	)))
 )
 ;; # Exponent Operator for Integers
@@ -260,32 +260,32 @@
 ;; 	)
 ;; }
 ;; ```
-(func $i64.exp (param $p0 i64) (param $p1 i64) (result i64)
-	(if (result i64) (i64.lt_s (local.get $p1) (i64.const 0)) ;; if $p1 < 0
+(func $i64.exp (param $base i64) (param $exponent i64) (result i64)
+	(if (result i64) (i64.lt_s (local.get $exponent) (i64.const 0)) ;; if $exponent < 0
 		(then (i64.const 0)) ;; return 0
-	(else (if (result i64) (i64.eqz (local.get $p1)) ;; else if $p1 === 0
+	(else (if (result i64) (i64.eqz (local.get $exponent)) ;; else if $exponent === 0
 		(then (i64.const 1)) ;; return 1
-	(else (if (result i64) (i64.eq (local.get $p1) (i64.const 1)) ;; else if $p1 === 1
-		(then (local.get $p0)) ;; return $p0
-	(else (if (result i64) (i64.eq (local.get $p1) (i64.const 2)) ;; else if $p1 === 2
-		(then (i64.mul (local.get $p0) (local.get $p0))) ;; return $p0 * $p0
-	(else (if (result i64) (i64.eqz (local.get $p0)) ;; else if $p0 === 0
+	(else (if (result i64) (i64.eq (local.get $exponent) (i64.const 1)) ;; else if $exponent === 1
+		(then (local.get $base)) ;; return $base
+	(else (if (result i64) (i64.eq (local.get $exponent) (i64.const 2)) ;; else if $exponent === 2
+		(then (i64.mul (local.get $base) (local.get $base))) ;; return $base * $base
+	(else (if (result i64) (i64.eqz (local.get $base)) ;; else if $base === 0
 		(then (i64.const 0)) ;; return 0
-	(else (if (result i64) (i64.eq (local.get $p0) (i64.const 1)) ;; else if $p0 === 1
+	(else (if (result i64) (i64.eq (local.get $base) (i64.const 1)) ;; else if $base === 1
 		(then (i64.const 1)) ;; return 1
-	(else (if (result i64) (i32.and (i64.eq (local.get $p0) (i64.const 2)) (i64.lt_s (local.get $p1) (i64.const 64))) ;; else if $p0 === 2 && $p1 < 64
-		(then (i64.shl (i64.const 1) (local.get $p1))) ;; return 1 << $p1
-	(else (if (result i64) (i64.gt_u (i64.ctz (local.get $p1)) (i64.const 0)) ;; else if $p1 % 2 === 0
-		(then (call $i64.exp ;; return $exp($p0 * $p0, $p1 / 2)
-			(i64.mul (local.get $p0) (local.get $p0))
-			(i64.shr_s (local.get $p1) (i64.const 1))
+	(else (if (result i64) (i32.and (i64.eq (local.get $base) (i64.const 2)) (i64.lt_s (local.get $exponent) (i64.const 64))) ;; else if $base === 2 && $exponent < 64
+		(then (i64.shl (i64.const 1) (local.get $exponent))) ;; return 1 << $exponent
+	(else (if (result i64) (i64.gt_u (i64.ctz (local.get $exponent)) (i64.const 0)) ;; else if $exponent % 2 === 0
+		(then (call $i64.exp ;; return $exp($base * $base, $exponent / 2)
+			(i64.mul (local.get $base) (local.get $base))
+			(i64.shr_s (local.get $exponent) (i64.const 1))
 		))
-	(else ;; else (assert $p1 % 2 === 1)
-		(i64.mul ;; return $p0 * $exp($p0 * $p0, ($p1 - 1) / 2)
-			(local.get $p0)
+	(else ;; else (assert $exponent % 2 === 1)
+		(i64.mul ;; return $base * $exp($base * $base, ($exponent - 1) / 2)
+			(local.get $base)
 			(call $i64.exp
-				(i64.mul (local.get $p0) (local.get $p0))
-				(i64.shr_s (i64.sub (local.get $p1) (i64.const 1)) (i64.const 1))
+				(i64.mul (local.get $base) (local.get $base))
+				(i64.shr_s (i64.sub (local.get $exponent) (i64.const 1)) (i64.const 1))
 			)
 		)
 	)) )) )) )) )) )) )) ))
