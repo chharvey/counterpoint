@@ -522,8 +522,6 @@ export class Builder {
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Binary Operators */
-		this.#setupBinopArithmetic('vimul',   mod.i64.mul  .bind(null), 'asInt');
-		this.#setupBinopArithmetic('vfmul',   mod.f64.mul  .bind(null), 'asFloat');
 		this.#setupBinopArithmetic('vidiv_s', mod.i64.div_s.bind(null), 'asInt');
 		this.#setupBinopArithmetic('vidiv_u', mod.i64.div_u.bind(null), 'asNat');
 		this.#setupBinopArithmetic('vfdiv',   mod.f64.div  .bind(null), 'asFloat');

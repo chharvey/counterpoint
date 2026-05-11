@@ -106,12 +106,15 @@ export class Binop extends Value {
 		switch (this.operator) {
 			case OpCode.INT_ADD: { return cg.vm.op.intAdd(...codes); }
 			case OpCode.INT_SUB: { return cg.vm.op.intSub(...codes); }
+			case OpCode.INT_MUL: { return cg.vm.op.intMul(...codes); }
 
 			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(...codes); }
 			case OpCode.NAT_SUB: { return cg.vm.op.natSub(...codes); }
+			case OpCode.NAT_MUL: { return cg.vm.op.natMul(...codes); }
 
 			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(...codes); }
 			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(...codes); }
+			case OpCode.FLOAT_MUL: { return cg.vm.op.floatMul(...codes); }
 			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }
 
 			case OpCode.NLT: { return cg.vm.op.not(cg.module.call('vlt', codes, cg.reftype.Value)); }
@@ -121,15 +124,12 @@ export class Binop extends Value {
 			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.INT_MUL, 'vimul'],
 			[OpCode.INT_DIV, 'vidiv_s'],
 			[OpCode.INT_EXP, 'viexp'],
 
-			[OpCode.NAT_MUL, 'vimul'],
 			[OpCode.NAT_DIV, 'vidiv_u'],
 			[OpCode.NAT_EXP, 'viexp'],
 
-			[OpCode.FLOAT_MUL, 'vfmul'],
 			[OpCode.FLOAT_DIV, 'vfdiv'],
 
 			[OpCode.LT, 'vlt'],
@@ -193,7 +193,7 @@ export class Binop extends Value {
 					arg1,
 					// else return a wasm call
 					mod.call(
-						bothInts(t0, t1) || bothNats(t0, t1) ? 'vimul' : (assert.ok(bothFloats(t0, t1)), 'vfmul'),
+						bothInts(t0, t1) ? 'cpl:int-mul' : bothNats(t0, t1) ? 'cpl:nat-mul' : (assert.ok(bothFloats(t0, t1)), 'cpl:float-mul'),
 						[local0.get(), arg1],
 						binaryen.v128,
 					),

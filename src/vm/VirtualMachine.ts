@@ -442,5 +442,20 @@ export class VirtualMachine {
 		floatSub: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-sub', [param0, param1], this.reftype.Value)
 		),
+
+		/** Multiplies two `int`s. */
+		intMul: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:int-mul', [param0, param1], this.reftype.Value)
+		),
+
+		/** Multiplies two `nat`s. */
+		natMul: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:nat-mul', [param0, param1], this.reftype.Value)
+		),
+
+		/** Multiplies two `float`s. */
+		floatMul: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:float-mul', [param0, param1], this.reftype.Value)
+		),
 	} as const;
 }

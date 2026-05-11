@@ -174,3 +174,24 @@
 		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg1)))
 	)))
 )
+
+
+
+(func $cpl:int-mul (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+	(call $Value.new-primitive (call $Vect.new-int (i64.mul
+		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg0)))
+		(call $Vect.as-int (struct.get $Value $primitive (local.get $arg1)))
+	)))
+)
+(func $cpl:nat-mul (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+	(call $Value.new-primitive (call $Vect.new-nat (i64.mul
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg0)))
+		(call $Vect.as-nat (struct.get $Value $primitive (local.get $arg1)))
+	)))
+)
+(func $cpl:float-mul (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
+	(call $Value.new-primitive (call $Vect.new-float (f64.mul
+		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg0)))
+		(call $Vect.as-float (struct.get $Value $primitive (local.get $arg1)))
+	)))
+)
