@@ -472,5 +472,20 @@ export class VirtualMachine {
 		floatDiv: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-div', [param0, param1], this.reftype.Value)
 		),
+
+		/** Exponentiates two `int`s. */
+		intExp: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:int-exp', [param0, param1], this.reftype.Value)
+		),
+
+		/** Exponentiates two `nat`s. */
+		natExp: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:nat-exp', [param0, param1], this.reftype.Value)
+		),
+
+		/** Exponentiates two `float`s. */
+		floatExp: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:float-exp', [param0, param1], this.reftype.Value)
+		),
 	} as const;
 }

@@ -108,17 +108,19 @@ export class Binop extends Value {
 			case OpCode.INT_SUB: { return cg.vm.op.intSub(...codes); }
 			case OpCode.INT_MUL: { return cg.vm.op.intMul(...codes); }
 			case OpCode.INT_DIV: { return cg.vm.op.intDiv(...codes); }
+			case OpCode.INT_EXP: { return cg.vm.op.intExp(...codes); }
 
 			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(...codes); }
 			case OpCode.NAT_SUB: { return cg.vm.op.natSub(...codes); }
 			case OpCode.NAT_MUL: { return cg.vm.op.natMul(...codes); }
 			case OpCode.NAT_DIV: { return cg.vm.op.natDiv(...codes); }
+			case OpCode.NAT_EXP: { return cg.vm.op.natExp(...codes); }
 
 			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(...codes); }
 			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(...codes); }
 			case OpCode.FLOAT_MUL: { return cg.vm.op.floatMul(...codes); }
 			case OpCode.FLOAT_DIV: { return cg.vm.op.floatDiv(...codes); }
-			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }
+			case OpCode.FLOAT_EXP: { return cg.vm.op.floatExp(...codes); }
 
 			case OpCode.NLT: { return cg.vm.op.not(cg.module.call('vlt', codes, cg.reftype.Value)); }
 			case OpCode.NGT: { return cg.vm.op.not(cg.module.call('vgt', codes, cg.reftype.Value)); }
@@ -127,10 +129,6 @@ export class Binop extends Value {
 			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.INT_EXP, 'viexp'],
-
-			[OpCode.NAT_EXP, 'viexp'],
-
 			[OpCode.LT, 'vlt'],
 			[OpCode.GT, 'vgt'],
 			[OpCode.LE, 'vle'],
