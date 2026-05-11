@@ -413,5 +413,20 @@ export class VirtualMachine {
 		toFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:to-float', [param0], this.reftype.Value)
 		),
+
+		/** Adds two `int`s. */
+		intAdd: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:int-add', [param0, param1], this.reftype.Value)
+		),
+
+		/** Adds two `nat`s. */
+		natAdd: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:nat-add', [param0, param1], this.reftype.Value)
+		),
+
+		/** Adds two `float`s. */
+		floatAdd: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:float-add', [param0, param1], this.reftype.Value)
+		),
 	} as const;
 }

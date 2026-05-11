@@ -104,6 +104,11 @@ export class Binop extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
+			case OpCode.INT_ADD: { return cg.vm.op.intAdd(...codes); }
+
+			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(...codes); }
+
+			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(...codes); }
 			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }
 
 			case OpCode.NLT: { return cg.vm.op.not(cg.module.call('vlt', codes, cg.reftype.Value)); }
@@ -113,19 +118,16 @@ export class Binop extends Value {
 			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.INT_ADD, 'viadd'],
 			[OpCode.INT_SUB, 'visub_s'],
 			[OpCode.INT_MUL, 'vimul'],
 			[OpCode.INT_DIV, 'vidiv_s'],
 			[OpCode.INT_EXP, 'viexp'],
 
-			[OpCode.NAT_ADD, 'viadd'],
 			[OpCode.NAT_SUB, 'visub_u'],
 			[OpCode.NAT_MUL, 'vimul'],
 			[OpCode.NAT_DIV, 'vidiv_u'],
 			[OpCode.NAT_EXP, 'viexp'],
 
-			[OpCode.FLOAT_ADD, 'vfadd'],
 			[OpCode.FLOAT_SUB, 'vfsub'],
 			[OpCode.FLOAT_MUL, 'vfmul'],
 			[OpCode.FLOAT_DIV, 'vfdiv'],
@@ -163,7 +165,7 @@ export class Binop extends Value {
 				arg1,
 				// else return a wasm call
 				mod.call(
-					bothInts(t0, t1) || bothNats(t0, t1) ? 'viadd' : (assert.ok(bothFloats(t0, t1)), 'vfadd'),
+					bothInts(t0, t1) ? 'cpl:int-add' : bothNats(t0, t1) ? 'cpl:nat-add' : (assert.ok(bothFloats(t0, t1)), 'cpl:float-add'),
 					[local0.get(), arg1],
 					binaryen.v128,
 				),

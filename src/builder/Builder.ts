@@ -522,8 +522,6 @@ export class Builder {
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Binary Operators */
-		this.#setupBinopArithmetic('viadd',   mod.i64.add  .bind(null), 'asInt');
-		this.#setupBinopArithmetic('vfadd',   mod.f64.add  .bind(null), 'asFloat');
 		this.#setupBinopArithmetic('visub_s', mod.i64.sub  .bind(null), 'asInt');
 		this.#setupBinopArithmetic('visub_u', (num0, num1) => mod.call('isub_u', [num0, num1], binaryen.i64), 'asNat');
 		this.#setupBinopArithmetic('vfsub',   mod.f64.sub  .bind(null), 'asFloat');
