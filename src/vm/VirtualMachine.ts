@@ -59,7 +59,6 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/types.wat'),                 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/stubs.wat'),                 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/iexp.wat'),              'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/fid.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/mod.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
