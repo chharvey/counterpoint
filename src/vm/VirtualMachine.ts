@@ -457,5 +457,20 @@ export class VirtualMachine {
 		floatMul: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-mul', [param0, param1], this.reftype.Value)
 		),
+
+		/** Divides two `int`s. */
+		intDiv: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:int-div', [param0, param1], this.reftype.Value)
+		),
+
+		/** Divides two `nat`s. */
+		natDiv: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:nat-div', [param0, param1], this.reftype.Value)
+		),
+
+		/** Divides two `float`s. */
+		floatDiv: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:float-div', [param0, param1], this.reftype.Value)
+		),
 	} as const;
 }
