@@ -201,7 +201,7 @@ export class Binop extends Value {
 			return cg.module.block(null, [
 				cg.module.drop(arg0),
 				cg.module.drop(arg1),
-				cg.newVect(false),
+				cg.vm.Vect.FALSE,
 			], binaryen.v128);
 		}
 

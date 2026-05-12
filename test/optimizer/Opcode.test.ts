@@ -728,10 +728,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.newVect(
-							cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)),
-							{unsigned: true},
-						)),
+						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -749,10 +746,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.newVect(
-							cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)),
-							{unsigned: true},
-						)),
+						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -770,10 +764,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.newVect(
-							cg.module.i64.extend_u(cg.module.call('Map.count', [set.codegen(cg)], binaryen.i32)),
-							{unsigned: true},
-						)),
+						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count', [set.codegen(cg)], binaryen.i32)))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -791,10 +782,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.newVect(
-							cg.module.i64.extend_u(cg.module.call('Map.count', [map.codegen(cg)], binaryen.i32)),
-							{unsigned: true},
-						)),
+						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count', [map.codegen(cg)], binaryen.i32)))),
 					);
 				});
 			});

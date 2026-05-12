@@ -87,9 +87,9 @@ export class Builder {
 		this.#setupGlobals();
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.newValue(this.newVect())],
-			[BinConst.FALSE, this.newValue(this.newVect(false))],
-			[BinConst.TRUE,  this.newValue(this.newVect(true))],
+			[BinConst.NULL,  this.newValue(this.vm.Vect.NULL)],
+			[BinConst.FALSE, this.newValue(this.vm.Vect.FALSE)],
+			[BinConst.TRUE,  this.newValue(this.vm.Vect.TRUE)],
 		]);
 	}
 
@@ -167,17 +167,13 @@ export class Builder {
 	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
 	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
 	 * @returns a `v128` value encoding the argument (or `unreachable` if given)
+	 * @deprecated
 	 */
 	public newVect(
-		arg:  null | boolean | binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */ = null,
+		arg:  binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */,
 		opts: {unsigned?: boolean, scale?: bigint} = {},
 	): binaryen.ExpressionRef /* v128 */ {
-		const {mod, Vect} = this.vm;
-		switch (arg) {
-			case null:  { return mod.global.get('Vect.NULL',  binaryen.v128); }
-			case false: { return mod.global.get('Vect.FALSE', binaryen.v128); }
-			case true:  { return mod.global.get('Vect.TRUE',  binaryen.v128); }
-		}
+		const {Vect} = this.vm;
 		switch (binaryen.getExpressionType(arg)) {
 			case binaryen.v128: {
 				return arg;

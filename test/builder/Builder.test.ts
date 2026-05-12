@@ -39,18 +39,12 @@ test.suite('Builder', () => {
 		});
 		test.test('returns v128.', () => {
 			assertEqualBins([
-				cg.newVect(null),
-				cg.newVect(false),
-				cg.newVect(true),
 				cg.newVect(bigint_to_i64(mod, 42n)),
 				cg.newVect(bigint_to_i64(mod, 42n, true), {unsigned: true}),
 				cg.newVect(mod.f64.const(4.2)),
 				mod.global.get('Vect.TRUE', binaryen.v128),
 				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
 			], ([
-				mod.global.get('Vect.NULL', binaryen.v128),
-				mod.global.get('Vect.FALSE', binaryen.v128),
-				mod.global.get('Vect.TRUE', binaryen.v128),
 				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
 				mod.call('Vect.new-nat', [bigint_to_i64(mod, 42n, true)], binaryen.v128),
 				mod.call('Vect.new-float', [mod.f64.const(4.2)], binaryen.v128),
@@ -65,7 +59,7 @@ test.suite('Builder', () => {
 		test.test('returns (nullish) `$Value` arg.', () => {
 			xjs.Array.forEachAggregated([
 				mod.ref.null(cg.vm.reftypeNull.Value), // BUG: `ref.null` should only take heap types
-				cg.newValue(cg.newVect(bigint_to_i64(mod, 42n))),
+				cg.newValue(cg.vm.Vect.newInt(bigint_to_i64(mod, 42n))),
 			], (arg) => assertEqualBins(
 				cg.newValue(arg),
 				arg,
@@ -85,11 +79,11 @@ test.suite('Builder', () => {
 		});
 		test.test('primitive values.', () => {
 			xjs.Array.forEachAggregated([
-				cg.newVect(null),
-				cg.newVect(false),
-				cg.newVect(bigint_to_i64(mod, 0x100n)),
-				cg.newVect(bigint_to_i64(mod, 42n)),
-				cg.newVect(mod.f64.const(4.2)),
+				cg.vm.Vect.NULL,
+				cg.vm.Vect.FALSE,
+				cg.vm.Vect.newInt(bigint_to_i64(mod, 0x100n)),
+				cg.vm.Vect.newNat(bigint_to_i64(mod, 42n)),
+				cg.vm.Vect.newFloat(mod.f64.const(4.2)),
 			], (arg) => assertEqualBins(
 				cg.newValue(arg),
 				mod.call('Value.new-primitive', [arg], cg.vm.reftype.Value),
@@ -138,13 +132,13 @@ test.suite('Builder', () => {
 			assertEqualBins([
 				cg.newProperty(0x102n, genConst(cg)),
 				cg.newProperty(0x103n, genConst(cg, 42n)),
-				cg.newProperty(0x104n, cg.newValue(cg.newVect(false))),
+				cg.newProperty(0x104n, cg.newValue(cg.vm.Vect.FALSE)),
 				cg.newProperty(0x105n, cg.newValue(genConst(cg, 4.2))),
 				cg.newProperty(0x106n, cg.newValue(genConst(cg, 4.2))),
 			], ([
 				[0x102n, genConst(cg)],
 				[0x103n, genConst(cg, 42n)],
-				[0x104n, cg.newValue(cg.newVect(false))],
+				[0x104n, cg.newValue(cg.vm.Vect.FALSE)],
 				[0x105n, cg.newValue(genConst(cg, 4.2))],
 				[0x106n, genConst(cg, 4.2)],
 			] as const).map(([id, code]) => mod.struct.new([

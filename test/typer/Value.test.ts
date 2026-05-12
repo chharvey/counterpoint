@@ -215,7 +215,7 @@ test.suite('Value', () => {
 			const cg = new Builder();
 			return assertEqualBins(
 				VALUE.NULL.codegen(cg),
-				cg.newValue(cg.newVect()),
+				cg.newValue(cg.vm.Vect.NULL),
 			);
 		});
 
@@ -225,8 +225,8 @@ test.suite('Value', () => {
 				VALUE.FALSE.codegen(cg),
 				VALUE.TRUE .codegen(cg),
 			], [
-				cg.newValue(cg.newVect(false)),
-				cg.newValue(cg.newVect(true)),
+				cg.newValue(cg.vm.Vect.FALSE),
+				cg.newValue(cg.vm.Vect.TRUE),
 			]);
 		});
 
@@ -236,8 +236,8 @@ test.suite('Value', () => {
 				VALUE.SYM_NOTHING.codegen(cg),
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
 			], [
-				cg.newValue(cg.newVect(bigint_to_i64(cg.module, 0x80n),  {unsigned: true})),
-				cg.newValue(cg.newVect(bigint_to_i64(cg.module, 0x100n), {unsigned: true})),
+				cg.newValue(cg.vm.Vect.newNat(bigint_to_i64(cg.module, 0x80n))),
+				cg.newValue(cg.vm.Vect.newNat(bigint_to_i64(cg.module, 0x100n))),
 			]);
 		});
 
@@ -260,7 +260,7 @@ test.suite('Value', () => {
 			const cg = new Builder();
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => cg.newValue(cg.newVect(bigint_to_i64(cg.module, x)))),
+				data.map((x) => cg.newValue(cg.vm.Vect.newInt(bigint_to_i64(cg.module, x)))),
 			);
 		});
 
@@ -275,7 +275,7 @@ test.suite('Value', () => {
 			const cg = new Builder();
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => cg.newValue(cg.newVect(bigint_to_i64(cg.module, x, true), {unsigned: true}))),
+				data.map((x) => cg.newValue(cg.vm.Vect.newNat(bigint_to_i64(cg.module, x, true)))),
 			);
 		});
 
@@ -292,7 +292,7 @@ test.suite('Value', () => {
 				const cg = new Builder();
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
-					data.map((x) => cg.newValue(cg.newVect(cg.module.f64.const(x)))),
+					data.map((x) => cg.newValue(cg.vm.Vect.newFloat(cg.module.f64.const(x)))),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
@@ -300,7 +300,7 @@ test.suite('Value', () => {
 				const mod: binaryen.Module = cg.module;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => cg.newValue(cg.newVect(c))),
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => cg.newValue(cg.vm.Vect.newFloat(c))),
 				);
 			});
 		});
