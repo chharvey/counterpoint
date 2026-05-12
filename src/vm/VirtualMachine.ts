@@ -174,6 +174,7 @@ export class VirtualMachine {
 			/* eslint-disable @stylistic/operator-linebreak */
 			binaryen.Features.NontrappingFPToInt |
 			binaryen.Features.SIMD128 |
+			binaryen.Features.TailCall |
 			binaryen.Features.ReferenceTypes |
 			binaryen.Features.Multivalue |
 			binaryen.Features.GC

@@ -36,15 +36,15 @@
 
 	(if
 		(i32.eq (local.get $tag) (i32.const 1))
-		(then (return (call $stringify-v128 (struct.get $Value $primitive (local.get $value)))))
+		(then (return_call $stringify-v128 (struct.get $Value $primitive (local.get $value))))
 	)
 	(if
 		(i32.eq (local.get $tag) (i32.const 2))
 		(then
 			(if (ref.test (ref $String) (local.get $composite)) (then (return (ref.cast (ref $String) (local.get $composite)))))
-			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (call $stringify-Tuple  (ref.cast (ref $Tuple)  (local.get $composite))))))
-			(if (ref.test (ref $Record) (local.get $composite)) (then (return (call $stringify-Record (ref.cast (ref $Record) (local.get $composite))))))
-			(if (ref.test (ref $Object) (local.get $composite)) (then (return (call $stringify-Object (ref.cast (ref $Object) (local.get $composite))))))
+			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return_call $stringify-Tuple  (ref.cast (ref $Tuple)  (local.get $composite)))))
+			(if (ref.test (ref $Record) (local.get $composite)) (then (return_call $stringify-Record (ref.cast (ref $Record) (local.get $composite)))))
+			(if (ref.test (ref $Object) (local.get $composite)) (then (return_call $stringify-Object (ref.cast (ref $Object) (local.get $composite)))))
 		)
 	)
 	(unreachable)
