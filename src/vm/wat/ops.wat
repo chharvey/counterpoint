@@ -261,32 +261,46 @@
 ;; }
 ;; ```
 (func $i64.exp (param $base i64) (param $exponent i64) (result i64)
-	(if (result i64) (i64.lt_s (local.get $exponent) (i64.const 0)) ;; if $exponent < 0
-		(then (i64.const 0)) ;; return 0
-	(else (if (result i64) (i64.eqz (local.get $exponent)) ;; else if $exponent === 0
-		(then (i64.const 1)) ;; return 1
-	(else (if (result i64) (i64.eq (local.get $exponent) (i64.const 1)) ;; else if $exponent === 1
-		(then (local.get $base)) ;; return $base
-	(else (if (result i64) (i64.eq (local.get $exponent) (i64.const 2)) ;; else if $exponent === 2
-		(then (i64.mul (local.get $base) (local.get $base))) ;; return $base * $base
-	(else (if (result i64) (i64.eqz (local.get $base)) ;; else if $base === 0
-		(then (i64.const 0)) ;; return 0
-	(else (if (result i64) (i64.eq (local.get $base) (i64.const 1)) ;; else if $base === 1
-		(then (i64.const 1)) ;; return 1
-	(else (if (result i64) (i32.and (i64.eq (local.get $base) (i64.const 2)) (i64.lt_s (local.get $exponent) (i64.const 64))) ;; else if $base === 2 && $exponent < 64
-		(then (i64.shl (i64.const 1) (local.get $exponent))) ;; return 1 << $exponent
-	(else (if (result i64) (i64.gt_u (i64.ctz (local.get $exponent)) (i64.const 0)) ;; else if $exponent % 2 === 0
-		(then (call $i64.exp ;; return $exp($base * $base, $exponent / 2)
+	(if
+		(i64.lt_s (local.get $exponent) (i64.const 0))
+		(then (return (i64.const 0)))
+	)
+	(if
+		(i64.eqz (local.get $exponent))
+		(then (return (i64.const 1)))
+	)
+	(if
+		(i64.eq (local.get $exponent) (i64.const 1))
+		(then (return (local.get $base)))
+	)
+	(if
+		(i64.eq (local.get $exponent) (i64.const 2))
+		(then (return (i64.mul (local.get $base) (local.get $base))))
+	)
+	(if
+		(i64.eqz (local.get $base))
+		(then (return (i64.const 0)))
+	)
+	(if
+		(i64.eq (local.get $base) (i64.const 1))
+		(then (return (i64.const 1)))
+	)
+	(if
+		(i32.and (i64.eq (local.get $base) (i64.const 2)) (i64.lt_s (local.get $exponent) (i64.const 64)))
+		(then (return (i64.shl (i64.const 1) (local.get $exponent))))
+	)
+	(if (result i64)
+		(i64.gt_u (i64.ctz (local.get $exponent)) (i64.const 0)) ;; $exponent % 2 === 0
+		(then (call $i64.exp
 			(i64.mul (local.get $base) (local.get $base))
 			(i64.shr_s (local.get $exponent) (i64.const 1))
 		))
-	(else ;; else (assert $exponent % 2 === 1)
-		(i64.mul ;; return $base * $exp($base * $base, ($exponent - 1) / 2)
+		(else (i64.mul
 			(local.get $base)
 			(call $i64.exp
 				(i64.mul (local.get $base) (local.get $base))
 				(i64.shr_s (i64.sub (local.get $exponent) (i64.const 1)) (i64.const 1))
 			)
-		)
-	)) )) )) )) )) )) )) ))
+		))
+	)
 )
