@@ -102,37 +102,37 @@ export class Binop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
+		const [code0, code1]: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
-			case OpCode.INT_ADD: { return cg.vm.op.intAdd(...codes); }
-			case OpCode.INT_SUB: { return cg.vm.op.intSub(...codes); }
-			case OpCode.INT_MUL: { return cg.vm.op.intMul(...codes); }
-			case OpCode.INT_DIV: { return cg.vm.op.intDiv(...codes); }
-			case OpCode.INT_EXP: { return cg.vm.op.intExp(...codes); }
+			case OpCode.INT_ADD: { return cg.vm.op.intAdd(code0, code1); }
+			case OpCode.INT_SUB: { return cg.vm.op.intSub(code0, code1); }
+			case OpCode.INT_MUL: { return cg.vm.op.intMul(code0, code1); }
+			case OpCode.INT_DIV: { return cg.vm.op.intDiv(code0, code1); }
+			case OpCode.INT_EXP: { return cg.vm.op.intExp(code0, code1); }
 
-			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(...codes); }
-			case OpCode.NAT_SUB: { return cg.vm.op.natSub(...codes); }
-			case OpCode.NAT_MUL: { return cg.vm.op.natMul(...codes); }
-			case OpCode.NAT_DIV: { return cg.vm.op.natDiv(...codes); }
-			case OpCode.NAT_EXP: { return cg.vm.op.natExp(...codes); }
+			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(code0, code1); }
+			case OpCode.NAT_SUB: { return cg.vm.op.natSub(code0, code1); }
+			case OpCode.NAT_MUL: { return cg.vm.op.natMul(code0, code1); }
+			case OpCode.NAT_DIV: { return cg.vm.op.natDiv(code0, code1); }
+			case OpCode.NAT_EXP: { return cg.vm.op.natExp(code0, code1); }
 
-			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(...codes); }
-			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(...codes); }
-			case OpCode.FLOAT_MUL: { return cg.vm.op.floatMul(...codes); }
-			case OpCode.FLOAT_DIV: { return cg.vm.op.floatDiv(...codes); }
-			case OpCode.FLOAT_EXP: { return cg.vm.op.floatExp(...codes); }
+			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(code0, code1); }
+			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(code0, code1); }
+			case OpCode.FLOAT_MUL: { return cg.vm.op.floatMul(code0, code1); }
+			case OpCode.FLOAT_DIV: { return cg.vm.op.floatDiv(code0, code1); }
+			case OpCode.FLOAT_EXP: { return cg.vm.op.floatExp(code0, code1); }
 
-			case OpCode.LT:  { return cg.vm.op.lt(...codes); }
-			case OpCode.GT:  { return cg.vm.op.gt(...codes); }
-			case OpCode.LE:  { return cg.vm.op.le(...codes); }
-			case OpCode.GE:  { return cg.vm.op.ge(...codes); }
-			case OpCode.NLT: { return cg.vm.op.not(cg.vm.op.lt(...codes)); }
-			case OpCode.NGT: { return cg.vm.op.not(cg.vm.op.gt(...codes)); }
+			case OpCode.LT:  { return cg.vm.op.lt(code0, code1); }
+			case OpCode.GT:  { return cg.vm.op.gt(code0, code1); }
+			case OpCode.LE:  { return cg.vm.op.le(code0, code1); }
+			case OpCode.GE:  { return cg.vm.op.ge(code0, code1); }
+			case OpCode.NLT: { return cg.vm.op.not(cg.vm.op.lt(code0, code1)); }
+			case OpCode.NGT: { return cg.vm.op.not(cg.vm.op.gt(code0, code1)); }
 
-			case OpCode.ID:  { return cg.vm.op.id(...codes); }
-			case OpCode.EQ:  { return cg.vm.op.eq(...codes); }
-			case OpCode.NID: { return cg.vm.op.not(cg.vm.op.id(...codes)); }
-			case OpCode.NEQ: { return cg.vm.op.not(cg.vm.op.eq(...codes)); }
+			case OpCode.ID:  { return cg.vm.op.id(code0, code1); }
+			case OpCode.EQ:  { return cg.vm.op.eq(code0, code1); }
+			case OpCode.NID: { return cg.vm.op.not(cg.vm.op.id(code0, code1)); }
+			case OpCode.NEQ: { return cg.vm.op.not(cg.vm.op.eq(code0, code1)); }
 		}
 	}
 

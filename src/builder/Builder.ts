@@ -6,7 +6,6 @@ import type {Temp} from '../optimizer/index.ts';
 import {Global} from '../code-generator/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
-import type {BinaryenModuleUpdates} from './-types.d.ts';
 
 
 
@@ -86,7 +85,6 @@ export class Builder {
 		this.structGet   = this.vm.structGet;
 
 		this.#setupGlobals();
-		this.#setupFunctions();
 
 		this.#constRegistry = new Map([
 			[BinConst.NULL,  this.newValue(this.newVect())],
@@ -410,97 +408,10 @@ export class Builder {
 		], this.reftype.Map);
 	}
 
-	/** assumes both operands are primitive */
-	#setupBinopComparative(
-		name:        string,
-		method_ints: (int0:   binaryen.ExpressionRef, int1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		method_nats: (nat0:   binaryen.ExpressionRef, nat1:   binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-	): binaryen.FunctionRef {
-		const mod: BinaryenModuleUpdates = this.module;
-		const {Vect} = this.vm;
-		const local_vects = [0, 1].map((i) => this.vm.Value.field(mod.local.get(i, this.reftype.Value)).primitive);
-
-		const int_int: binaryen.ExpressionRef = method_ints(Vect.asInt(local_vects[0]),      Vect.asInt(local_vects[1]));
-		const int_nat: binaryen.ExpressionRef = method_nats(Vect.intToNat(local_vects[0]),   Vect.asNat(local_vects[1]));
-		const int_flt: binaryen.ExpressionRef = method_flts(Vect.intToFloat(local_vects[0]), Vect.asFloat(local_vects[1]));
-		const nat_int: binaryen.ExpressionRef = method_nats(Vect.asNat(local_vects[0]),      Vect.intToNat(local_vects[1]));
-		const nat_nat: binaryen.ExpressionRef = method_nats(Vect.asNat(local_vects[0]),      Vect.asNat(local_vects[1]));
-		const nat_flt: binaryen.ExpressionRef = method_flts(Vect.natToFloat(local_vects[0]), Vect.asFloat(local_vects[1]));
-		const flt_int: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.intToFloat(local_vects[1]));
-		const flt_nat: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.natToFloat(local_vects[1]));
-		const flt_flt: binaryen.ExpressionRef = method_flts(Vect.asFloat(local_vects[0]),    Vect.asFloat(local_vects[1]));
-
-		return mod.addFunction(name, binaryen.createType([this.reftype.Value, this.reftype.Value]), this.reftype.Value, [], this.vm.Value.boolFromI32(mod.if(
-			Vect.isInt(local_vects[0]),
-			mod.if(
-				Vect.isInt(local_vects[1]),
-				int_int,
-				mod.if(
-					Vect.isNat(local_vects[1]),
-					int_nat,
-					mod.if(
-						Vect.isFloat(local_vects[1]),
-						int_flt,
-						mod.unreachable(),
-					),
-				),
-			),
-			mod.if(
-				Vect.isNat(local_vects[0]),
-				mod.if(
-					Vect.isInt(local_vects[1]),
-					nat_int,
-					mod.if(
-						Vect.isNat(local_vects[1]),
-						nat_nat,
-						mod.if(
-							Vect.isFloat(local_vects[1]),
-							nat_flt,
-							mod.unreachable(),
-						),
-					),
-				),
-				mod.if(
-					Vect.isFloat(local_vects[0]),
-					mod.if(
-						Vect.isInt(local_vects[1]),
-						flt_int,
-						mod.if(
-							Vect.isNat(local_vects[1]),
-							flt_nat,
-							mod.if(
-								Vect.isFloat(local_vects[1]),
-								flt_flt,
-								mod.unreachable(),
-							),
-						),
-					),
-					mod.unreachable(),
-				),
-			),
-		)));
-	}
-
 	#setupGlobals(): void {
 		const global = new Global(this.module, 'obj-ctr', bigint_to_i64(this.module, 0n, true), binaryen.i64, true);
 		this.#globals.set(global.name, global);
 		global.init();
-	}
-
-	#setupFunctions(): void {
-		const as_composite = (v: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* eqref */ => this.vm.Value.field(v).composite;
-
-		const mod:       BinaryenModuleUpdates = this.module;
-		const rt_value:  binaryen.Type         = this.reftype.Value;
-		const rt_tuple:  binaryen.Type         = this.reftype.Tuple;
-		const rt_record: binaryen.Type         = this.reftype.Record;
-		const rt_list:   binaryen.Type         = this.reftype.List;
-		const rt_dict:   binaryen.Type         = this.reftype.Dict;
-		const rt_map:    binaryen.Type         = this.reftype.Map;
-		const {Vect}      = this.vm;
-		const local_vals  = [0, 1].map((i) => mod.local.get(i, rt_value));
-		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 	}
 
 	/**
