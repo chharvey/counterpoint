@@ -72,7 +72,7 @@ export class Natural extends ValueNumber<Natural> {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.newValue(cg.vm.Vect.newNat(bigint_to_i64(cg.module, this.data, true)));
+		return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(bigint_to_i64(cg.module, this.data, true)));
 	}
 
 	public override toInt(): Integer {

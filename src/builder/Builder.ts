@@ -87,9 +87,9 @@ export class Builder {
 		this.#setupGlobals();
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.newValue(this.vm.Vect.NULL)],
-			[BinConst.FALSE, this.newValue(this.vm.Vect.FALSE)],
-			[BinConst.TRUE,  this.newValue(this.vm.Vect.TRUE)],
+			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
+			[BinConst.FALSE, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
+			[BinConst.TRUE,  this.vm.Value.newPrimitive(this.vm.Vect.TRUE)],
 		]);
 	}
 
@@ -194,65 +194,6 @@ export class Builder {
 					'`f64`',
 				].join('\n\t') }.`);
 			}
-		}
-	}
-
-	/**
-	 * Create a `$Value` struct containing the argument.
-	 * @param arg one of the following:
-	 *            - the native value `null`, which returns `(struct.new_default $Value)` (valid only in tombstones)
-	 *            - a Binaryen `v128`, `eqref`, `(ref $Value)`, or `(ref null $Value)`
-	 *            - an `unreachable`, which is directly returned
-	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
-	 */
-	public newValue(arg: binaryen.ExpressionRef /* unreachable | v128 | eqref | (ref $Value) | (ref null $Value) */ | null): binaryen.ExpressionRef /* (ref $Value) */ {
-		const {mod, heaptype, reftype, reftypeNull, Value} = this.vm;
-		if (arg === null) {
-			return mod.struct.new_default(heaptype.Value);
-		}
-		switch (binaryen.getExpressionType(arg)) {
-			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
-			case reftypeNull.Value | 4:
-			case reftype.Value     | 4:
-			case reftypeNull.Value:
-			case reftype.Value: { // if given a (nullish) `$Value`, just use that
-				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
-				But in case a `(ref null $Property)`, etc. is given, a `(struct.new_default $Value)` should be returned, since those aren’t valid in a `$Value` struct.
-				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
-				return arg;
-			}
-			case binaryen.unreachable: {
-				return arg;
-			}
-			case binaryen.v128: {
-				return Value.newPrimitive(arg);
-			}
-			case binaryen.eqref:
-			case reftype.String:
-			case reftype.Tuple:
-			case reftype.Record:
-			case reftype.Object:
-			case reftype.List:
-			case reftype.Dict:
-			case reftype.Map:
-			default: {
-				return Value.newComposite(arg);
-			}
-			/*
-			default: {
-				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
-					'`unreachable`',
-					'`v128`',
-					'`(ref $Tuple)`',
-					'`(ref $Record)`',
-					'`(ref $Object)` or a subtype',
-					'`(ref $Value)`',
-					'`(ref null $Value)`',
-				].join('\n\t') }.`);
-			}
-			*/
 		}
 	}
 

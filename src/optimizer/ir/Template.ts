@@ -38,7 +38,7 @@ export class Template extends Value {
 		const result: Local = cg.newLocal(cg.module.array.new_default(cg.heaptype.String, lengths.reduce((a, b) => cg.module.i32.add(a, b))), cg.reftype.String);
 		const offset: Local = cg.newLocal(cg.module.i32.const(0));
 
-		return cg.newValue(cg.module.block(null, [
+		return cg.vm.Value.newComposite(cg.module.block(null, [
 			...strings.map((strarr) => strarr.set()),
 			result.set(),
 			offset.set(),

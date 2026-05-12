@@ -108,7 +108,7 @@ test.suite('Opcode', () => {
 				const offset_get: binaryen.ExpressionRef = mod.local.get(OFFSET_IDX, binaryen.i32);
 				return assertEqualBins(
 					opt.instructions[3].codegen(cg),
-					mod.drop(cg.newValue(mod.block(null, [
+					mod.drop(cg.vm.Value.newComposite(mod.block(null, [
 						mod.local.set(3, strings[0]),
 						mod.local.set(4, strings[1]),
 						mod.local.set(5, strings[2]),
@@ -153,7 +153,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assertEqualBins(
 						(stmts[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.newValue(cg.codegenTuple()),
+						cg.vm.Value.newComposite(cg.codegenTuple()),
 					);
 				});
 				test.test('nonempty TUPLE.NEW', () => {
@@ -164,7 +164,7 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.newValue(cg.codegenTuple([
+						cg.vm.Value.newComposite(cg.codegenTuple([
 							mod.local.get(0, cg.reftype.Value),
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.reftype.Value),
@@ -177,7 +177,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assertEqualBins(
 						(stmts[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.newValue(cg.codegenList()),
+						cg.vm.Value.newComposite(cg.codegenList()),
 					);
 				});
 				test.test('nonempty LIST.NEW', () => {
@@ -188,7 +188,7 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.newValue(cg.codegenList([
+						cg.vm.Value.newComposite(cg.codegenList([
 							mod.local.get(0, cg.reftypeNull.Value),
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.reftypeNull.Value),
@@ -203,7 +203,7 @@ test.suite('Opcode', () => {
 					}`);
 					return assert.strictEqual(
 						binaryen.emitText((stmts[0] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-						binaryen.emitText(cg.newValue(cg.codegenMap())).replaceAll('$1', '$0'),
+						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
 					);
 				});
 				test.test('nonempty SET.NEW', () => {
@@ -214,7 +214,7 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assert.strictEqual(
 						binaryen.emitText((stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-						binaryen.emitText(cg.newValue(cg.codegenSet([
+						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenSet([
 							mod.local.get(0, cg.reftype.Value),
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.reftype.Value),
@@ -231,7 +231,7 @@ test.suite('Opcode', () => {
 					const cg = new Builder();
 					return assertEqualBins(
 						new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
-						cg.newValue(cg.codegenRecord()),
+						cg.vm.Value.newComposite(cg.codegenRecord()),
 					);
 				});
 				test.test('nonempty RECORD.NEW', () => {
@@ -242,7 +242,7 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.newValue(cg.codegenRecord(new Map([
+						cg.vm.Value.newComposite(cg.codegenRecord(new Map([
 							[257n, cg.newProperty(257n, mod.local.get(0, cg.reftype.Value))],
 							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
 							[259n, cg.newProperty(259n, mod.local.get(1, cg.reftype.Value))],
@@ -285,7 +285,7 @@ test.suite('Opcode', () => {
 							[256n, cg.newProperty(256n, genConst(cg, 42n))],
 							[259n, cg.newProperty(259n, genConst(cg, 4.2))],
 							[262n, cg.newProperty(262n, genConst(cg))],
-						])].map((props) => cg.newValue(cg.codegenRecord(props))),
+						])].map((props) => cg.vm.Value.newComposite(cg.codegenRecord(props))),
 					);
 				});
 			});
@@ -296,7 +296,7 @@ test.suite('Opcode', () => {
 					const cg = new Builder();
 					return assertEqualBins(
 						new IR.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
-						cg.newValue(cg.codegenDict()),
+						cg.vm.Value.newComposite(cg.codegenDict()),
 					);
 				});
 				test.test('nonempty DICT.NEW', () => {
@@ -307,7 +307,7 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.newValue(cg.codegenDict(new Map([
+						cg.vm.Value.newComposite(cg.codegenDict(new Map([
 							[257n, cg.newProperty(257n, mod.local.get(0, cg.reftype.Value))],
 							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
 							[259n, cg.newProperty(259n, mod.local.get(1, cg.reftype.Value))],
@@ -350,7 +350,7 @@ test.suite('Opcode', () => {
 							[256n, cg.newProperty(256n, genConst(cg, 42n))],
 							[257n, cg.newProperty(257n, genConst(cg, 4.2))],
 							[264n, cg.newProperty(264n, genConst(cg))],
-						])].map((props) => cg.newValue(cg.codegenDict(props))),
+						])].map((props) => cg.vm.Value.newComposite(cg.codegenDict(props))),
 					);
 				});
 			});
@@ -361,7 +361,7 @@ test.suite('Opcode', () => {
 					const cg = new Builder();
 					return assert.strictEqual(
 						binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
-						binaryen.emitText(cg.newValue(cg.codegenMap())).replaceAll('$1', '$0'),
+						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
 					);
 				});
 				test.test('nonempty MAP.NEW', () => {
@@ -372,7 +372,7 @@ test.suite('Opcode', () => {
 					const mod = cg.module;
 					return assert.strictEqual(
 						binaryen.emitText((stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-						binaryen.emitText(cg.newValue(cg.codegenMap(new Map([
+						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap(new Map([
 							[genConst(cg, 1.1), mod.local.get(0, cg.reftype.Value)],
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
 							[genConst(cg, 3.3), mod.local.get(1, cg.reftype.Value)],
@@ -728,7 +728,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)))),
+						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -746,7 +746,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)))),
+						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -764,7 +764,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count', [set.codegen(cg)], binaryen.i32)))),
+						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count', [set.codegen(cg)], binaryen.i32)))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -782,7 +782,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.newValue(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count', [map.codegen(cg)], binaryen.i32)))),
+						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count', [map.codegen(cg)], binaryen.i32)))),
 					);
 				});
 			});
