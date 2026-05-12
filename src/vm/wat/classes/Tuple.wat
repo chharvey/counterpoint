@@ -13,7 +13,7 @@
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $vid
+				(i32.eqz (call $Value.bool-to-i32 (call $cpl:id
 					(array.get $Tuple (local.get $tuple0) (local.get $i))
 					(array.get $Tuple (local.get $tuple1) (local.get $i))
 				)))
@@ -43,7 +43,7 @@
 		(loop $repeat
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $veq
+				(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
 					(array.get $Tuple (local.get $tuple0) (local.get $i))
 					(array.get $Tuple (local.get $tuple1) (local.get $i))
 				)))

@@ -36,7 +36,7 @@ test.suite('Optimizer', () => {
 			]),
 			mod.block(null, [mod.block(null, [
 				mod.local.set(1, mod.local.get(2, cg.reftype.Value)),
-				mod.drop(mod.call('vimul', [genConst(cg, 5n), mod.local.get(1, cg.reftype.Value)], cg.reftype.Value)),
+				mod.drop(cg.vm.op.intMul(genConst(cg, 5n), mod.local.get(1, cg.reftype.Value))),
 			])]),
 		]));
 	});

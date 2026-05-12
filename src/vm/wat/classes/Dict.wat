@@ -248,7 +248,7 @@
 
 	;; Dicts that are identical are always equal
 	(if
-		(ref.eq (local.get $dict0) (local.get $dict1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
+		(ref.eq (local.get $dict0) (local.get $dict1))
 		(then (return (i32.const 1)))
 	)
 
@@ -282,7 +282,7 @@
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $veq
+						(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
 							(struct.get $Property $val (local.get $prop0))
 							(struct.get $Property $val (local.get $prop1))
 						)))

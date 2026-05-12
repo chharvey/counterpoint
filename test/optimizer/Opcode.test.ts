@@ -799,7 +799,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.test('Binop returns custom WASM functions `viadd`, `vfmul`, etc.', () => {
+			test.test('Binop returns custom WASM functions.', () => {
 				const {stmts, opt, cg} = setupScript(`{
 					2 + 3;
 					2 - 3;
@@ -827,54 +827,34 @@ test.suite('Opcode', () => {
 					2.0 === 3;
 					2.0 ==  3;
 				}`, {codegen: false});
-				const mod = cg.module;
-				const CALL = {
-					viadd:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viadd',   [arg0, arg1], cg.reftype.Value),
-					vfadd:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfadd',   [arg0, arg1], cg.reftype.Value),
-					visub_s: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_s', [arg0, arg1], cg.reftype.Value),
-					visub_u: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('visub_u', [arg0, arg1], cg.reftype.Value),
-					vfsub:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfsub',   [arg0, arg1], cg.reftype.Value),
-					vimul:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vimul',   [arg0, arg1], cg.reftype.Value),
-					vfmul:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfmul',   [arg0, arg1], cg.reftype.Value),
-					vidiv_s: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_s', [arg0, arg1], cg.reftype.Value),
-					vidiv_u: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vidiv_u', [arg0, arg1], cg.reftype.Value),
-					vfdiv:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vfdiv',   [arg0, arg1], cg.reftype.Value),
-					viexp:   (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('viexp',   [arg0, arg1], cg.reftype.Value),
-					vlt:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',     [arg0, arg1], cg.reftype.Value),
-					vgt:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',     [arg0, arg1], cg.reftype.Value),
-					vle:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',     [arg0, arg1], cg.reftype.Value),
-					vge:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',     [arg0, arg1], cg.reftype.Value),
-					vid:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',     [arg0, arg1], cg.reftype.Value),
-					veq:     (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',     [arg0, arg1], cg.reftype.Value),
-				} as const;
 				return assertEqualBins(
 					stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
-						CALL.viadd  (genConst(cg, 2n), genConst(cg, 3n)),
-						CALL.visub_s(genConst(cg, 2n), genConst(cg, 3n)),
-						CALL.vimul  (genConst(cg, 2n), genConst(cg, 3n)),
-						CALL.vidiv_s(genConst(cg, 2n), genConst(cg, 3n)),
-						CALL.viexp  (genConst(cg, 2n), genConst(cg, 3n)),
+						cg.vm.op.intAdd(genConst(cg, 2n), genConst(cg, 3n)),
+						cg.vm.op.intSub(genConst(cg, 2n), genConst(cg, 3n)),
+						cg.vm.op.intMul(genConst(cg, 2n), genConst(cg, 3n)),
+						cg.vm.op.intDiv(genConst(cg, 2n), genConst(cg, 3n)),
+						cg.vm.op.intExp(genConst(cg, 2n), genConst(cg, 3n)),
 
-						CALL.viadd  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-						CALL.visub_u(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-						CALL.vimul  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-						CALL.vidiv_u(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
-						CALL.viexp  (genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+						cg.vm.op.natAdd(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+						cg.vm.op.natSub(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+						cg.vm.op.natMul(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+						cg.vm.op.natDiv(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
+						cg.vm.op.natExp(genConst(cg, 2n, 'nat'), genConst(cg, 3n, 'nat')),
 
-						CALL.vfadd(genConst(cg, 2.0), genConst(cg, 3.0)),
-						CALL.vfsub(genConst(cg, 2.0), genConst(cg, 3.0)),
-						CALL.vfmul(genConst(cg, 2.0), genConst(cg, 3.0)),
-						CALL.vfdiv(genConst(cg, 2.0), genConst(cg, 3.0)),
-						mod.unreachable(),
+						cg.vm.op.floatAdd(genConst(cg, 2.0), genConst(cg, 3.0)),
+						cg.vm.op.floatSub(genConst(cg, 2.0), genConst(cg, 3.0)),
+						cg.vm.op.floatMul(genConst(cg, 2.0), genConst(cg, 3.0)),
+						cg.vm.op.floatDiv(genConst(cg, 2.0), genConst(cg, 3.0)),
+						cg.vm.op.floatExp(genConst(cg, 2.0), genConst(cg, 3.0)),
 
-						CALL.vlt(genConst(cg, 2n), genConst(cg, 3.0)),
-						CALL.vgt(genConst(cg, 2n), genConst(cg, 3.0)),
-						CALL.vle(genConst(cg, 2n), genConst(cg, 3.0)),
-						CALL.vge(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.lt(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.gt(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.le(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.ge(genConst(cg, 2n), genConst(cg, 3.0)),
 
-						CALL.vid(genConst(cg, 2.0), genConst(cg, 3n)),
-						CALL.veq(genConst(cg, 2.0), genConst(cg, 3n)),
+						cg.vm.op.id(genConst(cg, 2.0), genConst(cg, 3n)),
+						cg.vm.op.eq(genConst(cg, 2.0), genConst(cg, 3n)),
 					],
 				);
 			});

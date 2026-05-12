@@ -303,35 +303,35 @@ Codegen((MAP.COUNT `map`)) := (struct.new $Value
 	(ref.null eq)
 );
 
-Codegen((INT.ADD `v0` `v1`)) := (call $viadd   `Codegen(v0)` `Codegen(v1)`);
-Codegen((INT.SUB `v0` `v1`)) := (call $visub_s `Codegen(v0)` `Codegen(v1)`);
-Codegen((INT.MUL `v0` `v1`)) := (call $vimul   `Codegen(v0)` `Codegen(v1)`);
-Codegen((INT.DIV `v0` `v1`)) := (call $vidiv_s `Codegen(v0)` `Codegen(v1)`);
-Codegen((INT.EXP `v0` `v1`)) := (call $viexp   `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.ADD `v0` `v1`)) := (call $cpl:int-add `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.SUB `v0` `v1`)) := (call $cpl:int-sub `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.MUL `v0` `v1`)) := (call $cpl:int-mul `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.DIV `v0` `v1`)) := (call $cpl:int-div `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.EXP `v0` `v1`)) := (call $cpl:int-exp `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((NAT.ADD `v0` `v1`)) := (call $viadd   `Codegen(v0)` `Codegen(v1)`);
-Codegen((NAT.SUB `v0` `v1`)) := (call $visub_u `Codegen(v0)` `Codegen(v1)`);
-Codegen((NAT.MUL `v0` `v1`)) := (call $vimul   `Codegen(v0)` `Codegen(v1)`);
-Codegen((NAT.DIV `v0` `v1`)) := (call $vidiv_u `Codegen(v0)` `Codegen(v1)`);
-Codegen((NAT.EXP `v0` `v1`)) := (call $viexp   `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.ADD `v0` `v1`)) := (call $cpl:nat-add `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.SUB `v0` `v1`)) := (call $cpl:nat-sub `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.MUL `v0` `v1`)) := (call $cpl:nat-mul `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.DIV `v0` `v1`)) := (call $cpl:nat-div `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.EXP `v0` `v1`)) := (call $cpl-nat-exp `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((FLOAT.ADD `v0` `v1`)) := (call $vfadd `Codegen(v0)` `Codegen(v1)`);
-Codegen((FLOAT.SUB `v0` `v1`)) := (call $vfsub `Codegen(v0)` `Codegen(v1)`);
-Codegen((FLOAT.MUL `v0` `v1`)) := (call $vfmul `Codegen(v0)` `Codegen(v1)`);
-Codegen((FLOAT.DIV `v0` `v1`)) := (call $vfdiv `Codegen(v0)` `Codegen(v1)`);
-Codegen((FLOAT.EXP `v0` `v1`)) := (unreachable);
+Codegen((FLOAT.ADD `v0` `v1`)) := (call $cpl:float-add `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.SUB `v0` `v1`)) := (call $cpl:float-sub `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.MUL `v0` `v1`)) := (call $cpl:float-mul `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.DIV `v0` `v1`)) := (call $cpl:float-div `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.EXP `v0` `v1`)) := (call $cpl:float-exp `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((LT  `v0` `v1`)) := (call $vlt `Codegen(v0)` `Codegen(v1)`);
-Codegen((GT  `v0` `v1`)) := (call $vgt `Codegen(v0)` `Codegen(v1)`);
-Codegen((LE  `v0` `v1`)) := (call $vle `Codegen(v0)` `Codegen(v1)`);
-Codegen((GE  `v0` `v1`)) := (call $vge `Codegen(v0)` `Codegen(v1)`);
-Codegen((NLT `v0` `v1`)) := `Codegen((NOT (LT `v0` `v1`)))`;
-Codegen((NGT `v0` `v1`)) := `Codegen((NOT (GT `v0` `v1`)))`;
+Codegen((LT  `v0` `v1`)) := (call $cpl:lt `Codegen(v0)` `Codegen(v1)`);
+Codegen((GT  `v0` `v1`)) := (call $cpl:gt `Codegen(v0)` `Codegen(v1)`);
+Codegen((LE  `v0` `v1`)) := (call $cpl:le `Codegen(v0)` `Codegen(v1)`);
+Codegen((GE  `v0` `v1`)) := (call $cpl:ge `Codegen(v0)` `Codegen(v1)`);
+Codegen((NLT `v0` `v1`)) := (call $cpl:not (call $cpl:lt `Codegen(v0)` `Codegen(v1)`));
+Codegen((NGT `v0` `v1`)) := (call $cpl:not (call $cpl:gt `Codegen(v0)` `Codegen(v1)`));
 
-Codegen((ID  `v0` `v1`)) := (call $vid `Codegen(v0)` `Codegen(v1)`);
-Codegen((EQ  `v0` `v1`)) := (call $veq `Codegen(v0)` `Codegen(v1)`);
-Codegen((NID `v0` `v1`)) := `Codegen((NOT (ID `v0` `v1`)))`;
-Codegen((NEQ `v0` `v1`)) := `Codegen((NOT (EQ `v0` `v1`)))`;
+Codegen((ID  `v0` `v1`)) := (call $cpl:id `Codegen(v0)` `Codegen(v1)`);
+Codegen((EQ  `v0` `v1`)) := (call $cpl:eq `Codegen(v0)` `Codegen(v1)`);
+Codegen((NID `v0` `v1`)) := (call $cpl:not (call $cpl:id `Codegen(v0)` `Codegen(v1)`));
+Codegen((NEQ `v0` `v1`)) := (call $cpl:not (call $cpl:eq `Codegen(v0)` `Codegen(v1)`));
 
 Codegen((DROP `v`)) := (drop `Codegen(v)`);
 

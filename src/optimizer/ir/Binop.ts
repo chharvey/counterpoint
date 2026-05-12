@@ -102,42 +102,38 @@ export class Binop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const codes: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
+		const [code0, code1]: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
-			case OpCode.FLOAT_EXP: { return cg.module.unreachable(); }
+			case OpCode.INT_ADD: { return cg.vm.op.intAdd(code0, code1); }
+			case OpCode.INT_SUB: { return cg.vm.op.intSub(code0, code1); }
+			case OpCode.INT_MUL: { return cg.vm.op.intMul(code0, code1); }
+			case OpCode.INT_DIV: { return cg.vm.op.intDiv(code0, code1); }
+			case OpCode.INT_EXP: { return cg.vm.op.intExp(code0, code1); }
 
-			case OpCode.NLT: { return cg.vm.op.not(cg.module.call('vlt', codes, cg.reftype.Value)); }
-			case OpCode.NGT: { return cg.vm.op.not(cg.module.call('vgt', codes, cg.reftype.Value)); }
+			case OpCode.NAT_ADD: { return cg.vm.op.natAdd(code0, code1); }
+			case OpCode.NAT_SUB: { return cg.vm.op.natSub(code0, code1); }
+			case OpCode.NAT_MUL: { return cg.vm.op.natMul(code0, code1); }
+			case OpCode.NAT_DIV: { return cg.vm.op.natDiv(code0, code1); }
+			case OpCode.NAT_EXP: { return cg.vm.op.natExp(code0, code1); }
 
-			case OpCode.NID: { return cg.vm.op.not(cg.module.call('vid', codes, cg.reftype.Value)); }
-			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
+			case OpCode.FLOAT_ADD: { return cg.vm.op.floatAdd(code0, code1); }
+			case OpCode.FLOAT_SUB: { return cg.vm.op.floatSub(code0, code1); }
+			case OpCode.FLOAT_MUL: { return cg.vm.op.floatMul(code0, code1); }
+			case OpCode.FLOAT_DIV: { return cg.vm.op.floatDiv(code0, code1); }
+			case OpCode.FLOAT_EXP: { return cg.vm.op.floatExp(code0, code1); }
+
+			case OpCode.LT:  { return cg.vm.op.lt(code0, code1); }
+			case OpCode.GT:  { return cg.vm.op.gt(code0, code1); }
+			case OpCode.LE:  { return cg.vm.op.le(code0, code1); }
+			case OpCode.GE:  { return cg.vm.op.ge(code0, code1); }
+			case OpCode.NLT: { return cg.vm.op.not(cg.vm.op.lt(code0, code1)); }
+			case OpCode.NGT: { return cg.vm.op.not(cg.vm.op.gt(code0, code1)); }
+
+			case OpCode.ID:  { return cg.vm.op.id(code0, code1); }
+			case OpCode.EQ:  { return cg.vm.op.eq(code0, code1); }
+			case OpCode.NID: { return cg.vm.op.not(cg.vm.op.id(code0, code1)); }
+			case OpCode.NEQ: { return cg.vm.op.not(cg.vm.op.eq(code0, code1)); }
 		}
-		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.INT_ADD, 'viadd'],
-			[OpCode.INT_SUB, 'visub_s'],
-			[OpCode.INT_MUL, 'vimul'],
-			[OpCode.INT_DIV, 'vidiv_s'],
-			[OpCode.INT_EXP, 'viexp'],
-
-			[OpCode.NAT_ADD, 'viadd'],
-			[OpCode.NAT_SUB, 'visub_u'],
-			[OpCode.NAT_MUL, 'vimul'],
-			[OpCode.NAT_DIV, 'vidiv_u'],
-			[OpCode.NAT_EXP, 'viexp'],
-
-			[OpCode.FLOAT_ADD, 'vfadd'],
-			[OpCode.FLOAT_SUB, 'vfsub'],
-			[OpCode.FLOAT_MUL, 'vfmul'],
-			[OpCode.FLOAT_DIV, 'vfdiv'],
-
-			[OpCode.LT, 'vlt'],
-			[OpCode.GT, 'vgt'],
-			[OpCode.LE, 'vle'],
-			[OpCode.GE, 'vge'],
-
-			[OpCode.ID, 'vid'],
-			[OpCode.EQ, 'veq'],
-		]).get(this.operator)!, codes, cg.reftype.Value);
 	}
 
 	/* eslint-disable */
@@ -163,7 +159,7 @@ export class Binop extends Value {
 				arg1,
 				// else return a wasm call
 				mod.call(
-					bothInts(t0, t1) || bothNats(t0, t1) ? 'viadd' : (assert.ok(bothFloats(t0, t1)), 'vfadd'),
+					bothInts(t0, t1) ? 'cpl:int-add' : bothNats(t0, t1) ? 'cpl:nat-add' : (assert.ok(bothFloats(t0, t1)), 'cpl:float-add'),
 					[local0.get(), arg1],
 					binaryen.v128,
 				),
@@ -191,7 +187,7 @@ export class Binop extends Value {
 					arg1,
 					// else return a wasm call
 					mod.call(
-						bothInts(t0, t1) || bothNats(t0, t1) ? 'vimul' : (assert.ok(bothFloats(t0, t1)), 'vfmul'),
+						bothInts(t0, t1) ? 'cpl:int-mul' : bothNats(t0, t1) ? 'cpl:nat-mul' : (assert.ok(bothFloats(t0, t1)), 'cpl:float-mul'),
 						[local0.get(), arg1],
 						binaryen.v128,
 					),
