@@ -122,18 +122,17 @@ export class Binop extends Value {
 			case OpCode.FLOAT_DIV: { return cg.vm.op.floatDiv(...codes); }
 			case OpCode.FLOAT_EXP: { return cg.vm.op.floatExp(...codes); }
 
-			case OpCode.NLT: { return cg.vm.op.not(cg.module.call('vlt', codes, cg.reftype.Value)); }
-			case OpCode.NGT: { return cg.vm.op.not(cg.module.call('vgt', codes, cg.reftype.Value)); }
+			case OpCode.LT:  { return cg.vm.op.lt(...codes); }
+			case OpCode.GT:  { return cg.vm.op.gt(...codes); }
+			case OpCode.LE:  { return cg.vm.op.le(...codes); }
+			case OpCode.GE:  { return cg.vm.op.ge(...codes); }
+			case OpCode.NLT: { return cg.vm.op.not(cg.vm.op.lt(...codes)); }
+			case OpCode.NGT: { return cg.vm.op.not(cg.vm.op.gt(...codes)); }
 
 			case OpCode.NID: { return cg.vm.op.not(cg.module.call('vid', codes, cg.reftype.Value)); }
 			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.LT, 'vlt'],
-			[OpCode.GT, 'vgt'],
-			[OpCode.LE, 'vle'],
-			[OpCode.GE, 'vge'],
-
 			[OpCode.ID, 'vid'],
 			[OpCode.EQ, 'veq'],
 		]).get(this.operator)!, codes, cg.reftype.Value);

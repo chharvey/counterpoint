@@ -61,6 +61,7 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/stubs.wat'),                 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/fid.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/mod.wat'),               'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/comparative.wat'),       'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
@@ -172,6 +173,7 @@ export class VirtualMachine {
 			/* eslint-disable @stylistic/operator-linebreak */
 			binaryen.Features.NontrappingFPToInt |
 			binaryen.Features.SIMD128 |
+			binaryen.Features.TailCall |
 			binaryen.Features.ReferenceTypes |
 			binaryen.Features.Multivalue |
 			binaryen.Features.GC
@@ -485,6 +487,26 @@ export class VirtualMachine {
 		/** Exponentiates the first `float` argument by the second (`param0 ^ param1`). */
 		floatExp: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:float-exp', [param0, param1], this.reftype.Value)
+		),
+
+		/** Is the first argument less than the second? */
+		lt: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:lt', [param0, param1], this.reftype.Value)
+		),
+
+		/** Is the first argument greater than the second? */
+		gt: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:gt', [param0, param1], this.reftype.Value)
+		),
+
+		/** Is the first argument less than or equal to the second? */
+		le: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:le', [param0, param1], this.reftype.Value)
+		),
+
+		/** Is the first argument greater than or equal to the second? */
+		ge: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:ge', [param0, param1], this.reftype.Value)
 		),
 	} as const;
 }

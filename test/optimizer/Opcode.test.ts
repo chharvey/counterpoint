@@ -829,10 +829,6 @@ test.suite('Opcode', () => {
 				}`, {codegen: false});
 				const mod = cg.module;
 				const CALL = {
-					vlt: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vlt',     [arg0, arg1], cg.reftype.Value),
-					vgt: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vgt',     [arg0, arg1], cg.reftype.Value),
-					vle: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vle',     [arg0, arg1], cg.reftype.Value),
-					vge: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vge',     [arg0, arg1], cg.reftype.Value),
 					vid: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',     [arg0, arg1], cg.reftype.Value),
 					veq: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',     [arg0, arg1], cg.reftype.Value),
 				} as const;
@@ -857,10 +853,10 @@ test.suite('Opcode', () => {
 						cg.vm.op.floatDiv(genConst(cg, 2.0), genConst(cg, 3.0)),
 						cg.vm.op.floatExp(genConst(cg, 2.0), genConst(cg, 3.0)),
 
-						CALL.vlt(genConst(cg, 2n), genConst(cg, 3.0)),
-						CALL.vgt(genConst(cg, 2n), genConst(cg, 3.0)),
-						CALL.vle(genConst(cg, 2n), genConst(cg, 3.0)),
-						CALL.vge(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.lt(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.gt(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.le(genConst(cg, 2n), genConst(cg, 3.0)),
+						cg.vm.op.ge(genConst(cg, 2n), genConst(cg, 3.0)),
 
 						CALL.vid(genConst(cg, 2.0), genConst(cg, 3n)),
 						CALL.veq(genConst(cg, 2.0), genConst(cg, 3n)),

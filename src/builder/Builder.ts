@@ -503,10 +503,6 @@ export class Builder {
 		const local_vects = local_vals.map((valuestruct) => this.vm.Value.field(valuestruct).primitive);
 
 		/* Binary Operators */
-		this.#setupBinopComparative('vlt',  mod.i64.lt_s.bind(null), mod.i64.lt_u.bind(null), mod.f64.lt.bind(null));
-		this.#setupBinopComparative('vgt',  mod.i64.gt_s.bind(null), mod.i64.gt_u.bind(null), mod.f64.gt.bind(null));
-		this.#setupBinopComparative('vle',  mod.i64.le_s.bind(null), mod.i64.le_u.bind(null), mod.f64.le.bind(null));
-		this.#setupBinopComparative('vge',  mod.i64.ge_s.bind(null), mod.i64.ge_u.bind(null), mod.f64.ge.bind(null));
 		this.#setupBinopComparative('veqn', mod.i64.eq  .bind(null), mod.i64.eq  .bind(null), mod.f64.eq.bind(null));
 
 		mod.removeFunction('vid'); // removes stub defined in `stubs.wat`

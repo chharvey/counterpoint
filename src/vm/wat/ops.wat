@@ -304,3 +304,45 @@
 		))
 	)
 )
+
+
+
+(func $cpl:lt (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (call $compare-primitives
+		(struct.get $Value $primitive (local.get 0))
+		(struct.get $Value $primitive (local.get 1))
+		(ref.func $i64.lt_s)
+		(ref.func $i64.lt_u)
+		(ref.func $f64.lt)
+	))
+)
+
+(func $cpl:gt (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (call $compare-primitives
+		(struct.get $Value $primitive (local.get 0))
+		(struct.get $Value $primitive (local.get 1))
+		(ref.func $i64.gt_s)
+		(ref.func $i64.gt_u)
+		(ref.func $f64.gt)
+	))
+)
+
+(func $cpl:le (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (call $compare-primitives
+		(struct.get $Value $primitive (local.get 0))
+		(struct.get $Value $primitive (local.get 1))
+		(ref.func $i64.le_s)
+		(ref.func $i64.le_u)
+		(ref.func $f64.le)
+	))
+)
+
+(func $cpl:ge (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (call $compare-primitives
+		(struct.get $Value $primitive (local.get 0))
+		(struct.get $Value $primitive (local.get 1))
+		(ref.func $i64.ge_s)
+		(ref.func $i64.ge_u)
+		(ref.func $f64.ge)
+	))
+)
