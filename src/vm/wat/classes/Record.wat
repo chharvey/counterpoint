@@ -80,7 +80,7 @@
 				(then (return (i32.const 0)))
 			)
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $vid
+				(i32.eqz (call $Value.bool-to-i32 (call $cpl:id
 					(struct.get $Property $val (local.get $prop))
 					(call $Record.get (local.get $record1) (local.get $key))
 				)))

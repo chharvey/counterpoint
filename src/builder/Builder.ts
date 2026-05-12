@@ -505,55 +505,6 @@ export class Builder {
 		/* Binary Operators */
 		this.#setupBinopComparative('veqn', mod.i64.eq  .bind(null), mod.i64.eq  .bind(null), mod.f64.eq.bind(null));
 
-		mod.removeFunction('vid'); // removes stub defined in `stubs.wat`
-		mod.addFunction('vid', binaryen.createType([rt_value, rt_value]), rt_value, [], this.vm.Value.boolFromI32(mod.if(
-			mod.i32.and(
-				this.vm.Value.isPrimitive(local_vals[0]),
-				this.vm.Value.isPrimitive(local_vals[1]),
-			),
-			mod.if(
-				mod.i32.and(Vect.isSpecial(local_vects[0]), Vect.isSpecial(local_vects[1])),
-				mod.i32.eq(Vect.type(local_vects[0]), Vect.type(local_vects[1])),
-				mod.if(
-					mod.i32.and(Vect.isInt(local_vects[0]), Vect.isInt(local_vects[1])),
-					mod.i64.eq(Vect.asInt(local_vects[0]), Vect.asInt(local_vects[1])), // `i64.eq` for ints gives the same result as `ID` operator
-					mod.if(
-						mod.i32.and(Vect.isNat(local_vects[0]), Vect.isNat(local_vects[1])),
-						mod.i64.eq(Vect.asNat(local_vects[0]), Vect.asNat(local_vects[1])), // `i64.eq` for nats gives the same result as `ID` operator
-						mod.if(
-							mod.i32.and(Vect.isFloat(local_vects[0]), Vect.isFloat(local_vects[1])),
-							mod.call('fid', [Vect.asFloat(local_vects[0]), Vect.asFloat(local_vects[1])], binaryen.i32),
-							mod.i32.const(0),
-						),
-					),
-				),
-			),
-			mod.if(
-				mod.i32.and(
-					mod.ref.test(as_composite(local_vals[0]), rt_tuple),
-					mod.ref.test(as_composite(local_vals[1]), rt_tuple),
-				),
-				mod.call('Tuple.identical', [
-					mod.ref.cast(as_composite(local_vals[0]), rt_tuple),
-					mod.ref.cast(as_composite(local_vals[1]), rt_tuple),
-				], binaryen.i32),
-				mod.if(
-					mod.i32.and(
-						mod.ref.test(as_composite(local_vals[0]), rt_record),
-						mod.ref.test(as_composite(local_vals[1]), rt_record),
-					),
-					mod.call('Record.identical', [
-						mod.ref.cast(as_composite(local_vals[0]), rt_record),
-						mod.ref.cast(as_composite(local_vals[1]), rt_record),
-					], binaryen.i32),
-					mod.ref.eq(
-						as_composite(local_vals[0]),
-						as_composite(local_vals[1]),
-					),
-				),
-			),
-		)));
-
 		mod.removeFunction('veq'); // removes stub defined in `stubs.wat`
 		mod.addFunction('veq', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
 			mod.i32.and(
@@ -562,7 +513,7 @@ export class Builder {
 			),
 			mod.if(
 				mod.i32.or(Vect.isSpecial(local_vects[0]), Vect.isSpecial(local_vects[1])),
-				mod.call('vid',  [local_vals[0], local_vals[1]], rt_value),
+				mod.call('cpl:id', [local_vals[0], local_vals[1]], rt_value),
 				mod.call('veqn', [local_vals[0], local_vals[1]], rt_value),
 			),
 			mod.if(
@@ -610,7 +561,7 @@ export class Builder {
 									mod.ref.cast(as_composite(local_vals[0]), rt_map),
 									mod.ref.cast(as_composite(local_vals[1]), rt_map),
 								], binaryen.i32)),
-								mod.call('vid', [local_vals[0], local_vals[1]], rt_value),
+								mod.call('cpl:id', [local_vals[0], local_vals[1]], rt_value),
 							),
 						),
 					),

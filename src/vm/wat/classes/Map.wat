@@ -86,7 +86,7 @@
 		)
 		;; if the antecedents match, we have our result.
 		(if
-			(call $Value.bool-to-i32 (call $vid (struct.get $Case $ant (local.get $case)) (local.get $ant)))
+			(call $Value.bool-to-i32 (call $cpl:id (struct.get $Case $ant (local.get $case)) (local.get $ant)))
 			(then (return (local.get $index) (local.get $case)))
 		)
 		;; if the current case is a tombstone, store it, then continue the search.
@@ -248,7 +248,7 @@
 
 	;; Maps that are identical are always equal
 	(if
-		(ref.eq (local.get $map0) (local.get $map1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
+		(ref.eq (local.get $map0) (local.get $map1))
 		(then (return (i32.const 1)))
 	)
 

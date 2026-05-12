@@ -328,9 +328,9 @@ Codegen((GE  `v0` `v1`)) := (call $cpl:ge `Codegen(v0)` `Codegen(v1)`);
 Codegen((NLT `v0` `v1`)) := (call $cpl:not (call $cpl:lt `Codegen(v0)` `Codegen(v1)`));
 Codegen((NGT `v0` `v1`)) := (call $cpl:not (call $cpl:gt `Codegen(v0)` `Codegen(v1)`));
 
-Codegen((ID  `v0` `v1`)) := (call $vid `Codegen(v0)` `Codegen(v1)`);
+Codegen((ID  `v0` `v1`)) := (call $cpl:id `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ  `v0` `v1`)) := (call $veq `Codegen(v0)` `Codegen(v1)`);
-Codegen((NID `v0` `v1`)) := `Codegen((NOT (ID `v0` `v1`)))`;
+Codegen((NID `v0` `v1`)) := (call $cpl:not (call $cpl:id `Codegen(v0)` `Codegen(v1)`));
 Codegen((NEQ `v0` `v1`)) := `Codegen((NOT (EQ `v0` `v1`)))`;
 
 Codegen((DROP `v`)) := (drop `Codegen(v)`);

@@ -59,7 +59,6 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/types.wat'),                 'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/stubs.wat'),                 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/fid.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/mod.wat'),               'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops/comparative.wat'),       'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
@@ -507,6 +506,11 @@ export class VirtualMachine {
 		/** Is the first argument greater than or equal to the second? */
 		ge: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			this.mod.call('cpl:ge', [param0, param1], this.reftype.Value)
+		),
+
+		/** Are the arguments ‘identical’ per the Counterpoint definition? */
+		id: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			this.mod.call('cpl:id', [param0, param1], this.reftype.Value)
 		),
 	} as const;
 }

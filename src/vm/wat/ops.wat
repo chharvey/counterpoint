@@ -346,3 +346,93 @@
 		(ref.func $f64.ge)
 	))
 )
+
+
+
+(func $cpl:id (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(local $vect0 v128)
+	(local $vect1 v128)
+	(local $ref0 eqref)
+	(local $ref1 eqref)
+	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
+	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
+	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
+	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
+
+	(call $Value.bool-from-i32 (block $exit (result i32)
+		(if
+			(i32.and
+				(call $Value.is-primitive (local.get 0))
+				(call $Value.is-primitive (local.get 0))
+			)
+			(then
+				(if
+					(i32.and
+						(call $Vect.is-special (local.get $vect0))
+						(call $Vect.is-special (local.get $vect1))
+					)
+					(then (br $exit (i32.eq
+						(call $Vect.type (local.get $vect0))
+						(call $Vect.type (local.get $vect1))
+					)))
+				)
+				(if
+					(i32.and
+						(call $Vect.is-int (local.get $vect0))
+						(call $Vect.is-int (local.get $vect1))
+					)
+					(then (br $exit (i64.eq
+						(call $Vect.as-int (local.get $vect0))
+						(call $Vect.as-int (local.get $vect1))
+					)))
+				)
+				(if
+					(i32.and
+						(call $Vect.is-nat (local.get $vect0))
+						(call $Vect.is-nat (local.get $vect1))
+					)
+					(then (br $exit (i64.eq
+						(call $Vect.as-nat (local.get $vect0))
+						(call $Vect.as-nat (local.get $vect1))
+					)))
+				)
+				(if
+					(i32.and
+						(call $Vect.is-float (local.get $vect0))
+						(call $Vect.is-float (local.get $vect1))
+					)
+					;; identity of floats compares bitwise
+					(then (br $exit (i64.eq
+						(i64.reinterpret_f64 (call $Vect.as-float (local.get $vect0)))
+						(i64.reinterpret_f64 (call $Vect.as-float (local.get $vect1)))
+					)))
+				)
+				(br $exit (i32.const 0))
+			)
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Tuple) (local.get $ref0))
+				(ref.test (ref $Tuple) (local.get $ref1))
+			)
+			(then (br $exit (call $Tuple.identical
+				(ref.cast (ref $Tuple) (local.get $ref0))
+				(ref.cast (ref $Tuple) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Record) (local.get $ref0))
+				(ref.test (ref $Record) (local.get $ref1))
+			)
+			(then (br $exit (call $Record.identical
+				(ref.cast (ref $Record) (local.get $ref0))
+				(ref.cast (ref $Record) (local.get $ref1))
+			)))
+		)
+		(br $exit (ref.eq
+			(local.get $ref0)
+			(local.get $ref1)
+		))
+	))
+)

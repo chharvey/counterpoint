@@ -4,12 +4,6 @@
 
 
 
-(func $vid (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
-	(unreachable)
-)
-
-
-
 (func $veq (param $arg0 (ref $Value)) (param $arg1 (ref $Value)) (result (ref $Value))
 	(unreachable)
 )

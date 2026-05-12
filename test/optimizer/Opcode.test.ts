@@ -829,7 +829,6 @@ test.suite('Opcode', () => {
 				}`, {codegen: false});
 				const mod = cg.module;
 				const CALL = {
-					vid: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('vid',     [arg0, arg1], cg.reftype.Value),
 					veq: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',     [arg0, arg1], cg.reftype.Value),
 				} as const;
 				return assertEqualBins(
@@ -858,7 +857,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.le(genConst(cg, 2n), genConst(cg, 3.0)),
 						cg.vm.op.ge(genConst(cg, 2n), genConst(cg, 3.0)),
 
-						CALL.vid(genConst(cg, 2.0), genConst(cg, 3n)),
+						cg.vm.op.id(genConst(cg, 2.0), genConst(cg, 3n)),
 						CALL.veq(genConst(cg, 2.0), genConst(cg, 3n)),
 					],
 				);

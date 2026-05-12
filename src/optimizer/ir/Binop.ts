@@ -129,11 +129,11 @@ export class Binop extends Value {
 			case OpCode.NLT: { return cg.vm.op.not(cg.vm.op.lt(...codes)); }
 			case OpCode.NGT: { return cg.vm.op.not(cg.vm.op.gt(...codes)); }
 
-			case OpCode.NID: { return cg.vm.op.not(cg.module.call('vid', codes, cg.reftype.Value)); }
+			case OpCode.ID:  { return cg.vm.op.id(...codes); }
+			case OpCode.NID: { return cg.vm.op.not(cg.vm.op.id(...codes)); }
 			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
 		}
 		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.ID, 'vid'],
 			[OpCode.EQ, 'veq'],
 		]).get(this.operator)!, codes, cg.reftype.Value);
 	}

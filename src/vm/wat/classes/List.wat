@@ -122,7 +122,7 @@
 
 	;; Lists that are identical are always equal
 	(if
-		(ref.eq (local.get $list0) (local.get $list1)) ;; using `ref.eq` instead of `vid` since they’re already unwrapped
+		(ref.eq (local.get $list0) (local.get $list1))
 		(then (return (i32.const 1)))
 	)
 
