@@ -436,3 +436,93 @@
 		))
 	))
 )
+
+
+
+(func $cpl:eq (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(local $vect0 v128)
+	(local $vect1 v128)
+	(local $ref0 eqref)
+	(local $ref1 eqref)
+	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
+	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
+	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
+	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
+
+	(if
+		(i32.and
+			(call $Value.is-primitive (local.get 0))
+			(call $Value.is-primitive (local.get 0))
+		)
+		(then (return (if (result (ref $Value))
+			(i32.or
+				(call $Vect.is-special (local.get $vect0))
+				(call $Vect.is-special (local.get $vect1))
+			)
+			(then (call $cpl:id (local.get 0) (local.get 1)))
+			(else (call $Value.bool-from-i32 (call $compare-primitives
+				(struct.get $Value $primitive (local.get 0))
+				(struct.get $Value $primitive (local.get 1))
+				(ref.func $i64.eq)
+				(ref.func $i64.eq)
+				(ref.func $f64.eq)
+			)))
+		)))
+	)
+	(call $Value.bool-from-i32 (block $exit (result i32)
+		(if
+			(i32.and
+				(ref.test (ref $Tuple) (local.get $ref0))
+				(ref.test (ref $Tuple) (local.get $ref1))
+			)
+			(then (br $exit (call $Tuple.equal
+				(ref.cast (ref $Tuple) (local.get $ref0))
+				(ref.cast (ref $Tuple) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Record) (local.get $ref0))
+				(ref.test (ref $Record) (local.get $ref1))
+			)
+			(then (br $exit (call $Record.equal
+				(ref.cast (ref $Record) (local.get $ref0))
+				(ref.cast (ref $Record) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $List) (local.get $ref0))
+				(ref.test (ref $List) (local.get $ref1))
+			)
+			(then (br $exit (call $List.equal
+				(ref.cast (ref $List) (local.get $ref0))
+				(ref.cast (ref $List) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Dict) (local.get $ref0))
+				(ref.test (ref $Dict) (local.get $ref1))
+			)
+			(then (br $exit (call $Dict.equal
+				(ref.cast (ref $Dict) (local.get $ref0))
+				(ref.cast (ref $Dict) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Map) (local.get $ref0))
+				(ref.test (ref $Map) (local.get $ref1))
+			)
+			(then (br $exit (call $Map.equal
+				(ref.cast (ref $Map) (local.get $ref0))
+				(ref.cast (ref $Map) (local.get $ref1))
+			)))
+		)
+		(return_call $cpl:id
+			(local.get 0)
+			(local.get 1)
+		)
+	))
+)

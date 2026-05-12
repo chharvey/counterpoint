@@ -827,10 +827,6 @@ test.suite('Opcode', () => {
 					2.0 === 3;
 					2.0 ==  3;
 				}`, {codegen: false});
-				const mod = cg.module;
-				const CALL = {
-					veq: (arg0: binaryen.ExpressionRef, arg1: binaryen.ExpressionRef): binaryen.ExpressionRef => mod.call('veq',     [arg0, arg1], cg.reftype.Value),
-				} as const;
 				return assertEqualBins(
 					stmts.map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
@@ -858,7 +854,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.ge(genConst(cg, 2n), genConst(cg, 3.0)),
 
 						cg.vm.op.id(genConst(cg, 2.0), genConst(cg, 3n)),
-						CALL.veq(genConst(cg, 2.0), genConst(cg, 3n)),
+						cg.vm.op.eq(genConst(cg, 2.0), genConst(cg, 3n)),
 					],
 				);
 			});

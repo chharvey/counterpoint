@@ -169,7 +169,7 @@
 							(i32.eqz (ref.is_null (local.get $item0)))
 							(i32.eqz (ref.is_null (local.get $item1)))
 						)
-						(i32.eqz (call $Value.bool-to-i32 (call $veq
+						(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
 							(ref.cast (ref $Value) (local.get $item0))
 							(ref.cast (ref $Value) (local.get $item1))
 						)))

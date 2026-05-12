@@ -130,12 +130,10 @@ export class Binop extends Value {
 			case OpCode.NGT: { return cg.vm.op.not(cg.vm.op.gt(...codes)); }
 
 			case OpCode.ID:  { return cg.vm.op.id(...codes); }
+			case OpCode.EQ:  { return cg.vm.op.eq(...codes); }
 			case OpCode.NID: { return cg.vm.op.not(cg.vm.op.id(...codes)); }
-			case OpCode.NEQ: { return cg.vm.op.not(cg.module.call('veq', codes, cg.reftype.Value)); }
+			case OpCode.NEQ: { return cg.vm.op.not(cg.vm.op.eq(...codes)); }
 		}
-		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.EQ, 'veq'],
-		]).get(this.operator)!, codes, cg.reftype.Value);
 	}
 
 	/* eslint-disable */
