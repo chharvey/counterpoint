@@ -162,10 +162,10 @@ export class VirtualMachine {
 		},
 	} as const;
 
-	public Vect     = new Vect(this);
-	public Value    = new Value(this);
-	public Property = new Property(this);
-	public Case     = new Case(this);
+	public readonly Vect     = new Vect(this);
+	public readonly Value    = new Value(this);
+	public readonly Property = new Property(this);
+	public readonly Case     = new Case(this);
 
 	public readonly util = utils(this);
 	public readonly op   = ops(this);
