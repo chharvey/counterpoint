@@ -67,7 +67,7 @@
 
 	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
-	(local.set $index    (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index    (call $util:mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombprop (ref.null $Property))
 
@@ -98,7 +98,7 @@
 			)
 		)
 		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
-		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+		(local.set $index (call $util:mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
 		(br $repeat)
 	)
 )

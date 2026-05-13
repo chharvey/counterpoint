@@ -67,7 +67,7 @@
 
 	(local.set $internal (struct.get $Map $internal (local.get $map)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
-	(local.set $index    (call $mod (i32.wrap_i64 (call $hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index    (call $util:mod (i32.wrap_i64 (call $hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombcase (ref.null $Case))
 
@@ -98,7 +98,7 @@
 			)
 		)
 		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
-		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+		(local.set $index (call $util:mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
 		(br $repeat)
 	)
 )
