@@ -515,13 +515,13 @@ test.suite('Opcode', () => {
 						dict.[@a];
 						dict.[@c];
 					}`);
-					const {mod, Vect, Value, Property} = cg.vm;
+					const {mod, Vect, Value, Property, Dict} = cg.vm;
 					return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
-							mod.local.set(3, mod.tuple.extract(mod.call('Dict.find', [
+							mod.local.set(3, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Dict),
 								Vect.asNat(Value.field(genConst(cg, Symbol(0x104))).primitive),
-							], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1)),
+							), 1)),
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(3, cg.reftypeNull.Property)),
@@ -532,10 +532,10 @@ test.suite('Opcode', () => {
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
-							mod.local.set(4, mod.tuple.extract(mod.call('Dict.find', [
+							mod.local.set(4, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 								Vect.asNat(Value.field(genConst(cg, Symbol(0x101))).primitive),
-							], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1)),
+							), 1)),
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(4, cg.reftypeNull.Property)),
@@ -546,10 +546,10 @@ test.suite('Opcode', () => {
 							),
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
-							mod.local.set(5, mod.tuple.extract(mod.call('Dict.find', [
+							mod.local.set(5, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 								Vect.asNat(Value.field(genConst(cg, Symbol(0x102))).primitive),
-							], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1)),
+							), 1)),
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(mod.local.get(5, cg.reftypeNull.Property)),
@@ -746,7 +746,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Dict.count', [dict.codegen(cg)], binaryen.i32)))),
+						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Dict.count(dict.codegen(cg))))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -953,23 +953,23 @@ test.suite('Opcode', () => {
 						set dict.[@a] = 46;
 						set dict.[@c] = 47;
 					}`);
-					const {mod, Vect, Value} = cg.vm;
+					const {mod, Vect, Value, Dict} = cg.vm;
 					return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-						mod.call('Dict.set', [
+						Dict.set(
 							Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Dict),
 							Vect.asNat(Value.field(genConst(cg, Symbol(0x104))).primitive),
 							genConst(cg, 45n),
-						], binaryen.none),
-						mod.call('Dict.set', [
+						),
+						Dict.set(
 							Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 							Vect.asNat(Value.field(genConst(cg, Symbol(0x101))).primitive),
 							genConst(cg, 46n),
-						], binaryen.none),
-						mod.call('Dict.set', [
+						),
+						Dict.set(
 							Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict),
 							Vect.asNat(Value.field(genConst(cg, Symbol(0x102))).primitive),
 							genConst(cg, 47n),
-						], binaryen.none),
+						),
 					]);
 				});
 				test.test('SET.SET', () => {
@@ -1124,7 +1124,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
 						}`, {codegen: false});
-						const {mod, Vect, Value} = cg.vm;
+						const {mod, Vect, Value, Dict} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.Tuple);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						opt.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
@@ -1138,7 +1138,7 @@ test.suite('Opcode', () => {
 									mod.loop('repeat-0', mod.block(null, [
 										mod.br_if('exit-0', mod.i32.ge_u(i_get, mod.array.len(pairs_get))),
 										mod.local.set(8, mod.array.get(pairs_get, i_get, cg.reftype.Value)),
-										mod.call('Dict.set', [
+										Dict.set(
 											mod.local.get(5, cg.reftype.Dict),
 											Vect.asNat(Value.field(mod.array.get(
 												mod.local.tee(9, Value.cast(mod.local.get(8, cg.reftype.Value), cg.reftype.Tuple), cg.reftype.Tuple),
@@ -1146,7 +1146,7 @@ test.suite('Opcode', () => {
 												cg.reftype.Value,
 											)).primitive),
 											mod.array.get(mod.local.get(9, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
-										], binaryen.none),
+										),
 										mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
 										mod.br('repeat-0'),
 									])),
@@ -1158,7 +1158,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>((a= 2, b= 3, c= 5));
 						}`, {codegen: false});
-						const {mod, Value} = cg.vm;
+						const {mod, Value, Dict} = cg.vm;
 						const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.Dict);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Record);
 						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1167,12 +1167,12 @@ test.suite('Opcode', () => {
 							mod.block(null, [
 								mod.local.set(2, Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
 								mod.local.set(3, Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Record)),
-								mod.call('Dict.adjust-capacity', [
+								Dict.adjustCapacity(
 									destdict_get,
 									cg.vm.util.capacityNeeded(mod.array.len(srcref_get)),
-								], binaryen.none),
+								),
 								mod.array.copy(
-									cg.structGet.dict.internal(destdict_get),
+									Dict.field(destdict_get).internal,
 									mod.i32.const(0),
 									srcref_get,
 									mod.i32.const(0),
@@ -1185,7 +1185,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
 						}`, {codegen: false});
-						const {mod, Vect, Value, List} = cg.vm;
+						const {mod, Vect, Value, List, Dict} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.reftypeNull.Value);
@@ -1202,7 +1202,7 @@ test.suite('Opcode', () => {
 										mod.local.set(8, mod.array.get(pairs_get, i_get, cg.reftypeNull.Value)),
 										mod.if(
 											mod.i32.eqz(mod.ref.is_null(item_get)),
-											mod.call('Dict.set', [
+											Dict.set(
 												mod.local.get(5, cg.reftype.Dict),
 												Vect.asNat(Value.field(mod.array.get(
 													mod.local.tee(9, Value.cast(item_get, cg.reftype.Tuple), cg.reftype.Tuple),
@@ -1210,7 +1210,7 @@ test.suite('Opcode', () => {
 													cg.reftype.Value,
 												)).primitive),
 												mod.array.get(mod.local.get(9, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
-											], binaryen.none),
+											),
 										),
 										mod.local.set(7, mod.i32.add(i_get, mod.i32.const(1))),
 										mod.br('repeat-0'),
@@ -1223,7 +1223,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>([a= 2, b= 3, c= 5]);
 						}`, {codegen: false});
-						const {mod, Value} = cg.vm;
+						const {mod, Value, Dict} = cg.vm;
 						const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.Dict);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.DictInternal);
 						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1231,13 +1231,13 @@ test.suite('Opcode', () => {
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
 								mod.local.set(2, Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
-								mod.local.set(3, cg.structGet.dict.internal(Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict))),
-								mod.call('Dict.adjust-capacity', [
+								mod.local.set(3, Dict.field(Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Dict)).internal),
+								Dict.adjustCapacity(
 									destdict_get,
 									mod.array.len(srcref_get),
-								], binaryen.none),
+								),
 								mod.array.copy(
-									cg.structGet.dict.internal(destdict_get),
+									Dict.field(destdict_get).internal,
 									mod.i32.const(0),
 									srcref_get,
 									mod.i32.const(0),
@@ -1250,7 +1250,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
 						}`, {codegen: false});
-						const {mod, Vect, Value, Case} = cg.vm;
+						const {mod, Vect, Value, Case, Dict} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(9, cg.reftypeNull.Case);
@@ -1267,7 +1267,7 @@ test.suite('Opcode', () => {
 										mod.local.set(9, mod.array.get(cases_get, i_get, cg.reftypeNull.Case)),
 										mod.if(
 											mod.i32.eqz(mod.ref.is_null(case_get)),
-											mod.call('Dict.set', [
+											Dict.set(
 												mod.local.get(6, cg.reftype.Dict),
 												Vect.asNat(Value.field(mod.array.get(
 													mod.local.tee(10, Value.cast(Case.field(case_get).ant, cg.reftype.Tuple), cg.reftype.Tuple),
@@ -1275,7 +1275,7 @@ test.suite('Opcode', () => {
 													cg.reftype.Value,
 												)).primitive),
 												mod.array.get(mod.local.get(10, cg.reftype.Tuple), mod.i32.const(1), cg.reftype.Value),
-											], binaryen.none),
+											),
 										),
 										mod.local.set(8, mod.i32.add(i_get, mod.i32.const(1))),
 										mod.br('repeat-0'),
@@ -1288,7 +1288,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
 						}`, {codegen: false});
-						const {mod, Vect, Value, Case} = cg.vm;
+						const {mod, Vect, Value, Case, Dict} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(6, cg.reftypeNull.Case);
@@ -1306,11 +1306,11 @@ test.suite('Opcode', () => {
 										mod.if(
 											mod.i32.eqz(mod.ref.is_null(case_get)),
 											mod.block(null, [
-												mod.call('Dict.set', [
+												Dict.set(
 													mod.local.get(3, cg.reftype.Dict),
 													Vect.asNat(Value.field(Case.field(case_get).ant).primitive),
 													Case.field(case_get).con,
-												], binaryen.none),
+												),
 											]),
 										),
 										mod.local.set(5, mod.i32.add(i_get, mod.i32.const(1))),

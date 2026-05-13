@@ -12,6 +12,7 @@ import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
 import {List} from './classes/List.ts';
+import {Dict} from './classes/Dict.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
 
@@ -83,12 +84,6 @@ const STRUCT = {
 		/** `$Object.$id` */
 		ID: 0,
 	},
-	DICT: {
-		/** `$Dict.$size` */
-		SIZE:     1,
-		/** `$Dict.$internal` */
-		INTERNAL: 2,
-	},
 	MAP: {
 		/** `$Map.$size` */
 		SIZE:     1,
@@ -122,10 +117,6 @@ export class VirtualMachine {
 			/** @return `(struct.get $Object $id <ref>)` */
 			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
 		},
-		dict: {
-			/** @return `(struct.get $Dict $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.DICT.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $Dict $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.DICT.INTERNAL, ref, this.reftype.DictInternal),
-		},
 		map: {
 			/** @return `(struct.get $Map $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.SIZE,     ref, binaryen.i32),
 			/** @return `(struct.get $Map $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.INTERNAL, ref, this.reftype.MapInternal),
@@ -138,10 +129,6 @@ export class VirtualMachine {
 			/** @return `(struct.get $Object $id <ref> <val>)` */
 			id: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.OBJECT.ID, ref, val),
 		},
-		dict: {
-			/** @return `(struct.get $Dict $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.DICT.SIZE,     ref, val),
-			/** @return `(struct.get $Dict $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.DICT.INTERNAL, ref, val),
-		},
 		map: {
 			/** @return `(struct.get $Map $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.SIZE,     ref, val),
 			/** @return `(struct.get $Map $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.INTERNAL, ref, val),
@@ -153,6 +140,7 @@ export class VirtualMachine {
 	public readonly Property = new Property(this);
 	public readonly Case     = new Case(this);
 	public readonly List     = new List(this);
+	public readonly Dict     = new Dict(this);
 
 	public readonly util = utils(this);
 	public readonly op   = ops(this);

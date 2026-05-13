@@ -67,7 +67,7 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Vect, Property, Case} = cg.vm;
+		const {mod, Vect, Property, Case, Dict} = cg.vm;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
@@ -95,10 +95,10 @@ export class CollectionDynamicGet extends Value {
 				], cg.reftype.Value);
 			}
 			case TypeName.DICT: {
-				const maybe_prop: Local = cg.newLocal(mod.tuple.extract(mod.call('Dict.find', [
+				const maybe_prop: Local = cg.newLocal(mod.tuple.extract(Dict.find(
 					cast_collection(cg.reftype.Dict),
 					Vect.asNat(cg.vm.Value.field(accessor).primitive),
-				], binaryen.createType([binaryen.i32, cg.reftypeNull.Property])), 1));
+				), 1));
 
 				return mod.block(null, [
 					maybe_prop.set(),

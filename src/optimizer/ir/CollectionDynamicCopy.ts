@@ -232,7 +232,7 @@ export class CollectionDynamicCopy extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Value, Case, List} = cg.vm;
+		const {mod, Value, Case, List, Dict} = cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
@@ -298,7 +298,7 @@ export class CollectionDynamicCopy extends Instruction {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
 						return each_item(cg, destdict, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
 							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
-							return mod.call('Dict.set', [dest_get, key, val], binaryen.none);
+							return Dict.set(dest_get, key, val);
 						});
 					}
 					// Dict.<T>((a= t, b= t, c= t));
@@ -307,9 +307,9 @@ export class CollectionDynamicCopy extends Instruction {
 						return copy_array(
 							cg.module,
 							destdict,
-							cg.structGet.dict.internal(destdict.get()),
+							Dict.field(destdict.get()).internal,
 							srcref,
-							'Dict.adjust-capacity',
+							'Dict.adjust-capacity', // FIXME: use VM method
 							cg.vm.util.capacityNeeded(mod.array.len(srcref.get())),
 						);
 					}
@@ -319,19 +319,19 @@ export class CollectionDynamicCopy extends Instruction {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
 							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
-							return mod.call('Dict.set', [dest_get, key, val], binaryen.none);
+							return Dict.set(dest_get, key, val);
 						});
 					}
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					// Dict.<T>([a= t, b= t, c= t]);
 					case this.source.type instanceof TYPE.Dict: {
-						const srcref: Local = cg.newLocal(cg.structGet.dict.internal(Value.cast(code_src, cg.reftype.Dict)), cg.reftype.DictInternal);
+						const srcref: Local = cg.newLocal(Dict.field(Value.cast(code_src, cg.reftype.Dict)).internal, cg.reftype.DictInternal);
 						return copy_array(
 							cg.module,
 							destdict,
-							cg.structGet.dict.internal(destdict.get()),
+							Dict.field(destdict.get()).internal,
 							srcref,
-							'Dict.adjust-capacity',
+							'Dict.adjust-capacity', // FIXME: use VM method
 							mod.array.len(srcref.get()),
 						);
 					}
@@ -341,7 +341,7 @@ export class CollectionDynamicCopy extends Instruction {
 						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
 							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
-							return mod.call('Dict.set', [dest_get, key, val], binaryen.none);
+							return Dict.set(dest_get, key, val);
 						});
 					}
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
@@ -350,7 +350,7 @@ export class CollectionDynamicCopy extends Instruction {
 						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
 							const {key, val} = case_to_prop(cg, item_get);
-							return mod.call('Dict.set', [dest_get, key, val], binaryen.none);
+							return Dict.set(dest_get, key, val);
 						});
 					}
 					default: {

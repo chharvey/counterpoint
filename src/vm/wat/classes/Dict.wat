@@ -1,5 +1,3 @@
-;; Returns the number of “live” elements in the Dict.
-;; “Live” elements are non-null, non-tombstone properties.
 (func $Dict.count (param $dict (ref $Dict)) (result i32)
 	;; the return value, the number of live elements.
 	(local $count i32)
@@ -35,20 +33,6 @@
 
 
 
-;; Find a Property in a Dict with the given key.
-;; If a Property with the key is found, returns the Property and its matching index.
-;; Else, returns a null Property or tombstone with the index that the key hashes to.
-;;
-;; Useful for get, set, and delete operations:
-;; - when getting:
-;; 	- if null or a “tombstone” is returned, no entry with the given key exists in the Dict
-;; 	- if a non-null, “live” Property is returned, its value is what you want
-;; - when setting:
-;; 	- if null is returned, it means you’re adding a new property; you should put the new entry at the returned index and increment the Dict’s size
-;; 	- if a “tombstone” or a non-null, “live” Property is returned, you should replace it with the new entry, but *do not* increment the Dict’s size
-;; - when deleting:
-;; 	- if null or a “tombstone” is returned, it means the key wasn’t found and the Dict was not mutated; *do not* change the Dict’s size
-;; 	- if a non-null, “live” Property is returned, it was deleted from the Dict and replaced with a tombstone; *do not* change the Dict’s size (as tombstones are still counted)
 (func $Dict.find (param $dict (ref $Dict)) (param $key i64) (result i32 (ref null $Property))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
@@ -105,10 +89,6 @@
 
 
 
-;; Reallocate a Dict’s internal array as needed, adjusting for size.
-;; Only the Dict’s “live” (non-tombstone) properties are copied over to the new array,
-;; according to the usual key hashing and linear probing technique, and its size and count are updated.
-;; There is no guarantee the entries’ positioning and/or order will be preserved.
 (func $Dict.adjust-capacity (param $dict (ref $Dict)) (param $capacity i32)
 	;; the given Dict’s original internal array.
 	(local $orig (ref $DictInternal))
@@ -155,8 +135,6 @@
 
 
 
-;; Set a Dict value given a key.
-;; This method first reallocates if necessary, then adds the value.
 (func $Dict.set (param $dict (ref $Dict)) (param $key i64) (param $val (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
@@ -199,10 +177,6 @@
 
 
 
-;; Delete a Dict Property with the given key.
-;; If a Property with the given key exists, it is removed and its value is returned;
-;; otherwise null is returned and the Dict is not mutated.
-;; This method removes the Property first (if found), then reallocates if necessary.
 (func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Value))
 	;; index of the found property in the internal array.
 	(local $index i32)
