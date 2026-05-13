@@ -376,6 +376,14 @@ export class VirtualMachine {
 		};
 	}
 
+	/** VM internal utilities. */
+	public readonly util = {
+		capacityNeeded: (param0: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* i32 */ => (
+			this.mod.call('util:capacity-needed', [param0], binaryen.i32)
+		),
+	} as const;
+
+	/** Language-level operators. */
 	public readonly op = {
 		/** Is the value equal to the counterpoint value `null`? */
 		isNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (

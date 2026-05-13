@@ -250,7 +250,7 @@ export class CollectionDynamicCopy extends Instruction {
 							cg.structGet.list.internal(destlist.get()),
 							srcref,
 							'List.adjust-capacity',
-							mod.call('capacity-needed', [mod.array.len(srcref.get())], binaryen.i32),
+							cg.vm.util.capacityNeeded(mod.array.len(srcref.get())),
 						);
 					}
 					// List.<T>(List.<T>((t, t, t)));
@@ -314,7 +314,7 @@ export class CollectionDynamicCopy extends Instruction {
 							cg.structGet.dict.internal(destdict.get()),
 							srcref,
 							'Dict.adjust-capacity',
-							mod.call('capacity-needed', [mod.array.len(srcref.get())], binaryen.i32),
+							cg.vm.util.capacityNeeded(mod.array.len(srcref.get())),
 						);
 					}
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));

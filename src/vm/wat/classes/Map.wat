@@ -174,7 +174,7 @@
 	(if
 		(ref.is_null (local.get $case))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1))))
+			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1))))
 			(if
 				(i32.lt_u (array.len (struct.get $Map $internal (local.get $map))) (local.get $new-capacity))
 				(then

@@ -341,7 +341,7 @@ Codegen((LIST.COPY `dest` `src:Tuple`)) := (block
 	(local.set $srcref   (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`)))
 	(call $List.adjust-capacity
 		(local.get $destlist)
-		(call $capacity-needed (array.len (local.get $srcref)))
+		(call $util:capacity-needed (array.len (local.get $srcref)))
 	)
 	(array.copy $ListInternal $Tuple
 		(struct.get $List $internal (local.get $destlist))
@@ -417,7 +417,7 @@ Codegen((DICT.COPY `dest` `src:Record`)) := (block
 	(local.set $srcref   (ref.cast (ref $Record) (struct.get $Value $composite `Codegen(src)`)))
 	(call $Dict.adjust-capacity
 		(local.get $destdict)
-		(call $capacity-needed (array.len (local.get $srcref)))
+		(call $util:capacity-needed (array.len (local.get $srcref)))
 	)
 	(array.copy $DictInternal $Record
 		(struct.get $Dict $internal (local.get $destdict))

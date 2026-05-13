@@ -1038,7 +1038,7 @@ test.suite('Opcode', () => {
 								mod.local.set(3, Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Tuple)),
 								mod.call('List.adjust-capacity', [
 									destlist_get,
-									mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
+									cg.vm.util.capacityNeeded(mod.array.len(srcref_get)),
 								], binaryen.none),
 								mod.array.copy(
 									cg.structGet.list.internal(destlist_get),
@@ -1169,7 +1169,7 @@ test.suite('Opcode', () => {
 								mod.local.set(3, Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Record)),
 								mod.call('Dict.adjust-capacity', [
 									destdict_get,
-									mod.call('capacity-needed', [mod.array.len(srcref_get)], binaryen.i32),
+									cg.vm.util.capacityNeeded(mod.array.len(srcref_get)),
 								], binaryen.none),
 								mod.array.copy(
 									cg.structGet.dict.internal(destdict_get),
