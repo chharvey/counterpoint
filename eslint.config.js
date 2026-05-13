@@ -314,6 +314,7 @@ export default [
 			'@typescript-eslint/return-await': 'error',
 
 			/* ## Strictness */
+			'@typescript-eslint/no-deprecated':   'warn',
 			'@typescript-eslint/prefer-readonly': 'error',
 		},
 	},
