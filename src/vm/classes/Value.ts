@@ -17,15 +17,15 @@ export class Value {
 
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
-		readonly tag:       binaryen.ExpressionRef /* i32 */,
-		readonly primitive: binaryen.ExpressionRef /* v128 */,
-		readonly composite: binaryen.ExpressionRef /* eqref */,
+		/** @return `(struct.get $Value $tag       <ref>)` */ readonly tag:       binaryen.ExpressionRef /* i32 */,
+		/** @return `(struct.get $Value $primitive <ref>)` */ readonly primitive: binaryen.ExpressionRef /* v128 */,
+		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* eqref */,
 	} {
 		const {mod} = this.vm;
 		return {
-			/** @return `(struct.get $Value $tag       <ref>)` */ get tag():       binaryen.ExpressionRef /* i32   */ { return mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
-			/** @return `(struct.get $Value $primitive <ref>)` */ get primitive(): binaryen.ExpressionRef /* v128  */ { return mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
-			/** @return `(struct.get $Value $primitive <ref>)` */ get composite(): binaryen.ExpressionRef /* eqref */ { return mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
+			get tag()       { return mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
+			get primitive() { return mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
+			get composite() { return mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
 		};
 	}
 

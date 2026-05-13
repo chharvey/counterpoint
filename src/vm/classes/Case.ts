@@ -16,13 +16,13 @@ export class Case {
 
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Case) */): {
-		readonly ant: binaryen.ExpressionRef /* (ref $Value) */,
-		readonly con: binaryen.ExpressionRef /* (ref $Value) */,
+		/** @return `(struct.get $Case $ant <ref>)` */ readonly ant: binaryen.ExpressionRef /* (ref $Value) */,
+		/** @return `(struct.get $Case $con <ref>)` */ readonly con: binaryen.ExpressionRef /* (ref $Value) */,
 	} {
 		const {mod, reftype} = this.vm;
 		return {
-			/** @return `(struct.get $Case $ant <ref>)` */ get ant(): binaryen.ExpressionRef /* (ref $Value) */ { return mod.struct.get(FIELD.ANT, ref, reftype.Value); },
-			/** @return `(struct.get $Case $con <ref>)` */ get con(): binaryen.ExpressionRef /* (ref $Value) */ { return mod.struct.get(FIELD.CON, ref, reftype.Value); },
+			get ant() { return mod.struct.get(FIELD.ANT, ref, reftype.Value); },
+			get con() { return mod.struct.get(FIELD.CON, ref, reftype.Value); },
 		};
 	}
 
