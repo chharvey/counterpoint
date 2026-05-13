@@ -1,23 +1,19 @@
 Codegen((TRAP)) := (unreachable);
 
-Codegen((NULL.CONST null))  := (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0001 0 0 0 0) (ref.null eq));
-Codegen((BOOL.CONST false)) := (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0002 0 0 0 0) (ref.null eq));
-Codegen((BOOL.CONST true))  := (struct.new $Value (i32.const 1) (v128.const i16x8 0 0 0 0x0003 0 0 0 0) (ref.null eq));
+Codegen((NULL.CONST null))  := (call $Value.new-primitive (global.get $Vect.NULL));
+Codegen((BOOL.CONST false)) := (call $Value.new-primitive (global.get $Vect.FALSE));
+Codegen((BOOL.CONST true))  := (call $Value.new-primitive (global.get $Vect.TRUE));
 
-Codegen((SYM.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.id`))   (ref.null eq));
-Codegen((INT.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0018 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
-Codegen((NAT.CONST   `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0028 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
-Codegen((FLOAT.CONST `v`)) := (struct.new $Value (i32.const 1) (i64x2.replace_lane 1 (v128.const i16x8 0 0 0 0x0048 0 0 0 0) (i64.const `v.data`)) (ref.null eq));
+Codegen((SYM.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.id`)));
+Codegen((INT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-int   (i64.const `v.data`)));
+Codegen((NAT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.data`)));
+Codegen((FLOAT.CONST `v`)) := (call $Value.new-primitive (call $Vect.new-float (i64.const `v.data`)));
 
-Codegen((STR.CONST `v`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((STR.CONST `v`)) := (call $Value.new-composite
 	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
 );
 
-Codegen((STR.TEMPLATE `values`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
 	(block (result (ref $String))
 		`values.map("(local.set $str_`i` (call $stringify `Codegen(values[i])`))")`
 		(local.set $string
@@ -40,31 +36,21 @@ Codegen((STR.TEMPLATE `values`)) := (struct.new $Value
 
 Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 
-Codegen((TUPLE.NEW)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((TUPLE.NEW)) := (call $Value.new-composite
 	(array.new_fixed $Tuple 0)
 );
-Codegen((TUPLE.NEW `values`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((TUPLE.NEW `values`)) := (call $Value.new-composite
 	(array.new_fixed $Tuple `values.count` `values.map(Codegen)`)
 );
 
-Codegen((RECORD.NEW)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((RECORD.NEW)) := (call $Value.new-composite
 	(array.new_fixed $Record 0)
 );
-Codegen((RECORD.NEW `pairs`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((RECORD.NEW `pairs`)) := (call $Value.new-composite
 	(array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
 );
 
-Codegen((LIST.NEW)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((LIST.NEW)) := (call $Value.new-composite
 	(struct.new $List
 		(block (result i64)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
@@ -74,9 +60,7 @@ Codegen((LIST.NEW)) := (struct.new $Value
 		(array.new_default $ListInternal (i32.const 8))
 	)
 );
-Codegen((LIST.NEW `values`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((LIST.NEW `values`)) := (call $Value.new-composite
 	(struct.new $List
 		(block (result i64)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
@@ -89,9 +73,7 @@ Codegen((LIST.NEW `values`)) := (struct.new $Value
 	)
 );
 
-Codegen((DICT.NEW)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((DICT.NEW)) := (call $Value.new-composite
 	(struct.new $Dict
 		(block (result i64)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
@@ -101,9 +83,7 @@ Codegen((DICT.NEW)) := (struct.new $Value
 		(array.new_default $DictInternal (i32.const 8))
 	)
 );
-Codegen((DICT.NEW `pairs`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((DICT.NEW `pairs`)) := (call $Value.new-composite
 	(struct.new $Dict
 		(block (result i64)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
@@ -120,9 +100,7 @@ Codegen((DICT.NEW `pairs`)) := (struct.new $Value
 );
 
 // `Set<T>`s are implemented as `Map<T, null>`s
-Codegen((SET.NEW)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((SET.NEW)) := (call $Value.new-composite
 	(struct.new $Map
 		(block (result i64)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
@@ -132,9 +110,7 @@ Codegen((SET.NEW)) := (struct.new $Value
 		(array.new_default $MapInternal (i32.const 8))
 	)
 );
-Codegen((SET.NEW `values`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((SET.NEW `values`)) := (call $Value.new-composite
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
 			(block (result i64)
@@ -149,9 +125,7 @@ Codegen((SET.NEW `values`)) := (struct.new $Value
 	)
 );
 
-Codegen((MAP.NEW)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((MAP.NEW)) := (call $Value.new-composite
 	(struct.new $Map
 		(block (result i64)
 			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
@@ -161,9 +135,7 @@ Codegen((MAP.NEW)) := (struct.new $Value
 		(array.new_default $MapInternal (i32.const 8))
 	)
 );
-Codegen((MAP.NEW `pairs`)) := (struct.new $Value
-	(i32.const 2)
-	(v128.const i64x2 0 0)
+Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
 			(block (result i64)
@@ -270,37 +242,25 @@ Codegen((TOINT   `v`)) := (call $cpl:to-int   `Codegen(v)`);
 Codegen((TONAT   `v`)) := (call $cpl:to-nat   `Codegen(v)`);
 Codegen((TOFLOAT `v`)) := (call $cpl:to-float `Codegen(v)`);
 
-Codegen((LIST.COUNT `list`)) := (struct.new $Value
-	(i32.const 1)
-	(i64x2.replace_lane 1
-		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+Codegen((LIST.COUNT `list`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
 		(i64.extend_i32_u (call $List.count `Codegen(list)`))
 	)
-	(ref.null eq)
 );
-Codegen((DICT.COUNT `dict`)) := (struct.new $Value
-	(i32.const 1)
-	(i64x2.replace_lane 1
-		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+Codegen((DICT.COUNT `dict`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
 		(i64.extend_i32_u (call $Dict.count `Codegen(dict)`))
 	)
-	(ref.null eq)
 );
-Codegen((SET.COUNT `set`)) := (struct.new $Value
-	(i32.const 1)
-	(i64x2.replace_lane 1
-		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+Codegen((SET.COUNT `set`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
 		(i64.extend_i32_u (call $Map.count `Codegen(set)`))
 	)
-	(ref.null eq)
 );
-Codegen((MAP.COUNT `map`)) := (struct.new $Value
-	(i32.const 1)
-	(i64x2.replace_lane 1
-		(v128.const i16x8 0 0 0 0x0028 0 0 0 0)
+Codegen((MAP.COUNT `map`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
 		(i64.extend_i32_u (call $Map.count `Codegen(map)`))
 	)
-	(ref.null eq)
 );
 
 Codegen((INT.ADD `v0` `v1`)) := (call $cpl:int-add `Codegen(v0)` `Codegen(v1)`);
