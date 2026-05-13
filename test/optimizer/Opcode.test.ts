@@ -567,7 +567,7 @@ test.suite('Opcode', () => {
 						'set'.[4.2];
 						'set'.[3.3];
 					}`);
-					const {mod, Value} = cg.vm;
+					const {mod, Value, Case} = cg.vm;
 					const base:         binaryen.ExpressionRef = mod.local.get(1, cg.reftype.Value); // index 0 = nonempty map setup (implementation of Set)
 					const maybe_case_0: binaryen.ExpressionRef = mod.local.get(2, cg.reftypeNull.Case);
 					const maybe_case_1: binaryen.ExpressionRef = mod.local.get(3, cg.reftypeNull.Case);
@@ -580,7 +580,7 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(maybe_case_0),
-									mod.call('Case.is-tombstone', [maybe_case_0], binaryen.i32),
+									Case.isTombstone(maybe_case_0),
 								),
 								genConst(cg, false),
 								genConst(cg, true),
@@ -594,7 +594,7 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(maybe_case_1),
-									mod.call('Case.is-tombstone', [maybe_case_1], binaryen.i32),
+									Case.isTombstone(maybe_case_1),
 								),
 								genConst(cg, false),
 								genConst(cg, true),
@@ -621,7 +621,7 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(maybe_case_0),
-									mod.call('Case.is-tombstone', [maybe_case_0], binaryen.i32),
+									Case.isTombstone(maybe_case_0),
 								),
 								genConst(cg),
 								Case.field(maybe_case_0).con,
@@ -635,7 +635,7 @@ test.suite('Opcode', () => {
 							mod.if(
 								mod.i32.or(
 									mod.ref.is_null(maybe_case_1),
-									mod.call('Case.is-tombstone', [maybe_case_1], binaryen.i32),
+									Case.isTombstone(maybe_case_1),
 								),
 								genConst(cg),
 								Case.field(maybe_case_1).con,

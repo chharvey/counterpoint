@@ -125,7 +125,7 @@ export class CollectionDynamicGet extends Value {
 					mod.if(
 						mod.i32.or(
 							mod.ref.is_null(maybe_case.get()),
-							mod.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+							Case.isTombstone(maybe_case.get()),
 						),
 						cg.getConst(BinConst.FALSE),
 						cg.getConst(BinConst.TRUE),
@@ -144,7 +144,7 @@ export class CollectionDynamicGet extends Value {
 					mod.if(
 						mod.i32.or(
 							mod.ref.is_null(maybe_case.get()),
-							mod.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+							Case.isTombstone(maybe_case.get()),
 						),
 						cg.getConst(BinConst.NULL),
 						Case.field(maybe_case.get()).con,
