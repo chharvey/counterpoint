@@ -1,4 +1,4 @@
-(func $cpl:is-null (param $value (ref $Value)) (result (ref $Value))
+(func $op:is-null (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-primitive (local.get $value))
 		(call $Vect.is-null (struct.get $Value $primitive (local.get $value)))
@@ -7,7 +7,7 @@
 
 
 
-(func $cpl:not (param $value (ref $Value)) (result (ref $Value))
+(func $op:not (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-primitive (local.get $value))
 		(i32.or
@@ -19,7 +19,7 @@
 
 
 
-(func $cpl:is-empty (param $value (ref $Value)) (result (ref $Value))
+(func $op:is-empty (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 
@@ -27,19 +27,19 @@
 		(call $Value.is-primitive (local.get $value))
 		(then (if (result (ref $Value))
 			(call $Vect.is-special (local.get $primitive))
-			(then (call $cpl:not (local.get $value)))
-			(else (call $Value.bool-from-i32 (call $is-empty/number (local.get $primitive))))
+			(then (call $op:not (local.get $value)))
+			(else (call $Value.bool-from-i32 (call $!op:is-empty/number (local.get $primitive))))
 		))
-		(else (call $Value.bool-from-i32 (call $is-empty/composite (ref.as_non_null (struct.get $Value $composite (local.get $value))))))
+		(else (call $Value.bool-from-i32 (call $!op:is-empty/composite (ref.as_non_null (struct.get $Value $composite (local.get $value))))))
 	)
 )
-(func $is-empty/number (param $primitive v128) (result i32)
+(func $!op:is-empty/number (param $primitive v128) (result i32)
 	(if (call $Vect.is-int   (local.get $primitive)) (then (return (i64.eqz (call $Vect.as-int (local.get $primitive))))))
 	(if (call $Vect.is-nat   (local.get $primitive)) (then (return (i64.eqz (call $Vect.as-nat (local.get $primitive))))))
 	(if (call $Vect.is-float (local.get $primitive)) (then (return (f64.eq (call $Vect.as-float (local.get $primitive)) (f64.const 0.0))))) ;; also takes care of -0.0
 	(unreachable)
 )
-(func $is-empty/composite (param $composite (ref eq)) (result i32)
+(func $!op:is-empty/composite (param $composite (ref eq)) (result i32)
 	(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return (i32.eqz (array.len              (ref.cast (ref $Tuple)  (local.get $composite)))))))
 	(if (ref.test (ref $Record) (local.get $composite)) (then (return (i32.eqz (array.len              (ref.cast (ref $Record) (local.get $composite)))))))
 	(if (ref.test (ref $List)   (local.get $composite)) (then (return (i32.eqz (struct.get $List $size (ref.cast (ref $List)   (local.get $composite)))))))
@@ -50,7 +50,7 @@
 
 
 
-(func $cpl:negate (param $value (ref $Value)) (result (ref $Value))
+(func $op:negate (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 
@@ -71,7 +71,7 @@
 
 
 
-(func $cpl:to-int (param $value (ref $Value)) (result (ref $Value))
+(func $op:to-int (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 
@@ -89,7 +89,7 @@
 		))
 	))
 )
-(func $cpl:to-nat (param $value (ref $Value)) (result (ref $Value))
+(func $op:to-nat (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 
@@ -107,7 +107,7 @@
 		))
 	))
 )
-(func $cpl:to-float (param $value (ref $Value)) (result (ref $Value))
+(func $op:to-float (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 
@@ -128,19 +128,19 @@
 
 
 
-(func $cpl:int-add (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:int-add (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.add
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-add (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:nat-add (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-nat (i64.add
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-add (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:float-add (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.add
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
@@ -149,13 +149,13 @@
 
 
 
-(func $cpl:int-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:int-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.sub
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:nat-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $nat0 i64)
 	(local $nat1 i64)
 	(local.set $nat0 (call $Vect.as-nat (struct.get $Value $primitive (local.get 0))))
@@ -167,7 +167,7 @@
 		(else (i64.sub (local.get $nat0) (local.get $nat1)))
 	)))
 )
-(func $cpl:float-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:float-sub (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.sub
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
@@ -176,19 +176,19 @@
 
 
 
-(func $cpl:int-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:int-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.mul
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:nat-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-nat (i64.mul
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:float-mul (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.mul
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
@@ -197,19 +197,19 @@
 
 
 
-(func $cpl:int-div (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:int-div (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-int (i64.div_s
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-div (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:nat-div (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-nat (i64.div_u
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-div (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:float-div (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (f64.div
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
@@ -218,19 +218,19 @@
 
 
 
-(func $cpl:int-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-int (call $i64.exp
+(func $op:int-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(call $Value.new-primitive (call $Vect.new-int (call $!i64.exp
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-int (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:nat-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.new-primitive (call $Vect.new-nat (call $i64.exp
+(func $op:nat-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
+	(call $Value.new-primitive (call $Vect.new-nat (call $!i64.exp
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-nat (struct.get $Value $primitive (local.get 1)))
 	)))
 )
-(func $cpl:float-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:float-exp (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.new-primitive (call $Vect.new-float (unreachable
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 0)))
 		(call $Vect.as-float (struct.get $Value $primitive (local.get 1)))
@@ -259,7 +259,7 @@
 ;; 	)
 ;; }
 ;; ```
-(func $i64.exp (param $base i64) (param $exponent i64) (result i64)
+(func $!i64.exp (param $base i64) (param $exponent i64) (result i64)
 	(if
 		(i64.lt_s (local.get $exponent) (i64.const 0))
 		(then (return (i64.const 0)))
@@ -290,13 +290,13 @@
 	)
 	(if (result i64)
 		(i64.gt_u (i64.ctz (local.get $exponent)) (i64.const 0)) ;; $exponent % 2 === 0
-		(then (call $i64.exp
+		(then (call $!i64.exp
 			(i64.mul (local.get $base) (local.get $base))
 			(i64.shr_s (local.get $exponent) (i64.const 1))
 		))
 		(else (i64.mul
 			(local.get $base)
-			(call $i64.exp
+			(call $!i64.exp
 				(i64.mul (local.get $base) (local.get $base))
 				(i64.shr_s (i64.sub (local.get $exponent) (i64.const 1)) (i64.const 1))
 			)
@@ -306,49 +306,49 @@
 
 
 
-(func $cpl:lt (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:lt (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
-		(ref.func $i64.lt_s)
-		(ref.func $i64.lt_u)
-		(ref.func $f64.lt)
+		(ref.func $!i64.lt_s)
+		(ref.func $!i64.lt_u)
+		(ref.func $!f64.lt)
 	))
 )
 
-(func $cpl:gt (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:gt (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
-		(ref.func $i64.gt_s)
-		(ref.func $i64.gt_u)
-		(ref.func $f64.gt)
+		(ref.func $!i64.gt_s)
+		(ref.func $!i64.gt_u)
+		(ref.func $!f64.gt)
 	))
 )
 
-(func $cpl:le (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:le (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
-		(ref.func $i64.le_s)
-		(ref.func $i64.le_u)
-		(ref.func $f64.le)
+		(ref.func $!i64.le_s)
+		(ref.func $!i64.le_u)
+		(ref.func $!f64.le)
 	))
 )
 
-(func $cpl:ge (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:ge (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
-		(ref.func $i64.ge_s)
-		(ref.func $i64.ge_u)
-		(ref.func $f64.ge)
+		(ref.func $!i64.ge_s)
+		(ref.func $!i64.ge_u)
+		(ref.func $!f64.ge)
 	))
 )
 
 
 
-(func $cpl:id (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:id (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
 	(local $ref0 eqref)
@@ -438,7 +438,7 @@
 
 
 
-(func $cpl:eq (param (ref $Value) (ref $Value)) (result (ref $Value))
+(func $op:eq (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
 	(local $ref0 eqref)
@@ -458,13 +458,13 @@
 				(call $Vect.is-special (local.get $vect0))
 				(call $Vect.is-special (local.get $vect1))
 			)
-			(then (call $cpl:id (local.get 0) (local.get 1)))
+			(then (call $op:id (local.get 0) (local.get 1)))
 			(else (call $Value.bool-from-i32 (call $util:compare-primitives
 				(struct.get $Value $primitive (local.get 0))
 				(struct.get $Value $primitive (local.get 1))
-				(ref.func $i64.eq)
-				(ref.func $i64.eq)
-				(ref.func $f64.eq)
+				(ref.func $!i64.eq)
+				(ref.func $!i64.eq)
+				(ref.func $!f64.eq)
 			)))
 		)))
 	)
@@ -519,7 +519,7 @@
 				(ref.cast (ref $Map) (local.get $ref1))
 			)))
 		)
-		(return_call $cpl:id
+		(return_call $op:id
 			(local.get 0)
 			(local.get 1)
 		)
@@ -529,17 +529,17 @@
 
 
 ;; wraps opcodes so they can be referenced dynamically
-(func $i64.eq   (type $i64.relop) (i64.eq   (local.get 0) (local.get 1)))
-(func $i64.lt_s (type $i64.relop) (i64.lt_s (local.get 0) (local.get 1)))
-(func $i64.lt_u (type $i64.relop) (i64.lt_u (local.get 0) (local.get 1)))
-(func $i64.gt_s (type $i64.relop) (i64.gt_s (local.get 0) (local.get 1)))
-(func $i64.gt_u (type $i64.relop) (i64.gt_u (local.get 0) (local.get 1)))
-(func $i64.le_s (type $i64.relop) (i64.le_s (local.get 0) (local.get 1)))
-(func $i64.le_u (type $i64.relop) (i64.le_u (local.get 0) (local.get 1)))
-(func $i64.ge_s (type $i64.relop) (i64.ge_s (local.get 0) (local.get 1)))
-(func $i64.ge_u (type $i64.relop) (i64.ge_u (local.get 0) (local.get 1)))
-(func $f64.eq   (type $f64.relop) (f64.eq   (local.get 0) (local.get 1)))
-(func $f64.lt   (type $f64.relop) (f64.lt   (local.get 0) (local.get 1)))
-(func $f64.gt   (type $f64.relop) (f64.gt   (local.get 0) (local.get 1)))
-(func $f64.le   (type $f64.relop) (f64.le   (local.get 0) (local.get 1)))
-(func $f64.ge   (type $f64.relop) (f64.ge   (local.get 0) (local.get 1)))
+(func $!i64.eq   (type $i64.relop) (i64.eq   (local.get 0) (local.get 1)))
+(func $!i64.lt_s (type $i64.relop) (i64.lt_s (local.get 0) (local.get 1)))
+(func $!i64.lt_u (type $i64.relop) (i64.lt_u (local.get 0) (local.get 1)))
+(func $!i64.gt_s (type $i64.relop) (i64.gt_s (local.get 0) (local.get 1)))
+(func $!i64.gt_u (type $i64.relop) (i64.gt_u (local.get 0) (local.get 1)))
+(func $!i64.le_s (type $i64.relop) (i64.le_s (local.get 0) (local.get 1)))
+(func $!i64.le_u (type $i64.relop) (i64.le_u (local.get 0) (local.get 1)))
+(func $!i64.ge_s (type $i64.relop) (i64.ge_s (local.get 0) (local.get 1)))
+(func $!i64.ge_u (type $i64.relop) (i64.ge_u (local.get 0) (local.get 1)))
+(func $!f64.eq   (type $f64.relop) (f64.eq   (local.get 0) (local.get 1)))
+(func $!f64.lt   (type $f64.relop) (f64.lt   (local.get 0) (local.get 1)))
+(func $!f64.gt   (type $f64.relop) (f64.gt   (local.get 0) (local.get 1)))
+(func $!f64.le   (type $f64.relop) (f64.le   (local.get 0) (local.get 1)))
+(func $!f64.ge   (type $f64.relop) (f64.ge   (local.get 0) (local.get 1)))

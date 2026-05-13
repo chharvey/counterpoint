@@ -159,7 +159,7 @@ export class Binop extends Value {
 				arg1,
 				// else return a wasm call
 				mod.call(
-					bothInts(t0, t1) ? 'cpl:int-add' : bothNats(t0, t1) ? 'cpl:nat-add' : (assert.ok(bothFloats(t0, t1)), 'cpl:float-add'),
+					bothInts(t0, t1) ? 'op:int-add' : bothNats(t0, t1) ? 'op:nat-add' : (assert.ok(bothFloats(t0, t1)), 'op:float-add'),
 					[local0.get(), arg1],
 					binaryen.v128,
 				),
@@ -187,7 +187,7 @@ export class Binop extends Value {
 					arg1,
 					// else return a wasm call
 					mod.call(
-						bothInts(t0, t1) ? 'cpl:int-mul' : bothNats(t0, t1) ? 'cpl:nat-mul' : (assert.ok(bothFloats(t0, t1)), 'cpl:float-mul'),
+						bothInts(t0, t1) ? 'op:int-mul' : bothNats(t0, t1) ? 'op:nat-mul' : (assert.ok(bothFloats(t0, t1)), 'op:float-mul'),
 						[local0.get(), arg1],
 						binaryen.v128,
 					),

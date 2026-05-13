@@ -282,7 +282,7 @@
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
+						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
 							(struct.get $Property $val (local.get $prop0))
 							(struct.get $Property $val (local.get $prop1))
 						)))

@@ -646,7 +646,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
-				test.test('ISNULL operator returns custom WASM function `$cpl:is-null`.', () => {
+				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
 					// there exists no syntax for “is null” operator, so constructing it manually
 					const cg = new Builder();
 					assertEqualBins(
@@ -654,7 +654,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.isNull(genConst(cg)),
 					);
 				});
-				test.test('TOBOOL operator returns custom WASM function `$cpl:not` applied twice.', () => {
+				test.test('TOBOOL operator returns custom WASM function `$op:not` applied twice.', () => {
 					// there exists no syntax for “to bool” operator, so constructing it manually
 					const cg = new Builder();
 					assertEqualBins(

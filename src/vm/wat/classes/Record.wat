@@ -80,7 +80,7 @@
 				(then (return (i32.const 0)))
 			)
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $cpl:id
+				(i32.eqz (call $Value.bool-to-i32 (call $op:id
 					(struct.get $Property $val (local.get $prop))
 					(call $Record.get (local.get $record1) (local.get $key))
 				)))
@@ -118,7 +118,7 @@
 				(then (return (i32.const 0)))
 			)
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
 					(struct.get $Property $val (local.get $prop))
 					(call $Record.get (local.get $record1) (local.get $key))
 				)))
