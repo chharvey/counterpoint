@@ -78,23 +78,24 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const {op, Vect, Value: VmValue, List, Dict, Map: VmMap} = cg.vm;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
-			case OpCode.ISNULL: { return cg.vm.op.isNull(code); }
+			case OpCode.ISNULL: { return op.isNull(code); }
 
-			case OpCode.NOT: { return cg.vm.op.not(code); }
-			case OpCode.EMP: { return cg.vm.op.isEmpty(code); }
-			case OpCode.NEG: { return cg.vm.op.negate(code); }
+			case OpCode.NOT: { return op.not(code); }
+			case OpCode.EMP: { return op.isEmpty(code); }
+			case OpCode.NEG: { return op.negate(code); }
 
-			case OpCode.TOBOOL:  { return cg.vm.op.not(cg.vm.op.not(code)); }
-			case OpCode.TOINT:   { return cg.vm.op.toInt(code); }
-			case OpCode.TONAT:   { return cg.vm.op.toNat(code); }
-			case OpCode.TOFLOAT: { return cg.vm.op.toFloat(code); }
+			case OpCode.TOBOOL:  { return op.not(op.not(code)); }
+			case OpCode.TOINT:   { return op.toInt(code); }
+			case OpCode.TONAT:   { return op.toNat(code); }
+			case OpCode.TOFLOAT: { return op.toFloat(code); }
 
-			case OpCode.LIST_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.List.count(code)))); }
-			case OpCode.DICT_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Dict.count(code)))); }
-			case OpCode.SET_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Map.count(code)))); }
-			case OpCode.MAP_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Map.count(code)))); }
+			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(cg.module.i64.extend_u(List.count(code)))); }
+			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(cg.module.i64.extend_u(Dict.count(code)))); }
+			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(cg.module.i64.extend_u(VmMap.count(code)))); }
+			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(cg.module.i64.extend_u(VmMap.count(code)))); }
 		}
 	}
 
