@@ -28,7 +28,7 @@ export class Case {
 
 
 	/**
-	 * Create and return a new Case tombstone.
+	 * Returns whether a Case is a “tombstone”, that is, whether it represents a deletion in a Map.
 	 *
 	 * Case tombstones are used when deleting Map entries so as not to break linear probing chains.
 	 * They may be returned when looking up an antecedent for which an entry has since been deleted.
@@ -43,11 +43,6 @@ export class Case {
 	 * they are counted when determining when a Map’s array should be grown or shrunk.
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
 	 */
-	public newTombstone(): binaryen.ExpressionRef /* (ref $Case) */ {
-		return this.vm.mod.call('Case.new-tombstone', [], this.vm.reftype.Case);
-	}
-
-	/** Returns whether a Case is a “tombstone”, that is, whether it represents a deletion in a Map. */
 	public isTombstone(param0: binaryen.ExpressionRef /* (ref null $Case) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Case.is-tombstone', [param0], binaryen.i32);
 	}

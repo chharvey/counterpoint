@@ -28,7 +28,7 @@ export class Property {
 
 
 	/**
-	 * Create and return a new Property tombstone.
+	 * Returns whether a Property is a “tombstone”, that is, whether it represents a deletion in a Dict.
 	 *
 	 * Property tombstones are used when deleting Dict entries so as not to break linear probing chains.
 	 * They may be returned when looking up a key for which an entry has since been deleted.
@@ -43,11 +43,6 @@ export class Property {
 	 * they are counted when determining when a Dict’s array should be grown or shrunk.
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
 	 */
-	public newTombstone(): binaryen.ExpressionRef /* (ref $Property) */ {
-		return this.vm.mod.call('Property.new-tombstone', [], this.vm.reftype.Property);
-	}
-
-	/** Returns whether a Property is a “tombstone”, that is, whether it represents a deletion in a Dict. */
 	public isTombstone(param0: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Property.is-tombstone', [param0], binaryen.i32);
 	}
