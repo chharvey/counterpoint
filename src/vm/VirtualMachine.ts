@@ -11,6 +11,7 @@ import {Vect} from './classes/Vect.ts';
 import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
+import {Record as VmRecord} from './classes/Record.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
@@ -102,6 +103,7 @@ export class VirtualMachine {
 	public readonly Value    = new Value(this);
 	public readonly Property = new Property(this);
 	public readonly Case     = new Case(this);
+	public readonly Record   = new VmRecord(this);
 	public readonly List     = new List(this);
 	public readonly Dict     = new Dict(this);
 	public readonly Map      = new VmMap(this);

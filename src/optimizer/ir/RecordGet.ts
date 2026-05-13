@@ -41,9 +41,9 @@ export class RecordGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.module.call('Record.get', [
+		return cg.vm.Record.get(
 			cg.vm.Value.cast(this.record.codegen(cg), cg.reftype.Record),
 			bigint_to_i64(cg.module, this.accessor.keyid, true),
-		], cg.reftype.Value);
+		);
 	}
 }

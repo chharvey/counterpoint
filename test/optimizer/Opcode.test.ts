@@ -421,20 +421,20 @@ test.suite('Opcode', () => {
 					rec.a;
 					rec.b;
 				}`);
-				const {mod, Value} = cg.vm;
+				const {mod, Value, Record: VmRecord} = cg.vm;
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-					mod.drop(mod.call('Record.get', [
+					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.Record),
 						bigint_to_i64(mod, 0x103n, true),
-					], cg.reftype.Value)),
-					mod.drop(mod.call('Record.get', [
+					)),
+					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Record),
 						bigint_to_i64(mod, 0x101n, true),
-					], cg.reftype.Value)),
-					mod.drop(mod.call('Record.get', [
+					)),
+					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Record),
 						bigint_to_i64(mod, 0x102n, true),
-					], cg.reftype.Value)),
+					)),
 				]);
 			});
 

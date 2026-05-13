@@ -22,7 +22,6 @@
 
 
 
-;; Get the value in a record at the given key.
 (func $Record.get (param $record (ref $Record)) (param $key i64) (result (ref $Value))
 	;; the length of the given record. constant.
 	(local $ARRLEN i32)
