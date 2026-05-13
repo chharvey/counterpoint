@@ -88,7 +88,7 @@ test.suite('Opcode', () => {
 					genConst(cg, ', you have '),
 					mod.local.get(2, cg.reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => mod.call('stringify', [code], cg.reftype.String));
+				].map((code) => cg.vm.Value.stringify(code));
 
 				const OFFSET_IDX = 9;
 

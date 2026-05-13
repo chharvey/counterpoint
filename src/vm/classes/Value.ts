@@ -70,4 +70,9 @@ export class Value {
 	public boolFromI32(param0: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.call('Value.bool-from-i32', [param0], this.vm.reftype.Value);
 	}
+
+	/** Return a string representation of the value. */
+	public stringify(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
+		return this.vm.mod.call('Value.stringify', [param0], this.vm.reftype.String);
+	}
 }
