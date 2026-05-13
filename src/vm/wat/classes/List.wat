@@ -52,7 +52,7 @@
 	(if
 		(ref.is_null (local.get $item))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $List $size (local.get $list)) (i32.const 1))))
+			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $List $size (local.get $list)) (i32.const 1))))
 			(if
 				(i32.lt_u (array.len (struct.get $List $internal (local.get $list))) (local.get $new-capacity))
 				(then (call $List.adjust-capacity (local.get $list) (local.get $new-capacity)))
@@ -169,7 +169,7 @@
 							(i32.eqz (ref.is_null (local.get $item0)))
 							(i32.eqz (ref.is_null (local.get $item1)))
 						)
-						(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
+						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
 							(ref.cast (ref $Value) (local.get $item0))
 							(ref.cast (ref $Value) (local.get $item1))
 						)))

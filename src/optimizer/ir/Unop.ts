@@ -91,10 +91,10 @@ export class Unop extends Value {
 			case OpCode.TONAT:   { return cg.vm.op.toNat(code); }
 			case OpCode.TOFLOAT: { return cg.vm.op.toFloat(code); }
 
-			case OpCode.LIST_COUNT: { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)), {unsigned: true})); }
-			case OpCode.DICT_COUNT: { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)), {unsigned: true})); }
-			case OpCode.SET_COUNT:  { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})); }
-			case OpCode.MAP_COUNT:  { return cg.newValue(cg.newVect(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)), {unsigned: true})); }
+			case OpCode.LIST_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)))); }
+			case OpCode.DICT_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)))); }
+			case OpCode.SET_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)))); }
+			case OpCode.MAP_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)))); }
 		}
 	}
 
@@ -109,18 +109,18 @@ export class Unop extends Value {
 			if (t0.isDefinitelyFalsy) {
 				return cg.module.block(null, [
 					cg.module.drop(arg0),
-					cg.newVect(true),
+					cg.vm.Vect.TRUE,
 				], binaryen.v128);
 			} else if (t0.isDefinitelyTruthy) {
 				return cg.module.block(null, [
 					cg.module.drop(arg0),
-					cg.newVect(false),
+					cg.vm.Vect.FALSE,
 				], binaryen.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
 			return cg.module.block(null, [
 				cg.module.drop(arg0),
-				cg.newVect(true),
+				cg.vm.Vect.TRUE,
 			], binaryen.v128);
 		}
 		return 0;

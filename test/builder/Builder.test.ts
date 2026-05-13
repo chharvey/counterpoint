@@ -1,6 +1,5 @@
 import * as test from 'node:test';
 import binaryen from 'binaryen';
-import * as xjs from 'extrajs';
 import {
 	bigint_to_i64,
 	Builder,
@@ -39,90 +38,18 @@ test.suite('Builder', () => {
 		});
 		test.test('returns v128.', () => {
 			assertEqualBins([
-				cg.newVect(null),
-				cg.newVect(false),
-				cg.newVect(true),
 				cg.newVect(bigint_to_i64(mod, 42n)),
 				cg.newVect(bigint_to_i64(mod, 42n, true), {unsigned: true}),
 				cg.newVect(mod.f64.const(4.2)),
 				mod.global.get('Vect.TRUE', binaryen.v128),
 				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
 			], ([
-				mod.global.get('Vect.NULL', binaryen.v128),
-				mod.global.get('Vect.FALSE', binaryen.v128),
-				mod.global.get('Vect.TRUE', binaryen.v128),
 				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
 				mod.call('Vect.new-nat', [bigint_to_i64(mod, 42n, true)], binaryen.v128),
 				mod.call('Vect.new-float', [mod.f64.const(4.2)], binaryen.v128),
 				mod.global.get('Vect.TRUE', binaryen.v128),
 				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
 			]));
-		});
-	});
-
-
-	test.suite('#newValue', () => {
-		test.test('returns (nullish) `$Value` arg.', () => {
-			xjs.Array.forEachAggregated([
-				mod.ref.null(cg.vm.reftypeNull.Value), // BUG: `ref.null` should only take heap types
-				cg.newValue(cg.newVect(bigint_to_i64(mod, 42n))),
-			], (arg) => assertEqualBins(
-				cg.newValue(arg),
-				arg,
-			));
-		});
-		test.test('returns `(struct.new_default $Value)` with native `null` argument.', () => {
-			assertEqualBins(
-				cg.newValue(null),
-				mod.struct.new_default(cg.vm.heaptype.Value),
-			);
-		});
-		test.test('returns `unreachable` arg.', () => {
-			assertEqualBins(
-				cg.newValue(mod.unreachable()),
-				mod.unreachable(),
-			);
-		});
-		test.test('primitive values.', () => {
-			xjs.Array.forEachAggregated([
-				cg.newVect(null),
-				cg.newVect(false),
-				cg.newVect(bigint_to_i64(mod, 0x100n)),
-				cg.newVect(bigint_to_i64(mod, 42n)),
-				cg.newVect(mod.f64.const(4.2)),
-			], (arg) => assertEqualBins(
-				cg.newValue(arg),
-				mod.call('Value.new-primitive', [arg], cg.vm.reftype.Value),
-			));
-		});
-		test.test('composite values.', () => {
-			xjs.Array.forEachAggregated([
-				cg.codegenTuple([
-					genConst(cg, true),
-					genConst(cg, 42n),
-				]),
-				cg.codegenRecord(new Map([
-					[0x100n, cg.newProperty(0x100n, genConst(cg, true))],
-					[0x101n, cg.newProperty(0x101n, genConst(cg, 42n))],
-					[0x102n, cg.newProperty(0x102n, genConst(cg, 4.2))],
-				])),
-				cg.codegenList([
-					genConst(cg, 1.1),
-					genConst(cg, 2.2),
-					genConst(cg, 3.3),
-					...repeat(mod.ref.null(cg.reftypeNull.Value), 5),
-				]),
-				cg.codegenDict(new Map([
-					[0x106n, cg.newProperty(0x106n, genConst(cg, 1.1))],
-					[0x107n, cg.newProperty(0x107n, genConst(cg, 2.2))],
-					[0x108n, cg.newProperty(0x108n, genConst(cg, 3.3))],
-					[0x109n, cg.newProperty(0x109n, genConst(cg, 4.4))],
-					[0x10an, cg.newProperty(0x10an, genConst(cg, 5.5))],
-				])),
-			], (arg) => assertEqualBins(
-				cg.newValue(arg),
-				mod.call('Value.new-composite', [arg], cg.vm.reftype.Value),
-			));
 		});
 	});
 
@@ -138,15 +65,13 @@ test.suite('Builder', () => {
 			assertEqualBins([
 				cg.newProperty(0x102n, genConst(cg)),
 				cg.newProperty(0x103n, genConst(cg, 42n)),
-				cg.newProperty(0x104n, cg.newValue(cg.newVect(false))),
-				cg.newProperty(0x105n, cg.newValue(genConst(cg, 4.2))),
-				cg.newProperty(0x106n, cg.newValue(genConst(cg, 4.2))),
+				cg.newProperty(0x104n, cg.vm.Value.newPrimitive(cg.vm.Vect.FALSE)),
+				cg.newProperty(0x105n, genConst(cg, 4.2)),
 			], ([
 				[0x102n, genConst(cg)],
 				[0x103n, genConst(cg, 42n)],
-				[0x104n, cg.newValue(cg.newVect(false))],
-				[0x105n, cg.newValue(genConst(cg, 4.2))],
-				[0x106n, genConst(cg, 4.2)],
+				[0x104n, cg.vm.Value.newPrimitive(cg.vm.Vect.FALSE)],
+				[0x105n, genConst(cg, 4.2)],
 			] as const).map(([id, code]) => mod.struct.new([
 				bigint_to_i64(mod, id, true),
 				code,

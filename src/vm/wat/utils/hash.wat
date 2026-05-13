@@ -4,11 +4,37 @@
 
 
 
+;; ## Main Hash Function ##
+(func $Value.hash (param $value (ref $Value)) (result i64)
+	(local $tag       i32)
+	(local $composite eqref)
+
+	(local.set $tag       (struct.get $Value $tag       (local.get $value)))
+	(local.set $composite (struct.get $Value $composite (local.get $value)))
+
+	(if
+		(i32.eq (local.get $tag) (i32.const 1))
+		(then (return_call $!v128.hash (struct.get $Value $primitive (local.get $value))))
+	)
+	(if
+		(i32.eq (local.get $tag) (i32.const 2))
+		(then
+			(if (ref.test (ref $String) (local.get $composite)) (then (return_call $!String.hash (ref.cast (ref $String) (local.get $composite)))))
+			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return_call $!Tuple.hash  (ref.cast (ref $Tuple)  (local.get $composite)))))
+			(if (ref.test (ref $Record) (local.get $composite)) (then (return_call $!Record.hash (ref.cast (ref $Record) (local.get $composite)))))
+			(if (ref.test (ref $Object) (local.get $composite)) (then (return_call $!Object.hash (ref.cast (ref $Object) (local.get $composite)))))
+		)
+	)
+	(unreachable)
+)
+
+
+
 ;; hash a v128: for `$Value.$primitive`.
 ;; ```
 ;; [SEED, lane_0, lane_1].reduce((a, b) => (a xor b) * PRIME);
 ;; ```
-(func $hash-v128 (param $v v128) (result i64)
+(func $!v128.hash (param $v v128) (result i64)
 	(i64.mul
 		(i64.xor
 			(i64.mul
@@ -30,7 +56,7 @@
 ;; ```
 ;; [SEED, $prop.$key, hash($prop.$val)].reduce((a, b) => (a xor b) * PRIME);
 ;; ```
-(func $hash-Property (param $prop (ref $Property)) (result i64)
+(func $!Property.hash (param $prop (ref $Property)) (result i64)
 	(i64.mul
 		(i64.xor
 			(i64.mul
@@ -40,7 +66,7 @@
 				)
 				(global.get $PRIME)
 			)
-			(call $hash (struct.get $Property $val (local.get $prop)))
+			(call $Value.hash (struct.get $Property $val (local.get $prop)))
 		)
 		(global.get $PRIME)
 	)
@@ -52,7 +78,7 @@
 ;; ```
 ;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_u(b)) * PRIME);
 ;; ```
-(func $hash-String (param $string (ref $String)) (result i64)
+(func $!String.hash (param $string (ref $String)) (result i64)
 	(local $result i64)
 	(local $i      i32)
 
@@ -82,7 +108,7 @@
 ;; ```
 ;; [SEED, ...$tuple.values()].reduce((a, b) => (a xor hash(b)) * PRIME);
 ;; ```
-(func $hash-Tuple (param $tuple (ref $Tuple)) (result i64)
+(func $!Tuple.hash (param $tuple (ref $Tuple)) (result i64)
 	(local $result i64)
 	(local $i      i32)
 
@@ -95,7 +121,7 @@
 			(local.set $result (i64.mul
 				(i64.xor
 					(local.get $result)
-					(call $hash (array.get $Tuple (local.get $tuple) (local.get $i)))
+					(call $Value.hash (array.get $Tuple (local.get $tuple) (local.get $i)))
 				)
 				(global.get $PRIME)
 			))
@@ -109,13 +135,13 @@
 
 
 ;; hash a $Record.
-;; Similar to `$hash-Tuple` except that we don’t multiply by PRIME until the very end.
+;; Similar to `$!Tuple.hash` except that we don’t multiply by PRIME until the very end.
 ;; Doing so preserves commutativity, which is necessary for Records,
 ;; because keys may be inserted in any order.
 ;; ```
 ;; [SEED, ...$record.entries()].reduce((a, b) => a xor hash(b)) * PRIME;
 ;; ```
-(func $hash-Record (param $record (ref $Record)) (result i64)
+(func $!Record.hash (param $record (ref $Record)) (result i64)
 	(local $result i64)
 	(local $i      i32)
 
@@ -127,7 +153,7 @@
 			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record))))
 			(local.set $result (i64.xor
 				(local.get $result)
-				(call $hash-Property (array.get $Record (local.get $record) (local.get $i)))
+				(call $!Property.hash (array.get $Record (local.get $record) (local.get $i)))
 			))
 			(local.set $i (i32.add (local.get $i) (i32.const 1)))
 			(br $repeat)
@@ -139,33 +165,8 @@
 
 
 ;; hash an $Object.
+;; Applies to all Objects, including Lists, Dicts, and Maps.
 ;; Returns its id.
-(func $hash-Object (param $obj (ref $Object)) (result i64)
+(func $!Object.hash (param $obj (ref $Object)) (result i64)
 	(struct.get $Object $id (local.get $obj))
-)
-
-
-
-;; ## Main Hash Function ##
-(func $hash (param $value (ref $Value)) (result i64)
-	(local $tag       i32)
-	(local $composite eqref)
-
-	(local.set $tag       (struct.get $Value $tag       (local.get $value)))
-	(local.set $composite (struct.get $Value $composite (local.get $value)))
-
-	(if
-		(i32.eq (local.get $tag) (i32.const 1))
-		(then (return_call $hash-v128 (struct.get $Value $primitive (local.get $value))))
-	)
-	(if
-		(i32.eq (local.get $tag) (i32.const 2))
-		(then
-			(if (ref.test (ref $String) (local.get $composite)) (then (return_call $hash-String (ref.cast (ref $String) (local.get $composite)))))
-			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return_call $hash-Tuple  (ref.cast (ref $Tuple)  (local.get $composite)))))
-			(if (ref.test (ref $Record) (local.get $composite)) (then (return_call $hash-Record (ref.cast (ref $Record) (local.get $composite)))))
-			(if (ref.test (ref $Object) (local.get $composite)) (then (return_call $hash-Object (ref.cast (ref $Object) (local.get $composite)))))
-		)
-	)
-	(unreachable)
 )

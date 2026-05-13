@@ -35,7 +35,7 @@
 
 	(local.set $ARRLEN     (array.len (local.get $record)))
 	(local.set $loop-count (i32.const 0))
-	(local.set $index      (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index      (call $util:mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 
 	(loop $repeat
 		(local.set $prop (array.get $Record (local.get $record) (local.get $index)))
@@ -50,7 +50,7 @@
 			(i32.gt_u (local.get $loop-count) (local.get $ARRLEN))
 			(then (unreachable))
 		)
-		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+		(local.set $index (call $util:mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
 		(br $repeat)
 	)
 )
@@ -80,7 +80,7 @@
 				(then (return (i32.const 0)))
 			)
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $cpl:id
+				(i32.eqz (call $Value.bool-to-i32 (call $op:id
 					(struct.get $Property $val (local.get $prop))
 					(call $Record.get (local.get $record1) (local.get $key))
 				)))
@@ -118,7 +118,7 @@
 				(then (return (i32.const 0)))
 			)
 			(if
-				(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
 					(struct.get $Property $val (local.get $prop))
 					(call $Record.get (local.get $record1) (local.get $key))
 				)))

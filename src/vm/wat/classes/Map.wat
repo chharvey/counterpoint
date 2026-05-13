@@ -67,7 +67,7 @@
 
 	(local.set $internal (struct.get $Map $internal (local.get $map)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
-	(local.set $index    (call $mod (i32.wrap_i64 (call $hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index    (call $util:mod (i32.wrap_i64 (call $Value.hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombcase (ref.null $Case))
 
@@ -86,7 +86,7 @@
 		)
 		;; if the antecedents match, we have our result.
 		(if
-			(call $Value.bool-to-i32 (call $cpl:id (struct.get $Case $ant (local.get $case)) (local.get $ant)))
+			(call $Value.bool-to-i32 (call $op:id (struct.get $Case $ant (local.get $case)) (local.get $ant)))
 			(then (return (local.get $index) (local.get $case)))
 		)
 		;; if the current case is a tombstone, store it, then continue the search.
@@ -98,7 +98,7 @@
 			)
 		)
 		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
-		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+		(local.set $index (call $util:mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
 		(br $repeat)
 	)
 )
@@ -174,7 +174,7 @@
 	(if
 		(ref.is_null (local.get $case))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1))))
+			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $Map $size (local.get $map)) (i32.const 1))))
 			(if
 				(i32.lt_u (array.len (struct.get $Map $internal (local.get $map))) (local.get $new-capacity))
 				(then
@@ -282,7 +282,7 @@
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
+						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
 							(struct.get $Case $con (local.get $case0))
 							(struct.get $Case $con (local.get $case1))
 						)))

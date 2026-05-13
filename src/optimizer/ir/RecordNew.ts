@@ -35,7 +35,7 @@ export class RecordNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.newValue(cg.codegenRecord(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([id, {value}]) => [
+		return cg.vm.Value.newComposite(cg.codegenRecord(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([id, {value}]) => [
 			id,
 			cg.newProperty(id, value.codegen(cg)),
 		]))));

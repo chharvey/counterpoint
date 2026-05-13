@@ -46,9 +46,9 @@ export class CollectionLinearNew extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		switch (this.name) {
-			case TypeName.TUPLE: { return cg.newValue(cg.codegenTuple (this.items.map((item) => item.codegen(cg)))); }
-			case TypeName.LIST:  { return cg.newValue(cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }
-			case TypeName.SET:   { return cg.newValue(cg.codegenSet   (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.TUPLE: { return cg.vm.Value.newComposite(cg.codegenTuple (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.LIST:  { return cg.vm.Value.newComposite(cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.SET:   { return cg.vm.Value.newComposite(cg.codegenSet   (this.items.map((item) => item.codegen(cg)))); }
 		}
 	}
 }

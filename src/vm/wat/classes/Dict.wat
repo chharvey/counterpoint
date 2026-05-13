@@ -67,7 +67,7 @@
 
 	(local.set $internal (struct.get $Dict $internal (local.get $dict)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
-	(local.set $index    (call $mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index    (call $util:mod (i32.wrap_i64 (local.get $key)) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombprop (ref.null $Property))
 
@@ -98,7 +98,7 @@
 			)
 		)
 		;; a load factor is enforced; this guarantees some empty slots, so the loop is guaranteed to terminate
-		(local.set $index (call $mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
+		(local.set $index (call $util:mod (i32.add (local.get $index) (i32.const 1)) (local.get $ARRLEN)))
 		(br $repeat)
 	)
 )
@@ -174,7 +174,7 @@
 	(if
 		(ref.is_null (local.get $prop))
 		(then
-			(local.set $new-capacity (call $capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
+			(local.set $new-capacity (call $util:capacity-needed (i32.add (struct.get $Dict $size (local.get $dict)) (i32.const 1))))
 			(if
 				(i32.lt_u (array.len (struct.get $Dict $internal (local.get $dict))) (local.get $new-capacity))
 				(then
@@ -282,7 +282,7 @@
 					)
 
 					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $cpl:eq
+						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
 							(struct.get $Property $val (local.get $prop0))
 							(struct.get $Property $val (local.get $prop1))
 						)))

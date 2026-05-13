@@ -96,6 +96,12 @@ export class Vect {
 	public constructor(private readonly vm: VirtualMachine) {}
 
 
+	public get VOID():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.global.get('Vect.VOID',  binaryen.v128); }
+	public get NULL():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.global.get('Vect.NULL',  binaryen.v128); }
+	public get FALSE(): binaryen.ExpressionRef /* v128 */ { return this.vm.mod.global.get('Vect.FALSE', binaryen.v128); }
+	public get TRUE():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.global.get('Vect.TRUE',  binaryen.v128); }
+
+
 	/** Returns a v128 encoding the given i64 as signed. */
 	public newInt(param0: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
 		return this.vm.mod.call('Vect.new-int', [param0], binaryen.v128);

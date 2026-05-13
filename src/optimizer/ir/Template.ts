@@ -32,13 +32,13 @@ export class Template extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(cg.module.call('stringify', [item.codegen(cg)], cg.reftype.String)));
+		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(cg.vm.Value.stringify(item.codegen(cg))));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => cg.module.array.len(strarr.get()));
 
 		const result: Local = cg.newLocal(cg.module.array.new_default(cg.heaptype.String, lengths.reduce((a, b) => cg.module.i32.add(a, b))), cg.reftype.String);
 		const offset: Local = cg.newLocal(cg.module.i32.const(0));
 
-		return cg.newValue(cg.module.block(null, [
+		return cg.vm.Value.newComposite(cg.module.block(null, [
 			...strings.map((strarr) => strarr.set()),
 			result.set(),
 			offset.set(),

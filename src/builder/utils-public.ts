@@ -45,6 +45,6 @@ export function drop_then(
 	args:  readonly binaryen.ExpressionRef[],
 	final: binaryen.ExpressionRef | boolean,
 ): binaryen.ExpressionRef {
-	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : cg.newVect(final);
+	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : final ? cg.vm.Vect.TRUE : cg.vm.Vect.FALSE;
 	return cg.module.block(null, [...args.map((arg) => cg.module.drop(arg)), last_item], binaryen.getExpressionType(last_item));
 }
