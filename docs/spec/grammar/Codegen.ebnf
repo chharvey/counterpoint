@@ -314,10 +314,7 @@ Codegen((SET.SET `obj` `accessor` `v`)) := (block
 	(local.set $base     (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`)))
 	(local.set $accessor `Codegen(accessor)`)
 	(if
-		(i32.eq
-			(i16x8.extract_lane_u 3 (struct.get $Value $primitive `Codegen(v)`))
-			(i32.const 0x0003)
-		)
+		(call $Vect.is-true (struct.get $Value $primitive `Codegen(v)`))
 		(call $Map.set
 			(local.get $base)
 			(local.get $accessor)

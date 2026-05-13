@@ -103,13 +103,13 @@ function each_item(
  * ```
  * ;; argument:
  * (array.new_fixed $Tuple 2
- * 	(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
- * 	(struct.new $Value <val>) ;; any CPL value, primitive or composite
+ * 	(call $Value.new-primitive (call $Vect.new-nat <sym>)) ;; CPL type `sym`
+ * 	<$Value> ;; any CPL value, primitive or composite
  * )
  * ;; returns the fields of:
  * (struct.new $Property
  * 	(i64.const <sym_key>)
- * 	(struct.new $Value <val>)
+ * 	<$Value>
  * )
  * ```
  * @param cg   code-generator
@@ -135,13 +135,13 @@ function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionR
  * ```
  * ;; argument:
  * (struct.new $Case
- * 	(struct.new $Value (i32.const 0) (v128.const i16x8 0 0 0 0x0028 <sym>) (rev.null eq)) ;; CPL type `sym`
- * 	(struct.new $Value <val>) ;; any CPL value, primitive or composite
+ * 	(call $Value.new-primitive (call $Vect.new-nat <sym>)) ;; CPL type `sym`
+ * 	<$Value> ;; any CPL value, primitive or composite
  * )
  * ;; returns the fields of:
  * (struct.new $Property
  * 	(i64.const <sym_key>)
- * 	(struct.new $Value <val>)
+ * 	<$Value>
  * )
  * ```
  * @param cg    code-generator
@@ -166,13 +166,13 @@ function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binarye
  * ```
  * ;; argument:
  * (array.new_fixed $Tuple 2
- * 	(struct.new $Value <ant>) ;; any CPL value, primitive or composite
- * 	(struct.new $Value <con>) ;; any CPL value, primitive or composite
+ * 	<$Value 'ant'> ;; any CPL value, primitive or composite
+ * 	<$Value 'con'> ;; any CPL value, primitive or composite
  * )
  * ;; returns the fields of:
  * (struct.new $Case
- * 	(struct.new $Value <ant>)
- * 	(struct.new $Value <con>)
+ * 	<$Value 'ant'>
+ * 	<$Value 'con'>
  * )
  * ```
  * @param cg   code-generator
