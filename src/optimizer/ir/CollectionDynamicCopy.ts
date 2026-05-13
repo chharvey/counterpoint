@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinConst,
@@ -24,20 +24,16 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** Adjusts destination capacity before copying. */
 function copy_array(
-	mod:          Builder['module'],
-	destobj:      Local,
-	destref:      binaryen.ExpressionRef,
-	srcref:       Local,
-	adj_cap_name: string,
-	cap_needed:   binaryen.ExpressionRef,
+	mod:     Builder['module'],
+	destobj: Local,
+	destref: binaryen.ExpressionRef,
+	srcref:  Local,
+	adj_cap: binaryen.ExpressionRef /* void */,
 ): binaryen.ExpressionRef {
 	return mod.block(null, [
 		destobj.set(),
 		srcref.set(),
-		mod.call(adj_cap_name, [
-			destobj.get(),
-			cap_needed,
-		], binaryen.none),
+		adj_cap,
 		mod.array.copy(
 			destref,
 			mod.i32.const(0),
@@ -249,8 +245,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
-							'List.adjust-capacity', // FIXME: use VM method
-							cg.vm.util.capacityNeeded(mod.array.len(srcref.get())),
+							List.adjustCapacity(destlist.get(), cg.vm.util.capacityNeeded(mod.array.len(srcref.get()))),
 						);
 					}
 					// List.<T>(List.<T>((t, t, t)));
@@ -262,8 +257,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
-							'List.adjust-capacity', // FIXME: use VM method
-							mod.array.len(srcref.get()),
+							List.adjustCapacity(destlist.get(), mod.array.len(srcref.get())),
 						);
 					}
 					// List.<T>(Set.<T>((t, t, t)));
@@ -309,8 +303,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
-							'Dict.adjust-capacity', // FIXME: use VM method
-							cg.vm.util.capacityNeeded(mod.array.len(srcref.get())),
+							Dict.adjustCapacity(destdict.get(), cg.vm.util.capacityNeeded(mod.array.len(srcref.get()))),
 						);
 					}
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
@@ -331,8 +324,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
-							'Dict.adjust-capacity', // FIXME: use VM method
-							mod.array.len(srcref.get()),
+							Dict.adjustCapacity(destdict.get(), mod.array.len(srcref.get())),
 						);
 					}
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
@@ -389,8 +381,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destset,
 							VmMap.field(destset.get()).internal,
 							srcref,
-							'Map.adjust-capacity', // FIXME: use VM method
-							mod.array.len(srcref.get()),
+							VmMap.adjustCapacity(destset.get(), mod.array.len(srcref.get())),
 						);
 					}
 					default: {
@@ -436,8 +427,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destmap,
 							VmMap.field(destmap.get()).internal,
 							srcref,
-							'Map.adjust-capacity', // FIXME: use VM method
-							mod.array.len(srcref.get()),
+							VmMap.adjustCapacity(destmap.get(), mod.array.len(srcref.get())),
 						);
 					}
 					default: {
