@@ -70,7 +70,6 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),         'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Tuple.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),           'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),             'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),             'utf8'),
