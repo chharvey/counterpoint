@@ -74,7 +74,6 @@ export class Builder {
 	/** Alias for `this.vm.heaptype`.    */ public readonly heaptype:    VirtualMachine['heaptype'];
 	/** Alias for `this.vm.reftype`.     */ public readonly reftype:     VirtualMachine['reftype'];
 	/** Alias for `this.vm.reftypeNull`. */ public readonly reftypeNull: VirtualMachine['reftypeNull'];
-	/** Alias for `this.vm.structGet`.   */ public readonly structGet:   VirtualMachine['structGet'];
 
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
@@ -82,7 +81,6 @@ export class Builder {
 		this.heaptype    = this.vm.heaptype;
 		this.reftype     = this.vm.reftype;
 		this.reftypeNull = this.vm.reftypeNull;
-		this.structGet   = this.vm.structGet;
 
 		this.#setupGlobals();
 

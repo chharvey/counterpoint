@@ -79,14 +79,6 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),              'utf8'),
 ];
 
-/** Struct field constant indices. */
-const STRUCT = {
-	OBJECT: {
-		/** `$Object.$id` */
-		ID: 0,
-	},
-} as const;
-
 
 
 export class VirtualMachine {
@@ -105,22 +97,6 @@ export class VirtualMachine {
 			${ IMPORTS.join('') }
 		)
 	`) as BinaryenModuleUpdates;
-
-	/** Utilities for getting fields of WASM structs. */
-	public readonly structGet = {
-		object: {
-			/** @return `(struct.get $Object $id <ref>)` */
-			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
-		},
-	} as const;
-
-	/** Utilities for setting fields of WASM structs. */
-	public readonly structSet = {
-		object: {
-			/** @return `(struct.get $Object $id <ref> <val>)` */
-			id: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.OBJECT.ID, ref, val),
-		},
-	} as const;
 
 	public readonly Vect     = new Vect(this);
 	public readonly Value    = new Value(this);
