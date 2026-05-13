@@ -232,7 +232,7 @@ export class CollectionDynamicCopy extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Value, Case} = cg.vm;
+		const {mod, Value, Case, List} = cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
@@ -247,22 +247,22 @@ export class CollectionDynamicCopy extends Instruction {
 						return copy_array(
 							cg.module,
 							destlist,
-							cg.structGet.list.internal(destlist.get()),
+							List.field(destlist.get()).internal,
 							srcref,
-							'List.adjust-capacity',
+							'List.adjust-capacity', // FIXME: use VM method
 							cg.vm.util.capacityNeeded(mod.array.len(srcref.get())),
 						);
 					}
 					// List.<T>(List.<T>((t, t, t)));
 					// List.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.structGet.list.internal(Value.cast(code_src, cg.reftype.List)), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return copy_array(
 							cg.module,
 							destlist,
-							cg.structGet.list.internal(destlist.get()),
+							List.field(destlist.get()).internal,
 							srcref,
-							'List.adjust-capacity',
+							'List.adjust-capacity', // FIXME: use VM method
 							mod.array.len(srcref.get()),
 						);
 					}
@@ -280,11 +280,7 @@ export class CollectionDynamicCopy extends Instruction {
 						return mod.block(null, [
 							j.set(),
 							each_item(cg, destlist, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => mod.block(null, [
-								mod.call('List.set', [
-									dest_get,
-									j.get(),
-									Case.field(item_get).ant,
-								], binaryen.none),
+								List.set(dest_get, j.get(), Case.field(item_get).ant),
 								j.inc(),
 							])),
 						]);
@@ -320,7 +316,7 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.structGet.list.internal(Value.cast(code_src, cg.reftype.List)), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
 							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
 							return mod.call('Dict.set', [dest_get, key, val], binaryen.none);
@@ -377,7 +373,7 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>(List.<T>((t, t, t)));
 					// Set.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.structGet.list.internal(Value.cast(code_src, cg.reftype.List)), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return each_item(cg, destset, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => mod.call('Map.set', [
 							dest_get,
 							mod.ref.as_non_null(item_get),
@@ -416,7 +412,7 @@ export class CollectionDynamicCopy extends Instruction {
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(cg.structGet.list.internal(Value.cast(code_src, cg.reftype.List)), cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
 							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
 							return mod.call('Map.set', [dest_get, ant, con], binaryen.none);

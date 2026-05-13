@@ -67,7 +67,7 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Vect, Value} = cg.vm;
+		const {mod, Vect, Value, List} = cg.vm;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
@@ -75,11 +75,11 @@ export class CollectionDynamicSet extends Instruction {
 		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, reftype);
 		switch (this.name) {
 			case TypeName.LIST: {
-				return mod.call('List.set', [
+				return List.set(
 					cast_collection(cg.reftype.List),
 					mod.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
 					value,
-				], binaryen.none);
+				);
 			}
 			case TypeName.DICT: {
 				return mod.call('Dict.set', [

@@ -449,7 +449,7 @@ test.suite('Opcode', () => {
 						list.[3];
 						list.[-1];
 					}`);
-					const {mod, Vect, Value} = cg.vm;
+					const {mod, Vect, Value, List} = cg.vm;
 					const list_get:   binaryen.ExpressionRef = mod.local.get(1, cg.reftype.Value);
 					const item_0_get: binaryen.ExpressionRef = mod.local.get(4, cg.reftypeNull.Value);
 					const item_1_get: binaryen.ExpressionRef = mod.local.get(5, cg.reftypeNull.Value);
@@ -458,7 +458,7 @@ test.suite('Opcode', () => {
 					return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
 							mod.local.set(4, mod.array.get(
-								cg.structGet.list.internal(Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.List)),
+								List.field(Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.List)).internal,
 								mod.i32.wrap(Vect.asInt(Value.field(mod.local.get(3, cg.reftype.Value)).primitive)),
 								cg.reftypeNull.Value,
 							)),
@@ -470,7 +470,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(5, mod.array.get(
-								cg.structGet.list.internal(Value.cast(list_get, cg.reftype.List)),
+								List.field(Value.cast(list_get, cg.reftype.List)).internal,
 								mod.i32.wrap(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
 								cg.reftypeNull.Value,
 							)),
@@ -482,7 +482,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(6, mod.array.get(
-								cg.structGet.list.internal(Value.cast(list_get, cg.reftype.List)),
+								List.field(Value.cast(list_get, cg.reftype.List)).internal,
 								mod.i32.wrap(Vect.asInt(Value.field(genConst(cg, 3n)).primitive)),
 								cg.reftypeNull.Value,
 							)),
@@ -494,7 +494,7 @@ test.suite('Opcode', () => {
 						], cg.reftype.Value)),
 						mod.drop(mod.block(null, [
 							mod.local.set(7, mod.array.get(
-								cg.structGet.list.internal(Value.cast(list_get, cg.reftype.List)),
+								List.field(Value.cast(list_get, cg.reftype.List)).internal,
 								mod.i32.wrap(Vect.asInt(Value.field(genConst(cg, -1n)).primitive)),
 								cg.reftypeNull.Value,
 							)),
@@ -728,7 +728,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('List.count', [list.codegen(cg)], binaryen.i32)))),
+						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.List.count(list.codegen(cg))))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -925,23 +925,23 @@ test.suite('Opcode', () => {
 						set list.[0] = 46;
 						set list.[2] = 47;
 					}`);
-					const {mod, Vect, Value} = cg.vm;
+					const {mod, Vect, Value, List} = cg.vm;
 					return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
-						mod.call('List.set', [
+						List.set(
 							Value.cast(mod.local.get(2, cg.reftype.Value), cg.reftype.List),
 							mod.i32.wrap(Vect.asInt(Value.field(mod.local.get(3, cg.reftype.Value)).primitive)),
 							genConst(cg, 45n),
-						], binaryen.none),
-						mod.call('List.set', [
+						),
+						List.set(
 							Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List),
 							mod.i32.wrap(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
 							genConst(cg, 46n),
-						], binaryen.none),
-						mod.call('List.set', [
+						),
+						List.set(
 							Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List),
 							mod.i32.wrap(Vect.asInt(Value.field(genConst(cg, 2n)).primitive)),
 							genConst(cg, 47n),
-						], binaryen.none),
+						),
 					]);
 				});
 				test.test('DICT.SET', () => {
@@ -1027,7 +1027,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							List.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {mod, Value} = cg.vm;
+						const {mod, Value, List} = cg.vm;
 						const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.List);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.Tuple);
 						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1036,12 +1036,12 @@ test.suite('Opcode', () => {
 							mod.block(null, [
 								mod.local.set(2, Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.List)),
 								mod.local.set(3, Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.Tuple)),
-								mod.call('List.adjust-capacity', [
+								List.adjustCapacity(
 									destlist_get,
 									cg.vm.util.capacityNeeded(mod.array.len(srcref_get)),
-								], binaryen.none),
+								),
 								mod.array.copy(
-									cg.structGet.list.internal(destlist_get),
+									List.field(destlist_get).internal,
 									mod.i32.const(0),
 									srcref_get,
 									mod.i32.const(0),
@@ -1054,7 +1054,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							List.<int>([2, 3, 5]);
 						}`, {codegen: false});
-						const {mod, Value} = cg.vm;
+						const {mod, Value, List} = cg.vm;
 						const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.reftype.List);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.reftype.ListInternal);
 						opt.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1062,13 +1062,13 @@ test.suite('Opcode', () => {
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
 								mod.local.set(2, Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.List)),
-								mod.local.set(3, cg.structGet.list.internal(Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List))),
-								mod.call('List.adjust-capacity', [
+								mod.local.set(3, List.field(Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List)).internal),
+								List.adjustCapacity(
 									destlist_get,
 									mod.array.len(srcref_get),
-								], binaryen.none),
+								),
 								mod.array.copy(
-									cg.structGet.list.internal(destlist_get),
+									List.field(destlist_get).internal,
 									mod.i32.const(0),
 									srcref_get,
 									mod.i32.const(0),
@@ -1081,7 +1081,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							List.<int>({2, 3, 5});
 						}`, {codegen: false});
-						const {mod, Value, Case} = cg.vm;
+						const {mod, Value, Case, List} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.reftype.MapInternal);
 						const j_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(6, binaryen.i32);
@@ -1102,11 +1102,11 @@ test.suite('Opcode', () => {
 											mod.if(
 												mod.i32.eqz(mod.ref.is_null(case_get)),
 												mod.block(null, [
-													mod.call('List.set', [
+													List.set(
 														mod.local.get(3, cg.reftype.List),
 														j_get,
 														Case.field(case_get).ant,
-													], binaryen.none),
+													),
 													mod.local.set(5, mod.i32.add(j_get, mod.i32.const(1))),
 												]),
 											),
@@ -1185,7 +1185,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
 						}`, {codegen: false});
-						const {mod, Vect, Value} = cg.vm;
+						const {mod, Vect, Value, List} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.reftypeNull.Value);
@@ -1194,7 +1194,7 @@ test.suite('Opcode', () => {
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
 								mod.local.set(5, Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Dict)),
-								mod.local.set(6, cg.structGet.list.internal(Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.List))),
+								mod.local.set(6, List.field(Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.List)).internal),
 								mod.block('exit-0', [
 									mod.local.set(7, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1357,7 +1357,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Set.<int>([2, 3, 5]);
 						}`, {codegen: false});
-						const {mod, Value} = cg.vm;
+						const {mod, Value, List} = cg.vm;
 						const items_get: binaryen.ExpressionRef = mod.local.get(3, cg.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(4, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(5, cg.reftype.Value);
@@ -1366,7 +1366,7 @@ test.suite('Opcode', () => {
 							opt.instructions[2].codegen(cg),
 							mod.block(null, [
 								mod.local.set(2, Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
-								mod.local.set(3, cg.structGet.list.internal(Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List))),
+								mod.local.set(3, List.field(Value.cast(mod.local.get(1, cg.reftype.Value), cg.reftype.List)).internal),
 								mod.block('exit-0', [
 									mod.local.set(4, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [
@@ -1450,7 +1450,7 @@ test.suite('Opcode', () => {
 						const {opt, cg} = setupScript(`{
 							Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
 						}`, {codegen: false});
-						const {mod, Value} = cg.vm;
+						const {mod, Value, List} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.reftypeNull.Value);
@@ -1459,7 +1459,7 @@ test.suite('Opcode', () => {
 							opt.instructions[5].codegen(cg),
 							mod.block(null, [
 								mod.local.set(5, Value.cast(mod.local.get(0, cg.reftype.Value), cg.reftype.Map)),
-								mod.local.set(6, cg.structGet.list.internal(Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.List))),
+								mod.local.set(6, List.field(Value.cast(mod.local.get(4, cg.reftype.Value), cg.reftype.List)).internal),
 								mod.block('exit-0', [
 									mod.local.set(7, mod.i32.const(0)),
 									mod.loop('repeat-0', mod.block(null, [

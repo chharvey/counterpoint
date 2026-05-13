@@ -79,7 +79,7 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(mod.array.get(
-					cg.structGet.list.internal(cast_collection(cg.reftype.List)),
+					cg.vm.List.field(cast_collection(cg.reftype.List)).internal,
 					mod.i32.wrap(Vect.asInt(cg.vm.Value.field(accessor).primitive)),
 					cg.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design

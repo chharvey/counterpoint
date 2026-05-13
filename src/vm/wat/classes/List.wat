@@ -1,14 +1,9 @@
-;; Returns the number of “live” elements in the List.
-;; Since lists are contiguously front-packed and contain no tombstones,
-;; this should always be equal to the List’s size.
 (func $List.count (param $list (ref $List)) (result i32)
 	(struct.get $List $size (local.get $list))
 )
 
 
 
-;; Reallocate a List’s internal array as needed, adjusting for size.
-;; The List’s items are copied over to the new array, preserving the order from the original array.
 (func $List.adjust-capacity (param $list (ref $List)) (param $capacity i32)
 	;; the given List’s original internal array.
 	(local $orig (ref $ListInternal))
@@ -32,10 +27,6 @@
 
 
 
-;; Set a List value given an index.
-;; The provided index must be non-negative and less than or equal to the List’s count.
-;; (‘Equal to’ is allowed when appending to the List.)
-;; This method first reallocates if necessary, then adds the item.
 (func $List.set (param $list (ref $List)) (param $index i32) (param $value (ref $Value))
 	;; item at the specified index.
 	(local $item (ref null $Value))
@@ -70,10 +61,6 @@
 
 
 
-;; Delete a List item at the given index.
-;; The provided index must be non-negative and strictly less than the List’s count.
-;; Shifts all subsequent items to the front, and returns the deleted item.
-;; This method removes the item first, then reallocates if necessary.
 (func $List.delete (param $list (ref $List)) (param $index i32) (result (ref $Value))
 	;; the given List’s internal array.
 	(local $internal (ref $ListInternal))

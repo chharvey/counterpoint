@@ -91,7 +91,7 @@ export class Unop extends Value {
 			case OpCode.TONAT:   { return cg.vm.op.toNat(code); }
 			case OpCode.TOFLOAT: { return cg.vm.op.toFloat(code); }
 
-			case OpCode.LIST_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('List.count', [code], binaryen.i32)))); }
+			case OpCode.LIST_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.List.count(code)))); }
 			case OpCode.DICT_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Dict.count', [code], binaryen.i32)))); }
 			case OpCode.SET_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)))); }
 			case OpCode.MAP_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)))); }
