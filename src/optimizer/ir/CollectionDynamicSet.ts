@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinConst,
@@ -67,7 +67,7 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Vect, Value, List, Dict} = cg.vm;
+		const {mod, Vect, Value, List, Dict, Map: VmMap} = cg.vm;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
@@ -96,24 +96,24 @@ export class CollectionDynamicSet extends Instruction {
 					xsor.set(),
 					mod.if(
 						Vect.isConst(Value.field(value).primitive, true),
-						mod.call('Map.set', [
+						VmMap.set(
 							base.get(),
 							xsor.get(),
 							cg.getConst(BinConst.NULL),
-						], binaryen.none),
-						mod.drop(mod.call('Map.delete', [
+						),
+						mod.drop(VmMap.delete(
 							base.get(),
 							xsor.get(),
-						], cg.reftypeNull.Value)),
+						)),
 					),
 				]);
 			}
 			case TypeName.MAP: {
-				return mod.call('Map.set', [
+				return VmMap.set(
 					cast_collection(cg.reftype.Map),
 					accessor,
 					value,
-				], binaryen.none);
+				);
 			}
 		}
 	}

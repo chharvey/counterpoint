@@ -232,7 +232,7 @@ export class CollectionDynamicCopy extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Value, Case, List, Dict} = cg.vm;
+		const {mod, Value, Case, List, Dict, Map: VmMap} = cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
@@ -275,7 +275,7 @@ export class CollectionDynamicCopy extends Instruction {
 						 * This may be surprising to programmers who expect the copy to preserve order;
 						 * however, Set semantics explicitly state that programmers should not expect iteration to occur in any particular order.
 						 */
-						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						const j:      Local = cg.newLocal(mod.i32.const(0));
 						return mod.block(null, [
 							j.set(),
@@ -338,7 +338,7 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
 							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
 							return Dict.set(dest_get, key, val);
@@ -347,7 +347,7 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					case this.source.type instanceof TYPE.Map: {
-						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
 							const {key, val} = case_to_prop(cg, item_get);
 							return Dict.set(dest_get, key, val);
@@ -364,32 +364,32 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
-						return each_item(cg, destset, srcref, cg.reftype.Value, false, (dest_get, item_get) => mod.call('Map.set', [
+						return each_item(cg, destset, srcref, cg.reftype.Value, false, (dest_get, item_get) => VmMap.set(
 							dest_get,
 							item_get,
 							cg.getConst(BinConst.NULL),
-						], binaryen.none));
+						));
 					}
 					// Set.<T>(List.<T>((t, t, t)));
 					// Set.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
-						return each_item(cg, destset, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => mod.call('Map.set', [
+						return each_item(cg, destset, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => VmMap.set(
 							dest_get,
 							mod.ref.as_non_null(item_get),
 							cg.getConst(BinConst.NULL),
-						], binaryen.none));
+						));
 					}
 					// Set.<T>(Set.<T>((t, t, t)));
 					// Set.<T>({t, t, t});
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return copy_array(
 							cg.module,
 							destset,
-							cg.structGet.map.internal(destset.get()),
+							VmMap.field(destset.get()).internal,
 							srcref,
-							'Map.adjust-capacity',
+							'Map.adjust-capacity', // FIXME: use VM method
 							mod.array.len(srcref.get()),
 						);
 					}
@@ -406,7 +406,7 @@ export class CollectionDynamicCopy extends Instruction {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
 						return each_item(cg, destmap, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
 							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
-							return mod.call('Map.set', [dest_get, ant, con], binaryen.none);
+							return VmMap.set(dest_get, ant, con);
 						});
 					}
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
@@ -415,28 +415,28 @@ export class CollectionDynamicCopy extends Instruction {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
 							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
-							return mod.call('Map.set', [dest_get, ant, con], binaryen.none);
+							return VmMap.set(dest_get, ant, con);
 						});
 					}
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
 							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
-							return mod.call('Map.set', [dest_get, ant, con], binaryen.none);
+							return VmMap.set(dest_get, ant, con);
 						});
 					}
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					case this.source.type instanceof TYPE.Map: {
-						const srcref: Local = cg.newLocal(cg.structGet.map.internal(Value.cast(code_src, cg.reftype.Map)), cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return copy_array(
 							cg.module,
 							destmap,
-							cg.structGet.map.internal(destmap.get()),
+							VmMap.field(destmap.get()).internal,
 							srcref,
-							'Map.adjust-capacity',
+							'Map.adjust-capacity', // FIXME: use VM method
 							mod.array.len(srcref.get()),
 						);
 					}

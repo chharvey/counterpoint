@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
@@ -93,8 +93,8 @@ export class Unop extends Value {
 
 			case OpCode.LIST_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.List.count(code)))); }
 			case OpCode.DICT_COUNT: { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Dict.count(code)))); }
-			case OpCode.SET_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)))); }
-			case OpCode.MAP_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.module.call('Map.count',  [code], binaryen.i32)))); }
+			case OpCode.SET_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Map.count(code)))); }
+			case OpCode.MAP_COUNT:  { return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Map.count(code)))); }
 		}
 	}
 

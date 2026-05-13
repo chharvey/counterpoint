@@ -340,7 +340,7 @@ export class Builder {
 		const local: Local = this.newLocal(map_obj, this.reftype.Map);
 		return this.module.block(null, [
 			local.set(),
-			...[...cases].map(([ant, con]) => this.module.call('Map.set', [local.get(), ant, con], binaryen.none)),
+			...[...cases].map(([ant, con]) => this.vm.Map.set(local.get(), ant, con)),
 			local.get(),
 		], this.reftype.Map);
 	}

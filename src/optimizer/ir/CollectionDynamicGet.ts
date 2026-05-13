@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinConst,
@@ -67,7 +67,7 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Vect, Property, Case, Dict} = cg.vm;
+		const {mod, Vect, Property, Case, Dict, Map: VmMap} = cg.vm;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
@@ -114,10 +114,10 @@ export class CollectionDynamicGet extends Value {
 				], cg.reftype.Value);
 			}
 			case TypeName.SET: {
-				const maybe_case: Local = cg.newLocal(mod.tuple.extract(mod.call('Map.find', [
+				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
 					cast_collection(cg.reftype.Map),
 					accessor,
-				], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1));
+				), 1));
 
 				return mod.block(null, [
 					maybe_case.set(),
@@ -133,10 +133,10 @@ export class CollectionDynamicGet extends Value {
 				], cg.reftype.Value);
 			}
 			case TypeName.MAP: {
-				const maybe_case: Local = cg.newLocal(mod.tuple.extract(mod.call('Map.find', [
+				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
 					cast_collection(cg.reftype.Map),
 					accessor,
-				], binaryen.createType([binaryen.i32, cg.reftypeNull.Case])), 1));
+				), 1));
 
 				return mod.block(null, [
 					maybe_case.set(),

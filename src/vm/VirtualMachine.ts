@@ -13,6 +13,7 @@ import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
+import {Map as VmMap} from './classes/Map.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
 
@@ -84,12 +85,6 @@ const STRUCT = {
 		/** `$Object.$id` */
 		ID: 0,
 	},
-	MAP: {
-		/** `$Map.$size` */
-		SIZE:     1,
-		/** `$Map.$internal` */
-		INTERNAL: 2,
-	},
 } as const;
 
 
@@ -117,10 +112,6 @@ export class VirtualMachine {
 			/** @return `(struct.get $Object $id <ref>)` */
 			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
 		},
-		map: {
-			/** @return `(struct.get $Map $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $Map $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.INTERNAL, ref, this.reftype.MapInternal),
-		},
 	} as const;
 
 	/** Utilities for setting fields of WASM structs. */
@@ -128,10 +119,6 @@ export class VirtualMachine {
 		object: {
 			/** @return `(struct.get $Object $id <ref> <val>)` */
 			id: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.OBJECT.ID, ref, val),
-		},
-		map: {
-			/** @return `(struct.get $Map $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.SIZE,     ref, val),
-			/** @return `(struct.get $Map $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.INTERNAL, ref, val),
 		},
 	} as const;
 
@@ -141,6 +128,7 @@ export class VirtualMachine {
 	public readonly Case     = new Case(this);
 	public readonly List     = new List(this);
 	public readonly Dict     = new Dict(this);
+	public readonly Map      = new VmMap(this);
 
 	public readonly util = utils(this);
 	public readonly op   = ops(this);

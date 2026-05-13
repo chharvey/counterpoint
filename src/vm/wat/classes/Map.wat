@@ -1,5 +1,3 @@
-;; Returns the number of “live” elements in the Map.
-;; “Live” elements are non-null, non-tombstone cases.
 (func $Map.count (param $map (ref $Map)) (result i32)
 	;; the return value, the number of live elements.
 	(local $count i32)
@@ -35,20 +33,6 @@
 
 
 
-;; Find a Case in a Map with the given antecedent.
-;; If a Case with the ant is found, returns the Case and its matching index.
-;; Else, returns a null Case or tombstone with the index that the ant hashes to.
-;;
-;; Useful for get, set, and delete operations:
-;; - when getting:
-;; 	- if null or a “tombstone” is returned, no entry with the given ant exists in the Map
-;; 	- if a non-null, “live” Case is returned, its consequent is what you want
-;; - when setting:
-;; 	- if null is returned, it means you’re adding a new case; you should put the new entry at the returned index and increment the Map’s size
-;; 	- if a “tombstone” or a non-null, “live” Case is returned, you should replace it with the new entry, but *do not* increment the Map’s size
-;; - when deleting:
-;; 	- if null or a “tombstone” is returned, it means the ant wasn’t found and the Map was not mutated; *do not* change the Map’s size
-;; 	- if a non-null, “live” Case is returned, it was deleted from the Map and replaced with a tombstone; *do not* change the Map’s size (as tombstones are still counted)
 (func $Map.find (param $map (ref $Map)) (param $ant (ref $Value)) (result i32 (ref null $Case))
 	;; the given Map’s internal array.
 	(local $internal (ref $MapInternal))
@@ -105,10 +89,6 @@
 
 
 
-;; Reallocate a Map’s internal array as needed, adjusting for size.
-;; Only the Map’s “live” (non-tombstone) cases are copied over to the new array,
-;; according to the usual key hashing and linear probing technique, and its size and count are updated.
-;; There is no guarantee the entries’ positioning and/or order will be preserved.
 (func $Map.adjust-capacity (param $map (ref $Map)) (param $capacity i32)
 	;; the given Map’s original internal array.
 	(local $orig (ref $MapInternal))
@@ -155,8 +135,6 @@
 
 
 
-;; Set a Map consequent given a antecedent.
-;; This method first reallocates if necessary, then adds the consequent.
 (func $Map.set (param $map (ref $Map)) (param $ant (ref $Value)) (param $con (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
@@ -199,10 +177,6 @@
 
 
 
-;; Delete a Map Case with the given antecedent.
-;; If a Case with the given antecedent exists, it is removed and its consequent is returned;
-;; otherwise null is returned and the Map is not mutated.
-;; This method removes the Case first (if found), then reallocates if necessary.
 (func $Map.delete (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref null $Value))
 	;; index of the found case in the internal array.
 	(local $index i32)
