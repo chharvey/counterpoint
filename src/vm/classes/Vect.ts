@@ -122,11 +122,6 @@ export class Vect {
 		return this.vm.mod.call('Vect.type', [param0], binaryen.i32);
 	}
 
-	/** Whether the Header Lane is within a given range (inclusive). */
-	public checkTypeRange(param0: binaryen.ExpressionRef /* v128 */, param1: binaryen.ExpressionRef /* i32 */, param2: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef {
-		return this.vm.mod.call('Vect.check-type-range', [param0, param1, param2], binaryen.i32);
-	}
-
 	/** Whether the value does not exist */
 	public isVoid(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call('Vect.is-void', [param0], binaryen.i32);
