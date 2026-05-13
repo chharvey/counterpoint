@@ -1,4 +1,4 @@
-(func $compare-primitives
+(func $util:compare-primitives
 	(param $vect0 v128)
 	(param $vect1 v128)
 	(param $compare-ints   (ref $i64.relop))

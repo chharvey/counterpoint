@@ -307,7 +307,7 @@
 
 
 (func $cpl:lt (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $i64.lt_s)
@@ -317,7 +317,7 @@
 )
 
 (func $cpl:gt (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $i64.gt_s)
@@ -327,7 +327,7 @@
 )
 
 (func $cpl:le (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $i64.le_s)
@@ -337,7 +337,7 @@
 )
 
 (func $cpl:ge (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-primitives
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $i64.ge_s)
@@ -459,7 +459,7 @@
 				(call $Vect.is-special (local.get $vect1))
 			)
 			(then (call $cpl:id (local.get 0) (local.get 1)))
-			(else (call $Value.bool-from-i32 (call $compare-primitives
+			(else (call $Value.bool-from-i32 (call $util:compare-primitives
 				(struct.get $Value $primitive (local.get 0))
 				(struct.get $Value $primitive (local.get 1))
 				(ref.func $i64.eq)
