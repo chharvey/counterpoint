@@ -1,5 +1,11 @@
 ;; # Common Types
 
+;; dynamic operation types
+(type $i64.relop (func (param i64 i64) (result i32)))
+(type $f64.relop (func (param f64 f64) (result i32)))
+
+
+
 ;; WASM representation of a Counterpoint value
 (type $Value (struct
 	(field $tag       i8) ;; 1 = primitive, 2 = composite
