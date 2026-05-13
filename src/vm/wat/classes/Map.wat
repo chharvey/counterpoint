@@ -67,7 +67,7 @@
 
 	(local.set $internal (struct.get $Map $internal (local.get $map)))
 	(local.set $ARRLEN   (array.len (local.get $internal)))
-	(local.set $index    (call $util:mod (i32.wrap_i64 (call $hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
+	(local.set $index    (call $util:mod (i32.wrap_i64 (call $Value.hash (local.get $ant))) (local.get $ARRLEN))) ;; will trap if ARRLEN == 0
 	(local.set $tombidx  (i32.const -1))
 	(local.set $tombcase (ref.null $Case))
 
