@@ -16,13 +16,13 @@ export class Property {
 
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Property) */): {
-		readonly key: binaryen.ExpressionRef /* i64 */,
-		readonly val: binaryen.ExpressionRef /* (ref $Value) */,
+		/** @return `(struct.get $Property $key <ref>)` */ readonly key: binaryen.ExpressionRef /* i64 */,
+		/** @return `(struct.get $Property $val <ref>)` */ readonly val: binaryen.ExpressionRef /* (ref $Value) */,
 	} {
 		const {mod, reftype} = this.vm;
 		return {
-			/** @return `(struct.get $Property $key <ref>)` */ get key() { return mod.struct.get(FIELD.KEY, ref, binaryen.i64); },
-			/** @return `(struct.get $Property $val <ref>)` */ get val() { return mod.struct.get(FIELD.VAL, ref, reftype.Value); },
+			get key() { return mod.struct.get(FIELD.KEY, ref, binaryen.i64); },
+			get val() { return mod.struct.get(FIELD.VAL, ref, reftype.Value); },
 		};
 	}
 

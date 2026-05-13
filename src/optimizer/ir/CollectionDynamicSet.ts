@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinConst,
@@ -67,7 +67,7 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Vect, Value} = cg.vm;
+		const {mod, Vect, Value, List, Dict, Map: VmMap} = cg.vm;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
@@ -75,18 +75,18 @@ export class CollectionDynamicSet extends Instruction {
 		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, reftype);
 		switch (this.name) {
 			case TypeName.LIST: {
-				return mod.call('List.set', [
+				return List.set(
 					cast_collection(cg.reftype.List),
 					mod.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
 					value,
-				], binaryen.none);
+				);
 			}
 			case TypeName.DICT: {
-				return mod.call('Dict.set', [
+				return Dict.set(
 					cast_collection(cg.reftype.Dict),
 					Vect.asNat(Value.field(accessor).primitive),
 					value,
-				], binaryen.none);
+				);
 			}
 			case TypeName.SET: {
 				const base: Local = cg.newLocal(cast_collection(cg.reftype.Map));
@@ -96,24 +96,24 @@ export class CollectionDynamicSet extends Instruction {
 					xsor.set(),
 					mod.if(
 						Vect.isConst(Value.field(value).primitive, true),
-						mod.call('Map.set', [
+						VmMap.set(
 							base.get(),
 							xsor.get(),
 							cg.getConst(BinConst.NULL),
-						], binaryen.none),
-						mod.drop(mod.call('Map.delete', [
+						),
+						mod.drop(VmMap.delete(
 							base.get(),
 							xsor.get(),
-						], cg.reftypeNull.Value)),
+						)),
 					),
 				]);
 			}
 			case TypeName.MAP: {
-				return mod.call('Map.set', [
+				return VmMap.set(
 					cast_collection(cg.reftype.Map),
 					accessor,
 					value,
-				], binaryen.none);
+				);
 			}
 		}
 	}

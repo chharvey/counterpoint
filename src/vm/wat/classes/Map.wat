@@ -1,5 +1,3 @@
-;; Returns the number of “live” elements in the Map.
-;; “Live” elements are non-null, non-tombstone cases.
 (func $Map.count (param $map (ref $Map)) (result i32)
 	;; the return value, the number of live elements.
 	(local $count i32)
@@ -35,20 +33,6 @@
 
 
 
-;; Find a Case in a Map with the given antecedent.
-;; If a Case with the ant is found, returns the Case and its matching index.
-;; Else, returns a null Case or tombstone with the index that the ant hashes to.
-;;
-;; Useful for get, set, and delete operations:
-;; - when getting:
-;; 	- if null or a “tombstone” is returned, no entry with the given ant exists in the Map
-;; 	- if a non-null, “live” Case is returned, its consequent is what you want
-;; - when setting:
-;; 	- if null is returned, it means you’re adding a new case; you should put the new entry at the returned index and increment the Map’s size
-;; 	- if a “tombstone” or a non-null, “live” Case is returned, you should replace it with the new entry, but *do not* increment the Map’s size
-;; - when deleting:
-;; 	- if null or a “tombstone” is returned, it means the ant wasn’t found and the Map was not mutated; *do not* change the Map’s size
-;; 	- if a non-null, “live” Case is returned, it was deleted from the Map and replaced with a tombstone; *do not* change the Map’s size (as tombstones are still counted)
 (func $Map.find (param $map (ref $Map)) (param $ant (ref $Value)) (result i32 (ref null $Case))
 	;; the given Map’s internal array.
 	(local $internal (ref $MapInternal))
@@ -105,10 +89,6 @@
 
 
 
-;; Reallocate a Map’s internal array as needed, adjusting for size.
-;; Only the Map’s “live” (non-tombstone) cases are copied over to the new array,
-;; according to the usual key hashing and linear probing technique, and its size and count are updated.
-;; There is no guarantee the entries’ positioning and/or order will be preserved.
 (func $Map.adjust-capacity (param $map (ref $Map)) (param $capacity i32)
 	;; the given Map’s original internal array.
 	(local $orig (ref $MapInternal))
@@ -155,8 +135,6 @@
 
 
 
-;; Set a Map consequent given a antecedent.
-;; This method first reallocates if necessary, then adds the consequent.
 (func $Map.set (param $map (ref $Map)) (param $ant (ref $Value)) (param $con (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
@@ -199,10 +177,6 @@
 
 
 
-;; Delete a Map Case with the given antecedent.
-;; If a Case with the given antecedent exists, it is removed and its consequent is returned;
-;; otherwise null is returned and the Map is not mutated.
-;; This method removes the Case first (if found), then reallocates if necessary.
 (func $Map.delete (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref null $Value))
 	;; index of the found case in the internal array.
 	(local $index i32)
@@ -232,67 +206,4 @@
 	;; capacity adjustment does not occur here. only on insertion.
 
 	(struct.get $Case $con (local.get $case))
-)
-
-
-
-;; Returns whether two Maps are equal —
-;; whether they have equal consequents at equal antecedents.
-(func $Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (result i32)
-	(local $i         i32)
-	(local $internal0 (ref $MapInternal))
-	(local $internal1 (ref $MapInternal))
-	(local $case0     (ref null $Case))
-	(local $case1     (ref null $Case))
-	(local $ant       (ref $Value))
-
-	;; Maps that are identical are always equal
-	(if
-		(ref.eq (local.get $map0) (local.get $map1))
-		(then (return (i32.const 1)))
-	)
-
-	;; compare $Map.$size since two equal Maps may have different internal array lengths
-	(if
-		(i32.ne (struct.get $Map $size (local.get $map0)) (struct.get $Map $size (local.get $map1)))
-		(then (return (i32.const 0)))
-	)
-
-	(local.set $internal0 (struct.get $Map $internal (local.get $map0)))
-	(local.set $internal1 (struct.get $Map $internal (local.get $map1)))
-
-	(block $exit
-		(local.set $i (i32.const 0))
-		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $case0 (array.get $MapInternal (local.get $internal0) (local.get $i)))
-			(if
-				(i32.eqz (ref.is_null (local.get $case0)))
-				(then
-					(local.set $ant (struct.get $Case $ant (local.get $case0)))
-
-					;; if $map1 doesn’t have the key, return false
-					(drop (local.set $case1 (call $Map.find (local.get $map1) (local.get $ant))))
-					(if
-						(i32.or
-							(ref.is_null (local.get $case1))
-							(call $Case.is-tombstone (local.get $case1))
-						)
-						(then (return (i32.const 0)))
-					)
-
-					(if
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
-							(struct.get $Case $con (local.get $case0))
-							(struct.get $Case $con (local.get $case1))
-						)))
-						(then (return (i32.const 0)))
-					)
-				)
-			)
-			(local.set $i (i32.add (local.get $i) (i32.const 1)))
-			(br $repeat)
-		)
-	)
-	(i32.const 1)
 )

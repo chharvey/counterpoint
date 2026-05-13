@@ -1,14 +1,9 @@
-;; Returns the number of “live” elements in the List.
-;; Since lists are contiguously front-packed and contain no tombstones,
-;; this should always be equal to the List’s size.
 (func $List.count (param $list (ref $List)) (result i32)
 	(struct.get $List $size (local.get $list))
 )
 
 
 
-;; Reallocate a List’s internal array as needed, adjusting for size.
-;; The List’s items are copied over to the new array, preserving the order from the original array.
 (func $List.adjust-capacity (param $list (ref $List)) (param $capacity i32)
 	;; the given List’s original internal array.
 	(local $orig (ref $ListInternal))
@@ -32,10 +27,6 @@
 
 
 
-;; Set a List value given an index.
-;; The provided index must be non-negative and less than or equal to the List’s count.
-;; (‘Equal to’ is allowed when appending to the List.)
-;; This method first reallocates if necessary, then adds the item.
 (func $List.set (param $list (ref $List)) (param $index i32) (param $value (ref $Value))
 	;; item at the specified index.
 	(local $item (ref null $Value))
@@ -70,10 +61,6 @@
 
 
 
-;; Delete a List item at the given index.
-;; The provided index must be non-negative and strictly less than the List’s count.
-;; Shifts all subsequent items to the front, and returns the deleted item.
-;; This method removes the item first, then reallocates if necessary.
 (func $List.delete (param $list (ref $List)) (param $index i32) (result (ref $Value))
 	;; the given List’s internal array.
 	(local $internal (ref $ListInternal))
@@ -107,80 +94,4 @@
 	;; capacity adjustment does not occur here. only on insertion.
 
 	(local.get $item)
-)
-
-
-
-;; Returns whether two Lists are equal —
-;; whether they have equal items at the same indices.
-(func $List.equal (param $list0 (ref $List)) (param $list1 (ref $List)) (result i32)
-	(local $i         i32)
-	(local $internal0 (ref $ListInternal))
-	(local $internal1 (ref $ListInternal))
-	(local $item0     (ref null $Value))
-	(local $item1     (ref null $Value))
-
-	;; Lists that are identical are always equal
-	(if
-		(ref.eq (local.get $list0) (local.get $list1))
-		(then (return (i32.const 1)))
-	)
-
-	;; compare $List.$size since two equal Lists may have different internal array lengths
-	(if
-		(i32.ne (struct.get $List $size (local.get $list0)) (struct.get $List $size (local.get $list1)))
-		(then (return (i32.const 0)))
-	)
-
-	(local.set $internal0 (struct.get $List $internal (local.get $list0)))
-	(local.set $internal1 (struct.get $List $internal (local.get $list1)))
-
-	(block $exit
-		(local.set $i (i32.const 0))
-		(loop $repeat
-			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
-			(local.set $item0 (array.get $ListInternal (local.get $internal0) (local.get $i)))
-			(local.set $item1 (array.get $ListInternal (local.get $internal1) (local.get $i)))
-
-			;; if they’re both null, we’ve reached the end of all live items; the Lists are equal; return true
-			(if
-				(i32.and
-					(ref.is_null (local.get $item0))
-					(ref.is_null (local.get $item1))
-				)
-				(then (return (i32.const 1)))
-			)
-
-			;; if exactly one of them is null, or neither of them is null and they’re not equal, return false
-			(if
-				(i32.or
-					(i32.or
-						(i32.and
-							(ref.is_null (local.get $item0))
-							(i32.eqz (ref.is_null (local.get $item1)))
-						)
-						(i32.and
-							(i32.eqz (ref.is_null (local.get $item0)))
-							(ref.is_null (local.get $item1))
-						)
-					)
-					(i32.and
-						(i32.and
-							(i32.eqz (ref.is_null (local.get $item0)))
-							(i32.eqz (ref.is_null (local.get $item1)))
-						)
-						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
-							(ref.cast (ref $Value) (local.get $item0))
-							(ref.cast (ref $Value) (local.get $item1))
-						)))
-					)
-				)
-				(then (return (i32.const 0)))
-			)
-
-			(local.set $i (i32.add (local.get $i) (i32.const 1)))
-			(br $repeat)
-		)
-	)
-	(i32.const 1)
 )

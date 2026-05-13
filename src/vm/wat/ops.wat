@@ -414,7 +414,7 @@
 				(ref.test (ref $Tuple) (local.get $ref0))
 				(ref.test (ref $Tuple) (local.get $ref1))
 			)
-			(then (br $exit (call $Tuple.identical
+			(then (br $exit (call $!Tuple.identical
 				(ref.cast (ref $Tuple) (local.get $ref0))
 				(ref.cast (ref $Tuple) (local.get $ref1))
 			)))
@@ -424,7 +424,7 @@
 				(ref.test (ref $Record) (local.get $ref0))
 				(ref.test (ref $Record) (local.get $ref1))
 			)
-			(then (br $exit (call $Record.identical
+			(then (br $exit (call $!Record.identical
 				(ref.cast (ref $Record) (local.get $ref0))
 				(ref.cast (ref $Record) (local.get $ref1))
 			)))
@@ -434,6 +434,68 @@
 			(local.get $ref1)
 		))
 	))
+)
+;; Returns whether two tuples are identical by value —
+;; whether they have identical items at the same indices.
+(func $!Tuple.identical (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
+	(local $i i32)
+
+	(if
+		(i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
+		(then (return (i32.const 0)))
+	)
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
+			(if
+				(i32.eqz (call $Value.bool-to-i32 (call $op:id
+					(array.get $Tuple (local.get $tuple0) (local.get $i))
+					(array.get $Tuple (local.get $tuple1) (local.get $i))
+				)))
+				(then (return (i32.const 0)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
+)
+;; Returns whether two records are identical by value —
+;; whether they have identical values at the same keys.
+(func $!Record.identical (param $record0 (ref $Record)) (param $record1 (ref $Record)) (result i32)
+	(local $i    i32)
+	(local $prop (ref $Property))
+	(local $key  i64)
+
+	(if
+		(i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
+		(then (return (i32.const 0)))
+	)
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record0))))
+			(local.set $prop (array.get $Record (local.get $record0) (local.get $i)))
+			(local.set $key  (struct.get $Property $key (local.get $prop)))
+			(if
+				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
+				(then (return (i32.const 0)))
+			)
+			(if
+				(i32.eqz (call $Value.bool-to-i32 (call $op:id
+					(struct.get $Property $val (local.get $prop))
+					(call $Record.get (local.get $record1) (local.get $key))
+				)))
+				(then (return (i32.const 0)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
 )
 
 
@@ -474,7 +536,7 @@
 				(ref.test (ref $Tuple) (local.get $ref0))
 				(ref.test (ref $Tuple) (local.get $ref1))
 			)
-			(then (br $exit (call $Tuple.equal
+			(then (br $exit (call $!Tuple.equal
 				(ref.cast (ref $Tuple) (local.get $ref0))
 				(ref.cast (ref $Tuple) (local.get $ref1))
 			)))
@@ -484,7 +546,7 @@
 				(ref.test (ref $Record) (local.get $ref0))
 				(ref.test (ref $Record) (local.get $ref1))
 			)
-			(then (br $exit (call $Record.equal
+			(then (br $exit (call $!Record.equal
 				(ref.cast (ref $Record) (local.get $ref0))
 				(ref.cast (ref $Record) (local.get $ref1))
 			)))
@@ -494,7 +556,7 @@
 				(ref.test (ref $List) (local.get $ref0))
 				(ref.test (ref $List) (local.get $ref1))
 			)
-			(then (br $exit (call $List.equal
+			(then (br $exit (call $!List.equal
 				(ref.cast (ref $List) (local.get $ref0))
 				(ref.cast (ref $List) (local.get $ref1))
 			)))
@@ -504,7 +566,7 @@
 				(ref.test (ref $Dict) (local.get $ref0))
 				(ref.test (ref $Dict) (local.get $ref1))
 			)
-			(then (br $exit (call $Dict.equal
+			(then (br $exit (call $!Dict.equal
 				(ref.cast (ref $Dict) (local.get $ref0))
 				(ref.cast (ref $Dict) (local.get $ref1))
 			)))
@@ -514,7 +576,7 @@
 				(ref.test (ref $Map) (local.get $ref0))
 				(ref.test (ref $Map) (local.get $ref1))
 			)
-			(then (br $exit (call $Map.equal
+			(then (br $exit (call $!Map.equal
 				(ref.cast (ref $Map) (local.get $ref0))
 				(ref.cast (ref $Map) (local.get $ref1))
 			)))
@@ -524,6 +586,261 @@
 			(local.get 1)
 		)
 	))
+)
+;; Returns whether two tuples are equal —
+;; whether they have equal items at the same indices.
+(func $!Tuple.equal (param $tuple0 (ref $Tuple)) (param $tuple1 (ref $Tuple)) (result i32)
+	(local $i i32)
+
+	(if
+		(i32.ne (array.len (local.get $tuple0)) (array.len (local.get $tuple1)))
+		(then (return (i32.const 0)))
+	)
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $tuple0))))
+			(if
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+					(array.get $Tuple (local.get $tuple0) (local.get $i))
+					(array.get $Tuple (local.get $tuple1) (local.get $i))
+				)))
+				(then (return (i32.const 0)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
+)
+;; Returns whether two records are equal —
+;; whether they have equal values at the same keys.
+(func $!Record.equal (param $record0 (ref $Record)) (param $record1 (ref $Record)) (result i32)
+	(local $i    i32)
+	(local $prop (ref $Property))
+	(local $key  i64)
+
+	(if
+		(i32.ne (array.len (local.get $record0)) (array.len (local.get $record1)))
+		(then (return (i32.const 0)))
+	)
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $record0))))
+			(local.set $prop (array.get $Record (local.get $record0) (local.get $i)))
+			(local.set $key  (struct.get $Property $key (local.get $prop)))
+			(if
+				(i32.eqz (call $Record.has-key (local.get $record1) (local.get $key)))
+				(then (return (i32.const 0)))
+			)
+			(if
+				(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+					(struct.get $Property $val (local.get $prop))
+					(call $Record.get (local.get $record1) (local.get $key))
+				)))
+				(then (return (i32.const 0)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
+)
+;; Returns whether two Lists are equal —
+;; whether they have equal items at the same indices.
+(func $!List.equal (param $list0 (ref $List)) (param $list1 (ref $List)) (result i32)
+	(local $i         i32)
+	(local $internal0 (ref $ListInternal))
+	(local $internal1 (ref $ListInternal))
+	(local $item0     (ref null $Value))
+	(local $item1     (ref null $Value))
+
+	;; Lists that are identical are always equal
+	(if
+		(ref.eq (local.get $list0) (local.get $list1))
+		(then (return (i32.const 1)))
+	)
+
+	;; compare $List.$size since two equal Lists may have different internal array lengths
+	(if
+		(i32.ne (struct.get $List $size (local.get $list0)) (struct.get $List $size (local.get $list1)))
+		(then (return (i32.const 0)))
+	)
+
+	(local.set $internal0 (struct.get $List $internal (local.get $list0)))
+	(local.set $internal1 (struct.get $List $internal (local.get $list1)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(local.set $item0 (array.get $ListInternal (local.get $internal0) (local.get $i)))
+			(local.set $item1 (array.get $ListInternal (local.get $internal1) (local.get $i)))
+
+			;; if they’re both null, we’ve reached the end of all live items; the Lists are equal; return true
+			(if
+				(i32.and
+					(ref.is_null (local.get $item0))
+					(ref.is_null (local.get $item1))
+				)
+				(then (return (i32.const 1)))
+			)
+
+			;; if exactly one of them is null, or neither of them is null and they’re not equal, return false
+			(if
+				(i32.or
+					(i32.or
+						(i32.and
+							(ref.is_null (local.get $item0))
+							(i32.eqz (ref.is_null (local.get $item1)))
+						)
+						(i32.and
+							(i32.eqz (ref.is_null (local.get $item0)))
+							(ref.is_null (local.get $item1))
+						)
+					)
+					(i32.and
+						(i32.and
+							(i32.eqz (ref.is_null (local.get $item0)))
+							(i32.eqz (ref.is_null (local.get $item1)))
+						)
+						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+							(ref.cast (ref $Value) (local.get $item0))
+							(ref.cast (ref $Value) (local.get $item1))
+						)))
+					)
+				)
+				(then (return (i32.const 0)))
+			)
+
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
+)
+;; Returns whether two Dicts are equal —
+;; whether they have equal values at the same keys.
+(func $!Dict.equal (param $dict0 (ref $Dict)) (param $dict1 (ref $Dict)) (result i32)
+	(local $i         i32)
+	(local $internal0 (ref $DictInternal))
+	(local $internal1 (ref $DictInternal))
+	(local $prop0     (ref null $Property))
+	(local $prop1     (ref null $Property))
+	(local $key       i64)
+
+	;; Dicts that are identical are always equal
+	(if
+		(ref.eq (local.get $dict0) (local.get $dict1))
+		(then (return (i32.const 1)))
+	)
+
+	;; compare $Dict.$size since two equal Dicts may have different internal array lengths
+	(if
+		(i32.ne (struct.get $Dict $size (local.get $dict0)) (struct.get $Dict $size (local.get $dict1)))
+		(then (return (i32.const 0)))
+	)
+
+	(local.set $internal0 (struct.get $Dict $internal (local.get $dict0)))
+	(local.set $internal1 (struct.get $Dict $internal (local.get $dict1)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(local.set $prop0 (array.get $DictInternal (local.get $internal0) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $prop0)))
+				(then
+					(local.set $key (struct.get $Property $key (local.get $prop0)))
+
+					;; if $dict1 doesn’t have the key, return false
+					(drop (local.set $prop1 (call $Dict.find (local.get $dict1) (local.get $key))))
+					(if
+						(i32.or
+							(ref.is_null (local.get $prop1))
+							(call $Property.is-tombstone (local.get $prop1))
+						)
+						(then (return (i32.const 0)))
+					)
+
+					(if
+						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+							(struct.get $Property $val (local.get $prop0))
+							(struct.get $Property $val (local.get $prop1))
+						)))
+						(then (return (i32.const 0)))
+					)
+				)
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
+)
+;; Returns whether two Maps are equal —
+;; whether they have equal consequents at equal antecedents.
+(func $!Map.equal (param $map0 (ref $Map)) (param $map1 (ref $Map)) (result i32)
+	(local $i         i32)
+	(local $internal0 (ref $MapInternal))
+	(local $internal1 (ref $MapInternal))
+	(local $case0     (ref null $Case))
+	(local $case1     (ref null $Case))
+	(local $ant       (ref $Value))
+
+	;; Maps that are identical are always equal
+	(if
+		(ref.eq (local.get $map0) (local.get $map1))
+		(then (return (i32.const 1)))
+	)
+
+	;; compare $Map.$size since two equal Maps may have different internal array lengths
+	(if
+		(i32.ne (struct.get $Map $size (local.get $map0)) (struct.get $Map $size (local.get $map1)))
+		(then (return (i32.const 0)))
+	)
+
+	(local.set $internal0 (struct.get $Map $internal (local.get $map0)))
+	(local.set $internal1 (struct.get $Map $internal (local.get $map1)))
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $internal0))))
+			(local.set $case0 (array.get $MapInternal (local.get $internal0) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $case0)))
+				(then
+					(local.set $ant (struct.get $Case $ant (local.get $case0)))
+
+					;; if $map1 doesn’t have the key, return false
+					(drop (local.set $case1 (call $Map.find (local.get $map1) (local.get $ant))))
+					(if
+						(i32.or
+							(ref.is_null (local.get $case1))
+							(call $Case.is-tombstone (local.get $case1))
+						)
+						(then (return (i32.const 0)))
+					)
+
+					(if
+						(i32.eqz (call $Value.bool-to-i32 (call $op:eq
+							(struct.get $Case $con (local.get $case0))
+							(struct.get $Case $con (local.get $case1))
+						)))
+						(then (return (i32.const 0)))
+					)
+				)
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
 )
 
 

@@ -11,6 +11,9 @@ import {Vect} from './classes/Vect.ts';
 import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
+import {List} from './classes/List.ts';
+import {Dict} from './classes/Dict.ts';
+import {Map as VmMap} from './classes/Map.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
 
@@ -70,38 +73,11 @@ const IMPORTS: readonly string[] = [
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),         'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Tuple.wat'),            'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),           'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),             'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),             'utf8'),
 	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),              'utf8'),
 ];
-
-/** Struct field constant indices. */
-const STRUCT = {
-	OBJECT: {
-		/** `$Object.$id` */
-		ID: 0,
-	},
-	LIST: {
-		/** `$List.$size` */
-		SIZE:     1,
-		/** `$List.$internal` */
-		INTERNAL: 2,
-	},
-	DICT: {
-		/** `$Dict.$size` */
-		SIZE:     1,
-		/** `$Dict.$internal` */
-		INTERNAL: 2,
-	},
-	MAP: {
-		/** `$Map.$size` */
-		SIZE:     1,
-		/** `$Map.$internal` */
-		INTERNAL: 2,
-	},
-} as const;
 
 
 
@@ -122,50 +98,13 @@ export class VirtualMachine {
 		)
 	`) as BinaryenModuleUpdates;
 
-	/** Utilities for getting fields of WASM structs. */
-	public readonly structGet = {
-		object: {
-			/** @return `(struct.get $Object $id <ref>)` */
-			id: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.OBJECT.ID, ref, binaryen.i64),
-		},
-		list: {
-			/** @return `(struct.get $List $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.LIST.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $List $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.LIST.INTERNAL, ref, this.reftype.ListInternal),
-		},
-		dict: {
-			/** @return `(struct.get $Dict $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.DICT.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $Dict $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.DICT.INTERNAL, ref, this.reftype.DictInternal),
-		},
-		map: {
-			/** @return `(struct.get $Map $size     <ref>)` */ size:     (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.SIZE,     ref, binaryen.i32),
-			/** @return `(struct.get $Map $internal <ref>)` */ internal: (ref: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.get(STRUCT.MAP.INTERNAL, ref, this.reftype.MapInternal),
-		},
-	} as const;
-
-	/** Utilities for setting fields of WASM structs. */
-	public readonly structSet = {
-		object: {
-			/** @return `(struct.get $Object $id <ref> <val>)` */
-			id: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.OBJECT.ID, ref, val),
-		},
-		list: {
-			/** @return `(struct.get $List $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.LIST.SIZE,     ref, val),
-			/** @return `(struct.get $List $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.LIST.INTERNAL, ref, val),
-		},
-		dict: {
-			/** @return `(struct.get $Dict $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.DICT.SIZE,     ref, val),
-			/** @return `(struct.get $Dict $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.DICT.INTERNAL, ref, val),
-		},
-		map: {
-			/** @return `(struct.get $Map $size     <ref> <val>)` */ size:     (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.SIZE,     ref, val),
-			/** @return `(struct.get $Map $internal <ref> <val>)` */ internal: (ref: binaryen.ExpressionRef, val: binaryen.ExpressionRef): binaryen.ExpressionRef => this.mod.struct.set(STRUCT.MAP.INTERNAL, ref, val),
-		},
-	} as const;
-
 	public readonly Vect     = new Vect(this);
 	public readonly Value    = new Value(this);
 	public readonly Property = new Property(this);
 	public readonly Case     = new Case(this);
+	public readonly List     = new List(this);
+	public readonly Dict     = new Dict(this);
+	public readonly Map      = new VmMap(this);
 
 	public readonly util = utils(this);
 	public readonly op   = ops(this);
