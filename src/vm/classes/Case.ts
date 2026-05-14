@@ -43,7 +43,7 @@ export class Case {
 	 * they are counted when determining when a Map’s array should be grown or shrunk.
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
 	 */
-	public isTombstone(param0: binaryen.ExpressionRef /* (ref null $Case) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Case.is-tombstone', [param0], binaryen.i32);
+	public isTombstone(case_: binaryen.ExpressionRef /* (ref null $Case) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Case.is-tombstone', [case_], binaryen.i32);
 	}
 }

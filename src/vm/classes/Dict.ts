@@ -35,8 +35,8 @@ export class Dict {
 	 * Returns the number of “live” elements in the Dict.
 	 * “Live” elements are non-null, non-tombstone properties.
 	 */
-	public count(param0: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Dict.count', [param0], binaryen.i32);
+	public count(dict: binaryen.ExpressionRef /* (ref $Dict) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Dict.count', [dict], binaryen.i32);
 	}
 
 	/**
@@ -55,8 +55,8 @@ export class Dict {
 	 * 	- if null or a “tombstone” is returned, it means the key wasn’t found and the Dict was not mutated; *do not* change the Dict’s size
 	 * 	- if a non-null, “live” Property is returned, it was deleted from the Dict and replaced with a tombstone; *do not* change the Dict’s size (as tombstones are still counted)
 	 */
-	public find(param0: binaryen.ExpressionRef /* (ref $Dict) */, param1: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* i32 (ref null $Property) */ {
-		return this.vm.mod.call('Dict.find', [param0, param1], binaryen.createType([binaryen.i32, this.vm.reftypeNull.Property]));
+	public find(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* i32 (ref null $Property) */ {
+		return this.vm.mod.call('Dict.find', [dict, key], binaryen.createType([binaryen.i32, this.vm.reftypeNull.Property]));
 	}
 
 	/**
@@ -65,16 +65,16 @@ export class Dict {
 	 * according to the usual key hashing and linear probing technique, and its size and count are updated.
 	 * There is no guarantee the entries’ positioning and/or order will be preserved.
 	 */
-	public adjustCapacity(param0: binaryen.ExpressionRef /* (ref $Dict) */, param1: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('Dict.adjust-capacity', [param0, param1], binaryen.none);
+	public adjustCapacity(dict: binaryen.ExpressionRef /* (ref $Dict) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.call('Dict.adjust-capacity', [dict, capacity], binaryen.none);
 	}
 
 	/**
 	 * Set a Dict value given a key.
 	 * This method first reallocates if necessary, then adds the value.
 	 */
-	public set(param0: binaryen.ExpressionRef /* (ref $Dict) */, param1: binaryen.ExpressionRef /* i64 */, param2: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('Dict.set', [param0, param1, param2], binaryen.none);
+	public set(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */, val: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.call('Dict.set', [dict, key, val], binaryen.none);
 	}
 
 	/**
@@ -83,7 +83,7 @@ export class Dict {
 	 * otherwise null is returned and the Dict is not mutated.
 	 * This method removes the Property first (if found), then reallocates if necessary.
 	 */
-	public delete(param0: binaryen.ExpressionRef /* (ref $Dict) */, param1: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* (ref null $Value) */ {
-		return this.vm.mod.call('Dict.delete', [param0, param1], this.vm.reftypeNull.Value);
+	public delete(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* (ref null $Value) */ {
+		return this.vm.mod.call('Dict.delete', [dict, key], this.vm.reftypeNull.Value);
 	}
 }

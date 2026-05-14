@@ -103,102 +103,102 @@ export class Vect {
 
 
 	/** Returns a v128 encoding the given i64 as signed. */
-	public newInt(param0: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
-		return this.vm.mod.call('Vect.new-int', [param0], binaryen.v128);
+	public newInt(int: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
+		return this.vm.mod.call('Vect.new-int', [int], binaryen.v128);
 	}
 
 	/** Returns a v128 encoding the given i64 as unsigned. */
-	public newNat(param0: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
-		return this.vm.mod.call('Vect.new-nat', [param0], binaryen.v128);
+	public newNat(nat: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* v128 */ {
+		return this.vm.mod.call('Vect.new-nat', [nat], binaryen.v128);
 	}
 
 	/** Returns a v128 encoding the given f64. */
-	public newFloat(param0: binaryen.ExpressionRef /* f64 */): binaryen.ExpressionRef /* v128 */ {
-		return this.vm.mod.call('Vect.new-float', [param0], binaryen.v128);
+	public newFloat(float: binaryen.ExpressionRef /* f64 */): binaryen.ExpressionRef /* v128 */ {
+		return this.vm.mod.call('Vect.new-float', [float], binaryen.v128);
 	}
 
 	/** The Header Lane’s value, indicating the type of data stored. */
-	public type(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.type', [param0], binaryen.i32);
+	public type(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.type', [vect], binaryen.i32);
 	}
 
 	/** Whether the value does not exist */
-	public isVoid(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.is-void', [param0], binaryen.i32);
+	public isVoid(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-void', [vect], binaryen.i32);
 	}
 
 	/**
 	 * Whether the value contains the encoding for one of the Counterpoint values `null`, `false`, or `true`.
-	 * @param param0 the parameter to send into the WASM function
+	 * @param vect the parameter to send into the WASM function
 	 * @param tag    determines which WASM function to call
 	 * @returns      the result of calling `$Vect.is-{null,false,true}` based on the given tag
 	 */
-	public isConst(param0: binaryen.ExpressionRef /* v128 */, tag: boolean | null): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call(`Vect.is-${ tag }`, [param0], binaryen.i32);
+	public isConst(vect: binaryen.ExpressionRef /* v128 */, tag: boolean | null): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call(`Vect.is-${ tag }`, [vect], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a special value: null, false, or true. */
-	public isSpecial(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.is-special', [param0], binaryen.i32);
+	public isSpecial(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-special', [vect], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a signed integer. */
-	public isInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.is-int', [param0], binaryen.i32);
+	public isInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-int', [vect], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as an unsigned integer. */
-	public isNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.is-nat', [param0], binaryen.i32);
+	public isNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-nat', [vect], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a float. */
-	public isFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.is-float', [param0], binaryen.i32);
+	public isFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Vect.is-float', [vect], binaryen.i32);
 	}
 
 	/** The value as interpreted as a signed integer. */
-	public asInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.as-int', [param0], binaryen.i64);
+	public asInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.as-int', [vect], binaryen.i64);
 	}
 
 	/** The value as interpreted as an unsigned integer. */
-	public asNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.as-nat', [param0], binaryen.i64);
+	public asNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.as-nat', [vect], binaryen.i64);
 	}
 
 	/** The value as interpreted as a float. */
-	public asFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
-		return this.vm.mod.call('Vect.as-float', [param0], binaryen.f64);
+	public asFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
+		return this.vm.mod.call('Vect.as-float', [vect], binaryen.f64);
 	}
 
 	/** Reinterpretation. Return the `int` value, reinterpreted as `nat`. */
-	public intToNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.int-to-nat', [param0], binaryen.i64);
+	public intToNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.int-to-nat', [vect], binaryen.i64);
 	}
 
 	/** Conversion. Return the `int` value, converted to `float`. */
-	public intToFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
-		return this.vm.mod.call('Vect.int-to-float', [param0], binaryen.f64);
+	public intToFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
+		return this.vm.mod.call('Vect.int-to-float', [vect], binaryen.f64);
 	}
 
 	/** Reinterpretation. Return the `nat` value, reinterpreted as `int`. */
-	public natToInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.nat-to-int', [param0], binaryen.i64);
+	public natToInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.nat-to-int', [vect], binaryen.i64);
 	}
 
 	/** Conversion. Return the `nat` value, converted to `float`. */
-	public natToFloat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
-		return this.vm.mod.call('Vect.nat-to-float', [param0], binaryen.f64);
+	public natToFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
+		return this.vm.mod.call('Vect.nat-to-float', [vect], binaryen.f64);
 	}
 
 	/** Truncation. Return the `float` value, truncated to `int`. */
-	public floatToInt(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.float-to-int', [param0], binaryen.i64);
+	public floatToInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.float-to-int', [vect], binaryen.i64);
 	}
 
 	/** Truncation. Return the `float` value, truncated to `nat`. */
-	public floatToNat(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.float-to-nat', [param0], binaryen.i64);
+	public floatToNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
+		return this.vm.mod.call('Vect.float-to-nat', [vect], binaryen.i64);
 	}
 }

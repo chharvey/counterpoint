@@ -43,7 +43,7 @@ export class Property {
 	 * they are counted when determining when a Dict’s array should be grown or shrunk.
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
 	 */
-	public isTombstone(param0: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Property.is-tombstone', [param0], binaryen.i32);
+	public isTombstone(prop: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Property.is-tombstone', [prop], binaryen.i32);
 	}
 }

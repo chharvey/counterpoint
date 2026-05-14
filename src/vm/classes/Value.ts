@@ -42,37 +42,37 @@ export class Value {
 
 
 	/** Creates a new Value struct storing the given v128 in its primitive slot. */
-	public newPrimitive(param0: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('Value.new-primitive', [param0], this.vm.reftype.Value);
+	public newPrimitive(primitive: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.new-primitive', [primitive], this.vm.reftype.Value);
 	}
 
 	/** Creates a new Value struct storing the given reference in its composite slot. */
-	public newComposite(param0: binaryen.ExpressionRef /* (ref eq) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('Value.new-composite', [param0], this.vm.reftype.Value);
+	public newComposite(composite: binaryen.ExpressionRef /* (ref eq) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.new-composite', [composite], this.vm.reftype.Value);
 	}
 
 	/** Whether the value is primitive (tag == 1). */
-	public isPrimitive(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Value.is-primitive', [param0], binaryen.i32);
+	public isPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.is-primitive', [value], binaryen.i32);
 	}
 
 	/** Whether the value is composite (tag == 2). */
-	public isComposite(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Value.is-composite', [param0], binaryen.i32);
+	public isComposite(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.is-composite', [value], binaryen.i32);
 	}
 
 	/** Converts this value (assuming it’s primitive and boolean) to i32. */
-	public boolToI32(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Value.bool-to-i32', [param0], binaryen.i32);
+	public boolToI32(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.bool-to-i32', [value], binaryen.i32);
 	}
 
 	/** Converts an i32 value to a $Value with a boolean primitive. */
-	public boolFromI32(param0: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('Value.bool-from-i32', [param0], this.vm.reftype.Value);
+	public boolFromI32(bool: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.bool-from-i32', [bool], this.vm.reftype.Value);
 	}
 
 	/** Return a string representation of the value. */
-	public stringify(param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
-		return this.vm.mod.call('Value.stringify', [param0], this.vm.reftype.String);
+	public stringify(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
+		return this.vm.mod.call('Value.stringify', [value], this.vm.reftype.String);
 	}
 }

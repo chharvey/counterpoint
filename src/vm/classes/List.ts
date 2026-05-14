@@ -36,16 +36,16 @@ export class List {
 	 * Since lists are contiguously front-packed and contain no tombstones,
 	 * this should always be equal to the List’s size.
 	 */
-	public count(param0: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('List.count', [param0], binaryen.i32);
+	public count(list: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('List.count', [list], binaryen.i32);
 	}
 
 	/**
 	 * Reallocates a List’s internal array as needed, adjusting for size.
 	 * The List’s items are copied over to the new array, preserving the order from the original array.
 	 */
-	public adjustCapacity(param0: binaryen.ExpressionRef /* (ref $List) */, param1: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('List.adjust-capacity', [param0, param1], binaryen.none);
+	public adjustCapacity(list: binaryen.ExpressionRef /* (ref $List) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.call('List.adjust-capacity', [list, capacity], binaryen.none);
 	}
 
 	/**
@@ -54,8 +54,8 @@ export class List {
 	 * (‘Equal to’ is allowed when appending to the List.)
 	 * This method first reallocates if necessary, then adds the item.
 	 */
-	public set(param0: binaryen.ExpressionRef /* (ref $List) */, param1: binaryen.ExpressionRef /* i32 */, param2: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('List.set', [param0, param1, param2], binaryen.none);
+	public set(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */, value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.call('List.set', [list, index, value], binaryen.none);
 	}
 
 	/**
@@ -64,7 +64,7 @@ export class List {
 	 * Shifts all subsequent items to the front, and returns the deleted item.
 	 * This method removes the item first, then reallocates if necessary.
 	 */
-	public delete(param0: binaryen.ExpressionRef /* (ref $List) */, param1: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('List.delete', [param0, param1], this.vm.reftype.Value);
+	public delete(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('List.delete', [list, index], this.vm.reftype.Value);
 	}
 }

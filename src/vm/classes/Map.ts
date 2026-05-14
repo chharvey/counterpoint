@@ -35,8 +35,8 @@ class VmMap {
 	 * Returns the number of “live” elements in the Map.
 	 * “Live” elements are non-null, non-tombstone cases.
 	 */
-	public count(param0: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Map.count', [param0], binaryen.i32);
+	public count(map: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Map.count', [map], binaryen.i32);
 	}
 
 	/**
@@ -55,8 +55,8 @@ class VmMap {
 	 *  	- if null or a “tombstone” is returned, it means the ant wasn’t found and the Map was not mutated; *do not* change the Map’s size
 	 *  	- if a non-null, “live” Case is returned, it was deleted from the Map and replaced with a tombstone; *do not* change the Map’s size (as tombstones are still counted)
 	 */
-	public find(param0: binaryen.ExpressionRef /* (ref $Map) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 (ref null $Case) */ {
-		return this.vm.mod.call('Map.find', [param0, param1], binaryen.createType([binaryen.i32, this.vm.reftypeNull.Case]));
+	public find(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 (ref null $Case) */ {
+		return this.vm.mod.call('Map.find', [map, ant], binaryen.createType([binaryen.i32, this.vm.reftypeNull.Case]));
 	}
 
 	/**
@@ -65,16 +65,16 @@ class VmMap {
 	 * according to the usual key hashing and linear probing technique, and its size and count are updated.
 	 * There is no guarantee the entries’ positioning and/or order will be preserved.
 	 */
-	public adjustCapacity(param0: binaryen.ExpressionRef /* (ref $Map) */, param1: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('Map.adjust-capacity', [param0, param1], binaryen.none);
+	public adjustCapacity(map: binaryen.ExpressionRef /* (ref $Map) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.call('Map.adjust-capacity', [map, capacity], binaryen.none);
 	}
 
 	/**
 	 * Set a Map consequent given an antecedent.
 	 * This method first reallocates if necessary, then adds the consequent.
 	 */
-	public set(param0: binaryen.ExpressionRef /* (ref $Map) */, param1: binaryen.ExpressionRef /* (ref $Value) */, param2: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('Map.set', [param0, param1, param2], binaryen.none);
+	public set(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */, con: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
+		return this.vm.mod.call('Map.set', [map, ant, con], binaryen.none);
 	}
 
 	/**
@@ -83,8 +83,8 @@ class VmMap {
 	 * otherwise null is returned and the Map is not mutated.
 	 * This method removes the Case first (if found), then reallocates if necessary.
 	 */
-	public delete(param0: binaryen.ExpressionRef /* (ref $Map) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
-		return this.vm.mod.call('Map.delete', [param0, param1], this.vm.reftypeNull.Value);
+	public delete(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
+		return this.vm.mod.call('Map.delete', [map, ant], this.vm.reftypeNull.Value);
 	}
 }
 export {VmMap as Map};
