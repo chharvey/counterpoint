@@ -109,14 +109,14 @@ function each_item(
  * 	<$Value>
  * )
  * ```
- * @param cg   code-generator
+ * @param vm   virtual machine
  * @param pair a `$Tuple` containing 2 `$Value`s
  * @return     the key and value of the `$Property`
  */
-function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
+function two_tuple_to_prop(vm: VirtualMachine, pair: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: cg.vm.Vect.asNat(cg.vm.Value.field(cg.vm.mod.array.get(pair.tee(), cg.vm.mod.i32.const(0), cg.reftype.Value)).primitive),
-		val: cg.vm.mod.array.get(pair.get(), cg.vm.mod.i32.const(1), cg.reftype.Value),
+		key: vm.Vect.asNat(vm.Value.field(vm.mod.array.get(pair.tee(), vm.mod.i32.const(0), vm.reftype.Value)).primitive),
+		val: vm.mod.array.get(pair.get(), vm.mod.i32.const(1), vm.reftype.Value),
 	};
 }
 
@@ -141,14 +141,14 @@ function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionR
  * 	<$Value>
  * )
  * ```
- * @param cg    code-generator
+ * @param vm   virtual machine
  * @param case_ a `$Case` whose `$ant` represents a Counterpoint Symbol
  * @return      the key and value of the `$Property`
  */
-function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
+function case_to_prop(vm: VirtualMachine, case_: binaryen.ExpressionRef): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: cg.vm.Vect.asNat(cg.vm.Value.field(cg.vm.Case.field(case_).ant).primitive),
-		val: cg.vm.Case.field(case_).con,
+		key: vm.Vect.asNat(vm.Value.field(vm.Case.field(case_).ant).primitive),
+		val: vm.Case.field(case_).con,
 	};
 }
 
@@ -172,14 +172,14 @@ function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binarye
  * 	<$Value 'con'>
  * )
  * ```
- * @param cg   code-generator
+ * @param vm   virtual machine
  * @param pair a `$Tuple` containing 2 `$Value`s
  * @return     the antecedent and consequent of a new `$Case`
  */
-function two_tuple_to_case(cg: Builder, pair: Local): {ant: binaryen.ExpressionRef, con: binaryen.ExpressionRef} {
+function two_tuple_to_case(vm: VirtualMachine, pair: Local): {ant: binaryen.ExpressionRef, con: binaryen.ExpressionRef} {
 	return {
-		ant: cg.vm.mod.array.get(pair.tee(), cg.vm.mod.i32.const(0), cg.reftype.Value),
-		con: cg.vm.mod.array.get(pair.get(), cg.vm.mod.i32.const(1), cg.reftype.Value),
+		ant: vm.mod.array.get(pair.tee(), vm.mod.i32.const(0), vm.reftype.Value),
+		con: vm.mod.array.get(pair.get(), vm.mod.i32.const(1), vm.reftype.Value),
 	};
 }
 
@@ -292,7 +292,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
 						return each_item(cg, destdict, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
 							return Dict.set(dest_get, key, val);
 						});
 					}
@@ -312,7 +312,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
 							return Dict.set(dest_get, key, val);
 						});
 					}
@@ -333,7 +333,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
+							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
 							return Dict.set(dest_get, key, val);
 						});
 					}
@@ -342,7 +342,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Map: {
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {key, val} = case_to_prop(cg, item_get);
+							const {key, val} = case_to_prop(cg.vm, item_get);
 							return Dict.set(dest_get, key, val);
 						});
 					}
@@ -397,7 +397,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
 						return each_item(cg, destmap, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
 							return VmMap.set(dest_get, ant, con);
 						});
 					}
@@ -406,7 +406,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
 							return VmMap.set(dest_get, ant, con);
 						});
 					}
@@ -415,7 +415,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return each_item(cg, destmap, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
+							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
 							return VmMap.set(dest_get, ant, con);
 						});
 					}
