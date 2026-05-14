@@ -350,10 +350,18 @@ export class Builder {
 	/**
 	 * Prepare the main function in this binaryen Module, then performs validation.
 	 * The main function should contain generated code for a program.
-	 * @param main a callback to run before validation
+	 * @param body the body of the main function
 	 */
-	public setupMain(main?: () => void): void {
-		main?.call(null);
+	public setupMain(body: binaryen.ExpressionRef): void {
+		const fn_name: string = 'main';
+		this.vm.mod.addFunction(
+			fn_name,
+			binaryen.none,
+			binaryen.none,
+			this.getAllLocals().map((local) => local.type),
+			body,
+		);
+		this.vm.mod.addFunctionExport(fn_name, fn_name);
 		if (!this.vm.mod.validate()) {
 			throw new Error('Invalid WebAssembly module.');
 		}

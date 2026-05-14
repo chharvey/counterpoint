@@ -25,7 +25,7 @@ test.suite('Builder', () => {
 
 	test.suite('#setupMain', () => {
 		test.test('validates successfully.', () => {
-			cg.setupMain(); // assert does not throw
+			cg.setupMain(mod.nop()); // assert does not throw
 		});
 	});
 
