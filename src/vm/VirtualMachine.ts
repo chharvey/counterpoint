@@ -1,7 +1,7 @@
 import * as fs from 'node:fs';
 import * as path from 'node:path';
 import binaryen from 'binaryen';
-import {runOnceMethod} from '../lib/decorators.ts';
+import {memoizeMethod} from '../lib/decorators.ts';
 import type {
 	BinaryenModuleUpdates,
 	Field,
@@ -84,13 +84,13 @@ const IMPORTS: readonly string[] = [
 
 export class VirtualMachine {
 	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
-	#heaptypeRegistry!: HeaptypeRegistry;
+	public readonly heaptype: HeaptypeRegistry;
 
 	/** A registry of reference types. */
-	#reftypeRegistry!: ReftypeRegistry;
+	public readonly reftype: ReftypeRegistry;
 
 	/** A registry of reference-null types. */
-	#reftypeNullRegistry!: ReftypeNullRegistry;
+	public readonly reftypeNull: ReftypeNullRegistry;
 
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
 	public readonly mod = binaryen.parseText(`
@@ -124,13 +124,12 @@ export class VirtualMachine {
 			/* eslint-enable @stylistic/operator-linebreak */
 		));
 
-		this.#setupTypes();
+		({
+			heaptypeRegistry:    this.heaptype,
+			reftypeRegistry:     this.reftype,
+			reftypeNullRegistry: this.reftypeNull,
+		} = this.#setupTypes());
 	}
-
-
-	public get heaptype():    HeaptypeRegistry    { return this.#heaptypeRegistry; }
-	public get reftype():     ReftypeRegistry     { return this.#reftypeRegistry; }
-	public get reftypeNull(): ReftypeNullRegistry { return this.#reftypeNullRegistry; }
 
 
 	/**
@@ -139,8 +138,12 @@ export class VirtualMachine {
 	 * but there’s currently no way to access them dynamically with Binaryen,
 	 * so we repeat them here.
 	 */
-	@runOnceMethod
-	#setupTypes(): void {
+	@memoizeMethod
+	#setupTypes(): {
+		heaptypeRegistry:    HeaptypeRegistry,
+		reftypeRegistry:     ReftypeRegistry,
+		reftypeNullRegistry: ReftypeNullRegistry,
+	} {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const tb: TypeBuilder = new binaryen.TypeBuilder();
 
@@ -280,45 +283,47 @@ export class VirtualMachine {
 
 		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		this.#heaptypeRegistry = {
-			Value:        heaptypes[i_value],
-			Property:     heaptypes[i_property],
-			Case:         heaptypes[i_case],
-			String:       heaptypes[i_string],
-			Tuple:        heaptypes[i_tuple],
-			Record:       heaptypes[i_record],
-			ListInternal: heaptypes[i_list_internal],
-			DictInternal: heaptypes[i_dict_internal],
-			MapInternal:  heaptypes[i_map_internal],
-			Object:       heaptypes[i_object],
-			List:         heaptypes[i_list],
-			Dict:         heaptypes[i_dict],
-			Map:          heaptypes[i_map],
-		};
-
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const {getTypeFromHeapType} = binaryen;
 
-		this.#reftypeRegistry = {
-			Value:        getTypeFromHeapType(heaptypes[i_value],         false),
-			Property:     getTypeFromHeapType(heaptypes[i_property],      false),
-			Case:         getTypeFromHeapType(heaptypes[i_case],          false),
-			String:       getTypeFromHeapType(heaptypes[i_string],        false),
-			Tuple:        getTypeFromHeapType(heaptypes[i_tuple],         false),
-			Record:       getTypeFromHeapType(heaptypes[i_record],        false),
-			ListInternal: getTypeFromHeapType(heaptypes[i_list_internal], false),
-			DictInternal: getTypeFromHeapType(heaptypes[i_dict_internal], false),
-			MapInternal:  getTypeFromHeapType(heaptypes[i_map_internal],  false),
-			Object:       getTypeFromHeapType(heaptypes[i_object],        false),
-			List:         getTypeFromHeapType(heaptypes[i_list],          false),
-			Dict:         getTypeFromHeapType(heaptypes[i_dict],          false),
-			Map:          getTypeFromHeapType(heaptypes[i_map],           false),
-		};
+		return {
+			heaptypeRegistry: {
+				Value:        heaptypes[i_value],
+				Property:     heaptypes[i_property],
+				Case:         heaptypes[i_case],
+				String:       heaptypes[i_string],
+				Tuple:        heaptypes[i_tuple],
+				Record:       heaptypes[i_record],
+				ListInternal: heaptypes[i_list_internal],
+				DictInternal: heaptypes[i_dict_internal],
+				MapInternal:  heaptypes[i_map_internal],
+				Object:       heaptypes[i_object],
+				List:         heaptypes[i_list],
+				Dict:         heaptypes[i_dict],
+				Map:          heaptypes[i_map],
+			},
 
-		this.#reftypeNullRegistry = {
-			Value:    getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal`
-			Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
-			Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
+			reftypeRegistry: {
+				Value:        getTypeFromHeapType(heaptypes[i_value],         false),
+				Property:     getTypeFromHeapType(heaptypes[i_property],      false),
+				Case:         getTypeFromHeapType(heaptypes[i_case],          false),
+				String:       getTypeFromHeapType(heaptypes[i_string],        false),
+				Tuple:        getTypeFromHeapType(heaptypes[i_tuple],         false),
+				Record:       getTypeFromHeapType(heaptypes[i_record],        false),
+				ListInternal: getTypeFromHeapType(heaptypes[i_list_internal], false),
+				DictInternal: getTypeFromHeapType(heaptypes[i_dict_internal], false),
+				MapInternal:  getTypeFromHeapType(heaptypes[i_map_internal],  false),
+				Object:       getTypeFromHeapType(heaptypes[i_object],        false),
+				List:         getTypeFromHeapType(heaptypes[i_list],          false),
+				Dict:         getTypeFromHeapType(heaptypes[i_dict],          false),
+				Map:          getTypeFromHeapType(heaptypes[i_map],           false),
+			},
+
+			reftypeNullRegistry: {
+				Value:    getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal`
+				Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
+				Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
+			},
 		};
 	}
 }
