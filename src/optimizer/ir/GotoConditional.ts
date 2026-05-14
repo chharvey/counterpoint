@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {
 	memoizeMethod,
@@ -45,7 +45,7 @@ export class GotoConditional extends Terminator {
 		relooper.addBranch(
 			blockrefs.get(this._containerLabel!)!,
 			blockrefs.get(this.labelIfTrue)!,
-			cg.module.call('bool-to-i32', [this.condition.codegen(cg)], binaryen.i32),
+			cg.vm.Value.boolToI32(this.condition.codegen(cg)),
 			0,
 		);
 		relooper.addBranch(

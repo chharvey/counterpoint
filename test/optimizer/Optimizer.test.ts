@@ -1,5 +1,4 @@
 import * as test from 'node:test';
-import binaryen from 'binaryen';
 import {assertEqualBins} from '../assert-helpers.ts';
 import {
 	setupScript,
@@ -21,10 +20,10 @@ test.suite('Optimizer', () => {
 				mod.block(null, [
 					mod.local.set(0, genConst(cg, true)),
 					mod.local.set(1, genConst(cg, 1n)),
-					mod.local.set(2, mod.struct.new_default(cg.reftype.Value)),
+					mod.local.set(2, mod.struct.new_default(cg.vm.reftype.Value)),
 				]),
 				mod.if(
-					mod.call('bool-to-i32', [mod.local.get(0, cg.reftype.Value)], binaryen.i32),
+					cg.vm.Value.boolToI32(mod.local.get(0, cg.vm.reftype.Value)),
 					mod.block(null, [mod.block(null, [
 						mod.local.set(2, genConst(cg, 3n)),
 						mod.block(null, [mod.br('block$4$break')]),
@@ -36,8 +35,8 @@ test.suite('Optimizer', () => {
 				),
 			]),
 			mod.block(null, [mod.block(null, [
-				mod.local.set(1, mod.local.get(2, cg.reftype.Value)),
-				mod.drop(mod.call('vimul', [genConst(cg, 5n), mod.local.get(1, cg.reftype.Value)], cg.reftype.Value)),
+				mod.local.set(1, mod.local.get(2, cg.vm.reftype.Value)),
+				mod.drop(cg.vm.op.intMul(genConst(cg, 5n), mod.local.get(1, cg.vm.reftype.Value))),
 			])]),
 		]));
 	});
