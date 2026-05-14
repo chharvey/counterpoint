@@ -70,14 +70,8 @@ export class Builder {
 	/** A map containing data of WASM local variables, indexed by their name. */
 	readonly #globals = new Map<string, Global>();
 
-	/** Alias for `this.vm.reftype`.     */ public readonly reftype:     VirtualMachine['reftype'];
-	/** Alias for `this.vm.reftypeNull`. */ public readonly reftypeNull: VirtualMachine['reftypeNull'];
-
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
-		this.reftype     = this.vm.reftype;
-		this.reftypeNull = this.vm.reftypeNull;
-
 		this.#setupGlobals();
 
 		this.#constRegistry = new Map([
@@ -267,7 +261,7 @@ export class Builder {
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.vm.mod.ref.null(this.reftypeNull.Value),
+			(_, i) => items[i] ?? this.vm.mod.ref.null(this.vm.reftypeNull.Value),
 		);
 		return this.vm.mod.struct.new([
 			this.#globals.get('obj-ctr')!.plusPlus(),
@@ -295,7 +289,7 @@ export class Builder {
 			this.vm.mod.i32.const(props.size),
 			this.vm.mod.array.new_fixed(
 				this.vm.heaptype.DictInternal,
-				entries.map((entry) => entry ?? this.vm.mod.ref.null(this.reftypeNull.Property)),
+				entries.map((entry) => entry ?? this.vm.mod.ref.null(this.vm.reftypeNull.Property)),
 			),
 		], this.vm.heaptype.Dict);
 	}
@@ -331,12 +325,12 @@ export class Builder {
 		if (!cases.size) {
 			return map_obj;
 		}
-		const local: Local = this.newLocal(map_obj, this.reftype.Map);
+		const local: Local = this.newLocal(map_obj, this.vm.reftype.Map);
 		return this.vm.mod.block(null, [
 			local.set(),
 			...[...cases].map(([ant, con]) => this.vm.Map.set(local.get(), ant, con)),
 			local.get(),
-		], this.reftype.Map);
+		], this.vm.reftype.Map);
 	}
 
 	#setupGlobals(): void {

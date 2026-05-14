@@ -79,9 +79,9 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(mod.array.get(
-					cg.vm.List.field(cast_collection(cg.reftype.List)).internal,
+					cg.vm.List.field(cast_collection(cg.vm.reftype.List)).internal,
 					mod.i32.wrap(Vect.asInt(cg.vm.Value.field(accessor).primitive)),
-					cg.reftypeNull.Value,
+					cg.vm.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
 
 				return mod.block(null, [
@@ -92,11 +92,11 @@ export class CollectionDynamicGet extends Value {
 						cg.getConst(BinConst.NULL),
 						mod.ref.as_non_null(item.get()),
 					),
-				], cg.reftype.Value);
+				], cg.vm.reftype.Value);
 			}
 			case TypeName.DICT: {
 				const maybe_prop: Local = cg.newLocal(mod.tuple.extract(Dict.find(
-					cast_collection(cg.reftype.Dict),
+					cast_collection(cg.vm.reftype.Dict),
 					Vect.asNat(cg.vm.Value.field(accessor).primitive),
 				), 1));
 
@@ -111,11 +111,11 @@ export class CollectionDynamicGet extends Value {
 						cg.getConst(BinConst.NULL),
 						Property.field(maybe_prop.get()).val,
 					),
-				], cg.reftype.Value);
+				], cg.vm.reftype.Value);
 			}
 			case TypeName.SET: {
 				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
-					cast_collection(cg.reftype.Map),
+					cast_collection(cg.vm.reftype.Map),
 					accessor,
 				), 1));
 
@@ -130,11 +130,11 @@ export class CollectionDynamicGet extends Value {
 						cg.getConst(BinConst.FALSE),
 						cg.getConst(BinConst.TRUE),
 					),
-				], cg.reftype.Value);
+				], cg.vm.reftype.Value);
 			}
 			case TypeName.MAP: {
 				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
-					cast_collection(cg.reftype.Map),
+					cast_collection(cg.vm.reftype.Map),
 					accessor,
 				), 1));
 
@@ -149,7 +149,7 @@ export class CollectionDynamicGet extends Value {
 						cg.getConst(BinConst.NULL),
 						Case.field(maybe_case.get()).con,
 					),
-				], cg.reftype.Value);
+				], cg.vm.reftype.Value);
 			}
 		}
 	}

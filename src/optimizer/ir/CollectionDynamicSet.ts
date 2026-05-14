@@ -76,21 +76,21 @@ export class CollectionDynamicSet extends Instruction {
 		switch (this.name) {
 			case TypeName.LIST: {
 				return List.set(
-					cast_collection(cg.reftype.List),
+					cast_collection(cg.vm.reftype.List),
 					mod.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
 					value,
 				);
 			}
 			case TypeName.DICT: {
 				return Dict.set(
-					cast_collection(cg.reftype.Dict),
+					cast_collection(cg.vm.reftype.Dict),
 					Vect.asNat(Value.field(accessor).primitive),
 					value,
 				);
 			}
 			case TypeName.SET: {
-				const base: Local = cg.newLocal(cast_collection(cg.reftype.Map));
-				const xsor: Local = cg.newLocal(accessor, cg.reftype.Value);
+				const base: Local = cg.newLocal(cast_collection(cg.vm.reftype.Map));
+				const xsor: Local = cg.newLocal(accessor, cg.vm.reftype.Value);
 				return mod.block(null, [
 					base.set(),
 					xsor.set(),
@@ -110,7 +110,7 @@ export class CollectionDynamicSet extends Instruction {
 			}
 			case TypeName.MAP: {
 				return VmMap.set(
-					cast_collection(cg.reftype.Map),
+					cast_collection(cg.vm.reftype.Map),
 					accessor,
 					value,
 				);

@@ -150,7 +150,7 @@ test.suite('Builder', () => {
 					mod.i32.const(0),
 					mod.array.new_fixed(
 						cg.vm.heaptype.ListInternal,
-						repeat(mod.ref.null(cg.reftypeNull.Value), 8),
+						repeat(mod.ref.null(cg.vm.reftypeNull.Value), 8),
 					),
 				], cg.vm.heaptype.List),
 			);
@@ -171,7 +171,7 @@ test.suite('Builder', () => {
 							genConst(cg, 1.1),
 							genConst(cg, 2.2),
 							genConst(cg, 3.3),
-							...repeat(mod.ref.null(cg.reftypeNull.Value), 5),
+							...repeat(mod.ref.null(cg.vm.reftypeNull.Value), 5),
 						],
 					),
 				], cg.vm.heaptype.List),
@@ -185,7 +185,7 @@ test.suite('Builder', () => {
 					mod.i32.const(0),
 					mod.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
-						repeat(mod.ref.null(cg.reftypeNull.Property), 8),
+						repeat(mod.ref.null(cg.vm.reftypeNull.Property), 8),
 					),
 				], cg.vm.heaptype.Dict),
 			);
@@ -208,7 +208,7 @@ test.suite('Builder', () => {
 							cg.newProperty(0x108n, genConst(cg, 3.3)),
 							cg.newProperty(0x109n, genConst(cg, 4.4)),
 							cg.newProperty(0x10an, genConst(cg, 5.5)),
-							...repeat(mod.ref.null(cg.reftypeNull.Property), 3),
+							...repeat(mod.ref.null(cg.vm.reftypeNull.Property), 3),
 							cg.newProperty(0x106n, genConst(cg, 1.1)),
 							cg.newProperty(0x107n, genConst(cg, 2.2)),
 						],
@@ -252,7 +252,7 @@ test.suite('Builder', () => {
 		});
 		test.test('`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', () => {
 			const {Map: VmMap} = cg.vm;
-			const map_get: binaryen.ExpressionRef = mod.local.get(0, cg.reftype.Map);
+			const map_get: binaryen.ExpressionRef = mod.local.get(0, cg.vm.reftype.Map);
 			return assertEqualBins(
 				cg.codegenMap(new Map([
 					[genConst(cg, 10n), genConst(cg, 1.1)],
@@ -273,7 +273,7 @@ test.suite('Builder', () => {
 					VmMap.set(map_get, genConst(cg, 40n), genConst(cg, 4.4)),
 					VmMap.set(map_get, genConst(cg, 50n), genConst(cg, 5.5)),
 					map_get,
-				], cg.reftype.Map),
+				], cg.vm.reftype.Map),
 			);
 		});
 
@@ -390,7 +390,7 @@ test.suite('Builder', () => {
 					(256,         257,         264,         ???,         ???,         ???,         ???,         ???) % (b, c, aaa, -, -, -, -, -)
 				%%
 			}`;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.reftypeNull.Property);
+			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.vm.reftypeNull.Property);
 			return assertEqualBins(
 				[new Map([
 					// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)

@@ -35,9 +35,9 @@ export class TupleGet extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.vm.mod.array.get(
-			cg.vm.Value.cast(this.tuple.codegen(cg), cg.reftype.Tuple),
+			cg.vm.Value.cast(this.tuple.codegen(cg), cg.vm.reftype.Tuple),
 			cg.vm.mod.i32.const(Number(this.accessor)),
-			cg.reftype.Value,
+			cg.vm.reftype.Value,
 		);
 	}
 }

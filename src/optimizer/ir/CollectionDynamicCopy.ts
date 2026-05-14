@@ -236,11 +236,11 @@ export class CollectionDynamicCopy extends Instruction {
 
 		switch (this.name) {
 			case TypeName.LIST: {
-				const destlist: Local = cg.newLocal(Value.cast(code_dest, cg.reftype.List));
+				const destlist: Local = cg.newLocal(Value.cast(code_dest, cg.vm.reftype.List));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// List.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
+						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.vm.reftype.Tuple));
 						return copy_array(
 							cg.vm.mod,
 							destlist,
@@ -252,7 +252,7 @@ export class CollectionDynamicCopy extends Instruction {
 					// List.<T>(List.<T>((t, t, t)));
 					// List.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.vm.reftype.List)).internal, cg.vm.reftype.ListInternal);
 						return copy_array(
 							cg.vm.mod,
 							destlist,
@@ -270,11 +270,11 @@ export class CollectionDynamicCopy extends Instruction {
 						 * This may be surprising to programmers who expect the copy to preserve order;
 						 * however, Set semantics explicitly state that programmers should not expect iteration to occur in any particular order.
 						 */
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
 						const j:      Local = cg.newLocal(mod.i32.const(0));
 						return mod.block(null, [
 							j.set(),
-							each_item(cg, destlist, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => mod.block(null, [
+							each_item(cg, destlist, srcref, cg.vm.reftypeNull.Case, true, (dest_get, item_get) => mod.block(null, [
 								List.set(dest_get, j.get(), Case.field(item_get).ant),
 								j.inc(),
 							])),
@@ -286,19 +286,19 @@ export class CollectionDynamicCopy extends Instruction {
 				}
 			}
 			case TypeName.DICT: {
-				const destdict: Local = cg.newLocal(Value.cast(code_dest, cg.reftype.Dict));
+				const destdict: Local = cg.newLocal(Value.cast(code_dest, cg.vm.reftype.Dict));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Dict.<T>(( (@a, t), (@b, t), (@c, t) ));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
-						return each_item(cg, destdict, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.vm.reftype.Tuple));
+						return each_item(cg, destdict, srcref, cg.vm.reftype.Value, false, (dest_get, item_get) => {
+							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(item_get, cg.vm.reftype.Tuple)));
 							return Dict.set(dest_get, key, val);
 						});
 					}
 					// Dict.<T>((a= t, b= t, c= t));
 					case this.source.type instanceof TYPE.Record: {
-						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Record));
+						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.vm.reftype.Record));
 						return copy_array(
 							cg.vm.mod,
 							destdict,
@@ -310,16 +310,16 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>([ (@a, t), (@b, t), (@c, t) ]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
-						return each_item(cg, destdict, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.vm.reftype.List)).internal, cg.vm.reftype.ListInternal);
+						return each_item(cg, destdict, srcref, cg.vm.reftypeNull.Value, true, (dest_get, item_get) => {
+							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(item_get, cg.vm.reftype.Tuple)));
 							return Dict.set(dest_get, key, val);
 						});
 					}
 					// Dict.<T>(Dict.<T>( (a= t, b= t, c= t) ));
 					// Dict.<T>([a= t, b= t, c= t]);
 					case this.source.type instanceof TYPE.Dict: {
-						const srcref: Local = cg.newLocal(Dict.field(Value.cast(code_src, cg.reftype.Dict)).internal, cg.reftype.DictInternal);
+						const srcref: Local = cg.newLocal(Dict.field(Value.cast(code_src, cg.vm.reftype.Dict)).internal, cg.vm.reftype.DictInternal);
 						return copy_array(
 							cg.vm.mod,
 							destdict,
@@ -331,17 +331,17 @@ export class CollectionDynamicCopy extends Instruction {
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({ (@a, t), (@b, t), (@c, t) });
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
-						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
+						return each_item(cg, destdict, srcref, cg.vm.reftypeNull.Case, true, (dest_get, item_get) => {
+							const {key, val} = two_tuple_to_prop(cg.vm, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.vm.reftype.Tuple)));
 							return Dict.set(dest_get, key, val);
 						});
 					}
 					// Dict.<T>(Map.<sym, T>(( (@a, t), (@b, t), (@c, t) )));
 					// Dict.<T>({@a -> t, @b -> t, @c -> t});
 					case this.source.type instanceof TYPE.Map: {
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
-						return each_item(cg, destdict, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
+						return each_item(cg, destdict, srcref, cg.vm.reftypeNull.Case, true, (dest_get, item_get) => {
 							const {key, val} = case_to_prop(cg.vm, item_get);
 							return Dict.set(dest_get, key, val);
 						});
@@ -352,12 +352,12 @@ export class CollectionDynamicCopy extends Instruction {
 				}
 			}
 			case TypeName.SET: {
-				const destset: Local = cg.newLocal(Value.cast(code_dest, cg.reftype.Map));
+				const destset: Local = cg.newLocal(Value.cast(code_dest, cg.vm.reftype.Map));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Set.<T>((t, t, t));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
-						return each_item(cg, destset, srcref, cg.reftype.Value, false, (dest_get, item_get) => VmMap.set(
+						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.vm.reftype.Tuple));
+						return each_item(cg, destset, srcref, cg.vm.reftype.Value, false, (dest_get, item_get) => VmMap.set(
 							dest_get,
 							item_get,
 							cg.getConst(BinConst.NULL),
@@ -366,8 +366,8 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>(List.<T>((t, t, t)));
 					// Set.<T>([t, t, t]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
-						return each_item(cg, destset, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => VmMap.set(
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.vm.reftype.List)).internal, cg.vm.reftype.ListInternal);
+						return each_item(cg, destset, srcref, cg.vm.reftypeNull.Value, true, (dest_get, item_get) => VmMap.set(
 							dest_get,
 							mod.ref.as_non_null(item_get),
 							cg.getConst(BinConst.NULL),
@@ -376,7 +376,7 @@ export class CollectionDynamicCopy extends Instruction {
 					// Set.<T>(Set.<T>((t, t, t)));
 					// Set.<T>({t, t, t});
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
 						return copy_array(
 							cg.vm.mod,
 							destset,
@@ -391,38 +391,38 @@ export class CollectionDynamicCopy extends Instruction {
 				}
 			}
 			case TypeName.MAP: {
-				const destmap: Local = cg.newLocal(Value.cast(code_dest, cg.reftype.Map));
+				const destmap: Local = cg.newLocal(Value.cast(code_dest, cg.vm.reftype.Map));
 				switch (true) { // using `ast_type_name()` is too expensive
 					// Map.<K, V>(( (k, v), (k, v), (k, v) ));
 					case this.source.type instanceof TYPE.Tuple: {
-						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
-						return each_item(cg, destmap, srcref, cg.reftype.Value, false, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.vm.reftype.Tuple));
+						return each_item(cg, destmap, srcref, cg.vm.reftype.Value, false, (dest_get, item_get) => {
+							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(item_get, cg.vm.reftype.Tuple)));
 							return VmMap.set(dest_get, ant, con);
 						});
 					}
 					// Map.<K, V>(List.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>([ (k, v), (k, v), (k, v) ]);
 					case this.source.type instanceof TYPE.List: {
-						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
-						return each_item(cg, destmap, srcref, cg.reftypeNull.Value, true, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(item_get, cg.reftype.Tuple)));
+						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.vm.reftype.List)).internal, cg.vm.reftype.ListInternal);
+						return each_item(cg, destmap, srcref, cg.vm.reftypeNull.Value, true, (dest_get, item_get) => {
+							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(item_get, cg.vm.reftype.Tuple)));
 							return VmMap.set(dest_get, ant, con);
 						});
 					}
 					// Map.<K, V>(Set.<(K, V)>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({ (k, v), (k, v), (k, v) });
 					case this.source.type instanceof TYPE.Set: {
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
-						return each_item(cg, destmap, srcref, cg.reftypeNull.Case, true, (dest_get, item_get) => {
-							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.reftype.Tuple)));
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
+						return each_item(cg, destmap, srcref, cg.vm.reftypeNull.Case, true, (dest_get, item_get) => {
+							const {ant, con} = two_tuple_to_case(cg.vm, cg.newLocal(Value.cast(Case.field(item_get).ant, cg.vm.reftype.Tuple)));
 							return VmMap.set(dest_get, ant, con);
 						});
 					}
 					// Map.<K, V>(Map.<K, V>(( (k, v), (k, v), (k, v) )));
 					// Map.<K, V>({k -> v, k -> v, k -> v});
 					case this.source.type instanceof TYPE.Map: {
-						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
+						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
 						return copy_array(
 							cg.vm.mod,
 							destmap,
