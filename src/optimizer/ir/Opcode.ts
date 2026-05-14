@@ -31,11 +31,6 @@ export enum OpCode {
 	SET_GET,
 	MAP_GET,
 
-	LIST_COUNT,
-	DICT_COUNT,
-	SET_COUNT,
-	MAP_COUNT,
-
 	CALL,
 
 	ISNULL,
@@ -48,6 +43,11 @@ export enum OpCode {
 	TOINT,
 	TONAT,
 	TOFLOAT,
+
+	LIST_COUNT,
+	DICT_COUNT,
+	SET_COUNT,
+	MAP_COUNT,
 
 	INT_ADD,
 	INT_SUB,

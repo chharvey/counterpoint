@@ -1,4 +1,3 @@
-import binaryen from 'binaryen';
 import {memoizeMethod} from '../lib/index.ts';
 import {
 	type CplConfig,
@@ -34,18 +33,7 @@ export class Program {
 		this.#astGoal.typeCheck();
 		this.#astGoal.lower(optimizer);
 
-		const body: binaryen.ExpressionRef = optimizer.codegen(cg); // must codegen before calling `.getAllLocals()`
-		cg.setupMain(() => {
-			const fn_name: string = 'main';
-			cg.module.addFunction(
-				fn_name,
-				binaryen.none,
-				binaryen.none,
-				cg.getAllLocals().map((local) => local.type),
-				body,
-			);
-			cg.module.addFunctionExport(fn_name, fn_name);
-		});
+		cg.setupMain(optimizer.codegen(cg));
 
 		return cg;
 	}
@@ -55,7 +43,7 @@ export class Program {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	public print(): string {
-		return this.#precompile().module.emitText();
+		return this.#precompile().vm.mod.emitText();
 	}
 
 	/**
@@ -63,6 +51,6 @@ export class Program {
 	 * @return a binary output in WASM format, which can be executed
 	 */
 	public compile(): Uint8Array {
-		return this.#precompile().module.emitBinary();
+		return this.#precompile().vm.mod.emitBinary();
 	}
 }

@@ -1,12 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	BinValue,
 	BinConst,
 	type Builder,
 	type Local,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -69,47 +67,53 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
+		const {mod, Vect, Value, List, Dict, Map: VmMap} = cg.vm;
+
+		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
+		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
+		const value:      binaryen.ExpressionRef = this.value.codegen(cg);
+		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, reftype);
 		switch (this.name) {
 			case TypeName.LIST: {
-				return cg.module.call('List.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.List),
-					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('asInt')),
-					this.value.codegen(cg),
-				], binaryen.none);
+				return List.set(
+					cast_collection(cg.vm.reftype.List),
+					mod.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
+					value,
+				);
 			}
 			case TypeName.DICT: {
-				return cg.module.call('Dict.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Dict),
-					new BinValue(cg, this.accessor.codegen(cg)).interpret('asNat'),
-					this.value.codegen(cg),
-				], binaryen.none);
+				return Dict.set(
+					cast_collection(cg.vm.reftype.Dict),
+					Vect.asNat(Value.field(accessor).primitive),
+					value,
+				);
 			}
 			case TypeName.SET: {
-				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map));
-				const accessor: Local = cg.newLocal(this.accessor.codegen(cg), cg.reftype.Value);
-				return cg.module.block(null, [
+				const base: Local = cg.newLocal(cast_collection(cg.vm.reftype.Map));
+				const xsor: Local = cg.newLocal(accessor, cg.vm.reftype.Value);
+				return mod.block(null, [
 					base.set(),
-					accessor.set(),
-					cg.module.if(
-						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).asPrimitive).isSpecial(true),
-						cg.module.call('Map.set', [
+					xsor.set(),
+					mod.if(
+						Vect.isConst(Value.field(value).primitive, true),
+						VmMap.set(
 							base.get(),
-							accessor.get(),
+							xsor.get(),
 							cg.getConst(BinConst.NULL),
-						], binaryen.none),
-						cg.module.drop(cg.module.call('Map.delete', [
+						),
+						mod.drop(VmMap.delete(
 							base.get(),
-							accessor.get(),
-						], cg.reftypeNull.Value)),
+							xsor.get(),
+						)),
 					),
 				]);
 			}
 			case TypeName.MAP: {
-				return cg.module.call('Map.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast(cg.reftype.Map),
-					this.accessor.codegen(cg),
-					this.value.codegen(cg),
-				], binaryen.none);
+				return VmMap.set(
+					cast_collection(cg.vm.reftype.Map),
+					accessor,
+					value,
+				);
 			}
 		}
 	}

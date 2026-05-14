@@ -110,7 +110,7 @@ export class StatementIteration extends StatementBreakable {
 		optimizer.terminateBlock(new IR.GotoConditional(new IR.Binop(
 			IR.OpCode.LT,
 			get_index,
-			new IR.CollectionDynamicCount(IR.TypeName.LIST, iterable).asTac(optimizer),
+			new IR.Unop(IR.OpCode.LIST_COUNT, iterable, TYPE.NAT).asTac(optimizer),
 			TYPE.BOOL,
 		), this.labels.do!, this.labels.endwhile!));
 

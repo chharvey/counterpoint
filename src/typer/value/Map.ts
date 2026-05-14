@@ -66,8 +66,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	 */
 	public override toType(): TYPE.Map {
 		return new TYPE.Map(
-			TYPE.Union.all([...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
-			TYPE.Union.all([...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
+			TYPE.Union.all(...[...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.Union.all(...[...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 

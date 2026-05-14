@@ -44,7 +44,7 @@ class AstSet extends CollectionLiteral {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.Set(
-			TYPE.Union.all(this.children.map((c) => c.type())),
+			TYPE.Union.all(...this.children.map((c) => c.type())),
 			true,
 		);
 	}

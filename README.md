@@ -26,7 +26,7 @@ $ npm ci && npm run build
 To be sure it installed correctly, run this command to see the current version of `counterpoint`:
 ```shell
 $ npx cplc --version # you should see:
-> counterpoint version 0.4.4
+> counterpoint version 0.5.0-alpha.0
 ```
 Run `npx cplc --help` for the full suite of CLI commands.
 

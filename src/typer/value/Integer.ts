@@ -1,9 +1,7 @@
 import type binaryen from 'binaryen';
 import {
-	BinValue,
 	bigint_to_i64,
 	type Builder,
-	BinVect,
 } from '../../index.ts';
 import {
 	noopMethod,
@@ -76,7 +74,7 @@ export class Integer extends ValueNumber<Integer> {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, new BinVect(cg.module, bigint_to_i64(cg.module, this.data))).value;
+		return cg.vm.Value.newPrimitive(cg.vm.Vect.newInt(bigint_to_i64(cg.vm.mod, this.data)));
 	}
 
 	public override toInt(): Integer {

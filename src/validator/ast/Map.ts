@@ -46,8 +46,8 @@ class AstMap extends CollectionLiteral {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.Map(
-			TYPE.Union.all(this.children.map((c) => c.antecedent.type())),
-			TYPE.Union.all(this.children.map((c) => c.consequent.type())),
+			TYPE.Union.all(...this.children.map((c) => c.antecedent.type())),
+			TYPE.Union.all(...this.children.map((c) => c.consequent.type())),
 			true,
 		);
 	}

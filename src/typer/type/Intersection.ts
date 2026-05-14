@@ -10,7 +10,7 @@ import {
 import type * as VALUE from '../value/index.ts';
 import {
 	Union,
-	NOTHING,
+	ANYTHING,
 } from './index.ts';
 import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
@@ -32,18 +32,12 @@ import {Combinable} from './Combinable.ts';
 export class Intersection extends Combinable {
 	/**
 	 * Intersect all the given types.
-	 * If an empty array is given, return type `nothing`.
+	 * If an empty array is given, return type `anything`.
 	 * @param types the types to intersect
 	 * @returns the intersection
 	 */
-	public static all(types: readonly Type[]): Type;
-	public static all(...types: readonly Type[]): Type;
-	public static all(arg0?: readonly Type[] | Type, ...args: readonly Type[]): Type {
-		return arg0 instanceof Array
-			? Intersection.all(...arg0)
-			: arg0
-				? [arg0, ...args].reduce((a, b) => a.intersect(b))
-				: NOTHING;
+	public static all(...types: readonly Type[]): Type {
+		return types.reduce((a, b) => a.intersect(b), ANYTHING);
 	}
 
 
@@ -148,12 +142,12 @@ export class Intersection extends Combinable {
 		// (A1 | A2 | B1 | B2 | E | F) & (A1 | A2 | C1 | C2 | F | G) & (A1 | A2 | D1 | D2 | E | G)
 		// == (A1 | A2) | ((B1 | B2 | E | F) & (C1 | C2 | F | G) & (D1 | D2 | E | G))
 		if (this.operands.every((s) => s instanceof Union)) {
-			const unions: readonly ReadonlySet<Type>[] = (this.operands as ReadonlyArrayOfAtLeast2<Union>).map((s) => new Set<Type>(s.operands));
-			const common: ReadonlySet<Type>            = unions.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
+			const unions_data = (this.operands as ReadonlyArrayOfAtLeast2<Union>).map((union) => new Set<Type>(union.operands)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
+			const common: ReadonlySet<Type> = unions_data.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
 
 			if (common.size) {
-				const differing: readonly ReadonlySet<Type>[] = unions.map((union) => xjs.Set.difference(union, common, language_types_equal));
-				return Union.all(...common, Intersection.all(differing.map((types) => Union.all(...types))));
+				const differing = unions_data.map((union_data) => xjs.Set.difference(union_data, common, language_types_equal)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
+				return Union.all(...common, Intersection.all(...differing.map((types) => Union.all(...types))));
 			}
 		}
 		return this;

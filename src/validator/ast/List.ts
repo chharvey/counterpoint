@@ -44,7 +44,7 @@ export class List extends CollectionLiteral {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.List(
-			TYPE.Union.all(this.children.map((c) => c.type())),
+			TYPE.Union.all(...this.children.map((c) => c.type())),
 			true,
 		);
 	}

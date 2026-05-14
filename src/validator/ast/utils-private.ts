@@ -269,7 +269,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AS
 				 * (In other words, they must *all* be optional/missing for maybe access to be valid.)
 				 */
 				return {
-					type:     TYPE.Intersection.all(entries.map((entry) => entry.type)),
+					type:     TYPE.Intersection.all(...entries.map((entry) => entry.type)),
 					optional: entries.every((entry) => entry.optional),
 				};
 			}
@@ -285,7 +285,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AS
 				 * (In other words, *any* of them may be optional/missing for maybe access to be valid.)
 				 */
 				return {
-					type:     TYPE.Union.all(entries.map((entry) => entry.type)),
+					type:     TYPE.Union.all(...entries.map((entry) => entry.type)),
 					optional: entries.some((entry) => entry.optional),
 				};
 			}

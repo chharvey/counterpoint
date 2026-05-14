@@ -28,7 +28,6 @@ import {
  * - TupleGet
  * - RecordGet
  * - CollectionDynamicGet
- * - CollectionDynamicCount
  * - Call
  * - Unop
  * - Binop

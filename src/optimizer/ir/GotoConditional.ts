@@ -45,7 +45,7 @@ export class GotoConditional extends Terminator {
 		relooper.addBranch(
 			blockrefs.get(this._containerLabel!)!,
 			blockrefs.get(this.labelIfTrue)!,
-			this.condition.codegen(cg),
+			cg.vm.Value.boolToI32(this.condition.codegen(cg)),
 			0,
 		);
 		relooper.addBranch(
