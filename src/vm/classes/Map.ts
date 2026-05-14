@@ -11,6 +11,7 @@ const FIELD = {
 
 
 
+/** Precursor to the Counterpoint `Map` class. */
 class VmMap {
 	public constructor(private readonly vm: VirtualMachine) {}
 

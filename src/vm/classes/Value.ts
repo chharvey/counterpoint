@@ -12,6 +12,7 @@ const FIELD = {
 
 
 
+/** WASM representation of a Counterpoint value. */
 export class Value {
 	public constructor(private readonly vm: VirtualMachine) {}
 

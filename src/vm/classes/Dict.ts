@@ -11,6 +11,7 @@ const FIELD = {
 
 
 
+/** Precursor to the Counterpoint `Dict` class. */
 export class Dict {
 	public constructor(private readonly vm: VirtualMachine) {}
 

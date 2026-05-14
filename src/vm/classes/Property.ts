@@ -11,6 +11,7 @@ const FIELD = {
 
 
 
+/** An entry in a record/Dict. */
 export class Property {
 	public constructor(private readonly vm: VirtualMachine) {}
 
