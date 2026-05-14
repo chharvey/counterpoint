@@ -70,13 +70,11 @@ export class Builder {
 	/** A map containing data of WASM local variables, indexed by their name. */
 	readonly #globals = new Map<string, Global>();
 
-	/** Alias for `this.vm.heaptype`.    */ public readonly heaptype:    VirtualMachine['heaptype'];
 	/** Alias for `this.vm.reftype`.     */ public readonly reftype:     VirtualMachine['reftype'];
 	/** Alias for `this.vm.reftypeNull`. */ public readonly reftypeNull: VirtualMachine['reftypeNull'];
 
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
-		this.heaptype    = this.vm.heaptype;
 		this.reftype     = this.vm.reftype;
 		this.reftypeNull = this.vm.reftypeNull;
 
@@ -232,7 +230,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
 	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.heaptype.String, units);
+		return this.vm.mod.array.new_fixed(this.vm.heaptype.String, units);
 	}
 
 	/**
@@ -241,7 +239,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.heaptype.Tuple, items);
+		return this.vm.mod.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
 	/**
@@ -253,7 +251,7 @@ export class Builder {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.vm.mod.array.new_fixed(this.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.vm.mod.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -274,8 +272,8 @@ export class Builder {
 		return this.vm.mod.struct.new([
 			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.vm.mod.i32.const(items.length),
-			this.vm.mod.array.new_fixed(this.heaptype.ListInternal, entries),
-		], this.heaptype.List);
+			this.vm.mod.array.new_fixed(this.vm.heaptype.ListInternal, entries),
+		], this.vm.heaptype.List);
 	}
 
 	/**
@@ -296,10 +294,10 @@ export class Builder {
 			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.vm.mod.i32.const(props.size),
 			this.vm.mod.array.new_fixed(
-				this.heaptype.DictInternal,
+				this.vm.heaptype.DictInternal,
 				entries.map((entry) => entry ?? this.vm.mod.ref.null(this.reftypeNull.Property)),
 			),
-		], this.heaptype.Dict);
+		], this.vm.heaptype.Dict);
 	}
 
 	/**
@@ -328,8 +326,8 @@ export class Builder {
 		const map_obj = this.vm.mod.struct.new([
 			this.#globals.get('obj-ctr')!.plusPlus(),
 			this.vm.mod.i32.const(cases.size),
-			this.vm.mod.array.new_default(this.heaptype.MapInternal, this.vm.mod.i32.const(capacity)),
-		], this.heaptype.Map);
+			this.vm.mod.array.new_default(this.vm.heaptype.MapInternal, this.vm.mod.i32.const(capacity)),
+		], this.vm.heaptype.Map);
 		if (!cases.size) {
 			return map_obj;
 		}

@@ -115,7 +115,7 @@ test.suite('Opcode', () => {
 						mod.local.set(6, strings[3]),
 						mod.local.set(7, strings[4]),
 						mod.local.set(8, mod.array.new_default(
-							cg.heaptype.String,
+							cg.vm.heaptype.String,
 							mod.i32.add(
 								mod.i32.add(
 									mod.i32.add(

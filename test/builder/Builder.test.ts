@@ -64,20 +64,21 @@ test.suite('Builder', () => {
 			);
 		});
 		test.test('returns `(struct.new $Property)`.', () => {
+			const {Vect, Value} = cg.vm;
 			assertEqualBins([
 				cg.newProperty(0x102n, genConst(cg)),
 				cg.newProperty(0x103n, genConst(cg, 42n)),
-				cg.newProperty(0x104n, cg.vm.Value.newPrimitive(cg.vm.Vect.FALSE)),
+				cg.newProperty(0x104n, Value.newPrimitive(Vect.FALSE)),
 				cg.newProperty(0x105n, genConst(cg, 4.2)),
 			], ([
 				[0x102n, genConst(cg)],
 				[0x103n, genConst(cg, 42n)],
-				[0x104n, cg.vm.Value.newPrimitive(cg.vm.Vect.FALSE)],
+				[0x104n, Value.newPrimitive(Vect.FALSE)],
 				[0x105n, genConst(cg, 4.2)],
 			] as const).map(([id, code]) => mod.struct.new([
 				bigint_to_i64(mod, id, true),
 				code,
-			], cg.heaptype.Property)));
+			], cg.vm.heaptype.Property)));
 		});
 	});
 
@@ -93,20 +94,20 @@ test.suite('Builder', () => {
 		test.test('empty `#codegenString`.', () => {
 			assertEqualBins(
 				cg.codegenString(),
-				mod.array.new_fixed(cg.heaptype.String, []),
+				mod.array.new_fixed(cg.vm.heaptype.String, []),
 			);
 		});
 		test.test('`#codegenTuple` returns (array.new_fixed).', () => {
 			const codeunits = [0x68, 0x65, 0x6c, 0x6c, 0x6f] as const; // 'hello' in UTF-8
 			return assertEqualBins(
 				cg.codegenString(codeunits.map((c) => mod.i32.const(c))),
-				mod.array.new_fixed(cg.heaptype.String, codeunits.map((c) => mod.i32.const(c))),
+				mod.array.new_fixed(cg.vm.heaptype.String, codeunits.map((c) => mod.i32.const(c))),
 			);
 		});
 		test.test('empty `#codegenTuple`.', () => {
 			assertEqualBins(
 				cg.codegenTuple(),
-				mod.array.new_fixed(cg.heaptype.Tuple, []),
+				mod.array.new_fixed(cg.vm.heaptype.Tuple, []),
 			);
 		});
 		test.test('`#codegenTuple` returns (array.new_fixed).', () => {
@@ -115,7 +116,7 @@ test.suite('Builder', () => {
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
-				mod.array.new_fixed(cg.heaptype.Tuple, [
+				mod.array.new_fixed(cg.vm.heaptype.Tuple, [
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
@@ -124,7 +125,7 @@ test.suite('Builder', () => {
 		test.test('empty `#codegenRecord`.', () => {
 			assertEqualBins(
 				cg.codegenRecord(),
-				mod.array.new_fixed(cg.heaptype.Record, []),
+				mod.array.new_fixed(cg.vm.heaptype.Record, []),
 			);
 		});
 		test.test('`#codegenRecord` returns (array.new_fixed).', () => {
@@ -134,7 +135,7 @@ test.suite('Builder', () => {
 					[0x101n, cg.newProperty(0x101n, genConst(cg, 42n))],
 					[0x102n, cg.newProperty(0x102n, genConst(cg, 4.2))],
 				])),
-				mod.array.new_fixed(cg.heaptype.Record, [
+				mod.array.new_fixed(cg.vm.heaptype.Record, [
 					cg.newProperty(0x102n, genConst(cg, 4.2)),
 					cg.newProperty(0x100n, genConst(cg, true)),
 					cg.newProperty(0x101n, genConst(cg, 42n)),
@@ -148,10 +149,10 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(mod),
 					mod.i32.const(0),
 					mod.array.new_fixed(
-						cg.heaptype.ListInternal,
+						cg.vm.heaptype.ListInternal,
 						repeat(mod.ref.null(cg.reftypeNull.Value), 8),
 					),
-				], cg.heaptype.List),
+				], cg.vm.heaptype.List),
 			);
 		});
 		test.test('`#codegenList` returns (struct.new) with id, count, and internal array.', () => {
@@ -165,7 +166,7 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(mod),
 					mod.i32.const(3),
 					mod.array.new_fixed(
-						cg.heaptype.ListInternal,
+						cg.vm.heaptype.ListInternal,
 						[
 							genConst(cg, 1.1),
 							genConst(cg, 2.2),
@@ -173,7 +174,7 @@ test.suite('Builder', () => {
 							...repeat(mod.ref.null(cg.reftypeNull.Value), 5),
 						],
 					),
-				], cg.heaptype.List),
+				], cg.vm.heaptype.List),
 			);
 		});
 		test.test('empty `#codegenDict`.', () => {
@@ -183,10 +184,10 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(mod),
 					mod.i32.const(0),
 					mod.array.new_fixed(
-						cg.heaptype.DictInternal,
+						cg.vm.heaptype.DictInternal,
 						repeat(mod.ref.null(cg.reftypeNull.Property), 8),
 					),
-				], cg.heaptype.Dict),
+				], cg.vm.heaptype.Dict),
 			);
 		});
 		test.test('`#codegenDict` (struct.new) with id, count, and internal array.', () => {
@@ -202,7 +203,7 @@ test.suite('Builder', () => {
 					obj_ctr_plus_plus(mod),
 					mod.i32.const(5),
 					mod.array.new_fixed(
-						cg.heaptype.DictInternal,
+						cg.vm.heaptype.DictInternal,
 						[
 							cg.newProperty(0x108n, genConst(cg, 3.3)),
 							cg.newProperty(0x109n, genConst(cg, 4.4)),
@@ -212,7 +213,7 @@ test.suite('Builder', () => {
 							cg.newProperty(0x107n, genConst(cg, 2.2)),
 						],
 					),
-				], cg.heaptype.Dict),
+				], cg.vm.heaptype.Dict),
 			);
 		});
 		test.test('empty `#codegenSet`.', () => {
@@ -245,11 +246,12 @@ test.suite('Builder', () => {
 				mod.struct.new([
 					obj_ctr_plus_plus(mod),
 					mod.i32.const(0),
-					mod.array.new_default(cg.heaptype.MapInternal, mod.i32.const(8)),
-				], cg.heaptype.Map),
+					mod.array.new_default(cg.vm.heaptype.MapInternal, mod.i32.const(8)),
+				], cg.vm.heaptype.Map),
 			);
 		});
 		test.test('`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', () => {
+			const {Map: VmMap} = cg.vm;
 			const map_get: binaryen.ExpressionRef = mod.local.get(0, cg.reftype.Map);
 			return assertEqualBins(
 				cg.codegenMap(new Map([
@@ -263,13 +265,13 @@ test.suite('Builder', () => {
 					mod.local.set(0, mod.struct.new([
 						obj_ctr_plus_plus(mod),
 						mod.i32.const(5),
-						mod.array.new_default(cg.heaptype.MapInternal, mod.i32.const(8)),
-					], cg.heaptype.Map)),
-					cg.vm.Map.set(map_get, genConst(cg, 10n), genConst(cg, 1.1)),
-					cg.vm.Map.set(map_get, genConst(cg, 20n), genConst(cg, 2.2)),
-					cg.vm.Map.set(map_get, genConst(cg, 30n), genConst(cg, 3.3)),
-					cg.vm.Map.set(map_get, genConst(cg, 40n), genConst(cg, 4.4)),
-					cg.vm.Map.set(map_get, genConst(cg, 50n), genConst(cg, 5.5)),
+						mod.array.new_default(cg.vm.heaptype.MapInternal, mod.i32.const(8)),
+					], cg.vm.heaptype.Map)),
+					VmMap.set(map_get, genConst(cg, 10n), genConst(cg, 1.1)),
+					VmMap.set(map_get, genConst(cg, 20n), genConst(cg, 2.2)),
+					VmMap.set(map_get, genConst(cg, 30n), genConst(cg, 3.3)),
+					VmMap.set(map_get, genConst(cg, 40n), genConst(cg, 4.4)),
+					VmMap.set(map_get, genConst(cg, 50n), genConst(cg, 5.5)),
 					map_get,
 				], cg.reftype.Map),
 			);
@@ -347,7 +349,7 @@ test.suite('Builder', () => {
 					cg.newProperty(262n, genConst(cg)),
 					cg.newProperty(256n, genConst(cg, 42n)),
 					cg.newProperty(259n, genConst(cg, 4.2)),
-				]].map((entries) => mod.array.new_fixed(cg.heaptype.Record, entries)),
+				]].map((entries) => mod.array.new_fixed(cg.vm.heaptype.Record, entries)),
 			);
 		});
 
@@ -439,8 +441,8 @@ test.suite('Builder', () => {
 				]].map((entries) => mod.struct.new([
 					obj_ctr_plus_plus(mod),
 					mod.i32.const(3),
-					mod.array.new_fixed(cg.heaptype.DictInternal, entries),
-				], cg.heaptype.Dict)),
+					mod.array.new_fixed(cg.vm.heaptype.DictInternal, entries),
+				], cg.vm.heaptype.Dict)),
 			);
 		});
 	});

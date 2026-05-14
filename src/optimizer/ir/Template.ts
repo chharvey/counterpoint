@@ -36,7 +36,7 @@ export class Template extends Value {
 		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.stringify(item.codegen(cg))));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => mod.array.len(strarr.get()));
 
-		const result: Local = cg.newLocal(mod.array.new_default(cg.heaptype.String, lengths.reduce((a, b) => mod.i32.add(a, b))), cg.reftype.String);
+		const result: Local = cg.newLocal(mod.array.new_default(cg.vm.heaptype.String, lengths.reduce((a, b) => mod.i32.add(a, b))), cg.reftype.String);
 		const offset: Local = cg.newLocal(mod.i32.const(0));
 
 		return VmValue.newComposite(mod.block(null, [
