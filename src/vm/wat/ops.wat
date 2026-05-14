@@ -410,6 +410,13 @@
 			)
 		)
 		(if
+			(ref.eq
+				(local.get $ref0)
+				(local.get $ref1)
+			)
+			(then (br $exit (i32.const 1)))
+		)
+		(if
 			(i32.and
 				(ref.test (ref $String) (local.get $ref0))
 				(ref.test (ref $String) (local.get $ref1))
@@ -439,10 +446,7 @@
 				(ref.cast (ref $Record) (local.get $ref1))
 			)))
 		)
-		(br $exit (ref.eq
-			(local.get $ref0)
-			(local.get $ref1)
-		))
+		(i32.const 0)
 	))
 )
 ;; Returns whether two strings are identical by value —
@@ -542,32 +546,39 @@
 	(local $vect1 v128)
 	(local $ref0 eqref)
 	(local $ref1 eqref)
+
+	;; identical values are necessarily equal
+	(if
+		(call $Value.bool-to-i32 (call $op:id (local.get 0) (local.get 1)))
+		(then (return_call $Value.new-primitive (global.get $Vect.TRUE)))
+	)
+
 	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
 	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
 	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
 	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
 
-	(if
-		(i32.and
-			(call $Value.is-primitive (local.get 0))
-			(call $Value.is-primitive (local.get 0))
-		)
-		(then (return (if (result (ref $Value))
-			(i32.or
-				(call $Vect.is-special (local.get $vect0))
-				(call $Vect.is-special (local.get $vect1))
-			)
-			(then (call $op:id (local.get 0) (local.get 1)))
-			(else (call $Value.bool-from-i32 (call $util:compare-primitives
-				(struct.get $Value $primitive (local.get 0))
-				(struct.get $Value $primitive (local.get 1))
-				(ref.func $!i64.eq)
-				(ref.func $!i64.eq)
-				(ref.func $!f64.eq)
-			)))
-		)))
-	)
 	(call $Value.bool-from-i32 (block $exit (result i32)
+		(if
+			(i32.and
+				(call $Value.is-primitive (local.get 0))
+				(call $Value.is-primitive (local.get 0))
+			)
+			(then (br $exit (if (result i32)
+				(i32.or
+					(call $Vect.is-special (local.get $vect0))
+					(call $Vect.is-special (local.get $vect1))
+				)
+				(then (i32.const 0))
+				(else (call $util:compare-primitives
+					(struct.get $Value $primitive (local.get 0))
+					(struct.get $Value $primitive (local.get 1))
+					(ref.func $!i64.eq)
+					(ref.func $!i64.eq)
+					(ref.func $!f64.eq)
+				))
+			)))
+		)
 		(if
 			(i32.and
 				(ref.test (ref $String) (local.get $ref0))
@@ -628,10 +639,7 @@
 				(ref.cast (ref $Map) (local.get $ref1))
 			)))
 		)
-		(return_call $op:id
-			(local.get 0)
-			(local.get 1)
-		)
+		(i32.const 0)
 	))
 )
 ;; Returns whether two strings are equal —
