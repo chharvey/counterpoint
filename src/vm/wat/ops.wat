@@ -411,6 +411,16 @@
 		)
 		(if
 			(i32.and
+				(ref.test (ref $String) (local.get $ref0))
+				(ref.test (ref $String) (local.get $ref1))
+			)
+			(then (br $exit (call $!String.identical
+				(ref.cast (ref $String) (local.get $ref0))
+				(ref.cast (ref $String) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
 				(ref.test (ref $Tuple) (local.get $ref0))
 				(ref.test (ref $Tuple) (local.get $ref1))
 			)
@@ -434,6 +444,33 @@
 			(local.get $ref1)
 		))
 	))
+)
+;; Returns whether two strings are identical by value —
+;; whether they contain the exact same sequence of code units.
+(func $!String.identical (param $string0 (ref $String)) (param $string1 (ref $String)) (result i32)
+	(local $i i32)
+
+	(if
+		(i32.ne (array.len (local.get $string0)) (array.len (local.get $string1)))
+		(then (return (i32.const 0)))
+	)
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $string0))))
+			(if
+				(i32.ne
+					(array.get $String (local.get $string0) (local.get $i))
+					(array.get $String (local.get $string1) (local.get $i))
+				)
+				(then (return (i32.const 0)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
 )
 ;; Returns whether two tuples are identical by value —
 ;; whether they have identical items at the same indices.
@@ -533,6 +570,16 @@
 	(call $Value.bool-from-i32 (block $exit (result i32)
 		(if
 			(i32.and
+				(ref.test (ref $String) (local.get $ref0))
+				(ref.test (ref $String) (local.get $ref1))
+			)
+			(then (br $exit (call $!String.equal
+				(ref.cast (ref $String) (local.get $ref0))
+				(ref.cast (ref $String) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
 				(ref.test (ref $Tuple) (local.get $ref0))
 				(ref.test (ref $Tuple) (local.get $ref1))
 			)
@@ -586,6 +633,11 @@
 			(local.get 1)
 		)
 	))
+)
+;; Returns whether two strings are equal —
+;; strings are equal if and only if they are identical.
+(func $!String.equal (param (ref $String) (ref $String)) (result i32)
+	(call $!String.identical (local.get 0) (local.get 1))
 )
 ;; Returns whether two tuples are equal —
 ;; whether they have equal items at the same indices.
