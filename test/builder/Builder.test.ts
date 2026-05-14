@@ -38,18 +38,19 @@ test.suite('Builder', () => {
 			);
 		});
 		test.test('returns v128.', () => {
+			const {Vect} = cg.vm;
 			assertEqualBins([
 				cg.newVect(bigint_to_i64(mod, 42n)),
 				cg.newVect(bigint_to_i64(mod, 42n, true), {unsigned: true}),
 				cg.newVect(mod.f64.const(4.2)),
-				mod.global.get('Vect.TRUE', binaryen.v128),
-				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
+				cg.newVect(Vect.TRUE),
+				cg.newVect(Vect.newInt(bigint_to_i64(mod, 42n))),
 			], ([
-				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
-				mod.call('Vect.new-nat', [bigint_to_i64(mod, 42n, true)], binaryen.v128),
-				mod.call('Vect.new-float', [mod.f64.const(4.2)], binaryen.v128),
-				mod.global.get('Vect.TRUE', binaryen.v128),
-				mod.call('Vect.new-int', [bigint_to_i64(mod, 42n)], binaryen.v128),
+				Vect.newInt(bigint_to_i64(mod, 42n)),
+				Vect.newNat(bigint_to_i64(mod, 42n, true)),
+				Vect.newFloat(mod.f64.const(4.2)),
+				Vect.TRUE,
+				Vect.newInt(bigint_to_i64(mod, 42n)),
 			]));
 		});
 	});
