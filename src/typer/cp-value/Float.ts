@@ -53,8 +53,8 @@ export class Float extends ValueNumber<Float> {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.vm.Value.newPrimitive(cg.vm.Vect.newFloat((Object.is(this.data, -0.0)
-			? cg.module.f64.ceil(cg.module.f64.const(-0.5))
-			: cg.module.f64.const(this.data)
+			? cg.vm.mod.f64.ceil(cg.vm.mod.f64.const(-0.5))
+			: cg.vm.mod.f64.const(this.data)
 		)));
 	}
 

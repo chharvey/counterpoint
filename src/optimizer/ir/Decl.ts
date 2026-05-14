@@ -52,7 +52,7 @@ export class Decl extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.module.struct.new_default(cg.reftype.Value)).set();
+		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.vm.mod.struct.new_default(cg.reftype.Value)).set();
 	}
 
 	/* eslint-disable */
@@ -77,11 +77,11 @@ export class Decl extends Instruction {
 		 * - `val mut _:     T = assigned_foldable;`
 		 * - `val mut _:     T = assigned_non_foldable;`
 		 */
-		if (!!this.assigned?.fold() && (!this.assignee || !this.writable)) return cg.module.nop();
+		if (!!this.assigned?.fold() && (!this.assignee || !this.writable)) return cg.vm.mod.nop();
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(cg);
 		return this.assignee
 			? cg.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
-			: cg.module.drop(value);
+			: cg.vm.mod.drop(value);
 	}
 	/* eslint-enable */
 }

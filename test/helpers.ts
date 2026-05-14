@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
+	type VirtualMachine,
 	AST,
 	VALUE,
 	type TYPE,
@@ -36,7 +37,7 @@ export function setupScript(
 	readonly stmts: NonNullable<typeof goal.block>['children'],
 	readonly opt:   Optimizer,
 	readonly cg:    Builder,
-	readonly mod:   Builder['module'],
+	readonly mod:   VirtualMachine['mod'],
 } {
 	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
 	const opt = new Optimizer();
@@ -55,7 +56,7 @@ export function setupScript(
 		opt,
 		cg,
 		stmts: goal.block.children,
-		mod:   cg.module,
+		mod:   cg.vm.mod,
 	};
 }
 

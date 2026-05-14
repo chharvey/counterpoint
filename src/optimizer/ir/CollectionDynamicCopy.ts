@@ -11,6 +11,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
+import type {VirtualMachine} from '../../vm/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {
 	TypeName,
@@ -24,7 +25,7 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** Adjusts destination capacity before copying. */
 function copy_array(
-	mod:     Builder['module'],
+	mod:     VirtualMachine['mod'],
 	destobj: Local,
 	destref: binaryen.ExpressionRef,
 	srcref:  Local,
@@ -114,8 +115,8 @@ function each_item(
  */
 function two_tuple_to_prop(cg: Builder, pair: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
 	return {
-		key: cg.vm.Vect.asNat(cg.vm.Value.field(cg.module.array.get(pair.tee(), cg.module.i32.const(0), cg.reftype.Value)).primitive),
-		val: cg.module.array.get(pair.get(), cg.module.i32.const(1), cg.reftype.Value),
+		key: cg.vm.Vect.asNat(cg.vm.Value.field(cg.vm.mod.array.get(pair.tee(), cg.vm.mod.i32.const(0), cg.reftype.Value)).primitive),
+		val: cg.vm.mod.array.get(pair.get(), cg.vm.mod.i32.const(1), cg.reftype.Value),
 	};
 }
 
@@ -177,8 +178,8 @@ function case_to_prop(cg: Builder, case_: binaryen.ExpressionRef): {key: binarye
  */
 function two_tuple_to_case(cg: Builder, pair: Local): {ant: binaryen.ExpressionRef, con: binaryen.ExpressionRef} {
 	return {
-		ant: cg.module.array.get(pair.tee(), cg.module.i32.const(0), cg.reftype.Value),
-		con: cg.module.array.get(pair.get(), cg.module.i32.const(1), cg.reftype.Value),
+		ant: cg.vm.mod.array.get(pair.tee(), cg.vm.mod.i32.const(0), cg.reftype.Value),
+		con: cg.vm.mod.array.get(pair.get(), cg.vm.mod.i32.const(1), cg.reftype.Value),
 	};
 }
 
@@ -241,7 +242,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Tuple));
 						return copy_array(
-							cg.module,
+							cg.vm.mod,
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
@@ -253,7 +254,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.reftype.List)).internal, cg.reftype.ListInternal);
 						return copy_array(
-							cg.module,
+							cg.vm.mod,
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
@@ -299,7 +300,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Record: {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.reftype.Record));
 						return copy_array(
-							cg.module,
+							cg.vm.mod,
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
@@ -320,7 +321,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Dict: {
 						const srcref: Local = cg.newLocal(Dict.field(Value.cast(code_src, cg.reftype.Dict)).internal, cg.reftype.DictInternal);
 						return copy_array(
-							cg.module,
+							cg.vm.mod,
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
@@ -377,7 +378,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return copy_array(
-							cg.module,
+							cg.vm.mod,
 							destset,
 							VmMap.field(destset.get()).internal,
 							srcref,
@@ -423,7 +424,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Map: {
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.reftype.Map)).internal, cg.reftype.MapInternal);
 						return copy_array(
-							cg.module,
+							cg.vm.mod,
 							destmap,
 							VmMap.field(destmap.get()).internal,
 							srcref,

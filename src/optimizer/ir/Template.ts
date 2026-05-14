@@ -32,25 +32,26 @@ export class Template extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(cg.vm.Value.stringify(item.codegen(cg))));
-		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => cg.module.array.len(strarr.get()));
+		const {mod, Value: VmValue} = cg.vm;
+		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.stringify(item.codegen(cg))));
+		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => mod.array.len(strarr.get()));
 
-		const result: Local = cg.newLocal(cg.module.array.new_default(cg.heaptype.String, lengths.reduce((a, b) => cg.module.i32.add(a, b))), cg.reftype.String);
-		const offset: Local = cg.newLocal(cg.module.i32.const(0));
+		const result: Local = cg.newLocal(mod.array.new_default(cg.heaptype.String, lengths.reduce((a, b) => mod.i32.add(a, b))), cg.reftype.String);
+		const offset: Local = cg.newLocal(mod.i32.const(0));
 
-		return cg.vm.Value.newComposite(cg.module.block(null, [
+		return VmValue.newComposite(mod.block(null, [
 			...strings.map((strarr) => strarr.set()),
 			result.set(),
 			offset.set(),
 			...strings.flatMap((strarr, i) => [
-				cg.module.array.copy(
+				mod.array.copy(
 					result.get(),
 					offset.get(),
 					strarr.get(),
-					cg.module.i32.const(0),
+					mod.i32.const(0),
 					lengths[i],
 				),
-				offset.set(cg.module.i32.add(offset.get(), lengths[i])),
+				offset.set(mod.i32.add(offset.get(), lengths[i])),
 			]).slice(0, -1), // slice off the last `offset.set`
 			result.get(),
 		], cg.reftype.String));

@@ -23,7 +23,7 @@ test.suite('Opcode', () => {
 		test.suite('#codegen', () => {
 			test.test('Trap returns (unreachable).', () => {
 				const cg = new Builder();
-				return assertEqualBins(new IR.Trap().codegen(cg), cg.module.unreachable());
+				return assertEqualBins(new IR.Trap().codegen(cg), cg.vm.mod.unreachable());
 			});
 
 			test.test('Const returns (struct.new $Value).', () => {
@@ -62,7 +62,7 @@ test.suite('Opcode', () => {
 					d;
 					e;
 				}`);
-				const mod = cg.module;
+				const {mod} = cg.vm;
 				return assertEqualBins(
 					stmts.slice(5).map((stmt) => (stmt as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
 					[
@@ -80,7 +80,7 @@ test.suite('Opcode', () => {
 					val user: (name: str) = (name= "Alan");
 					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
 				}`);
-				const mod = cg.module;
+				const {mod, Value} = cg.vm;
 
 				const strings = [
 					genConst(cg, 'Hello, '),
@@ -88,7 +88,7 @@ test.suite('Opcode', () => {
 					genConst(cg, ', you have '),
 					mod.local.get(2, cg.reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => cg.vm.Value.stringify(code));
+				].map((code) => Value.stringify(code));
 
 				const OFFSET_IDX = 9;
 
@@ -108,7 +108,7 @@ test.suite('Opcode', () => {
 				const offset_get: binaryen.ExpressionRef = mod.local.get(OFFSET_IDX, binaryen.i32);
 				return assertEqualBins(
 					opt.instructions[3].codegen(cg),
-					mod.drop(cg.vm.Value.newComposite(mod.block(null, [
+					mod.drop(Value.newComposite(mod.block(null, [
 						mod.local.set(3, strings[0]),
 						mod.local.set(4, strings[1]),
 						mod.local.set(5, strings[2]),
@@ -161,10 +161,10 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						(x, 4.2, (null,));
 					}`);
-					const mod = cg.module;
+					const {mod, Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenTuple([
+						Value.newComposite(cg.codegenTuple([
 							mod.local.get(0, cg.reftype.Value),
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.reftype.Value),
@@ -185,10 +185,10 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						[x, 4.2, (null,), x/2, @e];
 					}`);
-					const mod = cg.module;
+					const {mod, Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenList([
+						Value.newComposite(cg.codegenList([
 							mod.local.get(0, cg.reftypeNull.Value),
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.reftypeNull.Value),
@@ -211,10 +211,10 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						{x, 4.2, (null,), x/2, @e};
 					}`);
-					const mod = cg.module;
+					const {mod, Value} = cg.vm;
 					return assert.strictEqual(
 						binaryen.emitText((stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenSet([
+						binaryen.emitText(Value.newComposite(cg.codegenSet([
 							mod.local.get(0, cg.reftype.Value),
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.reftype.Value),
@@ -239,10 +239,10 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 					}`);
-					const mod = cg.module;
+					const {mod, Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenRecord(new Map([
+						Value.newComposite(cg.codegenRecord(new Map([
 							[257n, cg.newProperty(257n, mod.local.get(0, cg.reftype.Value))],
 							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
 							[259n, cg.newProperty(259n, mod.local.get(1, cg.reftype.Value))],
@@ -304,10 +304,10 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 					}`);
-					const mod = cg.module;
+					const {mod, Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg),
-						cg.vm.Value.newComposite(cg.codegenDict(new Map([
+						Value.newComposite(cg.codegenDict(new Map([
 							[257n, cg.newProperty(257n, mod.local.get(0, cg.reftype.Value))],
 							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
 							[259n, cg.newProperty(259n, mod.local.get(1, cg.reftype.Value))],
@@ -369,10 +369,10 @@ test.suite('Opcode', () => {
 						val mut x: int = 42;
 						{1.1 -> x, 2.2 -> 4.2, 3.3 -> (null,), 4.4 -> x/2, 5.5 -> @e};
 					}`);
-					const mod = cg.module;
+					const {mod, Value} = cg.vm;
 					return assert.strictEqual(
 						binaryen.emitText((stmts[1] as AST.ASTNodeStatementExpression).expr!.lower(opt).codegen(cg)),
-						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap(new Map([
+						binaryen.emitText(Value.newComposite(cg.codegenMap(new Map([
 							[genConst(cg, 1.1), mod.local.get(0, cg.reftype.Value)],
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
 							[genConst(cg, 3.3), mod.local.get(1, cg.reftype.Value)],
@@ -719,6 +719,7 @@ test.suite('Opcode', () => {
 						val list: [int] = [x, 43, 44];
 						list;
 					}`);
+					const {mod, Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
 					const list = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
 					const unop = new IR.Unop(
@@ -728,7 +729,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.List.count(list.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(List.count(list.codegen(cg))))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -737,6 +738,7 @@ test.suite('Opcode', () => {
 						val dict: [:int] = [a= x, b= 43, c= 44];
 						dict;
 					}`);
+					const {mod, Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
 					const dict = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
 					const unop = new IR.Unop(
@@ -746,7 +748,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Dict.count(dict.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict.count(dict.codegen(cg))))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -755,6 +757,7 @@ test.suite('Opcode', () => {
 						val 'set': {int} = {x, 43, 44};
 						'set';
 					}`);
+					const {mod, Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
 					const set = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
 					const unop = new IR.Unop(
@@ -764,7 +767,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Map.count(set.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(set.codegen(cg))))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -773,6 +776,7 @@ test.suite('Opcode', () => {
 						val map: {float -> int} = {1.1 -> x, 2.2 -> 43, 3.3 -> 44};
 						map;
 					}`);
+					const {mod, Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
 					const map = (stmts[2] as AST.ASTNodeStatementExpression).expr!.lower(opt) as IR.Get;
 					const unop = new IR.Unop(
@@ -782,7 +786,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.module.i64.extend_u(cg.vm.Map.count(map.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(map.codegen(cg))))),
 					);
 				});
 			});
@@ -860,7 +864,7 @@ test.suite('Opcode', () => {
 					42;
 					4.2;
 				}`, {codegen: false});
-				const mod = cg.module;
+				const {mod} = cg.vm;
 				return assertEqualBins(
 					opt.instructions.map((instr) => instr.codegen(cg)),
 					[
@@ -887,7 +891,7 @@ test.suite('Opcode', () => {
 					set d = 43;
 					set e = 4.3;
 				}`, {codegen: false});
-				const mod = cg.module;
+				const {mod} = cg.vm;
 				return assertEqualBins(
 					opt.instructions.map((instr) => instr.codegen(cg)),
 					[
@@ -909,9 +913,10 @@ test.suite('Opcode', () => {
 			test.test('uninitialized Decl returns (local.set) with (struct.new_default).', () => {
 				// there exists no syntax for empty Decls, so constructing it manually
 				const cg = new Builder();
+				const {mod} = cg.vm;
 				assertEqualBins(
 					new IR.Decl(new Optimizer().newTemp(TYPE.INT)).codegen(cg),
-					cg.module.local.set(0, cg.module.struct.new_default(cg.reftype.Value)),
+					mod.local.set(0, mod.struct.new_default(cg.reftype.Value)),
 				);
 			});
 

@@ -37,14 +37,14 @@ export class Program {
 		const body: binaryen.ExpressionRef = optimizer.codegen(cg); // must codegen before calling `.getAllLocals()`
 		cg.setupMain(() => {
 			const fn_name: string = 'main';
-			cg.module.addFunction(
+			cg.vm.mod.addFunction(
 				fn_name,
 				binaryen.none,
 				binaryen.none,
 				cg.getAllLocals().map((local) => local.type),
 				body,
 			);
-			cg.module.addFunctionExport(fn_name, fn_name);
+			cg.vm.mod.addFunctionExport(fn_name, fn_name);
 		});
 
 		return cg;
@@ -55,7 +55,7 @@ export class Program {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	public print(): string {
-		return this.#precompile().module.emitText();
+		return this.#precompile().vm.mod.emitText();
 	}
 
 	/**
@@ -63,6 +63,6 @@ export class Program {
 	 * @return a binary output in WASM format, which can be executed
 	 */
 	public compile(): Uint8Array {
-		return this.#precompile().module.emitBinary();
+		return this.#precompile().vm.mod.emitBinary();
 	}
 }

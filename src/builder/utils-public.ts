@@ -36,7 +36,7 @@ export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = 
  * Return a block containing `(drop)` expressions for each of `args`, followed by a final expression.
  * If `final` is provided as an ExpressionRef, it is the final expression;
  * otherwise, a v128 containing a boolean encoding is the final expression.
- * @param mod   the module to create the block
+ * @param cg
  * @param args  the args to drop first
  * @param final the final expression/statement
  */
@@ -46,5 +46,5 @@ export function drop_then(
 	final: binaryen.ExpressionRef | boolean,
 ): binaryen.ExpressionRef {
 	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : final ? cg.vm.Vect.TRUE : cg.vm.Vect.FALSE;
-	return cg.module.block(null, [...args.map((arg) => cg.module.drop(arg)), last_item], binaryen.getExpressionType(last_item));
+	return cg.vm.mod.block(null, [...args.map((arg) => cg.vm.mod.drop(arg)), last_item], binaryen.getExpressionType(last_item));
 }

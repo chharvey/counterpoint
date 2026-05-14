@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import type binaryen from 'binaryen';
 import {
 	VALUE,
 	bigint_to_i64,
@@ -232,12 +231,13 @@ test.suite('Value', () => {
 
 		test.test('Symbol', () => {
 			const cg = new Builder();
+			const {mod, Vect, Value} = cg.vm;
 			return assertEqualBins([
 				VALUE.SYM_NOTHING.codegen(cg),
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
 			], [
-				cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(bigint_to_i64(cg.module, 0x80n))),
-				cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(bigint_to_i64(cg.module, 0x100n))),
+				Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, 0x80n))),
+				Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, 0x100n))),
 			]);
 		});
 
@@ -258,9 +258,10 @@ test.suite('Value', () => {
 				(-5n) ** (2n * 3n),
 			];
 			const cg = new Builder();
+			const {mod, Vect, Value} = cg.vm;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => cg.vm.Value.newPrimitive(cg.vm.Vect.newInt(bigint_to_i64(cg.module, x)))),
+				data.map((x) => Value.newPrimitive(Vect.newInt(bigint_to_i64(mod, x)))),
 			);
 		});
 
@@ -273,9 +274,10 @@ test.suite('Value', () => {
 				(42n ** 2n * 420n) % (2n ** 64n),
 			];
 			const cg = new Builder();
+			const {mod, Vect, Value} = cg.vm;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(bigint_to_i64(cg.module, x, true)))),
+				data.map((x) => Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, x, true)))),
 			);
 		});
 
@@ -290,26 +292,28 @@ test.suite('Value', () => {
 				];
 				/* eslint-enable @stylistic/array-element-newline */
 				const cg = new Builder();
+				const {mod, Vect, Value} = cg.vm;
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
-					data.map((x) => cg.vm.Value.newPrimitive(cg.vm.Vect.newFloat(cg.module.f64.const(x)))),
+					data.map((x) => Value.newPrimitive(Vect.newFloat(mod.f64.const(x)))),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
 				const cg = new Builder();
-				const mod: binaryen.Module = cg.module;
+				const {mod, Vect, Value} = cg.vm;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => cg.vm.Value.newPrimitive(cg.vm.Vect.newFloat(c))),
+					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
 				);
 			});
 		});
 
 		test.test('String', () => {
 			const cg = new Builder();
+			const {mod, Value} = cg.vm;
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),
-				cg.vm.Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => cg.module.i32.const(c)))),
+				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => mod.i32.const(c)))),
 			);
 		});
 	});

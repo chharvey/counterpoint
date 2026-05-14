@@ -1,6 +1,7 @@
 import * as test from 'node:test';
 import binaryen from 'binaryen';
 import {
+	type VirtualMachine,
 	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
@@ -13,7 +14,7 @@ import {repeat} from '../utils.ts';
 test.suite('Builder', () => {
 	/* eslint-disable @typescript-eslint/init-declarations */
 	let cg:  Builder;
-	let mod: Builder['module'];
+	let mod: VirtualMachine['mod'];
 	/* eslint-enable @typescript-eslint/init-declarations */
 
 	test.beforeEach(() => {
