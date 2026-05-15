@@ -56,11 +56,7 @@
 
 	(call $Value.new-primitive (if (result v128)
 		(call $Vect.is-int (local.get $primitive))
-		;; `-n` in two’s complement is `(n xor -1) + 1`
-		(then (call $Vect.new-int (i64.add
-			(i64.xor (call $Vect.as-int (local.get $primitive)) (i64.const -1))
-			(i64.const 1)
-		)))
+		(then (call $Vect.new-int (i64.sub (i64.const 0) (call $Vect.as-int (local.get $primitive))))) ;; `-n == 0 - n`
 		(else (if (result v128)
 			(call $Vect.is-float (local.get $primitive))
 			(then (call $Vect.new-float (f64.neg (call $Vect.as-float (local.get $primitive)))))
@@ -307,7 +303,7 @@
 
 
 (func $op:lt (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $util:compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-numbers
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $!i64.lt_s)
@@ -317,7 +313,7 @@
 )
 
 (func $op:gt (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $util:compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-numbers
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $!i64.gt_s)
@@ -327,7 +323,7 @@
 )
 
 (func $op:le (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $util:compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-numbers
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $!i64.le_s)
@@ -337,7 +333,7 @@
 )
 
 (func $op:ge (param (ref $Value) (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (call $util:compare-primitives
+	(call $Value.bool-from-i32 (call $util:compare-numbers
 		(struct.get $Value $primitive (local.get 0))
 		(struct.get $Value $primitive (local.get 1))
 		(ref.func $!i64.ge_s)
@@ -410,6 +406,23 @@
 			)
 		)
 		(if
+			(ref.eq
+				(local.get $ref0)
+				(local.get $ref1)
+			)
+			(then (br $exit (i32.const 1)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $String) (local.get $ref0))
+				(ref.test (ref $String) (local.get $ref1))
+			)
+			(then (br $exit (call $!String.identical
+				(ref.cast (ref $String) (local.get $ref0))
+				(ref.cast (ref $String) (local.get $ref1))
+			)))
+		)
+		(if
 			(i32.and
 				(ref.test (ref $Tuple) (local.get $ref0))
 				(ref.test (ref $Tuple) (local.get $ref1))
@@ -429,11 +442,35 @@
 				(ref.cast (ref $Record) (local.get $ref1))
 			)))
 		)
-		(br $exit (ref.eq
-			(local.get $ref0)
-			(local.get $ref1)
-		))
+		(i32.const 0)
 	))
+)
+;; Returns whether two strings are identical by value —
+;; whether they contain the exact same sequence of code units.
+(func $!String.identical (param $string0 (ref $String)) (param $string1 (ref $String)) (result i32)
+	(local $i i32)
+
+	(if
+		(i32.ne (array.len (local.get $string0)) (array.len (local.get $string1)))
+		(then (return (i32.const 0)))
+	)
+
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $string0))))
+			(if
+				(i32.ne
+					(array.get $String (local.get $string0) (local.get $i))
+					(array.get $String (local.get $string1) (local.get $i))
+				)
+				(then (return (i32.const 0)))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+	(i32.const 1)
 )
 ;; Returns whether two tuples are identical by value —
 ;; whether they have identical items at the same indices.
@@ -505,32 +542,49 @@
 	(local $vect1 v128)
 	(local $ref0 eqref)
 	(local $ref1 eqref)
+
+	;; identical values are necessarily equal
+	(if
+		(call $Value.bool-to-i32 (call $op:id (local.get 0) (local.get 1)))
+		(then (return_call $Value.new-primitive (global.get $Vect.TRUE)))
+	)
+
 	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
 	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
 	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
 	(local.set $ref1  (struct.get $Value $composite (local.get 1)))
 
-	(if
-		(i32.and
-			(call $Value.is-primitive (local.get 0))
-			(call $Value.is-primitive (local.get 0))
-		)
-		(then (return (if (result (ref $Value))
-			(i32.or
-				(call $Vect.is-special (local.get $vect0))
-				(call $Vect.is-special (local.get $vect1))
-			)
-			(then (call $op:id (local.get 0) (local.get 1)))
-			(else (call $Value.bool-from-i32 (call $util:compare-primitives
-				(struct.get $Value $primitive (local.get 0))
-				(struct.get $Value $primitive (local.get 1))
-				(ref.func $!i64.eq)
-				(ref.func $!i64.eq)
-				(ref.func $!f64.eq)
-			)))
-		)))
-	)
 	(call $Value.bool-from-i32 (block $exit (result i32)
+		(if
+			(i32.and
+				(call $Value.is-primitive (local.get 0))
+				(call $Value.is-primitive (local.get 0))
+			)
+			(then (br $exit (if (result i32)
+				(i32.or
+					(call $Vect.is-special (local.get $vect0))
+					(call $Vect.is-special (local.get $vect1))
+				)
+				(then (i32.const 0))
+				(else (call $util:compare-numbers
+					(struct.get $Value $primitive (local.get 0))
+					(struct.get $Value $primitive (local.get 1))
+					(ref.func $!i64.eq)
+					(ref.func $!i64.eq)
+					(ref.func $!f64.eq)
+				))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $String) (local.get $ref0))
+				(ref.test (ref $String) (local.get $ref1))
+			)
+			(then (br $exit (call $!String.equal
+				(ref.cast (ref $String) (local.get $ref0))
+				(ref.cast (ref $String) (local.get $ref1))
+			)))
+		)
 		(if
 			(i32.and
 				(ref.test (ref $Tuple) (local.get $ref0))
@@ -581,11 +635,13 @@
 				(ref.cast (ref $Map) (local.get $ref1))
 			)))
 		)
-		(return_call $op:id
-			(local.get 0)
-			(local.get 1)
-		)
+		(i32.const 0)
 	))
+)
+;; Returns whether two strings are equal —
+;; strings are equal if and only if they are identical.
+(func $!String.equal (param (ref $String) (ref $String)) (result i32)
+	(call $!String.identical (local.get 0) (local.get 1))
 )
 ;; Returns whether two tuples are equal —
 ;; whether they have equal items at the same indices.
@@ -846,6 +902,8 @@
 
 
 ;; wraps opcodes so they can be referenced dynamically
+(type $i64.relop (func (param i64 i64) (result i32)))
+(type $f64.relop (func (param f64 f64) (result i32)))
 (func $!i64.eq   (type $i64.relop) (i64.eq   (local.get 0) (local.get 1)))
 (func $!i64.lt_s (type $i64.relop) (i64.lt_s (local.get 0) (local.get 1)))
 (func $!i64.lt_u (type $i64.relop) (i64.lt_u (local.get 0) (local.get 1)))

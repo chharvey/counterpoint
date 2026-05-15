@@ -12,6 +12,7 @@ import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
 import {Case} from './classes/Case.ts';
 import {Record as VmRecord} from './classes/Record.ts';
+import {Object as VmObject} from './classes/Object.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
@@ -63,21 +64,21 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 
 
 const IMPORTS: readonly string[] = [
-	fs.readFileSync(path.join(import.meta.dirname, './wat/types.wat'),                    'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/mod.wat'),                'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'),    'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/compare-primitives.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),          'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),               'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                      'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Vect.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),            'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),         'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),           'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),              'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/mod.wat'),             'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/compare-numbers.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),       'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Vect.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),         'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),      'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),        'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Object.wat'),        'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),           'utf8'),
 ];
 
 
@@ -104,6 +105,7 @@ export class VirtualMachine {
 	public readonly Property = new Property(this);
 	public readonly Case     = new Case(this);
 	public readonly Record   = new VmRecord(this);
+	public readonly Object   = new VmObject(this);
 	public readonly List     = new List(this);
 	public readonly Dict     = new Dict(this);
 	public readonly Map      = new VmMap(this);

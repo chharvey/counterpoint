@@ -1,3 +1,12 @@
+;; WASM representation of a Counterpoint value
+(type $Value (struct
+	(field $tag       i8) ;; 1 = primitive, 2 = composite
+	(field $primitive v128)
+	(field $composite eqref) ;; (ref null eq)
+))
+
+
+
 (func $Value.new-primitive (param $primitive v128) (result (ref $Value))
 	(struct.new $Value
 		(i32.const 1)

@@ -1,3 +1,9 @@
+(type $String (array (mut i8)))        ;; mutable to allow construction of templates
+(type $Tuple  (array (ref $Value)))    ;; mutable to allow construction of templates
+(type $Record (array (ref $Property))) ;; mutable to allow construction of templates
+
+
+
 ;; Return whether the given record has a property amongst its entries with the given key.
 (func $Record.has-key (param $record (ref $Record)) (param $key i64) (result i32)
 	(local $i i32)

@@ -11,6 +11,7 @@ const FIELD = {
 
 
 
+/** Precursor to the Counterpoint `List` class. */
 export class List {
 	public constructor(private readonly vm: VirtualMachine) {}
 

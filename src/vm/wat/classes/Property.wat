@@ -1,3 +1,11 @@
+;; type of entry in records/Dicts
+(type $Property (struct
+	(field $key i64)
+	(field $val (ref $Value))
+))
+
+
+
 (func $Property.new-tombstone (result (ref $Property))
 	(struct.new $Property
 		(i64.const 0xff)
