@@ -63,21 +63,21 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 
 
 const IMPORTS: readonly string[] = [
-	fs.readFileSync(path.join(import.meta.dirname, './wat/types.wat'),                    'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/mod.wat'),                'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'),    'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/compare-primitives.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),          'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),               'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                      'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Vect.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),            'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),         'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),           'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),              'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/types.wat'),                 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/mod.wat'),             'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/compare-numbers.wat'), 'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),       'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Vect.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),         'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),      'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),        'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),          'utf8'),
+	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),           'utf8'),
 ];
 
 
