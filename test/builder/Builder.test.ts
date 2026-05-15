@@ -1,5 +1,5 @@
 import * as test from 'node:test';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import {
 	type VirtualMachine,
 	bigint_to_i64,
@@ -84,13 +84,6 @@ test.suite('Builder', () => {
 
 
 	test.suite('#codegen*', () => {
-		function obj_ctr_plus_plus(m: binaryen.Module): binaryen.ExpressionRef {
-			return m.block(null, [
-				m.global.set('obj-ctr', m.i64.add(m.global.get('obj-ctr', binaryen.i64), bigint_to_i64(m, 1n, true))),
-				m.i64.sub(m.global.get('obj-ctr', binaryen.i64), bigint_to_i64(m, 1n, true)),
-			], binaryen.i64);
-		}
-
 		test.test('empty `#codegenString`.', () => {
 			assertEqualBins(
 				cg.codegenString(),
@@ -146,7 +139,7 @@ test.suite('Builder', () => {
 			assertEqualBins(
 				cg.codegenList(),
 				mod.struct.new([
-					obj_ctr_plus_plus(mod),
+					cg.vm.Object.ctrPlusPlus(),
 					mod.i32.const(0),
 					mod.array.new_fixed(
 						cg.vm.heaptype.ListInternal,
@@ -163,7 +156,7 @@ test.suite('Builder', () => {
 					genConst(cg, 3.3),
 				]),
 				mod.struct.new([
-					obj_ctr_plus_plus(mod),
+					cg.vm.Object.ctrPlusPlus(),
 					mod.i32.const(3),
 					mod.array.new_fixed(
 						cg.vm.heaptype.ListInternal,
@@ -181,7 +174,7 @@ test.suite('Builder', () => {
 			assertEqualBins(
 				cg.codegenDict(),
 				mod.struct.new([
-					obj_ctr_plus_plus(mod),
+					cg.vm.Object.ctrPlusPlus(),
 					mod.i32.const(0),
 					mod.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
@@ -200,7 +193,7 @@ test.suite('Builder', () => {
 					[0x10an, cg.newProperty(0x10an, genConst(cg, 5.5))],
 				])),
 				mod.struct.new([
-					obj_ctr_plus_plus(mod),
+					cg.vm.Object.ctrPlusPlus(),
 					mod.i32.const(5),
 					mod.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
@@ -244,14 +237,14 @@ test.suite('Builder', () => {
 			assertEqualBins(
 				cg.codegenMap(),
 				mod.struct.new([
-					obj_ctr_plus_plus(mod),
+					cg.vm.Object.ctrPlusPlus(),
 					mod.i32.const(0),
 					mod.array.new_default(cg.vm.heaptype.MapInternal, mod.i32.const(8)),
 				], cg.vm.heaptype.Map),
 			);
 		});
 		test.test('`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', () => {
-			const {Map: VmMap} = cg.vm;
+			const {Object: VmObject, Map: VmMap} = cg.vm;
 			const map_get: binaryen.ExpressionRef = mod.local.get(0, cg.vm.reftype.Map);
 			return assertEqualBins(
 				cg.codegenMap(new Map([
@@ -263,7 +256,7 @@ test.suite('Builder', () => {
 				])),
 				mod.block(null, [
 					mod.local.set(0, mod.struct.new([
-						obj_ctr_plus_plus(mod),
+						VmObject.ctrPlusPlus(),
 						mod.i32.const(5),
 						mod.array.new_default(cg.vm.heaptype.MapInternal, mod.i32.const(8)),
 					], cg.vm.heaptype.Map)),
@@ -439,7 +432,7 @@ test.suite('Builder', () => {
 					WASM_NULL,
 					WASM_NULL,
 				]].map((entries) => mod.struct.new([
-					obj_ctr_plus_plus(mod),
+					cg.vm.Object.ctrPlusPlus(),
 					mod.i32.const(3),
 					mod.array.new_fixed(cg.vm.heaptype.DictInternal, entries),
 				], cg.vm.heaptype.Dict)),

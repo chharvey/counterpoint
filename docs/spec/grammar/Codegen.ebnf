@@ -52,20 +52,14 @@ Codegen((RECORD.NEW `pairs`)) := (call $Value.new-composite
 
 Codegen((LIST.NEW)) := (call $Value.new-composite
 	(struct.new $List
-		(block (result i64)
-			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-			(i64.sub (global.get $obj-ctr) (i64.const 1))
-		)
+		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $ListInternal (i32.const 8))
 	)
 );
 Codegen((LIST.NEW `values`)) := (call $Value.new-composite
 	(struct.new $List
-		(block (result i64)
-			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-			(i64.sub (global.get $obj-ctr) (i64.const 1))
-		)
+		(call $Object.ctr-plus-plus)
 		(i32.const `values.count`)
 		(array.new_fixed $ListInternal `CapacityNeeded(values.count)`
 			`values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`
@@ -75,20 +69,14 @@ Codegen((LIST.NEW `values`)) := (call $Value.new-composite
 
 Codegen((DICT.NEW)) := (call $Value.new-composite
 	(struct.new $Dict
-		(block (result i64)
-			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-			(i64.sub (global.get $obj-ctr) (i64.const 1))
-		)
+		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $DictInternal (i32.const 8))
 	)
 );
 Codegen((DICT.NEW `pairs`)) := (call $Value.new-composite
 	(struct.new $Dict
-		(block (result i64)
-			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-			(i64.sub (global.get $obj-ctr) (i64.const 1))
-		)
+		(call $Object.ctr-plus-plus)
 		(i32.const `pairs.count`)
 		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)`
 			`pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property
@@ -102,10 +90,7 @@ Codegen((DICT.NEW `pairs`)) := (call $Value.new-composite
 // `Set<T>`s are implemented as `Map<T, null>`s
 Codegen((SET.NEW)) := (call $Value.new-composite
 	(struct.new $Map
-		(block (result i64)
-			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-			(i64.sub (global.get $obj-ctr) (i64.const 1))
-		)
+		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $MapInternal (i32.const 8))
 	)
@@ -113,10 +98,7 @@ Codegen((SET.NEW)) := (call $Value.new-composite
 Codegen((SET.NEW `values`)) := (call $Value.new-composite
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
-			(block (result i64)
-				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-				(i64.sub (global.get $obj-ctr) (i64.const 1))
-			)
+			(call $Object.ctr-plus-plus)
 			(i32.const `values.count`)
 			(array.new_default $MapInternal `CapacityNeeded(values.count)`)
 		))
@@ -127,10 +109,7 @@ Codegen((SET.NEW `values`)) := (call $Value.new-composite
 
 Codegen((MAP.NEW)) := (call $Value.new-composite
 	(struct.new $Map
-		(block (result i64)
-			(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-			(i64.sub (global.get $obj-ctr) (i64.const 1))
-		)
+		(call $Object.ctr-plus-plus)
 		(i32.const 0)
 		(array.new_default $MapInternal (i32.const 8))
 	)
@@ -138,10 +117,7 @@ Codegen((MAP.NEW)) := (call $Value.new-composite
 Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
 	(block (result (ref $Map))
 		(local.set $map (struct.new $Map
-			(block (result i64)
-				(global.set $obj-ctr (i64.add (global.get $obj-ctr) (i64.const 1)))
-				(i64.sub (global.get $obj-ctr) (i64.const 1))
-			)
+			(call $Object.ctr-plus-plus)
 			(i32.const `pairs.count`)
 			(array.new_default $MapInternal `CapacityNeeded(pairs.count)`)
 		))

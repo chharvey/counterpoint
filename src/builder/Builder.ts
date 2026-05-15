@@ -3,7 +3,6 @@ import binaryen from 'binaryen';
 import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {Global} from '../code-generator/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 
@@ -67,13 +66,8 @@ export class Builder {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
-	/** A map containing data of WASM local variables, indexed by their name. */
-	readonly #globals = new Map<string, Global>();
-
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
-		this.#setupGlobals();
-
 		this.#constRegistry = new Map([
 			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
 			[BinConst.FALSE, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
@@ -264,7 +258,7 @@ export class Builder {
 			(_, i) => items[i] ?? this.vm.mod.ref.null(this.vm.reftypeNull.Value),
 		);
 		return this.vm.mod.struct.new([
-			this.#globals.get('obj-ctr')!.plusPlus(),
+			this.vm.Object.ctrPlusPlus(),
 			this.vm.mod.i32.const(items.length),
 			this.vm.mod.array.new_fixed(this.vm.heaptype.ListInternal, entries),
 		], this.vm.heaptype.List);
@@ -285,7 +279,7 @@ export class Builder {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.vm.mod.struct.new([
-			this.#globals.get('obj-ctr')!.plusPlus(),
+			this.vm.Object.ctrPlusPlus(),
 			this.vm.mod.i32.const(props.size),
 			this.vm.mod.array.new_fixed(
 				this.vm.heaptype.DictInternal,
@@ -318,7 +312,7 @@ export class Builder {
 			capacity *= 2;
 		}
 		const map_obj = this.vm.mod.struct.new([
-			this.#globals.get('obj-ctr')!.plusPlus(),
+			this.vm.Object.ctrPlusPlus(),
 			this.vm.mod.i32.const(cases.size),
 			this.vm.mod.array.new_default(this.vm.heaptype.MapInternal, this.vm.mod.i32.const(capacity)),
 		], this.vm.heaptype.Map);
@@ -331,12 +325,6 @@ export class Builder {
 			...[...cases].map(([ant, con]) => this.vm.Map.set(local.get(), ant, con)),
 			local.get(),
 		], this.vm.reftype.Map);
-	}
-
-	#setupGlobals(): void {
-		const global = new Global(this.vm.mod, 'obj-ctr', bigint_to_i64(this.vm.mod, 0n, true), binaryen.i64, true);
-		this.#globals.set(global.name, global);
-		global.init();
 	}
 
 	/**
