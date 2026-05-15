@@ -11,6 +11,7 @@ const FIELD = {
 
 
 
+/** An entry in a Map. */
 export class Case {
 	public constructor(private readonly vm: VirtualMachine) {}
 
