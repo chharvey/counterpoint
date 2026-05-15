@@ -1,1 +1,1 @@
-export * from './Global.ts';
+export {};
