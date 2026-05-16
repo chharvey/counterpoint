@@ -1,22 +1,3 @@
-(type $ListInternal (array (mut (ref null $Value)))) ;; mutable to allow reassigning array entries, nullable because array can be sparse
-
-
-
-;; precursor to the `List` class
-(type $List (sub $Object (struct
-	;; --- inherited ---
-	;; unique id for hashing
-	(field $id i64)
-
-	;; --- own ---
-	;; number of items currently in the array (for total capacity, get its `(array.len)`); mutable to allow array mutation
-	(field $size (mut i32))
-	;; the array of List items; mutable to allow reallocation
-	(field $internal (mut (ref $ListInternal)))
-)))
-
-
-
 (func $List.count (param $list (ref $List)) (result i32)
 	(struct.get $List $size (local.get $list))
 )
