@@ -2,11 +2,7 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as binaryen from 'binaryen.ts';
 import {memoizeMethod} from '../lib/decorators.ts';
-import type {
-	BinaryenModuleUpdates,
-	Field,
-	TypeBuilder,
-} from '../builder/-types.d.ts';
+import type {Field} from '../builder/-types.d.ts';
 import {Vect} from './classes/Vect.ts';
 import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
@@ -55,7 +51,6 @@ type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Ca
 function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
 	return {
 		type:       typ,
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		packedType: binaryen[packedType],
 		mutable,
 	};
@@ -95,11 +90,11 @@ export class VirtualMachine {
 	public readonly reftypeNull: ReftypeNullRegistry;
 
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod = binaryen.parseText(`
+	public readonly mod: binaryen.Module = binaryen.parseText(`
 		(module
 			${ IMPORTS.join('') }
 		)
-	`) as BinaryenModuleUpdates;
+	`);
 
 	public readonly Vect     = new Vect(this);
 	public readonly Value    = new Value(this);
@@ -147,8 +142,7 @@ export class VirtualMachine {
 		reftypeRegistry:     ReftypeRegistry,
 		reftypeNullRegistry: ReftypeNullRegistry,
 	} {
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		const tb: TypeBuilder = new binaryen.TypeBuilder();
+		const tb = new binaryen.TypeBuilder();
 
 		let type_count: number = 0;
 
@@ -183,7 +177,6 @@ export class VirtualMachine {
 		tb.setArrayType(
 			i_string,
 			binaryen.i32,
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			binaryen.i8,
 			true,
 		);
@@ -194,7 +187,6 @@ export class VirtualMachine {
 		tb.setArrayType(
 			i_tuple,
 			tb.getTempRefType(tb.getTempHeapType(i_value), false),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			binaryen.notPacked,
 			false,
 		);
@@ -205,7 +197,6 @@ export class VirtualMachine {
 		tb.setArrayType(
 			i_record,
 			tb.getTempRefType(tb.getTempHeapType(i_property), false),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			binaryen.notPacked,
 			false,
 		);
@@ -216,7 +207,6 @@ export class VirtualMachine {
 		tb.setArrayType(
 			i_list_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_value), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			binaryen.notPacked,
 			true,
 		);
@@ -227,7 +217,6 @@ export class VirtualMachine {
 		tb.setArrayType(
 			i_dict_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_property), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			binaryen.notPacked,
 			true,
 		);
@@ -238,7 +227,6 @@ export class VirtualMachine {
 		tb.setArrayType(
 			i_map_internal,
 			tb.getTempRefType(tb.getTempHeapType(i_case), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 			binaryen.notPacked,
 			true,
 		);
@@ -286,7 +274,6 @@ export class VirtualMachine {
 
 		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const {getTypeFromHeapType} = binaryen;
 
 		return {

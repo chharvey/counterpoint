@@ -66,10 +66,10 @@ export function assertEqualTypes(arg0: TYPE.Type | readonly TYPE.Type[] | Readon
 
 
 
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(bins: ReadonlyMap<Ref, Ref>): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(arg0: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, arg1?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: readonly Ref[], expected: readonly Ref[]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(bins: ReadonlyMap<Ref, Ref>): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, arg1?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
 	if (arg0 instanceof Map) {
 		return assertEqualBins([...arg0.keys()], [...arg0.values()]);
 	} else if (Array.isArray(arg0)) {

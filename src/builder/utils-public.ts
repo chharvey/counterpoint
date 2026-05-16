@@ -24,7 +24,6 @@ export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = 
 		throw new RangeError(`bigint value ${ value } is out of ${ u ? 'un' : '' }signed 64-bit range.`);
 	}
 
-	// @ts-expect-error --- binaryen.js not typed yet
 	return mod.i64.const(value);
 }
 
