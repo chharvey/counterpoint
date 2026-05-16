@@ -1,5 +1,5 @@
 import * as test from 'node:test';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import {
 	type VirtualMachine,
 	bigint_to_i64,

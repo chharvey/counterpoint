@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,

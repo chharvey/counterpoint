@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import {
 	drop_then,
 	Builder,

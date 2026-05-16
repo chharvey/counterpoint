@@ -1,5 +1,5 @@
 import * as xjs from 'extrajs';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import {
 	drop_then,
 	type Builder,

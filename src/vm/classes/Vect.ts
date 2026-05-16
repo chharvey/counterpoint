@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 
 

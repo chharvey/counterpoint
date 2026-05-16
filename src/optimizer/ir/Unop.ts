@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,

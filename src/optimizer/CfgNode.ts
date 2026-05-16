@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import type {Builder} from '../index.ts';
 import {
