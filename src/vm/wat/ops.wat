@@ -358,7 +358,7 @@
 		(if
 			(i32.and
 				(call $Value.is-primitive (local.get 0))
-				(call $Value.is-primitive (local.get 0))
+				(call $Value.is-primitive (local.get 1))
 			)
 			(then
 				(if
