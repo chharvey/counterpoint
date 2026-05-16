@@ -3,13 +3,13 @@ import type {Builder} from './index.ts';
 
 
 
-const MASK32 = 0xffff_ffffn;
 /**
  * Convert a BigInt (signed 64-bit) to Binaryen `i64.const`.
  * @param    mod   a Binaryen module instance
  * @param    value a BigInt in the range [-2^63, 2^63 - 1] (if signed) or [0, 2^64 - 1] (if unsigned)
  * @param    u     Interpret as unsigned?
  * @returns        an `i64.const(low, high)` expression
+ * @deprecated Binaryen.TS `i64.const()` now allows a single bigint argument
  */
 export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = false): binaryen.ExpressionRef {
 	// signed integer bounds
@@ -24,10 +24,8 @@ export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = 
 		throw new RangeError(`bigint value ${ value } is out of ${ u ? 'un' : '' }signed 64-bit range.`);
 	}
 
-	const low:  number = Number(value & MASK32);
-	const high: number = Number((value >> 32n) & MASK32);
-
-	return mod.i64.const(low, high);
+	// @ts-expect-error --- binaryen.js not typed yet
+	return mod.i64.const(value);
 }
 
 
