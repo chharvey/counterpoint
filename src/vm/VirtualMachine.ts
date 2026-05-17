@@ -2,7 +2,6 @@ import * as fs from 'node:fs';
 import * as path from 'node:path';
 import * as binaryen from 'binaryen.ts';
 import {memoizeMethod} from '../lib/decorators.ts';
-import type {Field} from '../builder/-types.d.ts';
 import {Vect} from './classes/Vect.ts';
 import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';
@@ -48,7 +47,11 @@ type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Ca
  * @param packedType one of `'notPacked' | 'i8' | 'i16'` @default `'notPacked'`
  * @param mutable    Can the field be reassigned?        @default `false`
  */
-function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
+function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): {
+	type:       binaryen.Type,
+	packedType: binaryen.Type,
+	mutable:    boolean,
+} {
 	return {
 		type:       typ,
 		packedType: binaryen[packedType],
@@ -274,8 +277,6 @@ export class VirtualMachine {
 
 		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
-		const {getTypeFromHeapType} = binaryen;
-
 		return {
 			heaptypeRegistry: {
 				Value:        heaptypes[i_value],
@@ -294,25 +295,25 @@ export class VirtualMachine {
 			},
 
 			reftypeRegistry: {
-				Value:        getTypeFromHeapType(heaptypes[i_value],         false),
-				Property:     getTypeFromHeapType(heaptypes[i_property],      false),
-				Case:         getTypeFromHeapType(heaptypes[i_case],          false),
-				String:       getTypeFromHeapType(heaptypes[i_string],        false),
-				Tuple:        getTypeFromHeapType(heaptypes[i_tuple],         false),
-				Record:       getTypeFromHeapType(heaptypes[i_record],        false),
-				ListInternal: getTypeFromHeapType(heaptypes[i_list_internal], false),
-				DictInternal: getTypeFromHeapType(heaptypes[i_dict_internal], false),
-				MapInternal:  getTypeFromHeapType(heaptypes[i_map_internal],  false),
-				Object:       getTypeFromHeapType(heaptypes[i_object],        false),
-				List:         getTypeFromHeapType(heaptypes[i_list],          false),
-				Dict:         getTypeFromHeapType(heaptypes[i_dict],          false),
-				Map:          getTypeFromHeapType(heaptypes[i_map],           false),
+				Value:        binaryen.getTypeFromHeapType(heaptypes[i_value],         false),
+				Property:     binaryen.getTypeFromHeapType(heaptypes[i_property],      false),
+				Case:         binaryen.getTypeFromHeapType(heaptypes[i_case],          false),
+				String:       binaryen.getTypeFromHeapType(heaptypes[i_string],        false),
+				Tuple:        binaryen.getTypeFromHeapType(heaptypes[i_tuple],         false),
+				Record:       binaryen.getTypeFromHeapType(heaptypes[i_record],        false),
+				ListInternal: binaryen.getTypeFromHeapType(heaptypes[i_list_internal], false),
+				DictInternal: binaryen.getTypeFromHeapType(heaptypes[i_dict_internal], false),
+				MapInternal:  binaryen.getTypeFromHeapType(heaptypes[i_map_internal],  false),
+				Object:       binaryen.getTypeFromHeapType(heaptypes[i_object],        false),
+				List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
+				Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
+				Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
 			},
 
 			reftypeNullRegistry: {
-				Value:    getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal`
-				Property: getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
-				Case:     getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
+				Value:    binaryen.getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal`
+				Property: binaryen.getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
+				Case:     binaryen.getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
 			},
 		};
 	}
