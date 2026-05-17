@@ -32,8 +32,8 @@ export class Drop extends Instruction {
 
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder): number {
-		if (!this.expr || !!this.expr.fold()) return cg.vm.mod.nop();
-		return cg.vm.mod.drop(this.expr!.build());
+		if (!this.expr || !!this.expr.fold()) return cg.vm.mod.wasm.nop();
+		return cg.vm.mod.wasm.drop(this.expr!.build());
 	}
 	/* eslint-enable */
 }

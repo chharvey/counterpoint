@@ -1,6 +1,9 @@
 import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
-import type {Builder} from '../../index.ts';
+import {
+	drop_then,
+	type Builder,
+} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -100,12 +103,12 @@ export class Unop extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any): number {
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any): number {
 		let {wasm} = cg.vm.mod;
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(cg.vm.mod, [arg0], true);
+			return drop_then(cg.vm, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(cg.vm.mod, [arg0], false);
+			return drop_then(cg.vm, [arg0], false);
 		}
 		if (this.operator === Operator.NOT) {
 			if (t0.isDefinitelyFalsy) {

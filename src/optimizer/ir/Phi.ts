@@ -63,7 +63,7 @@ class Phi extends Value {
 			return drop_then(this.builder, [arg0], arg2);
 		}
 
-		return cg.vm.mod.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
+		return cg.vm.mod.wasm.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
 	}
 	/* eslint-enable */
 }

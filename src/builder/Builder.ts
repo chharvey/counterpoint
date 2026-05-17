@@ -330,7 +330,7 @@ export class Builder {
 	}
 
 	/**
-	 * Prepare the main function in this binaryen Module, then performs validation.
+	 * Prepares the main function in the WASM Module, then performs validation.
 	 * The main function should contain generated code for a program.
 	 * @param body the body of the main function
 	 */

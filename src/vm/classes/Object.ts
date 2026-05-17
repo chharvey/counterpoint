@@ -26,10 +26,10 @@ class VmObject {
 		/** @return `(struct.get $Object $id <ref>)` */
 		readonly id: binaryen.ExpressionRef /* i64 */,
 	} {
-		const {mod} = this.vm;
+		const {wasm} = this.vm.mod;
 		return {
 			get id() {
-				return mod.wasm.struct.get(FIELD.ID, ref, binaryen.i64);
+				return wasm.struct.get(FIELD.ID, ref, binaryen.i64);
 			},
 		};
 	}

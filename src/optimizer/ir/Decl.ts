@@ -77,11 +77,11 @@ export class Decl extends Instruction {
 		 * - `val mut _:     T = assigned_foldable;`
 		 * - `val mut _:     T = assigned_non_foldable;`
 		 */
-		if (!!this.assigned?.fold() && (!this.assignee || !this.writable)) return cg.vm.mod.nop();
+		if (!!this.assigned?.fold() && (!this.assignee || !this.writable)) return cg.vm.mod.wasm.nop();
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(cg);
 		return this.assignee
 			? cg.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
-			: cg.vm.mod.drop(value);
+			: cg.vm.mod.wasm.drop(value);
 	}
 	/* eslint-enable */
 }
