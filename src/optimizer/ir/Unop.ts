@@ -78,7 +78,7 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, op, Vect, Value: VmValue, List, Dict, Map: VmMap} = cg.vm;
+		const {mod: {wasm}, op, Vect, Value: VmValue, List, Dict, Map: VmMap} = cg.vm;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
 			case OpCode.ISNULL: { return op.isNull(code); }
@@ -92,15 +92,16 @@ export class Unop extends Value {
 			case OpCode.TONAT:   { return op.toNat(code); }
 			case OpCode.TOFLOAT: { return op.toFloat(code); }
 
-			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(List.count(code)))); }
-			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict.count(code)))); }
-			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(code)))); }
-			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(code)))); }
+			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(List.count(code)))); }
+			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(Dict.count(code)))); }
+			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(VmMap.count(code)))); }
+			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(VmMap.count(code)))); }
 		}
 	}
 
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any): number {
+		let {wasm} = cg.vm.mod;
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
 			return drop_then(cg.vm.mod, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
@@ -108,19 +109,19 @@ export class Unop extends Value {
 		}
 		if (this.operator === Operator.NOT) {
 			if (t0.isDefinitelyFalsy) {
-				return cg.vm.mod.block(null, [
-					cg.vm.mod.drop(arg0),
+				return wasm.block(null, [
+					wasm.drop(arg0),
 					cg.vm.Vect.TRUE,
 				], binaryen.v128);
 			} else if (t0.isDefinitelyTruthy) {
-				return cg.vm.mod.block(null, [
-					cg.vm.mod.drop(arg0),
+				return wasm.block(null, [
+					wasm.drop(arg0),
 					cg.vm.Vect.FALSE,
 				], binaryen.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
-			return cg.vm.mod.block(null, [
-				cg.vm.mod.drop(arg0),
+			return wasm.block(null, [
+				wasm.drop(arg0),
 				cg.vm.Vect.TRUE,
 			], binaryen.v128);
 		}

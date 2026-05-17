@@ -27,7 +27,7 @@ export class Drop extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.mod.drop(this.value.codegen(cg));
+		return cg.vm.mod.wasm.drop(this.value.codegen(cg));
 	}
 
 	/* eslint-disable */

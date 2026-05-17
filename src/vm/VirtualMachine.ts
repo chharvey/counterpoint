@@ -297,16 +297,16 @@ export class VirtualMachine {
 
 
 	public constructor() {
-		this.mod.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
+		this.mod.features = (
 			/* eslint-disable @stylistic/operator-linebreak */
-			binaryen.Features.NontrappingFPToInt |
-			binaryen.Features.SIMD128 |
-			binaryen.Features.TailCall |
-			binaryen.Features.ReferenceTypes |
-			binaryen.Features.Multivalue |
-			binaryen.Features.GC
+			binaryen.Feature.NontrappingFPToInt |
+			binaryen.Feature.SIMD128 |
+			binaryen.Feature.TailCall |
+			binaryen.Feature.ReferenceTypes |
+			binaryen.Feature.Multivalue |
+			binaryen.Feature.GC
 			/* eslint-enable @stylistic/operator-linebreak */
-		));
+		);
 
 		({
 			heaptypeRegistry:    this.heaptype,
