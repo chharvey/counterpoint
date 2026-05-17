@@ -1,8 +1,5 @@
 import type * as binaryen from 'binaryen.ts';
-import {
-	bigint_to_i64,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -74,7 +71,7 @@ export class Integer extends ValueNumber<Integer> {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.Value.newPrimitive(cg.vm.Vect.newInt(bigint_to_i64(cg.vm.mod, this.data)));
+		return cg.vm.Value.newPrimitive(cg.vm.Vect.newInt(cg.vm.mod.i64.const(this.data)));
 	}
 
 	public override toInt(): Integer {

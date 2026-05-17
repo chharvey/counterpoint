@@ -2,7 +2,6 @@ import * as test from 'node:test';
 import type * as binaryen from 'binaryen.ts';
 import {
 	type VirtualMachine,
-	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
@@ -40,17 +39,17 @@ test.suite('Builder', () => {
 		test.test('returns v128.', () => {
 			const {Vect} = cg.vm;
 			assertEqualBins([
-				cg.newVect(bigint_to_i64(mod, 42n)),
-				cg.newVect(bigint_to_i64(mod, 42n, true), {unsigned: true}),
+				cg.newVect(mod.i64.const(42n)),
+				cg.newVect(mod.i64.const(42n), {unsigned: true}),
 				cg.newVect(mod.f64.const(4.2)),
 				cg.newVect(Vect.TRUE),
-				cg.newVect(Vect.newInt(bigint_to_i64(mod, 42n))),
+				cg.newVect(Vect.newInt(mod.i64.const(42n))),
 			], ([
-				Vect.newInt(bigint_to_i64(mod, 42n)),
-				Vect.newNat(bigint_to_i64(mod, 42n, true)),
+				Vect.newInt(mod.i64.const(42n)),
+				Vect.newNat(mod.i64.const(42n)),
 				Vect.newFloat(mod.f64.const(4.2)),
 				Vect.TRUE,
-				Vect.newInt(bigint_to_i64(mod, 42n)),
+				Vect.newInt(mod.i64.const(42n)),
 			]));
 		});
 	});
@@ -76,7 +75,7 @@ test.suite('Builder', () => {
 				[0x104n, Value.newPrimitive(Vect.FALSE)],
 				[0x105n, genConst(cg, 4.2)],
 			] as const).map(([id, code]) => mod.struct.new([
-				bigint_to_i64(mod, id, true),
+				mod.i64.const(id),
 				code,
 			], cg.vm.heaptype.Property)));
 		});

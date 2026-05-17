@@ -3,7 +3,6 @@ import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 
 
@@ -204,7 +203,7 @@ export class Builder {
 				But in case a `(ref null $Case)`, etc. is given, an `(unreachable)` should be returned, since those aren’t valid in a `$Property` struct.
 				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
 				return this.vm.mod.struct.new([
-					bigint_to_i64(this.vm.mod, key, true),
+					this.vm.mod.i64.const(key),
 					arg,
 				], this.vm.heaptype.Property);
 			}

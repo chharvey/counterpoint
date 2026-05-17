@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	VALUE,
-	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
@@ -236,8 +235,8 @@ test.suite('Value', () => {
 				VALUE.SYM_NOTHING.codegen(cg),
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
 			], [
-				Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, 0x80n))),
-				Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, 0x100n))),
+				Value.newPrimitive(Vect.newNat(mod.i64.const(0x80n))),
+				Value.newPrimitive(Vect.newNat(mod.i64.const(0x100n))),
 			]);
 		});
 
@@ -261,7 +260,7 @@ test.suite('Value', () => {
 			const {mod, Vect, Value} = cg.vm;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newInt(bigint_to_i64(mod, x)))),
+				data.map((x) => Value.newPrimitive(Vect.newInt(mod.i64.const(x)))),
 			);
 		});
 
@@ -277,7 +276,7 @@ test.suite('Value', () => {
 			const {mod, Vect, Value} = cg.vm;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, x, true)))),
+				data.map((x) => Value.newPrimitive(Vect.newNat(mod.i64.const(x)))),
 			);
 		});
 

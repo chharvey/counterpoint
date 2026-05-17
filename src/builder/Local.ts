@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {bigint_to_i64} from './utils-public.ts';
 
 
 
@@ -64,7 +63,7 @@ export class Local {
 	public inc(): binaryen.ExpressionRef {
 		return this.set(this.type === binaryen.i32
 			? this.module.i32.add(this.get(), this.module.i32.const(1))
-			: (assert.strictEqual(this.type, binaryen.i64), this.module.i64.add(this.get(), bigint_to_i64(this.module, 1n))));
+			: (assert.strictEqual(this.type, binaryen.i64), this.module.i64.add(this.get(), this.module.i64.const(1n))));
 	}
 
 	/**
@@ -82,7 +81,7 @@ export class Local {
 			this.inc(),
 			this.type === binaryen.i32
 				? this.module.i32.sub(this.get(), this.module.i32.const(1))
-				: (assert.strictEqual(this.type, binaryen.i64), this.module.i64.sub(this.get(), bigint_to_i64(this.module, 1n))),
+				: (assert.strictEqual(this.type, binaryen.i64), this.module.i64.sub(this.get(), this.module.i64.const(1n))),
 		], this.type);
 	}
 }

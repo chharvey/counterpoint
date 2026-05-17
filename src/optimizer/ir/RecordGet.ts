@@ -1,8 +1,5 @@
 import type * as binaryen from 'binaryen.ts';
-import {
-	bigint_to_i64,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -43,7 +40,7 @@ export class RecordGet extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.vm.Record.get(
 			cg.vm.Value.cast(this.record.codegen(cg), cg.vm.reftype.Record),
-			bigint_to_i64(cg.vm.mod, this.accessor.keyid, true),
+			cg.vm.mod.i64.const(this.accessor.keyid),
 		);
 	}
 }

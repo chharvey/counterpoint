@@ -144,7 +144,6 @@ export class Binop extends Value {
 		let bothInts: any;
 		let bothNats: any;
 		let bothFloats: any;
-		let bigint_to_i64: any;
 
 		// Operator Addition
 		if (this.operator === Operator.ADD) {
@@ -182,7 +181,7 @@ export class Binop extends Value {
 				// else if arg0 is mathematically 1, return arg1
 				mod.if(
 					mod.i32.or(
-						mod.i32.and(cg.vm.Vect.isInt(getter),   mod.i64.eq(cg.vm.Vect.asInt(getter),   bigint_to_i64(mod, 1n))),
+						mod.i32.and(cg.vm.Vect.isInt(getter),   mod.i64.eq(cg.vm.Vect.asInt(getter),   mod.i64.const(1n))),
 						mod.i32.and(cg.vm.Vect.isFloat(getter), mod.f64.eq(cg.vm.Vect.asFloat(getter), mod.f64.const(1.0))),
 					),
 					arg1,

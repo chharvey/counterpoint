@@ -7,7 +7,6 @@ import {
 	TYPE,
 	Optimizer,
 	IR,
-	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../assert-helpers.ts';
@@ -425,15 +424,15 @@ test.suite('Opcode', () => {
 				return assertEqualBins(opt.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Record),
-						bigint_to_i64(mod, 0x103n, true),
+						mod.i64.const(0x103n),
 					)),
 					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Record),
-						bigint_to_i64(mod, 0x101n, true),
+						mod.i64.const(0x101n),
 					)),
 					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Record),
-						bigint_to_i64(mod, 0x102n, true),
+						mod.i64.const(0x102n),
 					)),
 				]);
 			});
