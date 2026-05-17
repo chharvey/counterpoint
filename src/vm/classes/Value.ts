@@ -1,0 +1,79 @@
+import binaryen from 'binaryen';
+import type {VirtualMachine} from '../VirtualMachine.ts';
+
+
+
+/** Struct field constant indices. */
+const FIELD = {
+	/** `$Value.$tag` */       TAG:       0,
+	/** `$Value.$primitive` */ PRIMITIVE: 1,
+	/** `$Value.$composite` */ COMPOSITE: 2,
+} as const;
+
+
+
+/** WASM representation of a Counterpoint value. */
+export class Value {
+	public constructor(private readonly vm: VirtualMachine) {}
+
+
+	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
+		/** @return `(struct.get $Value $tag       <ref>)` */ readonly tag:       binaryen.ExpressionRef /* i32 */,
+		/** @return `(struct.get $Value $primitive <ref>)` */ readonly primitive: binaryen.ExpressionRef /* v128 */,
+		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* eqref */,
+	} {
+		const {mod} = this.vm;
+		return {
+			get tag()       { return mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
+			get primitive() { return mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
+			get composite() { return mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
+		};
+	}
+
+	/**
+	 * Extracts a `$Value`’s `$composite` field and returns a `(ref.cast)` to the given reference type.
+	 * This method does not test the value’s `$tag` field — it assumes its `$composite` field is filled.
+	 * @param value   the expression to cast
+	 * @param reftype the type to cast to
+	 * @return        `(ref.cast (struct.get $Value $composite <value>) <reftype>)`
+	 */
+	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef {
+		return this.vm.mod.ref.cast(this.field(value).composite, reftype);
+	}
+
+
+	/** Creates a new Value struct storing the given v128 in its primitive slot. */
+	public newPrimitive(primitive: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.new-primitive', [primitive], this.vm.reftype.Value);
+	}
+
+	/** Creates a new Value struct storing the given reference in its composite slot. */
+	public newComposite(composite: binaryen.ExpressionRef /* (ref eq) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.new-composite', [composite], this.vm.reftype.Value);
+	}
+
+	/** Whether the value is primitive (tag == 1). */
+	public isPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.is-primitive', [value], binaryen.i32);
+	}
+
+	/** Whether the value is composite (tag == 2). */
+	public isComposite(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.is-composite', [value], binaryen.i32);
+	}
+
+	/** Converts this value (assuming it’s primitive and boolean) to i32. */
+	public boolToI32(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
+		return this.vm.mod.call('Value.bool-to-i32', [value], binaryen.i32);
+	}
+
+	/** Converts an i32 value to a $Value with a boolean primitive. */
+	public boolFromI32(bool: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.call('Value.bool-from-i32', [bool], this.vm.reftype.Value);
+	}
+
+	/** Return a string representation of the value. */
+	public stringify(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
+		return this.vm.mod.call('Value.stringify', [value], this.vm.reftype.String);
+	}
+}

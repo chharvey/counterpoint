@@ -141,7 +141,7 @@ export function differenceRules(
 
 		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 		if (t instanceof Union) {
-			return Intersection.all(t.operands.map((s) => this.subtract(s)));
+			return Intersection.all(this, ...t.operands.map((s) => this.subtract(s))); // `(A - B) & (A - C) == A & -B & -C`
 		}
 
 		return method.call(this, t);

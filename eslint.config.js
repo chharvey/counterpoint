@@ -16,7 +16,7 @@ export default [
 		],
 	},
 
-	eslint.configs.recommended, // https://github.com/eslint/eslint/blob/v9.22.0/packages/js/src/configs/eslint-recommended.js
+	eslint.configs.recommended, // https://github.com/eslint/eslint/blob/v9.39.4/packages/js/src/configs/eslint-recommended.js
 	{
 		name:            'All',
 		files:           ['**/*.{cjs,cts,js,mjs,mts,ts}'],
@@ -63,26 +63,22 @@ export default [
 			'@stylistic/rest-spread-spacing':         'error',
 			'@stylistic/semi-spacing':                'error',
 			'@stylistic/space-before-blocks':         'error',
-			'@stylistic/space-before-function-paren': ['warn', {
-				anonymous:  'always',
-				asyncArrow: 'always',
-				named:      'never',
-			}],
-			'@stylistic/space-infix-ops':         'error',
-			'@stylistic/space-unary-ops':         'error',
-			'@stylistic/spaced-comment':          'error',
-			'@stylistic/switch-colon-spacing':    'error',
-			'@stylistic/template-curly-spacing':  ['error', 'always'],
-			'@stylistic/template-tag-spacing':    'error',
-			'@stylistic/type-annotation-spacing': 'error',
-			'@stylistic/yield-star-spacing':      ['error', 'both'],
+			'@stylistic/space-before-function-paren': ['error', {named: 'never'}],
+			'@stylistic/space-infix-ops':             'error',
+			'@stylistic/space-unary-ops':             'error',
+			'@stylistic/spaced-comment':              'error',
+			'@stylistic/switch-colon-spacing':        'error',
+			'@stylistic/template-curly-spacing':      ['error', 'always'],
+			'@stylistic/template-tag-spacing':        'error',
+			'@stylistic/type-annotation-spacing':     'error',
+			'@stylistic/yield-star-spacing':          ['error', 'both'],
 
 			/* ## Grouping Structure Style */
 			'@stylistic/array-bracket-newline':          ['error', 'consistent'],
 			'@stylistic/array-bracket-spacing':          'warn',
 			'@stylistic/array-element-newline':          ['error', 'consistent'],
 			'arrow-body-style':                          'error',
-			'@stylistic/brace-style':                    'error',
+			'@stylistic/brace-style':                    ['error', '1tbs', {allowSingleLine: true}],
 			'@stylistic/computed-property-spacing':      'warn',
 			'curly':                                     'error',
 			'@stylistic/function-call-argument-newline': ['error', 'consistent'],
@@ -153,9 +149,13 @@ export default [
 			'prefer-template':      'error',
 
 			/* ## Variable Declarations */
-			'one-var': ['error', 'never'],
+			'init-declarations':    'error',
+			'no-shadow':            'error',
+			'no-use-before-define': 'error',
+			'one-var':              ['error', 'never'],
 
 			/* ## Function & Module Design */
+			'default-param-last':    'error',
 			'func-names':            ['error', 'never'],
 			'prefer-arrow-callback': ['error', {allowUnboundThis: false}],
 			'require-await':         'error',
@@ -174,9 +174,9 @@ export default [
 		},
 	},
 	...[
-		...tseslint.configs.recommended, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/recommended.ts
-		...tseslint.configs.strict,      // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/strict.ts
-		...tseslint.configs.stylistic,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/stylistic.ts
+		...tseslint.configs.recommended, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.58.2/packages/eslint-plugin/src/configs/flat/recommended.ts
+		...tseslint.configs.strict,      // https://github.com/typescript-eslint/typescript-eslint/blob/v8.58.2/packages/eslint-plugin/src/configs/flat/strict.ts
+		...tseslint.configs.stylistic,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.58.2/packages/eslint-plugin/src/configs/flat/stylistic.ts
 	].map((conf) => ({
 		...conf,
 		files: ['**/*.{cts,mts,ts}'],
@@ -188,8 +188,7 @@ export default [
 			globals: {...globals.node},
 			parser:  tseslint.parser,
 		},
-		linterOptions: {reportUnusedDisableDirectives: 'error'},
-		plugins:       {'@typescript-eslint': tseslint.plugin},
+		plugins: {'@typescript-eslint': tseslint.plugin},
 
 		rules: {
 			/* # Overrides */
@@ -201,7 +200,6 @@ export default [
 			'@typescript-eslint/no-unused-expressions': 'off',                           // getter access and logical operations may have side-effects
 			'@typescript-eslint/no-unused-vars':        ['error', {                      // override default options
 				argsIgnorePattern:              '^_',
-				caughtErrors:                   'all',
 				destructuredArrayIgnorePattern: '^_',
 				ignoreRestSiblings:             true,
 				reportUsedIgnorePattern:        true,
@@ -249,8 +247,8 @@ export default [
 	// NOTE: The following configs are separated from 'All' due to some of their rules requiring “type information” to run.
 	// See https://typescript-eslint.io/getting-started/typed-linting/ for more info.
 	...[
-		...tseslint.configs.recommendedTypeCheckedOnly, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/recommended-type-checked-only.ts
-		...tseslint.configs.stylisticTypeCheckedOnly,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.26.1/packages/eslint-plugin/src/configs/stylistic-type-checked-only.ts
+		...tseslint.configs.recommendedTypeCheckedOnly, // https://github.com/typescript-eslint/typescript-eslint/blob/v8.58.2/packages/eslint-plugin/src/configs/flat/recommended-type-checked-only.ts
+		...tseslint.configs.stylisticTypeCheckedOnly,   // https://github.com/typescript-eslint/typescript-eslint/blob/v8.58.2/packages/eslint-plugin/src/configs/flat/stylistic-type-checked-only.ts
 		// excluding `tseslint.configs.strictTypeCheckedOnly` as it is too strict
 	].map((conf) => ({
 		...conf,
@@ -273,8 +271,7 @@ export default [
 				],
 			},
 		},
-		linterOptions: {reportUnusedDisableDirectives: 'error'},
-		plugins:       {'@typescript-eslint': tseslint.plugin},
+		plugins: {'@typescript-eslint': tseslint.plugin},
 
 		rules: {
 			/* # Overrides */
@@ -302,6 +299,11 @@ export default [
 			/* ## Overrides of `tseslint.configs.stylisticTypeCheckedOnly` */
 			'@typescript-eslint/prefer-regexp-exec': 'off', // `String#match` is more ergonomic
 
+			/* # Layout & Formatting */
+			/* ## Operator Style */
+			'dot-notation':                    'off',
+			'@typescript-eslint/dot-notation': 'error',
+
 			/* # Best Practices */
 			/* ## Conciseness */
 			'@typescript-eslint/no-unnecessary-condition':           'error',
@@ -312,6 +314,7 @@ export default [
 			'@typescript-eslint/return-await': 'error',
 
 			/* ## Strictness */
+			'@typescript-eslint/no-deprecated':   'warn',
 			'@typescript-eslint/prefer-readonly': 'error',
 		},
 	},

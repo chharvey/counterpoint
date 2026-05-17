@@ -59,7 +59,7 @@ export class ASTNodeDict extends ASTNodeCollectionLiteral {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.Dict(
-			TYPE.Union.all(this.children.map((c) => c.val.type())),
+			TYPE.Union.all(...this.children.map((c) => c.val.type())),
 			true,
 		);
 	}

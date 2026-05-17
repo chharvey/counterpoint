@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -40,9 +37,9 @@ export class DictNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
+		return cg.vm.Value.newComposite(cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
 			id,
-			new BinValue(cg, value.codegen(cg)).toProperty(id),
-		])))).value;
+			cg.newProperty(id, value.codegen(cg)),
+		]))));
 	}
 }

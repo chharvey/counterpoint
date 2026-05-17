@@ -15,9 +15,9 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
 	MutabilityError01,
-} from '../../../src/index.js';
+} from '../../../src/index.ts';
 import {assertAssignable} from '../../assert-helpers.ts';
-import {setupScript} from '../../helpers.js';
+import {setupScript} from '../../helpers.ts';
 import {extract_lines} from '../../utils.ts';
 
 

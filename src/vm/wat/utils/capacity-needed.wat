@@ -27,7 +27,7 @@
 ;; it is still possible (but not recommended) for an array to have a larger capacity than the minimum required.
 ;; This policy ensures that all arrays have at least some empty slots,
 ;; while also utilizing space efficiently for arrays with few elements.
-(func $capacity-needed (param $size i32) (result i32)
+(func $util:capacity-needed (param $size i32) (result i32)
 	;; temporary constant for performance.
 	(local $s8 i32)
 	;; the returned result.
