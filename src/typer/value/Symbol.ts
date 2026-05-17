@@ -63,7 +63,7 @@ class ValueSymbol extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.vm.mod.i64.const(this.id)));
+		return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.vm.mod.wasm.i64.const(this.id)));
 	}
 }
 export {ValueSymbol as Symbol};

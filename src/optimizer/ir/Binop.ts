@@ -140,7 +140,7 @@ export class Binop extends Value {
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, t1: any, arg0: any, arg1: any): number {
 		type Local = any;
-		let mod = cg.vm.mod;
+		let {wasm} = cg.vm.mod;
 		let bothInts: any;
 		let bothNats: any;
 		let bothFloats: any;
@@ -151,14 +151,14 @@ export class Binop extends Value {
 			const teeer         = cg.newVect(local0.tee());
 			const getter        = cg.newVect(local0.get());
 			// if arg0 is mathematically 0, return arg1
-			return mod.if(
-				mod.i32.or(
-					mod.i32.and(cg.vm.Vect.isInt(teeer),    mod.i64.eqz(cg.vm.Vect.asInt(getter))),
-					mod.i32.and(cg.vm.Vect.isFloat(getter), mod.f64.eq(cg.vm.Vect.asFloat(getter), mod.f64.const(0.0))), // also takes care of the `-0.0` case
+			return wasm.if(
+				wasm.i32.or(
+					wasm.i32.and(cg.vm.Vect.isInt(teeer),    wasm.i64.eqz(cg.vm.Vect.asInt(getter))),
+					wasm.i32.and(cg.vm.Vect.isFloat(getter), wasm.f64.eq(cg.vm.Vect.asFloat(getter), wasm.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				arg1,
 				// else return a wasm call
-				mod.call(
+				wasm.call(
 					bothInts(t0, t1) ? 'op:int-add' : bothNats(t0, t1) ? 'op:nat-add' : (assert.ok(bothFloats(t0, t1)), 'op:float-add'),
 					[local0.get(), arg1],
 					binaryen.v128,
@@ -172,21 +172,21 @@ export class Binop extends Value {
 			const teeer         = cg.newVect(local0.tee());
 			const getter        = cg.newVect(local0.get());
 			// if arg0 is mathematically 0, return it
-			return mod.if(
-				mod.i32.or(
-					mod.i32.and(cg.vm.Vect.isInt(teeer),    mod.i64.eqz(cg.vm.Vect.asInt(getter))),
-					mod.i32.and(cg.vm.Vect.isFloat(getter), mod.f64.eq(cg.vm.Vect.asFloat(getter), mod.f64.const(0.0))), // also takes care of the `-0.0` case
+			return wasm.if(
+				wasm.i32.or(
+					wasm.i32.and(cg.vm.Vect.isInt(teeer),    wasm.i64.eqz(cg.vm.Vect.asInt(getter))),
+					wasm.i32.and(cg.vm.Vect.isFloat(getter), wasm.f64.eq(cg.vm.Vect.asFloat(getter), wasm.f64.const(0.0))), // also takes care of the `-0.0` case
 				),
 				local0.get(),
 				// else if arg0 is mathematically 1, return arg1
-				mod.if(
-					mod.i32.or(
-						mod.i32.and(cg.vm.Vect.isInt(getter),   mod.i64.eq(cg.vm.Vect.asInt(getter),   mod.i64.const(1n))),
-						mod.i32.and(cg.vm.Vect.isFloat(getter), mod.f64.eq(cg.vm.Vect.asFloat(getter), mod.f64.const(1.0))),
+				wasm.if(
+					wasm.i32.or(
+						wasm.i32.and(cg.vm.Vect.isInt(getter),   wasm.i64.eq(cg.vm.Vect.asInt(getter),   wasm.i64.const(1n))),
+						wasm.i32.and(cg.vm.Vect.isFloat(getter), wasm.f64.eq(cg.vm.Vect.asFloat(getter), wasm.f64.const(1.0))),
 					),
 					arg1,
 					// else return a wasm call
-					mod.call(
+					wasm.call(
 						bothInts(t0, t1) ? 'op:int-mul' : bothNats(t0, t1) ? 'op:nat-mul' : (assert.ok(bothFloats(t0, t1)), 'op:float-mul'),
 						[local0.get(), arg1],
 						binaryen.v128,
@@ -198,9 +198,9 @@ export class Binop extends Value {
 		// Operator Equality
 		if (this.type().equals(TYPE.FALSE)) {
 			drop_then(this.builder, [arg0, arg1], false);
-			return mod.block(null, [
-				mod.drop(arg0),
-				mod.drop(arg1),
+			return wasm.block(null, [
+				wasm.drop(arg0),
+				wasm.drop(arg1),
 				cg.vm.Vect.FALSE,
 			], binaryen.v128);
 		}

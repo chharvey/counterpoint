@@ -39,18 +39,18 @@ export class Local {
 		if (value !== undefined) {
 			this.#value = value;
 		}
-		return this.module.local.set(this.index, this.#value);
+		return this.module.wasm.local.set(this.index, this.#value);
 	}
 
 	public get(): binaryen.ExpressionRef {
-		return this.module.local.get(this.index, this.type);
+		return this.module.wasm.local.get(this.index, this.type);
 	}
 
 	public tee(value?: binaryen.ExpressionRef): binaryen.ExpressionRef {
 		if (value !== undefined) {
 			this.#value = value;
 		}
-		return this.module.local.tee(this.index, this.#value, this.type);
+		return this.module.wasm.local.tee(this.index, this.#value, this.type);
 	}
 
 	/**
@@ -61,9 +61,10 @@ export class Local {
 	 * This Local must be an i32 or i64.
 	 */
 	public inc(): binaryen.ExpressionRef {
+		const {wasm} = this.module;
 		return this.set(this.type === binaryen.i32
-			? this.module.i32.add(this.get(), this.module.i32.const(1))
-			: (assert.strictEqual(this.type, binaryen.i64), this.module.i64.add(this.get(), this.module.i64.const(1n))));
+			? wasm.i32.add(this.get(), wasm.i32.const(1))
+			: (assert.strictEqual(this.type, binaryen.i64), wasm.i64.add(this.get(), wasm.i64.const(1n))));
 	}
 
 	/**
@@ -77,11 +78,12 @@ export class Local {
 	 * ```
 	 */
 	public plusPlus(): binaryen.ExpressionRef {
-		return this.module.block(null, [
+		const {wasm} = this.module;
+		return wasm.block(null, [
 			this.inc(),
 			this.type === binaryen.i32
-				? this.module.i32.sub(this.get(), this.module.i32.const(1))
-				: (assert.strictEqual(this.type, binaryen.i64), this.module.i64.sub(this.get(), this.module.i64.const(1n))),
+				? wasm.i32.sub(this.get(), wasm.i32.const(1))
+				: (assert.strictEqual(this.type, binaryen.i64), wasm.i64.sub(this.get(), wasm.i64.const(1n))),
 		], this.type);
 	}
 }

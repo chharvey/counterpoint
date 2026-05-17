@@ -18,7 +18,7 @@ export class Trap extends ValueTac {
 
 	@noopMethod(memoizeMethod)
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.mod.unreachable();
+		return cg.vm.mod.wasm.unreachable();
 	}
 
 	public override asTac(): this {

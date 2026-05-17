@@ -58,7 +58,7 @@ class ValueString extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.Value.newComposite(cg.codegenString([...this.data].map((c) => cg.vm.mod.i32.const(c))));
+		return cg.vm.Value.newComposite(cg.codegenString([...this.data].map((c) => cg.vm.mod.wasm.i32.const(c))));
 	}
 
 	/**

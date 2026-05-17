@@ -69,7 +69,7 @@ export class Natural extends ValueNumber<Natural> {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.vm.mod.i64.const(this.data)));
+		return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.vm.mod.wasm.i64.const(this.data)));
 	}
 
 	public override toInt(): Integer {

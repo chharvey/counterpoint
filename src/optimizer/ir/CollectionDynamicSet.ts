@@ -67,7 +67,7 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Vect, Value, List, Dict, Map: VmMap} = cg.vm;
+		const {mod: {wasm}, Vect, Value, List, Dict, Map: VmMap} = cg.vm;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
@@ -77,7 +77,7 @@ export class CollectionDynamicSet extends Instruction {
 			case TypeName.LIST: {
 				return List.set(
 					cast_collection(cg.vm.reftype.List),
-					mod.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
+					wasm.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
 					value,
 				);
 			}
@@ -91,17 +91,17 @@ export class CollectionDynamicSet extends Instruction {
 			case TypeName.SET: {
 				const base: Local = cg.newLocal(cast_collection(cg.vm.reftype.Map));
 				const xsor: Local = cg.newLocal(accessor, cg.vm.reftype.Value);
-				return mod.block(null, [
+				return wasm.block(null, [
 					base.set(),
 					xsor.set(),
-					mod.if(
+					wasm.if(
 						Vect.isConst(Value.field(value).primitive, true),
 						VmMap.set(
 							base.get(),
 							xsor.get(),
 							cg.getConst(BinConst.NULL),
 						),
-						mod.drop(VmMap.delete(
+						wasm.drop(VmMap.delete(
 							base.get(),
 							xsor.get(),
 						)),

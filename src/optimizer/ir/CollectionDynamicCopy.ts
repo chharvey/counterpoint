@@ -25,22 +25,23 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** Adjusts destination capacity before copying. */
 function copy_array(
-	mod:     VirtualMachine['mod'],
+	mod:     binaryen.Module, // TODO: take ExpressionBuilder
 	destobj: Local,
 	destref: binaryen.ExpressionRef,
 	srcref:  Local,
 	adj_cap: binaryen.ExpressionRef /* void */,
 ): binaryen.ExpressionRef {
-	return mod.block(null, [
+	const {wasm} = mod;
+	return wasm.block(null, [
 		destobj.set(),
 		srcref.set(),
 		adj_cap,
-		mod.array.copy(
+		wasm.array.copy(
 			destref,
-			mod.i32.const(0),
+			wasm.i32.const(0),
 			srcref.get(),
-			mod.i32.const(0),
-			mod.array.len(srcref.get()),
+			wasm.i32.const(0),
+			wasm.array.len(srcref.get()),
 		),
 	]);
 }
@@ -56,7 +57,7 @@ function each_item(
 	check_null: boolean,
 	when_item_is_non_null: (dest_get: binaryen.ExpressionRef, item_get: binaryen.ExpressionRef) => binaryen.ExpressionRef,
 ): binaryen.ExpressionRef {
-	const {mod} = cg.vm;
+	const {wasm} = cg.vm.mod;
 
 	// HACK: Temporary counter until we get CodeGenerator blocks.
 	if (!('blockCount' in cg)) {
@@ -65,24 +66,24 @@ function each_item(
 	const block_n: bigint = Reflect.get(cg, 'blockCount') as bigint;
 	Reflect.set(cg, 'blockCount', block_n + 1n);
 
-	const i:    Local = cg.newLocal(mod.i32.const(0));
-	const item: Local = cg.newLocal(mod.array.get(srcref.get(), i.get(), itemtype));
+	const i:    Local = cg.newLocal(wasm.i32.const(0));
+	const item: Local = cg.newLocal(wasm.array.get(srcref.get(), i.get(), itemtype));
 
 	const non_null_item: binaryen.ExpressionRef = when_item_is_non_null(destobj.get(), item.get());
 
-	return mod.block(null, [
+	return wasm.block(null, [
 		destobj.set(),
 		srcref.set(),
-		mod.block(`exit-${ block_n }`, [
+		wasm.block(`exit-${ block_n }`, [
 			i.set(),
-			mod.loop(`repeat-${ block_n }`, mod.block(null, [
-				mod.br_if(`exit-${ block_n }`, mod.i32.ge_u(i.get(), mod.array.len(srcref.get()))),
+			wasm.loop(`repeat-${ block_n }`, wasm.block(null, [
+				wasm.br_if(`exit-${ block_n }`, wasm.i32.ge_u(i.get(), wasm.array.len(srcref.get()))),
 				item.set(),
 				check_null
-					? mod.if(mod.i32.eqz(mod.ref.is_null(item.get())), non_null_item)
+					? wasm.if(wasm.i32.eqz(wasm.ref.is_null(item.get())), non_null_item)
 					: non_null_item,
 				i.inc(),
-				mod.br(`repeat-${ block_n }`),
+				wasm.br(`repeat-${ block_n }`),
 			])),
 		]),
 	]);
@@ -114,9 +115,10 @@ function each_item(
  * @return     the key and value of the `$Property`
  */
 function two_tuple_to_prop(vm: VirtualMachine, pair: Local): {key: binaryen.ExpressionRef, val: binaryen.ExpressionRef} {
+	const {wasm} = vm.mod;
 	return {
-		key: vm.Vect.asNat(vm.Value.field(vm.mod.array.get(pair.tee(), vm.mod.i32.const(0), vm.reftype.Value)).primitive),
-		val: vm.mod.array.get(pair.get(), vm.mod.i32.const(1), vm.reftype.Value),
+		key: vm.Vect.asNat(vm.Value.field(wasm.array.get(pair.tee(), wasm.i32.const(0), vm.reftype.Value)).primitive),
+		val: wasm.array.get(pair.get(), wasm.i32.const(1), vm.reftype.Value),
 	};
 }
 
@@ -177,9 +179,10 @@ function case_to_prop(vm: VirtualMachine, case_: binaryen.ExpressionRef): {key: 
  * @return     the antecedent and consequent of a new `$Case`
  */
 function two_tuple_to_case(vm: VirtualMachine, pair: Local): {ant: binaryen.ExpressionRef, con: binaryen.ExpressionRef} {
+	const {wasm} = vm.mod;
 	return {
-		ant: vm.mod.array.get(pair.tee(), vm.mod.i32.const(0), vm.reftype.Value),
-		con: vm.mod.array.get(pair.get(), vm.mod.i32.const(1), vm.reftype.Value),
+		ant: wasm.array.get(pair.tee(), wasm.i32.const(0), vm.reftype.Value),
+		con: wasm.array.get(pair.get(), wasm.i32.const(1), vm.reftype.Value),
 	};
 }
 
@@ -229,7 +232,7 @@ export class CollectionDynamicCopy extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Value, Case, List, Dict, Map: VmMap} = cg.vm;
+		const {mod: {wasm}, Value, Case, List, Dict, Map: VmMap} = cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);
 		const code_src:  binaryen.ExpressionRef = this.source     .codegen(cg);
@@ -246,7 +249,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
-							List.adjustCapacity(destlist.get(), cg.vm.util.capacityNeeded(mod.array.len(srcref.get()))),
+							List.adjustCapacity(destlist.get(), cg.vm.util.capacityNeeded(wasm.array.len(srcref.get()))),
 						);
 					}
 					// List.<T>(List.<T>((t, t, t)));
@@ -258,7 +261,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
-							List.adjustCapacity(destlist.get(), mod.array.len(srcref.get())),
+							List.adjustCapacity(destlist.get(), wasm.array.len(srcref.get())),
 						);
 					}
 					// List.<T>(Set.<T>((t, t, t)));
@@ -271,10 +274,10 @@ export class CollectionDynamicCopy extends Instruction {
 						 * however, Set semantics explicitly state that programmers should not expect iteration to occur in any particular order.
 						 */
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
-						const j:      Local = cg.newLocal(mod.i32.const(0));
-						return mod.block(null, [
+						const j:      Local = cg.newLocal(wasm.i32.const(0));
+						return wasm.block(null, [
 							j.set(),
-							each_item(cg, destlist, srcref, cg.vm.reftypeNull.Case, true, (dest_get, item_get) => mod.block(null, [
+							each_item(cg, destlist, srcref, cg.vm.reftypeNull.Case, true, (dest_get, item_get) => wasm.block(null, [
 								List.set(dest_get, j.get(), Case.field(item_get).ant),
 								j.inc(),
 							])),
@@ -304,7 +307,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
-							Dict.adjustCapacity(destdict.get(), cg.vm.util.capacityNeeded(mod.array.len(srcref.get()))),
+							Dict.adjustCapacity(destdict.get(), cg.vm.util.capacityNeeded(wasm.array.len(srcref.get()))),
 						);
 					}
 					// Dict.<T>(List.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
@@ -325,7 +328,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
-							Dict.adjustCapacity(destdict.get(), mod.array.len(srcref.get())),
+							Dict.adjustCapacity(destdict.get(), wasm.array.len(srcref.get())),
 						);
 					}
 					// Dict.<T>(Set.<(sym, T)>(( (@a, t), (@b, t), (@c, t) )));
@@ -369,7 +372,7 @@ export class CollectionDynamicCopy extends Instruction {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.vm.reftype.List)).internal, cg.vm.reftype.ListInternal);
 						return each_item(cg, destset, srcref, cg.vm.reftypeNull.Value, true, (dest_get, item_get) => VmMap.set(
 							dest_get,
-							mod.ref.as_non_null(item_get),
+							wasm.ref.as_non_null(item_get),
 							cg.getConst(BinConst.NULL),
 						));
 					}
@@ -382,7 +385,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destset,
 							VmMap.field(destset.get()).internal,
 							srcref,
-							VmMap.adjustCapacity(destset.get(), mod.array.len(srcref.get())),
+							VmMap.adjustCapacity(destset.get(), wasm.array.len(srcref.get())),
 						);
 					}
 					default: {
@@ -428,7 +431,7 @@ export class CollectionDynamicCopy extends Instruction {
 							destmap,
 							VmMap.field(destmap.get()).internal,
 							srcref,
-							VmMap.adjustCapacity(destmap.get(), mod.array.len(srcref.get())),
+							VmMap.adjustCapacity(destmap.get(), wasm.array.len(srcref.get())),
 						);
 					}
 					default: {

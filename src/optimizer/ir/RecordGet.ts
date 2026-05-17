@@ -40,7 +40,7 @@ export class RecordGet extends Value {
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		return cg.vm.Record.get(
 			cg.vm.Value.cast(this.record.codegen(cg), cg.vm.reftype.Record),
-			cg.vm.mod.i64.const(this.accessor.keyid),
+			cg.vm.mod.wasm.i64.const(this.accessor.keyid),
 		);
 	}
 }

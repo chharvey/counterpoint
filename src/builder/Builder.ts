@@ -202,8 +202,8 @@ export class Builder {
 				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
 				But in case a `(ref null $Case)`, etc. is given, an `(unreachable)` should be returned, since those aren’t valid in a `$Property` struct.
 				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
-				return this.vm.mod.struct.new([
-					this.vm.mod.i64.const(key),
+				return this.vm.mod.wasm.struct.new([
+					this.vm.mod.wasm.i64.const(key),
 					arg,
 				], this.vm.heaptype.Property);
 			}
@@ -216,7 +216,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
 	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.String, units);
+		return this.vm.mod.wasm.array.new_fixed(this.vm.heaptype.String, units);
 	}
 
 	/**
@@ -225,7 +225,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.Tuple, items);
+		return this.vm.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
 	/**
@@ -237,7 +237,7 @@ export class Builder {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.vm.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -253,12 +253,12 @@ export class Builder {
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.vm.mod.ref.null(this.vm.reftypeNull.Value),
+			(_, i) => items[i] ?? this.vm.mod.wasm.ref.null(this.vm.reftypeNull.Value),
 		);
-		return this.vm.mod.struct.new([
+		return this.vm.mod.wasm.struct.new([
 			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.i32.const(items.length),
-			this.vm.mod.array.new_fixed(this.vm.heaptype.ListInternal, entries),
+			this.vm.mod.wasm.i32.const(items.length),
+			this.vm.mod.wasm.array.new_fixed(this.vm.heaptype.ListInternal, entries),
 		], this.vm.heaptype.List);
 	}
 
@@ -276,12 +276,12 @@ export class Builder {
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.vm.mod.struct.new([
+		return this.vm.mod.wasm.struct.new([
 			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.i32.const(props.size),
-			this.vm.mod.array.new_fixed(
+			this.vm.mod.wasm.i32.const(props.size),
+			this.vm.mod.wasm.array.new_fixed(
 				this.vm.heaptype.DictInternal,
-				entries.map((entry) => entry ?? this.vm.mod.ref.null(this.vm.reftypeNull.Property)),
+				entries.map((entry) => entry ?? this.vm.mod.wasm.ref.null(this.vm.reftypeNull.Property)),
 			),
 		], this.vm.heaptype.Dict);
 	}
@@ -309,16 +309,16 @@ export class Builder {
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
-		const map_obj = this.vm.mod.struct.new([
+		const map_obj = this.vm.mod.wasm.struct.new([
 			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.i32.const(cases.size),
-			this.vm.mod.array.new_default(this.vm.heaptype.MapInternal, this.vm.mod.i32.const(capacity)),
+			this.vm.mod.wasm.i32.const(cases.size),
+			this.vm.mod.wasm.array.new_default(this.vm.heaptype.MapInternal, this.vm.mod.wasm.i32.const(capacity)),
 		], this.vm.heaptype.Map);
 		if (!cases.size) {
 			return map_obj;
 		}
 		const local: Local = this.newLocal(map_obj, this.vm.reftype.Map);
-		return this.vm.mod.block(null, [
+		return this.vm.mod.wasm.block(null, [
 			local.set(),
 			...[...cases].map(([ant, con]) => this.vm.Map.set(local.get(), ant, con)),
 			local.get(),

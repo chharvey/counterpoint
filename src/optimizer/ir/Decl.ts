@@ -52,7 +52,7 @@ export class Decl extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.vm.mod.struct.new_default(cg.vm.reftype.Value)).set();
+		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.vm.mod.wasm.struct.new_default(cg.vm.reftype.Value)).set();
 	}
 
 	/* eslint-disable */

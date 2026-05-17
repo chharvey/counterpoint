@@ -18,7 +18,7 @@ class VmObject {
 
 	/** Global counter for `$Object` structs. Used for values of field `$Object.$id`. */
 	public get ctr(): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.global.get('Object.ctr', binaryen.i64);
+		return this.vm.mod.wasm.global.get('Object.ctr', binaryen.i64);
 	}
 
 
@@ -29,7 +29,7 @@ class VmObject {
 		const {mod} = this.vm;
 		return {
 			get id() {
-				return mod.struct.get(FIELD.ID, ref, binaryen.i64);
+				return mod.wasm.struct.get(FIELD.ID, ref, binaryen.i64);
 			},
 		};
 	}
@@ -39,7 +39,7 @@ class VmObject {
 	 * Equivalent to `ctr++` in most imperative languages.
 	 */
 	public ctrPlusPlus(): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Object.ctr-plus-plus', [], binaryen.i64);
+		return this.vm.mod.wasm.call('Object.ctr-plus-plus', [], binaryen.i64);
 	}
 }
 export {VmObject as Object};
