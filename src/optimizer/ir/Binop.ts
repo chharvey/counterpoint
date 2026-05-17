@@ -207,7 +207,7 @@ export class Binop extends Value {
 		}
 
 		// Operator Logical
-		const block1: binaryen.ExpressionRef = drop_then(cg, [arg0], arg1);
+		const block1: binaryen.ExpressionRef = drop_then(cg.vm, [arg0], arg1);
 		if (t0.isDefinitelyFalsy) {
 			return this.operator === Operator.AND ? arg0 : block1;
 		} else if (t0.isDefinitelyTruthy) {

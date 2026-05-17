@@ -18,7 +18,7 @@ const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
 
 
 /**
- * Generate an {@link AST.ASTNodeGoal} containing a Counterpoint script and run checks on it,
+ * Generate an {@link AST.Goal} containing a Counterpoint script and run checks on it,
  * then return various aspects of the node.
  * @param source         the source text of the Counterpoint script
  * @param opts           various options for compiling
@@ -26,23 +26,22 @@ const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
  * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
  * @param opts.lower     Should the Lower     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
  * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `varCheck`, `typeCheck`, and `lower` are true)
- * @param config         compiler config options
- * @return               the `ASTNodeGoal` instance and some properties of it
+ * @return               the `Goal` instance and some properties of it
  */
 export function setupScript(
 	source: string,
 	opts:   {varCheck?: boolean, typeCheck?: boolean, lower?: boolean, codegen?: boolean} = {},
 ): {
-	readonly goal:  AST.ASTNodeGoal,
+	readonly goal:  AST.Goal,
 	readonly stmts: NonNullable<typeof goal.block>['children'],
 	readonly opt:   Optimizer,
 	readonly cg:    Builder,
 	readonly mod:   VirtualMachine['mod'],
 } {
-	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
+	const goal: AST.Goal = AST.Goal.fromSource(source);
 	const opt = new Optimizer();
 	const cg  = new Builder();
-	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
+	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
 	opts.lower     ??= true;

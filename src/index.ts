@@ -8,3 +8,4 @@ export * from './optimizer/index.ts';
 export * from './code-generator/index.ts';
 export * from './builder/index.ts';
 export * from './error/index.ts';
+export * from './cli/index.ts';

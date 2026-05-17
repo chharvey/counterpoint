@@ -1,0 +1,75 @@
+import * as assert from 'node:assert';
+import type {Optimizer} from '../../index.ts';
+import {
+	type NonemptyArray,
+	memoizeGetter,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {
+	type CplConfig,
+	CONFIG_DEFAULT,
+} from '../../core/index.ts';
+import {Validator} from '../Validator.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
+import {Goal} from './index.ts';
+import {AstNode} from './AstNode.ts';
+import type {Foldable} from './Foldable.ts';
+import type {Lowerable} from './Lowerable.ts';
+import type {ExpressionBlock} from './ExpressionBlock.ts';
+import type {Statement} from './Statement.ts';
+import type {StatementConditional} from './StatementConditional.ts';
+
+
+
+export class Block extends AstNode implements Foldable, Lowerable {
+	/**
+	 * Construct a new Block from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new Block representing the given source
+	 */
+	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Block {
+		const goal: Goal = Goal.fromSource(src, config);
+		assert.ok(goal.block, 'semantic goal should have 1 child');
+		return goal.block;
+	}
+
+
+	#validator?: Validator;
+
+	public constructor(
+		start_node: SyntaxNodeFamily<'block', ['break']>,
+		public override readonly children: Readonly<NonemptyArray<Statement>>,
+		private readonly config:           CplConfig,
+	) {
+		super(start_node, {}, children);
+		assert.ok(this.children.length, 'Expected Block to contain at least 1 statement.');
+	}
+
+	public override get validator(): Validator {
+		this.#validator ??= new Validator(this.config, (this.parent as ExpressionBlock | StatementConditional | Goal | undefined)?.validator);
+		return this.#validator;
+	}
+
+	/** @implements Foldable */
+	@memoizeGetter
+	public get isFoldable(): boolean {
+		return this.children.every((stmt) => stmt.isFoldable);
+	}
+
+	/** @implements Foldable */
+	@memoizeGetter
+	public get hasBottomType(): boolean {
+		return this.children.some((c) => c.hasBottomType);
+	}
+
+	/**
+	 * @inheritdoc
+	 * @implements Lowerable
+	 */
+	@runOnceMethod
+	public lower(optimizer: Optimizer): void {
+		return this.children.forEach((stmt) => stmt.lower(optimizer));
+	}
+}
