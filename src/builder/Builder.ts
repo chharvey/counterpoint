@@ -332,14 +332,14 @@ export class Builder {
 	 */
 	public setupMain(body: binaryen.ExpressionRef): void {
 		const fn_name: string = 'main';
-		this.vm.mod.addFunction(
+		this.vm.mod.functions.add(
 			fn_name,
 			binaryen.none,
 			binaryen.none,
 			this.getAllLocals().map((local) => local.type),
 			body,
 		);
-		this.vm.mod.addFunctionExport(fn_name, fn_name);
+		this.vm.mod.exports.addFunction(fn_name, fn_name);
 		if (!this.vm.mod.validate()) {
 			throw new Error('Invalid WebAssembly module.');
 		}
