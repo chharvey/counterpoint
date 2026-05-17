@@ -457,7 +457,7 @@ test.suite('Opcode', () => {
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(4, wasm.array.get(
 								List.field(Value.cast(wasm.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.List)).internal,
-								wasm.i32.wrap(Vect.asInt(Value.field(wasm.local.get(3, cg.vm.reftype.Value)).primitive)),
+								wasm.i32.wrap_i64(Vect.asInt(Value.field(wasm.local.get(3, cg.vm.reftype.Value)).primitive)),
 								cg.vm.reftypeNull.Value,
 							)),
 							wasm.if(
@@ -469,7 +469,7 @@ test.suite('Opcode', () => {
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(5, wasm.array.get(
 								List.field(Value.cast(list_get, cg.vm.reftype.List)).internal,
-								wasm.i32.wrap(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
+								wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
 								cg.vm.reftypeNull.Value,
 							)),
 							wasm.if(
@@ -481,7 +481,7 @@ test.suite('Opcode', () => {
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(6, wasm.array.get(
 								List.field(Value.cast(list_get, cg.vm.reftype.List)).internal,
-								wasm.i32.wrap(Vect.asInt(Value.field(genConst(cg, 3n)).primitive)),
+								wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 3n)).primitive)),
 								cg.vm.reftypeNull.Value,
 							)),
 							wasm.if(
@@ -493,7 +493,7 @@ test.suite('Opcode', () => {
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(7, wasm.array.get(
 								List.field(Value.cast(list_get, cg.vm.reftype.List)).internal,
-								wasm.i32.wrap(Vect.asInt(Value.field(genConst(cg, -1n)).primitive)),
+								wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, -1n)).primitive)),
 								cg.vm.reftypeNull.Value,
 							)),
 							wasm.if(
@@ -727,7 +727,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_u(List.count(list.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List.count(list.codegen(cg))))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -746,7 +746,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_u(Dict.count(dict.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(dict.codegen(cg))))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -765,7 +765,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_u(VmMap.count(set.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(set.codegen(cg))))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -784,7 +784,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(wasm.i64.extend_u(VmMap.count(map.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(map.codegen(cg))))),
 					);
 				});
 			});
@@ -930,17 +930,17 @@ test.suite('Opcode', () => {
 					return assertEqualBins(opt.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						List.set(
 							Value.cast(wasm.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.List),
-							wasm.i32.wrap(Vect.asInt(Value.field(wasm.local.get(3, cg.vm.reftype.Value)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.field(wasm.local.get(3, cg.vm.reftype.Value)).primitive)),
 							genConst(cg, 45n),
 						),
 						List.set(
 							Value.cast(wasm.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.List),
-							wasm.i32.wrap(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
 							genConst(cg, 46n),
 						),
 						List.set(
 							Value.cast(wasm.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.List),
-							wasm.i32.wrap(Vect.asInt(Value.field(genConst(cg, 2n)).primitive)),
+							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 2n)).primitive)),
 							genConst(cg, 47n),
 						),
 					]);

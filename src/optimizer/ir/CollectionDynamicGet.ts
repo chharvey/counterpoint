@@ -80,7 +80,7 @@ export class CollectionDynamicGet extends Value {
 			case TypeName.LIST: {
 				const item: Local = cg.newLocal(wasm.array.get(
 					cg.vm.List.field(cast_collection(cg.vm.reftype.List)).internal,
-					wasm.i32.wrap(Vect.asInt(cg.vm.Value.field(accessor).primitive)),
+					wasm.i32.wrap_i64(Vect.asInt(cg.vm.Value.field(accessor).primitive)),
 					cg.vm.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
 

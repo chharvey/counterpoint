@@ -95,10 +95,10 @@ export class Unop extends Value {
 			case OpCode.TONAT:   { return op.toNat(code); }
 			case OpCode.TOFLOAT: { return op.toFloat(code); }
 
-			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(List.count(code)))); }
-			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(Dict.count(code)))); }
-			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(VmMap.count(code)))); }
-			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_u(VmMap.count(code)))); }
+			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List.count(code)))); }
+			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict.count(code)))); }
+			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(code)))); }
+			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(code)))); }
 		}
 	}
 
