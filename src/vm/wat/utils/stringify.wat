@@ -106,7 +106,7 @@
 			(array.set $String
 				(local.get $string)
 				(local.get $index)
-				(i32.sub (i32.const 0x30) (i32.wrap_i64 (local.get $rem))) ;; with digit <= 0, UTF8_codeunit(digit) == UTF8_codeunit('0') - digit
+				(i32.sub (i32.const 0x30) (i32.wrap_i64 (local.get $rem))) ;; with rem <= 0, UTF8_codeunit(abs(rem)) == UTF8_codeunit('0') - rem
 			)
 			(local.set $copy (i64.div_s (local.get $copy) (i64.const 10)))
 			(local.set $index (i32.sub (local.get $index) (i32.const 1)))

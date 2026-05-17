@@ -63,23 +63,24 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 
 
 
-const IMPORTS: readonly string[] = [
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/mod.wat'),             'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/capacity-needed.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/compare-numbers.wat'), 'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/stringify.wat'),       'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/utils/hash.wat'),            'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/ops.wat'),                   'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Vect.wat'),          'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Value.wat'),         'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Property.wat'),      'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Case.wat'),          'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Record.wat'),        'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Object.wat'),        'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/List.wat'),          'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Dict.wat'),          'utf8'),
-	fs.readFileSync(path.join(import.meta.dirname, './wat/classes/Map.wat'),           'utf8'),
-];
+const IMPORTS = await Promise.all([
+	'./wat/types.wat',
+	'./wat/utils/mod.wat',
+	'./wat/utils/capacity-needed.wat',
+	'./wat/utils/compare-numbers.wat',
+	'./wat/utils/stringify.wat',
+	'./wat/utils/hash.wat',
+	'./wat/ops.wat',
+	'./wat/classes/Vect.wat',
+	'./wat/classes/Value.wat',
+	'./wat/classes/Property.wat',
+	'./wat/classes/Case.wat',
+	'./wat/classes/Record.wat',
+	'./wat/classes/Object.wat',
+	'./wat/classes/List.wat',
+	'./wat/classes/Dict.wat',
+	'./wat/classes/Map.wat',
+].map((filename) => fs.promises.readFile(path.join(import.meta.dirname, filename), 'utf8')));
 
 
 

@@ -1,22 +1,3 @@
-(type $DictInternal (array (mut (ref null $Property)))) ;; mutable to allow reassigning array entries, nullable because array can be sparse
-
-
-
-;; precursor to the `Dict` class
-(type $Dict (sub $Object (struct
-	;; --- inherited ---
-	;; unique id for hashing
-	(field $id i64)
-
-	;; --- own ---
-	;; number of items currently in the array, including tombstones (for total capacity, get its `(array.len)`); mutable to allow array mutation
-	(field $size (mut i32))
-	;; the array of Dict properties; mutable to allow reallocation
-	(field $internal (mut (ref $DictInternal)))
-)))
-
-
-
 (func $Dict.count (param $dict (ref $Dict)) (result i32)
 	;; the return value, the number of live elements.
 	(local $count i32)

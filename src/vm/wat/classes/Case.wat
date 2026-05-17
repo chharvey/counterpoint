@@ -1,11 +1,3 @@
-;; type of entry in Maps
-(type $Case (struct
-	(field $ant (ref $Value))
-	(field $con (ref $Value))
-))
-
-
-
 (func $Case.new-tombstone (result (ref $Case))
 	(struct.new $Case
 		(struct.new_default $Value)
