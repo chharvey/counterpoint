@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	drop_then,
@@ -138,7 +138,7 @@ export class Binop extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, t1: any, arg0: any, arg1: any, binaryen: any): number {
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, t1: any, arg0: any, arg1: any): number {
 		type Local = any;
 		let mod = cg.vm.mod;
 		let bothInts: any;

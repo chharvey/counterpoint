@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
@@ -100,7 +100,7 @@ export class Unop extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any, binaryen: any): number {
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any): number {
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
 			return drop_then(cg.vm.mod, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
