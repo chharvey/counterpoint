@@ -188,24 +188,25 @@ export class Builder {
 	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
 	 */
 	public newProperty(key: bigint, arg: binaryen.ExpressionRef /* unreachable | (ref $Value) | (ref null $Value) */): binaryen.ExpressionRef /* (ref $Property) */ {
+		const {mod: {wasm}, heaptype, reftype, reftypeNull} = this.vm;
 		switch (binaryen.getExpressionType(arg)) {
 			case binaryen.unreachable: {
 				return arg;
 			}
 			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
 			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
-			case this.vm.reftypeNull.Value | 4:
-			case this.vm.reftype.Value     | 4:
-			case this.vm.reftypeNull.Value:
-			case this.vm.reftype.Value:
+			case reftypeNull.Value | 4:
+			case reftype.Value     | 4:
+			case reftypeNull.Value:
+			case reftype.Value:
 			default: {
 				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
 				But in case a `(ref null $Case)`, etc. is given, an `(unreachable)` should be returned, since those aren’t valid in a `$Property` struct.
 				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
-				return this.vm.mod.wasm.struct.new([
-					this.vm.mod.wasm.i64.const(key),
+				return wasm.struct.new([
+					wasm.i64.const(key),
 					arg,
-				], this.vm.heaptype.Property);
+				], heaptype.Property);
 			}
 		}
 	}
@@ -247,19 +248,20 @@ export class Builder {
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		const {mod: {wasm}, heaptype, reftypeNull, Object: VmObject} = this.vm;
 		let capacity: number = 8;
 		while (items.length > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.vm.mod.wasm.ref.null(this.vm.reftypeNull.Value),
+			(_, i) => items[i] ?? wasm.ref.null(reftypeNull.Value),
 		);
-		return this.vm.mod.wasm.struct.new([
-			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.wasm.i32.const(items.length),
-			this.vm.mod.wasm.array.new_fixed(this.vm.heaptype.ListInternal, entries),
-		], this.vm.heaptype.List);
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			wasm.i32.const(items.length),
+			wasm.array.new_fixed(heaptype.ListInternal, entries),
+		], heaptype.List);
 	}
 
 	/**
@@ -270,20 +272,21 @@ export class Builder {
 	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		const {mod: {wasm}, heaptype, reftypeNull, Object: VmObject} = this.vm;
 		let capacity: number = 8;
 		while (props.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.vm.mod.wasm.struct.new([
-			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.wasm.i32.const(props.size),
-			this.vm.mod.wasm.array.new_fixed(
-				this.vm.heaptype.DictInternal,
-				entries.map((entry) => entry ?? this.vm.mod.wasm.ref.null(this.vm.reftypeNull.Property)),
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			wasm.i32.const(props.size),
+			wasm.array.new_fixed(
+				heaptype.DictInternal,
+				entries.map((entry) => entry ?? wasm.ref.null(reftypeNull.Property)),
 			),
-		], this.vm.heaptype.Dict);
+		], heaptype.Dict);
 	}
 
 	/**
@@ -305,24 +308,25 @@ export class Builder {
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+		const {mod: {wasm}, heaptype, reftype, Object: VmObject, Map: VmMap} = this.vm;
 		let capacity: number = 8;
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
-		const map_obj = this.vm.mod.wasm.struct.new([
-			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.wasm.i32.const(cases.size),
-			this.vm.mod.wasm.array.new_default(this.vm.heaptype.MapInternal, this.vm.mod.wasm.i32.const(capacity)),
-		], this.vm.heaptype.Map);
+		const map_obj = wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			wasm.i32.const(cases.size),
+			wasm.array.new_default(heaptype.MapInternal, wasm.i32.const(capacity)),
+		], heaptype.Map);
 		if (!cases.size) {
 			return map_obj;
 		}
-		const local: Local = this.newLocal(map_obj, this.vm.reftype.Map);
-		return this.vm.mod.wasm.block(null, [
+		const local: Local = this.newLocal(map_obj, reftype.Map);
+		return wasm.block(null, [
 			local.set(),
-			...[...cases].map(([ant, con]) => this.vm.Map.set(local.get(), ant, con)),
+			...[...cases].map(([ant, con]) => VmMap.set(local.get(), ant, con)),
 			local.get(),
-		], this.vm.reftype.Map);
+		], reftype.Map);
 	}
 
 	/**
@@ -331,16 +335,17 @@ export class Builder {
 	 * @param body the body of the main function
 	 */
 	public setupMain(body: binaryen.ExpressionRef): void {
+		const {mod} = this.vm;
 		const fn_name: string = 'main';
-		this.vm.mod.functions.add(
+		mod.functions.add(
 			fn_name,
 			binaryen.none,
 			binaryen.none,
 			this.getAllLocals().map((local) => local.type),
 			body,
 		);
-		this.vm.mod.exports.addFunction(fn_name, fn_name);
-		if (!this.vm.mod.validate()) {
+		mod.exports.addFunction(fn_name, fn_name);
+		if (!mod.validate()) {
 			throw new Error('Invalid WebAssembly module.');
 		}
 	}

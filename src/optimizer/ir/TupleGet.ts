@@ -34,11 +34,11 @@ export class TupleGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {wasm} = cg.vm.mod;
+		const {mod: {wasm}, reftype, Value: VmValue} = cg.vm;
 		return wasm.array.get(
-			cg.vm.Value.cast(this.tuple.codegen(cg), cg.vm.reftype.Tuple),
+			VmValue.cast(this.tuple.codegen(cg), reftype.Tuple),
 			wasm.i32.const(Number(this.accessor)),
-			cg.vm.reftype.Value,
+			reftype.Value,
 		);
 	}
 }
