@@ -25,13 +25,12 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** Adjusts destination capacity before copying. */
 function copy_array(
-	mod:     binaryen.Module, // TODO: take ExpressionBuilder
+	wasm:    binaryen.ExpressionBuilder,
 	destobj: Local,
 	destref: binaryen.ExpressionRef,
 	srcref:  Local,
 	adj_cap: binaryen.ExpressionRef /* void */,
 ): binaryen.ExpressionRef {
-	const {wasm} = mod;
 	return wasm.block(null, [
 		destobj.set(),
 		srcref.set(),
@@ -245,7 +244,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Tuple: {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.vm.reftype.Tuple));
 						return copy_array(
-							cg.vm.mod,
+							cg.vm.mod.wasm,
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
@@ -257,7 +256,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.List: {
 						const srcref: Local = cg.newLocal(List.field(Value.cast(code_src, cg.vm.reftype.List)).internal, cg.vm.reftype.ListInternal);
 						return copy_array(
-							cg.vm.mod,
+							cg.vm.mod.wasm,
 							destlist,
 							List.field(destlist.get()).internal,
 							srcref,
@@ -303,7 +302,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Record: {
 						const srcref: Local = cg.newLocal(Value.cast(code_src, cg.vm.reftype.Record));
 						return copy_array(
-							cg.vm.mod,
+							cg.vm.mod.wasm,
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
@@ -324,7 +323,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Dict: {
 						const srcref: Local = cg.newLocal(Dict.field(Value.cast(code_src, cg.vm.reftype.Dict)).internal, cg.vm.reftype.DictInternal);
 						return copy_array(
-							cg.vm.mod,
+							cg.vm.mod.wasm,
 							destdict,
 							Dict.field(destdict.get()).internal,
 							srcref,
@@ -381,7 +380,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Set: {
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
 						return copy_array(
-							cg.vm.mod,
+							cg.vm.mod.wasm,
 							destset,
 							VmMap.field(destset.get()).internal,
 							srcref,
@@ -427,7 +426,7 @@ export class CollectionDynamicCopy extends Instruction {
 					case this.source.type instanceof TYPE.Map: {
 						const srcref: Local = cg.newLocal(VmMap.field(Value.cast(code_src, cg.vm.reftype.Map)).internal, cg.vm.reftype.MapInternal);
 						return copy_array(
-							cg.vm.mod,
+							cg.vm.mod.wasm,
 							destmap,
 							VmMap.field(destmap.get()).internal,
 							srcref,
