@@ -86,7 +86,7 @@ export class Builder {
 	 * @return      the new local variable
 	 */
 	public newLocal(value: binaryen.ExpressionRef, typ?: binaryen.Type): Local {
-		const local = new Local(this.vm.mod, this.#locals.size, value, typ);
+		const local = new Local(this.vm.mod.wasm, this.#locals.size, value, typ);
 		this.#locals.add(local);
 		return local;
 	}
@@ -102,7 +102,7 @@ export class Builder {
 	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
-			this.#locals.add(new Local(this.vm.mod, this.#locals.size, value, typ, schema));
+			this.#locals.add(new Local(this.vm.mod.wasm, this.#locals.size, value, typ, schema));
 			did = true;
 		}
 		return did;
