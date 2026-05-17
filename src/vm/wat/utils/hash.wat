@@ -6,18 +6,16 @@
 
 ;; ## Main Hash Function ##
 (func $Value.hash (param $value (ref $Value)) (result i64)
-	(local $tag       i32)
 	(local $composite eqref)
 
-	(local.set $tag       (struct.get $Value $tag       (local.get $value)))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
 	(if
-		(i32.eq (local.get $tag) (i32.const 1))
+		(call $Value.is-primitive (local.get $value))
 		(then (return_call $!v128.hash (struct.get $Value $primitive (local.get $value))))
 	)
 	(if
-		(i32.eq (local.get $tag) (i32.const 2))
+		(call $Value.is-composite (local.get $value))
 		(then
 			(if (ref.test (ref $String) (local.get $composite)) (then (return_call $!String.hash (ref.cast (ref $String) (local.get $composite)))))
 			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return_call $!Tuple.hash  (ref.cast (ref $Tuple)  (local.get $composite)))))
