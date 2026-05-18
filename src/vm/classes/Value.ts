@@ -25,7 +25,15 @@ export class Value implements HasFuncData {
 	/** @implements HasFuncData */
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
+			['Value#newPrimitive', {name: 'Value.new-primitive', param: binaryen.v128,  result: reftype.Value}],
+			['Value#newComposite', {name: 'Value.new-composite', param: binaryen.eqref, result: reftype.Value}], // TODO: `(ref eq)` (non-null)
+			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,  result: binaryen.i32}],
+			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,  result: binaryen.i32}],
+			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,  result: binaryen.i32}],
+			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.i32,   result: reftype.Value}],
+			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,  result: reftype.String}],
 		]);
 	}
 
