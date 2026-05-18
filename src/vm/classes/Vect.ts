@@ -105,6 +105,18 @@ export class Vect implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
+			['Vect#newInt',   {name: 'Vect.new-int',   param: binaryen.i64,  result: binaryen.v128}],
+			['Vect#newNat',   {name: 'Vect.new-nat',   param: binaryen.i64,  result: binaryen.v128}],
+			['Vect#newFloat', {name: 'Vect.new-float', param: binaryen.f64,  result: binaryen.v128}],
+			['Vect#isNull',   {name: 'Vect.is-null',   param: binaryen.v128, result: binaryen.i32}],
+			['Vect#isFalse',  {name: 'Vect.is-false',  param: binaryen.v128, result: binaryen.i32}],
+			['Vect#isTrue',   {name: 'Vect.is-true',   param: binaryen.v128, result: binaryen.i32}],
+			['Vect#isInt',    {name: 'Vect.is-int',    param: binaryen.v128, result: binaryen.i32}],
+			['Vect#isNat',    {name: 'Vect.is-nat',    param: binaryen.v128, result: binaryen.i32}],
+			['Vect#isFloat',  {name: 'Vect.is-float',  param: binaryen.v128, result: binaryen.i32}],
+			['Vect#asInt',    {name: 'Vect.as-int',    param: binaryen.v128, result: binaryen.i64}],
+			['Vect#asNat',    {name: 'Vect.as-nat',    param: binaryen.v128, result: binaryen.i64}],
+			['Vect#asFloat',  {name: 'Vect.as-float',  param: binaryen.v128, result: binaryen.f64}],
 		]);
 	}
 
