@@ -150,10 +150,8 @@ export class VirtualMachine {
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
 		const tb: TypeBuilder = new binaryen.TypeBuilder();
 
-		let type_count: number = 0;
-
 		/* (type $Value ...) */
-		const i_value: number = type_count++;
+		const i_value: number = tb.getSize();
 		tb.grow(1);
 		tb.setStructType(i_value, [
 			/* $tag */       TypeBuilder_makeField(binaryen.i32, 'i8'),
@@ -162,7 +160,7 @@ export class VirtualMachine {
 		]);
 
 		/* (type $Property ...) */
-		const i_property: number = type_count++;
+		const i_property: number = tb.getSize();
 		tb.grow(1);
 		tb.setStructType(i_property, [
 			/* $key */ TypeBuilder_makeField(binaryen.i64),
@@ -170,7 +168,7 @@ export class VirtualMachine {
 		]);
 
 		/* (type $Case ...) */
-		const i_case: number = type_count++;
+		const i_case: number = tb.getSize();
 		tb.grow(1);
 		tb.setStructType(i_case, [
 			/* $ant */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
@@ -178,7 +176,7 @@ export class VirtualMachine {
 		]);
 
 		/* (type $String ...) */
-		const i_string: number = type_count++;
+		const i_string: number = tb.getSize();
 		tb.grow(1);
 		tb.setArrayType(
 			i_string,
@@ -189,7 +187,7 @@ export class VirtualMachine {
 		);
 
 		/* (type $Tuple ...) */
-		const i_tuple: number = type_count++;
+		const i_tuple: number = tb.getSize();
 		tb.grow(1);
 		tb.setArrayType(
 			i_tuple,
@@ -200,7 +198,7 @@ export class VirtualMachine {
 		);
 
 		/* (type $Record ...) */
-		const i_record: number = type_count++;
+		const i_record: number = tb.getSize();
 		tb.grow(1);
 		tb.setArrayType(
 			i_record,
@@ -211,7 +209,7 @@ export class VirtualMachine {
 		);
 
 		/* (type $ListInternal ...) */
-		const i_list_internal: number = type_count++;
+		const i_list_internal: number = tb.getSize();
 		tb.grow(1);
 		tb.setArrayType(
 			i_list_internal,
@@ -222,7 +220,7 @@ export class VirtualMachine {
 		);
 
 		/* (type $DictInternal ...) */
-		const i_dict_internal: number = type_count++;
+		const i_dict_internal: number = tb.getSize();
 		tb.grow(1);
 		tb.setArrayType(
 			i_dict_internal,
@@ -233,7 +231,7 @@ export class VirtualMachine {
 		);
 
 		/* (type $MapInternal ...) */
-		const i_map_internal: number = type_count++;
+		const i_map_internal: number = tb.getSize();
 		tb.grow(1);
 		tb.setArrayType(
 			i_map_internal,
@@ -244,7 +242,7 @@ export class VirtualMachine {
 		);
 
 		/* (type $Object ...) */
-		const i_object: number = type_count++;
+		const i_object: number = tb.getSize();
 		tb.grow(1);
 		tb.setStructType(i_object, [
 			/* $id */ TypeBuilder_makeField(binaryen.i64),
@@ -252,7 +250,7 @@ export class VirtualMachine {
 		tb.setOpen(i_object);
 
 		/* (type $List ...) */
-		const i_list: number = type_count++;
+		const i_list: number = tb.getSize();
 		tb.grow(1);
 		tb.setStructType(i_list, [
 			/* $id */       TypeBuilder_makeField(binaryen.i64),
@@ -263,7 +261,7 @@ export class VirtualMachine {
 		tb.setOpen(i_list);
 
 		/* (type $Dict ...) */
-		const i_dict: number = type_count++;
+		const i_dict: number = tb.getSize();
 		tb.grow(1);
 		tb.setStructType(i_dict, [
 			/* $id */       TypeBuilder_makeField(binaryen.i64),
@@ -274,7 +272,7 @@ export class VirtualMachine {
 		tb.setOpen(i_dict);
 
 		/* (type $Map ...) */
-		const i_map: number = type_count++;
+		const i_map: number = tb.getSize();
 		tb.grow(1);
 		tb.setStructType(i_map, [
 			/* $id */       TypeBuilder_makeField(binaryen.i64),
