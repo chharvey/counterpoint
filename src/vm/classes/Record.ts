@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 import type {
@@ -16,6 +16,11 @@ class VmRecord implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
+			['Record#get', {
+				name:   'Record.get',
+				param:  binaryen.createType([this.vm.reftype.Record, binaryen.i64]),
+				result: this.vm.reftype.Value,
+			}],
 		]);
 	}
 
