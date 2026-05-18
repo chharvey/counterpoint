@@ -24,7 +24,24 @@ export class List implements HasFuncData {
 	/** @implements HasFuncData */
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
+			['List#count', {name: 'List.count', param: reftype.List, result: binaryen.i32}],
+			['List#adjustCapacity', {
+				name:   'List.adjust-capacity',
+				param:  binaryen.createType([reftype.List, binaryen.i32]),
+				result: binaryen.none,
+			}],
+			['List#set', {
+				name:   'List.set',
+				param:  binaryen.createType([reftype.List, binaryen.i32, reftype.Value]),
+				result: binaryen.none,
+			}],
+			['List#delete', {
+				name:   'List.delete',
+				param:  binaryen.createType([reftype.List, binaryen.i32]),
+				result: reftype.Value,
+			}],
 		]);
 	}
 
