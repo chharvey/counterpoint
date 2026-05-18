@@ -25,6 +25,7 @@ export class Case implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
+			['Case#isTombstone', {name: 'Case.is-tombstone', param: this.vm.reftypeNull.Case, result: binaryen.i32}],
 		]);
 	}
 
@@ -39,7 +40,6 @@ export class Case implements HasFuncData {
 			get con() { return mod.struct.get(FIELD.CON, ref, reftype.Value); },
 		};
 	}
-
 
 	/**
 	 * Returns whether a Case is a “tombstone”, that is, whether it represents a deletion in a Map.
