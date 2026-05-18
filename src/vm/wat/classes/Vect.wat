@@ -51,7 +51,7 @@
 (func $Vect.is-special (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0001) (i32.const 0x000f)))
 (func $Vect.is-int     (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0010) (i32.const 0x001f)))
 (func $Vect.is-nat     (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0020) (i32.const 0x002f)))
-(func $Vect.is-float   (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0030) (i32.const 0x003f)))
+(func $Vect.is-float   (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0040) (i32.const 0x004f)))
 
 (func $!Vect.check-type-range (param $vect v128) (param $min i32) (param $max i32) (result i32)
 	(local $type i32)
