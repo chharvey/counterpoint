@@ -129,16 +129,6 @@ export class Vect implements HasFuncData {
 		return this.vm.mod.call('Vect.new-float', [float], binaryen.v128);
 	}
 
-	/** The Header Lane’s value, indicating the type of data stored. */
-	public type(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.type', [vect], binaryen.i32);
-	}
-
-	/** Whether the value does not exist */
-	public isVoid(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.is-void', [vect], binaryen.i32);
-	}
-
 	/**
 	 * Whether the value contains the encoding for one of the Counterpoint values `null`, `false`, or `true`.
 	 * @param vect the parameter to send into the WASM function
@@ -147,11 +137,6 @@ export class Vect implements HasFuncData {
 	 */
 	public isConst(vect: binaryen.ExpressionRef /* v128 */, tag: boolean | null): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.call(`Vect.is-${ tag }`, [vect], binaryen.i32);
-	}
-
-	/** Whether the value is intended to be interpreted as a special value: null, false, or true. */
-	public isSpecial(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Vect.is-special', [vect], binaryen.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a signed integer. */
@@ -182,35 +167,5 @@ export class Vect implements HasFuncData {
 	/** The value as interpreted as a float. */
 	public asFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
 		return this.vm.mod.call('Vect.as-float', [vect], binaryen.f64);
-	}
-
-	/** Reinterpretation. Return the `int` value, reinterpreted as `nat`. */
-	public intToNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.int-to-nat', [vect], binaryen.i64);
-	}
-
-	/** Conversion. Return the `int` value, converted to `float`. */
-	public intToFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
-		return this.vm.mod.call('Vect.int-to-float', [vect], binaryen.f64);
-	}
-
-	/** Reinterpretation. Return the `nat` value, reinterpreted as `int`. */
-	public natToInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.nat-to-int', [vect], binaryen.i64);
-	}
-
-	/** Conversion. Return the `nat` value, converted to `float`. */
-	public natToFloat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* f64 */ {
-		return this.vm.mod.call('Vect.nat-to-float', [vect], binaryen.f64);
-	}
-
-	/** Truncation. Return the `float` value, truncated to `int`. */
-	public floatToInt(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.float-to-int', [vect], binaryen.i64);
-	}
-
-	/** Truncation. Return the `float` value, truncated to `nat`. */
-	public floatToNat(vect: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* i64 */ {
-		return this.vm.mod.call('Vect.float-to-nat', [vect], binaryen.i64);
 	}
 }

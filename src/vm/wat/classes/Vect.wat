@@ -35,12 +35,14 @@
 
 
 
+;; The Header Lane’s value, indicating the type of data stored.
 (func $Vect.type (param $vect v128) (result i32)
 	(i16x8.extract_lane_u 3 (local.get $vect))
 )
 
 
 
+;; Whether the value does not exist.
 (func $Vect.is-void  (param $vect v128) (result i32) (i32.eq (call $Vect.type (local.get $vect)) (i32.const 0x0000)))
 (func $Vect.is-null  (param $vect v128) (result i32) (i32.eq (call $Vect.type (local.get $vect)) (i32.const 0x0001)))
 (func $Vect.is-false (param $vect v128) (result i32) (i32.eq (call $Vect.type (local.get $vect)) (i32.const 0x0002)))
@@ -48,6 +50,7 @@
 
 
 
+;; Whether the value is intended to be interpreted as a special value: null, false, or true.
 (func $Vect.is-special (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0001) (i32.const 0x000f)))
 (func $Vect.is-int     (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0010) (i32.const 0x001f)))
 (func $Vect.is-nat     (param $vect v128) (result i32) (call $!Vect.check-type-range (local.get $vect) (i32.const 0x0020) (i32.const 0x002f)))
@@ -70,6 +73,12 @@
 
 
 
+;; Reinterpretation. Return the `int` value, reinterpreted as `nat`.
+;; Conversion. Return the `int` value, converted to `float`.
+;; Reinterpretation. Return the `nat` value, reinterpreted as `int`.
+;; Conversion. Return the `nat` value, converted to `float`.
+;; Truncation. Return the `float` value, truncated to `int`.
+;; Truncation. Return the `float` value, truncated to `nat`.
 (func $Vect.int-to-nat   (param $vect v128) (result i64) (call $Vect.as-nat (local.get $vect))) ;; reinterpretation doesn’t change the bits
 (func $Vect.int-to-float (param $vect v128) (result f64) (f64.convert_i64_s (call $Vect.as-int (local.get $vect))))
 (func $Vect.nat-to-int   (param $vect v128) (result i64) (call $Vect.as-int (local.get $vect))) ;; reinterpretation doesn’t change the bits
