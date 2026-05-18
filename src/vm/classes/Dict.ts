@@ -24,7 +24,29 @@ export class Dict implements HasFuncData {
 	/** @implements HasFuncData */
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		const {reftype, reftypeNull} = this.vm;
 		return new Map<string, FuncImportData>([
+			['Dict#count', {name: 'Dict.count', param: reftype.Dict, result: binaryen.i32}],
+			['Dict#find', {
+				name:   'Dict.find',
+				param:  binaryen.createType([reftype.Dict, binaryen.i64]),
+				result: binaryen.createType([binaryen.i32, reftypeNull.Property]),
+			}],
+			['Dict#adjustCapacity', {
+				name:   'Dict.adjust-capacity',
+				param:  binaryen.createType([reftype.Dict, binaryen.i32]),
+				result: binaryen.none,
+			}],
+			['Dict#set', {
+				name:   'Dict.set',
+				param:  binaryen.createType([reftype.Dict, binaryen.i64, reftype.Value]),
+				result: binaryen.none,
+			}],
+			['Dict#delete', {
+				name:   'Dict.delete',
+				param:  binaryen.createType([reftype.Dict, binaryen.i64]),
+				result: reftypeNull.Value,
+			}],
 		]);
 	}
 
