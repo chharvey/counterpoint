@@ -2,7 +2,7 @@
 
 
 
-(func $Object.ctr-plus-plus (result i64)
+(func $Object.ctr-plus-plus (export "Object#ctrPlusPlus") (result i64)
 	(global.get $Object.ctr) ;; place on stack to return later
 	(global.set $Object.ctr (i64.add (global.get $Object.ctr) (i64.const 1)))
 )

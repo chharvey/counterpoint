@@ -25,6 +25,7 @@ class VmObject implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
+			['Object#ctrPlusPlus', {name: 'Object.ctr-plus-plus', param: binaryen.none, result: binaryen.i64}],
 		]);
 	}
 
