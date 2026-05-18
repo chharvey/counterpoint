@@ -25,6 +25,7 @@ export class Property implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
+			['Property#isTombstone', {name: 'Property.is-tombstone', param: this.vm.reftypeNull.Property, result: binaryen.i32}],
 		]);
 	}
 
@@ -39,7 +40,6 @@ export class Property implements HasFuncData {
 			get val() { return mod.struct.get(FIELD.VAL, ref, reftype.Value); },
 		};
 	}
-
 
 	/**
 	 * Returns whether a Property is a “tombstone”, that is, whether it represents a deletion in a Dict.
