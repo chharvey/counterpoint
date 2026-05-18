@@ -1,5 +1,10 @@
 import binaryen from 'binaryen';
+import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
+import type {
+	FuncImportData,
+	HasFuncData,
+} from './HasFuncData.ts';
 
 
 
@@ -12,8 +17,17 @@ const FIELD = {
 
 
 /** Precursor to the Counterpoint `Map` class. */
-class VmMap {
+class VmMap implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
+
+
+	/** @implements HasFuncData */
+	@memoizeGetter
+	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		return new Map<string, FuncImportData>([
+		]);
+	}
+
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Map) */): {
 		/** @return `(struct.get $Map $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,

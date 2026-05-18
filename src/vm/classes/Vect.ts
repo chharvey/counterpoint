@@ -1,5 +1,10 @@
 import binaryen from 'binaryen';
+import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
+import type {
+	FuncImportData,
+	HasFuncData,
+} from './HasFuncData.ts';
 
 
 
@@ -92,9 +97,16 @@ import type {VirtualMachine} from '../VirtualMachine.ts';
  * f64:                \x0000 \x0000 \x0000 \x0048 | \x???? \x???? \x???? \x????
  * ```
  */
-export class Vect {
+export class Vect implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 
+
+	/** @implements HasFuncData */
+	@memoizeGetter
+	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		return new Map<string, FuncImportData>([
+		]);
+	}
 
 	public get VOID():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.global.get('Vect.VOID',  binaryen.v128); }
 	public get NULL():  binaryen.ExpressionRef /* v128 */ { return this.vm.mod.global.get('Vect.NULL',  binaryen.v128); }
