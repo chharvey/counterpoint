@@ -95,8 +95,8 @@ export class VirtualMachine {
 	public readonly reftypeNull: ReftypeNullRegistry;
 
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod = binaryen.parseText(`
-		(module
+	public mod = binaryen.parseText(`
+		(module $wat
 			${ IMPORTS.join('') }
 		)
 	`) as BinaryenModuleUpdates;
