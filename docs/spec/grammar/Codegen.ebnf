@@ -218,24 +218,24 @@ Codegen((TOINT   `v`)) := (call $op:to-int   `Codegen(v)`);
 Codegen((TONAT   `v`)) := (call $op:to-nat   `Codegen(v)`);
 Codegen((TOFLOAT `v`)) := (call $op:to-float `Codegen(v)`);
 
-Codegen((LIST.COUNT `list`)) := (call $Value.new-primitive
+Codegen((LIST.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $List.count `Codegen(list)`))
+		(i64.extend_i32_u (call $List.count (ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))))
 	)
 );
-Codegen((DICT.COUNT `dict`)) := (call $Value.new-primitive
+Codegen((DICT.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $Dict.count `Codegen(dict)`))
+		(i64.extend_i32_u (call $Dict.count (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))))
 	)
 );
-Codegen((SET.COUNT `set`)) := (call $Value.new-primitive
+Codegen((SET.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $Map.count `Codegen(set)`))
+		(i64.extend_i32_u (call $Map.count (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))))
 	)
 );
-Codegen((MAP.COUNT `map`)) := (call $Value.new-primitive
+Codegen((MAP.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
-		(i64.extend_i32_u (call $Map.count `Codegen(map)`))
+		(i64.extend_i32_u (call $Map.count (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))))
 	)
 );
 

@@ -37,10 +37,9 @@ export class Value {
 	 * @param reftype the type to cast to
 	 * @return        `(ref.cast (struct.get $Value $composite <value>) <reftype>)`
 	 */
-	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef {
+	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef /* <reftype> */ {
 		return this.vm.mod.ref.cast(this.field(value).composite, reftype);
 	}
-
 
 	/** Creates a new Value struct storing the given v128 in its primitive slot. */
 	public newPrimitive(primitive: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {

@@ -729,7 +729,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(List.count(list.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(List.count(Value.cast(list.codegen(cg), cg.vm.reftype.List))))),
 					);
 				});
 				test.test('DICT.COUNT', () => {
@@ -748,7 +748,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict.count(dict.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict.count(Value.cast(dict.codegen(cg), cg.vm.reftype.Dict))))),
 					);
 				});
 				test.test('SET.COUNT', () => {
@@ -767,7 +767,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(set.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(Value.cast(set.codegen(cg), cg.vm.reftype.Map))))),
 					);
 				});
 				test.test('MAP.COUNT', () => {
@@ -786,7 +786,7 @@ test.suite('Opcode', () => {
 					);
 					return assertEqualBins(
 						unop.codegen(cg),
-						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(map.codegen(cg))))),
+						Value.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(Value.cast(map.codegen(cg), cg.vm.reftype.Map))))),
 					);
 				});
 			});
