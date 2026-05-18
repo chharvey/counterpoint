@@ -24,7 +24,29 @@ class VmMap implements HasFuncData {
 	/** @implements HasFuncData */
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		const {reftype, reftypeNull} = this.vm;
 		return new Map<string, FuncImportData>([
+			['Map#count', {name: 'Map.count', param: reftype.Map, result: binaryen.i32}],
+			['Map#find', {
+				name:   'Map.find',
+				param:  binaryen.createType([reftype.Map, reftype.Value]),
+				result: binaryen.createType([binaryen.i32, reftypeNull.Case]),
+			}],
+			['Map#adjustCapacity', {
+				name:   'Map.adjust-capacity',
+				param:  binaryen.createType([reftype.Map, binaryen.i32]),
+				result: binaryen.none,
+			}],
+			['Map#set', {
+				name:   'Map.set',
+				param:  binaryen.createType([reftype.Map, reftype.Value, reftype.Value]),
+				result: binaryen.none,
+			}],
+			['Map#delete', {
+				name:   'Map.delete',
+				param:  binaryen.createType([reftype.Map, reftype.Value]),
+				result: reftypeNull.Value,
+			}],
 		]);
 	}
 
