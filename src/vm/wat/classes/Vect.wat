@@ -1,7 +1,7 @@
-(global $Vect.VOID  v128 (v128.const i16x8 0 0 0 0x0000 0 0 0 0))
-(global $Vect.NULL  v128 (v128.const i16x8 0 0 0 0x0001 0 0 0 0))
-(global $Vect.FALSE v128 (v128.const i16x8 0 0 0 0x0002 0 0 0 0))
-(global $Vect.TRUE  v128 (v128.const i16x8 0 0 0 0x0003 0 0 0 0))
+(global $Vect.VOID                        v128 (v128.const i16x8 0 0 0 0x0000 0 0 0 0))
+(global $Vect.NULL  (export "Vect#NULL")  v128 (v128.const i16x8 0 0 0 0x0001 0 0 0 0))
+(global $Vect.FALSE (export "Vect#FALSE") v128 (v128.const i16x8 0 0 0 0x0002 0 0 0 0))
+(global $Vect.TRUE  (export "Vect#TRUE")  v128 (v128.const i16x8 0 0 0 0x0003 0 0 0 0))
 
 
 

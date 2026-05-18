@@ -101,6 +101,15 @@ export class VirtualMachine {
 		)
 	`) as BinaryenModuleUpdates;
 
+	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
+		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.v128}],
+		['Vect#FALSE', {name: 'Vect.FALSE', type: binaryen.v128}],
+		['Vect#TRUE',  {name: 'Vect.TRUE',  type: binaryen.v128}],
+	]);
+
+	public readonly util = utils(this);
+	public readonly op   = ops(this);
+
 	public readonly Vect     = new Vect(this);
 	public readonly Value    = new Value(this);
 	public readonly Property = new Property(this);
@@ -110,9 +119,6 @@ export class VirtualMachine {
 	public readonly List     = new List(this);
 	public readonly Dict     = new Dict(this);
 	public readonly Map      = new VmMap(this);
-
-	public readonly util = utils(this);
-	public readonly op   = ops(this);
 
 
 	public constructor() {
