@@ -1,5 +1,10 @@
 import binaryen from 'binaryen';
+import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
+import type {
+	FuncImportData,
+	HasFuncData,
+} from './HasFuncData.ts';
 
 
 
@@ -13,8 +18,24 @@ const FIELD = {
 
 
 /** WASM representation of a Counterpoint value. */
-export class Value {
+export class Value implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
+
+
+	/** @implements HasFuncData */
+	@memoizeGetter
+	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		const {reftype} = this.vm;
+		return new Map<string, FuncImportData>([
+			['Value#newPrimitive', {name: 'Value.new-primitive', param: binaryen.v128,  result: reftype.Value}],
+			['Value#newComposite', {name: 'Value.new-composite', param: binaryen.eqref, result: reftype.Value}], // TODO: `(ref eq)` (non-null)
+			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,  result: binaryen.i32}],
+			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,  result: binaryen.i32}],
+			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,  result: binaryen.i32}],
+			['Value#boolFromI32',  {name: 'Value.bool-from-i32', param: binaryen.i32,   result: reftype.Value}],
+			['Value#stringify',    {name: 'Value.stringify',     param: reftype.Value,  result: reftype.String}],
+		]);
+	}
 
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {

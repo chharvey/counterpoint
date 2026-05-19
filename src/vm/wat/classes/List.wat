@@ -1,10 +1,10 @@
-(func $List.count (param $list (ref $List)) (result i32)
+(func $List.count (export "List#count") (param $list (ref $List)) (result i32)
 	(struct.get $List $size (local.get $list))
 )
 
 
 
-(func $List.adjust-capacity (param $list (ref $List)) (param $capacity i32)
+(func $List.adjust-capacity (export "List#adjustCapacity") (param $list (ref $List)) (param $capacity i32)
 	;; the given List’s original internal array.
 	(local $orig (ref $ListInternal))
 	;; copy of the List’s entries, to be used as the List’s new internal array.
@@ -27,7 +27,7 @@
 
 
 
-(func $List.set (param $list (ref $List)) (param $index i32) (param $value (ref $Value))
+(func $List.set (export "List#set") (param $list (ref $List)) (param $index i32) (param $value (ref $Value))
 	;; item at the specified index.
 	(local $item (ref null $Value))
 	;; capacity needed for adjustment.
@@ -61,7 +61,7 @@
 
 
 
-(func $List.delete (param $list (ref $List)) (param $index i32) (result (ref $Value))
+(func $List.delete (export "List#delete") (param $list (ref $List)) (param $index i32) (result (ref $Value))
 	;; the given List’s internal array.
 	(local $internal (ref $ListInternal))
 	;; item at the specified index.

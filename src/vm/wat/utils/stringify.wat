@@ -1,5 +1,5 @@
 ;; ## Main Stringify Function ##
-(func $Value.stringify (param $value (ref $Value)) (result (ref $String))
+(func $Value.stringify (export "Value#stringify") (param $value (ref $Value)) (result (ref $String))
 	(local $primitive v128)
 	(local $composite eqref)
 

@@ -1,4 +1,4 @@
-(func $Map.count (param $map (ref $Map)) (result i32)
+(func $Map.count (export "Map#count") (param $map (ref $Map)) (result i32)
 	;; the return value, the number of live elements.
 	(local $count i32)
 	;; the Map’s internal array.
@@ -33,7 +33,7 @@
 
 
 
-(func $Map.find (param $map (ref $Map)) (param $ant (ref $Value)) (result i32 (ref null $Case))
+(func $Map.find (export "Map#find") (param $map (ref $Map)) (param $ant (ref $Value)) (result i32 (ref null $Case))
 	;; the given Map’s internal array.
 	(local $internal (ref $MapInternal))
 	;; the length of the array. constant.
@@ -89,7 +89,7 @@
 
 
 
-(func $Map.adjust-capacity (param $map (ref $Map)) (param $capacity i32)
+(func $Map.adjust-capacity (export "Map#adjustCapacity") (param $map (ref $Map)) (param $capacity i32)
 	;; the given Map’s original internal array.
 	(local $orig (ref $MapInternal))
 	;; copy of the Map’s entries, to be used as the Map’s new internal array.
@@ -135,7 +135,7 @@
 
 
 
-(func $Map.set (param $map (ref $Map)) (param $ant (ref $Value)) (param $con (ref $Value))
+(func $Map.set (export "Map#set") (param $map (ref $Map)) (param $ant (ref $Value)) (param $con (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
 	;; case at the specified index.
@@ -177,7 +177,7 @@
 
 
 
-(func $Map.delete (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref null $Value))
+(func $Map.delete (export "Map#delete") (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref null $Value))
 	;; index of the found case in the internal array.
 	(local $index i32)
 	;; found case at the specified index.
