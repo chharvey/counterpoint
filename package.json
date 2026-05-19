@@ -31,7 +31,7 @@
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
     "compile": "tsc && tsc --project ./test/tsconfig.json",
     "lint": "eslint ./",
-    "test": "n exec 24 tsx --test -- './test/**/*.test.ts'",
+    "test": "n exec 24 tsx --test --test-isolation=none -- './test/**/*.test.ts'",
     "test:only": "n exec 24 tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
     "justbuild": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
