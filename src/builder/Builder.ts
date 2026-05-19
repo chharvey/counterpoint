@@ -65,8 +65,18 @@ export class Builder {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
+	/** Module created by VM from WAT files. */
+	public readonly watModule: binaryen.Module;
+
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
+		// HACK: reassigning VM's new module instead of giving it to Builder.
+		// we’re doing this because all of the `codegen` code uses `vm.mod`
+		// TODO: keep the WAT module readonly on VM, then give Builder its own module. update all `codegen` code.
+		this.watModule = vm.mod;
+		vm.mod = new binaryen.Module();
+		vm.mod.features = this.watModule.features;
+
 		this.#constRegistry = new Map([
 			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
 			[BinConst.FALSE, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
@@ -336,6 +346,27 @@ export class Builder {
 	 */
 	public setupMain(body: binaryen.ExpressionRef): void {
 		const {mod} = this.vm;
+
+		const extern_mod_name: string = 'wat';
+		this.vm.globalImportDataMap.forEach((data, export_name) => (
+			mod.imports.addGlobal(data.name, extern_mod_name, export_name, data.type, false)
+		));
+		[
+			this.vm.util.funcImportDataMap,
+			this.vm.op.funcImportDataMap,
+			this.vm.Vect.funcImportDataMap,
+			this.vm.Value.funcImportDataMap,
+			this.vm.Property.funcImportDataMap,
+			this.vm.Case.funcImportDataMap,
+			this.vm.Record.funcImportDataMap,
+			this.vm.Object.funcImportDataMap,
+			this.vm.List.funcImportDataMap,
+			this.vm.Dict.funcImportDataMap,
+			this.vm.Map.funcImportDataMap,
+		].forEach((datamap) => datamap.forEach((data, export_name) => (
+			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
+		)));
+
 		const fn_name: string = 'main';
 		mod.functions.add(
 			fn_name,

@@ -1,5 +1,10 @@
 import * as binaryen from 'binaryen.ts';
+import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
+import type {
+	FuncImportData,
+	HasFuncData,
+} from './HasFuncData.ts';
 
 
 
@@ -12,8 +17,34 @@ const FIELD = {
 
 
 /** Precursor to the Counterpoint `List` class. */
-export class List {
+export class List implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
+
+
+	/** @implements HasFuncData */
+	@memoizeGetter
+	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		const {reftype} = this.vm;
+		return new Map<string, FuncImportData>([
+			['List#count', {name: 'List.count', param: reftype.List, result: binaryen.i32}],
+			['List#adjustCapacity', {
+				name:   'List.adjust-capacity',
+				param:  binaryen.createType([reftype.List, binaryen.i32]),
+				result: binaryen.none,
+			}],
+			['List#set', {
+				name:   'List.set',
+				param:  binaryen.createType([reftype.List, binaryen.i32, reftype.Value]),
+				result: binaryen.none,
+			}],
+			['List#delete', {
+				name:   'List.delete',
+				param:  binaryen.createType([reftype.List, binaryen.i32]),
+				result: reftype.Value,
+			}],
+		]);
+	}
+
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $List) */): {
 		/** @return `(struct.get $List $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,

@@ -92,10 +92,8 @@ const TYPES: {
 } = (() => {
 	const tb = new binaryen.TypeBuilder();
 
-	let type_count: number = 0;
-
 	/* (type $Value ...) */
-	const i_value: number = type_count++;
+	const i_value: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_value, [
 		/* $tag */       TypeBuilder_makeField(binaryen.i32, 'i8'),
@@ -104,7 +102,7 @@ const TYPES: {
 	]);
 
 	/* (type $Property ...) */
-	const i_property: number = type_count++;
+	const i_property: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_property, [
 		/* $key */ TypeBuilder_makeField(binaryen.i64),
@@ -112,7 +110,7 @@ const TYPES: {
 	]);
 
 	/* (type $Case ...) */
-	const i_case: number = type_count++;
+	const i_case: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_case, [
 		/* $ant */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
@@ -120,7 +118,7 @@ const TYPES: {
 	]);
 
 	/* (type $String ...) */
-	const i_string: number = type_count++;
+	const i_string: number = tb.getSize();
 	tb.grow(1);
 	tb.setArrayType(
 		i_string,
@@ -130,7 +128,7 @@ const TYPES: {
 	);
 
 	/* (type $Tuple ...) */
-	const i_tuple: number = type_count++;
+	const i_tuple: number = tb.getSize();
 	tb.grow(1);
 	tb.setArrayType(
 		i_tuple,
@@ -140,7 +138,7 @@ const TYPES: {
 	);
 
 	/* (type $Record ...) */
-	const i_record: number = type_count++;
+	const i_record: number = tb.getSize();
 	tb.grow(1);
 	tb.setArrayType(
 		i_record,
@@ -150,7 +148,7 @@ const TYPES: {
 	);
 
 	/* (type $ListInternal ...) */
-	const i_list_internal: number = type_count++;
+	const i_list_internal: number = tb.getSize();
 	tb.grow(1);
 	tb.setArrayType(
 		i_list_internal,
@@ -160,7 +158,7 @@ const TYPES: {
 	);
 
 	/* (type $DictInternal ...) */
-	const i_dict_internal: number = type_count++;
+	const i_dict_internal: number = tb.getSize();
 	tb.grow(1);
 	tb.setArrayType(
 		i_dict_internal,
@@ -170,7 +168,7 @@ const TYPES: {
 	);
 
 	/* (type $MapInternal ...) */
-	const i_map_internal: number = type_count++;
+	const i_map_internal: number = tb.getSize();
 	tb.grow(1);
 	tb.setArrayType(
 		i_map_internal,
@@ -180,7 +178,7 @@ const TYPES: {
 	);
 
 	/* (type $Object ...) */
-	const i_object: number = type_count++;
+	const i_object: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_object, [
 		/* $id */ TypeBuilder_makeField(binaryen.i64),
@@ -188,7 +186,7 @@ const TYPES: {
 	tb.setOpen(i_object);
 
 	/* (type $List ...) */
-	const i_list: number = type_count++;
+	const i_list: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_list, [
 		/* $id */       TypeBuilder_makeField(binaryen.i64),
@@ -199,7 +197,7 @@ const TYPES: {
 	tb.setOpen(i_list);
 
 	/* (type $Dict ...) */
-	const i_dict: number = type_count++;
+	const i_dict: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_dict, [
 		/* $id */       TypeBuilder_makeField(binaryen.i64),
@@ -210,7 +208,7 @@ const TYPES: {
 	tb.setOpen(i_dict);
 
 	/* (type $Map ...) */
-	const i_map: number = type_count++;
+	const i_map: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_map, [
 		/* $id */       TypeBuilder_makeField(binaryen.i64),
@@ -276,11 +274,20 @@ export class VirtualMachine {
 	public readonly reftypeNull: ReftypeNullRegistry;
 
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public readonly mod: binaryen.Module = binaryen.parseText(`
-		(module
+	public mod: binaryen.Module = binaryen.parseText(`
+		(module $wat
 			${ IMPORTS.join('') }
 		)
 	`);
+
+	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
+		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.v128}],
+		['Vect#FALSE', {name: 'Vect.FALSE', type: binaryen.v128}],
+		['Vect#TRUE',  {name: 'Vect.TRUE',  type: binaryen.v128}],
+	]);
+
+	public readonly util = utils(this);
+	public readonly op   = ops(this);
 
 	public readonly Vect     = new Vect(this);
 	public readonly Value    = new Value(this);
@@ -291,9 +298,6 @@ export class VirtualMachine {
 	public readonly List     = new List(this);
 	public readonly Dict     = new Dict(this);
 	public readonly Map      = new VmMap(this);
-
-	public readonly util = utils(this);
-	public readonly op   = ops(this);
 
 
 	public constructor() {

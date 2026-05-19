@@ -1,5 +1,10 @@
 import * as binaryen from 'binaryen.ts';
+import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
+import type {
+	FuncImportData,
+	HasFuncData,
+} from './HasFuncData.ts';
 
 
 
@@ -12,9 +17,17 @@ const FIELD = {
 
 
 /** Precursor to the Counterpoint `Object` class. */
-class VmObject {
+class VmObject implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
 
+
+	/** @implements HasFuncData */
+	@memoizeGetter
+	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		return new Map<string, FuncImportData>([
+			['Object#ctrPlusPlus', {name: 'Object.ctr-plus-plus', param: binaryen.none, result: binaryen.i64}],
+		]);
+	}
 
 	/** Global counter for `$Object` structs. Used for values of field `$Object.$id`. */
 	public get ctr(): binaryen.ExpressionRef /* i64 */ {
