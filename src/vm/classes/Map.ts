@@ -1,5 +1,10 @@
 import binaryen from 'binaryen';
+import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
+import type {
+	FuncImportData,
+	HasFuncData,
+} from './HasFuncData.ts';
 
 
 
@@ -12,8 +17,39 @@ const FIELD = {
 
 
 /** Precursor to the Counterpoint `Map` class. */
-class VmMap {
+class VmMap implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
+
+
+	/** @implements HasFuncData */
+	@memoizeGetter
+	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		const {reftype, reftypeNull} = this.vm;
+		return new Map<string, FuncImportData>([
+			['Map#count', {name: 'Map.count', param: reftype.Map, result: binaryen.i32}],
+			['Map#find', {
+				name:   'Map.find',
+				param:  binaryen.createType([reftype.Map, reftype.Value]),
+				result: binaryen.createType([binaryen.i32, reftypeNull.Case]),
+			}],
+			['Map#adjustCapacity', {
+				name:   'Map.adjust-capacity',
+				param:  binaryen.createType([reftype.Map, binaryen.i32]),
+				result: binaryen.none,
+			}],
+			['Map#set', {
+				name:   'Map.set',
+				param:  binaryen.createType([reftype.Map, reftype.Value, reftype.Value]),
+				result: binaryen.none,
+			}],
+			['Map#delete', {
+				name:   'Map.delete',
+				param:  binaryen.createType([reftype.Map, reftype.Value]),
+				result: reftypeNull.Value,
+			}],
+		]);
+	}
+
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Map) */): {
 		/** @return `(struct.get $Map $size     <ref>)` */ readonly size:     binaryen.ExpressionRef /* i32 */,

@@ -78,7 +78,7 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, op, Vect, Value: VmValue, List, Dict, Map: VmMap} = cg.vm;
+		const {mod, reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap} = cg.vm;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
 			case OpCode.ISNULL: { return op.isNull(code); }
@@ -92,10 +92,10 @@ export class Unop extends Value {
 			case OpCode.TONAT:   { return op.toNat(code); }
 			case OpCode.TOFLOAT: { return op.toFloat(code); }
 
-			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(List.count(code)))); }
-			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict.count(code)))); }
-			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(code)))); }
-			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(code)))); }
+			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(List .count(VmValue.cast(code, reftype.List))))); }
+			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }
+			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
+			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
 		}
 	}
 

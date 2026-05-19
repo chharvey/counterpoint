@@ -1,15 +1,13 @@
 ;; ## Main Stringify Function ##
-(func $Value.stringify (param $value (ref $Value)) (result (ref $String))
-	(local $tag       i32)
+(func $Value.stringify (export "Value#stringify") (param $value (ref $Value)) (result (ref $String))
 	(local $primitive v128)
 	(local $composite eqref)
 
-	(local.set $tag       (struct.get $Value $tag       (local.get $value)))
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 
 	(if
-		(i32.eq (local.get $tag) (i32.const 1))
+		(call $Value.is-primitive (local.get $value))
 		(then
 			(if (call $Vect.is-null (local.get $primitive)) (then (return (array.new_fixed $String 4
 				(i32.const 0x6e) ;; 'n'
@@ -37,7 +35,7 @@
 		)
 	)
 	(if
-		(i32.eq (local.get $tag) (i32.const 2))
+		(call $Value.is-composite (local.get $value))
 		(then
 			(if (ref.test (ref $String) (local.get $composite)) (then (return (ref.cast (ref $String) (local.get $composite)))))
 			(if (ref.test (ref $Tuple)  (local.get $composite)) (then (return_call $!Tuple.stringify  (ref.cast (ref $Tuple)  (local.get $composite)))))
