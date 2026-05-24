@@ -21,8 +21,6 @@ export class Goto extends Terminator {
 		relooper.addBranch(
 			blockrefs.get(this._containerLabel!)!,
 			blockrefs.get(this.label)!,
-			0, // unconditional
-			0,
-		);
+		); // unconditional
 	}
 }
