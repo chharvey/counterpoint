@@ -912,7 +912,7 @@ test.suite('Opcode', () => {
 				const {wasm} = cg.vm.mod;
 				assertEqualBins(
 					new IR.Decl(new Optimizer().newTemp(TYPE.INT)).codegen(cg),
-					wasm.local.set(0, wasm.struct.new_default(cg.vm.reftype.Value)),
+					wasm.local.set(0, wasm.struct.new_default(cg.vm.heaptype.Value)),
 				);
 			});
 

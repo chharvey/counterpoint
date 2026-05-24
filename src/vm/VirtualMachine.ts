@@ -33,7 +33,7 @@ type TypeKey = (
 
 
 
-type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.Type>>;
+type HeaptypeRegistry = Readonly<Record<TypeKey, binaryen.HeapType>>;
 type ReftypeRegistry  = Readonly<Record<TypeKey, binaryen.Type>>;
 
 type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Case'), binaryen.Type>>;
@@ -48,7 +48,7 @@ type ReftypeNullRegistry = Readonly<Record<TypeKey & ('Value' | 'Property' | 'Ca
  */
 function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): {
 	type:       binaryen.Type,
-	packedType: binaryen.Type,
+	packedType: binaryen.PackedType,
 	mutable:    boolean,
 } {
 	return {
@@ -218,7 +218,7 @@ const TYPES: {
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
 	tb.setOpen(i_map);
 
-	const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
+	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
 	return {
 		heaptypeRegistry: {
