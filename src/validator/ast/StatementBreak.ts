@@ -14,10 +14,8 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {
-	Statement,
-	StatementBreakable,
-} from './Statement.ts';
+import {Statement} from './Statement.ts';
+import {StatementBreakable} from './StatementBreakable.ts';
 
 
 

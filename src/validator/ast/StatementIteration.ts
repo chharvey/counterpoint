@@ -25,10 +25,8 @@ import type {Block} from './index.ts';
 import type {Type} from './Type.ts';
 import type {Expression} from './Expression.ts';
 import type {Variable} from './Variable.ts';
-import {
-	Statement,
-	StatementBreakable,
-} from './Statement.ts';
+import {Statement} from './Statement.ts';
+import {StatementBreakable} from './StatementBreakable.ts';
 
 
 

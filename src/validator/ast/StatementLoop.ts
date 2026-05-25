@@ -17,10 +17,8 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Block} from './index.ts';
 import type {Expression} from './Expression.ts';
-import {
-	Statement,
-	StatementBreakable,
-} from './Statement.ts';
+import {Statement} from './Statement.ts';
+import {StatementBreakable} from './StatementBreakable.ts';
 
 
 
