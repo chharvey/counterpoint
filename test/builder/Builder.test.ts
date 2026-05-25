@@ -15,10 +15,8 @@ import {repeat} from '../utils.ts';
 
 
 test.suite('Builder', () => {
-	/* eslint-disable @typescript-eslint/init-declarations */
 	let cg:  Builder;
 	let mod: VirtualMachine['mod'];
-	/* eslint-enable @typescript-eslint/init-declarations */
 
 	test.beforeEach(() => {
 		cg = new Builder();
