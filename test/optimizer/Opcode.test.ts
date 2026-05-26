@@ -8,7 +8,7 @@ import {
 	Optimizer,
 	IR,
 	bigint_to_i64,
-	Builder,
+	CodeGenerator,
 } from '../../src/index.ts';
 import {
 	assertEqualBins,
@@ -22,7 +22,7 @@ test.suite('Opcode', () => {
 	test.suite('Value', () => {
 		test.suite('#codegen', () => {
 			test.test('Trap returns (unreachable).', () => {
-				const cg = new Builder();
+				const cg = new CodeGenerator();
 				return assertEqualBins(new IR.Trap().codegen(cg), cg.vm.mod.unreachable());
 			});
 
@@ -228,7 +228,7 @@ test.suite('Opcode', () => {
 			test.suite('RecordNew', () => {
 				test.test('empty RECORD.NEW', () => {
 					// there exists no syntax for empty records, so constructing it manually
-					const cg = new Builder();
+					const cg = new CodeGenerator();
 					return assertEqualBins(
 						new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenRecord()),
@@ -293,7 +293,7 @@ test.suite('Opcode', () => {
 			test.suite('DictNew', () => {
 				test.test('empty DICT.NEW', () => {
 					// there exists no syntax for empty Dicts, so constructing it manually
-					const cg = new Builder();
+					const cg = new CodeGenerator();
 					return assertEqualBins(
 						new IR.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenDict()),
@@ -358,7 +358,7 @@ test.suite('Opcode', () => {
 			test.suite('MapNew', () => {
 				test.test('empty MAP.NEW', () => {
 					// there exists no syntax for empty Maps, so constructing it manually
-					const cg = new Builder();
+					const cg = new CodeGenerator();
 					return assert.strictEqual(
 						binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
 						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
@@ -648,7 +648,7 @@ test.suite('Opcode', () => {
 			test.suite('Unop', () => {
 				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
 					// there exists no syntax for “is null” operator, so constructing it manually
-					const cg = new Builder();
+					const cg = new CodeGenerator();
 					assertEqualBins(
 						new IR.Unop(IR.OpCode.ISNULL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
 						cg.vm.op.isNull(genConst(cg)),
@@ -656,7 +656,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('TOBOOL operator returns custom WASM function `$op:not` applied twice.', () => {
 					// there exists no syntax for “to bool” operator, so constructing it manually
-					const cg = new Builder();
+					const cg = new CodeGenerator();
 					assertEqualBins(
 						new IR.Unop(IR.OpCode.TOBOOL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
 						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
@@ -912,7 +912,7 @@ test.suite('Opcode', () => {
 
 			test.test('uninitialized Decl returns (local.set) with (struct.new_default).', () => {
 				// there exists no syntax for empty Decls, so constructing it manually
-				const cg = new Builder();
+				const cg = new CodeGenerator();
 				const {mod} = cg.vm;
 				assertEqualBins(
 					new IR.Decl(new Optimizer().newTemp(TYPE.INT)).codegen(cg),

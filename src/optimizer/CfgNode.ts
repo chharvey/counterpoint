@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../index.ts';
+import type {CodeGenerator} from '../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -59,7 +59,7 @@ export class CfgNode {
 	}
 
 	@memoizeMethod
-	public codegen(cg: Builder, relooper: binaryen.Relooper): binaryen.RelooperBlockRef {
+	public codegen(cg: CodeGenerator, relooper: binaryen.Relooper): binaryen.RelooperBlockRef {
 		return relooper.addBlock(cg.vm.mod.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
 	}
 }

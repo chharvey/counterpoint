@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {runOnceSetter} from '../../lib/index.ts';
 import {Opcode} from './Opcode.ts';
 
@@ -28,5 +28,5 @@ export abstract class Terminator extends Opcode {
 	 * @param relooper  Binaryen Relooper for constructing Binaryen `blocks`
 	 * @param blockrefs code-generated `CfgNode`s
 	 */
-	public abstract codegen(cg: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void;
+	public abstract codegen(cg: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void;
 }

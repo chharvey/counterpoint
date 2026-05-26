@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {
 	Temp,
@@ -81,5 +81,5 @@ export abstract class Value extends Opcode {
 	 * @param  cg code-generator
 	 * @return    a binaryen expression of type `(ref $Value)`
 	 */
-	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
+	public abstract codegen(cg: CodeGenerator): binaryen.ExpressionRef;
 }

@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
@@ -17,7 +17,7 @@ export class Goto extends Terminator {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+	public override codegen(_: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
 		relooper.addBranch(
 			blockrefs.get(this._containerLabel!)!,
 			blockrefs.get(this.label)!,

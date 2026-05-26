@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {Opcode} from './Opcode.ts';
 
 
@@ -20,5 +20,5 @@ export abstract class Instruction extends Opcode {
 	 * @param  cg code-generator
 	 * @return    a binaryen expression of empty type (“`binaryen.none`”, not the WASM `none` heap type)
 	 */
-	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
+	public abstract codegen(cg: CodeGenerator): binaryen.ExpressionRef;
 }

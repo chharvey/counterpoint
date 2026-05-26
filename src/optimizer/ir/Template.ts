@@ -1,7 +1,7 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {
-	Builder,
+	CodeGenerator,
 	Local,
 } from '../../index.ts';
 import {
@@ -31,7 +31,7 @@ export class Template extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		const {mod, Value: VmValue} = cg.vm;
 		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.stringify(item.codegen(cg))));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => mod.array.len(strarr.get()));

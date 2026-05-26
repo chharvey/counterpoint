@@ -1,6 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -32,7 +32,7 @@ export class Call extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
+	public override codegen(_: CodeGenerator): binaryen.ExpressionRef {
 		throw new Error('not yet supported.');
 	}
 }

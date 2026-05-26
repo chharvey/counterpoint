@@ -3,7 +3,7 @@ import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	drop_then,
-	type Builder,
+	type CodeGenerator,
 } from '../../index.ts';
 import {
 	memoizeMethod,
@@ -101,7 +101,7 @@ export class Binop extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		const {op} = cg.vm;
 		const [code0, code1]: [binaryen.ExpressionRef, binaryen.ExpressionRef] = [this.operand0.codegen(cg), this.operand1.codegen(cg)];
 		switch (this.operator) {
@@ -138,7 +138,7 @@ export class Binop extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, t1: any, arg0: any, arg1: any): number {
+	#optimizationStrategy(this: any, cg: CodeGenerator, Operator: any, t0: any, t1: any, arg0: any, arg1: any): number {
 		type Local = any;
 		let mod = cg.vm.mod;
 		let bothInts: any;
@@ -198,7 +198,7 @@ export class Binop extends Value {
 
 		// Operator Equality
 		if (this.type().equals(TYPE.FALSE)) {
-			drop_then(this.builder, [arg0, arg1], false);
+			drop_then(cg.vm, [arg0, arg1], false);
 			return mod.block(null, [
 				mod.drop(arg0),
 				mod.drop(arg1),

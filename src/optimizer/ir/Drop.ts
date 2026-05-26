@@ -1,5 +1,5 @@
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -26,12 +26,12 @@ export class Drop extends Instruction {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.vm.mod.drop(this.value.codegen(cg));
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder): number {
+	#optimizationStrategy(this: any, cg: CodeGenerator): number {
 		if (!this.expr || !!this.expr.fold()) return cg.vm.mod.nop();
 		return cg.vm.mod.drop(this.expr!.build());
 	}

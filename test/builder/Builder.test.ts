@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import {
 	type VirtualMachine,
 	bigint_to_i64,
-	Builder,
+	CodeGenerator,
 } from '../../src/index.ts';
 import {
 	repeat,
@@ -14,12 +14,12 @@ import {
 
 
 
-test.suite('Builder', () => {
-	let cg:  Builder;
+test.suite('CodeGenerator', () => {
+	let cg:  CodeGenerator;
 	let mod: VirtualMachine['mod'];
 
 	test.beforeEach(() => {
-		cg = new Builder();
+		cg = new CodeGenerator();
 		mod = cg.vm.mod;
 	});
 
@@ -206,7 +206,7 @@ test.suite('Builder', () => {
 		test.test('empty `#codegenSet`.', () => {
 			assertEqualBins(
 				cg.codegenSet(),
-				new Builder().codegenMap(),
+				new CodeGenerator().codegenMap(),
 			);
 		});
 		test.test('`#codegenSet` returns the result of calling `#codegenMap`.', () => {
@@ -218,7 +218,7 @@ test.suite('Builder', () => {
 					genConst(cg, 4.4),
 					genConst(cg, 5.5),
 				]),
-				new Builder().codegenMap(new Map([
+				new CodeGenerator().codegenMap(new Map([
 					[genConst(cg, 1.1), genConst(cg)],
 					[genConst(cg, 2.2), genConst(cg)],
 					[genConst(cg, 3.3), genConst(cg)],

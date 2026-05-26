@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import type binaryen from 'binaryen';
 import {
 	drop_then,
-	type Builder,
+	type CodeGenerator,
 } from '../../index.ts';
 import {
 	memoizeMethod,
@@ -50,17 +50,17 @@ class Phi extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(_: Builder): binaryen.ExpressionRef {
+	public override codegen(_: CodeGenerator): binaryen.ExpressionRef {
 		throw new Error('not yet supported.');
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, TYPE: any, t0: any, arg0: any, arg1: any, arg2: any): number {
+	#optimizationStrategy(cg: CodeGenerator, TYPE: any, t0: any, arg0: any, arg1: any, arg2: any): number {
 		// Ternary Operator:
 		if (t0.isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(this.builder, [arg0], arg1);
+			return drop_then(cg.vm, [arg0], arg1);
 		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(this.builder, [arg0], arg2);
+			return drop_then(cg.vm, [arg0], arg2);
 		}
 
 		return cg.vm.mod.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
