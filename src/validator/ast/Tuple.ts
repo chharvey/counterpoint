@@ -1,8 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	VALUE,
-	TYPE,
 	type Optimizer,
 	IR,
 	TypeErrorNotAssignable,
@@ -15,6 +13,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {EntryType} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';

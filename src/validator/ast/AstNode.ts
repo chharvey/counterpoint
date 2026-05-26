@@ -1,10 +1,8 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
-import {
-	type TYPE,
-	TypeErrorNotAssignable,
-} from '../../index.ts';
+import {TypeErrorNotAssignable} from '../../index.ts';
 import {memoizeGetter} from '../../lib/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {
 	stringifyAttributes,
 	type Serializable,

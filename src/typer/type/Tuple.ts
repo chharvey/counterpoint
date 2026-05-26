@@ -1,6 +1,8 @@
 import * as assert from 'node:assert';
-import {TypeErrorNoEntry} from '../../index.ts';
-import type {AST} from '../../validator/index.ts';
+import {
+	TypeErrorNoEntry,
+	type AST,
+} from '../../index.ts';
 import type {EntryType} from '../utils-public.ts';
 import {
 	strictEqual,

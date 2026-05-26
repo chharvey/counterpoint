@@ -1,6 +1,4 @@
 import {
-	type VALUE,
-	type TYPE,
 	type Optimizer,
 	type IR,
 	TypeErrorNotAssignable,
@@ -13,6 +11,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Type} from './Type.ts';
 import {Expression} from './Expression.ts';

@@ -1,8 +1,5 @@
 import * as assert from 'node:assert';
-import {
-	type TYPE,
-	AssignmentErrorDuplicateDeclaration,
-} from '../../index.ts';
+import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
 import {
 	assert_instanceof,
 	noopMethod,
@@ -14,6 +11,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Type} from './Type.ts';

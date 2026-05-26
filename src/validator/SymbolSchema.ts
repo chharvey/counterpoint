@@ -1,7 +1,7 @@
 import {
 	type VALUE,
 	TYPE,
-} from '../index.ts';
+} from '../typer/index.ts';
 import type * as AST from './ast/index.ts';
 
 

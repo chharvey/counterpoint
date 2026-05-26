@@ -1,10 +1,6 @@
 import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
 import {
-	VALUE,
-	TYPE,
-} from '../../index.ts';
-import {
 	assert_instanceof,
 	memoizeMethod,
 } from '../../lib/index.ts';
@@ -12,6 +8,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {Keyword} from '../../parser/index.ts';
 import {
 	type SyntaxNodeType,

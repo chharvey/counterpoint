@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import {
-	TYPE,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -13,6 +12,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,

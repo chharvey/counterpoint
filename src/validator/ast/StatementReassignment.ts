@@ -1,6 +1,5 @@
 import * as assert from 'node:assert';
 import {
-	type TYPE,
 	type Optimizer,
 	IR,
 	AssignmentErrorReassignment,
@@ -16,6 +15,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';

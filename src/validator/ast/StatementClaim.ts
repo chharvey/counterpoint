@@ -1,5 +1,4 @@
 import {
-	TYPE,
 	type Optimizer,
 	IR,
 	TypeErrorNotNarrow,
@@ -14,6 +13,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Index} from './Index-.ts';

@@ -1,4 +1,4 @@
-import {Keyword} from '../../parser/index.ts';
+import {Keyword} from '../../index.ts';
 import {instanceOf} from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
 import {ValueType} from './ValueType.ts';
