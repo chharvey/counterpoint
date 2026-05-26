@@ -199,7 +199,7 @@ test.suite('Expression', () => {
 			test.test('repeated calls are idempotent.', () => {
 				const {stmts, opt} = setupScript(`{
 					(42 + 42 + 42) as <int | float>;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.strictEqual(opt.instructions.length, 0);
 				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
 				expr.operand.build(opt);
@@ -353,7 +353,7 @@ test.suite('Expression', () => {
 					val mut x?: int;
 					w;
 					x;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok( (stmts[0] as AST.DeclarationVariable).assigned);
 				assert.ok(!(stmts[1] as AST.DeclarationVariable).assigned);
 				return assertEqualTypes(
@@ -372,7 +372,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					val x: int = 21 * 2;
 					x;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok(!(stmts[0] as AST.DeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.StatementExpression).expr!.fold(),
@@ -383,7 +383,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					val mut x: int = 21 * 2;
 					x;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.DeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.StatementExpression).expr!.fold(),
@@ -394,7 +394,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					val fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.DeclarationVariable).typenode!.eval().hasMutable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.StatementExpression).expr!.fold(),
@@ -409,7 +409,7 @@ test.suite('Expression', () => {
 					val z: mut {int} = {11, 22, 33};
 					val w: bool = z.[22];
 					w;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok(!(stmts[1] as AST.DeclarationVariable).writable);
 				assert.ok(!(stmts[4] as AST.DeclarationVariable).writable);
 				assert.deepStrictEqual(
@@ -433,7 +433,7 @@ test.suite('Expression', () => {
 				(setupScript(`{
 					val mut x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
-				}`, {lower: false}).stmts[1] as AST.StatementExpression).expr as AST.Template,
+				}`, {build: false}).stmts[1] as AST.StatementExpression).expr as AST.Template,
 			];
 		}
 		test.suite('#type', () => {
@@ -485,7 +485,7 @@ test.suite('Expression', () => {
 						val f: null = null;
 						(e= [x= 42, w= 4.2], f= f);
 						[g= (w= 42, x= 4.2), f= f];
-					}`, {lower: false});
+					}`, {build: false});
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
@@ -599,7 +599,7 @@ test.suite('Expression', () => {
 				setupScript(`{
 					(   1,    [2.2],    "three");
 					(a= 1, b= [2.2], c= "three");
-				}`, {lower: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 		});
 
@@ -678,7 +678,7 @@ test.suite('Expression', () => {
 						21 + 21   -> 2.0,
 						3.0 * 1.0 -> z,
 					};
-				}`, {lower: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.StatementExpression).expr!.fold(), null));
+				}`, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.StatementExpression).expr!.fold(), null));
 			});
 		});
 	});
@@ -782,7 +782,7 @@ test.suite('Expression', () => {
 					};
 					x;
 					y;
-				}`, {lower: false});
+				}`, {build: false});
 				assertEqualTypes((stmts[1] as AST.DeclarationVariable).assigned!.type(), TYPE.INT);
 			});
 		});
@@ -799,7 +799,7 @@ test.suite('Expression', () => {
 					};
 					x;
 					y;
-				}`, {lower: false}).stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock).fold(), null);
+				}`, {build: false}).stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock).fold(), null);
 			});
 			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
@@ -814,7 +814,7 @@ test.suite('Expression', () => {
 					};
 					x;
 					y;
-				}`, {lower: false});
+				}`, {build: false});
 				const block_expression = (stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock;
 				assert.strictEqual(
 					block_expression.fold(),
@@ -830,7 +830,7 @@ test.suite('Expression', () => {
 					(setupScript(`{
 						val x: int = 42 - { 42; 69; };
 						x;
-					}`, {lower: false}).stmts[1] as AST.StatementExpression).expr!.fold(),
+					}`, {build: false}).stmts[1] as AST.StatementExpression).expr!.fold(),
 					new VALUE.Integer(42n - 69n),
 				);
 			});

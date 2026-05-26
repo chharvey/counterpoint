@@ -185,7 +185,7 @@ test.suite('Statement', () => {
 						setupScript(`{
 							val mut x: int | float = 4.2;
 							${ stmt }
-						}`, {lower: false}); // assert does not throw
+						}`, {build: false}); // assert does not throw
 					});
 				});
 				test.test('throws when the claimed type is not a subtype of the assignee type (including int and float).', () => {
@@ -219,7 +219,7 @@ test.suite('Statement', () => {
 						x;            % type \`int | float\`
 						claim x: int;
 						x;            % type \`int\`
-					}`, {lower: false});
+					}`, {build: false});
 					return assert.deepStrictEqual(
 						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
@@ -230,14 +230,14 @@ test.suite('Statement', () => {
 						val mut x: bool | null = false;
 						set x = true;
 						claim x: null;
-					}`, {lower: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('allows reassigning correct type after claim.', () => {
 					setupScript(`{
 						val mut x: bool | null = false;
 						claim x: bool;
 						set x = true;
-					}`, {lower: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('disallows reassigning incorrect type after claim.', () => {
 					const {stmts} = setupScript(`{
@@ -274,7 +274,7 @@ test.suite('Statement', () => {
 						claim map.["e"]:   float;
 						claim map.["tau"]: float;
 						%%
-					}`, {lower: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('accessing property after claim is narrowed.', () => {
 					const {stmts} = setupScript(`{
@@ -285,7 +285,7 @@ test.suite('Statement', () => {
 						claim record.tuple.0: int;
 						record.value;               % type \`null\`
 						record.tuple.0;             % type \`int\`
-					}`, {lower: false});
+					}`, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
 					return assert.deepStrictEqual(
 						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
@@ -303,8 +303,8 @@ test.suite('Statement', () => {
 						set list.[0] = 1.618;
 						claim list.[0]: int;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, {lower: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, {lower: false}), /not yet supported/);
+						i === 0 && setupScript(src, {build: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
 					});
 				});
 				test.test('allows mutating correct type after claim.', () => {
@@ -318,8 +318,8 @@ test.suite('Statement', () => {
 						claim list.[0]: float;
 						set list.[0] = 1.618;
 					}`], (src, i) => {
-						i === 0 && setupScript(src, {lower: false}); // assert does not throw
-						i === 1 && assert.throws(() => setupScript(src, {lower: false}), /not yet supported/);
+						i === 0 && setupScript(src, {build: false}); // assert does not throw
+						i === 1 && assert.throws(() => setupScript(src, {build: false}), /not yet supported/);
 					});
 				});
 				test.test('disallows mutating incorrect type after claim.', () => {
@@ -369,7 +369,7 @@ test.suite('Statement', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						val mut x?: int;
 						set x = 42;
-					}`, {lower: false}).goal.block!.validator.getSymbol(0x100n), {
+					}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
 						isWritable:      true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -396,7 +396,7 @@ test.suite('Statement', () => {
 						set Dict.<int>((i= 42)).[@i]              = 42;
 						set Set.<int>((42,)).[43]                 = false;
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
-					}`, {lower: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('widens assignee write type for collection literals.', () => { // TODO: use NodeJS v25.5 `test.expectFailure()`
 					const {goal} = setupScript(`{
@@ -511,7 +511,7 @@ test.suite('Statement', () => {
 						${ decl }
 						if     ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; } else { "alternative"; };
 						unless ${ decl_set === NON_BOOLS ? '!!' : '' }cond then { "consequent"; };
-					}`, {lower: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -545,7 +545,7 @@ test.suite('Statement', () => {
 						${ decl }
 						while ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
 						until ${ decl_set === NON_BOOLS ? '!!' : '' }cond do { "consequent"; };
-					}`, {lower: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				}));
 			});
 			test.test('throws when condition is not subtype of Boolean.', () => {
@@ -572,7 +572,7 @@ test.suite('Statement', () => {
 						for it: ${ vartype } in ["hello", "world"] do {
 							val greeting: ${ vartype } = it;
 						};
-					}`, {lower: false}); // assert does not throw
+					}`, {build: false}); // assert does not throw
 				});
 			});
 			test.test('throws when iterable is not subtype of List.', () => {
@@ -630,7 +630,7 @@ test.suite('Statement', () => {
 				x;
 				42;
 				;
-			}`, {lower: false});
+			}`, {build: false});
 			assert.strictEqual(opt.instructions.length, 0);
 			(stmts[1] as AST.StatementExpression).build(opt);
 			assert.strictEqual(opt.instructions.length, 1);
@@ -649,7 +649,7 @@ test.suite('Statement', () => {
 			const {stmts, opt} = setupScript(`{%
 				val mut x: int | float = 42;
 				claim x: int;
-			}`, {lower: false});
+			}`, {build: false});
 			(stmts[1] as AST.StatementClaim).build(opt);
 			return assert.strictEqual(opt.print(), xjs.String.dedent`
 				"block-0":
@@ -664,7 +664,7 @@ test.suite('Statement', () => {
 					set x = 43;
 					set x = 44;
 					set x = -42;
-				}`, {lower: false});
+				}`, {build: false});
 				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).build(opt));
 				return assert.strictEqual(opt.print(), xjs.String.dedent`
 					"block-0":
