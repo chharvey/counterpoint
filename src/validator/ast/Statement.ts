@@ -7,7 +7,7 @@ import {
 import {Block} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Buildable} from './Lowerable.ts';
+import type {Buildable} from './Buildable.ts';
 
 
 

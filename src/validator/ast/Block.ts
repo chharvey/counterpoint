@@ -14,7 +14,7 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Goal} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Buildable} from './Lowerable.ts';
+import type {Buildable} from './Buildable.ts';
 import type {ExpressionBlock} from './ExpressionBlock.ts';
 import type {Statement} from './Statement.ts';
 import type {StatementConditional} from './StatementConditional.ts';
