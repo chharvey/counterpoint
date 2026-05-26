@@ -203,7 +203,7 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
  * @param opts           various options for compiling
  * @param opts.varCheck  Should the VarCheck  algorithm be performed? (defaults true)
  * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
- * @param opts.lower     Should the Lower     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
+ * @param opts.lower     Should the Build     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
  * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `varCheck`, `typeCheck`, and `lower` are true)
  * @return               the `Goal` instance and some properties of it
  */
