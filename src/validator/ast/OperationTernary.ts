@@ -1,5 +1,5 @@
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
@@ -55,7 +55,7 @@ export class OperationTernary extends Operation {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Get {
+	public override build(optimizer: Builder): IR.Get {
 		return IR.conditional_expression(
 			optimizer,
 			this.operand1.type().union(this.operand2.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here

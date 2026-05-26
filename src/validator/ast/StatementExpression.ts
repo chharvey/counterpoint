@@ -1,5 +1,5 @@
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -42,7 +42,7 @@ export class StatementExpression extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(optimizer: Optimizer): void {
+	public override build(optimizer: Builder): void {
 		if (this.expr) {
 			return optimizer.pushInstruction(new IR.Drop(this.expr.build(optimizer)));
 		}

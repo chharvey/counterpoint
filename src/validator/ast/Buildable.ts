@@ -1,4 +1,4 @@
-import type {Optimizer} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import type {AstNode} from './AstNode.ts';
 
 
@@ -15,5 +15,5 @@ export interface Buildable extends AstNode {
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value if present
 	 */
-	build(optimizer: Optimizer): void;
+	build(optimizer: Builder): void;
 }

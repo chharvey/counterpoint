@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	AssignmentErrorReassignment,
 	MutabilityError01,
@@ -70,7 +70,7 @@ export class StatementReassignment extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(optimizer: Optimizer): void {
+	public override build(optimizer: Builder): void {
 		if (this.assignee instanceof Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			const value: IR.Value = this.assigned.build(optimizer);

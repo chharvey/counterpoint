@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Temp,
-	type Optimizer,
+	type Builder,
 	IR,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotNarrow,
@@ -93,7 +93,7 @@ export class StatementIteration extends StatementBreakable {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): void {
+	public override build(optimizer: Builder): void {
 		const iterable: IR.ValueTac = this.iterable.build(optimizer).asTac(optimizer);
 		const index:    Temp        = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
 		const get_index             = new IR.Get(index);

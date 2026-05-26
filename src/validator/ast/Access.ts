@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -69,7 +69,7 @@ export class Access extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Value {
+	public override build(optimizer: Builder): IR.Value {
 		const typ:        TYPE.Type   = this.type();
 		const base_value: IR.ValueTac = this.base.build(optimizer).asTac(optimizer);
 

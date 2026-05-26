@@ -1,5 +1,5 @@
 import {
-	type Optimizer,
+	type Builder,
 	type IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -54,7 +54,7 @@ export class Claim extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Value {
+	public override build(optimizer: Builder): IR.Value {
 		return this.operand.build(optimizer);
 	}
 

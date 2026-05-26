@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type {Optimizer} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -48,5 +48,5 @@ export abstract class Statement extends AstNode implements Foldable, Buildable {
 	 * @inheritdoc
 	 * @implements Buildable
 	 */
-	public abstract build(optimizer: Optimizer): void;
+	public abstract build(optimizer: Builder): void;
 }

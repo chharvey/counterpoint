@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -81,7 +81,7 @@ export class OperationUnary extends Operation {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Unop {
+	public override build(optimizer: Builder): IR.Unop {
 		return new IR.Unop(new Map<Operator, IR.OpCodeUn>([
 			[Operator.NOT,   IR.OpCode.NOT],
 			[Operator.EMP,   IR.OpCode.EMP],

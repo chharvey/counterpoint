@@ -1,5 +1,5 @@
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -46,7 +46,7 @@ export class Template extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Template {
+	public override build(optimizer: Builder): IR.Template {
 		return new IR.Template(this.children.map((c) => c.build(optimizer).asTac(optimizer)));
 	}
 

@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -64,7 +64,7 @@ export class StatementLoop extends StatementBreakable {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): void {
+	public override build(optimizer: Builder): void {
 		let condition: () => IR.Value = () => this.condition.build(optimizer);
 		if (this.until) {
 			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);

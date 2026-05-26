@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -51,7 +51,7 @@ class AstTuple extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public build(optimizer: Optimizer): IR.CollectionLinearNew {
+	public build(optimizer: Builder): IR.CollectionLinearNew {
 		return new IR.CollectionLinearNew(IR.TypeName.TUPLE, this.children.map((c) => c.build(optimizer).asTac(optimizer)), this.type());
 	}
 

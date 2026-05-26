@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type {Optimizer} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -69,7 +69,7 @@ export class Block extends AstNode implements Foldable, Buildable {
 	 * @implements Buildable
 	 */
 	@runOnceMethod
-	public build(optimizer: Optimizer): void {
+	public build(optimizer: Builder): void {
 		return this.children.forEach((stmt) => stmt.build(optimizer));
 	}
 }

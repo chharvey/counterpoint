@@ -7,7 +7,7 @@ import {
 
 
 
-test.suite('Optimizer', () => {
+test.suite('Builder', () => {
 	test.test('#codegen', () => {
 		const {opt, cg, mod} = setupScript(`{
 			val cond:  bool = true;

@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -52,7 +52,7 @@ class AstSet extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.CollectionLinearNew {
+	public override build(optimizer: Builder): IR.CollectionLinearNew {
 		return new IR.CollectionLinearNew(IR.TypeName.SET, this.children.map((c) => c.build(optimizer).asTac(optimizer)), this.type());
 	}
 

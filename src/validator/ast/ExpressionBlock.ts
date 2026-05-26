@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import type {
-	Optimizer,
+	Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -61,7 +61,7 @@ export class ExpressionBlock extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Value {
+	public override build(optimizer: Builder): IR.Value {
 		this.block.children.slice(0, -1).forEach((stmt) => stmt.build(optimizer));
 		return (this.block.children.at(-1) as StatementExpression).expr!.build(optimizer);
 	}

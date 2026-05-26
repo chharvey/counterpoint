@@ -1,5 +1,5 @@
 import type {
-	Optimizer,
+	Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -45,7 +45,7 @@ export class OperationBinaryCast extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(_: Optimizer): IR.Value {
+	public override build(_: Builder): IR.Value {
 		throw new Error('`OperationBinaryCast#build` not yet supported.');
 	}
 

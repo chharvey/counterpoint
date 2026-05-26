@@ -1,5 +1,5 @@
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
@@ -86,7 +86,7 @@ export class StatementClaim extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(optimizer: Optimizer): void {
+	public override build(optimizer: Builder): void {
 		return optimizer.pushInstruction(new IR.Drop(this.assignee.build(optimizer)));
 	}
 }

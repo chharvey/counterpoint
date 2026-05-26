@@ -1,5 +1,5 @@
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -73,7 +73,7 @@ export class OperationBinaryEquality extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Binop {
+	public override build(optimizer: Builder): IR.Binop {
 		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
 			[Operator.ID,  IR.OpCode.ID],
 			[Operator.EQ,  IR.OpCode.EQ],

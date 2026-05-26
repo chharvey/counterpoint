@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import type {
-	Optimizer,
+	Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -65,7 +65,7 @@ export abstract class Expression extends AstNode {
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value
 	 */
-	public abstract build(optimizer: Optimizer): IR.Value;
+	public abstract build(optimizer: Builder): IR.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

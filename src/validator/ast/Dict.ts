@@ -1,6 +1,6 @@
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
@@ -67,7 +67,7 @@ export class Dict extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.DictNew {
+	public override build(optimizer: Builder): IR.DictNew {
 		return new IR.DictNew(new Map(this.children.map((c) => [
 			new VALUE.Symbol(c.key.id, c.key.source),
 			c.val.build(optimizer).asTac(optimizer),

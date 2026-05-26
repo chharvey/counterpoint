@@ -19,7 +19,7 @@ export class Local {
 	 * @param index  The variable’s WASM index.
 	 * @param value  The Binaryen value of the variable.
 	 * @param typ    The Binaryen type of the variable.
-	 * @param schema The compiler’s internal data for a declared variable or an optimizer temporary.
+	 * @param schema The compiler’s internal data for a declared variable or a Builder temporary.
 	 */
 	public constructor(
 		private readonly module: binaryen.Module,

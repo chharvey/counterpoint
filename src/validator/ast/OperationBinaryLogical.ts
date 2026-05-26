@@ -1,5 +1,5 @@
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -63,7 +63,7 @@ export class OperationBinaryLogical extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Get {
+	public override build(optimizer: Builder): IR.Get {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```

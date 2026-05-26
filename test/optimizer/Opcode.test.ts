@@ -5,7 +5,7 @@ import {
 	type AST,
 	VALUE,
 	TYPE,
-	Optimizer,
+	Builder,
 	IR,
 	bigint_to_i64,
 	CodeGenerator,
@@ -915,7 +915,7 @@ test.suite('Opcode', () => {
 				const cg = new CodeGenerator();
 				const {mod} = cg.vm;
 				assertEqualBins(
-					new IR.Decl(new Optimizer().newTemp(TYPE.INT)).codegen(cg),
+					new IR.Decl(new Builder().newTemp(TYPE.INT)).codegen(cg),
 					mod.local.set(0, mod.struct.new_default(cg.vm.reftype.Value)),
 				);
 			});

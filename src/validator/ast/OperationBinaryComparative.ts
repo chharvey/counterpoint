@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
@@ -57,7 +57,7 @@ export class OperationBinaryComparative extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Binop {
+	public override build(optimizer: Builder): IR.Binop {
 		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
 			[Operator.LT,  IR.OpCode.LT],
 			[Operator.GT,  IR.OpCode.GT],

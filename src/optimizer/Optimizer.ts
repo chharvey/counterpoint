@@ -19,11 +19,11 @@ export type Temp = {
 
 
 /**
- * The Optimizer is responsible for lowering the abstract syntax tree (AST) into a high-level internal representation (IR),
+ * The Builder is responsible for converting an abstract syntax tree (AST) into a high-level internal representation (IR),
  * taking the form of a control flow graph (CFG). Unlike the AST, which represents syntax structure,
  * the CFG represents execution order. The CFG assumes the AST is already validated.
  */
-export class Optimizer {
+export class Builder {
 	#tempCounter:  bigint = 0n;
 	#labelCounter: bigint = 0n;
 
@@ -64,14 +64,14 @@ export class Optimizer {
 
 	public initiateBlock(label: string): void {
 		if (this.currentBlock) {
-			throw new Error('Cannot initiate a new block in an Optimizer with an active block. Try calling `Optimizer#terminateBlock` first.');
+			throw new Error('Cannot initiate a new block in a Builder with an active block. Try calling `Builder#terminateBlock` first.');
 		}
 		this.currentBlock = new CfgNode(label);
 	}
 
 	public terminateBlock(instr: IR.Terminator): void {
 		if (!this.currentBlock) {
-			throw new Error('Optimizer does not have an active block to terminate. Try calling `Optimizer#initiateBlock` first.');
+			throw new Error('Builder does not have an active block to terminate. Try calling `Builder#initiateBlock` first.');
 		}
 		this.currentBlock.terminate(instr);
 		this.#blocks.set(this.currentBlock.label, this.currentBlock);
@@ -81,19 +81,19 @@ export class Optimizer {
 
 	public pushInstruction(instr: IR.Instruction): void {
 		if (!this.currentBlock) {
-			throw new Error('Optimizer does not have an active block to push to. Try calling `Optimizer#initiateBlock` first.');
+			throw new Error('Builder does not have an active block to push to. Try calling `Builder#initiateBlock` first.');
 		}
 		this.currentBlock.pushInstruction(instr);
 	}
 
 	@runOnceMethod
 	public validate(): void {
-		assert.ok(!this.currentBlock, 'Should not validate Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
+		assert.ok(!this.currentBlock, 'Should not validate Builder with active block set. Try calling `Builder#terminateBlock` first.');
 		return xjs.Map.forEachAggregated(this.#blocks, (block) => block.validate());
 	}
 
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		assert.ok(!this.currentBlock, 'Should not codegen Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
+		assert.ok(!this.currentBlock, 'Should not codegen Builder with active block set. Try calling `Builder#terminateBlock` first.');
 		const relooper = new binaryen.Relooper(cg.vm.mod);
 		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map([...this.#blocks.values()].map((block) => [block.label, block.codegen(cg, relooper)]));
 		this.#blocks.forEach((block) => block.terminator!.codegen(cg, relooper, blockrefs));

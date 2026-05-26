@@ -1,7 +1,7 @@
 import {TYPE} from '../../typer/index.ts';
 import type {
 	Temp,
-	Optimizer,
+	Builder,
 } from '../Optimizer.ts';
 import {
 	type Value,
@@ -102,7 +102,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  * @return            a (GET) of the results based on the condition
  */
 export function conditional_expression(
-	optimizer:   Optimizer,
+	optimizer:   Builder,
 	result_type: TYPE.Type,
 	condition:   () => Value,
 	consequent:  () => Value,

@@ -3,7 +3,7 @@ import type {CodeGenerator} from '../../index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import type {
 	Temp,
-	Optimizer,
+	Builder,
 } from '../Optimizer.ts';
 import {
 	type ValueTac,
@@ -70,7 +70,7 @@ export abstract class Value extends Opcode {
 	 * @return          this value, or a GET of this value
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
-	public asTac(optimizer: Optimizer): ValueTac {
+	public asTac(optimizer: Builder): ValueTac {
 		const temp: Temp = optimizer.newTemp(this);
 		optimizer.pushInstruction(new Decl(temp));
 		return new Get(temp);

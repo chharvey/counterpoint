@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
@@ -63,7 +63,7 @@ export class OperationBinaryArithmetic extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Binop {
+	public override build(optimizer: Builder): IR.Binop {
 		const typ: TYPE.Type = this.type();
 		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
 		const [v0, v1] = [this.operand0.build(optimizer).asTac(optimizer), this.operand1.build(optimizer).asTac(optimizer)];

@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Temp,
-	type Optimizer,
+	type Builder,
 	IR,
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
@@ -182,7 +182,7 @@ export class Call extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): IR.Value {
+	public override build(optimizer: Builder): IR.Value {
 		/*
 		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `IR.Call` object.
 		 * But until we get functions and classes, statically build the function calls.

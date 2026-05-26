@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
@@ -177,7 +177,7 @@ export class DeclarationVariable extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(optimizer: Optimizer): void {
+	public override build(optimizer: Builder): void {
 		const value: IR.Value = this.assigned?.build(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;

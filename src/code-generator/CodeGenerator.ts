@@ -106,7 +106,7 @@ export class CodeGenerator {
 	/**
 	 * Set a local variable, given a variable id.
 	 * If a variable with that id has already been added, do nothing.
-	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
+	 * @param schema the compiler’s internal data for a declared variable or a Builder temporary
 	 * @param value  the binaryen value of the variable to set
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       Was the operation performed?
@@ -122,7 +122,7 @@ export class CodeGenerator {
 
 	/**
 	 * Get the local with the given schema/temp in this CodeGenerator’s list, if it’s been added; else, return `undefined`.
-	 * @param  schema the compiler’s internal data for a declared variable or an optimizer temporary
+	 * @param  schema the compiler’s internal data for a declared variable or a Builder temporary
 	 * @return        the local or `undefined`
 	 */
 	public getLocal(schema: SymbolSchemaVar | Temp): Local | undefined {
@@ -132,7 +132,7 @@ export class CodeGenerator {
 	/**
 	 * Set and then return a local variable.
 	 * If a variable with that schema has already been added, this CodeGenerator’s state is not changed.
-	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
+	 * @param schema the compiler’s internal data for a declared variable or a Builder temporary
 	 * @param value  the binaryen value of the variable to set
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       the local variable set (or retrieved)

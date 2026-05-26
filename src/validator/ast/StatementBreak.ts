@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	type Optimizer,
+	type Builder,
 	IR,
 } from '../../index.ts';
 import {
@@ -45,7 +45,7 @@ export class StatementBreak extends Statement {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Optimizer): void {
+	public override build(optimizer: Builder): void {
 		let labels: StatementBreakable['labels'] | undefined = undefined;
 		let node = this.parent;
 		while (node && labels === undefined) {

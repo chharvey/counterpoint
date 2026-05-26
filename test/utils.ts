@@ -8,7 +8,7 @@ import {
 	VALUE,
 	type VirtualMachine,
 	TYPE,
-	Optimizer,
+	Builder,
 	BinConst,
 	CodeGenerator,
 } from '../src/index.ts';
@@ -213,12 +213,12 @@ export function setupScript(
 ): {
 	readonly goal:  AST.Goal,
 	readonly stmts: NonNullable<typeof goal.block>['children'],
-	readonly opt:   Optimizer,
+	readonly opt:   Builder,
 	readonly cg:    CodeGenerator,
 	readonly mod:   VirtualMachine['mod'],
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
-	const opt = new Optimizer();
+	const opt = new Builder();
 	const cg  = new CodeGenerator();
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
