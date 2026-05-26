@@ -1,4 +1,4 @@
 export * from './utils-public.ts';
 
-export * from './Builder.ts';
+export * from './CodeGenerator.ts';
 export type * from './Local.ts';
