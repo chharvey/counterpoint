@@ -48,5 +48,5 @@ export abstract class Statement extends AstNode implements Foldable, Lowerable {
 	 * @inheritdoc
 	 * @implements Lowerable
 	 */
-	public abstract lower(optimizer: Optimizer): void;
+	public abstract build(optimizer: Optimizer): void;
 }

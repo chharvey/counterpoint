@@ -62,7 +62,7 @@ export class ExpressionBlock extends Expression {
 
 	@memoizeMethod
 	public override build(optimizer: Optimizer): IR.Value {
-		this.block.children.slice(0, -1).forEach((stmt) => stmt.lower(optimizer));
+		this.block.children.slice(0, -1).forEach((stmt) => stmt.build(optimizer));
 		return (this.block.children.at(-1) as StatementExpression).expr!.build(optimizer);
 	}
 

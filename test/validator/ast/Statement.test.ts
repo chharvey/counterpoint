@@ -623,7 +623,7 @@ test.suite('Statement', () => {
 	});
 
 
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.test('StatementExpression pushes IR.Drop instruction if expression exists.', () => {
 			const {stmts, opt} = setupScript(`{
 				val mut x: int = 42;
@@ -632,11 +632,11 @@ test.suite('Statement', () => {
 				;
 			}`, {lower: false});
 			assert.strictEqual(opt.instructions.length, 0);
-			(stmts[1] as AST.StatementExpression).lower(opt);
+			(stmts[1] as AST.StatementExpression).build(opt);
 			assert.strictEqual(opt.instructions.length, 1);
-			(stmts[2] as AST.StatementExpression).lower(opt);
+			(stmts[2] as AST.StatementExpression).build(opt);
 			assert.strictEqual(opt.instructions.length, 2);
-			(stmts[3] as AST.StatementExpression).lower(opt);
+			(stmts[3] as AST.StatementExpression).build(opt);
 			assert.strictEqual(opt.instructions.length, 2);
 			return assert.strictEqual(opt.print(), xjs.String.dedent`
 				"block-0":
@@ -650,7 +650,7 @@ test.suite('Statement', () => {
 				val mut x: int | float = 42;
 				claim x: int;
 			}`, {lower: false});
-			(stmts[1] as AST.StatementClaim).lower(opt);
+			(stmts[1] as AST.StatementClaim).build(opt);
 			return assert.strictEqual(opt.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (GET x))
@@ -665,7 +665,7 @@ test.suite('Statement', () => {
 					set x = 44;
 					set x = -42;
 				}`, {lower: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).lower(opt));
+				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).build(opt));
 				return assert.strictEqual(opt.print(), xjs.String.dedent`
 					"block-0":
 						(SET x (INT.CONST 43))

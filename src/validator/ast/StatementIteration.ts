@@ -93,7 +93,7 @@ export class StatementIteration extends StatementBreakable {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): void {
+	public override build(optimizer: Optimizer): void {
 		const iterable: IR.ValueTac = this.iterable.build(optimizer).asTac(optimizer);
 		const index:    Temp        = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
 		const get_index             = new IR.Get(index);
@@ -123,7 +123,7 @@ export class StatementIteration extends StatementBreakable {
 				new IR.CollectionDynamicGet(IR.TypeName.LIST, iterable, get_index, iterable.type.typearg),
 			));
 		}
-		this.block.lower(optimizer);
+		this.block.build(optimizer);
 		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.OpCode.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
 		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
 

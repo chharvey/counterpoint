@@ -31,7 +31,7 @@ export class Program {
 
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
-		this.#astGoal.lower(optimizer);
+		this.#astGoal.build(optimizer);
 
 		cg.setupMain(optimizer.codegen(cg));
 

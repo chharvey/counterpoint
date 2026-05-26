@@ -69,7 +69,7 @@ export class Block extends AstNode implements Foldable, Lowerable {
 	 * @implements Lowerable
 	 */
 	@runOnceMethod
-	public lower(optimizer: Optimizer): void {
-		return this.children.forEach((stmt) => stmt.lower(optimizer));
+	public build(optimizer: Optimizer): void {
+		return this.children.forEach((stmt) => stmt.build(optimizer));
 	}
 }

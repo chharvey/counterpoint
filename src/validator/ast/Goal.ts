@@ -80,8 +80,8 @@ export class Goal extends AstNode implements Lowerable {
 	 * @implements Lowerable
 	 */
 	@runOnceMethod
-	public lower(optimizer: Optimizer): void {
-		this.block?.lower(optimizer);
+	public build(optimizer: Optimizer): void {
+		this.block?.build(optimizer);
 		optimizer.terminateBlock(new IR.EndProgram());
 		return optimizer.validate();
 	}

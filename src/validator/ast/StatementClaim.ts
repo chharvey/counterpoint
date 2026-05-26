@@ -86,7 +86,7 @@ export class StatementClaim extends Statement {
 	}
 
 	@runOnceMethod
-	public override lower(optimizer: Optimizer): void {
+	public override build(optimizer: Optimizer): void {
 		return optimizer.pushInstruction(new IR.Drop(this.assignee.build(optimizer)));
 	}
 }

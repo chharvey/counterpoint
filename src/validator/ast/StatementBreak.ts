@@ -45,7 +45,7 @@ export class StatementBreak extends Statement {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): void {
+	public override build(optimizer: Optimizer): void {
 		let labels: StatementBreakable['labels'] | undefined = undefined;
 		let node = this.parent;
 		while (node && labels === undefined) {

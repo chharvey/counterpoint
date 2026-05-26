@@ -66,7 +66,7 @@ export class StatementConditional extends Statement {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): void {
+	public override build(optimizer: Optimizer): void {
 		let condition: () => IR.Value = () => this.condition.build(optimizer);
 		if (this.unless) {
 			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);
@@ -79,12 +79,12 @@ export class StatementConditional extends Statement {
 		optimizer.terminateBlock(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
 
 		optimizer.initiateBlock(label_then);
-		this.consequent.lower(optimizer);
+		this.consequent.build(optimizer);
 		optimizer.terminateBlock(new IR.Goto(label_endif));
 
 		if (this.alternative) {
 			optimizer.initiateBlock(label_else);
-			this.alternative.lower(optimizer);
+			this.alternative.build(optimizer);
 			optimizer.terminateBlock(new IR.Goto(label_endif));
 		}
 

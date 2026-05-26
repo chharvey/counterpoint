@@ -70,7 +70,7 @@ export class StatementReassignment extends Statement {
 	}
 
 	@runOnceMethod
-	public override lower(optimizer: Optimizer): void {
+	public override build(optimizer: Optimizer): void {
 		if (this.assignee instanceof Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			const value: IR.Value = this.assigned.build(optimizer);

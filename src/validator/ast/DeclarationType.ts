@@ -66,7 +66,7 @@ export class DeclarationType extends Statement {
 	}
 
 	@noopMethod(runOnceMethod)
-	public override lower(): void {
+	public override build(): void {
 		return;
 	}
 }

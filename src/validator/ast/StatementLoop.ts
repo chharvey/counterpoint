@@ -64,7 +64,7 @@ export class StatementLoop extends StatementBreakable {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): void {
+	public override build(optimizer: Optimizer): void {
 		let condition: () => IR.Value = () => this.condition.build(optimizer);
 		if (this.until) {
 			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);
@@ -78,7 +78,7 @@ export class StatementLoop extends StatementBreakable {
 			optimizer.terminateBlock(new IR.Goto(this.labels.do!));
 
 			optimizer.initiateBlock(this.labels.do!);
-			this.block.lower(optimizer);
+			this.block.build(optimizer);
 			optimizer.terminateBlock(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 		} else {
 			optimizer.terminateBlock(new IR.Goto(this.labels.while!));
@@ -87,7 +87,7 @@ export class StatementLoop extends StatementBreakable {
 			optimizer.terminateBlock(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 
 			optimizer.initiateBlock(this.labels.do!);
-			this.block.lower(optimizer);
+			this.block.build(optimizer);
 			optimizer.terminateBlock(new IR.Goto(this.labels.while!));
 		}
 

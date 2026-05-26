@@ -177,7 +177,7 @@ export class DeclarationVariable extends Statement {
 	}
 
 	@runOnceMethod
-	public override lower(optimizer: Optimizer): void {
+	public override build(optimizer: Optimizer): void {
 		const value: IR.Value = this.assigned?.build(optimizer) ?? new IR.Const(VALUE.NULL);
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;

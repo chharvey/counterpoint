@@ -227,7 +227,7 @@ export function setupScript(
 	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
-	opts.varCheck && opts.typeCheck && opts.lower &&                 goal.lower(opt);
+	opts.varCheck && opts.typeCheck && opts.lower &&                 goal.build(opt);
 	opts.varCheck && opts.typeCheck && opts.lower && opts.codegen && opt.codegen(cg);
 	return {
 		goal,

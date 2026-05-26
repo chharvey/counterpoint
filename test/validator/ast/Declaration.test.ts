@@ -602,7 +602,7 @@ test.suite('Declaration', () => {
 	});
 
 
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.test('DeclarationType has no effect.', () => {
 			assert.strictEqual(setupScript(`{
 				type N = int | nat | float;
@@ -629,7 +629,7 @@ test.suite('Declaration', () => {
 				val mut _:       int = assignee_c;
 				%%
 			}`, {codegen: false});
-			stmts.forEach((stmt) => (stmt as AST.DeclarationVariable).lower(opt));
+			stmts.forEach((stmt) => (stmt as AST.DeclarationVariable).build(opt));
 			return assert.strictEqual(opt.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (INT.CONST 42))
