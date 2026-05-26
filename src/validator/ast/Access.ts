@@ -69,9 +69,9 @@ export class Access extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override build(optimizer: Optimizer): IR.Value {
 		const typ:        TYPE.Type   = this.type();
-		const base_value: IR.ValueTac = this.base.lower(optimizer).asTac(optimizer);
+		const base_value: IR.ValueTac = this.base.build(optimizer).asTac(optimizer);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {
@@ -134,7 +134,7 @@ export class Access extends Expression implements Reassignable {
 						return new IR.CollectionDynamicGet(
 							base_typename as IR.CollectionDynamicName,
 							base_value,
-							this.accessor.lower(optimizer).asTac(optimizer),
+							this.accessor.build(optimizer).asTac(optimizer),
 							typ,
 						);
 					}

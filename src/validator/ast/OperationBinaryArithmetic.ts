@@ -63,10 +63,10 @@ export class OperationBinaryArithmetic extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Binop {
+	public override build(optimizer: Optimizer): IR.Binop {
 		const typ: TYPE.Type = this.type();
 		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
-		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
+		const [v0, v1] = [this.operand0.build(optimizer).asTac(optimizer), this.operand1.build(optimizer).asTac(optimizer)];
 		return (
 			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
 				[Operator.EXP, IR.OpCode.INT_EXP],

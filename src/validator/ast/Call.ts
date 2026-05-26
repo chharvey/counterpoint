@@ -182,15 +182,15 @@ export class Call extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override build(optimizer: Optimizer): IR.Value {
 		/*
 		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `IR.Call` object.
 		 * But until we get functions and classes, statically build the function calls.
 		 */
 		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
 			return new IR.Call(
-				this.base.lower(optimizer).asTac(optimizer),
-				this.exprargs.map((arg) => arg.lower(optimizer).asTac(optimizer)),
+				this.base.build(optimizer).asTac(optimizer),
+				this.exprargs.map((arg) => arg.build(optimizer).asTac(optimizer)),
 				this.type(),
 			);
 		}
@@ -208,7 +208,7 @@ export class Call extends Expression {
 		const dest: Temp = optimizer.newTemp(new_obj);
 		const get_dest = new IR.Get(dest);
 		optimizer.pushInstruction(new IR.Decl(dest));
-		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_dest, this.exprargs[0].lower(optimizer).asTac(optimizer)));
+		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(optimizer).asTac(optimizer)));
 		return get_dest;
 	}
 

@@ -46,8 +46,8 @@ export class Template extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Template {
-		return new IR.Template(this.children.map((c) => c.lower(optimizer).asTac(optimizer)));
+	public override build(optimizer: Optimizer): IR.Template {
+		return new IR.Template(this.children.map((c) => c.build(optimizer).asTac(optimizer)));
 	}
 
 	@memoizeMethod

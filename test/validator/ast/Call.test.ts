@@ -263,7 +263,7 @@ test.suite('Call', () => {
 	});
 
 
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.test('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.map((src) => `${ src };`).join('\n') }

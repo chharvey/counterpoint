@@ -94,7 +94,7 @@ export class StatementIteration extends StatementBreakable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		const iterable: IR.ValueTac = this.iterable.lower(optimizer).asTac(optimizer);
+		const iterable: IR.ValueTac = this.iterable.build(optimizer).asTac(optimizer);
 		const index:    Temp        = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
 		const get_index             = new IR.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);

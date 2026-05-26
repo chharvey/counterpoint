@@ -73,13 +73,13 @@ export class OperationBinaryEquality extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Binop {
+	public override build(optimizer: Optimizer): IR.Binop {
 		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
 			[Operator.ID,  IR.OpCode.ID],
 			[Operator.EQ,  IR.OpCode.EQ],
 			[Operator.NID, IR.OpCode.NID],
 			[Operator.NEQ, IR.OpCode.NEQ],
-		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
+		]).get(this.operator)!, this.operand0.build(optimizer).asTac(optimizer), this.operand1.build(optimizer).asTac(optimizer), this.type());
 	}
 
 	@memoizeMethod

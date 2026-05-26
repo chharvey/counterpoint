@@ -63,7 +63,7 @@ export class OperationBinaryLogical extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Get {
+	public override build(optimizer: Optimizer): IR.Get {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```
@@ -77,10 +77,10 @@ export class OperationBinaryLogical extends OperationBinary {
 		 * if !!left then left else ‹v1›
 		 * ```
 		 */
-		const left: IR.ValueTac = this.operand0.lower(optimizer).asTac(optimizer);
+		const left: IR.ValueTac = this.operand0.build(optimizer).asTac(optimizer);
 
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
-		let conseq = (): IR.Value => this.operand1.lower(optimizer);
+		let conseq = (): IR.Value => this.operand1.build(optimizer);
 		let altern = (): IR.Value => left;
 		if (this.operator === Operator.OR) {
 			[conseq, altern] = [altern, conseq];

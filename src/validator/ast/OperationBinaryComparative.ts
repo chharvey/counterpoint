@@ -57,7 +57,7 @@ export class OperationBinaryComparative extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Binop {
+	public override build(optimizer: Optimizer): IR.Binop {
 		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
 			[Operator.LT,  IR.OpCode.LT],
 			[Operator.GT,  IR.OpCode.GT],
@@ -65,7 +65,7 @@ export class OperationBinaryComparative extends OperationBinary {
 			[Operator.GE,  IR.OpCode.GE],
 			[Operator.NLT, IR.OpCode.NLT],
 			[Operator.NGT, IR.OpCode.NGT],
-		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
+		]).get(this.operator)!, this.operand0.build(optimizer).asTac(optimizer), this.operand1.build(optimizer).asTac(optimizer), this.type());
 	}
 
 	@memoizeMethod

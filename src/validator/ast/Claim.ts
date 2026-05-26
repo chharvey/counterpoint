@@ -54,8 +54,8 @@ export class Claim extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
-		return this.operand.lower(optimizer);
+	public override build(optimizer: Optimizer): IR.Value {
+		return this.operand.build(optimizer);
 	}
 
 	@memoizeMethod

@@ -61,11 +61,11 @@ export abstract class Expression extends AstNode {
 	public abstract type(): TYPE.Type;
 
 	/**
-	 * Lower this AST node to a high-level IR value.
+	 * Builds a high-level IR value from this AST node.
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value
 	 */
-	public abstract lower(optimizer: Optimizer): IR.Value;
+	public abstract build(optimizer: Optimizer): IR.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

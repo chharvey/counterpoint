@@ -67,9 +67,9 @@ export class StatementConditional extends Statement {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): void {
-		let condition: () => IR.Value = () => this.condition.lower(optimizer);
+		let condition: () => IR.Value = () => this.condition.build(optimizer);
 		if (this.unless) {
-			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer).asTac(optimizer), TYPE.BOOL);
+			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);
 		}
 
 		const label_then:  string = optimizer.newLabel();

@@ -61,9 +61,9 @@ export class ExpressionBlock extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override build(optimizer: Optimizer): IR.Value {
 		this.block.children.slice(0, -1).forEach((stmt) => stmt.lower(optimizer));
-		return (this.block.children.at(-1) as StatementExpression).expr!.lower(optimizer);
+		return (this.block.children.at(-1) as StatementExpression).expr!.build(optimizer);
 	}
 
 	@memoizeMethod

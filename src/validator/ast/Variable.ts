@@ -65,7 +65,7 @@ export class Variable extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override lower(): IR.Get {
+	public override build(): IR.Get {
 		return new IR.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
 	}
 

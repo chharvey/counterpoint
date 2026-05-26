@@ -52,8 +52,8 @@ class AstSet extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.CollectionLinearNew {
-		return new IR.CollectionLinearNew(IR.TypeName.SET, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
+	public override build(optimizer: Optimizer): IR.CollectionLinearNew {
+		return new IR.CollectionLinearNew(IR.TypeName.SET, this.children.map((c) => c.build(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod

@@ -947,7 +947,7 @@ test.suite('Access', () => {
 
 
 
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.suite('access kind: normal access (`a.‹b›`).', () => {
 			test.test('tuple access returns an IR.TupleGet.', () => {
 				assert.strictEqual(setupScript(`{

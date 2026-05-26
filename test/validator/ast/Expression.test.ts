@@ -28,10 +28,10 @@ import {
 
 
 test.suite('Expression', () => {
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.test('Constant returns an IR.Const.', () => {
 			const value: AST.Constant = AST.Constant.fromSource('42');
-			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
+			return assert.deepStrictEqual(value.build(), new IR.Const(value.fold()));
 		});
 		test.test('Variable returns an IR.Get.', () => {
 			const {stmts} = setupScript(`{
@@ -41,7 +41,7 @@ test.suite('Expression', () => {
 			const expr = (stmts[1] as AST.StatementExpression).expr as AST.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.lower(), new IR.Get(symbol));
+			return assert.deepStrictEqual(expr.build(), new IR.Get(symbol));
 		});
 		test.test('Template returns an IR.Template.', () => {
 			assert.strictEqual(setupScript(`{
@@ -194,7 +194,7 @@ test.suite('Expression', () => {
 					42 as <int>;
 				}`, {codegen: false});
 				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
-				return assert.deepStrictEqual(expr.lower(opt), expr.operand.lower(opt));
+				return assert.deepStrictEqual(expr.build(opt), expr.operand.build(opt));
 			});
 			test.test('repeated calls are idempotent.', () => {
 				const {stmts, opt} = setupScript(`{
@@ -202,9 +202,9 @@ test.suite('Expression', () => {
 				}`, {lower: false});
 				assert.strictEqual(opt.instructions.length, 0);
 				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
-				expr.operand.lower(opt);
+				expr.operand.build(opt);
 				assert.strictEqual(opt.instructions.length, 1);
-				expr.lower(opt);
+				expr.build(opt);
 				assert.strictEqual(opt.instructions.length, 1);
 			});
 		});

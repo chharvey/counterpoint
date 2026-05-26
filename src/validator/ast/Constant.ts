@@ -73,7 +73,7 @@ export class Constant extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(): IR.Const {
+	public override build(): IR.Const {
 		return new IR.Const(this.interpreterValue);
 	}
 

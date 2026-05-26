@@ -196,7 +196,7 @@ test.suite('Operation', () => {
 
 
 
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.test('with block-expressions.', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;

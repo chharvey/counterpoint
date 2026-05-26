@@ -44,7 +44,7 @@ export class StatementExpression extends Statement {
 	@runOnceMethod
 	public override lower(optimizer: Optimizer): void {
 		if (this.expr) {
-			return optimizer.pushInstruction(new IR.Drop(this.expr.lower(optimizer)));
+			return optimizer.pushInstruction(new IR.Drop(this.expr.build(optimizer)));
 		}
 	}
 }
