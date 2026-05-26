@@ -1,4 +1,3 @@
-import {Keyword} from '../../index.ts';
 import type {Type} from './index.ts';
 
 
@@ -34,7 +33,3 @@ export type GenericParameter = {
 	/** The type argument assigned to the parameter. */
 	readonly assigned: Type,
 };
-
-
-
-export const MUT_OPERATOR = `${ Keyword.MUTABLE } `;
