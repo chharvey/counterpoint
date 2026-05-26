@@ -9,7 +9,7 @@ import type {AstNode} from './AstNode.ts';
  * - Block
  * - Goal
  */
-export interface Lowerable extends AstNode {
+export interface Buildable extends AstNode {
 	/**
 	 * Builds a high-level IR instruction from thie AST node.
 	 * @param  optimizer the set of instructions to build the IR

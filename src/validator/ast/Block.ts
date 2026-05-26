@@ -14,14 +14,14 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Goal} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Lowerable} from './Lowerable.ts';
+import type {Buildable} from './Lowerable.ts';
 import type {ExpressionBlock} from './ExpressionBlock.ts';
 import type {Statement} from './Statement.ts';
 import type {StatementConditional} from './StatementConditional.ts';
 
 
 
-export class Block extends AstNode implements Foldable, Lowerable {
+export class Block extends AstNode implements Foldable, Buildable {
 	/**
 	 * Construct a new Block from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -66,7 +66,7 @@ export class Block extends AstNode implements Foldable, Lowerable {
 
 	/**
 	 * @inheritdoc
-	 * @implements Lowerable
+	 * @implements Buildable
 	 */
 	@runOnceMethod
 	public build(optimizer: Optimizer): void {

@@ -19,7 +19,7 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {AstNode} from './AstNode.ts';
-import type {Lowerable} from './Lowerable.ts';
+import type {Buildable} from './Lowerable.ts';
 import type {Block} from './Block.ts';
 
 
@@ -44,7 +44,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 
 
 
-export class Goal extends AstNode implements Lowerable {
+export class Goal extends AstNode implements Buildable {
 	/**
 	 * Construct a new Goal from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -77,7 +77,7 @@ export class Goal extends AstNode implements Lowerable {
 
 	/**
 	 * @inheritdoc
-	 * @implements Lowerable
+	 * @implements Buildable
 	 */
 	@runOnceMethod
 	public build(optimizer: Optimizer): void {
