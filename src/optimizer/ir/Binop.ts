@@ -1,15 +1,13 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	drop_then,
-	type CodeGenerator,
-} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import {drop_then} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';

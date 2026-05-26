@@ -1,13 +1,11 @@
 import * as xjs from 'extrajs';
 import type binaryen from 'binaryen';
-import {
-	drop_then,
-	type CodeGenerator,
-} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
+import {drop_then} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
