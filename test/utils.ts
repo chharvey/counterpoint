@@ -10,7 +10,7 @@ import {
 	TYPE,
 	Optimizer,
 	BinConst,
-	Builder,
+	CodeGenerator,
 } from '../src/index.ts';
 
 
@@ -165,9 +165,9 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 	return TYPE_UNIT_MEMO.get(value)!;
 }
 
-export function genConst(cg: Builder, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
-export function genConst(cg: Builder, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
-export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
+export function genConst(cg: CodeGenerator, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
+export function genConst(cg: CodeGenerator, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
+export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
 	switch (value) {
 		case null:  { return cg.getConst(BinConst.NULL); }
 		case false: { return cg.getConst(BinConst.FALSE); }
@@ -214,12 +214,12 @@ export function setupScript(
 	readonly goal:  AST.Goal,
 	readonly stmts: NonNullable<typeof goal.block>['children'],
 	readonly opt:   Optimizer,
-	readonly cg:    Builder,
+	readonly cg:    CodeGenerator,
 	readonly mod:   VirtualMachine['mod'],
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
 	const opt = new Optimizer();
-	const cg  = new Builder();
+	const cg  = new CodeGenerator();
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;

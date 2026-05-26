@@ -1,6 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	type ConstructorType,
 	assert_instanceof,
@@ -44,7 +44,7 @@ export class CollectionLinearNew extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		switch (this.name) {
 			case TypeName.TUPLE: { return cg.vm.Value.newComposite(cg.codegenTuple (this.items.map((item) => item.codegen(cg)))); }
 			case TypeName.LIST:  { return cg.vm.Value.newComposite(cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }

@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -51,12 +51,12 @@ export class Decl extends Instruction {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.vm.mod.struct.new_default(cg.vm.reftype.Value)).set();
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder): number {
+	#optimizationStrategy(this: any, cg: CodeGenerator): number {
 		let VALUE: any;
 		/**
 		 * Foldable cases:

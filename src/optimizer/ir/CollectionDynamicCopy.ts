@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinConst,
-	type Builder,
+	type CodeGenerator,
 	type Local,
 } from '../../index.ts';
 import {
@@ -49,7 +49,7 @@ function copy_array(
 
 /** Perform a set (insert) for each item. */
 function each_item(
-	cg:         Builder,
+	cg:         CodeGenerator,
 	destobj:    Local,
 	srcref:     Local,
 	itemtype:   binaryen.Type,
@@ -228,7 +228,7 @@ export class CollectionDynamicCopy extends Instruction {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		const {mod, Value, Case, List, Dict, Map: VmMap} = cg.vm;
 
 		const code_dest: binaryen.ExpressionRef = this.destination.codegen(cg);

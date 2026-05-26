@@ -3,7 +3,7 @@ import binaryen from 'binaryen';
 import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import type {BinaryenModuleUpdates} from './-types.d.ts';
+import type {BinaryenModuleUpdates} from './-types.js';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
 
@@ -50,9 +50,9 @@ function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: n
 
 
 /**
- * The Builder generates assembly code.
+ * The CodeGenerator generates assembly code.
  */
-export class Builder {
+export class CodeGenerator {
 	/**
 	 * Load Factor for arrays.
 	 * The number of items (including tombstones) in a `$ListInternal`/`$DictInternal`
@@ -72,9 +72,9 @@ export class Builder {
 
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
-		// HACK: reassigning VM's new module instead of giving it to Builder.
+		// HACK: reassigning VM's new module instead of giving it to CodeGenerator.
 		// we’re doing this because all of the `codegen` code uses `vm.mod`
-		// TODO: keep the WAT module readonly on VM, then give Builder its own module. update all `codegen` code.
+		// TODO: keep the WAT module readonly on VM, then give CodeGenerator its own module. update all `codegen` code.
 		this.watModule = vm.mod;
 		vm.mod = new binaryen.Module() as BinaryenModuleUpdates;
 		vm.mod.setFeatures(this.watModule.getFeatures());
@@ -121,7 +121,7 @@ export class Builder {
 	}
 
 	/**
-	 * Get the local with the given schema/temp in this Builder’s list, if it’s been added; else, return `undefined`.
+	 * Get the local with the given schema/temp in this CodeGenerator’s list, if it’s been added; else, return `undefined`.
 	 * @param  schema the compiler’s internal data for a declared variable or an optimizer temporary
 	 * @return        the local or `undefined`
 	 */
@@ -131,7 +131,7 @@ export class Builder {
 
 	/**
 	 * Set and then return a local variable.
-	 * If a variable with that schema has already been added, this Builder’s state is not changed.
+	 * If a variable with that schema has already been added, this CodeGenerator’s state is not changed.
 	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
 	 * @param value  the binaryen value of the variable to set
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
@@ -143,7 +143,7 @@ export class Builder {
 	}
 
 	/**
-	 * Return a copy of a list of this Builder’s local variables.
+	 * Return a copy of a list of this CodeGenerator’s local variables.
 	 * @return the local variables in an array
 	 */
 	public getAllLocals(): Local[] {
@@ -263,7 +263,7 @@ export class Builder {
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
 		const {mod, heaptype, reftypeNull, Object: VmObject} = this.vm;
 		let capacity: number = 8;
-		while (items.length > capacity * Builder.#LOAD_FACTOR) {
+		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
@@ -287,7 +287,7 @@ export class Builder {
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const {mod, heaptype, reftypeNull, Object: VmObject} = this.vm;
 		let capacity: number = 8;
-		while (props.size > capacity * Builder.#LOAD_FACTOR) {
+		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
@@ -323,7 +323,7 @@ export class Builder {
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const {mod, heaptype, reftype, Object: VmObject, Map: VmMap} = this.vm;
 		let capacity: number = 8;
-		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
+		while (cases.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const map_obj = mod.struct.new([

@@ -1,6 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -36,7 +36,7 @@ export class DictNew extends Value {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.vm.Value.newComposite(cg.codegenDict(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([{id}, value]) => [
 			id,
 			cg.newProperty(id, value.codegen(cg)),

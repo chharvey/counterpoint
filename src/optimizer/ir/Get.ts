@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {Temp} from '../Optimizer.ts';
@@ -20,7 +20,7 @@ export class Get extends ValueTac {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 

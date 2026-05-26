@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -44,7 +44,7 @@ export class Const extends ValueTac {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return this.interpreterValue.codegen(cg);
 	}
 

@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {Builder} from '../index.ts';
+import type {CodeGenerator} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import {CfgNode} from './CfgNode.ts';
@@ -92,7 +92,7 @@ export class Optimizer {
 		return xjs.Map.forEachAggregated(this.#blocks, (block) => block.validate());
 	}
 
-	public codegen(cg: Builder): binaryen.ExpressionRef {
+	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
 		const relooper = new binaryen.Relooper(cg.vm.mod);
 		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map([...this.#blocks.values()].map((block) => [block.label, block.codegen(cg, relooper)]));

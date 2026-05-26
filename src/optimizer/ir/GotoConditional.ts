@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
@@ -41,7 +41,7 @@ export class GotoConditional extends Terminator {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+	public override codegen(cg: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
 		relooper.addBranch(
 			blockrefs.get(this._containerLabel!)!,
 			blockrefs.get(this.labelIfTrue)!,

@@ -3,7 +3,7 @@ import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
 	BinConst,
-	type Builder,
+	type CodeGenerator,
 	type Local,
 } from '../../index.ts';
 import {
@@ -66,7 +66,7 @@ export class CollectionDynamicSet extends Instruction {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		const {mod, Vect, Value, List, Dict, Map: VmMap} = cg.vm;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
