@@ -9,12 +9,12 @@ import {
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 } from '../../../src/index.ts';
-import {assertEqualTypes} from '../../assert-helpers.ts';
 import {
-	setupScript,
+	extract_tokens,
+	assertEqualTypes,
 	typeUnit,
-} from '../../helpers.ts';
-import {extract_tokens} from '../../utils.ts';
+	setupScript,
+} from '../../utils.ts';
 
 
 

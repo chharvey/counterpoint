@@ -5,12 +5,12 @@ import {
 	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../assert-helpers.ts';
 import {
-	setupScript,
+	repeat,
+	assertEqualBins,
 	genConst,
-} from '../helpers.ts';
-import {repeat} from '../utils.ts';
+	setupScript,
+} from '../utils.ts';
 
 
 

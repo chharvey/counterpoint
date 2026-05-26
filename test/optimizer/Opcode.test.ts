@@ -10,11 +10,11 @@ import {
 	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../assert-helpers.ts';
 import {
-	setupScript,
+	assertEqualBins,
 	genConst,
-} from '../helpers.ts';
+	setupScript,
+} from '../utils.ts';
 
 
 

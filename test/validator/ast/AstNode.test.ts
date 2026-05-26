@@ -10,8 +10,10 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {assertAssignable} from '../../assert-helpers.ts';
-import {setupScript} from '../../helpers.ts';
+import {
+	assertAssignable,
+	setupScript,
+} from '../../utils.ts';
 
 
 

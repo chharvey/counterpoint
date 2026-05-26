@@ -11,14 +11,12 @@ import {
 	TypeErrorNoEntry,
 	VoidErrorOutOfBounds,
 } from '../../../src/index.ts';
-import {assertEqualTypes} from '../../assert-helpers.ts';
-import {
-	setupScript,
-	typeUnit,
-} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
+	assertEqualTypes,
+	typeUnit,
+	setupScript,
 } from '../../utils.ts';
 
 

@@ -10,13 +10,11 @@ import {
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
 import {
-	assertEqualTypes,
-	assertAssignable,
-} from '../../assert-helpers.ts';
-import {setupScript} from '../../helpers.ts';
-import {
 	extract_lines,
 	repeat,
+	assertAssignable,
+	assertEqualTypes,
+	setupScript,
 } from '../../utils.ts';
 
 

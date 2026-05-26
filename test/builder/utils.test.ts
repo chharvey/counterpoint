@@ -5,8 +5,10 @@ import {
 	drop_then,
 	Builder,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../assert-helpers.ts';
-import {genConst} from '../helpers.ts';
+import {
+	assertEqualBins,
+	genConst,
+} from '../utils.ts';
 
 
 

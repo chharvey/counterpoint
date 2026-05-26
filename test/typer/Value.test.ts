@@ -5,7 +5,7 @@ import {
 	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../assert-helpers.ts';
+import {assertEqualBins} from '../utils.ts';
 
 
 

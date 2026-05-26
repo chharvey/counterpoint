@@ -12,16 +12,12 @@ import {
 	NanErrorDivZero,
 } from '../../../src/index.ts';
 import {
-	assert_shallowStrictEqual,
-	assertEqualTypes,
-} from '../../assert-helpers.ts';
-import {
-	setupScript,
-	typeUnit,
-} from '../../helpers.ts';
-import {
 	extract_lines,
 	repeat,
+	assert_shallowStrictEqual,
+	assertEqualTypes,
+	typeUnit,
+	setupScript,
 } from '../../utils.ts';
 
 

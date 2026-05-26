@@ -7,8 +7,10 @@ import {
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
 } from '../../../src/index.ts';
-import {assertEqualTypes} from '../../assert-helpers.ts';
-import {extract_lines} from '../../utils.ts';
+import {
+	extract_lines,
+	assertEqualTypes,
+} from '../../utils.ts';
 
 
 

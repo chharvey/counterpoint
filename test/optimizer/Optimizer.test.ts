@@ -1,9 +1,9 @@
 import * as test from 'node:test';
-import {assertEqualBins} from '../assert-helpers.ts';
 import {
-	setupScript,
+	assertEqualBins,
 	genConst,
-} from '../helpers.ts';
+	setupScript,
+} from '../utils.ts';
 
 
 

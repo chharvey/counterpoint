@@ -5,11 +5,11 @@ import {
 	TYPE,
 	TypeErrorInvalidOperation,
 } from '../../../src/index.ts';
-import {assertEqualTypes} from '../../assert-helpers.ts';
 import {
-	setupScript,
+	assertEqualTypes,
 	typeUnit,
-} from '../../helpers.ts';
+	setupScript,
+} from '../../utils.ts';
 
 
 

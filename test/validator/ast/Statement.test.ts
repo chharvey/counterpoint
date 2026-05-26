@@ -16,9 +16,11 @@ import {
 	TypeErrorNotAssignable,
 	MutabilityError01,
 } from '../../../src/index.ts';
-import {assertAssignable} from '../../assert-helpers.ts';
-import {setupScript} from '../../helpers.ts';
-import {extract_lines} from '../../utils.ts';
+import {
+	extract_lines,
+	assertAssignable,
+	setupScript,
+} from '../../utils.ts';
 
 
 

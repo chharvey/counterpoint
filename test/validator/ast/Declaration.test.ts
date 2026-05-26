@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaType,
@@ -12,19 +13,14 @@ import {
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {assert_instanceof} from '../../../src/lib/index.ts';
-import {
-	assert_shallowStrictEqual,
-	assertEqualTypes,
-	assertAssignable,
-} from '../../assert-helpers.ts';
-import {
-	setupScript,
-	typeUnit,
-} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
+	assert_shallowStrictEqual,
+	assertAssignable,
+	assertEqualTypes,
+	typeUnit,
+	setupScript,
 } from '../../utils.ts';
 
 
