@@ -3,7 +3,7 @@ import PACKAGE from '../package.json' with {type: 'json'};
 import {
 	Cli,
 	Command,
-} from '../build/index.js';
+} from '../dist/index.js';
 
 
 
