@@ -5,7 +5,7 @@ import {
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
 import {Optimizer} from '../optimizer/index.ts';
-import {CodeGenerator} from '../builder/index.ts';
+import {CodeGenerator} from '../code-generator/index.ts';
 
 
 
