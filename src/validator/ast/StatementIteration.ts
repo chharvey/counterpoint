@@ -10,8 +10,8 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CplConfig,
@@ -92,7 +92,7 @@ export class StatementIteration extends StatementBreakable {
 		this.block.typeCheck();
 	}
 
-	@memoizeMethod
+	@runOnceMethod
 	public override build(builder: Builder): void {
 		const iterable: OP.ValueTac = this.iterable.build(builder).asTac(builder);
 		const index:    Temp        = builder.newTemp(new OP.Const(VALUE.NAT_0));

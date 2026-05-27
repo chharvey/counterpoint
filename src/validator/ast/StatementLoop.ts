@@ -6,8 +6,8 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CplConfig,
@@ -63,7 +63,7 @@ export class StatementLoop extends StatementBreakable {
 		}
 	}
 
-	@memoizeMethod
+	@runOnceMethod
 	public override build(builder: Builder): void {
 		let condition: () => OP.Value = () => this.condition.build(builder);
 		if (this.until) {

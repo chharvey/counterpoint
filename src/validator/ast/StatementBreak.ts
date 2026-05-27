@@ -6,8 +6,8 @@ import {
 import {
 	assert_instanceof,
 	noopGetter,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CplConfig,
@@ -44,7 +44,7 @@ export class StatementBreak extends Statement {
 		return false;
 	}
 
-	@memoizeMethod
+	@runOnceMethod
 	public override build(builder: Builder): void {
 		let labels: StatementBreakable['labels'] | undefined = undefined;
 		let node = this.parent;
