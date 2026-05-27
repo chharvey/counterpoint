@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import type {SymbolSchemaVar} from '../validator/index.ts';
-import type {Temp} from '../optimizer/index.ts';
+import type {Temp} from '../builder/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 
 

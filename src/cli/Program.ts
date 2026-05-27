@@ -4,7 +4,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
-import {Builder} from '../optimizer/index.ts';
+import {Builder} from '../builder/index.ts';
 import {CodeGenerator} from '../code-generator/index.ts';
 
 

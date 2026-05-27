@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
-import type {Temp} from '../optimizer/index.ts';
+import type {Temp} from '../builder/index.ts';
 import type {BinaryenModuleUpdates} from './-types.js';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
