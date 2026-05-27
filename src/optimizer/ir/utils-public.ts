@@ -2,7 +2,7 @@ import {TYPE} from '../../typer/index.ts';
 import type {
 	Temp,
 	Builder,
-} from '../Optimizer.ts';
+} from '../Builder.ts';
 import {
 	type Value,
 	Get,
