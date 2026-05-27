@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import type {SymbolSchemaVar} from '../validator/index.ts';
-import type {Temp} from '../optimizer/index.ts';
+import type {Temp} from '../builder/index.ts';
 import {bigint_to_i64} from './utils-public.ts';
 
 
@@ -19,7 +19,7 @@ export class Local {
 	 * @param index  The variable’s WASM index.
 	 * @param value  The Binaryen value of the variable.
 	 * @param typ    The Binaryen type of the variable.
-	 * @param schema The compiler’s internal data for a declared variable or an optimizer temporary.
+	 * @param schema The compiler’s internal data for a declared variable or a Builder temporary.
 	 */
 	public constructor(
 		private readonly module: binaryen.Module,

@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type {Optimizer} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -7,7 +7,7 @@ import {
 import {Block} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Lowerable} from './Lowerable.ts';
+import type {Buildable} from './Buildable.ts';
 
 
 
@@ -23,7 +23,7 @@ import type {Lowerable} from './Lowerable.ts';
  * - StatementBreakable
  * - StatementBreak
  */
-export abstract class Statement extends AstNode implements Foldable, Lowerable {
+export abstract class Statement extends AstNode implements Foldable, Buildable {
 	/**
 	 * Construct a new Statement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -46,7 +46,7 @@ export abstract class Statement extends AstNode implements Foldable, Lowerable {
 
 	/**
 	 * @inheritdoc
-	 * @implements Lowerable
+	 * @implements Buildable
 	 */
-	public abstract lower(optimizer: Optimizer): void;
+	public abstract build(builder: Builder): void;
 }

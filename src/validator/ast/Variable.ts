@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	IR,
+	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -65,8 +65,8 @@ export class Variable extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override lower(): IR.Get {
-		return new IR.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
+	public override build(): OP.Get {
+		return new OP.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
 	}
 
 	@memoizeMethod

@@ -8,7 +8,7 @@ import {
 	VALUE,
 	type VirtualMachine,
 	TYPE,
-	Optimizer,
+	Builder,
 	BinConst,
 	CodeGenerator,
 } from '../src/index.ts';
@@ -203,35 +203,35 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
  * @param opts           various options for compiling
  * @param opts.varCheck  Should the VarCheck  algorithm be performed? (defaults true)
  * @param opts.typeCheck Should the TypeCheck algorithm be performed? (defaults true) (only done if `varCheck` is true)
- * @param opts.lower     Should the Lower     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
+ * @param opts.build     Should the Build     algorithm be performed? (defaults true) (only done if `varCheck` and `typeCheck` are true)
  * @param opts.codegen   Should the Codegen   algorithm be performed? (defaults true) (only done if `varCheck`, `typeCheck`, and `lower` are true)
  * @return               the `Goal` instance and some properties of it
  */
 export function setupScript(
 	source: string,
-	opts:   {varCheck?: boolean, typeCheck?: boolean, lower?: boolean, codegen?: boolean} = {},
+	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
-	readonly goal:  AST.Goal,
-	readonly stmts: NonNullable<typeof goal.block>['children'],
-	readonly opt:   Optimizer,
-	readonly cg:    CodeGenerator,
-	readonly mod:   VirtualMachine['mod'],
+	readonly goal:    AST.Goal,
+	readonly stmts:   NonNullable<typeof goal.block>['children'],
+	readonly builder: Builder,
+	readonly cg:      CodeGenerator,
+	readonly mod:     VirtualMachine['mod'],
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
-	const opt = new Optimizer();
-	const cg  = new CodeGenerator();
+	const builder = new Builder();
+	const cg      = new CodeGenerator();
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
-	opts.lower     ??= true;
+	opts.build     ??= true;
 	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
-	opts.varCheck && opts.typeCheck && opts.lower &&                 goal.lower(opt);
-	opts.varCheck && opts.typeCheck && opts.lower && opts.codegen && opt.codegen(cg);
+	opts.varCheck && opts.typeCheck && opts.build &&                 goal.build(builder);
+	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
 	return {
 		goal,
-		opt,
+		builder,
 		cg,
 		stmts: goal.block.children,
 		mod:   cg.vm.mod,

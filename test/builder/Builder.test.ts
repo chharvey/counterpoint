@@ -7,15 +7,15 @@ import {
 
 
 
-test.suite('Optimizer', () => {
+test.suite('Builder', () => {
 	test.test('#codegen', () => {
-		const {opt, cg, mod} = setupScript(`{
+		const {builder, cg, mod} = setupScript(`{
 			val cond:  bool = true;
 			val mut x: int  = 1;
 			set x = if cond then 3 else 2;
 			5 * x;
 		}`, {codegen: false});
-		return assertEqualBins(opt.codegen(cg), mod.block(null, [
+		return assertEqualBins(builder.codegen(cg), mod.block(null, [
 			mod.block('block$4$break', [
 				mod.block(null, [
 					mod.local.set(0, genConst(cg, true)),

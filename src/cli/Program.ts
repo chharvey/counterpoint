@@ -4,7 +4,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
-import {Optimizer} from '../optimizer/index.ts';
+import {Builder} from '../builder/index.ts';
 import {CodeGenerator} from '../code-generator/index.ts';
 
 
@@ -26,14 +26,14 @@ export class Program {
 
 	@memoizeMethod
 	#precompile(): CodeGenerator {
-		const optimizer = new Optimizer();
-		const cg        = new CodeGenerator();
+		const builder = new Builder();
+		const cg      = new CodeGenerator();
 
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
-		this.#astGoal.lower(optimizer);
+		this.#astGoal.build(builder);
 
-		cg.setupMain(optimizer.codegen(cg));
+		cg.setupMain(builder.codegen(cg));
 
 		return cg;
 	}

@@ -73,7 +73,7 @@ test.suite('Operation', () => {
 							?j;
 							?k;
 							?l;
-						}`, {lower: false}).stmts.slice(11).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 						repeat(TYPE.BOOL, 11),
 					);
 				});
@@ -98,7 +98,7 @@ test.suite('Operation', () => {
 						(i1 + i2) * i3;
 						(n1 + n2) * n3;
 						f1 * f2 ^ f3;
-					}`, {lower: false}).stmts.slice(9).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
 					[TYPE.INT, TYPE.NAT, TYPE.FLOAT],
 				);
 			});
@@ -196,13 +196,13 @@ test.suite('Operation', () => {
 
 
 
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.test('with block-expressions.', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				val mut y: int = 69;
 				x + { x; x * y; };
-			}`).opt.print(), xjs.String.dedent`
+			}`).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <int> y (INT.CONST 69))
@@ -218,7 +218,7 @@ test.suite('Operation', () => {
 				!42;
 				val y: int = 42 / 7;
 				!(42 + y);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (NOT (INT.CONST 42)))
 					(DECL <int> y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
@@ -233,7 +233,7 @@ test.suite('Operation', () => {
 				?x;
 				val y: int = x / 7;
 				?(x + y);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DROP (EMP (GET x)))
@@ -251,7 +251,7 @@ test.suite('Operation', () => {
 				-(3.0 + y);
 				val mut z: int | float = if false then 42 else 4.2;
 				-z;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DROP (NEG (GET x)))
@@ -287,7 +287,7 @@ test.suite('Operation', () => {
 				float my_int;
 				float my_nat;
 				float my_flt;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> my_int (INT.CONST -7))
 					(DECL <nat> my_nat (NAT.CONST +42))
@@ -309,7 +309,7 @@ test.suite('Operation', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				3 + x^2 / 2^3;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <int> $0 (INT.EXP (GET x) (INT.CONST 2)))
@@ -332,7 +332,7 @@ test.suite('Operation', () => {
 				c >= d;
 				a !< d;
 				b !> c;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> a (INT.CONST 10))
 					(DECL <int> b (INT.CONST 100))
@@ -360,7 +360,7 @@ test.suite('Operation', () => {
 				c ==  d;
 				c !== a;
 				d !=  b;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
@@ -383,7 +383,7 @@ test.suite('Operation', () => {
 					val mut b: bool  = false;
 					a && b;
 					!a && !b;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
@@ -417,7 +417,7 @@ test.suite('Operation', () => {
 					val mut d: float = 0.1;
 					c || d;
 					-c + 1 || 1.0 - d;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
@@ -451,7 +451,7 @@ test.suite('Operation', () => {
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					a !& b;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
@@ -473,7 +473,7 @@ test.suite('Operation', () => {
 					val mut c: int   = 10;
 					val mut d: float = 0.1;
 					c !| d;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
@@ -498,7 +498,7 @@ test.suite('Operation', () => {
 				val mut z: float = 0.2;
 				if x then y else z;
 				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <bool> x (BOOL.CONST false))
 					(DECL <float> y (FLOAT.CONST 0.5))
@@ -577,7 +577,7 @@ test.suite('Operation', () => {
 							val mut b: null | false = null;
 							!a;
 							!b;
-						}`, {lower: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						}`, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 					test.test('returns type `bool` for a supertype of `T narrows null | false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
@@ -589,7 +589,7 @@ test.suite('Operation', () => {
 							!b;
 							!c;
 							!d;
-						}`, {lower: false}).stmts.slice(4), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
+						}`, {build: false}).stmts.slice(4), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.BOOL));
 					});
 					test.test('returns type `false` for any literal type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
@@ -599,7 +599,7 @@ test.suite('Operation', () => {
 							!a;
 							!b;
 							!c;
-						}`, {lower: false}).stmts.slice(3), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
+						}`, {build: false}).stmts.slice(3), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 					test.test('returns type `false` for any literal collection type not a supertype of `null` or `false`.', () => {
 						xjs.Array.forEachAggregated(setupScript(`{
@@ -607,7 +607,7 @@ test.suite('Operation', () => {
 							!(42,);
 							!(a= 42);
 							!{41 -> 42};
-						}`, {lower: false}).stmts, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
+						}`, {build: false}).stmts, (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.FALSE));
 					});
 				});
 				test.suite('[operator=EMP]', () => {
@@ -617,7 +617,7 @@ test.suite('Operation', () => {
 							val mut b: null | false = null;
 							?a;
 							?b;
-						}`, {lower: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
+						}`, {build: false}).stmts.slice(2), (stmt) => assert.strictEqual(typeOfStmtExpr(stmt), TYPE.TRUE));
 					});
 				});
 				test.test('[operator=NEG] throws for `nat` type.', () => {
@@ -645,7 +645,7 @@ test.suite('Operation', () => {
 						float my_int;
 						float my_nat;
 						float my_flt;
-					}`, {lower: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
+					}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
 						TYPE.INT,
 						TYPE.INT,
 						TYPE.INT,
@@ -742,7 +742,7 @@ test.suite('Operation', () => {
 					float my_int;
 					float my_nat;
 					float my_flt;
-				}`, {lower: false}).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr as AST.OperationUnary);
+				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr as AST.OperationUnary);
 				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
 				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
 				assert.strictEqual(values[0], operands[0]);
@@ -1019,7 +1019,7 @@ test.suite('Operation', () => {
 						c != (y= 42);
 						d != {41 -> 43};
 						d != {43 -> 42};
-					}`, {lower: false}).stmts.slice(4).forEach((stmt) => assert.strictEqual(
+					}`, {build: false}).stmts.slice(4).forEach((stmt) => assert.strictEqual(
 						((stmt as AST.StatementExpression).expr as AST.OperationBinaryEquality).type(),
 						TYPE.BOOL,
 					));
@@ -1153,7 +1153,7 @@ test.suite('Operation', () => {
 					c != (y= 42);
 					i != {41 -> 43};
 					i != {43 -> 42};
-				}`, {lower: false}).stmts.slice(13).forEach((stmt) => {
+				}`, {build: false}).stmts.slice(13).forEach((stmt) => {
 					assert.strictEqual((stmt as AST.StatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
 				});
 			});
@@ -1204,7 +1204,7 @@ test.suite('Operation', () => {
 							val mut b: null | false = null;
 							a && 42;
 							b && 42;
-						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL,
 							TYPE.NULL.union(TYPE.FALSE),
 						]);
@@ -1220,7 +1220,7 @@ test.suite('Operation', () => {
 							b && "hello";
 							c && "hello";
 							d && "hello";
-						}`, {lower: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {build: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.NULL.union(hello),
 							TYPE.NULL.union(hello),
 							TYPE.FALSE.union(hello),
@@ -1233,7 +1233,7 @@ test.suite('Operation', () => {
 							val mut b: float = 4.2;
 							a && true;
 							b && null;
-						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.TRUE,
 							TYPE.NULL,
 						]);
@@ -1246,7 +1246,7 @@ test.suite('Operation', () => {
 							val mut b: null | false = null;
 							a || false;
 							b || 42;
-						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.FALSE,
 							typeUnit(42n),
 						]);
@@ -1262,7 +1262,7 @@ test.suite('Operation', () => {
 							b || "hello";
 							c || "hello";
 							d || "hello";
-						}`, {lower: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {build: false}).stmts.slice(4).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT.union(hello),
 							TYPE.INT.union(hello),
 							TYPE.TRUE.union(hello),
@@ -1275,7 +1275,7 @@ test.suite('Operation', () => {
 							val mut b: float = 4.2;
 							a || true;
 							b || null;
-						}`, {lower: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
+						}`, {build: false}).stmts.slice(2).map((stmt) => typeOfStmtExpr(stmt)), [
 							TYPE.INT,
 							TYPE.FLOAT,
 						]);

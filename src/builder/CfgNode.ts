@@ -6,7 +6,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../lib/index.ts';
-import type {IR} from './index.ts';
+import type {OP} from './index.ts';
 
 
 
@@ -15,17 +15,17 @@ import type {IR} from './index.ts';
  * Also known as a “block” (but not the same as a “statement block”).
  */
 export class CfgNode {
-	readonly #instructions: IR.Instruction[] = [];
+	readonly #instructions: OP.Instruction[] = [];
 
-	#terminator?: IR.Terminator;
+	#terminator?: OP.Terminator;
 
 	public constructor(public readonly label: string) {}
 
-	public get instructions(): IR.Instruction[] {
+	public get instructions(): OP.Instruction[] {
 		return [...this.#instructions];
 	}
 
-	public get terminator(): IR.Terminator | undefined {
+	public get terminator(): OP.Terminator | undefined {
 		return this.#terminator;
 	}
 
@@ -37,14 +37,14 @@ export class CfgNode {
 		].join('\n\t');
 	}
 
-	public pushInstruction(instr: IR.Instruction): void {
+	public pushInstruction(instr: OP.Instruction): void {
 		if (this.#terminator) {
 			throw new Error('Unreachable instruction.');
 		}
 		this.#instructions.push(instr);
 	}
 
-	public terminate(term: IR.Terminator): void {
+	public terminate(term: OP.Terminator): void {
 		assert.ok(!this.#terminator, 'Block should not already be terminated.');
 		this.#terminator    = term;
 		term.containerLabel = this.label;

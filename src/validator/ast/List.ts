@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -52,8 +52,8 @@ export class List extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.CollectionLinearNew {
-		return new IR.CollectionLinearNew(IR.TypeName.LIST, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
+	public override build(builder: Builder): OP.CollectionLinearNew {
+		return new OP.CollectionLinearNew(OP.TypeName.LIST, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
 	}
 
 	@memoizeMethod

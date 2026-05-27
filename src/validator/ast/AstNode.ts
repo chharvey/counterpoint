@@ -90,7 +90,7 @@ export function typecheck_assign(
  *
  * Known subinterfaces:
  * - Foldable
- * - Lowerable
+ * - Buildable
  */
 export class AstNode implements Serializable {
 	/** @implements Serializable */

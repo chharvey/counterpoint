@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type {Optimizer} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -14,14 +14,14 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Goal} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Lowerable} from './Lowerable.ts';
+import type {Buildable} from './Buildable.ts';
 import type {ExpressionBlock} from './ExpressionBlock.ts';
 import type {Statement} from './Statement.ts';
 import type {StatementConditional} from './StatementConditional.ts';
 
 
 
-export class Block extends AstNode implements Foldable, Lowerable {
+export class Block extends AstNode implements Foldable, Buildable {
 	/**
 	 * Construct a new Block from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -66,10 +66,10 @@ export class Block extends AstNode implements Foldable, Lowerable {
 
 	/**
 	 * @inheritdoc
-	 * @implements Lowerable
+	 * @implements Buildable
 	 */
 	@runOnceMethod
-	public lower(optimizer: Optimizer): void {
-		return this.children.forEach((stmt) => stmt.lower(optimizer));
+	public build(builder: Builder): void {
+		return this.children.forEach((stmt) => stmt.build(builder));
 	}
 }

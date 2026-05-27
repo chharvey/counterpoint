@@ -1,12 +1,12 @@
 import {
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CplConfig,
@@ -65,29 +65,29 @@ export class StatementConditional extends Statement {
 		}
 	}
 
-	@memoizeMethod
-	public override lower(optimizer: Optimizer): void {
-		let condition: () => IR.Value = () => this.condition.lower(optimizer);
+	@runOnceMethod
+	public override build(builder: Builder): void {
+		let condition: () => OP.Value = () => this.condition.build(builder);
 		if (this.unless) {
-			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer).asTac(optimizer), TYPE.BOOL);
+			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(builder).asTac(builder), TYPE.BOOL);
 		}
 
-		const label_then:  string = optimizer.newLabel();
-		const label_else:  string = optimizer.newLabel();
-		const label_endif: string = this.alternative ? optimizer.newLabel() : label_else;
+		const label_then:  string = builder.newLabel();
+		const label_else:  string = builder.newLabel();
+		const label_endif: string = this.alternative ? builder.newLabel() : label_else;
 
-		optimizer.terminateBlock(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
+		builder.terminateBlock(new OP.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
 
-		optimizer.initiateBlock(label_then);
-		this.consequent.lower(optimizer);
-		optimizer.terminateBlock(new IR.Goto(label_endif));
+		builder.initiateBlock(label_then);
+		this.consequent.build(builder);
+		builder.terminateBlock(new OP.Goto(label_endif));
 
 		if (this.alternative) {
-			optimizer.initiateBlock(label_else);
-			this.alternative.lower(optimizer);
-			optimizer.terminateBlock(new IR.Goto(label_endif));
+			builder.initiateBlock(label_else);
+			this.alternative.build(builder);
+			builder.terminateBlock(new OP.Goto(label_endif));
 		}
 
-		optimizer.initiateBlock(label_endif);
+		builder.initiateBlock(label_endif);
 	}
 }

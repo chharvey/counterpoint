@@ -7,7 +7,7 @@ import {
 } from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Temp} from '../Optimizer.ts';
+import type {Temp} from '../Builder.ts';
 import {ast_type_name} from './utils-public.ts';
 import {stringify_type_name} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';

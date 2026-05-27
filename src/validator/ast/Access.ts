@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import {
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -69,11 +69,11 @@ export class Access extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
+	public override build(builder: Builder): OP.Value {
 		const typ:        TYPE.Type   = this.type();
-		const base_value: IR.ValueTac = this.base.lower(optimizer).asTac(optimizer);
+		const base_value: OP.ValueTac = this.base.build(builder).asTac(builder);
 
-		const non_nullish_base = (): IR.Value => {
+		const non_nullish_base = (): OP.Value => {
 			switch (true) {
 				case this.accessor instanceof Index: {
 					if (base_value.type instanceof TYPE.Tuple) {
@@ -92,10 +92,10 @@ export class Access extends Expression implements Reassignable {
 						 * We can assert there are no optional entries since this tuple type was created by the AST expression (`TYPE.Tuple.fromTypes`).
 						 */
 						if (base_value.type.isIndexCanonical(this.accessor.index)) {
-							return new IR.TupleGet(base_value, this.accessor.index, typ);
+							return new OP.TupleGet(base_value, this.accessor.index, typ);
 						} else {
-							optimizer.pushInstruction(new IR.Drop(base_value));
-							return new IR.Const(VALUE.NULL);
+							builder.pushInstruction(new OP.Drop(base_value));
+							return new OP.Const(VALUE.NULL);
 						}
 					}
 					break;
@@ -119,37 +119,37 @@ export class Access extends Expression implements Reassignable {
 						 * Note: Key hashing will be taken care of in the codegen phase.
 						 */
 						if (base_value.type.isKeyCanonical(this.accessor.id)) {
-							return new IR.RecordGet(base_value, {keyid: this.accessor.id, keysrc: this.accessor.source}, typ);
+							return new OP.RecordGet(base_value, {keyid: this.accessor.id, keysrc: this.accessor.source}, typ);
 						} else {
-							optimizer.pushInstruction(new IR.Drop(base_value));
-							return new IR.Const(VALUE.NULL);
+							builder.pushInstruction(new OP.Drop(base_value));
+							return new OP.Const(VALUE.NULL);
 						}
 					}
 					break;
 				}
 				default: {
 					assert_instanceof(this.accessor, Expression);
-					const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
-					if ([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename)) {
-						return new IR.CollectionDynamicGet(
-							base_typename as IR.CollectionDynamicName,
+					const base_typename: OP.TypeName = OP.ast_type_name(base_value.type);
+					if ([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename)) {
+						return new OP.CollectionDynamicGet(
+							base_typename as OP.CollectionDynamicName,
 							base_value,
-							this.accessor.lower(optimizer).asTac(optimizer),
+							this.accessor.build(builder).asTac(builder),
 							typ,
 						);
 					}
 				}
 			}
 			// else, it was a union with null (the only other valid option)
-			return new IR.Const(VALUE.NULL);
+			return new OP.Const(VALUE.NULL);
 		};
 
 		if (this.kind === Operator.DOT_MAY) {
-			return IR.conditional_expression(
-				optimizer,
+			return OP.conditional_expression(
+				builder,
 				this.type(),
-				() => new IR.Unop(IR.OpCode.ISNULL, base_value, TYPE.BOOL),
-				() => new IR.Const(VALUE.NULL),
+				() => new OP.Unop(OP.OpCode.ISNULL, base_value, TYPE.BOOL),
+				() => new OP.Const(VALUE.NULL),
 				non_nullish_base,
 			);
 		}

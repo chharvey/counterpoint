@@ -1,6 +1,6 @@
 import {
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -63,7 +63,7 @@ export class OperationBinaryLogical extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Get {
+	public override build(builder: Builder): OP.Get {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```
@@ -77,19 +77,19 @@ export class OperationBinaryLogical extends OperationBinary {
 		 * if !!left then left else ‹v1›
 		 * ```
 		 */
-		const left: IR.ValueTac = this.operand0.lower(optimizer).asTac(optimizer);
+		const left: OP.ValueTac = this.operand0.build(builder).asTac(builder);
 
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
-		let conseq = (): IR.Value => this.operand1.lower(optimizer);
-		let altern = (): IR.Value => left;
+		let conseq = (): OP.Value => this.operand1.build(builder);
+		let altern = (): OP.Value => left;
 		if (this.operator === Operator.OR) {
 			[conseq, altern] = [altern, conseq];
 		}
 
-		return IR.conditional_expression(
-			optimizer,
+		return OP.conditional_expression(
+			builder,
 			this.operand0.type().union(this.operand1.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
-			() => new IR.Unop(IR.OpCode.TOBOOL, left, TYPE.BOOL),
+			() => new OP.Unop(OP.OpCode.TOBOOL, left, TYPE.BOOL),
 			conseq,
 			altern,
 		);
