@@ -1,8 +1,6 @@
 import * as assert from 'node:assert';
 import {
-	type VALUE,
-	TYPE,
-	IR,
+	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 } from '../../index.ts';
@@ -15,6 +13,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	type VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
@@ -63,8 +65,8 @@ export class Variable extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override lower(): IR.Get {
-		return new IR.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
+	public override build(): OP.Get {
+		return new OP.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
 	}
 
 	@memoizeMethod

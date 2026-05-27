@@ -1,8 +1,5 @@
 import * as assert from 'node:assert';
 import {
-	type EntryType,
-	VALUE,
-	TYPE,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -11,6 +8,11 @@ import {
 	type ConstructorType,
 	assert_instanceof,
 } from '../../lib/index.ts';
+import {
+	type EntryType,
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {
 	Operator,
 	type ValidTypeAccessOperator,

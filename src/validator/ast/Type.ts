@@ -1,8 +1,8 @@
-import type {TYPE} from '../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {DeclarationType} from './index.ts';
 import {AstNode} from './AstNode.ts';
 

@@ -8,11 +8,11 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNoEntry,
 } from '../../../src/index.ts';
-import {assertEqualTypes} from '../../assert-helpers.ts';
-import {typeUnit} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
+	assertEqualTypes,
+	typeUnit,
 } from '../../utils.ts';
 
 

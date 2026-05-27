@@ -1,6 +1,8 @@
 import * as assert from 'node:assert';
-import {VoidErrorOutOfBounds} from '../../index.ts';
-import type {AST} from '../../validator/index.ts';
+import {
+	VoidErrorOutOfBounds,
+	type AST,
+} from '../../index.ts';
 import {NULL} from './index.ts';
 import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';

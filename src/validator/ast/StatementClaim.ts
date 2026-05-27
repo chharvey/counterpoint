@@ -1,7 +1,6 @@
 import {
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	TypeErrorNotNarrow,
 } from '../../index.ts';
 import {
@@ -14,6 +13,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Index} from './Index-.ts';
@@ -86,7 +86,7 @@ export class StatementClaim extends Statement {
 	}
 
 	@runOnceMethod
-	public override lower(optimizer: Optimizer): void {
-		return optimizer.pushInstruction(new IR.Drop(this.assignee.lower(optimizer)));
+	public override build(builder: Builder): void {
+		return builder.pushInstruction(new OP.Drop(this.assignee.build(builder)));
 	}
 }

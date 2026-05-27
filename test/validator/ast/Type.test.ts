@@ -9,12 +9,12 @@ import {
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 } from '../../../src/index.ts';
-import {assertEqualTypes} from '../../assert-helpers.ts';
 import {
-	setupScript,
+	extract_tokens,
+	assertEqualTypes,
 	typeUnit,
-} from '../../helpers.ts';
-import {extract_tokens} from '../../utils.ts';
+	setupScript,
+} from '../../utils.ts';
 
 
 
@@ -67,7 +67,7 @@ test.suite('Type', () => {
 					type A = (int, [float], str);
 					type C = (a: int, b: [float], c: str);
 					type E = ({float}, {float}, {float});
-				}`, {lower: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 		});
 	});

@@ -1,8 +1,6 @@
 import {
-	VALUE,
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -12,6 +10,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
@@ -71,13 +73,13 @@ export class OperationBinaryEquality extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Binop {
-		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
-			[Operator.ID,  IR.OpCode.ID],
-			[Operator.EQ,  IR.OpCode.EQ],
-			[Operator.NID, IR.OpCode.NID],
-			[Operator.NEQ, IR.OpCode.NEQ],
-		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
+	public override build(builder: Builder): OP.Binop {
+		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
+			[Operator.ID,  OP.OpCode.ID],
+			[Operator.EQ,  OP.OpCode.EQ],
+			[Operator.NID, OP.OpCode.NID],
+			[Operator.NEQ, OP.OpCode.NEQ],
+		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 
 	@memoizeMethod

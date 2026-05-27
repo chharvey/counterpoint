@@ -1,10 +1,8 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type VALUE,
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	TypeErrorInvalidOperation,
 	NanErrorInvalid,
 	NanErrorDivZero,
@@ -17,6 +15,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	type VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
@@ -61,31 +63,31 @@ export class OperationBinaryArithmetic extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Binop {
+	public override build(builder: Builder): OP.Binop {
 		const typ: TYPE.Type = this.type();
-		const [t0, t1] = [this.operand0.type(),                            this.operand1.type()];
-		const [v0, v1] = [this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer)];
+		const [t0, t1] = [this.operand0.type(),                        this.operand1.type()];
+		const [v0, v1] = [this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder)];
 		return (
-			bothInts(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
-				[Operator.EXP, IR.OpCode.INT_EXP],
-				[Operator.MUL, IR.OpCode.INT_MUL],
-				[Operator.DIV, IR.OpCode.INT_DIV],
-				[Operator.ADD, IR.OpCode.INT_ADD],
-				[Operator.SUB, IR.OpCode.INT_SUB],
+			bothInts(t0, t1) ? new OP.Binop(new Map<Operator, OP.OpCodeBin>([
+				[Operator.EXP, OP.OpCode.INT_EXP],
+				[Operator.MUL, OP.OpCode.INT_MUL],
+				[Operator.DIV, OP.OpCode.INT_DIV],
+				[Operator.ADD, OP.OpCode.INT_ADD],
+				[Operator.SUB, OP.OpCode.INT_SUB],
 			]).get(this.operator)!, v0, v1, typ) :
-			bothNats(t0, t1) ? new IR.Binop(new Map<Operator, IR.OpCodeBin>([
-				[Operator.EXP, IR.OpCode.NAT_EXP],
-				[Operator.MUL, IR.OpCode.NAT_MUL],
-				[Operator.DIV, IR.OpCode.NAT_DIV],
-				[Operator.ADD, IR.OpCode.NAT_ADD],
-				[Operator.SUB, IR.OpCode.NAT_SUB],
+			bothNats(t0, t1) ? new OP.Binop(new Map<Operator, OP.OpCodeBin>([
+				[Operator.EXP, OP.OpCode.NAT_EXP],
+				[Operator.MUL, OP.OpCode.NAT_MUL],
+				[Operator.DIV, OP.OpCode.NAT_DIV],
+				[Operator.ADD, OP.OpCode.NAT_ADD],
+				[Operator.SUB, OP.OpCode.NAT_SUB],
 			]).get(this.operator)!, v0, v1, typ) :
-			(assert.ok(bothFloats(t0, t1)), new IR.Binop(new Map<Operator, IR.OpCodeBin>([
-				[Operator.EXP, IR.OpCode.FLOAT_EXP],
-				[Operator.MUL, IR.OpCode.FLOAT_MUL],
-				[Operator.DIV, IR.OpCode.FLOAT_DIV],
-				[Operator.ADD, IR.OpCode.FLOAT_ADD],
-				[Operator.SUB, IR.OpCode.FLOAT_SUB],
+			(assert.ok(bothFloats(t0, t1)), new OP.Binop(new Map<Operator, OP.OpCodeBin>([
+				[Operator.EXP, OP.OpCode.FLOAT_EXP],
+				[Operator.MUL, OP.OpCode.FLOAT_MUL],
+				[Operator.DIV, OP.OpCode.FLOAT_DIV],
+				[Operator.ADD, OP.OpCode.FLOAT_ADD],
+				[Operator.SUB, OP.OpCode.FLOAT_SUB],
 			]).get(this.operator)!, v0, v1, typ))
 		);
 	}

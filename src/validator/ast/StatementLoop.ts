@@ -1,26 +1,24 @@
 import * as xjs from 'extrajs';
 import {
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	memoizeMethod,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Block} from './index.ts';
 import type {Expression} from './Expression.ts';
-import {
-	Statement,
-	StatementBreakable,
-} from './Statement.ts';
+import {Statement} from './Statement.ts';
+import {StatementBreakable} from './StatementBreakable.ts';
 
 
 
@@ -65,34 +63,34 @@ export class StatementLoop extends StatementBreakable {
 		}
 	}
 
-	@memoizeMethod
-	public override lower(optimizer: Optimizer): void {
-		let condition: () => IR.Value = () => this.condition.lower(optimizer);
+	@runOnceMethod
+	public override build(builder: Builder): void {
+		let condition: () => OP.Value = () => this.condition.build(builder);
 		if (this.until) {
-			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.lower(optimizer).asTac(optimizer), TYPE.BOOL);
+			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(builder).asTac(builder), TYPE.BOOL);
 		}
 
-		this.labelWhile    = optimizer.newLabel();
-		this.labelDo       = this.doFirst ? this.labels.while! : optimizer.newLabel();
-		this.labelEndwhile = optimizer.newLabel();
+		this.labelWhile    = builder.newLabel();
+		this.labelDo       = this.doFirst ? this.labels.while! : builder.newLabel();
+		this.labelEndwhile = builder.newLabel();
 
 		if (this.doFirst) {
-			optimizer.terminateBlock(new IR.Goto(this.labels.do!));
+			builder.terminateBlock(new OP.Goto(this.labels.do!));
 
-			optimizer.initiateBlock(this.labels.do!);
-			this.block.lower(optimizer);
-			optimizer.terminateBlock(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
+			builder.initiateBlock(this.labels.do!);
+			this.block.build(builder);
+			builder.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 		} else {
-			optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+			builder.terminateBlock(new OP.Goto(this.labels.while!));
 
-			optimizer.initiateBlock(this.labels.while!);
-			optimizer.terminateBlock(new IR.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
+			builder.initiateBlock(this.labels.while!);
+			builder.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 
-			optimizer.initiateBlock(this.labels.do!);
-			this.block.lower(optimizer);
-			optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+			builder.initiateBlock(this.labels.do!);
+			this.block.build(builder);
+			builder.terminateBlock(new OP.Goto(this.labels.while!));
 		}
 
-		optimizer.initiateBlock(this.labels.endwhile!);
+		builder.initiateBlock(this.labels.endwhile!);
 	}
 }
