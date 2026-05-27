@@ -625,20 +625,20 @@ test.suite('Statement', () => {
 
 	test.suite('#build', () => {
 		test.test('StatementExpression pushes OP.Drop instruction if expression exists.', () => {
-			const {stmts, opt} = setupScript(`{
+			const {stmts, builder} = setupScript(`{
 				val mut x: int = 42;
 				x;
 				42;
 				;
 			}`, {build: false});
-			assert.strictEqual(opt.instructions.length, 0);
-			(stmts[1] as AST.StatementExpression).build(opt);
-			assert.strictEqual(opt.instructions.length, 1);
-			(stmts[2] as AST.StatementExpression).build(opt);
-			assert.strictEqual(opt.instructions.length, 2);
-			(stmts[3] as AST.StatementExpression).build(opt);
-			assert.strictEqual(opt.instructions.length, 2);
-			return assert.strictEqual(opt.print(), xjs.String.dedent`
+			assert.strictEqual(builder.instructions.length, 0);
+			(stmts[1] as AST.StatementExpression).build(builder);
+			assert.strictEqual(builder.instructions.length, 1);
+			(stmts[2] as AST.StatementExpression).build(builder);
+			assert.strictEqual(builder.instructions.length, 2);
+			(stmts[3] as AST.StatementExpression).build(builder);
+			assert.strictEqual(builder.instructions.length, 2);
+			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (GET x))
 					(DROP (INT.CONST 42))
@@ -646,12 +646,12 @@ test.suite('Statement', () => {
 		});
 
 		test.test('StatementClaim pushes OP.Drop.', () => {
-			const {stmts, opt} = setupScript(`{%
+			const {stmts, builder} = setupScript(`{%
 				val mut x: int | float = 42;
 				claim x: int;
 			}`, {build: false});
-			(stmts[1] as AST.StatementClaim).build(opt);
-			return assert.strictEqual(opt.print(), xjs.String.dedent`
+			(stmts[1] as AST.StatementClaim).build(builder);
+			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (GET x))
 			`.trim());
@@ -659,14 +659,14 @@ test.suite('Statement', () => {
 
 		test.suite('StatementReassignment', () => {
 			test.test('for variables: pushes OP.Set instruction.', () => {
-				const {stmts, opt} = setupScript(`{
+				const {stmts, builder} = setupScript(`{
 					val mut x: int = 42;
 					set x = 43;
 					set x = 44;
 					set x = -42;
 				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).build(opt));
-				return assert.strictEqual(opt.print(), xjs.String.dedent`
+				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).build(builder));
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
 						(SET x (INT.CONST 43))
 						(SET x (INT.CONST 44))
@@ -685,7 +685,7 @@ test.suite('Statement', () => {
 					set my_dict.[@b]      = 84;
 					set my_set.[accessor] = true;
 					set my_map.[accessor] = 84;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @b->(INT.CONST 42)))
@@ -715,7 +715,7 @@ test.suite('Statement', () => {
 						(6 / (1 + 1));
 						3.3;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(GOTO.IF (BOOL.CONST true) "block-1" "block-2")
 					"block-1":
@@ -738,7 +738,7 @@ test.suite('Statement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(GOTO.IF (BOOL.CONST false) "block-1" "block-2")
 					"block-1":
@@ -756,7 +756,7 @@ test.suite('Statement', () => {
 						(2 * 1 + 0);
 						2.2;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(GOTO.IF (NOT (BOOL.CONST false)) "block-1" "block-2")
 					"block-1":
@@ -780,7 +780,7 @@ test.suite('Statement', () => {
 						val y: float = 3.3;
 					};
 					x;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <bool> unknown_cond (BOOL.CONST false))
 						(DECL <int> x (INT.CONST 42))
@@ -811,7 +811,7 @@ test.suite('Statement', () => {
 					} else {
 						30;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> cond (NULL.CONST null))
 						(SET cond (BOOL.CONST true))
@@ -843,7 +843,7 @@ test.suite('Statement', () => {
 						42;
 						4.2;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <bool> cond (BOOL.CONST false))
 						(GOTO "block-1")
@@ -863,7 +863,7 @@ test.suite('Statement', () => {
 					until cond do {
 						42;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <bool> cond (BOOL.CONST false))
 						(GOTO "block-1")
@@ -886,7 +886,7 @@ test.suite('Statement', () => {
 					do {
 						42;
 					} until cond;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <bool> cond (BOOL.CONST false))
 						(GOTO "block-1")
@@ -913,7 +913,7 @@ test.suite('Statement', () => {
 				for _: float in [4.4, 5.5, 6.6] do {
 					null;
 				};
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <List> $0 (LIST.NEW (INT.CONST 10) (INT.CONST 20) (INT.CONST 30)))
 					(DECL <nat> $1 (NAT.CONST +0))
@@ -959,7 +959,7 @@ test.suite('Statement', () => {
 						break;
 						30;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(GOTO "block-1")
 					"block-1":
@@ -1012,7 +1012,7 @@ test.suite('Statement', () => {
 						};
 						70;
 					};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(GOTO "block-1")
 					"block-1":

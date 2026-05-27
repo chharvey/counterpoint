@@ -42,9 +42,9 @@ export class StatementExpression extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(optimizer: Builder): void {
+	public override build(builder: Builder): void {
 		if (this.expr) {
-			return optimizer.pushInstruction(new OP.Drop(this.expr.build(optimizer)));
+			return builder.pushInstruction(new OP.Drop(this.expr.build(builder)));
 		}
 	}
 }

@@ -93,40 +93,40 @@ export class StatementIteration extends StatementBreakable {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): void {
-		const iterable: OP.ValueTac = this.iterable.build(optimizer).asTac(optimizer);
-		const index:    Temp        = optimizer.newTemp(new OP.Const(VALUE.NAT_0));
+	public override build(builder: Builder): void {
+		const iterable: OP.ValueTac = this.iterable.build(builder).asTac(builder);
+		const index:    Temp        = builder.newTemp(new OP.Const(VALUE.NAT_0));
 		const get_index             = new OP.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 
-		this.labelWhile    = optimizer.newLabel();
-		this.labelDo       = optimizer.newLabel();
-		this.labelEndwhile = optimizer.newLabel();
+		this.labelWhile    = builder.newLabel();
+		this.labelDo       = builder.newLabel();
+		this.labelEndwhile = builder.newLabel();
 
-		optimizer.pushInstruction(new OP.Decl(index));
-		optimizer.terminateBlock(new OP.Goto(this.labels.while!));
+		builder.pushInstruction(new OP.Decl(index));
+		builder.terminateBlock(new OP.Goto(this.labels.while!));
 
-		optimizer.initiateBlock(this.labels.while!);
-		optimizer.terminateBlock(new OP.GotoConditional(new OP.Binop(
+		builder.initiateBlock(this.labels.while!);
+		builder.terminateBlock(new OP.GotoConditional(new OP.Binop(
 			OP.OpCode.LT,
 			get_index,
-			new OP.Unop(OP.OpCode.LIST_COUNT, iterable, TYPE.NAT).asTac(optimizer),
+			new OP.Unop(OP.OpCode.LIST_COUNT, iterable, TYPE.NAT).asTac(builder),
 			TYPE.BOOL,
 		), this.labels.do!, this.labels.endwhile!));
 
-		optimizer.initiateBlock(this.labels.do!);
+		builder.initiateBlock(this.labels.do!);
 		if (this.assignee) {
 			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
-			optimizer.pushInstruction(new OP.Decl(
+			builder.pushInstruction(new OP.Decl(
 				symbol,
 				new OP.CollectionDynamicGet(OP.TypeName.LIST, iterable, get_index, iterable.type.typearg),
 			));
 		}
-		this.block.build(optimizer);
-		optimizer.pushInstruction(new OP.Set(index, new OP.Binop(OP.OpCode.NAT_ADD, get_index, new OP.Const(VALUE.NAT_1), index.type)));
-		optimizer.terminateBlock(new OP.Goto(this.labels.while!));
+		this.block.build(builder);
+		builder.pushInstruction(new OP.Set(index, new OP.Binop(OP.OpCode.NAT_ADD, get_index, new OP.Const(VALUE.NAT_1), index.type)));
+		builder.terminateBlock(new OP.Goto(this.labels.while!));
 
-		optimizer.initiateBlock(this.labels.endwhile!);
+		builder.initiateBlock(this.labels.endwhile!);
 	}
 }

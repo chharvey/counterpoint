@@ -606,10 +606,10 @@ test.suite('Declaration', () => {
 		test.test('DeclarationType has no effect.', () => {
 			assert.strictEqual(setupScript(`{
 				type N = int | nat | float;
-			}`, {codegen: false}).opt.print(), '"block-0":\n\t(ENDPROGRAM)');
+			}`, {codegen: false}).builder.print(), '"block-0":\n\t(ENDPROGRAM)');
 		});
 		test.test('DeclarationVariable pushes (DECL+SET)/DROP instruction depending on presence of child nodes.', () => {
-			const {stmts, opt} = setupScript(`{
+			const {stmts, builder} = setupScript(`{
 				% Foldable cases:
 				val _:          int = 42; % \`(DROP (INT.CONST 42))\`
 				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
@@ -629,8 +629,8 @@ test.suite('Declaration', () => {
 				val mut _:       int = assignee_c;
 				%%
 			}`, {codegen: false});
-			stmts.forEach((stmt) => (stmt as AST.DeclarationVariable).build(opt));
-			return assert.strictEqual(opt.print(), xjs.String.dedent`
+			stmts.forEach((stmt) => (stmt as AST.DeclarationVariable).build(builder));
+			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (INT.CONST 42))
 					(DECL <int> assignee_a (INT.CONST 42))

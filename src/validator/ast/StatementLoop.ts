@@ -64,33 +64,33 @@ export class StatementLoop extends StatementBreakable {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): void {
-		let condition: () => OP.Value = () => this.condition.build(optimizer);
+	public override build(builder: Builder): void {
+		let condition: () => OP.Value = () => this.condition.build(builder);
 		if (this.until) {
-			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);
+			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(builder).asTac(builder), TYPE.BOOL);
 		}
 
-		this.labelWhile    = optimizer.newLabel();
-		this.labelDo       = this.doFirst ? this.labels.while! : optimizer.newLabel();
-		this.labelEndwhile = optimizer.newLabel();
+		this.labelWhile    = builder.newLabel();
+		this.labelDo       = this.doFirst ? this.labels.while! : builder.newLabel();
+		this.labelEndwhile = builder.newLabel();
 
 		if (this.doFirst) {
-			optimizer.terminateBlock(new OP.Goto(this.labels.do!));
+			builder.terminateBlock(new OP.Goto(this.labels.do!));
 
-			optimizer.initiateBlock(this.labels.do!);
-			this.block.build(optimizer);
-			optimizer.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
+			builder.initiateBlock(this.labels.do!);
+			this.block.build(builder);
+			builder.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 		} else {
-			optimizer.terminateBlock(new OP.Goto(this.labels.while!));
+			builder.terminateBlock(new OP.Goto(this.labels.while!));
 
-			optimizer.initiateBlock(this.labels.while!);
-			optimizer.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
+			builder.initiateBlock(this.labels.while!);
+			builder.terminateBlock(new OP.GotoConditional(condition(), this.labels.do!, this.labels.endwhile!));
 
-			optimizer.initiateBlock(this.labels.do!);
-			this.block.build(optimizer);
-			optimizer.terminateBlock(new OP.Goto(this.labels.while!));
+			builder.initiateBlock(this.labels.do!);
+			this.block.build(builder);
+			builder.terminateBlock(new OP.Goto(this.labels.while!));
 		}
 
-		optimizer.initiateBlock(this.labels.endwhile!);
+		builder.initiateBlock(this.labels.endwhile!);
 	}
 }

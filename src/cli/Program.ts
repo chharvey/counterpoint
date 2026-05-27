@@ -26,14 +26,14 @@ export class Program {
 
 	@memoizeMethod
 	#precompile(): CodeGenerator {
-		const optimizer = new Builder();
-		const cg        = new CodeGenerator();
+		const builder = new Builder();
+		const cg      = new CodeGenerator();
 
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
-		this.#astGoal.build(optimizer);
+		this.#astGoal.build(builder);
 
-		cg.setupMain(optimizer.codegen(cg));
+		cg.setupMain(builder.codegen(cg));
 
 		return cg;
 	}

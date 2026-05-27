@@ -631,7 +631,7 @@ test.suite('CodeGenerator', () => {
 				Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
 				Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
 			`;
-			const {opt} = setupScript(`{ ${ [
+			const {builder} = setupScript(`{ ${ [
 				constants,
 				variables,
 				collection_literals,
@@ -640,7 +640,7 @@ test.suite('CodeGenerator', () => {
 				reassignments,
 				calls,
 			].join('') } }`, {codegen: false});
-			cg.setupMain(opt.codegen(cg));
+			cg.setupMain(builder.codegen(cg));
 		});
 	});
 });

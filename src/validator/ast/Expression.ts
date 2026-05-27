@@ -62,10 +62,10 @@ export abstract class Expression extends AstNode {
 
 	/**
 	 * Builds a high-level IR value from this AST node.
-	 * @param  optimizer the set of instructions to build the IR
-	 * @return           an optimized value
+	 * @param  builder the IR-builder
+	 * @return         an IR value
 	 */
-	public abstract build(optimizer: Builder): OP.Value;
+	public abstract build(builder: Builder): OP.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

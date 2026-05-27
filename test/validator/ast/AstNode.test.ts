@@ -166,7 +166,7 @@ test.suite('AstNode', () => {
 					set assignee_e = 43;
 					set assignee_e = 44;
 					set assignee_e = -42;
-				}`, {codegen: false}).opt.instructions.length, 12);
+				}`, {codegen: false}).builder.instructions.length, 12);
 			});
 		});
 	});

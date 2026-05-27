@@ -45,7 +45,7 @@ export class StatementBreak extends Statement {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): void {
+	public override build(builder: Builder): void {
 		let labels: StatementBreakable['labels'] | undefined = undefined;
 		let node = this.parent;
 		while (node && labels === undefined) {
@@ -57,7 +57,7 @@ export class StatementBreak extends Statement {
 		// we should already have labels by the time we reach the root node
 		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementLoop.');
 		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementLoop to have its labels already created.');
-		optimizer.terminateBlock(new OP.Goto(this.skip ? labels.while : labels.endwhile));
-		optimizer.initiateBlock(optimizer.newLabel(true));
+		builder.terminateBlock(new OP.Goto(this.skip ? labels.while : labels.endwhile));
+		builder.initiateBlock(builder.newLabel(true));
 	}
 }

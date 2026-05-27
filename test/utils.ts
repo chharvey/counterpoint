@@ -211,15 +211,15 @@ export function setupScript(
 	source: string,
 	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
-	readonly goal:  AST.Goal,
-	readonly stmts: NonNullable<typeof goal.block>['children'],
-	readonly opt:   Builder,
-	readonly cg:    CodeGenerator,
-	readonly mod:   VirtualMachine['mod'],
+	readonly goal:    AST.Goal,
+	readonly stmts:   NonNullable<typeof goal.block>['children'],
+	readonly builder: Builder,
+	readonly cg:      CodeGenerator,
+	readonly mod:     VirtualMachine['mod'],
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
-	const opt = new Builder();
-	const cg  = new CodeGenerator();
+	const builder = new Builder();
+	const cg      = new CodeGenerator();
 	assert.ok(goal.block, 'Expected AST.Goal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
@@ -227,11 +227,11 @@ export function setupScript(
 	opts.codegen   ??= true;
 	opts.varCheck &&                                                 goal.varCheck();
 	opts.varCheck && opts.typeCheck &&                               goal.typeCheck();
-	opts.varCheck && opts.typeCheck && opts.build &&                 goal.build(opt);
-	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && opt.codegen(cg);
+	opts.varCheck && opts.typeCheck && opts.build &&                 goal.build(builder);
+	opts.varCheck && opts.typeCheck && opts.build && opts.codegen && builder.codegen(cg);
 	return {
 		goal,
-		opt,
+		builder,
 		cg,
 		stmts: goal.block.children,
 		mod:   cg.vm.mod,

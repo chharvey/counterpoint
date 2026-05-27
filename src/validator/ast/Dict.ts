@@ -67,10 +67,10 @@ export class Dict extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.DictNew {
+	public override build(builder: Builder): OP.DictNew {
 		return new OP.DictNew(new Map(this.children.map((c) => [
 			new VALUE.Symbol(c.key.id, c.key.source),
-			c.val.build(optimizer).asTac(optimizer),
+			c.val.build(builder).asTac(builder),
 		])), this.type());
 	}
 

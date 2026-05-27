@@ -55,10 +55,10 @@ class AstMap extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.MapNew {
+	public override build(builder: Builder): OP.MapNew {
 		return new OP.MapNew(new Map(this.children.map((c) => [
-			c.antecedent.build(optimizer).asTac(optimizer),
-			c.consequent.build(optimizer).asTac(optimizer),
+			c.antecedent.build(builder).asTac(builder),
+			c.consequent.build(builder).asTac(builder),
 		])), this.type());
 	}
 

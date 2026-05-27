@@ -94,7 +94,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  * "endif":
  * return (GET $result).
  * ```
- * @param optimizer
+ * @param builder
  * @param result_type the type of the expression’s value
  * @param condition
  * @param consequent
@@ -102,28 +102,28 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
  * @return            a (GET) of the results based on the condition
  */
 export function conditional_expression(
-	optimizer:   Builder,
+	builder:   Builder,
 	result_type: TYPE.Type,
 	condition:   () => Value,
 	consequent:  () => Value,
 	alternative: () => Value,
 ): Get {
-	const label_then:  string = optimizer.newLabel();
-	const label_else:  string = optimizer.newLabel();
-	const label_endif: string = optimizer.newLabel();
+	const label_then:  string = builder.newLabel();
+	const label_else:  string = builder.newLabel();
+	const label_endif: string = builder.newLabel();
 
-	const result: Temp = optimizer.newTemp(result_type);
-	optimizer.pushInstruction(new Decl(result));
-	optimizer.terminateBlock(new GotoConditional(condition.call(null), label_then, label_else));
+	const result: Temp = builder.newTemp(result_type);
+	builder.pushInstruction(new Decl(result));
+	builder.terminateBlock(new GotoConditional(condition.call(null), label_then, label_else));
 
-	optimizer.initiateBlock(label_then);
-	optimizer.pushInstruction(new IrSet(result, consequent.call(null)));
-	optimizer.terminateBlock(new Goto(label_endif));
+	builder.initiateBlock(label_then);
+	builder.pushInstruction(new IrSet(result, consequent.call(null)));
+	builder.terminateBlock(new Goto(label_endif));
 
-	optimizer.initiateBlock(label_else);
-	optimizer.pushInstruction(new IrSet(result, alternative.call(null)));
-	optimizer.terminateBlock(new Goto(label_endif));
+	builder.initiateBlock(label_else);
+	builder.pushInstruction(new IrSet(result, alternative.call(null)));
+	builder.terminateBlock(new Goto(label_endif));
 
-	optimizer.initiateBlock(label_endif);
+	builder.initiateBlock(label_endif);
 	return new Get(result);
 }

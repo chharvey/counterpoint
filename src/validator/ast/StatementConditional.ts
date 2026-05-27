@@ -66,28 +66,28 @@ export class StatementConditional extends Statement {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): void {
-		let condition: () => OP.Value = () => this.condition.build(optimizer);
+	public override build(builder: Builder): void {
+		let condition: () => OP.Value = () => this.condition.build(builder);
 		if (this.unless) {
-			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);
+			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(builder).asTac(builder), TYPE.BOOL);
 		}
 
-		const label_then:  string = optimizer.newLabel();
-		const label_else:  string = optimizer.newLabel();
-		const label_endif: string = this.alternative ? optimizer.newLabel() : label_else;
+		const label_then:  string = builder.newLabel();
+		const label_else:  string = builder.newLabel();
+		const label_endif: string = this.alternative ? builder.newLabel() : label_else;
 
-		optimizer.terminateBlock(new OP.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
+		builder.terminateBlock(new OP.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
 
-		optimizer.initiateBlock(label_then);
-		this.consequent.build(optimizer);
-		optimizer.terminateBlock(new OP.Goto(label_endif));
+		builder.initiateBlock(label_then);
+		this.consequent.build(builder);
+		builder.terminateBlock(new OP.Goto(label_endif));
 
 		if (this.alternative) {
-			optimizer.initiateBlock(label_else);
-			this.alternative.build(optimizer);
-			optimizer.terminateBlock(new OP.Goto(label_endif));
+			builder.initiateBlock(label_else);
+			this.alternative.build(builder);
+			builder.terminateBlock(new OP.Goto(label_endif));
 		}
 
-		optimizer.initiateBlock(label_endif);
+		builder.initiateBlock(label_endif);
 	}
 }

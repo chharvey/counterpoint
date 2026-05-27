@@ -182,15 +182,15 @@ export class Call extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.Value {
+	public override build(builder: Builder): OP.Value {
 		/*
 		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `OP.Call` object.
 		 * But until we get functions and classes, statically build the function calls.
 		 */
 		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
 			return new OP.Call(
-				this.base.build(optimizer).asTac(optimizer),
-				this.exprargs.map((arg) => arg.build(optimizer).asTac(optimizer)),
+				this.base.build(builder).asTac(builder),
+				this.exprargs.map((arg) => arg.build(builder).asTac(builder)),
 				this.type(),
 			);
 		}
@@ -205,10 +205,10 @@ export class Call extends Expression {
 		if (!this.exprargs.length) {
 			return new_obj;
 		}
-		const dest: Temp = optimizer.newTemp(new_obj);
+		const dest: Temp = builder.newTemp(new_obj);
 		const get_dest = new OP.Get(dest);
-		optimizer.pushInstruction(new OP.Decl(dest));
-		optimizer.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(optimizer).asTac(optimizer)));
+		builder.pushInstruction(new OP.Decl(dest));
+		builder.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(builder).asTac(builder)));
 		return get_dest;
 	}
 

@@ -46,7 +46,7 @@ test.suite('Expression', () => {
 		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
 				"""hello {{ 42 }} world""";
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world")))
 					(ENDPROGRAM)
@@ -55,7 +55,7 @@ test.suite('Expression', () => {
 		test.test('three-address code format.', () => {
 			assert.strictEqual(setupScript(`{
 				"""hello {{ """great {{ 42 }} big""" }} world""";
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <str> $0 (STR.TEMPLATE (STR.CONST "great ") (INT.CONST 42) (STR.CONST " big")))
 					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $0) (STR.CONST " world")))
@@ -68,7 +68,7 @@ test.suite('Expression', () => {
 				val mut y: int   = 5;
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <bool> x (BOOL.CONST false))
 					(DECL <int> y (INT.CONST 5))
@@ -86,7 +86,7 @@ test.suite('Expression', () => {
 				val y: int   = 5;
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <bool> x (BOOL.CONST false))
 					(DECL <int> y (INT.CONST 5))
@@ -101,7 +101,7 @@ test.suite('Expression', () => {
 		test.test('List returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -113,7 +113,7 @@ test.suite('Expression', () => {
 		test.test('Dict returns an OP.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -125,7 +125,7 @@ test.suite('Expression', () => {
 		test.test('Set returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -138,7 +138,7 @@ test.suite('Expression', () => {
 			test.test('returns an OP.MapNew.', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 						(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -150,7 +150,7 @@ test.suite('Expression', () => {
 			test.test('evaluates antecedents and consequents interchangeably in source order.', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
 						(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
@@ -176,7 +176,7 @@ test.suite('Expression', () => {
 					set y = y + x;
 					y * 2;
 				} + y;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(SET x (INT.ADD (GET x) (INT.CONST 2)))
@@ -190,22 +190,22 @@ test.suite('Expression', () => {
 		});
 		test.suite('Claim', () => {
 			test.test('returns the operand.', () => {
-				const {stmts, opt} = setupScript(`{
+				const {stmts, builder} = setupScript(`{
 					42 as <int>;
 				}`, {codegen: false});
 				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
-				return assert.deepStrictEqual(expr.build(opt), expr.operand.build(opt));
+				return assert.deepStrictEqual(expr.build(builder), expr.operand.build(builder));
 			});
 			test.test('repeated calls are idempotent.', () => {
-				const {stmts, opt} = setupScript(`{
+				const {stmts, builder} = setupScript(`{
 					(42 + 42 + 42) as <int | float>;
 				}`, {build: false});
-				assert.strictEqual(opt.instructions.length, 0);
+				assert.strictEqual(builder.instructions.length, 0);
 				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
-				expr.operand.build(opt);
-				assert.strictEqual(opt.instructions.length, 1);
-				expr.build(opt);
-				assert.strictEqual(opt.instructions.length, 1);
+				expr.operand.build(builder);
+				assert.strictEqual(builder.instructions.length, 1);
+				expr.build(builder);
+				assert.strictEqual(builder.instructions.length, 1);
 			});
 		});
 	});

@@ -57,7 +57,7 @@ export class OperationBinaryComparative extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.Binop {
+	public override build(builder: Builder): OP.Binop {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
 			[Operator.LT,  OP.OpCode.LT],
 			[Operator.GT,  OP.OpCode.GT],
@@ -65,7 +65,7 @@ export class OperationBinaryComparative extends OperationBinary {
 			[Operator.GE,  OP.OpCode.GE],
 			[Operator.NLT, OP.OpCode.NLT],
 			[Operator.NGT, OP.OpCode.NGT],
-		]).get(this.operator)!, this.operand0.build(optimizer).asTac(optimizer), this.operand1.build(optimizer).asTac(optimizer), this.type());
+		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 
 	@memoizeMethod

@@ -68,10 +68,10 @@ class AstRecord extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.RecordNew {
+	public override build(builder: Builder): OP.RecordNew {
 		return new OP.RecordNew(new Map(this.children.map((c) => ([
 			c.key.id,
-			{keysrc: c.key.source, value: c.val.build(optimizer).asTac(optimizer)},
+			{keysrc: c.key.source, value: c.val.build(builder).asTac(builder)},
 		]))), this.type());
 	}
 

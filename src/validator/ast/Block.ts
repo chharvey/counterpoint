@@ -69,7 +69,7 @@ export class Block extends AstNode implements Foldable, Buildable {
 	 * @implements Buildable
 	 */
 	@runOnceMethod
-	public build(optimizer: Builder): void {
-		return this.children.forEach((stmt) => stmt.build(optimizer));
+	public build(builder: Builder): void {
+		return this.children.forEach((stmt) => stmt.build(builder));
 	}
 }

@@ -46,8 +46,8 @@ export class Template extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.Template {
-		return new OP.Template(this.children.map((c) => c.build(optimizer).asTac(optimizer)));
+	public override build(builder: Builder): OP.Template {
+		return new OP.Template(this.children.map((c) => c.build(builder).asTac(builder)));
 	}
 
 	@memoizeMethod

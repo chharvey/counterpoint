@@ -81,7 +81,7 @@ export class OperationUnary extends Operation {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.Unop {
+	public override build(builder: Builder): OP.Unop {
 		return new OP.Unop(new Map<Operator, OP.OpCodeUn>([
 			[Operator.NOT,   OP.OpCode.NOT],
 			[Operator.EMP,   OP.OpCode.EMP],
@@ -89,7 +89,7 @@ export class OperationUnary extends Operation {
 			[Operator.INT,   OP.OpCode.TOINT],
 			[Operator.NAT,   OP.OpCode.TONAT],
 			[Operator.FLOAT, OP.OpCode.TOFLOAT],
-		]).get(this.operator)!, this.operand.build(optimizer).asTac(optimizer), this.type());
+		]).get(this.operator)!, this.operand.build(builder).asTac(builder), this.type());
 	}
 
 	@memoizeMethod

@@ -177,14 +177,14 @@ export class DeclarationVariable extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(optimizer: Builder): void {
-		const value: OP.Value = this.assigned?.build(optimizer) ?? new OP.Const(VALUE.NULL);
+	public override build(builder: Builder): void {
+		const value: OP.Value = this.assigned?.build(builder) ?? new OP.Const(VALUE.NULL);
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = value.type;
-			optimizer.pushInstruction(new OP.Decl(symbol, value));
+			builder.pushInstruction(new OP.Decl(symbol, value));
 		} else {
-			optimizer.pushInstruction(new OP.Drop(value));
+			builder.pushInstruction(new OP.Drop(value));
 		}
 	}
 }

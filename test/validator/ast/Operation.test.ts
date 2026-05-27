@@ -202,7 +202,7 @@ test.suite('Operation', () => {
 				val mut x: int = 42;
 				val mut y: int = 69;
 				x + { x; x * y; };
-			}`).opt.print(), xjs.String.dedent`
+			}`).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <int> y (INT.CONST 69))
@@ -218,7 +218,7 @@ test.suite('Operation', () => {
 				!42;
 				val y: int = 42 / 7;
 				!(42 + y);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (NOT (INT.CONST 42)))
 					(DECL <int> y (INT.DIV (INT.CONST 42) (INT.CONST 7)))
@@ -233,7 +233,7 @@ test.suite('Operation', () => {
 				?x;
 				val y: int = x / 7;
 				?(x + y);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DROP (EMP (GET x)))
@@ -251,7 +251,7 @@ test.suite('Operation', () => {
 				-(3.0 + y);
 				val mut z: int | float = if false then 42 else 4.2;
 				-z;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DROP (NEG (GET x)))
@@ -287,7 +287,7 @@ test.suite('Operation', () => {
 				float my_int;
 				float my_nat;
 				float my_flt;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> my_int (INT.CONST -7))
 					(DECL <nat> my_nat (NAT.CONST +42))
@@ -309,7 +309,7 @@ test.suite('Operation', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
 				3 + x^2 / 2^3;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <int> $0 (INT.EXP (GET x) (INT.CONST 2)))
@@ -332,7 +332,7 @@ test.suite('Operation', () => {
 				c >= d;
 				a !< d;
 				b !> c;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> a (INT.CONST 10))
 					(DECL <int> b (INT.CONST 100))
@@ -360,7 +360,7 @@ test.suite('Operation', () => {
 				c ==  d;
 				c !== a;
 				d !=  b;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <null> a (NULL.CONST null))
 					(DECL <bool> b (BOOL.CONST false))
@@ -383,7 +383,7 @@ test.suite('Operation', () => {
 					val mut b: bool  = false;
 					a && b;
 					!a && !b;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
@@ -417,7 +417,7 @@ test.suite('Operation', () => {
 					val mut d: float = 0.1;
 					c || d;
 					-c + 1 || 1.0 - d;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
@@ -451,7 +451,7 @@ test.suite('Operation', () => {
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					a !& b;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
@@ -473,7 +473,7 @@ test.suite('Operation', () => {
 					val mut c: int   = 10;
 					val mut d: float = 0.1;
 					c !| d;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
@@ -498,7 +498,7 @@ test.suite('Operation', () => {
 				val mut z: float = 0.2;
 				if x then y else z;
 				if y < z then 0.03 + y * 2.0 else 3.0 * z + 0.02;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <bool> x (BOOL.CONST false))
 					(DECL <float> y (FLOAT.CONST 0.5))

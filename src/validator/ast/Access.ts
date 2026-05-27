@@ -69,9 +69,9 @@ export class Access extends Expression implements Reassignable {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.Value {
+	public override build(builder: Builder): OP.Value {
 		const typ:        TYPE.Type   = this.type();
-		const base_value: OP.ValueTac = this.base.build(optimizer).asTac(optimizer);
+		const base_value: OP.ValueTac = this.base.build(builder).asTac(builder);
 
 		const non_nullish_base = (): OP.Value => {
 			switch (true) {
@@ -94,7 +94,7 @@ export class Access extends Expression implements Reassignable {
 						if (base_value.type.isIndexCanonical(this.accessor.index)) {
 							return new OP.TupleGet(base_value, this.accessor.index, typ);
 						} else {
-							optimizer.pushInstruction(new OP.Drop(base_value));
+							builder.pushInstruction(new OP.Drop(base_value));
 							return new OP.Const(VALUE.NULL);
 						}
 					}
@@ -121,7 +121,7 @@ export class Access extends Expression implements Reassignable {
 						if (base_value.type.isKeyCanonical(this.accessor.id)) {
 							return new OP.RecordGet(base_value, {keyid: this.accessor.id, keysrc: this.accessor.source}, typ);
 						} else {
-							optimizer.pushInstruction(new OP.Drop(base_value));
+							builder.pushInstruction(new OP.Drop(base_value));
 							return new OP.Const(VALUE.NULL);
 						}
 					}
@@ -134,7 +134,7 @@ export class Access extends Expression implements Reassignable {
 						return new OP.CollectionDynamicGet(
 							base_typename as OP.CollectionDynamicName,
 							base_value,
-							this.accessor.build(optimizer).asTac(optimizer),
+							this.accessor.build(builder).asTac(builder),
 							typ,
 						);
 					}
@@ -146,7 +146,7 @@ export class Access extends Expression implements Reassignable {
 
 		if (this.kind === Operator.DOT_MAY) {
 			return OP.conditional_expression(
-				optimizer,
+				builder,
 				this.type(),
 				() => new OP.Unop(OP.OpCode.ISNULL, base_value, TYPE.BOOL),
 				() => new OP.Const(VALUE.NULL),

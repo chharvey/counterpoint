@@ -54,8 +54,8 @@ export class Claim extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.Value {
-		return this.operand.build(optimizer);
+	public override build(builder: Builder): OP.Value {
+		return this.operand.build(builder);
 	}
 
 	@memoizeMethod

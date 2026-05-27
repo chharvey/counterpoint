@@ -48,5 +48,5 @@ export abstract class Statement extends AstNode implements Foldable, Buildable {
 	 * @inheritdoc
 	 * @implements Buildable
 	 */
-	public abstract build(optimizer: Builder): void;
+	public abstract build(builder: Builder): void;
 }

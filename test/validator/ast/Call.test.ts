@@ -267,7 +267,7 @@ test.suite('Call', () => {
 		test.test('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.map((src) => `${ src };`).join('\n') }
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (LIST.NEW))
 					(DECL <List> $0 (LIST.NEW))
@@ -320,7 +320,7 @@ test.suite('Call', () => {
 		test.test('`Dict.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ DICT_CONS.map((src) => `${ src };`).join('\n') }
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (DICT.NEW))
 					(DECL <Dict> $0 (DICT.NEW))
@@ -423,7 +423,7 @@ test.suite('Call', () => {
 		test.test('`Set.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ SET_CONS.map((src) => `${ src };`).join('\n') }
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (SET.NEW))
 					(DECL <Set> $0 (SET.NEW))
@@ -476,7 +476,7 @@ test.suite('Call', () => {
 		test.test('`Map.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ MAP_CONS.map((src) => `${ src };`).join('\n') }
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (MAP.NEW))
 					(DECL <Map> $0 (MAP.NEW))

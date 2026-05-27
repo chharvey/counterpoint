@@ -66,13 +66,13 @@ export abstract class Value extends Opcode {
 	 * If this value is already a unit (constant or variable), override this method to return that value;
 	 * otherwise, store the value in a local and return a {@link Get}.
 	 *
-	 * @param optimizer
+	 * @param builder
 	 * @return          this value, or a GET of this value
 	 * @see https://en.wikipedia.org/wiki/Three-address_code
 	 */
-	public asTac(optimizer: Builder): ValueTac {
-		const temp: Temp = optimizer.newTemp(this);
-		optimizer.pushInstruction(new Decl(temp));
+	public asTac(builder: Builder): ValueTac {
+		const temp: Temp = builder.newTemp(this);
+		builder.pushInstruction(new Decl(temp));
 		return new Get(temp);
 	}
 

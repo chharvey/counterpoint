@@ -52,8 +52,8 @@ export class List extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.CollectionLinearNew {
-		return new OP.CollectionLinearNew(OP.TypeName.LIST, this.children.map((c) => c.build(optimizer).asTac(optimizer)), this.type());
+	public override build(builder: Builder): OP.CollectionLinearNew {
+		return new OP.CollectionLinearNew(OP.TypeName.LIST, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
 	}
 
 	@memoizeMethod

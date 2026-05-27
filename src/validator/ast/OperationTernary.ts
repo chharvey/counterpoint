@@ -55,13 +55,13 @@ export class OperationTernary extends Operation {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): OP.Get {
+	public override build(builder: Builder): OP.Get {
 		return OP.conditional_expression(
-			optimizer,
+			builder,
 			this.operand1.type().union(this.operand2.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
-			() => this.operand0.build(optimizer),
-			() => this.operand1.build(optimizer),
-			() => this.operand2.build(optimizer),
+			() => this.operand0.build(builder),
+			() => this.operand1.build(builder),
+			() => this.operand2.build(builder),
 		);
 	}
 

@@ -51,8 +51,8 @@ class AstTuple extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public build(optimizer: Builder): OP.CollectionLinearNew {
-		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, this.children.map((c) => c.build(optimizer).asTac(optimizer)), this.type());
+	public build(builder: Builder): OP.CollectionLinearNew {
+		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
 	}
 
 	@memoizeMethod

@@ -80,9 +80,9 @@ export class Goal extends AstNode implements Buildable {
 	 * @implements Buildable
 	 */
 	@runOnceMethod
-	public build(optimizer: Builder): void {
-		this.block?.build(optimizer);
-		optimizer.terminateBlock(new OP.EndProgram());
-		return optimizer.validate();
+	public build(builder: Builder): void {
+		this.block?.build(builder);
+		builder.terminateBlock(new OP.EndProgram());
+		return builder.validate();
 	}
 }
