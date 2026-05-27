@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import binaryen from 'binaryen';
 import {CodeGenerator} from '../../src/index.ts';
-import {drop_then} from '../../src/builder/ir/utils-private.ts';
+import {drop_then} from '../../src/builder/op/utils-private.ts';
 import {
 	assertEqualBins,
 	genConst,
