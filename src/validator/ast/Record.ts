@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	type Builder,
-	IR,
+	OP,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -68,8 +68,8 @@ class AstRecord extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): IR.RecordNew {
-		return new IR.RecordNew(new Map(this.children.map((c) => ([
+	public override build(optimizer: Builder): OP.RecordNew {
+		return new OP.RecordNew(new Map(this.children.map((c) => ([
 			c.key.id,
 			{keysrc: c.key.source, value: c.val.build(optimizer).asTac(optimizer)},
 		]))), this.type());

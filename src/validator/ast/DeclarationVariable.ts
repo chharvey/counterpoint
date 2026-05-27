@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Builder,
-	IR,
+	OP,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 } from '../../index.ts';
@@ -178,13 +178,13 @@ export class DeclarationVariable extends Statement {
 
 	@runOnceMethod
 	public override build(optimizer: Builder): void {
-		const value: IR.Value = this.assigned?.build(optimizer) ?? new IR.Const(VALUE.NULL);
+		const value: OP.Value = this.assigned?.build(optimizer) ?? new OP.Const(VALUE.NULL);
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = value.type;
-			optimizer.pushInstruction(new IR.Decl(symbol, value));
+			optimizer.pushInstruction(new OP.Decl(symbol, value));
 		} else {
-			optimizer.pushInstruction(new IR.Drop(value));
+			optimizer.pushInstruction(new OP.Drop(value));
 		}
 	}
 }

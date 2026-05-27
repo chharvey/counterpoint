@@ -1,6 +1,6 @@
 import {
 	type Builder,
-	IR,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -44,7 +44,7 @@ export class StatementExpression extends Statement {
 	@runOnceMethod
 	public override build(optimizer: Builder): void {
 		if (this.expr) {
-			return optimizer.pushInstruction(new IR.Drop(this.expr.build(optimizer)));
+			return optimizer.pushInstruction(new OP.Drop(this.expr.build(optimizer)));
 		}
 	}
 }

@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	type Temp,
 	type Builder,
-	IR,
+	OP,
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
@@ -182,33 +182,33 @@ export class Call extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): IR.Value {
+	public override build(optimizer: Builder): OP.Value {
 		/*
-		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `IR.Call` object.
+		 * Note: Eventually, calls will be dynamic; all we’d need to return is a new `OP.Call` object.
 		 * But until we get functions and classes, statically build the function calls.
 		 */
 		if (false) { // eslint-disable-line no-constant-condition, @typescript-eslint/no-unnecessary-condition
-			return new IR.Call(
+			return new OP.Call(
 				this.base.build(optimizer).asTac(optimizer),
 				this.exprargs.map((arg) => arg.build(optimizer).asTac(optimizer)),
 				this.type(),
 			);
 		}
 
-		const [name, ctor] = new Map<ValidFunctionName, [IR.CollectionDynamicName, () => IR.Value]>([
-			[ValidFunctionName.LIST, [IR.TypeName.LIST, () => new IR.CollectionLinearNew(IR.TypeName.LIST, [], this.type())]],
-			[ValidFunctionName.SET,  [IR.TypeName.SET,  () => new IR.CollectionLinearNew(IR.TypeName.SET,  [], this.type())]],
-			[ValidFunctionName.DICT, [IR.TypeName.DICT, () => new IR.DictNew            (new Map(),            this.type())]],
-			[ValidFunctionName.MAP,  [IR.TypeName.MAP,  () => new IR.MapNew             (new Map(),            this.type())]],
+		const [name, ctor] = new Map<ValidFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
+			[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
+			[ValidFunctionName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], this.type())]],
+			[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew            (new Map(),            this.type())]],
+			[ValidFunctionName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew             (new Map(),            this.type())]],
 		]).get(this.base.source as ValidFunctionName)!;
-		const new_obj: IR.Value = ctor();
+		const new_obj: OP.Value = ctor();
 		if (!this.exprargs.length) {
 			return new_obj;
 		}
 		const dest: Temp = optimizer.newTemp(new_obj);
-		const get_dest = new IR.Get(dest);
-		optimizer.pushInstruction(new IR.Decl(dest));
-		optimizer.pushInstruction(new IR.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(optimizer).asTac(optimizer)));
+		const get_dest = new OP.Get(dest);
+		optimizer.pushInstruction(new OP.Decl(dest));
+		optimizer.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(optimizer).asTac(optimizer)));
 		return get_dest;
 	}
 

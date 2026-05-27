@@ -2,7 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Builder,
-	IR,
+	OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -51,8 +51,8 @@ class AstTuple extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public build(optimizer: Builder): IR.CollectionLinearNew {
-		return new IR.CollectionLinearNew(IR.TypeName.TUPLE, this.children.map((c) => c.build(optimizer).asTac(optimizer)), this.type());
+	public build(optimizer: Builder): OP.CollectionLinearNew {
+		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, this.children.map((c) => c.build(optimizer).asTac(optimizer)), this.type());
 	}
 
 	@memoizeMethod

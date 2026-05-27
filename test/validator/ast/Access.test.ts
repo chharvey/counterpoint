@@ -949,7 +949,7 @@ test.suite('Access', () => {
 
 	test.suite('#build', () => {
 		test.suite('access kind: normal access (`a.‹b›`).', () => {
-			test.test('tuple access returns an IR.TupleGet.', () => {
+			test.test('tuple access returns an OP.TupleGet.', () => {
 				assert.strictEqual(setupScript(`{
 					(41 + 1, 42 / 2, 43 - 3).1;
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -962,7 +962,7 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('record access returns an IR.RecordGet.', () => {
+			test.test('record access returns an OP.RecordGet.', () => {
 				assert.strictEqual(setupScript(`{
 					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -975,7 +975,7 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('List access returns an IR.CollectionDynamicGet.', () => {
+			test.test('List access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					[41 + 1, 42 / 2, 43 - 3].[1];
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -988,7 +988,7 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('Dict access returns an IR.CollectionDynamicGet.', () => {
+			test.test('Dict access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -1001,7 +1001,7 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('Set access returns an IR.CollectionDynamicGet.', () => {
+			test.test('Set access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					{41 + 1, 42 / 2, 43 - 3}.[21];
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -1014,7 +1014,7 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('Map access returns an IR.CollectionDynamicGet.', () => {
+			test.test('Map access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`

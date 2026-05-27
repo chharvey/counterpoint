@@ -2,7 +2,7 @@ import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Builder,
-	IR,
+	OP,
 	ParseError01,
 } from '../../index.ts';
 import {runOnceMethod} from '../../lib/index.ts';
@@ -82,7 +82,7 @@ export class Goal extends AstNode implements Buildable {
 	@runOnceMethod
 	public build(optimizer: Builder): void {
 		this.block?.build(optimizer);
-		optimizer.terminateBlock(new IR.EndProgram());
+		optimizer.terminateBlock(new OP.EndProgram());
 		return optimizer.validate();
 	}
 }

@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import {
 	type Builder,
-	IR,
+	OP,
 	AssignmentErrorReassignment,
 	MutabilityError01,
 } from '../../index.ts';
@@ -73,16 +73,16 @@ export class StatementReassignment extends Statement {
 	public override build(optimizer: Builder): void {
 		if (this.assignee instanceof Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
-			const value: IR.Value = this.assigned.build(optimizer);
+			const value: OP.Value = this.assigned.build(optimizer);
 			symbol.irType = value.type;
-			return optimizer.pushInstruction(new IR.Set(symbol, value));
+			return optimizer.pushInstruction(new OP.Set(symbol, value));
 		} else {
 			assert_instanceof(this.assignee.accessor, Expression);
-			const base_value:    IR.ValueTac = this.assignee.base.build(optimizer).asTac(optimizer);
-			const base_typename: IR.TypeName = IR.ast_type_name(base_value.type);
-			assert.ok([IR.TypeName.LIST, IR.TypeName.DICT, IR.TypeName.SET, IR.TypeName.MAP].includes(base_typename), `Expected ${ IR.TypeName[base_typename] } to be a dynamic collection.`);
-			return optimizer.pushInstruction(new IR.CollectionDynamicSet(
-				base_typename as IR.CollectionDynamicName,
+			const base_value:    OP.ValueTac = this.assignee.base.build(optimizer).asTac(optimizer);
+			const base_typename: OP.TypeName = OP.ast_type_name(base_value.type);
+			assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), `Expected ${ OP.TypeName[base_typename] } to be a dynamic collection.`);
+			return optimizer.pushInstruction(new OP.CollectionDynamicSet(
+				base_typename as OP.CollectionDynamicName,
 				base_value,
 				this.assignee.accessor.build(optimizer).asTac(optimizer),
 				this.assigned.build(optimizer).asTac(optimizer),

@@ -9,7 +9,7 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
-	IR,
+	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -29,11 +29,11 @@ import {
 
 test.suite('Expression', () => {
 	test.suite('#build', () => {
-		test.test('Constant returns an IR.Const.', () => {
+		test.test('Constant returns an OP.Const.', () => {
 			const value: AST.Constant = AST.Constant.fromSource('42');
-			return assert.deepStrictEqual(value.build(), new IR.Const(value.fold()));
+			return assert.deepStrictEqual(value.build(), new OP.Const(value.fold()));
 		});
-		test.test('Variable returns an IR.Get.', () => {
+		test.test('Variable returns an OP.Get.', () => {
 			const {stmts} = setupScript(`{
 				val mut x: int = 42;
 				x;
@@ -41,9 +41,9 @@ test.suite('Expression', () => {
 			const expr = (stmts[1] as AST.StatementExpression).expr as AST.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.build(), new IR.Get(symbol));
+			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol));
 		});
-		test.test('Template returns an IR.Template.', () => {
+		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
 				"""hello {{ 42 }} world""";
 			}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -62,7 +62,7 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Tuple returns an IR.CollectionLinearNew.', () => {
+		test.test('Tuple returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: bool  = false;
 				val mut y: int   = 5;
@@ -80,7 +80,7 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Record returns an IR.RecordNew.', () => {
+		test.test('Record returns an OP.RecordNew.', () => {
 			assert.strictEqual(setupScript(`{
 				val x: bool  = false;
 				val y: int   = 5;
@@ -98,7 +98,7 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('List returns an IR.CollectionLinearNew.', () => {
+		test.test('List returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
 			}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -110,7 +110,7 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Dict returns an IR.DictNew.', () => {
+		test.test('Dict returns an OP.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
 			}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -122,7 +122,7 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Set returns an IR.CollectionLinearNew.', () => {
+		test.test('Set returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
 			}`, {codegen: false}).opt.print(), xjs.String.dedent`
@@ -135,7 +135,7 @@ test.suite('Expression', () => {
 			`.trim());
 		});
 		test.suite('Map', () => {
-			test.test('returns an IR.MapNew.', () => {
+			test.test('returns an OP.MapNew.', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
 				}`, {codegen: false}).opt.print(), xjs.String.dedent`

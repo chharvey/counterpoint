@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import {
 	type Builder,
-	IR,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -57,7 +57,7 @@ export class StatementBreak extends Statement {
 		// we should already have labels by the time we reach the root node
 		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementLoop.');
 		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementLoop to have its labels already created.');
-		optimizer.terminateBlock(new IR.Goto(this.skip ? labels.while : labels.endwhile));
+		optimizer.terminateBlock(new OP.Goto(this.skip ? labels.while : labels.endwhile));
 		optimizer.initiateBlock(optimizer.newLabel(true));
 	}
 }

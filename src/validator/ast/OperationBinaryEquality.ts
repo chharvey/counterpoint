@@ -1,6 +1,6 @@
 import {
 	type Builder,
-	IR,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -73,12 +73,12 @@ export class OperationBinaryEquality extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): IR.Binop {
-		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
-			[Operator.ID,  IR.OpCode.ID],
-			[Operator.EQ,  IR.OpCode.EQ],
-			[Operator.NID, IR.OpCode.NID],
-			[Operator.NEQ, IR.OpCode.NEQ],
+	public override build(optimizer: Builder): OP.Binop {
+		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
+			[Operator.ID,  OP.OpCode.ID],
+			[Operator.EQ,  OP.OpCode.EQ],
+			[Operator.NID, OP.OpCode.NID],
+			[Operator.NEQ, OP.OpCode.NEQ],
 		]).get(this.operator)!, this.operand0.build(optimizer).asTac(optimizer), this.operand1.build(optimizer).asTac(optimizer), this.type());
 	}
 

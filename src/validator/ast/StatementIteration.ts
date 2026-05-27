@@ -3,7 +3,7 @@ import * as xjs from 'extrajs';
 import {
 	type Temp,
 	type Builder,
-	IR,
+	OP,
 	AssignmentErrorDuplicateDeclaration,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
@@ -94,23 +94,23 @@ export class StatementIteration extends StatementBreakable {
 
 	@memoizeMethod
 	public override build(optimizer: Builder): void {
-		const iterable: IR.ValueTac = this.iterable.build(optimizer).asTac(optimizer);
-		const index:    Temp        = optimizer.newTemp(new IR.Const(VALUE.NAT_0));
-		const get_index             = new IR.Get(index);
+		const iterable: OP.ValueTac = this.iterable.build(optimizer).asTac(optimizer);
+		const index:    Temp        = optimizer.newTemp(new OP.Const(VALUE.NAT_0));
+		const get_index             = new OP.Get(index);
 		assert_instanceof(iterable.type, TYPE.List);
 
 		this.labelWhile    = optimizer.newLabel();
 		this.labelDo       = optimizer.newLabel();
 		this.labelEndwhile = optimizer.newLabel();
 
-		optimizer.pushInstruction(new IR.Decl(index));
-		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+		optimizer.pushInstruction(new OP.Decl(index));
+		optimizer.terminateBlock(new OP.Goto(this.labels.while!));
 
 		optimizer.initiateBlock(this.labels.while!);
-		optimizer.terminateBlock(new IR.GotoConditional(new IR.Binop(
-			IR.OpCode.LT,
+		optimizer.terminateBlock(new OP.GotoConditional(new OP.Binop(
+			OP.OpCode.LT,
 			get_index,
-			new IR.Unop(IR.OpCode.LIST_COUNT, iterable, TYPE.NAT).asTac(optimizer),
+			new OP.Unop(OP.OpCode.LIST_COUNT, iterable, TYPE.NAT).asTac(optimizer),
 			TYPE.BOOL,
 		), this.labels.do!, this.labels.endwhile!));
 
@@ -118,14 +118,14 @@ export class StatementIteration extends StatementBreakable {
 		if (this.assignee) {
 			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
-			optimizer.pushInstruction(new IR.Decl(
+			optimizer.pushInstruction(new OP.Decl(
 				symbol,
-				new IR.CollectionDynamicGet(IR.TypeName.LIST, iterable, get_index, iterable.type.typearg),
+				new OP.CollectionDynamicGet(OP.TypeName.LIST, iterable, get_index, iterable.type.typearg),
 			));
 		}
 		this.block.build(optimizer);
-		optimizer.pushInstruction(new IR.Set(index, new IR.Binop(IR.OpCode.NAT_ADD, get_index, new IR.Const(VALUE.NAT_1), index.type)));
-		optimizer.terminateBlock(new IR.Goto(this.labels.while!));
+		optimizer.pushInstruction(new OP.Set(index, new OP.Binop(OP.OpCode.NAT_ADD, get_index, new OP.Const(VALUE.NAT_1), index.type)));
+		optimizer.terminateBlock(new OP.Goto(this.labels.while!));
 
 		optimizer.initiateBlock(this.labels.endwhile!);
 	}

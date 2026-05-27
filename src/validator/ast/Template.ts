@@ -1,6 +1,6 @@
 import {
 	type Builder,
-	IR,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -46,8 +46,8 @@ export class Template extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): IR.Template {
-		return new IR.Template(this.children.map((c) => c.build(optimizer).asTac(optimizer)));
+	public override build(optimizer: Builder): OP.Template {
+		return new OP.Template(this.children.map((c) => c.build(optimizer).asTac(optimizer)));
 	}
 
 	@memoizeMethod

@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import type {
 	Builder,
-	IR,
+	OP,
 } from '../../index.ts';
 import {
 	type CplConfig,
@@ -65,7 +65,7 @@ export abstract class Expression extends AstNode {
 	 * @param  optimizer the set of instructions to build the IR
 	 * @return           an optimized value
 	 */
-	public abstract build(optimizer: Builder): IR.Value;
+	public abstract build(optimizer: Builder): OP.Value;
 
 	/**
 	 * Assess the value of this node at compile-time, if possible.

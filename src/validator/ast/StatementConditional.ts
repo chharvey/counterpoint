@@ -1,6 +1,6 @@
 import {
 	type Builder,
-	IR,
+	OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -67,25 +67,25 @@ export class StatementConditional extends Statement {
 
 	@memoizeMethod
 	public override build(optimizer: Builder): void {
-		let condition: () => IR.Value = () => this.condition.build(optimizer);
+		let condition: () => OP.Value = () => this.condition.build(optimizer);
 		if (this.unless) {
-			condition = () => new IR.Unop(IR.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);
+			condition = () => new OP.Unop(OP.OpCode.NOT, this.condition.build(optimizer).asTac(optimizer), TYPE.BOOL);
 		}
 
 		const label_then:  string = optimizer.newLabel();
 		const label_else:  string = optimizer.newLabel();
 		const label_endif: string = this.alternative ? optimizer.newLabel() : label_else;
 
-		optimizer.terminateBlock(new IR.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
+		optimizer.terminateBlock(new OP.GotoConditional(condition(), label_then, this.alternative ? label_else : label_endif));
 
 		optimizer.initiateBlock(label_then);
 		this.consequent.build(optimizer);
-		optimizer.terminateBlock(new IR.Goto(label_endif));
+		optimizer.terminateBlock(new OP.Goto(label_endif));
 
 		if (this.alternative) {
 			optimizer.initiateBlock(label_else);
 			this.alternative.build(optimizer);
-			optimizer.terminateBlock(new IR.Goto(label_endif));
+			optimizer.terminateBlock(new OP.Goto(label_endif));
 		}
 
 		optimizer.initiateBlock(label_endif);

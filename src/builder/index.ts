@@ -1,3 +1,3 @@
 export * from './Builder.ts';
 
-export * as IR from './op/index.ts';
+export * as OP from './op/index.ts';

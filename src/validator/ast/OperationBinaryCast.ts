@@ -1,6 +1,6 @@
 import type {
 	Builder,
-	IR,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -45,7 +45,7 @@ export class OperationBinaryCast extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(_: Builder): IR.Value {
+	public override build(_: Builder): OP.Value {
 		throw new Error('`OperationBinaryCast#build` not yet supported.');
 	}
 

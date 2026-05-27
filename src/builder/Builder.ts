@@ -5,7 +5,7 @@ import type {CodeGenerator} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import {CfgNode} from './CfgNode.ts';
-import {IR} from './index.ts';
+import {OP} from './index.ts';
 
 
 
@@ -13,7 +13,7 @@ export type Temp = {
 	readonly id:     bigint,
 	readonly name:   string,
 	readonly type:   TYPE.Type,
-	readonly value?: IR.Value,
+	readonly value?: OP.Value,
 };
 
 
@@ -32,7 +32,7 @@ export class Builder {
 	readonly #blocks = new Map<string, CfgNode>();
 
 
-	public get instructions(): IR.Instruction[] {
+	public get instructions(): OP.Instruction[] {
 		return [...this.#blocks.values()].flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
 	}
 
@@ -48,13 +48,13 @@ export class Builder {
 	 * If a value is given, the type is read from that value.
 	 * @return a new Temp with newly-generated id & name, the given value (or `undefined`), and the type
 	 */
-	public newTemp(value_or_type: IR.Value | TYPE.Type): Temp {
+	public newTemp(value_or_type: OP.Value | TYPE.Type): Temp {
 		const id:   bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
 		const name: string = `$${ -id }`; // appears positive
 		const temp: Temp   = {
 			id,
 			name,
-			...(value_or_type instanceof IR.Value
+			...(value_or_type instanceof OP.Value
 				? {value: value_or_type, type: value_or_type.type}
 				: {type: value_or_type}
 			),
@@ -69,7 +69,7 @@ export class Builder {
 		this.currentBlock = new CfgNode(label);
 	}
 
-	public terminateBlock(instr: IR.Terminator): void {
+	public terminateBlock(instr: OP.Terminator): void {
 		if (!this.currentBlock) {
 			throw new Error('Builder does not have an active block to terminate. Try calling `Builder#initiateBlock` first.');
 		}
@@ -79,7 +79,7 @@ export class Builder {
 	}
 
 
-	public pushInstruction(instr: IR.Instruction): void {
+	public pushInstruction(instr: OP.Instruction): void {
 		if (!this.currentBlock) {
 			throw new Error('Builder does not have an active block to push to. Try calling `Builder#initiateBlock` first.');
 		}

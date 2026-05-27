@@ -6,7 +6,7 @@ import {
 	VALUE,
 	TYPE,
 	Builder,
-	IR,
+	OP,
 	bigint_to_i64,
 	CodeGenerator,
 } from '../../src/index.ts';
@@ -23,7 +23,7 @@ test.suite('Opcode', () => {
 		test.suite('#codegen', () => {
 			test.test('Trap returns (unreachable).', () => {
 				const cg = new CodeGenerator();
-				return assertEqualBins(new IR.Trap().codegen(cg), cg.vm.mod.unreachable());
+				return assertEqualBins(new OP.Trap().codegen(cg), cg.vm.mod.unreachable());
 			});
 
 			test.test('Const returns (struct.new $Value).', () => {
@@ -230,7 +230,7 @@ test.suite('Opcode', () => {
 					// there exists no syntax for empty records, so constructing it manually
 					const cg = new CodeGenerator();
 					return assertEqualBins(
-						new IR.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
+						new OP.RecordNew(new Map(), new TYPE.Record()).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenRecord()),
 					);
 				});
@@ -295,7 +295,7 @@ test.suite('Opcode', () => {
 					// there exists no syntax for empty Dicts, so constructing it manually
 					const cg = new CodeGenerator();
 					return assertEqualBins(
-						new IR.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
+						new OP.DictNew(new Map(), new TYPE.Dict(TYPE.INT)).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenDict()),
 					);
 				});
@@ -360,7 +360,7 @@ test.suite('Opcode', () => {
 					// there exists no syntax for empty Maps, so constructing it manually
 					const cg = new CodeGenerator();
 					return assert.strictEqual(
-						binaryen.emitText(new IR.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
+						binaryen.emitText(new OP.MapNew(new Map(), new TYPE.Map(TYPE.INT, TYPE.FLOAT)).codegen(cg)),
 						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
 					);
 				});
@@ -650,7 +650,7 @@ test.suite('Opcode', () => {
 					// there exists no syntax for “is null” operator, so constructing it manually
 					const cg = new CodeGenerator();
 					assertEqualBins(
-						new IR.Unop(IR.OpCode.ISNULL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						new OP.Unop(OP.OpCode.ISNULL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
 						cg.vm.op.isNull(genConst(cg)),
 					);
 				});
@@ -658,7 +658,7 @@ test.suite('Opcode', () => {
 					// there exists no syntax for “to bool” operator, so constructing it manually
 					const cg = new CodeGenerator();
 					assertEqualBins(
-						new IR.Unop(IR.OpCode.TOBOOL, new IR.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						new OP.Unop(OP.OpCode.TOBOOL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
 						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
 					);
 				});
@@ -721,9 +721,9 @@ test.suite('Opcode', () => {
 					}`);
 					const {mod, Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
-					const list = (stmts[2] as AST.StatementExpression).expr!.build(opt) as IR.Get;
-					const unop = new IR.Unop(
-						IR.OpCode.LIST_COUNT,
+					const list = (stmts[2] as AST.StatementExpression).expr!.build(opt) as OP.Get;
+					const unop = new OP.Unop(
+						OP.OpCode.LIST_COUNT,
 						list,
 						TYPE.NAT,
 					);
@@ -740,9 +740,9 @@ test.suite('Opcode', () => {
 					}`);
 					const {mod, Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
-					const dict = (stmts[2] as AST.StatementExpression).expr!.build(opt) as IR.Get;
-					const unop = new IR.Unop(
-						IR.OpCode.DICT_COUNT,
+					const dict = (stmts[2] as AST.StatementExpression).expr!.build(opt) as OP.Get;
+					const unop = new OP.Unop(
+						OP.OpCode.DICT_COUNT,
 						dict,
 						TYPE.NAT,
 					);
@@ -759,9 +759,9 @@ test.suite('Opcode', () => {
 					}`);
 					const {mod, Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
-					const set = (stmts[2] as AST.StatementExpression).expr!.build(opt) as IR.Get;
-					const unop = new IR.Unop(
-						IR.OpCode.SET_COUNT,
+					const set = (stmts[2] as AST.StatementExpression).expr!.build(opt) as OP.Get;
+					const unop = new OP.Unop(
+						OP.OpCode.SET_COUNT,
 						set,
 						TYPE.NAT,
 					);
@@ -778,9 +778,9 @@ test.suite('Opcode', () => {
 					}`);
 					const {mod, Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
-					const map = (stmts[2] as AST.StatementExpression).expr!.build(opt) as IR.Get;
-					const unop = new IR.Unop(
-						IR.OpCode.MAP_COUNT,
+					const map = (stmts[2] as AST.StatementExpression).expr!.build(opt) as OP.Get;
+					const unop = new OP.Unop(
+						OP.OpCode.MAP_COUNT,
 						map,
 						TYPE.NAT,
 					);
@@ -915,7 +915,7 @@ test.suite('Opcode', () => {
 				const cg = new CodeGenerator();
 				const {mod} = cg.vm;
 				assertEqualBins(
-					new IR.Decl(new Builder().newTemp(TYPE.INT)).codegen(cg),
+					new OP.Decl(new Builder().newTemp(TYPE.INT)).codegen(cg),
 					mod.local.set(0, mod.struct.new_default(cg.vm.reftype.Value)),
 				);
 			});

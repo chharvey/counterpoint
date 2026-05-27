@@ -1,7 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	type Builder,
-	IR,
+	OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -55,8 +55,8 @@ class AstMap extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override build(optimizer: Builder): IR.MapNew {
-		return new IR.MapNew(new Map(this.children.map((c) => [
+	public override build(optimizer: Builder): OP.MapNew {
+		return new OP.MapNew(new Map(this.children.map((c) => [
 			c.antecedent.build(optimizer).asTac(optimizer),
 			c.consequent.build(optimizer).asTac(optimizer),
 		])), this.type());

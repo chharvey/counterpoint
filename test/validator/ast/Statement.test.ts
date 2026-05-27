@@ -624,7 +624,7 @@ test.suite('Statement', () => {
 
 
 	test.suite('#build', () => {
-		test.test('StatementExpression pushes IR.Drop instruction if expression exists.', () => {
+		test.test('StatementExpression pushes OP.Drop instruction if expression exists.', () => {
 			const {stmts, opt} = setupScript(`{
 				val mut x: int = 42;
 				x;
@@ -645,7 +645,7 @@ test.suite('Statement', () => {
 			`.trim());
 		});
 
-		test.test('StatementClaim pushes IR.Drop.', () => {
+		test.test('StatementClaim pushes OP.Drop.', () => {
 			const {stmts, opt} = setupScript(`{%
 				val mut x: int | float = 42;
 				claim x: int;
@@ -658,7 +658,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementReassignment', () => {
-			test.test('for variables: pushes IR.Set instruction.', () => {
+			test.test('for variables: pushes OP.Set instruction.', () => {
 				const {stmts, opt} = setupScript(`{
 					val mut x: int = 42;
 					set x = 43;
@@ -673,7 +673,7 @@ test.suite('Statement', () => {
 						(SET x (INT.CONST -42))
 				`.trim());
 			});
-			test.test('for collections: pushes IR.CollectionDynamicSet.', () => {
+			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_list: mut [int]        = [41, 42];
 					val mut my_dict: mut [:int]       = [a= 41, b= 42];
@@ -706,7 +706,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementConditional', () => {
-			test.test('pushes IR.GotoConditional.', () => {
+			test.test('pushes OP.GotoConditional.', () => {
 				assert.strictEqual(setupScript(`{
 					if true then {
 						(2 * 1 + 0);
@@ -836,7 +836,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementLoop', () => {
-			test.test('pushes IR.GotoConditional.', () => {
+			test.test('pushes OP.GotoConditional.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut cond: bool = false;
 					while cond do {
@@ -943,7 +943,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementBreak', () => {
-			test.test('[skip=false] returns IR.Goto("endwhile"). [skip=true] returns IR.Goto("while").', () => {
+			test.test('[skip=false] returns OP.Goto("endwhile"). [skip=true] returns OP.Goto("while").', () => {
 				assert.strictEqual(setupScript(`{
 					while true do {
 						41;
