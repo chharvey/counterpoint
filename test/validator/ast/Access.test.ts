@@ -11,14 +11,12 @@ import {
 	TypeErrorNoEntry,
 	VoidErrorOutOfBounds,
 } from '../../../src/index.ts';
-import {assertEqualTypes} from '../../assert-helpers.ts';
-import {
-	setupScript,
-	typeUnit,
-} from '../../helpers.ts';
 import {
 	extract_lines,
 	repeat,
+	assertEqualTypes,
+	typeUnit,
+	setupScript,
 } from '../../utils.ts';
 
 
@@ -949,12 +947,12 @@ test.suite('Access', () => {
 
 
 
-	test.suite('#lower', () => {
+	test.suite('#build', () => {
 		test.suite('access kind: normal access (`a.‹b›`).', () => {
-			test.test('tuple access returns an IR.TupleGet.', () => {
+			test.test('tuple access returns an OP.TupleGet.', () => {
 				assert.strictEqual(setupScript(`{
 					(41 + 1, 42 / 2, 43 - 3).1;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -964,10 +962,10 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('record access returns an IR.RecordGet.', () => {
+			test.test('record access returns an OP.RecordGet.', () => {
 				assert.strictEqual(setupScript(`{
 					(a= 41 + 1, b= 42 / 2, c= 43 - 3).b;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -977,10 +975,10 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('List access returns an IR.CollectionDynamicGet.', () => {
+			test.test('List access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					[41 + 1, 42 / 2, 43 - 3].[1];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -990,10 +988,10 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('Dict access returns an IR.CollectionDynamicGet.', () => {
+			test.test('Dict access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					[a= 41 + 1, b= 42 / 2, c= 43 - 3].[@b];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -1003,10 +1001,10 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('Set access returns an IR.CollectionDynamicGet.', () => {
+			test.test('Set access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					{41 + 1, 42 / 2, 43 - 3}.[21];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -1016,10 +1014,10 @@ test.suite('Access', () => {
 						(ENDPROGRAM)
 				`.trim());
 			});
-			test.test('Map access returns an IR.CollectionDynamicGet.', () => {
+			test.test('Map access returns an OP.CollectionDynamicGet.', () => {
 				assert.strictEqual(setupScript(`{
 					{21 -> 41 + 1, 22 -> 42 / 2, 23 -> 43 - 3}.[22];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -1032,7 +1030,7 @@ test.suite('Access', () => {
 			test.test('nested access.', () => {
 				assert.strictEqual(setupScript(`{
 					[("hello", {41, 42, 43})].[0].1.[42];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <Set> $0 (SET.NEW (INT.CONST 41) (INT.CONST 42) (INT.CONST 43)))
 						(DECL <tuple> $1 (TUPLE.NEW (STR.CONST "hello") (GET $0)))
@@ -1057,7 +1055,7 @@ test.suite('Access', () => {
 					dict.[@a];
 					'set'.[42];
 					map.[42];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <tuple> tup (TUPLE.NEW (INT.CONST 42)))
 						(DECL <record> rec (RECORD.NEW @a->(INT.CONST 42)))
@@ -1111,7 +1109,7 @@ test.suite('Access', () => {
 					val mut my_tupleB: (int, int, ?:int) = (41 + 1, 42 / 2);
 					my_tupleA?.2;
 					my_tupleB?.2;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -1135,7 +1133,7 @@ test.suite('Access', () => {
 					val mut my_recordY: (a: int, b?: int, c: int) = (a= 41 + 1, c= 42 / 2);
 					my_recordX?.b;
 					my_recordY?.b;
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 41) (INT.CONST 1)))
 						(DECL <int> $1 (INT.DIV (INT.CONST 42) (INT.CONST 2)))
@@ -1157,7 +1155,7 @@ test.suite('Access', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_list: [int] = [41, 42];
 					my_list?.[2];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> my_list (LIST.NEW (INT.CONST 41) (INT.CONST 42)))
 				`.trim().concat(maybe_access_output(1, 'my_list', 0, '(LIST.GET (GET my_list) (INT.CONST 2))'), '\n\t(ENDPROGRAM)'));
@@ -1166,7 +1164,7 @@ test.suite('Access', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_dict: [:int] = [a= 41, c= 42];
 					my_dict?.[@b];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 41) @c->(INT.CONST 42)))
 				`.trim().concat(maybe_access_output(1, 'my_dict', 0, '(DICT.GET (GET my_dict) (SYM.CONST @b))'), '\n\t(ENDPROGRAM)'));
@@ -1175,7 +1173,7 @@ test.suite('Access', () => {
 				assert.strictEqual(setupScript(`{
 					val mut accessor: int = 22;
 					{21 -> 41, 22 -> 42, 23 -> 43}?.[accessor];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> accessor (INT.CONST 22))
 						(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
@@ -1193,7 +1191,7 @@ test.suite('Access', () => {
 					my_list?.[2 * 2 - 3];
 					my_dict?.[@b && @a];
 					my_map?.[5 + 3 * 2];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> my_tup (NULL.CONST null))
 						(DECL <null> my_rec (NULL.CONST null))
@@ -1217,7 +1215,7 @@ test.suite('Access', () => {
 					my_list?.[2 * 2 - 3];
 					my_dict?.[@b && @a];
 					my_map?.[5 + 3 * 2];
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> my_list (LIST.NEW (INT.CONST 42)))
 						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 42)))

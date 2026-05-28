@@ -1,10 +1,6 @@
 import * as assert from 'node:assert';
 import type {SyntaxNode} from 'tree-sitter';
-import {
-	VALUE,
-	type TYPE,
-	IR,
-} from '../../index.ts';
+import {OP} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -14,6 +10,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	VALUE,
+	type TYPE,
+} from '../../typer/index.ts';
 import {Keyword} from '../../parser/index.ts';
 import {
 	type SyntaxNodeType,
@@ -73,8 +73,8 @@ export class Constant extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(): IR.Const {
-		return new IR.Const(this.interpreterValue);
+	public override build(): OP.Const {
+		return new OP.Const(this.interpreterValue);
 	}
 
 	@memoizeMethod

@@ -1,5 +1,10 @@
 import binaryen from 'binaryen';
+import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
+import type {
+	FuncImportData,
+	HasFuncData,
+} from './HasFuncData.ts';
 
 
 
@@ -12,8 +17,17 @@ const FIELD = {
 
 
 /** An entry in a record/Dict. */
-export class Property {
+export class Property implements HasFuncData {
 	public constructor(private readonly vm: VirtualMachine) {}
+
+
+	/** @implements HasFuncData */
+	@memoizeGetter
+	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
+		return new Map<string, FuncImportData>([
+			['Property#isTombstone', {name: 'Property.is-tombstone', param: this.vm.reftypeNull.Property, result: binaryen.i32}],
+		]);
+	}
 
 
 	public field(ref: binaryen.ExpressionRef /* (ref null $Property) */): {
@@ -26,7 +40,6 @@ export class Property {
 			get val() { return mod.struct.get(FIELD.VAL, ref, reftype.Value); },
 		};
 	}
-
 
 	/**
 	 * Returns whether a Property is a “tombstone”, that is, whether it represents a deletion in a Dict.

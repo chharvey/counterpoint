@@ -1,9 +1,7 @@
 import * as xjs from 'extrajs';
 import {
-	VALUE,
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -14,6 +12,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
 import {Expression} from './Expression.ts';
@@ -50,8 +52,8 @@ class AstSet extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.CollectionLinearNew {
-		return new IR.CollectionLinearNew(IR.TypeName.SET, this.children.map((c) => c.lower(optimizer).asTac(optimizer)), this.type());
+	public override build(builder: Builder): OP.CollectionLinearNew {
+		return new OP.CollectionLinearNew(OP.TypeName.SET, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
 	}
 
 	@memoizeMethod

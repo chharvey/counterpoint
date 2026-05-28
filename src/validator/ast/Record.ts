@@ -1,9 +1,7 @@
 import * as xjs from 'extrajs';
 import {
-	VALUE,
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
@@ -16,7 +14,11 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {EntryType} from '../../typer/index.ts';
+import {
+	type EntryType,
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
 import type {Key} from './Key.ts';
@@ -66,10 +68,10 @@ class AstRecord extends CollectionLiteral {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.RecordNew {
-		return new IR.RecordNew(new Map(this.children.map((c) => ([
+	public override build(builder: Builder): OP.RecordNew {
+		return new OP.RecordNew(new Map(this.children.map((c) => ([
 			c.key.id,
-			{keysrc: c.key.source, value: c.val.lower(optimizer).asTac(optimizer)},
+			{keysrc: c.key.source, value: c.val.build(builder).asTac(builder)},
 		]))), this.type());
 	}
 

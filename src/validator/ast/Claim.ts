@@ -1,8 +1,6 @@
 import {
-	type VALUE,
-	type TYPE,
-	type Optimizer,
-	type IR,
+	type Builder,
+	type OP,
 	TypeErrorNotAssignable,
 } from '../../index.ts';
 import {
@@ -13,6 +11,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Type} from './Type.ts';
 import {Expression} from './Expression.ts';
@@ -52,8 +54,8 @@ export class Claim extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Value {
-		return this.operand.lower(optimizer);
+	public override build(builder: Builder): OP.Value {
+		return this.operand.build(builder);
 	}
 
 	@memoizeMethod

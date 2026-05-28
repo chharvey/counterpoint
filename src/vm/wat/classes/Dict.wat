@@ -1,4 +1,4 @@
-(func $Dict.count (param $dict (ref $Dict)) (result i32)
+(func $Dict.count (export "Dict#count") (param $dict (ref $Dict)) (result i32)
 	;; the return value, the number of live elements.
 	(local $count i32)
 	;; the Dict’s internal array.
@@ -33,7 +33,7 @@
 
 
 
-(func $Dict.find (param $dict (ref $Dict)) (param $key i64) (result i32 (ref null $Property))
+(func $Dict.find (export "Dict#find") (param $dict (ref $Dict)) (param $key i64) (result i32 (ref null $Property))
 	;; the given Dict’s internal array.
 	(local $internal (ref $DictInternal))
 	;; the length of the array. constant.
@@ -89,7 +89,7 @@
 
 
 
-(func $Dict.adjust-capacity (param $dict (ref $Dict)) (param $capacity i32)
+(func $Dict.adjust-capacity (export "Dict#adjustCapacity") (param $dict (ref $Dict)) (param $capacity i32)
 	;; the given Dict’s original internal array.
 	(local $orig (ref $DictInternal))
 	;; copy of the Dict’s entries, to be used as the Dict’s new internal array.
@@ -135,7 +135,7 @@
 
 
 
-(func $Dict.set (param $dict (ref $Dict)) (param $key i64) (param $val (ref $Value))
+(func $Dict.set (export "Dict#set") (param $dict (ref $Dict)) (param $key i64) (param $val (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
 	;; property at the specified index.
@@ -177,7 +177,7 @@
 
 
 
-(func $Dict.delete (param $dict (ref $Dict)) (param $key i64) (result (ref null $Value))
+(func $Dict.delete (export "Dict#delete") (param $dict (ref $Dict)) (param $key i64) (result (ref null $Value))
 	;; index of the found property in the internal array.
 	(local $index i32)
 	;; found property at the specified index.

@@ -1,10 +1,10 @@
+import {Keyword} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {MUT_OPERATOR} from './utils-private.ts';
 import {
 	subtypeRules,
 	type Type,
@@ -38,7 +38,7 @@ class TypeSet extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Set.<${ this.typearg }>`;
+		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Set.<${ this.typearg }>`;
 	}
 
 	@instanceOf(() => VALUE.Set)

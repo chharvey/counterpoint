@@ -1,8 +1,6 @@
 import {
-	type VALUE,
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -12,6 +10,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	type VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import type {Constant} from './Constant.ts';
@@ -44,8 +46,8 @@ export class Template extends Expression {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Template {
-		return new IR.Template(this.children.map((c) => c.lower(optimizer).asTac(optimizer)));
+	public override build(builder: Builder): OP.Template {
+		return new OP.Template(this.children.map((c) => c.build(builder).asTac(builder)));
 	}
 
 	@memoizeMethod

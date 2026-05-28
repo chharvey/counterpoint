@@ -9,7 +9,7 @@ import {
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
-	IR,
+	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
@@ -17,27 +17,23 @@ import {
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
 import {
-	assertEqualTypes,
-	assertAssignable,
-} from '../../assert-helpers.ts';
-import {
-	setupScript,
-	typeUnit,
-} from '../../helpers.ts';
-import {
 	extract_tokens,
 	repeat,
+	assertAssignable,
+	assertEqualTypes,
+	typeUnit,
+	setupScript,
 } from '../../utils.ts';
 
 
 
 test.suite('Expression', () => {
-	test.suite('#lower', () => {
-		test.test('Constant returns an IR.Const.', () => {
+	test.suite('#build', () => {
+		test.test('Constant returns an OP.Const.', () => {
 			const value: AST.Constant = AST.Constant.fromSource('42');
-			return assert.deepStrictEqual(value.lower(), new IR.Const(value.fold()));
+			return assert.deepStrictEqual(value.build(), new OP.Const(value.fold()));
 		});
-		test.test('Variable returns an IR.Get.', () => {
+		test.test('Variable returns an OP.Get.', () => {
 			const {stmts} = setupScript(`{
 				val mut x: int = 42;
 				x;
@@ -45,12 +41,12 @@ test.suite('Expression', () => {
 			const expr = (stmts[1] as AST.StatementExpression).expr as AST.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.lower(), new IR.Get(symbol));
+			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol));
 		});
-		test.test('Template returns an IR.Template.', () => {
+		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
 				"""hello {{ 42 }} world""";
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world")))
 					(ENDPROGRAM)
@@ -59,20 +55,20 @@ test.suite('Expression', () => {
 		test.test('three-address code format.', () => {
 			assert.strictEqual(setupScript(`{
 				"""hello {{ """great {{ 42 }} big""" }} world""";
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <str> $0 (STR.TEMPLATE (STR.CONST "great ") (INT.CONST 42) (STR.CONST " big")))
 					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $0) (STR.CONST " world")))
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Tuple returns an IR.CollectionLinearNew.', () => {
+		test.test('Tuple returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: bool  = false;
 				val mut y: int   = 5;
 				val mut z: float = 0.2;
 				(x, y + 2, 3.0 * z - 1.0);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <bool> x (BOOL.CONST false))
 					(DECL <int> y (INT.CONST 5))
@@ -84,13 +80,13 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Record returns an IR.RecordNew.', () => {
+		test.test('Record returns an OP.RecordNew.', () => {
 			assert.strictEqual(setupScript(`{
 				val x: bool  = false;
 				val y: int   = 5;
 				val z: float = 0.2;
 				(a= x, b= y + 2, c= 3.0 * z - 1.0);
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <bool> x (BOOL.CONST false))
 					(DECL <int> y (INT.CONST 5))
@@ -102,10 +98,10 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('List returns an IR.CollectionLinearNew.', () => {
+		test.test('List returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[false, 5 + 2, 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -114,10 +110,10 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Dict returns an IR.DictNew.', () => {
+		test.test('Dict returns an OP.DictNew.', () => {
 			assert.strictEqual(setupScript(`{
 				[a= false, b= 5 + 2, c= 3.0 * 0.2 - 1.0];
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -126,10 +122,10 @@ test.suite('Expression', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('Set returns an IR.CollectionLinearNew.', () => {
+		test.test('Set returns an OP.CollectionLinearNew.', () => {
 			assert.strictEqual(setupScript(`{
 				{false, 5 + 2, 3.0 * 0.2 - 1.0};
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 					(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -139,10 +135,10 @@ test.suite('Expression', () => {
 			`.trim());
 		});
 		test.suite('Map', () => {
-			test.test('returns an IR.MapNew.', () => {
+			test.test('returns an OP.MapNew.', () => {
 				assert.strictEqual(setupScript(`{
 					{"a" -> false, "b" -> 5 + 2, "c" -> 3.0 * 0.2 - 1.0};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <int> $0 (INT.ADD (INT.CONST 5) (INT.CONST 2)))
 						(DECL <float> $1 (FLOAT.MUL (FLOAT.CONST 3.0) (FLOAT.CONST 0.2)))
@@ -154,7 +150,7 @@ test.suite('Expression', () => {
 			test.test('evaluates antecedents and consequents interchangeably in source order.', () => {
 				assert.strictEqual(setupScript(`{
 					{[10] -> 10 + 1, [12] -> 5 * 2 + 3, [7 * 2] -> 15};
-				}`, {codegen: false}).opt.print(), xjs.String.dedent`
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <List> $0 (LIST.NEW (INT.CONST 10)))
 						(DECL <int> $1 (INT.ADD (INT.CONST 10) (INT.CONST 1)))
@@ -180,7 +176,7 @@ test.suite('Expression', () => {
 					set y = y + x;
 					y * 2;
 				} + y;
-			}`, {codegen: false}).opt.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(SET x (INT.ADD (GET x) (INT.CONST 2)))
@@ -194,22 +190,22 @@ test.suite('Expression', () => {
 		});
 		test.suite('Claim', () => {
 			test.test('returns the operand.', () => {
-				const {stmts, opt} = setupScript(`{
+				const {stmts, builder} = setupScript(`{
 					42 as <int>;
 				}`, {codegen: false});
 				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
-				return assert.deepStrictEqual(expr.lower(opt), expr.operand.lower(opt));
+				return assert.deepStrictEqual(expr.build(builder), expr.operand.build(builder));
 			});
 			test.test('repeated calls are idempotent.', () => {
-				const {stmts, opt} = setupScript(`{
+				const {stmts, builder} = setupScript(`{
 					(42 + 42 + 42) as <int | float>;
-				}`, {lower: false});
-				assert.strictEqual(opt.instructions.length, 0);
+				}`, {build: false});
+				assert.strictEqual(builder.instructions.length, 0);
 				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
-				expr.operand.lower(opt);
-				assert.strictEqual(opt.instructions.length, 1);
-				expr.lower(opt);
-				assert.strictEqual(opt.instructions.length, 1);
+				expr.operand.build(builder);
+				assert.strictEqual(builder.instructions.length, 1);
+				expr.build(builder);
+				assert.strictEqual(builder.instructions.length, 1);
 			});
 		});
 	});
@@ -357,7 +353,7 @@ test.suite('Expression', () => {
 					val mut x?: int;
 					w;
 					x;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok( (stmts[0] as AST.DeclarationVariable).assigned);
 				assert.ok(!(stmts[1] as AST.DeclarationVariable).assigned);
 				return assertEqualTypes(
@@ -376,7 +372,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					val x: int = 21 * 2;
 					x;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok(!(stmts[0] as AST.DeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.StatementExpression).expr!.fold(),
@@ -387,7 +383,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					val mut x: int = 21 * 2;
 					x;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.DeclarationVariable).writable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.StatementExpression).expr!.fold(),
@@ -398,7 +394,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					val fixed_mutable: mut {int} = {1, 2, 3};
 					fixed_mutable;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok((stmts[0] as AST.DeclarationVariable).typenode!.eval().hasMutable);
 				assert.deepStrictEqual(
 					(stmts[1] as AST.StatementExpression).expr!.fold(),
@@ -413,7 +409,7 @@ test.suite('Expression', () => {
 					val z: mut {int} = {11, 22, 33};
 					val w: bool = z.[22];
 					w;
-				}`, {lower: false});
+				}`, {build: false});
 				assert.ok(!(stmts[1] as AST.DeclarationVariable).writable);
 				assert.ok(!(stmts[4] as AST.DeclarationVariable).writable);
 				assert.deepStrictEqual(
@@ -437,7 +433,7 @@ test.suite('Expression', () => {
 				(setupScript(`{
 					val mut x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
-				}`, {lower: false}).stmts[1] as AST.StatementExpression).expr as AST.Template,
+				}`, {build: false}).stmts[1] as AST.StatementExpression).expr as AST.Template,
 			];
 		}
 		test.suite('#type', () => {
@@ -489,7 +485,7 @@ test.suite('Expression', () => {
 						val f: null = null;
 						(e= [x= 42, w= 4.2], f= f);
 						[g= (w= 42, x= 4.2), f= f];
-					}`, {lower: false});
+					}`, {build: false});
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
@@ -603,7 +599,7 @@ test.suite('Expression', () => {
 				setupScript(`{
 					(   1,    [2.2],    "three");
 					(a= 1, b= [2.2], c= "three");
-				}`, {lower: false}); // assert does not throw
+				}`, {build: false}); // assert does not throw
 			});
 		});
 
@@ -682,7 +678,7 @@ test.suite('Expression', () => {
 						21 + 21   -> 2.0,
 						3.0 * 1.0 -> z,
 					};
-				}`, {lower: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.StatementExpression).expr!.fold(), null));
+				}`, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.StatementExpression).expr!.fold(), null));
 			});
 		});
 	});
@@ -786,7 +782,7 @@ test.suite('Expression', () => {
 					};
 					x;
 					y;
-				}`, {lower: false});
+				}`, {build: false});
 				assertEqualTypes((stmts[1] as AST.DeclarationVariable).assigned!.type(), TYPE.INT);
 			});
 		});
@@ -803,7 +799,7 @@ test.suite('Expression', () => {
 					};
 					x;
 					y;
-				}`, {lower: false}).stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock).fold(), null);
+				}`, {build: false}).stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock).fold(), null);
 			});
 			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
@@ -818,7 +814,7 @@ test.suite('Expression', () => {
 					};
 					x;
 					y;
-				}`, {lower: false});
+				}`, {build: false});
 				const block_expression = (stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock;
 				assert.strictEqual(
 					block_expression.fold(),
@@ -834,7 +830,7 @@ test.suite('Expression', () => {
 					(setupScript(`{
 						val x: int = 42 - { 42; 69; };
 						x;
-					}`, {lower: false}).stmts[1] as AST.StatementExpression).expr!.fold(),
+					}`, {build: false}).stmts[1] as AST.StatementExpression).expr!.fold(),
 					new VALUE.Integer(42n - 69n),
 				);
 			});

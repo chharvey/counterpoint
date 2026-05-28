@@ -1,18 +1,18 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import binaryen from 'binaryen';
+import {CodeGenerator} from '../../src/index.ts';
+import {drop_then} from '../../src/builder/op/utils-private.ts';
 import {
-	drop_then,
-	Builder,
-} from '../../src/index.ts';
-import {assertEqualBins} from '../assert-helpers.ts';
-import {genConst} from '../helpers.ts';
+	assertEqualBins,
+	genConst,
+} from '../utils.ts';
 
 
 
 test.suite('drop_then', () => {
 	test.test('returns a (block) containing `n - 1` (drop) exprs followed by a last expr.', () => {
-		const cg = new Builder();
+		const cg = new CodeGenerator();
 		const {mod} = cg.vm;
 		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
 		const expr2: binaryen.ExpressionRef = genConst(cg, 2n);
@@ -24,7 +24,7 @@ test.suite('drop_then', () => {
 		);
 	});
 	test.test('type of (block) is `binaryen.none` if last item is a Counterpoint block.', () => {
-		const cg = new Builder();
+		const cg = new CodeGenerator();
 		const {mod} = cg.vm;
 		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
 		const block: binaryen.ExpressionRef = mod.block(null, [

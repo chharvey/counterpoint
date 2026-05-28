@@ -1,10 +1,8 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	VALUE,
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 } from '../../index.ts';
@@ -17,6 +15,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
@@ -175,14 +177,14 @@ export class DeclarationVariable extends Statement {
 	}
 
 	@runOnceMethod
-	public override lower(optimizer: Optimizer): void {
-		const value: IR.Value = this.assigned?.lower(optimizer) ?? new IR.Const(VALUE.NULL);
+	public override build(builder: Builder): void {
+		const value: OP.Value = this.assigned?.build(builder) ?? new OP.Const(VALUE.NULL);
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			symbol.irType = value.type;
-			optimizer.pushInstruction(new IR.Decl(symbol, value));
+			builder.pushInstruction(new OP.Decl(symbol, value));
 		} else {
-			optimizer.pushInstruction(new IR.Drop(value));
+			builder.pushInstruction(new OP.Drop(value));
 		}
 	}
 }

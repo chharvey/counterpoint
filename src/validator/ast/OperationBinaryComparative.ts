@@ -1,9 +1,7 @@
 import * as assert from 'node:assert';
 import {
-	VALUE,
-	TYPE,
-	type Optimizer,
-	IR,
+	type Builder,
+	OP,
 	TypeErrorInvalidOperation,
 } from '../../index.ts';
 import {
@@ -14,6 +12,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
@@ -55,15 +57,15 @@ export class OperationBinaryComparative extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Binop {
-		return new IR.Binop(new Map<Operator, IR.OpCodeBin>([
-			[Operator.LT,  IR.OpCode.LT],
-			[Operator.GT,  IR.OpCode.GT],
-			[Operator.LE,  IR.OpCode.LE],
-			[Operator.GE,  IR.OpCode.GE],
-			[Operator.NLT, IR.OpCode.NLT],
-			[Operator.NGT, IR.OpCode.NGT],
-		]).get(this.operator)!, this.operand0.lower(optimizer).asTac(optimizer), this.operand1.lower(optimizer).asTac(optimizer), this.type());
+	public override build(builder: Builder): OP.Binop {
+		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
+			[Operator.LT,  OP.OpCode.LT],
+			[Operator.GT,  OP.OpCode.GT],
+			[Operator.LE,  OP.OpCode.LE],
+			[Operator.GE,  OP.OpCode.GE],
+			[Operator.NLT, OP.OpCode.NLT],
+			[Operator.NGT, OP.OpCode.NGT],
+		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 
 	@memoizeMethod

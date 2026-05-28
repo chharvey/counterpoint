@@ -1,7 +1,3 @@
-import type {
-	EntryType,
-	TYPE,
-} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -10,6 +6,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import type {
+	EntryType,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {ValidTypeAccessOperator} from '../Operator.ts';
 import {

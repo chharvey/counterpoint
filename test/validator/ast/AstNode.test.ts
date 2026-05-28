@@ -10,8 +10,10 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../../src/index.ts';
-import {assertAssignable} from '../../assert-helpers.ts';
-import {setupScript} from '../../helpers.ts';
+import {
+	assertAssignable,
+	setupScript,
+} from '../../utils.ts';
 
 
 
@@ -147,8 +149,8 @@ test.suite('AstNode', () => {
 		});
 
 
-		test.suite('#lower', () => {
-			test.test('Goal lowers each statement.', () => {
+		test.suite('#build', () => {
+			test.test('Goal builds each statement.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut assignee_b?: int;
 					val mut assignee_c:  int = 42;
@@ -164,7 +166,7 @@ test.suite('AstNode', () => {
 					set assignee_e = 43;
 					set assignee_e = 44;
 					set assignee_e = -42;
-				}`, {codegen: false}).opt.instructions.length, 12);
+				}`, {codegen: false}).builder.instructions.length, 12);
 			});
 		});
 	});

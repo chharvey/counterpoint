@@ -7,7 +7,7 @@
 
 
 
-(func $Property.is-tombstone (param $prop (ref null $Property)) (result i32)
+(func $Property.is-tombstone (export "Property#isTombstone") (param $prop (ref null $Property)) (result i32)
 	(if (result i32)
 		(ref.is_null (local.get $prop))
 		(then (i32.const 0))

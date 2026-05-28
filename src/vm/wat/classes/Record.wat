@@ -22,7 +22,7 @@
 
 
 
-(func $Record.get (param $record (ref $Record)) (param $key i64) (result (ref $Value))
+(func $Record.get (export "Record#get") (param $record (ref $Record)) (param $key i64) (result (ref $Value))
 	;; the length of the given record. constant.
 	(local $ARRLEN i32)
 	;; tracks the number of loops. if it exceeds the array length, trap.

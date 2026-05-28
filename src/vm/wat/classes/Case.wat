@@ -7,7 +7,7 @@
 
 
 
-(func $Case.is-tombstone (param $case (ref null $Case)) (result i32)
+(func $Case.is-tombstone (export "Case#isTombstone") (param $case (ref null $Case)) (result i32)
 	(if (result i32)
 		(ref.is_null (local.get $case))
 		(then (i32.const 0))
