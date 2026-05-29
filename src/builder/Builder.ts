@@ -29,11 +29,11 @@ export class Builder {
 
 	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 
-	readonly #blocks = new Map<string, CfgNode>();
+	readonly #blocks: CfgNode[] = [];
 
 
 	public get instructions(): OP.Instruction[] {
-		return [...this.#blocks.values()].flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
+		return this.#blocks.flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
 	}
 
 	public newLabel(unreachable: boolean = false): string {
@@ -73,8 +73,9 @@ export class Builder {
 		if (!this.currentBlock) {
 			throw new Error('Builder does not have an active block to terminate. Try calling `Builder#initiateBlock` first.');
 		}
+		assert.ok(!this.#blocks.includes(this.currentBlock));
 		this.currentBlock.terminate(instr);
-		this.#blocks.set(this.currentBlock.label, this.currentBlock);
+		this.#blocks.push(this.currentBlock);
 		delete this.currentBlock;
 	}
 
@@ -89,20 +90,20 @@ export class Builder {
 	@runOnceMethod
 	public validate(): void {
 		assert.ok(!this.currentBlock, 'Should not validate Builder with active block set. Try calling `Builder#terminateBlock` first.');
-		return xjs.Map.forEachAggregated(this.#blocks, (block) => block.validate());
+		return xjs.Array.forEachAggregated(this.#blocks, (block) => block.validate());
 	}
 
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Builder with active block set. Try calling `Builder#terminateBlock` first.');
 		const relooper = new binaryen.Relooper(cg.vm.mod);
-		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map([...this.#blocks.values()].map((block) => [block.label, block.codegen(cg, relooper)]));
+		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map(this.#blocks.map((block) => [block.label, block.codegen(cg, relooper)]));
 		this.#blocks.forEach((block) => block.terminator!.codegen(cg, relooper, blockrefs));
 		return relooper.renderAndDispose(blockrefs.get('block-0')!, cg.getAllLocals().length);
 	}
 
 	public print(): string {
 		return [
-			...this.#blocks.values(),
+			...this.#blocks,
 			...(this.currentBlock ? [this.currentBlock] : []),
 		].map((block) => block.toString()).join('\n');
 	}
