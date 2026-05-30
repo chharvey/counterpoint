@@ -1,0 +1,148 @@
+/**
+ * A Result object resembles either a success or a failure.
+ *
+ * If it represents a success, it is an instance of `Ok` and it holds a `value`.
+ * If it represents a failure, it is an instance of `Fail` and it holds a `reason`, which is an instance of Error.
+ *
+ * This class is **enumerated** — other than its enumerated subclasses, it must not be extended further.
+ *
+ * Known subclasses:
+ * - Ok
+ * - Fail
+ *
+ * @typeParam T : the type of the success value
+ * @typeParam E : the type of the failure reason
+ * @enum
+ */
+export abstract class Result<T, E extends Error = Error> {
+	/* eslint-disable @typescript-eslint/no-use-before-define */
+	/**
+	 * Returns a new Result containing an array of the values of the given Results, if they are all instances of Ok.
+	 * If any result is a Fail, returns a new Result containing that reason.
+	 *
+	 * This method short-circuits: if any array item is a Fail, the method returns without processing any further items.
+	 * @typeParam S : the type of values in the array
+	 * @typeParam X : the type of Error, if any, in the array
+	 * @param results the results to unwrap
+	 * @returns a new Ok containing the array of unwrapped success values, or a new Fail containing any unwrapped failure reason
+	 */
+	public static unwrapAll<S, X extends Error = Error>(results: readonly Result<S, X>[]): Result<S[], X> {
+		const values: S[] = [];
+		for (const result of results) {
+			if (result instanceof Ok) {
+				values.push(result.value);
+			} else {
+				return new Fail<S[], X>((result as Fail<S, X>).reason);
+			}
+		}
+		return new Ok<S[], X>(values);
+	}
+
+	/**
+	 * Returns a new Result containing the first successful value found in an array of Results.
+	 * If all Results are Fails, returns a new Result containing an AggregateError of all the failure reasons.
+	 *
+	 * If an empty array is given, all its entries are vacuously Fails, and so this method returns a Fail containing a single Error.
+	 *
+	 * If an Ok is returned, it holds the “leftmost” (closest to start) value.
+	 *
+	 * This method short-circuits: if any array item is an Ok, the method returns without processing any further items.
+	 * @typeParam S : the type of value, if any, in the array
+	 * @typeParam X : the type of Errors, if any, in the array
+	 * @param results the results to unwrap
+	 * @returns a new Ok containing an unwrapped success value, or a new Fail containing an AggregateError of unwrapped failure reasons
+	 */
+	public static unwrapAny<S, X extends Error = Error>(results: readonly Result<S, X>[]): Result<S, AggregateError | Error> {
+		if (!results.length) {
+			return new Fail<S, Error>(new Error('All results in given empty array were failures.'));
+		}
+		const reasons: X[] = [];
+		for (const result of results) {
+			if (result instanceof Fail) {
+				reasons.push(result.reason);
+			} else {
+				return new Ok<S, AggregateError>((result as Ok<S, X>).value);
+			}
+		}
+		return new Fail<S, AggregateError>(new AggregateError(reasons));
+	}
+	/* eslint-enable @typescript-eslint/no-use-before-define */
+
+
+	/**
+	 * Handle this Result’s success value, returning a new Result.
+	 * @typeParam S     : the type of the new Result’s success value
+	 * @param     on_ok : a function to be called on this Result’s success value
+	 * @return            a new Result with the result of `on_ok`
+	 */
+	public abstract map<S = T>(on_ok: (value: T) => S): Result<S, E>;
+
+	/**
+	 * Handle this Result’s fail reason, returning a new Result.
+	 * @typeParam X     : the type of the new Result’s fail reason
+	 * @param     on_ex : a function to be called on this Result’s fail reason
+	 * @return            a new Result with the result of `on_ex`
+	 */
+	public abstract catch<X extends Error = E>(on_ex: (reason: E) => X): Result<T, X>;
+
+	public abstract flatMap<S = T>(on_ok: (value: T) => Result<S, E>): Result<S, E>;
+
+	public abstract flatCatch<X extends Error = E>(on_ex: (reason: E) => Result<T, X>): Result<T, X>;
+}
+
+
+
+/** @final */
+export class Ok<T, E extends Error = Error> extends Result<T, E> {
+	public constructor(public readonly value: T) {
+		super();
+	}
+
+
+	public override map<S = T>(on_ok: (value: T) => S): Ok<S, E> {
+		return new Ok<S, E>(on_ok(this.value));
+	}
+
+	public override catch<X extends Error = E>(): Ok<T, X> {
+		return new Ok<T, X>(this.value);
+	}
+
+	public override flatMap<S = T>(on_ok: (value: T) => Result<S, E>): Result<S, E> {
+		return on_ok(this.value);
+	}
+
+	public override flatCatch<X extends Error = E>(): Ok<T, X> {
+		return this.catch<X>();
+	}
+}
+
+
+
+/** @final */
+export class Fail<T, E extends Error = Error> extends Result<T, E> {
+	public static fromString<S>(message: string): Fail<S> {
+		return new Fail<S>(new Error(message));
+	}
+
+
+	public constructor(public readonly reason: E) {
+		super();
+	}
+
+
+	public override map<S = T>(): Fail<S, E> {
+		return new Fail<S, E>(this.reason);
+	}
+
+	public override catch<X extends Error = E>(on_ex: (reason: E) => X): Fail<T, X> {
+		return new Fail<T, X>(on_ex(this.reason));
+	}
+
+	public override flatMap<S = T>(): Fail<S, E> {
+		return this.map<S>();
+	}
+
+	public override flatCatch<X extends Error = E>(on_ex: (reason: E) => Result<T, X>): Result<T, X> {
+		return on_ex(this.reason);
+	}
+}
