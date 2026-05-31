@@ -14,7 +14,7 @@ test.suite('Result', () => {
 		test.test('returns an empty array when given an empty array.', () => {
 			const all: Result<unknown[]> = Result.unwrapAll([]);
 			assert_instanceof(all, Ok);
-			assert.deepStrictEqual(all.value, []);
+			return assert.deepStrictEqual(all.value, []);
 		});
 		test.test('returns an array of values if no given items are Fails.', () => {
 			const all: Result<unknown[]> = Result.unwrapAll<unknown>([
@@ -24,7 +24,7 @@ test.suite('Result', () => {
 				new Ok<string>('hi'),
 			]);
 			assert_instanceof(all, Ok);
-			assert.deepStrictEqual(all.value, [null, false, 42, 'hi']);
+			return assert.deepStrictEqual(all.value, [null, false, 42, 'hi']);
 		});
 		test.test('treats non-Result values as successes.', () => {
 			const all: Result<unknown[]> = Result.unwrapAll<unknown>([
@@ -34,7 +34,7 @@ test.suite('Result', () => {
 				'hi',
 			]);
 			assert_instanceof(all, Ok);
-			assert.deepStrictEqual(all.value, [null, false, 42, 'hi']);
+			return assert.deepStrictEqual(all.value, [null, false, 42, 'hi']);
 		});
 		test.test('returns a new Fail containing the reason of the first Fail in the array.', () => {
 			const determiner = new Fail<boolean>(new TypeError('false'));
@@ -46,17 +46,17 @@ test.suite('Result', () => {
 			]);
 			assert_instanceof(all, Fail);
 			assert.notStrictEqual(all, determiner);
-			assert.strictEqual(all.reason, determiner.reason);
+			return assert.strictEqual(all.reason, determiner.reason);
 		});
 	});
 
 
 	test.suite('.unwrapAny', () => {
 		test.test('returns Fail when given an empty array.', () => {
-			const any: Result<unknown[]> = Result.unwrapAny([]);
+			const any: Result<never> = Result.unwrapAny([]);
 			assert_instanceof(any, Fail);
 			assert_instanceof(any.reason, Error);
-			assert.strictEqual(any.reason.message, 'All results in given empty array were failures.');
+			return assert.strictEqual(any.reason.message, 'All results in given empty array were failures.');
 		});
 		test.test('returns an AggregateError of reasons if no given items are Oks.', () => {
 			const any = Result.unwrapAny<unknown>([
@@ -67,7 +67,7 @@ test.suite('Result', () => {
 			]) as Result<unknown, AggregateError>;
 			assert_instanceof(any, Fail, 'expected test value to be Fail');
 			assert_instanceof(any.reason, AggregateError, 'expected reason to be AggregateError');
-			assert.deepStrictEqual(any.reason.errors, [
+			return assert.deepStrictEqual(any.reason.errors, [
 				new Error('null'),
 				new Error('false'),
 				new Error('42'),
@@ -84,7 +84,7 @@ test.suite('Result', () => {
 			]) as Result<unknown, AggregateError>;
 			assert_instanceof(any, Ok);
 			assert.notStrictEqual(any, determiner);
-			assert.strictEqual(any.value, determiner.value);
+			return assert.strictEqual(any.value, determiner.value);
 		});
 		test.test('treats non-Result values as successes.', () => {
 			const any = Result.unwrapAny<unknown>([
@@ -94,7 +94,7 @@ test.suite('Result', () => {
 				new Ok<string>('hi'),
 			]) as Result<unknown, AggregateError>;
 			assert_instanceof(any, Ok);
-			assert.strictEqual(any.value, false);
+			return assert.strictEqual(any.value, false);
 		});
 	});
 
@@ -162,7 +162,7 @@ test.suite('Result', () => {
 				return returned_fail;
 			});
 			assert.strictEqual(mapped_to_ok, returned_ok);
-			assert.strictEqual(mapped_to_fail, returned_fail);
+			return assert.strictEqual(mapped_to_fail, returned_fail);
 		});
 		test.test('[this: Fail] returns new `Fail` object with the same reason.', () => {
 			const err = new Error('message');
@@ -201,7 +201,7 @@ test.suite('Result', () => {
 				return returned_fail;
 			});
 			assert.strictEqual(mapped_to_ok, returned_ok);
-			assert.strictEqual(mapped_to_fail, returned_fail);
+			return assert.strictEqual(mapped_to_fail, returned_fail);
 		});
 	});
 });
