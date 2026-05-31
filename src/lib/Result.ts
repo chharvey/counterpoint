@@ -17,7 +17,7 @@
 abstract class ResultBase<T, E extends Error = Error> {
 	/* eslint-disable @typescript-eslint/no-use-before-define */
 	/**
-	 * Returns a new Result containing an array of the values of the given Results, if they are all instances of Ok.
+	 * Returns a new Result containing an array of the values of the given Results, if they are all instances of Ok or are non-`Result` objects.
 	 * If any result is a Fail, returns a new Result containing that reason.
 	 *
 	 * This method short-circuits: if any array item is a Fail, the method returns without processing any further items.
@@ -26,20 +26,20 @@ abstract class ResultBase<T, E extends Error = Error> {
 	 * @param results the results to unwrap
 	 * @returns a new Ok containing the array of unwrapped success values, or a new Fail containing any unwrapped failure reason
 	 */
-	public static unwrapAll<S, X extends Error = Error>(results: readonly Result<S, X>[]): Result<S[], X> {
+	public static unwrapAll<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S[], X> {
 		const values: S[] = [];
 		for (const result of results) {
-			if (result instanceof Ok) {
-				values.push(result.value);
-			} else {
+			if (result instanceof Fail) {
 				return new Fail<S[], X>(result.reason);
+			} else {
+				values.push(result instanceof Ok ? result.value : result);
 			}
 		}
 		return new Ok<S[], X>(values);
 	}
 
 	/**
-	 * Returns a new Result containing the first successful value found in an array of Results.
+	 * Returns a new Result containing the first successful value (or non-`Result` object) found in an array of Results.
 	 * If all Results are Fails, returns a new Result containing an AggregateError of all the failure reasons.
 	 *
 	 * If an empty array is given, all its entries are vacuously Fails, and so this method returns a Fail containing a single Error.
@@ -52,7 +52,7 @@ abstract class ResultBase<T, E extends Error = Error> {
 	 * @param results the results to unwrap
 	 * @returns a new Ok containing an unwrapped success value, or a new Fail containing an AggregateError of unwrapped failure reasons
 	 */
-	public static unwrapAny<S, X extends Error = Error>(results: readonly Result<S, X>[]): Result<S, AggregateError | Error> {
+	public static unwrapAny<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S, AggregateError | Error> {
 		if (!results.length) {
 			return new Fail<S, Error>(new Error('All results in given empty array were failures.'));
 		}
@@ -61,7 +61,7 @@ abstract class ResultBase<T, E extends Error = Error> {
 			if (result instanceof Fail) {
 				reasons.push(result.reason);
 			} else {
-				return new Ok<S, AggregateError>(result.value);
+				return new Ok<S, AggregateError>(result instanceof Ok ? result.value : result);
 			}
 		}
 		return new Fail<S, AggregateError>(new AggregateError(reasons));

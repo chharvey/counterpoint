@@ -26,6 +26,16 @@ test.suite('Result', () => {
 			assert_instanceof(all, Ok);
 			assert.deepStrictEqual(all.value, [null, false, 42, 'hi']);
 		});
+		test.test('treats non-Result values as successes.', () => {
+			const all: Result<unknown[]> = Result.unwrapAll<unknown>([
+				new Ok<null>(null),
+				false,
+				new Ok<number>(42),
+				'hi',
+			]);
+			assert_instanceof(all, Ok);
+			assert.deepStrictEqual(all.value, [null, false, 42, 'hi']);
+		});
 		test.test('returns a new Fail containing the reason of the first Fail in the array.', () => {
 			const determiner = new Fail<boolean>(new TypeError('false'));
 			const all: Result<unknown[]> = Result.unwrapAll<unknown>([
@@ -75,6 +85,16 @@ test.suite('Result', () => {
 			assert_instanceof(any, Ok);
 			assert.notStrictEqual(any, determiner);
 			assert.strictEqual(any.value, determiner.value);
+		});
+		test.test('treats non-Result values as successes.', () => {
+			const any = Result.unwrapAny<unknown>([
+				new Fail<null>(new TypeError('null')),
+				false,
+				new Fail<number>(new RangeError('42')),
+				new Ok<string>('hi'),
+			]) as Result<unknown, AggregateError>;
+			assert_instanceof(any, Ok);
+			assert.strictEqual(any.value, false);
 		});
 	});
 
