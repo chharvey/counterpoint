@@ -14,7 +14,7 @@
  * @typeParam E : the type of the failure reason
  * @enum
  */
-export abstract class Result<T, E extends Error = Error> {
+abstract class ResultBase<T, E extends Error = Error> {
 	/* eslint-disable @typescript-eslint/no-use-before-define */
 	/**
 	 * Returns a new Result containing an array of the values of the given Results, if they are all instances of Ok.
@@ -32,7 +32,7 @@ export abstract class Result<T, E extends Error = Error> {
 			if (result instanceof Ok) {
 				values.push(result.value);
 			} else {
-				return new Fail<S[], X>((result as Fail<S, X>).reason);
+				return new Fail<S[], X>(result.reason);
 			}
 		}
 		return new Ok<S[], X>(values);
@@ -61,7 +61,7 @@ export abstract class Result<T, E extends Error = Error> {
 			if (result instanceof Fail) {
 				reasons.push(result.reason);
 			} else {
-				return new Ok<S, AggregateError>((result as Ok<S, X>).value);
+				return new Ok<S, AggregateError>(result.value);
 			}
 		}
 		return new Fail<S, AggregateError>(new AggregateError(reasons));
@@ -93,7 +93,7 @@ export abstract class Result<T, E extends Error = Error> {
 
 
 /** @final */
-export class Ok<T, E extends Error = Error> extends Result<T, E> {
+export class Ok<T, E extends Error = Error> extends ResultBase<T, E> {
 	public constructor(public readonly value: T) {
 		super();
 	}
@@ -119,7 +119,7 @@ export class Ok<T, E extends Error = Error> extends Result<T, E> {
 
 
 /** @final */
-export class Fail<T, E extends Error = Error> extends Result<T, E> {
+export class Fail<T, E extends Error = Error> extends ResultBase<T, E> {
 	public static fromString<S>(message: string): Fail<S> {
 		return new Fail<S>(new Error(message));
 	}
@@ -145,4 +145,15 @@ export class Fail<T, E extends Error = Error> extends Result<T, E> {
 	public override flatCatch<X extends Error = E>(on_ex: (reason: E) => Result<T, X>): Result<T, X> {
 		return on_ex(this.reason);
 	}
+}
+
+
+
+// HACK: TypeScript doesn’t handle pattern-matching with object inheritance well,
+// so we’re using a type union combined with a namespace to represent the base class.
+export type Result<T, E extends Error = Error> = ResultBase<T, E> & (Ok<T, E> | Fail<T, E>);
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Result {
+	export const unwrapAll = ResultBase.unwrapAll.bind(undefined);
+	export const unwrapAny = ResultBase.unwrapAny.bind(undefined);
 }
