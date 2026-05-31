@@ -29,13 +29,13 @@ abstract class ResultBase<T, E extends Error = Error> {
 	public static unwrapAll<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S[], X> {
 		const values: S[] = [];
 		for (const result of results) {
-			if (result instanceof Fail) {
-				return new Fail<S[], X>(result.reason);
+			if (result instanceof ResultFail) {
+				return new ResultFail<S[], X>(result.reason);
 			} else {
-				values.push(result instanceof Ok ? result.value : result);
+				values.push(result instanceof ResultOk ? result.value : result);
 			}
 		}
-		return new Ok<S[], X>(values);
+		return new ResultOk<S[], X>(values);
 	}
 
 	/**
@@ -54,17 +54,17 @@ abstract class ResultBase<T, E extends Error = Error> {
 	 */
 	public static unwrapAny<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S, AggregateError | Error> {
 		if (!results.length) {
-			return new Fail<S, Error>(new Error('All results in given empty array were failures.'));
+			return new ResultFail<S, Error>(new Error('All results in given empty array were failures.'));
 		}
 		const reasons: X[] = [];
 		for (const result of results) {
-			if (result instanceof Fail) {
+			if (result instanceof ResultFail) {
 				reasons.push(result.reason);
 			} else {
-				return new Ok<S, AggregateError>(result instanceof Ok ? result.value : result);
+				return new ResultOk<S, AggregateError>(result instanceof ResultOk ? result.value : result);
 			}
 		}
-		return new Fail<S, AggregateError>(new AggregateError(reasons));
+		return new ResultFail<S, AggregateError>(new AggregateError(reasons));
 	}
 	/* eslint-enable @typescript-eslint/no-use-before-define */
 
@@ -93,25 +93,25 @@ abstract class ResultBase<T, E extends Error = Error> {
 
 
 /** @final */
-export class Ok<T, E extends Error = Error> extends ResultBase<T, E> {
+class ResultOk<T, E extends Error = Error> extends ResultBase<T, E> {
 	public constructor(public readonly value: T) {
 		super();
 	}
 
 
-	public override map<S = T>(on_ok: (value: T) => S): Ok<S, E> {
-		return new Ok<S, E>(on_ok(this.value));
+	public override map<S = T>(on_ok: (value: T) => S): ResultOk<S, E> {
+		return new ResultOk<S, E>(on_ok(this.value));
 	}
 
-	public override catch<X extends Error = E>(): Ok<T, X> {
-		return new Ok<T, X>(this.value);
+	public override catch<X extends Error = E>(): ResultOk<T, X> {
+		return new ResultOk<T, X>(this.value);
 	}
 
 	public override flatMap<S = T>(on_ok: (value: T) => Result<S, E>): Result<S, E> {
 		return on_ok(this.value);
 	}
 
-	public override flatCatch<X extends Error = E>(): Ok<T, X> {
+	public override flatCatch<X extends Error = E>(): ResultOk<T, X> {
 		return this.catch<X>();
 	}
 }
@@ -119,9 +119,9 @@ export class Ok<T, E extends Error = Error> extends ResultBase<T, E> {
 
 
 /** @final */
-export class Fail<T, E extends Error = Error> extends ResultBase<T, E> {
-	public static fromString<S>(message: string): Fail<S> {
-		return new Fail<S>(new Error(message));
+class ResultFail<T, E extends Error = Error> extends ResultBase<T, E> {
+	public static fromString<S>(message: string): ResultFail<S> {
+		return new ResultFail<S>(new Error(message));
 	}
 
 
@@ -130,15 +130,15 @@ export class Fail<T, E extends Error = Error> extends ResultBase<T, E> {
 	}
 
 
-	public override map<S = T>(): Fail<S, E> {
-		return new Fail<S, E>(this.reason);
+	public override map<S = T>(): ResultFail<S, E> {
+		return new ResultFail<S, E>(this.reason);
 	}
 
-	public override catch<X extends Error = E>(on_ex: (reason: E) => X): Fail<T, X> {
-		return new Fail<T, X>(on_ex(this.reason));
+	public override catch<X extends Error = E>(on_ex: (reason: E) => X): ResultFail<T, X> {
+		return new ResultFail<T, X>(on_ex(this.reason));
 	}
 
-	public override flatMap<S = T>(): Fail<S, E> {
+	public override flatMap<S = T>(): ResultFail<S, E> {
 		return this.map<S>();
 	}
 
@@ -151,9 +151,11 @@ export class Fail<T, E extends Error = Error> extends ResultBase<T, E> {
 
 // HACK: TypeScript doesn’t handle pattern-matching with object inheritance well,
 // so we’re using a type union combined with a namespace to represent the base class.
-export type Result<T, E extends Error = Error> = ResultBase<T, E> & (Ok<T, E> | Fail<T, E>);
+export type Result<T, E extends Error = Error> = ResultBase<T, E> & (ResultOk<T, E> | ResultFail<T, E>);
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace Result {
+	export const Ok = ResultOk;
+	export const Fail = ResultFail;
 	export const unwrapAll = ResultBase.unwrapAll.bind(undefined);
 	export const unwrapAny = ResultBase.unwrapAny.bind(undefined);
 }

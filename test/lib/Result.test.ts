@@ -3,13 +3,12 @@ import * as test from 'node:test';
 import {
 	assert_instanceof,
 	Result,
-	Fail,
-	Ok,
 } from '../../src/index.ts';
 
 
 
 test.suite('Result', () => {
+	const {Ok, Fail} = Result;
 	test.suite('.unwrapAll', () => {
 		test.test('returns an empty array when given an empty array.', () => {
 			const all: Result<unknown[]> = Result.unwrapAll([]);
