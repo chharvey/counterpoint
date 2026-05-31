@@ -203,4 +203,20 @@ test.suite('Result', () => {
 			return assert.strictEqual(mapped_to_fail, returned_fail);
 		});
 	});
+
+
+	test.suite('#unwrapOrPanic', () => {
+		test.test('[this: Ok] returns the success value.', () => {
+			const ok: Result<number> = new Ok<number>(42);
+			return assert.strictEqual(ok.unwrapOrPanic(), 42);
+		});
+		test.test('[this: Fail] throws the failure reason.', () => {
+			const err = new Error('message');
+			const fail: Result<number> = new Fail<number>(err);
+			assert.throws(() => fail.unwrapOrPanic(), (thrown) => {
+				assert.strictEqual(thrown, err);
+				return true;
+			});
+		});
+	});
 });

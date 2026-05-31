@@ -106,6 +106,13 @@ abstract class ResultBase<T, E extends Error = Error> {
 	 * @return            a new Result with the result of `on_ex`
 	 */
 	public abstract flatCatch<X extends Error = E>(on_ex: (reason: E) => Result<T, X>): Result<T, X>;
+
+	/**
+	 * Extract this Result's success value, or throw if it is a failure.
+	 * @returns the success value if this Result is an Ok
+	 * @throws  the failure reason if this Result is a Fail
+	 */
+	public abstract unwrapOrPanic(): T;
 }
 
 
@@ -135,6 +142,10 @@ class ResultOk<T, E extends Error = Error> extends ResultBase<T, E> {
 
 	public override flatCatch<X extends Error = E>(): ResultOk<T, X> {
 		return this.catch<X>();
+	}
+
+	public override unwrapOrPanic(): T {
+		return this.value;
 	}
 }
 
@@ -170,6 +181,10 @@ class ResultFail<T, E extends Error = Error> extends ResultBase<T, E> {
 
 	public override flatCatch<X extends Error = E>(on_ex: (reason: E) => Result<T, X>): Result<T, X> {
 		return on_ex(this.reason);
+	}
+
+	public override unwrapOrPanic(): never {
+		throw this.reason;
 	}
 }
 
