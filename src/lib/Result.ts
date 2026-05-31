@@ -85,8 +85,26 @@ abstract class ResultBase<T, E extends Error = Error> {
 	 */
 	public abstract catch<X extends Error = E>(on_ex: (reason: E) => X): Result<T, X>;
 
+	/**
+	 * Handle this Result’s success value, returning a new Result.
+	 * The callback must return a Result instead of a success value;
+	 * useful for fallible operations.
+	 * If the callback is performed, this method returns the value returned by it.
+	 * @typeParam S     : the type of the new Result’s success value
+	 * @param     on_ok : a function to be called on this Result’s success value
+	 * @return            a new Result with the result of `on_ok`
+	 */
 	public abstract flatMap<S = T>(on_ok: (value: T) => Result<S, E>): Result<S, E>;
 
+	/**
+	 * Handle this Result’s fail reason, returning a new Result.
+	 * The callback must return a Result instead of a failure reason;
+	 * useful for recoverable operations.
+	 * If the callback is performed, this method returns the value returned by it.
+	 * @typeParam X     : the type of the new Result’s fail reason
+	 * @param     on_ex : a function to be called on this Result’s fail reason
+	 * @return            a new Result with the result of `on_ex`
+	 */
 	public abstract flatCatch<X extends Error = E>(on_ex: (reason: E) => Result<T, X>): Result<T, X>;
 }
 
@@ -94,6 +112,10 @@ abstract class ResultBase<T, E extends Error = Error> {
 
 /** @final */
 class ResultOk<T, E extends Error = Error> extends ResultBase<T, E> {
+	/**
+	 * Construct a new Ok object.
+	 * @param value the value held by the Ok
+	 */
 	public constructor(public readonly value: T) {
 		super();
 	}
@@ -125,6 +147,10 @@ class ResultFail<T, E extends Error = Error> extends ResultBase<T, E> {
 	}
 
 
+	/**
+	 * Construct a new Fail object.
+	 * @param reason the reason held by the Fail
+	 */
 	public constructor(public readonly reason: E) {
 		super();
 	}
