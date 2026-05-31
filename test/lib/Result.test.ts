@@ -9,14 +9,14 @@ import {
 
 test.suite('Result', () => {
 	const {Ok, Fail} = Result;
-	test.suite('.unwrapAll', () => {
+	test.suite('.allOk', () => {
 		test.test('returns an empty array when given an empty array.', () => {
-			const all: Result<unknown[]> = Result.unwrapAll([]);
+			const all: Result<unknown[]> = Result.allOk([]);
 			assert_instanceof(all, Ok);
 			return assert.deepStrictEqual(all.value, []);
 		});
 		test.test('returns an array of values if no given items are Fails.', () => {
-			const all: Result<unknown[]> = Result.unwrapAll<unknown>([
+			const all: Result<unknown[]> = Result.allOk<unknown>([
 				new Ok<null>(null),
 				new Ok<boolean>(false),
 				new Ok<number>(42),
@@ -26,7 +26,7 @@ test.suite('Result', () => {
 			return assert.deepStrictEqual(all.value, [null, false, 42, 'hi']);
 		});
 		test.test('treats non-Result values as successes.', () => {
-			const all: Result<unknown[]> = Result.unwrapAll<unknown>([
+			const all: Result<unknown[]> = Result.allOk<unknown>([
 				new Ok<null>(null),
 				false,
 				new Ok<number>(42),
@@ -37,7 +37,7 @@ test.suite('Result', () => {
 		});
 		test.test('returns a new Fail containing the reason of the first Fail in the array.', () => {
 			const determiner = new Fail<boolean>(new TypeError('false'));
-			const all: Result<unknown[]> = Result.unwrapAll<unknown>([
+			const all: Result<unknown[]> = Result.allOk<unknown>([
 				new Ok<null>(null),
 				determiner,
 				new Ok<number>(42),
@@ -50,15 +50,15 @@ test.suite('Result', () => {
 	});
 
 
-	test.suite('.unwrapAny', () => {
+	test.suite('.anyOk', () => {
 		test.test('returns Fail when given an empty array.', () => {
-			const any: Result<never> = Result.unwrapAny([]);
+			const any: Result<never> = Result.anyOk([]);
 			assert_instanceof(any, Fail);
 			assert_instanceof(any.reason, Error);
 			return assert.strictEqual(any.reason.message, 'All results in given empty array were failures.');
 		});
 		test.test('returns an AggregateError of reasons if no given items are Oks.', () => {
-			const any = Result.unwrapAny<unknown>([
+			const any = Result.anyOk<unknown>([
 				new Fail<null>(new Error('null')),
 				new Fail<boolean>(new Error('false')),
 				new Fail<number>(new Error('42')),
@@ -75,7 +75,7 @@ test.suite('Result', () => {
 		});
 		test.test('returns an Ok containing the value of the first Ok in the array.', () => {
 			const determiner = new Ok<boolean>(false);
-			const any = Result.unwrapAny<unknown>([
+			const any = Result.anyOk<unknown>([
 				new Fail<null>(new TypeError('null')),
 				determiner,
 				new Fail<number>(new RangeError('42')),
@@ -86,7 +86,7 @@ test.suite('Result', () => {
 			return assert.strictEqual(any.value, determiner.value);
 		});
 		test.test('treats non-Result values as successes.', () => {
-			const any = Result.unwrapAny<unknown>([
+			const any = Result.anyOk<unknown>([
 				new Fail<null>(new TypeError('null')),
 				false,
 				new Fail<number>(new RangeError('42')),

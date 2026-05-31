@@ -26,7 +26,7 @@ abstract class ResultBase<T, E extends Error = Error> {
 	 * @param results the results to unwrap
 	 * @returns a new Ok containing the array of unwrapped success values, or a new Fail containing any unwrapped failure reason
 	 */
-	public static unwrapAll<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S[], X> {
+	public static allOk<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S[], X> {
 		const values: S[] = [];
 		for (const result of results) {
 			if (result instanceof ResultFail) {
@@ -52,7 +52,7 @@ abstract class ResultBase<T, E extends Error = Error> {
 	 * @param results the results to unwrap
 	 * @returns a new Ok containing an unwrapped success value, or a new Fail containing an AggregateError of unwrapped failure reasons
 	 */
-	public static unwrapAny<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S, AggregateError | Error> {
+	public static anyOk<S, X extends Error = Error>(results: readonly (Result<S, X> | S)[]): Result<S, AggregateError | Error> {
 		if (!results.length) {
 			return new ResultFail<S, Error>(new Error('All results in given empty array were failures.'));
 		}
@@ -197,6 +197,6 @@ export type Result<T, E extends Error = Error> = ResultBase<T, E> & (ResultOk<T,
 export namespace Result {
 	export const Ok = ResultOk;
 	export const Fail = ResultFail;
-	export const unwrapAll = ResultBase.unwrapAll.bind(undefined);
-	export const unwrapAny = ResultBase.unwrapAny.bind(undefined);
+	export const allOk = ResultBase.allOk.bind(undefined);
+	export const anyOk = ResultBase.anyOk.bind(undefined);
 }
