@@ -199,4 +199,12 @@ export namespace Result {
 	export const Fail = ResultFail;
 	export const allOk = ResultBase.allOk.bind(undefined);
 	export const anyOk = ResultBase.anyOk.bind(undefined);
+
+	export function tryCatch<U>(callback: () => U): Result<U> {
+		try {
+			return new Result.Ok<U>(callback());
+		} catch (err) {
+			return new Result.Fail<U>(err as Error);
+		}
+	}
 }
