@@ -101,7 +101,7 @@ test.suite('Result', () => {
 	test.suite('#map', () => {
 		test.test('[this: Ok] returns new `Ok` object whose value is the value returned by callback.', () => {
 			const ok: Result<number> = new Ok<number>(42);
-			const mapped: Result<string> = ok.map((value) => {
+			const mapped: Result<string> = ok.map<string>((value) => {
 				assert.strictEqual(value, 42);
 				return 'done';
 			});
@@ -112,7 +112,7 @@ test.suite('Result', () => {
 		test.test('[this: Fail] returns new `Fail` object with the same reason.', () => {
 			const reason = new Error('message');
 			const fail: Result<number> = new Fail<number>(reason);
-			const mapped: Result<never> = fail.map(() => {
+			const mapped: Result<never> = fail.map<never>(() => {
 				assert.fail('does not execute callback.');
 			});
 			assert_instanceof(mapped, Fail);
@@ -125,7 +125,7 @@ test.suite('Result', () => {
 	test.suite('#catch', () => {
 		test.test('[this: Ok] returns new `Ok` object with same value.', () => {
 			const ok: Result<number> = new Ok<number>(42);
-			const caught: Result<number> = ok.catch(() => {
+			const caught: Result<number> = ok.catch<never>(() => {
 				assert.fail('does not execute callback.');
 			});
 			assert_instanceof(caught, Ok);
@@ -152,11 +152,11 @@ test.suite('Result', () => {
 			const ok: Result<number> = new Ok<number>(42);
 			const returned_ok = new Ok<string>('done');
 			const returned_fail = new Fail<string>(new Error('done'));
-			const mapped_to_ok: Result<string> = ok.flatMap((value) => {
+			const mapped_to_ok: Result<string> = ok.flatMap<string>((value) => {
 				assert.strictEqual(value, 42);
 				return returned_ok;
 			});
-			const mapped_to_fail: Result<string> = ok.flatMap((value) => {
+			const mapped_to_fail: Result<string> = ok.flatMap<string>((value) => {
 				assert.strictEqual(value, 42);
 				return returned_fail;
 			});
@@ -166,7 +166,7 @@ test.suite('Result', () => {
 		test.test('[this: Fail] returns new `Fail` object with the same reason.', () => {
 			const err = new Error('message');
 			const fail: Result<number> = new Fail<number>(err);
-			const mapped: Result<never> = fail.flatMap(() => {
+			const mapped: Result<never> = fail.flatMap<never>(() => {
 				assert.fail('does not execute callback.');
 			});
 			assert_instanceof(mapped, Fail);
@@ -179,7 +179,7 @@ test.suite('Result', () => {
 	test.suite('#flatCatch', () => {
 		test.test('[this: Ok] returns new `Ok` object with same value.', () => {
 			const ok: Result<number> = new Ok<number>(42);
-			const caught: Result<number> = ok.flatCatch(() => {
+			const caught: Result<number> = ok.flatCatch<never>(() => {
 				assert.fail('does not execute callback.');
 			});
 			assert_instanceof(caught, Ok);
