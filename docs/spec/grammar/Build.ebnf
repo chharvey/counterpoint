@@ -29,9 +29,9 @@ NAT.CONST  (VALUE.Natural) -> Value;
 FLOAT.CONST(VALUE.Float)   -> Value;
 STR.CONST  (VALUE.String)  -> Value;
 
-STR.TEMPLATE([Value*]) -> String;
-
 GET(SymbolSchemaVar|native-string) -> Value;
+
+STR.TEMPLATE([Value*]) -> String;
 
 TUPLE.NEW([Value*])                       -> Tuple;
 RECORD.NEW(Vector<native-bigint, Value>*) -> Record;

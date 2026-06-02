@@ -1,10 +1,13 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
+	assert_instanceof,
 	type AST,
 	VALUE,
 	TYPE,
+	type SymbolSchemaVar,
 	Builder,
 	OP,
 	bigint_to_i64,
@@ -20,6 +23,56 @@ import {
 
 test.suite('Opcode', () => {
 	test.suite('Value', () => {
+		test.suite('#interpret', () => {
+			test.test('Trap always throws.', () => {
+				assert.throws(() => new OP.Trap().interpret(), /Trap\./);
+			});
+
+			test.test('Const returns interpreter value.', () => {
+				xjs.Array.forEachAggregated([
+					VALUE.NULL,
+					VALUE.FALSE,
+					VALUE.TRUE,
+					VALUE.SYM_NOTHING,
+					VALUE.INT_0,
+					VALUE.NAT_0,
+					VALUE.FLOAT_0,
+					VALUE.STR_EMPTY,
+					new VALUE.Symbol(0x100n, 'hello'),
+					new VALUE.Integer(42n),
+					new VALUE.Natural(42n),
+					new VALUE.Float(4.2),
+					new VALUE.String('hello'),
+				], (val) => assert.deepStrictEqual(new OP.Const(val).interpret(), val));
+			});
+
+			test.test('Get returns validator’s symbol table value.', () => {
+				const {goal, stmts, builder} = setupScript(`{
+					val mut a: null  = null;
+					val mut b: bool  = false;
+					val mut c: sym   = @hello;
+					val mut d: int   = 42;
+					val mut e: float = 4.2;
+
+					a;
+					b;
+					c;
+					d;
+					e;
+				}`, {codegen: false});
+				const vars = goal.block!.validator.getAllSymbols();
+				const gets: readonly OP.Value[] = stmts.slice(5).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder));
+				return xjs.Array.forEachAggregated(gets, (get, i) => {
+					assert_instanceof(get, OP.Get);
+					return assert.deepStrictEqual(
+						get.interpret(),
+						(vars.get([0x100n, 0x101n, 0x103n, 0x104n, 0x105n][i]) as SymbolSchemaVar).value,
+					);
+				});
+			});
+		});
+
+
 		test.suite('#codegen', () => {
 			test.test('Trap returns (unreachable).', () => {
 				const cg = new CodeGenerator();
@@ -852,6 +905,7 @@ test.suite('Opcode', () => {
 			});
 		});
 	});
+
 
 
 	test.suite('Instruction', () => {

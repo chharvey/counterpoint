@@ -13,6 +13,8 @@ Codegen((STR.CONST `v`)) := (call $Value.new-composite
 	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
 );
 
+Codegen((GET `id`)) := (local.get ‹index› `id.type`);
+
 Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
 	(block (result (ref $String))
 		`values.map("(local.set $str_`i` (call $Value.stringify `Codegen(values[i])`))")`
@@ -33,8 +35,6 @@ Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
 		(local.get $string)
 	)
 );
-
-Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 
 Codegen((TUPLE.NEW)) := (call $Value.new-composite
 	(array.new_fixed $Tuple 0)

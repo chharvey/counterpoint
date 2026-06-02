@@ -1,6 +1,9 @@
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {
 	Temp,
 	Builder,
@@ -74,6 +77,14 @@ export abstract class Value extends Opcode {
 		const temp: Temp = builder.newTemp(this);
 		builder.pushInstruction(new Decl(temp));
 		return new Get(temp);
+	}
+
+	/**
+	 * Execute the interpreter.
+	 * @returns a runtime value in the interpreter
+	 */
+	public interpret(): VALUE.Value { // TODO: abstractify this method
+		throw new Error(`\`${ this.constructor.name }#interpret\` is not yet supported.`);
 	}
 
 	/**

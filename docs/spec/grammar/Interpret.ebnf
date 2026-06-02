@@ -1,0 +1,36 @@
+Interpret((TRAP)) :=
+	1. *Throw:* a new Error.
+;
+
+Null Interpret((NULL.CONST `n`)) :=
+	1. *Return:* `n`.
+;
+Boolean Interpret((BOOL.CONST `b`)) :=
+	1. *Return:* `b`.
+;
+Symbol Interpret((SYM.CONST `s`)) :=
+	1. *Return:* `s`.
+;
+Integer Interpret((INT.CONST `i`)) :=
+	1. *Return:* `i`.
+;
+Natural Interpret((NAT.CONST `n`)) :=
+	1. *Return:* `n`.
+;
+Float Interpret((FLOAT.CONST `f`)) :=
+	1. *Return:* `f`.
+;
+String Interpret((STR.CONST `s`)) :=
+	1. *Return:* `s`.
+;
+
+Value! Interpret((GET `id`)) :=
+	1. *If* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `id`:
+		1. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+		2. *Assert:* `symbol.value` is set.
+		3. *Return:* `symbol.value`.
+	2. *Else:*
+		1. *Assert:* `symbol` is a temporary local in the IR.
+		2. *Assert:* `symbol.value` is set.
+		3. *Return:* `Interpret(symbol.value)`.
+;
