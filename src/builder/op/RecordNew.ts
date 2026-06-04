@@ -6,7 +6,10 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -31,6 +34,13 @@ export class RecordNew extends Value {
 	public override validate(): void {
 		assert_instanceof(this.type, TYPE.Record);
 		return xjs.Map.forEachAggregated(this.props, ({value}) => value.validate());
+	}
+
+	public override interpret(): VALUE.Record {
+		return new VALUE.Record(new Map<bigint, VALUE.Value>([...this.props].map(([id, {value}]) => [
+			id,
+			value.interpret(),
+		])));
 	}
 
 	@memoizeMethod

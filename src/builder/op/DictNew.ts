@@ -7,7 +7,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {
-	type VALUE,
+	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
@@ -33,6 +33,13 @@ export class DictNew extends Value {
 	public override validate(): void {
 		assert_instanceof(this.type, TYPE.Dict);
 		return xjs.Map.forEachAggregated(this.props, (value) => value.validate());
+	}
+
+	public override interpret(): VALUE.Dict {
+		return new VALUE.Dict(new Map<bigint, VALUE.Value>([...this.props].map(([{id}, value]) => [
+			id,
+			value.interpret(),
+		])));
 	}
 
 	@memoizeMethod

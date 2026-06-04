@@ -70,6 +70,74 @@ test.suite('Opcode', () => {
 					);
 				});
 			});
+
+			test.test('Template interprets each child, stringifies, and concatenates.', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x: int = 85;
+
+					"""42😀""";
+					%% TODO: support \`Binop#interpret\`
+					"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";
+					"""the answer is {{ x / 2 }} but what is the question?""";
+					%%
+				}`, {codegen: false});
+				return assert.deepStrictEqual(
+					stmts.slice(1).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret()),
+					[
+						new VALUE.String('42😀'),
+						/* TODO: support `Binop#interpret`
+						new VALUE.String('the answer is 42 but what is the question?'),
+						new VALUE.String('the answer is 42 but what is the question?'),
+						*/
+					],
+				);
+			});
+
+			test.test('CollectionLinearNew, RecordNew, DictNew, MapNew', () => {
+				const {stmts, builder} = setupScript(`{
+					(1, 2.0, "three");
+					[1, 2.0, "three"];
+					{1, 2.0, "three"};
+
+					(a= 1, b= 2.0, c= "three");
+					[a= 1, b= 2.0, c= "three"];
+
+					%% TODO: support \`Binop#interpret\`
+					{
+						"a" || "" -> 1,
+						21 + 21   -> 2.0,
+						1.5 * 2.0 -> "three",
+					};
+					%%
+				}`, {build: false});
+				const expected_items = [
+					new VALUE.Integer(1n),
+					new VALUE.Float(2.0),
+					new VALUE.String('three'),
+				];
+				const expected_pairs = [
+					[0x100n, expected_items[0]],
+					[0x101n, expected_items[1]],
+					[0x102n, expected_items[2]],
+				] as const;
+				return assert.deepStrictEqual(
+					stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret()),
+					[
+						new VALUE.Tuple(expected_items),
+						new VALUE.List(expected_items),
+						new VALUE.Set(new Set<VALUE.Value>(expected_items)),
+						new VALUE.Record(new Map<bigint, VALUE.Value>(expected_pairs)),
+						new VALUE.Dict(new Map<bigint, VALUE.Value>(expected_pairs)),
+						/* TODO: support `Binop#interpret`
+						new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+							[new VALUE.String('a'),  expected_items[0]],
+							[new VALUE.Integer(42n), expected_items[1]],
+							[new VALUE.Float(3.0),   expected_items[2]],
+						])),
+						*/
+					],
+				);
+			});
 		});
 
 

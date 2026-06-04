@@ -34,3 +34,52 @@ Value! Interpret((GET `id`)) :=
 		2. *Assert:* `symbol.value` is set.
 		3. *Return:* `Interpret(symbol.value)`.
 ;
+
+Value! Interpret((STR.TEMPLATE `values`)) :=
+	1. *Let* `values` be a mapping for each `value` in `values` to *Unwrap:* `Interpret(value)`.
+	2. *Let* `strings` be a mapping for each `value` in `values` to `String(value)`.
+	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
+;
+
+Tuple! Interpret((TUPLE.NEW `values`)) :=
+	1. *Let* `data` be a mapping of `values` for each `it` to *Unwrap:* `Interpret(it)`.
+	2. *Return:* a new Tuple containing the items in `data`.
+;
+
+Record! Interpret((RECORD.NEW `pairs`)) :=
+	1. *Let* `data` be a new Schema.
+	2. *For index* `i` in `pairs`:
+		1. Set `data` to a new Schema [
+			...data,
+			`pairs[i].0`= *Unwrap:* `Interpret(pairs[i].1)`,
+		].
+	3. *Return:* a new Record containing the properties in `data`.
+;
+
+List! Interpret((LIST.NEW `values`)) :=
+	1. *Let* `data` be a mapping of `values` for each `it` to *Unwrap:* `Interpret(it)`.
+	2. *Return:* a new List containing the items in `data`.
+;
+
+Dict! Interpret((DICT.NEW `pairs`)) :=
+	1. *Let* `data` be a new Schema.
+	2. *For index* `i` in `pairs`:
+		1. Set `data` to a new Schema [
+			...data,
+			`pairs[i].0.id`= *Unwrap:* `Interpret(pairs[i].1)`,
+		].
+	3. *Return:* a new Dict containing the properties in `data`.
+;
+
+Set! Interpret((SET.NEW `values`)) :=
+	1. *Let* `data` be a mapping of `values` for each `it` to *Unwrap:* `Interpret(it)`.
+	2. *Return:* a new Set containing the items in `data`.
+;
+
+Map! Interpret((MAP.NEW `pairs`)) :=
+	1. *Let* `data` be a mapping of `pairs` for each `case` to a new Vector [
+		*Unwrap:* `Interpret(case.0)`,
+		*Unwrap:* `Interpret(case.1)`,
+	].
+	2. *Return:* a new Map containing the pairs in `data`.
+;

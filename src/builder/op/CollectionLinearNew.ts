@@ -7,7 +7,10 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -41,6 +44,15 @@ export class CollectionLinearNew extends Value {
 			[TypeName.SET,   TYPE.Set],
 		]).get(this.name)!);
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
+	}
+
+	public override interpret(): VALUE.Tuple | VALUE.List | VALUE.Set {
+		const items: readonly VALUE.Value[] = this.items.map((value) => value.interpret());
+		switch (this.name) {
+			case TypeName.TUPLE: { return new VALUE.Tuple(items); }
+			case TypeName.LIST:  { return new VALUE.List(items); }
+			case TypeName.SET:   { return new VALUE.Set(new Set<VALUE.Value>(items)); }
+		}
 	}
 
 	@memoizeMethod

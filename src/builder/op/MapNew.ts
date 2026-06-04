@@ -6,7 +6,10 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -30,6 +33,13 @@ export class MapNew extends Value {
 	public override validate(): void {
 		assert_instanceof(this.type, TYPE.Map);
 		return xjs.Map.forEachAggregated(this.cases, (con, ant) => xjs.Array.forEachAggregated([ant, con], (value) => value.validate()));
+	}
+
+	public override interpret(): VALUE.Map {
+		return new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([...this.cases].map(([ant, con]) => [
+			ant.interpret(),
+			con.interpret(),
+		])));
 	}
 
 	@memoizeMethod
