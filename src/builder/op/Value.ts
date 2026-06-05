@@ -8,6 +8,7 @@ import type {
 	Temp,
 	Builder,
 } from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {
 	type ValueTac,
 	Get,
@@ -83,7 +84,7 @@ export abstract class Value extends Opcode {
 	 * Execute the interpreter.
 	 * @returns a runtime value in the interpreter
 	 */
-	public interpret(): VALUE.Value { // TODO: abstractify this method
+	public interpret(_interp: Interpreter): VALUE.Value { // TODO: abstractify this method
 		throw new Error(`\`${ this.constructor.name }#interpret\` is not yet supported.`);
 	}
 

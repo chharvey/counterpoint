@@ -9,6 +9,7 @@ import {
 	TYPE,
 	type SymbolSchemaVar,
 	Builder,
+	Interpreter,
 	OP,
 	bigint_to_i64,
 	CodeGenerator,
@@ -60,12 +61,13 @@ test.suite('Opcode', () => {
 					d;
 					e;
 				}`, {codegen: false});
+				const interp = new Interpreter();
 				const vars = goal.block!.validator.getAllSymbols();
 				const gets: readonly OP.Value[] = stmts.slice(5).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder));
 				return xjs.Array.forEachAggregated(gets, (get, i) => {
 					assert_instanceof(get, OP.Get);
 					return assert.deepStrictEqual(
-						get.interpret(),
+						get.interpret(interp),
 						(vars.get([0x100n, 0x101n, 0x103n, 0x104n, 0x105n][i]) as SymbolSchemaVar).value,
 					);
 				});
@@ -81,8 +83,9 @@ test.suite('Opcode', () => {
 					"""the answer is {{ x / 2 }} but what is the question?""";
 					%%
 				}`, {codegen: false});
+				const interp = new Interpreter();
 				return assert.deepStrictEqual(
-					stmts.slice(1).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret()),
+					stmts.slice(1).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret(interp)),
 					[
 						new VALUE.String('42😀'),
 						/* TODO: support `Binop#interpret`
@@ -110,6 +113,7 @@ test.suite('Opcode', () => {
 					};
 					%%
 				}`, {build: false});
+				const interp = new Interpreter();
 				const expected_items = [
 					new VALUE.Integer(1n),
 					new VALUE.Float(2.0),
@@ -121,7 +125,7 @@ test.suite('Opcode', () => {
 					[0x102n, expected_items[2]],
 				] as const;
 				return assert.deepStrictEqual(
-					stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret()),
+					stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret(interp)),
 					[
 						new VALUE.Tuple(expected_items),
 						new VALUE.List(expected_items),

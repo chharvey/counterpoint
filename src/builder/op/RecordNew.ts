@@ -11,6 +11,7 @@ import {
 	TYPE,
 } from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -37,10 +38,10 @@ export class RecordNew extends Value {
 		return xjs.Map.forEachAggregated(this.props, ({value}) => value.validate(builder));
 	}
 
-	public override interpret(): VALUE.Record {
+	public override interpret(interp: Interpreter): VALUE.Record {
 		return new VALUE.Record(new Map<bigint, VALUE.Value>([...this.props].map(([id, {value}]) => [
 			id,
-			value.interpret(),
+			value.interpret(interp),
 		])));
 	}
 

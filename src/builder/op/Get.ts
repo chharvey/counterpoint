@@ -11,6 +11,7 @@ import type {
 	Temp,
 	Builder,
 } from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {ValueTac} from './ValueTac.ts';
 
@@ -33,11 +34,11 @@ export class Get extends ValueTac {
 		}
 	}
 
-	public override interpret(): VALUE.Value {
+	public override interpret(interp: Interpreter): VALUE.Value {
 		return this.target instanceof SymbolSchemaVar
 			// non-null assertions are ok because by the time `new Get(temp)` is called, `temp` will have already been Set
 			? this.target.value!
-			: this.target.value!.interpret();
+			: this.target.value!.interpret(interp);
 	}
 
 	@memoizeMethod

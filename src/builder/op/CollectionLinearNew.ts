@@ -12,6 +12,7 @@ import {
 	TYPE,
 } from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -47,8 +48,8 @@ export class CollectionLinearNew extends Value {
 		return xjs.Array.forEachAggregated(this.items, (item) => item.validate(builder));
 	}
 
-	public override interpret(): VALUE.Tuple | VALUE.List | VALUE.Set {
-		const items: readonly VALUE.Value[] = this.items.map((value) => value.interpret());
+	public override interpret(interp: Interpreter): VALUE.Tuple | VALUE.List | VALUE.Set {
+		const items: readonly VALUE.Value[] = this.items.map((value) => value.interpret(interp));
 		switch (this.name) {
 			case TypeName.TUPLE: { return new VALUE.Tuple(items); }
 			case TypeName.LIST:  { return new VALUE.List(items); }
