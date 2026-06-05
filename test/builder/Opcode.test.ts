@@ -14,6 +14,7 @@ import {
 	CodeGenerator,
 } from '../../src/index.ts';
 import {
+	repeat,
 	assertEqualBins,
 	genConst,
 	setupScript,
@@ -145,6 +146,40 @@ test.suite('Opcode', () => {
 						])),
 						*/
 					],
+				);
+			});
+
+			test.test('TupleGet, RecordGet', () => {
+				const {stmts, builder} = setupScript(`{
+					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
+					val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
+
+					val     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+					val mut rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+
+					tup_fixed.0;    % value \`1\`
+					tup_fixed.1;    % value \`2.0\`
+					tup_fixed.2;    % value \`"three"\`
+					tup_unfixed.0;  % value \`1\`
+					tup_unfixed.1;  % value \`2.0\`
+					tup_unfixed.2;  % value \`"three"\`
+
+					rec_fixed.a;   % value \`1\`
+					rec_fixed.b;   % value \`2.0\`
+					rec_fixed._;   % value \`"three"\`
+					rec_unfixed.a; % value \`1\`
+					rec_unfixed.b; % value \`2.0\`
+					rec_unfixed._; % value \`"three"\`
+				}`, {codegen: false});
+				const interp = new Interpreter();
+				builder.instructions.slice(0, 4).forEach((instr) => instr.interpret(interp));
+				return assert.deepStrictEqual(
+					stmts.slice(4).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret(interp)),
+					repeat([
+						new VALUE.Integer(1n),
+						new VALUE.Float(2.0),
+						new VALUE.String('three'),
+					], 4).flat(),
 				);
 			});
 		});

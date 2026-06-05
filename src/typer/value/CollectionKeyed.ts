@@ -54,9 +54,15 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	}
 
 	/** @final */
-	public get(key: bigint, is_access_maybe: boolean, accessor: AST.Key | AST.Expression): T | Null {
+	public get(key: bigint): T | Null;
+	/** @deprecated */
+	public get(key: bigint, is_access_maybe: boolean, accessor: AST.Key | AST.Expression): T | Null;
+	public get(key: bigint, is_access_maybe?: boolean, accessor?: AST.Key | AST.Expression): T | Null {
+		if (is_access_maybe === undefined) {
+			return this.properties.get(key) ?? NULL;
+		}
 		return this.properties.has(key)
 			? this.properties.get(key)!
-			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('key', this, key, accessor));
+			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('key', this, key, accessor!));
 	}
 }

@@ -54,9 +54,15 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	/** @final */
-	public get(index: bigint, is_access_maybe: boolean, accessor: AST.Index | AST.Expression): T | Null {
+	public get(index: bigint): T | Null;
+	/** @deprecated */
+	public get(index: bigint, is_access_maybe: boolean, accessor: AST.Index | AST.Expression): T | Null;
+	public get(index: bigint, is_access_maybe?: boolean, accessor?: AST.Index | AST.Expression): T | Null {
+		if (is_access_maybe === undefined) {
+			return this.items.at(Number(index)) ?? NULL;
+		}
 		return 0 <= index && index < this.items.length
 			? this.items.at(Number(index))!
-			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor));
+			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor!));
 	}
 }

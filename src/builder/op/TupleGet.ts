@@ -5,8 +5,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -31,6 +35,12 @@ export class TupleGet extends Value {
 	public override validate(builder: Builder): void {
 		this.tuple.validate(builder);
 		return assert_instanceof(this.tuple.type, TYPE.Tuple);
+	}
+
+	public override interpret(interp: Interpreter): VALUE.Value {
+		const base: VALUE.Value = this.tuple.interpret(interp);
+		assert_instanceof(base, VALUE.Tuple);
+		return base.get(this.accessor);
 	}
 
 	@memoizeMethod

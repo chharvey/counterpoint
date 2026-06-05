@@ -546,13 +546,13 @@ test.suite('Access', () => {
 						val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
 						val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-						tupo1_f?.2; % type \`str?\`
-						tupo1_u?.2; % type \`str?\`
-						tupo2_u?.2; % type \`str?\`
+						tupo1_f?.2; % type \`str | null\`
+						tupo1_u?.2; % type \`str | null\`
+						tupo2_u?.2; % type \`str | null\`
 
-						reco1_f?.b; % type \`str?\`
-						reco1_u?.b; % type \`str?\`
-						reco2_u?.b; % type \`str?\`
+						reco1_f?.b; % type \`str | null\`
+						reco1_u?.b; % type \`str | null\`
+						reco2_u?.b; % type \`str | null\`
 					}`, [
 						...repeat(TypeErrorInvalidOperation, 4),
 						...repeat(TYPE.STR.union(TYPE.NULL), 6),
