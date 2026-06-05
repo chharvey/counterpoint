@@ -205,7 +205,7 @@ Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
 	)
 );
 
-// Codegen((CALL `values`));
+// Codegen((CALL `callable` `args`));
 
 Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
 

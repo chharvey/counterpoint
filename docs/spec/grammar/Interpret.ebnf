@@ -144,6 +144,8 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 		1. *Return:* `null`.
 ;
 
+// Value! Interpret((CALL `callable` `args`));
+
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;
