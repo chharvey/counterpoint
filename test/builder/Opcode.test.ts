@@ -7,7 +7,6 @@ import {
 	type AST,
 	VALUE,
 	TYPE,
-	type SymbolSchemaVar,
 	Builder,
 	Interpreter,
 	OP,
@@ -48,7 +47,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Get returns validator’s symbol table value.', () => {
-				const {goal, stmts, builder} = setupScript(`{
+				const {stmts, builder} = setupScript(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
@@ -62,15 +61,21 @@ test.suite('Opcode', () => {
 					e;
 				}`, {codegen: false});
 				const interp = new Interpreter();
-				const vars = goal.block!.validator.getAllSymbols();
-				const gets: readonly OP.Value[] = stmts.slice(5).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder));
-				return xjs.Array.forEachAggregated(gets, (get, i) => {
-					assert_instanceof(get, OP.Get);
-					return assert.deepStrictEqual(
-						get.interpret(interp),
-						(vars.get([0x100n, 0x101n, 0x103n, 0x104n, 0x105n][i]) as SymbolSchemaVar).value,
-					);
-				});
+				builder.instructions.slice(0, 5).forEach((instr) => instr.interpret(interp));
+				assert.deepStrictEqual(
+					stmts.slice(5).map((stmt) => {
+						const get: OP.Value = (stmt as AST.StatementExpression).expr!.build(builder);
+						assert_instanceof(get, OP.Get);
+						return get.interpret(interp);
+					}),
+					[
+						VALUE.NULL,
+						VALUE.FALSE,
+						new VALUE.Symbol(0x102n, 'hello'),
+						new VALUE.Integer(42n),
+						new VALUE.Float(4.2),
+					],
+				);
 			});
 
 			test.test('Template interprets each child, stringifies, and concatenates.', () => {

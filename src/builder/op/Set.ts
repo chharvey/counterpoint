@@ -48,7 +48,7 @@ class IrSet extends Instruction {
 	}
 
 	public override interpret(interp: Interpreter): void {
-		interp;
+		interp.setLocalValue(this.target, this.value.interpret(interp));
 	}
 
 	@memoizeMethod

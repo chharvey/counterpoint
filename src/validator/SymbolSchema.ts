@@ -56,7 +56,7 @@ export class SymbolSchemaVar extends SymbolSchema {
 	 */
 	public irType: TYPE.Type = TYPE.NOTHING;
 
-	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
+	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. @deprecated */
 	public value: VALUE.Value | null = null;
 
 	public constructor(

@@ -56,7 +56,11 @@ export class Decl extends Instruction {
 	}
 
 	public override interpret(interp: Interpreter): void {
-		interp;
+		if (this.target instanceof SymbolSchemaVar) {
+			interp.setLocalValue(this.target, this.value!.interpret(interp));
+		} else if (this.target.value) {
+			interp.setLocalValue(this.target, this.target.value.interpret(interp));
+		}
 	}
 
 	@memoizeMethod
