@@ -11,6 +11,7 @@ import type {
 	Temp,
 	Builder,
 } from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -44,6 +45,10 @@ class IrSet extends Instruction {
 		builder.registerLocal(this.target, 'set');
 		this.value.validate(builder);
 		return assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
+	}
+
+	public override interpret(interp: Interpreter): void {
+		interp;
 	}
 
 	@memoizeMethod

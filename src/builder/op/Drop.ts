@@ -5,6 +5,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -24,6 +25,10 @@ export class Drop extends Instruction {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		return this.value.validate(builder);
+	}
+
+	public override interpret(interp: Interpreter): void {
+		this.value.interpret(interp); // execute any side-effects
 	}
 
 	@memoizeMethod

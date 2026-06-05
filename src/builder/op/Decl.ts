@@ -11,6 +11,7 @@ import type {
 	Temp,
 	Builder,
 } from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {ast_type_name} from './utils-public.ts';
 import {stringify_type_name} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
@@ -52,6 +53,10 @@ export class Decl extends Instruction {
 		builder.registerLocal(this.target, this.value ? 'set' : 'declared');
 		this.value?.validate(builder);
 		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
+	}
+
+	public override interpret(interp: Interpreter): void {
+		interp;
 	}
 
 	@memoizeMethod

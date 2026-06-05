@@ -83,3 +83,7 @@ Map! Interpret((MAP.NEW `pairs`)) :=
 	].
 	2. *Return:* a new Map containing the pairs in `data`.
 ;
+
+None! Interpret((DROP `v`)) :=
+	1. *Perform:* `Interpret(v)`.
+;
