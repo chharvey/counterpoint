@@ -16,6 +16,7 @@ import {
 	TypeName,
 	type CollectionDynamicName,
 } from './utils-public.ts';
+import type {Builder} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -43,8 +44,8 @@ export class CollectionDynamicGet extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		xjs.Array.forEachAggregated([this.collection, this.accessor], (value) => value.validate());
+	public override validate(builder: Builder): void {
+		xjs.Array.forEachAggregated([this.collection, this.accessor], (value) => value.validate(builder));
 		switch (this.name) {
 			case TypeName.LIST: {
 				assert_instanceof(this.collection.type, TYPE.List);

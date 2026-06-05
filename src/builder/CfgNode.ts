@@ -7,6 +7,7 @@ import {
 	runOnceMethod,
 } from '../lib/index.ts';
 import type {OP} from './index.ts';
+import type {Builder} from './Builder.ts';
 
 
 
@@ -51,11 +52,11 @@ export class CfgNode {
 	}
 
 	@runOnceMethod
-	public validate(): void {
-		xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
+	public validate(builder: Builder): void {
+		xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate(builder));
 
 		assert.ok(this.#terminator, 'Block should already be terminated.');
-		return this.#terminator.validate();
+		return this.#terminator.validate(builder);
 	}
 
 	@memoizeMethod

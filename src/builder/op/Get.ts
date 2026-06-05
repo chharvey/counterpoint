@@ -1,10 +1,17 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
 import type {VALUE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
-import type {Temp} from '../Builder.ts';
+import type {
+	Temp,
+	Builder,
+} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {ValueTac} from './ValueTac.ts';
 
@@ -20,11 +27,15 @@ export class Get extends ValueTac {
 		return super.toString(this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name);
 	}
 
-	public override interpret(): VALUE.Value {
-		return this.target instanceof SymbolSchemaVar
-			// non-null assertions are ok because by the time `new Get(temp)` is called, `temp` will have already been Set
-			? this.target.value!
-			: this.target.value!.interpret();
+	@runOnceMethod
+	public override validate(builder: Builder): void {
+		if (builder.localStatus(this.target) !== 'set') {
+			throw new ReferenceError(`Local with id \`${ this.target.id }\` must be set before getting!`);
+		}
+	}
+
+	public override interpret(interp: Interpreter): VALUE.Value {
+		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 
 	@memoizeMethod

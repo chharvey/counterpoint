@@ -8,6 +8,7 @@ import {
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
+import type {Builder} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -65,10 +66,10 @@ export class Binop extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
+	public override validate(builder: Builder): void {
 		const operands = [this.operand0, this.operand1] as const;
 		return xjs.Array.forEachAggregated(operands, (arg) => {
-			arg.validate();
+			arg.validate(builder);
 			switch (this.operator) {
 				case OpCode.INT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
 				case OpCode.INT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }

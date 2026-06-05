@@ -4,6 +4,7 @@ import * as xjs from 'extrajs';
 import type {CodeGenerator} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
+import type {SymbolSchemaVar} from '../validator/index.ts';
 import {CfgNode} from './CfgNode.ts';
 import {OP} from './index.ts';
 
@@ -26,6 +27,9 @@ export type Temp = {
 export class Builder {
 	#tempCounter:  bigint = 0n;
 	#labelCounter: bigint = 0n;
+
+	readonly #declaredLocals = new Set<SymbolSchemaVar | Temp>();
+	readonly #setLocals      = new Set<SymbolSchemaVar | Temp>();
 
 	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
 
@@ -62,6 +66,24 @@ export class Builder {
 		return temp;
 	}
 
+	public registerLocal(local: SymbolSchemaVar | Temp, as: 'declared' | 'set'): void {
+		if (as === 'declared') {
+			this.#setLocals.delete(local); // shouldn’t be needed, but here just in case
+			this.#declaredLocals.add(local);
+		} else {
+			this.#declaredLocals.delete(local);
+			this.#setLocals.add(local);
+		}
+	}
+
+	public localStatus(local: SymbolSchemaVar | Temp): 'declared' | 'set' | undefined {
+		return (
+			this.#declaredLocals.has(local) ? 'declared' :
+			this.#setLocals     .has(local) ? 'set' :
+			undefined
+		);
+	}
+
 	public initiateBlock(label: string): void {
 		if (this.currentBlock) {
 			throw new Error('Cannot initiate a new block in a Builder with an active block. Try calling `Builder#terminateBlock` first.');
@@ -90,7 +112,7 @@ export class Builder {
 	@runOnceMethod
 	public validate(): void {
 		assert.ok(!this.currentBlock, 'Should not validate Builder with active block set. Try calling `Builder#terminateBlock` first.');
-		return xjs.Array.forEachAggregated(this.#blocks, (block) => block.validate());
+		return xjs.Array.forEachAggregated(this.#blocks, (block) => block.validate(this));
 	}
 
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {

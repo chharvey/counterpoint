@@ -9,6 +9,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -34,8 +35,8 @@ export class RecordGet extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		this.record.validate();
+	public override validate(builder: Builder): void {
+		this.record.validate(builder);
 		return assert_instanceof(this.record.type, TYPE.Record);
 	}
 

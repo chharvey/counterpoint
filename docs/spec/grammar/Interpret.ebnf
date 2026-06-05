@@ -25,14 +25,10 @@ String Interpret((STR.CONST `s`)) :=
 ;
 
 Value! Interpret((GET `id`)) :=
-	1. *If* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `id`:
-		1. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-		2. *Assert:* `symbol.value` is set.
-		3. *Return:* `symbol.value`.
+	1. *If* the interpreter’s symbol table contains `id`:
+		1. *Return:* the value stored at `id`.
 	2. *Else:*
-		1. *Assert:* `symbol` is a temporary local in the IR.
-		2. *Assert:* `symbol.value` is set.
-		3. *Return:* `Interpret(symbol.value)`.
+		1. *Throw:* a new ReferenceError.
 ;
 
 Value! Interpret((STR.TEMPLATE `values`)) :=
@@ -82,4 +78,16 @@ Map! Interpret((MAP.NEW `pairs`)) :=
 		*Unwrap:* `Interpret(case.1)`,
 	].
 	2. *Return:* a new Map containing the pairs in `data`.
+;
+
+None! Interpret((DROP `v`)) :=
+	1. *Perform:* `Interpret(v)`.
+;
+
+None! Interpret((DECL `id` `type` `v`)) :=
+	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
+;
+
+None! Interpret((SET `id` `v`)) :=
+	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
 ;
