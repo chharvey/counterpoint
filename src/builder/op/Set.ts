@@ -38,6 +38,10 @@ class IrSet extends Instruction {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
+		if (builder.localStatus(this.target) === undefined) {
+			throw new ReferenceError(`Local with id \`${ this.target.id }\` must be declared before setting!`);
+		}
+		builder.registerLocal(this.target, 'set');
 		this.value.validate(builder);
 		return assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
 	}
