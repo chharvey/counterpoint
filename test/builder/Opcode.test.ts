@@ -48,7 +48,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Get returns validator’s symbol table value.', () => {
-				const {stmts, builder} = setupScript(`{
+				const {builder} = setupScript(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
@@ -63,11 +63,11 @@ test.suite('Opcode', () => {
 				}`, {codegen: false});
 				const interp = new Interpreter();
 				builder.instructions.slice(0, 5).forEach((instr) => instr.interpret(interp));
-				assert.deepStrictEqual(
-					stmts.slice(5).map((stmt) => {
-						const get: OP.Value = (stmt as AST.StatementExpression).expr!.build(builder);
-						assert_instanceof(get, OP.Get);
-						return get.interpret(interp);
+				return assert.deepStrictEqual(
+					builder.instructions.slice(5).map((instr) => {
+						const {value} = instr as OP.Drop;
+						assert_instanceof(value, OP.Get);
+						return value.interpret(interp);
 					}),
 					[
 						VALUE.NULL,
@@ -80,7 +80,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Template interprets each child, stringifies, and concatenates.', () => {
-				const {stmts, builder} = setupScript(`{
+				const {builder} = setupScript(`{
 					val mut x: int = 85;
 
 					"""42😀""";
@@ -91,7 +91,11 @@ test.suite('Opcode', () => {
 				}`, {codegen: false});
 				const interp = new Interpreter();
 				return assert.deepStrictEqual(
-					stmts.slice(1).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret(interp)),
+					builder.instructions.slice(1).map((instr) => {
+						const {value} = instr as OP.Drop;
+						assert_instanceof(value, OP.Template);
+						return value.interpret(interp);
+					}),
 					[
 						new VALUE.String('42😀'),
 						/* TODO: support `Binop#interpret`
@@ -103,7 +107,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('CollectionLinearNew, RecordNew, DictNew, MapNew', () => {
-				const {stmts, builder} = setupScript(`{
+				const {builder} = setupScript(`{
 					(1, 2.0, "three");
 					[1, 2.0, "three"];
 					{1, 2.0, "three"};
@@ -118,7 +122,7 @@ test.suite('Opcode', () => {
 						1.5 * 2.0 -> "three",
 					};
 					%%
-				}`, {build: false});
+				}`, {codegen: false});
 				const interp = new Interpreter();
 				const expected_items = [
 					new VALUE.Integer(1n),
@@ -131,7 +135,16 @@ test.suite('Opcode', () => {
 					[0x102n, expected_items[2]],
 				] as const;
 				return assert.deepStrictEqual(
-					stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret(interp)),
+					builder.instructions.map((instr, i) => {
+						const {value} = instr as OP.Drop;
+						assert_instanceof<OP.Value>(value, [
+							...repeat(OP.CollectionLinearNew, 3),
+							OP.RecordNew,
+							OP.DictNew,
+							// OP.MapNew,
+						][i]);
+						return value.interpret(interp);
+					}),
 					[
 						new VALUE.Tuple(expected_items),
 						new VALUE.List(expected_items),
@@ -150,7 +163,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('TupleGet, RecordGet', () => {
-				const {stmts, builder} = setupScript(`{
+				const {builder} = setupScript(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
 					val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
@@ -174,7 +187,14 @@ test.suite('Opcode', () => {
 				const interp = new Interpreter();
 				builder.instructions.slice(0, 4).forEach((instr) => instr.interpret(interp));
 				return assert.deepStrictEqual(
-					stmts.slice(4).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).interpret(interp)),
+					builder.instructions.slice(4).map((instr, i) => {
+						const {value} = instr as OP.Drop;
+						assert_instanceof<OP.Value>(value, [
+							...repeat(OP.TupleGet, 6),
+							...repeat(OP.RecordGet, 6),
+						][i]);
+						return value.interpret(interp);
+					}),
 					repeat([
 						new VALUE.Integer(1n),
 						new VALUE.Float(2.0),
