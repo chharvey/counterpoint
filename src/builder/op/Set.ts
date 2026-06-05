@@ -7,7 +7,10 @@ import {
 } from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Temp} from '../Builder.ts';
+import type {
+	Temp,
+	Builder,
+} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -34,8 +37,8 @@ class IrSet extends Instruction {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		this.value.validate();
+	public override validate(builder: Builder): void {
+		this.value.validate(builder);
 		return assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
 	}
 

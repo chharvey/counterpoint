@@ -13,6 +13,7 @@ import {
 } from '../../lib/index.ts';
 import type {VirtualMachine} from '../../vm/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
 import {
 	TypeName,
 	type CollectionDynamicName,
@@ -205,8 +206,8 @@ export class CollectionDynamicCopy extends Instruction {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		xjs.Array.forEachAggregated([this.destination, this.source], (value) => value.validate());
+	public override validate(builder: Builder): void {
+		xjs.Array.forEachAggregated([this.destination, this.source], (value) => value.validate(builder));
 		switch (this.name) {
 			case TypeName.LIST: {
 				assert_instanceof(this.destination.type, TYPE.List);

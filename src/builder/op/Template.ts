@@ -12,6 +12,7 @@ import {
 	type VALUE,
 	TYPE,
 } from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -29,8 +30,8 @@ export class Template extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
+	public override validate(builder: Builder): void {
+		return xjs.Array.forEachAggregated(this.items, (item) => item.validate(builder));
 	}
 
 	public override interpret(): VALUE.String {

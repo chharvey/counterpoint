@@ -11,6 +11,7 @@ import {
 	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
 import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -37,13 +38,13 @@ export class CollectionLinearNew extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
+	public override validate(builder: Builder): void {
 		assert_instanceof(this.type, new Map<TypeName, ConstructorType<TYPE.Type>>([
 			[TypeName.TUPLE, TYPE.Tuple],
 			[TypeName.LIST,  TYPE.List],
 			[TypeName.SET,   TYPE.Set],
 		]).get(this.name)!);
-		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
+		return xjs.Array.forEachAggregated(this.items, (item) => item.validate(builder));
 	}
 
 	public override interpret(): VALUE.Tuple | VALUE.List | VALUE.Set {

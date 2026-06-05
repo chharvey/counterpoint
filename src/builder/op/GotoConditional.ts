@@ -6,6 +6,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 import type {Value} from './Value.ts';
@@ -35,8 +36,8 @@ export class GotoConditional extends Terminator {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		this.condition.validate();
+	public override validate(builder: Builder): void {
+		this.condition.validate(builder);
 		return assert.ok(this.condition.type.isSubtypeOf(TYPE.BOOL));
 	}
 

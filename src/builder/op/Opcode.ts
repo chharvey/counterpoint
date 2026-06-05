@@ -1,3 +1,7 @@
+import type {Builder} from '../Builder.ts';
+
+
+
 /**
  * An abstract operation code.
  * Models the concept of opcodes in a VM, but for the high-level IR instead.
@@ -121,7 +125,7 @@ export abstract class Opcode {
 	}
 
 	/** Type-validate this Opcode. Throws if invalid. */
-	public validate(): void {
+	public validate(_builder: Builder): void {
 		return;
 	}
 }

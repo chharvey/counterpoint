@@ -12,6 +12,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
 import {
 	TypeName,
 	type CollectionDynamicName,
@@ -43,8 +44,8 @@ export class CollectionDynamicSet extends Instruction {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate());
+	public override validate(builder: Builder): void {
+		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate(builder));
 		switch (this.name) {
 			case TypeName.LIST: {
 				assert_instanceof(this.collection.type, TYPE.List);

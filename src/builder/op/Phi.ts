@@ -6,6 +6,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {drop_then} from './utils-private.ts';
+import type {Builder} from '../Builder.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -43,8 +44,8 @@ class Phi extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		return xjs.Array.forEachAggregated([this.valueThen, this.valueElse], (value) => value.validate());
+	public override validate(builder: Builder): void {
+		return xjs.Array.forEachAggregated([this.valueThen, this.valueElse], (value) => value.validate(builder));
 	}
 
 	@memoizeMethod

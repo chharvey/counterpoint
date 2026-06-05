@@ -90,7 +90,7 @@ export class Builder {
 	@runOnceMethod
 	public validate(): void {
 		assert.ok(!this.currentBlock, 'Should not validate Builder with active block set. Try calling `Builder#terminateBlock` first.');
-		return xjs.Array.forEachAggregated(this.#blocks, (block) => block.validate());
+		return xjs.Array.forEachAggregated(this.#blocks, (block) => block.validate(this));
 	}
 
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
