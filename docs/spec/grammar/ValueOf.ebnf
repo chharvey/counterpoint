@@ -155,7 +155,8 @@ Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 			1. Find an antecedent `k` in `base_value` such that *UnwrapAffirm:* `Identical(k, accessor_value)`.
 			2. *If* `k` is set:
 				1. *Return:* the consequent accessed at antecedent `k` in `base_value`.
-			3. *Return:* `null`.
+			3. *Else:*
+				1. *Return:* `null`.
 		1. *Else:*
 			1. *Assert:* `access.kind` is `MAYBE`.
 			2. *Return:* `null`.

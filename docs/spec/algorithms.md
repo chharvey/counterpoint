@@ -401,7 +401,8 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 					optional= `accessor_maybe`,
 				].
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
-				1. *Throw:* a new Error "String keys for dict access are not yet supported."
+				1. *Note:* This step will be removed once string keys are supported.
+				2. *Throw:* a new Error "String keys for dict access are not yet supported."
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		6. *Else If* `base_type` is a Set type:

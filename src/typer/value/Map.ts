@@ -72,7 +72,7 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	}
 
 	public get(ant: Value): V | Null {
-		return xjs.Map.has<Value, V>(this.cases, ant, language_values_identical) ? xjs.Map.get<Value, V>(this.cases, ant, language_values_identical)! : NULL;
+		return xjs.Map.get<Value, V>(this.cases, ant, language_values_identical) ?? NULL;
 	}
 }
 export {ValueMap as Map};

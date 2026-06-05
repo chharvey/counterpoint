@@ -202,6 +202,65 @@ test.suite('Opcode', () => {
 					], 4).flat(),
 				);
 			});
+
+			test.test('CollectionDynamicGet', () => {
+				const {builder} = setupScript(`{
+					val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+					val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
+					val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+					val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+					val mut list_unfixed: List.<     int | float | str> = list_fixed;
+					val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+					val mut set_unfixed:  Set .<     int | float | str> = set_fixed;
+					val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
+
+					list_fixed.[0];      % value \`1\`
+					list_fixed.[1];      % value \`2.0\`
+					list_fixed.[+2];     % value \`"three"\`
+					dict_fixed.[@a];     % value \`1\`
+					dict_fixed.[@b];     % value \`2.0\`
+					dict_fixed.[@c];     % value \`"three"\`
+					set_fixed.[1];       % value \`true\`
+					set_fixed.[2.0];     % value \`true\`
+					set_fixed.["three"]; % value \`true\`
+					map_fixed.["a"];     % value \`1\`
+					map_fixed.["b"];     % value \`2.0\`
+					map_fixed.["c"];     % value \`"three"\`
+
+					list_unfixed.[0];      % value \`1\`
+					list_unfixed.[1];      % value \`2.0\`
+					list_unfixed.[+2];     % value \`"three"\`
+					dict_unfixed.[@a];     % value \`1\`
+					dict_unfixed.[@b];     % value \`2.0\`
+					dict_unfixed.[@c];     % value \`"three"\`
+					set_unfixed.[1];       % value \`true\`
+					set_unfixed.[2.0];     % value \`true\`
+					set_unfixed.["three"]; % value \`true\`
+					map_unfixed.["a"];     % value \`1\`
+					map_unfixed.["b"];     % value \`2.0\`
+					map_unfixed.["c"];     % value \`"three"\`
+				}`, {codegen: false});
+				const interp = new Interpreter();
+				const expected_items = [
+					new VALUE.Integer(1n),
+					new VALUE.Float(2.0),
+					new VALUE.String('three'),
+				];
+				builder.instructions.slice(0, 8).forEach((instr) => instr.interpret(interp));
+				return assert.deepStrictEqual(
+					builder.instructions.slice(8).map((instr) => {
+						const {value} = instr as OP.Drop;
+						assert_instanceof(value, OP.CollectionDynamicGet);
+						return value.interpret(interp);
+					}),
+					repeat([
+						...expected_items,
+						...expected_items,
+						...repeat(VALUE.TRUE, 3),
+						...expected_items,
+					], 2).flat(),
+				);
+			});
 		});
 
 

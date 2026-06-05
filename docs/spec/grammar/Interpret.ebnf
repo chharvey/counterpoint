@@ -98,6 +98,52 @@ Value! Interpret((RECORD.GET `key` `obj`)) :=
 		1. *Return:* `null`.
 ;
 
+Value! Interpret((LIST.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `index` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `List`.
+	4. *Assert:* `index` is an instance of `Integer` or `Natural`.
+	5. *If* `index` is an index in `base`:
+		1. *Return:* the item accessed at index `index` in `base`.
+	6. *Else:*
+		1. *Return:* `null`.
+;
+
+Value! Interpret((DICT.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `key` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `Dict`.
+	4. *Assert:* `key` is an instance of `Symbol` or `String`.
+	5. *If* `key` is an instance of `String`:
+		1. *Note:* This step will be updated once string keys are supported.
+		2. *Throw:* a new Error "String keys for dict access are not yet supported."
+	6. *If* `key` is a key in `base`:
+		1. *Return:* the value accessed at key `key` in `base`.
+	7. *Else:*
+		1. *Return:* `null`.
+;
+
+Value! Interpret((SET.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `value` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `Set`.
+	4. *If* `value` is in `base`:
+		1. *Return:* `true`.
+	5. *Else:*
+		1. *Return:* `false`.
+;
+
+Value! Interpret((MAP.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `ant` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `Map`.
+	4. Find an antecedent `k` in `base` such that *UnwrapAffirm:* `Identical(k, ant)`.
+	5. *If* `k` is set:
+		1. *Return:* the consequent accessed at antecedent `k` in `base`.
+	6. *Else:*
+		1. *Return:* `null`.
+;
+
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;
