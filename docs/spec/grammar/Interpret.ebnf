@@ -102,7 +102,7 @@ Value! Interpret((LIST.GET `obj` `accessor`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Let* `index` be *Unwrap:* `Interpret(accessor)`.
 	3. *Assert:* `base` is an instance of `List`.
-	4. *Assert:* `index` is an instance of `Integer` or `Natural`.
+	4. *Assert:* `index` is an instance of `Integer` *or* `index` is an instance of `Natural`.
 	5. *If* `index` is an index in `base`:
 		1. *Return:* the item accessed at index `index` in `base`.
 	6. *Else:*
@@ -113,7 +113,7 @@ Value! Interpret((DICT.GET `obj` `accessor`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Let* `key` be *Unwrap:* `Interpret(accessor)`.
 	3. *Assert:* `base` is an instance of `Dict`.
-	4. *Assert:* `key` is an instance of `Symbol` or `String`.
+	4. *Assert:* `key` is an instance of `Symbol` *or* `key` is an instance of `String`.
 	5. *If* `key` is an instance of `String`:
 		1. *Note:* This step will be updated once string keys are supported.
 		2. *Throw:* a new Error "String keys for dict access are not yet supported."

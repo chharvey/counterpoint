@@ -126,7 +126,7 @@ test.suite('Opcode', () => {
 				}`, {codegen: false});
 				const interp = new Interpreter();
 				const expected_items = [
-					new VALUE.Integer(1n),
+					VALUE.INT_1,
 					new VALUE.Float(2.0),
 					new VALUE.String('three'),
 				];
@@ -197,7 +197,7 @@ test.suite('Opcode', () => {
 						return value.interpret(interp);
 					}),
 					repeat([
-						new VALUE.Integer(1n),
+						VALUE.INT_1,
 						new VALUE.Float(2.0),
 						new VALUE.String('three'),
 					], 4).flat(),
@@ -243,7 +243,7 @@ test.suite('Opcode', () => {
 				}`, {codegen: false});
 				const interp = new Interpreter();
 				const expected_items = [
-					new VALUE.Integer(1n),
+					VALUE.INT_1,
 					new VALUE.Float(2.0),
 					new VALUE.String('three'),
 				];
