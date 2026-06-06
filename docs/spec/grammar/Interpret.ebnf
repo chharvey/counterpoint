@@ -146,6 +146,92 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 
 // Value! Interpret((CALL `callable` `args`));
 
+Value! Interpret((ISNULL `v`)) :=
+	1. *Return:* `Identical(v, null)`.
+;
+
+Value! Interpret((NOT `v`)) :=
+	1. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
+		1. *Return:* `false`.
+	2. *Return:* `true`.
+;
+
+Value! Interpret((EMP `v`)) :=
+	1. *If* *UnwrapAffirm:* `ToBoolean(v)` is `false`:
+		1. *Return:* `true`.
+	2. *If* `v` is an instance of `Integer` *and* `v` is `0`:
+		1. *Return:* `true`.
+	3. *If* `v` is an instance of `Natural` *and* `v` is `+0`:
+		1. *Return:* `true`.
+	4. *If* `v` is an instance of `Float` *and* `v` is `0.0` or `-0.0`:
+		1. *Return:* `true`.
+	5. *If* `v` is an instance of `String` *and* `v` contains 0 codepoints:
+		1. *Return:* `true`.
+	6. *If* `v` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v.count` is 0:
+		1. *Return:* `true`.
+	7. *Return:* `false`.
+;
+
+Value! Interpret((NEG `v`)) :=
+	1. *Let* `negation` be the additive inverse, `-v`,
+		obtained by negating `v`.
+	2. *Return:* `negation`.
+;
+
+Value! Interpret((TOBOOL `v`)) :=
+	1. *Return:* `ToBoolean(v)`.
+;
+
+Value! Interpret((TOINT `v`)) :=
+	1. *If* `v` is an instance of `Natural`:
+		1. *Let* `as_int` be the reinterpretation of `v` as a 64-bit signed integer value.
+		2. *Return:* `as_int`.
+	2. *If* `v` is an instance of `Float`:
+		1. *Let* `as_int` be the conversion of `v` to a 64-bit signed integer value.
+		2. *Return:* `as_int`.
+	3. *Assert:* `v` is an instance of `Integer`.
+	4. *Return:* `v`.
+;
+
+Value! Interpret((TONAT `v`)) :=
+	1. *If* `v` is an instance of `Integer`:
+		1. *Let* `as_nat` be the reinterpretation of `v` to a 64-bit unsigned integer value.
+		2. *Return:* `as_nat`.
+	2. *If* `v` is an instance of `Float`:
+		1. *Let* `as_nat` be the conversion of `v` to a 64-bit unsigned integer value.
+		2. *Return:* `as_nat`.
+	3. *Assert:* `v` is an instance of `Natural`.
+	4. *Return:* `v`.
+;
+
+Value! Interpret((TOFLOAT `v`)) :=
+	1. *If* `v` is an instance of `Integer` *or* `v` is an instance of `Natural`:
+		1. *Let* `as_float` be the conversion of `v` to a 64-bit binary floating-point value.
+		2. *Return:* `as_float`.
+	2. *Assert:* `v` is an instance of `Float`.
+	3. *Return:* `v`.
+;
+
+Value! Interpret((LIST.COUNT `obj`)) :=
+	1. *Assert:* `obj` is an instance of `List`.
+	2. *Return:* `Natural(obj.count)`.
+;
+
+Value! Interpret((DICT.COUNT `obj`)) :=
+	1. *Assert:* `obj` is an instance of `Dict`.
+	2. *Return:* `Natural(obj.count)`.
+;
+
+Value! Interpret((SET.COUNT `obj`)) :=
+	1. *Assert:* `obj` is an instance of `Set`.
+	2. *Return:* `Natural(obj.count)`.
+;
+
+Value! Interpret((MAP.COUNT `obj`)) :=
+	1. *Assert:* `obj` is an instance of `Map`.
+	2. *Return:* `Natural(obj.count)`.
+;
+
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;

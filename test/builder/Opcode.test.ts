@@ -4,7 +4,7 @@ import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
 	assert_instanceof,
-	type AST,
+	AST,
 	VALUE,
 	TYPE,
 	Builder,
@@ -14,6 +14,7 @@ import {
 	CodeGenerator,
 } from '../../src/index.ts';
 import {
+	extract_lines,
 	repeat,
 	assertEqualBins,
 	genConst,
@@ -263,6 +264,214 @@ test.suite('Opcode', () => {
 			});
 
 			test.test.todo('Call', () => undefined);
+
+			test.suite('Unop', () => {
+				const operands: readonly string[] = extract_lines`
+					null
+					false
+					true
+					0
+					42
+					0.0
+					-0.0
+					4.2e+1
+					+0
+					+42
+					""
+					"hello"
+					()
+					(42,)
+					(a= 42)
+					[]
+					[42]
+					[a= 42]
+					{}
+					{42}
+					{41 -> 42}
+				`;
+				function interpretUnops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
+					const interp = new Interpreter();
+					return setupScript(`{
+						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
+					}`, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
+						? instr.value.interpret(interp)
+						: instr.interpret(interp)
+					)).filter((value) => !!value);
+				}
+				test.test('[operator=ISNULL]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.ISNULL,
+						AST.Expression.fromSource(operand).build(builder).asTac(builder),
+						TYPE.BOOL,
+					))));
+					return assert.deepStrictEqual(
+						builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value),
+						[
+							VALUE.TRUE,
+							...repeat(VALUE.FALSE, 20),
+						],
+					);
+				});
+				test.test('[operator=NOT]', () => {
+					assert.deepStrictEqual(
+						interpretUnops('!'),
+						[
+							...repeat(VALUE.TRUE, 2),
+							...repeat(VALUE.FALSE, 19),
+						],
+					);
+				});
+				test.test('[operator=EMP]', () => {
+					assert.deepStrictEqual(
+						interpretUnops('?'),
+						[
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+						],
+					);
+				});
+				test.test('[operator=NEG]', () => {
+					assert.deepStrictEqual(
+						interpretUnops('-', operands.slice(3, 8)),
+						[
+							VALUE.INT_0,
+							new VALUE.Integer(-42n),
+							VALUE.FLOAT_N0,
+							VALUE.FLOAT_0,
+							new VALUE.Float(-4.2e+1),
+						],
+					);
+				});
+				test.test('[operator=TOBOOL]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.TOBOOL,
+						AST.Expression.fromSource(operand).build(builder).asTac(builder),
+						TYPE.BOOL,
+					))));
+					return assert.deepStrictEqual(
+						builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value),
+						[
+							...repeat(VALUE.FALSE, 2),
+							...repeat(VALUE.TRUE, 19),
+						],
+					);
+				});
+				test.test('[operator=TOINT]', () => {
+					assert.deepStrictEqual(
+						interpretUnops('int', operands.slice(3, 10)),
+						[
+							VALUE.INT_0,
+							new VALUE.Integer(42n),
+							VALUE.INT_0,
+							VALUE.INT_0,
+							new VALUE.Integer(42n),
+							VALUE.INT_0,
+							new VALUE.Integer(42n),
+						],
+					);
+				});
+				test.test('[operator=TONAT]', () => {
+					assert.deepStrictEqual(
+						interpretUnops('nat', operands.slice(3, 10)),
+						[
+							VALUE.NAT_0,
+							new VALUE.Natural(42n),
+							VALUE.NAT_0,
+							VALUE.NAT_0,
+							new VALUE.Natural(42n),
+							VALUE.NAT_0,
+							new VALUE.Natural(42n),
+						],
+					);
+				});
+				test.test('[operator=TOFLOAT]', () => {
+					assert.deepStrictEqual(
+						interpretUnops('float', operands.slice(3, 10)),
+						[
+							VALUE.FLOAT_0,
+							new VALUE.Float(42.0),
+							VALUE.FLOAT_0,
+							VALUE.FLOAT_N0,
+							new VALUE.Float(4.2e+1),
+							VALUE.FLOAT_0,
+							new VALUE.Float(42.0),
+						],
+					);
+				});
+				test.test('[operator={LIST,DICT,SET,MAP}_COUNT]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					const items: readonly OP.ValueTac[] = [
+						new OP.Const(VALUE.INT_1),
+						new OP.Const(new VALUE.Float(2.0)),
+						new OP.Const(new VALUE.String('three')),
+					];
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.LIST_COUNT,
+						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.DICT_COUNT,
+						new OP.DictNew(new Map([
+							[new VALUE.Symbol(0x100n, 'a'), items[0]],
+							[new VALUE.Symbol(0x101n, 'b'), items[1]],
+							[new VALUE.Symbol(0x102n, 'c'), items[2]],
+						]), new TYPE.Dict(TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.SET_COUNT,
+						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.MAP_COUNT,
+						new OP.MapNew(new Map([
+							[new OP.Const(new VALUE.Symbol(0x100n, 'a')), items[0]],
+							[new OP.Const(new VALUE.Symbol(0x101n, 'b')), items[1]],
+							[new OP.Const(new VALUE.Symbol(0x102n, 'c')), items[2]],
+						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					return assert.deepStrictEqual(
+						builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value),
+						repeat(new VALUE.Natural(3n), 4),
+					);
+				});
+			});
 		});
 
 

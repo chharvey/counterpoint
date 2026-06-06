@@ -6,8 +6,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -74,6 +78,27 @@ export class Unop extends Value {
 				assert_instanceof(this.operand.type, TYPE.Map);
 				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
 			}
+		}
+	}
+
+	public override interpret(interp: Interpreter): VALUE.Value {
+		const operand: VALUE.Value = this.operand.interpret(interp);
+		switch (this.operator) {
+			case OpCode.ISNULL: { return VALUE.Boolean.fromBoolean(operand.identical(VALUE.NULL)); }
+
+			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
+			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }
+			case OpCode.NEG: { return (operand as VALUE.Integer | VALUE.Float).neg(); }
+
+			case OpCode.TOBOOL:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
+			case OpCode.TOINT:   { return (operand as VALUE.Number).toInt(); }
+			case OpCode.TONAT:   { return (operand as VALUE.Number).toNat(); }
+			case OpCode.TOFLOAT: { return (operand as VALUE.Number).toFloat(); }
+
+			case OpCode.LIST_COUNT: { return new VALUE.Natural((operand as VALUE.List).count); }
+			case OpCode.DICT_COUNT: { return new VALUE.Natural((operand as VALUE.Dict).count); }
+			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
+			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
 		}
 	}
 
