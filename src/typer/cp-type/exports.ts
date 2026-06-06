@@ -42,6 +42,10 @@ export const FALSY_TYPES: ReadonlySet<Type> = new Set([NULL, FALSE]);
 
 
 
+export const NUMBER = new Union(INT, NAT, FLOAT); // cannot call `Type#union` because it has a decorator that relies on `TYPE_CONSTANTS` below
+
+
+
 export const TYPE_CONSTANTS = [
 	NULL,
 	BOOL,
@@ -55,7 +59,3 @@ export const TYPE_CONSTANTS = [
 	TRUE,
 	SYM_NOTHING,
 ] as const;
-
-
-
-export const NUMBER: Type = Union.all(INT, NAT, FLOAT); // needs to be defined after `TYPE_CONSTANTS` because `Type#union` has a decorator that relies on it

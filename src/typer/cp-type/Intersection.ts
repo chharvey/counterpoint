@@ -164,6 +164,7 @@ export class Intersection extends Combinable {
 			const right: Type = not_union.length >= 2
 				? new Union(not_union[0], not_union[1], ...not_union.slice(2))
 				: (assert.strictEqual(not_union.length, 1), not_union[0]);
+			// returns a `new Union()` instead of calling `Union.all()` because the latter calls `normalize`
 			return new Union(...union.operands.map((s) => s.intersect(right)) as readonly Type[] as typeof union.operands);
 		} else {
 			return this;
