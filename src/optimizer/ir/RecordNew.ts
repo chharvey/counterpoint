@@ -16,14 +16,13 @@ import type {ValueTac} from './ValueTac.ts';
 /** Create a record. */
 export class RecordNew extends Value {
 	public constructor(
-		private readonly props: ReadonlyMap<bigint, {readonly keysrc?: string, readonly value: ValueTac}>,
+		private readonly props: ReadonlyMap<bigint, {readonly keysrc: string, readonly value: ValueTac}>,
 		typ: TYPE.Type,
 	) {
 		super(OpCode.RECORD_NEW, typ);
 	}
 
 	public override toString(): string {
-		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
 		return super.toString(...[...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`));
 	}
 
