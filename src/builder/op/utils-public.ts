@@ -7,7 +7,7 @@ import {
 	type Value,
 	Get,
 	Decl,
-	Set as IrSet,
+	Set as OpSet,
 	Goto,
 	GotoConditional,
 } from './index.ts';
@@ -117,11 +117,11 @@ export function conditional_expression(
 	builder.terminateBlock(new GotoConditional(condition.call(null), label_then, label_else));
 
 	builder.initiateBlock(label_then);
-	builder.pushInstruction(new IrSet(result, consequent.call(null)));
+	builder.pushInstruction(new OpSet(result, consequent.call(null)));
 	builder.terminateBlock(new Goto(label_endif));
 
 	builder.initiateBlock(label_else);
-	builder.pushInstruction(new IrSet(result, alternative.call(null)));
+	builder.pushInstruction(new OpSet(result, alternative.call(null)));
 	builder.terminateBlock(new Goto(label_endif));
 
 	builder.initiateBlock(label_endif);
