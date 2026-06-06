@@ -76,7 +76,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				case this.accessor instanceof ASTNodeIndex: {
 					if (base_value.type instanceof TYPE.Tuple) {
 						/*
-						 * Ensure a canonical index. It may be within the range `[0, count - 1]`.
+						 * Ensure a canonical index. It may be within the mathematical range *[0, count - 1]*.
 						 * We cannot assume that this index is validated by the type-checker,
 						 * since the actual type of the base may be narrower than its declared type.
 						 * E.g.:
