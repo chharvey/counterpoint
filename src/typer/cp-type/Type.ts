@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	assert_context_name,
+	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
@@ -15,7 +16,8 @@ import {
 	Difference,
 	NOTHING,
 	ANYTHING,
-	FALSY_TYPES,
+	NULL,
+	FALSE,
 	TYPE_CONSTANTS,
 } from './index.ts';
 import {
@@ -263,6 +265,16 @@ export function subtypeRules(
  * - ReferenceType
  */
 export abstract class Type {
+	static #getFalsyTypes(): Type[] {
+		return [NULL, FALSE];
+	}
+
+	@memoizeMethod
+	static #falsy(): Type {
+		return Union.all(...Type.#getFalsyTypes());
+	}
+
+
 	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
@@ -322,7 +334,7 @@ export abstract class Type {
 	 */
 	@memoizeGetter
 	public get isDefinitelyFalsy(): boolean {
-		return this.isSubtypeOf(Union.all(...FALSY_TYPES));
+		return this.isSubtypeOf(Type.#falsy());
 	}
 
 	/**
@@ -332,7 +344,7 @@ export abstract class Type {
 	 */
 	@memoizeGetter
 	public get isDefinitelyTruthy(): boolean {
-		return !this.isBottomType && !this.isDefinitelyFalsy && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
+		return !this.isBottomType && !this.isDefinitelyFalsy && Type.#getFalsyTypes().every((t) => !t.isSubtypeOf(this));
 	}
 
 	/**
@@ -345,7 +357,7 @@ export abstract class Type {
 		return (
 			this.isDefinitelyFalsy  ? this :
 			this.isDefinitelyTruthy ? NOTHING :
-			this.intersect(Union.all(...FALSY_TYPES))
+			this.intersect(Type.#falsy())
 		);
 	}
 
@@ -359,7 +371,7 @@ export abstract class Type {
 		return (
 			this.isDefinitelyFalsy  ? NOTHING :
 			this.isDefinitelyTruthy ? this :
-			this.subtract(Union.all(...FALSY_TYPES))
+			this.subtract(Type.#falsy())
 		);
 	}
 

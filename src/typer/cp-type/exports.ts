@@ -1,5 +1,4 @@
 import * as VALUE from '../cp-value/index.ts';
-import type {Type} from './Type.ts';
 import {Union} from './Union.ts';
 import {Unit} from './Unit.ts';
 import {Nothing} from './Nothing.ts';
@@ -35,10 +34,6 @@ export const TRUE = new Unit<VALUE.Boolean>(VALUE.TRUE);
 
 /** A Unit Type containing only the Counterpoint Language Value `@nothing`. */
 export const SYM_NOTHING = new Unit<VALUE.Symbol>(VALUE.SYM_NOTHING);
-
-
-
-export const FALSY_TYPES: ReadonlySet<Type> = new Set([NULL, FALSE]);
 
 
 
