@@ -59,7 +59,7 @@ export function intersectionRules(
 ): typeof method {
 	assert_context_name(context, 'intersect');
 	return function (this: Type, t) {
-		/* 2-a | `T  & T == T` */
+		/* 2-1 | `T  & T == T` */
 		if (this === t) {
 			return this;
 		}
@@ -99,7 +99,7 @@ export function unionRules(
 ): typeof method {
 	assert_context_name(context, 'union');
 	return function (this: Type, t) {
-		/* 2-b | `T \| T == T` */
+		/* 2-2 | `T \| T == T` */
 		if (this === t) {
 			return this;
 		}
@@ -139,7 +139,7 @@ export function differenceRules(
 ): typeof method {
 	assert_context_name(context, 'subtract');
 	return function (this: Type, t) {
-		/* 2-c | `T  - T == nothing` */
+		/* 2-3 | `T  - T == nothing` */
 		if (this === t) {
 			return NOTHING;
 		}
@@ -173,7 +173,7 @@ export function subtypeRules(
 ): typeof method {
 	assert_context_name(context, 'isSubtypeOf');
 	return function (this: Type, t) {
-		/* 2-7 | `A <: A` */
+		/* 2-a | `A <: A` */
 		if (this === t) {
 			return true;
 		}
@@ -404,7 +404,7 @@ export abstract class Type {
 	@typeConstant
 	@intersectionRules
 	public intersect(t: Type): Type {
-		/* 2-1 | `A  & B == B  & A` */
+		/* 2-4 | `A  & B == B  & A` */
 		if (t instanceof Intersection) {
 			return t.intersect(this);
 		}
@@ -420,7 +420,7 @@ export abstract class Type {
 	@typeConstant
 	@unionRules
 	public union(t: Type): Type {
-		/* 2-2 | `A \| B == B \| A` */
+		/* 2-5 | `A \| B == B \| A` */
 		if (t instanceof Union) {
 			return t.union(this);
 		}
@@ -454,7 +454,7 @@ export abstract class Type {
 	 * Return whether this type is structurally equal to the given type.
 	 * Two types are structurally equal if they are subtypes of each other.
 	 *
-	 * 2-8 | `A <: B  &&  B <: A  -->  A == B`
+	 * 2-b | `A <: B  &&  B <: A  -->  A == B`
 	 * @param t the type to compare
 	 * @returns Is this type equal to the argument?
 	 */

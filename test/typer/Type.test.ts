@@ -215,17 +215,17 @@ test.suite('Type', () => {
 				assert.ok(t.intersect(TYPE.ANYTHING).equals(t), `${ t }`);
 			});
 		});
-		test.test('2-1 | `A  & B == B  & A`', () => {
+		test.test('2-4 | `A  & B == B  & A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.intersect(b).equals(b.intersect(a)), `${ a }, ${ b }`);
 			});
 		});
-		test.test('2-3 | `(A  & B)  & C == A  & (B  & C)`', () => {
+		test.test('2-6 | `(A  & B)  & C == A  & (B  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.intersect(b).intersect(c).equals(a.intersect(b.intersect(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		test.test('2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`', () => {
+		test.test('2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`);
 			});
@@ -282,17 +282,17 @@ test.suite('Type', () => {
 				assert.ok(t.union(TYPE.ANYTHING).isTopType, `${ t }`);
 			});
 		});
-		test.test('2-2 | `A \| B == B \| A`', () => {
+		test.test('2-5 | `A \| B == B \| A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.union(b).equals(b.union(a)), `${ a }, ${ b }`);
 			});
 		});
-		test.test('2-4 | `(A \| B) \| C == A \| (B \| C)`', () => {
+		test.test('2-7 | `(A \| B) \| C == A \| (B \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b).union(c).equals(a.union(b.union(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		test.test('2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`', () => {
+		test.test('2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`);
 			});
@@ -407,19 +407,19 @@ test.suite('Type', () => {
 				}
 			});
 		});
-		test.test('2-7 | `A <: A`', () => {
+		test.test('2-a | `A <: A`', () => {
 			builtin_types.forEach((a) => {
 				assert.ok(a.isSubtypeOf(a), `${ a }`);
 			});
 		});
-		test.test('2-8 | `A <: B  &&  B <: A  -->  A == B`', () => {
+		test.test('2-b | `A <: B  &&  B <: A  -->  A == B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(a)) {
 					assert.ok(a.equals(b), `${ a }, ${ b }`);
 				}
 			});
 		});
-		test.test('2-9 | `A <: B  &&  B <: C  -->  A <: C`', () => {
+		test.test('2-c | `A <: B  &&  B <: C  -->  A <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(c)) {
 					assert.ok(a.isSubtypeOf(c), `${ a }, ${ b }, ${ c }`);

@@ -135,7 +135,7 @@ export class Union extends Combinable {
 
 	public override normalize(): Type {
 		/*
-		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+		 * 2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     | `(A  & B) \| (A  & C) == A  & (B \| C)`
 		 */
 		// (A1 & A2 & B1 & B2 & E & F) | (A1 & A2 & C1 & C2 & F & G) | (A1 & A2 & D1 & D2 & E & G)
@@ -154,7 +154,7 @@ export class Union extends Combinable {
 
 	public override denormalize(): Type {
 		/*
-		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 * 2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)`
 		 *     | `(B  & C) \| A == (B \| A)  & (C \| A)`
 		 */
 		const intersection: Intersection | undefined = this.operands.find((s): s is Intersection => s instanceof Intersection);

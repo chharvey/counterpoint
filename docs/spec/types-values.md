@@ -778,18 +778,18 @@ For brevity, this section uses the following notational conventions:
 ### Operation Properties
 \# | Law | Description
 -- | --- | -----------
-2-a | `T  & T == T`       | Intersection Idempotence
-2-b | `T \| T == T`       | Union        Idempotence
-2-c | `T  - T == nothing` | Subtracting a type from itself yields Bottom.
-2-1 | `A  & B == B  & A`               | Intersection is Comutative
-2-2 | `A \| B == B \| A`               | Union        is Commutative
-2-3 | `(A  & B)  & C == A  & (B  & C)` | Intersection is Associative
-2-4 | `(A \| B) \| C == A \| (B \| C)` | Union        is Associative
-2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)` | Intersection Distributes over Union
-2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` | Union        Distributes over Intersection
-2-7 | `A <: A`                          | Subtype is Reflexive
-2-8 | `A <: B  &&  B <: A  -->  A == B` | Subtype is Anti-Symmetric
-2-9 | `A <: B  &&  B <: C  -->  A <: C` | Subtype is Transitive
+2-1 | `T  & T == T`       | Intersection Idempotence
+2-2 | `T \| T == T`       | Union        Idempotence
+2-3 | `T  - T == nothing` | Subtracting a type from itself yields Bottom.
+2-4 | `A  & B == B  & A`               | Intersection is Comutative
+2-5 | `A \| B == B \| A`               | Union        is Commutative
+2-6 | `(A  & B)  & C == A  & (B  & C)` | Intersection is Associative
+2-7 | `(A \| B) \| C == A \| (B \| C)` | Union        is Associative
+2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)` | Intersection Distributes over Union
+2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)` | Union        Distributes over Intersection
+2-a | `A <: A`                          | Subtype is Reflexive
+2-b | `A <: B  &&  B <: A  -->  A == B` | Subtype is Anti-Symmetric
+2-c | `A <: B  &&  B <: C  -->  A <: C` | Subtype is Transitive
 
 
 ### Other
