@@ -12,7 +12,7 @@ import {
 	Union,
 	ANYTHING,
 } from './index.ts';
-import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
+import type {ArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
 	intersectionLaws,
@@ -56,7 +56,7 @@ export class Intersection extends Combinable {
 				(accum, next) => xjs.Set.intersection(accum, next.values, language_values_identical),
 				xjs.Set.intersection(operand0.values, operand1.values, language_values_identical),
 			),
-			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Intersection ? operand.operands : [operand]) as readonly Type[] as ReadonlyArrayOfAtLeast2<Type>,
+			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Intersection ? operand.operands : [operand]) as ArrayOfAtLeast2<Type>,
 		);
 	}
 
@@ -138,11 +138,11 @@ export class Intersection extends Combinable {
 		// (A1 | A2 | B1 | B2 | E | F) & (A1 | A2 | C1 | C2 | F | G) & (A1 | A2 | D1 | D2 | E | G)
 		// == (A1 | A2) | ((B1 | B2 | E | F) & (C1 | C2 | F | G) & (D1 | D2 | E | G))
 		if (this.operands.every((s) => s instanceof Union)) {
-			const unions_data = (this.operands as ReadonlyArrayOfAtLeast2<Union>).map((union) => new Set<Type>(union.operands)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
+			const unions_data = this.operands.map((union) => new Set<Type>(union.operands));
 			const common: ReadonlySet<Type> = unions_data.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
 
 			if (common.size) {
-				const differing = unions_data.map((union_data) => xjs.Set.difference(union_data, common, language_types_equal)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
+				const differing = unions_data.map((union_data) => xjs.Set.difference(union_data, common, language_types_equal));
 				return Union.all(...common, Intersection.all(...differing.map((types) => Union.all(...types))));
 			}
 		}
@@ -161,7 +161,7 @@ export class Intersection extends Combinable {
 				? new Union(not_union[0], not_union[1], ...not_union.slice(2))
 				: (assert.strictEqual(not_union.length, 1), not_union[0]);
 			// returns a `new Union()` instead of calling `Union.all()` because the latter calls `normalize`
-			return new Union(...union.operands.map((s) => s.intersect(right)) as readonly Type[] as typeof union.operands);
+			return new Union(...union.operands.map((s) => s.intersect(right)) as ArrayOfAtLeast2<Type>);
 		} else {
 			return this;
 		}
