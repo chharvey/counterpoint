@@ -12,7 +12,7 @@ export enum Variance {
 
 
 
-export type ReadonlyArrayOfAtLeast2<T> = readonly [T, T, ...readonly T[]];
+export type ArrayOfAtLeast2<T> = [T, T, ...T[]];
 
 
 
