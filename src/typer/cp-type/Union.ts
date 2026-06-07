@@ -92,7 +92,7 @@ export class Union extends Combinable {
 		const filtered_operands = this.operands.filter((s) => !s.isSubtypeOf(t));
 		if (filtered_operands.length < this.operands.length) {
 			if (filtered_operands.length >= 2) {
-				return new Union(filtered_operands[0], filtered_operands[1], ...filtered_operands.slice(2)).union(t);
+				return Union.all(...filtered_operands, t);
 			} else if (filtered_operands.length) {
 				return filtered_operands[0].union(t);
 			} else {
@@ -155,9 +155,10 @@ export class Union extends Combinable {
 		const intersection: Intersection | undefined = this.operands.find((s): s is Intersection => s instanceof Intersection);
 		if (intersection) {
 			const not_intersection: readonly Type[] = this.operands.filter((s) => s !== intersection);
+			// union all the operands that are not `intersection`
 			const right: Type = not_intersection.length >= 2
-				? new Union(not_intersection[0], not_intersection[1], ...not_intersection.slice(2))
-				: (assert.strictEqual(not_intersection.length, 1), not_intersection[0]);
+				? Union.all(...not_intersection)
+				: (assert.ok(not_intersection.length), not_intersection[0]);
 			// returns a `new Intersection()` instead of calling `Intersection.all()` because the latter calls `normalize`
 			return new Intersection(...intersection.operands.map((s) => s.union(right)) as ArrayOfAtLeast2<Type>);
 		} else {
