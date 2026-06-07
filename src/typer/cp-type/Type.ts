@@ -59,6 +59,10 @@ export function intersectionRules(
 ): typeof method {
 	assert_context_name(context, 'intersect');
 	return function (this: Type, t) {
+		/* 2-a | `T  & T == T` */
+		if (this === t) {
+			return this;
+		}
 		/* 1-5 | `T  & nothing  == nothing` */
 		if (this.isBottomType || t.isBottomType) {
 			return NOTHING;
@@ -95,6 +99,10 @@ export function unionRules(
 ): typeof method {
 	assert_context_name(context, 'union');
 	return function (this: Type, t) {
+		/* 2-b | `T \| T == T` */
+		if (this === t) {
+			return this;
+		}
 		/* 1-7 | `T \| nothing  == T` */
 		if (this.isBottomType) {
 			return t;
@@ -131,16 +139,18 @@ export function differenceRules(
 ): typeof method {
 	assert_context_name(context, 'subtract');
 	return function (this: Type, t) {
+		/* 2-c | `T  - T == nothing` */
+		if (this === t) {
+			return NOTHING;
+		}
 		/* 4-1 | `A - B == A  <->  A & B == nothing` */
 		if (this.isDisjointWith(t)) {
 			return this;
 		}
-
 		/* 4-2 | `A - B == nothing  <->  A <: B` */
 		if (this.isSubtypeOf(t)) {
 			return NOTHING;
 		}
-
 		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 		if (t instanceof Union) {
 			return Intersection.all(this, ...t.operands.map((s) => this.subtract(s))); // `(A - B) & (A - C) == A & -B & -C`

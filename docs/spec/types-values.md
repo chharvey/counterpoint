@@ -778,6 +778,9 @@ For brevity, this section uses the following notational conventions:
 ### Operation Properties
 \# | Law | Description
 -- | --- | -----------
+2-a | `T  & T == T`       | Intersection Idempotence
+2-b | `T \| T == T`       | Union        Idempotence
+2-c | `T  - T == nothing` | Subtracting a type from itself yields Bottom.
 2-1 | `A  & B == B  & A`               | Intersection is Comutative
 2-2 | `A \| B == B \| A`               | Union        is Commutative
 2-3 | `(A  & B)  & C == A  & (B  & C)` | Intersection is Associative
