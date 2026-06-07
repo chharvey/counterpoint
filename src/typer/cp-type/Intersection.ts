@@ -99,8 +99,7 @@ export class Intersection extends Combinable {
 			} else {
 				/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 				assert.ok(t.isSubtypeOf(this), `Expected ${ t } to be a subtype of ${ this }.`);
-				/* 3-3 | `A <: B  <->  A  & B == A` */
-				return t;
+				return assert.fail('`@intersectionLaws` should have already returned.');
 			}
 		} else {
 			return new Intersection(this, t).normalize();

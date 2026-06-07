@@ -98,8 +98,7 @@ export class Union extends Combinable {
 			} else {
 				/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 				assert.ok(this.isSubtypeOf(t), `Expected ${ this } to be a subtype of ${ t }.`);
-				/* 3-4 | `A <: B  <->  A \| B == B` */
-				return t;
+				return assert.fail('`@unionLaws` should have already returned.');
 			}
 		} else {
 			return new Union(this, t).normalize();
