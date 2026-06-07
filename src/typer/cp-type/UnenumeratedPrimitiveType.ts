@@ -3,7 +3,7 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {ValueType} from './ValueType.ts';
@@ -29,7 +29,7 @@ import {ValueType} from './ValueType.ts';
  *
  * To fix the problem, we need to override the inherited {@link Type#isSubtypeOf} method, which checks for value inclusion.
  * This class just returns `false` in the method body, falling back on the rules of type theory
- * to carry out the computation (see the {@link subtypeRules} decorator).
+ * to carry out the computation (see the {@link subtypeLaws} decorator).
  *
  * This class should only be extended by primitive types for which it is too impractical (or impossible) to list out every value.
  *
@@ -49,7 +49,7 @@ export abstract class UnenumeratedPrimitiveType extends ValueType {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}

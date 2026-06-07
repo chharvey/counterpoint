@@ -6,7 +6,7 @@ import {
 import * as VALUE from '../cp-value/index.ts';
 import {MUT_OPERATOR} from './utils-private.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -48,7 +48,7 @@ class TypeSet extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => TypeSet)
 	public override isSubtypeOf(t: Type): boolean {

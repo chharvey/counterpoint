@@ -4,7 +4,7 @@ import {
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {ValueType} from './ValueType.ts';
@@ -35,7 +35,7 @@ export class Unit<T extends VALUE.Primitive = VALUE.Primitive> extends ValueType
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
 	}

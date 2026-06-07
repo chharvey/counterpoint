@@ -11,9 +11,9 @@ import {NOTHING} from './index.ts';
 import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
-	unionRules,
-	differenceRules,
-	subtypeRules,
+	unionLaws,
+	differenceLaws,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {botOrTopString} from './TypeOperation.ts';
@@ -87,7 +87,7 @@ export class Union extends Combinable {
 
 	@memoizeBinOp(true)
 	@typeConstant
-	@unionRules
+	@unionLaws
 	public override union(t: Type): Type {
 		/*
 		 * 3-a | `A <: C --> (A \| B) \| C == B \| C`
@@ -111,7 +111,7 @@ export class Union extends Combinable {
 	}
 
 	@typeConstant
-	@differenceRules
+	@differenceLaws
 	public override subtract(t: Type): Type {
 		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return Union.all(...this.operands.map((s) => s.subtract(t)));
@@ -119,7 +119,7 @@ export class Union extends Combinable {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.operands.every((s) => s.isSubtypeOf(t));

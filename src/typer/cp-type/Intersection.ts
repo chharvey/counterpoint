@@ -15,8 +15,8 @@ import {
 import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
-	intersectionRules,
-	subtypeRules,
+	intersectionLaws,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {botOrTopString} from './TypeOperation.ts';
@@ -88,7 +88,7 @@ export class Intersection extends Combinable {
 
 	@memoizeBinOp(true)
 	@typeConstant
-	@intersectionRules
+	@intersectionLaws
 	public override intersect(t: Type): Type {
 		/*
 		 * 3-9 | `C <: A --> (A  & B)  & C == B  & C`
@@ -113,7 +113,7 @@ export class Intersection extends Combinable {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.operands.some((s) => s.isSubtypeOf(t))) {

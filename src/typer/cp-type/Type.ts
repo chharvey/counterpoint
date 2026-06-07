@@ -50,10 +50,10 @@ export function typeConstant(
 
 /**
  * Decorator for {@link Type#intersect} method and any overrides.
- * Contains shortcuts for constructing type intersections.
+ * Contains type law shortcuts for constructing type intersections.
  * @implements MethodDecorator<Type, Type['intersect']>
  */
-export function intersectionRules(
+export function intersectionLaws(
 	method:  Type['intersect'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -90,10 +90,10 @@ export function intersectionRules(
 
 /**
  * Decorator for {@link Type#union} method and any overrides.
- * Contains shortcuts for constructing type unions.
+ * Contains type law shortcuts for constructing type unions.
  * @implements MethodDecorator<Type, Type['union']>
  */
-export function unionRules(
+export function unionLaws(
 	method:  Type['union'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -130,10 +130,10 @@ export function unionRules(
 
 /**
  * Decorator for {@link Type#subtract} method and any overrides.
- * Contains shortcuts for constructing type differences.
+ * Contains type law shortcuts for constructing type differences.
  * @implements MethodDecorator<Type, Type['subtract']>
  */
-export function differenceRules(
+export function differenceLaws(
 	method:  Type['subtract'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -164,10 +164,10 @@ export function differenceRules(
 
 /**
  * Decorator for {@link Type#isSubtypeOf} method and any overrides.
- * Contains shortcuts for determining subtypes.
+ * Contains type law shortcuts for determining subtypes.
  * @implements MethodDecorator<Type, Type['isSubtypeOf']>
  */
-export function subtypeRules(
+export function subtypeLaws(
 	method:  Type['isSubtypeOf'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
@@ -402,7 +402,7 @@ export abstract class Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@intersectionRules
+	@intersectionLaws
 	public intersect(t: Type): Type {
 		/* 2-4 | `A  & B == B  & A` */
 		if (t instanceof Intersection) {
@@ -418,7 +418,7 @@ export abstract class Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@unionRules
+	@unionLaws
 	public union(t: Type): Type {
 		/* 2-5 | `A \| B == B \| A` */
 		if (t instanceof Union) {
@@ -433,7 +433,7 @@ export abstract class Type {
 	 * @returns the type difference
 	 */
 	@typeConstant
-	@differenceRules
+	@differenceLaws
 	public subtract(t: Type): Type {
 		return new Difference(this, t);
 	}
@@ -445,7 +445,7 @@ export abstract class Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public isSubtypeOf(t: Type): boolean {
 		return [...this.values].every((v) => t.includes(v));
 	}
@@ -536,7 +536,7 @@ export class TypeInterface extends Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@intersectionRules
+	@intersectionLaws
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>([...this.properties]);
@@ -555,7 +555,7 @@ export class TypeInterface extends Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@unionRules
+	@unionLaws
 	public override union(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>();
@@ -577,7 +577,7 @@ export class TypeInterface extends Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {
 			if (![...this.typeparams.entries()].every(([name, this_param]) => {
