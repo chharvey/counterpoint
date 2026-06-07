@@ -306,6 +306,10 @@ test.suite('Type', () => {
 			assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
 			assert.deepStrictEqual(actual, expected);
 		});
+		test.test('`false | true` (or swapped) returns `bool` by reference.', () => {
+			assert.strictEqual(TYPE.FALSE.union(TYPE.TRUE), TYPE.BOOL);
+			assert.strictEqual(TYPE.TRUE.union(TYPE.FALSE), TYPE.BOOL);
+		});
 		test.suite('Union', () => {
 			test.test('optimizes nested unions: `(A | B) | A === A | B`', () => {
 				const a: TYPE.Type = typeUnit(4.2);

@@ -15,8 +15,6 @@ import {Object as TypeObject} from './Object.ts';
 
 /** The Counterpoint Language Nothing  Type `nothing`.  */ export const NOTHING  = new Nothing();
 /** The Counterpoint Language Anything Type `anything`. */ export const ANYTHING = new Anything();
-/** The Counterpoint Language Null     Type `null`.     */ export const NULL     = new Unit<VALUE.Null>(VALUE.NULL);
-/** The Counterpoint Language Boolean  Type `bool`.     */ export const BOOL     = new TypeBoolean();
 /** The Counterpoint Language Symbol   Type `sym`.      */ export const SYM      = new TypeSymbol();
 /** The Counterpoint Language Integer  Type `int`.      */ export const INT      = new Integer();
 /** The Counterpoint Language Natural  Type `nat`.      */ export const NAT      = new Natural();
@@ -25,6 +23,9 @@ import {Object as TypeObject} from './Object.ts';
 /** The Counterpoint Language Object   Type `Object`.   */ export const OBJ      = new TypeObject();
 
 
+
+/** The Counterpoint Language Null Type `null`. */
+export const NULL = new Unit<VALUE.Null>(VALUE.NULL);
 
 /** A Unit Type containing only the Counterpoint Language Value `false`. */
 export const FALSE = new Unit<VALUE.Boolean>(VALUE.FALSE);
@@ -37,6 +38,10 @@ export const SYM_NOTHING = new Unit<VALUE.Symbol>(VALUE.SYM_NOTHING);
 
 
 
+/** The Counterpoint Language Boolean Type `bool`. */
+export const BOOL = new TypeBoolean(); // NOTE: We would typically just use a `new Union()` here, but we need a class for overriding Union methods to improve performance.
+
+/** The union of all numeric types. */
 export const NUMBER = new Union(INT, NAT, FLOAT); // cannot call `Type#union` because it has a decorator that relies on `TYPE_CONSTANTS` below
 
 
