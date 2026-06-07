@@ -54,11 +54,7 @@ export class Union extends Combinable {
 				(accum, next) => xjs.Set.union(accum, next.values, language_values_identical),
 				xjs.Set.union(operand0.values, operand1.values, language_values_identical),
 			),
-			[
-				...(operand0 instanceof Union ? operand0.operands : [operand0] as const),
-				...(operand1 instanceof Union ? operand1.operands : [operand1] as const),
-				...operands,
-			],
+			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Union ? operand.operands : [operand]) as readonly Type[] as ReadonlyArrayOfAtLeast2<Type>,
 		);
 	}
 
