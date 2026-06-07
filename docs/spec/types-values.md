@@ -767,12 +767,12 @@ For brevity, this section uses the following notational conventions:
 -- | --- | -----------
 1-1 | `nothing  <: T`        | Bottom is a subtype   of any type.
 1-2 | `T        <: anything` | Top    is a supertype of any type.
-1-3 | `T        <: nothing  <->  T == nothing`  | Any subtype   of Bottom is Bottom (follows from 3-3, 1-5, 2-7)
-1-4 | `anything <: T        <->  T == anything` | Any supertype of Top    is Top    (follows from 3-4, 1-8, 2-7)
-1-5 | `T  & nothing  == nothing`  | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
-1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection (follows from 1-2 and 3-3)
-1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)
-1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union        (follows from 1-2 and 3-4)
+1-3 | `T        <: nothing  <->  T == nothing`  | Any subtype   of Bottom is Bottom
+1-4 | `anything <: T        <->  T == anything` | Any supertype of Top    is Top
+1-5 | `T  & nothing  == nothing`  | Bottom is The Absorption Element of Intersection
+1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection
+1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union
+1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union
 
 
 ### Operation Properties
