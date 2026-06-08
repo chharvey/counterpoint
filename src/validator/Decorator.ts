@@ -372,7 +372,7 @@ export class Decorator {
 			)],
 
 			['expression_unary_keyword', (node) => new AST.OperationUnary(
-				node as SyntaxNodeType<'expression_unary_symbol'>,
+				node as SyntaxNodeType<'expression_unary_keyword'>,
 				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword) as ValidOperatorUnary,
 				this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),
 			)],
