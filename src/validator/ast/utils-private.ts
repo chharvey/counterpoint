@@ -43,10 +43,13 @@ export enum ValidIntrinsicName {
 }
 
 export enum ValidFunctionName {
-	LIST = 'List',
-	DICT = 'Dict',
-	SET  = 'Set',
-	MAP  = 'Map',
+	INTEGER = 'Integer',
+	NATURAL = 'Natural',
+	FLOAT   = 'Float',
+	LIST    = 'List',
+	DICT    = 'Dict',
+	SET     = 'Set',
+	MAP     = 'Map',
 }
 
 export type ValidGenericFunctionName = (
@@ -132,6 +135,15 @@ export type ConstructorSchema = {
 
 /**
  * ```cpl
+ * declare class data Integer {
+ * 	new (x: int | nat | float);
+ * }
+ * declare class data Natural {
+ * 	new (x: int | nat | float);
+ * }
+ * declare class data Float {
+ * 	new (x: int | nat | float);
+ * }
  * declare class List<T> {
  * 	new ();
  * 	new (tup0:  ());
@@ -177,6 +189,21 @@ export type ConstructorSchema = {
  * ```
  */
 export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
+	[ValidFunctionName.INTEGER, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		returnType:    () => TYPE.INT,
+	}],
+	[ValidFunctionName.NATURAL, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		returnType:    () => TYPE.NAT,
+	}],
+	[ValidFunctionName.FLOAT, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		returnType:    () => TYPE.FLOAT,
+	}],
 	[ValidFunctionName.LIST, {
 		genericParams: [{positional: true}],
 		overloads:     [

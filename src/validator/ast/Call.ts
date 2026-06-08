@@ -176,6 +176,9 @@ export class Call extends Expression {
 					}
 					break;
 				}
+				default: {
+					throw err;
+				}
 			}
 		}
 		return constructor_schema.returnType(resolved_generic_args).mutableOf();
@@ -261,6 +264,9 @@ export class Call extends Expression {
 					arg instanceof VALUE.Set               ? new Map<VALUE.Value, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>].map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
 					(assert_instanceof(arg, VALUE.Map),      arg.cases)
 				));
+			}
+			default: {
+				throw new Error(`\`AST.Call[base.source="${ this.base.source }"]#fold\` unsupported.`);
 			}
 		}
 	}
