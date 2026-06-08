@@ -729,10 +729,6 @@ test.suite('ASTNodeAccess', () => {
 						collectionB?.bravo; % type \`3 | 4 | 6 | null\`
 					}`, [
 						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)),
-						// FIXME: compiler thinks `(alpha: bool, bravo?: 2 | 3 | 4) & (bravo?: 3 | 4 | 5, charlie: str)`
-						// is a subtype of `(bravo?: 6)`, therefore returning type `6 | null`
-						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-						typeUnit(6n).union(TYPE.NULL) ??
 						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)).union(TYPE.NULL),
 					]);
 				});
@@ -740,8 +736,8 @@ test.suite('ASTNodeAccess', () => {
 		});
 
 		test.suite('access manner: access by expression.', () => {
-			const TYPE_INT_FLOAT_STR      = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
-			const TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
+			let TYPE_INT_FLOAT_STR:      TYPE.Type;
+			let TYPE_INT_FLOAT_STR_NULL: TYPE.Type;
 			const DECLS = `
 				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
 				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
@@ -752,6 +748,10 @@ test.suite('ASTNodeAccess', () => {
 				val mut set_unfixed:  Set .<     int | float | str> = set_fixed;
 				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
+			test.before(() => {
+				TYPE_INT_FLOAT_STR      = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
+				TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
+			});
 			test.test('returns individual entry types for folded objects, union types for unfolded objects.', () => {
 				testExprTypes(`{
 					${ DECLS }

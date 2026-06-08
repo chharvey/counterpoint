@@ -9,7 +9,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {Union} from './Union.ts';
@@ -63,7 +63,7 @@ class TypeRecord extends ValueType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@instanceOf(() => TypeRecord)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
