@@ -49,13 +49,35 @@ export enum ValidFunctionName {
 	MAP  = 'Map',
 }
 
+export type ValidGenericFunctionName = (
+	| ValidFunctionName.LIST
+	| ValidFunctionName.DICT
+	| ValidFunctionName.SET
+	| ValidFunctionName.MAP
+);
+
+const FUNCTION_NAMES: readonly string[] = Object.values(ValidFunctionName);
+
+const GENERIC_FUNCTION_NAMES: readonly string[] = [
+	ValidFunctionName.LIST,
+	ValidFunctionName.DICT,
+	ValidFunctionName.SET,
+	ValidFunctionName.MAP,
+];
+
 export function is_valid_intrinsic_name(source: string): source is ValidIntrinsicName {
 	return Object.values<string>(ValidIntrinsicName).includes(source);
 }
 
 export function check_valid_function_name(source: string): asserts source is ValidFunctionName {
-	if (!Object.values<string>(ValidFunctionName).includes(source)) {
-		throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
+	if (!FUNCTION_NAMES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ FUNCTION_NAMES.join(' | ') }\`.`);
+	}
+}
+
+export function check_valid_generic_function_name(source: string): asserts source is ValidGenericFunctionName {
+	if (!GENERIC_FUNCTION_NAMES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ GENERIC_FUNCTION_NAMES.join(' | ') }\`.`);
 	}
 }
 
