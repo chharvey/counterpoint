@@ -298,6 +298,15 @@ test.suite('Opcode', () => {
 						: instr.interpret(interp)
 					)).filter((value) => !!value);
 				}
+				function interpretCalls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
+					const interp = new Interpreter();
+					return setupScript(`{
+						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
+					}`, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
+						? instr.value.interpret(interp)
+						: instr.interpret(interp)
+					)).filter((value) => !!value);
+				}
 				test.test('[operator=ISNULL]', () => {
 					const builder = new Builder();
 					const interp  = new Interpreter();
@@ -387,7 +396,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('[operator=TOINT]', () => {
 					assert.deepStrictEqual(
-						interpretUnops('int', operands.slice(3, 10)),
+						interpretCalls('Integer', operands.slice(3, 10)),
 						[
 							VALUE.INT_0,
 							new VALUE.Integer(42n),
@@ -401,7 +410,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('[operator=TONAT]', () => {
 					assert.deepStrictEqual(
-						interpretUnops('nat', operands.slice(3, 10)),
+						interpretCalls('Natural', operands.slice(3, 10)),
 						[
 							VALUE.NAT_0,
 							new VALUE.Natural(42n),
@@ -415,7 +424,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('[operator=TOFLOAT]', () => {
 					assert.deepStrictEqual(
-						interpretUnops('float', operands.slice(3, 10)),
+						interpretCalls('Float', operands.slice(3, 10)),
 						[
 							VALUE.FLOAT_0,
 							new VALUE.Float(42.0),
