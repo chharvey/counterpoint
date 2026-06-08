@@ -727,39 +727,6 @@ test.suite('Operation', () => {
 					['?{41 -> 42}', VALUE.FALSE],
 				]));
 			});
-			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion only if needed.', () => {
-				const exprs: readonly AST.OperationUnary[] = setupScript(`{
-					val my_int: int   = -7;
-					val my_nat: nat   = +42;
-					val my_flt: float = -3.5;
-
-					int   my_int;
-					int   my_nat;
-					int   my_flt;
-					nat   my_int;
-					nat   my_nat;
-					nat   my_flt;
-					float my_int;
-					float my_nat;
-					float my_flt;
-				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr as AST.OperationUnary);
-				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
-				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
-				assert.strictEqual(values[0], operands[0]);
-				assert.strictEqual(values[4], operands[4]);
-				assert.strictEqual(values[8], operands[8]);
-				return assert.deepStrictEqual(values, [
-					new VALUE.Integer(-7n),
-					new VALUE.Integer(42n),
-					new VALUE.Integer(-3n),
-					new VALUE.Natural(-7n),
-					new VALUE.Natural(42n),
-					new VALUE.Natural(0n),
-					new VALUE.Float(-7.0),
-					new VALUE.Float(42.0),
-					new VALUE.Float(-3.5),
-				]);
-			});
 		});
 	});
 

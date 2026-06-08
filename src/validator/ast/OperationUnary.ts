@@ -111,14 +111,8 @@ export class OperationUnary extends Operation {
 			case Operator.NEG: {
 				return this.foldNumeric(v as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>);
 			}
-			case Operator.INT: {
-				return (v as VALUE.Number).toInt();
-			}
-			case Operator.NAT: {
-				return (v as VALUE.Number).toNat();
-			}
-			case Operator.FLOAT: {
-				return (v as VALUE.Number).toFloat();
+			default: {
+				throw new Error(`\`AST.OperationUnary[operator="${ this.operator }"]#fold\` unsupported.`);
 			}
 		}
 	}
