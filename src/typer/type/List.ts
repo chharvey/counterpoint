@@ -6,7 +6,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -48,7 +48,7 @@ export class List extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => List)
 	public override isSubtypeOf(t: Type): boolean {

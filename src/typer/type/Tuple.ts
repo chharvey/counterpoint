@@ -11,7 +11,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {Union} from './Union.ts';
@@ -65,7 +65,7 @@ class TypeTuple extends ValueType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
