@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Builder,
@@ -89,10 +90,7 @@ export class OperationUnary extends Operation {
 			[Operator.NOT,   OP.OpCode.NOT],
 			[Operator.EMP,   OP.OpCode.EMP],
 			[Operator.NEG,   OP.OpCode.NEG],
-			[Operator.INT,   OP.OpCode.TOINT],
-			[Operator.NAT,   OP.OpCode.TONAT],
-			[Operator.FLOAT, OP.OpCode.TOFLOAT],
-		]).get(this.operator)!, this.operand.build(builder).asTac(builder), this.type());
+		]).get(this.operator) ?? assert.fail(new Error(`\`AST.OperationUnary[operator="${ this.operator }"]#build\` unsupported.`)), this.operand.build(builder).asTac(builder), this.type());
 	}
 
 	@memoizeMethod

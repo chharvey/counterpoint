@@ -272,38 +272,6 @@ test.suite('Operation', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-		test.test('AST.OperationUnary[operator=INT | NAT | FLOAT]', () => {
-			assert.strictEqual(setupScript(`{
-				val mut my_int: int   = -7;
-				val mut my_nat: nat   = +42;
-				val mut my_flt: float = -3.5;
-
-				int   my_int;
-				int   my_nat;
-				int   my_flt;
-				nat   my_int;
-				nat   my_nat;
-				nat   my_flt;
-				float my_int;
-				float my_nat;
-				float my_flt;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> my_int (INT.CONST -7))
-					(DECL <nat> my_nat (NAT.CONST +42))
-					(DECL <float> my_flt (FLOAT.CONST -3.5))
-					(DROP (TOINT (GET my_int)))
-					(DROP (TOINT (GET my_nat)))
-					(DROP (TOINT (GET my_flt)))
-					(DROP (TONAT (GET my_int)))
-					(DROP (TONAT (GET my_nat)))
-					(DROP (TONAT (GET my_flt)))
-					(DROP (TOFLOAT (GET my_int)))
-					(DROP (TOFLOAT (GET my_nat)))
-					(DROP (TOFLOAT (GET my_flt)))
-					(ENDPROGRAM)
-			`.trim());
-		});
 
 		test.test('OperationBinaryArithmetic', () => {
 			assert.strictEqual(setupScript(`{
