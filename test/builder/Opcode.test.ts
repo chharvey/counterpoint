@@ -1117,7 +1117,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
 					);
 				});
-				test.test('Primitive unary operators return custom WASM functions.', () => {
+				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
 						!null;
 						!false;
@@ -1140,6 +1140,13 @@ test.suite('Opcode', () => {
 						nat   4.2;
 						float +42;
 						float 42;
+
+						Integer.(+42);
+						Integer.(4.2);
+						Natural.(42);
+						Natural.(4.2);
+						Float.(+42);
+						Float.(42);
 					}`, {codegen: false});
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
@@ -1158,6 +1165,13 @@ test.suite('Opcode', () => {
 
 							cg.vm.op.negate(genConst(cg, 42n)),
 							cg.vm.op.negate(genConst(cg, 4.2)),
+
+							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toInt(genConst(cg, 4.2)),
+							cg.vm.op.toNat(genConst(cg, 42n)),
+							cg.vm.op.toNat(genConst(cg, 4.2)),
+							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toFloat(genConst(cg, 42n)),
 
 							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toInt(genConst(cg, 4.2)),

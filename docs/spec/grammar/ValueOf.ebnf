@@ -193,6 +193,7 @@ Object! ValueOf(SemanticCall call) :=
 		5. *Return:* a new Set containing the items in `tuple`.
 	7. *Else:*
 		1. *Assert:* `base.source` is "Map".
+		// NOTE: "Integer", "Natural", "Float" unsupported.
 		2. *Assert:* `call.children.count` is 2 or 3 or 4.
 		3. *If* `call.children.count` is 2:
 			1. *Note:* The call looks like "Map.<K>()".
