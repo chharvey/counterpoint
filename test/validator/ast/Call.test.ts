@@ -315,6 +315,39 @@ test.suite('Call', () => {
 
 
 	test.suite('#build', () => {
+		test.test('`Integer.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ INT_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOINT (INT.CONST -42)))
+					(DROP (TOINT (NAT.CONST +42)))
+					(DROP (TOINT (FLOAT.CONST 4.2)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Natural.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ NAT_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TONAT (INT.CONST -42)))
+					(DROP (TONAT (NAT.CONST +42)))
+					(DROP (TONAT (FLOAT.CONST 4.2)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Float.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ FLOAT_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOFLOAT (INT.CONST -42)))
+					(DROP (TOFLOAT (NAT.CONST +42)))
+					(DROP (TOFLOAT (FLOAT.CONST 4.2)))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.map((src) => `${ src };`).join('\n') }

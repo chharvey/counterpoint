@@ -23,6 +23,8 @@ import {
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	ValidFunctionName,
+	type ValidGenericFunctionName,
+	GENERIC_FUNCTION_NAMES,
 	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
@@ -198,21 +200,29 @@ export class Call extends Expression {
 			);
 		}
 
-		const [name, ctor] = new Map<ValidFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
-			[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
-			[ValidFunctionName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], this.type())]],
-			[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew            (new Map(),            this.type())]],
-			[ValidFunctionName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew             (new Map(),            this.type())]],
-		]).get(this.base.source as ValidFunctionName)!;
-		const new_obj: OP.Value = ctor();
-		if (!this.exprargs.length) {
-			return new_obj;
+		if (GENERIC_FUNCTION_NAMES.includes(this.base.source)) {
+			const [name, ctor] = new Map<ValidGenericFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
+				[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
+				[ValidFunctionName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], this.type())]],
+				[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew            (new Map(),            this.type())]],
+				[ValidFunctionName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew             (new Map(),            this.type())]],
+			]).get(this.base.source as ValidGenericFunctionName)!;
+			const new_obj: OP.Value = ctor();
+			if (!this.exprargs.length) {
+				return new_obj;
+			}
+			const dest: Temp = builder.newTemp(new_obj);
+			const get_dest = new OP.Get(dest);
+			builder.pushInstruction(new OP.Decl(dest));
+			builder.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(builder).asTac(builder)));
+			return get_dest;
+		} else {
+			return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
+				[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
+				[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
+				[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],
+			]).get(this.base.source as ValidFunctionName)!, this.exprargs[0].build(builder).asTac(builder), this.type());
 		}
-		const dest: Temp = builder.newTemp(new_obj);
-		const get_dest = new OP.Get(dest);
-		builder.pushInstruction(new OP.Decl(dest));
-		builder.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(builder).asTac(builder)));
-		return get_dest;
 	}
 
 	@memoizeMethod
