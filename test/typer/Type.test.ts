@@ -7,6 +7,8 @@ import {
 	TYPE,
 } from '../../src/index.ts';
 import {typeUnit} from '../helpers.ts';
+import {assert_shallowStrictEqual} from '../assert-helpers.ts';
+import {repeat} from '../utils.ts';
 
 
 
@@ -53,16 +55,35 @@ test.suite('Type', () => {
 
 	test.suite('#toString', () => {
 		test.test('properly prioritizes operators.', () => {
-			const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);
+			const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.FLOAT]);
 			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.INT]);
 			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.STR]);
 			const tests = new Map<TYPE.Type, string>([
-				[a.intersect(b).union(c), '(bool,) & (int,) | (str,)'],
-				[a.intersect(b.union(c)), '(bool,) & ((int,) | (str,))'],
-				[a.union(b).intersect(c), '((bool,) | (int,)) & (str,)'],
-				[a.union(b.intersect(c)), '(bool,) | (int,) & (str,)'],
+				[a.intersect(b).union(c), '(float,) & (int,) | (str,)'],
+				[a.intersect(b.union(c)), '((int,) | (str,)) & (float,)'],
+				[a.union(b).intersect(c), '((float,) | (int,)) & (str,)'],
+				[a.union(b.intersect(c)), '(float,) | (int,) & (str,)'],
 			]);
-			return assert.deepStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
+			return assert_shallowStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
+		});
+		test.test('with boolean types.', () => {
+			assert_shallowStrictEqual(
+				[
+					TYPE.BOOL,
+					TYPE.NULL.union(TYPE.BOOL),
+					TYPE.BOOL.union(TYPE.NULL),
+					TYPE.Union.all(TYPE.NULL, TYPE.FALSE, TYPE.TRUE),
+					TYPE.Union.all(TYPE.NULL, TYPE.TRUE, TYPE.FALSE),
+					TYPE.Union.all(TYPE.FALSE, TYPE.TRUE, TYPE.NULL),
+					TYPE.Union.all(TYPE.TRUE, TYPE.FALSE, TYPE.NULL),
+					TYPE.Union.all(TYPE.FALSE, TYPE.NULL, TYPE.TRUE),
+					TYPE.Union.all(TYPE.TRUE, TYPE.NULL, TYPE.FALSE),
+				].map((t) => t.toString()),
+				[
+					'bool',
+					...repeat('bool | null', 8),
+				],
+			);
 		});
 	});
 

@@ -6,7 +6,7 @@ import {
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
-import type * as VALUE from '../cp-value/index.ts';
+import * as VALUE from '../cp-value/index.ts';
 import {NOTHING} from './index.ts';
 import type {ArrayOfAtLeast2} from './utils-private.ts';
 import {
@@ -74,7 +74,15 @@ export class Union extends Combinable {
 
 	@botOrTopString
 	public override toString(): string {
-		return this.operands.join(' | ');
+		let strings: readonly string[] = this.operands.map((s) => s.toString());
+
+		// if `false` and `true` are both among the operands, replace them with `bool`
+		const bools: readonly string[] = [VALUE.FALSE, VALUE.TRUE].map((bv) => bv.toString());
+		if (bools.every((bs) => strings.includes(bs))) {
+			strings = [...strings.filter((s) => !bools.includes(s)), 'bool'];
+		}
+
+		return strings.toSorted().join(' | ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {

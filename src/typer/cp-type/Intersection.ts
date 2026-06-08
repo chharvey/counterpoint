@@ -75,7 +75,7 @@ export class Intersection extends Combinable {
 
 	@botOrTopString
 	public override toString(): string {
-		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' & ');
+		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).toSorted().join(' & ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
