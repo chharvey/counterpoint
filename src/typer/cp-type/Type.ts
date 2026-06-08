@@ -446,8 +446,13 @@ export abstract class Type {
 	@strictEqual
 	@memoizeBinOp()
 	@subtypeLaws
-	public isSubtypeOf(t: Type): boolean {
-		return [...this.values].every((v) => t.includes(v));
+	public isSubtypeOf(_t: Type): boolean {
+		/*
+		 * By default (unless overridden), this type will not be a subtype of anything
+		 * unless that thing is a union having this type as a constituent.
+		 * E.g., `int` is a subtype of a type `T` if and only if `T` is a union `V | int` for some other type `V`.
+		 */
+		return false;
 	}
 
 	/**

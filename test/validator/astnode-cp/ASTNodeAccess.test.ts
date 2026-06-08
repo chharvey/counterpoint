@@ -729,10 +729,6 @@ test.suite('ASTNodeAccess', () => {
 						collectionB?.bravo; % type \`3 | 4 | 6 | null\`
 					}`, [
 						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)),
-						// FIXME: compiler thinks `(alpha: bool, bravo?: 2 | 3 | 4) & (bravo?: 3 | 4 | 5, charlie: str)`
-						// is a subtype of `(bravo?: 6)`, therefore returning type `6 | null`
-						// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-						typeUnit(6n).union(TYPE.NULL) ??
 						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)).union(TYPE.NULL),
 					]);
 				});

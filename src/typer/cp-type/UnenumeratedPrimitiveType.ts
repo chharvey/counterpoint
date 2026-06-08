@@ -1,11 +1,3 @@
-import {
-	strictEqual,
-	memoizeBinOp,
-} from '../utils-private.ts';
-import {
-	subtypeLaws,
-	type Type,
-} from './Type.ts';
 import {ValueType} from './ValueType.ts';
 
 
@@ -39,18 +31,8 @@ import {ValueType} from './ValueType.ts';
  * - Natural
  * - Float
  * - TypeString
+ *
+ * @deprecated TODO: delete this class
  */
 export abstract class UnenumeratedPrimitiveType extends ValueType {
-	/**
-	 * This type will not be a subtype of anything
-	 * unless that thing is a union having this type as a component.
-	 *
-	 * E.g., `int` is a subtype of a type `T` if and only if `T` is a union `V | int` for some other type `V`.
-	 */
-	@strictEqual
-	@memoizeBinOp()
-	@subtypeLaws
-	public override isSubtypeOf(_t: Type): boolean {
-		return false;
-	}
 }
