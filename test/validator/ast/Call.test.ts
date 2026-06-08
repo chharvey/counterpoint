@@ -262,6 +262,12 @@ test.suite('Call', () => {
 		});
 		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
+				Integer.()
+				Integer.(1, 2)
+				Natural.()
+				Natural.(1, 2)
+				Float.()
+				Float.(1, 2)
 				List.<int>((), ())
 				Dict.<int>((), ())
 				Set.<int>((), ())
