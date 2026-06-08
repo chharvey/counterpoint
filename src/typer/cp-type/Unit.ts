@@ -5,6 +5,7 @@ import {
 import type * as VALUE from '../cp-value/index.ts';
 import {
 	subtypeLaws,
+	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {ValueType} from './ValueType.ts';
@@ -38,5 +39,11 @@ export class Unit<T extends VALUE.Primitive = VALUE.Primitive> extends ValueType
 	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
+	}
+
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		return !this.isSubtypeOf(t);
 	}
 }

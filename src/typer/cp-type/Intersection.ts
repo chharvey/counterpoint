@@ -17,6 +17,7 @@ import {
 	typeConstant,
 	intersectionLaws,
 	subtypeLaws,
+	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {botOrTopString} from './TypeOperation.ts';
@@ -119,6 +120,12 @@ export class Intersection extends Combinable {
 			return true;
 		}
 		return super.isSubtypeOf(t);
+	}
+
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		return this.operands.some((s) => s.isDisjointWith(t));
 	}
 
 	public override mutableOf(): Intersection {

@@ -14,6 +14,7 @@ import {
 	unionLaws,
 	differenceLaws,
 	subtypeLaws,
+	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {botOrTopString} from './TypeOperation.ts';
@@ -126,6 +127,12 @@ export class Union extends Combinable {
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-7 | `A <: C    &&  B <: C  <->  A \| B <: C` */
 		return this.operands.every((s) => s.isSubtypeOf(t));
+	}
+
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		return this.operands.every((s) => s.isDisjointWith(t));
 	}
 
 	public override mutableOf(): Union {

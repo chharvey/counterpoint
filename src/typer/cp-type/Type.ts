@@ -14,6 +14,7 @@ import {
 	Intersection,
 	Union,
 	Difference,
+	Unit,
 	NOTHING,
 	ANYTHING,
 	NULL,
@@ -267,6 +268,29 @@ export function subtypeLaws(
 
 
 /**
+ * Decorator for {@link Type#isDisjointWith} method and any overrides.
+ * Contains type law shortcuts for determining whether two types are disjoint.
+ * @implements MethodDecorator<Type, Type['isDisjointWith']>
+ */
+export function disjointLaws(
+	method:  Type['isDisjointWith'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'isDisjointWith');
+	return function (this: Type, t) {
+		if (this === t) {
+			return false;
+		}
+		if (this.isBottomType || t.isBottomType) {
+			return true;
+		}
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - TypeOperation
@@ -474,10 +498,13 @@ export abstract class Type {
 	 * If true, there is no overlap between the types.
 	 * @param t the type to compare
 	 * @return  Is this type disjoint with `t`?
-	 * @final
 	 */
 	@memoizeBinOp(true)
+	@disjointLaws
 	public isDisjointWith(t: Type): boolean {
+		if (t instanceof Intersection || t instanceof Union || t instanceof Unit) {
+			return t.isDisjointWith(this);
+		}
 		return this.intersect(t).isBottomType;
 	}
 
