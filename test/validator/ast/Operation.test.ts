@@ -597,54 +597,6 @@ test.suite('Operation', () => {
 					assert.throws(() => ((stmts[1] as AST.StatementExpression).expr as AST.OperationUnary).type(), TypeErrorInvalidOperation);
 				});
 			});
-			test.suite('[operator=INT | NAT | FLOAT]', () => {
-				test.test('returns the respective type for numeric operands.', () => {
-					assert.deepStrictEqual(setupScript(`{
-						val mut my_int: int   = 7;
-						val mut my_nat: nat   = +42;
-						val mut my_flt: float = -3.5;
-
-						int   my_int;
-						int   my_nat;
-						int   my_flt;
-						nat   my_int;
-						nat   my_nat;
-						nat   my_flt;
-						float my_int;
-						float my_nat;
-						float my_flt;
-					}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
-						TYPE.INT,
-						TYPE.INT,
-						TYPE.INT,
-						TYPE.NAT,
-						TYPE.NAT,
-						TYPE.NAT,
-						TYPE.FLOAT,
-						TYPE.FLOAT,
-						TYPE.FLOAT,
-					]);
-				});
-				test.test('throws for non-numeric operands.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						int   null
-						int   @symb
-						int   "string"
-						int   ["string tuple"]
-						int   [record= "string"]
-						nat   null
-						nat   @symb
-						nat   "string"
-						nat   ["string tuple"]
-						nat   [record= "string"]
-						float null
-						float @symb
-						float "string"
-						float ["string tuple"]
-						float [record= "string"]
-					`, (src) => assert.throws(() => AST.OperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
-				});
-			});
 		});
 
 

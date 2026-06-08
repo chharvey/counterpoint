@@ -61,23 +61,9 @@ export class OperationUnary extends Operation {
 			case Operator.EMP: {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
-		}
-		if (t.isSubtypeOf(TYPE.NUMBER)) {
-			switch (this.operator) {
-				case Operator.NEG: {
-					if (t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT))) {
-						return t;
-					}
-					break;
-				}
-				case Operator.INT: {
-					return TYPE.INT;
-				}
-				case Operator.NAT: {
-					return TYPE.NAT;
-				}
-				case Operator.FLOAT: {
-					return TYPE.FLOAT;
+			case Operator.NEG: {
+				if (t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT))) {
+					return t;
 				}
 			}
 		}
