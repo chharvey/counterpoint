@@ -55,9 +55,6 @@ export class Decorator {
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
-		[Keyword.INT,    Operator.INT],
-		[Keyword.NAT,    Operator.NAT],
-		[Keyword.FLOAT,  Operator.FLOAT],
 	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([

@@ -62,21 +62,18 @@ export class OperationUnary extends Operation {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
 			case Operator.NEG: {
-				if (t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT))) {
-					return t;
-				}
+				return t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)) ? t : assert.fail(new TypeErrorInvalidOperation(this));
 			}
 		}
-		throw new TypeErrorInvalidOperation(this);
 	}
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Unop {
 		return new OP.Unop(new Map<Operator, OP.OpCodeUn>([
-			[Operator.NOT,   OP.OpCode.NOT],
-			[Operator.EMP,   OP.OpCode.EMP],
-			[Operator.NEG,   OP.OpCode.NEG],
-		]).get(this.operator) ?? assert.fail(new Error(`\`AST.OperationUnary[operator="${ this.operator }"]#build\` unsupported.`)), this.operand.build(builder).asTac(builder), this.type());
+			[Operator.NOT, OP.OpCode.NOT],
+			[Operator.EMP, OP.OpCode.EMP],
+			[Operator.NEG, OP.OpCode.NEG],
+		]).get(this.operator)!, this.operand.build(builder).asTac(builder), this.type());
 	}
 
 	@memoizeMethod
@@ -94,9 +91,6 @@ export class OperationUnary extends Operation {
 			}
 			case Operator.NEG: {
 				return this.foldNumeric(v as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>);
-			}
-			default: {
-				throw new Error(`\`AST.OperationUnary[operator="${ this.operator }"]#fold\` unsupported.`);
 			}
 		}
 	}
