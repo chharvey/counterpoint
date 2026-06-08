@@ -25,6 +25,7 @@ export type OpCodeUn = (
 	| OpCode.TOINT
 	| OpCode.TONAT
 	| OpCode.TOFLOAT
+	| OpCode.TOSTR
 
 	| OpCode.LIST_COUNT
 	| OpCode.DICT_COUNT
@@ -91,6 +92,7 @@ export class Unop extends Value {
 			case OpCode.TOINT:   { return op.toInt(code); }
 			case OpCode.TONAT:   { return op.toNat(code); }
 			case OpCode.TOFLOAT: { return op.toFloat(code); }
+			case OpCode.TOSTR:   { return VmValue.stringify(code); }
 
 			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(List .count(VmValue.cast(code, reftype.List))))); }
 			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }

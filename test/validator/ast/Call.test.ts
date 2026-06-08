@@ -378,6 +378,32 @@ test.suite('Call', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
+		test.test('`String.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ STRING_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOSTR (NULL.CONST null)))
+					(DROP (TOSTR (BOOL.CONST true)))
+					(DROP (TOSTR (INT.CONST -42)))
+					(DROP (TOSTR (NAT.CONST +42)))
+					(DROP (TOSTR (FLOAT.CONST 4.2)))
+					(DROP (TOSTR (STR.CONST "hello")))
+					(DECL <tuple> $0 (TUPLE.NEW))
+					(DROP (TOSTR (GET $0)))
+					(DECL <record> $1 (RECORD.NEW @a->(INT.CONST 1)))
+					(DROP (TOSTR (GET $1)))
+					(DECL <List> $2 (LIST.NEW))
+					(DROP (TOSTR (GET $2)))
+					(DECL <Dict> $3 (DICT.NEW @a->(INT.CONST 1)))
+					(DROP (TOSTR (GET $3)))
+					(DECL <Set> $4 (SET.NEW))
+					(DROP (TOSTR (GET $4)))
+					(DECL <Map> $5 (MAP.NEW (STR.CONST "a")->(INT.CONST 1)))
+					(DROP (TOSTR (GET $5)))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.map((src) => `${ src };`).join('\n') }
