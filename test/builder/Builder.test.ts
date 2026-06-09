@@ -1,7 +1,6 @@
 import * as test from 'node:test';
 import type binaryen from 'binaryen';
 import {
-	type VirtualMachine,
 	bigint_to_i64,
 	Builder,
 } from '../../src/index.ts';
@@ -16,11 +15,11 @@ import {repeat} from '../utils.ts';
 
 test.suite('Builder', () => {
 	let cg:  Builder;
-	let mod: VirtualMachine['mod'];
+	let mod: Builder['mod'];
 
 	test.beforeEach(() => {
 		cg = new Builder();
-		mod = cg.vm.mod;
+		mod = cg.mod;
 	});
 
 

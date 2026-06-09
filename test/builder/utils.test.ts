@@ -13,7 +13,7 @@ import {genConst} from '../helpers.ts';
 test.suite('drop_then', () => {
 	test.test('returns a (block) containing `n - 1` (drop) exprs followed by a last expr.', () => {
 		const cg = new Builder();
-		const {mod} = cg.vm;
+		const {mod} = cg;
 		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
 		const expr2: binaryen.ExpressionRef = genConst(cg, 2n);
 		const expr3: binaryen.ExpressionRef = genConst(cg, 3n);
@@ -25,7 +25,7 @@ test.suite('drop_then', () => {
 	});
 	test.test('type of (block) is `binaryen.none` if last item is a Counterpoint block.', () => {
 		const cg = new Builder();
-		const {mod} = cg.vm;
+		const {mod} = cg;
 		const expr1: binaryen.ExpressionRef = genConst(cg, 1n);
 		const block: binaryen.ExpressionRef = mod.block(null, [
 			mod.drop(genConst(cg, 2n)),
