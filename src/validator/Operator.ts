@@ -9,9 +9,6 @@ export enum Operator {
 	EMP,
 	AFF,
 	NEG,
-	INT,
-	NAT,
-	FLOAT,
 	CAST,
 	CAST_MAY,
 	CAST_RES,
@@ -62,9 +59,6 @@ export type ValidOperatorUnary = (
 	| Operator.NOT
 	| Operator.EMP
 	| Operator.NEG
-	| Operator.INT
-	| Operator.NAT
-	| Operator.FLOAT
 );
 
 export type ValidOperatorCast = (

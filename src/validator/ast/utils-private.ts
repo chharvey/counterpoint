@@ -46,6 +46,7 @@ export enum ValidFunctionName {
 	INTEGER = 'Integer',
 	NATURAL = 'Natural',
 	FLOAT   = 'Float',
+	STRING  = 'String',
 	LIST    = 'List',
 	DICT    = 'Dict',
 	SET     = 'Set',
@@ -144,6 +145,9 @@ export type ConstructorSchema = {
  * declare class data Float {
  * 	new (x: int | nat | float);
  * }
+ * declare class data String {
+ * 	new (x: anything);
+ * }
  * declare class List<T> {
  * 	new ();
  * 	new (tup0:  ());
@@ -203,6 +207,11 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.FLOAT,
+	}],
+	[ValidFunctionName.STRING, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
+		returnType:    () => TYPE.STR,
 	}],
 	[ValidFunctionName.LIST, {
 		genericParams: [{positional: true}],

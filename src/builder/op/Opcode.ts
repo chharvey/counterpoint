@@ -47,6 +47,7 @@ export enum OpCode {
 	TOINT,
 	TONAT,
 	TOFLOAT,
+	TOSTR,
 
 	LIST_COUNT,
 	DICT_COUNT,

@@ -221,6 +221,7 @@ export class Call extends Expression {
 				[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
 				[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
 				[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],
+				[ValidFunctionName.STRING,  OP.OpCode.TOSTR],
 			]).get(this.base.source as ValidFunctionName)!, this.exprargs[0].build(builder).asTac(builder), this.type());
 		}
 	}

@@ -212,6 +212,15 @@ Value! Interpret((TOFLOAT `v`)) :=
 	3. *Return:* `v`.
 ;
 
+Value! Interpret((TOSTR `v`)) :=
+	1. *If* `v` is an instance of `String`:
+		1. *Return:* `v`.
+	2. *Else:*
+		1. *Let* `native_string` be a native string representation of `v`.
+		2. *Let* `encoding` be the UTF-8 encoding of `native_string`.
+		3. *Return:* `encoding`.
+;
+
 Value! Interpret((LIST.COUNT `obj`)) :=
 	1. *Assert:* `obj` is an instance of `List`.
 	2. *Return:* `Natural(obj.count)`.

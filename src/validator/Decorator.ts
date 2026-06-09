@@ -55,9 +55,6 @@ export class Decorator {
 		[Punctuator.EMP, Operator.EMP],
 		[Punctuator.AFF, Operator.AFF],
 		[Punctuator.NEG, Operator.NEG],
-		[Keyword.INT,    Operator.INT],
-		[Keyword.NAT,    Operator.NAT],
-		[Keyword.FLOAT,  Operator.FLOAT],
 	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
@@ -375,7 +372,7 @@ export class Decorator {
 			)],
 
 			['expression_unary_keyword', (node) => new AST.OperationUnary(
-				node as SyntaxNodeType<'expression_unary_symbol'>,
+				node as SyntaxNodeType<'expression_unary_keyword'>,
 				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword) as ValidOperatorUnary,
 				this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),
 			)],

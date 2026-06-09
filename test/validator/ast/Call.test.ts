@@ -24,6 +24,7 @@ test.suite('Call', () => {
 		'Integer.(42)',
 		'Natural.(42)',
 		'Float.(42)',
+		'String.(42)',
 		'List.<int>((1, 2, 3))',
 		'Dict.<int>((a= 1, b= 2, c= 3))',
 		'Set.<int>((1, 2, 3))',
@@ -47,6 +48,20 @@ test.suite('Call', () => {
 		'Float.(-42)',
 		'Float.(+42)',
 		'Float.(4.2)',
+	] as const;
+	const STRING_CONS = [
+		'String.(null)',
+		'String.(true)',
+		'String.(-42)',
+		'String.(+42)',
+		'String.(4.2)',
+		'String.("hello")',
+		'String.(())',
+		'String.((a= 1))',
+		'String.([])',
+		'String.([a= 1])',
+		'String.({})',
+		'String.({"a" -> 1})',
 	] as const;
 	const LIST_CONS = [
 		'List.<int>()',
@@ -183,13 +198,14 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
-		test.test('evaluates Integer, Natural, Float, List, Dict, Set, and Map.', () => {
+		test.test('evaluates Integer, Natural, Float, String, List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
 				EVALUATE.map((src) => AST.Call.fromSource(src).type()),
 				[
 					TYPE.INT,
 					TYPE.NAT,
 					TYPE.FLOAT,
+					TYPE.STR,
 					new TYPE.List(TYPE.INT, true),
 					new TYPE.Dict(TYPE.INT, true),
 					new TYPE.Set(TYPE.INT, true),
@@ -213,6 +229,12 @@ test.suite('Call', () => {
 			assertEqualTypes(
 				FLOAT_CONS.map((src) => AST.Call.fromSource(src).type()),
 				repeat(TYPE.FLOAT, FLOAT_CONS.length),
+			);
+		});
+		test.test('`String.(‹…›)`', () => {
+			assertEqualTypes(
+				STRING_CONS.map((src) => AST.Call.fromSource(src).type()),
+				repeat(TYPE.STR, STRING_CONS.length),
 			);
 		});
 		test.test('`List.(‹…›)`', () => {
@@ -268,6 +290,8 @@ test.suite('Call', () => {
 				Natural.(1, 2)
 				Float.()
 				Float.(1, 2)
+				String.()
+				String.(1, 2)
 				List.<int>((), ())
 				Dict.<int>((), ())
 				Set.<int>((), ())
@@ -351,6 +375,32 @@ test.suite('Call', () => {
 					(DROP (TOFLOAT (INT.CONST -42)))
 					(DROP (TOFLOAT (NAT.CONST +42)))
 					(DROP (TOFLOAT (FLOAT.CONST 4.2)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`String.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ STRING_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOSTR (NULL.CONST null)))
+					(DROP (TOSTR (BOOL.CONST true)))
+					(DROP (TOSTR (INT.CONST -42)))
+					(DROP (TOSTR (NAT.CONST +42)))
+					(DROP (TOSTR (FLOAT.CONST 4.2)))
+					(DROP (TOSTR (STR.CONST "hello")))
+					(DECL <tuple> $0 (TUPLE.NEW))
+					(DROP (TOSTR (GET $0)))
+					(DECL <record> $1 (RECORD.NEW @a->(INT.CONST 1)))
+					(DROP (TOSTR (GET $1)))
+					(DECL <List> $2 (LIST.NEW))
+					(DROP (TOSTR (GET $2)))
+					(DECL <Dict> $3 (DICT.NEW @a->(INT.CONST 1)))
+					(DROP (TOSTR (GET $3)))
+					(DECL <Set> $4 (SET.NEW))
+					(DROP (TOSTR (GET $4)))
+					(DECL <Map> $5 (MAP.NEW (STR.CONST "a")->(INT.CONST 1)))
+					(DROP (TOSTR (GET $5)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -659,7 +709,7 @@ test.suite('Call', () => {
 		] as const;
 		test.test('evaluates List, Dict, Set, and Map.', () => {
 			assert.deepStrictEqual(
-				EVALUATE.slice(3).map((src) => AST.Call.fromSource(src).fold()),
+				EVALUATE.slice(4).map((src) => AST.Call.fromSource(src).fold()),
 				[
 					new VALUE.List<VALUE.Integer>(TEST_VALUES),
 					new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
