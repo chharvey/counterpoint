@@ -196,7 +196,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 							3. *Else:*
-								1. Pass through.
+								1. Fall through.
 						3. *Else If* `base.source` is "Dict":
 							1. *Let* `is_assignable` be `TypeCheckAssign(arg, returntype)`.
 							2. *If* `is_assignable` is an abrupt completion:
@@ -211,7 +211,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 							3. *Else:*
-								1. Pass through.
+								1. Fall through.
 						4. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a List type under the type argument `genericarg`.
 							2. *Let* `is_assignable` be `TypeCheckAssign(arg, listtype)`.
@@ -226,12 +226,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 							4. *Else:*
-								1. Pass through.
+								1. Fall through.
 					3. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
 				6. *Return:* a mutable copy of `returntype`.
 			2. *Else:*
-				1. Pass through.
+				1. Fall through.
 		2. *Throw:* a new TypeErrorArgCount.
 	6. *Else:*
 		1. *Assert:* `base.source` is "Map".
@@ -278,11 +278,11 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						3. *Else:*
 							1. *Throw:* a new TypeErrorNotAssignable.
 					3. *Else:*
-						1. Pass through.
+						1. Fall through.
 				8. *Return:* a mutable Map type under an antecedent type argument `antecedenttype`
 					and a consequent type argument `consequenttype`.
 			2. *Else:*
-				1. Pass through.
+				1. Fall through.
 		3. *Throw:* a new TypeErrorArgCount.
 ;
 

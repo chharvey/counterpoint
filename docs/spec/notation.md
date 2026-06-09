@@ -478,7 +478,7 @@ each containing the substeps respective to that branch.
 ‘If’ steps begin with «*If* …:» and ‘else’ steps begin with «*Else:*».
 Every ‘if branch’ must be paired with exactly one ‘else’ branch.
 If the ‘else branch’ is semantically unnecessary, it is best to include an explicit step
-such as «*Return.*» or «Pass through.».
+such as «*Return.*» or «Fall through.».
 
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
 A loop step begins with «*While* …:».
