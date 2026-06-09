@@ -3,7 +3,6 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
-	assert_instanceof,
 	AST,
 	VALUE,
 	TYPE,
@@ -26,6 +25,14 @@ import {
 test.suite('Opcode', () => {
 	test.suite('Value', () => {
 		test.suite('#interpret', () => {
+			function interpret_extracted_drops(src: string): VALUE.Value[] {
+				const interp = new Interpreter();
+				return setupScript(src, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
+					? instr.value.interpret(interp)
+					: instr.interpret(interp)
+				)).filter((value) => !!value);
+			}
+
 			test.test('Trap always throws.', () => {
 				assert.throws(() => new OP.Trap().interpret(), /Trap\./);
 			});
@@ -49,7 +56,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Get returns validator’s symbol table value.', () => {
-				const {builder} = setupScript(`{
+				assert.deepStrictEqual(interpret_extracted_drops(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
@@ -61,70 +68,30 @@ test.suite('Opcode', () => {
 					c;
 					d;
 					e;
-				}`, {codegen: false});
-				const interp = new Interpreter();
-				builder.instructions.slice(0, 5).forEach((instr) => instr.interpret(interp));
-				return assert.deepStrictEqual(
-					builder.instructions.slice(5).map((instr) => {
-						const {value} = instr as OP.Drop;
-						assert_instanceof(value, OP.Get);
-						return value.interpret(interp);
-					}),
-					[
-						VALUE.NULL,
-						VALUE.FALSE,
-						new VALUE.Symbol(0x102n, 'hello'),
-						new VALUE.Integer(42n),
-						new VALUE.Float(4.2),
-					],
-				);
+				}`), [
+					VALUE.NULL,
+					VALUE.FALSE,
+					new VALUE.Symbol(0x102n, 'hello'),
+					new VALUE.Integer(42n),
+					new VALUE.Float(4.2),
+				]);
 			});
 
 			test.test('Template interprets each child, stringifies, and concatenates.', () => {
-				const {builder} = setupScript(`{
+				assert.deepStrictEqual(interpret_extracted_drops(`{
 					val mut x: int = 85;
 
 					"""42😀""";
-					%% TODO: support \`Binop#interpret\`
 					"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";
 					"""the answer is {{ x / 2 }} but what is the question?""";
-					%%
-				}`, {codegen: false});
-				const interp = new Interpreter();
-				return assert.deepStrictEqual(
-					builder.instructions.slice(1).map((instr) => {
-						const {value} = instr as OP.Drop;
-						assert_instanceof(value, OP.Template);
-						return value.interpret(interp);
-					}),
-					[
-						new VALUE.String('42😀'),
-						/* TODO: support `Binop#interpret`
-						new VALUE.String('the answer is 42 but what is the question?'),
-						new VALUE.String('the answer is 42 but what is the question?'),
-						*/
-					],
-				);
+				}`), [
+					new VALUE.String('42😀'),
+					new VALUE.String('the answer is 42 but what is the question?'),
+					new VALUE.String('the answer is 42 but what is the question?'),
+				]);
 			});
 
 			test.test('CollectionLinearNew, RecordNew, DictNew, MapNew', () => {
-				const {builder} = setupScript(`{
-					(1, 2.0, "three");
-					[1, 2.0, "three"];
-					{1, 2.0, "three"};
-
-					(a= 1, b= 2.0, c= "three");
-					[a= 1, b= 2.0, c= "three"];
-
-					%% TODO: support \`Binop#interpret\`
-					{
-						"a" || "" -> 1,
-						21 + 21   -> 2.0,
-						1.5 * 2.0 -> "three",
-					};
-					%%
-				}`, {codegen: false});
-				const interp = new Interpreter();
 				const expected_items = [
 					VALUE.INT_1,
 					new VALUE.Float(2.0),
@@ -135,36 +102,35 @@ test.suite('Opcode', () => {
 					[0x101n, expected_items[1]],
 					[0x102n, expected_items[2]],
 				] as const;
-				return assert.deepStrictEqual(
-					builder.instructions.map((instr, i) => {
-						const {value} = instr as OP.Drop;
-						assert_instanceof<OP.Value>(value, [
-							...repeat(OP.CollectionLinearNew, 3),
-							OP.RecordNew,
-							OP.DictNew,
-							// OP.MapNew,
-						][i]);
-						return value.interpret(interp);
-					}),
-					[
-						new VALUE.Tuple(expected_items),
-						new VALUE.List(expected_items),
-						new VALUE.Set(new Set<VALUE.Value>(expected_items)),
-						new VALUE.Record(new Map<bigint, VALUE.Value>(expected_pairs)),
-						new VALUE.Dict(new Map<bigint, VALUE.Value>(expected_pairs)),
-						/* TODO: support `Binop#interpret`
-						new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-							[new VALUE.String('a'),  expected_items[0]],
-							[new VALUE.Integer(42n), expected_items[1]],
-							[new VALUE.Float(3.0),   expected_items[2]],
-						])),
-						*/
-					],
-				);
+				return assert.deepStrictEqual(interpret_extracted_drops(`{
+					(1, 2.0, "three");
+					[1, 2.0, "three"];
+					{1, 2.0, "three"};
+
+					(a= 1, b= 2.0, c= "three");
+					[a= 1, b= 2.0, c= "three"];
+
+					{
+						% "a" || "" -> 1, % TODO: implement logical binop interp
+						21 + 21   -> 2.0,
+						1.5 * 2.0 -> "three",
+					};
+				}`), [
+					new VALUE.Tuple(expected_items),
+					new VALUE.List(expected_items),
+					new VALUE.Set(new Set<VALUE.Value>(expected_items)),
+					new VALUE.Record(new Map<bigint, VALUE.Value>(expected_pairs)),
+					new VALUE.Dict(new Map<bigint, VALUE.Value>(expected_pairs)),
+					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+						// [new VALUE.String('a'),  expected_items[0]], // TODO: implement logical binop interp
+						[new VALUE.Integer(42n), expected_items[1]],
+						[new VALUE.Float(3.0),   expected_items[2]],
+					])),
+				]);
 			});
 
 			test.test('TupleGet, RecordGet', () => {
-				const {builder} = setupScript(`{
+				assert.deepStrictEqual(interpret_extracted_drops(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
 					val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
@@ -184,28 +150,20 @@ test.suite('Opcode', () => {
 					rec_unfixed.a; % value \`1\`
 					rec_unfixed.b; % value \`2.0\`
 					rec_unfixed._; % value \`"three"\`
-				}`, {codegen: false});
-				const interp = new Interpreter();
-				builder.instructions.slice(0, 4).forEach((instr) => instr.interpret(interp));
-				return assert.deepStrictEqual(
-					builder.instructions.slice(4).map((instr, i) => {
-						const {value} = instr as OP.Drop;
-						assert_instanceof<OP.Value>(value, [
-							...repeat(OP.TupleGet, 6),
-							...repeat(OP.RecordGet, 6),
-						][i]);
-						return value.interpret(interp);
-					}),
-					repeat([
-						VALUE.INT_1,
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-					], 4).flat(),
-				);
+				}`), repeat([
+					VALUE.INT_1,
+					new VALUE.Float(2.0),
+					new VALUE.String('three'),
+				], 4).flat());
 			});
 
 			test.test('CollectionDynamicGet', () => {
-				const {builder} = setupScript(`{
+				const expected_items = [
+					VALUE.INT_1,
+					new VALUE.Float(2.0),
+					new VALUE.String('three'),
+				];
+				assert.deepStrictEqual(interpret_extracted_drops(`{
 					val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
 					val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
 					val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
@@ -240,27 +198,12 @@ test.suite('Opcode', () => {
 					map_unfixed.["a"];     % value \`1\`
 					map_unfixed.["b"];     % value \`2.0\`
 					map_unfixed.["c"];     % value \`"three"\`
-				}`, {codegen: false});
-				const interp = new Interpreter();
-				const expected_items = [
-					VALUE.INT_1,
-					new VALUE.Float(2.0),
-					new VALUE.String('three'),
-				];
-				builder.instructions.slice(0, 8).forEach((instr) => instr.interpret(interp));
-				return assert.deepStrictEqual(
-					builder.instructions.slice(8).map((instr) => {
-						const {value} = instr as OP.Drop;
-						assert_instanceof(value, OP.CollectionDynamicGet);
-						return value.interpret(interp);
-					}),
-					repeat([
-						...expected_items,
-						...expected_items,
-						...repeat(VALUE.TRUE, 3),
-						...expected_items,
-					], 2).flat(),
-				);
+				}`), repeat([
+					...expected_items,
+					...expected_items,
+					...repeat(VALUE.TRUE, 3),
+					...expected_items,
+				], 2).flat());
 			});
 
 			test.test.todo('Call', () => undefined);
@@ -290,22 +233,14 @@ test.suite('Opcode', () => {
 					{41 -> 42}
 				`;
 				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
-					const interp = new Interpreter();
-					return setupScript(`{
+					return interpret_extracted_drops(`{
 						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
-					}`, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
-						? instr.value.interpret(interp)
-						: instr.interpret(interp)
-					)).filter((value) => !!value);
+					}`);
 				}
 				function interpret_calls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
-					const interp = new Interpreter();
-					return setupScript(`{
+					return interpret_extracted_drops(`{
 						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
-					}`, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
-						? instr.value.interpret(interp)
-						: instr.interpret(interp)
-					)).filter((value) => !!value);
+					}`);
 				}
 				test.test('[operator=ISNULL]', () => {
 					const builder = new Builder();
@@ -466,13 +401,9 @@ test.suite('Opcode', () => {
 
 			test.suite('Binop', () => {
 				function interpret_binops(tested: readonly string[]): VALUE.Value[] {
-					const interp = new Interpreter();
-					return setupScript(`{
+					return interpret_extracted_drops(`{
 						${ tested.map((expr) => `${ expr };`).join('\n') }
-					}`, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
-						? instr.value.interpret(interp)
-						: instr.interpret(interp)
-					)).filter((value) => !!value);
+					}`);
 				}
 				test.test('integer operations.', () => {
 					assert.deepStrictEqual(interpret_binops(extract_lines`
