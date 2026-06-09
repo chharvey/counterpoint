@@ -31,7 +31,7 @@ Value! Interpret((GET `id`)) :=
 		1. *Throw:* a new ReferenceError.
 ;
 
-Value! Interpret((STR.TEMPLATE `values`)) :=
+String! Interpret((STR.TEMPLATE `values`)) :=
 	1. *Let* `values` be a mapping for each `value` in `values` to *Unwrap:* `Interpret(value)`.
 	2. *Let* `strings` be a mapping for each `value` in `values` to `String(value)`.
 	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
@@ -123,7 +123,7 @@ Value! Interpret((DICT.GET `obj` `accessor`)) :=
 		1. *Return:* `null`.
 ;
 
-Value! Interpret((SET.GET `obj` `accessor`)) :=
+Boolean! Interpret((SET.GET `obj` `accessor`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Let* `value` be *Unwrap:* `Interpret(accessor)`.
 	3. *Assert:* `base` is an instance of `Set`.
@@ -146,17 +146,17 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 
 // Value! Interpret((CALL `callable` `args`));
 
-Value! Interpret((ISNULL `v`)) :=
+Boolean! Interpret((ISNULL `v`)) :=
 	1. *Return:* `Identical(v, null)`.
 ;
 
-Value! Interpret((NOT `v`)) :=
+Boolean! Interpret((NOT `v`)) :=
 	1. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
 		1. *Return:* `false`.
 	2. *Return:* `true`.
 ;
 
-Value! Interpret((EMP `v`)) :=
+Boolean! Interpret((EMP `v`)) :=
 	1. *If* *UnwrapAffirm:* `ToBoolean(v)` is `false`:
 		1. *Return:* `true`.
 	2. *If* `v` is an instance of `Integer` *and* `v` is `0`:
@@ -172,17 +172,17 @@ Value! Interpret((EMP `v`)) :=
 	7. *Return:* `false`.
 ;
 
-Value! Interpret((NEG `v`)) :=
+Number! Interpret((NEG `v`)) :=
 	1. *Let* `negation` be the additive inverse, `-v`,
 		obtained by negating `v`.
 	2. *Return:* `negation`.
 ;
 
-Value! Interpret((TOBOOL `v`)) :=
+Boolean! Interpret((TOBOOL `v`)) :=
 	1. *Return:* `ToBoolean(v)`.
 ;
 
-Value! Interpret((TOINT `v`)) :=
+Integer! Interpret((TOINT `v`)) :=
 	1. *If* `v` is an instance of `Natural`:
 		1. *Let* `as_int` be the reinterpretation of `v` as a 64-bit signed integer value.
 		2. *Return:* `as_int`.
@@ -193,7 +193,7 @@ Value! Interpret((TOINT `v`)) :=
 	4. *Return:* `v`.
 ;
 
-Value! Interpret((TONAT `v`)) :=
+Natural! Interpret((TONAT `v`)) :=
 	1. *If* `v` is an instance of `Integer`:
 		1. *Let* `as_nat` be the reinterpretation of `v` to a 64-bit unsigned integer value.
 		2. *Return:* `as_nat`.
@@ -204,7 +204,7 @@ Value! Interpret((TONAT `v`)) :=
 	4. *Return:* `v`.
 ;
 
-Value! Interpret((TOFLOAT `v`)) :=
+Float! Interpret((TOFLOAT `v`)) :=
 	1. *If* `v` is an instance of `Integer` *or* `v` is an instance of `Natural`:
 		1. *Let* `as_float` be the conversion of `v` to a 64-bit binary floating-point value.
 		2. *Return:* `as_float`.
@@ -212,7 +212,7 @@ Value! Interpret((TOFLOAT `v`)) :=
 	3. *Return:* `v`.
 ;
 
-Value! Interpret((TOSTR `v`)) :=
+String! Interpret((TOSTR `v`)) :=
 	1. *If* `v` is an instance of `String`:
 		1. *Return:* `v`.
 	2. *Else:*
@@ -221,22 +221,22 @@ Value! Interpret((TOSTR `v`)) :=
 		3. *Return:* `encoding`.
 ;
 
-Value! Interpret((LIST.COUNT `obj`)) :=
+Natural! Interpret((LIST.COUNT `obj`)) :=
 	1. *Assert:* `obj` is an instance of `List`.
 	2. *Return:* `Natural(obj.count)`.
 ;
 
-Value! Interpret((DICT.COUNT `obj`)) :=
+Natural! Interpret((DICT.COUNT `obj`)) :=
 	1. *Assert:* `obj` is an instance of `Dict`.
 	2. *Return:* `Natural(obj.count)`.
 ;
 
-Value! Interpret((SET.COUNT `obj`)) :=
+Natural! Interpret((SET.COUNT `obj`)) :=
 	1. *Assert:* `obj` is an instance of `Set`.
 	2. *Return:* `Natural(obj.count)`.
 ;
 
-Value! Interpret((MAP.COUNT `obj`)) :=
+Natural! Interpret((MAP.COUNT `obj`)) :=
 	1. *Assert:* `obj` is an instance of `Map`.
 	2. *Return:* `Natural(obj.count)`.
 ;
