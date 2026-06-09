@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Builder,
@@ -61,23 +60,27 @@ export class OperationUnary extends Operation {
 			case Operator.EMP: {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
-			case Operator.NEG: {
-				assert.ok(t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)), new TypeErrorInvalidOperation(this));
-				return t;
-			}
-			case Operator.INT: {
-				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
-				return TYPE.INT;
-			}
-			case Operator.NAT: {
-				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
-				return TYPE.NAT;
-			}
-			case Operator.FLOAT: {
-				assert.ok(t.isSubtypeOf(TYPE.NUMBER), new TypeErrorInvalidOperation(this));
-				return TYPE.FLOAT;
+		}
+		if (t.isSubtypeOf(TYPE.NUMBER)) {
+			switch (this.operator) {
+				case Operator.NEG: {
+					if (t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT))) {
+						return t;
+					}
+					break;
+				}
+				case Operator.INT: {
+					return TYPE.INT;
+				}
+				case Operator.NAT: {
+					return TYPE.NAT;
+				}
+				case Operator.FLOAT: {
+					return TYPE.FLOAT;
+				}
 			}
 		}
+		throw new TypeErrorInvalidOperation(this);
 	}
 
 	@memoizeMethod

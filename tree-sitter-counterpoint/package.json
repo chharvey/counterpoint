@@ -54,6 +54,6 @@
     "prebuildify": "^6.0.0",
     "tree-sitter-cli": "^0.26.0",
     "tsx": "^4.19.3",
-    "typescript": "~5.9.0"
+    "typescript": "~6.0.3"
   }
 }

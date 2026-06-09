@@ -62,10 +62,10 @@ TOINT([Number])   -> Integer;
 TONAT([Number])   -> Natural;
 TOFLOAT([Number]) -> Float;
 
-LIST.COUNT([Value]) -> Value;
-DICT.COUNT([Value]) -> Value;
-SET.COUNT([Value])  -> Value;
-MAP.COUNT([Value])  -> Value;
+LIST.COUNT([Value]) -> Natural;
+DICT.COUNT([Value]) -> Natural;
+SET.COUNT([Value])  -> Natural;
+MAP.COUNT([Value])  -> Natural;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;

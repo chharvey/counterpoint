@@ -297,9 +297,8 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | NAT | FLOAT] expr) 
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	4. *If* *UnwrapAffirm:* `Subtype(t0, Number)` is `true`:
-		1. *If* `operator` is `NEG`:
-			1. *If* *UnwrapAffirm:* `AreDisjoint(t0, Natural)` is `true`:
-				1. *Return:* `t0`.
+		1. *If* `operator` is `NEG` *and* *UnwrapAffirm:* `AreDisjoint(t0, Natural)` is `true`:
+			1. *Return:* `t0`.
 		2. *Else If* `operator` is `INT`:
 			1. *Return:* `Integer`.
 		3. *Else If* `operator` is `NAT`:
