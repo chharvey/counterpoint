@@ -231,7 +231,7 @@ test.suite('Value', () => {
 
 		test.test('Symbol', () => {
 			const cg = new CodeGenerator();
-			const {mod, Vect, Value} = cg.vm;
+			const {vm: {Vect, Value}, mod} = cg;
 			return assertEqualBins([
 				VALUE.SYM_NOTHING.codegen(cg),
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
@@ -258,7 +258,7 @@ test.suite('Value', () => {
 				(-5n) ** (2n * 3n),
 			];
 			const cg = new CodeGenerator();
-			const {mod, Vect, Value} = cg.vm;
+			const {vm: {Vect, Value}, mod} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
 				data.map((x) => Value.newPrimitive(Vect.newInt(bigint_to_i64(mod, x)))),
@@ -274,7 +274,7 @@ test.suite('Value', () => {
 				(42n ** 2n * 420n) % (2n ** 64n),
 			];
 			const cg = new CodeGenerator();
-			const {mod, Vect, Value} = cg.vm;
+			const {vm: {Vect, Value}, mod} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
 				data.map((x) => Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, x, true)))),
@@ -292,7 +292,7 @@ test.suite('Value', () => {
 				];
 				/* eslint-enable @stylistic/array-element-newline */
 				const cg = new CodeGenerator();
-				const {mod, Vect, Value} = cg.vm;
+				const {vm: {Vect, Value}, mod} = cg;
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
 					data.map((x) => Value.newPrimitive(Vect.newFloat(mod.f64.const(x)))),
@@ -300,7 +300,7 @@ test.suite('Value', () => {
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
 				const cg = new CodeGenerator();
-				const {mod, Vect, Value} = cg.vm;
+				const {vm: {Vect, Value}, mod} = cg;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
 					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
@@ -310,7 +310,7 @@ test.suite('Value', () => {
 
 		test.test('String', () => {
 			const cg = new CodeGenerator();
-			const {mod, Value} = cg.vm;
+			const {vm: {Value}, mod} = cg;
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),
 				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => mod.i32.const(c)))),

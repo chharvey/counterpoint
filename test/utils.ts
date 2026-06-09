@@ -6,7 +6,6 @@ import {
 	assert_instanceof,
 	AST,
 	VALUE,
-	type VirtualMachine,
 	TYPE,
 	Builder,
 	BinConst,
@@ -215,7 +214,7 @@ export function setupScript(
 	readonly stmts:   NonNullable<typeof goal.block>['children'],
 	readonly builder: Builder,
 	readonly cg:      CodeGenerator,
-	readonly mod:     VirtualMachine['mod'],
+	readonly mod:     CodeGenerator['mod'],
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
 	const builder = new Builder();
@@ -234,6 +233,6 @@ export function setupScript(
 		builder,
 		cg,
 		stmts: goal.block.children,
-		mod:   cg.vm.mod,
+		mod:   cg.mod,
 	};
 }

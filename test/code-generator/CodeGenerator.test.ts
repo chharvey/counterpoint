@@ -1,7 +1,6 @@
 import * as test from 'node:test';
 import type binaryen from 'binaryen';
 import {
-	type VirtualMachine,
 	bigint_to_i64,
 	CodeGenerator,
 } from '../../src/index.ts';
@@ -16,11 +15,11 @@ import {
 
 test.suite('CodeGenerator', () => {
 	let cg:  CodeGenerator;
-	let mod: VirtualMachine['mod'];
+	let mod: CodeGenerator['mod'];
 
 	test.beforeEach(() => {
 		cg = new CodeGenerator();
-		mod = cg.vm.mod;
+		mod = cg.mod;
 	});
 
 
