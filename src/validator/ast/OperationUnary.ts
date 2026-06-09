@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Builder,
@@ -60,38 +61,18 @@ export class OperationUnary extends Operation {
 			case Operator.EMP: {
 				return t.isDefinitelyFalsy ? TYPE.TRUE : TYPE.BOOL;
 			}
-		}
-		if (t.isSubtypeOf(TYPE.NUMBER)) {
-			switch (this.operator) {
-				case Operator.NEG: {
-					if (t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT))) {
-						return t;
-					}
-					break;
-				}
-				case Operator.INT: {
-					return TYPE.INT;
-				}
-				case Operator.NAT: {
-					return TYPE.NAT;
-				}
-				case Operator.FLOAT: {
-					return TYPE.FLOAT;
-				}
+			case Operator.NEG: {
+				return t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)) ? t : assert.fail(new TypeErrorInvalidOperation(this));
 			}
 		}
-		throw new TypeErrorInvalidOperation(this);
 	}
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Unop {
 		return new OP.Unop(new Map<Operator, OP.OpCodeUn>([
-			[Operator.NOT,   OP.OpCode.NOT],
-			[Operator.EMP,   OP.OpCode.EMP],
-			[Operator.NEG,   OP.OpCode.NEG],
-			[Operator.INT,   OP.OpCode.TOINT],
-			[Operator.NAT,   OP.OpCode.TONAT],
-			[Operator.FLOAT, OP.OpCode.TOFLOAT],
+			[Operator.NOT, OP.OpCode.NOT],
+			[Operator.EMP, OP.OpCode.EMP],
+			[Operator.NEG, OP.OpCode.NEG],
 		]).get(this.operator)!, this.operand.build(builder).asTac(builder), this.type());
 	}
 
@@ -110,15 +91,6 @@ export class OperationUnary extends Operation {
 			}
 			case Operator.NEG: {
 				return this.foldNumeric(v as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>);
-			}
-			case Operator.INT: {
-				return (v as VALUE.Number).toInt();
-			}
-			case Operator.NAT: {
-				return (v as VALUE.Number).toNat();
-			}
-			case Operator.FLOAT: {
-				return (v as VALUE.Number).toFloat();
 			}
 		}
 	}

@@ -679,13 +679,6 @@ test.suite('Opcode', () => {
 						-(42);
 						-(4.2);
 
-						int   +42;
-						int   4.2;
-						nat   42;
-						nat   4.2;
-						float +42;
-						float 42;
-
 						Integer.(+42);
 						Integer.(4.2);
 						Natural.(42);
@@ -714,13 +707,6 @@ test.suite('Opcode', () => {
 
 							cg.vm.op.negate(genConst(cg, 42n)),
 							cg.vm.op.negate(genConst(cg, 4.2)),
-
-							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toInt(genConst(cg, 4.2)),
-							cg.vm.op.toNat(genConst(cg, 42n)),
-							cg.vm.op.toNat(genConst(cg, 4.2)),
-							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toFloat(genConst(cg, 42n)),
 
 							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toInt(genConst(cg, 4.2)),
