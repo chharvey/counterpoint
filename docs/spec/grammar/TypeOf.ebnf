@@ -149,19 +149,22 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 	3. *If* `base` is not a SemanticVariable:
 		1. *Note:* Currently, the only allowed generics are `List.<T>(arg)`, `Dict.<T>(arg)`, `Set.<T>(arg)`, `Map.<K, V>(arg)`.
 		2. *Throw:* a new TypeErrorNotCallable.
-	4. *If* `base.source` is one of "Integer", "Natural", or "Float":
+	4. *If* `base.source` is one of "Integer", "Natural", "Float", or "String":
 		1. *If* `call.children.count` is 2:
 			1. *Let* `arg` be `call.children.1`.
 			2. *If* `arg` is a SemanticExpression:
 				1. *Let* `argtype` be *Unwrap:* `TypeOf(arg)`.
-				2. *Perform:* *Unwrap:* `TypeCheckAssign(arg, Number)`.
+				2. *If* `base.source` is one of "Integer", "Natural", or "Float":
+					1. *Perform:* *Unwrap:* `TypeCheckAssign(arg, Number)`.
 				3. *If* `base.source` is "Integer":
 					1. *Return:* `Integer`.
 				4. *Else If* `base.source` is "Natural":
 					1. *Return:* `Natural`.
-				5. *Else:*
-					1. *Assert:* `base.source` is "Float".
-					2. *Return:* `Float`.
+				5. *Else If* `base.source` is "Float":
+					1. *Return:* `Float`.
+				6. *Else:*
+					1. *Assert:* `base.source` is "String".
+					2. *Return:* `String`.
 			3. *Else:*
 				1. *Throw:* a new TypeErrorArgCount.
 		2. *Else:*
