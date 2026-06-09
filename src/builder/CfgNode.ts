@@ -60,6 +60,6 @@ export class CfgNode {
 
 	@memoizeMethod
 	public codegen(cg: CodeGenerator, relooper: binaryen.Relooper): binaryen.RelooperBlockRef {
-		return relooper.addBlock(cg.vm.mod.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
+		return relooper.addBlock(cg.mod.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
 	}
 }

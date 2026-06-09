@@ -138,7 +138,7 @@ export class Binop extends Value {
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: CodeGenerator, Operator: any, t0: any, t1: any, arg0: any, arg1: any): number {
 		type Local = any;
-		let mod = cg.vm.mod;
+		const {mod} = cg;
 		let bothInts: any;
 		let bothNats: any;
 		let bothFloats: any;
@@ -196,7 +196,7 @@ export class Binop extends Value {
 
 		// Operator Equality
 		if (this.type().equals(TYPE.FALSE)) {
-			drop_then(cg.vm, [arg0, arg1], false);
+			drop_then(cg, [arg0, arg1], false);
 			return mod.block(null, [
 				mod.drop(arg0),
 				mod.drop(arg1),
@@ -205,7 +205,7 @@ export class Binop extends Value {
 		}
 
 		// Operator Logical
-		const block1: binaryen.ExpressionRef = drop_then(cg.vm, [arg0], arg1);
+		const block1: binaryen.ExpressionRef = drop_then(cg, [arg0], arg1);
 		if (t0.isDefinitelyFalsy) {
 			return this.operator === Operator.AND ? arg0 : block1;
 		} else if (t0.isDefinitelyTruthy) {

@@ -32,7 +32,7 @@ export class Template extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {mod, Value: VmValue} = cg.vm;
+		const {mod, vm: {Value: VmValue}} = cg;
 		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.stringify(item.codegen(cg))));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => mod.array.len(strarr.get()));
 

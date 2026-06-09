@@ -1,5 +1,5 @@
 import binaryen from 'binaryen';
-import type {VirtualMachine} from '../../vm/index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {TypeName} from './utils-public.ts';
 
 
@@ -30,15 +30,15 @@ export function stringify_type_name(typename: TypeName): string | undefined {
  * Return a block containing `(drop)` expressions for each of `args`, followed by a final expression.
  * If `final` is provided as an ExpressionRef, it is the final expression;
  * otherwise, a v128 containing a boolean encoding is the final expression.
- * @param vm
+ * @param cg
  * @param args  the args to drop first
  * @param final the final expression/statement
  */
 export function drop_then(
-	vm:    VirtualMachine,
+	cg:    CodeGenerator,
 	args:  readonly binaryen.ExpressionRef[],
 	final: binaryen.ExpressionRef | boolean,
 ): binaryen.ExpressionRef {
-	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : final ? vm.Vect.TRUE : vm.Vect.FALSE;
-	return vm.mod.block(null, [...args.map((arg) => vm.mod.drop(arg)), last_item], binaryen.getExpressionType(last_item));
+	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : final ? cg.vm.Vect.TRUE : cg.vm.Vect.FALSE;
+	return cg.mod.block(null, [...args.map((arg) => cg.mod.drop(arg)), last_item], binaryen.getExpressionType(last_item));
 }

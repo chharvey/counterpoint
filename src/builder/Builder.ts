@@ -94,7 +94,7 @@ export class Builder {
 
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		assert.ok(!this.currentBlock, 'Should not codegen Builder with active block set. Try calling `Builder#terminateBlock` first.');
-		const relooper = new binaryen.Relooper(cg.vm.mod);
+		const relooper = new binaryen.Relooper(cg.mod);
 		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map([...this.#blocks.values()].map((block) => [block.label, block.codegen(cg, relooper)]));
 		this.#blocks.forEach((block) => block.terminator!.codegen(cg, relooper, blockrefs));
 		return relooper.renderAndDispose(blockrefs.get('block-0')!, cg.getAllLocals().length);

@@ -56,12 +56,12 @@ class Phi extends Value {
 	#optimizationStrategy(cg: CodeGenerator, TYPE: any, t0: any, arg0: any, arg1: any, arg2: any): number {
 		// Ternary Operator:
 		if (t0.isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(cg.vm, [arg0], arg1);
+			return drop_then(cg, [arg0], arg1);
 		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(cg.vm, [arg0], arg2);
+			return drop_then(cg, [arg0], arg2);
 		}
 
-		return cg.vm.mod.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
+		return cg.mod.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
 	}
 	/* eslint-enable */
 }

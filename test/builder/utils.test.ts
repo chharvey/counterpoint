@@ -19,7 +19,7 @@ test.suite('drop_then', () => {
 		const expr3: binaryen.ExpressionRef = genConst(cg, 3n);
 		assert.strictEqual(binaryen.getExpressionType(expr3), cg.vm.reftype.Value);
 		return assertEqualBins(
-			drop_then(cg.vm, [expr1, expr2], expr3),
+			drop_then(cg, [expr1, expr2], expr3),
 			mod.block(null, [mod.drop(expr1), mod.drop(expr2), expr3], cg.vm.reftype.Value),
 		);
 	});
@@ -33,7 +33,7 @@ test.suite('drop_then', () => {
 		]); // result of building Block
 		assert.strictEqual(binaryen.getExpressionType(block), binaryen.none);
 		return assertEqualBins(
-			drop_then(cg.vm, [expr1], block),
+			drop_then(cg, [expr1], block),
 			mod.block(null, [mod.drop(expr1), block]), // defaults to `binaryen.none`
 		);
 	});

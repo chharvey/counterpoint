@@ -67,17 +67,13 @@ export class CodeGenerator {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
-	/** Module created by VM from WAT files. */
-	public readonly watModule: binaryen.Module;
+	/** The Binaryen module holding the generated code. */
+	public readonly mod: BinaryenModuleUpdates;
 
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
-		// HACK: reassigning VM's new module instead of giving it to CodeGenerator.
-		// we’re doing this because all of the `codegen` code uses `vm.mod`
-		// TODO: keep the WAT module readonly on VM, then give CodeGenerator its own module. update all `codegen` code.
-		this.watModule = vm.mod;
-		vm.mod = new binaryen.Module() as BinaryenModuleUpdates;
-		vm.mod.setFeatures(this.watModule.getFeatures());
+		this.mod = new binaryen.Module() as BinaryenModuleUpdates;
+		this.mod.setFeatures(vm.mod.getFeatures());
 
 		this.#constRegistry = new Map([
 			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
@@ -98,7 +94,7 @@ export class CodeGenerator {
 	 * @return      the new local variable
 	 */
 	public newLocal(value: binaryen.ExpressionRef, typ?: binaryen.Type): Local {
-		const local = new Local(this.vm.mod, this.#locals.size, value, typ);
+		const local = new Local(this.mod, this.#locals.size, value, typ);
 		this.#locals.add(local);
 		return local;
 	}
@@ -114,7 +110,7 @@ export class CodeGenerator {
 	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
-			this.#locals.add(new Local(this.vm.mod, this.#locals.size, value, typ, schema));
+			this.#locals.add(new Local(this.mod, this.#locals.size, value, typ, schema));
 			did = true;
 		}
 		return did;
@@ -200,7 +196,7 @@ export class CodeGenerator {
 	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
 	 */
 	public newProperty(key: bigint, arg: binaryen.ExpressionRef /* unreachable | (ref $Value) | (ref null $Value) */): binaryen.ExpressionRef /* (ref $Property) */ {
-		const {mod, heaptype, reftype, reftypeNull} = this.vm;
+		const {vm: {heaptype, reftype, reftypeNull}, mod} = this;
 		switch (binaryen.getExpressionType(arg)) {
 			case binaryen.unreachable: {
 				return arg;
@@ -230,7 +226,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
 	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.String, units);
+		return this.mod.array.new_fixed(this.vm.heaptype.String, units);
 	}
 
 	/**
@@ -239,7 +235,7 @@ export class CodeGenerator {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.Tuple, items);
+		return this.mod.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
 	/**
@@ -251,7 +247,7 @@ export class CodeGenerator {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.mod.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -261,7 +257,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		const {mod, heaptype, reftypeNull, Object: VmObject} = this.vm;
+		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod} = this;
 		let capacity: number = 8;
 		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -285,7 +281,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
-		const {mod, heaptype, reftypeNull, Object: VmObject} = this.vm;
+		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod} = this;
 		let capacity: number = 8;
 		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -321,7 +317,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
 	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
-		const {mod, heaptype, reftype, Object: VmObject, Map: VmMap} = this.vm;
+		const {vm: {heaptype, reftype, Object: VmObject, Map: VmMap}, mod} = this;
 		let capacity: number = 8;
 		while (cases.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -348,7 +344,7 @@ export class CodeGenerator {
 	 * @param body the body of the main function
 	 */
 	public setupMain(body: binaryen.ExpressionRef): void {
-		const {mod} = this.vm;
+		const {mod} = this;
 
 		const extern_mod_name: string = 'wat';
 		this.vm.globalImportDataMap.forEach((data, export_name) => (
