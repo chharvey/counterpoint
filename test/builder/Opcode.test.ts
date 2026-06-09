@@ -289,7 +289,7 @@ test.suite('Opcode', () => {
 					{42}
 					{41 -> 42}
 				`;
-				function interpretUnops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
+				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
 					const interp = new Interpreter();
 					return setupScript(`{
 						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
@@ -298,7 +298,7 @@ test.suite('Opcode', () => {
 						: instr.interpret(interp)
 					)).filter((value) => !!value);
 				}
-				function interpretCalls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
+				function interpret_calls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
 					const interp = new Interpreter();
 					return setupScript(`{
 						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
@@ -327,53 +327,44 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('[operator=NOT]', () => {
-					assert.deepStrictEqual(
-						interpretUnops('!'),
-						[
-							...repeat(VALUE.TRUE, 2),
-							...repeat(VALUE.FALSE, 19),
-						],
-					);
+					assert.deepStrictEqual(interpret_unops('!'), [
+						...repeat(VALUE.TRUE, 2),
+						...repeat(VALUE.FALSE, 19),
+					]);
 				});
 				test.test('[operator=EMP]', () => {
-					assert.deepStrictEqual(
-						interpretUnops('?'),
-						[
-							VALUE.TRUE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.TRUE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.FALSE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.FALSE,
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.FALSE,
-						],
-					);
+					assert.deepStrictEqual(interpret_unops('?'), [
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+					]);
 				});
 				test.test('[operator=NEG]', () => {
-					assert.deepStrictEqual(
-						interpretUnops('-', operands.slice(3, 8)),
-						[
-							VALUE.INT_0,
-							new VALUE.Integer(-42n),
-							VALUE.FLOAT_N0,
-							VALUE.FLOAT_0,
-							new VALUE.Float(-4.2e+1),
-						],
-					);
+					assert.deepStrictEqual(interpret_unops('-', operands.slice(3, 8)), [
+						VALUE.INT_0,
+						new VALUE.Integer(-42n),
+						VALUE.FLOAT_N0,
+						VALUE.FLOAT_0,
+						new VALUE.Float(-4.2e+1),
+					]);
 				});
 				test.test('[operator=TOBOOL]', () => {
 					const builder = new Builder();
@@ -395,46 +386,37 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('[operator=TOINT]', () => {
-					assert.deepStrictEqual(
-						interpretCalls('Integer', operands.slice(3, 10)),
-						[
-							VALUE.INT_0,
-							new VALUE.Integer(42n),
-							VALUE.INT_0,
-							VALUE.INT_0,
-							new VALUE.Integer(42n),
-							VALUE.INT_0,
-							new VALUE.Integer(42n),
-						],
-					);
+					assert.deepStrictEqual(interpret_calls('Integer', operands.slice(3, 10)), [
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+					]);
 				});
 				test.test('[operator=TONAT]', () => {
-					assert.deepStrictEqual(
-						interpretCalls('Natural', operands.slice(3, 10)),
-						[
-							VALUE.NAT_0,
-							new VALUE.Natural(42n),
-							VALUE.NAT_0,
-							VALUE.NAT_0,
-							new VALUE.Natural(42n),
-							VALUE.NAT_0,
-							new VALUE.Natural(42n),
-						],
-					);
+					assert.deepStrictEqual(interpret_calls('Natural', operands.slice(3, 10)), [
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+					]);
 				});
 				test.test('[operator=TOFLOAT]', () => {
-					assert.deepStrictEqual(
-						interpretCalls('Float', operands.slice(3, 10)),
-						[
-							VALUE.FLOAT_0,
-							new VALUE.Float(42.0),
-							VALUE.FLOAT_0,
-							VALUE.FLOAT_N0,
-							new VALUE.Float(4.2e+1),
-							VALUE.FLOAT_0,
-							new VALUE.Float(42.0),
-						],
-					);
+					assert.deepStrictEqual(interpret_calls('Float', operands.slice(3, 10)), [
+						VALUE.FLOAT_0,
+						new VALUE.Float(42.0),
+						VALUE.FLOAT_0,
+						VALUE.FLOAT_N0,
+						new VALUE.Float(4.2e+1),
+						VALUE.FLOAT_0,
+						new VALUE.Float(42.0),
+					]);
 				});
 				test.test('[operator={LIST,DICT,SET,MAP}_COUNT]', () => {
 					const builder = new Builder();
