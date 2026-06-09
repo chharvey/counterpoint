@@ -101,27 +101,28 @@ export class Unop extends Value {
 
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any): number {
+		const {mod, vm: {Vect}} = cg;
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(cg.mod, [arg0], true);
+			return drop_then(mod, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(cg.mod, [arg0], false);
+			return drop_then(mod, [arg0], false);
 		}
 		if (this.operator === Operator.NOT) {
 			if (t0.isDefinitelyFalsy) {
-				return cg.mod.block(null, [
-					cg.mod.drop(arg0),
-					cg.vm.Vect.TRUE,
+				return mod.block(null, [
+					mod.drop(arg0),
+					Vect.TRUE,
 				], binaryen.v128);
 			} else if (t0.isDefinitelyTruthy) {
-				return cg.mod.block(null, [
-					cg.mod.drop(arg0),
-					cg.vm.Vect.FALSE,
+				return mod.block(null, [
+					mod.drop(arg0),
+					Vect.FALSE,
 				], binaryen.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
-			return cg.mod.block(null, [
-				cg.mod.drop(arg0),
-				cg.vm.Vect.TRUE,
+			return mod.block(null, [
+				mod.drop(arg0),
+				Vect.TRUE,
 			], binaryen.v128);
 		}
 		return 0;
