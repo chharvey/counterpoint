@@ -241,6 +241,77 @@ Natural! Interpret((MAP.COUNT `obj`)) :=
 	2. *Return:* `Natural(obj.count)`.
 ;
 
+Integer! Interpret((INT.ADD `v0` `v1`)) :=
+	1. *Let* `result` be the sum, `v0 + v1`,
+		obtained by adding `v0` (the augend) to `v1` (the addend).
+	2. *Return:* `result`.
+;
+Natural! Interpret((NAT.ADD `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.ADD `v0` `v1`))».
+;
+Float! Interpret((FLOAT.ADD `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.ADD `v0` `v1`))».
+;
+
+Integer! Interpret((INT.SUB `v0` `v1`)) :=
+	1. *Let* `result` be the difference, `v0 - v1`,
+		obtained by subtracting `v1` (the subtrahend) from `v0` (the minuend).
+	2. *Return:* `result`.
+;
+Natural! Interpret((NAT.SUB `v0` `v1`)) :=
+	1. *If* `v0` is less than `v1`:
+		1. *Return:* `0`.
+	2. *Else:*
+		1. *Perform:* the steps listed under «Interpret((INT.SUB `v0` `v1`))».
+;
+Float! Interpret((FLOAT.SUB `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.SUB `v0` `v1`))».
+;
+
+Integer! Interpret((INT.MUL `v0` `v1`)) :=
+	1. *Let* `result` be the product, `v0 * v1`,
+		obtained by multiplying `v0` (the multiplicand) by `v1` (the multiplier).
+	2. *Return:* `result`.
+;
+Natural! Interpret((NAT.MUL `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.MUL `v0` `v1`))».
+;
+Float! Interpret((FLOAT.MUL `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.MUL `v0` `v1`))».
+;
+
+Integer! Interpret((INT.DIV `v0` `v1`)) :=
+	1. *Let* `quotient` be the result of performing the steps listed under «Interpret((FLOAT.DIV `v0` `v1`))».
+	2. *If* `quotient` is not a whole number:
+		1. Set `quotient` to a truncation of `quotient` (rounding towards zero to the nearest whole number).
+	3. *Else:*
+		1. Fall through.
+	4. *Return:* `quotient`.
+;
+Natural! Interpret((NAT.DIV `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.DIV `v0` `v1`))».
+;
+Float! Interpret((FLOAT.DIV `v0` `v1`)) :=
+	1. *If* `v1` is `0`:
+		1. *Throw:* a new NanErrorDivZero.
+	2. *Else:*
+		1. *Let* `result` be the quotient, `v0 / v1`,
+			obtained by dividing `v0` (the dividend) by `v1` (the divisor).
+		2. *Return:* `result`.
+;
+
+Integer! Interpret((INT.EXP `v0` `v1`)) :=
+	1. *Let* `result` be the power, `v0 ^ v1`,
+		obtained by raising `v0` (the base) to `v1` (the exponent).
+	2. *Return:* `result`.
+;
+Natural! Interpret((NAT.EXP `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.EXP `v0` `v1`))».
+;
+Float! Interpret((FLOAT.EXP `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.EXP `v0` `v1`))».
+;
+
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;

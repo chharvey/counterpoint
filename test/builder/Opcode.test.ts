@@ -463,6 +463,83 @@ test.suite('Opcode', () => {
 					);
 				});
 			});
+
+			test.suite('Binop', () => {
+				function interpret_binops(tested: readonly string[]): VALUE.Value[] {
+					const interp = new Interpreter();
+					return setupScript(`{
+						${ tested.map((expr) => `${ expr };`).join('\n') }
+					}`, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
+						? instr.value.interpret(interp)
+						: instr.interpret(interp)
+					)).filter((value) => !!value);
+				}
+				test.test('integer operations.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						42 + 420
+						42 - 420
+						 126 /  3
+						-126 /  3
+						 126 / -3
+						-126 / -3
+						 200 /  3
+						 200 / -3
+						-200 /  3
+						-200 / -3
+						-(5) ^ +(2 * 3)
+						+5 ^ (+2 * +3)
+					`), [
+						new VALUE.Integer(42n + 420n),
+						new VALUE.Integer(42n + -420n),
+						new VALUE.Integer( 126n /  3n),
+						new VALUE.Integer(-126n /  3n),
+						new VALUE.Integer( 126n / -3n),
+						new VALUE.Integer(-126n / -3n),
+						new VALUE.Integer( 200n /  3n),
+						new VALUE.Integer( 200n / -3n),
+						new VALUE.Integer(-200n /  3n),
+						new VALUE.Integer(-200n / -3n),
+						new VALUE.Integer((-5n) ** (2n * 3n)),
+						new VALUE.Natural(5n ** (2n * 3n)),
+					]);
+				});
+				test.test('float operations.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						3.0e1 - 201.0e-1
+						3.0 * 2.1
+					`), [
+						new VALUE.Float(30 - 20.1),
+						new VALUE.Float(3.0 * 2.1),
+					]);
+				});
+				test.test('overflows integers properly.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						2 ^ 63 + 2 ^ 62
+						-(2 ^ 62) - 2 ^ 63
+						42 ^ 2 * 420
+					`), [
+						new VALUE.Integer(-(2n ** 62n)),
+						new VALUE.Integer(2n ** 62n),
+						new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
+					]);
+				});
+				test.test('overflows naturals properly.', () => {
+					assert.deepStrictEqual(
+						interpret_binops(['+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63']),
+						[new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n)],
+					);
+				});
+				test.test('does not underflow naturals.', () => {
+					assert.deepStrictEqual(
+						interpret_binops(['+5 - +9']),
+						[VALUE.NAT_0],
+					);
+				});
+				test.test('throws when the operation does not yield a valid number.', () => {
+					assert.throws(() => interpret_binops(['42 / 0']),      RangeError);
+					assert.throws(() => interpret_binops(['-4.0 ^ -0.5']), xjs.NaNError);
+				});
+			});
 		});
 
 
