@@ -43,7 +43,7 @@ export class Program {
 	 * @return a readable text output in WAT format, to be compiled into WASM
 	 */
 	public print(): string {
-		return this.#precompile().vm.mod.emitText();
+		return this.#precompile().mod.emitText();
 	}
 
 	/**
@@ -51,6 +51,6 @@ export class Program {
 	 * @return a binary output in WASM format, which can be executed
 	 */
 	public compile(): Uint8Array {
-		return this.#precompile().vm.mod.emitBinary();
+		return this.#precompile().mod.emitBinary();
 	}
 }

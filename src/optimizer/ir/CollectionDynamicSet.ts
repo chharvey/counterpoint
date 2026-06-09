@@ -67,7 +67,7 @@ export class CollectionDynamicSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, Vect, Value, List, Dict, Map: VmMap} = cg.vm;
+		const {vm: {Vect, Value, List, Dict, Map: VmMap}, mod} = cg;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
