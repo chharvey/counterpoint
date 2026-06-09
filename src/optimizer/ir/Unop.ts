@@ -78,7 +78,7 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {mod, reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap} = cg.vm;
+		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
 			case OpCode.ISNULL: { return op.isNull(code); }
@@ -102,25 +102,25 @@ export class Unop extends Value {
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any): number {
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(cg.vm.mod, [arg0], true);
+			return drop_then(cg.mod, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(cg.vm.mod, [arg0], false);
+			return drop_then(cg.mod, [arg0], false);
 		}
 		if (this.operator === Operator.NOT) {
 			if (t0.isDefinitelyFalsy) {
-				return cg.vm.mod.block(null, [
-					cg.vm.mod.drop(arg0),
+				return cg.mod.block(null, [
+					cg.mod.drop(arg0),
 					cg.vm.Vect.TRUE,
 				], binaryen.v128);
 			} else if (t0.isDefinitelyTruthy) {
-				return cg.vm.mod.block(null, [
-					cg.vm.mod.drop(arg0),
+				return cg.mod.block(null, [
+					cg.mod.drop(arg0),
 					cg.vm.Vect.FALSE,
 				], binaryen.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
-			return cg.vm.mod.block(null, [
-				cg.vm.mod.drop(arg0),
+			return cg.mod.block(null, [
+				cg.mod.drop(arg0),
 				cg.vm.Vect.TRUE,
 			], binaryen.v128);
 		}

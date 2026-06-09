@@ -67,17 +67,13 @@ export class Builder {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
-	/** Module created by VM from WAT files. */
-	public readonly watModule: binaryen.Module;
+	/** The Binaryen module holding the generated code. */
+	public readonly mod: BinaryenModuleUpdates;
 
 
 	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
-		// HACK: reassigning VM's new module instead of giving it to Builder.
-		// we’re doing this because all of the `codegen` code uses `vm.mod`
-		// TODO: keep the WAT module readonly on VM, then give Builder its own module. update all `codegen` code.
-		this.watModule = vm.mod;
-		vm.mod = new binaryen.Module() as BinaryenModuleUpdates;
-		vm.mod.setFeatures(this.watModule.getFeatures());
+		this.mod = new binaryen.Module() as BinaryenModuleUpdates;
+		this.mod.setFeatures(vm.mod.getFeatures());
 
 		this.#constRegistry = new Map([
 			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
@@ -98,7 +94,7 @@ export class Builder {
 	 * @return      the new local variable
 	 */
 	public newLocal(value: binaryen.ExpressionRef, typ?: binaryen.Type): Local {
-		const local = new Local(this.vm.mod, this.#locals.size, value, typ);
+		const local = new Local(this.mod, this.#locals.size, value, typ);
 		this.#locals.add(local);
 		return local;
 	}
@@ -114,7 +110,7 @@ export class Builder {
 	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
-			this.#locals.add(new Local(this.vm.mod, this.#locals.size, value, typ, schema));
+			this.#locals.add(new Local(this.mod, this.#locals.size, value, typ, schema));
 			did = true;
 		}
 		return did;
@@ -215,8 +211,8 @@ export class Builder {
 				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
 				But in case a `(ref null $Case)`, etc. is given, an `(unreachable)` should be returned, since those aren’t valid in a `$Property` struct.
 				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
-				return this.vm.mod.struct.new([
-					bigint_to_i64(this.vm.mod, key, true),
+				return this.mod.struct.new([
+					bigint_to_i64(this.mod, key, true),
 					arg,
 				], this.vm.heaptype.Property);
 			}
@@ -229,7 +225,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
 	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.String, units);
+		return this.mod.array.new_fixed(this.vm.heaptype.String, units);
 	}
 
 	/**
@@ -238,7 +234,7 @@ export class Builder {
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.Tuple, items);
+		return this.mod.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
 	/**
@@ -250,7 +246,7 @@ export class Builder {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.vm.mod.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
+		return this.mod.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -266,12 +262,12 @@ export class Builder {
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.vm.mod.ref.null(this.vm.reftypeNull.Value),
+			(_, i) => items[i] ?? this.mod.ref.null(this.vm.reftypeNull.Value),
 		);
-		return this.vm.mod.struct.new([
+		return this.mod.struct.new([
 			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.i32.const(items.length),
-			this.vm.mod.array.new_fixed(this.vm.heaptype.ListInternal, entries),
+			this.mod.i32.const(items.length),
+			this.mod.array.new_fixed(this.vm.heaptype.ListInternal, entries),
 		], this.vm.heaptype.List);
 	}
 
@@ -289,12 +285,12 @@ export class Builder {
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.vm.mod.struct.new([
+		return this.mod.struct.new([
 			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.i32.const(props.size),
-			this.vm.mod.array.new_fixed(
+			this.mod.i32.const(props.size),
+			this.mod.array.new_fixed(
 				this.vm.heaptype.DictInternal,
-				entries.map((entry) => entry ?? this.vm.mod.ref.null(this.vm.reftypeNull.Property)),
+				entries.map((entry) => entry ?? this.mod.ref.null(this.vm.reftypeNull.Property)),
 			),
 		], this.vm.heaptype.Dict);
 	}
@@ -322,16 +318,16 @@ export class Builder {
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
-		const map_obj = this.vm.mod.struct.new([
+		const map_obj = this.mod.struct.new([
 			this.vm.Object.ctrPlusPlus(),
-			this.vm.mod.i32.const(cases.size),
-			this.vm.mod.array.new_default(this.vm.heaptype.MapInternal, this.vm.mod.i32.const(capacity)),
+			this.mod.i32.const(cases.size),
+			this.mod.array.new_default(this.vm.heaptype.MapInternal, this.mod.i32.const(capacity)),
 		], this.vm.heaptype.Map);
 		if (!cases.size) {
 			return map_obj;
 		}
 		const local: Local = this.newLocal(map_obj, this.vm.reftype.Map);
-		return this.vm.mod.block(null, [
+		return this.mod.block(null, [
 			local.set(),
 			...[...cases].map(([ant, con]) => this.vm.Map.set(local.get(), ant, con)),
 			local.get(),
@@ -346,7 +342,7 @@ export class Builder {
 	public setupMain(body: binaryen.ExpressionRef): void {
 		const extern_mod_name: string = 'wat';
 		this.vm.globalImportDataMap.forEach((data, export_name) => (
-			this.vm.mod.addGlobalImport(data.name, extern_mod_name, export_name, data.type, false)
+			this.mod.addGlobalImport(data.name, extern_mod_name, export_name, data.type, false)
 		));
 		[
 			this.vm.util.funcImportDataMap,
@@ -361,20 +357,20 @@ export class Builder {
 			this.vm.Dict.funcImportDataMap,
 			this.vm.Map.funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
-			this.vm.mod.addFunctionImport(data.name, extern_mod_name, export_name, data.param, data.result)
+			this.mod.addFunctionImport(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));
 
 		const fn_name: string = 'main';
-		this.vm.mod.addFunction(
+		this.mod.addFunction(
 			fn_name,
 			binaryen.none,
 			binaryen.none,
 			this.getAllLocals().map((local) => local.type),
 			body,
 		);
-		this.vm.mod.addFunctionExport(fn_name, fn_name);
-		if (!this.vm.mod.validate()) {
-			throw new Error('Invalid WebAssembly module.');
+		this.mod.addFunctionExport(fn_name, fn_name);
+		if (!this.mod.validate()) {
+			throw new Error('Invalid WebAssembly module in CodeGenerator.');
 		}
 	}
 }

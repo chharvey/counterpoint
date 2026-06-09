@@ -140,7 +140,7 @@ export class Binop extends Value {
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, t1: any, arg0: any, arg1: any): number {
 		type Local = any;
-		let mod = cg.vm.mod;
+		const {mod} = cg;
 		let bothInts: any;
 		let bothNats: any;
 		let bothFloats: any;
