@@ -19,7 +19,7 @@ import type {Value} from './Value.ts';
 
 
 /** Write a value to a variable/local. */
-class IrSet extends Instruction {
+class OpSet extends Instruction {
 	private readonly targetType: TYPE.Type;
 
 	public constructor(
@@ -56,4 +56,4 @@ class IrSet extends Instruction {
 		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 }
-export {IrSet as Set};
+export {OpSet as Set};

@@ -33,13 +33,13 @@ export class Drop extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.mod.drop(this.value.codegen(cg));
+		return cg.mod.drop(this.value.codegen(cg));
 	}
 
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: CodeGenerator): number {
-		if (!this.expr || !!this.expr.fold()) return cg.vm.mod.nop();
-		return cg.vm.mod.drop(this.expr!.build());
+		if (!this.expr || !!this.expr.fold()) return cg.mod.nop();
+		return cg.mod.drop(this.expr!.build());
 	}
 	/* eslint-enable */
 }

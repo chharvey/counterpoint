@@ -12,11 +12,12 @@ import {
 	Union,
 	ANYTHING,
 } from './index.ts';
-import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
+import type {ArrayOfAtLeast2} from './utils-private.ts';
 import {
 	typeConstant,
-	intersectionRules,
-	subtypeRules,
+	intersectionLaws,
+	subtypeLaws,
+	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {botOrTopString} from './TypeOperation.ts';
@@ -56,11 +57,7 @@ export class Intersection extends Combinable {
 				(accum, next) => xjs.Set.intersection(accum, next.values, language_values_identical),
 				xjs.Set.intersection(operand0.values, operand1.values, language_values_identical),
 			),
-			[
-				...(operand0 instanceof Intersection ? operand0.operands : [operand0] as const),
-				...(operand1 instanceof Intersection ? operand1.operands : [operand1] as const),
-				...operands,
-			],
+			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Intersection ? operand.operands : [operand]) as ArrayOfAtLeast2<Type>,
 		);
 	}
 
@@ -79,7 +76,7 @@ export class Intersection extends Combinable {
 
 	@botOrTopString
 	public override toString(): string {
-		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' & ');
+		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).toSorted().join(' & ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
@@ -88,7 +85,7 @@ export class Intersection extends Combinable {
 
 	@memoizeBinOp(true)
 	@typeConstant
-	@intersectionRules
+	@intersectionLaws
 	public override intersect(t: Type): Type {
 		/*
 		 * 3-9 | `C <: A --> (A  & B)  & C == B  & C`
@@ -97,14 +94,13 @@ export class Intersection extends Combinable {
 		const filtered_operands = this.operands.filter((s) => !t.isSubtypeOf(s));
 		if (filtered_operands.length < this.operands.length) {
 			if (filtered_operands.length >= 2) {
-				return new Intersection(filtered_operands[0], filtered_operands[1], ...filtered_operands.slice(2)).intersect(t);
+				return Intersection.all(...filtered_operands, t);
 			} else if (filtered_operands.length) {
 				return filtered_operands[0].intersect(t);
 			} else {
 				/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
 				assert.ok(t.isSubtypeOf(this), `Expected ${ t } to be a subtype of ${ this }.`);
-				/* 3-3 | `A <: B  <->  A  & B == A` */
-				return t;
+				return assert.fail('`@intersectionLaws` should have already returned.');
 			}
 		} else {
 			return new Intersection(this, t).normalize();
@@ -113,7 +109,7 @@ export class Intersection extends Combinable {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		/* 3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C` */
 		if (this.operands.some((s) => s.isSubtypeOf(t))) {
@@ -126,6 +122,12 @@ export class Intersection extends Combinable {
 		return super.isSubtypeOf(t);
 	}
 
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		return this.operands.some((s) => s.isDisjointWith(t));
+	}
+
 	public override mutableOf(): Intersection {
 		return new Intersection(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
 	}
@@ -136,17 +138,17 @@ export class Intersection extends Combinable {
 
 	public override normalize(): Type {
 		/*
-		 * 2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`
+		 * 2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)`
 		 *     | `(A \| B)  & (A \| C) == A \| (B  & C)`
 		 */
 		// (A1 | A2 | B1 | B2 | E | F) & (A1 | A2 | C1 | C2 | F | G) & (A1 | A2 | D1 | D2 | E | G)
 		// == (A1 | A2) | ((B1 | B2 | E | F) & (C1 | C2 | F | G) & (D1 | D2 | E | G))
 		if (this.operands.every((s) => s instanceof Union)) {
-			const unions_data = (this.operands as ReadonlyArrayOfAtLeast2<Union>).map((union) => new Set<Type>(union.operands)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
+			const unions_data = this.operands.map((union) => new Set<Type>(union.operands));
 			const common: ReadonlySet<Type> = unions_data.reduce((a, b) => xjs.Set.intersection(a, b, language_types_equal));
 
 			if (common.size) {
-				const differing = unions_data.map((union_data) => xjs.Set.difference(union_data, common, language_types_equal)) as readonly ReadonlySet<Type>[] as ReadonlyArrayOfAtLeast2<ReadonlySet<Type>>;
+				const differing = unions_data.map((union_data) => xjs.Set.difference(union_data, common, language_types_equal));
 				return Union.all(...common, Intersection.all(...differing.map((types) => Union.all(...types))));
 			}
 		}
@@ -155,16 +157,18 @@ export class Intersection extends Combinable {
 
 	public override denormalize(): Type {
 		/*
-		 * 2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`
+		 * 2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)`
 		 *     | `(B \| C)  & A == (B  & A) \| (C  & A)`
 		 */
 		const union: Union | undefined = this.operands.find((s): s is Union => s instanceof Union);
 		if (union) {
 			const not_union: readonly Type[] = this.operands.filter((s) => s !== union);
+			// intersect all the operands that are not `union`
 			const right: Type = not_union.length >= 2
-				? new Union(not_union[0], not_union[1], ...not_union.slice(2))
-				: (assert.strictEqual(not_union.length, 1), not_union[0]);
-			return new Union(...union.operands.map((s) => s.intersect(right)) as readonly Type[] as typeof union.operands);
+				? Intersection.all(...not_union)
+				: (assert.ok(not_union.length), not_union[0]);
+			// returns a `new Union()` instead of calling `Union.all()` because the latter calls `normalize`
+			return new Union(...union.operands.map((s) => s.intersect(right)) as ArrayOfAtLeast2<Type>);
 		} else {
 			return this;
 		}

@@ -6,7 +6,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -50,7 +50,7 @@ class TypeMap extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => TypeMap)
 	public override isSubtypeOf(t: Type): boolean {

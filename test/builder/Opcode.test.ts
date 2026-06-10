@@ -546,7 +546,7 @@ test.suite('Opcode', () => {
 		test.suite('#codegen', () => {
 			test.test('Trap returns (unreachable).', () => {
 				const cg = new CodeGenerator();
-				return assertEqualBins(new OP.Trap().codegen(cg), cg.vm.mod.unreachable());
+				return assertEqualBins(new OP.Trap().codegen(cg), cg.mod.unreachable());
 			});
 
 			test.test('Const returns (struct.new $Value).', () => {
@@ -572,7 +572,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Get returns (local.get).', () => {
-				const {stmts, builder, cg} = setupScript(`{
+				const {stmts, builder, cg, mod} = setupScript(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
@@ -585,7 +585,6 @@ test.suite('Opcode', () => {
 					d;
 					e;
 				}`);
-				const {mod} = cg.vm;
 				return assertEqualBins(
 					stmts.slice(5).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
 					[
@@ -599,11 +598,11 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Template returns (block) containing static repetition of (array.copy).', () => {
-				const {builder, cg} = setupScript(`{
+				const {builder, cg, mod} = setupScript(`{
 					val user: (name: str) = (name= "Alan");
 					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
 				}`);
-				const {mod, Value} = cg.vm;
+				const {Value} = cg.vm;
 
 				const strings = [
 					genConst(cg, 'Hello, '),
@@ -680,11 +679,11 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty TUPLE.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						(x, 4.2, (null,));
 					}`);
-					const {mod, Value} = cg.vm;
+					const {Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenTuple([
@@ -704,11 +703,11 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty LIST.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						[x, 4.2, (null,), x/2, @e];
 					}`);
-					const {mod, Value} = cg.vm;
+					const {Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenList([
@@ -730,11 +729,11 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty SET.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						{x, 4.2, (null,), x/2, @e};
 					}`);
-					const {mod, Value} = cg.vm;
+					const {Value} = cg.vm;
 					return assert.strictEqual(
 						binaryen.emitText((stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg)),
 						binaryen.emitText(Value.newComposite(cg.codegenSet([
@@ -758,11 +757,11 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty RECORD.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 					}`);
-					const {mod, Value} = cg.vm;
+					const {Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenRecord(new Map([
@@ -823,11 +822,11 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty DICT.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 					}`);
-					const {mod, Value} = cg.vm;
+					const {Value} = cg.vm;
 					return assertEqualBins(
 						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenDict(new Map([
@@ -888,11 +887,11 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('nonempty MAP.NEW', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						{1.1 -> x, 2.2 -> 4.2, 3.3 -> (null,), 4.4 -> x/2, 5.5 -> @e};
 					}`);
-					const {mod, Value} = cg.vm;
+					const {Value} = cg.vm;
 					return assert.strictEqual(
 						binaryen.emitText((stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg)),
 						binaryen.emitText(Value.newComposite(cg.codegenMap(new Map([
@@ -907,7 +906,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('TupleGet returns (array.get).', () => {
-				const {builder, cg} = setupScript(`{
+				const {builder, cg, mod} = setupScript(`{
 					val mut x:   int                = 42;
 					val mut tup: (int, int, ?: int) = (42, 43);
 
@@ -915,7 +914,7 @@ test.suite('Opcode', () => {
 					tup.0;
 					tup.1;
 				}`);
-				const {mod, Value} = cg.vm;
+				const {Value} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(mod.array.get(
 						Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Tuple),
@@ -936,7 +935,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('RecordGet returns (call $Record.get).', () => {
-				const {builder, cg} = setupScript(`{
+				const {builder, cg, mod} = setupScript(`{
 					val mut x:   int                       = 42;
 					val mut rec: (a: int, b: int, c?: int) = (a= 42, b= 43);
 
@@ -944,7 +943,7 @@ test.suite('Opcode', () => {
 					rec.a;
 					rec.b;
 				}`);
-				const {mod, Value, Record: VmRecord} = cg.vm;
+				const {Value, Record: VmRecord} = cg.vm;
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Record),
@@ -963,7 +962,7 @@ test.suite('Opcode', () => {
 
 			test.suite('CollectionDynamicGet', () => {
 				test.test('LIST.GET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val mut x:    int   = 42;
 						val mut list: [int] = [42, 43];
 
@@ -972,7 +971,7 @@ test.suite('Opcode', () => {
 						list.[3];
 						list.[-1];
 					}`);
-					const {mod, Vect, Value, List} = cg.vm;
+					const {Vect, Value, List} = cg.vm;
 					const list_get:   binaryen.ExpressionRef = mod.local.get(1, cg.vm.reftype.Value);
 					const item_0_get: binaryen.ExpressionRef = mod.local.get(4, cg.vm.reftypeNull.Value);
 					const item_1_get: binaryen.ExpressionRef = mod.local.get(5, cg.vm.reftypeNull.Value);
@@ -1030,7 +1029,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('DICT.GET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val mut x:    int    = 42;
 						val mut dict: [:int] = [a= 42, c= 43];
 
@@ -1038,7 +1037,7 @@ test.suite('Opcode', () => {
 						dict.[@a];
 						dict.[@c];
 					}`);
-					const {mod, Vect, Value, Property, Dict} = cg.vm;
+					const {Vect, Value, Property, Dict} = cg.vm;
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
 							mod.local.set(3, mod.tuple.extract(Dict.find(
@@ -1085,12 +1084,12 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('SET.GET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val 'set': {float} = {4.2, 2.4};
 						'set'.[4.2];
 						'set'.[3.3];
 					}`);
-					const {mod, Value, Case, Map: VmMap} = cg.vm;
+					const {Value, Case, Map: VmMap} = cg.vm;
 					const base:         binaryen.ExpressionRef = mod.local.get(1, cg.vm.reftype.Value); // index 0 = nonempty map setup (implementation of Set)
 					const maybe_case_0: binaryen.ExpressionRef = mod.local.get(2, cg.vm.reftypeNull.Case);
 					const maybe_case_1: binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftypeNull.Case);
@@ -1126,12 +1125,12 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('MAP.GET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val map: {float -> int} = {4.2 -> 42, 2.4 -> 24};
 						map.[4.2];
 						map.[3.3];
 					}`);
-					const {mod, Value, Case, Map: VmMap} = cg.vm;
+					const {Value, Case, Map: VmMap} = cg.vm;
 					const base:         binaryen.ExpressionRef = mod.local.get(1, cg.vm.reftype.Value); // index 0 = nonempty map setup
 					const maybe_case_0: binaryen.ExpressionRef = mod.local.get(2, cg.vm.reftypeNull.Case);
 					const maybe_case_1: binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftypeNull.Case);
@@ -1245,12 +1244,12 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('LIST.COUNT', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						val list: [int] = [x, 43, 44];
 						list;
 					}`);
-					const {mod, Vect, Value, List} = cg.vm;
+					const {Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
 					const list = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
@@ -1264,12 +1263,12 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('DICT.COUNT', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						val dict: [:int] = [a= x, b= 43, c= 44];
 						dict;
 					}`);
-					const {mod, Vect, Value, Dict} = cg.vm;
+					const {Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
 					const dict = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
@@ -1283,12 +1282,12 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('SET.COUNT', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						val 'set': {int} = {x, 43, 44};
 						'set';
 					}`);
-					const {mod, Vect, Value, Map: VmMap} = cg.vm;
+					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
 					const set = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
@@ -1302,12 +1301,12 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('MAP.COUNT', () => {
-					const {stmts, builder, cg} = setupScript(`{
+					const {stmts, builder, cg, mod} = setupScript(`{
 						val mut x: int = 42;
 						val map: {float -> int} = {1.1 -> x, 2.2 -> 43, 3.3 -> 44};
 						map;
 					}`);
-					const {mod, Vect, Value, Map: VmMap} = cg.vm;
+					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
 					const map = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
@@ -1389,14 +1388,13 @@ test.suite('Opcode', () => {
 	test.suite('Instruction', () => {
 		test.suite('#codegen', () => {
 			test.test('Drop returns (drop).', () => {
-				const {builder, cg} = setupScript(`{
+				const {builder, cg, mod} = setupScript(`{
 					null;
 					false;
 					@hello;
 					42;
 					4.2;
 				}`, {codegen: false});
-				const {mod} = cg.vm;
 				return assertEqualBins(
 					builder.instructions.map((instr) => instr.codegen(cg)),
 					[
@@ -1410,7 +1408,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Decl & Set both return (local.set).', () => {
-				const {builder, cg} = setupScript(`{
+				const {builder, cg, mod} = setupScript(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
@@ -1423,7 +1421,6 @@ test.suite('Opcode', () => {
 					set d = 43;
 					set e = 4.3;
 				}`, {codegen: false});
-				const {mod} = cg.vm;
 				return assertEqualBins(
 					builder.instructions.map((instr) => instr.codegen(cg)),
 					[
@@ -1445,7 +1442,7 @@ test.suite('Opcode', () => {
 			test.test('uninitialized Decl returns (local.set) with (struct.new_default).', () => {
 				// there exists no syntax for empty Decls, so constructing it manually
 				const cg = new CodeGenerator();
-				const {mod} = cg.vm;
+				const {mod} = cg;
 				assertEqualBins(
 					new OP.Decl(new Builder().newTemp(TYPE.INT)).codegen(cg),
 					mod.local.set(0, mod.struct.new_default(cg.vm.reftype.Value)),
@@ -1454,7 +1451,7 @@ test.suite('Opcode', () => {
 
 			test.suite('CollectionDynamicSet', () => {
 				test.test('LIST.SET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val mut x:    int       = 42;
 						val mut list: mut [int] = [42, 43];
 
@@ -1462,7 +1459,7 @@ test.suite('Opcode', () => {
 						set list.[0] = 46;
 						set list.[2] = 47;
 					}`);
-					const {mod, Vect, Value, List} = cg.vm;
+					const {Vect, Value, List} = cg.vm;
 					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr.codegen(cg)), [
 						List.set(
 							Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.List),
@@ -1482,7 +1479,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('DICT.SET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val mut x:    int        = 42;
 						val mut dict: mut [:int] = [a= 42, c= 43];
 
@@ -1490,7 +1487,7 @@ test.suite('Opcode', () => {
 						set dict.[@a] = 46;
 						set dict.[@c] = 47;
 					}`);
-					const {mod, Vect, Value, Dict} = cg.vm;
+					const {Vect, Value, Dict} = cg.vm;
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						Dict.set(
 							Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Dict),
@@ -1510,12 +1507,12 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('SET.SET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val 'set': mut {float} = {4.2, 2.4};
 						set 'set'.[4.2] = false;
 						set 'set'.[3.3] = true;
 					}`, {codegen: false});
-					const {mod, Vect, Value, Map: VmMap} = cg.vm;
+					const {Vect, Value, Map: VmMap} = cg.vm;
 					const base:           binaryen.ExpressionRef = mod.local.get(1, cg.vm.reftype.Value); // index 0 = nonempty map setup (implementation of Set)
 					const base_get_0:     binaryen.ExpressionRef = mod.local.get(2, cg.vm.reftype.Map);
 					const accessor_get_0: binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.Value);
@@ -1544,12 +1541,12 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('MAP.SET', () => {
-					const {builder, cg} = setupScript(`{
+					const {builder, cg, mod} = setupScript(`{
 						val map: mut {float -> int} = {4.2 -> 42, 2.4 -> 24};
 						set map.[4.2] = 21;
 						set map.[3.3] = 21;
 					}`);
-					const {mod, Value, Map: VmMap} = cg.vm;
+					const {Value, Map: VmMap} = cg.vm;
 					const base: binaryen.ExpressionRef = mod.local.get(1, cg.vm.reftype.Value); // index 0 = nonempty map setup
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						VmMap.set(Value.cast(base, cg.vm.reftype.Map), genConst(cg, 4.2), genConst(cg, 21n)),
@@ -1561,10 +1558,10 @@ test.suite('Opcode', () => {
 			test.suite('CollectionDynamicCopy', () => {
 				test.suite('LIST.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							List.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {mod, Value, List} = cg.vm;
+						const {Value, List} = cg.vm;
 						const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.vm.reftype.List);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.Tuple);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1588,10 +1585,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							List.<int>([2, 3, 5]);
 						}`, {codegen: false});
-						const {mod, Value, List} = cg.vm;
+						const {Value, List} = cg.vm;
 						const destlist_get: binaryen.ExpressionRef = mod.local.get(2, cg.vm.reftype.List);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.ListInternal);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1615,10 +1612,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							List.<int>({2, 3, 5});
 						}`, {codegen: false});
-						const {mod, Value, Case, List, Map: VmMap} = cg.vm;
+						const {Value, Case, List, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.vm.reftype.MapInternal);
 						const j_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(6, binaryen.i32);
@@ -1658,10 +1655,10 @@ test.suite('Opcode', () => {
 				});
 				test.suite('DICT.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Dict.<int>(( (@a, 2), (@b, 3), (@c, 5) ));
 						}`, {codegen: false});
-						const {mod, Vect, Value, Dict} = cg.vm;
+						const {Vect, Value, Dict} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.vm.reftype.Tuple);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
@@ -1692,10 +1689,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('record argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Dict.<int>((a= 2, b= 3, c= 5));
 						}`, {codegen: false});
-						const {mod, Value, Dict} = cg.vm;
+						const {Value, Dict} = cg.vm;
 						const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.vm.reftype.Dict);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.Record);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1719,10 +1716,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Dict.<int>([ (@a, 2), (@b, 3), (@c, 5) ]);
 						}`, {codegen: false});
-						const {mod, Vect, Value, List, Dict} = cg.vm;
+						const {Vect, Value, List, Dict} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.vm.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.vm.reftypeNull.Value);
@@ -1757,10 +1754,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Dict argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Dict.<int>([a= 2, b= 3, c= 5]);
 						}`, {codegen: false});
-						const {mod, Value, Dict} = cg.vm;
+						const {Value, Dict} = cg.vm;
 						const destdict_get: binaryen.ExpressionRef = mod.local.get(2, cg.vm.reftype.Dict);
 						const srcref_get:   binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.DictInternal);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1784,10 +1781,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Dict.<int>({ (@a, 2), (@b, 3), (@c, 5) });
 						}`, {codegen: false});
-						const {mod, Vect, Value, Case, Dict, Map: VmMap} = cg.vm;
+						const {Vect, Value, Case, Dict, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.vm.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(9, cg.vm.reftypeNull.Case);
@@ -1822,10 +1819,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Map argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Dict.<int>({@a -> 2, @b -> 3, @c -> 5});
 						}`, {codegen: false});
-						const {mod, Vect, Value, Case, Dict, Map: VmMap} = cg.vm;
+						const {Vect, Value, Case, Dict, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(4, cg.vm.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(5, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(6, cg.vm.reftypeNull.Case);
@@ -1860,10 +1857,10 @@ test.suite('Opcode', () => {
 				});
 				test.suite('SET.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Set.<int>((2, 3, 5));
 						}`, {codegen: false});
-						const {mod, Value, Map: VmMap} = cg.vm;
+						const {Value, Map: VmMap} = cg.vm;
 						const items_get: binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.Tuple);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(4, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(5, cg.vm.reftype.Value);
@@ -1891,10 +1888,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Set.<int>([2, 3, 5]);
 						}`, {codegen: false});
-						const {mod, Value, List, Map: VmMap} = cg.vm;
+						const {Value, List, Map: VmMap} = cg.vm;
 						const items_get: binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(4, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(5, cg.vm.reftype.Value);
@@ -1925,10 +1922,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Set.<int>({2, 3, 5});
 						}`, {codegen: false});
-						const {mod, Value, Map: VmMap} = cg.vm;
+						const {Value, Map: VmMap} = cg.vm;
 						const destset_get: binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.Map);
 						const srcref_get:  binaryen.ExpressionRef = mod.local.get(4, cg.vm.reftype.MapInternal);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
@@ -1954,10 +1951,10 @@ test.suite('Opcode', () => {
 				});
 				test.suite('MAP.COPY', () => {
 					test.test('tuple argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Map.<float, int>(( (1.414, 2), (1.732, 3), (2.236, 5) ));
 						}`, {codegen: false});
-						const {mod, Value, Map: VmMap} = cg.vm;
+						const {Value, Map: VmMap} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.vm.reftype.Tuple);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						builder.instructions.slice(0, 5).forEach((instr) => instr.codegen(cg));
@@ -1984,10 +1981,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('List argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Map.<float, int>([ (1.414, 2), (1.732, 3), (2.236, 5) ]);
 						}`, {codegen: false});
-						const {mod, Value, List, Map: VmMap} = cg.vm;
+						const {Value, List, Map: VmMap} = cg.vm;
 						const pairs_get: binaryen.ExpressionRef = mod.local.get(6, cg.vm.reftype.ListInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(7, binaryen.i32);
 						const item_get:  binaryen.ExpressionRef = mod.local.get(8, cg.vm.reftypeNull.Value);
@@ -2018,10 +2015,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Set argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Map.<float, int>({ (1.414, 2), (1.732, 3), (2.236, 5) });
 						}`, {codegen: false});
-						const {mod, Value, Case, Map: VmMap} = cg.vm;
+						const {Value, Case, Map: VmMap} = cg.vm;
 						const cases_get: binaryen.ExpressionRef = mod.local.get(7, cg.vm.reftype.MapInternal);
 						const i_get:     binaryen.ExpressionRef = mod.local.get(8, binaryen.i32);
 						const case_get:  binaryen.ExpressionRef = mod.local.get(9, cg.vm.reftypeNull.Case);
@@ -2052,10 +2049,10 @@ test.suite('Opcode', () => {
 						);
 					});
 					test.test('Map argument.', () => {
-						const {builder, cg} = setupScript(`{
+						const {builder, cg, mod} = setupScript(`{
 							Map.<float, int>({1.414 -> 2, 1.732 -> 3, 2.236 -> 5});
 						}`, {codegen: false});
-						const {mod, Value, Map: VmMap} = cg.vm;
+						const {Value, Map: VmMap} = cg.vm;
 						const destmap_get: binaryen.ExpressionRef = mod.local.get(3, cg.vm.reftype.Map);
 						const srcref_get:  binaryen.ExpressionRef = mod.local.get(4, cg.vm.reftype.MapInternal);
 						builder.instructions.slice(0, 2).forEach((instr) => instr.codegen(cg));
