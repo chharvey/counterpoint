@@ -61,6 +61,7 @@ NEG([Number])  -> Number;
 TOINT([Number])   -> Integer;
 TONAT([Number])   -> Natural;
 TOFLOAT([Number]) -> Float;
+TOSTR([Value])    -> String;
 
 LIST.COUNT([Value]) -> Natural;
 DICT.COUNT([Value]) -> Natural;
@@ -176,6 +177,7 @@ Build(SemanticAccess[kind=MAYBE] access) := [
 Build(SemanticCall:has(SemanticVariable ::= "Integer"):has(SemanticExpression*) call) := (TOINT   `Build(call.SemanticExpression*.0)`);
 Build(SemanticCall:has(SemanticVariable ::= "Natural"):has(SemanticExpression*) call) := (TONAT   `Build(call.SemanticExpression*.0)`);
 Build(SemanticCall:has(SemanticVariable ::= "Float")  :has(SemanticExpression*) call) := (TOFLOAT `Build(call.SemanticExpression*.0)`);
+Build(SemanticCall:has(SemanticVariable ::= "String") :has(SemanticExpression*) call) := (TOSTR   `Build(call.SemanticExpression*.0)`);
 
 Build(SemanticCall:has(SemanticVariable ::= "List") call) := (LIST.NEW);
 Build(SemanticCall:has(SemanticVariable ::= "Dict") call) := (DICT.NEW);

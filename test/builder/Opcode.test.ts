@@ -684,6 +684,10 @@ test.suite('Opcode', () => {
 						Natural.(4.2);
 						Float.(+42);
 						Float.(42);
+
+						String.(null);
+						String.(42);
+						String.("hello");
 					}`, {codegen: false});
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
@@ -709,6 +713,10 @@ test.suite('Opcode', () => {
 							cg.vm.op.toNat(genConst(cg, 4.2)),
 							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toFloat(genConst(cg, 42n)),
+
+							cg.vm.Value.stringify(genConst(cg)),
+							cg.vm.Value.stringify(genConst(cg, 42n)),
+							cg.vm.Value.stringify(genConst(cg, 'hello')),
 						],
 					);
 				});
