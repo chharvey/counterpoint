@@ -102,6 +102,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'expression_block'>
 	| SyntaxNodeType<'expression_compound'>
 	| SyntaxNodeType<'expression_unary_symbol'>
+	| SyntaxNodeType<'expression_unary_keyword'>
 	| SyntaxNodeType<'expression_cast'>
 	| SyntaxNodeType<'expression_exponential'>
 	| SyntaxNodeType<'expression_multiplicative'>

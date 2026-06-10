@@ -503,25 +503,6 @@ test.suite('Decorator', () => {
 				% (expression_unary_symbol)
 			`]],
 
-			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.Operation, `
-				{
-					int v;
-				}
-				% (expression_unary_keyword)
-			`]],
-			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.Operation, `
-				{
-					nat v;
-				}
-				% (expression_unary_keyword)
-			`]],
-			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.Operation, `
-				{
-					float v;
-				}
-				% (expression_unary_keyword)
-			`]],
-
 			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation', [AST.Operation, `
 				{
 					a as Klass;

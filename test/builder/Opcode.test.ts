@@ -661,7 +661,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
 					);
 				});
-				test.test('Primitive unary operators return custom WASM functions.', () => {
+				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
 						!null;
 						!false;
@@ -678,12 +678,12 @@ test.suite('Opcode', () => {
 						-(42);
 						-(4.2);
 
-						int   +42;
-						int   4.2;
-						nat   42;
-						nat   4.2;
-						float +42;
-						float 42;
+						Integer.(+42);
+						Integer.(4.2);
+						Natural.(42);
+						Natural.(4.2);
+						Float.(+42);
+						Float.(42);
 					}`, {codegen: false});
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),

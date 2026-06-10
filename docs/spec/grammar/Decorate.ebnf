@@ -452,18 +452,6 @@ Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Bloc
 
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=INT]
-		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
-	);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NAT]
-		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
-	);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=FLOAT]
-		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
-	);
 
 
 

@@ -192,6 +192,7 @@ Object! ValueOf(SemanticCall call) :=
 		5. *Return:* a new Set containing the items in `tuple`.
 	7. *Else:*
 		1. *Assert:* `base.source` is "Map".
+		// NOTE: "Integer", "Natural", "Float" unsupported.
 		2. *Assert:* `call.children.count` is 2 or 3 or 4.
 		3. *If* `call.children.count` is 2:
 			1. *Note:* The call looks like "Map.<K>()".
@@ -251,45 +252,6 @@ Number! ValueOf(SemanticOperation[operator: NEG] expr) :=
 	4. *Let* `negation` be the additive inverse, `-v0`,
 		obtained by negating `v0`.
 	5. *Return:* `negation`.
-;
-
-Number! ValueOf(SemanticOperation[operator: INT] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Assert:* `v0` is an instance of `Number`.
-	4. *If* `v0` is an instance of `Natural`:
-		1. *Let* `as_int` be the reinterpretation of `v0` as a 64-bit signed integer value.
-		2. *Return:* `as_int`.
-	5. *If* `v0` is an instance of `Float`:
-		1. *Let* `as_int` be the conversion of `v0` to a 64-bit signed integer value.
-		2. *Return:* `as_int`.
-	6. *Assert:* `v0` is an instance of `Integer`.
-	7. *Return:* `v0`.
-;
-
-Number! ValueOf(SemanticOperation[operator: NAT] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Assert:* `v0` is an instance of `Number`.
-	4. *If* `v0` is an instance of `Integer`:
-		1. *Let* `as_nat` be the reinterpretation of `v0` to a 64-bit unsigned integer value.
-		2. *Return:* `as_nat`.
-	5. *If* `v0` is an instance of `Float`:
-		1. *Let* `as_nat` be the conversion of `v0` to a 64-bit unsigned integer value.
-		2. *Return:* `as_nat`.
-	6. *Assert:* `v0` is an instance of `Natural`.
-	7. *Return:* `v0`.
-;
-
-Number! ValueOf(SemanticOperation[operator: FLOAT] expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
-	3. *Assert:* `v0` is an instance of `Number`.
-	4. *If* `v0` is an instance of `Integer` *or* `v0` is an instance of `Natural`:
-		1. *Let* `as_float` be the conversion of `v0` to a 64-bit binary floating-point value.
-		2. *Return:* `as_float`.
-	5. *Assert:* `v0` is an instance of `Float`.
-	6. *Return:* `v0`.
 ;
 
 Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=

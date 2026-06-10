@@ -1037,16 +1037,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		ExpressionUnaryKeyword: [
 			xjs.String.dedent`
 				{
-					int   value;
-					nat   value;
-					float value;
+					isset value;
 				}
 			`,
-			sourceExpressions(
-				s('expression_unary_keyword', s('identifier')),
-				s('expression_unary_keyword', s('identifier')),
-				s('expression_unary_keyword', s('identifier')),
-			),
+			sourceExpressions(s('expression_unary_keyword', s('identifier'))),
 		],
 
 		ExpressionCast: [
