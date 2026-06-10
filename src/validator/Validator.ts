@@ -196,10 +196,13 @@ function tokenWorthString(text: string): CodeUnit[] {
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
-	/** The minimum allowed cooked value of a keyword token. */
-	private static readonly MIN_VALUE_KEYWORD = 0x80n;
+	/** The minimum allowed cooked value of a reserved keyword token. */
+	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
-	/** The minimum allowed cooked value of an identifier token. */
+	/** The minimum allowed cooked value of an intrinsic identifier token. */
+	private static readonly MIN_VALUE_INTRINSIC = 0x80n;
+
+	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
 
 	/**
