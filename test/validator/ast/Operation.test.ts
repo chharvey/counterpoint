@@ -1065,22 +1065,20 @@ test.suite('Operation', () => {
 		test.suite('#type', () => {
 			test.test('with constant folding on.', () => {
 				typeOperations(new Map<string, TYPE.Type>([
-					['null     && false',    TYPE.NULL],
-					['false    && null',     TYPE.FALSE],
-					['true     && null',     TYPE.NULL],
-					['@nothing && @x',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'x'))],
-					['@x       && @nothing', TYPE.SYM_NOTHING],
-					['@nothing || @y',       TYPE.SYM_NOTHING],
-					['@y       || @nothing', new TYPE.Unit(new VALUE.Symbol(0x100n, 'y'))],
-					['@z       && false',    TYPE.FALSE],
-					['true     && @z',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'z'))],
-					['false    && 42',       TYPE.FALSE],
-					['4.2      && true',     TYPE.TRUE],
-					['null     || false',    TYPE.FALSE],
-					['false    || null',     TYPE.NULL],
-					['true     || null',     TYPE.TRUE],
-					['false    || 42',       new TYPE.Unit(new VALUE.Integer(42n))],
-					['4.2      || true',     new TYPE.Unit(new VALUE.Float(4.2))],
+					['null  && false',    TYPE.NULL],
+					['false && null',     TYPE.FALSE],
+					['true  && null',     TYPE.NULL],
+					['@x    && @y',       new TYPE.Unit(new VALUE.Symbol(0x101n, 'y'))],
+					['@x    || @y',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'x'))],
+					['@z    && false',    TYPE.FALSE],
+					['true  && @z',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'z'))],
+					['false && 42',       TYPE.FALSE],
+					['4.2   && true',     TYPE.TRUE],
+					['null  || false',    TYPE.FALSE],
+					['false || null',     TYPE.NULL],
+					['true  || null',     TYPE.TRUE],
+					['false || 42',       new TYPE.Unit(new VALUE.Integer(42n))],
+					['4.2   || true',     new TYPE.Unit(new VALUE.Float(4.2))],
 				]));
 			});
 			test.suite('with constant folding off.', () => {
@@ -1174,22 +1172,20 @@ test.suite('Operation', () => {
 
 		test.test('#fold', () => {
 			foldOperations(new Map<string, VALUE.Value>([
-				['@nothing && @x',       new VALUE.Symbol(0x100n, 'x')],
-				['@x       && @nothing', VALUE.SYM_NOTHING],
-				['@nothing || @y',       VALUE.SYM_NOTHING],
-				['@y       || @nothing', new VALUE.Symbol(0x100n, 'y')],
-				['@z       && false',    VALUE.FALSE],
-				['true     && @z',       new VALUE.Symbol(0x100n, 'z')],
-				['null     && 5',        VALUE.NULL],
-				['null     || 5',        new VALUE.Integer(5n)],
-				['5        && null',     VALUE.NULL],
-				['5        || null',     new VALUE.Integer(5n)],
-				['5.1      && true',     VALUE.TRUE],
-				['5.1      || true',     new VALUE.Float(5.1)],
-				['3.1      && 5',        new VALUE.Integer(5n)],
-				['3.1      || 5',        new VALUE.Float(3.1)],
-				['false    && null',     VALUE.FALSE],
-				['false    || null',     VALUE.NULL],
+				['@x    && @y',    new VALUE.Symbol(0x101n, 'y')],
+				['@x    || @y',    new VALUE.Symbol(0x100n, 'x')],
+				['@z    && false', VALUE.FALSE],
+				['true  && @z',    new VALUE.Symbol(0x100n, 'z')],
+				['null  && 5',     VALUE.NULL],
+				['null  || 5',     new VALUE.Integer(5n)],
+				['5     && null',  VALUE.NULL],
+				['5     || null',  new VALUE.Integer(5n)],
+				['5.1   && true',  VALUE.TRUE],
+				['5.1   || true',  new VALUE.Float(5.1)],
+				['3.1   && 5',     new VALUE.Integer(5n)],
+				['3.1   || 5',     new VALUE.Float(3.1)],
+				['false && null',  VALUE.FALSE],
+				['false || null',  VALUE.NULL],
 			]));
 		});
 	});
