@@ -53,7 +53,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementIteration', () => {
-			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 				const goal: AST.Goal = AST.Goal.fromSource(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						42;
@@ -69,7 +69,6 @@ test.suite('Statement', () => {
 					isWritable:      false,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
-					value:           null,
 				});
 			});
 			test.test('for blank identifiers, does not add to symbol table.', () => {
@@ -373,7 +372,6 @@ test.suite('Statement', () => {
 						isWritable:      true,
 						isUninitialized: true,
 						type:            TYPE.INT,
-						value:           null,
 					});
 				});
 				test.test('does not allow reassignment of `null` when uninitialized.', () => {

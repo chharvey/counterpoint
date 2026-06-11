@@ -1,7 +1,4 @@
-import {
-	type VALUE,
-	TYPE,
-} from '../typer/index.ts';
+import {TYPE} from '../typer/index.ts';
 import type * as AST from './ast/index.ts';
 
 
@@ -55,9 +52,6 @@ export class SymbolSchemaVar extends SymbolSchema {
 	 * This will typically be narrower than the assignee type.
 	 */
 	public irType: TYPE.Type = TYPE.NOTHING;
-
-	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. @deprecated */
-	public value: VALUE.Value | null = null;
 
 	public constructor(
 		node: AST.Variable,

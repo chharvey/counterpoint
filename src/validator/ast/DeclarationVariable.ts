@@ -147,7 +147,6 @@ export class DeclarationVariable extends Statement {
 			// TODO: move these next lines to the interpreter
 			if (!symbol.type.hasMutable && !this.writable) {
 				assert.ok(!symbol.isWritable, `Symbol \`${ symbol.source }\` should not be writable.`);
-				symbol.value = null;
 			}
 		}
 	}
