@@ -1,30 +1,17 @@
-Type! TypeOf(SemanticExpression expr) :=
-	1. *Let* `t` be *Unwrap:* `TypeOfUnfolded(expr)`.
-	2. *Let* `folded` be `ValueOf(expr)`.
-	3. *If* `folded` is an abrupt completion:
-		1. *Return:* `t`.
-	4. *If* `folded.value` is an instance of `Null`, `Boolean`, `Symbol`, `Integer`, `Natural`, `Float`, or `String`:
-		1. *Return:* `ToType(folded.value)`.
-	5. *Return:* `t`.
+Type TypeOf(SemanticConstant const) :=
+	1. *Let* `interpreterValue` be `const.value`.
+	2. *Return:* `ToType(interpreterValue)`.
 ;
 
 
 
-Type TypeOfUnfolded(SemanticConstant const) :=
-	1. *Let* `folded` be *UnwrapAffirm:* `ValueOf(const)`.
-	2. *Note:* `folded` is `const.value`.
-	3. *Return:* `ToType(folded)`.
-;
-
-
-
-Type TypeOfUnfolded(SemanticTemplate template) :=
+Type TypeOf(SemanticTemplate template) :=
 	1. *Return:* `String`.
 ;
 
 
 
-Type TypeOfUnfolded(SemanticVariable var) :=
+Type TypeOf(SemanticVariable var) :=
 	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
 	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 	3. *If* `symbol.isUninitialized` is `true`:
@@ -35,7 +22,7 @@ Type TypeOfUnfolded(SemanticVariable var) :=
 
 
 
-Type! TypeOfUnfolded(SemanticTuple tuple) :=
+Type! TypeOf(SemanticTuple tuple) :=
 	1. *Let* `data` be a new Sequence.
 	2. *For each* `item` in `tuple`:
 		1. *Let* `typedatum` be a new EntryTypeSchema [
@@ -50,7 +37,7 @@ Type! TypeOfUnfolded(SemanticTuple tuple) :=
 
 
 
-Type! TypeOfUnfolded(SemanticRecord record) :=
+Type! TypeOf(SemanticRecord record) :=
 	1. *Let* `data` be a new Schema.
 	2. *For each* `property` in `record`:
 		1. *Assert:* `property.children.count` is 2.
@@ -66,7 +53,7 @@ Type! TypeOfUnfolded(SemanticRecord record) :=
 
 
 
-Type! TypeOfUnfolded(SemanticList list) :=
+Type! TypeOf(SemanticList list) :=
 	1. *Let* `types` be a mapping of `list` for each `it` to *Unwrap:* `TypeOf(it)`.
 	2. *If* `types` contains `Nothing`:
 		1. *Return:* `Nothing`.
@@ -76,7 +63,7 @@ Type! TypeOfUnfolded(SemanticList list) :=
 
 
 
-Type! TypeOfUnfolded(SemanticDict dict) :=
+Type! TypeOf(SemanticDict dict) :=
 	1. *Let* `types` be a mapping of `dict` for each `prop` to *Unwrap:* `TypeOf(prop.children.1)`.
 	2. *If* `types` contains `Nothing`:
 		1. *Return:* `Nothing`.
@@ -86,7 +73,7 @@ Type! TypeOfUnfolded(SemanticDict dict) :=
 
 
 
-Type! TypeOfUnfolded(SemanticSet set) :=
+Type! TypeOf(SemanticSet set) :=
 	1. *Let* `types` be a mapping of `set` for each `el` to *Unwrap:* `TypeOf(el)`.
 	2. *If* `types` contains `Nothing`:
 		1. *Return:* `Nothing`.
@@ -96,7 +83,7 @@ Type! TypeOfUnfolded(SemanticSet set) :=
 
 
 
-Type! TypeOfUnfolded(SemanticMap map) :=
+Type! TypeOf(SemanticMap map) :=
 	1. *Let* `ant_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.0)`.
 	2. *Let* `con_types` be a mapping of `map` for each `case` to *Unwrap:* `TypeOf(case.children.1)`.
 	3. *If* `ant_types` contains `Nothing`:
@@ -110,7 +97,7 @@ Type! TypeOfUnfolded(SemanticMap map) :=
 
 
 
-Type! TypeOfUnfolded(SemanticExpressionBlock block) :=
+Type! TypeOf(SemanticExpressionBlock block) :=
 	1. *If* `block.children` contains any statement that contains any expression `expr` for which *UnwrapAffirm:* `IsBottomType(expr)` is `true`:
 		1. *Return:* `Nothing`.
 	2. *Assert:* `block.children.count` is greater than 0.
@@ -126,11 +113,11 @@ Type! TypeOfUnfolded(SemanticExpressionBlock block) :=
 
 
 
-Type! TypeOfUnfolded(SemanticAccess[kind: RESULT] access) :=
+Type! TypeOf(SemanticAccess[kind: RESULT] access) :=
 	// TODO: implement
 ;
 
-Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
+Type! TypeOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
@@ -143,7 +130,7 @@ Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 
 
 
-Type! TypeOfUnfolded(SemanticCall call) :=
+Type! TypeOf(SemanticCall call) :=
 	1. *Assert:* `call.children.count` is greater than or equal to 1.
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base` is not a SemanticVariable:
@@ -196,7 +183,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 							3. *Else:*
-								1. Pass through.
+								1. Fall through.
 						3. *Else If* `base.source` is "Dict":
 							1. *Let* `is_assignable` be `TypeCheckAssign(arg, returntype)`.
 							2. *If* `is_assignable` is an abrupt completion:
@@ -211,7 +198,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 							3. *Else:*
-								1. Pass through.
+								1. Fall through.
 						4. *Else If* `base.source` is "Set":
 							1. *Let* `listtype` be a List type under the type argument `genericarg`.
 							2. *Let* `is_assignable` be `TypeCheckAssign(arg, listtype)`.
@@ -226,12 +213,12 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 								3. *Else:*
 									1. *Throw:* a new TypeErrorNotAssignable.
 							4. *Else:*
-								1. Pass through.
+								1. Fall through.
 					3. *Else:*
 						1. *Throw:* a new TypeErrorArgCount.
 				6. *Return:* a mutable copy of `returntype`.
 			2. *Else:*
-				1. Pass through.
+				1. Fall through.
 		2. *Throw:* a new TypeErrorArgCount.
 	6. *Else:*
 		1. *Assert:* `base.source` is "Map".
@@ -278,11 +265,11 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 						3. *Else:*
 							1. *Throw:* a new TypeErrorNotAssignable.
 					3. *Else:*
-						1. Pass through.
+						1. Fall through.
 				8. *Return:* a mutable Map type under an antecedent type argument `antecedenttype`
 					and a consequent type argument `consequenttype`.
 			2. *Else:*
-				1. Pass through.
+				1. Fall through.
 		3. *Throw:* a new TypeErrorArgCount.
 ;
 
@@ -300,7 +287,7 @@ Type! TypeOf(SemanticClaim claim) :=
 
 
 
-Type! TypeOfUnfolded(SemanticOperation[operator: NOT] expr) :=
+Type! TypeOf(SemanticOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
@@ -313,7 +300,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NOT] expr) :=
 		1. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
+Type! TypeOf(SemanticOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
@@ -323,7 +310,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
 	5. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: NEG] expr) :=
+Type! TypeOf(SemanticOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
@@ -334,7 +321,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NEG] expr) :=
 		1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
+Type! TypeOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -349,7 +336,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] ex
 	8. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+Type! TypeOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -360,11 +347,11 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	6. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: IS] expr) :=
+Type! TypeOf(SemanticOperation[operator: IS] expr) :=
 	// TODO: implement
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
+Type! TypeOf(SemanticOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -378,7 +365,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
 	6. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=
+Type! TypeOf(SemanticOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -392,7 +379,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=
 		1. *Return:* `Union(FalsySide(t0), t1)`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: OR] expr) :=
+Type! TypeOf(SemanticOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -406,7 +393,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: OR] expr) :=
 		1. *Return:* `Union(TruthySide(t0), t1)`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
+Type! TypeOf(SemanticOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.

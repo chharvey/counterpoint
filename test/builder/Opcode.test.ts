@@ -1,16 +1,20 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
-	type AST,
+	AST,
 	VALUE,
 	TYPE,
 	Builder,
+	Interpreter,
 	OP,
 	bigint_to_i64,
 	CodeGenerator,
 } from '../../src/index.ts';
 import {
+	extract_lines,
+	repeat,
 	assertEqualBins,
 	genConst,
 	setupScript,
@@ -20,6 +24,768 @@ import {
 
 test.suite('Opcode', () => {
 	test.suite('Value', () => {
+		test.suite('#interpret', () => {
+			function interpret_extracted_drops(src: string): VALUE.Value[] {
+				const interp = new Interpreter();
+				return setupScript(src, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
+					? instr.value.interpret(interp)
+					: instr.interpret(interp)
+				)).filter((value) => !!value);
+			}
+
+			test.test('Trap always throws.', () => {
+				assert.throws(() => new OP.Trap().interpret(), /Trap\./);
+			});
+
+			test.test('Const returns interpreter value.', () => {
+				xjs.Array.forEachAggregated([
+					VALUE.NULL,
+					VALUE.FALSE,
+					VALUE.TRUE,
+					VALUE.INT_0,
+					VALUE.NAT_0,
+					VALUE.FLOAT_0,
+					VALUE.STR_EMPTY,
+					new VALUE.Symbol(0x100n, 'hello'),
+					new VALUE.Integer(42n),
+					new VALUE.Natural(42n),
+					new VALUE.Float(4.2),
+					new VALUE.String('hello'),
+				], (val) => assert.deepStrictEqual(new OP.Const(val).interpret(), val));
+			});
+
+			test.test('Get returns validator’s symbol table value.', () => {
+				assert.deepStrictEqual(interpret_extracted_drops(`{
+					val mut a: null  = null;
+					val mut b: bool  = false;
+					val mut c: sym   = @hello;
+					val mut d: int   = 42;
+					val mut e: float = 4.2;
+
+					a;
+					b;
+					c;
+					d;
+					e;
+				}`), [
+					VALUE.NULL,
+					VALUE.FALSE,
+					new VALUE.Symbol(0x102n, 'hello'),
+					new VALUE.Integer(42n),
+					new VALUE.Float(4.2),
+				]);
+			});
+
+			test.test('Template interprets each child, stringifies, and concatenates.', () => {
+				assert.deepStrictEqual(interpret_extracted_drops(`{
+					val mut x: int = 85;
+
+					"""42😀""";
+					"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";
+					"""the answer is {{ x / 2 }} but what is the question?""";
+				}`), [
+					new VALUE.String('42😀'),
+					new VALUE.String('the answer is 42 but what is the question?'),
+					new VALUE.String('the answer is 42 but what is the question?'),
+				]);
+			});
+
+			test.test('CollectionLinearNew, RecordNew, DictNew, MapNew', () => {
+				const expected_items = [
+					VALUE.INT_1,
+					new VALUE.Float(2.0),
+					new VALUE.String('three'),
+				];
+				const expected_pairs = [
+					[0x100n, expected_items[0]],
+					[0x101n, expected_items[1]],
+					[0x102n, expected_items[2]],
+				] as const;
+				return assert.deepStrictEqual(interpret_extracted_drops(`{
+					(1, 2.0, "three");
+					[1, 2.0, "three"];
+					{1, 2.0, "three"};
+
+					(a= 1, b= 2.0, c= "three");
+					[a= 1, b= 2.0, c= "three"];
+
+					{
+						% "a" || "" -> 1, % TODO: implement logical binop interp
+						21 + 21   -> 2.0,
+						1.5 * 2.0 -> "three",
+					};
+				}`), [
+					new VALUE.Tuple(expected_items),
+					new VALUE.List(expected_items),
+					new VALUE.Set(new Set<VALUE.Value>(expected_items)),
+					new VALUE.Record(new Map<bigint, VALUE.Value>(expected_pairs)),
+					new VALUE.Dict(new Map<bigint, VALUE.Value>(expected_pairs)),
+					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
+						// [new VALUE.String('a'),  expected_items[0]], // TODO: implement logical binop interp
+						[new VALUE.Integer(42n), expected_items[1]],
+						[new VALUE.Float(3.0),   expected_items[2]],
+					])),
+				]);
+			});
+
+			test.test('TupleGet, RecordGet', () => {
+				assert.deepStrictEqual(interpret_extracted_drops(`{
+					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
+					val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
+
+					val     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+					val mut rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
+
+					tup_fixed.0;    % value \`1\`
+					tup_fixed.1;    % value \`2.0\`
+					tup_fixed.2;    % value \`"three"\`
+					tup_unfixed.0;  % value \`1\`
+					tup_unfixed.1;  % value \`2.0\`
+					tup_unfixed.2;  % value \`"three"\`
+
+					rec_fixed.a;   % value \`1\`
+					rec_fixed.b;   % value \`2.0\`
+					rec_fixed._;   % value \`"three"\`
+					rec_unfixed.a; % value \`1\`
+					rec_unfixed.b; % value \`2.0\`
+					rec_unfixed._; % value \`"three"\`
+				}`), repeat([
+					VALUE.INT_1,
+					new VALUE.Float(2.0),
+					new VALUE.String('three'),
+				], 4).flat());
+			});
+
+			test.test('CollectionDynamicGet', () => {
+				const expected_items = [
+					VALUE.INT_1,
+					new VALUE.Float(2.0),
+					new VALUE.String('three'),
+				];
+				assert.deepStrictEqual(interpret_extracted_drops(`{
+					val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
+					val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
+					val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
+					val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
+					val mut list_unfixed: List.<     int | float | str> = list_fixed;
+					val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
+					val mut set_unfixed:  Set .<     int | float | str> = set_fixed;
+					val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
+
+					list_fixed.[0];      % value \`1\`
+					list_fixed.[1];      % value \`2.0\`
+					list_fixed.[+2];     % value \`"three"\`
+					dict_fixed.[@a];     % value \`1\`
+					dict_fixed.[@b];     % value \`2.0\`
+					dict_fixed.[@c];     % value \`"three"\`
+					set_fixed.[1];       % value \`true\`
+					set_fixed.[2.0];     % value \`true\`
+					set_fixed.["three"]; % value \`true\`
+					map_fixed.["a"];     % value \`1\`
+					map_fixed.["b"];     % value \`2.0\`
+					map_fixed.["c"];     % value \`"three"\`
+
+					list_unfixed.[0];      % value \`1\`
+					list_unfixed.[1];      % value \`2.0\`
+					list_unfixed.[+2];     % value \`"three"\`
+					dict_unfixed.[@a];     % value \`1\`
+					dict_unfixed.[@b];     % value \`2.0\`
+					dict_unfixed.[@c];     % value \`"three"\`
+					set_unfixed.[1];       % value \`true\`
+					set_unfixed.[2.0];     % value \`true\`
+					set_unfixed.["three"]; % value \`true\`
+					map_unfixed.["a"];     % value \`1\`
+					map_unfixed.["b"];     % value \`2.0\`
+					map_unfixed.["c"];     % value \`"three"\`
+				}`), repeat([
+					...expected_items,
+					...expected_items,
+					...repeat(VALUE.TRUE, 3),
+					...expected_items,
+				], 2).flat());
+			});
+
+			test.test.todo('Call', () => undefined);
+
+			test.suite('Unop', () => {
+				const operands: readonly string[] = extract_lines`
+					null
+					false
+					true
+					0
+					42
+					0.0
+					-0.0
+					4.2e+1
+					+0
+					+42
+					""
+					"hello"
+					()
+					(42,)
+					(a= 42)
+					[]
+					[42]
+					[a= 42]
+					{}
+					{42}
+					{41 -> 42}
+				`;
+				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
+					return interpret_extracted_drops(`{
+						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
+					}`);
+				}
+				function interpret_calls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
+					return interpret_extracted_drops(`{
+						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
+					}`);
+				}
+				test.test('[operator=ISNULL]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.ISNULL,
+						AST.Expression.fromSource(operand).build(builder).asTac(builder),
+						TYPE.BOOL,
+					))));
+					return assert.deepStrictEqual(
+						builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value),
+						[
+							VALUE.TRUE,
+							...repeat(VALUE.FALSE, 20),
+						],
+					);
+				});
+				test.test('[operator=NOT]', () => {
+					assert.deepStrictEqual(interpret_unops('!'), [
+						...repeat(VALUE.TRUE, 2),
+						...repeat(VALUE.FALSE, 19),
+					]);
+				});
+				test.test('[operator=EMP]', () => {
+					assert.deepStrictEqual(interpret_unops('?'), [
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+					]);
+				});
+				test.test('[operator=NEG]', () => {
+					assert.deepStrictEqual(interpret_unops('-', operands.slice(3, 8)), [
+						VALUE.INT_0,
+						new VALUE.Integer(-42n),
+						VALUE.FLOAT_N0,
+						VALUE.FLOAT_0,
+						new VALUE.Float(-4.2e+1),
+					]);
+				});
+				test.test('[operator=TOBOOL]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.TOBOOL,
+						AST.Expression.fromSource(operand).build(builder).asTac(builder),
+						TYPE.BOOL,
+					))));
+					return assert.deepStrictEqual(
+						builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value),
+						[
+							...repeat(VALUE.FALSE, 2),
+							...repeat(VALUE.TRUE, 19),
+						],
+					);
+				});
+				test.test('[operator=TOINT]', () => {
+					assert.deepStrictEqual(interpret_calls('Integer', operands.slice(3, 10)), [
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+					]);
+				});
+				test.test('[operator=TONAT]', () => {
+					assert.deepStrictEqual(interpret_calls('Natural', operands.slice(3, 10)), [
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+					]);
+				});
+				test.test('[operator=TOFLOAT]', () => {
+					assert.deepStrictEqual(interpret_calls('Float', operands.slice(3, 10)), [
+						VALUE.FLOAT_0,
+						new VALUE.Float(42.0),
+						VALUE.FLOAT_0,
+						VALUE.FLOAT_N0,
+						new VALUE.Float(4.2e+1),
+						VALUE.FLOAT_0,
+						new VALUE.Float(42.0),
+					]);
+				});
+				test.test('[operator={LIST,DICT,SET,MAP}_COUNT]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					const items: readonly OP.ValueTac[] = [
+						new OP.Const(VALUE.INT_1),
+						new OP.Const(new VALUE.Float(2.0)),
+						new OP.Const(new VALUE.String('three')),
+					];
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.LIST_COUNT,
+						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.DICT_COUNT,
+						new OP.DictNew(new Map([
+							[new VALUE.Symbol(0x100n, 'a'), items[0]],
+							[new VALUE.Symbol(0x101n, 'b'), items[1]],
+							[new VALUE.Symbol(0x102n, 'c'), items[2]],
+						]), new TYPE.Dict(TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.SET_COUNT,
+						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.MAP_COUNT,
+						new OP.MapNew(new Map([
+							[new OP.Const(new VALUE.Symbol(0x100n, 'a')), items[0]],
+							[new OP.Const(new VALUE.Symbol(0x101n, 'b')), items[1]],
+							[new OP.Const(new VALUE.Symbol(0x102n, 'c')), items[2]],
+						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)),
+						TYPE.NAT,
+					)));
+					return assert.deepStrictEqual(
+						builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value),
+						repeat(new VALUE.Natural(3n), 4),
+					);
+				});
+			});
+
+			test.suite('Binop', () => {
+				function interpret_binops(tested: readonly string[]): VALUE.Value[] {
+					return interpret_extracted_drops(`{
+						${ tested.map((expr) => `${ expr };`).join('\n') }
+					}`);
+				}
+				test.test('integer operations.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						42 + 420
+						42 - 420
+						 126 /  3
+						-126 /  3
+						 126 / -3
+						-126 / -3
+						 200 /  3
+						 200 / -3
+						-200 /  3
+						-200 / -3
+						-(5) ^ +(2 * 3)
+						+5 ^ (+2 * +3)
+					`), [
+						new VALUE.Integer(42n + 420n),
+						new VALUE.Integer(42n + -420n),
+						new VALUE.Integer( 126n /  3n),
+						new VALUE.Integer(-126n /  3n),
+						new VALUE.Integer( 126n / -3n),
+						new VALUE.Integer(-126n / -3n),
+						new VALUE.Integer( 200n /  3n),
+						new VALUE.Integer( 200n / -3n),
+						new VALUE.Integer(-200n /  3n),
+						new VALUE.Integer(-200n / -3n),
+						new VALUE.Integer((-5n) ** (2n * 3n)),
+						new VALUE.Natural(5n ** (2n * 3n)),
+					]);
+				});
+				test.test('float operations.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						3.0e1 - 201.0e-1
+						3.0 * 2.1
+					`), [
+						new VALUE.Float(30 - 20.1),
+						new VALUE.Float(3.0 * 2.1),
+					]);
+				});
+				test.test('overflows integers properly.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						2 ^ 63 + 2 ^ 62
+						-(2 ^ 62) - 2 ^ 63
+						42 ^ 2 * 420
+					`), [
+						new VALUE.Integer(-(2n ** 62n)),
+						new VALUE.Integer(2n ** 62n),
+						new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
+					]);
+				});
+				test.test('overflows naturals properly.', () => {
+					assert.deepStrictEqual(
+						interpret_binops(['+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63']),
+						[new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n)],
+					);
+				});
+				test.test('does not underflow naturals.', () => {
+					assert.deepStrictEqual(
+						interpret_binops(['+5 - +9']),
+						[VALUE.NAT_0],
+					);
+				});
+				test.test('throws when the operation does not yield a valid number.', () => {
+					assert.throws(() => interpret_binops(['42 / 0']),      RangeError);
+					assert.throws(() => interpret_binops(['-4.0 ^ -0.5']), xjs.NaNError);
+				});
+				test.test('comparative operations.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						3   <  3
+						3   >  3
+						3   <= 3
+						3   >= 3
+						+3  <  +3
+						+3  >  +3
+						+3  <= +3
+						+3  >= +3
+						5.2 <  7.0
+						5.2 >  7.0
+						5.2 <= 7.0
+						5.2 >= 7.0
+						5   <  +9
+						5   >  +9
+						5   <= +9
+						5   >= +9
+						+5  <  9
+						+5  >  9
+						+5  <= 9
+						+5  >= 9
+						5.2 <  9
+						5.2 >  9
+						5.2 <= 9
+						5.2 >= 9
+						5   <  9.2
+						5   >  9.2
+						5   <= 9.2
+						5   >= 9.2
+						5.2 <  +9
+						5.2 >  +9
+						5.2 <= +9
+						5.2 >= +9
+						+5  <  9.2
+						+5  >  9.2
+						+5  <= 9.2
+						+5  >= 9.2
+						+3  <  3
+						+3  >  3
+						+3  <= 3
+						+3  >= 3
+						3   <  +3
+						3   >  +3
+						3   <= +3
+						3   >= +3
+						3.0 <  +3
+						3.0 >  +3
+						3.0 <= +3
+						3.0 >= +3
+						+3  <  3.0
+						+3  >  3.0
+						+3  <= 3.0
+						+3  >= 3.0
+						3.0 <  3
+						3.0 >  3
+						3.0 <= 3
+						3.0 >= 3
+						3   <  3.0
+						3   >  3.0
+						3   <= 3.0
+						3   >= 3.0
+						-2 > (+2 ^ +64 - +3)
+					`), [
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+					]);
+				});
+				test.suite('equality operations.', () => {
+					test.test('simple non-numeric types.', () => {
+						assert.deepStrictEqual(interpret_binops(extract_lines`
+							null === null
+							null ==  null
+							null === 5
+							null ==  5
+							true === 1
+							true ==  1
+							true === 1.0
+							true ==  1.0
+							true === 5.1
+							true ==  5.1
+							true === true
+							true ==  true
+							@a === @a
+							@a ==  @a
+							@a === @b
+							@a ==  @b
+							@a === \\x100
+							@a ==  \\x100
+							@a === @\'a\'
+							@a ==  @\'a\'
+							@\'a\' === @\'\\u{61}\'
+							@\'a\' ==  @\'\\u{61}\'
+							@\'\\u{61}\' === @\'\\u{61}\'
+							@\'\\u{61}\' ==  @\'\\u{61}\'
+							"" == ""
+							"a" === "a"
+							"a" ==  "a"
+							"hello\\u{20}world" === "hello world"
+							"hello\\u{20}world" ==  "hello world"
+							"a" !== "b"
+							"a" !=  "b"
+							"hello\\u{20}world" !== "hello20world"
+							"hello\\u{20}world" !=  "hello20world"
+						`), [
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+						]);
+					});
+					test.suite('numeric types.', () => {
+						test.test('for identity (`===`), always returns `false` for distinct values.', () => {
+							assert.deepStrictEqual(interpret_binops(extract_lines`
+								0   === -0
+								0.0 === -0.0
+								0   === 0.0
+								0   === -0.0
+								-0  === 0.0
+								-0  === -0.0
+								3   === 3.0
+							`), [
+								VALUE.TRUE,
+								...repeat(VALUE.FALSE, 6),
+							]);
+						});
+						test.test('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
+							assert.deepStrictEqual(interpret_binops(extract_lines`
+								0   == -0
+								0.0 == -0.0
+								0   == 0.0
+								0   == -0.0
+								-0  == 0.0
+								-0  == -0.0
+								3   == 3.0
+							`), repeat(VALUE.TRUE, 7));
+						});
+					});
+					test.test('compound types.', () => {
+						assert.deepStrictEqual(interpret_extracted_drops(`{
+							val a: anything = ();
+							val b: anything = (42,);
+							val c: anything = (x= 42);
+							val d: Object   = [];
+							val e: Object   = [42];
+							val f: Object   = [x= 42];
+							val g: Object   = {};
+							val h: Object   = {42};
+							val i: Object   = {41 -> 42};
+
+							val bb: anything = ((42,),);
+							val cc: anything = (x= (42,));
+							val hh: Object   = {(42,)};
+							val ii: Object   = {(41,) -> (42,)};
+
+							a === ();
+							b === (42,);
+							c === (x= 42);
+							d !== [];
+							e !== [42];
+							f !== [x= 42];
+							g !== {};
+							h !== {42};
+							i !== {41 -> 42};
+							a === a;
+							b === b;
+							c === c;
+							d === d;
+							e === e;
+							f === f;
+							g === g;
+							h === h;
+							i === i;
+							a == ();
+							b == (42,);
+							c == (x= 42);
+							d == [];
+							e == [42];
+							f == [x= 42];
+							g == {};
+							h == {42};
+							i == {41 -> 42};
+
+							bb === ((42,),);
+							cc === (x= (42,));
+							hh !== {(42,)};
+							ii !== {(41,) -> (42,)};
+							bb === bb;
+							cc === cc;
+							hh === hh;
+							ii === ii;
+							bb == ((42,),);
+							cc == (x= (42,));
+							hh == {(42,)};
+							ii == {(41,) -> (42,)};
+
+							b != (42, 43);
+							c != (x= 43);
+							c != (y= 42);
+							i != {41 -> 43};
+							i != {43 -> 42};
+						}`), repeat(VALUE.TRUE, 44));
+					});
+					test.test('compound value types’ constituents are compared using same operand.', () => {
+						assert.deepStrictEqual(interpret_binops(extract_lines`
+							(   42.0,)  === (   42,)
+							(   42.0,)  ==  (   42,)
+							(a= 42.0)   === (a= 42)
+							(a= 42.0)   ==  (a= 42)
+							(    0.0,)  === (   -0.0,)
+							(    0.0,)  ==  (   -0.0,)
+							(a=  0.0)   === (a= -0.0)
+							(a=  0.0)   ==  (a= -0.0)
+						`), [
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+						]);
+					});
+				});
+			});
+		});
+
+
 		test.suite('#codegen', () => {
 			test.test('Trap returns (unreachable).', () => {
 				const cg = new CodeGenerator();
@@ -859,6 +1625,7 @@ test.suite('Opcode', () => {
 			});
 		});
 	});
+
 
 
 	test.suite('Instruction', () => {

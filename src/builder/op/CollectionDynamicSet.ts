@@ -11,7 +11,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {
 	TypeName,
 	type CollectionDynamicName,
@@ -43,8 +48,8 @@ export class CollectionDynamicSet extends Instruction {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate());
+	public override validate(builder: Builder): void {
+		xjs.Array.forEachAggregated([this.collection, this.accessor, this.value], (value) => value.validate(builder));
 		switch (this.name) {
 			case TypeName.LIST: {
 				assert_instanceof(this.collection.type, TYPE.List);
@@ -61,6 +66,43 @@ export class CollectionDynamicSet extends Instruction {
 			case TypeName.MAP: {
 				assert_instanceof(this.collection.type, TYPE.Map);
 				return; // TODO: Map type generics
+			}
+		}
+	}
+
+	public override interpret(interp: Interpreter): void {
+		const base:     VALUE.Value = this.collection.interpret(interp);
+		const accessor: VALUE.Value = this.accessor.interpret(interp);
+		const newvalue: VALUE.Value = this.value.interpret(interp);
+		switch (this.name) {
+			case TypeName.LIST: {
+				assert_instanceof(base, VALUE.List);
+				try {
+					assert_instanceof(accessor, VALUE.Integer);
+				} catch {
+					assert_instanceof(accessor, VALUE.Natural);
+				}
+				return base.set(accessor.toBigInt(), newvalue);
+			}
+			case TypeName.DICT: {
+				assert_instanceof(base, VALUE.Dict);
+				try {
+					assert_instanceof(accessor, VALUE.Symbol);
+				} catch {
+					assert_instanceof(accessor, VALUE.String);
+					throw new Error('String keys for dict access are not yet supported.');
+				}
+				return base.set(accessor.id, newvalue);
+			}
+			case TypeName.SET: {
+				assert_instanceof(base, VALUE.Set);
+				return newvalue.equal(VALUE.TRUE)
+					? base.put(accessor)
+					: (assert.ok(newvalue.equal(VALUE.FALSE)), base.delete(accessor));
+			}
+			case TypeName.MAP: {
+				assert_instanceof(base, VALUE.Map);
+				return base.set(accessor, newvalue);
 			}
 		}
 	}

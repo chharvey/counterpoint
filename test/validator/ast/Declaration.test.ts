@@ -7,7 +7,6 @@ import {
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
-	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
@@ -91,7 +90,7 @@ test.suite('Declaration', () => {
 		});
 
 		test.suite('DeclarationVariable', () => {
-			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 				const goal: AST.Goal = AST.Goal.fromSource(`{
 					val     a:  int = 42;
 					val mut b:  int = 42;
@@ -114,19 +113,16 @@ test.suite('Declaration', () => {
 					isWritable:      false,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
-					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_b, {
 					isWritable:      true,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
-					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_c, {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.ANYTHING,
-					value:           null,
 				});
 			});
 			test.test('for blank identifiers, does not add to symbol table.', () => {
@@ -238,7 +234,6 @@ test.suite('Declaration', () => {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
-					value:           null,
 				});
 			});
 			test.suite('type inference.', () => {
@@ -326,34 +321,6 @@ test.suite('Declaration', () => {
 				assert.throws(() => AST.DeclarationVariable.fromSource(`
 					val x: float = 42;
 				`).typeCheck(), TypeErrorNotAssignable);
-			});
-			test.test('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
-				const {goal} = setupScript(`{
-					val immut:  (int, int, int)                   = (42, 420, 4200);
-					val 'mut':  mut [int]                         = [42, 420, 4200];
-					val mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
-				}`, {build: false});
-				const [immut, mut, mutmut] = [
-					goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar,
-					goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar,
-					goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar,
-				];
-				assert.deepStrictEqual(
-					[immut.source, immut.value],
-					['immut',      new VALUE.Tuple<VALUE.Integer>([
-						new VALUE.Integer(  42n),
-						new VALUE.Integer( 420n),
-						new VALUE.Integer(4200n),
-					])],
-				);
-				assert.deepStrictEqual(
-					[mut.source, mut.value],
-					['\'mut\'',  null],
-				);
-				return assert.deepStrictEqual(
-					[mutmut.source, mutmut.value],
-					['mutmut',      null],
-				);
 			});
 			test.test('immutable lists/dicts/sets/maps should be covariant.', () => {
 				typeCheckGoal(extract_lines`

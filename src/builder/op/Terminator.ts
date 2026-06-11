@@ -1,6 +1,7 @@
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
 import {runOnceSetter} from '../../lib/index.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {Opcode} from './Opcode.ts';
 
 
@@ -20,6 +21,12 @@ export abstract class Terminator extends Opcode {
 	public set containerLabel(label: string) {
 		this._containerLabel = label;
 	}
+
+	/**
+	 * Execute the interpreter.
+	 * @param interp an Interpreter
+	 */
+	public abstract interpret(interp: Interpreter): void;
 
 	/**
 	 * Generate assembly code.

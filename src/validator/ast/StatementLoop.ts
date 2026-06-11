@@ -42,11 +42,6 @@ export class StatementLoop extends StatementBreakable {
 
 
 	@memoizeGetter
-	public override get isFoldable(): boolean {
-		return !!this.condition.fold() && this.block.isFoldable;
-	}
-
-	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.condition.type().isBottomType || this.block.hasBottomType;
 	}

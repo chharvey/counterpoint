@@ -29,9 +29,9 @@ NAT.CONST  (VALUE.Natural) -> Value;
 FLOAT.CONST(VALUE.Float)   -> Value;
 STR.CONST  (VALUE.String)  -> Value;
 
-STR.TEMPLATE([Value*]) -> String;
-
 GET(SymbolSchemaVar|native-string) -> Value;
+
+STR.TEMPLATE([Value*]) -> String;
 
 TUPLE.NEW([Value*])                       -> Tuple;
 RECORD.NEW(Vector<native-bigint, Value>*) -> Record;
@@ -129,13 +129,13 @@ Build(String  s) := (STR.CONST   s);
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
 
-Build(SemanticConstant[type=TYPE.Null]    const) := (NULL.CONST  `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Symbol]  const) := (SYM.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Integer] const) := (INT.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Natural] const) := (NAT.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.String]  const) := (STR.CONST   `Build(ValueOf(const)~!)`);
+Build(SemanticConstant[type=TYPE.Null]    const) := (NULL.CONST  `Build(const.value)`);
+Build(SemanticConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Build(const.value)`);
+Build(SemanticConstant[type=TYPE.Symbol]  const) := (SYM.CONST   `Build(const.value)`);
+Build(SemanticConstant[type=TYPE.Integer] const) := (INT.CONST   `Build(const.value)`);
+Build(SemanticConstant[type=TYPE.Natural] const) := (NAT.CONST   `Build(const.value)`);
+Build(SemanticConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Build(const.value)`);
+Build(SemanticConstant[type=TYPE.String]  const) := (STR.CONST   `Build(const.value)`);
 
 Build(SemanticTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Build)`);
 

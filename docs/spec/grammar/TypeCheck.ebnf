@@ -51,16 +51,11 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 	7. *If* `assigned` is not *none*:
 		1. *Perform:* *Unwrap:* `TypeCheckAssign(assigned, assignee_type)`.
 	8. *If* `assignee` is not *none*:
-		1. *If* `assigned` is not *none*:
-			1. *Let* `value` be *Unwrap:* `ValueOf(assigned)`.
-		2. *Else:*
-			1. *Let* `value` be *none*.
-		3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
-		4. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-		5. *Set* `symbol.type` to `assignee_type`.
-		6. *If* `assignee_type` is not mutable and has no mutable parts *and* `decl.writable` is `false`:
+		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+		3. *Set* `symbol.type` to `assignee_type`.
+		4. *If* `assignee_type` is not mutable and has no mutable parts *and* `decl.writable` is `false`:
 			1. *Assert:* `symbol.isWritable` is `false`.
-			2. *Set* `symbol.value` to `value`.
 ;
 
 

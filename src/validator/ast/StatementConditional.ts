@@ -38,22 +38,6 @@ export class StatementConditional extends Statement {
 	}
 
 	@memoizeGetter
-	public override get isFoldable(): boolean {
-		const condition_type:   TYPE.Type = this.condition.type();
-		const condition_truthy: boolean   = condition_type.isSubtypeOf(TYPE.TRUE);
-		const condition_falsy:  boolean   = condition_type.isSubtypeOf(TYPE.FALSE);
-
-		return !!this.condition.fold() && (
-			/*
-				- `if true…`  or `unless false…`, and consequent  is foldable                    -> sufficient
-				- `if false…` or `unless true…`,  and alternative is foldable (or doesn’t exist) -> sufficient
-			*/
-			(!this.unless && condition_truthy || this.unless && condition_falsy)  && this.consequent.isFoldable ||
-			(!this.unless && condition_falsy  || this.unless && condition_truthy) && (!this.alternative || !!this.alternative.isFoldable)
-		);
-	}
-
-	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.condition.type().isBottomType || this.consequent.hasBottomType || (this.alternative?.hasBottomType ?? false);
 	}

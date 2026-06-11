@@ -1,5 +1,6 @@
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {Opcode} from './Opcode.ts';
 
 
@@ -15,6 +16,12 @@ import {Opcode} from './Opcode.ts';
  * - CollectionDynamicCopy
  */
 export abstract class Instruction extends Opcode {
+	/**
+	 * Execute the interpreter.
+	 * @param interp an Interpreter
+	 */
+	public abstract interpret(interp: Interpreter): void;
+
 	/**
 	 * Generate assembly code.
 	 * @param  cg code-generator

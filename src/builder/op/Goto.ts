@@ -1,6 +1,7 @@
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 
@@ -14,6 +15,10 @@ export class Goto extends Terminator {
 
 	public override toString(): string {
 		return super.toString(`"${ this.label }"`);
+	}
+
+	public override interpret(interp: Interpreter): void {
+		return interp.interpretNextBlock(this.label);
 	}
 
 	@memoizeMethod

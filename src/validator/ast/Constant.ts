@@ -53,32 +53,6 @@ export class Constant extends Expression {
 
 	@memoizeGetter
 	public get interpreterValue(): VALUE.Primitive {
-		return this.fold();
-	}
-
-	public override varCheck(): void {
-		super.varCheck();
-		if (
-			isSyntaxNodeType(this.start_node, 'primitive_literal') &&
-			this.start_node.children.length === 2 &&
-			isSyntaxNodeType(this.start_node.children[1], 'word')
-		) {
-			this.validator.wordNodeID(this.start_node.children[1]);
-		}
-	}
-
-	@memoizeMethod
-	public override type(): TYPE.Type {
-		return this.interpreterValue.toType();
-	}
-
-	@memoizeMethod
-	public override build(): OP.Const {
-		return new OP.Const(this.interpreterValue);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Primitive {
 		if (isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) {
 			return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
 		}
@@ -100,5 +74,26 @@ export class Constant extends Expression {
 				return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
 			}
 		}
+	}
+
+	public override varCheck(): void {
+		super.varCheck();
+		if (
+			isSyntaxNodeType(this.start_node, 'primitive_literal') &&
+			this.start_node.children.length === 2 &&
+			isSyntaxNodeType(this.start_node.children[1], 'word')
+		) {
+			this.validator.wordNodeID(this.start_node.children[1]);
+		}
+	}
+
+	@memoizeMethod
+	public override type(): TYPE.Type {
+		return this.interpreterValue.toType();
+	}
+
+	@memoizeMethod
+	public override build(): OP.Const {
+		return new OP.Const(this.interpreterValue);
 	}
 }

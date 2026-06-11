@@ -22,31 +22,37 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
-	public constructor(public readonly cases: ReadonlyMap<K, V> = new Map()) {
+	#cases: Map<K, V>;
+
+
+	public constructor(cases: ReadonlyMap<K, V> = new Map()) {
 		super();
-		const uniques = new Map<K, V>();
-		[...cases].forEach(([ant, con]) => {
-			xjs.Map.set(uniques, ant, con, language_values_identical);
+		this.#cases = new Map<K, V>();
+		cases.forEach((con, ant) => {
+			xjs.Map.set(this.#cases, ant, con, language_values_identical);
 		});
-		this.cases = uniques;
 	}
 
 	/**
 	 * @implements Value
 	 */
 	public override get isEmpty(): boolean {
-		return this.cases.size === 0;
+		return this.#cases.size === 0;
 	}
 
 	/**
 	 * @implements Collection
 	 */
 	public override get count(): bigint {
-		return BigInt(this.cases.size);
+		return BigInt(this.#cases.size);
+	}
+
+	public get cases(): Map<K, V> {
+		return new Map([...this.#cases]);
 	}
 
 	public override toString(): string {
-		return `{${ [...this.cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
+		return `{${ [...this.#cases].map(([ant, con]) => `${ ant } -> ${ con }`).join(', ') }}`;
 	}
 
 	@strictEqual
@@ -55,8 +61,8 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	@instanceOf(() => ValueMap)
 	public override equal(value: Value): boolean {
 		return (
-			this.cases.size === (value as ValueMap).cases.size &&
-			[...(value as ValueMap).cases].every(([thatant, thatcon]) => !!xjs.Map.get<Value, Value>(this.cases, thatant, language_values_equal)?.equal(thatcon))
+			this.#cases.size === (value as ValueMap).#cases.size &&
+			[...(value as ValueMap).#cases].every(([thatant, thatcon]) => !!xjs.Map.get<Value, Value>(this.#cases, thatant, language_values_equal)?.equal(thatcon))
 		);
 	}
 
@@ -66,13 +72,21 @@ class ValueMap<K extends Value = Value, V extends Value = Value> extends Collect
 	 */
 	public override toType(): TYPE.Map {
 		return new TYPE.Map(
-			TYPE.Union.all(...[...this.cases.keys()]   .map<TYPE.Type>((ant) => ant.toType())),
-			TYPE.Union.all(...[...this.cases.values()] .map<TYPE.Type>((con) => con.toType())),
+			TYPE.Union.all(...this.#cases.keys()   .map<TYPE.Type>((ant) => ant.toType())),
+			TYPE.Union.all(...this.#cases.values() .map<TYPE.Type>((con) => con.toType())),
 		);
 	}
 
 	public get(ant: Value): V | Null {
-		return xjs.Map.has<Value, V>(this.cases, ant, language_values_identical) ? xjs.Map.get<Value, V>(this.cases, ant, language_values_identical)! : NULL;
+		return xjs.Map.get<Value, V>(this.#cases, ant, language_values_identical) ?? NULL;
+	}
+
+	public set(ant: K, con: V): void {
+		this.#cases.set(ant, con);
+	}
+
+	public clear(): void {
+		this.#cases = new Map<K, V>();
 	}
 }
 export {ValueMap as Map};

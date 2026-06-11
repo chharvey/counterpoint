@@ -11,10 +11,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {
-	type VALUE,
-	TYPE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {
 	type Statement,
@@ -64,10 +61,5 @@ export class ExpressionBlock extends Expression {
 	public override build(builder: Builder): OP.Value {
 		this.block.children.slice(0, -1).forEach((stmt) => stmt.build(builder));
 		return (this.block.children.at(-1) as StatementExpression).expr!.build(builder);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		return this.block.isFoldable ? (this.block.children.at(-1) as StatementExpression).expr!.fold() : null;
 	}
 }

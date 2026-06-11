@@ -50,11 +50,6 @@ export class StatementIteration extends StatementBreakable {
 	}
 
 	@memoizeGetter
-	public override get isFoldable(): boolean {
-		return !!this.iterable.fold() && this.block.isFoldable;
-	}
-
-	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.iterable.type().isBottomType || this.block.hasBottomType;
 	}

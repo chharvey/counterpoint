@@ -1,13 +1,21 @@
 import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import type {CodeGenerator} from '../../index.ts';
+import {
+	type CodeGenerator,
+	NanErrorDivZero,
+} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -65,10 +73,10 @@ export class Binop extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
+	public override validate(builder: Builder): void {
 		const operands = [this.operand0, this.operand1] as const;
 		return xjs.Array.forEachAggregated(operands, (arg) => {
-			arg.validate();
+			arg.validate(builder);
 			switch (this.operator) {
 				case OpCode.INT_ADD: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
 				case OpCode.INT_SUB: { return assert.ok(arg.type.isSubtypeOf(TYPE.INT)); }
@@ -96,6 +104,41 @@ export class Binop extends Value {
 				case OpCode.NGT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
 			}
 		});
+	}
+
+	public override interpret(interp: Interpreter): VALUE.Value {
+		const [operand0, operand1]: [VALUE.Value, VALUE.Value] = [this.operand0.interpret(interp), this.operand1.interpret(interp)];
+		switch (this.operator) {
+			case OpCode.INT_ADD: { return (operand0 as VALUE.Integer).plus   (operand1 as VALUE.Integer); }
+			case OpCode.INT_SUB: { return (operand0 as VALUE.Integer).minus  (operand1 as VALUE.Integer); }
+			case OpCode.INT_MUL: { return (operand0 as VALUE.Integer).times  (operand1 as VALUE.Integer); }
+			case OpCode.INT_DIV: { return (operand0 as VALUE.Integer).divide (operand1 as VALUE.Integer); }
+			case OpCode.INT_EXP: { return (operand0 as VALUE.Integer).exp    (operand1 as VALUE.Integer); }
+
+			case OpCode.NAT_ADD: { return (operand0 as VALUE.Natural).plus   (operand1 as VALUE.Natural); }
+			case OpCode.NAT_SUB: { return (operand0 as VALUE.Natural).minus  (operand1 as VALUE.Natural); }
+			case OpCode.NAT_MUL: { return (operand0 as VALUE.Natural).times  (operand1 as VALUE.Natural); }
+			case OpCode.NAT_DIV: { return (operand0 as VALUE.Natural).divide (operand1 as VALUE.Natural); }
+			case OpCode.NAT_EXP: { return (operand0 as VALUE.Natural).exp    (operand1 as VALUE.Natural); }
+
+			case OpCode.FLOAT_ADD: { return (operand0 as VALUE.Float).plus   (operand1 as VALUE.Float); }
+			case OpCode.FLOAT_SUB: { return (operand0 as VALUE.Float).minus  (operand1 as VALUE.Float); }
+			case OpCode.FLOAT_MUL: { return (operand0 as VALUE.Float).times  (operand1 as VALUE.Float); }
+			case OpCode.FLOAT_DIV: { return (operand0 as VALUE.Float).divide (operand1 as VALUE.Float); }
+			case OpCode.FLOAT_EXP: { return (operand0 as VALUE.Float).exp    (operand1 as VALUE.Float); }
+
+			case OpCode.LT:  { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.GT:  { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
+			case OpCode.LE:  { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).equal(operand1) || (operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.GE:  { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).equal(operand0) || (operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
+			case OpCode.NLT: { return VALUE.Boolean.fromBoolean(!(operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.NGT: { return VALUE.Boolean.fromBoolean(!(operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
+
+			case OpCode.ID:  { return VALUE.Boolean.fromBoolean(operand0.identical(operand1)); }
+			case OpCode.EQ:  { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
+			case OpCode.NID: { return VALUE.Boolean.fromBoolean(!operand0.identical(operand1)); }
+			case OpCode.NEQ: { return VALUE.Boolean.fromBoolean(!operand0.equal(operand1)); }
+		}
 	}
 
 	@memoizeMethod
@@ -136,7 +179,7 @@ export class Binop extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: CodeGenerator, Operator: any, t0: any, t1: any, arg0: any, arg1: any): number {
+	#optimizationStrategy(this: any, cg: CodeGenerator, Operator: any, t0: any, t1: any, arg0: any, arg1: any, v0: any, v1: any): number {
 		type Local = any;
 		const {mod} = cg;
 		let bothInts: any;
@@ -145,6 +188,9 @@ export class Binop extends Value {
 		let bigint_to_i64: any;
 
 		// Operator Addition
+		if (this.operator === Operator.ADD && (v0 as VALUE.Number).eq0()) {
+			return v1;
+		}
 		if (this.operator === Operator.ADD) {
 			const local0: Local = cg.newLocal(arg0);
 			const teeer         = cg.newVect(local0.tee());
@@ -166,6 +212,9 @@ export class Binop extends Value {
 		}
 
 		// Operator Multiplication
+		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1()) {
+			return v1;
+		}
 		if (this.operator === Operator.MUL) {
 			const local0: Local = cg.newLocal(arg0);
 			const teeer         = cg.newVect(local0.tee());
@@ -192,6 +241,11 @@ export class Binop extends Value {
 					),
 				),
 			);
+		}
+
+		// Operator Division
+		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {
+			throw new NanErrorDivZero(this.operand1);
 		}
 
 		// Operator Equality

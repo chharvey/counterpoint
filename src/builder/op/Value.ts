@@ -1,10 +1,14 @@
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {
 	Temp,
 	Builder,
 } from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {
 	type ValueTac,
 	Get,
@@ -75,6 +79,13 @@ export abstract class Value extends Opcode {
 		builder.pushInstruction(new Decl(temp));
 		return new Get(temp);
 	}
+
+	/**
+	 * Execute the interpreter.
+	 * @param   interp an Interpreter
+	 * @returns a runtime value in the interpreter
+	 */
+	public abstract interpret(interp: Interpreter): VALUE.Value;
 
 	/**
 	 * Generate assembly code.

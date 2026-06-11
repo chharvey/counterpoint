@@ -22,6 +22,7 @@ type PartialCplConfig = Partial<{
 export enum Command {
 	HELP,
 	VERSION,
+	INTERPRET,
 	COMPILE,
 	DEV,
 	RUN,
@@ -58,7 +59,7 @@ type CustomArgsType = {
  */
 export class Cli {
 	/** Text to print on --help. */
-	public static readonly HELPTEXT: string = xjs.String.dedent`
+	private static readonly HELPTEXT: string = xjs.String.dedent`
 		Usage: cplc <command> <filepath> [<options>]
 
 		Parse, analyze, and compile a Counterpoint source code file.
@@ -67,6 +68,9 @@ export class Cli {
 
 		Examples:
 		\`\`\`
+		# Interpret \`test.cpls\`:
+		$ cplc interpret test.cpls
+
 		# Compile \`test.cpls\` to \`test.wasm\`:
 		$ cplc compile test.cpls
 
@@ -83,6 +87,7 @@ export class Cli {
 		Commands:
 		help                           Print this help message.
 		version                        Print the version of Counterpoint currently installed.
+		i, interpret                   Interpret and execute a Counterpoint file directly from source.
 		c, compile                     Compile a Counterpoint file into a \`*.wasm\` executable binary.
 		d, dev                         Compile a Counterpoint file into a \`*.wat\` text file for inspection.
 		r, run                         Execute a compiled binary file. Ignore the \`--out\` option.
@@ -98,7 +103,7 @@ export class Cli {
 	`.trimStart();
 
 	/** Text to print on --config. */
-	public static readonly CONFIGTEXT: string = xjs.String.dedent`
+	private static readonly CONFIGTEXT: string = xjs.String.dedent`
 		The following options set individual language features and compiler options.
 		These options will override those in the configuration file provided by \`--project\`.
 
@@ -162,14 +167,16 @@ export class Cli {
 			(this.argv.help || this.argv.config) ? Command.HELP :
 			(this.argv.version) ? Command.VERSION :
 			new Map<string, Command>([
-				['help',    Command.HELP],
-				['version', Command.VERSION],
-				['compile', Command.COMPILE],
-				['c',       Command.COMPILE],
-				['dev',     Command.DEV],
-				['d',       Command.DEV],
-				['run',     Command.RUN],
-				['r',       Command.RUN],
+				['help',      Command.HELP],
+				['version',   Command.VERSION],
+				['interpret', Command.INTERPRET],
+				['i',         Command.INTERPRET],
+				['compile',   Command.COMPILE],
+				['c',         Command.COMPILE],
+				['dev',       Command.DEV],
+				['d',         Command.DEV],
+				['run',       Command.RUN],
+				['r',         Command.RUN],
 			]).get(this.argv._[0]) ?? Command.HELP
 		);
 		if (this.argv.out === '' || this.argv.project === '') {
@@ -223,6 +230,25 @@ export class Cli {
 			`);
 		}
 		return path.join(cwd, path.normalize(this.argv._[1]));
+	}
+
+	/**
+	 * Run the command `interpret`.
+	 * @param cwd the current working directory, `process.cwd()`
+	 */
+	public async interpret(cwd: string): Promise<[string, () => void]> {
+		const inputfilepath: string = this.inputPath(cwd);
+		const program = new Program(...await Promise.all([
+			fs.promises.readFile(inputfilepath, 'utf8'),
+			this.computeConfig(cwd),
+		]));
+		return [
+			xjs.String.dedent`
+				Interpreting………
+				Source file: ${ inputfilepath }
+			`.trimStart(),
+			() => program.interpret(),
+		];
 	}
 
 	/**
