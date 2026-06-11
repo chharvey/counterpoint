@@ -463,3 +463,109 @@ None! Interpret((MAP.SET `obj` `accessor` `v`)) :=
 	4. *Assert:* `base` is an instance of `Map`.
 	5. Set the consequent at antecedent `ant` in `base` to `con`.
 ;
+
+None! Interpret((LIST.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `List`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the items in `src`.
+		2. *For index* `i` in `items`:
+			1. Set the item at index `i` in `dest` to `items[i]`.
+	5. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For index* `i` in `elems`:
+			1. Set the item at index `i` in `dest` to `elems[i]`.
+	6. *Else:*
+		1. *Throw:* a new TypeError.
+;
+
+None! Interpret((DICT.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `Dict`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `items`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. *Assert:* `tup_items.0` is an instance of `Symbol`.
+			5. *Let* `key` be the name of `tup_items.0`.
+			6. Set the value at key `key` in `dest` to `tup_items.1`.
+	5. *Else If* `src` is an instance of `Record` *or* `src` is an instance of `Dict`:
+		1. *Let* `props` be a Schema of the properties in `src`.
+		2. *For key* `key` in `props`:
+			1. Set the value at key `key` in `dest` to `props[key]`.
+	6. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `elems`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. *Assert:* `tup_items.0` is an instance of `Symbol`.
+			5. *Let* `key` be the name of `tup_items.0`.
+			6. Set the value at key `key` in `dest` to `tup_items.1`.
+	7. *Else If* `src` is an instance of `Map`:
+		1. *Let* `cases` be a Sequence of the cases in `src`.
+		2. *For each* `item` in `cases`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. *Assert:* `tup_items.0` is an instance of `Symbol`.
+			5. *Let* `key` be the name of `tup_items.0`.
+			6. Set the value at key `key` in `dest` to `tup_items.1`.
+	8. *Else:*
+		1. *Throw:* a new TypeError.
+;
+
+None! Interpret((SET.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `Set`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the items in `src`.
+		2. *For each* `item` in `items`:
+			1. *If*: `item` is not in `dest`:
+				1. Put `item` in `dest`.
+			2. *Else:*
+				1. Continue.
+	5. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `items`:
+			1. *If*: `item` is not in `dest`:
+				1. Put `item` in `dest`.
+			2. *Else:*
+				1. Continue.
+	6. *Else:*
+		1. *Throw:* a new TypeError.
+;
+
+None! Interpret((MAP.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `Set`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `items`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. Set the consequent at antecedent `tup_items.0` in `dest` to `tup_items.1`.
+	5. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `elems`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. Set the consequent at antecedent `tup_items.0` in `dest` to `tup_items.1`.
+	6. *Else If* `src` is an instance of `MAP`:
+		1. *Let* `cases` be a Sequence of the cases in `src`.
+		2. *For each* `item` in `cases`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. Set the consequent at antecedent `tup_items.0` in `dest` to `tup_items.1`.
+	7. *Else:*
+		1. *Throw:* a new TypeError.
+;

@@ -20,9 +20,7 @@ export abstract class Instruction extends Opcode {
 	 * Execute the interpreter.
 	 * @returns a runtime value in the interpreter
 	 */
-	public interpret(_interp: Interpreter): void { // TODO: abstractify this method
-		throw new Error(`\`${ this.constructor.name }#interpret\` is not yet supported.`);
-	}
+	public abstract interpret(interp: Interpreter): void;
 
 	/**
 	 * Generate assembly code.
