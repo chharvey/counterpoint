@@ -17,10 +17,10 @@ export class Goto extends Terminator {
 	}
 
 	@memoizeMethod
-	public override codegen(_: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+	public override codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void {
 		relooper.addBranch(
-			blockrefs.get(this._containerLabel!)!,
-			blockrefs.get(this.label)!,
+			cg.getBlockRef(this._containerLabel!),
+			cg.getBlockRef(this.label),
 			0, // unconditional
 			0,
 		);

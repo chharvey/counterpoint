@@ -67,6 +67,9 @@ export class CodeGenerator {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
+	/** A map containing code-generated `CfgNode`s. */
+	readonly #blockRefs = new Map<string, binaryen.RelooperBlockRef>();
+
 	/** The Binaryen module holding the generated code. */
 	public readonly mod: BinaryenModuleUpdates;
 
@@ -144,6 +147,27 @@ export class CodeGenerator {
 	 */
 	public getAllLocals(): Local[] {
 		return [...this.#locals];
+	}
+
+	/**
+	 * Register a new code-gen’d block.
+	 * @param label the block label
+	 * @param block_ref the code-generated block
+	 */
+	public registerBlockRef(label: string, block_ref: binaryen.RelooperBlockRef): void {
+		this.#blockRefs.set(label, block_ref);
+	}
+
+	/**
+	 * Retrieve a code-gen’d block by label.
+	 * @param label the block label
+	 * @returns     the code-generated block
+	 */
+	public getBlockRef(label: string): binaryen.RelooperBlockRef {
+		if (!this.#blockRefs.has(label)) {
+			throw new Error(`BlockRef with label \`${ label }\` not found in CodeGenerator.`);
+		}
+		return this.#blockRefs.get(label)!;
 	}
 
 	/**

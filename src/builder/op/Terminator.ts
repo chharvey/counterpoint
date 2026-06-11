@@ -26,7 +26,6 @@ export abstract class Terminator extends Opcode {
 	 * Creates an edge from this Terminator’s containing block to a destination block.
 	 * @param cg        code-generator
 	 * @param relooper  Binaryen Relooper for constructing Binaryen `blocks`
-	 * @param blockrefs code-generated `CfgNode`s
 	 */
-	public abstract codegen(cg: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void;
+	public abstract codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void;
 }
