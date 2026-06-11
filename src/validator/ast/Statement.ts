@@ -39,9 +39,6 @@ export abstract class Statement extends AstNode implements Foldable, Buildable {
 
 
 	/** @implements Foldable */
-	public abstract get isFoldable(): boolean;
-
-	/** @implements Foldable */
 	public abstract get hasBottomType(): boolean;
 
 	/**

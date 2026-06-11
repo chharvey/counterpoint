@@ -54,12 +54,6 @@ export class Block extends AstNode implements Foldable, Buildable {
 
 	/** @implements Foldable */
 	@memoizeGetter
-	public get isFoldable(): boolean {
-		return this.children.every((stmt) => stmt.isFoldable);
-	}
-
-	/** @implements Foldable */
-	@memoizeGetter
 	public get hasBottomType(): boolean {
 		return this.children.some((c) => c.hasBottomType);
 	}

@@ -68,6 +68,6 @@ export class ExpressionBlock extends Expression {
 
 	@memoizeMethod
 	public override fold(): VALUE.Value | null {
-		return this.block.isFoldable ? (this.block.children.at(-1) as StatementExpression).expr!.fold() : null;
+		return null;
 	}
 }

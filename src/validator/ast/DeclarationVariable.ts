@@ -107,30 +107,6 @@ export class DeclarationVariable extends Statement {
 	}
 
 	@memoizeGetter
-	public override get isFoldable(): boolean {
-		/*
-		 * Foldable cases:
-		 * - `val _:        T = assigned_foldable;`
-		 * - `val assignee: T = assigned_foldable;`
-		 *
-		 * Non-Foldable cases:
-		 * - `val mut assignee?: T;`
-		 * - `val mut assignee:  T = assigned_foldable;`
-		 * - `val     _:         T = assigned_non_foldable;`
-		 * - `val     assignee:  T = assigned_non_foldable;`
-		 * - `val mut assignee:  T = assigned_non_foldable;`
-		 *
-		 * Syntactically impossible cases (for completion):
-		 * - `val _?:        T;`
-		 * - `val assignee?: T;`
-		 * - `val mut _?:    T;`
-		 * - `val mut _:     T = assigned_foldable;`
-		 * - `val mut _:     T = assigned_non_foldable;`
-		 */
-		return !!this.assigned?.fold() && (!this.assignee || !this.writable);
-	}
-
-	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.assigned?.type().isBottomType ?? false;
 	}

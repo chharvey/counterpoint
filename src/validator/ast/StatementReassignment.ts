@@ -7,7 +7,6 @@ import {
 } from '../../index.ts';
 import {
 	assert_instanceof,
-	noopGetter,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../lib/index.ts';
@@ -39,11 +38,6 @@ export class StatementReassignment extends Statement {
 		public readonly assigned: Expression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
-	}
-
-	@noopGetter(memoizeGetter)
-	public override get isFoldable(): boolean {
-		return false;
 	}
 
 	@memoizeGetter

@@ -42,11 +42,6 @@ export class StatementClaim extends Statement {
 	}
 
 	@noopGetter(memoizeGetter)
-	public override get isFoldable(): boolean {
-		return true;
-	}
-
-	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
 	}

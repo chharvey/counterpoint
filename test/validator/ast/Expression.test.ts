@@ -786,54 +786,5 @@ test.suite('Expression', () => {
 				assertEqualTypes((stmts[1] as AST.DeclarationVariable).assigned!.type(), TYPE.INT);
 			});
 		});
-
-
-		test.suite('#fold', () => {
-			test.test('returns null if the block is not foldable.', () => {
-				assert.strictEqual(((setupScript(`{
-					val mut x: int = 42;
-					val z: int = 69;
-					val mut y: int | null = {
-						x;
-						z;
-					};
-					x;
-					y;
-				}`, {build: false}).stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock).fold(), null);
-			});
-			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
-				const {stmts} = setupScript(`{
-					val x: int = 42;
-					val z: int = 69;
-					val y: int | null = {
-						x;
-						val w: int = x;
-						w;
-						;
-						z;
-					};
-					x;
-					y;
-				}`, {build: false});
-				const block_expression = (stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock;
-				assert.strictEqual(
-					block_expression.fold(),
-					(block_expression.block.children.at(-1) as AST.StatementExpression).expr!.fold(),
-				);
-				return assert.deepStrictEqual(
-					(stmts[4] as AST.StatementExpression).expr!.fold(),
-					new VALUE.Integer(69n),
-				);
-			});
-			test.test('sanity check.', () => {
-				assert.deepStrictEqual(
-					(setupScript(`{
-						val x: int = 42 - { 42; 69; };
-						x;
-					}`, {build: false}).stmts[1] as AST.StatementExpression).expr!.fold(),
-					new VALUE.Integer(42n - 69n),
-				);
-			});
-		});
 	});
 });
