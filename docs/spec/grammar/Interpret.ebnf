@@ -383,6 +383,28 @@ Boolean! Interpret((NGT `v0` `v1`)) :=
 	2. *Return:* the logical negation of `gt`.
 ;
 
+Boolean! Interpret((ID `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Return:* `Identical(v0, v1)`.
+;
+
+Boolean! Interpret((EQ `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Return:* `Equal(v0, v1)`.
+;
+
+Boolean! Interpret((NID `v0` `v1`)) :=
+	1. *Let* `id` be the result of performing the steps listed under «Interpret((ID `v0` `v1`))»
+	2. *Return:* the logical negation of `id`.
+;
+
+Boolean! Interpret((NEQ `v0` `v1`)) :=
+	1. *Let* `eq` be the result of performing the steps listed under «Interpret((EQ `v0` `v1`))»
+	2. *Return:* the logical negation of `eq`.
+;
+
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;

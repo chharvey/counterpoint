@@ -597,6 +597,192 @@ test.suite('Opcode', () => {
 						VALUE.TRUE,
 					]);
 				});
+				test.suite('equality operations.', () => {
+					test.test('simple non-numeric types.', () => {
+						assert.deepStrictEqual(interpret_binops(extract_lines`
+							null === null
+							null ==  null
+							null === 5
+							null ==  5
+							true === 1
+							true ==  1
+							true === 1.0
+							true ==  1.0
+							true === 5.1
+							true ==  5.1
+							true === true
+							true ==  true
+							@a === @a
+							@a ==  @a
+							@a === @b
+							@a ==  @b
+							@a === \\x100
+							@a ==  \\x100
+							@a === @\'a\'
+							@a ==  @\'a\'
+							@\'a\' === @\'\\u{61}\'
+							@\'a\' ==  @\'\\u{61}\'
+							@\'\\u{61}\' === @\'\\u{61}\'
+							@\'\\u{61}\' ==  @\'\\u{61}\'
+							"" == ""
+							"a" === "a"
+							"a" ==  "a"
+							"hello\\u{20}world" === "hello world"
+							"hello\\u{20}world" ==  "hello world"
+							"a" !== "b"
+							"a" !=  "b"
+							"hello\\u{20}world" !== "hello20world"
+							"hello\\u{20}world" !=  "hello20world"
+						`), [
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+							VALUE.TRUE,
+						]);
+					});
+					test.suite('numeric types.', () => {
+						test.test('for identity (`===`), always returns `false` for distinct values.', () => {
+							assert.deepStrictEqual(interpret_binops(extract_lines`
+								0   === -0
+								0.0 === -0.0
+								0   === 0.0
+								0   === -0.0
+								-0  === 0.0
+								-0  === -0.0
+								3   === 3.0
+							`), [
+								VALUE.TRUE,
+								...repeat(VALUE.FALSE, 6),
+							]);
+						});
+						test.test('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
+							assert.deepStrictEqual(interpret_binops(extract_lines`
+								0   == -0
+								0.0 == -0.0
+								0   == 0.0
+								0   == -0.0
+								-0  == 0.0
+								-0  == -0.0
+								3   == 3.0
+							`), repeat(VALUE.TRUE, 7));
+						});
+					});
+					test.test('compound types.', () => {
+						assert.deepStrictEqual(interpret_extracted_drops(`{
+							val a: anything = ();
+							val b: anything = (42,);
+							val c: anything = (x= 42);
+							val d: Object   = [];
+							val e: Object   = [42];
+							val f: Object   = [x= 42];
+							val g: Object   = {};
+							val h: Object   = {42};
+							val i: Object   = {41 -> 42};
+
+							val bb: anything = ((42,),);
+							val cc: anything = (x= (42,));
+							val hh: Object   = {(42,)};
+							val ii: Object   = {(41,) -> (42,)};
+
+							a === ();
+							b === (42,);
+							c === (x= 42);
+							d !== [];
+							e !== [42];
+							f !== [x= 42];
+							g !== {};
+							h !== {42};
+							i !== {41 -> 42};
+							a === a;
+							b === b;
+							c === c;
+							d === d;
+							e === e;
+							f === f;
+							g === g;
+							h === h;
+							i === i;
+							a == ();
+							b == (42,);
+							c == (x= 42);
+							d == [];
+							e == [42];
+							f == [x= 42];
+							g == {};
+							h == {42};
+							i == {41 -> 42};
+
+							bb === ((42,),);
+							cc === (x= (42,));
+							hh !== {(42,)};
+							ii !== {(41,) -> (42,)};
+							bb === bb;
+							cc === cc;
+							hh === hh;
+							ii === ii;
+							bb == ((42,),);
+							cc == (x= (42,));
+							hh == {(42,)};
+							ii == {(41,) -> (42,)};
+
+							b != (42, 43);
+							c != (x= 43);
+							c != (y= 42);
+							i != {41 -> 43};
+							i != {43 -> 42};
+						}`), repeat(VALUE.TRUE, 44));
+					});
+					test.test('compound value types’ constituents are compared using same operand.', () => {
+						assert.deepStrictEqual(interpret_binops(extract_lines`
+							(   42.0,)  === (   42,)
+							(   42.0,)  ==  (   42,)
+							(a= 42.0)   === (a= 42)
+							(a= 42.0)   ==  (a= 42)
+							(    0.0,)  === (   -0.0,)
+							(    0.0,)  ==  (   -0.0,)
+							(a=  0.0)   === (a= -0.0)
+							(a=  0.0)   ==  (a= -0.0)
+						`), [
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+						]);
+					});
+				});
 			});
 		});
 
