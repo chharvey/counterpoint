@@ -8,6 +8,7 @@ import {
 } from '../lib/index.ts';
 import type {OP} from './index.ts';
 import type {Builder} from './Builder.ts';
+import type {Interpreter} from './Interpreter.ts';
 
 
 
@@ -57,6 +58,11 @@ export class CfgNode {
 
 		assert.ok(this.#terminator, 'Block should already be terminated.');
 		return this.#terminator.validate(builder);
+	}
+
+	public interpret(interp: Interpreter): void {
+		this.#instructions.forEach((instr) => instr.interpret(interp));
+		return this.#terminator!.interpret(interp);
 	}
 
 	@memoizeMethod

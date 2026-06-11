@@ -82,6 +82,7 @@ export abstract class Value extends Opcode {
 
 	/**
 	 * Execute the interpreter.
+	 * @param   interp an Interpreter
 	 * @returns a runtime value in the interpreter
 	 */
 	public abstract interpret(interp: Interpreter): VALUE.Value;

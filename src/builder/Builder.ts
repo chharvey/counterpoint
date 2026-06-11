@@ -5,6 +5,7 @@ import type {CodeGenerator} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
+import type {Interpreter} from './Interpreter.ts';
 import {CfgNode} from './CfgNode.ts';
 import {OP} from './index.ts';
 
@@ -113,6 +114,12 @@ export class Builder {
 	public validate(): void {
 		assert.ok(!this.currentBlock, 'Should not validate Builder with active block set. Try calling `Builder#terminateBlock` first.');
 		return xjs.Array.forEachAggregated(this.#blocks, (block) => block.validate(this));
+	}
+
+	public interpret(interp: Interpreter): void {
+		assert.ok(!this.currentBlock, 'Should not interpret Builder with active block set. Try calling `Builder#terminateBlock` first.');
+		this.#blocks.forEach((block) => interp.registerBlock(block));
+		return this.#blocks[0]?.interpret(interp);
 	}
 
 	public codegen(cg: CodeGenerator): binaryen.ExpressionRef {

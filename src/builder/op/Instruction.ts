@@ -18,7 +18,7 @@ import {Opcode} from './Opcode.ts';
 export abstract class Instruction extends Opcode {
 	/**
 	 * Execute the interpreter.
-	 * @returns a runtime value in the interpreter
+	 * @param interp an Interpreter
 	 */
 	public abstract interpret(interp: Interpreter): void;
 

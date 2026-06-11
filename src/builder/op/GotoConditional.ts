@@ -5,8 +5,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 import type {Value} from './Value.ts';
@@ -39,6 +43,15 @@ export class GotoConditional extends Terminator {
 	public override validate(builder: Builder): void {
 		this.condition.validate(builder);
 		return assert.ok(this.condition.type.isSubtypeOf(TYPE.BOOL));
+	}
+
+	public override interpret(interp: Interpreter): void {
+		const condition: VALUE.Value = this.condition.interpret(interp);
+		return interp.interpretNextBlock((
+			condition.equal(VALUE.TRUE)  ? this.labelIfTrue :
+			condition.equal(VALUE.FALSE) ? this.labelIfFalse :
+			assert.fail(new TypeError('Expected condition of a `GotoConditional` to be of type `Boolean`.'))
+		));
 	}
 
 	@memoizeMethod

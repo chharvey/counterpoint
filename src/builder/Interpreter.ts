@@ -1,11 +1,14 @@
 import type {VALUE} from '../typer/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from './Builder.ts';
+import type {CfgNode} from './CfgNode.ts';
 
 
 
 export class Interpreter {
 	readonly #symbolTable = new Map<SymbolSchemaVar | Temp, VALUE.Value>();
+
+	readonly #blocks = new Map<string, CfgNode>();
 
 
 	public setLocalValue(local: SymbolSchemaVar | Temp, value: VALUE.Value): void {
@@ -14,5 +17,16 @@ export class Interpreter {
 
 	public getLocalValue(local: SymbolSchemaVar | Temp): VALUE.Value | undefined {
 		return this.#symbolTable.get(local);
+	}
+
+	public registerBlock(block: CfgNode): void {
+		this.#blocks.set(block.label, block);
+	}
+
+	public interpretNextBlock(label: string): void {
+		if (!this.#blocks.has(label)) {
+			throw new Error(`CfgNode with label \`${ label }\` not found in Interpreter.`);
+		}
+		return this.#blocks.get(label)!.interpret(this);
 	}
 }
