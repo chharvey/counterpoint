@@ -34,7 +34,7 @@
     "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
     "prebuild": "npm run compile && npm run generate && npm run test",
-    "build": "prebuildify --napi --strip",
+    "build": "prebuildify --napi --strip --target 22.22.0",
     "install": "node-gyp-build"
   },
   "dependencies": {
@@ -55,5 +55,8 @@
     "tree-sitter-cli": "^0.26.0",
     "tsx": "^4.19.3",
     "typescript": "~5.9.0"
+  },
+  "engines": {
+    "node": "^22.22"
   }
 }
