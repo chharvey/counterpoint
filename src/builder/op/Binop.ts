@@ -10,7 +10,7 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {
-	type VALUE,
+	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
 import {drop_then} from './utils-private.ts';
@@ -126,6 +126,13 @@ export class Binop extends Value {
 			case OpCode.FLOAT_MUL: { return (operand0 as VALUE.Float).times  (operand1 as VALUE.Float); }
 			case OpCode.FLOAT_DIV: { return (operand0 as VALUE.Float).divide (operand1 as VALUE.Float); }
 			case OpCode.FLOAT_EXP: { return (operand0 as VALUE.Float).exp    (operand1 as VALUE.Float); }
+
+			case OpCode.LT:  { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.GT:  { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
+			case OpCode.LE:  { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).equal(operand1) || (operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.GE:  { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).equal(operand0) || (operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
+			case OpCode.NLT: { return VALUE.Boolean.fromBoolean(!(operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.NGT: { return VALUE.Boolean.fromBoolean(!(operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
 		}
 		throw new Error('TODO: WIP');
 	}

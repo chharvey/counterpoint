@@ -337,6 +337,52 @@ Float! Interpret((FLOAT.EXP `v0` `v1`)) :=
 	1. *Perform:* the steps listed under «Interpret((INT.EXP `v0` `v1`))».
 ;
 
+Boolean! Interpret((LT `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v0` is strictly less than `v1`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((GT `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v1` is strictly less than `v0`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((LE `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v0` is equal to `v1` *or* `v0` is strictly less than `v1`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((GE `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v1` is equal to `v0` *or* `v1` is strictly less than `v0`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((NLT `v0` `v1`)) :=
+	1. *Let* `lt` be the result of performing the steps listed under «Interpret((LT `v0` `v1`))»
+	2. *Return:* the logical negation of `lt`.
+;
+
+Boolean! Interpret((NGT `v0` `v1`)) :=
+	1. *Let* `gt` be the result of performing the steps listed under «Interpret((GT `v0` `v1`))»
+	2. *Return:* the logical negation of `gt`.
+;
+
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;

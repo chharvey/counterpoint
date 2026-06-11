@@ -470,6 +470,133 @@ test.suite('Opcode', () => {
 					assert.throws(() => interpret_binops(['42 / 0']),      RangeError);
 					assert.throws(() => interpret_binops(['-4.0 ^ -0.5']), xjs.NaNError);
 				});
+				test.test('comparative operations.', () => {
+					assert.deepStrictEqual(interpret_binops(extract_lines`
+						3   <  3
+						3   >  3
+						3   <= 3
+						3   >= 3
+						+3  <  +3
+						+3  >  +3
+						+3  <= +3
+						+3  >= +3
+						5.2 <  7.0
+						5.2 >  7.0
+						5.2 <= 7.0
+						5.2 >= 7.0
+						5   <  +9
+						5   >  +9
+						5   <= +9
+						5   >= +9
+						+5  <  9
+						+5  >  9
+						+5  <= 9
+						+5  >= 9
+						5.2 <  9
+						5.2 >  9
+						5.2 <= 9
+						5.2 >= 9
+						5   <  9.2
+						5   >  9.2
+						5   <= 9.2
+						5   >= 9.2
+						5.2 <  +9
+						5.2 >  +9
+						5.2 <= +9
+						5.2 >= +9
+						+5  <  9.2
+						+5  >  9.2
+						+5  <= 9.2
+						+5  >= 9.2
+						+3  <  3
+						+3  >  3
+						+3  <= 3
+						+3  >= 3
+						3   <  +3
+						3   >  +3
+						3   <= +3
+						3   >= +3
+						3.0 <  +3
+						3.0 >  +3
+						3.0 <= +3
+						3.0 >= +3
+						+3  <  3.0
+						+3  >  3.0
+						+3  <= 3.0
+						+3  >= 3.0
+						3.0 <  3
+						3.0 >  3
+						3.0 <= 3
+						3.0 >= 3
+						3   <  3.0
+						3   >  3.0
+						3   <= 3.0
+						3   >= 3.0
+						-2 > (+2 ^ +64 - +3)
+					`), [
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+					]);
+				});
 			});
 		});
 
