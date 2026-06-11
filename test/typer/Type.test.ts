@@ -885,14 +885,14 @@ test.suite('Type', () => {
 			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
 		});
 		test.test('built-in types do not equal unit types of their canonical values.', () => {
-			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),       'bool  != false');
-			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),        'bool  != true');
-			assert.ok(!TYPE.SYM   .equals(TYPE.SYM_NOTHING), 'sym   != @nothing');
-			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),     'int   != 0');
-			assert.ok(!TYPE.INT   .equals(typeUnit(1n)),     'int   != 1');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),    'float != 0.0');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(-0.0)),   'float != -0.0');
-			assert.ok(!TYPE.STR   .equals(typeUnit('')),     'str   != ""');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),                       'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),                        'bool  != true');
+			assert.ok(!TYPE.SYM   .equals(typeUnit(Symbol(0x100), 'hello')), 'sym   != @hello');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),                     'int   != 0');
+			assert.ok(!TYPE.INT   .equals(typeUnit(1n)),                     'int   != 1');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),                    'float != 0.0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(-0.0)),                   'float != -0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),                     'str   != ""');
 
 			assert.ok(!TYPE.INT  .equals(typeUnit(0n) .union(typeUnit(1n))),   'int   != 0   | 1');
 			assert.ok(!TYPE.FLOAT.equals(typeUnit(0.0).union(typeUnit(-0.0))), 'float != 0.0 | -0.0');

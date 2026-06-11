@@ -10,13 +10,13 @@ import {
 
 test.suite('Validator', () => {
 	test.suite('.cookTokenKeyword', () => {
-		test.test('assigns values 0x80n–0x100n to reserved keywords.', () => {
-			const cooked: bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
-			const expected: bigint[] = [...new Array<undefined>(128)].map((_, i) => BigInt(i + 128)).slice(0, KEYWORDS.length);
+		test.test('assigns values 0x40n–0x80n to reserved keywords.', () => {
+			const cooked:   readonly bigint[] = KEYWORDS.map((k) => Validator.cookTokenKeyword(k));
+			const expected: readonly bigint[] = Array.from(new Array<undefined>(0x80 - 0x40), (_, i) => BigInt(i + 0x40)).slice(0, KEYWORDS.length);
 			assert.deepStrictEqual(cooked, expected);
 			cooked.forEach((value) => {
-				assert.ok(0x80n <= value, 'cooked value should be >= 0x80n.');
-				assert.ok(value < 0x100n, 'cooked value should be < 0x100n.');
+				assert.ok(0x40n <= value, 'cooked value should be >= 0x40n.');
+				assert.ok(value <  0x80n, 'cooked value should be <  0x80n.');
 			});
 		});
 	});

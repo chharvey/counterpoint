@@ -20,8 +20,8 @@ import {
 import {
 	SymbolKind,
 	type SymbolSchema,
-	SymbolSchemaVar,
 	SymbolSchemaType,
+	SymbolSchemaVar,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
