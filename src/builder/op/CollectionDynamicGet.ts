@@ -71,7 +71,7 @@ export class CollectionDynamicGet extends Value {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
-		const base: VALUE.Value = this.collection.interpret(interp);
+		const base:     VALUE.Value = this.collection.interpret(interp);
 		const accessor: VALUE.Value = this.accessor.interpret(interp);
 		switch (this.name) {
 			case TypeName.LIST: {

@@ -416,3 +416,50 @@ None! Interpret((DECL `id` `type` `v`)) :=
 None! Interpret((SET `id` `v`)) :=
 	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
 ;
+
+None! Interpret((LIST.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `index` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `item` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `List`.
+	5. *Assert:* `index` is an instance of `Integer` *or* `index` is an instance of `Natural`.
+	6. Set the item at index `index` in `base` to `item`.
+;
+
+None! Interpret((DICT.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `key` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `value` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `Dict`.
+	5. *Assert:* `key` is an instance of `Symbol` *or* `key` is an instance of `String`.
+	6. *If* `key` is an instance of `String`:
+		1. *Note:* This step will be updated once string keys are supported.
+		2. *Throw:* a new Error "String keys for dict access are not yet supported."
+	7. Set the value at key `key` in `base` to `value`.
+;
+
+None! Interpret((SET.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `elem` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `put` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `Set`.
+	5. *If* `Identical(put, true)` is `true`:
+		1. *If*: `elem` is not in `base`:
+			1. Put `elem` in `base`.
+		2. *Else:*
+			1. *Return.*
+	6. *Else:*
+		1. *Assert:* `Identical(put, false)` is `true`.
+		2. *If*: `elem` is in `base`:
+			1. Delete `elem` from `base`.
+		3. *Else:*
+			1. *Return.*
+;
+
+None! Interpret((MAP.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `ant` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `con` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `Map`.
+	5. Set the consequent at antecedent `ant` in `base` to `con`.
+;
