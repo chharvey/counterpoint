@@ -48,6 +48,17 @@ test.suite('Cli', () => {
 				assert.strictEqual(cli.command, Command.VERSION);
 			});
 		});
+		test.suite('interpret', () => {
+			test.test('same as `i`; interprets given file.', () => {
+				['interpret', 'i'].forEach((command) => {
+					const cli = new Cli(`
+						npx cplc ${ command } ./sample/test-v0.1.cpls
+					`.trim().split(' '));
+					assert.strictEqual(cli.argv._[1], './sample/test-v0.1.cpls');
+					assert.strictEqual(cli.command, Command.INTERPRET);
+				});
+			});
+		});
 		test.suite('compile', () => {
 			test.test('same as `c`; compiles given file.', () => {
 				['compile', 'c'].forEach((command) => {

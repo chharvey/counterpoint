@@ -21,6 +21,7 @@
     "cplc": "npx cplc",
     "cplc-h": "npx cplc -h",
     "cplc-v": "npx cplc -v",
+    "cplc:i": "npx cplc i ./sample/test-v0.5.cpls",
     "cplc:c": "npx cplc c ./sample/test-v0.5.cpls",
     "cplc:c-o": "npx cplc c ./sample/test-v0.5.cpls -o ./sample/testout.wasm",
     "cplc:c-p": "npx cplc c ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",

@@ -21,6 +21,13 @@ import {
 			console.log(`counterpoint version ${ PACKAGE.version }`);
 			break;
 		}
+		case Command.INTERPRET: {
+			const result = await cli.interpret(process.cwd());
+			console.log(result[0]);
+			result[1]();
+			console.log('Success!');
+			break;
+		}
 		case Command.COMPILE:
 		case Command.DEV: {
 			const result = await cli.compileOrDev(process.cwd());
