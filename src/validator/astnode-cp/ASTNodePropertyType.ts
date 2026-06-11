@@ -9,9 +9,9 @@ export class ASTNodePropertyType extends ASTNodeCP {
 	public constructor(
 		start_node: SyntaxNodeFamily<'entry_type__named', ['optional']>,
 		public readonly optional: boolean,
-		public readonly key:      ASTNodeKey,
-		public readonly val:      ASTNodeType,
+		public readonly key:       ASTNodeKey,
+		public readonly typevalue: ASTNodeType,
 	) {
-		super(start_node, {optional}, [key, val]);
+		super(start_node, {optional}, [key, typevalue]);
 	}
 }

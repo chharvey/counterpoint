@@ -1,17 +1,19 @@
+import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import type {Builder} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
+import {CfgNode} from './CfgNode.ts';
 import {IR} from './index.ts';
 
 
 
 export type Temp = {
-	readonly id:    bigint,
-	readonly name:  string,
-	readonly type:  TYPE.Type,
-	readonly value: IR.Value,
+	readonly id:     bigint,
+	readonly name:   string,
+	readonly type:   TYPE.Type,
+	readonly value?: IR.Value,
 };
 
 
@@ -25,55 +27,83 @@ export class Optimizer {
 	#tempCounter:  bigint = 0n;
 	#labelCounter: bigint = 0n;
 
-	readonly #instructions: IR.Instruction[] = [];
+	private currentBlock?: CfgNode = new CfgNode(this.newLabel());
+
+	readonly #blocks = new Map<string, CfgNode>();
+
 
 	public get instructions(): IR.Instruction[] {
-		return [...this.#instructions];
+		return [...this.#blocks.values()].flatMap((block) => block.instructions).concat(this.currentBlock?.instructions ?? []);
 	}
 
-	public newTemp(value: IR.Value): Temp {
-		const id:    bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
-		const local: Temp   = {
+	public newLabel(unreachable: boolean = false): string {
+		return [
+			unreachable ? 'unreachable' : 'block',
+			this.#labelCounter++,
+		].join('-');
+	}
+
+	/**
+	 * Create a new IR temporary given a value; or a type, if uninitialized with a value.
+	 * If a value is given, the type is read from that value.
+	 * @return a new Temp with newly-generated id & name, the given value (or `undefined`), and the type
+	 */
+	public newTemp(value_or_type: IR.Value | TYPE.Type): Temp {
+		const id:   bigint = this.#tempCounter--; // temp ids are negative so as not to conflict with actual variable ids
+		const name: string = `$${ -id }`; // appears positive
+		const temp: Temp   = {
 			id,
-			value,
-			name: `$${ -id }`, // appears positive
-			type: value.type,
+			name,
+			...(value_or_type instanceof IR.Value
+				? {value: value_or_type, type: value_or_type.type}
+				: {type: value_or_type}
+			),
 		};
-		this.pushInstruction(new IR.Decl(local, value));
-		return local;
+		return temp;
 	}
 
-	public newLabel(): IR.Label {
-		return new IR.Label(`block-${ this.#labelCounter++ }`);
+	public initiateBlock(label: string): void {
+		if (this.currentBlock) {
+			throw new Error('Cannot initiate a new block in an Optimizer with an active block. Try calling `Optimizer#terminateBlock` first.');
+		}
+		this.currentBlock = new CfgNode(label);
 	}
+
+	public terminateBlock(instr: IR.Terminator): void {
+		if (!this.currentBlock) {
+			throw new Error('Optimizer does not have an active block to terminate. Try calling `Optimizer#initiateBlock` first.');
+		}
+		this.currentBlock.terminate(instr);
+		this.#blocks.set(this.currentBlock.label, this.currentBlock);
+		delete this.currentBlock;
+	}
+
 
 	public pushInstruction(instr: IR.Instruction): void {
-		this.#instructions.push(instr);
+		if (!this.currentBlock) {
+			throw new Error('Optimizer does not have an active block to push to. Try calling `Optimizer#initiateBlock` first.');
+		}
+		this.currentBlock.pushInstruction(instr);
 	}
 
 	@runOnceMethod
 	public validate(): void {
-		return xjs.Array.forEachAggregated(this.#instructions, (instr) => instr.validate());
+		assert.ok(!this.currentBlock, 'Should not validate Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
+		return xjs.Map.forEachAggregated(this.#blocks, (block) => block.validate());
 	}
 
-	public codegen(cg: Builder): void {
-		return cg.setupMain((mod) => {
-			if (this.#instructions.length) {
-				const codes:   binaryen.ExpressionRef[] = this.#instructions.map((instr) => instr.codegen(cg)); // must codegen before calling `.getAllLocals()`
-				const fn_name: string                   = 'main';
-				mod.addFunction(
-					fn_name,
-					binaryen.none,
-					binaryen.none,
-					cg.getAllLocals().map((local) => local.type),
-					mod.block(null, codes),
-				);
-				mod.addFunctionExport(fn_name, fn_name);
-			}
-		});
+	public codegen(cg: Builder): binaryen.ExpressionRef {
+		assert.ok(!this.currentBlock, 'Should not codegen Optimizer with active block set. Try calling `Optimizer#terminateBlock` first.');
+		const relooper = new binaryen.Relooper(cg.mod);
+		const blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef> = new Map([...this.#blocks.values()].map((block) => [block.label, block.codegen(cg, relooper)]));
+		this.#blocks.forEach((block) => block.terminator!.codegen(cg, relooper, blockrefs));
+		return relooper.renderAndDispose(blockrefs.get('block-0')!, cg.getAllLocals().length);
 	}
 
 	public print(): string {
-		return this.#instructions.map((instr) => instr.toString()).join('\n');
+		return [
+			...this.#blocks.values(),
+			...(this.currentBlock ? [this.currentBlock] : []),
+		].map((block) => block.toString()).join('\n');
 	}
 }

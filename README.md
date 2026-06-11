@@ -25,30 +25,32 @@ $ npm ci && npm run build
 
 To be sure it installed correctly, run this command to see the current version of `counterpoint`:
 ```shell
-$ npx cpc --version # you should see:
-> counterpoint version 0.4.4
+$ npx cplc --version # you should see:
+> counterpoint version 0.5.0-alpha.0
 ```
-Run `npx cpc --help` for the full suite of CLI commands.
+Run `npx cplc --help` for the full suite of CLI commands.
 
 Now you’re ready to start coding!
 For this demo, we’ll write a simple calculation of only numbers and operators.
 Open a new text file and enter the following source code:
 ```cpl
-1 + +2 ^ (5 - 3) * -4;
+{
+	1 + +2 ^ (5 - 3) * -4;
+}
 ```
-Then save the file under `./sample/my-program.cp` within the project directory.
+Then save the file under `./sample/my-program.cpls` within the project directory.
 
 Once you save your source code, you can compile and execute it from the command line.
 Make sure your current working directory is the `./counterpoint/` project directory as shown above
 (for now, you’ll need to be in this directory to run the compiler),
 and then run the following commands:
 ```shell
-$ npx cpc c ./sample/my-program.cp
-$ npx cpc r ./sample/my-program.wasm
+$ npx cplc c ./sample/my-program.cpls
+$ npx cplc r ./sample/my-program.wasm
 ```
 The first line compiles your source code into an executable binary format,
 and the second line runs that executable.
-For a full description of what the `cpc` command-line interface can do, run `npx cpc --help`.
+For a full description of what the `cplc` command-line interface can do, run `npx cplc --help`.
 
 That’s it! You should see `[-15]` in the output,
 which is the result of evaluating the expression.

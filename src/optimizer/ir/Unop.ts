@@ -1,13 +1,15 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import binaryen from 'binaryen';
 import type {Builder} from '../../index.ts';
 import {
+	assert_instanceof,
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -23,6 +25,11 @@ export type OpCodeUn = (
 	| OpCode.TOINT
 	| OpCode.TONAT
 	| OpCode.TOFLOAT
+
+	| OpCode.LIST_COUNT
+	| OpCode.DICT_COUNT
+	| OpCode.SET_COUNT
+	| OpCode.MAP_COUNT
 );
 
 
@@ -31,7 +38,7 @@ export type OpCodeUn = (
 export class Unop extends Value {
 	public constructor(
 		private readonly operator: OpCodeUn,
-		private readonly operand:  Value,
+		private readonly operand:  ValueTac,
 		typ: TYPE.Type,
 	) {
 		super(operator, typ);
@@ -45,56 +52,77 @@ export class Unop extends Value {
 	public override validate(): void {
 		this.operand.validate();
 		switch (this.operator) {
-			case OpCode.TOINT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-			case OpCode.TONAT:   { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.NEG:
+			case OpCode.TOINT:
+			case OpCode.TONAT:
 			case OpCode.TOFLOAT: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
-			case OpCode.NEG:     { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+
+			case OpCode.LIST_COUNT: {
+				assert_instanceof(this.operand.type, TYPE.List);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
+			case OpCode.DICT_COUNT: {
+				assert_instanceof(this.operand.type, TYPE.Dict);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
+			case OpCode.SET_COUNT:  {
+				assert_instanceof(this.operand.type, TYPE.Set);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
+			case OpCode.MAP_COUNT:  {
+				assert_instanceof(this.operand.type, TYPE.Map);
+				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
+			}
 		}
 	}
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
-			case OpCode.TOBOOL: {
-				return cg.module.call('vnot', [cg.module.call('vnot', [code], rt_value)], rt_value);
-			}
-			case OpCode.TOINT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
-			case OpCode.TONAT:   { throw new Error('not yet supported.'); } // TODO: v0.5+
-			case OpCode.TOFLOAT: { throw new Error('not yet supported.'); } // TODO: v0.5+
+			case OpCode.ISNULL: { return op.isNull(code); }
+
+			case OpCode.NOT: { return op.not(code); }
+			case OpCode.EMP: { return op.isEmpty(code); }
+			case OpCode.NEG: { return op.negate(code); }
+
+			case OpCode.TOBOOL:  { return op.not(op.not(code)); }
+			case OpCode.TOINT:   { return op.toInt(code); }
+			case OpCode.TONAT:   { return op.toNat(code); }
+			case OpCode.TOFLOAT: { return op.toFloat(code); }
+
+			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(List .count(VmValue.cast(code, reftype.List))))); }
+			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }
+			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
+			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
 		}
-		return cg.module.call(new Map<OpCode, string>([
-			[OpCode.ISNULL, 'isnull'],
-			[OpCode.NOT,    'vnot'],
-			[OpCode.EMP,    'vemp'],
-			[OpCode.NEG,    'vneg'],
-		]).get(this.operator)!, [code], rt_value);
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, BinVect: any, t0: any, arg0: any, drop_then: any, binaryen: any): number {
+	#optimizationStrategy(this: any, cg: Builder, Operator: any, t0: any, arg0: any, drop_then: any): number {
+		const {mod, vm: {Vect}} = cg;
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(cg.module, [arg0], true);
+			return drop_then(mod, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(cg.module, [arg0], false);
+			return drop_then(mod, [arg0], false);
 		}
 		if (this.operator === Operator.NOT) {
 			if (t0.isDefinitelyFalsy) {
-				return cg.module.block(null, [
-					cg.module.drop(arg0),
-					new BinVect(cg.module, true).vect,
+				return mod.block(null, [
+					mod.drop(arg0),
+					Vect.TRUE,
 				], binaryen.v128);
 			} else if (t0.isDefinitelyTruthy) {
-				return cg.module.block(null, [
-					cg.module.drop(arg0),
-					new BinVect(cg.module, false).vect,
+				return mod.block(null, [
+					mod.drop(arg0),
+					Vect.FALSE,
 				], binaryen.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
-			return cg.module.block(null, [
-				cg.module.drop(arg0),
-				new BinVect(cg.module, true).vect,
+			return mod.block(null, [
+				mod.drop(arg0),
+				Vect.TRUE,
 			], binaryen.v128);
 		}
 		return 0;

@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import {
 	VALUE,
 	TYPE,
@@ -14,12 +13,9 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeSupertype} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {Operator} from '../Operator.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {ASTNodeOperation} from './ASTNodeOperation.ts';
 
 
@@ -32,7 +28,7 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeSupertype<'expression'>,
+		start_node: SyntaxNodeFamily<'expression_conditional', ['break']>,
 		operator: Operator.COND,
 		public readonly operand0: ASTNodeExpression,
 		public readonly operand1: ASTNodeExpression,
@@ -42,13 +38,14 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		// compute types early to rethrow any errors
 		const [t0, t1, t2]: TYPE.Type[] = this.children.map((operand) => operand.type());
-		assert.ok(t0.isSubtypeOf(TYPE.BOOL), new TypeErrorInvalidOperation(this));
+		if (!t0.isSubtypeOf(TYPE.BOOL)) {
+			throw new TypeErrorInvalidOperation(this);
+		}
 		return (
-			t0.isBottomType       ? TYPE.NEVER :
+			t0.isBottomType       ? TYPE.NOTHING :
 			t0.equals(TYPE.FALSE) ? t2 : // If `typeof a` is `false`, then `typeof (if a then b else c)` is `typeof c`.
 			t0.equals(TYPE.TRUE)  ? t1 : // If `typeof a` is `true`,  then `typeof (if a then b else c)` is `typeof b`.
 			t1.union(t2)
@@ -56,9 +53,10 @@ export class ASTNodeOperationTernary extends ASTNodeOperation {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Phi {
+	public override lower(optimizer: Optimizer): IR.Get {
 		return IR.conditional_expression(
 			optimizer,
+			this.operand1.type().union(this.operand2.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
 			() => this.operand0.lower(optimizer),
 			() => this.operand1.lower(optimizer),
 			() => this.operand2.lower(optimizer),

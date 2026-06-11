@@ -1,5 +1,9 @@
 import {Primitive} from './Primitive.ts';
-import type {Float} from './index.ts';
+import type {
+	Integer,
+	Natural,
+	Float,
+} from './index.ts';
 
 
 
@@ -7,6 +11,7 @@ import type {Float} from './index.ts';
  * A numeric Counterpoint Language Value.
  * Known subclasses:
  * - Integer
+ * - Natural
  * - Float
  */
 abstract class ValueNumber<T = unknown> extends Primitive {
@@ -17,6 +22,18 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	public override get isEmpty(): boolean {
 		return this.eq0();
 	}
+
+	/**
+	 * Type-coerce this number into an int.
+	 * @returns the equivalent signed integer value
+	 */
+	public abstract toInt(): Integer;
+
+	/**
+	 * Type-coerce this number into a nat.
+	 * @returns the equivalent unsigned integer value
+	 */
+	public abstract toNat(): Natural;
 
 	/**
 	 * Type-coerce this number into a float.
@@ -38,10 +55,10 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	public abstract minus(subtrahend: T): T;
 	/**
 	 * Multiply two numbers.
-	 * @param multiplicand - the multiplicand
-	 * @return the product, `this multiplier * multiplicand`
+	 * @param multiplier - the multiplier
+	 * @return the product, `this multiplicand * multiplier`
 	 */
-	public abstract times(multiplicand: T): T;
+	public abstract times(multiplier: T): T;
 	/**
 	 * Divide two numbers.
 	 * @param divisor - the divisor
@@ -66,10 +83,15 @@ abstract class ValueNumber<T = unknown> extends Primitive {
 	 */
 	public abstract eq0(): boolean;
 	/**
+	 * Is the number equal to one?
+	 * @returns Is the number equal to one?
+	 */
+	public abstract eq1(): boolean;
+	/**
 	 * Is the number strictly less than the argument?
 	 * @param y - the argument
 	 * @returns Is the number strictly less than the argument?
 	 */
-	public abstract lt(y: T): boolean;
+	public abstract lt(y: ValueNumber): boolean;
 }
 export {ValueNumber as Number};

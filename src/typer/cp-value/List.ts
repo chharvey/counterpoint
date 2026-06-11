@@ -24,8 +24,8 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 
 	@strictEqual
 	@identical
-	@instanceOf(() => List)
 	@memoizeBinOp(true, true)
+	@instanceOf(() => List)
 	public override equal(value: Value): boolean {
 		return CollectionIndexed.samenessDfn<T>(this, value as List<T>, language_values_equal);
 	}
@@ -35,6 +35,6 @@ export class List<T extends Value = Value> extends CollectionIndexed<T> {
 	 * Returns a TYPE.List whose type argument is the union of the types of this List’s items.
 	 */
 	public override toType(): TYPE.List {
-		return new TYPE.List(TYPE.Union.all(this.items.map<TYPE.Type>((it) => it.toType())));
+		return new TYPE.List(TYPE.Union.all(...this.items.map<TYPE.Type>((it) => it.toType())));
 	}
 }

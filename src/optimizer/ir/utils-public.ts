@@ -1,16 +1,36 @@
+import {TYPE} from '../../typer/index.ts';
 import type {
 	Temp,
 	Optimizer,
 } from '../Optimizer.ts';
 import {
-	type TypeName,
 	type Value,
 	Get,
-	Phi,
-	type Label,
+	Decl,
+	Set as IrSet,
 	Goto,
-	GotoIfFalse,
+	GotoConditional,
 } from './index.ts';
+
+
+
+export enum TypeName {
+	TRAP,
+	NULL,
+	BOOL,
+	SYM,
+	INT,
+	NAT,
+	FLOAT,
+	STR,
+	TUPLE,
+	RECORD,
+	LIST,
+	DICT,
+	SET,
+	MAP,
+	ANY,
+}
 
 
 
@@ -23,6 +43,39 @@ export type CollectionDynamicName = (
 
 
 
+export function ast_type_name(typ: TYPE.Type): TypeName {
+	switch (true) {
+		case typ.isSubtypeOf(TYPE.NULL):  { return TypeName.NULL; }
+		case typ.isSubtypeOf(TYPE.BOOL):  { return TypeName.BOOL; }
+		case typ.isSubtypeOf(TYPE.SYM):   { return TypeName.SYM; }
+		case typ.isSubtypeOf(TYPE.INT):   { return TypeName.INT; }
+		case typ.isSubtypeOf(TYPE.NAT):   { return TypeName.NAT; }
+		case typ.isSubtypeOf(TYPE.FLOAT): { return TypeName.FLOAT; }
+		case typ.isSubtypeOf(TYPE.STR):   { return TypeName.STR; }
+
+		case typ instanceof TYPE.Tuple:  { return TypeName.TUPLE; }
+		case typ instanceof TYPE.Record: { return TypeName.RECORD; }
+		case typ instanceof TYPE.List:   { return TypeName.LIST; }
+		case typ instanceof TYPE.Dict:   { return TypeName.DICT; }
+		case typ instanceof TYPE.Set:    { return TypeName.SET; }
+		case typ instanceof TYPE.Map:    { return TypeName.MAP; }
+	}
+
+	if (typ instanceof TYPE.Union || typ instanceof TYPE.Intersection) {
+		switch (true) {
+			case typ.operands.every((op) => op instanceof TYPE.Tuple):  { return TypeName.TUPLE; }
+			case typ.operands.every((op) => op instanceof TYPE.Record): { return TypeName.RECORD; }
+			case typ.operands.every((op) => op instanceof TYPE.List):   { return TypeName.LIST; }
+			case typ.operands.every((op) => op instanceof TYPE.Dict):   { return TypeName.DICT; }
+			case typ.operands.every((op) => op instanceof TYPE.Set):    { return TypeName.SET; }
+			case typ.operands.every((op) => op instanceof TYPE.Map):    { return TypeName.MAP; }
+		}
+	}
+	return TypeName.ANY;
+}
+
+
+
 /**
  * Utilty for implementing a conditional expression CFG:
  * ```
@@ -30,85 +83,47 @@ export type CollectionDynamicName = (
  * ```
  * IR Outline:
  * ```
- * if_false ‹condition›, goto "else".
+ * (DECL ‹result_type› $result)
+ * (GOTO.IF ‹condition› "then" "else")
  * "then":
- * (DECL ‹result_type› $result_then ‹consequent›) ;; evaluate consequent and set to result
- * goto "endif".
+ * (SET $result ‹consequent›)
+ * (GOTO "endif")
  * "else":
- * (DECL ‹result_type› $result_else ‹alternative›) ;; evaluate alternative and set to result
+ * (SET $result ‹alternative›)
+ * (GOTO "endif")
  * "endif":
- * return (PHI "then"->(GET $result_then) "else"->(GET $result_else)).
+ * return (GET $result).
  * ```
  * @param optimizer
  * @param result_type the type of the expression’s value
  * @param condition
  * @param consequent
  * @param alternative
- * @return            a (PHI) of the results based on the condition
+ * @return            a (GET) of the results based on the condition
  */
 export function conditional_expression(
 	optimizer:   Optimizer,
+	result_type: TYPE.Type,
 	condition:   () => Value,
 	consequent:  () => Value,
 	alternative: () => Value,
-): Phi {
-	const block_then:  Label = optimizer.newLabel();
-	const block_else:  Label = optimizer.newLabel();
-	const block_endif: Label = optimizer.newLabel();
+): Get {
+	const label_then:  string = optimizer.newLabel();
+	const label_else:  string = optimizer.newLabel();
+	const label_endif: string = optimizer.newLabel();
 
-	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), block_else));
-	optimizer.pushInstruction(block_then);
-	const result_then: Temp = optimizer.newTemp(consequent.call(null));
-	optimizer.pushInstruction(new Goto(block_endif));
-	optimizer.pushInstruction(block_else);
-	const result_else: Temp = optimizer.newTemp(alternative.call(null));
-	optimizer.pushInstruction(block_endif);
-	return new Phi(
-		[block_then, new Get(result_then)],
-		[block_else, new Get(result_else)],
-	);
-}
+	const result: Temp = optimizer.newTemp(result_type);
+	optimizer.pushInstruction(new Decl(result));
+	optimizer.terminateBlock(new GotoConditional(condition.call(null), label_then, label_else));
 
+	optimizer.initiateBlock(label_then);
+	optimizer.pushInstruction(new IrSet(result, consequent.call(null)));
+	optimizer.terminateBlock(new Goto(label_endif));
 
+	optimizer.initiateBlock(label_else);
+	optimizer.pushInstruction(new IrSet(result, alternative.call(null)));
+	optimizer.terminateBlock(new Goto(label_endif));
 
-/**
- * Utilty for implementing a conditional statement CFG:
- * ```
- * if ‹condition› then {... ‹consequent› ...} else {... ‹alternative› ...};
- * ```
- * If there is no ‘else’ block, don’t provide an argument for `alternative`.
- *
- * For if–else–if chains, structure them the old-fashioned way:
- * ```
- * if … then {…} else {if … then {…} else {if … then {…} else {…}}};
- * ```
- * @param optimizer
- * @param condition
- * @param consequent
- * @param alternative
- * @return            labels for the ‘then’ branch (and ‘else’ branch, if applicable) for later use
- */
-export function conditional_statement(
-	optimizer:    Optimizer,
-	condition:    () => Value,
-	consequent:   () => void,
-	alternative?: () => void,
-): {then: Label, else: Label | null} {
-	const block_then:  Label = optimizer.newLabel();
-	const block_else:  Label = optimizer.newLabel();
-	const block_endif: Label = optimizer.newLabel();
-
-	optimizer.pushInstruction(new GotoIfFalse(condition.call(null), alternative ? block_else : block_endif));
-	optimizer.pushInstruction(block_then);
-	consequent.call(null);
-	optimizer.pushInstruction(new Goto(block_endif));
-	if (alternative) {
-		optimizer.pushInstruction(block_else);
-		alternative.call(null);
-	}
-	optimizer.pushInstruction(block_endif);
-	return {
-		then: block_then,
-		else: alternative ? block_else : null,
-	};
+	optimizer.initiateBlock(label_endif);
+	return new Get(result);
 }

@@ -6,7 +6,7 @@ import {
 import * as VALUE from '../cp-value/index.ts';
 import {MUT_OPERATOR} from './utils-private.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -30,7 +30,7 @@ class TypeSet extends ReferenceType {
 		public readonly typearg: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Set()]));
+		super(new Set<VALUE.Set>([new VALUE.Set()]), is_mutable);
 	}
 
 	public override get hasMutable(): boolean {
@@ -48,7 +48,7 @@ class TypeSet extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => TypeSet)
 	public override isSubtypeOf(t: Type): boolean {

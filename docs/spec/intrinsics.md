@@ -4,7 +4,7 @@ This chapter describes the objects built in to the standard “core” Counterpo
 
 
 ## Primitive and Composite Values
-Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Symbol`, `Integer`, `Float`, or `String`.
+Primitive values are unbreakable and are instances of `Null`, `Boolean`, `Symbol`, `Integer`, `Natural`, `Float`, or `String`.
 These types are discussed in the [Types and Values](./types-values.md#simple-types) chapter.
 
 Composite values are not primitive values and are composed of other values (of any kind).
@@ -43,11 +43,15 @@ Symbols are identical if and only if they have the same name.
 
 
 ### `Integer`
-`Integer` objects are integer numbers with 16-bit encodings.
+`Integer` objects are integer numbers with 64-bit signed two’s complement encodings.
+
+
+### `Natural`
+`Natural` objects are non-negative integer numbers with 64-bit encodings.
 
 
 ### `Float`
-`Float` objects are rational numbers encoded in IEEE 754-2019 format.
+`Float` objects are rational numbers encoded in IEEE 754-2019 64-bit format.
 
 
 ### `String`

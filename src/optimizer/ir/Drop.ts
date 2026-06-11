@@ -4,17 +4,14 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {Instruction} from './Instruction.ts';
-import {
-	OpCode,
-	Opcode,
-} from './Opcode.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
 
 
 
 /** Evaluate an expression but then drop it. */
-export class Drop extends Opcode implements Instruction {
+export class Drop extends Instruction {
 	public constructor(private readonly value: Value) {
 		super(OpCode.DROP);
 	}
@@ -30,13 +27,13 @@ export class Drop extends Opcode implements Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.module.drop(this.value.codegen(cg));
+		return cg.mod.drop(this.value.codegen(cg));
 	}
 
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: Builder): number {
-		if (!this.expr || !!this.expr.fold()) return cg.module.nop();
-		return cg.module.drop(this.expr!.build());
+		if (!this.expr || !!this.expr.fold()) return cg.mod.nop();
+		return cg.mod.drop(this.expr!.build());
 	}
 	/* eslint-enable */
 }

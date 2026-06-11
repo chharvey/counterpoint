@@ -11,4 +11,24 @@ This chapter defines the syntax, semantics, and behavior of statements in the Co
 
 
 
-## Variable Assignment
+## Variable/Property Claim
+
+
+
+## Variable/Property Reassignment
+
+
+
+## Conditional Statement
+
+
+
+## Loop
+
+
+
+## Iteration
+
+
+
+# Break & Skip

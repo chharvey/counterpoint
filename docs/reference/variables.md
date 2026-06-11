@@ -64,29 +64,54 @@ val my_other_var: str = "Hello, programmer!";
 > ReferenceError: `my_other_var` is used before it is declared.
 
 
+### Type Inference
+When assigning a variable a primitive literal, string template, or constructor call (with no operations),
+we can omit the type annotation.
+For read-only variables, the type is inferred as a unit type containing that primitive value.
+For writable variables, the inferred type is the narrowest primitive type corresponding to that value.
+For string template values (with or without interpolation), the inferred type is always `str`.
+Constructor calls always imply their exact type (made mutable if applicable).
+```cpl
+val     untyped         = 11; % type `11`
+val mut untyped_unfixed = 22; % type `int`
+
+val     tpl_untyped         = """hello"""; % type `str`
+val mut tpl_untyped_unfixed = """world"""; % type `str`
+
+val     list_untyped         = List.<int>((11, 22));                 % type `mut List.<int>`
+val mut dict_untyped_unfixed = Dict.<str>((a= "hello", b= "world")); % type `mut Dict.<str>`
+```
+Type inference is applied recursively for tuple and record literals.
+```cpl
+val tup_untyped             = (   42,    (x= "hello"),    Dict.<bool>((x= false, y= true))); % type `(   42,    (x= "hello"),    mut Dict.<bool>)`
+val mut rec_untyped_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type `(a= int, b= (str,),      c= mut List.<bool>)`
+```
+
+
 
 ## Variable Reassignment
-By default, variables are **fixed** in that they cannot be reassigned.
+By default, variables are **read-only** in that they cannot be reassigned.
 ```
 val my_var: str = "Hello, world!";
-my_var = "¡Hola, mundo!";          %> AssignmentError
+set my_var = "¡Hola, mundo!";      %> AssignmentError
 ```
-> AssignmentError: Reassignment of a fixed variable: `my_var`.
+> AssignmentError: Reassignment of a read-only variable: `my_var`.
 
 In some programming disciplines this pattern is generally encouraged, because
 variables holding different values at different points in runtime could lead to unpredictability.
 However, changing a variable’s value is useful in some cases, such as in loops or for storing state.
 
-Therefore, we can declare unfixed variables with the keywords `val mut`,
+Therefore, we can declare writable variables with the keywords `val mut`,
 which allows us to assign it a new value later.
+The variable is reassigned with the keyword `set`.
 ```
 val mut my_var = "Hello, world!";
 my_var;                           %== "Hello, world!"
-my_var = "¡Hola, mundo!";
+set my_var = "¡Hola, mundo!";
 my_var;                           %== "¡Hola, mundo!"
 ```
-The statement `my_var = "¡Hola, mundo!";` is called a **variable reassignment statement**.
-An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
+The statement `set my_var = "¡Hola, mundo!";` is called a **variable reassignment statement**.
+A writable variable can be reassigned anywhere in the scope in which it’s visible.
 
 
 ### Pointers
@@ -111,10 +136,70 @@ val mut a: int = 42;
 val mut b: int = a;
 a;                   %== 42
 b;                   % also `42`
-a = 420;
+set a = 420;
 a;                   % now `420`
 b;                   % still `42`
 ```
+
+
+
+## Type Claim Declarations
+A type claim declaration is a [type claim](./expressions-operators.md#type-claim) for a variable at the block level.
+After a variable `expr` has been declared, we may want to **claim** that it has type `T` throughout the rest of the block,
+so we would declare the following:
+```
+claim expr: T;
+```
+This is convenient because we don’t have to claim the expression everywhere it’s used in later the block.
+
+The code below has to claim that `item.1` is of type `int` every time it’s referenced.
+```
+val item: [str, int | str] = ["apples", 42];
+"""
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ item.1 as <int> }} please.
+	Clerk: Wow, {{ item.1 as <int> }} is a lot!
+""";
+```
+One way to simplify this would be to declare a new variable:
+```
+val item: [str, int | str] = ["apples", 42];
+val quantity: int = item.1 as <int>;
+"""
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ quantity }} please.
+	Clerk: Wow, {{ quantity }} is a lot!
+""";
+```
+But a new variable could take up space on the runtime machine.
+The only purpose of `quantity` is to make a type claim, so it’s not necessary at runtime.
+Instead, we should claim the expression’s type in a claim statement.
+Type claims take place only in the compiler, so no memory is wasted.
+```
+val item: [str, int | str] = ["apples", 42];
+claim item.1: int;
+"""
+	Clerk: How many {{ item.0 }} would you like?
+	Customer: {{ item.1 }} please.
+	Clerk: Wow, {{ item.1 }} is a lot!
+""";
+```
+
+Type claim declarations only apply to statements below, not to previous statements.
+```
+val mut x: bool | int = false;
+set x = true;
+claim x: int;
+```
+Even though we claimed `x` as type `int` on line 3, the reassignment to a boolean on line 2 is still valid.
+
+Any reassignments after a claim are still held to that claim, though.
+```
+val mut x: bool | int = false;
+claim x: int;
+set x = true; %> TypeError
+```
+Since we claimed `x` as type `int`, we cannot reassign it to a boolean after the claim is made.
 
 
 
@@ -215,10 +300,10 @@ type MyType = int | float;
 ```
 By convention, type aliases are named in *PascalCase*.
 
-Type aliases are initialized when they’re declared, and they’re always fixed — they can never be reassigned.
+Type aliases are initialized when they’re declared, and they’re always read-only — they can never be reassigned.
 ```
 type MyType = int | float;
-MyType = int;              % raises a ParseError or ReferenceError (depending on type expression)
+set MyType = int;          % raises a ParseError or ReferenceError (depending on type expression)
 ```
 
 Type aliases can be declared only once within a given scope.
@@ -240,7 +325,7 @@ val my_next_var:  MyNextType  = "Hello, programmer!"; %> ReferenceError [2]
 %%------------------------
 --- TEMPORAL DEAD ZONE ---
 ------------------------%%
-type MyType = str;
+type MyNextType = str;
 ```
 > 1. ReferenceError: `MyFirstType` is never declared.
 > 2. ReferenceError: `MyNextType` is used before it is declared.
@@ -250,7 +335,7 @@ The same is true conversely.
 *(NOTE: This may change in future versions.)*
 ```
 type MyFirstType = float;
-val my_first_var: unknown = MyFirstType; %> ReferenceError [1]
+val my_first_var: anything = MyFirstType; %> ReferenceError [1]
 
 val my_next_var: float = 4.2;
 type MyNextType = my_next_var | int;  %> ReferenceError [2]
@@ -263,7 +348,7 @@ type MyNextType = my_next_var | int;  %> ReferenceError [2]
 ## The Blank Identifier
 The token `_` (a single underscore) is called the “blank identifier”, and it behaves differently from normal variables.
 It may *only* be assigned, and *never* be referenced. It’s actually a syntax error to treat it as an expression.
-```
+```cpl
 val _: int = 42;    % ok
 val x: int = _ + 1; %> ParseError
 ```
@@ -276,23 +361,20 @@ The same goes for destructuring — we might not need all the entries in the obj
 Instead of declaring a regular variable that ends up never being referenced,
 we can use the blank identifier `_` as a placeholder.
 We can even declare it more than once!
-```
+```cpl
 val _: int = 42;
 val _: str = "the answer"; % no duplicate declaration error!
 
-val (_, b, c): str[3] = ["a", "b", "c"];
-val (_, _, f): str[3] = ["d", "e", "f"]; % no duplicate declaration error!
+val (_, b, c): (str, str, str) = ("a", "b", "c");
+val (_, _, f): (str, str, str) = ("d", "e", "f"); % no duplicate declaration error!
 
-type Binop = (float, float) => float;
-val square: Binop = (_: float, x: float): float => x * x;
+type Binop = \(float, float) => float;
+val square: Binop = \(_: float, x: float): float => x * x;
 func trinop(_: float, _: float, y: float): float => y + y + y; % no duplicate declaration error!
 ```
 
-It’s also possible to assign the blank identifier as a type alias, and in an unfixed variable assignment.
-However, these use cases are less practical.
-```
+It’s also possible to assign the blank identifier as a type alias.
+```cpl
 type _ = int | float;
-type _ = [str, bool]; % no duplicate declaration error!
-
-val mut _: float = 4.2;
+type _ = (str, bool); % no duplicate declaration error!
 ```

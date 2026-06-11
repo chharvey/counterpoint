@@ -1,9 +1,7 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	STRUCT_FIELD,
-	BinValue,
 	BinConst,
 	type Builder,
 	type Local,
@@ -14,10 +12,13 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import type {CollectionDynamicName} from './utils-public.ts';
+import {
+	TypeName,
+	type CollectionDynamicName,
+} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
-import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -25,11 +26,11 @@ import {Value} from './Value.ts';
 export class CollectionDynamicGet extends Value {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
-		private readonly collection: Value,
-		private readonly accessor:   Value,
+		private readonly collection: ValueTac,
+		private readonly accessor:   ValueTac,
 		entry_type: TYPE.Type,
 	) {
-		super(new Map<TypeName, OpCode>([
+		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_GET],
 			[TypeName.DICT, OpCode.DICT_GET],
 			[TypeName.SET,  OpCode.SET_GET],
@@ -47,7 +48,7 @@ export class CollectionDynamicGet extends Value {
 		switch (this.name) {
 			case TypeName.LIST: {
 				assert_instanceof(this.collection.type, TYPE.List);
-				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT)); // TODO: v0.5: .union(TYPE.NAT)
+				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT.union(TYPE.NAT)));
 			}
 			case TypeName.DICT: {
 				assert_instanceof(this.collection.type, TYPE.Dict);
@@ -66,86 +67,89 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		cg.module.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
-		const rt_value: binaryen.Type = cg.getReftype('(ref $Value)');
+		const {vm: {Vect, Property, Case, Dict, Map: VmMap}, mod} = cg;
+
+		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
+		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
+		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => cg.vm.Value.cast(collection, reftype);
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
 		 * But we still need to check for nullish values in the collection.
 		 */
 		switch (this.name) {
 			case TypeName.LIST: {
-				const item: Local = cg.newLocal(cg.module.array.get(
-					cg.getListInternal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)')),
-					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
-					cg.getReftype('(ref null $Value)'),
+				const item: Local = cg.newLocal(mod.array.get(
+					cg.vm.List.field(cast_collection(cg.vm.reftype.List)).internal,
+					mod.i32.wrap(Vect.asInt(cg.vm.Value.field(accessor).primitive)),
+					cg.vm.reftypeNull.Value,
 				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
 
-				return cg.module.block(null, [
+				return mod.block(null, [
 					item.set(),
 					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
-					cg.module.if(
-						cg.module.ref.is_null(item.get()),
+					mod.if(
+						mod.ref.is_null(item.get()),
 						cg.getConst(BinConst.NULL),
-						cg.module.ref.as_non_null(item.get()),
+						mod.ref.as_non_null(item.get()),
 					),
-				], rt_value);
+				], cg.vm.reftype.Value);
 			}
 			case TypeName.DICT: {
-				const maybe_prop: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Dict.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
-					cg.module.i64.extend_u(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Property)')])), 1));
+				const maybe_prop: Local = cg.newLocal(mod.tuple.extract(Dict.find(
+					cast_collection(cg.vm.reftype.Dict),
+					Vect.asNat(cg.vm.Value.field(accessor).primitive),
+				), 1));
 
-				return cg.module.block(null, [
+				return mod.block(null, [
 					maybe_prop.set(),
 					// if `(ref.null $Property)` or a tombstone is returned, return Counterpoint `null`; else return the property value
-					cg.module.if(
-						cg.module.i32.or(
-							cg.module.ref.is_null(maybe_prop.get()),
-							cg.module.call('Property.is-tombstone', [maybe_prop.get()], binaryen.i32),
+					mod.if(
+						mod.i32.or(
+							mod.ref.is_null(maybe_prop.get()),
+							Property.isTombstone(maybe_prop.get()),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.module.struct.get(STRUCT_FIELD.PROPERTY_VAL, maybe_prop.get(), rt_value),
+						Property.field(maybe_prop.get()).val,
 					),
-				], rt_value);
+				], cg.vm.reftype.Value);
 			}
 			case TypeName.SET: {
-				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
-					this.accessor.codegen(cg),
-				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Case)')])), 1));
+				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
+					cast_collection(cg.vm.reftype.Map),
+					accessor,
+				), 1));
 
-				return cg.module.block(null, [
+				return mod.block(null, [
 					maybe_case.set(),
 					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `false`; else return `true`
-					cg.module.if(
-						cg.module.i32.or(
-							cg.module.ref.is_null(maybe_case.get()),
-							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+					mod.if(
+						mod.i32.or(
+							mod.ref.is_null(maybe_case.get()),
+							Case.isTombstone(maybe_case.get()),
 						),
 						cg.getConst(BinConst.FALSE),
 						cg.getConst(BinConst.TRUE),
 					),
-				], rt_value);
+				], cg.vm.reftype.Value);
 			}
 			case TypeName.MAP: {
-				const maybe_case: Local = cg.newLocal(cg.module.tuple.extract(cg.module.call('Map.find', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
-					this.accessor.codegen(cg),
-				], binaryen.createType([binaryen.i32, cg.getReftype('(ref null $Case)')])), 1));
+				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
+					cast_collection(cg.vm.reftype.Map),
+					accessor,
+				), 1));
 
-				return cg.module.block(null, [
+				return mod.block(null, [
 					maybe_case.set(),
 					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `null`; else return the consequent
-					cg.module.if(
-						cg.module.i32.or(
-							cg.module.ref.is_null(maybe_case.get()),
-							cg.module.call('Case.is-tombstone', [maybe_case.get()], binaryen.i32),
+					mod.if(
+						mod.i32.or(
+							mod.ref.is_null(maybe_case.get()),
+							Case.isTombstone(maybe_case.get()),
 						),
 						cg.getConst(BinConst.NULL),
-						cg.module.struct.get(STRUCT_FIELD.CASE_CON, maybe_case.get(), rt_value),
+						Case.field(maybe_case.get()).con,
 					),
-				], rt_value);
+				], cg.vm.reftype.Value);
 			}
 		}
 	}

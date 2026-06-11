@@ -1,10 +1,10 @@
 import {assert_context_name} from '../../lib/index.ts';
 import type * as VALUE from '../cp-value/index.ts';
 import {
-	NEVER,
-	UNKNOWN,
+	NOTHING,
+	ANYTHING,
 } from './index.ts';
-import type {ReadonlyArrayOfAtLeast2} from './utils-private.ts';
+import type {ArrayOfAtLeast2} from './utils-private.ts';
 import {Type} from './Type.ts';
 
 
@@ -21,8 +21,8 @@ export function botOrTopString(
 	assert_context_name(context, 'toString');
 	return function (this: Type) {
 		return (
-			this.isBottomType ? NEVER  .toString() :
-			this.isTopType    ? UNKNOWN.toString() :
+			this.isBottomType ? NOTHING .toString() :
+			this.isTopType    ? ANYTHING.toString() :
 			method.call(this)
 		);
 	};
@@ -36,6 +36,9 @@ export function botOrTopString(
  * - Difference
  */
 export abstract class TypeOperation extends Type {
+	public readonly operands: readonly Type[];
+
+
 	/**
 	 * Construct a new TypeOperation object.
 	 * @param values   the values assignable to this type
@@ -43,8 +46,9 @@ export abstract class TypeOperation extends Type {
 	 */
 	public constructor(
 		values: ReadonlySet<VALUE.Value>,
-		public readonly operands: ReadonlyArrayOfAtLeast2<Type>,
+		operands: Readonly<ArrayOfAtLeast2<Type>>,
 	) {
-		super(false, values);
+		super(values);
+		this.operands = operands;
 	}
 }

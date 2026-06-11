@@ -40,7 +40,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
 		if (t0.isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
 			case Operator.AND: {
@@ -61,7 +61,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 	}
 
 	@memoizeMethod
-	public override lower(optimizer: Optimizer): IR.Phi {
+	public override lower(optimizer: Optimizer): IR.Get {
 		/*
 		 * `‹v0› && ‹v1›` desugars to:
 		 * ```
@@ -75,7 +75,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 		 * if !!left then left else ‹v1›
 		 * ```
 		 */
-		const left: IR.Value = this.operand0.lower(optimizer).asTac(optimizer);
+		const left: IR.ValueTac = this.operand0.lower(optimizer).asTac(optimizer);
 
 		// Assume `Operator.AND` first, then switch if `Operator.OR`.
 		let conseq = (): IR.Value => this.operand1.lower(optimizer);
@@ -86,6 +86,7 @@ export class ASTNodeOperationBinaryLogical extends ASTNodeOperationBinary {
 
 		return IR.conditional_expression(
 			optimizer,
+			this.operand0.type().union(this.operand1.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
 			() => new IR.Unop(IR.OpCode.TOBOOL, left, TYPE.BOOL),
 			conseq,
 			altern,

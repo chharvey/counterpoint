@@ -1,31 +1,27 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
-import {
-	BinValue,
-	BinConst,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {
+import type {
 	VALUE,
-	type TYPE,
+	TYPE,
 } from '../../typer/index.ts';
-import {OpCode} from './Opcode.ts';
 import {
 	TypeName,
 	ast_type_name,
-} from './TypeName.ts';
-import {Value} from './Value.ts';
+} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
+import {ValueTac} from './ValueTac.ts';
 
 
 
 /** A constant primitive value. */
-export class Const extends Value {
-	public constructor(private readonly value: VALUE.Primitive) {
-		const typ: TYPE.Unit = value.toType();
+export class Const extends ValueTac {
+	public constructor(private readonly interpreterValue: VALUE.Primitive) {
+		const typ: TYPE.Unit = interpreterValue.toType();
 		super(new Map<TypeName, OpCode>([
 			[TypeName.TRAP,  OpCode.TRAP],
 			[TypeName.NULL,  OpCode.NULL_CONST],
@@ -39,25 +35,20 @@ export class Const extends Value {
 	}
 
 	public override toString(): string {
-		return super.toString(this.value);
+		return super.toString(this.interpreterValue);
 	}
 
 	@runOnceMethod
 	public override validate(): void {
-		return assert.ok(this.value.toType().isSubtypeOf(this.type));
+		return assert.ok(this.interpreterValue.toType().isSubtypeOf(this.type));
 	}
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		switch (this.value) {
-			case VALUE.NULL:  { return cg.getConst(BinConst.NULL); }
-			case VALUE.FALSE: { return cg.getConst(BinConst.FALSE); }
-			case VALUE.TRUE:  { return cg.getConst(BinConst.TRUE); }
-		}
-		return new BinValue(cg, this.value.codegen(cg.module)).value;
+		return this.interpreterValue.codegen(cg);
 	}
 
-	public override asTac(): Const {
+	public override asTac(): this {
 		return this;
 	}
 }

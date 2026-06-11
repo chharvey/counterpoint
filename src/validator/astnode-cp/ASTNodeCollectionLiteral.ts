@@ -1,10 +1,7 @@
 import * as xjs from 'extrajs';
 import {TYPE} from '../../index.ts';
-import {
-	assert_context_name,
-	forEither,
-} from '../../lib/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import {assert_context_name} from '../../lib/index.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {ASTNodeCP} from './ASTNodeCP.ts';
 import {ASTNodeExpression} from './ASTNodeExpression.ts';
 
@@ -28,7 +25,7 @@ export function assignToDeco(
 		} else if (assignee instanceof TYPE.Union) {
 			/* A value is assignable to a type union if and only if
 			it is assignable to any operand of that union. */
-			return forEither(assignee.operands, (s) => this.assignTo(s));
+			return xjs.Array.forEither(assignee.operands, (s) => this.assignTo(s));
 		} else {
 			return method.call(this, assignee);
 		}
@@ -49,12 +46,12 @@ export function assignToDeco(
 export abstract class ASTNodeCollectionLiteral extends ASTNodeExpression {
 	protected constructor(
 		start_node:
-			| SyntaxNodeType<'tuple_literal'>
-			| SyntaxNodeType<'record_literal'>
-			| SyntaxNodeType<'list_literal'>
-			| SyntaxNodeType<'dict_literal'>
-			| SyntaxNodeType<'set_literal'>
-			| SyntaxNodeType<'map_literal'>,
+			| SyntaxNodeFamily<'tuple_literal',  ['break']>
+			| SyntaxNodeFamily<'record_literal', ['break']>
+			| SyntaxNodeFamily<'list_literal',   ['break']>
+			| SyntaxNodeFamily<'dict_literal',   ['break']>
+			| SyntaxNodeFamily<'set_literal',    ['break']>
+			| SyntaxNodeFamily<'map_literal',    ['break']>,
 
 		children: readonly ASTNodeCP[],
 	) {

@@ -1,6 +1,11 @@
+import {Keyword} from '../../parser/index.ts';
 import {instanceOf} from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {ValueType} from './ValueType.ts';
+import {
+	FALSE,
+	TRUE,
+} from './index.ts';
+import {Union} from './Union.ts';
 
 
 
@@ -8,13 +13,13 @@ import {ValueType} from './ValueType.ts';
  * Class for constructing the `bool` type.
  * @final
  */
-class TypeBoolean extends ValueType {
+class TypeBoolean extends Union {
 	public constructor() {
-		super(false, new Set([VALUE.FALSE, VALUE.TRUE]));
+		super(FALSE, TRUE);
 	}
 
 	public override toString(): string {
-		return 'bool';
+		return Keyword.BOOL;
 	}
 
 	@instanceOf(() => VALUE.Boolean)

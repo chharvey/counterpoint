@@ -43,21 +43,17 @@ export class ASTNodeTypeRecord extends ASTNodeTypeCollectionLiteral {
 				throw new AssignmentErrorDuplicateKey(key);
 			}
 		});
-		return xjs.Array.forEachAggregated(this.children, (prop) => prop.val.varCheck());
+		return xjs.Array.forEachAggregated(this.children, (prop) => prop.typevalue.varCheck());
 	}
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entries: ReadonlyMap<bigint, EntryType> = new Map<bigint, EntryType>(this.children.map((c) => {
-			const valuetype: TYPE.Type = c.val.eval();
-			return [
-				c.key.id,
-				{
-					type:     valuetype,
-					optional: c.optional,
-				},
-			];
-		}));
-		return new TYPE.Record(entries);
+		return new TYPE.Record(new Map<bigint, EntryType>(this.children.map((c) => [
+			c.key.id,
+			{
+				type:     c.typevalue.eval(),
+				optional: c.optional,
+			},
+		])));
 	}
 }

@@ -1,12 +1,10 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
 import {
-	BinValue,
 	BinConst,
 	type Builder,
 	type Local,
-	BinVect,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -14,26 +12,25 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
-import type {CollectionDynamicName} from './utils-public.ts';
-import type {Instruction} from './Instruction.ts';
 import {
-	OpCode,
-	Opcode,
-} from './Opcode.ts';
-import {TypeName} from './TypeName.ts';
-import type {Value} from './Value.ts';
+	TypeName,
+	type CollectionDynamicName,
+} from './utils-public.ts';
+import {OpCode} from './Opcode.ts';
+import {Instruction} from './Instruction.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Write to an entry of a dynamic collection (List/Dict/Set/Map). */
-export class CollectionDynamicSet extends Opcode implements Instruction {
+export class CollectionDynamicSet extends Instruction {
 	public constructor(
 		private readonly name:       CollectionDynamicName,
-		private readonly collection: Value,
-		private readonly accessor:   Value,
-		private readonly value:      Value,
+		private readonly collection: ValueTac,
+		private readonly accessor:   ValueTac,
+		private readonly value:      ValueTac,
 	) {
-		super(new Map<TypeName, OpCode>([
+		super(new Map<typeof name, OpCode>([
 			[TypeName.LIST, OpCode.LIST_SET],
 			[TypeName.DICT, OpCode.DICT_SET],
 			[TypeName.SET,  OpCode.SET_SET],
@@ -51,7 +48,7 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 		switch (this.name) {
 			case TypeName.LIST: {
 				assert_instanceof(this.collection.type, TYPE.List);
-				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT)); // TODO: v0.5: .union(TYPE.NAT)
+				return assert.ok(this.accessor.type.isSubtypeOf(TYPE.INT.union(TYPE.NAT)));
 			}
 			case TypeName.DICT: {
 				assert_instanceof(this.collection.type, TYPE.Dict);
@@ -70,48 +67,53 @@ export class CollectionDynamicSet extends Opcode implements Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		cg.module.i32.wrap = (x) => x; // TODO: HACK: remove in v0.5
+		const {vm: {Vect, Value, List, Dict, Map: VmMap}, mod} = cg;
+
+		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
+		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
+		const value:      binaryen.ExpressionRef = this.value.codegen(cg);
+		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => Value.cast(collection, reftype);
 		switch (this.name) {
 			case TypeName.LIST: {
-				return cg.module.call('List.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $List)'),
-					cg.module.i32.wrap(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')),
-					this.value.codegen(cg),
-				], binaryen.none);
+				return List.set(
+					cast_collection(cg.vm.reftype.List),
+					mod.i32.wrap(Vect.asInt(Value.field(accessor).primitive)),
+					value,
+				);
 			}
 			case TypeName.DICT: {
-				return cg.module.call('Dict.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Dict)'),
-					cg.module.i64.extend_u(new BinValue(cg, this.accessor.codegen(cg)).interpret('intValue')), // TODO: v0.5: intValue will already be i64; remove `cg.module.i64.extend_u()` call
-					this.value.codegen(cg),
-				], binaryen.none);
+				return Dict.set(
+					cast_collection(cg.vm.reftype.Dict),
+					Vect.asNat(Value.field(accessor).primitive),
+					value,
+				);
 			}
 			case TypeName.SET: {
-				const base:     Local = cg.newLocal(new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'));
-				const accessor: Local = cg.newLocal(this.accessor.codegen(cg));
-				return cg.module.block(null, [
+				const base: Local = cg.newLocal(cast_collection(cg.vm.reftype.Map));
+				const xsor: Local = cg.newLocal(accessor, cg.vm.reftype.Value);
+				return mod.block(null, [
 					base.set(),
-					accessor.set(),
-					cg.module.if(
-						new BinVect(cg.module, new BinValue(cg, this.value.codegen(cg)).primitiveValue).isSpecial(true),
-						cg.module.call('Map.set', [
+					xsor.set(),
+					mod.if(
+						Vect.isConst(Value.field(value).primitive, true),
+						VmMap.set(
 							base.get(),
-							accessor.get(),
+							xsor.get(),
 							cg.getConst(BinConst.NULL),
-						], binaryen.none),
-						cg.module.drop(cg.module.call('Map.delete', [
+						),
+						mod.drop(VmMap.delete(
 							base.get(),
-							accessor.get(),
-						], cg.getReftype('(ref null $Value)'))),
+							xsor.get(),
+						)),
 					),
 				]);
 			}
 			case TypeName.MAP: {
-				return cg.module.call('Map.set', [
-					new BinValue(cg, this.collection.codegen(cg)).cast('(ref $Map)'),
-					this.accessor.codegen(cg),
-					this.value.codegen(cg),
-				], binaryen.none);
+				return VmMap.set(
+					cast_collection(cg.vm.reftype.Map),
+					accessor,
+					value,
+				);
 			}
 		}
 	}

@@ -1,7 +1,3 @@
-import {IrNode} from './IrNode.ts';
-
-
-
 /**
  * An abstract operation code.
  * Models the concept of opcodes in a VM, but for the high-level IR instead.
@@ -48,6 +44,11 @@ export enum OpCode {
 	TONAT,
 	TOFLOAT,
 
+	LIST_COUNT,
+	DICT_COUNT,
+	SET_COUNT,
+	MAP_COUNT,
+
 	INT_ADD,
 	INT_SUB,
 	INT_MUL,
@@ -78,6 +79,7 @@ export enum OpCode {
 	NID,
 	NEQ,
 
+	/** @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later. */
 	PHI,
 
 	DROP,
@@ -93,27 +95,33 @@ export enum OpCode {
 	DICT_COPY,
 	SET_COPY,
 	MAP_COPY,
+
+	GOTO,
+	GOTO_IF,
+	ENDPROGRAM,
 }
 
 
 
 /**
- * An Opcode is an IrNode witha an OpCode.
+ * An Opcode is an operation of the virtual machine.
  *
  * Known subclasses:
  * - Value
- * - Drop
- * - Decl
- * - Set
- * - CollectionDynamicSet
- * - CollectionDynamicCopy
+ * - Instruction
+ * - Terminator
  */
-export abstract class Opcode extends IrNode {
+export abstract class Opcode {
 	public constructor(private readonly opCode: OpCode) {
-		super();
 	}
 
-	public override toString(...args: readonly {toString(): string}[]): string {
+	/** Represent this Opcode as a string for inspection. */
+	public toString(...args: readonly {toString(): string}[]): string {
 		return `(${ [OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ') })`;
+	}
+
+	/** Type-validate this Opcode. Throws if invalid. */
+	public validate(): void {
+		return;
 	}
 }

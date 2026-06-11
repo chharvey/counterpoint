@@ -1,6 +1,7 @@
+import {Keyword} from '../../parser/index.ts';
 import {instanceOf} from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
-import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
+import {ValueType} from './ValueType.ts';
 
 
 
@@ -8,13 +9,13 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
  * Class for constructing the `float` type.
  * @final
  */
-export class Float extends UnenumeratedPrimitiveType {
+export class Float extends ValueType {
 	public constructor() {
-		super(false, new Set([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
+		super(new Set<VALUE.Float>([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
 	}
 
 	public override toString(): string {
-		return 'float';
+		return Keyword.FLOAT;
 	}
 
 	@instanceOf(() => VALUE.Float)

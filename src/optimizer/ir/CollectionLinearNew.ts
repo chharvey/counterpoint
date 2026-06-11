@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type ConstructorType,
 	assert_instanceof,
@@ -11,9 +8,10 @@ import {
 	runOnceMethod,
 } from '../../lib/index.ts';
 import {TYPE} from '../../typer/index.ts';
+import {TypeName} from './utils-public.ts';
 import {OpCode} from './Opcode.ts';
-import {TypeName} from './TypeName.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -21,7 +19,7 @@ import {Value} from './Value.ts';
 export class CollectionLinearNew extends Value {
 	public constructor(
 		private readonly name:  TypeName.TUPLE | TypeName.LIST | TypeName.SET,
-		private readonly items: readonly Value[],
+		private readonly items: readonly ValueTac[],
 		typ: TYPE.Type,
 	) {
 		super(new Map<TypeName, OpCode>([
@@ -48,15 +46,9 @@ export class CollectionLinearNew extends Value {
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
 		switch (this.name) {
-			case TypeName.TUPLE: {
-				return new BinValue(cg, cg.codegenTuple(this.items.map((item) => item.codegen(cg)))).value;
-			}
-			case TypeName.LIST: {
-				return new BinValue(cg, cg.codegenList(this.items.map((item) => item.codegen(cg)))).value;
-			}
-			case TypeName.SET: {
-				return new BinValue(cg, cg.codegenSet(this.items.map((item) => item.codegen(cg)))).value;
-			}
+			case TypeName.TUPLE: { return cg.vm.Value.newComposite(cg.codegenTuple (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.LIST:  { return cg.vm.Value.newComposite(cg.codegenList  (this.items.map((item) => item.codegen(cg)))); }
+			case TypeName.SET:   { return cg.vm.Value.newComposite(cg.codegenSet   (this.items.map((item) => item.codegen(cg)))); }
 		}
 	}
 }

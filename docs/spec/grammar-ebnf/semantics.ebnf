@@ -12,7 +12,7 @@ Text =:= Sequence<RealNumber>;
 SemanticParam[name: Text]
 	::= ();
 
-SemanticArg[name: Text, append: TRUE | FALSE | INHERIT]
+SemanticArg[name: Text, append: TRUE | FALSE | INHERIT | NOTINHERIT]
 	::= ();
 
 SemanticCondition[name: Text, include: TRUE | FALSE]
@@ -33,7 +33,7 @@ SemanticItem
 
 SemanticOp[operator: PLUS | HASH | OPT]
 	::= SemanticExpr;
-SemanticOp[operator: ORDER | CONCAT | ALTERN]
+SemanticOp[operator: SEQ | UNSEQ | UNCHOICE | CHOICE]
 	::= SemanticExpr SemanticExpr;
 
 

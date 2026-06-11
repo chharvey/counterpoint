@@ -6,7 +6,7 @@ import {
 import * as VALUE from '../cp-value/index.ts';
 import {MUT_OPERATOR} from './utils-private.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -32,7 +32,7 @@ class TypeMap extends ReferenceType {
 		public readonly typearg_con: Type,
 		is_mutable: boolean = false,
 	) {
-		super(is_mutable, new Set([new VALUE.Map()]));
+		super(new Set<VALUE.Map>([new VALUE.Map()]), is_mutable);
 	}
 
 	public override get hasMutable(): boolean {
@@ -50,7 +50,7 @@ class TypeMap extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => TypeMap)
 	public override isSubtypeOf(t: Type): boolean {

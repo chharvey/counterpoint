@@ -3,6 +3,7 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	type Optimizer,
 	type Lowerable,
+	IR,
 	ParseError01,
 } from '../../index.ts';
 import {runOnceMethod} from '../../lib/index.ts';
@@ -16,10 +17,10 @@ import {
 	to_serializable,
 } from '../../parser/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import {DECORATOR} from '../Decorator.ts';
+import {Decorator} from '../Decorator.ts';
 import {Validator} from '../Validator.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
-import type {ASTNodeStatement} from './ASTNodeStatement.ts';
+import type {ASTNodeBlock} from './ASTNodeBlock.ts';
 
 
 
@@ -29,13 +30,13 @@ function report_syntax_errors(node: SyntaxNode): void {
 			throw new ParseError01(to_serializable(n));
 		} else if (n.type === 'MISSING' || n.text === '') {
 			const serializable: Serializable = to_serializable(n);
-			const err = new ParseError01(to_serializable(n));
+			const err = new ParseError01(serializable);
 			// @ts-expect-error --- TODO: write class for `ParseError02`
 			err.message = (n.type === 'MISSING')
 				? err.message.replace(/Unexpected/, 'Expected')
 				: `Expected token: \`${ n.type }\` at line ${ serializable.line_index + 1 } col ${ serializable.col_index + 1 }.`;
 			throw err;
-		} else if (n.childCount > 0) {
+		} else if (n.childCount) {
 			report_syntax_errors(n);
 		}
 	});
@@ -54,7 +55,7 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 	public static fromSource(src: string, config: CPConfig = CONFIG_DEFAULT): ASTNodeGoal {
 		const root_node = TS_PARSER.parse(src).rootNode as SyntaxNodeType<'source_file'>;
 		report_syntax_errors(root_node);
-		return DECORATOR.decorateTS(root_node, config);
+		return new Decorator(config).decorateTS(root_node);
 	}
 
 
@@ -63,10 +64,10 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 
 	public constructor(
 		start_node: SyntaxNodeType<'source_file'>,
-		public override readonly children: readonly ASTNodeStatement[],
+		public readonly block: ASTNodeBlock | null,
 		config: CPConfig,
 	) {
-		super(start_node, {}, children);
+		super(start_node, {}, (block) ? [block] : []);
 		this.#validator = new Validator(config);
 	}
 
@@ -80,7 +81,8 @@ export class ASTNodeGoal extends ASTNodeCP implements Lowerable {
 	 */
 	@runOnceMethod
 	public lower(optimizer: Optimizer): void {
-		this.children.forEach((stmt) => stmt.lower(optimizer));
+		this.block?.lower(optimizer);
+		optimizer.terminateBlock(new IR.EndProgram());
 		return optimizer.validate();
 	}
 }

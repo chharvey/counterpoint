@@ -4,7 +4,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {ReferenceType} from './ReferenceType.ts';
@@ -17,7 +17,7 @@ import {ReferenceType} from './ReferenceType.ts';
  */
 class TypeObject extends ReferenceType {
 	public constructor() {
-		super(false, new Set([
+		super(new Set<VALUE.Collection>([
 			new VALUE.List(),
 			new VALUE.Dict(),
 			new VALUE.Set(),
@@ -40,7 +40,7 @@ class TypeObject extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}

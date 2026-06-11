@@ -15,13 +15,10 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {ASTNodeCP} from './ASTNodeCP.ts';
 import type {ASTNodeCase} from './ASTNodeCase.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
 import {
 	assignToDeco,
 	ASTNodeCollectionLiteral,
@@ -37,18 +34,20 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'map_literal'>,
+		start_node: SyntaxNodeFamily<'map_literal', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<ASTNodeCase>>,
 	) {
 		super(start_node, children);
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
+		if (this.children.some((c) => c.antecedent.type().isBottomType || c.consequent.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		return new TYPE.Map(
-			TYPE.Union.all(this.children.map((c) => c.antecedent.type())),
-			TYPE.Union.all(this.children.map((c) => c.consequent.type())),
+			TYPE.Union.all(...this.children.map((c) => c.antecedent.type())),
+			TYPE.Union.all(...this.children.map((c) => c.consequent.type())),
 			true,
 		);
 	}
@@ -82,6 +81,6 @@ export class ASTNodeMap extends ASTNodeCollectionLiteral {
 				))
 			));
 		}
-		throw new TypeErrorNotAssignable(this.type(), assignee, this);
+		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }

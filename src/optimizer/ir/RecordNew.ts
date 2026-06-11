@@ -1,9 +1,6 @@
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -12,20 +9,20 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Create a record. */
 export class RecordNew extends Value {
 	public constructor(
-		private readonly props: ReadonlyMap<bigint, {readonly keysrc?: string, readonly value: Value}>,
+		private readonly props: ReadonlyMap<bigint, {readonly keysrc: string, readonly value: ValueTac}>,
 		typ: TYPE.Type,
 	) {
 		super(OpCode.RECORD_NEW, typ);
 	}
 
 	public override toString(): string {
-		// eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing --- keysrc may be empty string
 		return super.toString(...[...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`));
 	}
 
@@ -37,9 +34,9 @@ export class RecordNew extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return new BinValue(cg, cg.codegenRecord(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([id, {value}]) => [
+		return cg.vm.Value.newComposite(cg.codegenRecord(new Map<bigint, binaryen.ExpressionRef>([...this.props].map(([id, {value}]) => [
 			id,
-			new BinValue(cg, value.codegen(cg)).toProperty(id),
-		])))).value;
+			cg.newProperty(id, value.codegen(cg)),
+		]))));
 	}
 }

@@ -9,6 +9,12 @@ export enum Operator {
 	EMP,
 	AFF,
 	NEG,
+	INT,
+	NAT,
+	FLOAT,
+	CAST,
+	CAST_MAY,
+	CAST_RES,
 	EXP,
 	MUL,
 	DIV,
@@ -56,6 +62,15 @@ export type ValidOperatorUnary = (
 	| Operator.NOT
 	| Operator.EMP
 	| Operator.NEG
+	| Operator.INT
+	| Operator.NAT
+	| Operator.FLOAT
+);
+
+export type ValidOperatorCast = (
+	| Operator.CAST
+	| Operator.CAST_MAY
+	| Operator.CAST_RES
 );
 
 export type ValidOperatorArithmetic = (
@@ -63,6 +78,7 @@ export type ValidOperatorArithmetic = (
 	| Operator.MUL
 	| Operator.DIV
 	| Operator.ADD
+	| Operator.SUB
 );
 
 export type ValidOperatorComparative = (
@@ -87,6 +103,7 @@ export type ValidOperatorLogical = (
 );
 
 export type ValidOperatorBinary = (
+	| ValidOperatorCast
 	| ValidOperatorArithmetic
 	| ValidOperatorComparative
 	| ValidOperatorEquality

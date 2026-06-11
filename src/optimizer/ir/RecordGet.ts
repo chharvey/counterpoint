@@ -1,6 +1,6 @@
 import type binaryen from 'binaryen';
 import {
-	BinValue,
+	bigint_to_i64,
 	type Builder,
 } from '../../index.ts';
 import {
@@ -11,13 +11,14 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Read an entry of a record. */
 export class RecordGet extends Value {
 	public constructor(
-		private readonly record:   Value,
+		private readonly record:   ValueTac,
 		private readonly accessor: {readonly keyid: bigint, readonly keysrc?: string},
 		entry_type: TYPE.Type,
 	) {
@@ -40,9 +41,9 @@ export class RecordGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.module.call('Record.get', [
-			new BinValue(cg, this.record.codegen(cg)).cast('(ref $Record)'),
-			cg.module.i64.const(Number(this.accessor.keyid), 0), // TODO: v0.5: use `bigint_to_i64(this.cg.module, this.accessor.keyid, true)`
-		], cg.getReftype('(ref $Value)'));
+		return cg.vm.Record.get(
+			cg.vm.Value.cast(this.record.codegen(cg), cg.vm.reftype.Record),
+			bigint_to_i64(cg.mod, this.accessor.keyid, true),
+		);
 	}
 }

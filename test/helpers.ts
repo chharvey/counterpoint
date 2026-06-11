@@ -1,13 +1,10 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import {
-	type CPConfig,
-	CONFIG_DEFAULT,
 	AST,
 	VALUE,
 	type TYPE,
 	Optimizer,
-	BinValue,
 	BinConst,
 	Builder,
 } from '../src/index.ts';
@@ -15,47 +12,12 @@ import {
 
 
 const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
-
-
-
-export const CONFIG_RADICES_SEPARATORS_ON: CPConfig = {
-	...CONFIG_DEFAULT,
-	languageFeatures: {
-		...CONFIG_DEFAULT.languageFeatures,
-		integerRadices:    true,
-		numericSeparators: true,
-	},
-};
-
-export const CONFIG_FOLDING_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-	},
-};
-
-export const CONFIG_COERCION_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		intCoercion: false,
-	},
-};
-
-export const CONFIG_FOLDING_COERCION_OFF: CPConfig = {
-	...CONFIG_DEFAULT,
-	compilerOptions: {
-		...CONFIG_DEFAULT.compilerOptions,
-		constantFolding: false,
-		intCoercion:     false,
-	},
-};
+const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
 
 
 
 /**
- * Generate an {@link AST.Goal} containing a Counterpoint script and run checks on it,
+ * Generate an {@link AST.ASTNodeGoal} containing a Counterpoint script and run checks on it,
  * then return various aspects of the node.
  * @param source         the source text of the Counterpoint script
  * @param opts           various options for compiling
@@ -71,14 +33,15 @@ export function setupScript(
 	opts:   {varCheck?: boolean, typeCheck?: boolean, lower?: boolean, codegen?: boolean} = {},
 ): {
 	readonly goal:  AST.ASTNodeGoal,
-	readonly stmts: AST.ASTNodeGoal['children'],
+	readonly stmts: NonNullable<typeof goal.block>['children'],
 	readonly opt:   Optimizer,
 	readonly cg:    Builder,
-	readonly mod:   Builder['module'],
+	readonly mod:   Builder['mod'],
 } {
-	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source.slice(1, -1));
+	const goal: AST.ASTNodeGoal = AST.ASTNodeGoal.fromSource(source);
 	const opt = new Optimizer();
 	const cg  = new Builder();
+	assert.ok(goal.block, 'Expected ASTNodeGoal to contain a block.');
 	opts.varCheck  ??= true;
 	opts.typeCheck ??= true;
 	opts.lower     ??= true;
@@ -91,25 +54,35 @@ export function setupScript(
 		goal,
 		opt,
 		cg,
-		stmts: goal.children,
-		mod:   cg.module,
+		stmts: goal.block.children,
+		mod:   cg.mod,
 	};
 }
 
 
 
-export function typeUnit(value: symbol): TYPE.Unit<VALUE.Symbol>;
+export function typeUnit(value: symbol, name?: string): TYPE.Unit<VALUE.Symbol>;
 export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
+export function typeUnit(value: bigint, t: 'nat'): TYPE.Unit<VALUE.Natural>;
 export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
 export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
-export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String> {
+export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
+	if (typeof value === 'bigint' && tag === 'nat') {
+		TYPE_UNIT_MEMO_NAT.has(value) || TYPE_UNIT_MEMO_NAT.set(value, (
+			value === 0n              ? VALUE.NAT_0 :
+			value === 1n              ? VALUE.NAT_1 :
+			typeof value === 'bigint' ? new VALUE.Natural(value) :
+			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		).toType());
+		return TYPE_UNIT_MEMO_NAT.get(value)!;
+	}
 	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
 		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
 		value === ''              ? VALUE.STR_EMPTY :
-		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :
@@ -120,13 +93,23 @@ export function typeUnit(value: symbol | bigint | number | string): TYPE.Unit<VA
 
 
 
-export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null): binaryen.ExpressionRef {
+export function genConst(cg: Builder, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
+export function genConst(cg: Builder, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
+export function genConst(cg: Builder, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
 	switch (value) {
 		case null:  { return cg.getConst(BinConst.NULL); }
 		case false: { return cg.getConst(BinConst.FALSE); }
 		case true:  { return cg.getConst(BinConst.TRUE); }
 	}
-	return new BinValue(cg, (
+	if (t === 'nat') {
+		return (
+			value === 0n              ? VALUE.NAT_0 :
+			value === 1n              ? VALUE.NAT_1 :
+			typeof value === 'bigint' ? new VALUE.Natural(value) :
+			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+		).codegen(cg);
+	}
+	return (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
@@ -134,7 +117,7 @@ export function genConst(cg: Builder, value: null | boolean | symbol | bigint | 
 		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
-		typeof value === 'string' ? assert.fail('String argument to `genConst` is not yet supported.') :
+		typeof value === 'string' ? new VALUE.String(value) :
 		assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
-	).codegen(cg.module)).value;
+	).codegen(cg);
 }

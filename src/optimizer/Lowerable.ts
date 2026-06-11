@@ -5,6 +5,7 @@ import type {Optimizer} from './index.ts';
 /**
  * Known implementers:
  * - ASTNodeStatement
+ * - ASTNodeBlock
  * - ASTNodeGoal
  */
 export interface Lowerable {

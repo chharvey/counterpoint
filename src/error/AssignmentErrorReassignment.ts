@@ -4,10 +4,10 @@ import {AssignmentError} from './AssignmentError.ts';
 
 
 /**
- * An AssignmentErrorReassignment is thrown when attempting to reassign a fixed variable.
+ * An AssignmentErrorReassignment is thrown when attempting to reassign a read-only variable.
  * @example
  * val my_var: int = 42;
- * set my_var = 24;      % AssignmentErrorReassignment: Reassignment of fixed variable `my_var`.
+ * set my_var = 24;      % AssignmentErrorReassignment: Reassignment of read-only variable `my_var`.
  */
 export class AssignmentErrorReassignment extends AssignmentError {
 	/**
@@ -16,7 +16,7 @@ export class AssignmentErrorReassignment extends AssignmentError {
 	 */
 	public constructor(variable: AST.ASTNodeVariable) {
 		super(
-			`Reassignment of fixed variable \`${ variable.source }\`.`,
+			`Reassignment of read-only variable \`${ variable.source }\`.`,
 			AssignmentError.CODES.get(AssignmentErrorReassignment),
 			variable.line_index,
 			variable.col_index,

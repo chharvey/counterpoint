@@ -9,7 +9,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {Union} from './Union.ts';
@@ -40,7 +40,7 @@ class TypeRecord extends ValueType {
 	 * @param typeargs a map of this type’s property ids along with their associated types
 	 */
 	public constructor(public readonly typeargs: ReadonlyMap<bigint, EntryType> = new Map()) {
-		super(false, new Set([new VALUE.Record()]));
+		super(new Set<VALUE.Record>([VALUE.RECORD_EMPTY]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -63,7 +63,7 @@ class TypeRecord extends ValueType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@instanceOf(() => TypeRecord)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
@@ -88,8 +88,17 @@ class TypeRecord extends ValueType {
 			: assert.fail(new TypeErrorNoEntry('key', this, accessor));
 	}
 
+	public set(key: bigint, typ: Type, accessor: AST.ASTNodeKey): void {
+		const entrytype: EntryType | undefined = this.typeargs.get(key);
+		if (entrytype) {
+			(this.typeargs as Map<bigint, EntryType>).set(key, {...entrytype, type: typ});
+		} else {
+			throw new TypeErrorNoEntry('key', this, accessor);
+		}
+	}
+
 	public valueTypes(): Type {
-		return Union.all([...this.typeargs.values()].map((t) => t.type));
+		return Union.all(...[...this.typeargs.values()].map((t) => t.type));
 	}
 
 	public isKeyCanonical(key: bigint): boolean {

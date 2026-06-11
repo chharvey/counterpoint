@@ -112,7 +112,7 @@ RealNumber Multiply(Sequence<RealNumber> ns) :=
 None! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
 		1. *If* `i` is 0:
-			1. *Continue.*
+			1. *Skip.*
 		2. *If* `units[i]` is less than \x80 or greater than or equal to \xc0:
 			1. *Note:* The bits of `units[i]` are either "0_______" or "11______".
 			2. *Throw:* `i`.
@@ -216,6 +216,9 @@ Boolean Identical(Object a, Object b) :=
 	4. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Integer`:
 		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
+	4. *If* `a` is an instance of `Natural` *and* `b` is an instance of `Natural`:
+		1. *If* `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
 	5. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
 		1. *If* `a` and `b` have the same bitwise encoding:
 			1. *Return:* `true`.
@@ -262,9 +265,8 @@ Compares two objects and returns whether they are considered “equal” by some
 Boolean Equal(Object a, Object b) :=
 	1. *If* `Identical(a, b)` is `true`:
 		1. *Return:* `true`.
-	2. *If* `a` is an instance of `Integer` *or* `b` is an instance of `Integer`:
-		1. *If* `a` is an instance of `Float` *or* `b` is an instance of `Float`:
-			1. *Return:* `Equal(Float(a), Float(b))`.
+	2. *If* `a` is an instance of `Number` *and* `b` is an instance of `Number`:
+		1. *Return:* `Equal(Float(a), Float(b))`.
 	3. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
 		1. *If* `a` is `0.0` *and* `b` is `-0.0`:
 			1. *Return:* `true`.
@@ -353,7 +355,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			1. *If* `seq_b[i].optional` is `false`:
 				1. *Assert:* `expr.children[i]` is set.
 		6. *For index* `i` in `expr.children`:
-			1. Let `ib` be `seq_b[i]`.
+			1. *Let* `ib` be `seq_b[i]`.
 			2. *If:* `ib` is set:
 				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
 		7. *Return.*
@@ -369,7 +371,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 				2. *If* `property` is not set:
 					1. *Throw:* a new TypeErrorNotAssignable.
 		6. *For each* `property` in `expr.children`:
-			1. Let `vb` be `struct_b[property.children.0.id]`.
+			1. *Let* `vb` be `struct_b[property.children.0.id]`.
 			2. *If:* `vb` is set:
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
@@ -421,7 +423,11 @@ Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
 		1. *Let* `result` be the sum, `operand0 + operand1`,
 			obtained by adding `operand0` (the augend) to `operand1` (the addend).
 		2. *Return:* `result`.
-	5. *Throw:* a new TypeErrorInvalidOperation.
+	5. *Else If* `op` is `SUB`:
+		1. *Let* `result` be the difference, `operand0 - operand1`,
+			obtained by subtracting `operand1` (the subtrahend) from `operand0` (the minuend).
+		2. *Return:* `result`.
+	6. *Throw:* a new TypeErrorInvalidOperation.
 ```
 
 
@@ -491,7 +497,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			3. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `false`:
 					1. *Set* `all_optional` to `false`.
-			4. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to `Intersection(x.type, y.type)`.
+			4. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Intersection(x.type, y.type)`.
 			5. *Return:* a new EntryTypeSchema [
 					type=     `intersection`,
 					optional= `all_optional`,
@@ -504,21 +510,19 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 			4. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `true`:
 					1. *Set* `any_optional` to `true`.
-			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to `Union(x.type, y.type)`.
+			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Union(x.type, y.type)`.
 			6. *Return:* a new EntryTypeSchema [
 					type=     `union`,
 					optional= `any_optional`,
 				].
 	8. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
-			1. *Let* `entry` be the item accessed at index `accessor.index` in `base_type`.
-			2. *Return:* `entry`.
+			1. *Return:* the item accessed at index `accessor.index` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	9. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
-			1. *Let* `entry` be the item accessed at key `accessor.id` in `base_type`.
-			2. *Return:* `entry`.
+			1. *Return:* the value accessed at key `accessor.id` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
 	10. *Else:*
@@ -531,12 +535,13 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				].
 		4. *If* `base_type` is a List type:
 			1. *Let* `t` be the type argument over `base_type`.
-			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Integer)` is `true`:
+			2. *Let* `integral` be *UnwrapAffirm:* `Union(Integer, Natural)`.
+			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, integral)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
 					type=     `t`,
 					optional= `accessor_maybe`,
 				].
-			3. *Else:*
+			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		5. *Else If* `base_type` is a Dict type:
 			1. *Let* `t` be the type argument over `base_type`.
@@ -588,7 +593,7 @@ None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry
 	2. *If* `access_kind` is *MAYBE* *and* `is_entry_optional` is `true`:
 		1. *Return.*
 	3. *If* `access_kind` is *RESULT*:
-		1. *Throw:* a new TypeError "Operator not yet supported.".
+		// TODO: implement
 	4. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
@@ -603,7 +608,7 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 	1. *If* `access_kind` is *MAYBE*:
 		1. *Return:* `Union(type, Null)`.
 	2. *Else If* `access_kind` is *RESULT*:
-		1. *Throw:* a new TypeError "Operator not yet supported.".
+		// TODO: implement
 	3. *Else:*
 		1. *Assert:* `access_kind` is *NORMAL*.
 		2. *Return:* `type`.

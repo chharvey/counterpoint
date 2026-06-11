@@ -14,7 +14,10 @@ import {
 	type CPConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+import type {
+	SyntaxNodeType,
+	SyntaxNodeFamily,
+} from '../utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
@@ -24,13 +27,10 @@ import {
 	validate_access_kind,
 	update_accessed_type,
 } from './utils-private.ts';
-import type {Reassignable} from './Reassignable.ts';
 import {ASTNodeIndex} from './ASTNodeIndex.ts';
 import {ASTNodeKey} from './ASTNodeKey.ts';
-import {
-	typeDeco,
-	ASTNodeExpression,
-} from './ASTNodeExpression.ts';
+import {ASTNodeExpression} from './ASTNodeExpression.ts';
+import type {Reassignable} from './Reassignable.ts';
 
 
 
@@ -44,23 +44,22 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
-			| SyntaxNodeType<'assignee'>,
+			| SyntaxNodeFamily<'assignee', ['break']>,
 
 		public readonly kind:     ValidAccessOperator,
 		public readonly base:     ASTNodeExpression,
 		public readonly accessor: ASTNodeIndex | ASTNodeKey | ASTNodeExpression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		if (this.kind === Operator.DOT_RES) {
+		if ([Operator.DOT_RES].includes(this.kind)) {
 			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
 		}
 	}
 
 	@memoizeMethod
-	@typeDeco
 	public override type(): TYPE.Type {
 		if (this.base.type().isBottomType) {
-			return TYPE.NEVER;
+			return TYPE.NOTHING;
 		}
 		const entry: EntryType = get_entry_info(this.base.type(), this);
 		validate_access_kind(this.kind, entry.optional, this);
@@ -69,15 +68,15 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 
 	@memoizeMethod
 	public override lower(optimizer: Optimizer): IR.Value {
-		const typ:        TYPE.Type = this.type();
-		const base_value: IR.Value  = this.base.lower(optimizer).asTac(optimizer);
+		const typ:        TYPE.Type   = this.type();
+		const base_value: IR.ValueTac = this.base.lower(optimizer).asTac(optimizer);
 
 		const non_nullish_base = (): IR.Value => {
 			switch (true) {
 				case this.accessor instanceof ASTNodeIndex: {
 					if (base_value.type instanceof TYPE.Tuple) {
 						/*
-						 * Ensure a canonical index. It may be within the range `[0, count - 1]`.
+						 * Ensure a canonical index. It may be within the mathematical range *[0, count - 1]*.
 						 * We cannot assume that this index is validated by the type-checker,
 						 * since the actual type of the base may be narrower than its declared type.
 						 * E.g.:
@@ -146,6 +145,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 		if (this.kind === Operator.DOT_MAY) {
 			return IR.conditional_expression(
 				optimizer,
+				this.type(),
 				() => new IR.Unop(IR.OpCode.ISNULL, base_value, TYPE.BOOL),
 				() => new IR.Const(VALUE.NULL),
 				non_nullish_base,
@@ -180,7 +180,7 @@ export class ASTNodeAccess extends ASTNodeExpression implements Reassignable {
 				}
 				switch (true) {
 					case base_value instanceof VALUE.List: {
-						return base_value.get(BigInt((accessor_value as VALUE.Integer).toNumber()), KIND_MAYBE, this.accessor);
+						return base_value.get((accessor_value as VALUE.Integer | VALUE.Natural).toBigInt(), KIND_MAYBE, this.accessor);
 					}
 					case base_value instanceof VALUE.Dict: {
 						return base_value.get((accessor_value as VALUE.Symbol).id, KIND_MAYBE, this.accessor);

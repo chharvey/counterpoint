@@ -1,52 +1,18 @@
 import * as assert from 'node:assert';
-import * as fs from 'node:fs';
-import * as path from 'node:path';
 import binaryen from 'binaryen';
+import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../optimizer/index.ts';
-import {
-	STRUCT_FIELD,
-	Global,
-	BinValue,
-} from '../code-generator/index.ts';
+import type {BinaryenModuleUpdates} from './-types.d.ts';
+import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
-import {BinVect} from './BinVect.ts';
-import type {
-	BinaryenModuleUpdates,
-	Field,
-	TypeBuilder,
-} from './-types.d.ts';
 
 
-
-type HeaptypeKey = (
-	| '$Value'
-	| '$Property'
-	| '$Case'
-	| '$Tuple'
-	| '$Record'
-	| '$ListInternal'
-	| '$DictInternal'
-	| '$MapInternal'
-	| '$Object'
-	| '$List'
-	| '$Dict'
-	| '$Map'
-);
-type ReftypeKey = `(ref ${ HeaptypeKey | `null ${ '$Value' | '$Property' | '$Case' }` })`;
 
 export enum BinConst {
 	NULL,
 	FALSE,
 	TRUE,
-}
-
-
-
-/** stub for v0.5 */
-export function bigint_to_i64(mod: binaryen.Module, value: bigint, u: boolean = false): binaryen.ExpressionRef {
-	u;
-	return mod.i64.const(Number(value), 0);
 }
 
 
@@ -81,6 +47,8 @@ function insert_entry(array: Array<binaryen.ExpressionRef | undefined>, index: n
 
 
 
+
+
 /**
  * The Builder generates assembly code.
  */
@@ -92,43 +60,6 @@ export class Builder {
 	 */
 	static readonly #LOAD_FACTOR = 7 / 8;
 
-	private static readonly IMPORTS: readonly string[] = [
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/types.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/stubs.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/exp.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/builder/fid.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/mod.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/capacity-needed.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/tombstones.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/hash.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Tuple.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Record.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/List.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Dict.wat'), 'utf8'),
-		fs.readFileSync(path.join(import.meta.dirname, '../../src/code-generator/Map.wat'), 'utf8'),
-	];
-
-	/**
-	 * Create a new struct field for a `TypeBuilder`.
-	 * @param typ        the field type
-	 * @param packedType one of `'notPacked' | 'i8' | 'i16'` @default `'notPacked'`
-	 * @param mutable    Can the field be reassigned?        @default `false`
-	 */
-	private static newField(typ: binaryen.Type, packedType: 'notPacked' | 'i8' | 'i16' = 'notPacked', mutable: boolean = false): Field {
-		return {
-			type:       typ,
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			packedType: binaryen[packedType],
-			mutable,
-		};
-	}
-
-
-	/** A lookup table for heap types created by a Binaryen TypeBuilder. */
-	readonly #heaptypeRegistry = new Map<HeaptypeKey, binaryen.Type>();
-
-	/** A registry of reference (and reference-null) types. */
-	readonly #reftypeRegistry = new Map<ReftypeKey, binaryen.Type>();
 
 	/** A registry of constant WASM expressions. */
 	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
@@ -136,45 +67,19 @@ export class Builder {
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
 
-	/** A map containing data of WASM local variables, indexed by their name. */
-	readonly #globals = new Map<string, Global>();
+	/** The Binaryen module holding the generated code. */
+	public readonly mod: BinaryenModuleUpdates;
 
-	/** The Binaryen module to build upon building. */
-	public readonly module: BinaryenModuleUpdates = binaryen.parseText(`
-		(module
-			${ Builder.IMPORTS.join('') }
-		)
-	`) as BinaryenModuleUpdates;
 
-	public constructor() {
-		this.module.setFeatures(( // NOTE: features are bit tags; to add them we must use bit-wise disjunction
-			/* eslint-disable @stylistic/operator-linebreak */
-			binaryen.Features.SIMD128 |
-			binaryen.Features.ReferenceTypes |
-			binaryen.Features.Multivalue |
-			binaryen.Features.GC
-			/* eslint-enable @stylistic/operator-linebreak */
-		));
-
-		this.#setupTypes();
-		this.#setupGlobals();
-		this.#setupFunctions();
+	public constructor(public readonly vm: VirtualMachine = new VirtualMachine()) {
+		this.mod = new binaryen.Module() as BinaryenModuleUpdates;
+		this.mod.setFeatures(vm.mod.getFeatures());
 
 		this.#constRegistry = new Map([
-			[BinConst.NULL,  new BinValue(this, new BinVect(this.module))       .value],
-			[BinConst.FALSE, new BinValue(this, new BinVect(this.module, false)).value],
-			[BinConst.TRUE,  new BinValue(this, new BinVect(this.module, true)) .value],
+			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
+			[BinConst.FALSE, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
+			[BinConst.TRUE,  this.vm.Value.newPrimitive(this.vm.Vect.TRUE)],
 		]);
-	}
-
-	public getHeaptype(key: HeaptypeKey): binaryen.Type {
-		assert.ok(this.#heaptypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
-		return this.#heaptypeRegistry.get(key)!;
-	}
-
-	public getReftype(key: ReftypeKey): binaryen.Type {
-		assert.ok(this.#reftypeRegistry.has(key), `Expected type registry to have type \`${ key }\`.`);
-		return this.#reftypeRegistry.get(key)!;
 	}
 
 	public getConst(key: BinConst): binaryen.ExpressionRef {
@@ -189,7 +94,7 @@ export class Builder {
 	 * @return      the new local variable
 	 */
 	public newLocal(value: binaryen.ExpressionRef, typ?: binaryen.Type): Local {
-		const local = new Local(this.module, this.#locals.size, value, typ);
+		const local = new Local(this.mod, this.#locals.size, value, typ);
 		this.#locals.add(local);
 		return local;
 	}
@@ -205,16 +110,16 @@ export class Builder {
 	public setLocal(schema: SymbolSchemaVar | Temp, value: binaryen.ExpressionRef, typ?: binaryen.Type): boolean {
 		let did: boolean = false;
 		if (!this.getLocal(schema)) {
-			this.#locals.add(new Local(this.module, this.#locals.size, value, typ, schema));
+			this.#locals.add(new Local(this.mod, this.#locals.size, value, typ, schema));
 			did = true;
 		}
 		return did;
 	}
 
 	/**
-	 * Get the local with the given id in this Builder’s list, if it’s been added; else, return `undefined`.
-	 * @param  id the schema of the local to get
-	 * @return    the local or `undefined`
+	 * Get the local with the given schema/temp in this Builder’s list, if it’s been added; else, return `undefined`.
+	 * @param  schema the compiler’s internal data for a declared variable or an optimizer temporary
+	 * @return        the local or `undefined`
 	 */
 	public getLocal(schema: SymbolSchemaVar | Temp): Local | undefined {
 		return [...this.#locals].find((local) => local.schema === schema);
@@ -222,7 +127,8 @@ export class Builder {
 
 	/**
 	 * Set and then return a local variable.
-	 * @param schema the symbol schema of the variable to set
+	 * If a variable with that schema has already been added, this Builder’s state is not changed.
+	 * @param schema the compiler’s internal data for a declared variable or an optimizer temporary
 	 * @param value  the binaryen value of the variable to set
 	 * @param type   the type of the value; if not supplied, the Local will compute its type using `binaryen.getExpressionType`
 	 * @return       the local variable set (or retrieved)
@@ -241,12 +147,94 @@ export class Builder {
 	}
 
 	/**
+	 * Return a `v128` representing the argument.
+	 * @param arg one of the following:
+	 *            - the native value `null`, `false`, or `true` (corresponding to its representation)
+	 *            - a Binaryen `i64`, `f64`, or `v128` value to use in a `v128`
+	 *            - an `unreachable`, which is directly returned
+	 * @param opts an object:
+	 * 	@property `unsigned` - if `arg` is an `i64`, should it be interpreted as unsigned? (default `false`)
+	 * 	@property `scale`    - the scale factor for decimal values (default `undefined`) — currently not supported
+	 * @returns a `v128` value encoding the argument (or `unreachable` if given)
+	 * @deprecated
+	 */
+	public newVect(
+		arg:  binaryen.ExpressionRef /* unreachable | i64 | f64 | v128 */,
+		opts: {unsigned?: boolean, scale?: bigint} = {},
+	): binaryen.ExpressionRef /* v128 */ {
+		const {Vect} = this.vm;
+		switch (binaryen.getExpressionType(arg)) {
+			case binaryen.v128: {
+				return arg;
+			}
+			case binaryen.unreachable: {
+				return arg;
+			}
+			case binaryen.i64: {
+				return opts.unsigned ? Vect.newNat(arg) : Vect.newInt(arg);
+			}
+			case binaryen.f64: {
+				return Vect.newFloat(arg);
+			}
+			default: {
+				throw new TypeError(`Expected argument \`${ binaryen.emitText(arg) }\` to be one of the following types:\n\t${ [
+					'`unreachable`',
+					'`i64`',
+					'`f64`',
+				].join('\n\t') }.`);
+			}
+		}
+	}
+
+	/**
+	 * Create a `$Property` struct containing the given key and `$Value`.
+	 * Note that a `$Property` may only contain a “default” `$Value` (a `(struct.new_default)`)
+	 * if its key is less than `\x100` — in which case it is a tombstone property.
+	 * @param arg one of the following:
+	 *            - a Binaryen `(ref $Value)`, or `(ref null $Value)`
+	 *            - an `unreachable`, which is directly returned
+	 * @returns a `(struct.new $Value)` holding an encoding of the argument (or `unreachable` if given)
+	 */
+	public newProperty(key: bigint, arg: binaryen.ExpressionRef /* unreachable | (ref $Value) | (ref null $Value) */): binaryen.ExpressionRef /* (ref $Property) */ {
+		switch (binaryen.getExpressionType(arg)) {
+			case binaryen.unreachable: {
+				return arg;
+			}
+			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
+			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
+			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
+			case this.vm.reftypeNull.Value | 4:
+			case this.vm.reftype.Value     | 4:
+			case this.vm.reftypeNull.Value:
+			case this.vm.reftype.Value:
+			default: {
+				/* NOTE: If the expression type is `binaryen.nullref`, we’re assuming a `(ref null $Value)` was given.
+				But in case a `(ref null $Case)`, etc. is given, an `(unreachable)` should be returned, since those aren’t valid in a `$Property` struct.
+				Since Binaryen considers all nullish values to be `nullref`, we can’t make that distinction. */
+				return this.mod.struct.new([
+					bigint_to_i64(this.mod, key, true),
+					arg,
+				], this.vm.heaptype.Property);
+			}
+		}
+	}
+
+	/**
+	 * Return a new `$String` from UTF-8-encoded code units.
+	 * @param units items in the array; must be of type `i32`
+	 * @return      `(array.new_fixed $String <...items>)`
+	 */
+	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+		return this.mod.array.new_fixed(this.vm.heaptype.String, units);
+	}
+
+	/**
 	 * Return a new `$Tuple` from items.
 	 * @param items items in the array; must be of type `(ref $Value)`
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
 	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.module.array.new_fixed(this.getHeaptype('$Tuple'), items);
+		return this.mod.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
 	/**
@@ -258,7 +246,7 @@ export class Builder {
 	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.module.array.new_fixed(this.getHeaptype('$Record'), entries as binaryen.ExpressionRef[]);
+		return this.mod.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
 	}
 
 	/**
@@ -274,13 +262,13 @@ export class Builder {
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? this.module.ref.null(this.getReftype('(ref null $Value)')),
+			(_, i) => items[i] ?? this.mod.ref.null(this.vm.reftypeNull.Value),
 		);
-		return this.module.struct.new([
-			this.#globals.get('obj-ctr')!.plusPlus(),
-			this.module.i32.const(items.length),
-			this.module.array.new_fixed(this.getHeaptype('$ListInternal'), entries),
-		], this.getHeaptype('$List'));
+		return this.mod.struct.new([
+			this.vm.Object.ctrPlusPlus(),
+			this.mod.i32.const(items.length),
+			this.mod.array.new_fixed(this.vm.heaptype.ListInternal, entries),
+		], this.vm.heaptype.List);
 	}
 
 	/**
@@ -297,14 +285,14 @@ export class Builder {
 		}
 		const entries = new Array<binaryen.ExpressionRef | undefined>(capacity).fill(undefined);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
-		return this.module.struct.new([
-			this.#globals.get('obj-ctr')!.plusPlus(),
-			this.module.i32.const(props.size),
-			this.module.array.new_fixed(
-				this.getHeaptype('$DictInternal'),
-				entries.map((entry) => entry ?? this.module.ref.null(this.getReftype('(ref null $Property)'))),
+		return this.mod.struct.new([
+			this.vm.Object.ctrPlusPlus(),
+			this.mod.i32.const(props.size),
+			this.mod.array.new_fixed(
+				this.vm.heaptype.DictInternal,
+				entries.map((entry) => entry ?? this.mod.ref.null(this.vm.reftypeNull.Property)),
 			),
-		], this.getHeaptype('$Dict'));
+		], this.vm.heaptype.Dict);
 	}
 
 	/**
@@ -330,466 +318,59 @@ export class Builder {
 		while (cases.size > capacity * Builder.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
-		const rt_map: binaryen.Type = this.getReftype('(ref $Map)');
-		const map_obj = this.module.struct.new([
-			this.#globals.get('obj-ctr')!.plusPlus(),
-			this.module.i32.const(cases.size),
-			this.module.array.new_default(this.getHeaptype('$MapInternal'), this.module.i32.const(capacity)),
-		], this.getHeaptype('$Map'));
+		const map_obj = this.mod.struct.new([
+			this.vm.Object.ctrPlusPlus(),
+			this.mod.i32.const(cases.size),
+			this.mod.array.new_default(this.vm.heaptype.MapInternal, this.mod.i32.const(capacity)),
+		], this.vm.heaptype.Map);
 		if (!cases.size) {
 			return map_obj;
 		}
-		const local: Local = this.newLocal(map_obj, rt_map);
-		return this.module.block(null, [
+		const local: Local = this.newLocal(map_obj, this.vm.reftype.Map);
+		return this.mod.block(null, [
 			local.set(),
-			...[...cases].map(([ant, con]) => this.module.call('Map.set', [local.get(), ant, con], binaryen.none)),
+			...[...cases].map(([ant, con]) => this.vm.Map.set(local.get(), ant, con)),
 			local.get(),
-		], rt_map);
-	}
-
-	/** @return `(struct.get $List $internal <list>)` */
-	public getListInternal(list: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.LIST_INTERNAL, list, this.getReftype('(ref $ListInternal)'));
-	}
-
-	/** @return `(struct.get $Dict $internal <dict>)` */
-	public getDictInternal(dict: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.DICT_INTERNAL, dict, this.getReftype('(ref $DictInternal)'));
-	}
-
-	/** @return `(struct.get $Map $internal <map>)` */
-	public getMapInternal(map: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		return this.module.struct.get(STRUCT_FIELD.MAP_INTERNAL, map, this.getReftype('(ref $MapInternal)'));
-	}
-
-	/**
-	 * Set up common types.
-	 * We’ve defined these in a static `types.wat` file,
-	 * but there’s currently no way to access them dynamically with Binaryen,
-	 * so we repeat them here.
-	 */
-	#setupTypes(): void {
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		const tb: TypeBuilder = new binaryen.TypeBuilder();
-
-		let type_count: number = 0;
-
-		/* (type $Value ...) */
-		const i_value: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_value, [
-			/* $tag */       Builder.newField(binaryen.i32, 'i8'),
-			/* $primitive */ Builder.newField(binaryen.v128),
-			/* $composite */ Builder.newField(binaryen.eqref),
-		]);
-
-		/* (type $Property ...) */
-		const i_property: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_property, [
-			/* $key */ Builder.newField(binaryen.i64),
-			/* $val */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-		]);
-
-		/* (type $Case ...) */
-		const i_case: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_case, [
-			/* $ant */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-			/* $con */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
-		]);
-
-		/* (type $Tuple ...) */
-		const i_tuple: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_tuple,
-			tb.getTempRefType(tb.getTempHeapType(i_value), false),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			false,
-		);
-
-		/* (type $Record ...) */
-		const i_record: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_record,
-			tb.getTempRefType(tb.getTempHeapType(i_property), false),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			false,
-		);
-
-		/* (type $ListInternal ...) */
-		const i_list_internal: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_list_internal,
-			tb.getTempRefType(tb.getTempHeapType(i_value), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			true,
-		);
-
-		/* (type $DictInternal ...) */
-		const i_dict_internal: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_dict_internal,
-			tb.getTempRefType(tb.getTempHeapType(i_property), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			true,
-		);
-
-		/* (type $MapInternal ...) */
-		const i_map_internal: number = type_count++;
-		tb.grow(1);
-		tb.setArrayType(
-			i_map_internal,
-			tb.getTempRefType(tb.getTempHeapType(i_case), true),
-			// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-			binaryen.notPacked,
-			true,
-		);
-
-		/* (type $Object ...) */
-		const i_object: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_object, [
-			/* $id */ Builder.newField(binaryen.i64),
-		]);
-		tb.setOpen(i_object);
-
-		/* (type $List ...) */
-		const i_list: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_list, [
-			/* $id */       Builder.newField(binaryen.i64),
-			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
-		]);
-		tb.setSubType(i_list, tb.getTempHeapType(i_object));
-		tb.setOpen(i_list);
-
-		/* (type $Dict ...) */
-		const i_dict: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_dict, [
-			/* $id */       Builder.newField(binaryen.i64),
-			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
-		]);
-		tb.setSubType(i_dict, tb.getTempHeapType(i_object));
-		tb.setOpen(i_dict);
-
-		/* (type $Map ...) */
-		const i_map: number = type_count++;
-		tb.grow(1);
-		tb.setStructType(i_map, [
-			/* $id */       Builder.newField(binaryen.i64),
-			/* $size */     Builder.newField(binaryen.i32, 'notPacked', true),
-			/* $internal */ Builder.newField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
-		]);
-		tb.setSubType(i_map, tb.getTempHeapType(i_object));
-		tb.setOpen(i_map);
-
-		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
-
-		this.#heaptypeRegistry.set('$Value',        heaptypes[i_value]);
-		this.#heaptypeRegistry.set('$Property',     heaptypes[i_property]);
-		this.#heaptypeRegistry.set('$Case',         heaptypes[i_case]);
-		this.#heaptypeRegistry.set('$Tuple',        heaptypes[i_tuple]);
-		this.#heaptypeRegistry.set('$Record',       heaptypes[i_record]);
-		this.#heaptypeRegistry.set('$ListInternal', heaptypes[i_list_internal]);
-		this.#heaptypeRegistry.set('$DictInternal', heaptypes[i_dict_internal]);
-		this.#heaptypeRegistry.set('$MapInternal',  heaptypes[i_map_internal]);
-		this.#heaptypeRegistry.set('$Object',       heaptypes[i_object]);
-		this.#heaptypeRegistry.set('$List',         heaptypes[i_list]);
-		this.#heaptypeRegistry.set('$Dict',         heaptypes[i_dict]);
-		this.#heaptypeRegistry.set('$Map',          heaptypes[i_map]);
-
-		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
-		const {getTypeFromHeapType} = binaryen;
-
-		this.#reftypeRegistry.set('(ref $Value)',        getTypeFromHeapType(heaptypes[i_value],         false));
-		this.#reftypeRegistry.set('(ref $Property)',     getTypeFromHeapType(heaptypes[i_property],      false));
-		this.#reftypeRegistry.set('(ref $Case)',         getTypeFromHeapType(heaptypes[i_case],          false));
-		this.#reftypeRegistry.set('(ref $Tuple)',        getTypeFromHeapType(heaptypes[i_tuple],         false));
-		this.#reftypeRegistry.set('(ref $Record)',       getTypeFromHeapType(heaptypes[i_record],        false));
-		this.#reftypeRegistry.set('(ref $ListInternal)', getTypeFromHeapType(heaptypes[i_list_internal], false));
-		this.#reftypeRegistry.set('(ref $DictInternal)', getTypeFromHeapType(heaptypes[i_dict_internal], false));
-		this.#reftypeRegistry.set('(ref $MapInternal)',  getTypeFromHeapType(heaptypes[i_map_internal],  false));
-		this.#reftypeRegistry.set('(ref $Object)',       getTypeFromHeapType(heaptypes[i_object],        false));
-		this.#reftypeRegistry.set('(ref $List)',         getTypeFromHeapType(heaptypes[i_list],          false));
-		this.#reftypeRegistry.set('(ref $Dict)',         getTypeFromHeapType(heaptypes[i_dict],          false));
-		this.#reftypeRegistry.set('(ref $Map)',          getTypeFromHeapType(heaptypes[i_map],           false));
-
-		this.#reftypeRegistry.set('(ref null $Value)',    getTypeFromHeapType(heaptypes[i_value],    true)); // only used as the fields of `$ListInternal`
-		this.#reftypeRegistry.set('(ref null $Property)', getTypeFromHeapType(heaptypes[i_property], true)); // only used as the fields of `$DictInternal`
-		this.#reftypeRegistry.set('(ref null $Case)',     getTypeFromHeapType(heaptypes[i_case],     true)); // only used as the fields of `$MapInternal`
-	}
-
-	/** assumes both operands are primitive */
-	#setupBinopPrimitive(
-		name:        string,
-		method_ints: (int0: binaryen.ExpressionRef,   int1: binaryen.ExpressionRef)   => binaryen.ExpressionRef,
-		method_flts: (float0: binaryen.ExpressionRef, float1: binaryen.ExpressionRef) => binaryen.ExpressionRef,
-		comparative: boolean = false, // if true, expects method calls to return `i32`; otherwise, expects any argument to BinVect
-	): binaryen.FunctionRef {
-		const mod:      BinaryenModuleUpdates = this.module;
-		const rt_value: binaryen.Type         = this.getReftype('(ref $Value)');
-		const local_vals = [
-			new BinValue(this, mod.local.get(0, rt_value)),
-			new BinValue(this, mod.local.get(1, rt_value)),
-		] as const;
-		const local_vects = local_vals.map((binval) => new BinVect(mod, binval.primitiveValue));
-
-		let int_int: binaryen.ExpressionRef = method_ints.call(null,                       local_vects[0].intValue,                         local_vects[1].intValue);
-		let int_flt: binaryen.ExpressionRef = method_flts.call(null, mod.f64.convert_u.i32(local_vects[0].intValue),                        local_vects[1].floatValue);
-		let flt_int: binaryen.ExpressionRef = method_flts.call(null,                       local_vects[0].floatValue, mod.f64.convert_u.i32(local_vects[1].intValue));
-		let flt_flt: binaryen.ExpressionRef = method_flts.call(null,                       local_vects[0].floatValue,                       local_vects[1].floatValue);
-		if (comparative) {
-			int_int = BinVect.asBool(mod, int_int);
-			int_flt = BinVect.asBool(mod, int_flt);
-			flt_int = BinVect.asBool(mod, flt_int);
-			flt_flt = BinVect.asBool(mod, flt_flt);
-		} else {
-			int_int = new BinVect(mod, int_int).vect;
-			int_flt = new BinVect(mod, int_flt).vect;
-			flt_int = new BinVect(mod, flt_int).vect;
-			flt_flt = new BinVect(mod, flt_flt).vect;
-		}
-		int_int = new BinValue(this, int_int).value;
-		int_flt = new BinValue(this, int_flt).value;
-		flt_int = new BinValue(this, flt_int).value;
-		flt_flt = new BinValue(this, flt_flt).value;
-
-		return mod.addFunction(name, binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
-			local_vects[0].isInt,
-			mod.if(
-				local_vects[1].isInt,
-				int_int,
-				mod.if(
-					local_vects[1].isFloat,
-					int_flt,
-					mod.unreachable(),
-				),
-			),
-			mod.if(
-				local_vects[0].isFloat,
-				mod.if(
-					local_vects[1].isInt,
-					flt_int,
-					mod.if(
-						local_vects[1].isFloat,
-						flt_flt,
-						mod.unreachable(),
-					),
-				),
-				mod.unreachable(),
-			),
-		));
-	};
-
-	#setupGlobals(): void {
-		const global = new Global(this.module, 'obj-ctr', bigint_to_i64(this.module, 0n, true), binaryen.i64, true);
-		this.#globals.set(global.name, global);
-		global.init();
-	}
-
-	#setupFunctions(): void {
-		const mod:       BinaryenModuleUpdates = this.module;
-		const rt_value:  binaryen.Type         = this.getReftype('(ref $Value)');
-		const rt_tuple:  binaryen.Type         = this.getReftype('(ref $Tuple)');
-		const rt_record: binaryen.Type         = this.getReftype('(ref $Record)');
-		const rt_list:   binaryen.Type         = this.getReftype('(ref $List)');
-		const rt_dict:   binaryen.Type         = this.getReftype('(ref $Dict)');
-		const rt_map:    binaryen.Type         = this.getReftype('(ref $Map)');
-		const local_vals = [
-			new BinValue(this, mod.local.get(0, rt_value)),
-			new BinValue(this, mod.local.get(1, rt_value)),
-		] as const;
-		const local_vects = local_vals.map((binval) => new BinVect(mod, binval.primitiveValue));
-
-		/* Unary Operators */
-		mod.addFunction('isnull', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
-			local_vals[0].isPrimitive,
-			local_vects[0].isSpecial(null),
-		))).value);
-		mod.addFunction('vnot', rt_value, rt_value, [], new BinValue(this, BinVect.asBool(mod, mod.i32.and(
-			local_vals[0].isPrimitive,
-			mod.i32.or(local_vects[0].isSpecial(null), local_vects[0].isSpecial(false)),
-		))).value);
-		mod.addFunction('vemp', rt_value, rt_value, [], mod.if(
-			local_vals[0].isPrimitive,
-			mod.if(
-				local_vects[0].isSpecial(),
-				mod.call('vnot', [local_vals[0].value], rt_value),
-				/* eslint-disable @stylistic/indent */
-				new BinValue(this, mod.if(
-					local_vects[0].isInt,
-					BinVect.asBool(mod, mod.i32.eqz(local_vects[0].intValue)), // TODO: v0.5: use i64.eqz
-					// mod.if(
-					// 	local_vects[0].isNat,
-					// 	BinVect.asBool(mod, mod.i64.eqz(local_vects[0].natValue)),
-						mod.if(
-							local_vects[0].isFloat,
-							BinVect.asBool(mod, mod.f64.eq(local_vects[0].floatValue, mod.f64.const(0.0))), // also takes care of -0.0
-							BinVect.asBool(mod, mod.i32.and(local_vects[0].isAddr, mod.i32.eqz(local_vects[0].addrValue))), // TODO: v0.5: use i64.eqz
-						),
-					// ),
-				)).value,
-				/* eslint-enable @stylistic/indent */
-			),
-			mod.unreachable(), // TODO: EMP operator on composites
-		));
-		mod.addFunction('vneg', rt_value, rt_value, [], new BinValue(this, mod.if( // assume operand is primitive
-			local_vects[0].isInt,
-			// `-n` in two’s complement is `(n xor -1) + 1`
-			new BinVect(mod, mod.i32.add(mod.i32.xor(local_vects[0].intValue, mod.i32.const(-1)), mod.i32.const(1))).vect,
-			mod.if(
-				local_vects[0].isFloat,
-				new BinVect(mod, mod.f64.neg(local_vects[0].floatValue)).vect,
-				mod.unreachable(), // cannot call NEG on other primitives
-			),
-		)).value);
-
-		/* Binary Operators */
-		mod.addFunction('vexp', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if( // TODO: v0.5: will be fixed in 'viexp'
-			mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-			new BinValue(this, new BinVect(mod, mod.call('exp', [local_vects[0].intValue, local_vects[1].intValue], binaryen.i32))).value,
-			mod.unreachable(),
-		));
-
-		this.#setupBinopPrimitive('vmul', mod.i32.mul  .bind(null), mod.f64.mul.bind(null));
-		this.#setupBinopPrimitive('vdiv', mod.i32.div_s.bind(null), mod.f64.div.bind(null));
-		this.#setupBinopPrimitive('vadd', mod.i32.add  .bind(null), mod.f64.add.bind(null));
-		this.#setupBinopPrimitive('vlt',  mod.i32.lt_s .bind(null), mod.f64.lt .bind(null), true);
-		this.#setupBinopPrimitive('vgt',  mod.i32.gt_s .bind(null), mod.f64.gt .bind(null), true);
-		this.#setupBinopPrimitive('vle',  mod.i32.le_s .bind(null), mod.f64.le .bind(null), true);
-		this.#setupBinopPrimitive('vge',  mod.i32.ge_s .bind(null), mod.f64.ge .bind(null), true);
-		this.#setupBinopPrimitive('veqn', mod.i32.eq   .bind(null), mod.f64.eq .bind(null), true);
-
-		mod.removeFunction('vid'); // removes stub defined in `stubs.wat`
-		this.module.addFunction('vid', binaryen.createType([rt_value, rt_value]), rt_value, [], new BinValue(this, mod.if(
-			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
-			mod.if(
-				mod.i32.and(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				BinVect.asBool(mod, mod.i32.eq(
-					mod.i16x8.extract_lane_s(local_vects[0].vect, 3), // TODO: v0.5: `.specialValue`/`.asSpecial`
-					mod.i16x8.extract_lane_s(local_vects[1].vect, 3), // TODO: v0.5: `.specialValue`/`.asSpecial`
-				)),
-				mod.if(
-					mod.i32.and(local_vects[0].isInt, local_vects[1].isInt),
-					BinVect.asBool(mod, mod.i32.eq(local_vects[0].intValue, local_vects[1].intValue)), // `i32.eq` for ints gives the same result as `ID` operator
-					mod.if(
-						mod.i32.and(local_vects[0].isFloat, local_vects[1].isFloat),
-						BinVect.asBool(mod, mod.call('fid', [local_vects[0].floatValue, local_vects[1].floatValue], binaryen.i32)),
-						new BinVect(mod, false).vect,
-					),
-				),
-			),
-			mod.if(
-				mod.i32.and(
-					mod.ref.test(local_vals[0].compositeValue, rt_tuple),
-					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
-				),
-				BinVect.asBool(mod, mod.call('Tuple.identical', [
-					mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
-					mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
-				], binaryen.i32)),
-				mod.if(
-					mod.i32.and(
-						mod.ref.test(local_vals[0].compositeValue, rt_record),
-						mod.ref.test(local_vals[1].compositeValue, rt_record),
-					),
-					BinVect.asBool(mod, mod.call('Record.identical', [
-						mod.ref.cast(local_vals[0].compositeValue, rt_record),
-						mod.ref.cast(local_vals[1].compositeValue, rt_record),
-					], binaryen.i32)),
-					BinVect.asBool(mod, mod.ref.eq(local_vals[0].compositeValue, local_vals[1].compositeValue)),
-				),
-			),
-		)).value);
-
-		mod.removeFunction('veq'); // removes stub defined in `stubs.wat`
-		this.module.addFunction('veq', binaryen.createType([rt_value, rt_value]), rt_value, [], mod.if(
-			mod.i32.and(local_vals[0].isPrimitive, local_vals[1].isPrimitive),
-			mod.if(
-				mod.i32.or(local_vects[0].isSpecial(), local_vects[1].isSpecial()),
-				mod.call('vid',  [local_vals[0].value, local_vals[1].value], rt_value),
-				mod.call('veqn', [local_vals[0].value, local_vals[1].value], rt_value),
-			),
-			mod.if(
-				mod.i32.and(
-					mod.ref.test(local_vals[0].compositeValue, rt_tuple),
-					mod.ref.test(local_vals[1].compositeValue, rt_tuple),
-				),
-				new BinValue(this, BinVect.asBool(mod, mod.call('Tuple.equal', [
-					mod.ref.cast(local_vals[0].compositeValue, rt_tuple),
-					mod.ref.cast(local_vals[1].compositeValue, rt_tuple),
-				], binaryen.i32))).value,
-				mod.if(
-					mod.i32.and(
-						mod.ref.test(local_vals[0].compositeValue, rt_record),
-						mod.ref.test(local_vals[1].compositeValue, rt_record),
-					),
-					new BinValue(this, BinVect.asBool(mod, mod.call('Record.equal', [
-						mod.ref.cast(local_vals[0].compositeValue, rt_record),
-						mod.ref.cast(local_vals[1].compositeValue, rt_record),
-					], binaryen.i32))).value,
-					mod.if(
-						mod.i32.and(
-							mod.ref.test(local_vals[0].compositeValue, rt_list),
-							mod.ref.test(local_vals[1].compositeValue, rt_list),
-						),
-						new BinValue(this, BinVect.asBool(mod, mod.call('List.equal', [
-							mod.ref.cast(local_vals[0].compositeValue, rt_list),
-							mod.ref.cast(local_vals[1].compositeValue, rt_list),
-						], binaryen.i32))).value,
-						mod.if(
-							mod.i32.and(
-								mod.ref.test(local_vals[0].compositeValue, rt_dict),
-								mod.ref.test(local_vals[1].compositeValue, rt_dict),
-							),
-							new BinValue(this, BinVect.asBool(mod, mod.call('Dict.equal', [
-								mod.ref.cast(local_vals[0].compositeValue, rt_dict),
-								mod.ref.cast(local_vals[1].compositeValue, rt_dict),
-							], binaryen.i32))).value,
-							mod.if(
-								mod.i32.and(
-									mod.ref.test(local_vals[0].compositeValue, rt_map),
-									mod.ref.test(local_vals[1].compositeValue, rt_map),
-								),
-								new BinValue(this, BinVect.asBool(mod, mod.call('Map.equal', [
-									mod.ref.cast(local_vals[0].compositeValue, rt_map),
-									mod.ref.cast(local_vals[1].compositeValue, rt_map),
-								], binaryen.i32))).value,
-								mod.call('vid', [local_vals[0].value, local_vals[1].value], rt_value),
-							),
-						),
-					),
-				),
-			),
-		));
-
-
-		/* Utilities */
-		mod.removeFunction('bool-to-i32'); // removes stub defined in `stubs.wat`
-		mod.addFunction('bool-to-i32', rt_value, binaryen.i32, [], new BinVect(mod, local_vals[0].primitiveValue).isSpecial(true));
+		], this.vm.reftype.Map);
 	}
 
 	/**
 	 * Prepare the main function in this binaryen Module, then performs validation.
 	 * The main function should contain generated code for a program.
-	 * @param main a callback to run before validation
+	 * @param body the body of the main function
 	 */
-	public setupMain(main?: (mod: binaryen.Module) => void): void {
-		main?.call(null, this.module);
-		if (!this.module.validate()) {
-			throw new Error('Invalid WebAssembly module.');
+	public setupMain(body: binaryen.ExpressionRef): void {
+		const extern_mod_name: string = 'wat';
+		this.vm.globalImportDataMap.forEach((data, export_name) => (
+			this.mod.addGlobalImport(data.name, extern_mod_name, export_name, data.type, false)
+		));
+		[
+			this.vm.util.funcImportDataMap,
+			this.vm.op.funcImportDataMap,
+			this.vm.Vect.funcImportDataMap,
+			this.vm.Value.funcImportDataMap,
+			this.vm.Property.funcImportDataMap,
+			this.vm.Case.funcImportDataMap,
+			this.vm.Record.funcImportDataMap,
+			this.vm.Object.funcImportDataMap,
+			this.vm.List.funcImportDataMap,
+			this.vm.Dict.funcImportDataMap,
+			this.vm.Map.funcImportDataMap,
+		].forEach((datamap) => datamap.forEach((data, export_name) => (
+			this.mod.addFunctionImport(data.name, extern_mod_name, export_name, data.param, data.result)
+		)));
+
+		const fn_name: string = 'main';
+		this.mod.addFunction(
+			fn_name,
+			binaryen.none,
+			binaryen.none,
+			this.getAllLocals().map((local) => local.type),
+			body,
+		);
+		this.mod.addFunctionExport(fn_name, fn_name);
+		if (!this.mod.validate()) {
+			throw new Error('Invalid WebAssembly module in CodeGenerator.');
 		}
 	}
 }

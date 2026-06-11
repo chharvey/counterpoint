@@ -28,22 +28,22 @@ An instance of a reference type is called a “reference object” or simply an 
 Simple types are individual basic types. They cannot be broken up into smaller types.
 
 
-### `never`
-Type `never` is at the bottom of the type hierarchy —
+### `nothing`
+Type `nothing` is at the bottom of the type hierarchy —
 it contains no values and is a subtype of every other type.
 
-Type `never` is used to describe the return type of functions that never return,
+Type `nothing` is used to describe the return type of functions that never return,
 or the type of an expression that never evaluates.
 
-Type `never` is most commonly a result of a type operation that produces the Bottom type,
+Type `nothing` is most commonly a result of a type operation that produces the Bottom type,
 for example, the intersection of two disjoint types.
 
 
-### `unknown`
-Type  `unknown` is at the top of the type hierarchy —
+### `anything`
+Type `anything` is at the top of the type hierarchy —
 it contains every value and expression, and is a supertype of every other type.
 
-Type `unknown` is used to describe a value or expression about which nothing is known.
+Type `anything` is used to describe a value or expression about which nothing is known.
 Therefore, the compiler will not assume it has any properties or is valid in some operations.
 
 ### `null`
@@ -92,7 +92,7 @@ but we are never exposed to their values.
 We cannot operate and compute with symbols the same way we do with strings or integers.
 ```
 val mut el: sym = @fire;
-% Unfixed variables of type `sym` may be reassigned,
+% Writable variables of type `sym` may be reassigned,
 set el = @air;
 set el = @aether;
 
@@ -169,13 +169,31 @@ The numeric separator cannot appear at the beginning or end of an integer,
 nor can it appear consecutively.
 
 Integers can be added, subtracted, and multiplied like normal numbers.
-However, when dividing integers, if getting a non-integer value, we will truncate the decimal
+However, when dividing integers, if getting a non-integer value, the fractional part is truncated
 (round towards zero). Dividing by zero is an error.
 In all operations on integers, bases can be mixed.
 ```
 3 / 2;        %== 1
 -3 / 2;       %== -1
 \b110 * \q12; %== 36
+```
+
+
+### `nat`
+Type `nat` contains whole numbers and zero.
+
+Naturals are written as a series of digits following a `+` sign, such as `+0123`.
+As with the Integers, Naturals may also be written in six other bases:
+2, 4, 6, 8, 16, and 36, and may contain underscores usd as separators.
+
+Naturals can be added and multiplied like normal numbers.
+Division of naturals behaves the same way as with Integers, rounding towards zero. Dividing by zero is an error.
+When subtracting naturals, if getting a negative value, the result is always zero.
+In all operations on naturals, bases can be mixed.
+```cpl
++3 / +2;        %== +1
++5 - +8;        %== +0
++\b110 * +\q12; %== +36
 ```
 
 
@@ -207,12 +225,6 @@ The coefficient need not be between 1 and 10. `-42.0e-1` is a valid floating-poi
 Floating-point values can be operated on just as integers can.
 There is no truncation for division, but dividing by zero still raises an error.
 The floating-point value `0.0` is *not identical* to the value `-0.0`.
-
-Float values are considered “contageous” in that they “infect” any integers they are operated with.
-For example, in the expression `1 + 2.3`, the integer `1` is *coerced* into the float `1.0`,
-giving the same result as `1.0 + 2.3`.
-If an expression contains *any* float value anywhere, then
-*all* the integers in the expression are coerced into floats.
 
 
 ### `str`
@@ -495,20 +507,20 @@ although that term can be ambiguous in the context of generics, where types may 
 
 A unit type must be a single primitive literal, i.e., an Integer, Float, or String (and of course `null`),
 and any value assignable to it must compute to that value. Variables with a unit type may still be reassignable,
-but they can only be reassigned to the same value, so having an unfixed variable with a unit type is kind of pointless.
+but they can only be reassigned to the same value, so having a writable variable with a unit type is kind of pointless.
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
 val mut TAU: true = true;
-TAU = true;
-TAU = false; %> TypeError
+set TAU = true;
+set TAU = false; %> TypeError
 
 val mut CAR_WHEELS: 4 = 4;
 val CAT_FEET: \b100 = \o4;
-CAR_WHEELS = CAT_FEET;
+set CAR_WHEELS = CAT_FEET;
 ```
 
 The assigned value doesn’t need to be a literal; it may be an expression,
-as long as it’s computable by the compiler’s [constant folding](./configuration.md#constantFolding) mechanism.
+as long as it’s computable by the compiler’s constant folding mechanism.
 ```
 val TAU: true = !false;
 val CAR_WHEELS: \b100 = \o10 / 2;
@@ -535,7 +547,7 @@ val GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
 ```
 Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
 the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
-However, if they were unfixed, that wouldn’t be possible.
+However, if they were writable, that wouldn’t be possible.
 ```
 val mut hello: str = "Hello";
 val mut world: str = "World";
@@ -554,14 +566,14 @@ val GREETING: """Hello World!""" = "Hello World!"; %> ParseError
 ## Compound Types
 Compound types are composed of other types.
 
-Type               | Size     | Indices/Keys  | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
------------------- | -------- | ------------  | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
-[Tuple](#tuples)   | Fixed    | integers      | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
-[Record](#records) | Fixed    | symbols       | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
-[List](#lists)     | Variable | integers      | `List.<str>`        | `[str]`                              | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
-[Dict](#dicts)     | Variable | symbols       | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
-[Set](#sets)       | Variable | *(none)*      | `Set.<str>`         | `{str}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
-[Map](#maps)       | Variable | objects       | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
+Type               | Size     | Indices/Keys        | Generic Type Syntax | Explicit Type Syntax                 | Constructor Syntax                           | Literal Syntax                         | Empty Literal Syntax
+------------------ | -------- | ------------        | ------------------- | ------------------------------------ | -------------------------------------------- | -------------------------------------- | --------------------
+[Tuple](#tuples)   | Fixed    | integers & naturals | *(none)*            | `(str, str, str)`<sup>&lowast;</sup> | *(none)*                                     | `("x", "y", "z")`<sup>&lowast;</sup>   | `()`
+[Record](#records) | Fixed    | symbols             | *(none)*            | `(a: str, b: str, c: str)`           | *(none)*                                     | `(a= "x", b= "y", c= "z")`             | *(none)*
+[List](#lists)     | Variable | integers & naturals | `List.<str>`        | `[str]`                              | `List.(("x", "y", "z"))`                     | `["x", "y", "z"]`                      | `[]`
+[Dict](#dicts)     | Variable | symbols             | `Dict.<str>`        | `[:str]`                             | `Dict.((a= "x", b= "y", c= "z"))`            | `[a= "x", b= "y", c= "z"]`             | *(none)*
+[Set](#sets)       | Variable | *(none)*            | `Set.<str>`         | `{str}`                              | `Set.(("x", "y", "z"))`                      | `{"x", "y", "z"}`                      | `{}`
+[Map](#maps)       | Variable | objects             | `Map.<str, str>`    | `{str -> str}`                       | `Map.((("u", "x"), ("v", "y"), ("w", "z")))` | `{"u" -> "x", "v" -> "y", "w" -> "z"}` | *(none)*
 
 
 ### Tuples
@@ -614,10 +626,16 @@ elements.1; %== "wind"
 elements.2; %== "fire"
 ```
 
-Since tuples have integer indices, we can use other bases:
+Since tuples have integral indices, we can use other bases:
 ```
 elements.\b01; %== "wind"
 elements.\b10; %== "fire"
+```
+
+We can also access by natural number index.
+```cpl
+elements.+1;    %== "wind"
+elements.+\b10; %== "fire"
 ```
 
 Tuple size is known at compile-time,
@@ -839,7 +857,7 @@ The bracketed expression must be an Integer or Natural value (of type `int` or `
 ```
 val elements: [str] = ["earth", "wind", "fire"];
 elements.[0];       %== "earth"
-elements.[3 - 2];   %== "wind"
+elements.[+3 - +2]; %== "wind"
 elements.[-3 + 2];  %== "fire"
 elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```
@@ -864,7 +882,7 @@ elements.[i];   %> VoidErrorOutOfBounds
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
 In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
 ```
-val mut i: int = 4;           % unfixed variables are not folded
+val mut i: int = 4;           % writable variables are not folded
 val elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
 ```
 
@@ -942,7 +960,7 @@ elements.[s];             %> VoidErrorOutOfBounds
 Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
 In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
 ```
-val mut s: sym = @pythagoras; % unfixed variables are not folded
+val mut s: sym = @pythagoras; % writable variables are not folded
 elements.[s];                 % no compile-time error, but results in ExceptionKeyOutOfRange
 json_data.["pythagoras"];     % no compile-time error, but results in ExceptionKeyOutOfRange
 ```

@@ -4,7 +4,8 @@ import {
 } from '../utils-private.ts';
 import type * as VALUE from '../cp-value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
+	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {ValueType} from './ValueType.ts';
@@ -13,16 +14,16 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing unit types, types that contain exactly one value.
- * @typeparam Value the type of value this unit type holds
+ * @typeparam T the type of value this unit type holds
  * @final
  */
-export class Unit<Value extends VALUE.Primitive = VALUE.Primitive> extends ValueType {
+export class Unit<T extends VALUE.Primitive = VALUE.Primitive> extends ValueType {
 	/**
 	 * Construct a new Unit object.
 	 * @param value the Counterpoint Language Value contained in this Type
 	 */
-	public constructor(public readonly value: Value) {
-		super(false, new Set([value]));
+	public constructor(public readonly value: T) {
+		super(new Set<T>([value]));
 	}
 
 	public override toString(): string {
@@ -35,8 +36,14 @@ export class Unit<Value extends VALUE.Primitive = VALUE.Primitive> extends Value
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		return t.includes(this.value);
+	}
+
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		return !this.isSubtypeOf(t);
 	}
 }

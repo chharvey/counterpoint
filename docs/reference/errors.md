@@ -49,14 +49,14 @@ A reference error is raised when the compiler fails to dereference an identifier
 #### 2101: ReferenceErrorUndeclared
 Cause: A variable was referenced but was not declared.
 ```
-my_var; % ReferenceError: `my_var` is never declared.
+my_var; % ReferenceErrorUndeclared: `my_var` is never declared.
 ```
 Solution(s): Ensure the variable, type, or parameter is declared before referencing it.
 
 #### 2102: ReferenceErrorDeadZone
 Cause: A variable was referenced before it was declared.
 ```
-my_var;               % ReferenceError: `my_var` is used before it is declared.
+my_var;               % ReferenceErrorDeadZone: `my_var` is used before it is declared.
 val my_var: int = 42;
 ```
 Solution(s): Ensure the variable or type is declared before referencing it.
@@ -65,10 +65,10 @@ Solution(s): Ensure the variable or type is declared before referencing it.
 Cause: A variable was used as a type, or a type was used as a variable.
 ```
 val FOO: int = 42;
-type T = FOO | float; % ReferenceError: `FOO` refers to a value, but is used as a type.
+type T = FOO | float; % ReferenceErrorKind: `FOO` refers to a value, but is used as a type.
 
 type BAR = int;
-42 || BAR;      % ReferenceError: `BAR` refers to a type, but is used as a value.
+42 || BAR;      % ReferenceErrorKind: `BAR` refers to a type, but is used as a value.
 ```
 Solution(s): Keep types and variables separate.
 
@@ -79,16 +79,17 @@ An assignment error is raised when the compiler detects an illegal declaration o
 1.  2200                                             — A general assignment error not covered by one of the following cases.
 1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
 1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict key.
-1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a fixed variable was attempted.
+1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a read-only variable was attempted.
+1. [2220](#2220-assignmenterrormissingtype)          — A symbol was declared without a type annotation and initialized to a value ineligible for type inference.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
 Cause: A duplicate declaration was encountered.
 ```
 val my_var: int = 42;
-val my_var: int = 24; % AssignmentError: Duplicate declaration of `my_var`.
+val my_var: int = 24; % AssignmentErrorDuplicateDeclaration: Duplicate declaration of `my_var`.
 
 type MyType = int;
-type MyType = float; % AssignmentError: Duplicate declaration of `MyType`.
+type MyType = float; % AssignmentErrorDuplicateDeclaration: Duplicate declaration of `MyType`.
 ```
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
@@ -103,12 +104,23 @@ type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate rec
 Solution(s): Remove or rename the duplicate key.
 
 #### 2210: AssignmentErrorReassignment
-Cause: A fixed variable was reassigned.
+Cause: A read-only variable was reassigned.
 ```
 val my_var: int = 42;
-set my_var = 24;      % AssignmentError: Reassignment of fixed variable `my_var`.
+set my_var = 24;      % AssignmentErrorReassignment: Reassignment of read-only variable `my_var`.
 ```
 Solution(s): Remove the reassignment, or declare the variable with `mut`.
+
+#### 2220: AssignmentErrorMissingType
+Cause: A variable, parameter, or field was declared without a type annotation when it is not eligible for type inference.
+```cpl
+val a = 42 + 1;                 % AssignmentErrorMissingType: Variable `a` is missing a type annotation.
+func f(b? = 42 + 1): int => -b; % AssignmentErrorMissingType: Parameter `b` is missing a type annotation.
+class Foo {
+	public c = 42 + 1; % AssignmentErrorMissingType: Field `c` is missing a type annotation.
+}
+```
+Solution(s): Add an explicit type annotation, update the symbol’s initializer to be eligible for type inference, or remove the declaration.
 
 
 ### Type Errors (23xx)
@@ -120,7 +132,7 @@ A type error is raised when the compiler recognizes a type mismatch.
 1. [2303](#2303-typeerrornotassignable)    — An expression was assigned to a type to which it is not assignable.
 1. [2304](#2304-typeerrornoentry)          — The validator encountered a non-existent index/property/argument access.
 1. [2305](#2305-typeerrornotcallable)      — The validator encountered an attempt to call a non-callable object.
-1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments is passed to a callable object.
+1. [2306](#2306-typeerrorargcount)         — An incorrect number of arguments was passed to a callable object.
 
 #### 2301: TypeErrorInvalidOperation
 Cause: An invalid operation was performed.
@@ -139,8 +151,8 @@ Solution(s): Ensure the assigned type is a subtype of the assignee.
 #### 2303: TypeErrorNotAssignable
 Cause: A variable, property, or parameter was assigned an expression of an incorrect type.
 ```
-val x: int = true;              % TypeError: Expression of type `true` is not assignable to type `int`.
-((x: int): int => x + 1).(4.2); % TypeError: Expression of type `4.2` is not assignable to type `int`.
+val x: int = true;               % TypeError: Expression `true` is not assignable to type `int`.
+(\(x: int): int => x + 1).(4.2); % TypeError: Expression `4.2` is not assignable to type `int`.
 ```
 Solution(s): Ensure the expression has an assignable type.
 

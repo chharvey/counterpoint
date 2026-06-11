@@ -9,7 +9,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../cp-value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {Union} from './Union.ts';
@@ -40,7 +40,7 @@ class TypeTuple extends ValueType {
 	 * @param typeargs this type’s item types
 	 */
 	public constructor(public readonly typeargs: readonly EntryType[] = []) {
-		super(false, new Set([new VALUE.Tuple()]));
+		super(new Set<VALUE.Tuple>([VALUE.TUPLE_EMPTY]));
 	}
 
 	public override get hasMutable(): boolean {
@@ -63,7 +63,7 @@ class TypeTuple extends ValueType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@instanceOf(() => TypeTuple)
 	public override isSubtypeOf(t: Type): boolean {
 		return (
@@ -86,8 +86,18 @@ class TypeTuple extends ValueType {
 			: assert.fail(new TypeErrorNoEntry('index', this, accessor));
 	}
 
+	public set(index: bigint, typ: Type, accessor: AST.ASTNodeIndex): void {
+		const i: number = Number(index);
+		const entrytype: EntryType | undefined = this.typeargs.at(i);
+		if (entrytype) {
+			(this.typeargs as EntryType[])[i] = {...entrytype, type: typ};
+		} else {
+			throw new TypeErrorNoEntry('index', this, accessor);
+		}
+	}
+
 	public itemTypes(): Type {
-		return Union.all(this.typeargs.map((t) => t.type));
+		return Union.all(...this.typeargs.map((t) => t.type));
 	}
 
 	public isIndexCanonical(index: bigint): boolean {

@@ -1,29 +1,34 @@
 import * as xjs from 'extrajs';
 import type binaryen from 'binaryen';
-import type {Builder} from '../../index.ts';
+import {
+	drop_then,
+	type Builder,
+} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {Label} from './index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /**
  * A Phi function merges branches of control flow in SSA form.
  * @see https://en.wikipedia.org/wiki/Static_single-assignment_form
+ * @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later.
  */
-export class Phi extends Value {
-	private readonly labelThen: Label;
-	private readonly labelElse: Label;
-	private readonly valueThen: Value;
-	private readonly valueElse: Value;
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+class Phi extends Value {
+	private readonly labelThen: string;
+	private readonly labelElse: string;
+	private readonly valueThen: ValueTac;
+	private readonly valueElse: ValueTac;
 
 	public constructor(
-		[then_label, then_value]: readonly [Label, Value],
-		[else_label, else_value]: readonly [Label, Value],
+		[then_label, then_value]: readonly [string, ValueTac],
+		[else_label, else_value]: readonly [string, ValueTac],
 	) {
 		super(OpCode.PHI, then_value.type.union(else_value.type));
 		this.labelThen = then_label;
@@ -34,8 +39,8 @@ export class Phi extends Value {
 
 	public override toString(): string {
 		return super.toString(
-			`"${ this.labelThen.name }"->${ this.valueThen }`,
-			`"${ this.labelElse.name }"->${ this.valueElse }`,
+			`"${ this.labelThen }"->${ this.valueThen }`,
+			`"${ this.labelElse }"->${ this.valueElse }`,
 		);
 	}
 
@@ -50,33 +55,15 @@ export class Phi extends Value {
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: Builder, Operator: any, TYPE: any, BinVect: any, t0: any, arg0: any, arg1: any, arg2: any, binaryen: any): number {
-		// Binary Logical Operator:
-		const block1: binaryen.ExpressionRef = cg.module.block(null, [
-			cg.module.drop(arg0),
-			arg1,
-		], binaryen.v128);
-		if (t0.isDefinitelyFalsy) {
-			return this.operator === Operator.AND ? arg0 : block1;
-		} else if (t0.isDefinitelyTruthy) {
-			return this.operator === Operator.AND ? block1 : arg0;
-		}
-
-
+	#optimizationStrategy(this: any, cg: Builder, TYPE: any, t0: any, arg0: any, arg1: any, arg2: any): number {
 		// Ternary Operator:
-		if (t0.equals(TYPE.FALSE)) {
-			return cg.module.block(null, [
-				cg.module.drop(arg0),
-				arg2,
-			], binaryen.v128);
-		} else if (t0.equals(TYPE.TRUE)) {
-			return cg.module.block(null, [
-				cg.module.drop(arg0),
-				arg1,
-			], binaryen.v128);
+		if (t0.isSubtypeOf(TYPE.TRUE)) {
+			return drop_then(this.builder, [arg0], arg1);
+		} else if (t0.isSubtypeOf(TYPE.FALSE)) {
+			return drop_then(this.builder, [arg0], arg2);
 		}
 
-		return cg.module.if(new BinVect(cg.module, arg0).isSpecial(true), arg1, arg2);
+		return cg.mod.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
 	}
 	/* eslint-enable */
 }

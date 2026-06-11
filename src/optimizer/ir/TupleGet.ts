@@ -1,8 +1,5 @@
 import type binaryen from 'binaryen';
-import {
-	BinValue,
-	type Builder,
-} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -11,13 +8,14 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
 /** Read an entry of a tuple. */
 export class TupleGet extends Value {
 	public constructor(
-		private readonly tuple:    Value,
+		private readonly tuple:    ValueTac,
 		private readonly accessor: bigint,
 		entry_type: TYPE.Type,
 	) {
@@ -36,10 +34,10 @@ export class TupleGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		return cg.module.array.get(
-			new BinValue(cg, this.tuple.codegen(cg)).cast('(ref $Tuple)'),
-			cg.module.i32.const(Number(this.accessor)),
-			cg.getReftype('(ref $Value)'),
+		return cg.mod.array.get(
+			cg.vm.Value.cast(this.tuple.codegen(cg), cg.vm.reftype.Tuple),
+			cg.mod.i32.const(Number(this.accessor)),
+			cg.vm.reftype.Value,
 		);
 	}
 }
