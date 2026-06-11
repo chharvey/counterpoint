@@ -14,6 +14,10 @@ import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from './utils-private.ts';
+import {
+	ValidIntrinsicName,
+	ValidFunctionName,
+} from './ast/utils-private.ts';
 
 
 
@@ -282,7 +286,10 @@ export class Validator {
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table = new Map<bigint, SymbolSchema>();
 
-	/** A bank of unique identifier names. */
+	/** A bank of unique intrinsic identifier names. */
+	private readonly intrinsics = new Set<string>();
+
+	/** A bank of unique user-defined identifier names. */
 	private readonly identifiers = new Set<string>();
 
 	/**
@@ -294,6 +301,17 @@ export class Validator {
 		public  readonly config:  CplConfig = CONFIG_DEFAULT,
 		private readonly parent?: Validator,
 	) {
+		if (!this.parent) {
+			[
+				ValidIntrinsicName.OBJECT,
+				ValidFunctionName.INTEGER,
+				ValidFunctionName.NATURAL,
+				ValidFunctionName.FLOAT,
+				ValidFunctionName.STRING,
+			].forEach((name) => {
+				this.intrinsics.add(name);
+			});
+		}
 	}
 
 	/**
@@ -360,8 +378,11 @@ export class Validator {
 		if (this.parent) {
 			return this.parent.cookTokenIdentifier(source);
 		}
+		if (this.intrinsics.has(source)) {
+			return Validator.MIN_VALUE_INTRINSIC + BigInt([...this.intrinsics].indexOf(source));
+		}
 		this.identifiers.add(source);
-		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+		return Validator.MIN_VALUE_IDENTIFIER + BigInt([...this.identifiers].indexOf(source));
 	}
 
 	/**
