@@ -147,104 +147,119 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 // Value! Interpret((CALL `callable` `args`));
 
 Boolean! Interpret((ISNULL `v`)) :=
-	1. *Return:* `Identical(v, null)`.
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *Return:* `Identical(v, null)`.
 ;
 
 Boolean! Interpret((NOT `v`)) :=
-	1. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
 		1. *Return:* `false`.
-	2. *Return:* `true`.
+	3. *Return:* `true`.
 ;
 
 Boolean! Interpret((EMP `v`)) :=
-	1. *If* *UnwrapAffirm:* `ToBoolean(v)` is `false`:
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `false`:
 		1. *Return:* `true`.
-	2. *If* `v` is an instance of `Integer` *and* `v` is `0`:
+	3. *If* `v` is an instance of `Integer` *and* `v` is `0`:
 		1. *Return:* `true`.
-	3. *If* `v` is an instance of `Natural` *and* `v` is `+0`:
+	4. *If* `v` is an instance of `Natural` *and* `v` is `+0`:
 		1. *Return:* `true`.
-	4. *If* `v` is an instance of `Float` *and* `v` is `0.0` or `-0.0`:
+	5. *If* `v` is an instance of `Float` *and* `v` is `0.0` or `-0.0`:
 		1. *Return:* `true`.
-	5. *If* `v` is an instance of `String` *and* `v` contains 0 codepoints:
+	6. *If* `v` is an instance of `String` *and* `v` contains 0 codepoints:
 		1. *Return:* `true`.
-	6. *If* `v` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v.count` is 0:
+	7. *If* `v` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v.count` is 0:
 		1. *Return:* `true`.
-	7. *Return:* `false`.
+	8. *Return:* `false`.
 ;
 
 Number! Interpret((NEG `v`)) :=
-	1. *Let* `negation` be the additive inverse, `-v`,
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *Let* `negation` be the additive inverse, `-v`,
 		obtained by negating `v`.
-	2. *Return:* `negation`.
+	3. *Return:* `negation`.
 ;
 
 Boolean! Interpret((TOBOOL `v`)) :=
-	1. *Return:* `ToBoolean(v)`.
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *Return:* `ToBoolean(v)`.
 ;
 
 Integer! Interpret((TOINT `v`)) :=
-	1. *If* `v` is an instance of `Natural`:
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `Natural`:
 		1. *Let* `as_int` be the reinterpretation of `v` as a 64-bit signed integer value.
 		2. *Return:* `as_int`.
-	2. *If* `v` is an instance of `Float`:
+	3. *If* `v` is an instance of `Float`:
 		1. *Let* `as_int` be the conversion of `v` to a 64-bit signed integer value.
 		2. *Return:* `as_int`.
-	3. *Assert:* `v` is an instance of `Integer`.
-	4. *Return:* `v`.
+	4. *Assert:* `v` is an instance of `Integer`.
+	5. *Return:* `v`.
 ;
 
 Natural! Interpret((TONAT `v`)) :=
-	1. *If* `v` is an instance of `Integer`:
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `Integer`:
 		1. *Let* `as_nat` be the reinterpretation of `v` to a 64-bit unsigned integer value.
 		2. *Return:* `as_nat`.
-	2. *If* `v` is an instance of `Float`:
+	3. *If* `v` is an instance of `Float`:
 		1. *Let* `as_nat` be the conversion of `v` to a 64-bit unsigned integer value.
 		2. *Return:* `as_nat`.
-	3. *Assert:* `v` is an instance of `Natural`.
-	4. *Return:* `v`.
+	4. *Assert:* `v` is an instance of `Natural`.
+	5. *Return:* `v`.
 ;
 
 Float! Interpret((TOFLOAT `v`)) :=
-	1. *If* `v` is an instance of `Integer` *or* `v` is an instance of `Natural`:
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `Integer` *or* `v` is an instance of `Natural`:
 		1. *Let* `as_float` be the conversion of `v` to a 64-bit binary floating-point value.
 		2. *Return:* `as_float`.
-	2. *Assert:* `v` is an instance of `Float`.
-	3. *Return:* `v`.
+	3. *Assert:* `v` is an instance of `Float`.
+	4. *Return:* `v`.
 ;
 
 String! Interpret((TOSTR `v`)) :=
-	1. *If* `v` is an instance of `String`:
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `String`:
 		1. *Return:* `v`.
-	2. *Else:*
+	3. *Else:*
 		1. *Let* `native_string` be a native string representation of `v`.
 		2. *Let* `encoding` be the UTF-8 encoding of `native_string`.
 		3. *Return:* `encoding`.
 ;
 
 Natural! Interpret((LIST.COUNT `obj`)) :=
-	1. *Assert:* `obj` is an instance of `List`.
-	2. *Return:* `Natural(obj.count)`.
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `List`.
+	3. *Return:* `Natural(obj.count)`.
 ;
 
 Natural! Interpret((DICT.COUNT `obj`)) :=
-	1. *Assert:* `obj` is an instance of `Dict`.
-	2. *Return:* `Natural(obj.count)`.
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `Dict`.
+	3. *Return:* `Natural(obj.count)`.
 ;
 
 Natural! Interpret((SET.COUNT `obj`)) :=
-	1. *Assert:* `obj` is an instance of `Set`.
-	2. *Return:* `Natural(obj.count)`.
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `Set`.
+	3. *Return:* `Natural(obj.count)`.
 ;
 
 Natural! Interpret((MAP.COUNT `obj`)) :=
-	1. *Assert:* `obj` is an instance of `Map`.
-	2. *Return:* `Natural(obj.count)`.
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `Map`.
+	3. *Return:* `Natural(obj.count)`.
 ;
 
 Integer! Interpret((INT.ADD `v0` `v1`)) :=
-	1. *Let* `result` be the sum, `v0 + v1`,
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the sum, `v0 + v1`,
 		obtained by adding `v0` (the augend) to `v1` (the addend).
-	2. *Return:* `result`.
+	4. *Return:* `result`.
 ;
 Natural! Interpret((NAT.ADD `v0` `v1`)) :=
 	1. *Perform:* the steps listed under «Interpret((INT.ADD `v0` `v1`))».
@@ -254,24 +269,30 @@ Float! Interpret((FLOAT.ADD `v0` `v1`)) :=
 ;
 
 Integer! Interpret((INT.SUB `v0` `v1`)) :=
-	1. *Let* `result` be the difference, `v0 - v1`,
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the difference, `v0 - v1`,
 		obtained by subtracting `v1` (the subtrahend) from `v0` (the minuend).
-	2. *Return:* `result`.
+	4. *Return:* `result`.
 ;
 Natural! Interpret((NAT.SUB `v0` `v1`)) :=
-	1. *If* `v0` is less than `v1`:
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v0` is less than `v1`:
 		1. *Return:* `0`.
-	2. *Else:*
-		1. *Perform:* the steps listed under «Interpret((INT.SUB `v0` `v1`))».
+	4. *Else:*
+		1. *Perform:* the steps listed under «Interpret((INT.SUB `v0` `v1`))», starting with step 3.
 ;
 Float! Interpret((FLOAT.SUB `v0` `v1`)) :=
 	1. *Perform:* the steps listed under «Interpret((INT.SUB `v0` `v1`))».
 ;
 
 Integer! Interpret((INT.MUL `v0` `v1`)) :=
-	1. *Let* `result` be the product, `v0 * v1`,
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the product, `v0 * v1`,
 		obtained by multiplying `v0` (the multiplicand) by `v1` (the multiplier).
-	2. *Return:* `result`.
+	4. *Return:* `result`.
 ;
 Natural! Interpret((NAT.MUL `v0` `v1`)) :=
 	1. *Perform:* the steps listed under «Interpret((INT.MUL `v0` `v1`))».
@@ -281,7 +302,7 @@ Float! Interpret((FLOAT.MUL `v0` `v1`)) :=
 ;
 
 Integer! Interpret((INT.DIV `v0` `v1`)) :=
-	1. *Let* `quotient` be the result of performing the steps listed under «Interpret((FLOAT.DIV `v0` `v1`))».
+	1. *Let* `quotient` be the result of performing the steps listed under «Interpret((FLOAT.DIV `v0` `v1`))», starting with step 3.
 	2. *If* `quotient` is not a whole number:
 		1. Set `quotient` to a truncation of `quotient` (rounding towards zero to the nearest whole number).
 	3. *Else:*
@@ -292,18 +313,22 @@ Natural! Interpret((NAT.DIV `v0` `v1`)) :=
 	1. *Perform:* the steps listed under «Interpret((INT.DIV `v0` `v1`))».
 ;
 Float! Interpret((FLOAT.DIV `v0` `v1`)) :=
-	1. *If* `v1` is `0`:
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v1` is `0`:
 		1. *Throw:* a new NanErrorDivZero.
-	2. *Else:*
+	4. *Else:*
 		1. *Let* `result` be the quotient, `v0 / v1`,
 			obtained by dividing `v0` (the dividend) by `v1` (the divisor).
 		2. *Return:* `result`.
 ;
 
 Integer! Interpret((INT.EXP `v0` `v1`)) :=
-	1. *Let* `result` be the power, `v0 ^ v1`,
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the power, `v0 ^ v1`,
 		obtained by raising `v0` (the base) to `v1` (the exponent).
-	2. *Return:* `result`.
+	4. *Return:* `result`.
 ;
 Natural! Interpret((NAT.EXP `v0` `v1`)) :=
 	1. *Perform:* the steps listed under «Interpret((INT.EXP `v0` `v1`))».
