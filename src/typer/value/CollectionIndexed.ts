@@ -24,7 +24,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		return (
 			a.items === b.items ||
 			a.items.length === b.items.length &&
-			b.items.every((thatvalue, i) => comparator.call(null, a.items[i], thatvalue))
+			b.items.every((thatvalue, i) => comparator(a.items[i], thatvalue))
 		);
 	}
 

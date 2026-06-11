@@ -114,14 +114,14 @@ export function conditional_expression(
 
 	const result: Temp = builder.newTemp(result_type);
 	builder.pushInstruction(new Decl(result));
-	builder.terminateBlock(new GotoConditional(condition.call(null), label_then, label_else));
+	builder.terminateBlock(new GotoConditional(condition(), label_then, label_else));
 
 	builder.initiateBlock(label_then);
-	builder.pushInstruction(new OpSet(result, consequent.call(null)));
+	builder.pushInstruction(new OpSet(result, consequent()));
 	builder.terminateBlock(new Goto(label_endif));
 
 	builder.initiateBlock(label_else);
-	builder.pushInstruction(new OpSet(result, alternative.call(null)));
+	builder.pushInstruction(new OpSet(result, alternative()));
 	builder.terminateBlock(new Goto(label_endif));
 
 	builder.initiateBlock(label_endif);

@@ -24,7 +24,7 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 		return (
 			a.properties === b.properties ||
 			a.properties.size === b.properties.size &&
-			[...b.properties].every(([thatkey, thatvalue]) => a.properties.has(thatkey) && comparator.call(null, a.properties.get(thatkey)!, thatvalue))
+			[...b.properties].every(([thatkey, thatvalue]) => a.properties.has(thatkey) && comparator(a.properties.get(thatkey)!, thatvalue))
 		);
 	}
 

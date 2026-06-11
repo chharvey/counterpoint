@@ -60,7 +60,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 		});
 		return [
 			familyName(family_name, args_arr),
-			parameterized_rule.call(null, args_obj),
+			parameterized_rule(args_obj),
 		];
 	})).forEach((rule, name) => {
 		rules_obj[name] = rule;

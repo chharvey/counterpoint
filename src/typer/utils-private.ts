@@ -63,7 +63,7 @@ export function strictEqual<Proto extends object, Params extends unknown[]>(
 export function instanceOf<ProtoThis extends object, ProtoThat extends object, Params extends unknown[]>(cons: () => ConstructorType<object>): MethodDecorator<ProtoThis, (this: ProtoThis, that: ProtoThat, ...args: Params) => boolean> {
 	let klass: ConstructorType<object> | null = null;
 	return (method) => function (that, ...args) {
-		klass ??= cons.call(null);
+		klass ??= cons();
 		return that instanceof klass && method.call(this, that, ...args);
 	};
 }
