@@ -31,7 +31,7 @@ test.suite('Expression', () => {
 	test.suite('#build', () => {
 		test.test('Constant returns an OP.Const.', () => {
 			const value: AST.Constant = AST.Constant.fromSource('42');
-			return assert.deepStrictEqual(value.build(), new OP.Const(value.fold()));
+			return assert.deepStrictEqual(value.build(), new OP.Const(value.interpreterValue));
 		});
 		test.test('Variable returns an OP.Get.', () => {
 			const {stmts} = setupScript(`{
@@ -221,7 +221,7 @@ test.suite('Expression', () => {
 
 
 		test.suite('#type', () => {
-			test.test('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
+			test.test('returns the result of `this#interpreterValue`, wrapped in a `new Unit`.', () => {
 				const constants: AST.Constant[] = extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
@@ -233,7 +233,7 @@ test.suite('Expression', () => {
 				`).map((src) => AST.Constant.fromSource(src));
 				return assertEqualTypes(
 					constants.map((c) => c.type()),
-					constants.map((c) => new TYPE.Unit(c.fold())),
+					constants.map((c) => new TYPE.Unit(c.interpreterValue)),
 				);
 			});
 		});
@@ -365,62 +365,6 @@ test.suite('Expression', () => {
 				);
 			});
 		});
-
-
-		test.suite('#fold', () => {
-			test.test('assesses the value of a read-only variable.', () => {
-				const {stmts} = setupScript(`{
-					val x: int = 21 * 2;
-					x;
-				}`, {build: false});
-				assert.ok(!(stmts[0] as AST.DeclarationVariable).writable);
-				assert.deepStrictEqual(
-					(stmts[1] as AST.StatementExpression).expr!.fold(),
-					new VALUE.Integer(42n),
-				);
-			});
-			test.test('returns null for a writable variable.', () => {
-				const {stmts} = setupScript(`{
-					val mut x: int = 21 * 2;
-					x;
-				}`, {build: false});
-				assert.ok((stmts[0] as AST.DeclarationVariable).writable);
-				assert.deepStrictEqual(
-					(stmts[1] as AST.StatementExpression).expr!.fold(),
-					null,
-				);
-			});
-			test.test('returns null for a read-only variable of mutable type.', () => {
-				const {stmts} = setupScript(`{
-					val fixed_mutable: mut {int} = {1, 2, 3};
-					fixed_mutable;
-				}`, {build: false});
-				assert.ok((stmts[0] as AST.DeclarationVariable).typenode!.eval().hasMutable);
-				assert.deepStrictEqual(
-					(stmts[1] as AST.StatementExpression).expr!.fold(),
-					null,
-				);
-			});
-			test.test('returns null for an uncomputable read-only variable.', () => {
-				const {stmts} = setupScript(`{
-					val mut x: int = 21 * 2;
-					val y: int = x / 2;
-					y;
-					val z: mut {int} = {11, 22, 33};
-					val w: bool = z.[22];
-					w;
-				}`, {build: false});
-				assert.ok(!(stmts[1] as AST.DeclarationVariable).writable);
-				assert.ok(!(stmts[4] as AST.DeclarationVariable).writable);
-				assert.deepStrictEqual(
-					[
-						(stmts[2] as AST.StatementExpression).expr!.fold(),
-						(stmts[5] as AST.StatementExpression).expr!.fold(),
-					],
-					[null, null],
-				);
-			});
-		});
 	});
 
 
@@ -442,32 +386,6 @@ test.suite('Expression', () => {
 				assertEqualTypes(
 					templates.map((t) => t.type()),
 					repeat(TYPE.STR, templates.length),
-				);
-			});
-		});
-
-
-		test.suite('#fold', () => {
-			let templates: AST.Template[] = [];
-			test.test.before(() => {
-				templates = initTemplates();
-			});
-			test.test('returns a constant String for Template with no interpolations.', () => {
-				assert.deepStrictEqual(
-					templates[0].fold(),
-					new VALUE.String('42😀'),
-				);
-			});
-			test.test('returns a constant String for Template with foldable interpolations.', () => {
-				assert.deepStrictEqual(
-					templates[1].fold(),
-					new VALUE.String('the answer is 42 but what is the question?'),
-				);
-			});
-			test.test('returns null for Template with dynamic interpolations.', () => {
-				assert.deepStrictEqual(
-					templates[2].fold(),
-					null,
 				);
 			});
 		});
@@ -494,7 +412,7 @@ test.suite('Expression', () => {
 							[0x108n, {source: 'f'}],
 						]),
 					);
-					assertEqualTypes(
+					return assertEqualTypes(
 						(stmts[1] as AST.DeclarationType).assigned.eval(),
 						TYPE.Record.fromTypes(new Map([
 							[0x101n, TYPE.BOOL],
@@ -503,22 +421,6 @@ test.suite('Expression', () => {
 							[0x104n, TYPE.Record.fromTypes(new Map([[0x106n, TYPE.FLOAT]]))],
 						])),
 					);
-					return assert.deepStrictEqual(stmts.slice(3, 5).map((stmt) => (stmt as AST.StatementExpression).expr!.fold()), [
-						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x109n, new VALUE.Dict(new Map<bigint, VALUE.Value>([
-								[0x10an, new VALUE.Integer(42n)],
-								[0x10bn, new VALUE.Float(4.2)],
-							]))],
-							[0x108n, VALUE.NULL],
-						])),
-						new VALUE.Dict(new Map<bigint, VALUE.Value>([
-							[0x10cn, new VALUE.Record(new Map<bigint, VALUE.Value>([
-								[0x10bn, new VALUE.Integer(42n)],
-								[0x10an, new VALUE.Float(4.2)],
-							]))],
-							[0x108n, VALUE.NULL],
-						])),
-					]);
 				});
 				test.test('throws if containing duplicate keys.', () => {
 					[
@@ -602,107 +504,11 @@ test.suite('Expression', () => {
 				}`, {build: false}); // assert does not throw
 			});
 		});
-
-
-		test.suite('#fold', () => {
-			test.test('returns Tuple/Record for constant collections.', () => {
-				assert.deepStrictEqual(
-					[
-						AST.Tuple  .fromSource('(   1,    2.0,    "three")'),
-						AST.Record .fromSource('(a= 1, b= 2.0, c= "three")'),
-					].map((c) => c.fold()),
-					[
-						new VALUE.Tuple([
-							new VALUE.Integer(1n),
-							new VALUE.Float(2.0),
-							new VALUE.String('three'),
-						]),
-						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, new VALUE.Integer(1n)],
-							[0x101n, new VALUE.Float(2.0)],
-							[0x102n, new VALUE.String('three')],
-						])),
-					],
-				);
-			});
-			test.test('returns a constant List/Dict/Set/Map for foldable entries.', () => {
-				assert.deepStrictEqual(
-					[
-						AST.List.fromSource('[1, 2.0, "three"]'),
-						AST.Dict.fromSource('[a= 1, b= 2.0, c= "three"]'),
-						AST.Set.fromSource('{1, 2.0, "three"}'),
-						AST.Map.fromSource(`
-							{
-								"a" || "" -> 1,
-								21 + 21   -> 2.0,
-								3.0 * 1.0 -> "three",
-							}
-						`),
-					].map((c) => c.fold()),
-					[
-						new VALUE.List([
-							new VALUE.Integer(1n),
-							new VALUE.Float(2.0),
-							new VALUE.String('three'),
-						]),
-						new VALUE.Dict(new Map<bigint, VALUE.Value>([
-							[0x100n, new VALUE.Integer(1n)],
-							[0x101n, new VALUE.Float(2.0)],
-							[0x102n, new VALUE.String('three')],
-						])),
-						new VALUE.Set(new Set([
-							new VALUE.Integer(1n),
-							new VALUE.Float(2.0),
-							new VALUE.String('three'),
-						])),
-						new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-							[new VALUE.String('a'),  new VALUE.Integer(1n)],
-							[new VALUE.Integer(42n), new VALUE.Float(2.0)],
-							[new VALUE.Float(3.0),   new VALUE.String('three')],
-						])),
-					],
-				);
-			});
-			test.test('returns null for non-foldable entries.', () => {
-				xjs.Array.forEachAggregated(setupScript(`{
-					val mut x: int   = 1;
-					val mut y: float = 2.0;
-					val mut z: str   = "three";
-					(x, 2.0, "three");
-					(a= 1, b= y, c= "three");
-					[x, 2.0, "three"];
-					[a= 1, b= y, c= "three"];
-					{1, 2.0, z};
-					{
-						"a" || "" -> 1,
-						21 + 21   -> 2.0,
-						3.0 * 1.0 -> z,
-					};
-				}`, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.StatementExpression).expr!.fold(), null));
-			});
-		});
 	});
 
 
 
 	test.suite('Claim', () => {
-		const samples: string[] = [
-			'null',
-			'false',
-			'true',
-			'0',
-			'+0',
-			'-0',
-			'42',
-			'+42',
-			'-42',
-			'0.0',
-			'+0.0',
-			'-0.0',
-			'-4.2e-2',
-		];
-
-
 		test.suite('#type', () => {
 			test.test('returns the type value of the claimed type.', () => {
 				assert.ok(AST.Claim.fromSource('3 as <int?>').type().equals(TYPE.INT.union(TYPE.NULL)));
@@ -727,17 +533,6 @@ test.suite('Expression', () => {
 				assert.throws(() => AST.Claim.fromSource('"three" as <int>').type(), TypeErrorNotAssignable);
 				assert.throws(() => AST.Claim.fromSource('3 as <float>')    .type(), TypeErrorNotAssignable);
 				assert.throws(() => AST.Claim.fromSource('3.0 as <int>')    .type(), TypeErrorNotAssignable);
-			});
-		});
-
-
-		test.suite('#fold', () => {
-			test.test('returns the fold of the operand.', () => {
-				samples.forEach((expr) => assert.deepStrictEqual(
-					AST.Claim     .fromSource(`${ expr } as <anything>`) .fold(),
-					AST.Expression.fromSource(expr).fold(),
-					expr,
-				));
 			});
 		});
 	});

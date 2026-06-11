@@ -7,7 +7,6 @@ import {
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
-	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
@@ -340,11 +339,7 @@ test.suite('Declaration', () => {
 				];
 				assert.deepStrictEqual(
 					[immut.source, immut.value],
-					['immut',      new VALUE.Tuple<VALUE.Integer>([
-						new VALUE.Integer(  42n),
-						new VALUE.Integer( 420n),
-						new VALUE.Integer(4200n),
-					])],
+					['immut',      null],
 				);
 				assert.deepStrictEqual(
 					[mut.source, mut.value],

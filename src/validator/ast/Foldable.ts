@@ -6,8 +6,6 @@ import type {AstNode} from './AstNode.ts';
  * Known implementers:
  * - Statement
  * - Block
- *
- * Note: For `Expression` objects, just use the result of `Expression#fold()`.
  */
 export interface Foldable extends AstNode {
 	/**

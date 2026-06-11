@@ -3,7 +3,6 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	AST,
-	VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
@@ -697,66 +696,6 @@ test.suite('Call', () => {
 					(DROP (GET $45))
 					(ENDPROGRAM)
 			`.trim());
-		});
-	});
-
-
-	test.suite('#fold', () => {
-		const TEST_VALUES = [
-			VALUE.INT_1,
-			new VALUE.Integer(2n),
-			new VALUE.Integer(3n),
-		] as const;
-		test.test('evaluates List, Dict, Set, and Map.', () => {
-			assert.deepStrictEqual(
-				EVALUATE.slice(4).map((src) => AST.Call.fromSource(src).fold()),
-				[
-					new VALUE.List<VALUE.Integer>(TEST_VALUES),
-					new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
-						[0x100n, TEST_VALUES[0]],
-						[0x101n, TEST_VALUES[1]],
-						[0x102n, TEST_VALUES[2]],
-					])),
-					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)),
-					new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
-						[TEST_VALUES[0], new VALUE.Float(0.1)],
-						[TEST_VALUES[1], new VALUE.Float(0.2)],
-						[TEST_VALUES[2], new VALUE.Float(0.4)],
-					])),
-				],
-			);
-		});
-		test.test('`List.(‹…›)`', () => {
-			assert.deepStrictEqual(LIST_CONS.map((src) => AST.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.List<never>(), 6),
-				...repeat(new VALUE.List<VALUE.Integer>(TEST_VALUES), 5),
-			]);
-		});
-		test.test('`Dict.(‹…›)`', () => {
-			assert.deepStrictEqual(DICT_CONS.map((src) => AST.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.Dict<never>(), 8),
-				...repeat(new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
-					[0x100n, TEST_VALUES[0]],
-					[0x101n, TEST_VALUES[1]],
-					[0x102n, TEST_VALUES[2]],
-				])), 10),
-			]);
-		});
-		test.test('`Set.(‹…›)`', () => {
-			assert.deepStrictEqual(SET_CONS.map((src) => AST.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.Set<never>(), 6),
-				...repeat(new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)), 5),
-			]);
-		});
-		test.test('`Map.(‹…›)`', () => {
-			assert.deepStrictEqual(MAP_CONS.map((src) => AST.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.Map<never, never>(), 7),
-				...repeat(new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
-					[TEST_VALUES[0], new VALUE.Float(0.1)],
-					[TEST_VALUES[1], new VALUE.Float(0.2)],
-					[TEST_VALUES[2], new VALUE.Float(0.4)],
-				])), 7),
-			]);
 		});
 	});
 });

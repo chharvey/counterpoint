@@ -1,10 +1,8 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	type Builder,
 	OP,
 	TypeErrorInvalidOperation,
-	NanErrorInvalid,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -14,10 +12,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
@@ -74,35 +69,5 @@ export class OperationUnary extends Operation {
 			[Operator.EMP, OP.OpCode.EMP],
 			[Operator.NEG, OP.OpCode.NEG],
 		]).get(this.operator)!, this.operand.build(builder).asTac(builder), this.type());
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const v: VALUE.Value | null = this.operand.fold();
-		if (!v) {
-			return v;
-		}
-		switch (this.operator) {
-			case Operator.NOT: {
-				return VALUE.Boolean.fromBoolean(!v.isTruthy);
-			}
-			case Operator.EMP: {
-				return VALUE.Boolean.fromBoolean(!v.isTruthy || v.isEmpty);
-			}
-			case Operator.NEG: {
-				return this.foldNumeric(v as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>);
-			}
-		}
-	}
-
-	private foldNumeric<T extends VALUE.Number<T>>(v0: T): T {
-		try {
-			return new Map<Operator, (z: T) => T>([
-				[Operator.AFF, (z) => z],
-				[Operator.NEG, (z) => z.neg()],
-			]).get(this.operator)!(v0);
-		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;
-		}
 	}
 }

@@ -12,10 +12,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../utils-private.ts';
 import {
 	Operator,
@@ -66,32 +63,5 @@ export class OperationBinaryComparative extends OperationBinary {
 			[Operator.NLT, OP.OpCode.NLT],
 			[Operator.NGT, OP.OpCode.NGT],
 		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const v0: VALUE.Value | null = this.operand0.fold();
-		if (!v0) {
-			return v0;
-		}
-		const v1: VALUE.Value | null = this.operand1.fold();
-		if (!v1) {
-			return v1;
-		}
-		return this.foldComparative(
-			(v0 as VALUE.Number<VALUE.Integer | VALUE.Float>),
-			(v1 as VALUE.Number<VALUE.Integer | VALUE.Float>),
-		);
-	}
-
-	private foldComparative<T extends VALUE.Number<T>>(v0: T, v1: T): VALUE.Boolean {
-		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: T, y: T) => boolean>([
-			[Operator.LT, (x, y) => x.lt(y)],
-			[Operator.GT, (x, y) => y.lt(x)],
-			[Operator.LE, (x, y) => x.equal(y) || x.lt(y)],
-			[Operator.GE, (x, y) => x.equal(y) || y.lt(x)],
-			[Operator.NLT, (x, y) => !x.lt(y)],
-			[Operator.NGT, (x, y) => !y.lt(x)],
-		]).get(this.operator)!(v0, v1));
 	}
 }

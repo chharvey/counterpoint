@@ -96,9 +96,4 @@ export class Constant extends Expression {
 	public override build(): OP.Const {
 		return new OP.Const(this.interpreterValue);
 	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Primitive {
-		return this.interpreterValue;
-	}
 }

@@ -13,10 +13,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
-import {
-	type VALUE,
-	TYPE,
-} from '../../typer/index.ts';
+import {TYPE} from '../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
@@ -67,17 +64,6 @@ export class Variable extends Expression implements Reassignable {
 	@memoizeMethod
 	public override build(): OP.Get {
 		return new OP.Get(this.validator.getSymbol(this.id) as SymbolSchemaVar);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
-		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
-		assert_instanceof(symbol, SymbolSchemaVar);
-		if (!symbol.isWritable) {
-			return symbol.value;
-		}
-		return null;
 	}
 
 	/**
