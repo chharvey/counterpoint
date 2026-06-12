@@ -299,49 +299,49 @@ test.suite('Expression', () => {
 	test.suite('Variable', () => {
 		test.suite('#varCheck', () => {
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					val mut i: int = 42;
 					i;
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 				assert.throws(() => AST.Variable.fromSource('i').varCheck(), ReferenceErrorUndeclared);
 			});
 			test.test('throws when declared in an inner scope.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					if true then {
 						val mut i: int = 42;
 					};
 					i;
-				}`).varCheck(), ReferenceErrorUndeclared);
+				}`, {typeCheck: false}), ReferenceErrorUndeclared);
 			});
 			test.test.todo('throws when there is a temporal dead zone.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					i;
 					val mut i: int = 42;
-				}`).varCheck(), ReferenceErrorDeadZone);
+				}`, {typeCheck: false}), ReferenceErrorDeadZone);
 			});
 			test.test('throws if it was declared as a type alias.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					type FOO = int;
 					42 || FOO;
-				}`).varCheck(), ReferenceErrorKind);
+				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
 			test.test('iteration variable of `for` loop is scoped only to the block.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						it;
 					};
-				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
 					for it: float in [1.1, 2.2, 3.3, it] do {
 						42;
 					};
-				}`).varCheck(), ReferenceErrorUndeclared, 'iteraion variable cannot be referenced in the iterator expression.');
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteraion variable cannot be referenced in the iterator expression.');
+				assert.throws(() => setupScript(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 					it;
-				}`).varCheck(), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
+				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
 			});
 		});
 
