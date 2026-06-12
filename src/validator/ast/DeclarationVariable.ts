@@ -88,6 +88,7 @@ export class DeclarationVariable extends Statement {
 		return statement;
 	}
 
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly writable: boolean,

@@ -27,6 +27,7 @@ export class DeclarationType extends Statement {
 		return statement;
 	}
 
+
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
 		private readonly assignee: TypeAlias | null,
