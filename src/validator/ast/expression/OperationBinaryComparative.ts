@@ -3,25 +3,25 @@ import {
 	type Builder,
 	OP,
 	TypeErrorInvalidOperation,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
-import type {SyntaxNodeSupertype} from '../utils-private.ts';
+} from '../../../typer/index.ts';
+import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorComparative,
-} from '../Operator.ts';
-import {bothNumbers} from './utils-private.ts';
+} from '../../Operator.ts';
+import {bothNumbers} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 

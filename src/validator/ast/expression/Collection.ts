@@ -1,8 +1,8 @@
 import * as xjs from 'extrajs';
-import {assert_context_name} from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
-import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {AstNode} from './AstNode.ts';
+import {assert_context_name} from '../../../lib/index.ts';
+import {TYPE} from '../../../typer/index.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {AstNode} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
 
 

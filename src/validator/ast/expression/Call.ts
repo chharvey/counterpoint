@@ -7,28 +7,28 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+} from '../../../typer/index.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	ValidFunctionName,
 	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
-} from './utils-private.ts';
-import {TYPE as AST_TYPE} from './index.ts';
-import {typecheck_assign} from './AstNode.ts';
+} from '../utils-private.ts';
+import {TYPE as AST_TYPE} from '../index.ts';
+import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Tuple as AstTuple} from './Tuple.ts';
@@ -267,7 +267,7 @@ export class Call extends Expression {
 	/**
 	 * Type-checks assignment of function arguments to a constructor call.
 	 * @param constructor_schema    the name of the class constructor’s schema
-	 * @param resolved_generic_args the resolved type arguments, returned by {@link TYPEX.Call.checkGenericArgs}
+	 * @param resolved_generic_args the resolved type arguments, returned by {@link AST_TYPE.Call.checkGenericArgs}
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {

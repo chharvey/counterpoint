@@ -2,35 +2,35 @@ import * as assert from 'node:assert';
 import {
 	type Builder,
 	OP,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	type EntryType,
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
+} from '../../../typer/index.ts';
 import type {
 	SyntaxNodeType,
 	SyntaxNodeFamily,
-} from '../utils-private.ts';
+} from '../../utils-private.ts';
 import {
 	Operator,
 	type ValidAccessOperator,
-} from '../Operator.ts';
+} from '../../Operator.ts';
 import {
 	get_entry_info,
 	validate_access_kind,
 	update_accessed_type,
-} from './utils-private.ts';
-import {Index} from './Index-.ts';
-import {Key} from './Key.ts';
+} from '../utils-private.ts';
+import {Index} from '../Index-.ts';
+import {Key} from '../Key.ts';
 import {Expression} from './Expression.ts';
 import type {Reassignable} from './Reassignable.ts';
 

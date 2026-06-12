@@ -4,27 +4,27 @@ import {
 	type Builder,
 	OP,
 	TypeErrorNotAssignable,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
-import type {EntryType} from '../../typer/index.ts';
-import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {typecheck_assign} from './AstNode.ts';
+} from '../../../typer/index.ts';
+import type {EntryType} from '../../../typer/index.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
 import {
 	assignToDeco,
 	CollectionLiteral,
-} from './CollectionLiteral.ts';
+} from './Collection.ts';
 
 
 

@@ -27,8 +27,8 @@ import type {
 	Block,
 	TYPE as AST_TYPE,
 } from './index.ts';
-import type {Expression} from './Expression.ts';
-import type {Variable} from './Variable.ts';
+import type {Expression} from './expression/Expression.ts';
+import type {Variable} from './expression/Variable.ts';
 import {Statement} from './Statement.ts';
 import {StatementBreakable} from './StatementBreakable.ts';
 

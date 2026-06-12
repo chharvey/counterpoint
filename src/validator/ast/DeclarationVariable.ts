@@ -23,13 +23,13 @@ import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {TYPE as AST_TYPE} from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import type {Expression} from './Expression.ts';
-import {Constant} from './Constant.ts';
-import type {Variable} from './Variable.ts';
-import {Template} from './Template.ts';
-import {Tuple as AstTuple} from './Tuple.ts';
-import {Record as AstRecord} from './Record.ts';
-import {Call} from './Call.ts';
+import type {Expression} from './expression/Expression.ts';
+import {Constant} from './expression/Constant.ts';
+import type {Variable} from './expression/Variable.ts';
+import {Template} from './expression/Template.ts';
+import {Tuple as AstTuple} from './expression/Tuple.ts';
+import {Record as AstRecord} from './expression/Record.ts';
+import {Call} from './expression/Call.ts';
 import {Statement} from './Statement.ts';
 
 

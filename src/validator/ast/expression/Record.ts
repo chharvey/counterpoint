@@ -4,30 +4,30 @@ import {
 	OP,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	type EntryType,
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
-import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {typecheck_assign} from './AstNode.ts';
-import type {Key} from './Key.ts';
-import type {Property} from './Property.ts';
+} from '../../../typer/index.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import {typecheck_assign} from '../AstNode.ts';
+import type {Key} from '../Key.ts';
+import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
 import {
 	assignToDeco,
 	CollectionLiteral,
-} from './CollectionLiteral.ts';
+} from './Collection.ts';
 
 
 

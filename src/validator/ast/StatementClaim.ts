@@ -19,9 +19,9 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {TYPE as AST_TYPE} from './index.ts';
 import {Index} from './Index-.ts';
 import {Key} from './Key.ts';
-import {Expression} from './Expression.ts';
-import {Variable} from './Variable.ts';
-import {Access} from './Access.ts';
+import {Expression} from './expression/Expression.ts';
+import {Variable} from './expression/Variable.ts';
+import {Access} from './expression/Access.ts';
 import {Statement} from './Statement.ts';
 
 

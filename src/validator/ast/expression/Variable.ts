@@ -3,27 +3,27 @@ import {
 	OP,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
 	memoizeGetter,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	type VALUE,
 	TYPE,
-} from '../../typer/index.ts';
+} from '../../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
 	SymbolSchemaVar,
 	SymbolSchemaType,
-} from '../index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+} from '../../index.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Expression} from './Expression.ts';
 import type {Reassignable} from './Reassignable.ts';
 

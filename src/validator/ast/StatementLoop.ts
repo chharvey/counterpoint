@@ -16,7 +16,7 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Block} from './index.ts';
-import type {Expression} from './Expression.ts';
+import type {Expression} from './expression/Expression.ts';
 import {Statement} from './Statement.ts';
 import {StatementBreakable} from './StatementBreakable.ts';
 

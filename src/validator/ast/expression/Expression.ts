@@ -2,17 +2,17 @@ import * as assert from 'node:assert';
 import type {
 	Builder,
 	OP,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import type {
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
-import {StatementExpression} from './index.ts';
-import {AstNode} from './AstNode.ts';
+} from '../../../typer/index.ts';
+import {StatementExpression} from '../index.ts';
+import {AstNode} from '../AstNode.ts';
 
 
 

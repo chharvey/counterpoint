@@ -1,4 +1,4 @@
-import type {TYPE} from '../../typer/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import type {Expression} from './Expression.ts';
 
 

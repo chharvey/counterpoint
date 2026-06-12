@@ -12,7 +12,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {Expression} from './Expression.ts';
+import type {Expression} from './expression/Expression.ts';
 import {Statement} from './Statement.ts';
 
 

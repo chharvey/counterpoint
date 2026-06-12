@@ -19,9 +19,9 @@ import type {TYPE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
-import {Expression} from './Expression.ts';
-import {Variable} from './Variable.ts';
-import {Access} from './Access.ts';
+import {Expression} from './expression/Expression.ts';
+import {Variable} from './expression/Variable.ts';
+import {Access} from './expression/Access.ts';
 import {Statement} from './Statement.ts';
 
 
