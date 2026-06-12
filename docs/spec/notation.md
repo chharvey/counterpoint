@@ -206,18 +206,18 @@ the type union `Node 1 | Node2`.
 The distinction is made by the definition symbol `=:=` instead of the usual `::=`.
 
 For example, the following grammar describes the form of a `SemanticTemplate` node:
-If it has the attribute `[type="full"]`, then it must contain only a `SemanticConstant` node;
+If it has the attribute `[type="full"]`, then it must contain only a `SemanticExpressionConstant` node;
 if it has the attribute `[type="substitution"]`, then it must contain one or more groups of
-a `SemanticConstant` followed by an optional `SemanticExpression`, and must end with a final `SemanticConstant`.
+a `SemanticExpressionConstant` followed by an optional `SemanticExpression`, and must end with a final `SemanticExpressionConstant`.
 ```
 SemanticTemplate[type: "full"]
-	::= SemanticConstant;
+	::= SemanticExpressionConstant;
 SemanticTemplate[type: "substitution"]
-	::= (SemanticConstant SemanticExpression?)+ SemanticConstant;
+	::= (SemanticExpressionConstant SemanticExpression?)+ SemanticExpressionConstant;
 ```
 Note that the above grammar is not an unambiguous context-free grammar,
 since it cannot yield a unique parse tree.
-(Think of the sequence `SemanticConstant SemanticConstant SemanticConstant`.)
+(Think of the sequence `SemanticExpressionConstant SemanticExpressionConstant SemanticExpressionConstant`.)
 
 
 ### Notation: Tree Node Schema Grammar
@@ -347,12 +347,12 @@ An AG production may define several forms of a CFG production as its parameter:
 ```
 Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
 	:= (SemanticTemplate[type="full"]
-		(SemanticConstant[value=TokenWorth(TEMPLATE_FULL)])
+		(SemanticExpressionConstant[value=TokenWorth(TEMPLATE_FULL)])
 	);
 Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
 	:= (SemanticTemplate[type="substitution"]
-		(SemanticConstant[value=TokenWorth(TEMPLATE_HEAD)])
-		(SemanticConstant[value=TokenWorth(TEMPLATE_TAIL)])
+		(SemanticExpressionConstant[value=TokenWorth(TEMPLATE_HEAD)])
+		(SemanticExpressionConstant[value=TokenWorth(TEMPLATE_TAIL)])
 	);
 ```
 The AG example above defines a Decoration attribute on `StringTemplate` productions.

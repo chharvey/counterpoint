@@ -30,7 +30,7 @@ import {
 test.suite('Expression', () => {
 	test.suite('#build', () => {
 		test.test('Constant returns an OP.Const.', () => {
-			const value: AST.Constant = AST.Constant.fromSource('42');
+			const value: AST.EXPR.Constant = AST.EXPR.Constant.fromSource('42');
 			return assert.deepStrictEqual(value.build(), new OP.Const(value.fold()));
 		});
 		test.test('Variable returns an OP.Get.', () => {
@@ -215,14 +215,14 @@ test.suite('Expression', () => {
 	test.suite('Constant', () => {
 		test.suite('#varCheck', () => {
 			test.test('never throws.', () => {
-				AST.Constant.fromSource('42').varCheck();
+				AST.EXPR.Constant.fromSource('42').varCheck();
 			});
 		});
 
 
 		test.suite('#type', () => {
 			test.test('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
-				const constants: AST.Constant[] = extract_tokens(`
+				const constants: AST.EXPR.Constant[] = extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
 					55  -55  +033  -033  0  -0
@@ -230,7 +230,7 @@ test.suite('Expression', () => {
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
 					"42😀"  "42\\u{1f600}"
-				`).map((src) => AST.Constant.fromSource(src));
+				`).map((src) => AST.EXPR.Constant.fromSource(src));
 				return assertEqualTypes(
 					constants.map((c) => c.type()),
 					constants.map((c) => new TYPE.Unit(c.fold())),
@@ -245,7 +245,7 @@ test.suite('Expression', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
-				`).map((src) => AST.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
@@ -259,7 +259,7 @@ test.suite('Expression', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					55  -55  033  -033  0  -0
 					\\o55  -\\o55  \\q033  -\\q033
-				`).map((src) => AST.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));
@@ -268,7 +268,7 @@ test.suite('Expression', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					+55  +033  +0
 					+\\o55  +\\q033
-				`).map((src) => AST.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
 					55, 33, 0,
 					parseInt('55', 8), parseInt('33', 4),
 				].map((v) => new VALUE.Natural(BigInt(v))));
@@ -278,7 +278,7 @@ test.suite('Expression', () => {
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`).map((src) => AST.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
 					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
@@ -286,7 +286,7 @@ test.suite('Expression', () => {
 			});
 			test.test('computes string values.', () => {
 				assertEqualTypes(
-					AST.Constant.fromSource('"42😀\\u{1f600}"').type(),
+					AST.EXPR.Constant.fromSource('"42😀\\u{1f600}"').type(),
 					typeUnit('42😀\u{1f600}'),
 				);
 			});

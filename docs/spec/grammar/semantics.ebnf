@@ -69,7 +69,7 @@ SemanticTypeOperation[operator: AND | OR]
 
 
 SemanticExpression =:=
-	| SemanticConstant
+	| SemanticExpressionConstant
 	| SemanticTemplate
 	| SemanticVariable
 	| SemanticCollectionLiteral
@@ -82,17 +82,17 @@ SemanticExpression =:=
 
 
 
-SemanticConstant[value: Null | Boolean | Symbol | Number | String]
+SemanticExpressionConstant[value: Null | Boolean | Symbol | Number | String]
 	::= ();
 
 SemanticTemplate
-	::= (SemanticConstant SemanticExpression?)* SemanticConstant;
+	::= (SemanticExpressionConstant SemanticExpression?)* SemanticExpressionConstant;
 
 SemanticVariable[id: RealNumber]
 	::= ();
 
 SemanticTemplatePartial
-	::= (SemanticConstant SemanticExpression?)+;
+	::= (SemanticExpressionConstant SemanticExpression?)+;
 
 SemanticCollectionLiteral =:=
 	| SemanticTuple

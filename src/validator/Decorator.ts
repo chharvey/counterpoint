@@ -95,7 +95,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                    AST.TYPE.TypeAlias | AST.Variable;
 	public decorate(syntaxnode: SyntaxNodeType<'keyword_type'>):                                  AST.TYPE.Constant;
 	public decorate(syntaxnode: SyntaxNodeType<'word'>):                                          AST.Key;
-	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                             AST.TYPE.Constant | AST.Constant;
+	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                             AST.TYPE.Constant | AST.EXPR.Constant;
 	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type',        ['optional']>):             AST.ItemType;
 	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type__named', ['optional']>):             AST.PropertyType;
 	public decorate(syntaxnode: SyntaxNodeType<'property_accessor_type'>):                        AST.Index | AST.Key;
@@ -175,7 +175,7 @@ export class Decorator {
 
 			['primitive_literal', (node) => (
 				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TYPE.Constant(node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.Constant     (node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.EXPR.Constant(node as SyntaxNodeType<'primitive_literal'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
 			)],
 
@@ -289,7 +289,7 @@ export class Decorator {
 			[/^string_template(__break)?$/, (node) => new AST.Template(
 				node as SyntaxNodeFamily<'string_template', ['break']>,
 				node.namedChildren.map((c) => ((isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
-					? new AST.Constant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
+					? new AST.EXPR.Constant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
 					: this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)
 				)),
 			)],
@@ -701,7 +701,7 @@ export class Decorator {
 	private decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.EXPR.Expression {
 		return (
 			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.Variable(exprnode) :
-			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.Constant(exprnode) :
+			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.EXPR.Constant(exprnode) :
 			this.decorate(exprnode)
 		);
 	}

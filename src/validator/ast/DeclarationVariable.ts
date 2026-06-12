@@ -21,12 +21,11 @@ import {
 } from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {
-	TYPE as AST_TYPE,
+import {
+	type TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import {Constant} from './expression/Constant.ts';
 import type {Variable} from './expression/Variable.ts';
 import {Template} from './expression/Template.ts';
 import {Tuple as AstTuple} from './expression/Tuple.ts';
@@ -39,7 +38,7 @@ import {Statement} from './Statement.ts';
 function is_inferrable(node?: EXPR.Expression): boolean {
 	return (
 		[
-			Constant,
+			EXPR.Constant,
 			Template,
 			Call, // TODO: distinguish between constructor calls and function calls
 		].some((klass) => (node instanceof klass)) ? true :
@@ -53,7 +52,7 @@ function is_inferrable(node?: EXPR.Expression): boolean {
 
 function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 	switch (true) {
-		case node instanceof Constant: {
+		case node instanceof EXPR.Constant: {
 			const value: VALUE.Primitive = node.interpreterValue;
 			return (
 				value instanceof VALUE.Null    ? TYPE.NULL :
@@ -76,7 +75,7 @@ function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 			return node.type();
 		}
 		default: {
-			assert.fail(`${ node.source } should be an instance of ${ Constant.name }, ${ AstTuple.name }, ${ AstRecord.name }, or ${ Call.name }.`);
+			assert.fail(`${ node.source } should be an instance of ${ EXPR.Constant.name }, ${ AstTuple.name }, ${ AstRecord.name }, or ${ Call.name }.`);
 		}
 	}
 }
@@ -158,7 +157,7 @@ export class DeclarationVariable extends Statement {
 		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
 			this.writable && ([
-				Constant,
+				EXPR.Constant,
 				AstTuple,
 				AstRecord,
 			].some((klass) => (this.assigned instanceof klass))) ? writable_inferred_type(this.assigned!) :

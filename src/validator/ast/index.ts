@@ -6,7 +6,6 @@ export * from './ItemType.ts';
 export * from './PropertyType.ts';
 export * from './Property.ts';
 export * from './Case.ts';
-export * from './expression/Constant.ts';
 export * from './expression/Template.ts';
 export * from './expression/Variable.ts';
 export * from './expression/Collection.ts';

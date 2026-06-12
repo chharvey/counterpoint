@@ -37,18 +37,18 @@ Decorate(Word ::= KeywordValue) -> SemanticKey
 
 
 
-Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
-	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
-Decorate(PrimitiveLiteral ::= NATURAL) -> SemanticConstant
-	:= (SemanticConstant[value=Natural(TokenWorth(NATURAL))]);
-Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
-	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
-Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
-	:= (SemanticConstant[value=String(TokenWorth(STRING))]);
-Decorate(PrimitiveLiteral ::= KeywordValue) -> SemanticConstant
-	:= (SemanticConstant[value=KeywordValue(KeywordValue)]);
-Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticConstant
-	:= (SemanticConstant[value=Symbol(Decorate(Word).id)]);
+Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Integer(TokenWorth(INTEGER))]);
+Decorate(PrimitiveLiteral ::= NATURAL) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Natural(TokenWorth(NATURAL))]);
+Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Float(TokenWorth(FLOAT))]);
+Decorate(PrimitiveLiteral ::= STRING) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=String(TokenWorth(STRING))]);
+Decorate(PrimitiveLiteral ::= KeywordValue) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=KeywordValue(KeywordValue)]);
+Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Symbol(Decorate(Word).id)]);
 
 
 
@@ -248,49 +248,49 @@ Decorate(Type ::= TypeUnion) -> SemanticType
 
 Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticTemplate
 	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_FULL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_FULL))])
 	);
 Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
 	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> TEMPLATE_TAIL) -> SemanticTemplate
 	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression<+Block><?Break>)
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
 	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
 	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression<+Block><?Break>)
 		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 
-	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE) -> Vector<SemanticConstant>
-		:= [SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]];
-	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Vector<SemanticConstant, SemanticExpression>
+	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE) -> Vector<SemanticExpressionConstant>
+		:= [SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]];
+	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Vector<SemanticExpressionConstant, SemanticExpression>
 		:= [
-			(SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
+			(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
 			Decorate(Expression<+Block><?Break>),
 		];
-	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> Sequence<...Vector<SemanticConstant, SemanticExpression?>>
+	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> Sequence<...Vector<SemanticExpressionConstant, SemanticExpression?>>
 		:= [
 			...Decorate(StringTemplate__0__List),
-			(SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
+			(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
 		];
-	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Sequence<...Vector<SemanticConstant, SemanticExpression?>>
+	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Sequence<...Vector<SemanticExpressionConstant, SemanticExpression?>>
 		:= [
 			...Decorate(StringTemplate__0__List),
-			(SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
+			(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
 			Decorate(Expression<+Block><?Break>),
 		];
 
@@ -377,7 +377,7 @@ Decorate(FunctionArguments<Break> ::= "(" (","? Expression<+Block><?Break># ","?
 
 Decorate(ExpressionUnit<Block, Break> ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
-Decorate(ExpressionUnit<Block, Break> ::= PrimitiveLiteral) -> SemanticConstant
+Decorate(ExpressionUnit<Block, Break> ::= PrimitiveLiteral) -> SemanticExpressionConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit<Block, Break> ::= StringTemplate<?Break>) -> SemanticTemplate
 	:= Decorate(StringTemplate<?Break>);

@@ -128,13 +128,13 @@ Build(String  s) := (STR.CONST   s);
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
 
-Build(SemanticConstant[type=TYPE.Null]    const) := (NULL.CONST  `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Symbol]  const) := (SYM.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Integer] const) := (INT.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Natural] const) := (NAT.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Build(ValueOf(const)~!)`);
-Build(SemanticConstant[type=TYPE.String]  const) := (STR.CONST   `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[type=TYPE.Null]    const) := (NULL.CONST  `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[type=TYPE.Symbol]  const) := (SYM.CONST   `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[type=TYPE.Integer] const) := (INT.CONST   `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[type=TYPE.Natural] const) := (NAT.CONST   `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[type=TYPE.String]  const) := (STR.CONST   `Build(ValueOf(const)~!)`);
 
 Build(SemanticTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Build)`);
 

@@ -80,31 +80,31 @@ test.suite('Decorator', () => {
 				% (primitive_literal (word (identifier)))
 			`]],
 
-			['Decorate(Expression > PrimitiveLiteral ::= INTEGER) -> SemanticConstant', [AST.Constant, `
+			['Decorate(Expression > PrimitiveLiteral ::= INTEGER) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
 				{
 					42;
 				}
 				% (primitive_literal (integer))
 			`]],
-			['Decorate(Expression > PrimitiveLiteral ::= FLOAT) -> SemanticConstant', [AST.Constant, `
+			['Decorate(Expression > PrimitiveLiteral ::= FLOAT) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
 				{
 					42.69;
 				}
 				% (primitive_literal (float))
 			`]],
-			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticConstant', [AST.Constant, `
+			['Decorate(Expression > PrimitiveLiteral ::= STRING) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
 				{
 					"hello";
 				}
 				% (primitive_literal (string))
 			`]],
-			['Decorate(Expression > PrimitiveLiteral ::= KeywordValue) -> SemanticConstant', [AST.Constant, `
+			['Decorate(Expression > PrimitiveLiteral ::= KeywordValue) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
 				{
 					false;
 				}
 				% (primitive_literal (keyword_value))
 			`]],
-			['Decorate(Expression > PrimitiveLiteral ::= "@" Word) -> SemanticConstant', [AST.Constant, `
+			['Decorate(Expression > PrimitiveLiteral ::= "@" Word) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
 				{
 					@hello;
 				}

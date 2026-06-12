@@ -10,7 +10,7 @@ Type! TypeOf(SemanticExpression expr) :=
 
 
 
-Type TypeOfUnfolded(SemanticConstant const) :=
+Type TypeOfUnfolded(SemanticExpressionConstant const) :=
 	1. *Let* `folded` be *UnwrapAffirm:* `ValueOf(const)`.
 	2. *Note:* `folded` is `const.value`.
 	3. *Return:* `ToType(folded)`.
