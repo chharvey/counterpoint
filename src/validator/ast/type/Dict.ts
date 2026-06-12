@@ -9,14 +9,14 @@ import {
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Type} from './Type.ts';
-import {TypeCollectionLiteral} from './Collection.ts';
+import {Collection} from './Collection.ts';
 
 
 
-export class TypeDict extends TypeCollectionLiteral {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeDict {
+export class Dict extends Collection {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Dict {
 		const typ: Type = Type.fromSource(src, config);
-		assert_instanceof(typ, TypeDict);
+		assert_instanceof(typ, Dict);
 		return typ;
 	}
 

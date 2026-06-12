@@ -16,9 +16,9 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
+import type {TYPE as AST_TYPE} from './index.ts';
 import {Index} from './Index-.ts';
 import {Key} from './Key.ts';
-import type {Type} from './type/Type.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Access} from './Access.ts';
@@ -36,7 +36,7 @@ export class StatementClaim extends Statement {
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_claim', ['break']>,
 		private readonly assignee: Variable | Access,
-		private readonly claimed_type: Type,
+		private readonly claimed_type: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
 	}

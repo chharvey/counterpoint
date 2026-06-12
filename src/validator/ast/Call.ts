@@ -27,9 +27,8 @@ import {
 	type ConstructorSchema,
 	CLASS_API,
 } from './utils-private.ts';
+import {TYPE as AST_TYPE} from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import type {Type} from './type/Type.ts';
-import {TypeCall} from './type/Call.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Tuple as AstTuple} from './Tuple.ts';
@@ -47,7 +46,7 @@ export class Call extends Expression {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_compound'>,
 		private readonly base:     Expression,
-		private readonly typeargs: readonly Type[],
+		private readonly typeargs: readonly AST_TYPE.Type[],
 		private readonly exprargs: readonly Expression[],
 	) {
 		super(start_node, {}, [base, ...typeargs, ...exprargs]);
@@ -79,7 +78,7 @@ export class Call extends Expression {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
-		const resolved_generic_args: TYPE.Type[]       = TypeCall.checkGenericArgs(constructor_schema, this.typeargs, this);
+		const resolved_generic_args: TYPE.Type[]       = AST_TYPE.Call.checkGenericArgs(constructor_schema, this.typeargs, this);
 		try {
 			this.checkFunctionArgs(constructor_schema, resolved_generic_args);
 		} catch (err) {
@@ -268,7 +267,7 @@ export class Call extends Expression {
 	/**
 	 * Type-checks assignment of function arguments to a constructor call.
 	 * @param constructor_schema    the name of the class constructor’s schema
-	 * @param resolved_generic_args the resolved type arguments, returned by {@link TypeCall.checkGenericArgs}
+	 * @param resolved_generic_args the resolved type arguments, returned by {@link TYPEX.Call.checkGenericArgs}
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {

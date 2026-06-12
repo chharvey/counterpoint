@@ -23,10 +23,10 @@ import {Type} from './Type.ts';
 
 
 
-export class TypeAccess extends Type {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeAccess {
+export class Access extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Access {
 		const typ: Type = Type.fromSource(src, config);
-		assert_instanceof(typ, TypeAccess);
+		assert_instanceof(typ, Access);
 		return typ;
 	}
 

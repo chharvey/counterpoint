@@ -14,14 +14,14 @@ import {
 	type ValidTypeOperator,
 } from '../../Operator.ts';
 import type {Type} from './Type.ts';
-import {TypeOperation} from './Operation.ts';
+import {Operation} from './Operation.ts';
 
 
 
-export class TypeOperationBinary extends TypeOperation {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeOperationBinary {
-		const typ: TypeOperation = TypeOperation.fromSource(src, config);
-		assert_instanceof(typ, TypeOperationBinary);
+export class OperationBinary extends Operation {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationBinary {
+		const typ: Operation = Operation.fromSource(src, config);
+		assert_instanceof(typ, OperationBinary);
 		return typ;
 	}
 

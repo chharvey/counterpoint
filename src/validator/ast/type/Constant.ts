@@ -23,10 +23,10 @@ import {Type} from './Type.ts';
 
 
 
-export class TypeConstant extends Type {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeConstant {
+export class Constant extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Constant {
 		const typ: Type = Type.fromSource(src, config);
-		assert_instanceof(typ, TypeConstant);
+		assert_instanceof(typ, Constant);
 		return typ;
 	}
 
@@ -57,7 +57,7 @@ export class TypeConstant extends Type {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		if (isSyntaxNodeType(this.start_node, 'keyword_type')) {
-			return TypeConstant.keywordType(this.start_node.children[0].text);
+			return Constant.keywordType(this.start_node.children[0].text);
 		}
 		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
 		const children: readonly SyntaxNode[] = this.start_node.children;
@@ -69,7 +69,7 @@ export class TypeConstant extends Type {
 				return new VALUE.String(Validator.cookTokenString(children[0].text)).toType();
 			}
 			case isSyntaxNodeType(children[0], 'keyword_value'): {
-				return TypeConstant.keywordType(children[0].children[0].text);
+				return Constant.keywordType(children[0].children[0].text);
 			}
 			default: {
 				assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);

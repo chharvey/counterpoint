@@ -11,12 +11,12 @@ import {AstNode} from '../AstNode.ts';
 /**
  * A sematic node representing a type.
  * Known subclasses:
- * - TypeConstant
- * - TypeAlias
- * - TypeCollectionLiteral
- * - TypeAccess
- * - TypeCall
- * - TypeOperation
+ * - Constant
+ * - Alias
+ * - Collection
+ * - Access
+ * - Call
+ * - Operation
  */
 export abstract class Type extends AstNode {
 	/**

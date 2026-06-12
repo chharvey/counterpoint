@@ -23,7 +23,7 @@ test.suite('Type', () => {
 		test.suite('TypeCollectionLiteral', () => {
 			test.test('TypeTuple', () => {
 				assertEqualTypes(
-					AST.TypeTuple.fromSource('(int, bool, ?:str)').eval(),
+					AST.TYPE.Tuple.fromSource('(int, bool, ?:str)').eval(),
 					new TYPE.Tuple([
 						{type: TYPE.INT,  optional: false},
 						{type: TYPE.BOOL, optional: false},
@@ -33,7 +33,7 @@ test.suite('Type', () => {
 			});
 
 			test.test('TypeRecord', () => {
-				const rec: AST.TypeRecord = AST.TypeRecord.fromSource('(x: int, y?: bool, _: str)');
+				const rec: AST.TYPE.Record = AST.TYPE.Record.fromSource('(x: int, y?: bool, _: str)');
 				return assertEqualTypes(
 					rec.eval(),
 					new TYPE.Record(new Map<bigint, EntryType>(rec.children.map((c, i) => [c.key.id, [
@@ -48,10 +48,10 @@ test.suite('Type', () => {
 				const INT_BOOL: TYPE.Type = TYPE.INT.union(TYPE.BOOL);
 				assertEqualTypes(
 					[
-						AST.TypeList. fromSource('[int | bool]')  .eval(),
-						AST.TypeDict .fromSource('[:int | bool]') .eval(),
-						AST.TypeSet  .fromSource('{int | bool}')  .eval(),
-						AST.TypeMap  .fromSource('{int -> bool}') .eval(),
+						AST.TYPE.List .fromSource('[int | bool]')  .eval(),
+						AST.TYPE.Dict .fromSource('[:int | bool]') .eval(),
+						AST.TYPE.Set  .fromSource('{int | bool}')  .eval(),
+						AST.TYPE.Map  .fromSource('{int -> bool}') .eval(),
 					],
 					[
 						new TYPE.List(INT_BOOL),
@@ -82,7 +82,7 @@ test.suite('Type', () => {
 					@then  @str  @false  @foobar
 					42  +42  4.2e+3
 					"hi"
-				`).map((src) => AST.TypeConstant.fromSource(src).eval()), [
+				`).map((src) => AST.TYPE.Constant.fromSource(src).eval()), [
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
@@ -99,7 +99,7 @@ test.suite('Type', () => {
 			test.test('computes the value of keyword type.', () => {
 				assertEqualTypes(extract_tokens(`
 					nothing  bool  sym  int  float  str  anything
-				`).map((src) => AST.TypeConstant.fromSource(src).eval()), [
+				`).map((src) => AST.TYPE.Constant.fromSource(src).eval()), [
 					TYPE.NOTHING,
 					TYPE.BOOL,
 					TYPE.SYM,
@@ -163,7 +163,7 @@ test.suite('Type', () => {
 			test.test('computes the value of reserved types.', () => {
 				assertEqualTypes([
 					'Object',
-				].map((src) => AST.TypeAlias.fromSource(src).eval()), [
+				].map((src) => AST.TYPE.TypeAlias.fromSource(src).eval()), [
 					TYPE.OBJ,
 				]);
 			});
@@ -172,7 +172,7 @@ test.suite('Type', () => {
 					((setupScript(`{
 						type T = int;
 						type U = T;
-					}`).stmts[1] as AST.DeclarationType).assigned as AST.TypeAlias).eval(),
+					}`).stmts[1] as AST.DeclarationType).assigned as AST.TYPE.TypeAlias).eval(),
 					TYPE.INT,
 				);
 			});

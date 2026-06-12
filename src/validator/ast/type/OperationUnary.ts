@@ -15,14 +15,14 @@ import {
 	type ValidTypeOperator,
 } from '../../Operator.ts';
 import type {Type} from './Type.ts';
-import {TypeOperation} from './Operation.ts';
+import {Operation} from './Operation.ts';
 
 
 
-export class TypeOperationUnary extends TypeOperation {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeOperationUnary {
-		const typ: TypeOperation = TypeOperation.fromSource(src, config);
-		assert_instanceof(typ, TypeOperationUnary);
+export class OperationUnary extends Operation {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): OperationUnary {
+		const typ: Operation = Operation.fromSource(src, config);
+		assert_instanceof(typ, OperationUnary);
 		return typ;
 	}
 

@@ -14,8 +14,7 @@ import {
 import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {Type} from './type/Type.ts';
-import type {TypeAlias} from './type/TypeAlias.ts';
+import type {TYPE as AST_TYPE} from './index.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -29,8 +28,8 @@ export class DeclarationType extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		private readonly assignee: TypeAlias | null,
-		public  readonly assigned: Type,
+		private readonly assignee: AST_TYPE.TypeAlias | null,
+		public  readonly assigned: AST_TYPE.Type,
 	) {
 		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
 	}

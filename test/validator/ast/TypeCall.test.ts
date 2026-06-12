@@ -21,7 +21,7 @@ test.suite('TypeCall', () => {
 				SET.<str>
 				Mapping.<bool>
 			`, (src) => {
-				assert.throws(() => AST.TypeCall.fromSource(src).varCheck(), SyntaxError);
+				assert.throws(() => AST.TYPE.Call.fromSource(src).varCheck(), SyntaxError);
 			});
 		});
 	});
@@ -35,7 +35,7 @@ test.suite('TypeCall', () => {
 					'Dict.<bool>',
 					'Set.<str>',
 					'Map.<int, float>',
-				].map((src) => AST.TypeCall.fromSource(src).eval()),
+				].map((src) => AST.TYPE.Call.fromSource(src).eval()),
 				[
 					new TYPE.List(TYPE.NULL),
 					new TYPE.Dict(TYPE.BOOL),
@@ -46,7 +46,7 @@ test.suite('TypeCall', () => {
 		});
 		test.test('Map has a default type parameter.', () => {
 			assertEqualTypes(
-				AST.TypeCall.fromSource('Map.<int>').eval(),
+				AST.TYPE.Call.fromSource('Map.<int>').eval(),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
 			);
 		});
@@ -54,7 +54,7 @@ test.suite('TypeCall', () => {
 			xjs.Array.forEachAggregated(extract_lines`
 				int.<str>
 				(int | float).<bool>
-			`, (src) => assert.throws(() => AST.TypeCall.fromSource(src).eval(), TypeErrorNotCallable));
+			`, (src) => assert.throws(() => AST.TYPE.Call.fromSource(src).eval(), TypeErrorNotCallable));
 		});
 		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
@@ -62,7 +62,7 @@ test.suite('TypeCall', () => {
 				Dict.<bool, bool, bool>
 				Set.<str, str, str, str>
 				Map.<int, int, int, int, int>
-			`, (src) => assert.throws(() => AST.TypeCall.fromSource(src).eval(), TypeErrorArgCount));
+			`, (src) => assert.throws(() => AST.TYPE.Call.fromSource(src).eval(), TypeErrorArgCount));
 		});
 	});
 });

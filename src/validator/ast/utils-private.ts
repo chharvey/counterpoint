@@ -20,6 +20,7 @@ import {
 	Validator,
 	AST,
 } from '../index.ts';
+import type {TYPE as AST_TYPE} from './index.ts';
 
 
 
@@ -231,7 +232,7 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 	return t instanceof TYPE.Combinable ? t.operands.flatMap((comp) => decombine(comp)) : [t];
 }
 
-export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AST.Access, is_writing: boolean = false): EntryType {
+export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | AST.Access, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
@@ -352,7 +353,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AS
 
 
 
-export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.TypeAccess | AST.Access): void {
+export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST_TYPE.Access | AST.Access): void {
 	if (
 		access_kind === Operator.DOT     &&  is_entry_optional ||
 		access_kind === Operator.DOT_MAY && !is_entry_optional

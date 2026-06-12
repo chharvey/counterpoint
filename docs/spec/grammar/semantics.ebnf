@@ -25,7 +25,7 @@ SemanticCase
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
-	| SemanticTypeCollectionLiteral
+	| SemanticTypeCollection
 	| SemanticTypeAccess
 	| SemanticTypeCall
 	| SemanticTypeOperation
@@ -39,7 +39,7 @@ SemanticTypeConstant[value: Type]
 SemanticTypeAlias[id: RealNumber]
 	::= ();
 
-SemanticTypeCollectionLiteral =:=
+SemanticTypeCollection =:=
 	| SemanticTypeTuple
 	| SemanticTypeRecord
 	| SemanticTypeList

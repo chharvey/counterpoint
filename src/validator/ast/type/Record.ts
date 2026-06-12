@@ -17,11 +17,11 @@ import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {Key} from '../Key.ts';
 import type {PropertyType} from '../PropertyType.ts';
 import {Type} from './Type.ts';
-import {TypeCollectionLiteral} from './Collection.ts';
+import {Collection} from './Collection.ts';
 
 
 
-export class TypeRecord extends TypeCollectionLiteral {
+class TypeRecord extends Collection {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeRecord {
 		const typ: Type = Type.fromSource(src, config);
 		assert_instanceof(typ, TypeRecord);
@@ -57,3 +57,4 @@ export class TypeRecord extends TypeCollectionLiteral {
 		])));
 	}
 }
+export {TypeRecord as Record};

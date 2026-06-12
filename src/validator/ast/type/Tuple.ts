@@ -10,11 +10,11 @@ import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {ItemType} from '../ItemType.ts';
 import {Type} from './Type.ts';
-import {TypeCollectionLiteral} from './Collection.ts';
+import {Collection} from './Collection.ts';
 
 
 
-export class TypeTuple extends TypeCollectionLiteral {
+class TypeTuple extends Collection {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeTuple {
 		const typ: Type = Type.fromSource(src, config);
 		assert_instanceof(typ, TypeTuple);
@@ -36,3 +36,4 @@ export class TypeTuple extends TypeCollectionLiteral {
 		})));
 	}
 }
+export {TypeTuple as Tuple};

@@ -16,7 +16,7 @@ import type {
 	TYPE,
 } from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {Type} from './type/Type.ts';
+import type {TYPE as AST_TYPE} from './index.ts';
 import {Expression} from './Expression.ts';
 
 
@@ -32,7 +32,7 @@ export class Claim extends Expression {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_cast'>,
 		public readonly operand:      Expression,
-		public readonly claimed_type: Type,
+		public readonly claimed_type: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [operand, claimed_type]);
 	}

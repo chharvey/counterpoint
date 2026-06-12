@@ -14,13 +14,13 @@ import {Type} from './Type.ts';
 
 /**
  * Known subclasses:
- * - TypeOperationUnary
- * - TypeOperationBinary
+ * - OperationUnary
+ * - OperationBinary
  */
-export abstract class TypeOperation extends Type {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): TypeOperation {
+export abstract class Operation extends Type {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Operation {
 		const typ: Type = Type.fromSource(src, config);
-		assert_instanceof(typ, TypeOperation);
+		assert_instanceof(typ, Operation);
 		return typ;
 	}
 

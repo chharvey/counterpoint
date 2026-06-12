@@ -36,7 +36,7 @@ export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.ANYTHING;
 
-	public constructor(node: AST.TypeAlias) {
+	public constructor(node: AST.TYPE.TypeAlias) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }

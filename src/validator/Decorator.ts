@@ -92,26 +92,26 @@ export class Decorator {
 	}
 
 	/* eslint-disable @typescript-eslint/unified-signatures */
-	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                    AST.TypeAlias | AST.Variable;
-	public decorate(syntaxnode: SyntaxNodeType<'keyword_type'>):                                  AST.TypeConstant;
+	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                    AST.TYPE.TypeAlias | AST.Variable;
+	public decorate(syntaxnode: SyntaxNodeType<'keyword_type'>):                                  AST.TYPE.Constant;
 	public decorate(syntaxnode: SyntaxNodeType<'word'>):                                          AST.Key;
-	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                             AST.TypeConstant | AST.Constant;
+	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                             AST.TYPE.Constant | AST.Constant;
 	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type',        ['optional']>):             AST.ItemType;
 	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type__named', ['optional']>):             AST.PropertyType;
 	public decorate(syntaxnode: SyntaxNodeType<'property_accessor_type'>):                        AST.Index | AST.Key;
-	public decorate(syntaxnode: SyntaxNodeType<'type_grouped'>):                                  AST.Type;
-	public decorate(syntaxnode: SyntaxNodeType<'type_tuple_literal'>):                            AST.TypeTuple;
-	public decorate(syntaxnode: SyntaxNodeType<'type_record_literal'>):                           AST.TypeRecord;
-	public decorate(syntaxnode: SyntaxNodeType<'type_list_literal'>):                             AST.TypeList;
-	public decorate(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                             AST.TypeDict;
-	public decorate(syntaxnode: SyntaxNodeType<'type_set_literal'>):                              AST.TypeSet;
-	public decorate(syntaxnode: SyntaxNodeType<'type_map_literal'>):                              AST.TypeMap;
-	public decorate(syntaxnode: SyntaxNodeType<'type_compound'>):                                 AST.TypeAccess | AST.TypeCall;
-	public decorate(syntaxnode: SyntaxNodeType<'type_unary_symbol'>):                             AST.TypeOperationUnary | AST.TypeList | AST.TypeSet;
-	public decorate(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                            AST.TypeOperationUnary;
-	public decorate(syntaxnode: SyntaxNodeType<'type_intersection'>):                             AST.TypeOperationBinary;
-	public decorate(syntaxnode: SyntaxNodeType<'type_union'>):                                    AST.TypeOperationBinary;
-	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                     AST.Type;
+	public decorate(syntaxnode: SyntaxNodeType<'type_grouped'>):                                  AST.TYPE.Type;
+	public decorate(syntaxnode: SyntaxNodeType<'type_tuple_literal'>):                            AST.TYPE.Tuple;
+	public decorate(syntaxnode: SyntaxNodeType<'type_record_literal'>):                           AST.TYPE.Record;
+	public decorate(syntaxnode: SyntaxNodeType<'type_list_literal'>):                             AST.TYPE.List;
+	public decorate(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                             AST.TYPE.Dict;
+	public decorate(syntaxnode: SyntaxNodeType<'type_set_literal'>):                              AST.TYPE.Set;
+	public decorate(syntaxnode: SyntaxNodeType<'type_map_literal'>):                              AST.TYPE.Map;
+	public decorate(syntaxnode: SyntaxNodeType<'type_compound'>):                                 AST.TYPE.Access | AST.TYPE.Call;
+	public decorate(syntaxnode: SyntaxNodeType<'type_unary_symbol'>):                             AST.TYPE.OperationUnary | AST.TYPE.List | AST.TYPE.Set;
+	public decorate(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                            AST.TYPE.OperationUnary;
+	public decorate(syntaxnode: SyntaxNodeType<'type_intersection'>):                             AST.TYPE.OperationBinary;
+	public decorate(syntaxnode: SyntaxNodeType<'type_union'>):                                    AST.TYPE.OperationBinary;
+	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                     AST.TYPE.Type;
 	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):        AST.Template;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):        AST.Property;
 	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):        AST.Case;
@@ -163,19 +163,19 @@ export class Decorator {
 
 			/* # TERMINALS */
 			['identifier', (node) => (
-				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TypeAlias(node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.Variable (node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TYPE.TypeAlias(node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.Variable      (node as SyntaxNodeType<'identifier'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
 			)],
 
 			/* # PRODUCTIONS */
-			['keyword_type', (node) => new AST.TypeConstant(node as SyntaxNodeType<'keyword_type'>)],
+			['keyword_type', (node) => new AST.TYPE.Constant(node as SyntaxNodeType<'keyword_type'>)],
 
 			['word', (node) => new AST.Key(node as SyntaxNodeType<'word'>)],
 
 			['primitive_literal', (node) => (
-				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TypeConstant(node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.Constant    (node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TYPE.Constant(node as SyntaxNodeType<'primitive_literal'>) :
+				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.Constant     (node as SyntaxNodeType<'primitive_literal'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
 			)],
 
@@ -213,32 +213,32 @@ export class Decorator {
 
 			['type_grouped', (node) => this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>)],
 
-			['type_tuple_literal', (node) => new AST.TypeTuple(
+			['type_tuple_literal', (node) => new AST.TYPE.Tuple(
 				node as SyntaxNodeType<'type_tuple_literal'>,
 				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'entry_type', ['optional']>)),
 			)],
 
-			['type_record_literal', (node) => new AST.TypeRecord(
+			['type_record_literal', (node) => new AST.TYPE.Record(
 				node as SyntaxNodeType<'type_record_literal'>,
 				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'entry_type__named', ['optional']>)) as NonemptyArray<AST.PropertyType>,
 			)],
 
-			['type_list_literal', (node) => new AST.TypeList(
+			['type_list_literal', (node) => new AST.TYPE.List(
 				node as SyntaxNodeType<'type_list_literal'>,
 				this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['type_dict_literal', (node) => new AST.TypeDict(
+			['type_dict_literal', (node) => new AST.TYPE.Dict(
 				node as SyntaxNodeType<'type_dict_literal'>,
 				this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['type_set_literal', (node) => new AST.TypeSet(
+			['type_set_literal', (node) => new AST.TYPE.Set(
 				node as SyntaxNodeType<'type_set_literal'>,
 				this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['type_map_literal', (node) => new AST.TypeMap(
+			['type_map_literal', (node) => new AST.TYPE.Map(
 				node as SyntaxNodeType<'type_map_literal'>,
 				this.decorateTypeNode(node.namedChild(0) as SyntaxNodeSupertype<'type'>),
 				this.decorateTypeNode(node.namedChild(1) as SyntaxNodeSupertype<'type'>),
@@ -247,38 +247,38 @@ export class Decorator {
 			['type_compound', (node) => {
 				const type_0                   = node.childForFieldName('type_0')                   as SyntaxNodeSupertype<'type'>;
 				const property_accessor_type_0 = node.childForFieldName('property_accessor_type_0') as SyntaxNodeType<'property_accessor_type'> | null;
-				return property_accessor_type_0 ? new AST.TypeAccess(
+				return property_accessor_type_0 ? new AST.TYPE.Access(
 					node as SyntaxNodeType<'type_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].text as Punctuator) as ValidTypeAccessOperator,
 					this.decorateTypeNode(type_0),
 					this.decorate(property_accessor_type_0),
-				) : new AST.TypeCall(
+				) : new AST.TYPE.Call(
 					node as SyntaxNodeType<'type_compound'>,
 					this.decorateTypeNode(type_0),
-					node.childForFieldName('generic_arguments_0')!.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) as NonemptyArray<AST.Type>,
+					node.childForFieldName('generic_arguments_0')!.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) as NonemptyArray<AST.TYPE.Type>,
 				);
 			}],
 
-			['type_unary_symbol', (node) => new AST.TypeOperationUnary(
+			['type_unary_symbol', (node) => new AST.TYPE.OperationUnary(
 				node as SyntaxNodeType<'type_unary_symbol'>,
 				Decorator.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
 				this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['type_unary_keyword', (node) => new AST.TypeOperationUnary(
+			['type_unary_keyword', (node) => new AST.TYPE.OperationUnary(
 				node as SyntaxNodeType<'type_unary_keyword'>,
 				Decorator.TYPEOPERATORS_UNARY.get(node.children[0].text as Keyword)!,
 				this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['type_intersection', (node) => new AST.TypeOperationBinary(
+			['type_intersection', (node) => new AST.TYPE.OperationBinary(
 				node as SyntaxNodeType<'type_intersection'>,
 				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
 				this.decorateTypeNode(node.namedChild(0) as SyntaxNodeSupertype<'type'>),
 				this.decorateTypeNode(node.namedChild(1) as SyntaxNodeSupertype<'type'>),
 			)],
 
-			['type_union', (node) => new AST.TypeOperationBinary(
+			['type_union', (node) => new AST.TYPE.OperationBinary(
 				node as SyntaxNodeType<'type_union'>,
 				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
 				this.decorateTypeNode(node.namedChild(0) as SyntaxNodeSupertype<'type'>),
@@ -663,7 +663,7 @@ export class Decorator {
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				return new AST.DeclarationType(
 					node as SyntaxNodeType<'declaration_type'>,
-					identifier_0 && new AST.TypeAlias(identifier_0),
+					identifier_0 && new AST.TYPE.TypeAlias(identifier_0),
 					this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 				);
 			}],
@@ -690,10 +690,10 @@ export class Decorator {
 		)(syntaxnode);
 	}
 
-	private decorateTypeNode(typenode: SyntaxNodeSupertype<'type'>): AST.Type {
+	private decorateTypeNode(typenode: SyntaxNodeSupertype<'type'>): AST.TYPE.Type {
 		return (
-			(isSyntaxNodeType(typenode, 'identifier'))        ? new AST.TypeAlias   (typenode) :
-			(isSyntaxNodeType(typenode, 'primitive_literal')) ? new AST.TypeConstant(typenode) :
+			(isSyntaxNodeType(typenode, 'identifier'))        ? new AST.TYPE.TypeAlias (typenode) :
+			(isSyntaxNodeType(typenode, 'primitive_literal')) ? new AST.TYPE.Constant  (typenode) :
 			this.decorate(typenode)
 		);
 	}

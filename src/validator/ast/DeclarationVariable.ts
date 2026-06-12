@@ -21,8 +21,8 @@ import {
 } from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
+import type {TYPE as AST_TYPE} from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import type {Type} from './type/Type.ts';
 import type {Expression} from './Expression.ts';
 import {Constant} from './Constant.ts';
 import type {Variable} from './Variable.ts';
@@ -92,7 +92,7 @@ export class DeclarationVariable extends Statement {
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly writable: boolean,
 		public  readonly assignee: Variable | null,
-		public  readonly typenode: Type | null,
+		public  readonly typenode: AST_TYPE.Type | null,
 		public  readonly assigned: Expression | null,
 	) {
 		super(

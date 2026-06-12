@@ -522,27 +522,27 @@ test.suite('Expression', () => {
 				});
 				test.test('throws if containing duplicate keys.', () => {
 					[
-						AST.TypeRecord .fromSource('(a: int, b: float, c: str)'),
-						AST.Record     .fromSource('(a= 1, b= 2.0, c= "three")'),
-						AST.Dict       .fromSource('[a= 1, b= 2.0, c= "three"]'),
+						AST.TYPE.Record .fromSource('(a: int, b: float, c: str)'),
+						AST.Record      .fromSource('(a= 1, b= 2.0, c= "three")'),
+						AST.Dict        .fromSource('[a= 1, b= 2.0, c= "three"]'),
 					].forEach((node) => node.varCheck()); // assert does not throw
 
 					[
-						AST.TypeRecord .fromSource('(a: int, b: float, a: str)'),
-						AST.TypeRecord .fromSource('(_: int, b: float, _: str)'),
-						AST.Record     .fromSource('(a= 1, b= 2.0, a= "three")'),
-						AST.Record     .fromSource('(_= 1, b= 2.0, _= "three")'),
-						AST.Dict       .fromSource('[a= 1, b= 2.0, a= "three"]'),
+						AST.TYPE.Record .fromSource('(a: int, b: float, a: str)'),
+						AST.TYPE.Record .fromSource('(_: int, b: float, _: str)'),
+						AST.Record      .fromSource('(a= 1, b= 2.0, a= "three")'),
+						AST.Record      .fromSource('(_= 1, b= 2.0, _= "three")'),
+						AST.Dict        .fromSource('[a= 1, b= 2.0, a= "three"]'),
 						AST.Dict       .fromSource('[_= 1, b= 2.0, _= "three"]'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.AstNode, string[]>([
-						[AST.TypeRecord .fromSource('(c: int, d: float, c: str, d: bool)'),  ['c', 'd']],
-						[AST.TypeRecord .fromSource('(e: int, f: float, e: str, e: bool)'),  ['e', 'e']],
-						[AST.Record     .fromSource('(c= 1, d= 2.0, c= "three", d= false)'), ['c', 'd']],
-						[AST.Record     .fromSource('(e= 1, f= 2.0, e= "three", e= false)'), ['e', 'e']],
-						[AST.Dict       .fromSource('[c= 1, d= 2.0, c= "three", d= false]'), ['c', 'd']],
-						[AST.Dict       .fromSource('[e= 1, f= 2.0, e= "three", e= false]'), ['e', 'e']],
+						[AST.TYPE.Record .fromSource('(c: int, d: float, c: str, d: bool)'),  ['c', 'd']],
+						[AST.TYPE.Record .fromSource('(e: int, f: float, e: str, e: bool)'),  ['e', 'e']],
+						[AST.Record      .fromSource('(c= 1, d= 2.0, c= "three", d= false)'), ['c', 'd']],
+						[AST.Record      .fromSource('(e= 1, f= 2.0, e= "three", e= false)'), ['e', 'e']],
+						[AST.Dict        .fromSource('[c= 1, d= 2.0, c= "three", d= false]'), ['c', 'd']],
+						[AST.Dict        .fromSource('[e= 1, f= 2.0, e= "three", e= false]'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
@@ -718,7 +718,7 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.Claim = AST.Claim.fromSource('"Alice" as <Name>');
-				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.TypeAlias));
+				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.TYPE.TypeAlias));
 				(claim.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
 				assert.strictEqual(claim.type(), TYPE.STR);
 			});

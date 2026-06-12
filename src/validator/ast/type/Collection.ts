@@ -8,12 +8,12 @@ import {Type} from './Type.ts';
  * Known subclasses:
  * - TypeTuple
  * - TypeRecord
- * - TypeList
- * - TypeDict
+ * - List
+ * - Dict
  * - TypeSet
  * - TypeMap
  */
-export abstract class TypeCollectionLiteral extends Type {
+export abstract class Collection extends Type {
 	protected constructor(
 		start_node: (
 			| SyntaxNodeType<'type_tuple_literal'>

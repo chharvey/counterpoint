@@ -49,31 +49,31 @@ test.suite('Decorator', () => {
 				% (word (keyword_value))
 			`]],
 
-			['Decorate(Type > PrimitiveLiteral ::= INTEGER) -> SemanticTypeConstant', [AST.TypeConstant, `
+			['Decorate(Type > PrimitiveLiteral ::= INTEGER) -> SemanticTypeConstant', [AST.TYPE.Constant, `
 				{
 					type T = 42;
 				}
 				% (primitive_literal (integer))
 			`]],
-			['Decorate(Type > PrimitiveLiteral ::= FLOAT) -> SemanticTypeConstant', [AST.TypeConstant, `
+			['Decorate(Type > PrimitiveLiteral ::= FLOAT) -> SemanticTypeConstant', [AST.TYPE.Constant, `
 				{
 					type T = 42.69;
 				}
 				% (primitive_literal (float))
 			`]],
-			['Decorate(Type > PrimitiveLiteral ::= STRING) -> SemanticTypeConstant', [AST.TypeConstant, `
+			['Decorate(Type > PrimitiveLiteral ::= STRING) -> SemanticTypeConstant', [AST.TYPE.Constant, `
 				{
 					type T = "hello";
 				}
 				% (primitive_literal (string))
 			`]],
-			['Decorate(Type > PrimitiveLiteral ::= KeywordValue) -> SemanticTypeConstant', [AST.TypeConstant, `
+			['Decorate(Type > PrimitiveLiteral ::= KeywordValue) -> SemanticTypeConstant', [AST.TYPE.Constant, `
 				{
 					type T = false;
 				}
 				% (primitive_literal (keyword_value))
 			`]],
-			['Decorate(Type > PrimitiveLiteral ::= "@" Word) -> SemanticTypeConstant', [AST.TypeConstant, `
+			['Decorate(Type > PrimitiveLiteral ::= "@" Word) -> SemanticTypeConstant', [AST.TYPE.Constant, `
 				{
 					type T = @hello;
 				}
@@ -168,108 +168,108 @@ test.suite('Decorator', () => {
 				% (property_accessor_type)
 			`]],
 
-			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.Type, `
+			['Decorate(TypeGrouped ::= "(" Type ")") -> SemanticType', [AST.TYPE.Type, `
 				{
 					type T = (3 | float);
 				}
 				% (type_grouped)
 			`]],
 
-			['Decorate(TypeTupleLiteral ::= "(" ")") -> SemanticTypeTuple', [AST.TypeTuple, `
+			['Decorate(TypeTupleLiteral ::= "(" ")") -> SemanticTypeTuple', [AST.TYPE.Tuple, `
 				{
 					type T = ();
 				}
 				% (type_tuple_literal)
 			`]],
-			['Decorate(TypeTupleLiteral ::= "(" ItemsType ")") -> SemanticTypeTuple', [AST.TypeTuple, `
+			['Decorate(TypeTupleLiteral ::= "(" ItemsType ")") -> SemanticTypeTuple', [AST.TYPE.Tuple, `
 				{
 					type T = (int, ?: float);
 				}
 				% (type_tuple_literal)
 			`]],
 
-			['Decorate(TypeRecordLiteral ::= "(" PropertiesType ")") -> SemanticTypeRecord', [AST.TypeRecord, `
+			['Decorate(TypeRecordLiteral ::= "(" PropertiesType ")") -> SemanticTypeRecord', [AST.TYPE.Record, `
 				{
 					type T = (a?: int, b: float);
 				}
 				% (type_record_literal)
 			`]],
 
-			['Decorate(TypeListLiteral ::= "[" Type "]") -> SemanticTypeList', [AST.TypeList, `
+			['Decorate(TypeListLiteral ::= "[" Type "]") -> SemanticTypeList', [AST.TYPE.List, `
 				{
 					type T = [int];
 				}
 				% (type_list_literal)
 			`]],
 
-			['Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict', [AST.TypeDict, `
+			['Decorate(TypeDictLiteral ::= "[" ":" Type "]") -> SemanticTypeDict', [AST.TYPE.Dict, `
 				{
 					type T = [:int];
 				}
 				% (type_dict_literal)
 			`]],
 
-			['Decorate(TypeSetLiteral ::= "{" Type "}") -> SemanticTypeSet', [AST.TypeSet, `
+			['Decorate(TypeSetLiteral ::= "{" Type "}") -> SemanticTypeSet', [AST.TYPE.Set, `
 				{
 					type T = {int};
 				}
 				% (type_set_literal)
 			`]],
 
-			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.TypeMap, `
+			['Decorate(TypeMapLiteral ::= "{" Type__0 "->" Type__1 "}") -> SemanticTypeMap', [AST.TYPE.Map, `
 				{
 					type T = {int -> float};
 				}
 				% (type_map_literal)
 			`]],
 
-			['Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess', [AST.TypeAccess, `
+			['Decorate(TypeCompound ::= TypeCompound "." PropertyAccessorType) -> SemanticTypeAccess', [AST.TYPE.Access, `
 				{
 					type T = U.p;
 				}
 				% (type_compound)
 			`]],
-			['Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess', [AST.TypeAccess, `
+			['Decorate(TypeCompound ::= TypeCompound "?." PropertyAccessorType) -> SemanticTypeAccess', [AST.TYPE.Access, `
 				{
 					type T = U?.p;
 				}
 				% (type_compound)
 			`]],
-			['Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall', [AST.TypeCall, `
+			['Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall', [AST.TYPE.Call, `
 				{
 					type T = List.<U>;
 				}
 				% (type_compound)
 			`]],
 
-			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation', [AST.TypeOperation, `
+			['Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation', [AST.TYPE.Operation, `
 				{
 					type T = U?;
 				}
 				% (type_unary_symbol)
 			`]],
-			['todo: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.TypeOperation, `
+			['todo: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.TYPE.Operation, `
 				{
 					type T = U!;
 				}
 				% (type_unary_symbol)
 			`]],
 
-			['Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.TypeOperation, `
+			['Decorate(TypeUnaryKeyword ::= "mut" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.TYPE.Operation, `
 				{
 					type T = mut U;
 				}
 				% (type_unary_keyword)
 			`]],
 
-			['Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.TypeOperation, `
+			['Decorate(TypeIntersection ::= TypeIntersection "&" TypeUnaryKeyword) -> SemanticTypeOperation', [AST.TYPE.Operation, `
 				{
 					type T = U & V;
 				}
 				% (type_intersection)
 			`]],
 
-			['Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation', [AST.TypeOperation, `
+			['Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation', [AST.TYPE.Operation, `
 				{
 					type T = U | V;
 				}

@@ -109,14 +109,14 @@ test.suite('TypeAccess', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					List.<int>.1
 					Dict.<int>.b
-				`, (src) => assert.throws(() => AST.TypeAccess.fromSource(src).eval(), TypeErrorNoEntry, src));
+				`, (src) => assert.throws(() => AST.TYPE.Access.fromSource(src).eval(), TypeErrorNoEntry, src));
 			});
 			test.test('throws when index is out of bounds / when key is out of range.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
 					(1, 2.0, "three").3
 					(1, 2.0, "three").-4
 					(a: 1, b: 2.0, c: "three").d
-				`, (src) => assert.throws(() => AST.TypeAccess.fromSource(src).eval(), TypeErrorNoEntry));
+				`, (src) => assert.throws(() => AST.TYPE.Access.fromSource(src).eval(), TypeErrorNoEntry));
 			});
 		});
 
