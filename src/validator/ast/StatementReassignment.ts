@@ -18,8 +18,8 @@ import {
 import type {TYPE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
+import {EXPR} from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import {Expression} from './expression/Expression.ts';
 import {Variable} from './expression/Variable.ts';
 import {Access} from './expression/Access.ts';
 import {Statement} from './Statement.ts';
@@ -36,7 +36,7 @@ export class StatementReassignment extends Statement {
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_reassignment', ['break']>,
 		public readonly assignee: Variable | Access,
-		public readonly assigned: Expression,
+		public readonly assigned: EXPR.Expression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
 	}
@@ -77,7 +77,7 @@ export class StatementReassignment extends Statement {
 			symbol.irType = value.type;
 			return builder.pushInstruction(new OP.Set(symbol, value));
 		} else {
-			assert_instanceof(this.assignee.accessor, Expression);
+			assert_instanceof(this.assignee.accessor, EXPR.Expression);
 			const base_value:    OP.ValueTac = this.assignee.base.build(builder).asTac(builder);
 			const base_typename: OP.TypeName = OP.ast_type_name(base_value.type);
 			assert.ok([OP.TypeName.LIST, OP.TypeName.DICT, OP.TypeName.SET, OP.TypeName.MAP].includes(base_typename), `Expected ${ OP.TypeName[base_typename] } to be a dynamic collection.`);

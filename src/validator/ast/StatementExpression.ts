@@ -12,7 +12,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {Expression} from './expression/Expression.ts';
+import type {EXPR} from './index.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -26,7 +26,7 @@ export class StatementExpression extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_expression', ['break']>,
-		public readonly expr?: Expression,
+		public readonly expr?: EXPR.Expression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);
 	}

@@ -334,7 +334,7 @@ test.suite('Decorator', () => {
 				}
 				% (property_accessor)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression', [AST.Expression, `
+			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression', [AST.EXPR.Expression, `
 				{
 					v.[a + b];
 				}
@@ -359,14 +359,14 @@ test.suite('Decorator', () => {
 				}
 				% (property_accessor)
 			`]],
-			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression', [AST.Expression, `
+			['Decorate(Assignee<Break> > PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> SemanticExpression', [AST.EXPR.Expression, `
 				{
 					set v.[a + b] = false;
 				}
 				% (property_accessor)
 			`]],
 
-			['Decorate(ExpressionGrouped<Break> ::= "(" Expression<+Block><?Break> ")") -> SemanticExpression', [AST.Expression, `
+			['Decorate(ExpressionGrouped<Break> ::= "(" Expression<+Block><?Break> ")") -> SemanticExpression', [AST.EXPR.Expression, `
 				{
 					(42 || 6.9);
 				}
@@ -490,7 +490,7 @@ test.suite('Decorator', () => {
 				}
 				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Block, Break> ::= "+" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression', [AST.Expression, `
+			['Decorate(ExpressionUnarySymbol<Block, Break> ::= "+" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression', [AST.EXPR.Expression, `
 				{
 					+v;
 				}

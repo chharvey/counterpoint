@@ -20,11 +20,14 @@ import {
 	Validator,
 	AST,
 } from '../index.ts';
-import type {TYPE as AST_TYPE} from './index.ts';
+import {
+	type TYPE as AST_TYPE,
+	EXPR,
+} from './index.ts';
 
 
 
-function throwWrongSubtypeError(accessor: AST.Expression, supertype: TYPE.Type): never {
+function throwWrongSubtypeError(accessor: EXPR.Expression, supertype: TYPE.Type): never {
 	throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 }
 
@@ -314,7 +317,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | A
 		}
 		default: {
 			assert_instanceof(access, AST.Access);
-			assert_instanceof(access.accessor, AST.Expression);
+			assert_instanceof(access.accessor, EXPR.Expression);
 			const accessor_type: TYPE.Type = access.accessor.type();
 			if (accessor_type.isBottomType) {
 				return {type: TYPE.NOTHING, optional: accessor_maybe};

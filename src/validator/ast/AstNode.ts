@@ -10,8 +10,8 @@ import {
 } from '../../parser/index.ts';
 import type {Validator} from '../Validator.ts';
 import {
-	type Expression,
 	CollectionLiteral,
+	type EXPR,
 } from './index.ts';
 
 
@@ -45,7 +45,7 @@ import {
  *                       or is not entry-wise assignable
  */
 export function typecheck_assign(
-	assigned:      Expression,
+	assigned:      EXPR.Expression,
 	assignee_type: TYPE.Type,
 	node:          AstNode,
 ): void {

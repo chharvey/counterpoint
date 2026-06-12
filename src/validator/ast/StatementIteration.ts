@@ -26,8 +26,8 @@ import type {SyntaxNodeType} from '../utils-private.ts';
 import type {
 	Block,
 	TYPE as AST_TYPE,
+	EXPR,
 } from './index.ts';
-import type {Expression} from './expression/Expression.ts';
 import type {Variable} from './expression/Variable.ts';
 import {Statement} from './Statement.ts';
 import {StatementBreakable} from './StatementBreakable.ts';
@@ -45,7 +45,7 @@ export class StatementIteration extends StatementBreakable {
 		start_node: SyntaxNodeType<'statement_iteration'>,
 		private readonly assignee: Variable | null,
 		private readonly typenode: AST_TYPE.Type,
-		public  readonly iterable: Expression,
+		public  readonly iterable: EXPR.Expression,
 		public  readonly block:    Block,
 	) {
 		super(start_node, {}, assignee ? [assignee, typenode, iterable, block] : [typenode, iterable, block]);

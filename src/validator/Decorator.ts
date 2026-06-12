@@ -115,8 +115,8 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):        AST.Template;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):        AST.Property;
 	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):        AST.Case;
-	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):        AST.Index | AST.Key | AST.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break']>):        AST.Expression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):        AST.Index | AST.Key | AST.EXPR.Expression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break']>):        AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_tuple_literal',  ['break']>):        AST.Tuple;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_record_literal', ['break']>):        AST.Record;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_list_literal',   ['break']>):        AST.List;
@@ -124,9 +124,9 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_set_literal',    ['break']>):        AST.Set;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break']>):        AST.Map;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                              AST.ExpressionBlock;
-	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                               AST.Index | AST.Key | AST.Expression;
+	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                               AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                           AST.Access | AST.Call;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                       AST.Expression | AST.OperationUnary;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                       AST.EXPR.Expression | AST.OperationUnary;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                               AST.OperationBinaryCast | AST.Claim;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                        AST.OperationBinaryArithmetic;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                     AST.OperationBinaryArithmetic;
@@ -136,7 +136,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                        AST.OperationUnary | AST.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                        AST.OperationUnary | AST.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):           AST.OperationTernary;
-	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                               AST.Expression;
+	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                               AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.Variable | AST.Access;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',   ['break']>):           AST.StatementExpression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_claim',        ['break']>):           AST.StatementClaim;
@@ -421,7 +421,7 @@ export class Decorator {
 			['expression_comparative', (node) => ((
 				n:        SyntaxNodeType<'expression_comparative'>,
 				operator: Operator,
-				operands: readonly [AST.Expression, AST.Expression],
+				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !< b` is syntax sugar for `!(a < b)`
 				(operator === Operator.NLT) ? new AST.OperationUnary(
@@ -470,7 +470,7 @@ export class Decorator {
 			['expression_equality', (node) => ((
 				n:        SyntaxNodeType<'expression_equality'>,
 				operator: Operator,
-				operands: readonly [AST.Expression, AST.Expression],
+				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !== b` is syntax sugar for `!(a === b)`
 				(operator === Operator.NID) ? new AST.OperationUnary(
@@ -509,7 +509,7 @@ export class Decorator {
 			['expression_conjunctive', (node) => ((
 				n:        SyntaxNodeType<'expression_conjunctive'>,
 				operator: Operator,
-				operands: readonly [AST.Expression, AST.Expression],
+				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !& b` is syntax sugar for `!(a && b)`
 				(operator === Operator.NAND) ? new AST.OperationUnary(
@@ -538,7 +538,7 @@ export class Decorator {
 			['expression_disjunctive', (node) => ((
 				n:        SyntaxNodeType<'expression_disjunctive'>,
 				operator: Operator,
-				operands: readonly [AST.Expression, AST.Expression],
+				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !| b` is syntax sugar for `!(a || b)`
 				(operator === Operator.NOR) ? new AST.OperationUnary(
@@ -698,7 +698,7 @@ export class Decorator {
 		);
 	}
 
-	private decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.Expression {
+	private decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.EXPR.Expression {
 		return (
 			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.Variable(exprnode) :
 			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.Constant(exprnode) :

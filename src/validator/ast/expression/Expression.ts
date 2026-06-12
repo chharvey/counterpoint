@@ -17,7 +17,7 @@ import {AstNode} from '../AstNode.ts';
 
 
 /**
- * A sematic node representing an expression.
+ * A sematic node representing a value expression.
  * Known subclasses:
  * - Constant
  * - Template

@@ -16,10 +16,12 @@ import {
 import {TYPE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {TYPE as AST_TYPE} from './index.ts';
+import {
+	type TYPE as AST_TYPE,
+	EXPR,
+} from './index.ts';
 import {Index} from './Index-.ts';
 import {Key} from './Key.ts';
-import {Expression} from './expression/Expression.ts';
 import {Variable} from './expression/Variable.ts';
 import {Access} from './expression/Access.ts';
 import {Statement} from './Statement.ts';
@@ -78,7 +80,7 @@ export class StatementClaim extends Statement {
 					return base_type.set(accessor.id, claimed_type, accessor);
 				}
 				default: {
-					assert_instanceof(accessor, Expression);
+					assert_instanceof(accessor, EXPR.Expression);
 					throw new Error('`StatementClaim[assignee: Access[accessor: Expression]]#typeCheck` not yet supported.');
 				}
 			}

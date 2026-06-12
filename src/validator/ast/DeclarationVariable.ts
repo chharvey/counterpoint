@@ -21,9 +21,11 @@ import {
 } from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {TYPE as AST_TYPE} from './index.ts';
+import type {
+	TYPE as AST_TYPE,
+	EXPR,
+} from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import type {Expression} from './expression/Expression.ts';
 import {Constant} from './expression/Constant.ts';
 import type {Variable} from './expression/Variable.ts';
 import {Template} from './expression/Template.ts';
@@ -34,7 +36,7 @@ import {Statement} from './Statement.ts';
 
 
 
-function is_inferrable(node?: Expression): boolean {
+function is_inferrable(node?: EXPR.Expression): boolean {
 	return (
 		[
 			Constant,
@@ -49,7 +51,7 @@ function is_inferrable(node?: Expression): boolean {
 
 
 
-function writable_inferred_type(node: Expression): TYPE.Type {
+function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 	switch (true) {
 		case node instanceof Constant: {
 			const value: VALUE.Primitive = node.interpreterValue;
@@ -93,7 +95,7 @@ export class DeclarationVariable extends Statement {
 		public  readonly writable: boolean,
 		public  readonly assignee: Variable | null,
 		public  readonly typenode: AST_TYPE.Type | null,
-		public  readonly assigned: Expression | null,
+		public  readonly assigned: EXPR.Expression | null,
 	) {
 		super(
 			start_node,

@@ -14,8 +14,10 @@ import {
 } from '../../core/index.ts';
 import {TYPE} from '../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {Block} from './index.ts';
-import type {Expression} from './expression/Expression.ts';
+import type {
+	Block,
+	EXPR,
+} from './index.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -30,7 +32,7 @@ export class StatementConditional extends Statement {
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>,
 		private readonly unless:       boolean,
-		public  readonly condition:    Expression,
+		public  readonly condition:    EXPR.Expression,
 		public  readonly consequent:   Block,
 		public  readonly alternative?: Block | StatementConditional,
 	) {

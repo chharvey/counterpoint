@@ -851,8 +851,8 @@ test.suite('Operation', () => {
 					1.0 * f;  % non-foldable value
 					-1.0 * f; % non-foldable value
 				}`);
-				const exprs:     readonly AST.Expression[] = stmts.slice(2).map((stmt) => ((stmt as AST.StatementExpression).expr!));
-				const expecteds: readonly (VALUE.Value | null)[]  = exprs.slice(0, 3).map((op) => (op as AST.OperationBinaryArithmetic).operand0.fold());
+				const exprs:     readonly AST.EXPR.Expression[]  = stmts.slice(2).map((stmt) => ((stmt as AST.StatementExpression).expr!));
+				const expecteds: readonly (VALUE.Value | null)[] = exprs.slice(0, 3).map((op) => (op as AST.OperationBinaryArithmetic).operand0.fold());
 				assert.deepStrictEqual(
 					exprs.map((op) => op.fold()),
 					[...expecteds, null, null, null],

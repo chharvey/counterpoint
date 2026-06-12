@@ -734,8 +734,8 @@ test.suite('Expression', () => {
 		test.suite('#fold', () => {
 			test.test('returns the fold of the operand.', () => {
 				samples.forEach((expr) => assert.deepStrictEqual(
-					AST.Claim     .fromSource(`${ expr } as <anything>`) .fold(),
-					AST.Expression.fromSource(expr).fold(),
+					AST.Claim           .fromSource(`${ expr } as <anything>`) .fold(),
+					AST.EXPR.Expression .fromSource(expr).fold(),
 					expr,
 				));
 			});
