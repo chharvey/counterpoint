@@ -8,13 +8,13 @@ import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_tokens,
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 

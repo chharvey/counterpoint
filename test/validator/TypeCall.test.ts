@@ -6,11 +6,11 @@ import {
 	TYPE,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_lines,
 	assertEqualTypes,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 

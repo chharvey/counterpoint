@@ -7,13 +7,13 @@ import {
 	TYPE,
 	TypeErrorInvalidOperation,
 	TypeErrorNoEntry,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_lines,
 	repeat,
 	assertEqualTypes,
 	typeUnit,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 

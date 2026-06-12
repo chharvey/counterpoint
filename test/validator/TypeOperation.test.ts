@@ -4,12 +4,12 @@ import {
 	AST,
 	TYPE,
 	TypeErrorInvalidOperation,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 
