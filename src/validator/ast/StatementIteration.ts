@@ -24,7 +24,7 @@ import {
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
 import type {Block} from './index.ts';
-import type {Type} from './Type.ts';
+import type {Type} from './type/Type.ts';
 import type {Expression} from './Expression.ts';
 import type {Variable} from './Variable.ts';
 import {Statement} from './Statement.ts';

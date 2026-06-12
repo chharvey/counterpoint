@@ -18,7 +18,7 @@ import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Index} from './Index-.ts';
 import {Key} from './Key.ts';
-import type {Type} from './Type.ts';
+import type {Type} from './type/Type.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Access} from './Access.ts';

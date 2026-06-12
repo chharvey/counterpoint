@@ -14,8 +14,8 @@ import {
 import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaType} from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {Type} from './Type.ts';
-import type {TypeAlias} from './TypeAlias.ts';
+import type {Type} from './type/Type.ts';
+import type {TypeAlias} from './type/TypeAlias.ts';
 import {Statement} from './Statement.ts';
 
 

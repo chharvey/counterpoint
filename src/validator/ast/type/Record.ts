@@ -1,23 +1,23 @@
 import * as xjs from 'extrajs';
-import {AssignmentErrorDuplicateKey} from '../../index.ts';
+import {AssignmentErrorDuplicateKey} from '../../../index.ts';
 import {
 	type NonemptyArray,
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	type EntryType,
 	TYPE,
-} from '../../typer/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
-import type {Key} from './Key.ts';
-import type {PropertyType} from './PropertyType.ts';
+} from '../../../typer/index.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {Key} from '../Key.ts';
+import type {PropertyType} from '../PropertyType.ts';
 import {Type} from './Type.ts';
-import {TypeCollectionLiteral} from './TypeCollectionLiteral.ts';
+import {TypeCollectionLiteral} from './Collection.ts';
 
 
 

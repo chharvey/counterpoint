@@ -2,19 +2,19 @@ import * as assert from 'node:assert';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import type {TYPE} from '../../typer/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+} from '../../../core/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	Operator,
 	type ValidTypeOperator,
-} from '../Operator.ts';
+} from '../../Operator.ts';
 import type {Type} from './Type.ts';
-import {TypeOperation} from './TypeOperation.ts';
+import {TypeOperation} from './Operation.ts';
 
 
 

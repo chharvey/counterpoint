@@ -22,7 +22,7 @@ import {
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
-import type {Type} from './Type.ts';
+import type {Type} from './type/Type.ts';
 import type {Expression} from './Expression.ts';
 import {Constant} from './Constant.ts';
 import type {Variable} from './Variable.ts';

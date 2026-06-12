@@ -3,22 +3,22 @@ import type {SyntaxNode} from 'tree-sitter';
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
-import {Keyword} from '../../parser/index.ts';
+} from '../../../typer/index.ts';
+import {Keyword} from '../../../parser/index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-} from '../utils-private.ts';
-import {Validator} from '../Validator.ts';
-import {valueOfTokenNumber} from './utils-private.ts';
+} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
+import {valueOfTokenNumber} from '../utils-private.ts';
 import {Type} from './Type.ts';
 
 

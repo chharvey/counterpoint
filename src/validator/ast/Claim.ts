@@ -16,7 +16,7 @@ import type {
 	TYPE,
 } from '../../typer/index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
-import type {Type} from './Type.ts';
+import type {Type} from './type/Type.ts';
 import {Expression} from './Expression.ts';
 
 

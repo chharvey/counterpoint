@@ -1,5 +1,5 @@
-import type {SyntaxNodeType} from '../utils-private.ts';
-import type {AstNode} from './AstNode.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {AstNode} from '../AstNode.ts';
 import {Type} from './Type.ts';
 
 

@@ -28,8 +28,8 @@ import {
 	CLASS_API,
 } from './utils-private.ts';
 import {typecheck_assign} from './AstNode.ts';
-import type {Type} from './Type.ts';
-import {TypeCall} from './TypeCall.ts';
+import type {Type} from './type/Type.ts';
+import {TypeCall} from './type/Call.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
 import {Tuple as AstTuple} from './Tuple.ts';

@@ -1,16 +1,16 @@
 import {
 	assert_instanceof,
 	memoizeMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import {TYPE} from '../../typer/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
-import type {ItemType} from './ItemType.ts';
+} from '../../../core/index.ts';
+import {TYPE} from '../../../typer/index.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {ItemType} from '../ItemType.ts';
 import {Type} from './Type.ts';
-import {TypeCollectionLiteral} from './TypeCollectionLiteral.ts';
+import {TypeCollectionLiteral} from './Collection.ts';
 
 
 
