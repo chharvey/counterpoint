@@ -136,7 +136,7 @@ export class AstNode implements Serializable {
 
 	@memoizeGetter
 	public get validator(): Validator {
-		return this.parent!.validator;
+		return this.#parent!.validator;
 	}
 
 	/** @implements Serializable */

@@ -14,9 +14,7 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {Goal} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Buildable} from './Buildable.ts';
-import type {ExpressionBlock} from './ExpressionBlock.ts';
 import type {Statement} from './Statement.ts';
-import type {StatementConditional} from './StatementConditional.ts';
 
 
 
@@ -47,7 +45,7 @@ export class Block extends AstNode implements Buildable {
 	}
 
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, (this.parent as ExpressionBlock | StatementConditional | Goal | undefined)?.validator);
+		this.#validator ??= new Validator(this.config, this.parent?.validator);
 		return this.#validator;
 	}
 
