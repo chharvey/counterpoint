@@ -26,7 +26,6 @@ import {
 	EXPR,
 } from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import type {Variable} from './expression/Variable.ts';
 import {Tuple as AstTuple} from './expression/Tuple.ts';
 import {Record as AstRecord} from './expression/Record.ts';
 import {Call} from './expression/Call.ts';
@@ -91,7 +90,7 @@ export class DeclarationVariable extends Statement {
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly writable: boolean,
-		public  readonly assignee: Variable | null,
+		public  readonly assignee: EXPR.Variable | null,
 		public  readonly typenode: AST_TYPE.Type | null,
 		public  readonly assigned: EXPR.Expression | null,
 	) {

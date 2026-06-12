@@ -71,7 +71,7 @@ SemanticTypeOperation[operator: AND | OR]
 SemanticExpression =:=
 	| SemanticExpressionConstant
 	| SemanticExpressionTemplate
-	| SemanticVariable
+	| SemanticExpressionVariable
 	| SemanticCollectionLiteral
 	| SemanticExpressionBlock
 	| SemanticAccess
@@ -88,7 +88,7 @@ SemanticExpressionConstant[value: Null | Boolean | Symbol | Number | String]
 SemanticExpressionTemplate
 	::= (SemanticExpressionConstant SemanticExpression?)* SemanticExpressionConstant;
 
-SemanticVariable[id: RealNumber]
+SemanticExpressionVariable[id: RealNumber]
 	::= ();
 
 SemanticExpressionTemplatePartial
@@ -159,7 +159,7 @@ SemanticDeclarationType
 	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[writable: Boolean]
-	::= SemanticVariable? SemanticType? SemanticExpression?;
+	::= SemanticExpressionVariable? SemanticType? SemanticExpression?;
 
 
 
@@ -167,10 +167,10 @@ SemanticStatementExpression
 	::= SemanticExpression?;
 
 SemanticStatementClaim
-	::= (SemanticVariable | SemanticAccess) SemanticType;
+	::= (SemanticExpressionVariable | SemanticAccess) SemanticType;
 
 SemanticStatementReassignment
-	::= (SemanticVariable | SemanticAccess) SemanticExpression;
+	::= (SemanticExpressionVariable | SemanticAccess) SemanticExpression;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
@@ -179,7 +179,7 @@ SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 	::= SemanticExpression SemanticBlock;
 
 SemanticStatementIteration
-	::= SemanticVariable? SemanticType SemanticExpression SemanticBlock;
+	::= SemanticExpressionVariable? SemanticType SemanticExpression SemanticBlock;
 
 SemanticStatementBreak[skip: Boolean]
 	::= ();

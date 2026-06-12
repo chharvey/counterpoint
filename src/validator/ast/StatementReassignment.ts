@@ -20,7 +20,6 @@ import type {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {EXPR} from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import {Variable} from './expression/Variable.ts';
 import {Access} from './expression/Access.ts';
 import {Statement} from './Statement.ts';
 
@@ -35,7 +34,7 @@ export class StatementReassignment extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_reassignment', ['break']>,
-		public readonly assignee: Variable | Access,
+		public readonly assignee: EXPR.Variable | Access,
 		public readonly assigned: EXPR.Expression,
 	) {
 		super(start_node, {}, [assignee, assigned]);
@@ -53,7 +52,7 @@ export class StatementReassignment extends Statement {
 
 	public override varCheck(): void {
 		super.varCheck();
-		if (this.assignee instanceof Variable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
+		if (this.assignee instanceof EXPR.Variable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
 			throw new AssignmentErrorReassignment(this.assignee);
 		}
 	}
@@ -71,7 +70,7 @@ export class StatementReassignment extends Statement {
 
 	@runOnceMethod
 	public override build(builder: Builder): void {
-		if (this.assignee instanceof Variable) {
+		if (this.assignee instanceof EXPR.Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			const value: OP.Value = this.assigned.build(builder);
 			symbol.irType = value.type;

@@ -92,7 +92,7 @@ export class Decorator {
 	}
 
 	/* eslint-disable @typescript-eslint/unified-signatures */
-	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                    AST.TYPE.TypeAlias | AST.Variable;
+	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                    AST.TYPE.TypeAlias | AST.EXPR.Variable;
 	public decorate(syntaxnode: SyntaxNodeType<'keyword_type'>):                                  AST.TYPE.Constant;
 	public decorate(syntaxnode: SyntaxNodeType<'word'>):                                          AST.Key;
 	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                             AST.TYPE.Constant | AST.EXPR.Constant;
@@ -137,7 +137,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                        AST.OperationUnary | AST.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):           AST.OperationTernary;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                               AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.Variable | AST.Access;
+	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.EXPR.Variable | AST.Access;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',   ['break']>):           AST.StatementExpression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_claim',        ['break']>):           AST.StatementClaim;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_reassignment', ['break']>):           AST.StatementReassignment;
@@ -164,7 +164,7 @@ export class Decorator {
 			/* # TERMINALS */
 			['identifier', (node) => (
 				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TYPE.TypeAlias(node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.Variable      (node as SyntaxNodeType<'identifier'>) :
+				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.EXPR.Variable (node as SyntaxNodeType<'identifier'>) :
 				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
 			)],
 
@@ -576,7 +576,7 @@ export class Decorator {
 			[/^assignee(__break)?$/, (node) => {
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				return identifier_0
-					? new AST.Variable(identifier_0)
+					? new AST.EXPR.Variable(identifier_0)
 					: new AST.Access(
 						node as SyntaxNodeFamily<'assignee', ['break']>,
 						Operator.DOT,
@@ -645,7 +645,7 @@ export class Decorator {
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				return new AST.StatementIteration(
 					node as SyntaxNodeType<'statement_iteration'>,
-					identifier_0 && new AST.Variable(identifier_0),
+					identifier_0 && new AST.EXPR.Variable(identifier_0),
 					this.decorateTypeNode(node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>),
 					this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
 					this.decorate(node.childForFieldName('block_0')              as SyntaxNodeType<'block__break'>),
@@ -675,7 +675,7 @@ export class Decorator {
 				return new AST.DeclarationVariable(
 					node as SyntaxNodeFamily<'declaration_variable', ['break']>,
 					node.children[1].text === Keyword.MUTABLE,
-					identifier_0 && new AST.Variable(identifier_0),
+					identifier_0 && new AST.EXPR.Variable(identifier_0),
 					type_0       && this.decorateTypeNode(type_0),
 					expression_0 && this.decorateExprNode(expression_0),
 				);
@@ -700,7 +700,7 @@ export class Decorator {
 
 	private decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.EXPR.Expression {
 		return (
-			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.Variable(exprnode) :
+			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.EXPR.Variable(exprnode) :
 			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.EXPR.Constant(exprnode) :
 			this.decorate(exprnode)
 		);

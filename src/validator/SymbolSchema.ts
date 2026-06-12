@@ -60,7 +60,7 @@ export class SymbolSchemaVar extends SymbolSchema {
 	public value: VALUE.Value | null = null;
 
 	public constructor(
-		node: AST.Variable,
+		node: AST.EXPR.Variable,
 		/** May the symbol be reassigned? */
 		public readonly isWritable: boolean,
 		/** Was the symbol declared without an initial value? */

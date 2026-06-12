@@ -27,10 +27,12 @@ import {
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
-import {TYPE as AST_TYPE} from '../index.ts';
+import {
+	TYPE as AST_TYPE,
+	EXPR,
+} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
-import {Variable} from './Variable.ts';
 import {Tuple as AstTuple} from './Tuple.ts';
 import {Record as AstRecord} from './Record.ts';
 
@@ -74,7 +76,7 @@ export class Call extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		if (!(this.base instanceof Variable)) {
+		if (!(this.base instanceof EXPR.Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;

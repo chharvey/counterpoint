@@ -375,8 +375,8 @@ Decorate(FunctionArguments<Break> ::= "(" (","? Expression<+Block><?Break># ","?
 
 
 
-Decorate(ExpressionUnit<Block, Break> ::= IDENTIFIER) -> SemanticVariable
-	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
+Decorate(ExpressionUnit<Block, Break> ::= IDENTIFIER) -> SemanticExpressionVariable
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit<Block, Break> ::= PrimitiveLiteral) -> SemanticExpressionConstant
 	:= Decorate(PrimitiveLiteral);
 Decorate(ExpressionUnit<Block, Break> ::= StringTemplate<?Break>) -> SemanticExpressionTemplate
@@ -662,8 +662,8 @@ Decorate(Expression<Block, Break> ::= ExpressionConditional) -> SemanticExpressi
 
 
 
-Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable
-	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
+Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticExpressionVariable
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
 	:= (SemanticAccess[kind=NORMAL]
 		Decorate(ExpressionCompound<+Block><?Break>)
@@ -751,7 +751,7 @@ Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Brea
 	);
 Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		(SemanticType     Decorate(Type))
 		(SemanticIterable Decorate(Expression<+Block><-Break>))
 		Decorate(Block<+Break>)
@@ -815,29 +815,29 @@ Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block
 	);
 Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=false]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=false]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=true]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=true]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=true]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 	);
 

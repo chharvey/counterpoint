@@ -22,7 +22,6 @@ import {
 } from './index.ts';
 import {Index} from './Index-.ts';
 import {Key} from './Key.ts';
-import {Variable} from './expression/Variable.ts';
 import {Access} from './expression/Access.ts';
 import {Statement} from './Statement.ts';
 
@@ -37,7 +36,7 @@ export class StatementClaim extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_claim', ['break']>,
-		private readonly assignee: Variable | Access,
+		private readonly assignee: EXPR.Variable | Access,
 		private readonly claimed_type: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
@@ -61,7 +60,7 @@ export class StatementClaim extends Statement {
 		if (!claimed_type.isSubtypeOf(computed_type)) {
 			throw new TypeErrorNotNarrow(claimed_type, computed_type, this.line_index, this.col_index);
 		}
-		if (this.assignee instanceof Variable) {
+		if (this.assignee instanceof EXPR.Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar | undefined;
 			if (symbol) {
 				symbol.type = claimed_type;

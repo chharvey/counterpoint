@@ -1323,7 +1323,7 @@ test.suite('Operation', () => {
 			});
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.OperationTernary = AST.OperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.Claim).operand as AST.Variable, false, false));
+				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.Claim).operand as AST.EXPR.Variable, false, false));
 				return assert.ok(ternary.type().isBottomType);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {

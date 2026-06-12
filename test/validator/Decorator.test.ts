@@ -628,13 +628,13 @@ test.suite('Decorator', () => {
 			`]],
 
 			/* ## Statements */
-			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.Variable, `
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticExpressionVariable', [AST.EXPR.Variable, `
 				{
 					claim v: int;
 				}
 				% (assignee)
 			`]],
-			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable', [AST.Variable, `
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticExpressionVariable', [AST.EXPR.Variable, `
 				{
 					set v = 42;
 				}

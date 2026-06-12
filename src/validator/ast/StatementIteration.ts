@@ -28,7 +28,6 @@ import type {
 	TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
-import type {Variable} from './expression/Variable.ts';
 import {Statement} from './Statement.ts';
 import {StatementBreakable} from './StatementBreakable.ts';
 
@@ -43,7 +42,7 @@ export class StatementIteration extends StatementBreakable {
 
 	public constructor(
 		start_node: SyntaxNodeType<'statement_iteration'>,
-		private readonly assignee: Variable | null,
+		private readonly assignee: EXPR.Variable | null,
 		private readonly typenode: AST_TYPE.Type,
 		public  readonly iterable: EXPR.Expression,
 		public  readonly block:    Block,

@@ -38,7 +38,7 @@ test.suite('Expression', () => {
 				val mut x: int = 42;
 				x;
 			}`, {codegen: false});
-			const expr = (stmts[1] as AST.StatementExpression).expr as AST.Variable;
+			const expr = (stmts[1] as AST.StatementExpression).expr as AST.EXPR.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
 			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol));
@@ -303,7 +303,7 @@ test.suite('Expression', () => {
 					val mut i: int = 42;
 					i;
 				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.Variable.fromSource('i').varCheck(), ReferenceErrorUndeclared);
+				assert.throws(() => AST.EXPR.Variable.fromSource('i').varCheck(), ReferenceErrorUndeclared);
 			});
 			test.test('throws when declared in an inner scope.', () => {
 				assert.throws(() => AST.Goal.fromSource(`{
@@ -712,7 +712,7 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
 				const claim: AST.Claim = AST.Claim.fromSource('n as <int>');
-				claim.validator.addSymbol(new SymbolSchemaVar(claim.operand as AST.Variable, false, false));
+				claim.validator.addSymbol(new SymbolSchemaVar(claim.operand as AST.EXPR.Variable, false, false));
 				(claim.validator.getSymbol(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
