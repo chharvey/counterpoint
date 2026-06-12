@@ -46,12 +46,12 @@ export function assignToDeco(
 export abstract class CollectionLiteral extends Expression {
 	protected constructor(
 		start_node:
-			| SyntaxNodeFamily<'tuple_literal',  ['break']>
-			| SyntaxNodeFamily<'record_literal', ['break']>
-			| SyntaxNodeFamily<'list_literal',   ['break']>
-			| SyntaxNodeFamily<'dict_literal',   ['break']>
-			| SyntaxNodeFamily<'set_literal',    ['break']>
-			| SyntaxNodeFamily<'map_literal',    ['break']>,
+			| SyntaxNodeFamily<'expression_tuple_literal',  ['break']>
+			| SyntaxNodeFamily<'expression_record_literal', ['break']>
+			| SyntaxNodeFamily<'expression_list_literal',   ['break']>
+			| SyntaxNodeFamily<'expression_dict_literal',   ['break']>
+			| SyntaxNodeFamily<'expression_set_literal',    ['break']>
+			| SyntaxNodeFamily<'expression_map_literal',    ['break']>,
 
 		children: readonly AstNode[],
 	) {

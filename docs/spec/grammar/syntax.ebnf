@@ -146,27 +146,27 @@ Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
 PropertyAccessor<Break>
 	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break> "]";
 
-ExpressionGrouped <Break> ::= "("       Expression<+Block><?Break>         ")";
-TupleLiteral      <Break> ::= "("       Items<?Break>?                     ")";
-RecordLiteral     <Break> ::= "("  ","? Property<?Break>#           ","?   ")";
-ListLiteral       <Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]";
-DictLiteral       <Break> ::= "["  ","? Property<?Break>#           ","?   "]";
-SetLiteral        <Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}";
-MapLiteral        <Break> ::= "{"  ","? Case<?Break>#               ","?   "}";
-FunctionArguments <Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")";
+ExpressionGrouped       <Break> ::= "("       Expression<+Block><?Break>         ")";
+ExpressionTupleLiteral  <Break> ::= "("       Items<?Break>?                     ")";
+ExpressionRecordLiteral <Break> ::= "("  ","? Property<?Break>#           ","?   ")";
+ExpressionListLiteral   <Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]";
+ExpressionDictLiteral   <Break> ::= "["  ","? Property<?Break>#           ","?   "]";
+ExpressionSetLiteral    <Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}";
+ExpressionMapLiteral    <Break> ::= "{"  ","? Case<?Break>#               ","?   "}";
+FunctionArguments       <Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")";
 
 ExpressionUnit<Block, Break> ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| StringTemplate    <?Break>
-	| ExpressionGrouped <?Break>
-	| TupleLiteral      <?Break>
-	| RecordLiteral     <?Break>
-	| ListLiteral       <?Break>
-	| DictLiteral       <?Break>
-	| SetLiteral        <?Break>
-	| MapLiteral        <?Break>
-	| <Block+>Block     <?Break>
+	| StringTemplate          <?Break>
+	| ExpressionGrouped       <?Break>
+	| ExpressionTupleLiteral  <?Break>
+	| ExpressionRecordLiteral <?Break>
+	| ExpressionListLiteral   <?Break>
+	| ExpressionDictLiteral   <?Break>
+	| ExpressionSetLiteral    <?Break>
+	| ExpressionMapLiteral    <?Break>
+	| <Block+>Block           <?Break>
 ;
 
 ExpressionCompound<Block, Break> ::=

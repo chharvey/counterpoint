@@ -36,7 +36,7 @@ class AstMap extends CollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'map_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_map_literal', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<Case>>,
 	) {
 		super(start_node, children);

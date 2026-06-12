@@ -91,14 +91,14 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 ) : C extends 'expression' ? (
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeFamily<'string_template',    ['break']>
-	| SyntaxNodeFamily<'expression_grouped', ['break']>
-	| SyntaxNodeFamily<'tuple_literal',      ['break']>
-	| SyntaxNodeFamily<'record_literal',     ['break']>
-	| SyntaxNodeFamily<'list_literal',       ['break']>
-	| SyntaxNodeFamily<'dict_literal',       ['break']>
-	| SyntaxNodeFamily<'set_literal',        ['break']>
-	| SyntaxNodeFamily<'map_literal',        ['break']>
+	| SyntaxNodeFamily<'string_template',           ['break']>
+	| SyntaxNodeFamily<'expression_grouped',        ['break']>
+	| SyntaxNodeFamily<'expression_tuple_literal',  ['break']>
+	| SyntaxNodeFamily<'expression_record_literal', ['break']>
+	| SyntaxNodeFamily<'expression_list_literal',   ['break']>
+	| SyntaxNodeFamily<'expression_dict_literal',   ['break']>
+	| SyntaxNodeFamily<'expression_set_literal',    ['break']>
+	| SyntaxNodeFamily<'expression_map_literal',    ['break']>
 	| SyntaxNodeType<'expression_block'>
 	| SyntaxNodeType<'expression_compound'>
 	| SyntaxNodeType<'expression_unary_symbol'>
@@ -133,7 +133,7 @@ export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode
 	}
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_grouped(__break)?|(tuple|record|list|dict|set|map)_literal(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_(grouped|(tuple|record|list|dict|set|map)_literal)(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?)$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^declaration|statement_(expression(__break)?|claim(__break)?|reassignment(__break)?|conditional(__unless)?(__break)?|loop|iteration|break)$/) || isSyntaxNodeSupertype(node, 'declaration')],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?)$/)],
 	]).get(category)!(syntaxnode);

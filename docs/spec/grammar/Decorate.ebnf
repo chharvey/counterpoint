@@ -334,38 +334,38 @@ Decorate(PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> Sema
 Decorate(ExpressionGrouped<Break> ::= "(" Expression<+Block><?Break> ")") -> SemanticExpression
 	:= Decorate(Expression<+Block><?Break>);
 
-Decorate(TupleLiteral<Break> ::= "(" ")") -> SemanticTuple
+Decorate(ExpressionTupleLiteral<Break> ::= "(" ")") -> SemanticTuple
 	:= (SemanticTuple);
-Decorate(TupleLiteral<Break> ::= "(" Items<?Break> ")") -> SemanticTuple
+Decorate(ExpressionTupleLiteral<Break> ::= "(" Items<?Break> ")") -> SemanticTuple
 	:= (SemanticTuple
 		...Decorate(Items<?Break>)
 	);
 
-Decorate(RecordLiteral<Break> ::= "(" ","? Property<?Break># ","? ")") -> SemanticRecord
+Decorate(ExpressionRecordLiteral<Break> ::= "(" ","? Property<?Break># ","? ")") -> SemanticRecord
 	:= (SemanticRecord
 		...ParseList(Property<?Break>, SemanticProperty)
 	);
 
-Decorate(ListLiteral<Break> ::= "[" "]") -> SemanticList
+Decorate(ExpressionListLiteral<Break> ::= "[" "]") -> SemanticList
 	:= (SemanticList);
-Decorate(ListLiteral<Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]") -> SemanticList
+Decorate(ExpressionListLiteral<Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]") -> SemanticList
 	:= (SemanticList
 		...ParseList(Expression<+Block><?Break>, SemanticExpression)
 	);
 
-Decorate(DictLiteral<Break> ::= [" ","? Property<?Break># ","? "]") -> SemanticDict
+Decorate(ExpressionDictLiteral<Break> ::= [" ","? Property<?Break># ","? "]") -> SemanticDict
 	:= (SemanticDict
 		...ParseList(Property<?Break>, SemanticProperty)
 	);
 
-Decorate(SetLiteral<Break> ::= "{" "}") -> SemanticSet
+Decorate(ExpressionSetLiteral<Break> ::= "{" "}") -> SemanticSet
 	:= (SemanticSet);
-Decorate(SetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}") -> SemanticSet
+Decorate(ExpressionSetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}") -> SemanticSet
 	:= (SemanticSet
 		...ParseList(Expression<+Block><?Break>, SemanticExpression)
 	);
 
-Decorate(MapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticMap
+Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticMap
 	:= (SemanticMap
 		...ParseList(Case<?Break>, SemanticCase)
 	);
@@ -383,18 +383,18 @@ Decorate(ExpressionUnit<Block, Break> ::= StringTemplate<?Break>) -> SemanticTem
 	:= Decorate(StringTemplate<?Break>);
 Decorate(ExpressionUnit<Block, Break> ::= ExpressionGrouped<?Break>) -> SemanticExpression
 	:= Decorate(ExpressionGrouped<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= TupleLiteral<?Break>) -> SemanticTuple
-	:= Decorate(TupleLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= RecordLiteral<?Break>) -> SemanticRecord
-	:= Decorate(RecordLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= ListLiteral<?Break>) -> SemanticList
-	:= Decorate(ListLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= DictLiteral<?Break>) -> SemanticDict
-	:= Decorate(DictLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= SetLiteral<?Break>) -> SemanticSet
-	:= Decorate(SetLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= MapLiteral<?Break>) -> SemanticMap
-	:= Decorate(MapLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionTupleLiteral<?Break>) -> SemanticTuple
+	:= Decorate(ExpressionTupleLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionRecordLiteral<?Break>) -> SemanticRecord
+	:= Decorate(ExpressionRecordLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionListLiteral<?Break>) -> SemanticList
+	:= Decorate(ExpressionListLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionDictLiteral<?Break>) -> SemanticDict
+	:= Decorate(ExpressionDictLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionSetLiteral<?Break>) -> SemanticSet
+	:= Decorate(ExpressionSetLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionMapLiteral<?Break>) -> SemanticMap
+	:= Decorate(ExpressionMapLiteral<?Break>);
 Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBlock
 	:= (SemanticExpressionBlock Decorate(Block<?Break>));
 

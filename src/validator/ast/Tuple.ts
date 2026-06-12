@@ -36,7 +36,7 @@ class AstTuple extends CollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'tuple_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_tuple_literal', ['break']>,
 		public override readonly children: readonly Expression[],
 	) {
 		super(start_node, children);

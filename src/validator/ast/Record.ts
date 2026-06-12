@@ -39,7 +39,7 @@ class AstRecord extends CollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'record_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_record_literal', ['break']>,
 		public override readonly children: Readonly<NonemptyArray<Property>>,
 	) {
 		super(start_node, children);

@@ -34,7 +34,7 @@ export class List extends CollectionLiteral {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'list_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_list_literal', ['break']>,
 		public override readonly children: readonly Expression[],
 	) {
 		super(start_node, children);

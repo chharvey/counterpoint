@@ -112,17 +112,17 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'type_intersection'>):                             AST.TypeOperationBinary;
 	public decorate(syntaxnode: SyntaxNodeType<'type_union'>):                                    AST.TypeOperationBinary;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                     AST.Type;
-	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',    ['break']>):               AST.Template;
-	public decorate(syntaxnode: SyntaxNodeFamily<'property',           ['break']>):               AST.Property;
-	public decorate(syntaxnode: SyntaxNodeFamily<'case',               ['break']>):               AST.Case;
-	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',  ['break']>):               AST.Index | AST.Key | AST.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped', ['break']>):               AST.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'tuple_literal',      ['break']>):               AST.Tuple;
-	public decorate(syntaxnode: SyntaxNodeFamily<'record_literal',     ['break']>):               AST.Record;
-	public decorate(syntaxnode: SyntaxNodeFamily<'list_literal',       ['break']>):               AST.List;
-	public decorate(syntaxnode: SyntaxNodeFamily<'dict_literal',       ['break']>):               AST.Dict;
-	public decorate(syntaxnode: SyntaxNodeFamily<'set_literal',        ['break']>):               AST.Set;
-	public decorate(syntaxnode: SyntaxNodeFamily<'map_literal',        ['break']>):               AST.Map;
+	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):        AST.Template;
+	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):        AST.Property;
+	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):        AST.Case;
+	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):        AST.Index | AST.Key | AST.Expression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break']>):        AST.Expression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_tuple_literal',  ['break']>):        AST.Tuple;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_record_literal', ['break']>):        AST.Record;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_list_literal',   ['break']>):        AST.List;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_dict_literal',   ['break']>):        AST.Dict;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_set_literal',    ['break']>):        AST.Set;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break']>):        AST.Map;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                              AST.ExpressionBlock;
 	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                               AST.Index | AST.Key | AST.Expression;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                           AST.Access | AST.Call;
@@ -314,33 +314,33 @@ export class Decorator {
 
 			[/^expression_grouped(__break)?$/, (node) => this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>)],
 
-			[/^tuple_literal(__break)?$/, (node) => new AST.Tuple(
-				node as SyntaxNodeFamily<'tuple_literal', ['break']>,
+			[/^expression_tuple_literal(__break)?$/, (node) => new AST.Tuple(
+				node as SyntaxNodeFamily<'expression_tuple_literal', ['break']>,
 				node.namedChildren.map((c) => this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)),
 			)],
 
-			[/^record_literal(__break)?$/, (node) => new AST.Record(
-				node as SyntaxNodeFamily<'record_literal', ['break']>,
+			[/^expression_record_literal(__break)?$/, (node) => new AST.Record(
+				node as SyntaxNodeFamily<'expression_record_literal', ['break']>,
 				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'property'>)) as NonemptyArray<AST.Property>,
 			)],
 
-			[/^list_literal(__break)?$/, (node) => new AST.List(
-				node as SyntaxNodeFamily<'list_literal', ['break']>,
+			[/^expression_list_literal(__break)?$/, (node) => new AST.List(
+				node as SyntaxNodeFamily<'expression_list_literal', ['break']>,
 				node.namedChildren.map((c) => this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)),
 			)],
 
-			[/^dict_literal(__break)?$/, (node) => new AST.Dict(
-				node as SyntaxNodeFamily<'dict_literal', ['break']>,
+			[/^expression_dict_literal(__break)?$/, (node) => new AST.Dict(
+				node as SyntaxNodeFamily<'expression_dict_literal', ['break']>,
 				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'property'>)) as NonemptyArray<AST.Property>,
 			)],
 
-			[/^set_literal(__break)?$/, (node) => new AST.Set(
-				node as SyntaxNodeFamily<'set_literal', ['break']>,
+			[/^expression_set_literal(__break)?$/, (node) => new AST.Set(
+				node as SyntaxNodeFamily<'expression_set_literal', ['break']>,
 				node.namedChildren.map((c) => this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)),
 			)],
 
-			[/^map_literal(__break)?$/, (node) => new AST.Map(
-				node as SyntaxNodeFamily<'map_literal', ['break']>,
+			[/^expression_map_literal(__break)?$/, (node) => new AST.Map(
+				node as SyntaxNodeFamily<'expression_map_literal', ['break']>,
 				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'case'>)) as NonemptyArray<AST.Case>,
 			)],
 
