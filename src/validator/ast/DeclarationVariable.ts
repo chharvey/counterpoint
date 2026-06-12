@@ -27,7 +27,6 @@ import {
 } from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
 import type {Variable} from './expression/Variable.ts';
-import {Template} from './expression/Template.ts';
 import {Tuple as AstTuple} from './expression/Tuple.ts';
 import {Record as AstRecord} from './expression/Record.ts';
 import {Call} from './expression/Call.ts';
@@ -39,7 +38,7 @@ function is_inferrable(node?: EXPR.Expression): boolean {
 	return (
 		[
 			EXPR.Constant,
-			Template,
+			EXPR.Template,
 			Call, // TODO: distinguish between constructor calls and function calls
 		].some((klass) => (node instanceof klass)) ? true :
 		node instanceof AstTuple  ? node.children.every((expr) => is_inferrable(expr)) :
@@ -161,7 +160,7 @@ export class DeclarationVariable extends Statement {
 				AstTuple,
 				AstRecord,
 			].some((klass) => (this.assigned instanceof klass))) ? writable_inferred_type(this.assigned!) :
-			this.assigned instanceof Template ? TYPE.STR :
+			this.assigned instanceof EXPR.Template ? TYPE.STR :
 			this.assigned!.type()
 		);
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);

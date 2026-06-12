@@ -426,19 +426,19 @@ test.suite('Expression', () => {
 
 
 	test.suite('Template', () => {
-		function initTemplates(): AST.Template[] {
+		function initTemplates(): AST.EXPR.Template[] {
 			return [
-				AST.Template.fromSource('"""42😀"""'),
-				AST.Template.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?"""'),
+				AST.EXPR.Template.fromSource('"""42😀"""'),
+				AST.EXPR.Template.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?"""'),
 				(setupScript(`{
 					val mut x: int = 21;
 					"""the answer is {{ x * 2 }} but what is the question?""";
-				}`, {build: false}).stmts[1] as AST.StatementExpression).expr as AST.Template,
+				}`, {build: false}).stmts[1] as AST.StatementExpression).expr as AST.EXPR.Template,
 			];
 		}
 		test.suite('#type', () => {
 			test.test('always returns `String`.', () => {
-				const templates: readonly AST.Template[] = initTemplates();
+				const templates: readonly AST.EXPR.Template[] = initTemplates();
 				assertEqualTypes(
 					templates.map((t) => t.type()),
 					repeat(TYPE.STR, templates.length),
@@ -448,7 +448,7 @@ test.suite('Expression', () => {
 
 
 		test.suite('#fold', () => {
-			let templates: AST.Template[] = [];
+			let templates: AST.EXPR.Template[] = [];
 			test.test.before(() => {
 				templates = initTemplates();
 			});

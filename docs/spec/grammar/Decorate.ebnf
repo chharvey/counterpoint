@@ -246,29 +246,29 @@ Decorate(Type ::= TypeUnion) -> SemanticType
 
 
 
-Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticTemplate
-	:= (SemanticTemplate
+Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_FULL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression<+Block><?Break>)
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		...Decorate(StringTemplate__0__List)
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> StringTemplate__0__List TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
 		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression<+Block><?Break>)
 		...Decorate(StringTemplate__0__List)
@@ -379,7 +379,7 @@ Decorate(ExpressionUnit<Block, Break> ::= IDENTIFIER) -> SemanticVariable
 	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(ExpressionUnit<Block, Break> ::= PrimitiveLiteral) -> SemanticExpressionConstant
 	:= Decorate(PrimitiveLiteral);
-Decorate(ExpressionUnit<Block, Break> ::= StringTemplate<?Break>) -> SemanticTemplate
+Decorate(ExpressionUnit<Block, Break> ::= StringTemplate<?Break>) -> SemanticExpressionTemplate
 	:= Decorate(StringTemplate<?Break>);
 Decorate(ExpressionUnit<Block, Break> ::= ExpressionGrouped<?Break>) -> SemanticExpression
 	:= Decorate(ExpressionGrouped<?Break>);

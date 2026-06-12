@@ -4,7 +4,7 @@ Or<Null, Boolean, Symbol, Number, String> ValueOf(SemanticExpressionConstant con
 
 
 
-String! ValueOf(SemanticTemplate tpl) :=
+String! ValueOf(SemanticExpressionTemplate tpl) :=
 	1. *Let* `values` be a mapping for each `node` in `tpl.children` to *Unwrap:* `ValueOf(node)`.
 	2. *Let* `strings` be a mapping for each `value` in `values` to `String(value)`.
 	3. *Return:* the string-concatenation of each item in `strings`, preserving order.

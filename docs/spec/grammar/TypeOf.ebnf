@@ -18,7 +18,7 @@ Type TypeOfUnfolded(SemanticExpressionConstant const) :=
 
 
 
-Type TypeOfUnfolded(SemanticTemplate template) :=
+Type TypeOfUnfolded(SemanticExpressionTemplate template) :=
 	1. *Return:* `String`.
 ;
 

@@ -277,19 +277,19 @@ test.suite('Decorator', () => {
 			`]],
 
 			/* ## Expressions */
-			['Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticTemplate', [AST.Template, `
+			['Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticExpressionTemplate', [AST.EXPR.Template, `
 				{
 					"""full1""";
 				}
 				% (string_template)
 			`]],
-			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.Template, `
+			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticExpressionTemplate', [AST.EXPR.Template, `
 				{
 					"""hello {{ "to" }} the {{ "whole" }} great {{ "big" }} world""";
 				}
 				% (string_template)
 			`]],
-			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticTemplate', [AST.Template, `
+			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticExpressionTemplate', [AST.EXPR.Template, `
 				{
 					"""hello {{ """to {{ """the {{ "whole" }} great""" }} big""" }} world""";
 				}

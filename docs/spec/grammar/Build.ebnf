@@ -136,7 +136,7 @@ Build(SemanticExpressionConstant[type=TYPE.Natural] const) := (NAT.CONST   `Buil
 Build(SemanticExpressionConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Build(ValueOf(const)~!)`);
 Build(SemanticExpressionConstant[type=TYPE.String]  const) := (STR.CONST   `Build(ValueOf(const)~!)`);
 
-Build(SemanticTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Build)`);
+Build(SemanticExpressionTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Build)`);
 
 Build(SemanticVariable var) := (GET `GetSymbolSchema(var)`);
 

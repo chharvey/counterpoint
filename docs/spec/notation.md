@@ -205,14 +205,14 @@ which is of type either `Node1` or `Node2`. Rather, `Alias` is only a shorthand 
 the type union `Node 1 | Node2`.
 The distinction is made by the definition symbol `=:=` instead of the usual `::=`.
 
-For example, the following grammar describes the form of a `SemanticTemplate` node:
+For example, the following grammar describes the form of a `SemanticExpressionTemplate` node:
 If it has the attribute `[type="full"]`, then it must contain only a `SemanticExpressionConstant` node;
 if it has the attribute `[type="substitution"]`, then it must contain one or more groups of
 a `SemanticExpressionConstant` followed by an optional `SemanticExpression`, and must end with a final `SemanticExpressionConstant`.
 ```
-SemanticTemplate[type: "full"]
+SemanticExpressionTemplate[type: "full"]
 	::= SemanticExpressionConstant;
-SemanticTemplate[type: "substitution"]
+SemanticExpressionTemplate[type: "substitution"]
 	::= (SemanticExpressionConstant SemanticExpression?)+ SemanticExpressionConstant;
 ```
 Note that the above grammar is not an unambiguous context-free grammar,
@@ -345,12 +345,12 @@ Since different AGs can “return” different types, the “return type” is i
 
 An AG production may define several forms of a CFG production as its parameter:
 ```
-Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticTemplate
-	:= (SemanticTemplate[type="full"]
+Decorate(StringTemplate ::= TEMPLATE_FULL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate[type="full"]
 		(SemanticExpressionConstant[value=TokenWorth(TEMPLATE_FULL)])
 	);
-Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate[type="substitution"]
+Decorate(StringTemplate ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate[type="substitution"]
 		(SemanticExpressionConstant[value=TokenWorth(TEMPLATE_HEAD)])
 		(SemanticExpressionConstant[value=TokenWorth(TEMPLATE_TAIL)])
 	);

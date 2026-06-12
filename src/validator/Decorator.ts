@@ -112,7 +112,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'type_intersection'>):                             AST.TYPE.OperationBinary;
 	public decorate(syntaxnode: SyntaxNodeType<'type_union'>):                                    AST.TYPE.OperationBinary;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                     AST.TYPE.Type;
-	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):        AST.Template;
+	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):        AST.EXPR.Template;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):        AST.Property;
 	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):        AST.Case;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):        AST.Index | AST.Key | AST.EXPR.Expression;
@@ -286,7 +286,7 @@ export class Decorator {
 			)],
 
 			/* ## Expressions */
-			[/^string_template(__break)?$/, (node) => new AST.Template(
+			[/^string_template(__break)?$/, (node) => new AST.EXPR.Template(
 				node as SyntaxNodeFamily<'string_template', ['break']>,
 				node.namedChildren.map((c) => ((isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
 					? new AST.EXPR.Constant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
