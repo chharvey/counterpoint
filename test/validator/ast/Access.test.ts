@@ -31,8 +31,7 @@ test.suite('Access', () => {
 	 * @param expecteds the expected types of the expressions
 	 */
 	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-		const goal: AST.Goal = AST.Goal.fromSource(source);
-		goal.varCheck();
+		const {goal} = setupScript(source, {typeCheck: false});
 		try {
 			goal.typeCheck();
 		} catch {

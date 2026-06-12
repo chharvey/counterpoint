@@ -54,6 +54,17 @@ export class TypeConstant extends Type {
 		super(start_node);
 	}
 
+	public override varCheck(): void {
+		super.varCheck();
+		if (
+			isSyntaxNodeType(this.start_node, 'primitive_literal') &&
+			this.start_node.children.length === 2 &&
+			isSyntaxNodeType(this.start_node.children[1], 'word')
+		) {
+			this.validator.wordNodeID(this.start_node.children[1]);
+		}
+	}
+
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		if (isSyntaxNodeType(this.start_node, 'keyword_type')) {
@@ -72,6 +83,7 @@ export class TypeConstant extends Type {
 				return TypeConstant.keywordType(children[0].children[0].text);
 			}
 			default: {
+				assert.strictEqual(children.length, 2);
 				assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
 				return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text).toType();
 			}

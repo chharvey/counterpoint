@@ -32,6 +32,7 @@ export class StatementReassignment extends Statement {
 		return statement;
 	}
 
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_reassignment', ['break']>,
 		public readonly assignee: Variable | Access,
@@ -46,7 +47,7 @@ export class StatementReassignment extends Statement {
 	}
 
 	public override varCheck(): void {
-		super.varCheck();
+		super.varCheck(); // runtime asserts the var is in the symbol table
 		if (this.assignee instanceof Variable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
 			throw new AssignmentErrorReassignment(this.assignee);
 		}

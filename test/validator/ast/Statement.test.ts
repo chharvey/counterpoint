@@ -28,27 +28,27 @@ test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('StatementReassignment', () => {
 			test.test('throws if the variable is read-only.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					val mut i: int = 42;
 					set i = 43;
-				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
 					val i: int = 42;
 					set i = 43;
-				}`).varCheck(), AssignmentErrorReassignment);
+				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
 			test.test('always throws for type alias reassignment.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					type T = 42;
 					set T = 43;
-				}`).varCheck(), ReferenceErrorKind);
+				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
 			test.test('disallows manual reassignment of the iteration variable.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						set it = 44;
 					};
-				}`).varCheck(), AssignmentErrorReassignment);
+				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
 		});
 
@@ -83,17 +83,17 @@ test.suite('Statement', () => {
 				return assert.ok(!validator.hasSymbol(0x100n));
 			});
 			test.test('allows duplicate declaration of iteration variable.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('allows duplicate declaration in nested scopes (not technically shadowing).', () => {
-				AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					for it: int in [11, 22, 33] do {
 						42;
 					};
@@ -102,8 +102,7 @@ test.suite('Statement', () => {
 							42;
 						};
 					};
-				}`).varCheck(); // assert does not throw
-				AST.Goal.fromSource(`{
+				}`, `{
 					for it: int in [11, 22, 33] do {
 						42;
 					};
@@ -112,8 +111,7 @@ test.suite('Statement', () => {
 							42;
 						};
 					};
-				}`).varCheck(); // assert does not throw
-				AST.Goal.fromSource(`{
+				}`, `{
 					for it: int in [11, 22, 33] do {
 						42;
 					};
@@ -122,52 +120,49 @@ test.suite('Statement', () => {
 							42;
 						};
 					};
-				}`).varCheck(); // assert does not throw
+				}`], (src) => {
+					setupScript(src, {typeCheck: false}); // assert does not throw
+				});
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					val i: int = 42;
 					for i: bool in [false, true] do {
 						null;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					type FOO = float;
 					for FOO: bool in [false, true] do {
 						null;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					for it: float in [1.1, 2.2, 3.3] do {
 						for it: bool in [false, true] do {
 							null;
 						};
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val mut x: int = 42;
 					if true then {
 						for x: bool in [false, true] do {
 							null;
 						};
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val mut x: int = 42;
 					while false do {
 						for x: bool in [false, true] do {
 							null;
 						};
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val mut x: int = 42;
 					for it: float in [1.1, 2.2, 3.3] do {
 						for x: bool in [false, true] do {
 							null;
 						};
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 		});
 	});
@@ -357,11 +352,10 @@ test.suite('Statement', () => {
 		test.suite('StatementReassignment', () => {
 			test.suite('for variable reassignment.', () => {
 				test.test('throws when variable assignee type is not supertype.', () => {
-					const goal: AST.Goal = AST.Goal.fromSource(`{
+					const {goal} = setupScript(`{
 						val mut i: int = 42;
 						set i = 4.3;
-					}`);
-					goal.varCheck();
+					}`, {typeCheck: false});
 					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
 				test.test('allows reassignment when uninitialized.', () => {
@@ -375,11 +369,10 @@ test.suite('Statement', () => {
 					});
 				});
 				test.test('does not allow reassignment of `null` when uninitialized.', () => {
-					const goal: AST.Goal = AST.Goal.fromSource(`{
+					const {goal} = setupScript(`{
 						val mut x?: int;
 						set x = null;
-					}`);
-					goal.varCheck();
+					}`, {typeCheck: false});
 					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
 						isWritable:      true,
 						isUninitialized: true,
@@ -438,8 +431,7 @@ test.suite('Statement', () => {
 							set m.[true] = 4.2;
 						}`,
 					].forEach((src) => {
-						const goal: AST.Goal = AST.Goal.fromSource(src);
-						goal.varCheck();
+						const {goal} = setupScript(src, {typeCheck: false});
 						assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 					});
 				});
@@ -451,8 +443,7 @@ test.suite('Statement', () => {
 						val m: mut {bool -> int} = {true -> 42};
 						set m.["true"] = 43;
 					}`], (src) => {
-						const goal: AST.Goal = AST.Goal.fromSource(src);
-						goal.varCheck();
+						const {goal} = setupScript(src, {typeCheck: false});
 						assert.throws(() => goal.typeCheck(), TypeErrorNotNarrow);
 					});
 				});
@@ -483,8 +474,7 @@ test.suite('Statement', () => {
 							set m.[true] = 43;
 						}`,
 					].forEach((src) => {
-						const goal: AST.Goal = AST.Goal.fromSource(src);
-						goal.varCheck();
+						const {goal} = setupScript(src, {typeCheck: false});
 						assert.throws(() => goal.typeCheck(), MutabilityError01);
 					});
 				});

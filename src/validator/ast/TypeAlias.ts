@@ -16,7 +16,6 @@ import {TYPE} from '../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
-	SymbolSchemaVar,
 	SymbolSchemaType,
 } from '../index.ts';
 import type {SyntaxNodeType} from '../utils-private.ts';
@@ -53,7 +52,7 @@ export class TypeAlias extends Type {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaVar) {
+		if (!(this.validator.getSymbol(this.id) instanceof SymbolSchemaType)) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}

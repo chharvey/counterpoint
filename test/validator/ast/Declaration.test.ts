@@ -47,45 +47,41 @@ test.suite('Declaration', () => {
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the symbol.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					type T = int;
 					type T = float;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val FOO: int = 42;
 					type FOO = float;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					for it: float in [1.1, 2.2, 3.3] do {
 						type it = int;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					type T = int;
 					if true then {
 						type T = float;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					type T = int;
 					while false do {
 						type T = float;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					type T = int;
 					for it: float in [1.1, 2.2, 3.3] do {
 						type T = float;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('allows duplicate declaration of blank identifier.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					type _ = int | float;
 					type _ = (str, bool);
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 			});
 		});
 
@@ -134,45 +130,41 @@ test.suite('Declaration', () => {
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the variable.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					val i: int = 42;
 					val i: int = 43;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					type FOO = float;
 					val FOO: int = 42;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					for it: float in [1.1, 2.2, 3.3] do {
 						val it: int = 42;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					val mut x: int = 42;
 					if true then {
 						val mut x: float = 4.2;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val mut x: int = 42;
 					while false do {
 						val mut x: float = 4.2;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val mut x: int = 42;
 					for it: float in [1.1, 2.2, 3.3] do {
 						val mut x: float = 4.2;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('allows duplicate declaration of blank identifier.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					val _: int = 42;
 					val _: str = "the answer";
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 			});
 		});
 	});
@@ -198,8 +190,7 @@ test.suite('Declaration', () => {
 						.filter((s) => !!s)
 						.forEach((s) => typeCheckGoal(`{${ s }}`, expect_thrown));
 				}
-				const goal: AST.Goal = AST.Goal.fromSource(src);
-				goal.varCheck();
+				const {goal} = setupScript(src, {typeCheck: false});
 				return (expect_thrown)
 					? assert.throws(() => goal.typeCheck(), expect_thrown)
 					: goal.typeCheck();
