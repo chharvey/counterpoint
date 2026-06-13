@@ -27,12 +27,12 @@ import {
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
-import {
-	TYPE as AST_TYPE,
-	EXPR,
-} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
+import * as AST_TYPE from '../type/index.ts';
 import {Expression} from './Expression.ts';
+import {Variable} from './Variable.ts';
+import {Tuple as ExpressionTuple} from './Tuple.ts';
+import {Record as ExpressionRecord} from './Record.ts';
 
 
 
@@ -74,7 +74,7 @@ export class Call extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		if (!(this.base instanceof EXPR.Variable)) {
+		if (!(this.base instanceof Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
@@ -93,7 +93,7 @@ export class Call extends Expression {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:      Expression = this.exprargs[0];
-					if (arg instanceof EXPR.Tuple) {
+					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, itemtype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
@@ -113,9 +113,9 @@ export class Call extends Expression {
 					const valuetype: TYPE.Type  = this.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
 					const arg:       Expression = this.exprargs[0];
-					if (arg instanceof EXPR.Tuple) {
+					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
-					} else if (arg instanceof EXPR.Record) {
+					} else if (arg instanceof ExpressionRecord) {
 						xjs.Array.forEachAggregated(arg.children, (prop) => typecheck_assign(prop.val, valuetype, prop.val));
 					} else {
 						const argtype: TYPE.Type = arg.type();
@@ -139,7 +139,7 @@ export class Call extends Expression {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:    Expression = this.exprargs[0];
-					if (arg instanceof EXPR.Tuple) {
+					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, eltype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();
@@ -160,7 +160,7 @@ export class Call extends Expression {
 					const contype:   TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([anttype, contype]);
 					const arg:       Expression = this.exprargs[0];
-					if (arg instanceof EXPR.Tuple) {
+					if (arg instanceof ExpressionTuple) {
 						xjs.Array.forEachAggregated(arg.children, (item) => typecheck_assign(item, entrytype, item));
 					} else {
 						const argtype: TYPE.Type = arg.type();

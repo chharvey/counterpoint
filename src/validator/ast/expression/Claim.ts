@@ -16,7 +16,7 @@ import type {
 	TYPE,
 } from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import type {TYPE as AST_TYPE} from '../index.ts';
+import type * as AST_TYPE from '../type/index.ts';
 import {Expression} from './Expression.ts';
 
 
