@@ -2,26 +2,26 @@ import {
 	type Builder,
 	OP,
 	TypeErrorNotNarrow,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	noopGetter,
 	memoizeGetter,
 	runOnceMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import {TYPE} from '../../typer/index.ts';
-import type {SymbolSchemaVar} from '../index.ts';
-import type {SyntaxNodeFamily} from '../utils-private.ts';
+} from '../../../core/index.ts';
+import {TYPE} from '../../../typer/index.ts';
+import type {SymbolSchemaVar} from '../../index.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {
 	type TYPE as AST_TYPE,
 	EXPR,
-} from './index.ts';
-import {Index} from './Index-.ts';
-import {Key} from './Key.ts';
+} from '../index.ts';
+import {Index} from '../Index-.ts';
+import {Key} from '../Key.ts';
 import {Statement} from './Statement.ts';
 
 

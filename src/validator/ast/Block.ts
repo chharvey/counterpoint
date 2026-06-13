@@ -18,8 +18,8 @@ import {
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
-import type {Statement} from './Statement.ts';
-import type {StatementConditional} from './StatementConditional.ts';
+import type {Statement} from './statement/Statement.ts';
+import type {StatementConditional} from './statement/StatementConditional.ts';
 
 
 

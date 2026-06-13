@@ -1,20 +1,20 @@
 import * as assert from 'node:assert';
-import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
+import {AssignmentErrorDuplicateDeclaration} from '../../../index.ts';
 import {
 	assert_instanceof,
 	noopMethod,
 	noopGetter,
 	memoizeGetter,
 	runOnceMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import type {TYPE} from '../../typer/index.ts';
-import {SymbolSchemaType} from '../index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
-import type {TYPE as AST_TYPE} from './index.ts';
+} from '../../../core/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
+import {SymbolSchemaType} from '../../index.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {TYPE as AST_TYPE} from '../index.ts';
 import {Statement} from './Statement.ts';
 
 

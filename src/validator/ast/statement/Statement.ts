@@ -1,13 +1,13 @@
 import * as assert from 'node:assert';
-import type {Builder} from '../../index.ts';
+import type {Builder} from '../../../index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import {Block} from './index.ts';
-import {AstNode} from './AstNode.ts';
-import type {Foldable} from './Foldable.ts';
-import type {Buildable} from './Buildable.ts';
+} from '../../../core/index.ts';
+import {Block} from '../index.ts';
+import {AstNode} from '../AstNode.ts';
+import type {Foldable} from '../Foldable.ts';
+import type {Buildable} from '../Buildable.ts';
 
 
 

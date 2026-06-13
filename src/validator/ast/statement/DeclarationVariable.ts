@@ -5,27 +5,27 @@ import {
 	OP,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	runOnceMethod,
 	memoizeGetter,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
+} from '../../../core/index.ts';
 import {
 	VALUE,
 	TYPE,
-} from '../../typer/index.ts';
-import {SymbolSchemaVar} from '../index.ts';
-import type {SyntaxNodeFamily} from '../utils-private.ts';
+} from '../../../typer/index.ts';
+import {SymbolSchemaVar} from '../../index.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {
 	type TYPE as AST_TYPE,
 	EXPR,
-} from './index.ts';
-import {typecheck_assign} from './AstNode.ts';
+} from '../index.ts';
+import {typecheck_assign} from '../AstNode.ts';
 import {Statement} from './Statement.ts';
 
 

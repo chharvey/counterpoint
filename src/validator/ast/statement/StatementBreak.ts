@@ -2,18 +2,18 @@ import * as assert from 'node:assert';
 import {
 	type Builder,
 	OP,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	noopGetter,
 	memoizeGetter,
 	runOnceMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import type {SyntaxNodeType} from '../utils-private.ts';
+} from '../../../core/index.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Statement} from './Statement.ts';
 import {StatementBreakable} from './StatementBreakable.ts';
 

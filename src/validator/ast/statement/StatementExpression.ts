@@ -1,18 +1,18 @@
 import {
 	type Builder,
 	OP,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeGetter,
 	runOnceMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import type {SyntaxNodeFamily} from '../utils-private.ts';
-import type {EXPR} from './index.ts';
+} from '../../../core/index.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {EXPR} from '../index.ts';
 import {Statement} from './Statement.ts';
 
 

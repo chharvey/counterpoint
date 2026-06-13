@@ -4,22 +4,22 @@ import {
 	OP,
 	AssignmentErrorReassignment,
 	MutabilityError01,
-} from '../../index.ts';
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	noopGetter,
 	memoizeGetter,
 	runOnceMethod,
-} from '../../lib/index.ts';
+} from '../../../lib/index.ts';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
-} from '../../core/index.ts';
-import type {TYPE} from '../../typer/index.ts';
-import type {SymbolSchemaVar} from '../index.ts';
-import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {EXPR} from './index.ts';
-import {typecheck_assign} from './AstNode.ts';
+} from '../../../core/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
+import type {SymbolSchemaVar} from '../../index.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import {EXPR} from '../index.ts';
+import {typecheck_assign} from '../AstNode.ts';
 import {Statement} from './Statement.ts';
 
 
