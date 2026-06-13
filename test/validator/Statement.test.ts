@@ -15,12 +15,12 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
 	MutabilityError01,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_lines,
 	assertAssignable,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 

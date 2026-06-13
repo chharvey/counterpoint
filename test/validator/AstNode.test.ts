@@ -9,11 +9,11 @@ import {
 	AssignmentErrorReassignment,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	assertAssignable,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 

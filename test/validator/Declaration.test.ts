@@ -12,7 +12,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
 	TypeErrorNotAssignable,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_lines,
 	repeat,
@@ -21,7 +21,7 @@ import {
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 
