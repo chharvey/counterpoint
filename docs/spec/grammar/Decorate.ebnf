@@ -402,28 +402,28 @@ Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBl
 
 Decorate(ExpressionCompound<Block, Break> ::= ExpressionUnit<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnit<?Block><?Break>);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=NORMAL]
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=NORMAL]
 		Decorate(ExpressionCompound<?Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "?." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=MAYBE]
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "?." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=MAYBE]
 		Decorate(ExpressionCompound<?Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "!." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=RESULT]
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "!." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=RESULT]
 		Decorate(ExpressionCompound<?Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." FunctionArguments<?Break>) -> SemanticCall
-	:= (SemanticCall
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." FunctionArguments<?Break>) -> SemanticExpressionCall
+	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break>)
 		...Decorate(FunctionArguments<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." GenericArguments FunctionArguments<?Break>) -> SemanticCall
-	:= (SemanticCall
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." GenericArguments FunctionArguments<?Break>) -> SemanticExpressionCall
+	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break>)
 		...Decorate(GenericArguments)
 		...Decorate(FunctionArguments<?Break>)
@@ -484,8 +484,8 @@ Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" E
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticClaim
-	:= (SemanticClaim
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticExpressionClaim
+	:= (SemanticExpressionClaim
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(Type)
 	);
@@ -664,8 +664,8 @@ Decorate(Expression<Block, Break> ::= ExpressionConditional) -> SemanticExpressi
 
 Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticExpressionVariable
 	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
-Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=NORMAL]
+Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=NORMAL]
 		Decorate(ExpressionCompound<+Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);

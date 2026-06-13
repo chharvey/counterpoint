@@ -313,7 +313,7 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 
 ## GetEntryInfo
 ```
-EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access, Boolean is_writing) :=
+EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExpressionAccess> access, Boolean is_writing) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
 	3. *Let* `accessor_maybe` be `false`.
@@ -470,13 +470,13 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 ## WriteTypeOf
 Assuming reassignment of a symbol/entry is valid, gives the write-type of that symbol/entry.
 ```
-Type! WriteTypeOf(Or<SemanticExpressionVariable, SemanticAccess> reassignable) :=
+Type! WriteTypeOf(Or<SemanticExpressionVariable, SemanticExpressionAccess> reassignable) :=
 	1. *If* `reassignable` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		3. *Return:* `symbol.type`.
 	2. *Else:*
-		1. *Assert:* `reassignable` is a SemanticAccess.
+		1. *Assert:* `reassignable` is a SemanticExpressionAccess.
 		2. *Assert:* `reassignable.children.count` is 2.
 		3. *Let* `base` be `reassignable.children.0`.
 		4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.

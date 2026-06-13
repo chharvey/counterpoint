@@ -147,19 +147,19 @@ Build(SemanticExpressionDict dict)  := (DICT.NEW   `...dict.children.flatMap(Bui
 Build(SemanticExpressionSet set)    := (SET.NEW    [`...set.children.map(Build)`]);
 Build(SemanticExpressionMap map)    := (MAP.NEW    `...map.children.map(Build)`);
 
-Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Build(SemanticExpression)`]);
-Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Build(SemanticExpression)`]);
-Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Build(SemanticExpression)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Build(SemanticExpression)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
 
 Build(SemanticExpressionBlock blex) := [
 	...`blex.0.SemanticStatement.slice(0, 1).map(Build)`
 	return `Build(blex.0.-1.SemanticExpression)`.
 ];
 
-Build(SemanticAccess[kind=MAYBE] access) := [
+Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $tuple `Build(access.0)`)
 	(DECL ‹type› $result)
 	(GOTO.IF (ISNULL (GET $tuple)) "then" "else")
@@ -173,37 +173,37 @@ Build(SemanticAccess[kind=MAYBE] access) := [
 	return (GET $result).
 ];
 
-Build(SemanticCall:has(SemanticExpressionVariable ::= "List") call) := (LIST.NEW);
-Build(SemanticCall:has(SemanticExpressionVariable ::= "Dict") call) := (DICT.NEW);
-Build(SemanticCall:has(SemanticExpressionVariable ::= "Set")  call) := (SET.NEW);
-Build(SemanticCall:has(SemanticExpressionVariable ::= "Map")  call) := (MAP.NEW);
-Build(SemanticCall:has(SemanticExpressionVariable ::= "List"):has(SemanticExpression) call) := [
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List") call) := (LIST.NEW);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Dict") call) := (DICT.NEW);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set")  call) := (SET.NEW);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map")  call) := (MAP.NEW);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List"):has(SemanticExpression) call) := [
 	(DECL <List> $destination (LIST.NEW))
 	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
 	(LIST.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
-Build(SemanticCall:has(SemanticExpressionVariable ::= "Dict"):has(SemanticExpression) call) := [
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Dict"):has(SemanticExpression) call) := [
 	(DECL <Dict> $destination (DICT.NEW))
 	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
 	(DICT.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
-Build(SemanticCall:has(SemanticExpressionVariable ::= "Set"):has(SemanticExpression) call) := [
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set"):has(SemanticExpression) call) := [
 	(DECL <Set> $destination (SET.NEW))
 	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
 	(SET.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
-Build(SemanticCall:has(SemanticExpressionVariable ::= "Map"):has(SemanticExpression) call) := [
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(SemanticExpression) call) := [
 	(DECL <Map> $destination (MAP.NEW))
 	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
-Build(SemanticCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
+Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
-Build(SemanticClaim claim) := Build(claim.0);
+Build(SemanticExpressionClaim claim) := Build(claim.0);
 
 Build(SemanticOperation[operator=NOT] ::= SemanticExpression)               := (NOT [`SemanticExpression`]);
 Build(SemanticOperation[operator=EMP] ::= SemanticExpression)               := (EMP [`SemanticExpression`]);
@@ -305,10 +305,10 @@ Build(SemanticStatementClaim stmt) := [
 Build(SemanticStatementReassignment:has(SemanticExpressionVariable) stmt) := [
 	(SET `GetSymbolSchema(stmt.0)` `Build(stmt.1)`)
 ];
-Build(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.List] SemanticExpression) SemanticExpression) := (LIST.SET [`Build(SemanticAccess.0)` `Build(SemanticAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticAccess.0)` `Build(SemanticAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.SET]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticAccess.0)` `Build(SemanticAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticAccess ::= SemanticExpression[type: TYPE.MAP]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticAccess.0)` `Build(SemanticAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.List] SemanticExpression) SemanticExpression) := (LIST.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.SET]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.MAP]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 
 Build(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock) := [
 	(GOTO.IF `Build(SemanticExpression)` "then" "endif")

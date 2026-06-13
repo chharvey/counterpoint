@@ -102,7 +102,7 @@ test.suite('Access', () => {
 				null.[((((),),),)]
 			`;
 			test.test('#fold: throws when base is null.', () => {
-				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.Access.fromSource(src).fold(), Error, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
+				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), Error, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
 			});
 		});
 
@@ -152,10 +152,10 @@ test.suite('Access', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(null, true, @hello).a
 						(a= 42).0
-					`, (src) => assert.throws(() => AST.Access.fromSource(src).fold(), assert.AssertionError));
+					`, (src) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), assert.AssertionError));
 				});
 				test.test('throws when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.Access.fromSource(src).fold(), VoidErrorOutOfBounds));
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), VoidErrorOutOfBounds));
 				});
 			});
 		});
@@ -298,7 +298,7 @@ test.suite('Access', () => {
 				});
 				test.test('maybe access of non-existent value returns null (bypassing type-checking).', () => {
 					assert.strictEqual(
-						AST.Access.fromSource('(prop= ()).prop?.0').fold(),
+						AST.EXPR.Access.fromSource('(prop= ()).prop?.0').fold(),
 						VALUE.NULL,
 					);
 				});
@@ -342,10 +342,10 @@ test.suite('Access', () => {
 					xjs.Array.forEachAggregated(extract_lines`
 						(null, true, @hello)?.a
 						(a= 42)?.0
-					`, (src) => assert.throws(() => AST.Access.fromSource(src).fold(), assert.AssertionError));
+					`, (src) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), assert.AssertionError));
 				});
 				test.test('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.Access.fromSource(src).fold(), VALUE.NULL));
+					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.EXPR.Access.fromSource(src).fold(), VALUE.NULL));
 				});
 			});
 		});
@@ -433,7 +433,7 @@ test.suite('Access', () => {
 
 
 	test.test.todo('access kind: result access (`a!.‹b›`) is unsupported.', () => { // TODO: Maybe & Result types (#100)
-		assert.throws(() => AST.Access.fromSource('(42,)!.0;'), TypeError);
+		assert.throws(() => AST.EXPR.Access.fromSource('(42,)!.0;'), TypeError);
 	});
 
 
@@ -809,7 +809,7 @@ test.suite('Access', () => {
 				]);
 			});
 			test.test('unsupported: throws for string access of dict.', () => {
-				assert.throws(() => AST.Access.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
+				assert.throws(() => AST.EXPR.Access.fromSource('[a= 10, b= 20, c= 30].["a"]').type(), /String keys for dict access are not yet supported\./);
 			});
 			test.test('throws when base object is of incorrect type.', () => {
 				testExprTypes(`{

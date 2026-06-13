@@ -125,9 +125,9 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break']>):        AST.EXPR.Map;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                              AST.ExpressionBlock;
 	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                               AST.Index | AST.Key | AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                           AST.Access | AST.Call;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                           AST.EXPR.Access | AST.EXPR.Call;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                       AST.EXPR.Expression | AST.OperationUnary;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                               AST.OperationBinaryCast | AST.Claim;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                               AST.OperationBinaryCast | AST.EXPR.Claim;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                        AST.OperationBinaryArithmetic;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                     AST.OperationBinaryArithmetic;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_additive'>):                           AST.OperationBinaryArithmetic;
@@ -137,7 +137,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                        AST.OperationUnary | AST.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):           AST.OperationTernary;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                               AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.EXPR.Variable | AST.Access;
+	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.EXPR.Variable | AST.EXPR.Access;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',   ['break']>):           AST.StatementExpression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_claim',        ['break']>):           AST.StatementClaim;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_reassignment', ['break']>):           AST.StatementReassignment;
@@ -352,12 +352,12 @@ export class Decorator {
 			['expression_compound', (node) => {
 				const expression_0        = node.childForFieldName('expression_0')        as SyntaxNodeSupertype<'expression'>;
 				const property_accessor_0 = node.childForFieldName('property_accessor_0') as SyntaxNodeFamily<'property_accessor', ['break']> | null;
-				return property_accessor_0 ? new AST.Access(
+				return property_accessor_0 ? new AST.EXPR.Access(
 					node as SyntaxNodeType<'expression_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].text as Punctuator)!,
 					this.decorateExprNode(expression_0),
 					this.decorate(property_accessor_0),
-				) : new AST.Call(
+				) : new AST.EXPR.Call(
 					node as SyntaxNodeType<'expression_compound'>,
 					this.decorateExprNode(expression_0),
 					node.childForFieldName('generic_arguments_0') ?.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) ?? [],
@@ -390,7 +390,7 @@ export class Decorator {
 						this.decorateExprNode(expression_0),
 						this.decorateExprNode(expression_1),
 					)
-					: new AST.Claim(
+					: new AST.EXPR.Claim(
 						node as SyntaxNodeType<'expression_cast'>,
 						this.decorateExprNode(expression_0),
 						this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
@@ -577,7 +577,7 @@ export class Decorator {
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				return identifier_0
 					? new AST.EXPR.Variable(identifier_0)
-					: new AST.Access(
+					: new AST.EXPR.Access(
 						node as SyntaxNodeFamily<'assignee', ['break']>,
 						Operator.DOT,
 						this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),

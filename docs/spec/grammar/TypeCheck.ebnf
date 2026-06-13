@@ -77,7 +77,7 @@ Type! TypeCheck(SemanticStatementClaim claim) :=
 			1. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 			2. *Set* `symbol.type` to `claimed_type`.
 	7. *Else:*
-		1. *Assert:* `assignee` is a SemanticAccess.
+		1. *Assert:* `assignee` is a SemanticExpressionAccess.
 		2. *Assert:* `assignee.children.count` is 2.
 		3. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
 		4. *Let* `accessor` be `assignee.children.1`.
@@ -116,7 +116,7 @@ None! TypeCheck(SemanticStatementReassignment assignment) :=
 	3. *Let* `assigned` be `assignment.children.1`.
 	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
 	5. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
-	6. *If* `assignee` is a SemanticAccess:
+	6. *If* `assignee` is a SemanticExpressionAccess:
 		2. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
 		3. *If* `base_type` is not mutable:
 			1. *Throw:* a new MutabilityError01.

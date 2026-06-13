@@ -16,13 +16,13 @@ import {
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {EXPR} from '../index.ts';
 import {
 	type ValidFunctionName,
 	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
-import type {Call as ExpressionCall} from '../index.ts';
 import {Type} from './Type.ts';
 import {TypeAlias} from './TypeAlias.ts';
 
@@ -42,7 +42,7 @@ export class Call extends Type {
 	 * @param call_node          the type/function call
 	 * @return                   a list of resolved generic parameter assignments
 	 */
-	public static checkGenericArgs(constructor_schema: ConstructorSchema, args: readonly Type[], call_node: Call | ExpressionCall): TYPE.Type[] {
+	public static checkGenericArgs(constructor_schema: ConstructorSchema, args: readonly Type[], call_node: Call | EXPR.Call): TYPE.Type[] {
 		const {genericParams: generic_params}: ConstructorSchema = constructor_schema;
 
 		/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */

@@ -447,31 +447,31 @@ test.suite('Decorator', () => {
 				% (expression_block)
 			`]],
 
-			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.Access, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v.p;
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "?." PropertyAccessor<?Break>) -> SemanticAccess', [AST.Access, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "?." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v?.p;
 				}
 				% (expression_compound)
 			`]],
-			['todo: Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "!." PropertyAccessor<?Break>) -> SemanticAccess', [AST.Access, `
+			['todo: Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "!." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v!.p;
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." FunctionArguments<?Break>) -> SemanticCall', [AST.Call, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." FunctionArguments<?Break>) -> SemanticExpressionCall', [AST.EXPR.Call, `
 				{
 					List.();
 				}
 				% (expression_compound)
 			`]],
-			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." GenericArguments FunctionArguments<?Break>) -> SemanticCall', [AST.Call, `
+			['Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." GenericArguments FunctionArguments<?Break>) -> SemanticExpressionCall', [AST.EXPR.Call, `
 				{
 					List.<T>();
 				}
@@ -540,7 +540,7 @@ test.suite('Decorator', () => {
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticClaim', [AST.Claim, `
+			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
 				{
 					a as <T>;
 				}
@@ -640,13 +640,13 @@ test.suite('Decorator', () => {
 				}
 				% (assignee)
 			`]],
-			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.Access, `
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					claim v.1: int;
 				}
 				% (assignee)
 			`]],
-			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess', [AST.Access, `
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					set v.1 = 42;
 				}
@@ -857,7 +857,7 @@ test.suite('Decorator', () => {
 		});
 		['!.'].forEach((op) => {
 			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
-				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccessor) -> SemanticAccess`, () => {
+				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccessor) -> SemanticExpressionAccess`, () => {
 					test.test(`operator \`${ op }\` is not yet supported.`, () => {
 						assert.throws(() => new Decorator().decorate(captureParseNode(`
 							{

@@ -62,7 +62,7 @@ None! VarCheck(SemanticExpressionVariable var) :=
 
 
 
-None! VarCheck(SemanticCall call) :=
+None! VarCheck(SemanticExpressionCall call) :=
 	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
 	2. *If* `call.children.0.source` is not one of "List", "Dict", "Set", or "Map":
 		1. *Throw:* a new SyntaxError.

@@ -26,7 +26,6 @@ import {
 	EXPR,
 } from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import {Call} from './expression/Call.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -36,7 +35,7 @@ function is_inferrable(node?: EXPR.Expression): boolean {
 		[
 			EXPR.Constant,
 			EXPR.Template,
-			Call, // TODO: distinguish between constructor calls and function calls
+			EXPR.Call, // TODO: distinguish between constructor calls and function calls
 		].some((klass) => (node instanceof klass)) ? true :
 		node instanceof EXPR.Tuple  ? node.children.every((expr) => is_inferrable(expr)) :
 		node instanceof EXPR.Record ? node.children.every((prop) => is_inferrable(prop.val)) :
@@ -67,11 +66,11 @@ function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 		case node instanceof EXPR.Record: {
 			return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, writable_inferred_type(prop.val)])));
 		}
-		case node instanceof Call: { // TODO: distinguish between constructor calls and function calls
+		case node instanceof EXPR.Call: { // TODO: distinguish between constructor calls and function calls
 			return node.type();
 		}
 		default: {
-			assert.fail(`${ node.source } should be an instance of ${ EXPR.Constant.name }, ${ EXPR.Tuple.name }, ${ EXPR.Record.name }, or ${ Call.name }.`);
+			assert.fail(`${ node.source } should be an instance of ${ EXPR.Constant.name }, ${ EXPR.Tuple.name }, ${ EXPR.Record.name }, or ${ EXPR.Call.name }.`);
 		}
 	}
 }

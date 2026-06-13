@@ -235,7 +235,7 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 	return t instanceof TYPE.Combinable ? t.operands.flatMap((comp) => decombine(comp)) : [t];
 }
 
-export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | AST.Access, is_writing: boolean = false): EntryType {
+export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
@@ -316,7 +316,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | A
 			}
 		}
 		default: {
-			assert_instanceof(access, AST.Access);
+			assert_instanceof(access, EXPR.Access);
 			assert_instanceof(access.accessor, EXPR.Expression);
 			const accessor_type: TYPE.Type = access.accessor.type();
 			if (accessor_type.isBottomType) {
@@ -356,7 +356,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | A
 
 
 
-export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST_TYPE.Access | AST.Access): void {
+export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST_TYPE.Access | EXPR.Access): void {
 	if (
 		access_kind === Operator.DOT     &&  is_entry_optional ||
 		access_kind === Operator.DOT_MAY && !is_entry_optional

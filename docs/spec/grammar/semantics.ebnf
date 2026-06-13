@@ -74,9 +74,9 @@ SemanticExpression =:=
 	| SemanticExpressionVariable
 	| SemanticExpressionCollection
 	| SemanticExpressionBlock
-	| SemanticAccess
-	| SemanticCall
-	| SemanticClaim
+	| SemanticExpressionAccess
+	| SemanticExpressionCall
+	| SemanticExpressionClaim
 	| SemanticOperation
 ;
 
@@ -113,13 +113,13 @@ SemanticExpressionMap    ::= SemanticCase+;
 SemanticExpressionBlock
 	::= SemanticBlock;
 
-SemanticAccess[kind: NORMAL | MAYBE | RESULT]
+SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT]
 	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
 
-SemanticCall
+SemanticExpressionCall
 	::= SemanticExpression SemanticType* SemanticExpression*;
 
-SemanticClaim
+SemanticExpressionClaim
 	::= SemanticExpression SemanticType;
 
 SemanticOperation[operator: NOT | EMP]
@@ -167,10 +167,10 @@ SemanticStatementExpression
 	::= SemanticExpression?;
 
 SemanticStatementClaim
-	::= (SemanticExpressionVariable | SemanticAccess) SemanticType;
+	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticType;
 
 SemanticStatementReassignment
-	::= (SemanticExpressionVariable | SemanticAccess) SemanticExpression;
+	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;

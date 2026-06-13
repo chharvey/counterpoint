@@ -126,11 +126,11 @@ Type! TypeOfUnfolded(SemanticExpressionBlock block) :=
 
 
 
-Type! TypeOfUnfolded(SemanticAccess[kind: RESULT] access) :=
+Type! TypeOfUnfolded(SemanticExpressionAccess[kind: RESULT] access) :=
 	// TODO: implement
 ;
 
-Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
+Type! TypeOfUnfolded(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
@@ -143,7 +143,7 @@ Type! TypeOfUnfolded(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 
 
 
-Type! TypeOfUnfolded(SemanticCall call) :=
+Type! TypeOfUnfolded(SemanticExpressionCall call) :=
 	1. *Assert:* `call.children.count` is greater than or equal to 1.
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base` is not a SemanticExpressionVariable:
@@ -256,7 +256,7 @@ Type! TypeOfUnfolded(SemanticCall call) :=
 
 
 
-Type! TypeOf(SemanticClaim claim) :=
+Type! TypeOf(SemanticExpressionClaim claim) :=
 	1. *Note:* This algorithm overrides `TypeOf(SemanticExpression)`.
 	2. *Assert:* `claim.children.count` is 2.
 	3. *Let* `computed_type` be *Unwrap:* `TypeOf(claim.children.0)`.

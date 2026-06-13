@@ -193,7 +193,7 @@ test.suite('Expression', () => {
 				const {stmts, builder} = setupScript(`{
 					42 as <int>;
 				}`, {codegen: false});
-				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
+				const expr = (stmts[0] as AST.StatementExpression).expr as AST.EXPR.Claim;
 				return assert.deepStrictEqual(expr.build(builder), expr.operand.build(builder));
 			});
 			test.test('repeated calls are idempotent.', () => {
@@ -201,7 +201,7 @@ test.suite('Expression', () => {
 					(42 + 42 + 42) as <int | float>;
 				}`, {build: false});
 				assert.strictEqual(builder.instructions.length, 0);
-				const expr = (stmts[0] as AST.StatementExpression).expr as AST.Claim;
+				const expr = (stmts[0] as AST.StatementExpression).expr as AST.EXPR.Claim;
 				expr.operand.build(builder);
 				assert.strictEqual(builder.instructions.length, 1);
 				expr.build(builder);
@@ -705,28 +705,28 @@ test.suite('Expression', () => {
 
 		test.suite('#type', () => {
 			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(AST.Claim.fromSource('3 as <int?>').type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(AST.EXPR.Claim.fromSource('3 as <int?>').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			test.test('allows claiming to `nothing` even though intersection is empty.', () => {
-				assert.ok(AST.Claim.fromSource('42 as <nothing>').type().isBottomType);
+				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);
 			});
 			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
-				const claim: AST.Claim = AST.Claim.fromSource('n as <int>');
+				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
 				claim.validator.addSymbol(new SymbolSchemaVar(claim.operand as AST.EXPR.Variable, false, false));
 				(claim.validator.getSymbol(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
 			test.test('allows claiming to a type alias.', () => {
-				const claim: AST.Claim = AST.Claim.fromSource('"Alice" as <Name>');
+				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
 				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.TYPE.TypeAlias));
 				(claim.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
 				assert.strictEqual(claim.type(), TYPE.STR);
 			});
 			test.test('throws when the operand type and claimed type do not overlap (and neither is `nothing`).', () => {
-				assert.throws(() => AST.Claim.fromSource('3 as <str>')      .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.Claim.fromSource('"three" as <int>').type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.Claim.fromSource('3 as <float>')    .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.Claim.fromSource('3.0 as <int>')    .type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.EXPR.Claim.fromSource('3 as <str>')       .type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.EXPR.Claim.fromSource('"three" as <int>') .type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.EXPR.Claim.fromSource('3 as <float>')     .type(), TypeErrorNotAssignable);
+				assert.throws(() => AST.EXPR.Claim.fromSource('3.0 as <int>')     .type(), TypeErrorNotAssignable);
 			});
 		});
 
@@ -734,7 +734,7 @@ test.suite('Expression', () => {
 		test.suite('#fold', () => {
 			test.test('returns the fold of the operand.', () => {
 				samples.forEach((expr) => assert.deepStrictEqual(
-					AST.Claim           .fromSource(`${ expr } as <anything>`) .fold(),
+					AST.EXPR.Claim      .fromSource(`${ expr } as <anything>`) .fold(),
 					AST.EXPR.Expression .fromSource(expr).fold(),
 					expr,
 				));

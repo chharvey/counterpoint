@@ -22,7 +22,6 @@ import {
 } from './index.ts';
 import {Index} from './Index-.ts';
 import {Key} from './Key.ts';
-import {Access} from './expression/Access.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -36,7 +35,7 @@ export class StatementClaim extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'statement_claim', ['break']>,
-		private readonly assignee: EXPR.Variable | Access,
+		private readonly assignee: EXPR.Variable | EXPR.Access,
 		private readonly claimed_type: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [assignee, claimed_type]);
@@ -66,7 +65,7 @@ export class StatementClaim extends Statement {
 				symbol.type = claimed_type;
 			}
 		} else {
-			assert_instanceof(this.assignee, Access);
+			assert_instanceof(this.assignee, EXPR.Access);
 			const base_type: TYPE.Type = this.assignee.base.type();
 			const {accessor} = this.assignee;
 			switch (true) {

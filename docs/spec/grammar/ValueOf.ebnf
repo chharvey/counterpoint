@@ -92,11 +92,11 @@ Value! ValueOf(SemanticExpressionBlock block) :=
 
 
 
-Object! ValueOf(SemanticAccess[kind: RESULT] access) :=
+Object! ValueOf(SemanticExpressionAccess[kind: RESULT] access) :=
 	// TODO: implement
 ;
 
-Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
+Object! ValueOf(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
@@ -163,7 +163,7 @@ Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 
 
 
-Object! ValueOf(SemanticCall call) :=
+Object! ValueOf(SemanticExpressionCall call) :=
 	1. *Assert:* `call.children.count` is greater than or equal to 1.
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base.source` is "List":
@@ -211,7 +211,7 @@ Object! ValueOf(SemanticCall call) :=
 
 
 
-Object! ValueOf(SemanticClaim claim) :=
+Object! ValueOf(SemanticExpressionClaim claim) :=
 	1. *Assert:* `claim.children.count` is 2.
 	2. *Return:* `ValueOf(claim.children.0)`.
 ;

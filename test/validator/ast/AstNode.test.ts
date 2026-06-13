@@ -26,7 +26,7 @@ test.suite('AstNode', () => {
 					assert_instanceof(type_accessor, AST.Index);
 					assert.strictEqual(type_accessor.index, index);
 
-					const expr_accessor: AST.Index | AST.Key | AST.EXPR.Expression = AST.Access.fromSource(`my_tuple.${ index }`).accessor;
+					const expr_accessor: AST.Index | AST.Key | AST.EXPR.Expression = AST.EXPR.Access.fromSource(`my_tuple.${ index }`).accessor;
 					assert_instanceof(expr_accessor, AST.Index);
 					assert.strictEqual(expr_accessor.index, index);
 				});
