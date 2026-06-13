@@ -10,14 +10,14 @@ import {
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
 	VoidErrorOutOfBounds,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_lines,
 	repeat,
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 

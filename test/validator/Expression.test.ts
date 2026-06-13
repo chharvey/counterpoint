@@ -15,7 +15,7 @@ import {
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
 	TypeErrorNotAssignable,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_tokens,
 	repeat,
@@ -23,7 +23,7 @@ import {
 	assertEqualTypes,
 	typeUnit,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 

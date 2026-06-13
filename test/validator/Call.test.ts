@@ -8,14 +8,14 @@ import {
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
 	TypeErrorArgCount,
-} from '../../../src/index.ts';
+} from '../../src/index.ts';
 import {
 	extract_lines,
 	repeat,
 	assertAssignable,
 	assertEqualTypes,
 	setupScript,
-} from '../../utils.ts';
+} from '../utils.ts';
 
 
 
