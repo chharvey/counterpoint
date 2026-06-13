@@ -14,7 +14,7 @@ export class ReferenceErrorDeadZone extends CplReferenceError {
 	 * Construct a new ReferenceErrorDeadZone object.
 	 * @param variable the not-yet-declared variable
 	 */
-	public constructor(variable: AST.TypeAlias | AST.Variable) {
+	public constructor(variable: AST.TYPE.TypeAlias | AST.EXPR.Variable) {
 		super(
 			`\`${ variable.source }\` is used before it is declared.`,
 			CplReferenceError.CODES.get(ReferenceErrorDeadZone),

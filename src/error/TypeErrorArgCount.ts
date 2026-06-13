@@ -19,7 +19,7 @@ export class TypeErrorArgCount extends CplTypeError {
 	 * @param generic  - whether the arguments are generic arguments (true) or function arguments (false)
 	 * @param call     - the function call
 	 */
-	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.TypeCall | AST.Call) {
+	public constructor(actual: bigint, expected: bigint, generic: boolean, call: AST.TYPE.Call | AST.EXPR.Call) {
 		super(
 			`Got \`${ actual }\` ${ (generic) ? 'type ' : '' }arguments, but expected \`${ expected }\`.`,
 			CplTypeError.CODES.get(TypeErrorArgCount),

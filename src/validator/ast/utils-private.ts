@@ -18,12 +18,17 @@ import {
 	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	Validator,
-	AST,
 } from '../index.ts';
+import {
+	Index,
+	Key,
+	type TYPE as AST_TYPE,
+	EXPR,
+} from './index.ts';
 
 
 
-function throwWrongSubtypeError(accessor: AST.Expression, supertype: TYPE.Type): never {
+function throwWrongSubtypeError(accessor: EXPR.Expression, supertype: TYPE.Type): never {
 	throw new TypeErrorNotNarrow(accessor.type(), supertype, accessor.line_index, accessor.col_index);
 }
 
@@ -289,7 +294,7 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 	return t instanceof TYPE.Combinable ? t.operands.flatMap((comp) => decombine(comp)) : [t];
 }
 
-export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AST.Access, is_writing: boolean = false): EntryType {
+export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
 	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
@@ -355,14 +360,14 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AS
 		}
 	}
 	switch (true) {
-		case access.accessor instanceof AST.Index: {
+		case access.accessor instanceof Index: {
 			if (base_type instanceof TYPE.Tuple) {
 				return base_type.get(access.accessor.index, access.accessor);
 			} else {
 				throw new TypeErrorNoEntry('index', base_type, access.accessor);
 			}
 		}
-		case access.accessor instanceof AST.Key: {
+		case access.accessor instanceof Key: {
 			if (base_type instanceof TYPE.Record) {
 				return base_type.get(access.accessor.id, access.accessor);
 			} else {
@@ -370,8 +375,8 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AS
 			}
 		}
 		default: {
-			assert_instanceof(access, AST.Access);
-			assert_instanceof(access.accessor, AST.Expression);
+			assert_instanceof(access, EXPR.Access);
+			assert_instanceof(access.accessor, EXPR.Expression);
 			const accessor_type: TYPE.Type = access.accessor.type();
 			if (accessor_type.isBottomType) {
 				return {type: TYPE.NOTHING, optional: accessor_maybe};
@@ -410,7 +415,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST.TypeAccess | AS
 
 
 
-export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST.TypeAccess | AST.Access): void {
+export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST_TYPE.Access | EXPR.Access): void {
 	if (
 		access_kind === Operator.DOT     &&  is_entry_optional ||
 		access_kind === Operator.DOT_MAY && !is_entry_optional

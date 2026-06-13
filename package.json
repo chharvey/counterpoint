@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.5.1-alpha.0",
+  "version": "0.5.1-alpha.1",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -56,7 +56,7 @@
     "eslint-plugin-import": "^2.31.0",
     "globals": "^17.0.0",
     "n": "^10.2.0",
-    "tsx": "^4.19.3",
+    "tsx": "^4.22.4",
     "typescript": "~6.0.3",
     "typescript-eslint": "^8.18.0"
   },

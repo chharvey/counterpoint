@@ -14,7 +14,7 @@ export class AssignmentErrorReassignment extends AssignmentError {
 	 * Construct a new AssignmentErrorReassignment object.
 	 * @param variable the undeclared variable
 	 */
-	public constructor(variable: AST.Variable) {
+	public constructor(variable: AST.EXPR.Variable) {
 		super(
 			`Reassignment of read-only variable \`${ variable.source }\`.`,
 			AssignmentError.CODES.get(AssignmentErrorReassignment),

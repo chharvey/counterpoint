@@ -9,10 +9,7 @@ import {
 	to_serializable,
 } from '../../parser/index.ts';
 import type {Validator} from '../Validator.ts';
-import {
-	type Expression,
-	CollectionLiteral,
-} from './index.ts';
+import {EXPR} from './index.ts';
 
 
 
@@ -45,12 +42,12 @@ import {
  *                       or is not entry-wise assignable
  */
 export function typecheck_assign(
-	assigned:      Expression,
+	assigned:      EXPR.Expression,
 	assignee_type: TYPE.Type,
 	node:          AstNode,
 ): void {
 	if (!assigned.type().isSubtypeOf(assignee_type)) {
-		if (assigned instanceof CollectionLiteral) {
+		if (assigned instanceof EXPR.Collection) {
 			return assigned.assignTo(assignee_type);
 		}
 		throw new TypeErrorNotAssignable(assigned, assignee_type, node);

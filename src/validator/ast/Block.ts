@@ -11,10 +11,12 @@ import {
 } from '../../core/index.ts';
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {Goal} from './index.ts';
+import {
+	Goal,
+	type STMT,
+} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Buildable} from './Buildable.ts';
-import type {Statement} from './Statement.ts';
 
 
 
@@ -37,7 +39,7 @@ export class Block extends AstNode implements Buildable {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'block', ['break']>,
-		public override readonly children: Readonly<NonemptyArray<Statement>>,
+		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
 	) {
 		super(start_node, {}, children);

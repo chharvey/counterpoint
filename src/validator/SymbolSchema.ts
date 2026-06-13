@@ -33,7 +33,7 @@ export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.ANYTHING;
 
-	public constructor(node: AST.TypeAlias) {
+	public constructor(node: AST.TYPE.TypeAlias) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }
@@ -54,7 +54,7 @@ export class SymbolSchemaVar extends SymbolSchema {
 	public irType: TYPE.Type = TYPE.NOTHING;
 
 	public constructor(
-		node: AST.Variable,
+		node: AST.EXPR.Variable,
 		/** May the symbol be reassigned? */
 		public readonly isWritable: boolean,
 		/** Was the symbol declared without an initial value? */
