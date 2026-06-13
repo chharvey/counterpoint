@@ -433,18 +433,18 @@ Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break>
 
 Decorate(ExpressionUnarySymbol<Block, Break> ::= ExpressionCompound<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionCompound<?Block><?Break>);
-Decorate(ExpressionUnarySymbol<Block, Break> ::= "!" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
+Decorate(ExpressionUnarySymbol<Block, Break> ::= "!" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
 		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
-Decorate(ExpressionUnarySymbol<Block, Break> ::= "?" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=EMP]
+Decorate(ExpressionUnarySymbol<Block, Break> ::= "?" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=EMP]
 		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
 Decorate(ExpressionUnarySymbol<Block, Break> ::= "+" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
-Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NEG]
+Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NEG]
 		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
 
@@ -452,16 +452,16 @@ Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Bloc
 
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=INT]
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=INT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NAT]
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NAT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=FLOAT]
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=FLOAT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
 
@@ -469,18 +469,18 @@ Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword
 
 Decorate(ExpressionCast<Block, Break> ::= ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnaryKeyword<?Block><?Break>);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=CAST]
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=CAST]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=MAYBE]
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=MAYBE]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=RESULT]
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=RESULT]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
@@ -494,8 +494,8 @@ Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<
 
 Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionCast<?Block><?Break>);
-Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break> "^" ExpressionExponential<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=EXP]
+Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break> "^" ExpressionExponential<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=EXP]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionExponential<?Block><?Break>)
 	);
@@ -504,13 +504,13 @@ Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break> 
 
 Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionExponential<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionExponential<?Block><?Break>);
-Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "*" ExpressionExponential<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=MUL]
+Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "*" ExpressionExponential<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=MUL]
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 		Decorate(ExpressionExponential<?Block><?Break>)
 	);
-Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "/" ExpressionExponential<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=DIV]
+Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "/" ExpressionExponential<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=DIV]
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 		Decorate(ExpressionExponential<?Block><?Break>)
 	);
@@ -519,63 +519,63 @@ Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Bl
 
 Decorate(ExpressionAdditive<Block, Break> ::= ExpressionMultiplicative<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionMultiplicative<?Block><?Break>);
-Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "+" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=ADD]
+Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "+" ExpressionMultiplicative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=ADD]
 		Decorate(ExpressionAdditive<?Block><?Break>)
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
-Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=SUB]
+Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=SUB]
 		Decorate(ExpressionAdditive<?Block><?Break>)
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 
 
 
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionAdditive<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionAdditive<?Block><?Break>);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=LT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=LT]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=GT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=GT]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<=" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=LE]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<=" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=LE]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">=" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=GE]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">=" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=GE]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!<" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=LT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!<" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=LT]
 			Decorate(ExpressionComparative<?Block><?Break>)
 			Decorate(ExpressionAdditive<?Block><?Break>)
 		)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!>" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=GT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!>" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=GT]
 			Decorate(ExpressionComparative<?Block><?Break>)
 			Decorate(ExpressionAdditive<?Block><?Break>)
 		)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "is" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=IS]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "is" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=IS]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!is" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=IS]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!is" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=IS]
 			Decorate(ExpressionComparative<?Block><?Break>)
 			Decorate(ExpressionAdditive<?Block><?Break>)
 		)
@@ -583,28 +583,28 @@ Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?
 
 
 
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionComparative<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionComparative<?Block>);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "===" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=ID]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "===" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=ID]
 		Decorate(ExpressionEquality<?Block><?Break>)
 		Decorate(ExpressionComparative<?Block><?Break>)
 	);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!==" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=ID]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!==" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=ID]
 			Decorate(ExpressionEquality<?Block><?Break>)
 			Decorate(ExpressionComparative<?Block><?Break>)
 		)
 	);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "==" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=EQ]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "==" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=EQ]
 		Decorate(ExpressionEquality<?Block><?Break>)
 		Decorate(ExpressionComparative<?Block><?Break>)
 	);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!=" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=EQ]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!=" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=EQ]
 			Decorate(ExpressionEquality<?Block><?Break>)
 			Decorate(ExpressionComparative<?Block><?Break>)
 		)
@@ -614,14 +614,14 @@ Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break>
 
 Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionEquality<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionEquality<?Block><?Break>);
-Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "&&" ExpressionEquality<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=AND]
+Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "&&" ExpressionEquality<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=AND]
 		Decorate(ExpressionConjunctive<?Block><?Break>)
 		Decorate(ExpressionEquality<?Block><?Break>)
 	);
-Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "!&" ExpressionEquality<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=AND]
+Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "!&" ExpressionEquality<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=AND]
 			Decorate(ExpressionConjunctive<?Block><?Break>)
 			Decorate(ExpressionEquality<?Block><?Break>)
 		)
@@ -629,16 +629,16 @@ Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?
 
 
 
-Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionConjunctive<?Block><?Break>);
-Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "||" ExpressionConjunctive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=OR]
+Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "||" ExpressionConjunctive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=OR]
 		Decorate(ExpressionDisjunctive<?Block><?Break>)
 		Decorate(ExpressionConjunctive<?Block><?Break>)
 	);
-Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "!|" ExpressionConjunctive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=OR]
+Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "!|" ExpressionConjunctive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=OR]
 			Decorate(ExpressionDisjunctive<?Block><?Break>)
 			Decorate(ExpressionConjunctive<?Block><?Break>)
 		)
@@ -646,8 +646,8 @@ Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?
 
 
 
-Decorate(ExpressionConditional<Break> ::= "if" Expression__0<+Block><?Break> "then" Expression__1<-Block><?Break> "else" Expression__2<-Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=COND]
+Decorate(ExpressionConditional<Break> ::= "if" Expression__0<+Block><?Break> "then" Expression__1<-Block><?Break> "else" Expression__2<-Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=COND]
 		Decorate(Expression__0<+Block><?Break>)
 		Decorate(Expression__1<-Block><?Break>)
 		Decorate(Expression__2<-Block><?Break>)

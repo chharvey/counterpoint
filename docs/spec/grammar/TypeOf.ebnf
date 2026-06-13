@@ -268,7 +268,7 @@ Type! TypeOf(SemanticExpressionClaim claim) :=
 
 
 
-Type! TypeOfUnfolded(SemanticOperation[operator: NOT] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
@@ -281,7 +281,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NOT] expr) :=
 		1. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
@@ -291,7 +291,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EMP] expr) :=
 	5. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | NAT | FLOAT] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: NEG | INT | NAT | FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
@@ -309,7 +309,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: NEG | INT | NAT | FLOAT] expr) 
 	5. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -324,7 +324,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] ex
 	8. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -335,11 +335,11 @@ Type! TypeOfUnfolded(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	6. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: IS] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: IS] expr) :=
 	// TODO: implement
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: ID | EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -353,7 +353,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: ID | EQ] expr) :=
 	6. *Return:* `Boolean`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -367,7 +367,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: AND] expr) :=
 		1. *Return:* `Union(FalsySide(t0), t1)`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: OR] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.
@@ -381,7 +381,7 @@ Type! TypeOfUnfolded(SemanticOperation[operator: OR] expr) :=
 		1. *Return:* `Union(TruthySide(t0), t1)`.
 ;
 
-Type! TypeOfUnfolded(SemanticOperation[operator: COND] expr) :=
+Type! TypeOfUnfolded(SemanticExpressionOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
 	3. *Let* `t1` be *Unwrap:* `TypeOf(expr.children.1)`.

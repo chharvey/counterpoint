@@ -126,16 +126,16 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                              AST.EXPR.ExpressionBlock;
 	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                               AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                           AST.EXPR.Access | AST.EXPR.Call;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                       AST.EXPR.Expression | AST.OperationUnary;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                               AST.OperationBinaryCast | AST.EXPR.Claim;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                        AST.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                     AST.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_additive'>):                           AST.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                        AST.OperationUnary | AST.OperationBinaryComparative;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_equality'>):                           AST.OperationUnary | AST.OperationBinaryEquality;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                        AST.OperationUnary | AST.OperationBinaryLogical;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                        AST.OperationUnary | AST.OperationBinaryLogical;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):           AST.OperationTernary;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                       AST.EXPR.Expression | AST.EXPR.OperationUnary;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                               AST.EXPR.OperationBinaryCast | AST.EXPR.Claim;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                        AST.EXPR.OperationBinaryArithmetic;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                     AST.EXPR.OperationBinaryArithmetic;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_additive'>):                           AST.EXPR.OperationBinaryArithmetic;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                        AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryComparative;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_equality'>):                           AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryEquality;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                        AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                        AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):           AST.EXPR.OperationTernary;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                               AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.EXPR.Variable | AST.EXPR.Access;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',   ['break']>):           AST.StatementExpression;
@@ -367,14 +367,14 @@ export class Decorator {
 
 			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF // `+a` is a no-op
 				? this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>)
-				: new AST.OperationUnary(
+				: new AST.EXPR.OperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
 					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
 					this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),
 				)
 			)],
 
-			['expression_unary_keyword', (node) => new AST.OperationUnary(
+			['expression_unary_keyword', (node) => new AST.EXPR.OperationUnary(
 				node as SyntaxNodeType<'expression_unary_symbol'>,
 				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword) as ValidOperatorUnary,
 				this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),
@@ -384,7 +384,7 @@ export class Decorator {
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>;
 				const expression_1 = node.childForFieldName('expression_1') as SyntaxNodeSupertype<'expression'> | null;
 				return expression_1
-					? new AST.OperationBinaryCast(
+					? new AST.EXPR.OperationBinaryCast(
 						node as SyntaxNodeType<'expression_cast'>,
 						Decorator.OPERATORS_BINARY.get(node.children[1].text as Keyword)! as ValidOperatorCast,
 						this.decorateExprNode(expression_0),
@@ -397,21 +397,21 @@ export class Decorator {
 					);
 			}],
 
-			['expression_exponential', (node) => new AST.OperationBinaryArithmetic(
+			['expression_exponential', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_exponential'>,
 				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			['expression_multiplicative', (node) => new AST.OperationBinaryArithmetic(
+			['expression_multiplicative', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_multiplicative'>,
 				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			['expression_additive', (node) => new AST.OperationBinaryArithmetic(
+			['expression_additive', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_additive'>,
 				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
@@ -424,36 +424,36 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !< b` is syntax sugar for `!(a < b)`
-				(operator === Operator.NLT) ? new AST.OperationUnary(
+				(operator === Operator.NLT) ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.OperationBinaryComparative(
+					new AST.EXPR.OperationBinaryComparative(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.LT,
 						...operands,
 					),
 				) :
 				// `a !> b` is syntax sugar for `!(a > b)`
-				(operator === Operator.NGT) ? new AST.OperationUnary(
+				(operator === Operator.NGT) ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.OperationBinaryComparative(
+					new AST.EXPR.OperationBinaryComparative(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.GT,
 						...operands,
 					),
 				) :
 				// `a !is b` is syntax sugar for `!(a is b)`
-				(operator === Operator.ISNT) ? new AST.OperationUnary(
+				(operator === Operator.ISNT) ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.OperationBinaryComparative(
+					new AST.EXPR.OperationBinaryComparative(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.IS as ValidOperatorComparative, // TODO: make a new class for comparing object instances
 						...operands,
 					),
 				) :
-				new AST.OperationBinaryComparative(
+				new AST.EXPR.OperationBinaryComparative(
 					n,
 					operator as ValidOperatorComparative,
 					...operands,
@@ -473,26 +473,26 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !== b` is syntax sugar for `!(a === b)`
-				(operator === Operator.NID) ? new AST.OperationUnary(
+				(operator === Operator.NID) ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.OperationBinaryEquality(
+					new AST.EXPR.OperationBinaryEquality(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.ID,
 						...operands,
 					),
 				) :
 				// `a != b` is syntax sugar for `!(a == b)`
-				(operator === Operator.NEQ) ? new AST.OperationUnary(
+				(operator === Operator.NEQ) ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.OperationBinaryEquality(
+					new AST.EXPR.OperationBinaryEquality(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.EQ,
 						...operands,
 					),
 				) :
-				new AST.OperationBinaryEquality(
+				new AST.EXPR.OperationBinaryEquality(
 					n,
 					operator as ValidOperatorEquality,
 					...operands,
@@ -512,16 +512,16 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !& b` is syntax sugar for `!(a && b)`
-				(operator === Operator.NAND) ? new AST.OperationUnary(
+				(operator === Operator.NAND) ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.OperationBinaryLogical(
+					new AST.EXPR.OperationBinaryLogical(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.AND,
 						...operands,
 					),
 				) :
-				new AST.OperationBinaryLogical(
+				new AST.EXPR.OperationBinaryLogical(
 					n,
 					operator as ValidOperatorLogical,
 					...operands,
@@ -541,16 +541,16 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !| b` is syntax sugar for `!(a || b)`
-				(operator === Operator.NOR) ? new AST.OperationUnary(
+				(operator === Operator.NOR) ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.OperationBinaryLogical(
+					new AST.EXPR.OperationBinaryLogical(
 						n.children[0] as SyntaxNodeSupertype<'expression'>,
 						Operator.OR,
 						...operands,
 					),
 				) :
-				new AST.OperationBinaryLogical(
+				new AST.EXPR.OperationBinaryLogical(
 					n,
 					operator as ValidOperatorLogical,
 					...operands,
@@ -564,7 +564,7 @@ export class Decorator {
 				],
 			)],
 
-			[/^expression_conditional(__break)?$/, (node) => new AST.OperationTernary(
+			[/^expression_conditional(__break)?$/, (node) => new AST.EXPR.OperationTernary(
 				node as SyntaxNodeFamily<'expression_conditional', ['break']>,
 				Operator.COND,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),

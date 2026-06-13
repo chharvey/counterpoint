@@ -178,7 +178,7 @@ such as `ExpressionUnit ::= IDENTIFIER | "(" Expression ")";`.
 An AstNode is the resulting output of a **decoration** step in semantic analysis,
 which is described by the [Decoration attribute grammar](./notation.md#decoration).
 AstNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
-such as `SemanticOperation ::= SemanticExpression+;`.
+such as `SemanticExpressionOperation ::= SemanticExpression+;`.
 
 
 

@@ -77,7 +77,7 @@ SemanticExpression =:=
 	| SemanticExpressionAccess
 	| SemanticExpressionCall
 	| SemanticExpressionClaim
-	| SemanticOperation
+	| SemanticExpressionOperation
 ;
 
 
@@ -122,17 +122,17 @@ SemanticExpressionCall
 SemanticExpressionClaim
 	::= SemanticExpression SemanticType;
 
-SemanticOperation[operator: NOT | EMP]
+SemanticExpressionOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-SemanticOperation[operator: NEG | INT | NAT | FLOAT]
+SemanticExpressionOperation[operator: NEG | INT | NAT | FLOAT]
 	::= SemanticExpression[type: Number];
-SemanticOperation[operator: CAST | MAYBE | RESULT | IS]
+SemanticExpressionOperation[operator: CAST | MAYBE | RESULT | IS]
 	::= SemanticExpression SemanticExpression[type: Class];
-SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
+SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
-SemanticOperation[operator: ID | EQ | AND | OR]
+SemanticExpressionOperation[operator: ID | EQ | AND | OR]
 	::= SemanticExpression SemanticExpression;
-SemanticOperation[operator: COND]
+SemanticExpressionOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
 
 
