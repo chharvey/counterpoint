@@ -9,10 +9,7 @@ import {
 	to_serializable,
 } from '../../parser/index.ts';
 import type {Validator} from '../Validator.ts';
-import {
-	CollectionLiteral,
-	type EXPR,
-} from './index.ts';
+import {EXPR} from './index.ts';
 
 
 
@@ -50,7 +47,7 @@ export function typecheck_assign(
 	node:          AstNode,
 ): void {
 	if (!assigned.type().isSubtypeOf(assignee_type)) {
-		if (assigned instanceof CollectionLiteral) {
+		if (assigned instanceof EXPR.Collection) {
 			return assigned.assignTo(assignee_type);
 		}
 		throw new TypeErrorNotAssignable(assigned, assignee_type, node);

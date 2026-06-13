@@ -8,16 +8,16 @@ import {Expression} from './Expression.ts';
 
 
 /**
- * Decorator for {@link CollectionLiteral#assignTo} method and any overrides.
+ * Decorator for {@link Collection#assignTo} method and any overrides.
  * Simplifies assignments by handling type operations.
- * @implements MethodDecorator<CollectionLiteral, CollectionLiteral['assignTo']>
+ * @implements MethodDecorator<Collection, Collection['assignTo']>
  */
 export function assignToDeco(
-	method:  CollectionLiteral['assignTo'],
-	context: ClassMethodDecoratorContext<CollectionLiteral, typeof method>,
+	method:  Collection['assignTo'],
+	context: ClassMethodDecoratorContext<Collection, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'assignTo');
-	return function (this: CollectionLiteral, assignee) {
+	return function (this: Collection, assignee) {
 		if (assignee instanceof TYPE.Intersection) {
 			/* A value is assignable to a type intersection if and only if
 			it is assignable to all operands of that intersection. */
@@ -43,7 +43,7 @@ export function assignToDeco(
  * - Set
  * - Map
  */
-export abstract class CollectionLiteral extends Expression {
+export abstract class Collection extends Expression {
 	protected constructor(
 		start_node:
 			| SyntaxNodeFamily<'expression_tuple_literal',  ['break']>

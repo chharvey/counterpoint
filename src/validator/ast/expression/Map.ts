@@ -23,12 +23,12 @@ import type {Case} from '../Case.ts';
 import {Expression} from './Expression.ts';
 import {
 	assignToDeco,
-	CollectionLiteral,
+	Collection,
 } from './Collection.ts';
 
 
 
-class AstMap extends CollectionLiteral {
+class AstMap extends Collection {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstMap {
 		const expression: Expression = Expression.fromSource(src, config);
 		assert_instanceof(expression, AstMap);

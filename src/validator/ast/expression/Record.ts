@@ -26,12 +26,12 @@ import type {Property} from '../Property.ts';
 import {Expression} from './Expression.ts';
 import {
 	assignToDeco,
-	CollectionLiteral,
+	Collection,
 } from './Collection.ts';
 
 
 
-class AstRecord extends CollectionLiteral {
+class AstRecord extends Collection {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstRecord {
 		const expression: Expression = Expression.fromSource(src, config);
 		assert_instanceof(expression, AstRecord);

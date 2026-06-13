@@ -21,12 +21,12 @@ import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
 import {
 	assignToDeco,
-	CollectionLiteral,
+	Collection,
 } from './Collection.ts';
 
 
 
-export class List extends CollectionLiteral {
+export class List extends Collection {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): List {
 		const expression: Expression = Expression.fromSource(src, config);
 		assert_instanceof(expression, List);

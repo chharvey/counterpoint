@@ -72,7 +72,7 @@ SemanticExpression =:=
 	| SemanticExpressionConstant
 	| SemanticExpressionTemplate
 	| SemanticExpressionVariable
-	| SemanticCollectionLiteral
+	| SemanticExpressionCollection
 	| SemanticExpressionBlock
 	| SemanticAccess
 	| SemanticCall
@@ -94,7 +94,7 @@ SemanticExpressionVariable[id: RealNumber]
 SemanticExpressionTemplatePartial
 	::= (SemanticExpressionConstant SemanticExpression?)+;
 
-SemanticCollectionLiteral =:=
+SemanticExpressionCollection =:=
 	| SemanticTuple
 	| SemanticRecord
 	| SemanticList

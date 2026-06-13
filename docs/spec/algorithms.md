@@ -194,7 +194,7 @@ Performs the type-checking piece during semantic analysis.
 Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
+None! AssignTo(SemanticExpressionCollection expr, Type type) :=
 	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.

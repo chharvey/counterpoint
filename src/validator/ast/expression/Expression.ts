@@ -22,7 +22,7 @@ import {AstNode} from '../AstNode.ts';
  * - Constant
  * - Template
  * - Variable
- * - CollectionLiteral
+ * - Collection
  * - ExpressionBlock
  * - Access
  * - Call
