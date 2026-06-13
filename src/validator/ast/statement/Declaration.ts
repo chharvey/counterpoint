@@ -1,7 +1,7 @@
 import type {
 	DeclarationType,
 	DeclarationVariable,
-} from '../index.ts';
+} from './index.ts';
 
 
 

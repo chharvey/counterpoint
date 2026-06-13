@@ -46,7 +46,7 @@ test.suite('Access', () => {
 		} catch {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
-		const statements: readonly AST.StatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.StatementExpression);
+		const statements: readonly AST.STMT.StatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.STMT.StatementExpression);
 		return expecteds.some((it) => it instanceof Function)
 			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];
@@ -79,7 +79,7 @@ test.suite('Access', () => {
 		} catch {
 			// if type-checking fails, proceed to `assert.throws` below
 		}
-		const statements: readonly AST.StatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.StatementExpression);
+		const statements: readonly AST.STMT.StatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.STMT.StatementExpression);
 		return expecteds.some((it) => it instanceof Function)
 			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 				const expected: VALUE.Value | null | ConstructorType<Error> = expecteds[i];

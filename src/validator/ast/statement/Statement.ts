@@ -4,10 +4,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {Block} from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 import type {Foldable} from '../Foldable.ts';
 import type {Buildable} from '../Buildable.ts';
+import {Block} from '../Block.ts';
 
 
 

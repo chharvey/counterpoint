@@ -212,7 +212,7 @@ test.suite('Declaration', () => {
 				setupScript(`{
 					val the_answer: nat = +42;
 				}`, {build: false}); // assert does not throw
-				const var_: AST.DeclarationVariable = AST.DeclarationVariable.fromSource(`
+				const var_: AST.STMT.DeclarationVariable = AST.STMT.DeclarationVariable.fromSource(`
 					val  the_answer:  int | float =  21  *  2;
 				`);
 				var_.varCheck();
@@ -314,16 +314,16 @@ test.suite('Declaration', () => {
 						val rec_literal = (a= 69, b= "world", c= operation);
 						val list_literal = [42, 69];
 						val dict_literal = [a= "hello", b= "world"];
-					`, (src) => assert.throws(() => AST.DeclarationVariable.fromSource(src).typeCheck(), AssignmentErrorMissingType));
+					`, (src) => assert.throws(() => AST.STMT.DeclarationVariable.fromSource(src).typeCheck(), AssignmentErrorMissingType));
 				});
 			});
 			test.test('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
-				assert.throws(() => AST.DeclarationVariable.fromSource(`
+				assert.throws(() => AST.STMT.DeclarationVariable.fromSource(`
 					val  the_answer:  null =  21  *  2;
 				`).typeCheck(), TypeErrorNotAssignable);
 			});
 			test.test('throws when assigning int to float.', () => {
-				assert.throws(() => AST.DeclarationVariable.fromSource(`
+				assert.throws(() => AST.STMT.DeclarationVariable.fromSource(`
 					val x: float = 42;
 				`).typeCheck(), TypeErrorNotAssignable);
 			});
@@ -629,7 +629,7 @@ test.suite('Declaration', () => {
 				val mut _:       int = assignee_c;
 				%%
 			}`, {codegen: false});
-			stmts.forEach((stmt) => (stmt as AST.DeclarationVariable).build(builder));
+			stmts.forEach((stmt) => (stmt as AST.STMT.DeclarationVariable).build(builder));
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (INT.CONST 42))

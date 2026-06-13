@@ -172,7 +172,7 @@ test.suite('Type', () => {
 					((setupScript(`{
 						type T = int;
 						type U = T;
-					}`).stmts[1] as AST.DeclarationType).assigned as AST.TYPE.TypeAlias).eval(),
+					}`).stmts[1] as AST.STMT.DeclarationType).assigned as AST.TYPE.TypeAlias).eval(),
 					TYPE.INT,
 				);
 			});

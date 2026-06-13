@@ -23,11 +23,9 @@ import {
 } from '../../../typer/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import type {
-	Block,
-	TYPE as AST_TYPE,
-	EXPR,
-} from '../index.ts';
+import type {Block} from '../Block.ts';
+import type * as AST_TYPE from '../type/index.ts';
+import type * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 import {StatementBreakable} from './StatementBreakable.ts';
 

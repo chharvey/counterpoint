@@ -36,7 +36,7 @@ test.suite('Opcode', () => {
 					"hello";
 				}`, {codegen: false});
 				return assertEqualBins(
-					stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+					stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 					[
 						genConst(cg),
 						genConst(cg, false),
@@ -63,7 +63,7 @@ test.suite('Opcode', () => {
 					e;
 				}`);
 				return assertEqualBins(
-					stmts.slice(5).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+					stmts.slice(5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 					[
 						mod.local.get(0, cg.vm.reftype.Value),
 						mod.local.get(1, cg.vm.reftype.Value),
@@ -151,7 +151,7 @@ test.suite('Opcode', () => {
 						();
 					}`);
 					return assertEqualBins(
-						(stmts[0] as AST.StatementExpression).expr!.build(builder).codegen(cg),
+						(stmts[0] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenTuple()),
 					);
 				});
@@ -162,7 +162,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Value} = cg.vm;
 					return assertEqualBins(
-						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
+						(stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenTuple([
 							mod.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
@@ -175,7 +175,7 @@ test.suite('Opcode', () => {
 						[];
 					}`);
 					return assertEqualBins(
-						(stmts[0] as AST.StatementExpression).expr!.build(builder).codegen(cg),
+						(stmts[0] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						cg.vm.Value.newComposite(cg.codegenList()),
 					);
 				});
@@ -186,7 +186,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Value} = cg.vm;
 					return assertEqualBins(
-						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
+						(stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenList([
 							mod.local.get(0, cg.vm.reftypeNull.Value),
 							genConst(cg, 4.2),
@@ -201,7 +201,7 @@ test.suite('Opcode', () => {
 						{};
 					}`);
 					return assert.strictEqual(
-						binaryen.emitText((stmts[0] as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+						binaryen.emitText((stmts[0] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						binaryen.emitText(cg.vm.Value.newComposite(cg.codegenMap())).replaceAll('$1', '$0'),
 					);
 				});
@@ -212,7 +212,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Value} = cg.vm;
 					return assert.strictEqual(
-						binaryen.emitText((stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+						binaryen.emitText((stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						binaryen.emitText(Value.newComposite(cg.codegenSet([
 							mod.local.get(0, cg.vm.reftype.Value),
 							genConst(cg, 4.2),
@@ -240,7 +240,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Value} = cg.vm;
 					return assertEqualBins(
-						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
+						(stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenRecord(new Map([
 							[257n, cg.newProperty(257n, mod.local.get(0, cg.vm.reftype.Value))],
 							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
@@ -268,7 +268,7 @@ test.suite('Opcode', () => {
 						(b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
 					}`);
 					return assertEqualBins(
-						stmts.slice(9).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+						stmts.slice(9).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[new Map([
 							// (a= 42, aa= false, b= 4.2);  % (258, 261, 256)
 							[258n, cg.newProperty(258n, genConst(cg, 42n))],
@@ -305,7 +305,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Value} = cg.vm;
 					return assertEqualBins(
-						(stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg),
+						(stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenDict(new Map([
 							[257n, cg.newProperty(257n, mod.local.get(0, cg.vm.reftype.Value))],
 							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
@@ -333,7 +333,7 @@ test.suite('Opcode', () => {
 						[b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
 					}`);
 					return assertEqualBins(
-						stmts.slice(9).map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+						stmts.slice(9).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[new Map([
 							// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
 							[258n, cg.newProperty(258n, genConst(cg, 42n))],
@@ -370,7 +370,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Value} = cg.vm;
 					return assert.strictEqual(
-						binaryen.emitText((stmts[1] as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+						binaryen.emitText((stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						binaryen.emitText(Value.newComposite(cg.codegenMap(new Map([
 							[genConst(cg, 1.1), mod.local.get(0, cg.vm.reftype.Value)],
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
@@ -686,7 +686,7 @@ test.suite('Opcode', () => {
 						float 42;
 					}`, {codegen: false});
 					return assertEqualBins(
-						stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[
 							cg.vm.op.not(genConst(cg)),
 							cg.vm.op.not(genConst(cg, false)),
@@ -720,7 +720,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, List} = cg.vm;
 					// there exists no syntax for List count, so constructing it manually
-					const list = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
+					const list = (stmts[2] as AST.STMT.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
 						OP.OpCode.LIST_COUNT,
 						list,
@@ -739,7 +739,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, Dict} = cg.vm;
 					// there exists no syntax for Dict count, so constructing it manually
-					const dict = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
+					const dict = (stmts[2] as AST.STMT.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
 						OP.OpCode.DICT_COUNT,
 						dict,
@@ -758,7 +758,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Set count, so constructing it manually
-					const set = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
+					const set = (stmts[2] as AST.STMT.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
 						OP.OpCode.SET_COUNT,
 						set,
@@ -777,7 +777,7 @@ test.suite('Opcode', () => {
 					}`);
 					const {Vect, Value, Map: VmMap} = cg.vm;
 					// there exists no syntax for Map count, so constructing it manually
-					const map = (stmts[2] as AST.StatementExpression).expr!.build(builder) as OP.Get;
+					const map = (stmts[2] as AST.STMT.StatementExpression).expr!.build(builder) as OP.Get;
 					const unop = new OP.Unop(
 						OP.OpCode.MAP_COUNT,
 						map,
@@ -819,7 +819,7 @@ test.suite('Opcode', () => {
 					2.0 ==  3;
 				}`, {codegen: false});
 				return assertEqualBins(
-					stmts.map((stmt) => (stmt as AST.StatementExpression).expr!.build(builder).codegen(cg)),
+					stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 					[
 						cg.vm.op.intAdd(genConst(cg, 2n), genConst(cg, 3n)),
 						cg.vm.op.intSub(genConst(cg, 2n), genConst(cg, 3n)),

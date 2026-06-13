@@ -11,7 +11,7 @@ import type {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
-import {StatementExpression} from '../index.ts';
+import {STMT} from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 
 
@@ -41,7 +41,7 @@ export abstract class Expression extends AstNode {
 	 * @returns      a new Expression representing the given source
 	 */
 	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Expression {
-		const statement_expr: StatementExpression = StatementExpression.fromSource(`${ src };`, config);
+		const statement_expr: STMT.StatementExpression = STMT.StatementExpression.fromSource(`${ src };`, config);
 		assert.ok(statement_expr.expr, 'semantic statement expression should have 1 child');
 		return statement_expr.expr;
 	}

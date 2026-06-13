@@ -3,7 +3,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
-import {DeclarationType} from '../index.ts';
+import {STMT} from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 
 
@@ -27,7 +27,7 @@ export abstract class Type extends AstNode {
 	 * @returns      a new Type representing the given source
 	 */
 	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Type {
-		const statement: DeclarationType = DeclarationType.fromSource(`type T = ${ src };`, config);
+		const statement: STMT.DeclarationType = STMT.DeclarationType.fromSource(`type T = ${ src };`, config);
 		return statement.assigned;
 	}
 

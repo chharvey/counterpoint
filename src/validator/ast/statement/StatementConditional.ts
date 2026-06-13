@@ -14,10 +14,8 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
-import type {
-	Block,
-	EXPR,
-} from '../index.ts';
+import type {Block} from '../Block.ts';
+import type * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 

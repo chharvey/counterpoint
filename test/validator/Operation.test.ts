@@ -38,8 +38,8 @@ function foldOperations(tests: Map<string, VALUE.Value>): void {
 
 
 test.suite('Operation', () => {
-	function typeOfStmtExpr(stmt: AST.Statement): TYPE.Type {
-		assert_instanceof(stmt, AST.StatementExpression);
+	function typeOfStmtExpr(stmt: AST.STMT.Statement): TYPE.Type {
+		assert_instanceof(stmt, AST.STMT.StatementExpression);
 		return stmt.expr!.type();
 	}
 
@@ -73,7 +73,7 @@ test.suite('Operation', () => {
 							?j;
 							?k;
 							?l;
-						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+						}`, {build: false}).stmts.slice(11).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						repeat(TYPE.BOOL, 11),
 					);
 				});
@@ -98,7 +98,7 @@ test.suite('Operation', () => {
 						(i1 + i2) * i3;
 						(n1 + n2) * n3;
 						f1 * f2 ^ f3;
-					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+					}`, {build: false}).stmts.slice(9).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					[TYPE.INT, TYPE.NAT, TYPE.FLOAT],
 				);
 			});
@@ -117,7 +117,7 @@ test.suite('Operation', () => {
 						val mut f2: float = 3.1;
 
 						${ ['i1', 'n1', 'f1'].flatMap((left) => ['i2', 'n2', 'f2'].flatMap((right) => ['<', '>', '<=', '>=', '!<', '!>'].map((op) => `${ left } ${ op } ${ right };`))).join('\n') }
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 3 * 3 * 6),
 				);
 			});
@@ -153,7 +153,7 @@ test.suite('Operation', () => {
 						i1 == i2;
 						n1 == n2;
 						f1 == f2;
-					}`).stmts.slice(6).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+					}`).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 6),
 				);
 			});
@@ -169,7 +169,7 @@ test.suite('Operation', () => {
 							i1 === n1;
 							i1 === f1;
 							n1 === f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						repeat(TYPE.FALSE, 3),
 					);
 				});
@@ -186,7 +186,7 @@ test.suite('Operation', () => {
 							i1 == n1;
 							i1 == f1;
 							n1 == f1;
-						}`).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+						}`).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						repeat(TYPE.BOOL, 3),
 					);
 				});
@@ -626,7 +626,7 @@ test.suite('Operation', () => {
 						-n;
 					}`, {typeCheck: false});
 					stmts[0].typeCheck(); // assert does not throw
-					assert.throws(() => ((stmts[1] as AST.StatementExpression).expr as AST.EXPR.OperationUnary).type(), TypeErrorInvalidOperation);
+					assert.throws(() => ((stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary).type(), TypeErrorInvalidOperation);
 				});
 			});
 			test.suite('[operator=INT | NAT | FLOAT]', () => {
@@ -742,7 +742,7 @@ test.suite('Operation', () => {
 					float my_int;
 					float my_nat;
 					float my_flt;
-				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.StatementExpression).expr as AST.EXPR.OperationUnary);
+				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary);
 				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
 				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
 				assert.strictEqual(values[0], operands[0]);
@@ -851,7 +851,7 @@ test.suite('Operation', () => {
 					1.0 * f;  % non-foldable value
 					-1.0 * f; % non-foldable value
 				}`);
-				const exprs:     readonly AST.EXPR.Expression[]  = stmts.slice(2).map((stmt) => ((stmt as AST.StatementExpression).expr!));
+				const exprs:     readonly AST.EXPR.Expression[]  = stmts.slice(2).map((stmt) => ((stmt as AST.STMT.StatementExpression).expr!));
 				const expecteds: readonly (VALUE.Value | null)[] = exprs.slice(0, 3).map((op) => (op as AST.EXPR.OperationBinaryArithmetic).operand0.fold());
 				assert.deepStrictEqual(
 					exprs.map((op) => op.fold()),
@@ -1020,7 +1020,7 @@ test.suite('Operation', () => {
 						d != {41 -> 43};
 						d != {43 -> 42};
 					}`, {build: false}).stmts.slice(4).forEach((stmt) => assert.strictEqual(
-						((stmt as AST.StatementExpression).expr as AST.EXPR.OperationBinaryEquality).type(),
+						((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.OperationBinaryEquality).type(),
 						TYPE.BOOL,
 					));
 				});
@@ -1154,7 +1154,7 @@ test.suite('Operation', () => {
 					i != {41 -> 43};
 					i != {43 -> 42};
 				}`, {build: false}).stmts.slice(13).forEach((stmt) => {
-					assert.strictEqual((stmt as AST.StatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
+					assert.strictEqual((stmt as AST.STMT.StatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
 				});
 			});
 			test.test('compound value types’ constituents are compared using same operand.', () => {

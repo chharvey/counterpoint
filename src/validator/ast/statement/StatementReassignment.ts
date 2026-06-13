@@ -18,8 +18,8 @@ import {
 import type {TYPE} from '../../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
-import {EXPR} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
+import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 

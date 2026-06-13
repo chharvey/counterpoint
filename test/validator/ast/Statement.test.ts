@@ -59,7 +59,7 @@ test.suite('Statement', () => {
 						42;
 					};
 				}`);
-				const validator: Validator = (goal.block!.children[0] as AST.StatementIteration).block.validator;
+				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
 				assert.ok(!validator.hasSymbol(0x100n));
 				goal.varCheck();
 				assert.ok(validator.hasSymbol(0x100n));
@@ -78,7 +78,7 @@ test.suite('Statement', () => {
 						42;
 					};
 				}`);
-				const validator: Validator = (goal.block!.children[0] as AST.StatementIteration).block.validator;
+				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
 				assert.ok(!validator.hasSymbol(0x100n));
 				goal.varCheck();
 				return assert.ok(!validator.hasSymbol(0x100n));
@@ -221,7 +221,7 @@ test.suite('Statement', () => {
 						x;            % type \`int\`
 					}`, {build: false});
 					return assert.deepStrictEqual(
-						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+						[stmts[1], stmts[3]].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[TYPE.INT.union(TYPE.FLOAT), TYPE.INT],
 					);
 				});
@@ -288,7 +288,7 @@ test.suite('Statement', () => {
 					}`, {build: false});
 					const INT_NULL: TYPE.Type = TYPE.INT.union(TYPE.NULL);
 					return assert.deepStrictEqual(
-						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.StatementExpression).expr!.type()),
+						[...stmts.slice(1, 3), ...stmts.slice(5, 7)].map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[INT_NULL, INT_NULL, TYPE.NULL, TYPE.INT],
 					);
 				});
@@ -616,7 +616,7 @@ test.suite('Statement', () => {
 						42 + it; %> TypeErrorInvalidOperation
 					};
 				}`, {typeCheck: false});
-				assert.throws(() => (stmts[0] as AST.StatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
+				assert.throws(() => (stmts[0] as AST.STMT.StatementIteration).block.children[0].typeCheck(), TypeErrorInvalidOperation);
 				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
 			});
 		});
@@ -632,11 +632,11 @@ test.suite('Statement', () => {
 				;
 			}`, {build: false});
 			assert.strictEqual(builder.instructions.length, 0);
-			(stmts[1] as AST.StatementExpression).build(builder);
+			(stmts[1] as AST.STMT.StatementExpression).build(builder);
 			assert.strictEqual(builder.instructions.length, 1);
-			(stmts[2] as AST.StatementExpression).build(builder);
+			(stmts[2] as AST.STMT.StatementExpression).build(builder);
 			assert.strictEqual(builder.instructions.length, 2);
-			(stmts[3] as AST.StatementExpression).build(builder);
+			(stmts[3] as AST.STMT.StatementExpression).build(builder);
 			assert.strictEqual(builder.instructions.length, 2);
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
@@ -650,7 +650,7 @@ test.suite('Statement', () => {
 				val mut x: int | float = 42;
 				claim x: int;
 			}`, {build: false});
-			(stmts[1] as AST.StatementClaim).build(builder);
+			(stmts[1] as AST.STMT.StatementClaim).build(builder);
 			return assert.strictEqual(builder.print(), xjs.String.dedent`
 				"block-0":
 					(DROP (GET x))
@@ -665,7 +665,7 @@ test.suite('Statement', () => {
 					set x = 44;
 					set x = -42;
 				}`, {build: false});
-				stmts.slice(1).forEach((stmt) => (stmt as AST.StatementReassignment).build(builder));
+				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
 						(SET x (INT.CONST 43))

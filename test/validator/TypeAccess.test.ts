@@ -37,7 +37,7 @@ test.suite('TypeAccess', () => {
 			} catch {
 				// if type-checking fails, proceed to `assert.throws` below
 			}
-			const statements: readonly AST.DeclarationType[] = goal.block!.children.filter((stmt) => stmt instanceof AST.DeclarationType).slice(start);
+			const statements: readonly AST.STMT.DeclarationType[] = goal.block!.children.filter((stmt) => stmt instanceof AST.STMT.DeclarationType).slice(start);
 			return expecteds.some((it) => it instanceof Function)
 				? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
 					const expected: TYPE.Type | ConstructorType<Error> = expecteds[i];

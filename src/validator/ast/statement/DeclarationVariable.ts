@@ -21,11 +21,9 @@ import {
 } from '../../../typer/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
-import {
-	type TYPE as AST_TYPE,
-	EXPR,
-} from '../index.ts';
 import {typecheck_assign} from '../AstNode.ts';
+import type * as AST_TYPE from '../type/index.ts';
+import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 

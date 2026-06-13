@@ -654,97 +654,97 @@ test.suite('Decorator', () => {
 				% (assignee)
 			`]],
 
-			['Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression', [AST.StatementExpression, `
+			['Decorate(StatementExpression<Break> ::= Expression<+Block><?Break> ";") -> SemanticStatementExpression', [AST.STMT.StatementExpression, `
 				{
 					a;
 				}
 				% (statement_expression)
 			`]],
 
-			['Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticStatementClaim', [AST.StatementClaim, `
+			['Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> SemanticStatementClaim', [AST.STMT.StatementClaim, `
 				{
 					claim a: T;
 				}
 				% (statement_claim)
 			`]],
 
-			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.StatementReassignment, `
+			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
 				{
 					set a = b;
 				}
 				% (statement_reassignment)
 			`]],
 
-			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.StatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.STMT.StatementConditional, `
 				{
 					if condition then { consequent; };
 				}
 				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block__0<?Break> "else" Block__1<?Break> ";") -> SemanticStatementConditional', [AST.StatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block__0<?Break> "else" Block__1<?Break> ";") -> SemanticStatementConditional', [AST.STMT.StatementConditional, `
 				{
 					if condition then { consequent; } else { alternative; };
 				}
 				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> "else" StatementConditional<-Unless><?Break>) -> SemanticStatementConditional', [AST.StatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> "else" StatementConditional<-Unless><?Break>) -> SemanticStatementConditional', [AST.STMT.StatementConditional, `
 				{
 					if condition1 then { consequent1; } else if condition2 then { consequent2; } else { alternative; };
 				}
 				% (statement_conditional)
 			`]],
-			['Decorate(StatementConditional<Unless, Break> ::= "unless" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.StatementConditional, `
+			['Decorate(StatementConditional<Unless, Break> ::= "unless" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.STMT.StatementConditional, `
 				{
 					unless condition then { alternative; };
 				}
 				% (statement_conditional__unless)
 			`]],
 
-			['Decorate(StatementLoop ::= "while" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementLoop', [AST.StatementLoop, `
+			['Decorate(StatementLoop ::= "while" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementLoop', [AST.STMT.StatementLoop, `
 				{
 					while condition do { loop; };
 				}
 				% (statement_loop)
 			`]],
-			['Decorate(StatementLoop ::= "do" Block<+Break> "while" Expression<+Block><-Break> ";") -> SemanticStatementLoop', [AST.StatementLoop, `
+			['Decorate(StatementLoop ::= "do" Block<+Break> "while" Expression<+Block><-Break> ";") -> SemanticStatementLoop', [AST.STMT.StatementLoop, `
 				{
 					do { loop; } while condition;
 				}
 				% (statement_loop)
 			`]],
-			['Decorate(StatementLoop ::= "until" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementLoop', [AST.StatementLoop, `
+			['Decorate(StatementLoop ::= "until" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementLoop', [AST.STMT.StatementLoop, `
 				{
 					until condition do { loop; };
 				}
 				% (statement_loop)
 			`]],
-			['Decorate(StatementLoop ::= "do" Block<+Break> "until" Expression<+Block><-Break> ";") -> SemanticStatementLoop', [AST.StatementLoop, `
+			['Decorate(StatementLoop ::= "do" Block<+Break> "until" Expression<+Block><-Break> ";") -> SemanticStatementLoop', [AST.STMT.StatementLoop, `
 				{
 					do { loop; } until condition;
 				}
 				% (statement_loop)
 			`]],
 
-			['Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.StatementIteration, `
+			['Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
 				{
 					for _: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
-			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.StatementIteration, `
+			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
 				{
 					for it: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
 
-			['Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak', [AST.StatementBreak, `
+			['Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak', [AST.STMT.StatementBreak, `
 				{
 					while condition do { break; };
 				}
 				% (statement_break)
 			`]],
-			['Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak', [AST.StatementBreak, `
+			['Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak', [AST.STMT.StatementBreak, `
 				{
 					while condition do { skip; };
 				}
@@ -768,56 +768,56 @@ test.suite('Decorator', () => {
 				% (block)
 			`]],
 
-			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.DeclarationType, `
+			['Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType', [AST.STMT.DeclarationType, `
 				{
 					type _ = U;
 				}
 				% (declaration_type)
 			`]],
-			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.DeclarationType, `
+			['Decorate(DeclarationType ::= "type" IDENTIFIER "=" Type ";") -> SemanticDeclarationType', [AST.STMT.DeclarationType, `
 				{
 					type T = U;
 				}
 				% (declaration_type)
 			`]],
 
-			['Decorate(DeclarationVariable<Break> ::= "val" "_" "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.DeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "_" "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.STMT.DeclarationVariable, `
 				{
 					val _ = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.DeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.STMT.DeclarationVariable, `
 				{
 					val _: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.DeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.STMT.DeclarationVariable, `
 				{
 					val a = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.DeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.STMT.DeclarationVariable, `
 				{
 					val a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.DeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.STMT.DeclarationVariable, `
 				{
 					val mut a = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.DeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable', [AST.STMT.DeclarationVariable, `
 				{
 					val mut a: T = b;
 				}
 				% (declaration_variable)
 			`]],
-			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.DeclarationVariable, `
+			['Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable', [AST.STMT.DeclarationVariable, `
 				{
 					val mut a?: T;
 				}
