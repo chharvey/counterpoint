@@ -1,10 +1,10 @@
-Or<Null, Boolean, Symbol, Number, String> ValueOf(SemanticConstant const) :=
+Or<Null, Boolean, Symbol, Number, String> ValueOf(SemanticExpressionConstant const) :=
 	1. *Return:* `const.value`.
 ;
 
 
 
-String! ValueOf(SemanticTemplate tpl) :=
+String! ValueOf(SemanticExpressionTemplate tpl) :=
 	1. *Let* `values` be a mapping for each `node` in `tpl.children` to *Unwrap:* `ValueOf(node)`.
 	2. *Let* `strings` be a mapping for each `value` in `values` to `String(value)`.
 	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
@@ -12,7 +12,7 @@ String! ValueOf(SemanticTemplate tpl) :=
 
 
 
-Object! ValueOf(SemanticVariable var) :=
+Object! ValueOf(SemanticExpressionVariable var) :=
 	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
 	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 	3. *If* `symbol.isWritable` is `false`:
@@ -23,14 +23,14 @@ Object! ValueOf(SemanticVariable var) :=
 
 
 
-Tuple! ValueOf(SemanticTuple tuple) :=
+Tuple! ValueOf(SemanticExpressionTuple tuple) :=
 	1. *Let* `data` be a mapping of `tuple` for each `it` to *Unwrap:* `ValueOf(it)`.
 	2. *Return:* a new Tuple containing the items in `data`.
 ;
 
 
 
-Record! ValueOf(SemanticRecord record) :=
+Record! ValueOf(SemanticExpressionRecord record) :=
 	1. *Let* `data` be a new Schema.
 	2. *For each* `property` in `record`:
 		1. Set `data` to a new Schema [
@@ -42,28 +42,28 @@ Record! ValueOf(SemanticRecord record) :=
 
 
 
-Set! ValueOf(SemanticList list) :=
+Set! ValueOf(SemanticExpressionList list) :=
 	1. *Let* `data` be a mapping of `list` for each `it` to *Unwrap:* `ValueOf(it)`.
 	2. *Return:* a new List containing the items in `data`.
 ;
 
 
 
-Set! ValueOf(SemanticDict dict) :=
+Set! ValueOf(SemanticExpressionDict dict) :=
 	1. *Let* `data` be a mapping of `dict` for each `prop` to *Unwrap:* `ValueOf(prop.children.1)`.
 	2. *Return:* a new List containing the items in `data`.
 ;
 
 
 
-Set! ValueOf(SemanticSet set) :=
+Set! ValueOf(SemanticExpressionSet set) :=
 	1. *Let* `data` be a mapping of `set` for each `el` to *Unwrap:* `ValueOf(el)`.
 	2. *Return:* a new Set containing the items in `data`.
 ;
 
 
 
-Map! ValueOf(SemanticMap map) :=
+Map! ValueOf(SemanticExpressionMap map) :=
 	1. *Let* `data` be a mapping of `map` for each `case` to a new Sequence [
 		*Unwrap:* `ValueOf(case.children.0)`,
 		*Unwrap:* `ValueOf(case.children.1)`,
@@ -92,11 +92,11 @@ Value! ValueOf(SemanticExpressionBlock block) :=
 
 
 
-Object! ValueOf(SemanticAccess[kind: RESULT] access) :=
+Object! ValueOf(SemanticExpressionAccess[kind: RESULT] access) :=
 	// TODO: implement
 ;
 
-Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
+Object! ValueOf(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `accessor` be `access.children.1`.
@@ -163,7 +163,7 @@ Object! ValueOf(SemanticAccess[kind: NORMAL | MAYBE] access) :=
 
 
 
-Object! ValueOf(SemanticCall call) :=
+Object! ValueOf(SemanticExpressionCall call) :=
 	1. *Assert:* `call.children.count` is greater than or equal to 1.
 	2. *Let* `base` be `call.children.0`.
 	3. *If* `base.source` is "List":
@@ -211,14 +211,14 @@ Object! ValueOf(SemanticCall call) :=
 
 
 
-Object! ValueOf(SemanticClaim claim) :=
+Object! ValueOf(SemanticExpressionClaim claim) :=
 	1. *Assert:* `claim.children.count` is 2.
 	2. *Return:* `ValueOf(claim.children.0)`.
 ;
 
 
 
-Boolean! ValueOf(SemanticOperation[operator: NOT] expr) :=
+Boolean! ValueOf(SemanticExpressionOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `true`:
@@ -226,7 +226,7 @@ Boolean! ValueOf(SemanticOperation[operator: NOT] expr) :=
 	4. *Return:* `true`.
 ;
 
-Boolean! ValueOf(SemanticOperation[operator: EMP] expr) :=
+Boolean! ValueOf(SemanticExpressionOperation[operator: EMP] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `false`:
@@ -244,7 +244,7 @@ Boolean! ValueOf(SemanticOperation[operator: EMP] expr) :=
 	9. *Return:* `false`.
 ;
 
-Number! ValueOf(SemanticOperation[operator: NEG] expr) :=
+Number! ValueOf(SemanticExpressionOperation[operator: NEG] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Assert:* `v0` is an instance of `Number`.
@@ -253,7 +253,7 @@ Number! ValueOf(SemanticOperation[operator: NEG] expr) :=
 	5. *Return:* `negation`.
 ;
 
-Number! ValueOf(SemanticOperation[operator: INT] expr) :=
+Number! ValueOf(SemanticExpressionOperation[operator: INT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Assert:* `v0` is an instance of `Number`.
@@ -267,7 +267,7 @@ Number! ValueOf(SemanticOperation[operator: INT] expr) :=
 	7. *Return:* `v0`.
 ;
 
-Number! ValueOf(SemanticOperation[operator: NAT] expr) :=
+Number! ValueOf(SemanticExpressionOperation[operator: NAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Assert:* `v0` is an instance of `Number`.
@@ -281,7 +281,7 @@ Number! ValueOf(SemanticOperation[operator: NAT] expr) :=
 	7. *Return:* `v0`.
 ;
 
-Number! ValueOf(SemanticOperation[operator: FLOAT] expr) :=
+Number! ValueOf(SemanticExpressionOperation[operator: FLOAT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Assert:* `v0` is an instance of `Number`.
@@ -292,7 +292,7 @@ Number! ValueOf(SemanticOperation[operator: FLOAT] expr) :=
 	6. *Return:* `v0`.
 ;
 
-Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
+Number! ValueOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
@@ -300,7 +300,7 @@ Number! ValueOf(SemanticOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :
 	5. *Return:* `PerformBinaryArithmetic(expr.operator, v0, v1)`.
 ;
 
-Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
+Boolean! ValueOf(SemanticExpressionOperation[operator: LT | GT | LE | GE] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
@@ -308,25 +308,25 @@ Boolean! ValueOf(SemanticOperation[operator: LT | GT | LE | GE] expr) :=
 	5. *Return:* `PerformBinaryCompare(expr.operator, v0, v1)`.
 ;
 
-Boolean! ValueOf(SemanticOperation[operator: IS] expr) :=
+Boolean! ValueOf(SemanticExpressionOperation[operator: IS] expr) :=
 	// TODO: implement
 ;
 
-Boolean! ValueOf(SemanticOperation[operator: ID] expr) :=
+Boolean! ValueOf(SemanticExpressionOperation[operator: ID] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
 	4. *Return:* `Identical(v0, v1)`.
 ;
 
-Boolean! ValueOf(SemanticOperation[operator: EQ] expr) :=
+Boolean! ValueOf(SemanticExpressionOperation[operator: EQ] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Let* `v1` be *Unwrap:* `ValueOf(expr.children.1)`.
 	4. *Return:* `Equal(v0, v1)`.
 ;
 
-Object! ValueOf(SemanticOperation[operator: AND] expr) :=
+Object! ValueOf(SemanticExpressionOperation[operator: AND] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `false`:
@@ -334,7 +334,7 @@ Object! ValueOf(SemanticOperation[operator: AND] expr) :=
 	4. *Return:* `ValueOf(expr.children.1)`.
 ;
 
-Object! ValueOf(SemanticOperation[operator: OR] expr) :=
+Object! ValueOf(SemanticExpressionOperation[operator: OR] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *If* *UnwrapAffirm:* `ToBoolean(v0)` is `true`:
@@ -342,7 +342,7 @@ Object! ValueOf(SemanticOperation[operator: OR] expr) :=
 	4. *Return:* `ValueOf(expr.children.1)`.
 ;
 
-Object! ValueOf(SemanticOperation[operator: COND] expr) :=
+Object! ValueOf(SemanticExpressionOperation[operator: COND] expr) :=
 	1. *Assert:* `expr.children.count` is 3.
 	2. *Let* `v0` be *Unwrap:* `ValueOf(expr.children.0)`.
 	3. *Assert:* `v0` is an instance of `Boolean`.

@@ -194,8 +194,8 @@ Performs the type-checking piece during semantic analysis.
 Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
-	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
+None! AssignTo(SemanticExpressionCollection expr, Type type) :=
+	1. *If* `expr` is a SemanticExpressionTuple *and* `type` is a Tuple type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
 		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
@@ -209,7 +209,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			2. *If:* `ib` is set:
 				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
 		7. *Return.*
-	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
+	2. *If* `expr` is a SemanticExpressionRecord *and* `type` is a Record type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
 		2. *Let* `struct_b` be a Schema whose properties are exactly the properties in `type`.
 		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
@@ -225,22 +225,22 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			2. *If:* `vb` is set:
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
-	3. *If* `expr` is a SemanticList *and* `type` is a List type:
+	3. *If* `expr` is a SemanticExpressionList *and* `type` is a List type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_it` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_it, b_type)`.
 		3. *Return.*
-	4. *If* `expr` is a SemanticDict *and* `type` is a Dict type:
+	4. *If* `expr` is a SemanticExpressionDict *and* `type` is a Dict type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_prop` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_prop.children.1, b_type)`.
 		3. *Return.*
-	5. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+	5. *If* `expr` is a SemanticExpressionSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_el` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
 		3. *Return.*
-	6. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+	6. *If* `expr` is a SemanticExpressionMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent type argument over `type`.
 		2. *Let* `b_con_type` be the consequent type argument over `type`.
 		3. *For each* `a_case` in `expr.children`:
@@ -313,7 +313,7 @@ Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
 
 ## GetEntryInfo
 ```
-EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access, Boolean is_writing) :=
+EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExpressionAccess> access, Boolean is_writing) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
 	3. *Let* `accessor_maybe` be `false`.
@@ -470,13 +470,13 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 ## WriteTypeOf
 Assuming reassignment of a symbol/entry is valid, gives the write-type of that symbol/entry.
 ```
-Type! WriteTypeOf(Or<SemanticVariable, SemanticAccess> reassignable) :=
-	1. *If* `reassignable` is a SemanticVariable:
+Type! WriteTypeOf(Or<SemanticExpressionVariable, SemanticExpressionAccess> reassignable) :=
+	1. *If* `reassignable` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		3. *Return:* `symbol.type`.
 	2. *Else:*
-		1. *Assert:* `reassignable` is a SemanticAccess.
+		1. *Assert:* `reassignable` is a SemanticExpressionAccess.
 		2. *Assert:* `reassignable.children.count` is 2.
 		3. *Let* `base` be `reassignable.children.0`.
 		4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.

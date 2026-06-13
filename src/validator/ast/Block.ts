@@ -11,13 +11,14 @@ import {
 } from '../../core/index.ts';
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {Goal} from './index.ts';
+import {
+	Goal,
+	type EXPR,
+	type STMT,
+} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
-import type {ExpressionBlock} from './ExpressionBlock.ts';
-import type {Statement} from './Statement.ts';
-import type {StatementConditional} from './StatementConditional.ts';
 
 
 
@@ -40,7 +41,7 @@ export class Block extends AstNode implements Foldable, Buildable {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'block', ['break']>,
-		public override readonly children: Readonly<NonemptyArray<Statement>>,
+		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
 	) {
 		super(start_node, {}, children);
@@ -48,7 +49,7 @@ export class Block extends AstNode implements Foldable, Buildable {
 	}
 
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, (this.parent as ExpressionBlock | StatementConditional | Goal | undefined)?.validator);
+		this.#validator ??= new Validator(this.config, (this.parent as EXPR.ExpressionBlock | STMT.StatementConditional | Goal | undefined)?.validator);
 		return this.#validator;
 	}
 

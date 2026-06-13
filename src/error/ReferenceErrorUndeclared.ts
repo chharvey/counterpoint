@@ -13,7 +13,7 @@ export class ReferenceErrorUndeclared extends CplReferenceError {
 	 * Construct a new ReferenceErrorUndeclared object.
 	 * @param variable the undeclared variable
 	 */
-	public constructor(variable: AST.TypeAlias | AST.Variable) {
+	public constructor(variable: AST.TYPE.TypeAlias | AST.EXPR.Variable) {
 		super(
 			`\`${ variable.source }\` is never declared.`,
 			CplReferenceError.CODES.get(ReferenceErrorUndeclared),

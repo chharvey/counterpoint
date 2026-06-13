@@ -18,7 +18,7 @@ export class TypeErrorNotCallable extends CplTypeError {
 	 * @param typ  - the type trying to be called
 	 * @param base - the object expression being called
 	 */
-	public constructor(typ: TYPE.Type, base: AST.Type | AST.Expression) {
+	public constructor(typ: TYPE.Type, base: AST.TYPE.Type | AST.EXPR.Expression) {
 		super(
 			`Type \`${ typ }\` is not callable.`,
 			CplTypeError.CODES.get(TypeErrorNotCallable),
