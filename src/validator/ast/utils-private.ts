@@ -18,9 +18,10 @@ import {
 	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
 	Validator,
-	AST,
 } from '../index.ts';
 import {
+	Index,
+	Key,
 	type TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
@@ -301,14 +302,14 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 		}
 	}
 	switch (true) {
-		case access.accessor instanceof AST.Index: {
+		case access.accessor instanceof Index: {
 			if (base_type instanceof TYPE.Tuple) {
 				return base_type.get(access.accessor.index, access.accessor);
 			} else {
 				throw new TypeErrorNoEntry('index', base_type, access.accessor);
 			}
 		}
-		case access.accessor instanceof AST.Key: {
+		case access.accessor instanceof Key: {
 			if (base_type instanceof TYPE.Record) {
 				return base_type.get(access.accessor.id, access.accessor);
 			} else {
