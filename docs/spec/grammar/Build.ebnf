@@ -140,12 +140,12 @@ Build(SemanticExpressionTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Buil
 
 Build(SemanticExpressionVariable var) := (GET `GetSymbolSchema(var)`);
 
-Build(SemanticTuple tup)  := (TUPLE.NEW  [`...tup.children.map(Build)`]);
-Build(SemanticRecord rec) := (RECORD.NEW `...rec.children.map(Sequence [prop.0.id, Build(prop.1)])`);
-Build(SemanticList list)  := (LIST.NEW   [`...list.children.map(Build)`]);
-Build(SemanticDict dict)  := (DICT.NEW   `...dict.children.flatMap(Build)`);
-Build(SemanticSet set)    := (SET.NEW    [`...set.children.map(Build)`]);
-Build(SemanticMap map)    := (MAP.NEW    `...map.children.map(Build)`);
+Build(SemanticExpressionTuple tup)  := (TUPLE.NEW  [`...tup.children.map(Build)`]);
+Build(SemanticExpressionRecord rec) := (RECORD.NEW `...rec.children.map(Sequence [prop.0.id, Build(prop.1)])`);
+Build(SemanticExpressionList list)  := (LIST.NEW   [`...list.children.map(Build)`]);
+Build(SemanticExpressionDict dict)  := (DICT.NEW   `...dict.children.flatMap(Build)`);
+Build(SemanticExpressionSet set)    := (SET.NEW    [`...set.children.map(Build)`]);
+Build(SemanticExpressionMap map)    := (MAP.NEW    `...map.children.map(Build)`);
 
 Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex) := (TUPLE.GET  `SemanticIndex.index` [`Build(SemanticExpression)`]);
 Build(SemanticAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Build(SemanticExpression)`]);

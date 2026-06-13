@@ -36,12 +36,12 @@ export function assignToDeco(
 
 /**
  * Known subclasses:
- * - Tuple
- * - Record
+ * - ExpressionTuple
+ * - ExpressionRecord
  * - List
  * - Dict
- * - Set
- * - Map
+ * - ExpressionSet
+ * - ExpressionMap
  */
 export abstract class Collection extends Expression {
 	protected constructor(

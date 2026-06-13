@@ -26,8 +26,6 @@ import {
 	EXPR,
 } from './index.ts';
 import {typecheck_assign} from './AstNode.ts';
-import {Tuple as AstTuple} from './expression/Tuple.ts';
-import {Record as AstRecord} from './expression/Record.ts';
 import {Call} from './expression/Call.ts';
 import {Statement} from './Statement.ts';
 
@@ -40,8 +38,8 @@ function is_inferrable(node?: EXPR.Expression): boolean {
 			EXPR.Template,
 			Call, // TODO: distinguish between constructor calls and function calls
 		].some((klass) => (node instanceof klass)) ? true :
-		node instanceof AstTuple  ? node.children.every((expr) => is_inferrable(expr)) :
-		node instanceof AstRecord ? node.children.every((prop) => is_inferrable(prop.val)) :
+		node instanceof EXPR.Tuple  ? node.children.every((expr) => is_inferrable(expr)) :
+		node instanceof EXPR.Record ? node.children.every((prop) => is_inferrable(prop.val)) :
 		false
 	);
 }
@@ -63,17 +61,17 @@ function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 				assert.fail(`Expected ${ value } to be a primitive value.`)
 			);
 		}
-		case node instanceof AstTuple: {
+		case node instanceof EXPR.Tuple: {
 			return TYPE.Tuple.fromTypes(node.children.map((expr) => writable_inferred_type(expr)));
 		}
-		case node instanceof AstRecord: {
+		case node instanceof EXPR.Record: {
 			return TYPE.Record.fromTypes(new Map(node.children.map((prop) => [prop.key.id, writable_inferred_type(prop.val)])));
 		}
 		case node instanceof Call: { // TODO: distinguish between constructor calls and function calls
 			return node.type();
 		}
 		default: {
-			assert.fail(`${ node.source } should be an instance of ${ EXPR.Constant.name }, ${ AstTuple.name }, ${ AstRecord.name }, or ${ Call.name }.`);
+			assert.fail(`${ node.source } should be an instance of ${ EXPR.Constant.name }, ${ EXPR.Tuple.name }, ${ EXPR.Record.name }, or ${ Call.name }.`);
 		}
 	}
 }
@@ -156,8 +154,8 @@ export class DeclarationVariable extends Statement {
 		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
 			this.writable && ([
 				EXPR.Constant,
-				AstTuple,
-				AstRecord,
+				EXPR.Tuple,
+				EXPR.Record,
 			].some((klass) => (this.assigned instanceof klass))) ? writable_inferred_type(this.assigned!) :
 			this.assigned instanceof EXPR.Template ? TYPE.STR :
 			this.assigned!.type()

@@ -28,10 +28,10 @@ import {
 
 
 
-class AstMap extends Collection {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstMap {
+class ExpressionMap extends Collection {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ExpressionMap {
 		const expression: Expression = Expression.fromSource(src, config);
-		assert_instanceof(expression, AstMap);
+		assert_instanceof(expression, ExpressionMap);
 		return expression;
 	}
 
@@ -86,4 +86,4 @@ class AstMap extends Collection {
 		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }
-export {AstMap as Map};
+export {ExpressionMap as Map};

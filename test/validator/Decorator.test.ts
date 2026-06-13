@@ -373,60 +373,60 @@ test.suite('Decorator', () => {
 				% (expression_grouped)
 			`]],
 
-			['Decorate(ExpressionTupleLiteral<Break> ::= "(" ")") -> SemanticTuple', [AST.Tuple, `
+			['Decorate(ExpressionTupleLiteral<Break> ::= "(" ")") -> SemanticExpressionTuple', [AST.EXPR.Tuple, `
 				{
 					();
 				}
 				% (expression_tuple_literal)
 			`]],
-			['Decorate(ExpressionTupleLiteral<Break> ::= "(" Items<?Break> ")") -> SemanticTuple', [AST.Tuple, `
+			['Decorate(ExpressionTupleLiteral<Break> ::= "(" Items<?Break> ")") -> SemanticExpressionTuple', [AST.EXPR.Tuple, `
 				{
 					(42, 6.9);
 				}
 				% (expression_tuple_literal)
 			`]],
 
-			['Decorate(ExpressionRecordLiteral<Break> ::= "(" ","? Property<?Break># ","? ")") -> SemanticRecord', [AST.Record, `
+			['Decorate(ExpressionRecordLiteral<Break> ::= "(" ","? Property<?Break># ","? ")") -> SemanticExpressionRecord', [AST.EXPR.Record, `
 				{
 					(a= 42, b= 6.9);
 				}
 				% (expression_record_literal)
 			`]],
 
-			['Decorate(ExpressionListLiteral<Break> ::= "[" "]") -> SemanticSet', [AST.List, `
+			['Decorate(ExpressionListLiteral<Break> ::= "[" "]") -> SemanticExpressionList', [AST.EXPR.List, `
 				{
 					[];
 				}
 				% (expression_list_literal)
 			`]],
-			['Decorate(ExpressionListLiteral<Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]") -> SemanticList', [AST.List, `
+			['Decorate(ExpressionListLiteral<Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]") -> SemanticExpressionList', [AST.EXPR.List, `
 				{
 					[42, 6.9];
 				}
 				% (expression_list_literal)
 			`]],
 
-			['Decorate(ExpressionDictLiteral<Break> ::= "[" ","? Property<?Break># ","? "]") -> SemanticRecord', [AST.Dict, `
+			['Decorate(ExpressionDictLiteral<Break> ::= "[" ","? Property<?Break># ","? "]") -> SemanticExpressionDict', [AST.EXPR.Dict, `
 				{
 					[a= 42, b= 6.9];
 				}
 				% (expression_dict_literal)
 			`]],
 
-			['Decorate(ExpressionSetLiteral<Break> ::= "{" "}") -> SemanticSet', [AST.Set, `
+			['Decorate(ExpressionSetLiteral<Break> ::= "{" "}") -> SemanticExpressionSet', [AST.EXPR.Set, `
 				{
 					{};
 				}
 				% (expression_set_literal)
 			`]],
-			['Decorate(ExpressionSetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}") -> SemanticSet', [AST.Set, `
+			['Decorate(ExpressionSetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}") -> SemanticExpressionSet', [AST.EXPR.Set, `
 				{
 					{42, 6.9};
 				}
 				% (expression_set_literal)
 			`]],
 
-			['Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticMap', [AST.Map, `
+			['Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticExpressionMap', [AST.EXPR.Map, `
 				{
 					{42 -> 6.9, "hello" -> true};
 				}

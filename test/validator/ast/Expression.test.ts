@@ -523,26 +523,26 @@ test.suite('Expression', () => {
 				test.test('throws if containing duplicate keys.', () => {
 					[
 						AST.TYPE.Record .fromSource('(a: int, b: float, c: str)'),
-						AST.Record      .fromSource('(a= 1, b= 2.0, c= "three")'),
-						AST.Dict        .fromSource('[a= 1, b= 2.0, c= "three"]'),
+						AST.EXPR.Record .fromSource('(a= 1, b= 2.0, c= "three")'),
+						AST.EXPR.Dict   .fromSource('[a= 1, b= 2.0, c= "three"]'),
 					].forEach((node) => node.varCheck()); // assert does not throw
 
 					[
 						AST.TYPE.Record .fromSource('(a: int, b: float, a: str)'),
 						AST.TYPE.Record .fromSource('(_: int, b: float, _: str)'),
-						AST.Record      .fromSource('(a= 1, b= 2.0, a= "three")'),
-						AST.Record      .fromSource('(_= 1, b= 2.0, _= "three")'),
-						AST.Dict        .fromSource('[a= 1, b= 2.0, a= "three"]'),
-						AST.Dict       .fromSource('[_= 1, b= 2.0, _= "three"]'),
+						AST.EXPR.Record .fromSource('(a= 1, b= 2.0, a= "three")'),
+						AST.EXPR.Record .fromSource('(_= 1, b= 2.0, _= "three")'),
+						AST.EXPR.Dict   .fromSource('[a= 1, b= 2.0, a= "three"]'),
+						AST.EXPR.Dict   .fromSource('[_= 1, b= 2.0, _= "three"]'),
 					].forEach((node) => assert.throws(() => node.varCheck(), AssignmentErrorDuplicateKey));
 
 					new Map<AST.AstNode, string[]>([
 						[AST.TYPE.Record .fromSource('(c: int, d: float, c: str, d: bool)'),  ['c', 'd']],
 						[AST.TYPE.Record .fromSource('(e: int, f: float, e: str, e: bool)'),  ['e', 'e']],
-						[AST.Record      .fromSource('(c= 1, d= 2.0, c= "three", d= false)'), ['c', 'd']],
-						[AST.Record      .fromSource('(e= 1, f= 2.0, e= "three", e= false)'), ['e', 'e']],
-						[AST.Dict        .fromSource('[c= 1, d= 2.0, c= "three", d= false]'), ['c', 'd']],
-						[AST.Dict        .fromSource('[e= 1, f= 2.0, e= "three", e= false]'), ['e', 'e']],
+						[AST.EXPR.Record .fromSource('(c= 1, d= 2.0, c= "three", d= false)'), ['c', 'd']],
+						[AST.EXPR.Record .fromSource('(e= 1, f= 2.0, e= "three", e= false)'), ['e', 'e']],
+						[AST.EXPR.Dict   .fromSource('[c= 1, d= 2.0, c= "three", d= false]'), ['c', 'd']],
+						[AST.EXPR.Dict   .fromSource('[e= 1, f= 2.0, e= "three", e= false]'), ['e', 'e']],
 					]).forEach((dupes, node) => assert.throws(() => node.varCheck(), (err) => {
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
@@ -562,15 +562,15 @@ test.suite('Expression', () => {
 			test.test('with constant folding on.', () => {
 				const expected: readonly TYPE.Unit[] = [typeUnit(1n), typeUnit(2.0), typeUnit('three')];
 				const collections: readonly [
-					AST.Tuple,
-					AST.Record,
-					AST.Set,
-					AST.Map,
+					AST.EXPR.Tuple,
+					AST.EXPR.Record,
+					AST.EXPR.Set,
+					AST.EXPR.Map,
 				] = [
-					AST.Tuple  .fromSource('(   1,    2.0,    "three")'),
-					AST.Record .fromSource('(a= 1, b= 2.0, _= "three")'),
-					AST.Set    .fromSource('{   1,    2.0,    "three"}'),
-					AST.Map.fromSource(`
+					AST.EXPR.Tuple  .fromSource('(   1,    2.0,    "three")'),
+					AST.EXPR.Record .fromSource('(a= 1, b= 2.0, _= "three")'),
+					AST.EXPR.Set    .fromSource('{   1,    2.0,    "three"}'),
+					AST.EXPR.Map    .fromSource(`
 						{
 							"a" || "" -> 1,
 							21 + 21   -> 2.0,
@@ -608,8 +608,8 @@ test.suite('Expression', () => {
 			test.test('returns Tuple/Record for constant collections.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.Tuple  .fromSource('(   1,    2.0,    "three")'),
-						AST.Record .fromSource('(a= 1, b= 2.0, c= "three")'),
+						AST.EXPR.Tuple  .fromSource('(   1,    2.0,    "three")'),
+						AST.EXPR.Record .fromSource('(a= 1, b= 2.0, c= "three")'),
 					].map((c) => c.fold()),
 					[
 						new VALUE.Tuple([
@@ -628,10 +628,10 @@ test.suite('Expression', () => {
 			test.test('returns a constant List/Dict/Set/Map for foldable entries.', () => {
 				assert.deepStrictEqual(
 					[
-						AST.List.fromSource('[1, 2.0, "three"]'),
-						AST.Dict.fromSource('[a= 1, b= 2.0, c= "three"]'),
-						AST.Set.fromSource('{1, 2.0, "three"}'),
-						AST.Map.fromSource(`
+						AST.EXPR.List .fromSource('[1, 2.0, "three"]'),
+						AST.EXPR.Dict .fromSource('[a= 1, b= 2.0, c= "three"]'),
+						AST.EXPR.Set  .fromSource('{1, 2.0, "three"}'),
+						AST.EXPR.Map  .fromSource(`
 							{
 								"a" || "" -> 1,
 								21 + 21   -> 2.0,

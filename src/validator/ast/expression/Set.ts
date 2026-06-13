@@ -26,10 +26,10 @@ import {
 
 
 
-class AstSet extends Collection {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstSet {
+class ExpressionSet extends Collection {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ExpressionSet {
 		const expression: Expression = Expression.fromSource(src, config);
-		assert_instanceof(expression, AstSet);
+		assert_instanceof(expression, ExpressionSet);
 		return expression;
 	}
 
@@ -73,4 +73,4 @@ class AstSet extends Collection {
 		throw new TypeErrorNotAssignable(this, assignee);
 	}
 }
-export {AstSet as Set};
+export {ExpressionSet as Set};

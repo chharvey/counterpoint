@@ -95,20 +95,20 @@ SemanticExpressionTemplatePartial
 	::= (SemanticExpressionConstant SemanticExpression?)+;
 
 SemanticExpressionCollection =:=
-	| SemanticTuple
-	| SemanticRecord
-	| SemanticList
-	| SemanticDict
-	| SemanticSet
-	| SemanticMap
+	| SemanticExpressionTuple
+	| SemanticExpressionRecord
+	| SemanticExpressionList
+	| SemanticExpressionDict
+	| SemanticExpressionSet
+	| SemanticExpressionMap
 ;
 
-SemanticTuple  ::= SemanticExpression*;
-SemanticRecord ::= SemanticProperty+;
-SemanticList   ::= SemanticExpression*;
-SemanticDict   ::= SemanticProperty+;
-SemanticSet    ::= SemanticExpression*;
-SemanticMap    ::= SemanticCase+;
+SemanticExpressionTuple  ::= SemanticExpression*;
+SemanticExpressionRecord ::= SemanticProperty+;
+SemanticExpressionList   ::= SemanticExpression*;
+SemanticExpressionDict   ::= SemanticProperty+;
+SemanticExpressionSet    ::= SemanticExpression*;
+SemanticExpressionMap    ::= SemanticCase+;
 
 SemanticExpressionBlock
 	::= SemanticBlock;

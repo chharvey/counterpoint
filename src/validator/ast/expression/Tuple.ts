@@ -28,10 +28,10 @@ import {
 
 
 
-class AstTuple extends Collection {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstTuple {
+class ExpressionTuple extends Collection {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ExpressionTuple {
 		const expression: Expression = Expression.fromSource(src, config);
-		assert_instanceof(expression, AstTuple);
+		assert_instanceof(expression, ExpressionTuple);
 		return expression;
 	}
 
@@ -85,4 +85,4 @@ class AstTuple extends Collection {
 		throw err;
 	}
 }
-export {AstTuple as Tuple};
+export {ExpressionTuple as Tuple};

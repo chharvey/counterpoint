@@ -31,10 +31,10 @@ import {
 
 
 
-class AstRecord extends Collection {
-	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): AstRecord {
+class ExpressionRecord extends Collection {
+	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): ExpressionRecord {
 		const expression: Expression = Expression.fromSource(src, config);
-		assert_instanceof(expression, AstRecord);
+		assert_instanceof(expression, ExpressionRecord);
 		return expression;
 	}
 
@@ -110,4 +110,4 @@ class AstRecord extends Collection {
 		throw err;
 	}
 }
-export {AstRecord as Record};
+export {ExpressionRecord as Record};

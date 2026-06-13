@@ -16,7 +16,7 @@ None! VarCheck(Or<
 
 
 
-None! VarCheck(Or<SemanticTypeRecord, SemanticRecord, SemanticDict> assoc) :=
+None! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressionDict> assoc) :=
 	1. *Note:* In keyed collection literals, all keys are var-checked before all values.
 	2. *For each* `prop` in `assoc.children`:
 		1. *Let* `key` be `prop.children.0`.
