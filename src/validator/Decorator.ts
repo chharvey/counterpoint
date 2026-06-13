@@ -123,7 +123,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_dict_literal',   ['break']>):        AST.EXPR.Dict;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_set_literal',    ['break']>):        AST.EXPR.Set;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break']>):        AST.EXPR.Map;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                              AST.ExpressionBlock;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                              AST.EXPR.ExpressionBlock;
 	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                               AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                           AST.EXPR.Access | AST.EXPR.Call;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                       AST.EXPR.Expression | AST.OperationUnary;
@@ -344,7 +344,7 @@ export class Decorator {
 				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'case'>)) as NonemptyArray<AST.Case>,
 			)],
 
-			['expression_block', (node) => new AST.ExpressionBlock(
+			['expression_block', (node) => new AST.EXPR.ExpressionBlock(
 				node as SyntaxNodeType<'expression_block'>,
 				this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break']>),
 			)],

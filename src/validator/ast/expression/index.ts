@@ -12,3 +12,4 @@ export * from './Map.ts';
 export * from './Access.ts';
 export * from './Call.ts';
 export * from './Claim.ts';
+export * from './ExpressionBlock.ts';

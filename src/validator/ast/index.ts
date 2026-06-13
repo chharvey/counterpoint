@@ -6,7 +6,6 @@ export * from './ItemType.ts';
 export * from './PropertyType.ts';
 export * from './Property.ts';
 export * from './Case.ts';
-export * from './expression/ExpressionBlock.ts';
 export * from './expression/Operation.ts';
 export * from './expression/OperationUnary.ts';
 export * from './expression/OperationBinary.ts';

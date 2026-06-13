@@ -799,7 +799,7 @@ test.suite('Expression', () => {
 					};
 					x;
 					y;
-				}`, {build: false}).stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock).fold(), null);
+				}`, {build: false}).stmts[2] as AST.DeclarationVariable).assigned as AST.EXPR.ExpressionBlock).fold(), null);
 			});
 			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
 				const {stmts} = setupScript(`{
@@ -815,7 +815,7 @@ test.suite('Expression', () => {
 					x;
 					y;
 				}`, {build: false});
-				const block_expression = (stmts[2] as AST.DeclarationVariable).assigned as AST.ExpressionBlock;
+				const block_expression = (stmts[2] as AST.DeclarationVariable).assigned as AST.EXPR.ExpressionBlock;
 				assert.strictEqual(
 					block_expression.fold(),
 					(block_expression.block.children.at(-1) as AST.StatementExpression).expr!.fold(),

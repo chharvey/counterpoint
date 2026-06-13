@@ -433,7 +433,7 @@ test.suite('Decorator', () => {
 				% (expression_map_literal)
 			`]],
 
-			['Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBlock', [AST.ExpressionBlock, `
+			['Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBlock', [AST.EXPR.ExpressionBlock, `
 				{
 					type T = U;
 					val a: T = b;
