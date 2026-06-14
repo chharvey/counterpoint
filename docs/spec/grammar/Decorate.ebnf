@@ -693,6 +693,13 @@ Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<
 
 
 
+Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementDelete
+	:= (SemanticStatementDelete
+		Decorate(Assignee<?Break>)
+	);
+
+
+
 Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional
 	:= (SemanticStatementConditional[unless=false]
 		Decorate(Expression<+Block><?Break>)
@@ -772,6 +779,8 @@ Decorate(Statement<Break> ::= StatementClaim<?Break>) -> SemanticStatementClaim
 	:= Decorate(StatementClaim<?Break>);
 Decorate(Statement<Break> ::= StatementReassignment<?Break>) -> SemanticStatementReassignment
 	:= Decorate(StatementReassignment<?Break>);
+Decorate(Statement<Break> ::= StatementDelete<?Break>) -> SemanticStatementDelete
+	:= Decorate(StatementDelete<?Break>);
 Decorate(Statement<Break> ::= StatementConditional<∓Unless><?Break>) -> SemanticStatementConditional
 	:= Decorate(StatementConditional<∓Unless><?Break>);
 Decorate(Statement<Break> ::= StatementLoop) -> SemanticStatementLoop

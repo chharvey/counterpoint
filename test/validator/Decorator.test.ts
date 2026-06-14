@@ -635,6 +635,12 @@ test.suite('Decorator', () => {
 				}
 				% (assignee)
 			`]],
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticExpressionVariable', [AST.EXPR.Variable, `
+				{
+					delete v;
+				}
+				% (assignee)
+			`]],
 			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					claim v.1: int;
@@ -644,6 +650,12 @@ test.suite('Decorator', () => {
 			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					set v.1 = 42;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
+				{
+					delete v.1;
 				}
 				% (assignee)
 			`]],
@@ -667,6 +679,13 @@ test.suite('Decorator', () => {
 					set a = b;
 				}
 				% (statement_reassignment)
+			`]],
+
+			['Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementDelete', [AST.STMT.StatementDelete, `
+				{
+					delete a;
+				}
+				% (statement_delete)
 			`]],
 
 			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.STMT.StatementConditional, `
@@ -751,6 +770,7 @@ test.suite('Decorator', () => {
 					val a: T = b;
 					claim a: U;
 					set a = b;
+					delete a;
 					a;
 					{
 						b;

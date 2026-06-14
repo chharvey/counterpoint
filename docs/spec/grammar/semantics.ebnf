@@ -142,6 +142,7 @@ SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticStatementClaim
 	| SemanticStatementReassignment
+	| SemanticStatementDelete
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration
@@ -171,6 +172,9 @@ SemanticStatementClaim
 
 SemanticStatementReassignment
 	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression;
+
+SemanticStatementDelete
+	::= SemanticExpressionVariable | SemanticExpressionAccess;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;

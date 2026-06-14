@@ -140,6 +140,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',   ['break']>):           AST.STMT.StatementExpression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_claim',        ['break']>):           AST.STMT.StatementClaim;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_reassignment', ['break']>):           AST.STMT.StatementReassignment;
+	public decorate(syntaxnode: SyntaxNodeFamily<'statement_delete',       ['break']>):           AST.STMT.StatementDelete;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_conditional',  ['unless', 'break']>): AST.STMT.StatementConditional;
 	public decorate(syntaxnode: SyntaxNodeType<'statement_loop'>):                                AST.STMT.StatementLoop;
 	public decorate(syntaxnode: SyntaxNodeType<'statement_iteration'>):                           AST.STMT.StatementIteration;
@@ -615,6 +616,11 @@ export class Decorator {
 				node as SyntaxNodeFamily<'statement_reassignment', ['break']>,
 				this.decorate(node.namedChild(0) as SyntaxNodeFamily<'assignee', ['break']>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
+			)],
+
+			[/^statement_delete(__break)?$/, (node) => new AST.STMT.StatementDelete(
+				node as SyntaxNodeFamily<'statement_delete', ['break']>,
+				this.decorate(node.namedChild(0) as SyntaxNodeFamily<'assignee', ['break']>),
 			)],
 
 			[/^statement_conditional(__break)?$/, (node) => {
