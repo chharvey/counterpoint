@@ -524,6 +524,54 @@ test.suite('Statement', () => {
 			});
 		});
 
+		test.suite('StatementDelete', () => {
+			test.suite('for property deletion.', () => {
+				test.test('throws for deletion on non-interface objects.', () => {
+					xjs.Array.forEachAggregated(extract_lines`
+						List.<int>((42,)).[0]
+						Dict.<int>((i= 42)).[@i]
+						Set.<int>((42,)).[43]
+						Map.<bool, int>(((true, 42),)).[true]
+					`, (src) => {
+						const {goal} = setupScript(`{ delete ${ src }; }`, {typeCheck: false});
+						assert.throws(() => goal.typeCheck(), /only applicable to interface types/);
+					});
+				});
+				test.test.skip('throws when assignee’s base type is not mutable.', () => {
+					const {stmts} = setupScript(`{
+						claim p: interface {
+							readonly x: int;
+							y: int;
+							z?: int;
+						};
+						delete p.x;
+						delete p.y;
+						delete p.z;
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
+					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
+					assert.throws(() => stmts[3].typeCheck(), MutabilityError01);
+				});
+				test.test.skip('throws when assignee’s property is read-only or non-optional.', () => {
+					const {stmts} = setupScript(`{
+						claim p: mut interface {
+							readonly x: int;
+							y: int | null;
+							z?: int;
+						};
+						delete p.x; % cannot delete a read-only property
+						delete p.y; % cannot delete a non-optional property (even if type is nullish)
+						delete p.z; % allowed
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
+					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
+					stmts[3].typeCheck();
+				});
+			});
+		});
+
 		test.suite('StatementConditional', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
 				val mut cond: int         = 42;

@@ -201,7 +201,7 @@ Solution(s): Pass in an expected number of arguments.
 A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.
 
 1.  2400                           — A general mutability error not covered by one of the following cases.
-1. [2401](#2401-mutabilityerror01) — An item or property of an immutable object was reassigned.
+1. [2401](#2401-mutabilityerror01) — An item or property of an immutable object was reassigned or deleted.
 
 #### 2401: MutabilityError01
 Cause: An immutable object was mutated.

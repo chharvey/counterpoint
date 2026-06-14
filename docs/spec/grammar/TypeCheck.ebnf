@@ -105,18 +105,38 @@ Type! TypeCheck(SemanticStatementClaim claim) :=
 
 
 
-None! TypeCheck(SemanticStatementReassignment assignment) :=
-	1. *Assert:* `assignment.children.count` is 2.
-	2. *Let* `assignee` be `assignment.children.0`.
-	3. *Let* `assigned` be `assignment.children.1`.
+None! TypeCheck(SemanticStatementReassignment stmt) :=
+	1. *Assert:* `stmt.children.count` is 2.
+	2. *Let* `assignee` be `stmt.children.0`.
+	3. *Let* `assigned` be `stmt.children.1`.
 	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
 	5. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
 	6. *If* `assignee` is a SemanticExpressionAccess:
-		2. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
-		3. *If* `base_type` is not mutable:
+		1. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
+		2. *If* `base_type` is not mutable:
 			1. *Throw:* a new MutabilityError01.
-	7. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(assignee)`.
-	8. *Return:* `TypeCheckAssign(assigned, assignee_type)`.
+		3. *Else:*
+			1. *Fall through.*
+	7. *Else:*
+		1. *Fall through.*
+	8. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(assignee)`.
+	9. *Return:* `TypeCheckAssign(assigned, assignee_type)`.
+;
+
+
+
+None! TypeCheck(SemanticStatementDelete stmt) :=
+	1. *Assert:* `stmt.children.count` is 1.
+	2. *Let* `assignee` be `stmt.children.0`.
+	3. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
+	4. *If* `assignee` is a SemanticExpressionAccess:
+		1. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
+		2. *If* `base_type` is not an interface type:
+			1. *Throw:* a new TypeError.
+		3. *Else If* `base_type` is not mutable:
+			1. *Throw:* a new MutabilityError01.
+		4. *Else:*
+			1. *Return.*
 ;
 
 

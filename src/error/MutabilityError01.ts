@@ -5,7 +5,7 @@ import {MutabilityError} from './MutabilityError.ts';
 
 
 /**
- * A MutabilityError01 is thrown when the an item or property of an immutable object is reassigned.
+ * A MutabilityError01 is thrown when the an item or property of an immutable object is reassigned or deleted.
  * @example
  * val x: (a: int) = (a= 42);
  * set x.a = 43;              % MutabilityError01: Mutation of an object of immutable type `(a: int)`.
@@ -16,7 +16,7 @@ export class MutabilityError01 extends MutabilityError {
 	 * @param typ  the type that is being mutated
 	 * @param node the reassignment node where it happens
 	 */
-	public constructor(typ: TYPE.Type, node: AST.STMT.StatementReassignment) {
+	public constructor(typ: TYPE.Type, node: AST.STMT.StatementReassignment | AST.STMT.StatementDelete) {
 		super(
 			`Mutation of an object of immutable type \`${ typ }\`.`,
 			MutabilityError.CODES.get(MutabilityError01),
