@@ -1,6 +1,6 @@
 import {
 	type Builder,
-	AssignmentErrorReassignment,
+	AssignmentErrorDeletion,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
@@ -43,7 +43,7 @@ export class StatementDelete extends Statement {
 		if (this.assignee instanceof EXPR.Variable) {
 			const schema = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
 			if (!schema.isUninitialized || !schema.isWritable) {
-				throw new AssignmentErrorReassignment(this.assignee);
+				throw new AssignmentErrorDeletion(this.assignee);
 			}
 		}
 	}

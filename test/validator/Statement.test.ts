@@ -11,6 +11,7 @@ import {
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
+	AssignmentErrorDeletion,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
@@ -73,13 +74,11 @@ test.suite('Statement', () => {
 				assert.throws(() => setupScript(`{
 					val mut i: int = 42;
 					delete i;
-				}`, {typeCheck: false}), AssignmentErrorReassignment);
-			});
-			test.test('throws if the variable is read-only.', () => {
+				}`, {typeCheck: false}), AssignmentErrorDeletion);
 				assert.throws(() => setupScript(`{
 					val i: int = 42;
 					delete i;
-				}`, {typeCheck: false}), AssignmentErrorReassignment);
+				}`, {typeCheck: false}), AssignmentErrorDeletion);
 			});
 			test.test('always throws for type alias deletion.', () => {
 				assert.throws(() => setupScript(`{
@@ -92,7 +91,7 @@ test.suite('Statement', () => {
 					for it: int in [11, 22, 33] do {
 						delete it;
 					};
-				}`, {typeCheck: false}), AssignmentErrorReassignment);
+				}`, {typeCheck: false}), AssignmentErrorDeletion);
 			});
 		});
 
