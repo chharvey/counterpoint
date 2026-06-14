@@ -464,7 +464,7 @@ module.exports = grammar({
 		))), 'block', 'break'),
 
 		...parameterize('expression_unary_symbol',  ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_unary_keyword', ({block, break: brk}) => $ => prec( 9, seq('isset',                    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_keyword', ({block, break: brk}) => $ => prec( 9, seq(choice('isset', '!isset'),  call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
 		...parameterize('expression_cast', ({block, break: brk}) => $ => choice(
 			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
@@ -515,8 +515,9 @@ module.exports = grammar({
 
 		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
 
-		...parameterize('statement_claim',        ({break: brk}) => $ => seq('claim', call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
-		...parameterize('statement_reassignment', ({break: brk}) => $ => seq('set',   call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
+		...parameterize('statement_claim',        ({break: brk}) => $ => seq('claim',  call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
+		...parameterize('statement_reassignment', ({break: brk}) => $ => seq('set',    call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
+		...parameterize('statement_delete',       ({break: brk}) => $ => seq('delete', call($, 'assignee', {break: brk}),                                                     ';'), 'break'),
 
 		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
 			!unless ? 'if' : 'unless',
@@ -545,6 +546,7 @@ module.exports = grammar({
 			call($, 'statement_expression',                     {break: brk}),
 			call($, 'statement_claim',                          {break: brk}),
 			call($, 'statement_reassignment',                   {break: brk}),
+			call($, 'statement_delete',                         {break: brk}),
 			call($, 'statement_conditional',    ['', 'unless'], {break: brk}),
 			$.statement_loop,
 			$.statement_iteration,

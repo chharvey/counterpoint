@@ -1038,9 +1038,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			xjs.String.dedent`
 				{
 					isset value;
+					!isset value;
 				}
 			`,
-			sourceExpressions(s('expression_unary_keyword', s('identifier'))),
+			sourceExpressions(
+				s('expression_unary_keyword', s('identifier')),
+				s('expression_unary_keyword', s('identifier')),
+			),
 		],
 
 		ExpressionCast: [
@@ -1328,7 +1332,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		/* ## Statements */
 		// Assignee
-		// tested in #Statement{Claim,Reassignment}
+		// tested in #Statement{Claim,Reassignment,Delete}
 
 		StatementExpression: [
 			xjs.String.dedent`
@@ -1515,6 +1519,86 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		StatementDelete: [
+			xjs.String.dedent`
+				{
+					delete my_var;
+					delete tuple.1;
+					delete record.prop;
+					delete record._;
+					delete list.[index];
+					delete record.type;
+					delete record.bool;
+					delete record.true;
+				}
+			`,
+			sourceStatements(
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('identifier_0', 'identifier'),
+					),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('integer')),
+					),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+					),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word')),
+					),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('identifier')),
+					),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word')),
+					),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('keyword_type'))),
+					),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('keyword_value'))),
+					),
+				),
+			),
+		],
+
 		StatementConditional: [
 			xjs.String.dedent`
 				{
@@ -1623,7 +1707,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// Statement
-		// consists of #{Declaration,Statement{Expression,Claim,Reassignment,Conditional,Loop,Iteration,Break}}
+		// consists of #{Declaration,Statement{Expression,Claim,Reassignment,Delete,Conditional,Loop,Iteration,Break}}
 
 		Block: [
 			xjs.String.dedent`
@@ -1632,6 +1716,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					val a: T = b;
 					claim a: U;
 					set a = b;
+					delete a;
 					a;
 					{
 						b;
@@ -1668,6 +1753,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						f('identifier_0', 'identifier'),
 					),
 					s('identifier'),
+				),
+				s(
+					'statement_delete',
+					s(
+						'assignee',
+						f('identifier_0', 'identifier'),
+					),
 				),
 				s(
 					'statement_expression',
