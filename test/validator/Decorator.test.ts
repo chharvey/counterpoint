@@ -768,10 +768,10 @@ test.suite('Decorator', () => {
 				{
 					type T = U;
 					val a: T = b;
+					a;
 					claim a: U;
 					set a = b;
 					delete a;
-					a;
 					{
 						b;
 					};

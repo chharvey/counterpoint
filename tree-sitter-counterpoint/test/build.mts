@@ -1714,10 +1714,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					type T = U;
 					val a: T = b;
+					a;
 					claim a: U;
 					set a = b;
 					delete a;
-					a;
 					{
 						b;
 					};
@@ -1737,6 +1737,10 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					f('identifier_0', 'identifier'),
 					f('type_0',       'identifier'),
 					f('expression_0', 'identifier'),
+				),
+				s(
+					'statement_expression',
+					s('identifier'),
 				),
 				s(
 					'statement_claim',
@@ -1760,10 +1764,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						'assignee',
 						f('identifier_0', 'identifier'),
 					),
-				),
-				s(
-					'statement_expression',
-					s('identifier'),
 				),
 				s(
 					'statement_expression',
