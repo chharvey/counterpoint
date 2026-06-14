@@ -91,67 +91,67 @@ export class Decorator {
 	}
 
 	/* eslint-disable @typescript-eslint/unified-signatures */
-	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                    AST.TYPE.TypeAlias | AST.EXPR.Variable;
-	public decorate(syntaxnode: SyntaxNodeType<'keyword_type'>):                                  AST.TYPE.Constant;
-	public decorate(syntaxnode: SyntaxNodeType<'word'>):                                          AST.Key;
-	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                             AST.TYPE.Constant | AST.EXPR.Constant;
-	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type',        ['optional']>):             AST.ItemType;
-	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type__named', ['optional']>):             AST.PropertyType;
-	public decorate(syntaxnode: SyntaxNodeType<'property_accessor_type'>):                        AST.Index | AST.Key;
-	public decorate(syntaxnode: SyntaxNodeType<'type_grouped'>):                                  AST.TYPE.Type;
-	public decorate(syntaxnode: SyntaxNodeType<'type_tuple_literal'>):                            AST.TYPE.Tuple;
-	public decorate(syntaxnode: SyntaxNodeType<'type_record_literal'>):                           AST.TYPE.Record;
-	public decorate(syntaxnode: SyntaxNodeType<'type_list_literal'>):                             AST.TYPE.List;
-	public decorate(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                             AST.TYPE.Dict;
-	public decorate(syntaxnode: SyntaxNodeType<'type_set_literal'>):                              AST.TYPE.Set;
-	public decorate(syntaxnode: SyntaxNodeType<'type_map_literal'>):                              AST.TYPE.Map;
-	public decorate(syntaxnode: SyntaxNodeType<'type_compound'>):                                 AST.TYPE.Access | AST.TYPE.Call;
-	public decorate(syntaxnode: SyntaxNodeType<'type_unary_symbol'>):                             AST.TYPE.OperationUnary | AST.TYPE.List | AST.TYPE.Set;
-	public decorate(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                            AST.TYPE.OperationUnary;
-	public decorate(syntaxnode: SyntaxNodeType<'type_intersection'>):                             AST.TYPE.OperationBinary;
-	public decorate(syntaxnode: SyntaxNodeType<'type_union'>):                                    AST.TYPE.OperationBinary;
-	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                     AST.TYPE.Type;
-	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):        AST.EXPR.Template;
-	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):        AST.Property;
-	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):        AST.Case;
-	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):        AST.Index | AST.Key | AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break']>):        AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_tuple_literal',  ['break']>):        AST.EXPR.Tuple;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_record_literal', ['break']>):        AST.EXPR.Record;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_list_literal',   ['break']>):        AST.EXPR.List;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_dict_literal',   ['break']>):        AST.EXPR.Dict;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_set_literal',    ['break']>):        AST.EXPR.Set;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break']>):        AST.EXPR.Map;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                              AST.EXPR.ExpressionBlock;
-	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                               AST.Index | AST.Key | AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                           AST.EXPR.Access | AST.EXPR.Call;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                       AST.EXPR.Expression | AST.EXPR.OperationUnary;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                               AST.EXPR.OperationBinaryCast | AST.EXPR.Claim;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                        AST.EXPR.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                     AST.EXPR.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_additive'>):                           AST.EXPR.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                        AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryComparative;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_equality'>):                           AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryEquality;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                        AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                        AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):           AST.EXPR.OperationTernary;
-	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                               AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',               ['break']>):           AST.EXPR.Variable | AST.EXPR.Access;
-	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',   ['break']>):           AST.STMT.StatementExpression;
-	public decorate(syntaxnode: SyntaxNodeFamily<'statement_claim',        ['break']>):           AST.STMT.StatementClaim;
-	public decorate(syntaxnode: SyntaxNodeFamily<'statement_reassignment', ['break']>):           AST.STMT.StatementReassignment;
-	public decorate(syntaxnode: SyntaxNodeFamily<'statement_delete',       ['break']>):           AST.STMT.StatementReassignment;
-	public decorate(syntaxnode: SyntaxNodeFamily<'statement_conditional',  ['unless', 'break']>): AST.STMT.StatementConditional;
-	public decorate(syntaxnode: SyntaxNodeType<'statement_loop'>):                                AST.STMT.StatementLoop;
-	public decorate(syntaxnode: SyntaxNodeType<'statement_iteration'>):                           AST.STMT.StatementIteration;
-	public decorate(syntaxnode: SyntaxNodeType<'statement_break'>):                               AST.STMT.StatementBreak;
-	public decorate(syntaxnode: SyntaxNodeSupertype<'statement'>):                                AST.STMT.Statement;
-	public decorate(syntaxnode: SyntaxNodeFamily<'block', ['break']>):                            AST.Block;
-	public decorate(syntaxnode: SyntaxNodeType<'declaration_type'>):                              AST.STMT.DeclarationType;
-	public decorate(syntaxnode: SyntaxNodeFamily<'declaration_variable', ['break']>):             AST.STMT.DeclarationVariable;
-	public decorate(syntaxnode: SyntaxNodeSupertype<'declaration'>):                              AST.STMT.Declaration;
-	public decorate(syntaxnode: SyntaxNodeType<'source_file'>):                                   AST.Goal;
-	public decorate(syntaxnode: SyntaxNode):                                                      AST.AstNode;
+	public decorate(syntaxnode: SyntaxNodeType<'identifier'>):                                   AST.TYPE.TypeAlias | AST.EXPR.Variable;
+	public decorate(syntaxnode: SyntaxNodeType<'keyword_type'>):                                 AST.TYPE.Constant;
+	public decorate(syntaxnode: SyntaxNodeType<'word'>):                                         AST.Key;
+	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                            AST.TYPE.Constant | AST.EXPR.Constant;
+	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type',        ['optional']>):            AST.ItemType;
+	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type__named', ['optional']>):            AST.PropertyType;
+	public decorate(syntaxnode: SyntaxNodeType<'property_accessor_type'>):                       AST.Index | AST.Key;
+	public decorate(syntaxnode: SyntaxNodeType<'type_grouped'>):                                 AST.TYPE.Type;
+	public decorate(syntaxnode: SyntaxNodeType<'type_tuple_literal'>):                           AST.TYPE.Tuple;
+	public decorate(syntaxnode: SyntaxNodeType<'type_record_literal'>):                          AST.TYPE.Record;
+	public decorate(syntaxnode: SyntaxNodeType<'type_list_literal'>):                            AST.TYPE.List;
+	public decorate(syntaxnode: SyntaxNodeType<'type_dict_literal'>):                            AST.TYPE.Dict;
+	public decorate(syntaxnode: SyntaxNodeType<'type_set_literal'>):                             AST.TYPE.Set;
+	public decorate(syntaxnode: SyntaxNodeType<'type_map_literal'>):                             AST.TYPE.Map;
+	public decorate(syntaxnode: SyntaxNodeType<'type_compound'>):                                AST.TYPE.Access | AST.TYPE.Call;
+	public decorate(syntaxnode: SyntaxNodeType<'type_unary_symbol'>):                            AST.TYPE.OperationUnary | AST.TYPE.List | AST.TYPE.Set;
+	public decorate(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                           AST.TYPE.OperationUnary;
+	public decorate(syntaxnode: SyntaxNodeType<'type_intersection'>):                            AST.TYPE.OperationBinary;
+	public decorate(syntaxnode: SyntaxNodeType<'type_union'>):                                   AST.TYPE.OperationBinary;
+	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                    AST.TYPE.Type;
+	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):       AST.EXPR.Template;
+	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):       AST.Property;
+	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):       AST.Case;
+	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):       AST.Index | AST.Key | AST.EXPR.Expression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break']>):       AST.EXPR.Expression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_tuple_literal',  ['break']>):       AST.EXPR.Tuple;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_record_literal', ['break']>):       AST.EXPR.Record;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_list_literal',   ['break']>):       AST.EXPR.List;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_dict_literal',   ['break']>):       AST.EXPR.Dict;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_set_literal',    ['break']>):       AST.EXPR.Set;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break']>):       AST.EXPR.Map;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                             AST.EXPR.ExpressionBlock;
+	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                              AST.Index | AST.Key | AST.EXPR.Expression;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                          AST.EXPR.Access | AST.EXPR.Call;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                      AST.EXPR.Expression | AST.EXPR.OperationUnary;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                              AST.EXPR.OperationBinaryCast | AST.EXPR.Claim;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                       AST.EXPR.OperationBinaryArithmetic;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                    AST.EXPR.OperationBinaryArithmetic;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_additive'>):                          AST.EXPR.OperationBinaryArithmetic;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryComparative;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_equality'>):                          AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryEquality;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):          AST.EXPR.OperationTernary;
+	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                              AST.EXPR.Expression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',              ['break']>):           AST.EXPR.Variable | AST.EXPR.Access;
+	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',  ['break']>):           AST.STMT.StatementExpression;
+	public decorate(syntaxnode: SyntaxNodeFamily<'statement_claim',       ['break']>):           AST.STMT.StatementClaim;
+	public decorate(syntaxnode: SyntaxNodeFamily<'statement_set',         ['break']>):           AST.STMT.StatementReassignment;
+	public decorate(syntaxnode: SyntaxNodeFamily<'statement_delete',      ['break']>):           AST.STMT.StatementReassignment;
+	public decorate(syntaxnode: SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>): AST.STMT.StatementConditional;
+	public decorate(syntaxnode: SyntaxNodeType<'statement_loop'>):                               AST.STMT.StatementLoop;
+	public decorate(syntaxnode: SyntaxNodeType<'statement_iteration'>):                          AST.STMT.StatementIteration;
+	public decorate(syntaxnode: SyntaxNodeType<'statement_break'>):                              AST.STMT.StatementBreak;
+	public decorate(syntaxnode: SyntaxNodeSupertype<'statement'>):                               AST.STMT.Statement;
+	public decorate(syntaxnode: SyntaxNodeFamily<'block', ['break']>):                           AST.Block;
+	public decorate(syntaxnode: SyntaxNodeType<'declaration_type'>):                             AST.STMT.DeclarationType;
+	public decorate(syntaxnode: SyntaxNodeFamily<'declaration_variable', ['break']>):            AST.STMT.DeclarationVariable;
+	public decorate(syntaxnode: SyntaxNodeSupertype<'declaration'>):                             AST.STMT.Declaration;
+	public decorate(syntaxnode: SyntaxNodeType<'source_file'>):                                  AST.Goal;
+	public decorate(syntaxnode: SyntaxNode):                                                     AST.AstNode;
 	/* eslint-enable @typescript-eslint/unified-signatures */
 	public decorate(syntaxnode: SyntaxNode): AST.AstNode {
 		const decorators = new Map<string | RegExp, (node: SyntaxNode) => AST.AstNode>([
@@ -608,8 +608,8 @@ export class Decorator {
 				this.decorateTypeNode(node.namedChild(1) as SyntaxNodeSupertype<'type'>),
 			)],
 
-			[/^statement_reassignment(__break)?$/, (node) => new AST.STMT.StatementReassignment(
-				node as SyntaxNodeFamily<'statement_reassignment', ['break']>,
+			[/^statement_set(__break)?$/, (node) => new AST.STMT.StatementReassignment(
+				node as SyntaxNodeFamily<'statement_set', ['break']>,
 				this.decorate(node.namedChild(0) as SyntaxNodeFamily<'assignee', ['break']>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],

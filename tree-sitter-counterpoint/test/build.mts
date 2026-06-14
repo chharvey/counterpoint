@@ -1332,7 +1332,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		/* ## Statements */
 		// Assignee
-		// tested in #Statement{Claim,Reassignment,Delete}
+		// tested in #Statement{Claim,Set,Delete}
 
 		StatementExpression: [
 			xjs.String.dedent`
@@ -1431,7 +1431,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
-		StatementReassignment: [
+		StatementSet: [
 			xjs.String.dedent`
 				{
 					set my_var       = a;
@@ -1446,7 +1446,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			`,
 			sourceStatements(
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('identifier_0', 'identifier'),
@@ -1454,7 +1454,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
@@ -1463,7 +1463,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
@@ -1472,7 +1472,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
@@ -1481,7 +1481,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
@@ -1490,7 +1490,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
@@ -1499,7 +1499,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
@@ -1508,7 +1508,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('expression_0', 'identifier'),
@@ -1707,7 +1707,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// Statement
-		// consists of #{Declaration,Statement{Expression,Claim,Reassignment,Delete,Conditional,Loop,Iteration,Break}}
+		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break}}
 
 		Block: [
 			xjs.String.dedent`
@@ -1751,7 +1751,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					s('identifier'),
 				),
 				s(
-					'statement_reassignment',
+					'statement_set',
 					s(
 						'assignee',
 						f('identifier_0', 'identifier'),

@@ -674,11 +674,11 @@ test.suite('Decorator', () => {
 				% (statement_claim)
 			`]],
 
-			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
+			['Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
 				{
 					set a = b;
 				}
-				% (statement_reassignment)
+				% (statement_set)
 			`]],
 
 			['Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
