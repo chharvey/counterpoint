@@ -51,10 +51,12 @@ export class Decorator {
 	]);
 
 	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
-		[Punctuator.NOT, Operator.NOT],
-		[Punctuator.EMP, Operator.EMP],
-		[Punctuator.AFF, Operator.AFF],
-		[Punctuator.NEG, Operator.NEG],
+		[Punctuator.NOT,  Operator.NOT],
+		[Punctuator.EMP,  Operator.EMP],
+		[Punctuator.AFF,  Operator.AFF],
+		[Punctuator.NEG,  Operator.NEG],
+		[Keyword.ISSET,   Operator.ISSET],
+		[Keyword.ISNTSET, Operator.ISNTSET],
 	]);
 
 	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
@@ -371,7 +373,23 @@ export class Decorator {
 				)
 			)],
 
-			['expression_unary_keyword', (node) => new AST.EXPR.OperationUnary(
+			['expression_unary_keyword', (node) => ((
+				n:        SyntaxNodeType<'expression_unary_keyword'>,
+				operator: ValidOperatorUnary,
+				operand:  AST.EXPR.Expression,
+			) => (
+				// `!isset a` is syntax sugar for `!(isset a)`
+				operator === Operator.ISNTSET ? new AST.EXPR.OperationUnary(
+					n,
+					Operator.NOT,
+					new AST.EXPR.OperationUnary(
+						n.children[1] as SyntaxNodeSupertype<'expression'>,
+						Operator.ISSET,
+						operand,
+					),
+				) :
+				new AST.EXPR.OperationUnary(n, operator, operand)
+			))(
 				node as SyntaxNodeType<'expression_unary_keyword'>,
 				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword) as ValidOperatorUnary,
 				this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),

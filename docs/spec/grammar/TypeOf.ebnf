@@ -321,6 +321,10 @@ Type! TypeOf(SemanticExpressionOperation[operator: NEG] expr) :=
 		1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 
+Type! TypeOf(SemanticExpressionOperation[operator: ISSET | ISNTSET] expr) :=
+	// TODO:
+;
+
 Type! TypeOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
 	1. *Assert:* `expr.children.count` is 2.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.

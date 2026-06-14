@@ -504,6 +504,19 @@ test.suite('Decorator', () => {
 				% (expression_unary_symbol)
 			`]],
 
+			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "isset" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+				{
+					isset v;
+				}
+				% (expression_unary_keyword)
+			`]],
+			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "!isset" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+				{
+					!isset v;
+				}
+				% (expression_unary_keyword)
+			`]],
+
 			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
 				{
 					a as Klass;

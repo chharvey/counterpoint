@@ -211,9 +211,11 @@ Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticEx
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
 
-Build(SemanticExpressionOperation[operator=NOT] ::= SemanticExpression)               := (NOT [`SemanticExpression`]);
-Build(SemanticExpressionOperation[operator=EMP] ::= SemanticExpression)               := (EMP [`SemanticExpression`]);
-Build(SemanticExpressionOperation[operator=NEG] ::= SemanticExpression[type: Number]) := (NEG [`SemanticExpression`]);
+Build(SemanticExpressionOperation[operator=NOT]     ::= SemanticExpression)               := (NOT [`SemanticExpression`]);
+Build(SemanticExpressionOperation[operator=EMP]     ::= SemanticExpression)               := (EMP [`SemanticExpression`]);
+Build(SemanticExpressionOperation[operator=NEG]     ::= SemanticExpression[type: Number]) := (NEG [`SemanticExpression`]);
+Build(SemanticExpressionOperation[operator=ISSET]   ::= TODO:;
+Build(SemanticExpressionOperation[operator=ISNTSET] ::= TODO:;
 
 Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`op.0` `op.1`]);
 Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`op.0` `op.1`]);
