@@ -1042,8 +1042,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(
-				s('expression_unary_keyword', s('identifier')),
-				s('expression_unary_keyword', s('identifier')),
+				s('expression_unary_keyword', s('assignee', s('identifier'))),
+				s('expression_unary_keyword', s('assignee', s('identifier'))),
 			),
 		],
 

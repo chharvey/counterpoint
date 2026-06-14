@@ -179,8 +179,15 @@ ExpressionCompound<Block, Break> ::=
 	)
 ;
 
-ExpressionUnarySymbol  <Block, Break> ::= ExpressionCompound    <?Block><?Break> | ("!" | "?" | "+" | "-") ExpressionUnarySymbol  <?Block><?Break>;
-ExpressionUnaryKeyword <Block, Break> ::= ExpressionUnarySymbol <?Block><?Break> | ("isset" | "!isset")    ExpressionUnaryKeyword <?Block><?Break>;
+ExpressionUnarySymbol<Block, Break> ::=
+	| ExpressionCompound<?Block><?Break>
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Block><?Break>
+;
+
+ExpressionUnaryKeyword<Block, Break> ::=
+	| ExpressionUnarySymbol<?Block><?Break>
+	| ("isset" | "!isset") Assignee<?Break>
+;
 
 ExpressionCast<Block, Break> ::=
 	| (ExpressionCast<?Block><?Break> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block><?Break>
