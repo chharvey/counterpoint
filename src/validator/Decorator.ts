@@ -376,23 +376,19 @@ export class Decorator {
 
 			['expression_unary_keyword', (node) => ((
 				n:        SyntaxNodeType<'expression_unary_keyword'>,
-				operator: ValidOperatorUnary,
+				operator: Operator,
 				operand:  AST.EXPR.Variable | AST.EXPR.Access,
 			) => (
 				// `!isset a` is syntax sugar for `!(isset a)`
 				operator === Operator.ISNTSET ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationUnary(
-						n,
-						Operator.ISSET,
-						operand,
-					),
+					new AST.EXPR.Isset(n, operand),
 				) :
-				new AST.EXPR.OperationUnary(n, operator, operand)
+				new AST.EXPR.Isset(n, operand)
 			))(
 				node as SyntaxNodeType<'expression_unary_keyword'>,
-				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword) as ValidOperatorUnary,
+				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword)!,
 				this.decorate(node.firstNamedChild as SyntaxNodeFamily<'assignee', ['break']>),
 			)],
 

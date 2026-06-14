@@ -61,8 +61,6 @@ export type ValidOperatorUnary = (
 	| Operator.NOT
 	| Operator.EMP
 	| Operator.NEG
-	| Operator.ISSET
-	| Operator.ISNTSET
 );
 
 export type ValidOperatorCast = (

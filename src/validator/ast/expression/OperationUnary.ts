@@ -59,17 +59,11 @@ export class OperationUnary extends Operation {
 			case Operator.NEG: {
 				return t.isSubtypeOf(TYPE.INT.union(TYPE.FLOAT)) ? t : assert.fail(new TypeErrorInvalidOperation(this));
 			}
-			default: {
-				throw new Error('not yet supported');
-			}
 		}
 	}
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Unop {
-		if ([Operator.ISSET, Operator.ISNTSET].includes(this.operator)) {
-			throw new Error('not yet supported');
-		}
 		return new OP.Unop(new Map<Operator, OP.OpCodeUn>([
 			[Operator.NOT, OP.OpCode.NOT],
 			[Operator.EMP, OP.OpCode.EMP],
