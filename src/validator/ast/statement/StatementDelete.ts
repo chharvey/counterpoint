@@ -1,4 +1,7 @@
-import type {Builder} from '../../../index.ts';
+import {
+	type Builder,
+	AssignmentErrorReassignment,
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	memoizeGetter,
@@ -8,8 +11,9 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
+import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
-import type * as EXPR from '../expression/index.ts';
+import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -35,7 +39,13 @@ export class StatementDelete extends Statement {
 	}
 
 	public override varCheck(): void {
-		throw new Error('Unsupported.');
+		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
+		if (this.assignee instanceof EXPR.Variable) {
+			const schema = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			if (!schema.isUninitialized || !schema.isWritable) {
+				throw new AssignmentErrorReassignment(this.assignee);
+			}
+		}
 	}
 
 	public override typeCheck(): void {

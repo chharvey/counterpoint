@@ -27,11 +27,17 @@ import {
 test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('StatementReassignment', () => {
-			test.test('throws if the variable is read-only.', () => {
-				setupScript(`{
+			test.test('does not throw if the variable is writable.', () => {
+				const {goal} = setupScript(`{
 					val mut i: int = 42;
 					set i = 43;
 				}`, {typeCheck: false}); // assert does not throw
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
+					isWritable:      true,
+					isUninitialized: false,
+				});
+			});
+			test.test('throws if the variable is read-only.', () => {
 				assert.throws(() => setupScript(`{
 					val i: int = 42;
 					set i = 43;
@@ -47,6 +53,44 @@ test.suite('Statement', () => {
 				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						set it = 44;
+					};
+				}`, {typeCheck: false}), AssignmentErrorReassignment);
+			});
+		});
+
+		test.suite('StatementDelete', () => {
+			test.test('does not throw if the variable was uninitialized.', () => {
+				const {goal} = setupScript(`{
+					val mut i?: int;
+					delete i;
+				}`, {typeCheck: false}); // assert does not throw
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
+					isWritable:      true,
+					isUninitialized: true,
+				});
+			});
+			test.test('throws if the variable was initialized.', () => {
+				assert.throws(() => setupScript(`{
+					val mut i: int = 42;
+					delete i;
+				}`, {typeCheck: false}), AssignmentErrorReassignment);
+			});
+			test.test('throws if the variable is read-only.', () => {
+				assert.throws(() => setupScript(`{
+					val i: int = 42;
+					delete i;
+				}`, {typeCheck: false}), AssignmentErrorReassignment);
+			});
+			test.test('always throws for type alias deletion.', () => {
+				assert.throws(() => setupScript(`{
+					type T = 42;
+					delete T;
+				}`, {typeCheck: false}), ReferenceErrorKind);
+			});
+			test.test('disallows deletion of the iteration variable.', () => {
+				assert.throws(() => setupScript(`{
+					for it: int in [11, 22, 33] do {
+						delete it;
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});

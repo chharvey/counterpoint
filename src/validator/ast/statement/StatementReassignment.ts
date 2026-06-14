@@ -45,7 +45,7 @@ export class StatementReassignment extends Statement {
 	}
 
 	public override varCheck(): void {
-		super.varCheck(); // runtime asserts the var is in the symbol table
+		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
 		if (this.assignee instanceof EXPR.Variable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
 			throw new AssignmentErrorReassignment(this.assignee);
 		}
