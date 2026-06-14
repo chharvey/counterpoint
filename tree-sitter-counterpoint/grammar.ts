@@ -318,6 +318,7 @@ module.exports = grammar({
 		word: $ => choice(
 			// operator
 			'mut',
+			'isset',
 			'as',
 			'is',
 			'if',
@@ -328,6 +329,7 @@ module.exports = grammar({
 			'val',
 			'claim',
 			'set',
+			'delete',
 			'_',
 			'void',
 			// modifier
@@ -601,6 +603,7 @@ module.exports = grammar({
 		global: _$ => [
 			// operator
 			'mut',
+			'isset',
 			'as',
 			'is',
 			'if',
@@ -611,6 +614,7 @@ module.exports = grammar({
 			'val',
 			'claim',
 			'set',
+			'delete',
 			'_',
 			'void',
 			// modifier

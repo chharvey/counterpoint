@@ -32,6 +32,7 @@ KeywordValue ::=
 Word ::=
 	// operator
 		| "mut"
+		| "isset"
 		| "as"
 		| "is"
 		| "if"
@@ -42,6 +43,7 @@ Word ::=
 		| "val"
 		| "claim"
 		| "set"
+		| "delete"
 		| "_"
 		| "void"
 	// modifier
