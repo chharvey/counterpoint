@@ -38,7 +38,7 @@ export class StatementDelete extends Statement {
 
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
-		throw new Error('Unsupported.');
+		return this.assignee.type().isBottomType;
 	}
 
 	public override varCheck(): void {

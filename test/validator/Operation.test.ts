@@ -38,6 +38,44 @@ test.suite('Operation', () => {
 
 
 	test.suite('#type', () => {
+		test.suite('Isset', () => {
+			test.test('always returns `bool`.', () => {
+				assert_shallowStrictEqual(
+					setupScript(`{
+						val mut a0?: int;
+						val mut a1?: int;
+						val mut a2?: int;
+
+						val mut b: int = 42;
+						val mut c0: int | null = 42;
+						val mut c1: int | null = 42;
+						val mut d: int | null = null;
+						val e: int = 42;
+						val f: int | null = 42;
+						val g: int | null = null;
+
+						set a1 = 42;
+						set a2 = 42;
+						delete a2;
+						set c1 = null;
+
+						isset a0;
+						isset a1;
+						isset a2;
+						isset b;
+						isset c0;
+						isset c1;
+						isset d;
+						isset e;
+						isset f;
+						isset g;
+					}`, {build: false}).stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					repeat(TYPE.BOOL, 10),
+				);
+			});
+		});
+
+
 		test.suite('OperationUnary', () => {
 			test.suite('[operator=EMP]', () => {
 				test.test('without constant folding: returns type `bool` for anything else.', () => {

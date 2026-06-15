@@ -10,7 +10,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {Operator} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
@@ -36,7 +36,11 @@ export class Isset extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		throw new Error('not yet supported');
+		const t: TYPE.Type = this.assignee.type();
+		if (t.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		return TYPE.BOOL;
 	}
 
 	@memoizeMethod
