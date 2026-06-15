@@ -107,9 +107,6 @@ export class DeclarationVariable extends Statement {
 	}
 
 	public override varCheck(): void {
-		if (!this.writable) {
-			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
-		}
 		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
 		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
 		if (this.assignee) {

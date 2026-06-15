@@ -686,12 +686,27 @@ export class Decorator {
 			}],
 
 			[/^declaration_variable(__break)?$/, (node) => {
+				const is_writable: boolean = node.children[1].text === Keyword.MUTABLE;
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>      | null;
 				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
+
+				if (is_writable) {
+					assert.ok(identifier_0);
+				} else {
+					assert.ok(expression_0);
+				}
+				if (!identifier_0) {
+					assert.ok(!is_writable);
+					assert.ok(expression_0);
+				}
+				if (!expression_0) {
+					assert.ok(is_writable);
+					assert.ok(identifier_0);
+				}
 				return new AST.STMT.DeclarationVariable(
 					node as SyntaxNodeFamily<'declaration_variable', ['break']>,
-					node.children[1].text === Keyword.MUTABLE,
+					is_writable,
 					identifier_0 && new AST.EXPR.Variable(identifier_0),
 					type_0       && this.decorateTypeNode(type_0),
 					expression_0 && this.decorateExprNode(expression_0),

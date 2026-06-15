@@ -164,7 +164,11 @@ SemanticDeclarationType
 	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[writable: Boolean]
-	::= SemanticExpressionVariable? SemanticType? SemanticExpression?;
+	::= SemanticExpressionVariable SemanticType? SemanticExpression;
+SemanticDeclarationVariable[writable=false]
+	::= SemanticType? SemanticExpression;
+SemanticDeclarationVariable[writable=true]
+	::= SemanticExpressionVariable SemanticType;
 
 
 

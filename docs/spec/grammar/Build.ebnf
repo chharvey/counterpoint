@@ -291,14 +291,14 @@ Build(SemanticExpressionOperation[operator=COND] op) := [
 
 Build(SemanticDeclarationType decl) := [];
 
-Build(SemanticDeclarationVariable:has(SemanticExpressionVariable):has(SemanticExpression) decl) := [
-	(DECL ‹type› `GetSymbolSchema(decl.0)` `Build(decl.2)`)
+Build(SemanticDeclarationVariable[writable: Boolean] ::= SemanticExpressionVariable SemanticType? SemanticExpression) := [
+	(DECL ‹type› `GetSymbolSchema(SemanticExpressionVariable)` `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable:has(SemanticExpressionVariable) decl) := [
-	(DECL <null> `GetSymbolSchema(decl.0)` (NULL.CONST null))
+Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpression) := [
+	(DROP `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable decl):has(SemanticExpressionVariable) := [
-	(DROP `Build(decl.1)`)
+Build(SemanticDeclarationVariable[writable=true] ::= SemanticExpressionVariable SemanticType) := [
+	(DECL <null> `GetSymbolSchema(SemanticExpressionVariable)` (NULL.CONST null))
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
