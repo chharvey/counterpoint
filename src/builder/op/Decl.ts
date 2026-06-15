@@ -25,7 +25,7 @@ export class Decl extends Instruction {
 	private readonly targetType: TYPE.Type;
 	private readonly value?:     Value;
 
-	public constructor(target: SymbolSchemaVar, value: Value);
+	public constructor(target: SymbolSchemaVar, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
 		private readonly target: SymbolSchemaVar | Temp,
@@ -34,7 +34,9 @@ export class Decl extends Instruction {
 		super(OpCode.DECL);
 		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
 		if (target instanceof SymbolSchemaVar) {
-			this.value = value!;
+			if (value) {
+				this.value = value;
+			}
 		} else if (target.value) {
 			this.value = target.value;
 		}
@@ -50,14 +52,16 @@ export class Decl extends Instruction {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		builder.setLocalStatus(this.target, this.value ? 'set' : 'declared');
+		// Use 'declared' only for declared, unset temps. Enforces setting before getting.
+		// Uninitialized variables can use 'set' becuase they can be get before setting (in which case CPL `null` will be returned).
+		builder.setLocalStatus(this.target, (this.target instanceof SymbolSchemaVar || this.value) ? 'set' : 'declared');
 		this.value?.validate(builder);
 		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
 	}
 
 	public override interpret(interp: Interpreter): void {
 		if (this.target instanceof SymbolSchemaVar) {
-			interp.setLocalValue(this.target, this.value!.interpret(interp));
+			interp.setLocalValue(this.target, this.value?.interpret(interp));
 		} else if (this.target.value) {
 			interp.setLocalValue(this.target, this.target.value.interpret(interp));
 		}

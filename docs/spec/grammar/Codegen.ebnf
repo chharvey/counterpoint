@@ -273,7 +273,8 @@ Codegen((NEQ `v0` `v1`)) := (call $op:not (call $op:eq `Codegen(v0)` `Codegen(v1
 Codegen((DROP `v`)) := (drop `Codegen(v)`);
 
 Codegen((DECL `id` `type` `v`)) := (local.set ‹index› `id` `Codegen(v)`);
-Codegen((SET  `id`        `v`)) := (local.set ‹index› `id` `Codegen(v)`);
+Codegen((DECL `id` `type`))     := (local.set ‹index› `id` (struct.new_default $Value));
+Codegen((SET  `id` `v`))        := (local.set ‹index› `id` `Codegen(v)`);
 
 Codegen((LIST.SET `obj` `accessor` `v`)) := (call $List.set
 	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))

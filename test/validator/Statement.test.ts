@@ -892,7 +892,7 @@ test.suite('Statement', () => {
 					};
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> cond (NULL.CONST null))
+						(DECL <null> cond)
 						(SET cond (BOOL.CONST true))
 						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":

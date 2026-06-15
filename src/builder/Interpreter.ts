@@ -1,4 +1,4 @@
-import type {VALUE} from '../typer/index.ts';
+import {VALUE} from '../typer/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from './Builder.ts';
 import type {CfgNode} from './CfgNode.ts';
@@ -6,17 +6,20 @@ import type {CfgNode} from './CfgNode.ts';
 
 
 export class Interpreter {
-	readonly #symbolTable = new Map<SymbolSchemaVar | Temp, VALUE.Value>();
+	/** A map of local variable/temp values. Native `null` means the variable is declared but uninitialized/deleted. */
+	readonly #symbolTable = new Map<SymbolSchemaVar | Temp, VALUE.Value | null>();
 
 	readonly #blocks = new Map<string, CfgNode>();
 
 
-	public setLocalValue(local: SymbolSchemaVar | Temp, value: VALUE.Value): void {
-		this.#symbolTable.set(local, value);
+	public setLocalValue(local: SymbolSchemaVar | Temp, value?: VALUE.Value): void {
+		this.#symbolTable.set(local, value ?? null);
 	}
 
 	public getLocalValue(local: SymbolSchemaVar | Temp): VALUE.Value | undefined {
-		return this.#symbolTable.get(local);
+		return this.#symbolTable.has(local)
+			? this.#symbolTable.get(local) ?? VALUE.NULL
+			: undefined;
 	}
 
 	public registerBlock(block: CfgNode): void {

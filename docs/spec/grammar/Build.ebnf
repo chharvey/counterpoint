@@ -296,7 +296,7 @@ Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpr
 	(DROP `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[writable=true] ::= SemanticExpressionVariable SemanticType) := [
-	(DECL <null> `GetSymbolSchema(SemanticExpressionVariable)` (NULL.CONST null))
+	(DECL <null> `GetSymbolSchema(SemanticExpressionVariable)`)
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [

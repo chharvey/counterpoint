@@ -26,7 +26,11 @@ String Interpret((STR.CONST `s`)) :=
 
 Value! Interpret((GET `id`)) :=
 	1. *If* the interpreter’s symbol table contains `id`:
-		1. *Return:* the value stored at `id`.
+		1. *Let* `value` be the value stored at `id`.
+		2. *If* `value` is *none*:
+			1. *Return:* `null`;
+		3. *Else:*
+			1. *Return:* `value`.
 	2. *Else:*
 		1. *Throw:* a new ReferenceError.
 ;
@@ -411,6 +415,9 @@ None! Interpret((DROP `v`)) :=
 
 None! Interpret((DECL `id` `type` `v`)) :=
 	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
+;
+None! Interpret((DECL `id` `type`)) :=
+	1. Set the key `id` to *none* in the interpreter’s symbol table.
 ;
 
 None! Interpret((SET `id` `v`)) :=
