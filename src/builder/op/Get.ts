@@ -29,7 +29,7 @@ export class Get extends ValueTac {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		if (builder.localStatus(this.target) !== 'set') {
+		if (builder.getLocalStatus(this.target) !== 'set') {
 			throw new ReferenceError(`Local with id \`${ this.target.id }\` must be set before getting!`);
 		}
 	}

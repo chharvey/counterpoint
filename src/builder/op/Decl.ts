@@ -50,7 +50,7 @@ export class Decl extends Instruction {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		builder.registerLocal(this.target, this.value ? 'set' : 'declared');
+		builder.setLocalStatus(this.target, this.value ? 'set' : 'declared');
 		this.value?.validate(builder);
 		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
 	}
