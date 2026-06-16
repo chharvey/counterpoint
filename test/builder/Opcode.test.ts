@@ -1688,7 +1688,7 @@ test.suite('Opcode', () => {
 				const {mod} = cg;
 				assertEqualBins(
 					new OP.Decl(new Builder().newTemp(TYPE.INT)).codegen(cg),
-					mod.local.set(0, mod.struct.new_default(cg.vm.reftype.Value)),
+					mod.local.set(0, cg.vm.Value.newDefault()),
 				);
 			});
 

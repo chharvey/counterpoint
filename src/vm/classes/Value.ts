@@ -62,6 +62,11 @@ export class Value implements HasFuncData {
 		return this.vm.mod.ref.cast(this.field(value).composite, reftype);
 	}
 
+	/** Returns `(struct.new_default $Value)`, for deleting variables/parameters/fields. */
+	public newDefault(): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.struct.new_default(this.vm.heaptype.Value);
+	}
+
 	/** Creates a new Value struct storing the given v128 in its primitive slot. */
 	public newPrimitive(primitive: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
 		return this.vm.mod.call('Value.new-primitive', [primitive], this.vm.reftype.Value);
