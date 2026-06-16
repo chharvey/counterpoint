@@ -15,6 +15,7 @@ import {
 import {
 	extract_lines,
 	repeat,
+	assert_shallowStrictEqual,
 	assertEqualBins,
 	genConst,
 	setupScript,
@@ -206,6 +207,43 @@ test.suite('Opcode', () => {
 			});
 
 			test.test.todo('Call', () => undefined);
+
+			test.test('Isset', () => {
+				assert_shallowStrictEqual(interpret_extracted_drops(`{
+					val mut a0?: int;
+					val mut a1?: int;
+					val mut a2?: int;
+
+					val mut b: int = 42;
+					val mut c0: int | null = 42;
+					val mut c1: int | null = 42;
+					val mut d: int | null = null;
+					val e: int = 42;
+					val f: int | null = 42;
+					val g: int | null = null;
+
+					set a1 = 42;
+					set a2 = 42;
+					delete a2;
+					set c1 = null;
+
+					isset a0; % false
+					isset a1; % true
+					isset a2; % false
+					isset b;  % true
+					isset c0; % true
+					isset c1; % true
+					isset d;  % true
+					isset e;  % true
+					isset f;  % true
+					isset g;  % true
+				}`), [
+					VALUE.FALSE,
+					VALUE.TRUE,
+					VALUE.FALSE,
+					...repeat(VALUE.TRUE, 7),
+				]);
+			});
 
 			test.suite('Unop', () => {
 				const operands: readonly string[] = extract_lines`
@@ -1408,6 +1446,42 @@ test.suite('Opcode', () => {
 						], cg.vm.reftype.Value)),
 					]);
 				});
+			});
+
+			test.test('Isset', () => {
+				const {stmts, builder, cg} = setupScript(`{
+					val mut a0?: int;
+					val mut a1?: int;
+					val mut a2?: int;
+
+					val mut b: int = 42;
+					val mut c0: int | null = 42;
+					val mut c1: int | null = 42;
+					val mut d: int | null = null;
+					val e: int = 42;
+					val f: int | null = 42;
+					val g: int | null = null;
+
+					set a1 = 42;
+					set a2 = 42;
+					delete a2;
+					set c1 = null;
+
+					isset a0;
+					isset a1;
+					isset a2;
+					isset b;
+					isset c0;
+					isset c1;
+					isset d;
+					isset e;
+					isset f;
+					isset g;
+				}`);
+				return assertEqualBins(
+					stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
+					Array.from(new Array(10), (_, i) => cg.vm.Value.boolFromI32(cg.mod.i32.eqz(cg.mod.i32.eqz(cg.vm.Value.field(cg.mod.local.get(i, cg.vm.reftype.Value)).tag)))),
+				);
 			});
 
 			test.suite('Unop', () => {

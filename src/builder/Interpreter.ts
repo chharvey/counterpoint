@@ -1,4 +1,4 @@
-import {VALUE} from '../typer/index.ts';
+import type {VALUE} from '../typer/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from './Builder.ts';
 import type {CfgNode} from './CfgNode.ts';
@@ -16,10 +16,8 @@ export class Interpreter {
 		this.#symbolTable.set(local, value ?? null);
 	}
 
-	public getLocalValue(local: SymbolSchemaVar | Temp): VALUE.Value | undefined {
-		return this.#symbolTable.has(local)
-			? this.#symbolTable.get(local) ?? VALUE.NULL
-			: undefined;
+	public getLocalValue(local: SymbolSchemaVar | Temp): VALUE.Value | null | undefined {
+		return this.#symbolTable.get(local);
 	}
 
 	public registerBlock(block: CfgNode): void {

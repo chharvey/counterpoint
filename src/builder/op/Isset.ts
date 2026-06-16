@@ -1,10 +1,11 @@
+import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {VALUE} from '../../typer/index.ts';
+import {VALUE} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../validator/index.ts';
 import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
@@ -30,12 +31,18 @@ export class Isset extends Value {
 		}
 	}
 
-	public override interpret(_interp: Interpreter): VALUE.Value {
-		throw new Error('not yet supported');
+	public override interpret(interp: Interpreter): VALUE.Value {
+		const value: VALUE.Value | null | undefined = interp.getLocalValue(this.target);
+		switch (value) {
+			case undefined: { throw new ReferenceError(`Local with id \`${ this.target.id }\` must be declared first!`); };
+			case null:      { return VALUE.FALSE; }
+			default:        { return VALUE.TRUE; }
+		}
 	}
 
 	@memoizeMethod
-	public override codegen(_cg: CodeGenerator): binaryen.ExpressionRef {
-		throw new Error('not yet supported');
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+		const local: binaryen.ExpressionRef = cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be declared first!`));
+		return cg.vm.Value.boolFromI32(cg.mod.i32.eqz(cg.mod.i32.eqz(cg.vm.Value.field(local).tag)));
 	}
 }

@@ -150,6 +150,17 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 
 // Value! Interpret((CALL `callable` `args`));
 
+Boolean! Interpret((ISSET `id`)) :=
+	1. *If* the interpreter’s symbol table contains `id`:
+		1. *Let* `value` be the value stored at `id`.
+		2. *If* `value` is *none*:
+			1. *Return:* `false`;
+		3. *Else:*
+			1. *Return:* `true`.
+	2. *Else:*
+		1. *Throw:* a new ReferenceError.
+;
+
 Boolean! Interpret((ISNULL `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *Return:* `Identical(v, null)`.

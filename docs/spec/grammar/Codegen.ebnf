@@ -13,7 +13,7 @@ Codegen((STR.CONST `v`)) := (call $Value.new-composite
 	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
 );
 
-Codegen((GET `id`)) := (local.get ‹index› `id.type`);
+Codegen((GET `id`)) := (local.get ‹index›);
 
 Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
 	(block (result (ref $String))
@@ -206,6 +206,10 @@ Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
 );
 
 // Codegen((CALL `callable` `args`));
+
+Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
+	(struct.get $Value $tag (local.get ‹index›))
+)));
 
 Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
 
