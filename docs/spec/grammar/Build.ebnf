@@ -49,7 +49,8 @@ MAP.GET ([Value Value])           -> Value;
 
 CALL([Value*]) -> Value;
 
-ISNULL([Value]) -> Boolean;
+ISSET (SymbolSchemaVar|native-string) -> Boolean;
+ISNULL([Value])                       -> Boolean;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
@@ -100,8 +101,8 @@ NEQ([Value Value]) -> Boolean;
 
 DROP([Value]);
 
-DECL(SymbolSchemaVar|native-string Type [Value]);
-SET (SymbolSchemaVar|native-string      [Value]);
+DECL(SymbolSchemaVar|native-string Type [Value?]);
+SET (SymbolSchemaVar|native-string      [Value?]);
 
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
@@ -210,6 +211,9 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(Seman
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
+
+Build(SemanticExpressionIsset ::= SemanticExpressionVariable) := (ISSET `GetSymbolSchema(SemanticExpressionVariable)`);
+Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ISNULL `Build(SemanticExpressionAccess)`);
 
 Build(SemanticExpressionOperation[operator=NOT]     ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=EMP]     ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);

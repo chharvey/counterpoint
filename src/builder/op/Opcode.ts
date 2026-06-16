@@ -37,6 +37,7 @@ export enum OpCode {
 
 	CALL,
 
+	ISSET,
 	ISNULL,
 
 	NOT,

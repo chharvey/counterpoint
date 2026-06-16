@@ -1,5 +1,5 @@
-import type {
-	Builder,
+import {
+	type Builder,
 	OP,
 } from '../../../index.ts';
 import {
@@ -11,10 +11,11 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
+import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {Operator} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
-import type {Variable} from './Variable.ts';
+import {Variable} from './Variable.ts';
 import type {Access} from './Access.ts';
 
 
@@ -44,7 +45,10 @@ export class Isset extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(_builder: Builder): OP.Unop {
-		throw new Error('not yet supported');
+	public override build(builder: Builder): OP.Isset | OP.Unop {
+		if (this.assignee instanceof Variable) {
+			return new OP.Isset(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar);
+		}
+		return new OP.Unop(OP.OpCode.ISNULL, this.assignee.build(builder).asTac(builder), TYPE.BOOL);
 	}
 }
