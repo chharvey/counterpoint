@@ -1,5 +1,6 @@
 import {
 	type Builder,
+	OP,
 	AssignmentErrorDeletion,
 	TypeError as CplTypeError,
 	MutabilityError01,
@@ -65,7 +66,10 @@ export class StatementDelete extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(_builder: Builder): void {
-		throw new Error('Unsupported.');
+	public override build(builder: Builder): void {
+		assert_instanceof(this.assignee, EXPR.Variable); // TODO: object/interface support
+		const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+		symbol.irType = TYPE.NULL;
+		return builder.pushInstruction(new OP.Set(symbol));
 	}
 }

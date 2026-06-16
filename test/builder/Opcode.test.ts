@@ -1657,12 +1657,15 @@ test.suite('Opcode', () => {
 					val mut c: sym   = @hello;
 					val mut d: int   = 42;
 					val mut e: float = 4.2;
+					val mut f?: str;
 
 					set a = null;
 					set b = true;
 					set c = @world;
 					set d = 43;
 					set e = 4.3;
+					set f = "hello";
+					delete f;
 				}`, {codegen: false});
 				return assertEqualBins(
 					builder.instructions.map((instr) => instr.codegen(cg)),
@@ -1672,12 +1675,15 @@ test.suite('Opcode', () => {
 						mod.local.set(2, genConst(cg, Symbol(0x102))),
 						mod.local.set(3, genConst(cg, 42n)),
 						mod.local.set(4, genConst(cg, 4.2)),
+						mod.local.set(5, cg.vm.Value.newDefault()),
 
 						mod.local.set(0, genConst(cg)),
 						mod.local.set(1, genConst(cg, true)),
-						mod.local.set(2, genConst(cg, Symbol(0x106))),
+						mod.local.set(2, genConst(cg, Symbol(0x107))),
 						mod.local.set(3, genConst(cg, 43n)),
 						mod.local.set(4, genConst(cg, 4.3)),
+						mod.local.set(5, genConst(cg, 'hello')),
+						mod.local.set(5, cg.vm.Value.newDefault()),
 					],
 				);
 			});
