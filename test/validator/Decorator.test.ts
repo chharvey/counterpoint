@@ -681,7 +681,7 @@ test.suite('Decorator', () => {
 				% (statement_reassignment)
 			`]],
 
-			['Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementDelete', [AST.STMT.StatementDelete, `
+			['Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
 				{
 					delete a;
 				}

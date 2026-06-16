@@ -5,7 +5,6 @@ export * from './DeclarationVariable.ts';
 export * from './StatementExpression.ts';
 export * from './StatementClaim.ts';
 export * from './StatementReassignment.ts';
-export * from './StatementDelete.ts';
 export * from './StatementConditional.ts';
 export * from './StatementLoop.ts';
 export * from './StatementIteration.ts';
