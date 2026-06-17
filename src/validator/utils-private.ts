@@ -99,6 +99,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeFamily<'expression_dict_literal',   ['break']>
 	| SyntaxNodeFamily<'expression_set_literal',    ['break']>
 	| SyntaxNodeFamily<'expression_map_literal',    ['break']>
+	// NOTE: the following expression types (`_block` through `_disjunctive`) refer to aliases in the grammar --- no need for suffices
 	| SyntaxNodeType<'expression_block'>
 	| SyntaxNodeType<'expression_compound'>
 	| SyntaxNodeType<'expression_unary_symbol'>

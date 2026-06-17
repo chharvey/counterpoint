@@ -344,6 +344,8 @@ export class Decorator {
 				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'case'>)) as NonemptyArray<AST.Case>,
 			)],
 
+			// NOTE: the following expression types (`_block` through `_disjunctive`) refer to aliases in the grammar --- no need for suffices
+
 			['expression_block', (node) => new AST.EXPR.ExpressionBlock(
 				node as SyntaxNodeType<'expression_block'>,
 				this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break']>),
