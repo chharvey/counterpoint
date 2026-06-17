@@ -12,7 +12,7 @@ import {AssignmentError} from './AssignmentError.ts';
 export class AssignmentErrorReassignment extends AssignmentError {
 	/**
 	 * Construct a new AssignmentErrorReassignment object.
-	 * @param variable the undeclared variable
+	 * @param variable the reassigned variable
 	 */
 	public constructor(variable: AST.EXPR.Variable) {
 		super(

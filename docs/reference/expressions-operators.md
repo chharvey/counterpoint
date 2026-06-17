@@ -61,7 +61,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !.[ … ]</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">3</th>
+			<th>3</th>
+			<td>Function Calls</td>
+			<td>unary postfix</td>
+			<td>left-to-right</td>
+			<td><code>… .( … )</code></td>
+		</tr>
+		<tr>
+			<th rowspan="4">4</th>
 			<td>Logical Negation</td>
 			<td rowspan="4">unary prefix</td>
 			<td rowspan="4">right-to-left</td>
@@ -80,22 +87,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="3">4</th>
-			<td>Integer Conversion</td>
-			<td rowspan="3">unary prefix</td>
-			<td rowspan="3">right-to-left</td>
-			<td><code>int …</code></td>
+			<th>5</th>
+			<td>Is-Set</td>
+			<td>unary prefix</td>
+			<td>right-to-left</td>
+			<td><code>isset …</code></td>
 		</tr>
 		<tr>
-			<td>Natural Conversion</td>
-			<td><code>nat …</code></td>
-		</tr>
-		<tr>
-			<td>Float Conversion</td>
-			<td><code>float …</code></td>
-		</tr>
-		<tr>
-			<th rowspan="4">5</th>
+			<th rowspan="4">6</th>
 			<td rowspan="3">Type Cast</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -112,14 +111,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… as &lt; … &gt;</code></td>
 		</tr>
 		<tr>
-			<th>6</th>
+			<th>7</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">7</th>
+			<th rowspan="2">8</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -130,7 +129,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">8</th>
+			<th rowspan="2">9</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -141,7 +140,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">9</th>
+			<th rowspan="8">10</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -176,7 +175,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">10</th>
+			<th rowspan="4">11</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -195,7 +194,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">11</th>
+			<th rowspan="2">12</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -206,7 +205,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">12</th>
+			<th rowspan="2">13</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -217,7 +216,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>13</th>
+			<th>14</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -496,39 +495,81 @@ This is important to mention because it could also affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
-### Numeric Conversions
+### Is-Set
 ```
-int   <Number>
-nat   <Number>
-float <Number>
+`isset`  <Assignee>
+`!isset` <Assignee>
 ```
-The keywords `int`, `nat`, and `float` can also be used as unary prefix operators.
-They convert their numeric operand into their respective type. If the operand is not numeric, a type error is raised.
+The `isset` operator returns a boolean indicating whether a variable or property has been assigned, regardless of its value.
+For non-optional variables and properties, it always returns `true`.
+For [optional variables](./variables.md#optional-variables)/properties that have been set or reassigned to a value, the operator returns `true`.
+If the variable/property has never been assigned, or has been assigned and then deleted, the operator returns `false`.
+This operator is dynamic and may return different results at various points in a program.
+
+`!isset` is a single operator that returns the negation of `isset`.
+
 ```cpl
-val my_int: int   = 7;
-val my_nat: nat   = +4;
-val my_flt: float = -3.5;
+val mut greeting?: str;
+print.(greeting);        %> null
+print.(isset greeting);  %> false
+print.(!isset greeting); %> true
 
-2 * int my_flt;     % converts -3.5 to -3; result is same as `2 * -3`
-float my_int / 3.5; % converts 7 to 7.0; result is same as `7.0 / 3.5`
-2 - int my_nat;     % converts +4 to 4; result is same as `2 - 4`
-nat my_flt;         % negative floats are converted to `+0`
+set greeting = "hello";
+print.(greeting);        %> "hello"
+print.(isset greeting);  %> true
+print.(!isset greeting); %> false
+
+delete greeting;
+print.(greeting);        %> null
+print.(isset greeting);  %> false
+print.(!isset greeting); %> true
 ```
-When converting floats to integers/naturals, the “round-toward-zero” (truncation) method is used.
-Both `-0.0` and `0.0` convert to `0`/`+0`.
-When converting to integers, if the floating-point number is greater than the maximal integer *2^63 &minus; 1*, the maximal integer is returned;
-likewise for less than the minimal integer *&minus;2^63*.
-When converting to naturals, if the floating-point number is greater than the maximal natural *2^64 &minus; 1*, the maximal natural is returned;
-if the float is negative, the natural number `+0` is returned.
-For NaN and other unrepresentable values, an error is raised.
 
-When converting integers/naturals to floats, some precision will be lost for numbers greater than *2^53*
-and for numbers less than *&minus;2^53*, as per the *IEEE 754* specification.
+Even if a variable has the `null` value, the `isset` operator returns `true`.
+Thus comparing an optional variable to `null` is not sufficient.
+```cpl
+val mut amount?: float | null;
+print.(amount == null); %> true
+print.(isset amount);   %> false
 
-Integer conversion to and from natural numbers does not change bitwise representation, just reinterpretation.
-Any (signed) integer value between *-(2^63)* and *-1* is just added mathematically to *2^64* to get its (unsigned) natural interpretation
-(that is, underflow occurs).
-Conversely, natural numbers *2^63* or larger are reinterpreted as negative integers by subtracting *2^64* from their value (overflow occurs).
+set amount = null;
+print.(amount == null); %> true
+print.(isset amount);   %> true
+```
+
+Syntactically, `isset` may only be applied to variables and property accessors
+(that is, anything that can be assigned in a [`set` statement](./variables.md#variable-reassignment)).
+It is not applicable to arbitrary expressions.
+```cpl
+% well-formed syntax:
+isset variable;
+isset object.property;
+isset tuple.0;
+isset chained.1.calls.("and").prop.2.().xsors; % ending with an accessor
+
+% syntax errors:
+isset (x);
+isset (a || b);
+isset -c;
+isset f.();
+isset if a then b else c;
+isset { x; };
+```
+Like other unary operators, `isset` binds tighter than binary operators.
+The following pairs are well-formed and equivalent:
+```cpl
+isset a || b;
+(isset a) || b;
+
+isset a && isset b;
+(isset a) && (isset b);
+```
+`isset` binds looser than the symbolic unary operators.
+```cpl
++isset c;   %> SyntaxError
++(isset c); % well-formed
+```
+`!isset` is a single parse token. `!isset c` is syntax sugar for `!(isset c)`.
 
 
 ### Type Cast/Claim
@@ -817,7 +858,7 @@ The order of promotion precedence:
 int --> nat --> float
 ```
 Conversions are made only for determining mathematical inequality; the value of the operand does not change.
-Note that conversions may be lossy; see [Numeric Conversions](#numeric-conversions) for details.
+Note that conversions may be lossy; see [Numeric Conversions](./built-ins.md#numeric-conversions) for details.
 
 The object comparative operators `is` and `!is` are not currently available,
 but they are reserved for future semantics.

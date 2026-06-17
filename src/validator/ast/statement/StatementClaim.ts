@@ -41,7 +41,7 @@ export class StatementClaim extends Statement {
 
 	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
-		return false;
+		return this.assignee.type().isBottomType;
 	}
 
 	public override typeCheck(): void {

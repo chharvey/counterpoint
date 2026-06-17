@@ -11,6 +11,7 @@ import {
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorReassignment,
+	AssignmentErrorDeletion,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNotAssignable,
@@ -27,11 +28,17 @@ import {
 test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('StatementReassignment', () => {
-			test.test('throws if the variable is read-only.', () => {
-				setupScript(`{
+			test.test('does not throw if the variable is writable.', () => {
+				const {goal} = setupScript(`{
 					val mut i: int = 42;
 					set i = 43;
 				}`, {typeCheck: false}); // assert does not throw
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
+					isWritable:      true,
+					isUninitialized: false,
+				});
+			});
+			test.test('throws if the variable is read-only.', () => {
 				assert.throws(() => setupScript(`{
 					val i: int = 42;
 					set i = 43;
@@ -49,6 +56,42 @@ test.suite('Statement', () => {
 						set it = 44;
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
+			});
+		});
+
+		test.suite('StatementDelete', () => {
+			test.test('does not throw if the variable was uninitialized.', () => {
+				const {goal} = setupScript(`{
+					val mut i?: int;
+					delete i;
+				}`, {typeCheck: false}); // assert does not throw
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
+					isWritable:      true,
+					isUninitialized: true,
+				});
+			});
+			test.test('throws if the variable was initialized.', () => {
+				assert.throws(() => setupScript(`{
+					val mut i: int = 42;
+					delete i;
+				}`, {typeCheck: false}), AssignmentErrorDeletion);
+				assert.throws(() => setupScript(`{
+					val i: int = 42;
+					delete i;
+				}`, {typeCheck: false}), AssignmentErrorDeletion);
+			});
+			test.test('always throws for type alias deletion.', () => {
+				assert.throws(() => setupScript(`{
+					type T = 42;
+					delete T;
+				}`, {typeCheck: false}), ReferenceErrorKind);
+			});
+			test.test('disallows deletion of the iteration variable.', () => {
+				assert.throws(() => setupScript(`{
+					for it: int in [11, 22, 33] do {
+						delete it;
+					};
+				}`, {typeCheck: false}), AssignmentErrorDeletion);
 			});
 		});
 
@@ -481,6 +524,54 @@ test.suite('Statement', () => {
 			});
 		});
 
+		test.suite('StatementDelete', () => {
+			test.suite('for property deletion.', () => {
+				test.test('throws for deletion on non-interface objects.', () => {
+					xjs.Array.forEachAggregated(extract_lines`
+						List.<int>((42,)).[0]
+						Dict.<int>((i= 42)).[@i]
+						Set.<int>((42,)).[43]
+						Map.<bool, int>(((true, 42),)).[true]
+					`, (src) => {
+						const {goal} = setupScript(`{ delete ${ src }; }`, {typeCheck: false});
+						assert.throws(() => goal.typeCheck(), /only applicable to interface types/);
+					});
+				});
+				test.test.skip('throws when assignee’s base type is not mutable.', () => {
+					const {stmts} = setupScript(`{
+						claim p: interface {
+							readonly x: int;
+							y: int;
+							z?: int;
+						};
+						delete p.x;
+						delete p.y;
+						delete p.z;
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
+					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
+					assert.throws(() => stmts[3].typeCheck(), MutabilityError01);
+				});
+				test.test.skip('throws when assignee’s property is read-only or non-optional.', () => {
+					const {stmts} = setupScript(`{
+						claim p: mut interface {
+							readonly x: int;
+							y: int | null;
+							z?: int;
+						};
+						delete p.x; % cannot delete a read-only property
+						delete p.y; % cannot delete a non-optional property (even if type is nullish)
+						delete p.z; % allowed
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					assert.throws(() => stmts[1].typeCheck(), MutabilityError01);
+					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
+					stmts[3].typeCheck();
+				});
+			});
+		});
+
 		test.suite('StatementConditional', () => {
 			const NON_BOOLS: readonly string[] = extract_lines`
 				val mut cond: int         = 42;
@@ -801,7 +892,7 @@ test.suite('Statement', () => {
 					};
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> cond (NULL.CONST null))
+						(DECL <null> cond)
 						(SET cond (BOOL.CONST true))
 						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":

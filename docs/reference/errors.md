@@ -80,6 +80,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
 1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict key.
 1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a read-only variable was attempted.
+1. [2211](#2211-assignmenterrordeletion)             — A deletion of a non-optional variable was attempted.
 1. [2220](#2220-assignmenterrormissingtype)          — A symbol was declared without a type annotation and initialized to a value ineligible for type inference.
 
 #### 2201: AssignmentErrorDuplicateDeclaration
@@ -109,7 +110,15 @@ Cause: A read-only variable was reassigned.
 val my_var: int = 42;
 set my_var = 24;      % AssignmentErrorReassignment: Reassignment of read-only variable `my_var`.
 ```
-Solution(s): Remove the reassignment, or declare the variable with `mut`.
+Solution(s): Remove the reassignment statement, or declare the variable with `mut`.
+
+#### 2211: AssignmentErrorDeletion
+Cause: A non-optional variable was deleted.
+```
+val mut my_var: int | null = 42;
+delete my_var;                   % AssignmentErrorDeletion: Deletion of non-optional variable `my_var`.
+```
+Solution(s): Remove the deletion statement, or remove the variable’s initializer.
 
 #### 2220: AssignmentErrorMissingType
 Cause: A variable, parameter, or field was declared without a type annotation when it is not eligible for type inference.
@@ -192,7 +201,7 @@ Solution(s): Pass in an expected number of arguments.
 A mutability error is raised when the compiler recognizes an attempt to mutate an immutable object.
 
 1.  2400                           — A general mutability error not covered by one of the following cases.
-1. [2401](#2401-mutabilityerror01) — An item or property of an immutable object was reassigned.
+1. [2401](#2401-mutabilityerror01) — An item or property of an immutable object was reassigned or deleted.
 
 #### 2401: MutabilityError01
 Cause: An immutable object was mutated.

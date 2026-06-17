@@ -143,6 +143,55 @@ b;                   % still `42`
 
 
 
+## Optional Variables
+Variables may be declared without an explicit inital value. These varaibles are called “uninitialized” or “optional”.
+```cpl
+val mut greeting?: str;
+```
+When declared, the variable must be writable (with the `mut` keyword) and must be annotated with a type.
+
+The declared type of `greeting` is `str`, but its implicit initial value is `null`.
+When accessed, its type is `str | null`, but it may only be assigned `str` values.
+```cpl
+val greet_1: str        = greeting; %> TypeError: Expression of type `str | null` is not assignable to type `str`.
+val greet_2: str | null = greeting; % ok
+
+set greeting = null;    %> TypeError: Expression of type `null` is not assignable to type `str`.
+set greeting = "hello"; % ok
+```
+There’s a subtle difference between the following two statements:
+```cpl
+val mut greeting1: str | null = "hello";
+val mut greeting2?: str;
+```
+Besides the former being initialized, it says that a value for `greeting1` always exists,
+and whenever accessed or assigned, that value’s type is the union `str | null`.
+The latter says that a value for `greeting2` might or might not exist.
+If it does exist, its type is definitely `str` and not `null`, and if it doesn’t exist, then it is `null`.
+When assigned, it only accepts values of type `str`.
+Optional variables are similar to optional entries of [tuples/records](./types.md#compound-types),
+and they pair nicely with the [`isset` operator](./expressions-operators.md#is-set).
+
+
+### `delete` Statements
+To “unset” an optional variable, use the syntax `delete variable;`.
+An optional variable cannot be explicitly set to `null` (unless that’s in its declared type),
+so the `delete` statement resets it.
+```cpl
+val mut greeting?: str;
+
+set greeting = "hello";
+print.(greeting); %> "hello"
+
+set greeting = null; %> TypeError: Expression of type `null` is not assignable to type `str`.
+delete greeting;     % ok
+print.(greeting);    %> null
+```
+
+The `delete` statement can only be used on optional variables or optional entries on mutable objects.
+
+
+
 ## Type Claim Declarations
 A type claim declaration is a [type claim](./expressions-operators.md#type-claim) for a variable at the block level.
 After a variable `expr` has been declared, we may want to **claim** that it has type `T` throughout the rest of the block,

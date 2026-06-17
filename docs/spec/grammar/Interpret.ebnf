@@ -26,7 +26,11 @@ String Interpret((STR.CONST `s`)) :=
 
 Value! Interpret((GET `id`)) :=
 	1. *If* the interpreter’s symbol table contains `id`:
-		1. *Return:* the value stored at `id`.
+		1. *Let* `value` be the value stored at `id`.
+		2. *If* `value` is *none*:
+			1. *Return:* `null`;
+		3. *Else:*
+			1. *Return:* `value`.
 	2. *Else:*
 		1. *Throw:* a new ReferenceError.
 ;
@@ -145,6 +149,17 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 ;
 
 // Value! Interpret((CALL `callable` `args`));
+
+Boolean! Interpret((ISSET `id`)) :=
+	1. *If* the interpreter’s symbol table contains `id`:
+		1. *Let* `value` be the value stored at `id`.
+		2. *If* `value` is *none*:
+			1. *Return:* `false`;
+		3. *Else:*
+			1. *Return:* `true`.
+	2. *Else:*
+		1. *Throw:* a new ReferenceError.
+;
 
 Boolean! Interpret((ISNULL `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
@@ -373,16 +388,6 @@ Boolean! Interpret((GE `v0` `v1`)) :=
 		1. *Return:* `false`.
 ;
 
-Boolean! Interpret((NLT `v0` `v1`)) :=
-	1. *Let* `lt` be the result of performing the steps listed under «Interpret((LT `v0` `v1`))»
-	2. *Return:* the logical negation of `lt`.
-;
-
-Boolean! Interpret((NGT `v0` `v1`)) :=
-	1. *Let* `gt` be the result of performing the steps listed under «Interpret((GT `v0` `v1`))»
-	2. *Return:* the logical negation of `gt`.
-;
-
 Boolean! Interpret((ID `v0` `v1`)) :=
 	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
 	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
@@ -395,22 +400,15 @@ Boolean! Interpret((EQ `v0` `v1`)) :=
 	3. *Return:* `Equal(v0, v1)`.
 ;
 
-Boolean! Interpret((NID `v0` `v1`)) :=
-	1. *Let* `id` be the result of performing the steps listed under «Interpret((ID `v0` `v1`))»
-	2. *Return:* the logical negation of `id`.
-;
-
-Boolean! Interpret((NEQ `v0` `v1`)) :=
-	1. *Let* `eq` be the result of performing the steps listed under «Interpret((EQ `v0` `v1`))»
-	2. *Return:* the logical negation of `eq`.
-;
-
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;
 
 None! Interpret((DECL `id` `type` `v`)) :=
 	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
+;
+None! Interpret((DECL `id` `type`)) :=
+	1. Set the key `id` to *none* in the interpreter’s symbol table.
 ;
 
 None! Interpret((SET `id` `v`)) :=

@@ -46,13 +46,9 @@ export type OpCodeBin = (
 	| OpCode.GT
 	| OpCode.LE
 	| OpCode.GE
-	| OpCode.NLT
-	| OpCode.NGT
 
 	| OpCode.ID
 	| OpCode.EQ
-	| OpCode.NID
-	| OpCode.NEQ
 );
 
 
@@ -96,12 +92,10 @@ export class Binop extends Value {
 				case OpCode.FLOAT_DIV: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
 				case OpCode.FLOAT_EXP: { return assert.ok(arg.type.isSubtypeOf(TYPE.FLOAT)); }
 
-				case OpCode.LT:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.GT:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.LE:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.GE:  { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.NLT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
-				case OpCode.NGT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case OpCode.LT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case OpCode.GT: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case OpCode.LE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
+				case OpCode.GE: { return assert.ok(arg.type.isSubtypeOf(TYPE.NUMBER)); }
 			}
 		});
 	}
@@ -127,17 +121,13 @@ export class Binop extends Value {
 			case OpCode.FLOAT_DIV: { return (operand0 as VALUE.Float).divide (operand1 as VALUE.Float); }
 			case OpCode.FLOAT_EXP: { return (operand0 as VALUE.Float).exp    (operand1 as VALUE.Float); }
 
-			case OpCode.LT:  { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
-			case OpCode.GT:  { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
-			case OpCode.LE:  { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).equal(operand1) || (operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
-			case OpCode.GE:  { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).equal(operand0) || (operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
-			case OpCode.NLT: { return VALUE.Boolean.fromBoolean(!(operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
-			case OpCode.NGT: { return VALUE.Boolean.fromBoolean(!(operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
+			case OpCode.LT: { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.GT: { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
+			case OpCode.LE: { return VALUE.Boolean.fromBoolean((operand0 as VALUE.Number).equal(operand1) || (operand0 as VALUE.Number).lt(operand1 as VALUE.Number)); }
+			case OpCode.GE: { return VALUE.Boolean.fromBoolean((operand1 as VALUE.Number).equal(operand0) || (operand1 as VALUE.Number).lt(operand0 as VALUE.Number)); }
 
-			case OpCode.ID:  { return VALUE.Boolean.fromBoolean(operand0.identical(operand1)); }
-			case OpCode.EQ:  { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
-			case OpCode.NID: { return VALUE.Boolean.fromBoolean(!operand0.identical(operand1)); }
-			case OpCode.NEQ: { return VALUE.Boolean.fromBoolean(!operand0.equal(operand1)); }
+			case OpCode.ID: { return VALUE.Boolean.fromBoolean(operand0.identical(operand1)); }
+			case OpCode.EQ: { return VALUE.Boolean.fromBoolean(operand0.equal(operand1)); }
 		}
 	}
 
@@ -164,17 +154,13 @@ export class Binop extends Value {
 			case OpCode.FLOAT_DIV: { return op.floatDiv(code0, code1); }
 			case OpCode.FLOAT_EXP: { return op.floatExp(code0, code1); }
 
-			case OpCode.LT:  { return op.lt(code0, code1); }
-			case OpCode.GT:  { return op.gt(code0, code1); }
-			case OpCode.LE:  { return op.le(code0, code1); }
-			case OpCode.GE:  { return op.ge(code0, code1); }
-			case OpCode.NLT: { return op.not(op.lt(code0, code1)); }
-			case OpCode.NGT: { return op.not(op.gt(code0, code1)); }
+			case OpCode.LT: { return op.lt(code0, code1); }
+			case OpCode.GT: { return op.gt(code0, code1); }
+			case OpCode.LE: { return op.le(code0, code1); }
+			case OpCode.GE: { return op.ge(code0, code1); }
 
-			case OpCode.ID:  { return op.id(code0, code1); }
-			case OpCode.EQ:  { return op.eq(code0, code1); }
-			case OpCode.NID: { return op.not(op.id(code0, code1)); }
-			case OpCode.NEQ: { return op.not(op.eq(code0, code1)); }
+			case OpCode.ID: { return op.id(code0, code1); }
+			case OpCode.EQ: { return op.eq(code0, code1); }
 		}
 	}
 

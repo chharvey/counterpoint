@@ -452,6 +452,16 @@ Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Bloc
 
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "isset" Assignee<?Break>) -> SemanticExpressionIsset
+	:= (SemanticExpressionIsset
+		Decorate(Assignee<?Break>)
+	);
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "!isset" Assignee<?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionIsset
+			Decorate(Assignee<?Break>)
+		)
+	);
 
 
 
@@ -675,10 +685,17 @@ Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> Sem
 
 
 
-Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment
+Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment
 	:= (SemanticStatementReassignment
 		Decorate(Assignee<?Break>)
 		Decorate(Expression<+Block><?Break>)
+	);
+
+
+
+Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementReassignment
+	:= (SemanticStatementReassignment
+		Decorate(Assignee<?Break>)
 	);
 
 
@@ -760,8 +777,10 @@ Decorate(Statement<Break> ::= StatementExpression<?Break>) -> SemanticStatementE
 	:= Decorate(StatementExpression<?Break>);
 Decorate(Statement<Break> ::= StatementClaim<?Break>) -> SemanticStatementClaim
 	:= Decorate(StatementClaim<?Break>);
-Decorate(Statement<Break> ::= StatementReassignment<?Break>) -> SemanticStatementReassignment
-	:= Decorate(StatementReassignment<?Break>);
+Decorate(Statement<Break> ::= StatementSet<?Break>) -> SemanticStatementReassignment
+	:= Decorate(StatementSet<?Break>);
+Decorate(Statement<Break> ::= StatementDelete<?Break>) -> SemanticStatementReassignment
+	:= Decorate(StatementDelete<?Break>);
 Decorate(Statement<Break> ::= StatementConditional<∓Unless><?Break>) -> SemanticStatementConditional
 	:= Decorate(StatementConditional<∓Unless><?Break>);
 Decorate(Statement<Break> ::= StatementLoop) -> SemanticStatementLoop

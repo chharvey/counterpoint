@@ -194,7 +194,7 @@ test.suite('Operation', () => {
 				val mut x: int = 42;
 				val mut y: int = 69;
 				x + { x; x * y; };
-			}`).builder.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <int> y (INT.CONST 69))

@@ -3,6 +3,7 @@ import {
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorDuplicateKey,
 	AssignmentErrorReassignment,
+	AssignmentErrorDeletion,
 	AssignmentErrorMissingType,
 } from './index.ts';
 import {ErrorCode} from './ErrorCode.ts';
@@ -26,6 +27,7 @@ export class AssignmentError extends ErrorCode {
 			[AssignmentErrorDuplicateDeclaration,  1],
 			[AssignmentErrorDuplicateKey,          2],
 			[AssignmentErrorReassignment,         10],
+			[AssignmentErrorDeletion,             11],
 			[AssignmentErrorMissingType,          20],
 		]);
 	}

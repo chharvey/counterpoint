@@ -45,6 +45,7 @@ export type CollectionDynamicName = (
 
 export function ast_type_name(typ: TYPE.Type): TypeName {
 	switch (true) {
+		case typ.isBottomType:            { return TypeName.TRAP; }
 		case typ.isSubtypeOf(TYPE.NULL):  { return TypeName.NULL; }
 		case typ.isSubtypeOf(TYPE.BOOL):  { return TypeName.BOOL; }
 		case typ.isSubtypeOf(TYPE.SYM):   { return TypeName.SYM; }

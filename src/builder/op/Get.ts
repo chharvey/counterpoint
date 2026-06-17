@@ -5,7 +5,7 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {VALUE} from '../../typer/index.ts';
+import {VALUE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {
 	Temp,
@@ -29,13 +29,17 @@ export class Get extends ValueTac {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		if (builder.localStatus(this.target) !== 'set') {
+		if (builder.getLocalStatus(this.target) !== 'set') {
 			throw new ReferenceError(`Local with id \`${ this.target.id }\` must be set before getting!`);
 		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
-		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
+		const value: VALUE.Value | null | undefined = interp.getLocalValue(this.target);
+		if (value === null) {
+			return VALUE.NULL;
+		}
+		return value ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 
 	@memoizeMethod

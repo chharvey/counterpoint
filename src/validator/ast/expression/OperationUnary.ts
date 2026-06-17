@@ -34,7 +34,7 @@ export class OperationUnary extends Operation {
 	public constructor(
 		start_node: SyntaxNodeSupertype<'expression'>,
 		private readonly operator: ValidOperatorUnary,
-		public  readonly operand:  Expression,
+		private readonly operand:  Expression,
 	) {
 		super(start_node, operator, [operand]);
 	}

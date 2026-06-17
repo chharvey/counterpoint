@@ -77,6 +77,7 @@ SemanticExpression =:=
 	| SemanticExpressionAccess
 	| SemanticExpressionCall
 	| SemanticExpressionClaim
+	| SemanticExpressionIsset
 	| SemanticExpressionOperation
 ;
 
@@ -122,6 +123,9 @@ SemanticExpressionCall
 SemanticExpressionClaim
 	::= SemanticExpression SemanticType;
 
+SemanticExpressionIsset
+	::= SemanticExpressionVariable | SemanticExpressionAccess;
+
 SemanticExpressionOperation[operator: NOT | EMP]
 	::= SemanticExpression;
 SemanticExpressionOperation[operator: NEG]
@@ -142,6 +146,7 @@ SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticStatementClaim
 	| SemanticStatementReassignment
+	| SemanticStatementDelete
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration
@@ -159,7 +164,11 @@ SemanticDeclarationType
 	::= SemanticTypeAlias? SemanticType;
 
 SemanticDeclarationVariable[writable: Boolean]
-	::= SemanticExpressionVariable? SemanticType? SemanticExpression?;
+	::= SemanticExpressionVariable SemanticType? SemanticExpression;
+SemanticDeclarationVariable[writable=false]
+	::= SemanticType? SemanticExpression;
+SemanticDeclarationVariable[writable=true]
+	::= SemanticExpressionVariable SemanticType;
 
 
 
@@ -170,7 +179,7 @@ SemanticStatementClaim
 	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticType;
 
 SemanticStatementReassignment
-	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression;
+	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression?;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;

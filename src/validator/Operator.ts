@@ -9,6 +9,7 @@ export enum Operator {
 	EMP,
 	AFF,
 	NEG,
+	ISSET,
 	CAST,
 	CAST_MAY,
 	CAST_RES,
@@ -21,18 +22,12 @@ export enum Operator {
 	GT,
 	LE,
 	GE,
-	NLT,
-	NGT,
 	IS,
 	ISNT,
 	ID,
 	EQ,
-	NID,
-	NEQ,
 	AND,
-	NAND,
 	OR,
-	NOR,
 	COND,
 }
 
@@ -80,15 +75,11 @@ export type ValidOperatorComparative = (
 	| Operator.GT
 	| Operator.LE
 	| Operator.GE
-	| Operator.NLT
-	| Operator.NGT
 );
 
 export type ValidOperatorEquality = (
 	| Operator.ID
 	| Operator.EQ
-	| Operator.NID
-	| Operator.NEQ
 );
 
 export type ValidOperatorLogical = (
