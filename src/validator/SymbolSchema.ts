@@ -1,8 +1,5 @@
-import {
-	type VALUE,
-	TYPE,
-} from '../index.ts';
-import type * as AST from './astnode-cp/index.ts';
+import {TYPE} from '../typer/index.ts';
+import type * as AST from './ast/index.ts';
 
 
 
@@ -35,7 +32,8 @@ export abstract class SymbolSchema {
 export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.ANYTHING;
-	public constructor(node: AST.ASTNodeTypeAlias) {
+
+	public constructor(node: AST.TYPE.TypeAlias) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }
@@ -43,14 +41,22 @@ export class SymbolSchemaType extends SymbolSchema {
 
 
 export class SymbolSchemaVar extends SymbolSchema {
-	/** The variable’s Type. */
-	public type:  TYPE.Type = TYPE.ANYTHING;
-	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-	public value: VALUE.Value | null = null;
+	/**
+	 * The variable’s assignee type.
+	 * This is the type declared in the annotation.
+	 */
+	public type: TYPE.Type = TYPE.ANYTHING;
+
+	/**
+	 * The variable’s assigned value type as represented in IR.
+	 * This will typically be narrower than the assignee type.
+	 */
+	public irType: TYPE.Type = TYPE.NOTHING;
+
 	public constructor(
-		node: AST.ASTNodeVariable,
+		node: AST.EXPR.Variable,
 		/** May the symbol be reassigned? */
-		public readonly isUnfixed: boolean,
+		public readonly isWritable: boolean,
 		/** Was the symbol declared without an initial value? */
 		public readonly isUninitialized: boolean,
 	) {

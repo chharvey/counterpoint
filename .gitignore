@@ -61,14 +61,15 @@ typings/
 .next
 
 
-# Editor Settings
+# System/Editor Settings
+.DS_Store
 .vscode/
 
 # Sample test files
 sample/
 
 # Generated build files
-build/
+dist/
 *.wasm
 
 # Generated documentation & style guides

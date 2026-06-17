@@ -92,7 +92,7 @@ but we are never exposed to their values.
 We cannot operate and compute with symbols the same way we do with strings or integers.
 ```
 val mut el: sym = @fire;
-% Unfixed variables of type `sym` may be reassigned,
+% Writable variables of type `sym` may be reassigned,
 set el = @air;
 set el = @aether;
 
@@ -507,7 +507,7 @@ although that term can be ambiguous in the context of generics, where types may 
 
 A unit type must be a single primitive literal, i.e., an Integer, Float, or String (and of course `null`),
 and any value assignable to it must compute to that value. Variables with a unit type may still be reassignable,
-but they can only be reassigned to the same value, so having an unfixed variable with a unit type is kind of pointless.
+but they can only be reassigned to the same value, so having a writable variable with a unit type is kind of pointless.
 Variables with unit types are conventionally written in MACRO_CASE.
 ```
 val mut TAU: true = true;
@@ -547,7 +547,7 @@ val GREETING: "Hello World!" = """{{ hello }} {{ world }}!""";
 ```
 Notice that even though the variables `hello` and `world` are *not* declared with unit types (`str` is not a unit type),
 the compiler is still able to compute their values, thus the assignment to `GREETING` is valid.
-However, if they were unfixed, that wouldn’t be possible.
+However, if they were writable, that wouldn’t be possible.
 ```
 val mut hello: str = "Hello";
 val mut world: str = "World";
@@ -632,26 +632,18 @@ elements.\b01; %== "wind"
 elements.\b10; %== "fire"
 ```
 
-Negative indices count backwards from the end of the list.
-Index `-1` represents the last item, index `-2` represents the penultimate item, etc.
-```
-elements.-1;    %== "fire"
-elements.-\b10; %== "wind"
-```
-
 We can also access by natural number index.
 ```cpl
-elements.+\b01; %== "wind"
+elements.+1;    %== "wind"
 elements.+\b10; %== "fire"
 ```
 
 Tuple size is known at compile-time,
 so attempting to retrieve an out-of-bounds index results in a compile-time error.
-Positive indices beyond the end of the list, and negative indices beyond the beginning,
-result in a TypeErrorNoEntry. In other words, the indices *do not* loop around.
+Positive indices beyond the end of the list result in a TypeErrorNoEntry.
+The indices *do not* loop around.
 ```
-elements.3;  %> TypeErrorNoEntry
-elements.-4; %> TypeErrorNoEntry
+elements.3; %> TypeErrorNoEntry
 ```
 
 A tuple’s items, type, and size are all fixed.
@@ -870,17 +862,27 @@ elements.[-3 + 2];  %== "fire"
 elements.[0.5 * 2]; %> TypeError % expected int but found float
 ```
 
+Negative indices count backwards from the end of the list.
+Index `-1` represents the last item, index `-2` represents the penultimate item, etc.
+```
+elements.[-1];    %== "fire"
+elements.[-\b10]; %== "wind"
+```
+
 When the the compiler can determine if the index is out-of-bounds (for example if the list and index are foldable),
 then a VoidErrorOutOfBounds is reported at compile-time.
 (This differs from a tuple, where a TypeErrorNoEntry would be reported.)
+Indices *do not* loop around. Negative indices can not be less than the negative count.
 ```
-val i: int = 4;
+val mut i: int = 4;
+elements.[i];   %> VoidErrorOutOfBounds
+set i = -4;
 elements.[i];   %> VoidErrorOutOfBounds
 ```
 Most lists are dynamic and their count is unknown by the compiler, so we won’t always be warned when the index is out of bounds.
 In these cases, the typer will still analyze the expression, but an ExceptionIndexOutOfBounds is thrown at runtime.
 ```
-val mut i: int = 4;           % unfixed variables are not folded
+val mut i: int = 4;           % writable variables are not folded
 val elem: str = elements.[i]; % no compile-time error, but results in ExceptionIndexOutOfBounds
 ```
 
@@ -958,7 +960,7 @@ elements.[s];             %> VoidErrorOutOfBounds
 Most dicts are dynamic and their range of keys is unknown by the compiler, so we won’t always be warned when the key is out of range.
 In these cases, the typer will still analyze the expression, but an ExceptionKeyOutOfRange is thrown at runtime.
 ```
-val mut s: sym = @pythagoras; % unfixed variables are not folded
+val mut s: sym = @pythagoras; % writable variables are not folded
 elements.[s];                 % no compile-time error, but results in ExceptionKeyOutOfRange
 json_data.["pythagoras"];     % no compile-time error, but results in ExceptionKeyOutOfRange
 ```

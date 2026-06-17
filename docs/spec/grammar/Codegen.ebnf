@@ -1,0 +1,617 @@
+Codegen((TRAP)) := (unreachable);
+
+Codegen((NULL.CONST null))  := (call $Value.new-primitive (global.get $Vect.NULL));
+Codegen((BOOL.CONST false)) := (call $Value.new-primitive (global.get $Vect.FALSE));
+Codegen((BOOL.CONST true))  := (call $Value.new-primitive (global.get $Vect.TRUE));
+
+Codegen((SYM.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.id`)));
+Codegen((INT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-int   (i64.const `v.data`)));
+Codegen((NAT.CONST   `v`)) := (call $Value.new-primitive (call $Vect.new-nat   (i64.const `v.data`)));
+Codegen((FLOAT.CONST `v`)) := (call $Value.new-primitive (call $Vect.new-float (i64.const `v.data`)));
+
+Codegen((STR.CONST `v`)) := (call $Value.new-composite
+	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
+);
+
+Codegen((GET `id`)) := (local.get ‹index›);
+
+Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
+	(block (result (ref $String))
+		`values.map("(local.set $str_`i` (call $Value.stringify `Codegen(values[i])`))")`
+		(local.set $string
+			(array.new_default $String `values.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
+		)
+		(local.set $offset (i32.const 0))
+		`values.flatMap([
+			"(array.COPY
+				(local.get $string)
+				(local.get $offset)
+				(local.get $str_`i`)
+				(i32.const 0)
+				(array.len (local.get $str_`i`))
+			)",
+			"(local.set $offset (i32.add (local.get $offset) (array.len (local.get $str_`i`))))",
+		]).slice(0, -1)`
+		(local.get $string)
+	)
+);
+
+Codegen((TUPLE.NEW)) := (call $Value.new-composite
+	(array.new_fixed $Tuple 0)
+);
+Codegen((TUPLE.NEW `values`)) := (call $Value.new-composite
+	(array.new_fixed $Tuple `values.count` `values.map(Codegen)`)
+);
+
+Codegen((RECORD.NEW)) := (call $Value.new-composite
+	(array.new_fixed $Record 0)
+);
+Codegen((RECORD.NEW `pairs`)) := (call $Value.new-composite
+	(array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
+);
+
+Codegen((LIST.NEW)) := (call $Value.new-composite
+	(struct.new $List
+		(call $Object.ctr-plus-plus)
+		(i32.const 0)
+		(array.new_default $ListInternal (i32.const 8))
+	)
+);
+Codegen((LIST.NEW `values`)) := (call $Value.new-composite
+	(struct.new $List
+		(call $Object.ctr-plus-plus)
+		(i32.const `values.count`)
+		(array.new_fixed $ListInternal `CapacityNeeded(values.count)`
+			`values.pad(CapacityNeeded(values.count), "(ref.null $Value)").map(Codegen)`
+		)
+	)
+);
+
+Codegen((DICT.NEW)) := (call $Value.new-composite
+	(struct.new $Dict
+		(call $Object.ctr-plus-plus)
+		(i32.const 0)
+		(array.new_default $DictInternal (i32.const 8))
+	)
+);
+Codegen((DICT.NEW `pairs`)) := (call $Value.new-composite
+	(struct.new $Dict
+		(call $Object.ctr-plus-plus)
+		(i32.const `pairs.count`)
+		(array.new_fixed $DictInternal `CapacityNeeded(pairs.count)`
+			`pairs.pad(CapacityNeeded(pairs.count), "(ref.null $Property)").hashMap("(struct.new $Property
+				(i64.const `pairs[i].0`)
+				`Codegen(pairs[i].1)`
+			)")`
+		)
+	)
+);
+
+// `Set<T>`s are implemented as `Map<T, null>`s
+Codegen((SET.NEW)) := (call $Value.new-composite
+	(struct.new $Map
+		(call $Object.ctr-plus-plus)
+		(i32.const 0)
+		(array.new_default $MapInternal (i32.const 8))
+	)
+);
+Codegen((SET.NEW `values`)) := (call $Value.new-composite
+	(block (result (ref $Map))
+		(local.set $map (struct.new $Map
+			(call $Object.ctr-plus-plus)
+			(i32.const `values.count`)
+			(array.new_default $MapInternal `CapacityNeeded(values.count)`)
+		))
+		`...values.map("(call $Map.set `Codegen(values[i])` `Codegen((NULL.CONST null))`)")`
+		(local.get $map)
+	)
+);
+
+Codegen((MAP.NEW)) := (call $Value.new-composite
+	(struct.new $Map
+		(call $Object.ctr-plus-plus)
+		(i32.const 0)
+		(array.new_default $MapInternal (i32.const 8))
+	)
+);
+Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
+	(block (result (ref $Map))
+		(local.set $map (struct.new $Map
+			(call $Object.ctr-plus-plus)
+			(i32.const `pairs.count`)
+			(array.new_default $MapInternal `CapacityNeeded(pairs.count)`)
+		))
+		`...pairs.map("(call $Map.set `Codegen(pairs[i].0)` `Codegen(pairs[i].1)`)")`
+		(local.get $map)
+	)
+);
+
+Codegen((TUPLE.GET `index` `obj`)) := (array.get
+	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`))
+	(i32.const `index`)
+);
+
+Codegen((RECORD.GET `key` `obj`)) := (call $Record.get
+	(ref.cast (ref $Record) (struct.get $Value $composite `Codegen(obj)`))
+	(i64.const `key`)
+);
+
+Codegen((LIST.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(local.set $item (array.get
+		(struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`)))
+		(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
+	))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $item))
+		(then `Codegen((NULL.CONST null))`)
+		(else (ref.as_non_null (local.get $item)))
+	)
+);
+
+Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(drop
+		(local.set $maybe-prop
+			(call $Dict.find
+				(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))
+				(i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`))
+			)
+		)
+	)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $maybe-prop))
+			(call $Property.is-tombstone (local.get $maybe-prop))
+		)
+		(then `Codegen((NULL.CONST null))`)
+		(else (struct.get $Property $val (local.get $maybe-prop)))
+	)
+);
+
+Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(drop
+		(local.set $maybe-case
+			(call $Map.find
+				(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+				`Codegen(accessor)`
+			)
+		)
+	)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $maybe-case))
+			(call $Case.is-tombstone (local.get $maybe-case))
+		)
+		(then `Codegen((BOOL.CONST false))`)
+		(else `Codegen((BOOL.CONST true))`)
+	)
+);
+
+Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
+	(drop
+		(local.set $maybe-case
+			(call $Map.find
+				(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+				`Codegen(accessor)`
+			)
+		)
+	)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $maybe-case))
+			(call $Case.is-tombstone (local.get $maybe-case))
+		)
+		(then `Codegen((NULL.CONST null))`)
+		(else (struct.get $Case $con (local.get $maybe-case)))
+	)
+);
+
+// Codegen((CALL `callable` `args`));
+
+Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
+	(struct.get $Value $tag (local.get ‹index›))
+)));
+
+Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
+
+Codegen((NOT `v`)) := (call $op:not      `Codegen(v)`);
+Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);
+Codegen((NEG `v`)) := (call $op:negate   `Codegen(v)`);
+
+Codegen((TOBOOL  `v`)) := (call $op:not (call $op:not `Codegen(v)`));
+Codegen((TOINT   `v`)) := (call $op:to-int       `Codegen(v)`);
+Codegen((TONAT   `v`)) := (call $op:to-nat       `Codegen(v)`);
+Codegen((TOFLOAT `v`)) := (call $op:to-float     `Codegen(v)`);
+Codegen((TOSTR   `v`)) := (call $Value.stringify `Codegen(v)`);
+
+Codegen((LIST.COUNT `obj`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
+		(i64.extend_i32_u (call $List.count (ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))))
+	)
+);
+Codegen((DICT.COUNT `obj`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
+		(i64.extend_i32_u (call $Dict.count (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))))
+	)
+);
+Codegen((SET.COUNT `obj`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
+		(i64.extend_i32_u (call $Map.count (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))))
+	)
+);
+Codegen((MAP.COUNT `obj`)) := (call $Value.new-primitive
+	(call $Vect.new-nat
+		(i64.extend_i32_u (call $Map.count (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))))
+	)
+);
+
+Codegen((INT.ADD `v0` `v1`)) := (call $op:int-add `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.SUB `v0` `v1`)) := (call $op:int-sub `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.MUL `v0` `v1`)) := (call $op:int-mul `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.DIV `v0` `v1`)) := (call $op:int-div `Codegen(v0)` `Codegen(v1)`);
+Codegen((INT.EXP `v0` `v1`)) := (call $op:int-exp `Codegen(v0)` `Codegen(v1)`);
+
+Codegen((NAT.ADD `v0` `v1`)) := (call $op:nat-add `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.SUB `v0` `v1`)) := (call $op:nat-sub `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.MUL `v0` `v1`)) := (call $op:nat-mul `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.DIV `v0` `v1`)) := (call $op:nat-div `Codegen(v0)` `Codegen(v1)`);
+Codegen((NAT.EXP `v0` `v1`)) := (call $cpl-nat-exp `Codegen(v0)` `Codegen(v1)`);
+
+Codegen((FLOAT.ADD `v0` `v1`)) := (call $op:float-add `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.SUB `v0` `v1`)) := (call $op:float-sub `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.MUL `v0` `v1`)) := (call $op:float-mul `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.DIV `v0` `v1`)) := (call $op:float-div `Codegen(v0)` `Codegen(v1)`);
+Codegen((FLOAT.EXP `v0` `v1`)) := (call $op:float-exp `Codegen(v0)` `Codegen(v1)`);
+
+Codegen((LT `v0` `v1`)) := (call $op:lt `Codegen(v0)` `Codegen(v1)`);
+Codegen((GT `v0` `v1`)) := (call $op:gt `Codegen(v0)` `Codegen(v1)`);
+Codegen((LE `v0` `v1`)) := (call $op:le `Codegen(v0)` `Codegen(v1)`);
+Codegen((GE `v0` `v1`)) := (call $op:ge `Codegen(v0)` `Codegen(v1)`);
+
+Codegen((ID `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
+Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
+
+Codegen((DROP `v`)) := (drop `Codegen(v)`);
+
+Codegen((DECL `id` `type` `v`)) := (local.set ‹index› `id` `Codegen(v)`);
+Codegen((DECL `id` `type`))     := (local.set ‹index› `id` (struct.new_default $Value));
+Codegen((SET  `id` `v`))        := (local.set ‹index› `id` `Codegen(v)`);
+
+Codegen((LIST.SET `obj` `accessor` `v`)) := (call $List.set
+	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))
+	(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
+	`Codegen(v)`
+);
+
+Codegen((DICT.SET `obj` `accessor` `v`)) := (call $Dict.set
+	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))
+	(i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`))
+	`Codegen(v)`
+);
+
+Codegen((SET.SET `obj` `accessor` `v`)) := (block
+	(local.set $base     (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`)))
+	(local.set $accessor `Codegen(accessor)`)
+	(if
+		(call $Vect.is-true (struct.get $Value $primitive `Codegen(v)`))
+		(call $Map.set
+			(local.get $base)
+			(local.get $accessor)
+			`Codegen((NULL.CONST null))`
+		)
+		(drop (call $Map.delete
+			(local.get $base)
+			(local.get $accessor)
+		))
+	)
+);
+
+Codegen((MAP.SET `obj` `accessor` `v`)) := (call $Map.set
+	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+	`Codegen(accessor)`
+	`Codegen(v)`
+);
+
+Codegen((LIST.COPY `dest` `src:Tuple`)) := (block
+	(local.set $destlist (ref.cast (ref $List)  (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $srcref   (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`)))
+	(call $List.adjust-capacity
+		(local.get $destlist)
+		(call $util:capacity-needed (array.len (local.get $srcref)))
+	)
+	(array.copy $ListInternal $Tuple
+		(struct.get $List $internal (local.get $destlist))
+		(i32.const 0)
+		(local.get $srcref)
+		(i32.const 0)
+		(array.len (local.get $srcref))
+	)
+);
+Codegen((LIST.COPY `dest` `src:List`)) := (block
+	(local.set $destlist (ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $srcref   (struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))))
+	(call $List.adjust-capacity
+		(local.get $destlist)
+		(array.len (local.get $srcref))
+	)
+	(array.copy $ListInternal $ListInternal
+		(struct.get $List $internal (local.get $destlist))
+		(i32.const 0)
+		(local.get $srcref)
+		(i32.const 0)
+		(array.len (local.get $srcref))
+	)
+);
+Codegen((LIST.COPY `dest` `src:Set`)) := (block
+	(local.set $list  (ref.cast (ref $List) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $cases (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(local.set $j (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
+			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then
+					(call $List.set
+						(local.get $list)
+						(local.get $j)
+						(struct.get $Case $ant (local.get $case))
+					)
+					(local.set $j (i32.add (local.get $j) (i32.const 1)))
+				)
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+
+Codegen((DICT.COPY `dest` `src:Tuple`)) := (block
+	(local.set $dict  (ref.cast (ref $Dict)  (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $pairs (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`)))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
+			(local.set $item (array.get $Tuple (local.get $pairs) (local.get $i)))
+			(call $Dict.set
+				(local.get $dict)
+				(i64x2.extract_lane 1 (struct.get $Value $primitive
+					(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
+				))
+				(array.get $Tuple (local.get $pair) (i32.const 1))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((DICT.COPY `dest` `src:Record`)) := (block
+	(local.set $destdict (ref.cast (ref $Dict)   (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $srcref   (ref.cast (ref $Record) (struct.get $Value $composite `Codegen(src)`)))
+	(call $Dict.adjust-capacity
+		(local.get $destdict)
+		(call $util:capacity-needed (array.len (local.get $srcref)))
+	)
+	(array.copy $DictInternal $Record
+		(struct.get $Dict $internal (local.get $destdict))
+		(i32.const 0)
+		(local.get $srcref)
+		(i32.const 0)
+		(array.len (local.get $srcref))
+	)
+);
+Codegen((DICT.COPY `dest` `src:List`)) := (block
+	(local.set $dict  (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $pairs (struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
+			(local.set $item (array.get $ListInternal (local.get $pairs) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Dict.set
+					(local.get $dict)
+					(i64x2.extract_lane 1 (struct.get $Value $primitive
+						(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
+					))
+					(array.get $Tuple (local.get $pair) (i32.const 1))
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((DICT.COPY `dest` `src:Dict`)) := (block
+	(local.set $destdict (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $srcref   (struct.get $Dict $internal (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(src)`))))
+	(call $Dict.adjust-capacity
+		(local.get $destdict)
+		(array.len (local.get $srcref))
+	)
+	(array.copy $DictInternal $DictInternal
+		(struct.get $Dict $internal (local.get $destdict))
+		(i32.const 0)
+		(local.get $srcref)
+		(i32.const 0)
+		(array.len (local.get $srcref))
+	)
+);
+Codegen((DICT.COPY `dest` `src:Set`)) := (block
+	(local.set $dict  (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $cases (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
+			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then (call $Dict.set
+					(local.get $dict)
+					(i64x2.extract_lane 1 (struct.get $Value $primitive
+						(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $case))))) (i32.const 0))
+					))
+					(array.get $Tuple (local.get $pair) (i32.const 1))
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((DICT.COPY `dest` `src:Map`)) := (block
+	(local.set $dict  (ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $cases (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
+			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then (call $Dict.set
+					(local.get $dict)
+					(i64x2.extract_lane 1 (struct.get $Value $primitive (struct.get $Case $ant (local.get $case))))
+					(struct.get $Case $con (local.get $case))
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+
+Codegen((SET.COPY `dest` `src:Tuple`)) := (block
+	(local.set $set   (ref.cast (ref $Map)   (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $items (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`)))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $items))))
+			(local.set $item (array.get $Tuple (local.get $items) (local.get $i)))
+			(call $Map.set
+				(local.get $set)
+				(local.get $item)
+				`Codegen((NULL.CONST null))`
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((SET.COPY `dest` `src:List`)) := (block
+	(local.set $set   (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $items (struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $items))))
+			(local.set $item (array.get $ListInternal (local.get $items) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Map.set
+					(local.get $set)
+					(ref.as_non_null (local.get $item))
+					`Codegen((NULL.CONST null))`
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((SET.COPY `dest` `src:Set`)) := (block
+	(local.set $destset (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $srcref  (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
+	(call $Map.adjust-capacity
+		(local.get $destset)
+		(array.len (local.get $srcref))
+	)
+	(array.copy $MapInternal $MapInternal
+		(struct.get $Map $internal (local.get $destset))
+		(i32.const 0)
+		(local.get $srcref)
+		(i32.const 0)
+		(array.len (local.get $srcref))
+	)
+);
+
+Codegen((MAP.COPY `dest` `src:Tuple`)) := (block
+	(local.set $map   (ref.cast (ref $Map)   (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $pairs (ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(src)`)))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
+			(local.set $item (array.get $Tuple (local.get $pairs) (local.get $i)))
+			(call $Map.set
+				(local.get $map)
+				(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
+				(array.get $Tuple (local.get $pair) (i32.const 1))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((MAP.COPY `dest` `src:List`)) := (block
+	(local.set $map   (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $pairs (struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(src)`))))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $pairs))))
+			(local.set $item (array.get $ListInternal (local.get $pairs) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $item)))
+				(then (call $Dict.set
+					(local.get $map)
+					(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (local.get $item)))) (i32.const 0))
+					(array.get $Tuple (local.get $pair) (i32.const 1))
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((MAP.COPY `dest` `src:Set`)) := (block
+	(local.set $map   (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $cases (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
+	(block $exit
+		(local.set $i (i32.const 0))
+		(loop $repeat
+			(br_if $exit (i32.ge_u (local.get $i) (array.len (local.get $cases))))
+			(local.set $case (array.get $MapInternal (local.get $cases) (local.get $i)))
+			(if
+				(i32.eqz (ref.is_null (local.get $case)))
+				(then (call $Map.set
+					(local.get $map)
+					(array.get $Tuple (local.tee $pair (ref.cast (ref $Tuple) (struct.get $Value $composite (struct.get $Case $ant (local.get $case))))) (i32.const 0))
+					(array.get $Tuple (local.get $pair) (i32.const 1))
+				))
+			)
+			(local.set $i (i32.add (local.get $i) (i32.const 1)))
+			(br $repeat)
+		)
+	)
+);
+Codegen((MAP.COPY `dest` `src:Map`)) := (block
+	(local.set $destmap (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(dest)`)))
+	(local.set $srcref  (struct.get $Map $internal (ref.cast (ref $Map) (struct.get $Value $composite `Codegen(src)`))))
+	(call $Map.adjust-capacity
+		(local.get $destmap)
+		(array.len (local.get $srcref))
+	)
+	(array.copy $MapInternal $MapInternal
+		(struct.get $Map $internal (local.get $destmap))
+		(i32.const 0)
+		(local.get $srcref)
+		(i32.const 0)
+		(array.len (local.get $srcref))
+	)
+);

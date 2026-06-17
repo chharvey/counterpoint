@@ -5,5 +5,6 @@
 1. [Variables](./variables.md)
 1. [Statements](./statements.md)
 1. [Functions](./functions.md)
+1. [Built-Ins](./built-ins.md)
 1. [Errors](./errors.md)
 1. [Configuration](./configuration.md)

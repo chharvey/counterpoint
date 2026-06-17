@@ -19,7 +19,7 @@ This chapter defines the syntax, semantics, and behavior of statements in the Co
 
 
 
-## Variable/Property Reassignment
+## Variable/Property Reassignment/Deletion
 
 
 

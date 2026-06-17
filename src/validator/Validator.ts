@@ -1,8 +1,7 @@
 import * as assert from 'node:assert';
-import utf8 from 'utf8'; // need `tsconfig.json#compilerOptions.allowSyntheticDefaultImports = true`
-import type {CodeUnit} from '../lib/index.ts';
+import * as xjs from 'extrajs';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {
@@ -14,12 +13,44 @@ import type {SymbolSchema} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
-	utf8Encode,
 } from './utils-private.ts';
+import {
+	ValidIntrinsicName,
+	ValidFunctionName,
+} from './ast/utils-private.ts';
 
 
 
 type RadixType = 2n | 4n | 6n | 8n | 10n | 16n | 36n;
+
+
+
+/**
+ * A code point is an integer within the closed interval [0, 0x10_ffff] that represents
+ * the index of a character in the Unicode Universal Character Set.
+ */
+type CodePoint = number;
+
+
+
+/**
+ * A code unit is an integer within the closed interval [0, 0xff] that represents
+ * a byte of an encoded Unicode code point.
+ */
+type CodeUnit = number;
+
+
+
+/**
+ * An encoded character is a sequence of code units
+ * that corresponds to a single code point in the UTF-8 encoding.
+ */
+type EncodedChar = (
+	| [CodeUnit]
+	| [CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit]
+	| [CodeUnit, CodeUnit, CodeUnit, CodeUnit]
+);
 
 
 
@@ -34,6 +65,18 @@ const DELIM_INTERP_START = '{{';
 const DELIM_INTERP_END   = '}}';
 const COMMENTER_LINE     = '%';
 const COMMENTER_MULTI    = '%%';
+
+
+
+/**
+ * The UTF-8 encoding of a numeric code point value.
+ * @param   codepoint a Unicode code point
+ * @returns           a code unit sequence representing the code point
+ */
+export function utf8Encode(codepoint: CodePoint): EncodedChar {
+	xjs.Number.assertType(codepoint, xjs.NumericType.NATURAL);
+	return [...new TextEncoder().encode(String.fromCodePoint(codepoint))] as EncodedChar;
+}
 
 
 
@@ -157,10 +200,13 @@ function tokenWorthString(text: string): CodeUnit[] {
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
-	/** The minimum allowed cooked value of a keyword token. */
-	private static readonly MIN_VALUE_KEYWORD = 0x80n;
+	/** The minimum allowed cooked value of a reserved keyword token. */
+	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
-	/** The minimum allowed cooked value of an identifier token. */
+	/** The minimum allowed cooked value of an intrinsic identifier token. */
+	private static readonly MIN_VALUE_INTRINSIC = 0x80n;
+
+	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
 
 	/**
@@ -178,7 +224,7 @@ export class Validator {
 
 	/**
 	 * Give the numeric value of a number token.
-	 * If the returned value is a native `bigint`, it represents a Counterpoint Integer language value;
+	 * If the returned value is a native `bigint`, it represents either a Counterpoint Integer or Natural language value;
 	 * if the returned value is a native `number`, it represents a Counterpoint Float language value.
 	 * @param source the token’s text
 	 * @return       the numeric value, cooked
@@ -213,8 +259,8 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenString(source: string): CodeUnit[] {
-		return tokenWorthString(source.slice(DELIM_STRING.length, -DELIM_STRING.length));
+	public static cookTokenString(source: string): Uint8Array {
+		return new Uint8Array(tokenWorthString(source.slice(DELIM_STRING.length, -DELIM_STRING.length)));
 	}
 
 	/**
@@ -222,7 +268,7 @@ export class Validator {
 	 * @param source the token’s text
 	 * @return       the text value, cooked
 	 */
-	public static cookTokenTemplate(source: string): CodeUnit[] {
+	public static cookTokenTemplate(source: string): Uint8Array {
 		const delim_start = (
 			source.startsWith(DELIM_TEMPLATE)   ? DELIM_TEMPLATE   :
 			source.startsWith(DELIM_INTERP_END) ? DELIM_INTERP_END :
@@ -233,14 +279,17 @@ export class Validator {
 			source.endsWith(DELIM_INTERP_START) ? DELIM_INTERP_START :
 			''
 		);
-		return [...utf8.encode(source.slice(delim_start.length, -delim_end.length))].map((ch) => ch.codePointAt(0)!);
+		return new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length));
 	}
 
 
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table = new Map<bigint, SymbolSchema>();
 
-	/** A bank of unique identifier names. */
+	/** A bank of unique intrinsic identifier names. */
+	private readonly intrinsics = new Set<string>();
+
+	/** A bank of unique user-defined identifier names. */
 	private readonly identifiers = new Set<string>();
 
 	/**
@@ -249,9 +298,20 @@ export class Validator {
 	 * @param parent - a parent validator from which to inherit symbols
 	 */
 	public constructor(
-		public  readonly config:  CPConfig = CONFIG_DEFAULT,
+		public  readonly config:  CplConfig = CONFIG_DEFAULT,
 		private readonly parent?: Validator,
 	) {
+		if (!this.parent) {
+			[
+				ValidIntrinsicName.OBJECT,
+				ValidFunctionName.INTEGER,
+				ValidFunctionName.NATURAL,
+				ValidFunctionName.FLOAT,
+				ValidFunctionName.STRING,
+			].forEach((name) => {
+				this.intrinsics.add(name);
+			});
+		}
 	}
 
 	/**
@@ -318,8 +378,11 @@ export class Validator {
 		if (this.parent) {
 			return this.parent.cookTokenIdentifier(source);
 		}
+		if (this.intrinsics.has(source)) {
+			return Validator.MIN_VALUE_INTRINSIC + BigInt([...this.intrinsics].indexOf(source));
+		}
 		this.identifiers.add(source);
-		return BigInt([...this.identifiers].indexOf(source)) + Validator.MIN_VALUE_IDENTIFIER;
+		return Validator.MIN_VALUE_IDENTIFIER + BigInt([...this.identifiers].indexOf(source));
 	}
 
 	/**

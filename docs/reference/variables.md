@@ -67,8 +67,8 @@ val my_other_var: str = "Hello, programmer!";
 ### Type Inference
 When assigning a variable a primitive literal, string template, or constructor call (with no operations),
 we can omit the type annotation.
-For fixed variables, the type is inferred as a unit type containing that primitive value.
-For unfixed variables, the inferred type is the narrowest primitive type corresponding to that value.
+For read-only variables, the type is inferred as a unit type containing that primitive value.
+For writable variables, the inferred type is the narrowest primitive type corresponding to that value.
 For string template values (with or without interpolation), the inferred type is always `str`.
 Constructor calls always imply their exact type (made mutable if applicable).
 ```cpl
@@ -90,18 +90,18 @@ val mut rec_untyped_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,
 
 
 ## Variable Reassignment
-By default, variables are **fixed** in that they cannot be reassigned.
+By default, variables are **read-only** in that they cannot be reassigned.
 ```
 val my_var: str = "Hello, world!";
 set my_var = "¡Hola, mundo!";      %> AssignmentError
 ```
-> AssignmentError: Reassignment of a fixed variable: `my_var`.
+> AssignmentError: Reassignment of a read-only variable: `my_var`.
 
 In some programming disciplines this pattern is generally encouraged, because
 variables holding different values at different points in runtime could lead to unpredictability.
 However, changing a variable’s value is useful in some cases, such as in loops or for storing state.
 
-Therefore, we can declare unfixed variables with the keywords `val mut`,
+Therefore, we can declare writable variables with the keywords `val mut`,
 which allows us to assign it a new value later.
 The variable is reassigned with the keyword `set`.
 ```
@@ -111,7 +111,7 @@ set my_var = "¡Hola, mundo!";
 my_var;                           %== "¡Hola, mundo!"
 ```
 The statement `set my_var = "¡Hola, mundo!";` is called a **variable reassignment statement**.
-An unfixed variable can be reassigned anywhere in the scope in which it’s visible.
+A writable variable can be reassigned anywhere in the scope in which it’s visible.
 
 
 ### Pointers
@@ -140,6 +140,55 @@ set a = 420;
 a;                   % now `420`
 b;                   % still `42`
 ```
+
+
+
+## Optional Variables
+Variables may be declared without an explicit inital value. These varaibles are called “uninitialized” or “optional”.
+```cpl
+val mut greeting?: str;
+```
+When declared, the variable must be writable (with the `mut` keyword) and must be annotated with a type.
+
+The declared type of `greeting` is `str`, but its implicit initial value is `null`.
+When accessed, its type is `str | null`, but it may only be assigned `str` values.
+```cpl
+val greet_1: str        = greeting; %> TypeError: Expression of type `str | null` is not assignable to type `str`.
+val greet_2: str | null = greeting; % ok
+
+set greeting = null;    %> TypeError: Expression of type `null` is not assignable to type `str`.
+set greeting = "hello"; % ok
+```
+There’s a subtle difference between the following two statements:
+```cpl
+val mut greeting1: str | null = "hello";
+val mut greeting2?: str;
+```
+Besides the former being initialized, it says that a value for `greeting1` always exists,
+and whenever accessed or assigned, that value’s type is the union `str | null`.
+The latter says that a value for `greeting2` might or might not exist.
+If it does exist, its type is definitely `str` and not `null`, and if it doesn’t exist, then it is `null`.
+When assigned, it only accepts values of type `str`.
+Optional variables are similar to optional entries of [tuples/records](./types.md#compound-types),
+and they pair nicely with the [`isset` operator](./expressions-operators.md#is-set).
+
+
+### `delete` Statements
+To “unset” an optional variable, use the syntax `delete variable;`.
+An optional variable cannot be explicitly set to `null` (unless that’s in its declared type),
+so the `delete` statement resets it.
+```cpl
+val mut greeting?: str;
+
+set greeting = "hello";
+print.(greeting); %> "hello"
+
+set greeting = null; %> TypeError: Expression of type `null` is not assignable to type `str`.
+delete greeting;     % ok
+print.(greeting);    %> null
+```
+
+The `delete` statement can only be used on optional variables or optional entries on mutable objects.
 
 
 
@@ -300,7 +349,7 @@ type MyType = int | float;
 ```
 By convention, type aliases are named in *PascalCase*.
 
-Type aliases are initialized when they’re declared, and they’re always fixed — they can never be reassigned.
+Type aliases are initialized when they’re declared, and they’re always read-only — they can never be reassigned.
 ```
 type MyType = int | float;
 set MyType = int;          % raises a ParseError or ReferenceError (depending on type expression)

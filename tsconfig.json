@@ -5,17 +5,17 @@
 		"noImplicitOverride":                 true,
 		"noImplicitReturns":                  true,
 		"noPropertyAccessFromIndexSignature": true,
-		"strict":                             true,
 
 		// Modules
-		"module":                          "node20",
+		"module":                          "esnext", // BUG: https://github.com/microsoft/TypeScript/issues/63330
 		"rewriteRelativeImportExtensions": true,
 		"resolveJsonModule":               true,
 		"rootDir":                         "./src/",
+		"types":                           ["node"],
 
 		// Emit
 		"noEmitOnError": true,
-		"outDir":        "./build/",
+		"outDir":        "./dist/",
 
 		// Interop Constraints
 		"allowSyntheticDefaultImports": true,

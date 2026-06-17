@@ -16,6 +16,8 @@ export enum Keyword {
 
 	// operator
 	MUTABLE = 'mut',
+	ISSET   = 'isset',
+	ISNTSET = '!isset',
 	AS      = 'as',
 	AS_MAY  = 'as?',
 	AS_RES  = 'as!',
@@ -26,16 +28,17 @@ export enum Keyword {
 	ELSE    = 'else',
 
 	// storage
-	TYPE  = 'type',
-	LET   = 'val',
-	CLAIM = 'claim',
-	SET   = 'set',
-	BLANK = '_',
-	VOID  = 'void',
+	TYPE   = 'type',
+	LET    = 'val',
+	CLAIM  = 'claim',
+	SET    = 'set',
+	DELETE = 'delete',
+	BLANK  = '_',
+	VOID   = 'void',
 
 	// modifier
-	NOMINAL = 'nominal',
-	UNFIXED = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+	NOMINAL  = 'nominal',
+	WRITABLE = 'mut', // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
 
 	// control
 	UNLESS = 'unless',

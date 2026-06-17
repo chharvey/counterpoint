@@ -190,162 +190,12 @@ Performs the type-checking piece during semantic analysis.
 
 
 
-## ToBoolean
-Returns an associated [boolean value](./types-values#boolean), `true` or `false`, with a Counterpoint Language Value.
-```
-Boolean ToBoolean(Object value) :=
-	1. *If* `value` is an instance of `Null`:
-		1. *Return:* `false`.
-	2. *If* `value` is an instance of `Boolean`:
-		1. *Return:* `value`.
-	3. *Return:* `true`.
-```
-
-
-
-## Identical
-Compares two objects and returns whether they are the exact same object.
-```
-Boolean Identical(Object a, Object b) :=
-	1. *If* `a` is the value `null` and `b` is the value `null`:
-		1. *Return:* `true`.
-	2. *If* `a` is the value `false` *and* `b` is the value `false`:
-		1. *Return:* `true`.
-	3. *If* `a` is the value `true` *and* `b` is the value `true`:
-		1. *Return:* `true`.
-	4. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Integer`:
-		1. *If* `a` and `b` have the same bitwise encoding:
-			1. *Return:* `true`.
-	4. *If* `a` is an instance of `Natural` *and* `b` is an instance of `Natural`:
-		1. *If* `a` and `b` have the same bitwise encoding:
-			1. *Return:* `true`.
-	5. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
-		1. *If* `a` and `b` have the same bitwise encoding:
-			1. *Return:* `true`.
-	6. *If* `a` is an instance of `String` *and* `b` is an instance of `String`:
-		1. *If* `a` and `b` are exactly the same sequence of code units
-			(same length and same code units at corresponding indices):
-			1. *Return:* `true`.
-	7. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
-		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
-		3. *If* `seq_a.count` is not `seq_b.count`:
-			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For index* `i` in `seq_b`:
-			1. *If* *UnwrapAffirm:* `Identical(seq_a[i], seq_b[i])` is `false`:
-				1. *Return:* `false`.
-		6. *Return:* `true`.
-	8. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
-		1. *Let* `struct_a` be a new Schema whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a new Schema whose properties are exactly the properties in `b`.
-		3. *If* `struct_a.count` is not `struct_b.count`:
-			1. *Return:* `false`.
-		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
-			1. *Note:* This assumption prevents an infinite loop,
-				if `a` and `b` ever recursively contain themselves or each other.
-		5. *For key* `k` in `struct_b`:
-			1. *If* `struct_a[k]` is not set:
-				1. *Return:* `false`.
-			2. *If* *UnwrapAffirm:* `Identical(struct_a[k], struct_b[k])` is `false`:
-				1. *Return:* `false`.
-		6. *Return:* `true`.
-	9. *If* `a` and `b` are the same object:
-		1. *Return:* `true`.
-	10. *Return:* `false`.
-```
-
-
-
-## Equal
-Compares two objects and returns whether they are considered “equal” by some definition.
-```
-Boolean Equal(Object a, Object b) :=
-	1. *If* `Identical(a, b)` is `true`:
-		1. *Return:* `true`.
-	2. *If* `a` is an instance of `Number` *and* `b` is an instance of `Number`:
-		1. *Return:* `Equal(Float(a), Float(b))`.
-	3. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
-		1. *If* `a` is `0.0` *and* `b` is `-0.0`:
-			1. *Return:* `true`.
-		2. *If* `a` is `-0.0` *and* `b` is `0.0`:
-			1. *Return:* `true`.
-	4. Let the substeps of this step be a subroutine for determining equality of given Sequences of items, `seq_a` and `seq_b`.
-		1. *Assert:* `seq_a` is a Sequence of Counterpoint language values.
-		2. *Assert:* `seq_b` is a Sequence of Counterpoint language values.
-		3. *If* `seq_a.count` is not `seq_b.count`:
-			1. *Return:* `false`.
-		4. *For index* `i` in `seq_b`:
-			1. *If* *UnwrapAffirm:* `Equal(seq_a[i], seq_b[i])` is `false`:
-				1. *Return:* `false`.
-		5. *Return:* `true`.
-	5. Let the substeps of this step be a subroutine for determining equality of given Schemata of values, `sch_a` and `sch_b`.
-		1. *Assert:* `sch_a` is a Schema of Conterpoint language values.
-		2. *Assert:* `sch_b` is a Schema of Conterpoint language values.
-		3. *If* `sch_a.count` is not `sch_b.count`:
-			1. *Return:* `false`.
-		4. *For key* `k` in `sch_b`:
-			1. *If* `sch_a[k]` is not set:
-				1. *Return:* `false`.
-			2. *If* *UnwrapAffirm:* `Equal(sch_a[k], sch_b[k])` is `false`:
-				1. *Return:* `false`.
-		5. *Return:* `true`.
-	6. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following steps.
-		1. *Note:* This assumption prevents an infinite loop,
-			if `a` and `b` ever recursively contain themselves or each other.
-	7. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
-		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
-		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
-	8. *If* `a` is an instance of `List` *and* `b` is an instance of `List`:
-		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
-		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
-	9. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
-		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
-		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
-		3. *Perform:* The subroutine listed in Step 5 of this algorithm.
-	10. *If* `a` is an instance of `Dict` *and* `b` is an instance of `Dict`:
-		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
-		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
-		3. *Perform:* The subroutine listed in Step 5 of this algorithm.
-	11. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
-		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
-		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
-		3. *If* `seq_a.count` is not `seq_b.count`:
-			1. *Return:* `false`.
-		4. *For each* `it_b` in `seq_b`:
-			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
-			2. *If* `it_a` is not set:
-				1. *Return:* `false`.
-		5. *Return:* `true`.
-	12. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
-		1. *Let* `data_a` be a new Sequence of 2-tuples,
-			whose items are exactly the antecedents and consequents in `a`.
-		2. *Let* `data_b` be a new Sequence of 2-tuples,
-			whose items are exactly the antecedents and consequents in `b`.
-		3. *If* `data_a.count` is not `data_b.count`:
-			1. *Return:* `false`.
-		4. *For each* `it_b` in `data_b`:
-			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
-			2. *If* `it_a` is not set:
-				1. *Return:* `false`.
-			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
-				1. *Return:* `false`.
-		5. *Return:* `true`.
-	13. *Return:* `false`.
-```
-
-
-
 ## AssignTo
 Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
-	1. *If* `expr` is a SemanticTuple *and* `type` is a Tuple type:
+None! AssignTo(SemanticExpressionCollection expr, Type type) :=
+	1. *If* `expr` is a SemanticExpressionTuple *and* `type` is a Tuple type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
 		3. *Let* `seq_b_req` be a filtering of `seq_b` for each `ib` such that `ib.optional` is `false`.
@@ -359,7 +209,7 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			2. *If:* `ib` is set:
 				1. *Perform:* `TypeCheckAssign(expr.children[i], ib.type)`.
 		7. *Return.*
-	2. *If* `expr` is a SemanticRecord *and* `type` is a Record type:
+	2. *If* `expr` is a SemanticExpressionRecord *and* `type` is a Record type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
 		2. *Let* `struct_b` be a Schema whose properties are exactly the properties in `type`.
 		3. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
@@ -375,22 +225,22 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 			2. *If:* `vb` is set:
 				1. *Perform:* `TypeCheckAssign(property.children.1, vb.type)`.
 		7. *Return.*
-	3. *If* `expr` is a SemanticList *and* `type` is a List type:
+	3. *If* `expr` is a SemanticExpressionList *and* `type` is a List type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_it` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_it, b_type)`.
 		3. *Return.*
-	4. *If* `expr` is a SemanticDict *and* `type` is a Dict type:
+	4. *If* `expr` is a SemanticExpressionDict *and* `type` is a Dict type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_prop` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_prop.children.1, b_type)`.
 		3. *Return.*
-	5. *If* `expr` is a SemanticSet *and* `type` is a Set type:
+	5. *If* `expr` is a SemanticExpressionSet *and* `type` is a Set type:
 		1. *Let* `b_type` be the type argument over `type`.
 		2. *For each* `a_el` in `expr.children`:
 			1. *Perform:* `TypeCheckAssign(a_el, b_type)`.
 		3. *Return.*
-	6. *If* `expr` is a SemanticMap *and* `type` is a Map type:
+	6. *If* `expr` is a SemanticExpressionMap *and* `type` is a Map type:
 		1. *Let* `b_ant_type` be the antecedent type argument over `type`.
 		2. *Let* `b_con_type` be the consequent type argument over `type`.
 		3. *For each* `a_case` in `expr.children`:
@@ -403,127 +253,79 @@ None! AssignTo(SemanticCollectionLiteral expr, Type type) :=
 
 
 
-## PerformBinaryArithmetic
-Performs a binary arithmetic operation.
-```
-Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
-	1. *If* `op` is `EXP`:
-		1. *Let* `result` be the power, `operand0 ^ operand1`,
-			obtained by raising `operand0` (the base) to `operand1` (the exponent).
-		2. *Return:* `result`.
-	2. *Else If* `op` is `MUL`:
-		1. *Let* `result` be the product, `operand0 * operand1`,
-			obtained by multiplying `operand0` (the multiplicand) by `operand1` (the multiplier).
-		2. *Return:* `result`.
-	3. *Else If* `op` is `DIV`:
-		1. *Let* `result` be the quotient, `operand0 / operand1`,
-			obtained by dividing `operand0` (the dividend) by `operand1` (the divisor).
-		2. *Return:* `result`.
-	4. *Else If* `op` is `ADD`:
-		1. *Let* `result` be the sum, `operand0 + operand1`,
-			obtained by adding `operand0` (the augend) to `operand1` (the addend).
-		2. *Return:* `result`.
-	5. *Else If* `op` is `SUB`:
-		1. *Let* `result` be the difference, `operand0 - operand1`,
-			obtained by subtracting `operand1` (the subtrahend) from `operand0` (the minuend).
-		2. *Return:* `result`.
-	6. *Throw:* a new TypeErrorInvalidOperation.
-```
-
-
-
-## PerformBinaryCompare
-Performs a binary comparison operation.
-```
-Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
-	1. *If* `op` is `LT`:
-		1. *If* `operand0` is strictly less than `operand1`:
-			1. *Return:* `true`.
-		2. *Return:* `false`.
-	2. *Else If* `op` is `GT`:
-		1. *If* `operand1` is strictly less than `operand0`:
-			1. *Return:* `true`.
-		2. *Return:* `false`.
-	3. *Else If* `op` is `LE`:
-		1. *If* `operand0` is equal to `operand1`:
-			1. *Return:* `true`.
-		2. *If* `operand0` is strictly less than `operand1`:
-			1. *Return:* `true`.
-		3. *Return:* `false`.
-	4. *Else If* `op` is `GE`:
-		1. *If* `operand0` is equal to `operand1`:
-			1. *Return:* `true`.
-		2. *If* `operand1` is strictly less than `operand0`:
-			1. *Return:* `true`.
-		3. *Return:* `false`.
-	5. *Throw:* a new TypeErrorInvalidOperation.
-```
-
-
-
 ## GetEntryInfo
 ```
-EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAccess> access, Boolean is_writing) :=
+EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExpressionAccess> access, Boolean is_writing) :=
 	1. *Assert:* `access.children.count` is 2.
 	2. *Let* `accessor` be `access.children.1`.
-	3. *If* *UnwrapAffirm:* `IsTopType(base_type)` is `true` *and* `access.kind` is `MAYBE`:
+	3. *Let* `accessor_maybe` be `false`.
+	4. *If* `access.kind` is `MAYBE`:
+		1. *Set* `accessor_maybe` to `true`.
+	5. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* a new EntryTypeSchema [
-				type=     `Anything`,
+				type=     `Nothing`,
+				optional= `accessor_maybe`,
+			].
+	6. *If* *UnwrapAffirm:* `Subtype(Null, base_type)` is `true`:
+		1. *Let* `nonnull_base_type` be *UnwrapAffirm:* `Difference(base_type, Null)`.
+		2. *Let* `entry_info` be *Unwrap*: `GetEntryInfo(nonnull_base_type, access, is_writing)`.
+		3. *Let* `result` be *UnwrapAffirm:* `Union(entry_info, Null)`.
+		4. *Return:* a new EntryTypeSchema [
+				type=     `result`,
 				optional= `true`,
 			].
-	4. *If* `base_type` is the intersection or union of some types `a` and `b`:
-		1. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
-		2. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
-		3. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
-		4. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
-		5. *Set* `entries` to a mapping of `entries` for each `entry` to `entry.value`.
-		6. *If* `entries.count` is 0:
-			1. *If* `errors.count` is 1:
-				1. *Throw:* `errors.0`.
-			2. *Throw:* a new AggregateError containing `errors`.
+	7. *If* `base_type` is the intersection or union of some types `a` and `b`:
+		1. If `a` and `b` are of different types:
+			1. *Throw:* a new TypeErrorInvalidOperation.
+		2. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
+		3. *Let* `errors` be a filtering of `entry_infos` for each `info` such that `info` is an abrupt completion.
+		4. *Let* `entries` be a filtering of `entry_infos` for each `info` such that `info` is a normal completion.
+		5. *Set* `errors` to a mapping of `errors` for each `err` to `err.value`.
+		6. *Set* `entries` to a mapping of `entries` for each `entry` to `entry.value`.
 		7. *If* `base_type` is the intersection of some types `a` and `b`:
-			1. *Let* `all_optional` be `true`.
-			2. *For each* `entry` in `entries`:
+			1. *If* `entries.count` is 0:
+				1. *Throw:* all of the items in `errors`.
+			2. *Let* `all_optional` be `true`.
+			3. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `false`:
 					1. *Set* `all_optional` to `false`.
-			3. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Intersection(x.type, y.type)`.
-			4. *Return:* a new EntryTypeSchema [
+			4. *Let* `intersection` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Intersection(x.type, y.type)`.
+			5. *Return:* a new EntryTypeSchema [
 					type=     `intersection`,
 					optional= `all_optional`,
 				].
 		8. *Else:*
 			1. *Assert:* `base_type` is the union of some types `a` and `b`.
-			2. *Let* `any_optional` be `false`.
-			3. *For each* `entry` in `entries`:
+			2. *If* `errors.count` is greater than 0:
+				1. *Throw:* all of the items in `errors`.
+			3. *Let* `any_optional` be `false`.
+			4. *For each* `entry` in `entries`:
 				1. *If* `entry.optional` is `true`:
 					1. *Set* `any_optional` to `true`.
-			4. *If* `errors.count` is greater than 0:
-				1. *Set* `any_optional` to `true`.
 			5. *Let* `union` be a reduction of `entries` for each `x` and `y` to *UnwrapAffirm:* `Union(x.type, y.type)`.
 			6. *Return:* a new EntryTypeSchema [
 					type=     `union`,
 					optional= `any_optional`,
 				].
-	5. *If* `accessor` is a SemanticIndex:
-		1. *If* `base_type` is a Tuple type:
-			1. *Let* `index` be `accessor.index`.
-			2. *If* `index` is less than *0*:
-				1. *Set* `index` to `index + base_type.count`.
-			3. *If* `index` is an index in `base_type`:
-				1. *Return:* the item accessed at index `index` in `base_type`.
-		2. *Throw:* a new TypeErrorNoEntry.
-	6. *Else If* `accessor` is a SemanticKey:
+	8. *If* `accessor` is a SemanticIndex:
+		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
+			1. *Return:* the item accessed at index `accessor.index` in `base_type`.
+		2. *Else:*
+			1. *Throw:* a new TypeErrorNoEntry.
+	9. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Return:* the value accessed at key `accessor.id` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	7. *Else:*
+	10. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
-		3. *Let* `accessor_maybe` be `false`.
-		4. *If* `access.kind` is `MAYBE`:
-			1. *Set* `accessor_maybe` to `true`.
-		5. *If* `base_type` is a List type:
+		3. *If* *UnwrapAffirm:* `IsBottomType(accessor_type)` is `true`:
+			1. *Return:* a new EntryTypeSchema [
+					type=     `Nothing`,
+					optional= `accessor_maybe`,
+				].
+		4. *If* `base_type` is a List type:
 			1. *Let* `t` be the type argument over `base_type`.
 			2. *Let* `integral` be *UnwrapAffirm:* `Union(Integer, Natural)`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, integral)` is `true`:
@@ -533,7 +335,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				].
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		6. *Else If* `base_type` is a Dict type:
+		5. *Else If* `base_type` is a Dict type:
 			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, Symbol)` is `true`:
 				1. *Return:* a new EntryTypeSchema [
@@ -541,10 +343,11 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 					optional= `accessor_maybe`,
 				].
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
-				1. *Throw:* a new Error "String keys for dict access are not yet supported."
+				1. *Note:* This step will be removed once string keys are supported.
+				2. *Throw:* a new Error "String keys for dict access are not yet supported."
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		7. *Else If* `base_type` is a Set type:
+		6. *Else If* `base_type` is a Set type:
 			1. *Let* `t` be the type argument over `base_type`.
 			2. *If* *UnwrapAffirm:* `Subtype(accessor_type, t)` is `true` *or* `is_writing` is `false`:
 				1. *Return:* a new EntryTypeSchema [
@@ -553,7 +356,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				].
 			3. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		8. *Else If* `base_type` is a Map type:
+		7. *Else If* `base_type` is a Map type:
 			1. *Let* `k` be the antecedent type argument over `base_type`.
 			2. *Let* `v` be the consequent type argument over `base_type`.
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, k)` is `true` *or* `is_writing` is `false`:
@@ -563,7 +366,7 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticAcc
 				].
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
-		9. *Else:*
+		8. *Else:*
 			1. *Throw:* a new TypeErrorInvalidOperation.
 ;
 ```
@@ -610,13 +413,13 @@ Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
 ## WriteTypeOf
 Assuming reassignment of a symbol/entry is valid, gives the write-type of that symbol/entry.
 ```
-Type! WriteTypeOf(Or<SemanticVariable, SemanticAccess> reassignable) :=
-	1. *If* `reassignable` is a SemanticVariable:
+Type! WriteTypeOf(Or<SemanticExpressionVariable, SemanticExpressionAccess> reassignable) :=
+	1. *If* `reassignable` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `reassignable.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		3. *Return:* `symbol.type`.
 	2. *Else:*
-		1. *Assert:* `reassignable` is a SemanticAccess.
+		1. *Assert:* `reassignable` is a SemanticExpressionAccess.
 		2. *Assert:* `reassignable.children.count` is 2.
 		3. *Let* `base` be `reassignable.children.0`.
 		4. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
