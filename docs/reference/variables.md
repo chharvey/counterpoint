@@ -143,7 +143,7 @@ b;                   % still `42`
 
 
 
-## Uninitialized Variables
+## Optional Variables
 Variables may be declared without an explicit inital value. These varaibles are called “uninitialized” or “optional”.
 ```cpl
 val mut greeting?: str;
@@ -169,7 +169,8 @@ and whenever accessed or assigned, that value’s type is the union `str | null`
 The latter says that a value for `greeting2` might or might not exist.
 If it does exist, its type is definitely `str` and not `null`, and if it doesn’t exist, then it is `null`.
 When assigned, it only accepts values of type `str`.
-Optional variables are similar to optional entries of [tuples/records](./types.md#compound-types).
+Optional variables are similar to optional entries of [tuples/records](./types.md#compound-types),
+and they pair nicely with the [`isset` operator](./expressions-operators.md#is-set).
 
 
 ### `delete` Statements
