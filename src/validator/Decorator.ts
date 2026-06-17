@@ -15,7 +15,6 @@ import {
 	isSyntaxNodeType,
 	type SyntaxNodeFamily,
 	type SyntaxNodeSupertype,
-	isSyntaxNodeSupertype,
 } from './utils-private.ts';
 import {
 	Operator,
@@ -162,22 +161,12 @@ export class Decorator {
 			)],
 
 			/* # TERMINALS */
-			['identifier', (node) => (
-				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TYPE.TypeAlias(node as SyntaxNodeType<'identifier'>) :
-				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.EXPR.Variable (node as SyntaxNodeType<'identifier'>) :
-				assert.fail(`Expected ${ node.parent } to be a node that contains an identifier.`)
-			)],
 
 			/* # PRODUCTIONS */
 			['keyword_type', (node) => new AST.TYPE.Constant(node as SyntaxNodeType<'keyword_type'>)],
 
 			['word', (node) => new AST.Key(node as SyntaxNodeType<'word'>)],
 
-			['primitive_literal', (node) => (
-				(isSyntaxNodeSupertype(node.parent, 'type')       || isSyntaxNodeType(node.parent, /^(entry_type(__named)?(__optional)?|generic_arguments|declaration_(type|claim(__break)?))$/))                                                                                 ? new AST.TYPE.Constant(node as SyntaxNodeType<'primitive_literal'>) :
-				(isSyntaxNodeSupertype(node.parent, 'expression') || isSyntaxNodeType(node.parent, /^(property(__break)?|case(__break)?|function_arguments|property_accessor(__break)?|assignee(__break)?|statement_expression|declaration_(variable|reassignment(__break)?))$/)) ? new AST.EXPR.Constant(node as SyntaxNodeType<'primitive_literal'>) :
-				assert.fail(`Expected ${ node.parent } to be a node that contains a primitive literal.`)
-			)],
 
 			/* ## Types */
 			['entry_type', (node) => new AST.ItemType(
@@ -724,7 +713,7 @@ export class Decorator {
 		)(syntaxnode);
 	}
 
-	private decorateTypeNode(typenode: SyntaxNodeSupertype<'type'>): AST.TYPE.Type {
+	public decorateTypeNode(typenode: SyntaxNodeSupertype<'type'>): AST.TYPE.Type {
 		return (
 			(isSyntaxNodeType(typenode, 'identifier'))        ? new AST.TYPE.TypeAlias (typenode) :
 			(isSyntaxNodeType(typenode, 'primitive_literal')) ? new AST.TYPE.Constant  (typenode) :
@@ -732,7 +721,7 @@ export class Decorator {
 		);
 	}
 
-	private decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.EXPR.Expression {
+	public decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.EXPR.Expression {
 		return (
 			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.EXPR.Variable(exprnode) :
 			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.EXPR.Constant(exprnode) :

@@ -13,6 +13,7 @@ import {
 	Decorator,
 	AST,
 } from '../../src/index.ts';
+import type {SyntaxNodeType} from '../../src/validator/utils-private.ts';
 
 
 
@@ -55,6 +56,12 @@ test.suite('Decorator', () => {
 				}
 				% (primitive_literal (integer))
 			`]],
+			['Decorate(Type > PrimitiveLiteral ::= NATURAL) -> SemanticTypeConstant', [AST.TYPE.Constant, `
+				{
+					type T = +42;
+				}
+				% (primitive_literal (natural))
+			`]],
 			['Decorate(Type > PrimitiveLiteral ::= FLOAT) -> SemanticTypeConstant', [AST.TYPE.Constant, `
 				{
 					type T = 42.69;
@@ -85,6 +92,12 @@ test.suite('Decorator', () => {
 					42;
 				}
 				% (primitive_literal (integer))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= NATURAL) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
+				{
+					+42;
+				}
+				% (primitive_literal (natural))
 			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= FLOAT) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
 				{
@@ -855,8 +868,19 @@ test.suite('Decorator', () => {
 				todo: description.startsWith('todo:'),
 				only: description.startsWith('only:') || undefined, // `only: false` negates `only: true` in parent suite
 			}, () => {
-				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-				return assert_instanceof(new Decorator().decorate(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
+				const [source, query] = text.split('%');
+				const parsenode: SyntaxNode = captureParseNode(source, query);
+				const decorator = new Decorator();
+				const query_is_primlit: boolean = query.includes('primitive_literal');
+				let instance: AST.AstNode;
+				if (query_is_primlit && description.includes('Decorate(Type > PrimitiveLiteral')) {
+					instance = decorator.decorateTypeNode(parsenode as SyntaxNodeType<'primitive_literal'>);
+				} else if (query_is_primlit && description.includes('Decorate(Expression > PrimitiveLiteral')) {
+					instance = decorator.decorateExprNode(parsenode as SyntaxNodeType<'primitive_literal'>);
+				} else {
+					instance = decorator.decorate(parsenode);
+				}
+				return assert_instanceof(instance, klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 			});
 		});
 		['!'].forEach((op) => {
