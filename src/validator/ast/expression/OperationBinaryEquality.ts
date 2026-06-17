@@ -63,19 +63,14 @@ export class OperationBinaryEquality extends OperationBinary {
 				 */
 				return DISJOINT_TYPES && [t0, t1].some((t) => t.isDisjointWith(TYPE.NUMBER)) ? TYPE.FALSE : TYPE.BOOL;
 			}
-			default: {
-				return TYPE.BOOL;
-			}
 		}
 	}
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Binop {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-			[Operator.ID,  OP.OpCode.ID],
-			[Operator.EQ,  OP.OpCode.EQ],
-			[Operator.NID, OP.OpCode.NID],
-			[Operator.NEQ, OP.OpCode.NEQ],
+			[Operator.ID, OP.OpCode.ID],
+			[Operator.EQ, OP.OpCode.EQ],
 		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 }

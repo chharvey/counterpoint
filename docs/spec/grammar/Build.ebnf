@@ -87,17 +87,13 @@ FLOAT.MUL([Float Float]) -> Float;
 FLOAT.DIV([Float Float]) -> Float;
 FLOAT.EXP([Float Float]) -> Float;
 
-LT ([Number Number]) -> Boolean;
-GT ([Number Number]) -> Boolean;
-LE ([Number Number]) -> Boolean;
-GE ([Number Number]) -> Boolean;
-NLT([Number Number]) -> Boolean;
-NGT([Number Number]) -> Boolean;
+LT([Number Number]) -> Boolean;
+GT([Number Number]) -> Boolean;
+LE([Number Number]) -> Boolean;
+GE([Number Number]) -> Boolean;
 
-ID ([Value Value]) -> Boolean;
-EQ ([Value Value]) -> Boolean;
-NID([Value Value]) -> Boolean;
-NEQ([Value Value]) -> Boolean;
+ID([Value Value]) -> Boolean;
+EQ([Value Value]) -> Boolean;
 
 DROP([Value]);
 
@@ -237,17 +233,13 @@ Build(SemanticExpressionOperation[operator=MUL][0: Float][1: Float] op) := (FLOA
 Build(SemanticExpressionOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT.DIV [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT.EXP [`Build(op.0)` `Build(op.1)`]);
 
-Build(SemanticExpressionOperation[operator=LT] [0: Number][1: Number] op) := (LT  [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=GT] [0: Number][1: Number] op) := (GT  [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=LE] [0: Number][1: Number] op) := (LE  [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=GE] [0: Number][1: Number] op) := (GE  [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=NLT][0: Number][1: Number] op) := (NLT [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=NGT][0: Number][1: Number] op) := (NGT [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=LT][0: Number][1: Number] op) := (LT  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=GT][0: Number][1: Number] op) := (GT  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=LE][0: Number][1: Number] op) := (LE  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE  [`Build(op.0)` `Build(op.1)`]);
 
-Build(SemanticExpressionOperation[operator=ID]  op) := (ID  [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=EQ]  op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=NID] op) := (NID [`Build(op.0)` `Build(op.1)`]);
-Build(SemanticExpressionOperation[operator=NEQ] op) := (NEQ [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
 
 
 Build(SemanticExpressionOperation[operator=AND] op) := [

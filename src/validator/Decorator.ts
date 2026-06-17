@@ -26,7 +26,6 @@ import {
 	type ValidOperatorArithmetic,
 	type ValidOperatorComparative,
 	type ValidOperatorEquality,
-	type ValidOperatorLogical,
 } from './Operator.ts';
 
 
@@ -49,40 +48,37 @@ export class Decorator {
 		[Punctuator.UNION, Operator.OR],
 	]);
 
-	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
-		[Punctuator.NOT,  Operator.NOT],
-		[Punctuator.EMP,  Operator.EMP],
-		[Punctuator.AFF,  Operator.AFF],
-		[Punctuator.NEG,  Operator.NEG],
-		[Keyword.ISSET,   Operator.ISSET],
-		[Keyword.ISNTSET, Operator.ISNTSET],
+	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, ValidOperatorUnary> = new Map<Punctuator, ValidOperatorUnary>([
+		[Punctuator.NOT, Operator.NOT],
+		[Punctuator.EMP, Operator.EMP],
+		[Punctuator.NEG, Operator.NEG],
 	]);
 
-	private static readonly OPERATORS_BINARY: ReadonlyMap<Punctuator | Keyword, Operator> = new Map<Punctuator | Keyword, Operator>([
-		[Keyword   .AS,     Operator.CAST],
-		[Keyword   .AS_MAY, Operator.CAST_MAY],
-		[Keyword   .AS_RES, Operator.CAST_RES],
-		[Punctuator.EXP,    Operator.EXP],
-		[Punctuator.MUL,    Operator.MUL],
-		[Punctuator.DIV,    Operator.DIV],
-		[Punctuator.ADD,    Operator.ADD],
-		[Punctuator.SUB,    Operator.SUB],
-		[Punctuator.LT,     Operator.LT],
-		[Punctuator.GT,     Operator.GT],
-		[Punctuator.LE,     Operator.LE],
-		[Punctuator.GE,     Operator.GE],
-		[Punctuator.NLT,    Operator.NLT],
-		[Punctuator.NGT,    Operator.NGT],
-		[Keyword   .IS,     Operator.IS],
-		[Keyword   .ISNT,   Operator.ISNT],
-		[Punctuator.ID,     Operator.ID],
-		[Punctuator.NID,    Operator.NID],
-		[Punctuator.EQ,     Operator.EQ],
-		[Punctuator.NEQ,    Operator.NEQ],
-		[Punctuator.AND,    Operator.AND],
-		[Punctuator.NAND,   Operator.NAND],
-		[Punctuator.OR,     Operator.OR],
-		[Punctuator.NOR,    Operator.NOR],
+	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
+		[Keyword.AS,     Operator.CAST],
+		[Keyword.AS_MAY, Operator.CAST_MAY],
+		[Keyword.AS_RES, Operator.CAST_RES],
+	]);
+
+	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
+		[Punctuator.EXP, Operator.EXP],
+		[Punctuator.MUL, Operator.MUL],
+		[Punctuator.DIV, Operator.DIV],
+		[Punctuator.ADD, Operator.ADD],
+		[Punctuator.SUB, Operator.SUB],
+	]);
+
+	private static readonly OPERATORS_COMPARATIVE: ReadonlyMap<Punctuator | Keyword, ValidOperatorComparative> = new Map<Punctuator | Keyword, ValidOperatorComparative>([
+		[Punctuator.LT, Operator.LT],
+		[Punctuator.GT, Operator.GT],
+		[Punctuator.LE, Operator.LE],
+		[Punctuator.GE, Operator.GE],
+		[Keyword   .IS, Operator.IS as ValidOperatorComparative], // TODO: make a new class for comparing object instances
+	]);
+
+	private static readonly OPERATORS_EQUALITY: ReadonlyMap<Punctuator, ValidOperatorEquality> = new Map<Punctuator, ValidOperatorEquality>([
+		[Punctuator.ID, Operator.ID],
+		[Punctuator.EQ, Operator.EQ],
 	]);
 
 
@@ -360,18 +356,18 @@ export class Decorator {
 				? this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>)
 				: new AST.EXPR.OperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
-					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator) as ValidOperatorUnary,
+					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator)!,
 					this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),
 				)
 			)],
 
 			['expression_unary_keyword', (node) => ((
 				n:        SyntaxNodeType<'expression_unary_keyword'>,
-				operator: Operator,
+				punct:    Keyword,
 				operand:  AST.EXPR.Variable | AST.EXPR.Access,
 			) => (
 				// `!isset a` is syntax sugar for `!(isset a)`
-				operator === Operator.ISNTSET ? new AST.EXPR.OperationUnary(
+				punct === Keyword.ISNTSET ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.Isset(n, operand),
@@ -379,7 +375,7 @@ export class Decorator {
 				new AST.EXPR.Isset(n, operand)
 			))(
 				node as SyntaxNodeType<'expression_unary_keyword'>,
-				Decorator.OPERATORS_UNARY.get(node.children[0].text as Keyword)!,
+				node.children[0].text as Keyword,
 				this.decorate(node.firstNamedChild as SyntaxNodeFamily<'assignee', ['break']>),
 			)],
 
@@ -389,7 +385,7 @@ export class Decorator {
 				return expression_1
 					? new AST.EXPR.OperationBinaryCast(
 						node as SyntaxNodeType<'expression_cast'>,
-						Decorator.OPERATORS_BINARY.get(node.children[1].text as Keyword)! as ValidOperatorCast,
+						Decorator.OPERATORS_CAST.get(node.children[1].text as Keyword)!,
 						this.decorateExprNode(expression_0),
 						this.decorateExprNode(expression_1),
 					)
@@ -402,32 +398,32 @@ export class Decorator {
 
 			['expression_exponential', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_exponential'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
+				Operator.EXP,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_multiplicative', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_multiplicative'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
+				Decorator.OPERATORS_ARITHMETIC.get(node.children[1].text as Punctuator)!,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_additive', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_additive'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)! as ValidOperatorArithmetic,
+				Decorator.OPERATORS_ARITHMETIC.get(node.children[1].text as Punctuator)!,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_comparative', (node) => ((
 				n:        SyntaxNodeType<'expression_comparative'>,
-				operator: Operator,
+				punct:    Punctuator | Keyword,
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !< b` is syntax sugar for `!(a < b)`
-				(operator === Operator.NLT) ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.NLT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryComparative(
@@ -437,7 +433,7 @@ export class Decorator {
 					),
 				) :
 				// `a !> b` is syntax sugar for `!(a > b)`
-				(operator === Operator.NGT) ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.NGT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryComparative(
@@ -447,7 +443,7 @@ export class Decorator {
 					),
 				) :
 				// `a !is b` is syntax sugar for `!(a is b)`
-				(operator === Operator.ISNT) ? new AST.EXPR.OperationUnary(
+				punct === Keyword.ISNT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryComparative(
@@ -458,12 +454,12 @@ export class Decorator {
 				) :
 				new AST.EXPR.OperationBinaryComparative(
 					n,
-					operator as ValidOperatorComparative,
+					Decorator.OPERATORS_COMPARATIVE.get(punct)!,
 					...operands,
 				)
 			))(
 				node as SyntaxNodeType<'expression_comparative'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				node.children[1].text as Punctuator | Keyword,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
@@ -472,11 +468,11 @@ export class Decorator {
 
 			['expression_equality', (node) => ((
 				n:        SyntaxNodeType<'expression_equality'>,
-				operator: Operator,
+				punct:    Punctuator,
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !== b` is syntax sugar for `!(a === b)`
-				(operator === Operator.NID) ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.NID ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryEquality(
@@ -486,7 +482,7 @@ export class Decorator {
 					),
 				) :
 				// `a != b` is syntax sugar for `!(a == b)`
-				(operator === Operator.NEQ) ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.NEQ ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryEquality(
@@ -497,12 +493,12 @@ export class Decorator {
 				) :
 				new AST.EXPR.OperationBinaryEquality(
 					n,
-					operator as ValidOperatorEquality,
+					Decorator.OPERATORS_EQUALITY.get(punct)!,
 					...operands,
 				)
 			))(
 				node as SyntaxNodeType<'expression_equality'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				node.children[1].text as Punctuator,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
@@ -511,11 +507,11 @@ export class Decorator {
 
 			['expression_conjunctive', (node) => ((
 				n:        SyntaxNodeType<'expression_conjunctive'>,
-				operator: Operator,
+				punct:    Punctuator,
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !& b` is syntax sugar for `!(a && b)`
-				(operator === Operator.NAND) ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.NAND ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryLogical(
@@ -524,14 +520,10 @@ export class Decorator {
 						...operands,
 					),
 				) :
-				new AST.EXPR.OperationBinaryLogical(
-					n,
-					operator as ValidOperatorLogical,
-					...operands,
-				)
+				new AST.EXPR.OperationBinaryLogical(n, Operator.AND, ...operands)
 			))(
 				node as SyntaxNodeType<'expression_conjunctive'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				node.children[1].text as Punctuator,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
@@ -540,11 +532,11 @@ export class Decorator {
 
 			['expression_disjunctive', (node) => ((
 				n:        SyntaxNodeType<'expression_disjunctive'>,
-				operator: Operator,
+				punct:    Punctuator,
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !| b` is syntax sugar for `!(a || b)`
-				(operator === Operator.NOR) ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.NOR ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryLogical(
@@ -553,14 +545,10 @@ export class Decorator {
 						...operands,
 					),
 				) :
-				new AST.EXPR.OperationBinaryLogical(
-					n,
-					operator as ValidOperatorLogical,
-					...operands,
-				)
+				new AST.EXPR.OperationBinaryLogical(n, Operator.OR, ...operands)
 			))(
 				node as SyntaxNodeType<'expression_disjunctive'>,
-				Decorator.OPERATORS_BINARY.get(node.children[1].text as Punctuator | Keyword)!,
+				node.children[1].text as Punctuator,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),

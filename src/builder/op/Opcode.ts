@@ -77,14 +77,9 @@ export enum OpCode {
 	GT,
 	LE,
 	GE,
-	NLT,
-	NGT,
 
 	ID,
 	EQ,
-	NID,
-	NEQ,
-
 	/** @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later. */
 	PHI,
 

@@ -38,7 +38,7 @@ export class OperationBinaryComparative extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
-		if ([Operator.IS, Operator.ISNT].includes(this.operator)) {
+		if (this.operator === Operator.IS as ValidOperatorComparative) { // TODO: make a new class for comparing object instances
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
 	}
@@ -60,8 +60,6 @@ export class OperationBinaryComparative extends OperationBinary {
 			[Operator.GT,  OP.OpCode.GT],
 			[Operator.LE,  OP.OpCode.LE],
 			[Operator.GE,  OP.OpCode.GE],
-			[Operator.NLT, OP.OpCode.NLT],
-			[Operator.NGT, OP.OpCode.NGT],
 		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 }
