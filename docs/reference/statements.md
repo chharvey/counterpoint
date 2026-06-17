@@ -18,7 +18,7 @@ print.("a function call is an expression.");
 
 
 
-## Declarations, Reassignments, and Claim Statements
+## Declarations, Reassignments, Deletions, and Claim Statements
 See the [Variables](./variables.md) chapter.
 
 
