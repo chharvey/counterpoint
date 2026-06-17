@@ -426,28 +426,20 @@ export class Decorator {
 				punct === Punctuator.NLT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryComparative(
-						n.children[0] as SyntaxNodeSupertype<'expression'>,
-						Operator.LT,
-						...operands,
-					),
+					new AST.EXPR.OperationBinaryComparative(n, Operator.LT, ...operands),
 				) :
 				// `a !> b` is syntax sugar for `!(a > b)`
 				punct === Punctuator.NGT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryComparative(
-						n.children[0] as SyntaxNodeSupertype<'expression'>,
-						Operator.GT,
-						...operands,
-					),
+					new AST.EXPR.OperationBinaryComparative(n, Operator.GT, ...operands),
 				) :
 				// `a !is b` is syntax sugar for `!(a is b)`
 				punct === Keyword.ISNT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryComparative(
-						n.children[0] as SyntaxNodeSupertype<'expression'>,
+						n,
 						Operator.IS as ValidOperatorComparative, // TODO: make a new class for comparing object instances
 						...operands,
 					),
@@ -475,21 +467,13 @@ export class Decorator {
 				punct === Punctuator.NID ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryEquality(
-						n.children[0] as SyntaxNodeSupertype<'expression'>,
-						Operator.ID,
-						...operands,
-					),
+					new AST.EXPR.OperationBinaryEquality(n, Operator.ID, ...operands),
 				) :
 				// `a != b` is syntax sugar for `!(a == b)`
 				punct === Punctuator.NEQ ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryEquality(
-						n.children[0] as SyntaxNodeSupertype<'expression'>,
-						Operator.EQ,
-						...operands,
-					),
+					new AST.EXPR.OperationBinaryEquality(n, Operator.EQ, ...operands),
 				) :
 				new AST.EXPR.OperationBinaryEquality(
 					n,
@@ -514,11 +498,7 @@ export class Decorator {
 				punct === Punctuator.NAND ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryLogical(
-						n.children[0] as SyntaxNodeSupertype<'expression'>,
-						Operator.AND,
-						...operands,
-					),
+					new AST.EXPR.OperationBinaryLogical(n, Operator.AND, ...operands),
 				) :
 				new AST.EXPR.OperationBinaryLogical(n, Operator.AND, ...operands)
 			))(
@@ -539,11 +519,7 @@ export class Decorator {
 				punct === Punctuator.NOR ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryLogical(
-						n.children[0] as SyntaxNodeSupertype<'expression'>,
-						Operator.OR,
-						...operands,
-					),
+					new AST.EXPR.OperationBinaryLogical(n, Operator.OR, ...operands),
 				) :
 				new AST.EXPR.OperationBinaryLogical(n, Operator.OR, ...operands)
 			))(
