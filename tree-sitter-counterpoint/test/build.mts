@@ -1734,13 +1734,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			))),
 		],
 
-		// TODO: StatementReturn: [
-		// 	xjs.String.dedent`
-		// 		{
-		// 		}
-		// 	`,
-		// 	sourceStatements(s('statement_return')),
-		// ],
+		// StatementReturn
+		// tested in #DeclarationFunction
 
 		// Statement
 		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break,Return}}
@@ -1810,6 +1805,18 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('statement_iteration',   f('identifier_0', 'identifier'), f('type_0', 'identifier'), f('expression_0', 'identifier'), f('block_0', 'block__break', s('statement_expression__break', s('identifier')))),
 			),
 		],
+
+		// ParameterFunction
+		// tested in #ParametersFunction
+
+		// ParametersType
+		// tested in #TypeFunction
+
+		// ParametersFunction
+		// tested in #DeclaredFunction
+
+		// DeclaredFunction
+		// tested in #DeclarationFunction
 
 		DeclarationType: [
 			xjs.String.dedent`
@@ -1925,8 +1932,52 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		DeclarationFunction: [
+			xjs.String.dedent`
+				{
+					func foo(): void {;}
+					func foo(a: A, $b: B, c= charlie: C): void { return; }
+				}
+			`,
+			sourceStatements(
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('declared_function_0', 'declared_function', s('block__return', s('statement_expression__return'))),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f(
+						'declared_function_0',
+						'declared_function',
+						s(
+							'parameters_function',
+							s(
+								'parameter_function',
+								f('identifier_0', 'identifier'),
+								f('type_0',       'identifier'),
+							),
+							s(
+								'parameter_function__named',
+								f('identifier_0', 'identifier'),
+								f('type_0',       'identifier'),
+							),
+							s(
+								'parameter_function__named',
+								f('word_0',       'word', s('identifier')),
+								f('identifier_0', 'identifier'),
+								f('type_0',       'identifier'),
+							),
+						),
+						s('block__return', s('statement_return')),
+					),
+				),
+			),
+		],
+
 		// Declaration
-		// consists of #Declaration{Type,Variable}
+		// consists of #Declaration{Type,Variable,Function}
 	}).map(([title, [source, expected]]) => xjs.String.dedent`
 		${ '='.repeat(title.length) }
 		${ title }

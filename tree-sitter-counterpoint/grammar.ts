@@ -565,6 +565,11 @@ module.exports = grammar({
 
 		...parameterize('block', ({break: brk, return: rtn}) => $ => seq('{', repeat1(call($, '_statement', {break: brk}, {return: rtn})), '}'), 'break', 'return'),
 
+		...parameterize('parameter_function', ({named}) => $ => seq(choice(
+			seq(...iff(named, seq(field('word_0', $.word), '=')), choice('_', seq(optional('mut'), field('identifier_0', $.identifier)))),
+			...iff(named, seq(optional('mut'), '$', field('identifier_0', $.identifier))),
+		), ':', field('type_0', $._type)), 'named'),
+
 		parameters_type: $ => {
 			const LIST_ENT_NAM: SeqRule = repCom1(call($, 'entry_type', 'named'));
 			return choice(
@@ -572,6 +577,15 @@ module.exports = grammar({
 				seq(OPT_COM,                                          LIST_ENT_NAM,   OPT_COM),
 			);
 		},
+		parameters_function: $ => {
+			const LIST_PARAM_NAM: SeqRule = repCom1(call($, 'parameter_function', 'named'));
+			return choice(
+				seq(OPT_COM, repCom1($.parameter_function), optional(seq(',', LIST_PARAM_NAM)), OPT_COM),
+				seq(OPT_COM,                                                  LIST_PARAM_NAM,   OPT_COM),
+			);
+		},
+
+		declared_function: $ => seq('(', optional($.parameters_function), ')', ':', 'void', call($, 'block', 'return')),
 
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
@@ -580,9 +594,12 @@ module.exports = grammar({
 			seq('val',                          'mut',  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
 		), 'break', 'return'),
 
+		declaration_function: $ => seq('func', choice('_', field('identifier_0', $.identifier)), field('declared_function_0', $.declared_function)),
+
 		...parameterize('_declaration', ({break: brk, return: rtn}) => $ => choice(
 			$.declaration_type,
 			call($, 'declaration_variable', {break: brk}, {return: rtn}),
+			$.declaration_function,
 		), 'break', 'return'),
 	},
 
@@ -599,6 +616,7 @@ module.exports = grammar({
 		// example:
 		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => $[rulename]),
 		[$.parameters_type],
+		[$.parameters_function],
 	],
 
 	/**

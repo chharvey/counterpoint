@@ -811,6 +811,34 @@ Decorate(Block<Break, Return> ::= "{" Statement<?Break><?Return>+ "}") -> Semant
 
 
 
+Decorate(ParameterFunction<Named> ::= "_" ":" Type) -> // TODO
+Decorate(ParameterFunction<Named> ::= IDENTIFIER ":" Type) -> // TODO
+Decorate(ParameterFunction<Named> ::= "mut" IDENTIFIER ":" Type) -> // TODO
+Decorate(ParameterFunction<Named> ::= Word "=" "_" ":" Type) -> // TODO
+Decorate(ParameterFunction<Named> ::= Word "=" IDENTIFIER ":" Type) -> // TODO
+Decorate(ParameterFunction<Named> ::= Word "=" "mut" IDENTIFIER ":" Type) -> // TODO
+Decorate(ParameterFunction<Named> ::= "$" IDENTIFIER ":" Type) -> // TODO
+Decorate(ParameterFunction<Named> ::= "mut" "$" IDENTIFIER ":" Type) -> // TODO
+
+
+
+Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># ","?) -> // TODO
+Decorate(ParametersType ::= ","? EntryType<+Named><-Optional># ","?) -> // TODO
+Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># "," EntryType<+Named><-Optional># ","?) -> // TODO
+
+
+
+Decorate(ParametersFunction ::= ","? ParameterFunction<-Named># ","?) -> // TODO
+Decorate(ParametersFunction ::= ","? ParameterFunction<+Named># ","?) -> // TODO
+Decorate(ParametersFunction ::= ","? ParameterFunction<-Named># "," ParameterFunction<+Named># ","?) -> // TODO
+
+
+
+Decorate(DeclaredFunction ::= "(" ")" ":" "void" Block<-Break><+Return>) -> // TODO
+Decorate(DeclaredFunction ::= "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> // TODO
+
+
+
 Decorate(DeclarationType ::= "type" "_" "=" Type ";") -> SemanticDeclarationType
 	:= (SemanticDeclarationType
 		Decorate(Type)
@@ -862,10 +890,17 @@ Decorate(DeclarationVariable<Break, Return> ::= "val" "mut" IDENTIFIER "?" ":" T
 
 
 
+Decorate(DeclarationFunction ::= "func" "_" DeclaredFunction) -> // TODO
+Decorate(DeclarationFunction ::= "func" IDENTIFIER DeclaredFunction) -> // TODO
+
+
+
 Decorate(Declaration<Break, Return> ::= DeclarationType) -> SemanticDeclarationType
 	:= Decorate(DeclarationType);
 Decorate(Declaration<Break, Return> ::= DeclarationVariable<?Break><?Return>) -> SemanticDeclarationVariable
 	:= Decorate(DeclarationVariable<?Break><?Return>);
+Decorate(Declaration<Break, Return> ::= DeclarationFunction) -> // TODO
+	:= Decorate(DeclarationFunction);
 
 
 

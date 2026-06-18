@@ -281,10 +281,26 @@ Block<Break, Return>
 
 
 
+ParameterFunction<Named> ::= (
+	| <Named+>(Word "=") ("_" | "mut"? IDENTIFIER)
+	| <Named+>("mut"? "$" IDENTIFIER)
+) ":" Type;
+
+
+
 ParametersType ::=
 	| ","? EntryType<-Named><-Optional># ("," EntryType<+Named><-Optional>#)? ","?
 	| ","?                                    EntryType<+Named><-Optional>#   ","?
 ;
+
+ParametersFunction ::=
+	| ","? ParameterFunction<-Named># ("," ParameterFunction<+Named>#)? ","?
+	| ","?                                 ParameterFunction<+Named>#   ","?
+;
+
+
+
+DeclaredFunction ::= "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
 
 
 
@@ -296,9 +312,13 @@ DeclarationVariable<Break, Return> ::=
 	| "val"        "mut"  IDENTIFIER  "?" ":" Type                                           ";"
 ;
 
+DeclarationFunction
+	::= "func" ("_" | IDENTIFIER) DeclaredFunction
+
 Declaration<Break, Return> ::=
 	| DeclarationType
 	| DeclarationVariable<?Break><?Return>
+	| DeclarationFunction
 ;
 
 

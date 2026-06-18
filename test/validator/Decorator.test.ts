@@ -863,6 +863,19 @@ test.suite('Decorator', () => {
 				% (declaration_variable)
 			`]],
 
+			['todo: Decorate(DeclarationFunction ::= "func" "_" DeclaredFunction) ->', [AST.AstNode, `
+				{
+					func _(): void {;}
+				}
+				% (declaration_function)
+			`]],
+			['todo: Decorate(DeclarationFunction ::= "func" "IDENTIFIER" DeclaredFunction) ->', [AST.AstNode, `
+				{
+					func foo(): void {;}
+				}
+				% (declaration_function)
+			`]],
+
 			['Decorate(SourceFile ::= #x02 #x03) -> SemanticGoal', [AST.Goal, `
 				{
 				}

@@ -143,8 +143,13 @@ export class Decorator {
 	// public decorate(syntaxnode: SyntaxNodeType<'statement_return'>):                                       AST.STMT.???
 	public decorate(syntaxnode: SyntaxNodeSupertype<'statement'>):                                         AST.STMT.Statement;
 	public decorate(syntaxnode: SyntaxNodeFamily<'block', ['break', 'return']>):                           AST.Block;
+	// public decorate(syntaxnode: SyntaxNodeFamily<'parameter_function', ['named']>):                        AST.???;
+	// public decorate(syntaxnode: SyntaxNodeType<'parameters_type'>):                                        AST.???;
+	// public decorate(syntaxnode: SyntaxNodeType<'parameters_function'>):                                    AST.???;
+	// public decorate(syntaxnode: SyntaxNodeType<'declared_function'>):                                      AST.???;
 	public decorate(syntaxnode: SyntaxNodeType<'declaration_type'>):                                       AST.STMT.DeclarationType;
 	public decorate(syntaxnode: SyntaxNodeFamily<'declaration_variable', ['break', 'return']>):            AST.STMT.DeclarationVariable;
+	// public decorate(syntaxnode: SyntaxNodeType<'declaration_function'>):                                   AST.STMT.???;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'declaration'>):                                       AST.STMT.Declaration;
 	public decorate(syntaxnode: SyntaxNodeType<'source_file'>):                                            AST.Goal;
 	public decorate(syntaxnode: SyntaxNode):                                                               AST.AstNode;
@@ -636,6 +641,14 @@ export class Decorator {
 
 			[/^block(__break)?(__return)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break', 'return']>)],
 
+			// [/^parameter_function(__named)?$/, () => undefined], // TODO:
+
+			// ['parameters_type', () => undefined], // TODO:
+
+			// ['parameters_function', () => undefined], // TODO:
+
+			// ['declared_function', () => undefined], // TODO:
+
 			['declaration_type', (node) => {
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				return new AST.STMT.DeclarationType(
@@ -672,6 +685,8 @@ export class Decorator {
 					expression_0 && this.decorateExprNode(expression_0),
 				);
 			}],
+
+			// ['declaration_function', () => undefined], // TODO:
 		]);
 		return (
 			decorators.get(syntaxnode.type) ??
