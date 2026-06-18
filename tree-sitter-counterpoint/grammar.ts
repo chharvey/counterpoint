@@ -343,6 +343,7 @@ module.exports = grammar({
 			'do',
 			'break',
 			'skip',
+			'return',
 			$.identifier,
 			$.keyword_type,
 			$.keyword_value,
@@ -628,6 +629,7 @@ module.exports = grammar({
 			'do',
 			'break',
 			'skip',
+			'return',
 			// type keyword
 			'nothing',
 			'bool',

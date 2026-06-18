@@ -57,6 +57,7 @@ Word ::=
 		| "do"
 		| "break"
 		| "skip"
+		| "return"
 	| IDENTIFIER
 	| KeywordType
 	| KeywordValue

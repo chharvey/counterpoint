@@ -49,6 +49,7 @@ export enum Keyword {
 	DO     = 'do',
 	BREAK  = 'break',
 	SKIP   = 'skip',
+	RETURN = 'return',
 }
 
 

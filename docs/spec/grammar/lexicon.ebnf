@@ -93,6 +93,7 @@ KeywordOther :::=
 		| "do"
 		| "break"
 		| "skip"
+		| "return"
 ;
 
 
