@@ -1354,8 +1354,46 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		ExpressionFunction: [
+			xjs.String.dedent`
+				{
+					\\(): void {;};
+					\\(a: A, $b: B, c= charlie: C): void { return; };
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_function',
+					s('block__return', s('statement_expression__return')),
+				),
+				s(
+					'expression_function',
+					s(
+						'parameters_function',
+						s(
+							'parameter_function',
+							f('identifier_0', 'identifier'),
+							f('type_0',       'identifier'),
+						),
+						s(
+							'parameter_function__named',
+							f('identifier_0', 'identifier'),
+							f('type_0',       'identifier'),
+						),
+						s(
+							'parameter_function__named',
+							f('word_0',       'word', s('identifier')),
+							f('identifier_0', 'identifier'),
+							f('type_0',       'identifier'),
+						),
+					),
+					s('block__return', s('statement_return')),
+				),
+			),
+		],
+
 		// Expression
-		// consists of #Expression{Disjunctive,Conditional}
+		// consists of #Expression{Disjunctive,Conditional,Function}
 
 
 		/* ## Statements */
@@ -1735,7 +1773,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// StatementReturn
-		// tested in #DeclarationFunction
+		// tested in #{Expression,Declaration}Function
 
 		// Statement
 		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break,Return}}

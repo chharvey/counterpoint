@@ -222,6 +222,7 @@ ExpressionConditional<Break, Return> ::=
 Expression<Block, Break, Return> ::=
 	| ExpressionDisjunctive<?Block><?Break><?Return>
 	| ExpressionConditional<?Break><?Return>
+	| ExpressionFunction
 ;
 
 
@@ -300,7 +301,8 @@ ParametersFunction ::=
 
 
 
-DeclaredFunction ::= "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
+DeclaredFunction   ::=     "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
+ExpressionFunction ::= "\" "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
 
 
 

@@ -512,6 +512,7 @@ module.exports = grammar({
 			alias(call($, 'expression_disjunctive',    {block}, {break: brk}, {return: rtn}), $.expression_disjunctive),
 
 			call($, 'expression_conditional', {break: brk}, {return: rtn}),
+			$.expression_function,
 		), 'block', 'break', 'return'),
 
 
@@ -585,7 +586,8 @@ module.exports = grammar({
 			);
 		},
 
-		declared_function: $ => seq('(', optional($.parameters_function), ')', ':', 'void', call($, 'block', 'return')),
+		declared_function:   $ => seq(      '(', optional($.parameters_function), ')', ':', 'void', call($, 'block', 'return')),
+		expression_function: $ => seq('\\', '(', optional($.parameters_function), ')', ':', 'void', call($, 'block', 'return')),
 
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 

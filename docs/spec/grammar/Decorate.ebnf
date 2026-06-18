@@ -664,6 +664,8 @@ Decorate(Expression<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Bre
 	:= Decorate(ExpressionDisjunctive<?Block><?Break><?Return>);
 Decorate(Expression<Block, Break, Return> ::= ExpressionConditional<?Break><?Return>) -> SemanticExpression
 	:= Decorate(ExpressionConditional<?Break><?Return>);
+Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExpression
+	:= Decorate(ExpressionFunction);
 
 
 
@@ -836,6 +838,9 @@ Decorate(ParametersFunction ::= ","? ParameterFunction<-Named># "," ParameterFun
 
 Decorate(DeclaredFunction ::= "(" ")" ":" "void" Block<-Break><+Return>) -> // TODO
 Decorate(DeclaredFunction ::= "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> // TODO
+
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" Block<-Break><+Return>) -> // TODO
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> // TODO
 
 
 

@@ -641,6 +641,17 @@ test.suite('Decorator', () => {
 				% (expression_conditional)
 			`]],
 
+			['todo: Decorate(ExpressionFunction ::= "\\" "(" ")" ":" "void" Block<-Break><+Return>) ->', [AST.AstNode, `
+				{
+				}
+				% (expression_function)
+			`]],
+			['todo: Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) ->', [AST.AstNode, `
+				{
+				}
+				% (expression_function)
+			`]],
+
 			/* ## Statements */
 			['Decorate(Assignee<Break, Return> ::= IDENTIFIER) -> SemanticExpressionVariable', [AST.EXPR.Variable, `
 				{
