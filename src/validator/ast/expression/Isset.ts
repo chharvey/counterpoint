@@ -12,7 +12,7 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../index.ts';
-import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Operator} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
 import {Variable} from './Variable.ts';
@@ -29,7 +29,7 @@ export class Isset extends Expression {
 
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_unary_keyword', ['block', 'break']>,
+		start_node: SyntaxNodeType<'expression_unary_keyword'>,
 		public readonly assignee: Variable | Access,
 	) {
 		super(start_node, {operator: Operator.ISSET}, [assignee]);
