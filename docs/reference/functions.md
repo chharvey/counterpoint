@@ -35,12 +35,12 @@ The **return statement** declares the return value, or “output”, which is pr
 To execute the function, we have to **call** it. Calling a function involves sending in **arguments**,
 which are values used as its inputs. When the function returns, it usually returns a result.
 ```cpl
-val result: float = compute_hypotenuse.(3.0, 4.0); %=> 5.0
+val result: float = compute_hypotenuse(3.0, 4.0); %=> 5.0
 ```
 Named functions must be called by name. It’s a compile-time error to reference a named function without calling it.
 ```cpl
-compute_hypotenuse || null;              %> Error
-(compute_hypotenuse || null).(3.0, 4.0); %> Error
+compute_hypotenuse || null;             %> Error
+(compute_hypotenuse || null)(3.0, 4.0); %> Error
 ```
 > Error: Named function `compute_hypotenuse` is not called by name.
 
@@ -56,8 +56,8 @@ func myVoidFunction(message: str): void {
 	%                          ^ parameter
 	return;
 }
-myVoidFunction.("Hello world!"); % evaluates the string
-%               ^ argument
+myVoidFunction("Hello world!"); % evaluates the string
+%              ^ argument
 ```
 
 The difference between *parameters* and *arguments* is subtle:
@@ -67,9 +67,9 @@ In the example above, `message` is a parameter, and `"Hello world!"` is an argum
 The caller of a function may supply different arguments every time the function is called.
 If that function is not void, then it’s most likely going to return different outputs.
 ```cpl
-val x: float = compute_hypotenuse.( 3.0,  4.0); %=>  5.0
-val y: float = compute_hypotenuse.( 6.0,  8.0); %=> 10.0
-val z: float = compute_hypotenuse.(12.0, 16.0); %=> 20.0
+val x: float = compute_hypotenuse( 3.0,  4.0); %=>  5.0
+val y: float = compute_hypotenuse( 6.0,  8.0); %=> 10.0
+val z: float = compute_hypotenuse(12.0, 16.0); %=> 20.0
 ```
 
 One of the most confusing things to understand about functions
@@ -89,10 +89,10 @@ func distance(ax: float, ay: float, bx: float, 'by': float): float {
 The function `distance` expects 4 arguments, all of them floating-point values.
 When we call it, we must obey that contract.
 ```cpl
-distance.(2.0, 3.0, 4.0, 5.0);      % about `2.828`
-distance.(2.0, "3", 4.0, 5.0);      %> TypeError (str not assignable to float)
-distance.(2.0, 3.0, 4.0, 5.0, 6.0); %> TypeError (too many arguments)
-distance.(2.0, 3.0, 4.0);           %> TypeError (too few arguments)
+distance(2.0, 3.0, 4.0, 5.0);      % about `2.828`
+distance(2.0, "3", 4.0, 5.0);      %> TypeError (str not assignable to float)
+distance(2.0, 3.0, 4.0, 5.0, 6.0); %> TypeError (too many arguments)
+distance(2.0, 3.0, 4.0);           %> TypeError (too few arguments)
 ```
 
 
@@ -109,7 +109,7 @@ This isn’t particularly helpful — Once the function above is defined, it can
 However, we can assign it to a variable.
 ```cpl
 val add: \(a: int, b: int) => int = \(a: int, b: int): int { return a + b; };
-add.(2, 3); %== 5
+add(2, 3); %== 5
 ```
 
 Assigning lambdas to variables is discouraged in favor of using a function declaration,
@@ -136,7 +136,7 @@ Lambdas are first-class citizens: They can be passed around and operated on, jus
 This means we can do so much more with lambdas than with named functions.
 For example, we can send lambdas into [higher-order functions](#higher-order-functions),
 ```cpl
-fold.([1, 2, 3], \(a: int, b: int): int { return a + b; }); %== 6
+fold([1, 2, 3], \(a: int, b: int): int { return a + b; }); %== 6
 ```
 we can return them as [closures](#closures),
 ```cpl
@@ -144,12 +144,12 @@ func adder(augend: int): \(int) => int {
 	return \[augend](addend: int): int { return augend + addend; };
 	%       ^ this is called ‘capturing’ --- don’t worry about it for now
 }
-val closure: \(int) => int = adder.(3);
-closure.(5); %== 8
+val closure: \(int) => int = adder(3);
+closure(5); %== 8
 ```
 and we can even [define and call](#iifes) them within the same expression:
 ```cpl
-val value: int = (\(augend: int): int { return augend + 3; }).(5);
+val value: int = (\(augend: int): int { return augend + 3; })(5);
 value; %== 8
 ```
 
@@ -160,7 +160,7 @@ The IIFE is called only once and then discarded.
 ```cpl
 val eight: int = (\(a: int, b: int): int {
 	return a + b;
-}).(3, 5);
+})(3, 5);
 ```
 Here, we’ve defined a lambda `\(a: int, b: int) { return a + b; }`, and then called it immediately
 with the arguments `3` and `5`. After this statement, the lambda can never be accessed again.
@@ -173,7 +173,7 @@ val message: str = (\(): str {
 	set m = """{{ m }}Hello """;
 	set m = """{{ m }}world!""";
 	return m;
-}).();
+})();
 % `m` is not visible outside the function
 message; %== "Hello world!"
 ```
@@ -219,9 +219,9 @@ is the same as its **internal name** — the name referenced in the function bod
 When called, the arguments *must* be named: preceded by a label, which indicates
 the corresponding parameter to which the argument is assigned.
 ```cpl
-compute_hypotenuse.(a= 3.0, b= 4.0); %=>  5.0
-compute_hypotenuse.(b= 8.0, a= 6.0); %=> 10.0
-compute_hypotenuse.(3.0, 4.0);       %> TypeError
+compute_hypotenuse(a= 3.0, b= 4.0); %=>  5.0
+compute_hypotenuse(b= 8.0, a= 6.0); %=> 10.0
+compute_hypotenuse(3.0, 4.0);       %> TypeError
 ```
 Notice that we may send named arguments in any order; they don’t need to be the same order as in the function definition.
 It’s a type error to give positional arguments for named parameters or vice versa.
@@ -239,7 +239,7 @@ func distance(x1= ax: float, x2= ay: float, y1= bx: float, y2= 'by': float): flo
 }
 % typeof distance: \(x1: float, x2: float, y1: float, y2: float) => float
 
-distance.(x1= 2.0, x2= 3.0, y1= 4.0, y2= 5.0);
+distance(x1= 2.0, x2= 3.0, y1= 4.0, y2= 5.0);
 ```
 
 When a function parameter uses the `$param` syntax (shorthand for `param= param`),
@@ -251,7 +251,7 @@ However, within the named parameters, punned and un-punned parameters may be int
 and the named arguments may be given in any order.
 ```cpl
 func foo(a: int, b: int, $c: int, delta= d: int, $e: int): void { return; }
-foo.(1, 2, delta= 4, c= 3, e= 5);
+foo(1, 2, delta= 4, c= 3, e= 5);
 ```
 
 
@@ -269,8 +269,8 @@ func subtract($a: int, subtrahend= b: int): int {
 % typeof add: \(int, int) => int
 % typeof subtract: \(a: int, subtrahend: int) => int
 
-add.(2, 3);
-subtract.(subtrahend= 3, a= 2);
+add(2, 3);
+subtract(subtrahend= 3, a= 2);
 ```
 The type signature `\(int, int) => int` tells us that the function takes two parameters,
 each of type `int`, and it returns a value of type `int`.
@@ -300,7 +300,7 @@ must be a subtype of the *assignee* (target) function’s return type.
 type Stringify = \(int | float) => str;
 
 claim f: Stringify;
-val result: str = f.(42); % expected to return type `str`
+val result: str = f(42); % expected to return type `str`
 
 val g: Stringify = \(n: int | float): str | null {...}; %> TypeError % return type `str | null` is not assignable to return type `str`
 ```
@@ -310,7 +310,7 @@ must be assignable to the *assigned* (source) function’s parameters.
 type Stringify = \(int | float) => str;
 
 claim f: Stringify;
-f.(4.2); % expected to accept type `float`
+f(4.2); % expected to accept type `float`
 
 val g: Stringify = \(n: int): str {...}; %> TypeError % parameter type `int | float` is not assignable to parameter type `int`
 ```
@@ -359,14 +359,14 @@ We might implement it as so:
 ```cpl
 func iterate(list: [float], callback: \(item: float) => void): void {
 	for val: float in list do {
-		callback.(item= val);
+		callback(item= val);
 	};
 	return;
 }
 ```
 And a caller might use it as so:
 ```cpl
-iterate.([2.0, 4.0, 8.0, 16.0], \($item: float): void {
+iterate([2.0, 4.0, 8.0, 16.0], \($item: float): void {
 	"""2 to the {{ item }} power is {{ 2.0 ^ item }}""";
 	return;
 });
@@ -374,7 +374,7 @@ iterate.([2.0, 4.0, 8.0, 16.0], \($item: float): void {
 If the caller doesn’t like `item` as the callback parameter name,
 they can [alias](#named-parameters-and-arguments) it to a more sensible name:
 ```cpl
-iterate.([2.0, 4.0, 8.0, 16.0], (item= n: float): void {
+iterate([2.0, 4.0, 8.0, 16.0], (item= n: float): void {
 	"""2 to the {{ n }} power is {{ 2.0 ^ n }}""";
 	return;
 });
@@ -388,13 +388,13 @@ type IteratorFn = \(list: [float], callback: \(float) => void) => void;
 func iterate(list: [float], callback: \(float) => void): void {
 	for val: float in list do {
 		% now we just can’t call `callback` with named arguments
-		callback.(val);
+		callback(val);
 	};
 	return;
 }
 
-iterate.([2.0, 4.0, 8.0, 16.0], \(n: float): void {
-%                                 ^ no parameter aliasing necessary
+iterate([2.0, 4.0, 8.0, 16.0], \(n: float): void {
+%                                ^ no parameter aliasing necessary
 	"""2 to the {{ n }} power is {{ 2.0 ^ n }}""";
 	return;
 });
@@ -410,18 +410,18 @@ In a function call, arguments are evaluated *before* being sent.
 This might be counter-intuitive for some programmers who are used to evaluation being deferred to inside the function call.
 ```cpl
 func say_all(message1: str, message2: str): void {
-	print.("printing...");
-	return print.("""{{ message1 }} {{ message2 }}""");
+	print("printing...");
+	return print("""{{ message1 }} {{ message2 }}""");
 }
 func say_hello(): str {
-	print.("hello");
+	print("hello");
 	return "hello";
 }
 func say_world(): str {
-	print.("world");
+	print("world");
 	return "world";
 }
-say_all.(say_hello.(), say_world.());
+say_all(say_hello(), say_world());
 ```
 In this example, the order of prints is:
 1. `"hello"`
@@ -432,21 +432,21 @@ In this example, the order of prints is:
 To emulate lazy evaluation, we can use lambdas.
 ```cpl
 func say_all(message1: \() => str, message2: \() => str): void {
-	print.("printing...");
+	print("printing...");
 	% call in any order you like
-	val w: str = message2.();
-	val h: str = message1.();
-	return print.("""{{ h }} {{ w }}""");
+	val w: str = message2();
+	val h: str = message1();
+	return print("""{{ h }} {{ w }}""");
 }
 func say_hello(): str {
-	print.("hello");
+	print("hello");
 	return "hello";
 }
 func say_world(): str {
-	print.("world");
+	print("world");
 	return "world";
 }
-say_all.(() => say_hello.(), () => say_world.());
+say_all(() => say_hello(), () => say_world());
 ```
 1. `"printing..."`
 2. `"world"`
@@ -467,7 +467,7 @@ val arg: int = 42;
 func reassign(var param: int): void {
 	set param = 43;
 }
-reassign.(arg);
+reassign(arg);
 arg; % still 42, not 43
 ```
 This contrasts to other languages that are “call-by-reference”, in which *only* the reference,
@@ -483,7 +483,7 @@ func reassign_demo(var a: int, b: int, var $c: int, delta= var d: int): void {
 	set d -= 1; % ok
 	return;
 }
-reassign_demo.(1, 2, c= 3, delta= 4);
+reassign_demo(1, 2, c= 3, delta= 4);
 ```
 
 Call-by-sharing also means that any mutations made to the object inside the function are
@@ -495,7 +495,7 @@ func mutate(param: mut [int]): void {
 	set param.[0] = 43;
 	return;
 }
-mutate.(arg);
+mutate(arg);
 arg; % modified to `[43]`
 ```
 This contrasts to “call-by-value”, where a *copy* of the object
