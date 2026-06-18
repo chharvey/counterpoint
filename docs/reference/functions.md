@@ -51,14 +51,27 @@ whether it be an empty `return;` statement or a statement that returns another v
 The function below does nothing but evaluate a string when called.
 Typically, void functions will have observable side-effects, such as modifying non-local variables.
 ```cpl
-func myVoidFunction(message: str): void {
+func my_void_function(message: str): void {
 	"""Here is the message: {{ message }}""";
 	%                          ^ parameter
 	return;
 }
-myVoidFunction("Hello world!"); % evaluates the string
+my_void_function("Hello world!"); % evaluates the string
 %              ^ argument
 ```
+
+Void functions do not return values, so their call expressions cannot be used as a value.
+Assigning a void function call expression to a variable, using it as an argument,
+putting it in a collection, etc., are all type errors.
+```cpl
+val mut result: anything = my_void_function(); %> TypeError
+takes_anything(my_void_function());            %> TypeError
+func returns_anything(): anything {
+	return my_void_function(); %> TypeError
+}
+```
+(There is one exception: returning a void function call from within another void function,
+but that’s only because [tail call optimization](#tail-call-optimization) may be utilized.)
 
 The difference between *parameters* and *arguments* is subtle:
 parameters are unbound identifiers used in the function *definition*,
@@ -502,3 +515,48 @@ as opposed to the `mut` keyword on the parameter’s *type*, which indicates it 
 
 Call-by-sharing contrasts to “call-by-value”, where a *copy* of the object
 is sent into the function so that no modifications apply to the original.
+
+
+### Tail Call Optimization
+Normally, function calls open new stack frames. But when a function returns the result of another function call directly,
+that additional stack frame is unnecessary, since the result will just get returned by the outer function anyway.
+```cpl
+func is_even(n: nat): bool {
+	if n == 0 then {
+		return true;
+	} else {
+		return is_odd(n - 1);
+	};
+}
+```
+Tail call optimization improves performance significantly by allowing reuse of the calling function’s stack
+frame to compute what’s needed for the callee function.
+In the example above, since `is_odd()` is returned directly, no new stack frame for it is opened —
+the stack frame for `is_even` is cleared and reused to compute `is_odd(n - 1)`, and then that result is used
+as the stack frame’s return value.
+
+We allow this for void functions as well.
+Void function call expressions can’t usually be passed around as values,
+but an exception is made when used as in the tail call position.
+```cpl
+func countdown(n: int): void {
+	if n > 0 then {
+		print(n);
+		return countdown(n - 1);
+	} else {
+		return print("Blast off!");
+	};
+}
+```
+
+Tail calls also allow us to write more functional-style code.
+```cpl
+my_ints.forEach(\(i) => print(i));
+
+% is better than:
+
+my_ints.forEach(\(i) {
+	print(i);
+	return;
+});
+```
