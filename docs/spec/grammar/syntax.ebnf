@@ -41,6 +41,7 @@ Word ::=
 	// storage
 		| "type"
 		| "val"
+		| "func"
 		| "claim"
 		| "set"
 		| "delete"

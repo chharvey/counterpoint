@@ -327,6 +327,7 @@ module.exports = grammar({
 			// storage
 			'type',
 			'val',
+			'func',
 			'claim',
 			'set',
 			'delete',
@@ -628,6 +629,7 @@ module.exports = grammar({
 			// storage
 			'type',
 			'val',
+			'func',
 			'claim',
 			'set',
 			'delete',

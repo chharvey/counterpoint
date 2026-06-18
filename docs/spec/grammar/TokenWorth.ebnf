@@ -65,21 +65,23 @@ TokenWorth(KeywordOther :::= "then")     -> RealNumber := \x54;
 TokenWorth(KeywordOther :::= "else")     -> RealNumber := \x55;
 TokenWorth(KeywordOther :::= "type")     -> RealNumber := \x56;
 TokenWorth(KeywordOther :::= "val")      -> RealNumber := \x57;
-TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x58;
-TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x59;
-TokenWorth(KeywordOther :::= "delete")   -> RealNumber := \x5a;
-TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x5b;
-TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x5c;
-TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x5d;
-TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x5e;
-TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x5f;
-TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x60;
-TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x61;
-TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x62;
-TokenWorth(KeywordOther :::= "do")       -> RealNumber := \x63;
-TokenWorth(KeywordOther :::= "break")    -> RealNumber := \x64;
-TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x65;
-TokenWorth(KeywordOther :::= "return")   -> RealNumber := \x66;
+TokenWorth(KeywordOther :::= "func")     -> RealNumber := \x58;
+TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x59;
+TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x5a;
+TokenWorth(KeywordOther :::= "delete")   -> RealNumber := \x5b;
+TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x5c;
+TokenWorth(KeywordOther :::= "$")        -> RealNumber := \x5d;
+TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x5e;
+TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x5f;
+TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x60;
+TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x61;
+TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x62;
+TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x63;
+TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x64;
+TokenWorth(KeywordOther :::= "do")       -> RealNumber := \x65;
+TokenWorth(KeywordOther :::= "break")    -> RealNumber := \x66;
+TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x67;
+TokenWorth(KeywordOther :::= "return")   -> RealNumber := \x68;
 
 
 

@@ -30,10 +30,12 @@ export enum Keyword {
 	// storage
 	TYPE   = 'type',
 	LET    = 'val',
+	FUNC   = 'func',
 	CLAIM  = 'claim',
 	SET    = 'set',
 	DELETE = 'delete',
 	BLANK  = '_',
+	PUN    = '$',
 	VOID   = 'void',
 
 	// modifier
