@@ -25,7 +25,7 @@ export class StatementExpression extends Statement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'statement_expression', ['break']>,
+		start_node: SyntaxNodeFamily<'statement_expression', ['break', 'return']>,
 		public readonly expr?: EXPR.Expression,
 	) {
 		super(start_node, {}, (expr) ? [expr] : void 0);

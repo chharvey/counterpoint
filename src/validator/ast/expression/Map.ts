@@ -33,7 +33,7 @@ class ExpressionMap extends Collection {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_map_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_map_literal', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<Case>>,
 	) {
 		super(start_node, children);

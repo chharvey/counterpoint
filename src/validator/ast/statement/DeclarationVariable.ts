@@ -84,7 +84,7 @@ export class DeclarationVariable extends Statement {
 
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
+		start_node: SyntaxNodeFamily<'declaration_variable', ['break', 'return']>,
 		public  readonly writable: boolean,
 		public  readonly assignee: EXPR.Variable | null,
 		public  readonly typenode: AST_TYPE.Type | null,

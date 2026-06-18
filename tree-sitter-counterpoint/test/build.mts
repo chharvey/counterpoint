@@ -1706,8 +1706,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			))),
 		],
 
+		// TODO: StatementReturn: [
+		// 	xjs.String.dedent`
+		// 		{
+		// 		}
+		// 	`,
+		// 	sourceStatements(s('statement_return')),
+		// ],
+
 		// Statement
-		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break}}
+		// consists of #{Declaration,Statement{Expression,Claim,Set,Delete,Conditional,Loop,Iteration,Break,Return}}
 
 		Block: [
 			xjs.String.dedent`

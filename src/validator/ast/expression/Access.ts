@@ -45,7 +45,7 @@ export class Access extends Expression implements Reassignable {
 	public constructor(
 		start_node:
 			| SyntaxNodeType<'expression_compound'>
-			| SyntaxNodeFamily<'assignee', ['break']>,
+			| SyntaxNodeFamily<'assignee', ['break', 'return']>,
 
 		public readonly kind:     ValidAccessOperator,
 		public readonly base:     Expression,

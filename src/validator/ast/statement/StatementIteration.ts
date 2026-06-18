@@ -22,7 +22,7 @@ import {
 	TYPE,
 } from '../../../typer/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
-import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import type * as EXPR from '../expression/index.ts';
@@ -39,7 +39,7 @@ export class StatementIteration extends StatementBreakable {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeType<'statement_iteration'>,
+		start_node: SyntaxNodeFamily<'statement_iteration', ['return']>,
 		private readonly assignee: EXPR.Variable | null,
 		private readonly typenode: AST_TYPE.Type,
 		public  readonly iterable: EXPR.Expression,

@@ -38,7 +38,7 @@ class ExpressionRecord extends Collection {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_record_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_record_literal', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<Property>>,
 	) {
 		super(start_node, children);

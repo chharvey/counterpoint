@@ -133,162 +133,163 @@ Type ::=
 
 
 
-StringTemplate<Break> ::=
+StringTemplate<Break, Return> ::=
 	| TEMPLATE_FULL
-	| TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL
+	| TEMPLATE_HEAD Expression<+Block><?Break><?Return>? (TEMPLATE_MIDDLE Expression<+Block><?Break><?Return>?)* TEMPLATE_TAIL
 ;
 
-Items<Break> ::=
-	| Expression<+Block><?Break>  ","
-	| Expression<+Block><?Break>? "," Expression<+Block><?Break># ","?
+Items<Break, Return> ::=
+	| Expression<+Block><?Break><?Return>  ","
+	| Expression<+Block><?Break><?Return>? "," Expression<+Block><?Break><?Return># ","?
 ;
 
-Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
-Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+Property <Break, Return> ::= Word                                "="  Expression<+Block><?Break><?Return>;
+Case     <Break, Return> ::= Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>;
 
-PropertyAccessor<Break>
-	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break> "]";
+PropertyAccessor<Break, Return>
+	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break><?Return> "]";
 
-ExpressionGrouped       <Break> ::= "("       Expression<+Block><?Break>         ")";
-ExpressionTupleLiteral  <Break> ::= "("       Items<?Break>?                     ")";
-ExpressionRecordLiteral <Break> ::= "("  ","? Property<?Break>#           ","?   ")";
-ExpressionListLiteral   <Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]";
-ExpressionDictLiteral   <Break> ::= "["  ","? Property<?Break>#           ","?   "]";
-ExpressionSetLiteral    <Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}";
-ExpressionMapLiteral    <Break> ::= "{"  ","? Case<?Break>#               ","?   "}";
-FunctionArguments       <Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")";
+ExpressionGrouped       <Break, Return> ::= "("       Expression <+Block><?Break><?Return>         ")";
+ExpressionTupleLiteral  <Break, Return> ::= "("       Items              <?Break><?Return>?        ")";
+ExpressionRecordLiteral <Break, Return> ::= "("  ","? Property           <?Break><?Return># ","?   ")";
+ExpressionListLiteral   <Break, Return> ::= "[" (","? Expression <+Block><?Break><?Return># ","?)? "]";
+ExpressionDictLiteral   <Break, Return> ::= "["  ","? Property           <?Break><?Return># ","?   "]";
+ExpressionSetLiteral    <Break, Return> ::= "{" (","? Expression <+Block><?Break><?Return># ","?)? "}";
+ExpressionMapLiteral    <Break, Return> ::= "{"  ","? Case               <?Break><?Return># ","?   "}";
+FunctionArguments       <Break, Return> ::= "(" (","? Expression <+Block><?Break><?Return># ","?)? ")";
 
-ExpressionUnit<Block, Break> ::=
+ExpressionUnit<Block, Break, Return> ::=
 	| IDENTIFIER
 	| PrimitiveLiteral
-	| StringTemplate          <?Break>
-	| ExpressionGrouped       <?Break>
-	| ExpressionTupleLiteral  <?Break>
-	| ExpressionRecordLiteral <?Break>
-	| ExpressionListLiteral   <?Break>
-	| ExpressionDictLiteral   <?Break>
-	| ExpressionSetLiteral    <?Break>
-	| ExpressionMapLiteral    <?Break>
-	| <Block+>Block           <?Break>
+	| StringTemplate          <?Break><?Return>
+	| ExpressionGrouped       <?Break><?Return>
+	| ExpressionTupleLiteral  <?Break><?Return>
+	| ExpressionRecordLiteral <?Break><?Return>
+	| ExpressionListLiteral   <?Break><?Return>
+	| ExpressionDictLiteral   <?Break><?Return>
+	| ExpressionSetLiteral    <?Break><?Return>
+	| ExpressionMapLiteral    <?Break><?Return>
+	| <Block+>Block           <?Break><?Return>
 ;
 
-ExpressionCompound<Block, Break> ::=
-	| ExpressionUnit<?Block><?Break>
-	| ExpressionCompound<?Block><?Break> (
-		| ("." | "?." | "!.") PropertyAccessor<?Break>
-		|  "."                GenericArguments? FunctionArguments<?Break>
+ExpressionCompound<Block, Break, Return> ::=
+	| ExpressionUnit<?Block><?Break><?Return>
+	| ExpressionCompound<?Block><?Break><?Return> (
+		| ("." | "?." | "!.") PropertyAccessor<?Break><?Return>
+		|  "."                GenericArguments? FunctionArguments<?Break><?Return>
 	)
 ;
 
-ExpressionUnarySymbol<Block, Break> ::=
-	| ExpressionCompound<?Block><?Break>
-	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Block><?Break>
+ExpressionUnarySymbol<Block, Break, Return> ::=
+	| ExpressionCompound<?Block><?Break><?Return>
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Block><?Break><?Return>
 ;
 
-ExpressionUnaryKeyword<Block, Break> ::=
-	| ExpressionUnarySymbol<?Block><?Break>
-	| ("isset" | "!isset") Assignee<?Break>
+ExpressionUnaryKeyword<Block, Break, Return> ::=
+	| ExpressionUnarySymbol<?Block><?Break><?Return>
+	| ("isset" | "!isset") Assignee<?Break><?Return>
 ;
 
-ExpressionCast<Block, Break> ::=
-	| (ExpressionCast<?Block><?Break> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block><?Break>
-	|  ExpressionCast<?Block><?Break>  "as"                    "<" Type ">"
+ExpressionCast<Block, Break, Return> ::=
+	| (ExpressionCast<?Block><?Break><?Return> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block><?Break><?Return>
+	|  ExpressionCast<?Block><?Break><?Return>  "as"                    "<" Type ">"
 ;
 
-ExpressionExponential<Block, Break>
-	::= ExpressionCast<?Block><?Break> ("^" ExpressionExponential<?Block><?Break>)?;
+ExpressionExponential<Block, Break, Return>
+	::= ExpressionCast<?Block><?Break><?Return> ("^" ExpressionExponential<?Block><?Break><?Return>)?;
 
-ExpressionMultiplicative <Block, Break> ::= (ExpressionMultiplicative <?Block><?Break> ("*" | "/" ))?                                           ExpressionExponential    <?Block><?Break>;
-ExpressionAdditive       <Block, Break> ::= (ExpressionAdditive       <?Block><?Break> ("+" | "-" ))?                                           ExpressionMultiplicative <?Block><?Break>;
-ExpressionComparative    <Block, Break> ::= (ExpressionComparative    <?Block><?Break> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "!is"))? ExpressionAdditive       <?Block><?Break>;
-ExpressionEquality       <Block, Break> ::= (ExpressionEquality       <?Block><?Break> ("===" | "!==" | "==" | "!="))?                          ExpressionComparative    <?Block><?Break>;
-ExpressionConjunctive    <Block, Break> ::= (ExpressionConjunctive    <?Block><?Break> ("&&" | "!&"))?                                          ExpressionEquality       <?Block><?Break>;
-ExpressionDisjunctive    <Block, Break> ::= (ExpressionDisjunctive    <?Block><?Break> ("||" | "!|"))?                                          ExpressionConjunctive    <?Block><?Break>;
+ExpressionMultiplicative <Block, Break, Return> ::= (ExpressionMultiplicative <?Block><?Break><?Return> ("*" | "/" ))?                                           ExpressionExponential    <?Block><?Break><?Return>;
+ExpressionAdditive       <Block, Break, Return> ::= (ExpressionAdditive       <?Block><?Break><?Return> ("+" | "-" ))?                                           ExpressionMultiplicative <?Block><?Break><?Return>;
+ExpressionComparative    <Block, Break, Return> ::= (ExpressionComparative    <?Block><?Break><?Return> ("<" | ">" | "<=" | ">=" | "!<" | "!>" | "is" | "!is"))? ExpressionAdditive       <?Block><?Break><?Return>;
+ExpressionEquality       <Block, Break, Return> ::= (ExpressionEquality       <?Block><?Break><?Return> ("===" | "!==" | "==" | "!="))?                          ExpressionComparative    <?Block><?Break><?Return>;
+ExpressionConjunctive    <Block, Break, Return> ::= (ExpressionConjunctive    <?Block><?Break><?Return> ("&&" | "!&"))?                                          ExpressionEquality       <?Block><?Break><?Return>;
+ExpressionDisjunctive    <Block, Break, Return> ::= (ExpressionDisjunctive    <?Block><?Break><?Return> ("||" | "!|"))?                                          ExpressionConjunctive    <?Block><?Break><?Return>;
 
-ExpressionConditional<Break> ::=
+ExpressionConditional<Break, Return> ::=
 	& "if"
-	& Expression<+Block><?Break>
+	& Expression<+Block><?Break><?Return>
 	& "then"
-	& Expression<-Block><?Break>
+	& Expression<-Block><?Break><?Return>
 	& "else"
-	& Expression<-Block><?Break>
+	& Expression<-Block><?Break><?Return>
 ;
 
-Expression<Block, Break> ::=
-	| ExpressionDisjunctive<?Block><?Break>
-	| ExpressionConditional<?Break>
+Expression<Block, Break, Return> ::=
+	| ExpressionDisjunctive<?Block><?Break><?Return>
+	| ExpressionConditional<?Break><?Return>
 ;
 
 
 
-Assignee<Break> ::=
+Assignee<Break, Return> ::=
 	| IDENTIFIER
-	| ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>
+	| ExpressionCompound<+Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>
 ;
 
 
 
-StatementExpression<Break>
-	::= Expression<+Block><?Break>? ";";
+StatementExpression<Break, Return>
+	::= Expression<+Block><?Break><?Return>? ";";
 
-StatementClaim  <Break> ::= "claim"  Assignee<?Break> ":" Type                       ";";
-StatementSet    <Break> ::= "set"    Assignee<?Break> "=" Expression<+Block><?Break> ";";
-StatementDelete <Break> ::= "delete" Assignee<?Break>                                ";";
+StatementClaim  <Break, Return> ::= "claim"  Assignee<?Break><?Return> ":" Type                                ";";
+StatementSet    <Break, Return> ::= "set"    Assignee<?Break><?Return> "=" Expression<+Block><?Break><?Return> ";";
+StatementDelete <Break, Return> ::= "delete" Assignee<?Break><?Return>                                         ";";
 
-StatementConditional<Unless, Break> ::=
-	& <Unless->"if" <Unless+>"unless" Expression<+Block><?Break>
-	& "then" Block<?Break>
+StatementConditional<Unless, Break, Return> ::=
+	& <Unless->"if" <Unless+>"unless" Expression<+Block><?Break><?Return>
+	& "then" Block<?Break><?Return>
 	& <Unless->(
-		| ("else" Block<?Break>)? ";"
-		| "else" StatementConditional<?Unless><?Break>
+		| ("else" Block<?Break><?Return>)? ";"
+		| "else" StatementConditional<?Unless><?Break><?Return>
 	)
 	& <Unless+>";"
 ;
 
-StatementLoop ::= (
-	&& ("while" | "until") Expression<+Block><-Break>
-	&& "do"                Block<+Break>
+StatementLoop<Return> ::= (
+	&& ("while" | "until") Expression<+Block><-Break><?Return>
+	&& "do"                Block<+Break><?Return>
 ) ";";
 
-StatementIteration
-	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";";
+StatementIteration<Return>
+	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break><?Return> "do" Block<+Break><?Return> ";";
 
-StatementBreak
-	::= ("break" | "skip") ";";
+StatementBreak  ::= ("break" | "skip") ";";
+StatementReturn ::=  "return"          ";";
 
-Statement<Break> ::=
-	| Declaration                   <?Break>
-	| StatementExpression           <?Break>
-	| StatementClaim                <?Break>
-	| StatementSet                  <?Break>
-	| StatementDelete               <?Break>
-	| StatementConditional <∓Unless><?Break>
-	| StatementLoop
-	| StatementIteration
-	| <Break+>StatementBreak
+Statement<Break, Return> ::=
+	| Declaration                   <?Break><?Return>
+	| StatementExpression           <?Break><?Return>
+	| StatementClaim                <?Break><?Return>
+	| StatementSet                  <?Break><?Return>
+	| StatementDelete               <?Break><?Return>
+	| StatementConditional <∓Unless><?Break><?Return>
+	| StatementLoop                         <?Return>
+	| StatementIteration                    <?Return>
+	| <Break+> StatementBreak
+	| <Return+>StatementReturn
 ;
 
 
 
-Block<Break>
-	::= "{" Statement<?Break>+ "}";
+Block<Break, Return>
+	::= "{" Statement<?Break><?Return>+ "}";
 
 
 
 DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
-DeclarationVariable<Break> ::=
-	| "val" ("_" | "mut"? IDENTIFIER)    (":" Type)? "=" Expression<+Block><?Break> ";"
-	| "val"        "mut"  IDENTIFIER  "?" ":" Type                                  ";"
+DeclarationVariable<Break, Return> ::=
+	| "val" ("_" | "mut"? IDENTIFIER)    (":" Type)? "=" Expression<+Block><?Break><?Return> ";"
+	| "val"        "mut"  IDENTIFIER  "?" ":" Type                                           ";"
 ;
 
-Declaration<Break> ::=
+Declaration<Break, Return> ::=
 	| DeclarationType
-	| DeclarationVariable<?Break>
+	| DeclarationVariable<?Break><?Return>
 ;
 
 
 
 SourceFile
-	::= #x02 Block<-Break>? #x03;
+	::= #x02 Block<-Break><-Return>? #x03;

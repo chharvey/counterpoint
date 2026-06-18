@@ -38,7 +38,7 @@ export class Block extends AstNode implements Buildable {
 	#validator?: Validator;
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'block', ['break']>,
+		start_node: SyntaxNodeFamily<'block', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
 	) {

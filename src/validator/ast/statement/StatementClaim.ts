@@ -32,7 +32,7 @@ export class StatementClaim extends Statement {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'statement_claim', ['break']>,
+		start_node: SyntaxNodeFamily<'statement_claim', ['break', 'return']>,
 		private readonly assignee: EXPR.Variable | EXPR.Access,
 		private readonly claimed_type: AST_TYPE.Type,
 	) {

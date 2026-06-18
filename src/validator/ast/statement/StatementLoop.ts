@@ -14,7 +14,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
-import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import type {Block} from '../Block.ts';
 import type * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
@@ -31,7 +31,7 @@ export class StatementLoop extends StatementBreakable {
 
 
 	public constructor(
-		start_node: SyntaxNodeType<'statement_loop'>,
+		start_node: SyntaxNodeFamily<'statement_loop', ['return']>,
 		private readonly doFirst:   boolean,
 		private readonly until:     boolean,
 		public  readonly condition: EXPR.Expression,

@@ -91,14 +91,14 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 ) : C extends 'expression' ? (
 	| SyntaxNodeType<'identifier'>
 	| SyntaxNodeType<'primitive_literal'>
-	| SyntaxNodeFamily<'string_template',           ['break']>
-	| SyntaxNodeFamily<'expression_grouped',        ['break']>
-	| SyntaxNodeFamily<'expression_tuple_literal',  ['break']>
-	| SyntaxNodeFamily<'expression_record_literal', ['break']>
-	| SyntaxNodeFamily<'expression_list_literal',   ['break']>
-	| SyntaxNodeFamily<'expression_dict_literal',   ['break']>
-	| SyntaxNodeFamily<'expression_set_literal',    ['break']>
-	| SyntaxNodeFamily<'expression_map_literal',    ['break']>
+	| SyntaxNodeFamily<'string_template',           ['break', 'return']>
+	| SyntaxNodeFamily<'expression_grouped',        ['break', 'return']>
+	| SyntaxNodeFamily<'expression_tuple_literal',  ['break', 'return']>
+	| SyntaxNodeFamily<'expression_record_literal', ['break', 'return']>
+	| SyntaxNodeFamily<'expression_list_literal',   ['break', 'return']>
+	| SyntaxNodeFamily<'expression_dict_literal',   ['break', 'return']>
+	| SyntaxNodeFamily<'expression_set_literal',    ['break', 'return']>
+	| SyntaxNodeFamily<'expression_map_literal',    ['break', 'return']>
 	// NOTE: the following expression types (`_block` through `_disjunctive`) refer to aliases in the grammar --- no need for suffices
 	| SyntaxNodeType<'expression_block'>
 	| SyntaxNodeType<'expression_compound'>
@@ -112,20 +112,21 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'expression_equality'>
 	| SyntaxNodeType<'expression_conjunctive'>
 	| SyntaxNodeType<'expression_disjunctive'>
-	| SyntaxNodeFamily<'expression_conditional', ['break']>
+	| SyntaxNodeFamily<'expression_conditional', ['break', 'return']>
 ) : C extends 'statement' ? (
 	| SyntaxNodeSupertype<'declaration'>
-	| SyntaxNodeFamily<'statement_expression',  ['break']>
-	| SyntaxNodeFamily<'statement_claim',       ['break']>
-	| SyntaxNodeFamily<'statement_set',         ['break']>
-	| SyntaxNodeFamily<'statement_delete',      ['break']>
-	| SyntaxNodeFamily<'statement_conditional', ['unless', 'break']>
-	| SyntaxNodeType<'statement_loop'>
-	| SyntaxNodeType<'statement_iteration'>
+	| SyntaxNodeFamily<'statement_expression',  [          'break', 'return']>
+	| SyntaxNodeFamily<'statement_claim',       [          'break', 'return']>
+	| SyntaxNodeFamily<'statement_set',         [          'break', 'return']>
+	| SyntaxNodeFamily<'statement_delete',      [          'break', 'return']>
+	| SyntaxNodeFamily<'statement_conditional', ['unless', 'break', 'return']>
+	| SyntaxNodeFamily<'statement_loop',        [                   'return']>
+	| SyntaxNodeFamily<'statement_iteration',   [                   'return']>
 	| SyntaxNodeType<'statement_break'>
+	| SyntaxNodeType<'statement_return'>
 ) : C extends 'declaration' ? (
 	| SyntaxNodeType<'declaration_type'>
-	| SyntaxNodeFamily<'declaration_variable', ['break']>
+	| SyntaxNodeFamily<'declaration_variable', ['break', 'return']>
 ) : never;
 
 
@@ -136,8 +137,8 @@ export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode
 	}
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_(grouped|(tuple|record|list|dict|set|map)_literal)(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?)$/)],
-		['statement',   (node) => isSyntaxNodeType(node, /^declaration|statement_((expression|claim|set|delete)(__break)?|conditional(__unless)?(__break)?|loop|iteration|break)$/) || isSyntaxNodeSupertype(node, 'declaration')],
-		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?(__return)?|expression_(grouped|(tuple|record|list|dict|set|map)_literal)(__break)?(__return)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?(__return)?)$/)],
+		['statement',   (node) => isSyntaxNodeType(node, /^statement_((expression|claim|set|delete)(__break)?(__return)?|conditional(__unless)?(__break)?(__return)?|(loop|iteration)(__return)?|break|return)$/) || isSyntaxNodeSupertype(node, 'declaration')],
+		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?(__return)?)$/)],
 	]).get(category)!(syntaxnode);
 }

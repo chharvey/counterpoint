@@ -38,7 +38,7 @@ export class Dict extends Collection {
 	}
 
 	public constructor(
-		start_node: SyntaxNodeFamily<'expression_dict_literal', ['break']>,
+		start_node: SyntaxNodeFamily<'expression_dict_literal', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<Property>>,
 	) {
 		super(start_node, children);
