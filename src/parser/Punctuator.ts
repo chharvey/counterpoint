@@ -51,4 +51,8 @@ export enum Punctuator {
 	ENDSTAT = ';',
 	ISTYPE  = ':',
 	ASSIGN  = '=',
+
+	// storage
+	LAMBDA_START = '\\',
+	IMPL_RTN     = '=>',
 }

@@ -599,8 +599,36 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			)),
 		],
 
+		TypeFunction: [
+			xjs.String.dedent`
+				{
+					type T = \\() => void;
+					type T = \\(A, b: B) => void;
+					type T = \\(\\() => void) => void;
+				}
+			`,
+			sourceTypes(
+				s('type_function'),
+				s(
+					'type_function',
+					s(
+						'parameters_type',
+						s('entry_type',        f('type_0', 'identifier')),
+						s('entry_type__named', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
+					),
+				),
+				s(
+					'type_function',
+					s(
+						'parameters_type',
+						s('entry_type', f('type_0', 'type_function')),
+					),
+				),
+			),
+		],
+
 		// Type
-		// consists of #TypeUnion
+		// consists of #Type{Union,Function}
 
 
 		/* ## Expressions */

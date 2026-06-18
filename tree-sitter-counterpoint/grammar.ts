@@ -410,6 +410,8 @@ module.exports = grammar({
 		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
 		type_union:        $ => prec.left(1, seq($._type, '|', $._type)),
 
+		type_function: $ => seq('\\', '(', optional($.parameters_type), ')', '=>', 'void'),
+
 		_type: $ => choice(
 			$._type_unit,
 
@@ -419,6 +421,8 @@ module.exports = grammar({
 			$.type_unary_keyword,
 			$.type_intersection,
 			$.type_union,
+
+			$.type_function,
 		),
 
 
@@ -560,6 +564,14 @@ module.exports = grammar({
 
 		...parameterize('block', ({break: brk, return: rtn}) => $ => seq('{', repeat1(call($, '_statement', {break: brk}, {return: rtn})), '}'), 'break', 'return'),
 
+		parameters_type: $ => {
+			const LIST_ENT_NAM: SeqRule = repCom1(call($, 'entry_type', 'named'));
+			return choice(
+				seq(OPT_COM, repCom1($.entry_type), optional(seq(',', LIST_ENT_NAM)), OPT_COM),
+				seq(OPT_COM,                                          LIST_ENT_NAM,   OPT_COM),
+			);
+		},
+
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
 		...parameterize('declaration_variable', ({break: brk, return: rtn}) => $ => choice(
@@ -582,9 +594,10 @@ module.exports = grammar({
 	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
 	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
 	 */
-	conflicts: _$ => [
+	conflicts: $ => [
 		// example:
-		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => _$[rulename]),
+		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => $[rulename]),
+		[$.parameters_type],
 	],
 
 	/**

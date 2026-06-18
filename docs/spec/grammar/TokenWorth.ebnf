@@ -36,6 +36,8 @@ TokenWorth(Punctuator :::= "|")   -> RealNumber := \x22;
 TokenWorth(Punctuator :::= ";")   -> RealNumber := \x23;
 TokenWorth(Punctuator :::= ":")   -> RealNumber := \x24;
 TokenWorth(Punctuator :::= "=")   -> RealNumber := \x25;
+TokenWorth(Punctuator :::= "\")   -> RealNumber := \x26;
+TokenWorth(Punctuator :::= "=>")  -> RealNumber := \x27;
 
 
 

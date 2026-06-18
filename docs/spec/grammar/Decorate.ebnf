@@ -241,8 +241,15 @@ Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation
 
 
 
+Decorate(TypeFunction ::= "\" "(" ParametersType? ")" "=>" "void") -> SemanticType
+	// TODO
+
+
+
 Decorate(Type ::= TypeUnion) -> SemanticType
 	:= Decorate(TypeUnion);
+Decorate(Type ::= TypeFunction) -> SemanticType
+	:= Decorate(TypeFunction);
 
 
 

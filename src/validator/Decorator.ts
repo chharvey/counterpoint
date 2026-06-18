@@ -271,6 +271,8 @@ export class Decorator {
 				this.decorateTypeNode(node.namedChild(1) as SyntaxNodeSupertype<'type'>),
 			)],
 
+			// ['type_function', () => undefined], // TODO:
+
 			/* ## Expressions */
 			[/^string_template(__break)?(__return)?$/, (node) => new AST.EXPR.Template(
 				node as SyntaxNodeFamily<'string_template', ['break', 'return']>,

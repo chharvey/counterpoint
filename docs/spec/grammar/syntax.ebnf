@@ -127,8 +127,12 @@ TypeUnaryKeyword ::= TypeUnarySymbol | "mut" TypeUnaryKeyword;
 TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
 TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
 
+TypeFunction
+	::= "\" "(" ParametersType? ")" "=>" "void";
+
 Type ::=
 	| TypeUnion
+	| TypeFunction
 ;
 
 
@@ -273,6 +277,13 @@ Statement<Break, Return> ::=
 
 Block<Break, Return>
 	::= "{" Statement<?Break><?Return>+ "}";
+
+
+
+ParametersType ::=
+	| ","? EntryType<-Named><-Optional># ("," EntryType<+Named><-Optional>#)? ","?
+	| ","?                                    EntryType<+Named><-Optional>#   ","?
+;
 
 
 

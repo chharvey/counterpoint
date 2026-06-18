@@ -40,6 +40,9 @@ Punctuator :::=
 		| "&" | "|"
 	// statement
 		| ";" | ":" | "="
+	// storage
+		| "\"
+		| "=>"
 ;
 
 

@@ -289,6 +289,12 @@ test.suite('Decorator', () => {
 				% (type_union)
 			`]],
 
+			['todo: Decorate(TypeFunction ::= "\\" "(" ParametersType? ")" "=>" "void") -> SemanticType', [AST.TYPE.Type, `
+				{
+				}
+				% (type_function)
+			`]],
+
 			/* ## Expressions */
 			['Decorate(StringTemplate<Break, Return> ::= TEMPLATE_FULL) -> SemanticExpressionTemplate', [AST.EXPR.Template, `
 				{
