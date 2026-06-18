@@ -141,8 +141,8 @@ fold([1, 2, 3], \(a: int, b: int): int { return a + b; }); %== 6
 we can return them as [closures](#closures),
 ```cpl
 func adder(augend: int): \(int) => int {
-	return \[augend](addend: int): int { return augend + addend; };
-	%       ^ this is called ‘capturing’ --- don’t worry about it for now
+	return \(addend: int): int with (augend) { return augend + addend; };
+	%                               ^ this is called ‘capturing’ --- don’t worry about it for now
 }
 val closure: \(int) => int = adder(3);
 closure(5); %== 8
@@ -446,7 +446,7 @@ func say_world(): str {
 	print("world");
 	return "world";
 }
-say_all(() => say_hello(), () => say_world());
+say_all(\() => say_hello(), \() => say_world());
 ```
 1. `"printing..."`
 2. `"world"`
@@ -464,7 +464,7 @@ that reassignment is only observed *within the function’s scope*.
 Outside the function, the argument sent (if it was a variable) will still point to its original value.
 ```cpl
 val arg: int = 42;
-func reassign(var param: int): void {
+func reassign(mut param: int): void {
 	set param = 43;
 }
 reassign(arg);
@@ -473,8 +473,7 @@ arg; % still 42, not 43
 This contrasts to other languages that are “call-by-reference”, in which *only* the reference,
 not the object, is sent into the function and thus may be reassigned by it.
 
-Notice that a parameter must be declared `var` in order for it to be reassigned.
-(When an unfixed parameter is “punned”, it uses the syntax `var $param`.)
+Notice that a parameter must be declared with `mut` in order for it to be reassigned.
 ```cpl
 func reassign_demo(var a: int, b: int, var $c: int, delta= var d: int): void {
 	set a += 1; % ok
@@ -498,5 +497,8 @@ func mutate(param: mut [int]): void {
 mutate(arg);
 arg; % modified to `[43]`
 ```
-This contrasts to “call-by-value”, where a *copy* of the object
+Notice the difference between the `mut` keyword on the *parameter*, which allows reassignment,
+as opposed to the `mut` keyword on the parameter’s *type*, which indicates it is a mutable object.
+
+Call-by-sharing contrasts to “call-by-value”, where a *copy* of the object
 is sent into the function so that no modifications apply to the original.
