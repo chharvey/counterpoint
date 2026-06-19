@@ -249,8 +249,10 @@ StatementLoop ::= (
 	&& "do"                Block<+Break>
 ) ";";
 
-StatementIteration
-	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";";
+StatementIteration ::=
+	& "for" ("_" | IDENTIFIER) ":" Type
+	& "in" Expression<+Block><+Break>
+	& "do" Block<+Break> ";";
 
 StatementBreak
 	::= ("break" | "skip") ";";

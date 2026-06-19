@@ -748,17 +748,17 @@ Decorate(StatementLoop ::= "do" Block<+Break> "until" Expression<+Block><-Break>
 
 
 
-Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
+Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><+Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
 		(SemanticType     Decorate(Type))
-		(SemanticIterable Decorate(Expression<+Block><-Break>))
+		(SemanticIterable Decorate(Expression<+Block><+Break>))
 		Decorate(Block<+Break>)
 	);
-Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
+Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><+Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
 		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		(SemanticType     Decorate(Type))
-		(SemanticIterable Decorate(Expression<+Block><-Break>))
+		(SemanticIterable Decorate(Expression<+Block><+Break>))
 		Decorate(Block<+Break>)
 	);
 
