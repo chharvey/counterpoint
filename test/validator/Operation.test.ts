@@ -98,7 +98,7 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryComparative', () => {
-			test.test('without constant folding: returns `bool` for numeric operands.', () => {
+			test.test('returns `bool` for numeric operands.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val mut i1: int   = 7;

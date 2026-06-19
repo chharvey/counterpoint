@@ -18,10 +18,14 @@ import {
 	Operator,
 	type ValidOperatorComparative,
 } from '../../Operator.ts';
-import {bothNumbers} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
+
+
+export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.NUMBER) && t1.isSubtypeOf(TYPE.NUMBER);
+}
 
 
 export class OperationBinaryComparative extends OperationBinary {
