@@ -595,20 +595,14 @@ export class Decorator {
 			)],
 
 			['statement_loop', (node) => {
+				const is_until: boolean = !!node.childForFieldName('until_0');
+				const do_first: boolean = node.children[0].text === Keyword.DO;
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>;
 				const block_0      = node.childForFieldName('block_0')      as SyntaxNodeType<'block__break'>;
-				return node.children[0].text === Keyword.DO ? new AST.STMT.StatementLoop(
-					// we have `"do" Block ("while" | "until") Expression ";"` (bottom-tested)
+				return new AST.STMT.StatementLoop(
 					node as SyntaxNodeType<'statement_loop'>,
-					true,
-					node.children[2].text === Keyword.UNTIL,
-					this.decorateExprNode(expression_0),
-					this.decorate(block_0),
-				) : new AST.STMT.StatementLoop(
-					// we have `("while" | "until") Expression "do" Block ";"` (top-tested)
-					node as SyntaxNodeType<'statement_loop'>,
-					false,
-					node.children[0].text === Keyword.UNTIL,
+					do_first,
+					is_until,
 					this.decorateExprNode(expression_0),
 					this.decorate(block_0),
 				);
@@ -642,7 +636,7 @@ export class Decorator {
 			}],
 
 			[/^declaration_variable(__break)?$/, (node) => {
-				const is_writable: boolean = node.children[1].text === Keyword.MUTABLE;
+				const is_writable: boolean = !!node.childForFieldName('mut_0');
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>      | null;
 				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;

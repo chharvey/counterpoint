@@ -535,8 +535,8 @@ module.exports = grammar({
 		), 'unless', 'break'),
 
 		statement_loop: $ => seq(uSeq(
-			seq(choice('while', 'until'), field('expression_0', call($, '_expression', 'block'))),
-			seq('do',                     field('block_0',      call($, 'block', 'break'))),
+			seq(choice('while', field('until_0', 'until')), field('expression_0', call($, '_expression', 'block'))),
+			seq('do',                                       field('block_0',      call($, 'block', 'break'))),
 		), ';'),
 
 		statement_iteration: $ => seq(
@@ -570,8 +570,8 @@ module.exports = grammar({
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
 		...parameterize('declaration_variable', ({break: brk}) => $ => choice(
-			seq('val', choice('_', seq(optional('mut'), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk})), ';'),
-			seq('val',                          'mut',  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                              ';'),
+			seq('val', choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk})), ';'),
+			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                              ';'),
 		), 'break'),
 
 		...parameterize('_declaration', ({break: brk}) => $ => choice(
