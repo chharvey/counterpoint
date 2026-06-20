@@ -18,13 +18,22 @@ import {
 	Operator,
 	type ValidOperatorArithmetic,
 } from '../../Operator.ts';
-import {
-	bothInts,
-	bothNats,
-	bothFloats,
-} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
+
+
+
+function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
+}
+
+function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
+}
+
+function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
+}
 
 
 

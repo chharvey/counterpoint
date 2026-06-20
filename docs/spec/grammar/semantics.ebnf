@@ -160,15 +160,15 @@ SemanticDeclaration =:=
 	| SemanticDeclarationVariable
 ;
 
-SemanticDeclarationType
-	::= SemanticTypeAlias? SemanticType;
+SemanticDeclarationType[id: RealNumber]
+	::= SemanticType;
 
-SemanticDeclarationVariable[writable: Boolean]
-	::= SemanticExpressionVariable SemanticType? SemanticExpression;
+SemanticDeclarationVariable[id: RealNumber][writable: Boolean]
+	::= SemanticType? SemanticExpression;
 SemanticDeclarationVariable[writable=false]
 	::= SemanticType? SemanticExpression;
-SemanticDeclarationVariable[writable=true]
-	::= SemanticExpressionVariable SemanticType;
+SemanticDeclarationVariable[id: RealNumber][writable=true]
+	::= SemanticType;
 
 
 
@@ -187,8 +187,8 @@ SemanticStatementConditional[unless: Boolean]
 SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 	::= SemanticExpression SemanticBlock;
 
-SemanticStatementIteration
-	::= SemanticExpressionVariable? SemanticType SemanticExpression SemanticBlock;
+SemanticStatementIteration[id?: RealNumber]
+	::= SemanticType SemanticExpression SemanticBlock;
 
 SemanticStatementBreak[skip: Boolean]
 	::= ();

@@ -768,13 +768,13 @@ test.suite('Decorator', () => {
 				% (statement_loop)
 			`]],
 
-			['Decorate(StatementIteration<Return> ::= "for" "_" ":" Type "in" Expression<+Block><-Break><?Return> "do" Block<+Break><?Return> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
+			['Decorate(StatementIteration<Return> ::= "for" "_" ":" Type "in" Expression<+Block><+Break><?Return> "do" Block<+Break><?Return> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
 				{
 					for _: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
-			['Decorate(StatementIteration<Return> ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break><?Return> "do" Block<+Break><?Return> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
+			['Decorate(StatementIteration<Return> ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><+Break><?Return> "do" Block<+Break><?Return> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
 				{
 					for it: T in iterable do { iterate; };
 				}

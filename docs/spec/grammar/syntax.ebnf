@@ -256,8 +256,11 @@ StatementLoop<Return> ::= (
 	&& "do"                Block<+Break><?Return>
 ) ";";
 
-StatementIteration<Return>
-	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break><?Return> "do" Block<+Break><?Return> ";";
+StatementIteration<Return> ::=
+	& "for" ("_" | IDENTIFIER) ":" Type
+	& "in" Expression<+Block><+Break><?Return>
+	& "do" Block<+Break><?Return> ";"
+;
 
 StatementBreak  ::= ("break" | "skip") ";";
 StatementReturn ::=  "return"          ";";

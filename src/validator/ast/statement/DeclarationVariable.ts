@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	type Builder,
 	OP,
@@ -19,6 +18,7 @@ import {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
+import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
@@ -83,10 +83,13 @@ export class DeclarationVariable extends Statement {
 	}
 
 
+	private id?: bigint;
+
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break', 'return']>,
 		public  readonly writable: boolean,
-		public  readonly assignee: EXPR.Variable | null,
+		public  readonly assignee: Serializable | null,
 		public  readonly typenode: AST_TYPE.Type | null,
 		public  readonly assigned: EXPR.Expression | null,
 	) {
@@ -94,7 +97,6 @@ export class DeclarationVariable extends Statement {
 			start_node,
 			{writable},
 			[
-				...(assignee ? [assignee] : []),
 				...(typenode ? [typenode] : []),
 				...(assigned ? [assigned] : []),
 			],
@@ -107,13 +109,13 @@ export class DeclarationVariable extends Statement {
 	}
 
 	public override varCheck(): void {
-		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
-		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
+		super.varCheck();
 		if (this.assignee) {
-			if (this.validator.hasSymbol(this.assignee.id)) {
+			this.id = this.validator.cookTokenIdentifier(this.assignee.source);
+			if (this.validator.hasSymbol(this.id)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaVar(this.assignee, this.writable, !this.assigned));
+			this.validator.addSymbol(new SymbolSchemaVar(this.id, this.assignee, this.writable, !this.assigned));
 		}
 	}
 
@@ -133,13 +135,9 @@ export class DeclarationVariable extends Statement {
 		);
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.type = assignee_type;
-			// TODO: move these next lines to the interpreter
-			if (!symbol.type.hasMutable && !this.writable) {
-				assert.ok(!symbol.isWritable, `Symbol \`${ symbol.source }\` should not be writable.`);
-			}
 		}
 	}
 
@@ -147,7 +145,7 @@ export class DeclarationVariable extends Statement {
 	public override build(builder: Builder): void {
 		const value: OP.Value | undefined = this.assigned?.build(builder);
 		if (this.assignee) {
-			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.irType = value?.type ?? TYPE.NULL;
 			builder.pushInstruction(new OP.Decl(symbol, value));
 		} else {

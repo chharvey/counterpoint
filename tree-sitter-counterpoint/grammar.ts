@@ -546,7 +546,17 @@ module.exports = grammar({
 			seq('do',                     field('block_0',      call($, 'block', 'break', {return: rtn}))),
 		), ';'), 'return'),
 
-		...parameterize('statement_iteration', ({return: rtn}) => $ => seq('for', choice('_', field('identifier_0', $.identifier)), ':', field('type_0', $._type), 'in', field('expression_0', call($, '_expression', 'block', {return: rtn})), 'do', field('block_0', call($, 'block', 'break', {return: rtn})), ';'), 'return'),
+		...parameterize('statement_iteration', ({return: rtn}) => $ => seq(
+			'for',
+			choice('_', field('identifier_0', $.identifier)),
+			':',
+			field('type_0', $._type),
+			'in',
+			field('expression_0', call($, '_expression', 'block', 'break', {return: rtn})),
+			'do',
+			field('block_0', call($, 'block', 'break', {return: rtn})),
+			';',
+		), 'return'),
 
 		statement_break:  _$ => seq(choice('break', 'skip'), ';'),
 		statement_return: _$ => seq('return',                ';'),

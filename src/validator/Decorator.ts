@@ -8,6 +8,7 @@ import {
 import {
 	Punctuator,
 	Keyword,
+	to_serializable,
 } from '../parser/index.ts';
 import {AST} from './index.ts';
 import {
@@ -628,7 +629,7 @@ export class Decorator {
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				return new AST.STMT.StatementIteration(
 					node as SyntaxNodeFamily<'statement_iteration', ['return']>,
-					identifier_0 && new AST.EXPR.Variable(identifier_0),
+					identifier_0 && to_serializable(identifier_0),
 					this.decorateTypeNode(node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>),
 					this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
 					this.decorate(node.childForFieldName('block_0')              as SyntaxNodeType<'block__break'>),
@@ -656,7 +657,7 @@ export class Decorator {
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				return new AST.STMT.DeclarationType(
 					node as SyntaxNodeType<'declaration_type'>,
-					identifier_0 && new AST.TYPE.TypeAlias(identifier_0),
+					identifier_0 && to_serializable(identifier_0),
 					this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 				);
 			}],
@@ -683,7 +684,7 @@ export class Decorator {
 				return new AST.STMT.DeclarationVariable(
 					node as SyntaxNodeFamily<'declaration_variable', ['break', 'return']>,
 					is_writable,
-					identifier_0 && new AST.EXPR.Variable(identifier_0),
+					identifier_0 && to_serializable(identifier_0),
 					type_0       && this.decorateTypeNode(type_0),
 					expression_0 && this.decorateExprNode(expression_0),
 				);
