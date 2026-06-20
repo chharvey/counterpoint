@@ -240,7 +240,7 @@ export class Decorator {
 				const property_accessor_type_0 = node.childForFieldName('property_accessor_type_0') as SyntaxNodeType<'property_accessor_type'> | null;
 				return property_accessor_type_0 ? new AST.TYPE.Access(
 					node as SyntaxNodeType<'type_compound'>,
-					Decorator.ACCESSORS.get(node.children[1].text as Punctuator) as ValidTypeAccessOperator,
+					Decorator.ACCESSORS.get(node.children[1].type as Punctuator) as ValidTypeAccessOperator,
 					this.decorateTypeNode(type_0),
 					this.decorate(property_accessor_type_0),
 				) : new AST.TYPE.Call(
@@ -252,26 +252,26 @@ export class Decorator {
 
 			['type_unary_symbol', (node) => new AST.TYPE.OperationUnary(
 				node as SyntaxNodeType<'type_unary_symbol'>,
-				Decorator.TYPEOPERATORS_UNARY.get(node.children[1].text as Punctuator)!,
+				Decorator.TYPEOPERATORS_UNARY.get(node.children[1].type as Punctuator)!,
 				this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['type_unary_keyword', (node) => new AST.TYPE.OperationUnary(
 				node as SyntaxNodeType<'type_unary_keyword'>,
-				Decorator.TYPEOPERATORS_UNARY.get(node.children[0].text as Keyword)!,
+				Decorator.TYPEOPERATORS_UNARY.get(node.children[0].type as Keyword)!,
 				this.decorateTypeNode(node.firstNamedChild as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['type_intersection', (node) => new AST.TYPE.OperationBinary(
 				node as SyntaxNodeType<'type_intersection'>,
-				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
+				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].type as Punctuator)!,
 				this.decorateTypeNode(node.namedChild(0) as SyntaxNodeSupertype<'type'>),
 				this.decorateTypeNode(node.namedChild(1) as SyntaxNodeSupertype<'type'>),
 			)],
 
 			['type_union', (node) => new AST.TYPE.OperationBinary(
 				node as SyntaxNodeType<'type_union'>,
-				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].text as Punctuator)!,
+				Decorator.TYPEOPERATORS_BINARY.get(node.children[1].type as Punctuator)!,
 				this.decorateTypeNode(node.namedChild(0) as SyntaxNodeSupertype<'type'>),
 				this.decorateTypeNode(node.namedChild(1) as SyntaxNodeSupertype<'type'>),
 			)],
@@ -349,7 +349,7 @@ export class Decorator {
 				const property_accessor_0 = node.childForFieldName('property_accessor_0') as SyntaxNodeFamily<'property_accessor', ['break', 'return']> | null;
 				return property_accessor_0 ? new AST.EXPR.Access(
 					node as SyntaxNodeType<'expression_compound'>,
-					Decorator.ACCESSORS.get(node.children[1].text as Punctuator)!,
+					Decorator.ACCESSORS.get(node.children[1].type as Punctuator)!,
 					this.decorateExprNode(expression_0),
 					this.decorate(property_accessor_0),
 				) : new AST.EXPR.Call(
@@ -360,11 +360,11 @@ export class Decorator {
 				);
 			}],
 
-			['expression_unary_symbol', (node) => (node.children[0].text === Punctuator.AFF // `+a` is a no-op
+			['expression_unary_symbol', (node) => (node.children[0].type === Punctuator.AFF // `+a` is a no-op
 				? this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>)
 				: new AST.EXPR.OperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
-					Decorator.OPERATORS_UNARY.get(node.children[0].text as Punctuator)!,
+					Decorator.OPERATORS_UNARY.get(node.children[0].type as Punctuator)!,
 					this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),
 				)
 			)],
@@ -383,7 +383,7 @@ export class Decorator {
 				new AST.EXPR.Isset(n, operand)
 			))(
 				node as SyntaxNodeType<'expression_unary_keyword'>,
-				node.children[0].text as Keyword,
+				node.children[0].type as Keyword,
 				this.decorate(node.firstNamedChild as SyntaxNodeFamily<'assignee', ['break', 'return']>),
 			)],
 
@@ -393,7 +393,7 @@ export class Decorator {
 				return expression_1
 					? new AST.EXPR.OperationBinaryCast(
 						node as SyntaxNodeType<'expression_cast'>,
-						Decorator.OPERATORS_CAST.get(node.children[1].text as Keyword)!,
+						Decorator.OPERATORS_CAST.get(node.children[1].type as Keyword)!,
 						this.decorateExprNode(expression_0),
 						this.decorateExprNode(expression_1),
 					)
@@ -413,14 +413,14 @@ export class Decorator {
 
 			['expression_multiplicative', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_multiplicative'>,
-				Decorator.OPERATORS_ARITHMETIC.get(node.children[1].text as Punctuator)!,
+				Decorator.OPERATORS_ARITHMETIC.get(node.children[1].type as Punctuator)!,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_additive', (node) => new AST.EXPR.OperationBinaryArithmetic(
 				node as SyntaxNodeType<'expression_additive'>,
-				Decorator.OPERATORS_ARITHMETIC.get(node.children[1].text as Punctuator)!,
+				Decorator.OPERATORS_ARITHMETIC.get(node.children[1].type as Punctuator)!,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
@@ -459,7 +459,7 @@ export class Decorator {
 				)
 			))(
 				node as SyntaxNodeType<'expression_comparative'>,
-				node.children[1].text as Punctuator | Keyword,
+				node.children[1].type as Punctuator | Keyword,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
@@ -490,7 +490,7 @@ export class Decorator {
 				)
 			))(
 				node as SyntaxNodeType<'expression_equality'>,
-				node.children[1].text as Punctuator,
+				node.children[1].type as Punctuator,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
@@ -511,7 +511,7 @@ export class Decorator {
 				new AST.EXPR.OperationBinaryLogical(n, Operator.AND, ...operands)
 			))(
 				node as SyntaxNodeType<'expression_conjunctive'>,
-				node.children[1].text as Punctuator,
+				node.children[1].type as Punctuator,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
@@ -532,7 +532,7 @@ export class Decorator {
 				new AST.EXPR.OperationBinaryLogical(n, Operator.OR, ...operands)
 			))(
 				node as SyntaxNodeType<'expression_disjunctive'>,
-				node.children[1].text as Punctuator,
+				node.children[1].type as Punctuator,
 				[
 					this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 					this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
@@ -604,20 +604,14 @@ export class Decorator {
 			)],
 
 			[/^statement_loop(__return)?$/, (node) => {
+				const is_until: boolean = !!node.childForFieldName('until_0');
+				const do_first: boolean = node.children[0].type === Keyword.DO;
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>;
 				const block_0      = node.childForFieldName('block_0')      as SyntaxNodeType<'block__break'>;
-				return node.children[0].text === Keyword.DO ? new AST.STMT.StatementLoop(
-					// we have `"do" Block ("while" | "until") Expression ";"` (bottom-tested)
+				return new AST.STMT.StatementLoop(
 					node as SyntaxNodeFamily<'statement_loop', ['return']>,
-					true,
-					node.children[2].text === Keyword.UNTIL,
-					this.decorateExprNode(expression_0),
-					this.decorate(block_0),
-				) : new AST.STMT.StatementLoop(
-					// we have `("while" | "until") Expression "do" Block ";"` (top-tested)
-					node as SyntaxNodeFamily<'statement_loop', ['return']>,
-					false,
-					node.children[0].text === Keyword.UNTIL,
+					do_first,
+					is_until,
 					this.decorateExprNode(expression_0),
 					this.decorate(block_0),
 				);
@@ -636,7 +630,7 @@ export class Decorator {
 
 			['statement_break', (node) => new AST.STMT.StatementBreak(
 				node as SyntaxNodeType<'statement_break'>,
-				node.children[0].text === Keyword.SKIP,
+				node.children[0].type === Keyword.SKIP,
 			)],
 
 			['statement_return', (node) => new AST.STMT.StatementReturn(node as SyntaxNodeType<'statement_return'>)],
@@ -673,7 +667,7 @@ export class Decorator {
 			}],
 
 			[/^declaration_variable(__break)?(__return)?$/, (node) => {
-				const is_writable: boolean = node.children[1].text === Keyword.MUTABLE;
+				const is_writable: boolean = !!node.childForFieldName('mut_0');
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>      | null;
 				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;

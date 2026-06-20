@@ -542,8 +542,8 @@ module.exports = grammar({
 		), 'unless', 'break', 'return'),
 
 		...parameterize('statement_loop', ({return: rtn}) => $ => seq(uSeq(
-			seq(choice('while', 'until'), field('expression_0', call($, '_expression', 'block', {return: rtn}))),
-			seq('do',                     field('block_0',      call($, 'block', 'break', {return: rtn}))),
+			seq(choice('while', field('until_0', 'until')), field('expression_0', call($, '_expression', 'block', {return: rtn}))),
+			seq('do',                                       field('block_0',      call($, 'block', 'break', {return: rtn}))),
 		), ';'), 'return'),
 
 		...parameterize('statement_iteration', ({return: rtn}) => $ => seq(
@@ -602,8 +602,8 @@ module.exports = grammar({
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
 		...parameterize('declaration_variable', ({break: brk, return: rtn}) => $ => choice(
-			seq('val', choice('_', seq(optional('mut'), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk}, {return: rtn})), ';'),
-			seq('val',                          'mut',  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
+			seq('val', choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk}, {return: rtn})), ';'),
+			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
 		), 'break', 'return'),
 
 		declaration_function: $ => seq('func', choice('_', field('identifier_0', $.identifier)), field('declared_function_0', $.declared_function)),
