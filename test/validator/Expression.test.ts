@@ -618,13 +618,13 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
-				claim.validator.addSymbol(new SymbolSchemaVar(claim.operand as AST.EXPR.Variable, false, false));
+				claim.validator.addSymbol(new SymbolSchemaVar(0x100n, claim.operand, false, false));
 				(claim.validator.getSymbol(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
-				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.TYPE.TypeAlias));
+				claim.validator.addSymbol(new SymbolSchemaType(0x100n, claim.claimed_type));
 				(claim.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
 				assert.strictEqual(claim.type(), TYPE.STR);
 			});

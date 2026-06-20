@@ -285,14 +285,14 @@ Build(SemanticExpressionOperation[operator=COND] op) := [
 
 Build(SemanticDeclarationType decl) := [];
 
-Build(SemanticDeclarationVariable[writable: Boolean] ::= SemanticExpressionVariable SemanticType? SemanticExpression) := [
-	(DECL ‹type› `GetSymbolSchema(SemanticExpressionVariable)` `Build(SemanticExpression)`)
+Build(SemanticDeclarationVariable[id: RealNumber][writable: Boolean] ::= SemanticType? SemanticExpression) := [
+	(DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpression) := [
 	(DROP `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable[writable=true] ::= SemanticExpressionVariable SemanticType) := [
-	(DECL <null> `GetSymbolSchema(SemanticExpressionVariable)`)
+Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
+	(DECL <null> `GetSymbolSchema(id)`)
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
@@ -389,14 +389,14 @@ Build(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression Sem
 	"endwhile":
 ];
 
-Build(SemanticStatementIteration ::= SemanticExpressionVariable SemanticType SemanticExpression SemanticBlock) := [
+Build(SemanticStatementIteration[id: RealNumber] ::= SemanticType SemanticExpression SemanticBlock) := [
 	(DECL <List> $iterable `Build(SemanticExpression)`)
 	(DECL <nat> $index (NAT.CONST +0))
 	(GOTO "while")
 	"while":
 	(GOTO.IF (LT (GET $index) (LIST.COUNT (GET $iterable))) "do" "endwhile")
 	"do":
-	(DECL ‹type› `GetSymbolSchema(SemanticExpressionVariable)` (LIST.GET (GET $iterable) (GET $index)))
+	(DECL ‹type› `GetSymbolSchema(id)` (LIST.GET (GET $iterable) (GET $index)))
 	...`Build(SemanticBlock)`
 	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
 	(GOTO "while")
