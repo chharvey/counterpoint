@@ -1364,11 +1364,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceExpressions(
 				s(
 					'expression_function',
-					s('block__return', s('statement_expression__return')),
+					f('block_0', 'block__return', s('statement_expression__return')),
 				),
 				s(
 					'expression_function',
-					s(
+					f(
+						'parameters_function_0',
 						'parameters_function',
 						s(
 							'parameter_function',
@@ -1387,7 +1388,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 							f('type_0',       'identifier'),
 						),
 					),
-					s('block__return', s('statement_return')),
+					f('block_0', 'block__return', s('statement_return')),
 				),
 			),
 		],
@@ -1981,7 +1982,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'declaration_function',
 					f('identifier_0', 'identifier'),
-					f('declared_function_0', 'declared_function', s('block__return', s('statement_expression__return'))),
+					f('declared_function_0', 'declared_function', f('block_0', 'block__return', s('statement_expression__return'))),
 				),
 				s(
 					'declaration_function',
@@ -1989,7 +1990,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					f(
 						'declared_function_0',
 						'declared_function',
-						s(
+						f(
+							'parameters_function_0',
 							'parameters_function',
 							s(
 								'parameter_function',
@@ -2008,7 +2010,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 								f('type_0',       'identifier'),
 							),
 						),
-						s('block__return', s('statement_return')),
+						f('block_0', 'block__return', s('statement_return')),
 					),
 				),
 			),

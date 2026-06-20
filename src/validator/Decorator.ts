@@ -638,12 +638,12 @@ export class Decorator {
 			[/^block(__break)?(__return)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break', 'return']>)],
 
 			[/^parameter_function(__named)?$/, (node) => {
-				const is_writable: boolean = node.children.some((c) => c.type === Keyword.MUTABLE); // TODO: use named field
+				const is_writable: boolean = !!node.childForFieldName('mut_0');
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				const word_0       = node.childForFieldName('word_0')       as SyntaxNodeType<'word'>       | null;
 				const key: AST.Key | null = (
-					word_0                                      ? this.decorate(word_0) :
-					identifier_0?.previousSibling?.type === '$' ? this.decorate(identifier_0 as SyntaxNode as SyntaxNodeType<'word'>) : // TODO: use named field
+					word_0                        ? this.decorate(word_0) :
+					node.childForFieldName('$_0') ? this.decorate(identifier_0 as SyntaxNode as SyntaxNodeType<'word'>) :
 					null
 				);
 				return new AST.ParameterFunction(
@@ -695,10 +695,10 @@ export class Decorator {
 			}],
 
 			['declaration_function', (node) => {
-				const identifier_0          = node.childForFieldName('identifier_0')        as SyntaxNodeType<'identifier'> | null;
-				const declared_function_0   = node.childForFieldName('declared_function_0') as SyntaxNodeType<'declared_function'>;
-				const parameters_function_0 = (declared_function_0.namedChildren.length === 2 ? declared_function_0.namedChild(0) : null)                              as SyntaxNodeType<'parameters_function'> | null; // TODO: use named fields
-				const block                 = (declared_function_0.namedChildren.length === 2 ? declared_function_0.namedChild(1) : declared_function_0.namedChild(0)) as SyntaxNodeFamily<'block', ['return']>;
+				const identifier_0          = node.childForFieldName('identifier_0')                         as SyntaxNodeType<'identifier'> | null;
+				const declared_function_0   = node.childForFieldName('declared_function_0')                  as SyntaxNodeType<'declared_function'>;
+				const parameters_function_0 = declared_function_0.childForFieldName('parameters_function_0') as SyntaxNodeType<'parameters_function'> | null;
+				const block                 = declared_function_0.childForFieldName('block_0')               as SyntaxNodeFamily<'block', ['return']>;
 				return new AST.STMT.DeclarationFunction(
 					node as SyntaxNodeType<'declaration_function'>,
 					identifier_0 && to_serializable(identifier_0),
