@@ -70,6 +70,40 @@ test.suite('Type', () => {
 				}`, {build: false}); // assert does not throw
 			});
 		});
+
+
+		test.suite('TypeFunction', () => {
+			test.test('with all required parameters.', () => {
+				assertEqualTypes(
+					AST.TYPE.Function.fromSource('\\(bool, int | null, alpha: str, bravo: float) => void').eval(),
+					new TYPE.Function(TYPE.Tuple.fromTypes([
+						TYPE.BOOL,
+						TYPE.INT.union(TYPE.NULL),
+					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[0x100n, TYPE.STR],
+						[0x101n, TYPE.FLOAT],
+					]))),
+				);
+			});
+			test.test.todo('with optional parameters.', () => {
+				assertEqualTypes(
+					AST.TYPE.Function.fromSource('\\(bool, ?: int | null, alpha?: str, bravo: float) => void').eval(),
+					new TYPE.Function(new TYPE.Tuple([
+						{type: TYPE.BOOL,                 optional: false},
+						{type: TYPE.INT.union(TYPE.NULL), optional: true},
+					]), new TYPE.Record(new Map<bigint, EntryType>([
+						[0x100n, {type: TYPE.STR,   optional: true}],
+						[0x101n, {type: TYPE.FLOAT, optional: false}],
+					]))),
+				);
+			});
+			test.test.todo('with return type.', () => {
+				assertEqualTypes(
+					AST.TYPE.Function.fromSource('\\() => sym').eval(),
+					new TYPE.Function(undefined, undefined, TYPE.SYM),
+				);
+			});
+		});
 	});
 
 
