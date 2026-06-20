@@ -45,10 +45,6 @@ class TypeRecord extends ValueType {
 		super(new Set<VALUE.Record>([VALUE.RECORD_EMPTY]));
 	}
 
-	public override get hasMutable(): boolean {
-		return super.hasMutable || [...this.typeargs.values()].some((t) => t.type.hasMutable);
-	}
-
 	/** The minimum possible number of properties in this record type. */
 	public get minCount(): bigint {
 		return BigInt([...this.typeargs.values()].filter((val) => !val.optional).length);

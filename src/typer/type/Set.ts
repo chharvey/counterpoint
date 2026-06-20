@@ -33,10 +33,6 @@ class TypeSet extends ReferenceType {
 		super(new Set<VALUE.Set>([new VALUE.Set()]), is_mutable);
 	}
 
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.typearg.hasMutable;
-	}
-
 	public override toString(): string {
 		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Set.<${ this.typearg }>`;
 	}

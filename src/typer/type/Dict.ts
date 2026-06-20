@@ -33,10 +33,6 @@ export class Dict extends ReferenceType {
 		super(new Set<VALUE.Dict>([new VALUE.Dict()]), is_mutable);
 	}
 
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.typearg.hasMutable;
-	}
-
 	public override toString(): string {
 		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Dict.<${ this.typearg }>`;
 	}
