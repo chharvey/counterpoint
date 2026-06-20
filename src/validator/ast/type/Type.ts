@@ -17,6 +17,7 @@ import {AstNode} from '../AstNode.ts';
  * - Access
  * - Call
  * - Operation
+ * - TypeFunction
  */
 export abstract class Type extends AstNode {
 	/**

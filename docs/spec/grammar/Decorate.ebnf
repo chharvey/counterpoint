@@ -106,9 +106,15 @@ Decorate(PropertiesType ::= ","? EntryType<+Named><+Optional># ","?) -> Sequence
 
 
 
-Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># ","?) -> // TODO
-Decorate(ParametersType ::= ","? EntryType<+Named><-Optional># ","?) -> // TODO
-Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># "," EntryType<+Named><-Optional># ","?) -> // TODO
+Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># ","?) -> Sequence<SemanticItemType>
+	:= ParseList(EntryType<-Named><-Optional>, SemanticItemType);
+Decorate(ParametersType ::= ","? EntryType<+Named><-Optional># ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType<+Named><-Optional>, SemanticPropertyType);
+Decorate(ParametersType ::= ","? EntryType<-Named><-Optional># "," EntryType<+Named><-Optional># ","?) -> Sequence<...Sequence<SemanticItemType>, ...Sequence<SemanticPropertyType>>
+	:= [
+		...ParseList(EntryType<-Named><-Optional>, SemanticItemType),
+		...ParseList(EntryType<+Named><-Optional>, SemanticPropertyType),
+	];
 
 
 
@@ -247,8 +253,10 @@ Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation
 
 
 
-Decorate(TypeFunction ::= "\" "(" ParametersType? ")" "=>" "void") -> SemanticType
-	// TODO
+Decorate(TypeFunction ::= "\" "(" ")" "=>" "void") -> SemanticType
+	:= (SemanticTypeFunction);
+Decorate(TypeFunction ::= "\" "(" ParametersType ")" "=>" "void") -> SemanticType
+	:= (SemanticTypeFunction ...Decorate(ParametersType));
 
 
 
@@ -372,9 +380,9 @@ Decorate(ParameterFunction<Named> ::= "mut" "$" IDENTIFIER ":" Type) -> Semantic
 	);
 
 Decorate(ParametersFunction ::= ","? ParameterFunction<-Named># ","?) -> Sequence<SemanticParameterFunction>
-	:= ParseList(ParameterFunction<-Named>, SemanticParameterFunction)
+	:= ParseList(ParameterFunction<-Named>, SemanticParameterFunction);
 Decorate(ParametersFunction ::= ","? ParameterFunction<+Named># ","?) -> Sequence<SemanticParameterFunction>
-	:= ParseList(ParameterFunction<+Named>, SemanticParameterFunction)
+	:= ParseList(ParameterFunction<+Named>, SemanticParameterFunction);
 Decorate(ParametersFunction ::= ","? ParameterFunction<-Named># "," ParameterFunction<+Named># ","?) -> Sequence<SemanticParameterFunction>
 	:= [
 		...ParseList(ParameterFunction<-Named>, SemanticParameterFunction),

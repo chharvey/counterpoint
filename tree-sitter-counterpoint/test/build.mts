@@ -614,7 +614,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('type_function'),
 				s(
 					'type_function',
-					s(
+					f(
+						'parameters_type_0',
 						'parameters_type',
 						s('entry_type',        f('type_0', 'identifier')),
 						s('entry_type__named', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
@@ -622,7 +623,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'type_function',
-					s(
+					f(
+						'parameters_type_0',
 						'parameters_type',
 						s('entry_type', f('type_0', 'type_function')),
 					),

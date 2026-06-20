@@ -289,8 +289,16 @@ test.suite('Decorator', () => {
 				% (type_union)
 			`]],
 
-			['todo: Decorate(TypeFunction ::= "\\" "(" ParametersType? ")" "=>" "void") -> SemanticType', [AST.TYPE.Type, `
+			['Decorate(TypeFunction ::= "\\" "(" ")" "=>" "void") -> SemanticType', [AST.TYPE.Function, `
 				{
+					type T = \\() => void;
+				}
+				% (type_function)
+			`]],
+
+			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" "void") -> SemanticType', [AST.TYPE.Function, `
+				{
+					type T = \\(A, b: B, c: \\() => void) => void;
 				}
 				% (type_function)
 			`]],

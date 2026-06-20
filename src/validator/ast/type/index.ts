@@ -12,3 +12,4 @@ export * from './Call.ts';
 export * from './Operation.ts';
 export * from './OperationUnary.ts';
 export * from './OperationBinary.ts';
+export * from './Function.ts';

@@ -419,7 +419,7 @@ module.exports = grammar({
 		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
 		type_union:        $ => prec.left(1, seq($._type, '|', $._type)),
 
-		type_function: $ => seq('\\', '(', optional($.parameters_type), ')', '=>', 'void'),
+		type_function: $ => seq('\\', '(', optional(field('parameters_type_0', $.parameters_type)), ')', '=>', 'void'),
 
 		_type: $ => choice(
 			$._type_unit,

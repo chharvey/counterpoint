@@ -44,6 +44,7 @@ SemanticType =:=
 	| SemanticTypeAccess
 	| SemanticTypeCall
 	| SemanticTypeOperation
+	| SemanticTypeFunction
 ;
 
 
@@ -80,6 +81,9 @@ SemanticTypeOperation[operator: ORNULL | OREXCP | MUTABLE]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
+
+SemanticTypeFunction
+	::= SemanticItemType* SemanticPropertyType*;
 
 
 

@@ -93,7 +93,6 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'primitive_literal'>):                                      AST.TYPE.Constant | AST.EXPR.Constant;
 	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type',        ['optional']>):                      AST.ItemType;
 	public decorate(syntaxnode: SyntaxNodeFamily<'entry_type__named', ['optional']>):                      AST.PropertyType;
-	// public decorate(syntaxnode: SyntaxNodeType<'parameters_type'>):                                        AST.???;
 	public decorate(syntaxnode: SyntaxNodeType<'property_accessor_type'>):                                 AST.Index | AST.Key;
 	public decorate(syntaxnode: SyntaxNodeType<'type_grouped'>):                                           AST.TYPE.Type;
 	public decorate(syntaxnode: SyntaxNodeType<'type_tuple_literal'>):                                     AST.TYPE.Tuple;
@@ -107,6 +106,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'type_unary_keyword'>):                                     AST.TYPE.OperationUnary;
 	public decorate(syntaxnode: SyntaxNodeType<'type_intersection'>):                                      AST.TYPE.OperationBinary;
 	public decorate(syntaxnode: SyntaxNodeType<'type_union'>):                                             AST.TYPE.OperationBinary;
+	public decorate(syntaxnode: SyntaxNodeType<'type_function'>):                                          AST.TYPE.Function;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                              AST.TYPE.Type;
 	public decorate(syntaxnode: SyntaxNodeFamily<'string_template', ['break', 'return']>):                 AST.EXPR.Template;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',        ['break', 'return']>):                 AST.Property;
@@ -278,7 +278,14 @@ export class Decorator {
 				this.decorateTypeNode(node.namedChild(1) as SyntaxNodeSupertype<'type'>),
 			)],
 
-			// ['type_function', () => undefined], // TODO:
+			['type_function', (node) => {
+				const parameters_type_0 = node.childForFieldName('parameters_type_0') as SyntaxNodeType<'parameters_type'> | null;
+				return new AST.TYPE.Function(
+					node as SyntaxNodeType<'type_function'>,
+					parameters_type_0?.namedChildren.filter((c) => c.type === 'entry_type')        .map((c) => this.decorate(c as SyntaxNodeType<'entry_type'>)) ?? [],
+					parameters_type_0?.namedChildren.filter((c) => c.type === 'entry_type__named') .map((c) => this.decorate(c as SyntaxNodeType<'entry_type__named'>)) ?? [],
+				);
+			}],
 
 			/* ## Expressions */
 			[/^string_template(__break)?(__return)?$/, (node) => new AST.EXPR.Template(
@@ -572,7 +579,7 @@ export class Decorator {
 				const block                 = node.childForFieldName('block_0')               as SyntaxNodeFamily<'block', ['return']>;
 				return new AST.EXPR.Function(
 					node as SyntaxNodeType<'expression_function'>,
-					(parameters_function_0?.namedChildren ?? []).map((c) => this.decorate(c as SyntaxNodeFamily<'parameter_function', ['named']>)),
+					parameters_function_0?.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'parameter_function', ['named']>)) ?? [],
 					this.decorateBlockNode(block),
 				);
 			}],
@@ -709,7 +716,7 @@ export class Decorator {
 				return new AST.STMT.DeclarationFunction(
 					node as SyntaxNodeType<'declaration_function'>,
 					identifier_0 && to_serializable(identifier_0),
-					(parameters_function_0?.namedChildren ?? []).map((c) => this.decorate(c as SyntaxNodeFamily<'parameter_function', ['named']>)),
+					parameters_function_0?.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'parameter_function', ['named']>)) ?? [],
 					this.decorateBlockNode(block),
 				);
 			}],
