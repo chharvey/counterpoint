@@ -651,7 +651,7 @@ export class Decorator {
 				const word_0       = node.childForFieldName('word_0')       as SyntaxNodeType<'word'>       | null;
 				const key: AST.Key | null = (
 					word_0                        ? this.decorate(word_0) :
-					node.childForFieldName('$_0') ? this.decorate(identifier_0 as SyntaxNode as SyntaxNodeType<'word'>) :
+					node.childForFieldName('$_0') ? new AST.Key(identifier_0 as SyntaxNode as SyntaxNodeType<'word'>) :
 					null
 				);
 				return new AST.ParameterFunction(

@@ -649,7 +649,7 @@ test.suite('Decorator', () => {
 			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
-					\\(): void { return; };
+					\\(a: A, $b: B, c= charlie: C): void { return; };
 				}
 				% (expression_function)
 			`]],
@@ -885,7 +885,7 @@ test.suite('Decorator', () => {
 			`]],
 			['Decorate(DeclarationFunction ::= "func" IDENTIFIER DeclaredFunction) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
-					func foo(): void {;}
+					func foo(a: A, $b: B, c= charlie: C): void { return; }
 				}
 				% (declaration_function)
 			`]],
