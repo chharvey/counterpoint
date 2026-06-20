@@ -418,6 +418,8 @@ Build(SemanticStatementIteration ::= SemanticType SemanticExpression SemanticBlo
 Build(SemanticStatementBreak[skip=false] stmt) := [ (GOTO "endwhile") ];
 Build(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
+Build(SemanticStatementReturn stmt); // TODO
+
 Build(SemanticBlock block) := block.children.map(Build);
 
 Build(SemanticGoal goal) := [

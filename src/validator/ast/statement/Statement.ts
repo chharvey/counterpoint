@@ -21,6 +21,7 @@ import {Block} from '../Block.ts';
  * - StatementConditional
  * - StatementBreakable
  * - StatementBreak
+ * - StatementReturn
  */
 export abstract class Statement extends AstNode implements Buildable {
 	/**

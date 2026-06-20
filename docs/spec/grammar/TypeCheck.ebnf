@@ -4,6 +4,8 @@ None! TypeCheck(Or<
 	SemanticProperty,
 	SemanticCase,
 	SemanticStatementExpression,
+	SemanticStatementBreak,
+	SemanticStatementReturn,
 	SemanticGoal,
 > list) :=
 	1. *For each* `it` in `list.children`:

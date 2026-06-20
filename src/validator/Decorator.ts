@@ -142,7 +142,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_loop',        [                   'return']>): AST.STMT.StatementLoop;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_iteration',   [                   'return']>): AST.STMT.StatementIteration;
 	public decorate(syntaxnode: SyntaxNodeType<'statement_break'>):                                        AST.STMT.StatementBreak;
-	// public decorate(syntaxnode: SyntaxNodeType<'statement_return'>):                                       AST.STMT.???
+	public decorate(syntaxnode: SyntaxNodeType<'statement_return'>):                                       AST.STMT.StatementReturn;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'statement'>):                                         AST.STMT.Statement;
 	public decorate(syntaxnode: SyntaxNodeFamily<'block', ['break', 'return']>):                           AST.Block;
 	// public decorate(syntaxnode: SyntaxNodeFamily<'parameter_function', ['named']>):                        AST.???;
@@ -641,7 +641,7 @@ export class Decorator {
 				node.children[0].text === Keyword.SKIP,
 			)],
 
-			// ['statement_return', () => undefined], // TODO:
+			['statement_return', (node) => new AST.STMT.StatementReturn(node as SyntaxNodeType<'statement_return'>)],
 
 			[/^block(__break)?(__return)?$/, (node) => this.decorateBlockNode(node as SyntaxNodeFamily<'block', ['break', 'return']>)],
 

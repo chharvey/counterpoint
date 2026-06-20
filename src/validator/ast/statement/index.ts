@@ -9,3 +9,4 @@ export * from './StatementConditional.ts';
 export * from './StatementLoop.ts';
 export * from './StatementIteration.ts';
 export * from './StatementBreak.ts';
+export * from './StatementReturn.ts';

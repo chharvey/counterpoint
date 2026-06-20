@@ -8,6 +8,8 @@ None! VarCheck(Or<
 	SemanticStatementExpression,
 	SemanticStatementClaim,
 	SemanticStatementConditional,
+	SemanticStatementBreak,
+	SemanticStatementReturn,
 	SemanticGoal,
 > list) :=
 	1. *For each* `it` in `list.children`:

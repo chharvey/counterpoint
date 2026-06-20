@@ -31,7 +31,7 @@ export class StatementBreak extends Statement {
 		start_node: SyntaxNodeType<'statement_break'>,
 		private readonly skip: boolean,
 	) {
-		super(start_node, {}, []);
+		super(start_node);
 	}
 
 	@noopGetter(memoizeGetter)

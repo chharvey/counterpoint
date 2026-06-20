@@ -794,8 +794,9 @@ test.suite('Decorator', () => {
 				% (statement_break)
 			`]],
 
-			['todo: Decorate(StatementReturn ::= "return" ";") ->', [AST.STMT.Statement, `
+			['Decorate(StatementReturn ::= "return" ";") ->', [AST.STMT.StatementReturn, `
 				{
+					func foo(): void { return; }
 				}
 				% (statement_return)
 			`]],
