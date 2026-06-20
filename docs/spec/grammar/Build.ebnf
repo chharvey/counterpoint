@@ -285,13 +285,13 @@ Build(SemanticExpressionOperation[operator=COND] op) := [
 
 Build(SemanticDeclarationType decl) := [];
 
-Build(SemanticDeclarationVariable[id: RealNumber][writable: Boolean] ::= SemanticType? SemanticExpression) := [
+Build(SemanticDeclarationVariable[writable: Boolean][id: RealNumber] ::= SemanticType? SemanticExpression) := [
 	(DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpression) := [
 	(DROP `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
+Build(SemanticDeclarationVariable[writable=true][id: RealNumber] ::= SemanticType) := [
 	(DECL <null> `GetSymbolSchema(id)`)
 ];
 
