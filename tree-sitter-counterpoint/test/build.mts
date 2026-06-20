@@ -614,20 +614,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s('type_function'),
 				s(
 					'type_function',
-					f(
-						'parameters_type_0',
-						'parameters_type',
-						s('entry_type',        f('type_0', 'identifier')),
-						s('entry_type__named', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
-					),
+					s('entry_type',        f('type_0', 'identifier')),
+					s('entry_type__named', f('word_0', 'word', s('identifier')), f('type_0', 'identifier')),
 				),
 				s(
 					'type_function',
-					f(
-						'parameters_type_0',
-						'parameters_type',
-						s('entry_type', f('type_0', 'type_function')),
-					),
+					s('entry_type', f('type_0', 'type_function')),
 				),
 			),
 		],
@@ -1379,25 +1371,21 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				),
 				s(
 					'expression_function',
-					f(
-						'parameters_function_0',
-						'parameters_function',
-						s(
-							'parameter_function',
-							f('identifier_0', 'identifier'),
-							f('type_0',       'identifier'),
-						),
-						s(
-							'parameter_function__named',
-							f('identifier_0', 'identifier'),
-							f('type_0',       'identifier'),
-						),
-						s(
-							'parameter_function__named',
-							f('word_0',       'word', s('identifier')),
-							f('identifier_0', 'identifier'),
-							f('type_0',       'identifier'),
-						),
+					s(
+						'parameter_function',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
 					),
 					f('block_0', 'block__return', s('statement_return')),
 				),
@@ -1986,25 +1974,21 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'declaration_function',
 					f('identifier_0', 'identifier'),
-					f(
-						'parameters_function_0',
-						'parameters_function',
-						s(
-							'parameter_function',
-							f('identifier_0', 'identifier'),
-							f('type_0',       'identifier'),
-						),
-						s(
-							'parameter_function__named',
-							f('identifier_0', 'identifier'),
-							f('type_0',       'identifier'),
-						),
-						s(
-							'parameter_function__named',
-							f('word_0',       'word', s('identifier')),
-							f('identifier_0', 'identifier'),
-							f('type_0',       'identifier'),
-						),
+					s(
+						'parameter_function',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
+					),
+					s(
+						'parameter_function__named',
+						f('word_0',       'word', s('identifier')),
+						f('identifier_0', 'identifier'),
+						f('type_0',       'identifier'),
 					),
 					f('block_0', 'block__return', s('statement_return')),
 				),

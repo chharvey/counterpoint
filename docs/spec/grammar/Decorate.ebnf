@@ -99,10 +99,8 @@ Decorate(ItemsType ::= EntryType<-Named><-Optional>__0 "," EntryType<-Named><-Op
 
 
 
-Decorate(PropertiesType ::= ","? EntryType<+Named><-Optional># ","?) -> Sequence<SemanticPropertyType>
-	:= ParseList(EntryType<+Named><-Optional>, SemanticPropertyType);
-Decorate(PropertiesType ::= ","? EntryType<+Named><+Optional># ","?) -> Sequence<SemanticPropertyType>
-	:= ParseList(EntryType<+Named><+Optional>, SemanticPropertyType);
+Decorate(PropertiesType ::= ","? EntryType<+Named><∓Optional># ","?) -> Sequence<SemanticPropertyType>
+	:= ParseList(EntryType<+Named><∓Optional>, SemanticPropertyType);
 
 
 
@@ -253,9 +251,9 @@ Decorate(TypeUnion ::= TypeUnion "|" TypeIntersection) -> SemanticTypeOperation
 
 
 
-Decorate(TypeFunction ::= "\" "(" ")" "=>" "void") -> SemanticType
+Decorate(TypeFunction ::= "\" "(" ")" "=>" "void") -> SemanticTypeFunction
 	:= (SemanticTypeFunction);
-Decorate(TypeFunction ::= "\" "(" ParametersType ")" "=>" "void") -> SemanticType
+Decorate(TypeFunction ::= "\" "(" ParametersType ")" "=>" "void") -> SemanticTypeFunction
 	:= (SemanticTypeFunction ...Decorate(ParametersType));
 
 

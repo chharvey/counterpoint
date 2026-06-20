@@ -376,7 +376,7 @@ module.exports = grammar({
 
 		_properties_type: $ => seq(OPT_COM, repCom1(call($, 'entry_type', 'named', ['', 'optional'])), OPT_COM),
 
-		parameters_type: $ => {
+		_parameters_type: $ => {
 			const LIST_ENT_NAM: SeqRule = repCom1(call($, 'entry_type', 'named'));
 			return choice(
 				seq(OPT_COM, repCom1($.entry_type), optional(seq(',', LIST_ENT_NAM)), OPT_COM),
@@ -419,7 +419,7 @@ module.exports = grammar({
 		type_intersection: $ => prec.left(2, seq($._type, '&', $._type)),
 		type_union:        $ => prec.left(1, seq($._type, '|', $._type)),
 
-		type_function: $ => seq('\\', '(', optional(field('parameters_type_0', $.parameters_type)), ')', '=>', 'void'),
+		type_function: $ => seq('\\', '(', optional($._parameters_type), ')', '=>', 'void'),
 
 		_type: $ => choice(
 			$._type_unit,
@@ -454,7 +454,7 @@ module.exports = grammar({
 			...iff(named, seq(optional(field('mut_0', 'mut')), field('$_0', '$'), field('identifier_0', $.identifier))),
 		), ':', field('type_0', $._type)), 'named'),
 
-		parameters_function: $ => {
+		_parameters_function: $ => {
 			const LIST_PARAM_NAM: SeqRule = repCom1(call($, 'parameter_function', 'named'));
 			return choice(
 				seq(OPT_COM, repCom1($.parameter_function), optional(seq(',', LIST_PARAM_NAM)), OPT_COM),
@@ -517,7 +517,7 @@ module.exports = grammar({
 			call($, '_expression', {break: brk}, {return: rtn}),
 		), 'break', 'return'),
 
-		expression_function: $ => seq('\\', '(', optional(field('parameters_function_0', $.parameters_function)), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
+		expression_function: $ => seq('\\', '(', optional($._parameters_function), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
 
 		...parameterize('_expression', ({block, break: brk, return: rtn}) => $ => choice(
 			call($, '_expression_unit', {block}, {break: brk}, {return: rtn}),
@@ -606,7 +606,7 @@ module.exports = grammar({
 			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
 		), 'break', 'return'),
 
-		declaration_function: $ => seq('func', choice('_', field('identifier_0', $.identifier)), '(', optional(field('parameters_function_0', $.parameters_function)), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
+		declaration_function: $ => seq('func', choice('_', field('identifier_0', $.identifier)), '(', optional($._parameters_function), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
 
 		...parameterize('_declaration', ({break: brk, return: rtn}) => $ => choice(
 			$.declaration_type,
@@ -627,8 +627,8 @@ module.exports = grammar({
 	conflicts: $ => [
 		// example:
 		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => $[rulename]),
-		[$.parameters_type],
-		[$.parameters_function],
+		[$._parameters_type],
+		[$._parameters_function],
 	],
 
 	/**
