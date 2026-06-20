@@ -84,6 +84,7 @@ SemanticExpression =:=
 	| SemanticExpressionClaim
 	| SemanticExpressionIsset
 	| SemanticExpressionOperation
+	| SemanticExpressionFunction
 ;
 
 
@@ -143,6 +144,9 @@ SemanticExpressionOperation[operator: ID | EQ | AND | OR]
 	::= SemanticExpression SemanticExpression;
 SemanticExpressionOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
+
+SemanticExpressionFunction
+	::= SemanticParameterFunction* SemanticBlock;
 
 
 

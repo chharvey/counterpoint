@@ -25,6 +25,7 @@ import {AstNode} from '../AstNode.ts';
  * - Call
  * - Claim
  * - Operation
+ * - ExpressionFunction
  *
  * Known subinterfaces:
  * - Reassignable

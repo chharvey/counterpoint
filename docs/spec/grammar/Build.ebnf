@@ -283,6 +283,8 @@ Build(SemanticExpressionOperation[operator=COND] op) := [
 	return (GET $result).
 ];
 
+Build(SemanticExpressionFunction); // TODO
+
 Build(SemanticDeclarationType decl) := [];
 
 Build(SemanticDeclarationVariable[writable: Boolean][id: RealNumber] ::= SemanticType? SemanticExpression) := [

@@ -537,7 +537,7 @@ Decorate(ExpressionAdditive<Block, Break, Return> ::= ExpressionAdditive<?Block>
 
 
 
-Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation
+Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpression
 	:= Decorate(ExpressionAdditive<?Block><?Break><?Return>);
 Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "<" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=LT]
@@ -588,7 +588,7 @@ Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?
 
 
 
-Decorate(ExpressionEquality<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return>) -> SemanticExpressionOperation
+Decorate(ExpressionEquality<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return>) -> SemanticExpression
 	:= Decorate(ExpressionComparative<?Block>);
 Decorate(ExpressionEquality<Block, Break, Return> ::= ExpressionEquality<?Block><?Break><?Return> "===" ExpressionComparative<?Block><?Break><?Return>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=ID]
@@ -634,7 +634,7 @@ Decorate(ExpressionConjunctive<Block, Break, Return> ::= ExpressionConjunctive<?
 
 
 
-Decorate(ExpressionDisjunctive<Block, Break, Return> ::= ExpressionConjunctive<?Block><?Break><?Return>) -> SemanticExpressionOperation
+Decorate(ExpressionDisjunctive<Block, Break, Return> ::= ExpressionConjunctive<?Block><?Break><?Return>) -> SemanticExpression
 	:= Decorate(ExpressionConjunctive<?Block><?Break><?Return>);
 Decorate(ExpressionDisjunctive<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Break><?Return> "||" ExpressionConjunctive<?Block><?Break><?Return>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=OR]
@@ -662,9 +662,9 @@ Decorate(ExpressionConditional<Break, Return> ::= "if" Expression__0<+Block><?Br
 
 Decorate(Expression<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Break><?Return>) -> SemanticExpression
 	:= Decorate(ExpressionDisjunctive<?Block><?Break><?Return>);
-Decorate(Expression<Block, Break, Return> ::= ExpressionConditional<?Break><?Return>) -> SemanticExpression
+Decorate(Expression<Block, Break, Return> ::= ExpressionConditional<?Break><?Return>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionConditional<?Break><?Return>);
-Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExpression
+Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExpressionFunction
 	:= Decorate(ExpressionFunction);
 
 
@@ -881,8 +881,15 @@ Decorate(DeclaredFunction ::= "(" ParametersFunction ")" ":" "void" Block<-Break
 		Decorate(Block<-Break><+Return>),
 	];
 
-Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" Block<-Break><+Return>) -> // TODO
-Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> // TODO
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		Decorate(Block<-Break><+Return>)
+	);
 
 
 

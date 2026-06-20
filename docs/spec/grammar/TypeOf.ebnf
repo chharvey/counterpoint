@@ -426,6 +426,10 @@ Type! TypeOf(SemanticExpressionOperation[operator: COND] expr) :=
 
 
 
+Type! TypeOf(SemanticExpressionFunction expr) :=; // TODO
+
+
+
 Type ToType(Or<Null, Boolean, Symbol, Number, String> v) :=
 	1. *Return:* a new Type containing only the value `v`.
 ;

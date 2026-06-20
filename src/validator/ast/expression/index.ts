@@ -23,3 +23,4 @@ export * from './OperationBinaryComparative.ts';
 export * from './OperationBinaryEquality.ts';
 export * from './OperationBinaryLogical.ts';
 export * from './OperationTernary.ts';
+export * from './Function.ts';

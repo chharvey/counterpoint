@@ -131,7 +131,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                                 AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                                 AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break', 'return']>):          AST.EXPR.OperationTernary;
-	// public decorate(syntaxnode: SyntaxNodeType<'expression_function'>):                                    AST.STMT.???;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_function'>):                                    AST.EXPR.Function;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                                        AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',              [          'break', 'return']>): AST.EXPR.Variable | AST.EXPR.Access;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',  [          'break', 'return']>): AST.STMT.StatementExpression;
@@ -547,7 +547,15 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(2) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			// ['expression_function', () => undefined], // TODO:
+			['expression_function', (node) => {
+				const parameters_function_0 = node.childForFieldName('parameters_function_0') as SyntaxNodeType<'parameters_function'> | null;
+				const block                 = node.childForFieldName('block_0')               as SyntaxNodeFamily<'block', ['return']>;
+				return new AST.EXPR.Function(
+					node as SyntaxNodeType<'expression_function'>,
+					(parameters_function_0?.namedChildren ?? []).map((c) => this.decorate(c as SyntaxNodeFamily<'parameter_function', ['named']>)),
+					this.decorateBlockNode(block),
+				);
+			}],
 
 			/* ## Statements */
 			[/^assignee(__break)?(__return)?$/, (node) => {
