@@ -126,6 +126,15 @@ Build(String  s) := (STR.CONST   s);
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
 
+Build(SemanticBlock block) := block.children.map(Build);
+
+Build(SemanticGoal goal) := [
+	"start":
+	`Build(goal.0)`
+];
+
+
+
 Build(SemanticExpressionConstant[value: VALUE.Null]    const) := (NULL.CONST  `Build(const.value)`);
 Build(SemanticExpressionConstant[value: VALUE.Boolean] const) := (BOOL.CONST  `Build(const.value)`);
 Build(SemanticExpressionConstant[value: VALUE.Symbol]  const) := (SYM.CONST   `Build(const.value)`);
@@ -241,7 +250,6 @@ Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE 
 Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
 
-
 Build(SemanticExpressionOperation[operator=AND] op) := [
 	(DECL ‹type› $left `Build(op.0)`)
 	(DECL ‹type› $result)
@@ -284,6 +292,8 @@ Build(SemanticExpressionOperation[operator=COND] op) := [
 ];
 
 Build(SemanticExpressionFunction); // TODO
+
+
 
 Build(SemanticDeclarationType decl) := [];
 
@@ -423,13 +433,6 @@ Build(SemanticStatementBreak[skip=false] stmt) := [ (GOTO "endwhile") ];
 Build(SemanticStatementBreak[skip=true]  stmt) := [ (GOTO "while") ];
 
 Build(SemanticStatementReturn stmt); // TODO
-
-Build(SemanticBlock block) := block.children.map(Build);
-
-Build(SemanticGoal goal) := [
-	"start":
-	`Build(goal.0)`
-];
 
 
 

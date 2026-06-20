@@ -877,13 +877,25 @@ test.suite('Decorator', () => {
 				% (declaration_variable)
 			`]],
 
-			['Decorate(DeclarationFunction ::= "func" "_" DeclaredFunction) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func _(): void {;}
 				}
 				% (declaration_function)
 			`]],
-			['Decorate(DeclarationFunction ::= "func" IDENTIFIER DeclaredFunction) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): void {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): void { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func foo(a: A, $b: B, c= charlie: C): void { return; }
 				}

@@ -273,6 +273,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// PropertiesType
 		// tested in #TypeRecordLiteral
 
+		// ParametersType
+		// tested in #TypeFunction
+
 		// PropertyAccessorType
 		// tested in #TypeCompound
 
@@ -685,6 +688,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 
 		// Case
 		// tested in #MapLiteral
+
+		// ParameterFunction
+		// tested in #ParametersFunction
+
+		// ParametersFunction
+		// tested in #{Expression,Declaration}Function
 
 		// PropertyAccessor
 		// tested in #{ExpressionCompound,Assignee}
@@ -1845,18 +1854,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
-		// ParameterFunction
-		// tested in #ParametersFunction
-
-		// ParametersType
-		// tested in #TypeFunction
-
-		// ParametersFunction
-		// tested in #DeclaredFunction
-
-		// DeclaredFunction
-		// tested in #DeclarationFunction
-
 		DeclarationType: [
 			xjs.String.dedent`
 				{
@@ -1982,36 +1979,32 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'declaration_function',
 					f('identifier_0', 'identifier'),
-					f('declared_function_0', 'declared_function', f('block_0', 'block__return', s('statement_expression__return'))),
+					f('block_0', 'block__return', s('statement_expression__return')),
 				),
 				s(
 					'declaration_function',
 					f('identifier_0', 'identifier'),
 					f(
-						'declared_function_0',
-						'declared_function',
-						f(
-							'parameters_function_0',
-							'parameters_function',
-							s(
-								'parameter_function',
-								f('identifier_0', 'identifier'),
-								f('type_0',       'identifier'),
-							),
-							s(
-								'parameter_function__named',
-								f('identifier_0', 'identifier'),
-								f('type_0',       'identifier'),
-							),
-							s(
-								'parameter_function__named',
-								f('word_0',       'word', s('identifier')),
-								f('identifier_0', 'identifier'),
-								f('type_0',       'identifier'),
-							),
+						'parameters_function_0',
+						'parameters_function',
+						s(
+							'parameter_function',
+							f('identifier_0', 'identifier'),
+							f('type_0',       'identifier'),
 						),
-						f('block_0', 'block__return', s('statement_return')),
+						s(
+							'parameter_function__named',
+							f('identifier_0', 'identifier'),
+							f('type_0',       'identifier'),
+						),
+						s(
+							'parameter_function__named',
+							f('word_0',       'word', s('identifier')),
+							f('identifier_0', 'identifier'),
+							f('type_0',       'identifier'),
+						),
 					),
+					f('block_0', 'block__return', s('statement_return')),
 				),
 			),
 		],

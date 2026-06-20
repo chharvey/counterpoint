@@ -27,6 +27,16 @@ SemanticParameterFunction[writable: Boolean][id?: RealNumber]
 
 
 
+SemanticBlock
+	::= SemanticStatement+;
+
+
+
+SemanticGoal
+	::= SemanticBlock?;
+
+
+
 SemanticType =:=
 	| SemanticTypeConstant
 	| SemanticTypeAlias
@@ -208,13 +218,3 @@ SemanticStatementBreak[skip: Boolean]
 
 SemanticStatementReturn
 	::= ();
-
-
-
-SemanticBlock
-	::= SemanticStatement+;
-
-
-
-SemanticGoal
-	::= SemanticBlock?;

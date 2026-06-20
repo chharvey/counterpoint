@@ -89,6 +89,11 @@ ItemsType ::=
 PropertiesType
 	::= ","? EntryType<+Named><∓Optional># ","?;
 
+ParametersType ::=
+	| ","? EntryType<-Named><-Optional># ("," EntryType<+Named><-Optional>#)? ","?
+	| ","?                                    EntryType<+Named><-Optional>#   ","?
+;
+
 PropertyAccessorType
 	::= INTEGER | NATURAL | Word;
 
@@ -150,6 +155,16 @@ Items<Break, Return> ::=
 
 Property <Break, Return> ::= Word                                "="  Expression<+Block><?Break><?Return>;
 Case     <Break, Return> ::= Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>;
+
+ParameterFunction<Named> ::= (
+	| <Named+>(Word "=") ("_" | "mut"? IDENTIFIER)
+	| <Named+>("mut"? "$" IDENTIFIER)
+) ":" Type;
+
+ParametersFunction ::=
+	| ","? ParameterFunction<-Named># ("," ParameterFunction<+Named>#)? ","?
+	| ","?                                 ParameterFunction<+Named>#   ","?
+;
 
 PropertyAccessor<Break, Return>
 	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break><?Return> "]";
@@ -219,6 +234,9 @@ ExpressionConditional<Break, Return> ::=
 	& Expression<-Block><?Break><?Return>
 ;
 
+ExpressionFunction
+	::= "\" "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
+
 Expression<Block, Break, Return> ::=
 	| ExpressionDisjunctive<?Block><?Break><?Return>
 	| ExpressionConditional<?Break><?Return>
@@ -285,30 +303,6 @@ Block<Break, Return>
 
 
 
-ParameterFunction<Named> ::= (
-	| <Named+>(Word "=") ("_" | "mut"? IDENTIFIER)
-	| <Named+>("mut"? "$" IDENTIFIER)
-) ":" Type;
-
-
-
-ParametersType ::=
-	| ","? EntryType<-Named><-Optional># ("," EntryType<+Named><-Optional>#)? ","?
-	| ","?                                    EntryType<+Named><-Optional>#   ","?
-;
-
-ParametersFunction ::=
-	| ","? ParameterFunction<-Named># ("," ParameterFunction<+Named>#)? ","?
-	| ","?                                 ParameterFunction<+Named>#   ","?
-;
-
-
-
-DeclaredFunction   ::=     "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
-ExpressionFunction ::= "\" "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
-
-
-
 DeclarationType
 	::= "type" ("_" | IDENTIFIER) "=" Type ";";
 
@@ -318,7 +312,7 @@ DeclarationVariable<Break, Return> ::=
 ;
 
 DeclarationFunction
-	::= "func" ("_" | IDENTIFIER) DeclaredFunction
+	::= "func" ("_" | IDENTIFIER) "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>
 
 Declaration<Break, Return> ::=
 	| DeclarationType
