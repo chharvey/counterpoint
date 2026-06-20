@@ -1,6 +1,7 @@
 import type {
 	DeclarationType,
 	DeclarationVariable,
+	DeclarationFunction,
 } from './index.ts';
 
 
@@ -10,8 +11,10 @@ import type {
  * Known subclasses:
  * - DeclarationType
  * - DeclarationVariable
+ * - DeclarationFunction
  */
 export type Declaration = (
 	| DeclarationType
 	| DeclarationVariable
+	| DeclarationFunction
 );

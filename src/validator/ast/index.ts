@@ -6,6 +6,7 @@ export * from './ItemType.ts';
 export * from './PropertyType.ts';
 export * from './Property.ts';
 export * from './Case.ts';
+export * from './ParameterFunction.ts';
 export * from './Block.ts';
 export * from './Goal.ts';
 

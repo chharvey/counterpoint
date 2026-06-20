@@ -88,10 +88,10 @@ export class DeclarationVariable extends Statement {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break', 'return']>,
-		public  readonly writable: boolean,
-		public  readonly assignee: Serializable | null,
-		public  readonly typenode: AST_TYPE.Type | null,
-		public  readonly assigned: EXPR.Expression | null,
+		public readonly writable: boolean,
+		public readonly assignee: Serializable | null,
+		public readonly typenode: AST_TYPE.Type | null,
+		public readonly assigned: EXPR.Expression | null,
 	) {
 		super(
 			start_node,

@@ -2,6 +2,7 @@ export * from './Statement.ts';
 export * from './Declaration.ts';
 export * from './DeclarationType.ts';
 export * from './DeclarationVariable.ts';
+export * from './DeclarationFunction.ts';
 export * from './StatementExpression.ts';
 export * from './StatementClaim.ts';
 export * from './StatementReassignment.ts';

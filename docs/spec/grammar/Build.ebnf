@@ -295,6 +295,8 @@ Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticTyp
 	(DECL <null> `GetSymbolSchema(id)`)
 ];
 
+Build(SemanticDeclarationFunction); // TODO
+
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
 	(DROP `Build(stmt.0)`)
 ];

@@ -79,6 +79,7 @@ export function typecheck_assign(
  * - PropertyType
  * - Property
  * - Case
+ * - ParameterFunction
  * - Type
  * - Expression
  * - Statement

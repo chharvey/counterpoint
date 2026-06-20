@@ -875,13 +875,13 @@ test.suite('Decorator', () => {
 				% (declaration_variable)
 			`]],
 
-			['todo: Decorate(DeclarationFunction ::= "func" "_" DeclaredFunction) ->', [AST.AstNode, `
+			['Decorate(DeclarationFunction ::= "func" "_" DeclaredFunction) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func _(): void {;}
 				}
 				% (declaration_function)
 			`]],
-			['todo: Decorate(DeclarationFunction ::= "func" "IDENTIFIER" DeclaredFunction) ->', [AST.AstNode, `
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER DeclaredFunction) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func foo(): void {;}
 				}
