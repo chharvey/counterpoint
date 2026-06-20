@@ -30,6 +30,7 @@ export function isObjectType(
  * - Dict
  * - TypeSet
  * - TypeMap
+ * - TypeFunction
  */
 export abstract class ReferenceType extends Type {
 	/** @final */

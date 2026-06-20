@@ -721,11 +721,41 @@ Boolean Subtype(Type a, Type b) :=
 		6. *Else:*
 			1. *If* *UnwrapAffirm:* `Subtype(ak, bk)` is `true` *and* *UnwrapAffirm:* `Subtype(av, bv)` is `true`:
 				1. *Return:* `true`.
-	15. *If* `IsReference(a)` is `true` *and* `Equal(b, Object)` is `true`:
+	15. *If* `a` is a Function type *and* `b` is a Function type:
+		1. *Let* `app` be the positional parameter type arguments over `a`.
+		2. *Let* `apn` be the named parameter type arguments over `a`.
+		3. *Let* `ar` be the return type argument over `a`, if it exists.
+		4. *Let* `bpp` be the positional parameter type arguments over `b`.
+		5. *Let* `bpn` be the named parameter type arguments over `b`.
+		6. *Let* `br` be the return type argument over `b`, if it exists.
+		7. *Let* `ta` be a new Tuple type containing the items in `app`.
+		8. *Let* `tb` be a new Tuple type containing the items in `bpp`.
+		9. *If* *UnwrapAffirm:* `Subtype(tb, ta)` is `false`:
+			1. *Return:* `false`.
+		10. *Else:*
+			1. Fall through.
+		11. *Let* `ra` be a new Record type containing the properties in `apn`.
+		12. *Let* `rb` be a new Record type containing the properties in `bpn`.
+		13. *If* *UnwrapAffirm:* `Subtype(rb, ra)` is `false`:
+			1. *Return:* `false`.
+		14. *Else:*
+			1. Fall through.
+		15. *If* `ar` is not set *and* `br` is not set:
+			1. *Return:* `true`.
+		16. *Else:*
+			1. Fall through.
+		17. *If* `ar` is set *and* `br` is set:
+			1. *If* *UnwrapAffirm:* `Subtype(ar, br)` is `true`:
+				1. *Return:* `true`.
+			2. *Else:*
+				1. Fall through.
+		18. *Else:*
+			1. Fall through.
+	16. *If* `IsReference(a)` is `true` *and* `Equal(b, Object)` is `true`:
 		1. *Return:* `true`.
-	16. *If* every value that is assignable to `a` is also assignable to `b`:
+	17. *If* every value that is assignable to `a` is also assignable to `b`:
 		1. *Return:* `true`.
-	17. *Return:* `false`.
+	18. *Return:* `false`.
 ;
 ```
 

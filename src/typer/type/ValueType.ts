@@ -7,6 +7,11 @@ import {Type} from './Type.ts';
  * Known subclasses:
  * - Nothing
  * - TypeBoolean
+ * - TypeSymbol
+ * - Integer
+ * - Natural
+ * - Float
+ * - TypeString
  * - Unit
  * - TypeTuple
  * - TypeRecord

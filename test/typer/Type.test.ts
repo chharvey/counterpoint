@@ -87,6 +87,33 @@ test.suite('Type', () => {
 				],
 			);
 		});
+		test.test('TypeFunction', () => {
+			assert_shallowStrictEqual(
+				[
+					new TYPE.Function(),
+					new TYPE.Function(
+						TYPE.Tuple.fromTypes([TYPE.INT]),
+						TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.FLOAT]])),
+					),
+					new TYPE.Function(
+						new TYPE.Tuple([
+							{type: TYPE.INT, optional: false},
+							{type: TYPE.INT, optional: true},
+						]),
+						new TYPE.Record(new Map<bigint, EntryType>([
+							[0x100n, {type: TYPE.FLOAT, optional: true}],
+							[0x101n, {type: TYPE.FLOAT, optional: false}],
+						])),
+						TYPE.STR,
+					),
+				].map((fn) => fn.toString()),
+				[
+					'\\() => void',
+					'\\(int, 256: float) => void',
+					'\\(int, ?: int, 256?: float, 257: float) => str',
+				],
+			);
+		});
 	});
 
 
@@ -847,6 +874,37 @@ test.suite('Type', () => {
 				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL, true)),                 'mut Map.<int, bool> !<: mut Map.<int | str, bool>');
 				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT,                 TYPE.BOOL.union(TYPE.STR), true)), 'mut Map.<int, bool> !<: mut Map.<int,       bool | str>');
 				assert.ok(!INT_BOOL.isSubtypeOf(new TYPE.Map(TYPE.INT.union(TYPE.STR), TYPE.BOOL.union(TYPE.STR), true)), 'mut Map.<int, bool> !<: mut Map.<int | str, bool | str>');
+			});
+		});
+
+		test.suite('TypeFunction', () => {
+			test.test('is a subtype but not a supertype of `anything` and `Object`.', () => {
+				const fn = new TYPE.Function();
+				assert.ok(fn.isSubtypeOf(TYPE.ANYTHING), '() => void <: anything');
+				assert.ok(!TYPE.ANYTHING.isSubtypeOf(fn), 'anything !<: () => void');
+				assert.ok(fn.isSubtypeOf(TYPE.OBJ), '() => void <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(fn), 'Object !<: () => void');
+			});
+			test.test('Contravariance for parameter types: `A >: B --> \\(A) => R <: \\(B) => R`.', () => {
+				const f0 = new TYPE.Function(TYPE.Tuple.fromTypes([
+					TYPE.INT,
+					TYPE.BOOL,
+					TYPE.STR,
+				]));
+				const f1 = new TYPE.Function(TYPE.Tuple.fromTypes([
+					TYPE.INT.union(TYPE.FLOAT),
+					TYPE.BOOL.union(TYPE.NULL),
+				]));
+
+				assert.ok(!f0.isSubtypeOf(f1), '\\(int, bool, str) => void !<: \\(int | float, bool | null) => void');
+				assert.ok(f1.isSubtypeOf(f0),  '\\(int | float, bool | null) => void <: \\(int, bool, str) => void');
+			});
+			test.test('Covariance     for return type:     `A <: B --> \\(P) => A <: \\(P) => B`.', () => {
+				const f0 = new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.STR]), undefined, TYPE.INT);
+				const f1 = new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.STR]), undefined, TYPE.INT.union(TYPE.NULL));
+
+				assert.ok(f0.isSubtypeOf(f1),  '\\(str) => int <: \\(str) => int | null');
+				assert.ok(!f1.isSubtypeOf(f0), '\\(str) => int | null !<: \\(str) => int');
 			});
 		});
 

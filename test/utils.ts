@@ -35,8 +35,13 @@ export function assert_shallowStrictEqual<T>(actual: unknown[], expected: T[], m
 	if (actual === expected) {
 		return;
 	}
-	assert.strictEqual(actual.length, expected.length, message);
-	return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i], message));
+	if (message) {
+		assert.strictEqual(actual.length, expected.length, message);
+		return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i], message));
+	} else {
+		assert.strictEqual(actual.length, expected.length);
+		return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i]));
+	}
 }
 
 type ValidationObject = {cons: ConstructorType<Error>} & (
