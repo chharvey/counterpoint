@@ -26,8 +26,8 @@ class TypeFunction extends Type {
 
 	public constructor(
 		start_node: SyntaxNodeType<'type_function'>,
-		private readonly paramPositTypes: ItemType[],
-		private readonly paramNamedTypes: PropertyType[],
+		private readonly paramPositTypes: readonly ItemType[],
+		private readonly paramNamedTypes: readonly PropertyType[],
 	) {
 		super(start_node, {}, [...paramPositTypes, ...paramNamedTypes]);
 	}

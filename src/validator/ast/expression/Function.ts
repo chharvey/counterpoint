@@ -28,8 +28,8 @@ class ExpressionFunction extends Expression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
-		parameters: ParameterFunction[],
-		block:      Block,
+		public readonly parameters: readonly ParameterFunction[],
+		public readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, block]);
 	}

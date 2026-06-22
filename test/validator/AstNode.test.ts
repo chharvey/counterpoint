@@ -2,7 +2,10 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	assert_instanceof,
+	TYPE,
 	AST,
+	type SymbolSchema,
+	SymbolSchemaVar,
 	ReferenceErrorUndeclared,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateDeclaration,
@@ -18,6 +21,103 @@ import {
 
 
 test.suite('AstNode', () => {
+	test.suite('#varCheck', () => {
+		test.suite('ParameterFunction', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: int, mut b: int): void { return; };
+				}`, {varCheck: false});
+				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.ok(!fn.block.validator.hasSymbol(0x100n));
+				assert.ok(!fn.block.validator.hasSymbol(0x101n));
+				fn.varCheck();
+				assert.ok(fn.block.validator.hasSymbol(0x100n));
+				assert.ok(fn.block.validator.hasSymbol(0x101n));
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(0x100n);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(0x101n);
+				assert_instanceof(info_a, SymbolSchemaVar);
+				assert_instanceof(info_b, SymbolSchemaVar);
+				assert.partialDeepStrictEqual(info_a, {
+					isWritable:      false,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+				return assert.partialDeepStrictEqual(info_b, {
+					isWritable:      true,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+			});
+			test.test('for blank params, does not add to symbol table.', () => {
+				const {stmts} = setupScript(`{
+					\\(_: int): void { return; };
+				}`, {varCheck: false});
+				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.ok(!fn.block.validator.hasSymbol(0x100n));
+				fn.varCheck();
+				return assert.ok(!fn.block.validator.hasSymbol(0x100n));
+			});
+			test.test('allows duplicate blank param.', () => {
+				setupScript(`{
+					\\(_: int, _: str): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('throws when parameter shadows outside scope.', () => {
+				setupScript(`{
+					val x: int = 42;
+					\\(y: str): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+				return assert.throws(() => setupScript(`{
+					val x: int = 42;
+					\\(x: str): void { return; };
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+			});
+			test.test('does not throw when parameter name is reused outside of function scope.', () => {
+				setupScript(`{
+					\\(x: str): void { return; };
+					val x: int = 42;
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('parameter itself does not throw when it is shadowed.', () => {
+				const {stmts} = setupScript(`{
+					val x: int = 42;
+					\\(y: str): void { % no error
+						val y: float = 4.2; %> AssignmentErrorDuplicateDeclaration
+						return;
+					};
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				fn.parameters[0].varCheck(); // assert does not throw
+				return assert.throws(() => fn.block.varCheck(), AssignmentErrorDuplicateDeclaration);
+			});
+			test.test('TEMP: allows implicit captures.', () => {
+				setupScript(`{
+					val x: int = 42;
+					\\(y: str): void {
+						x;
+						return;
+					};
+				}`, {typeCheck: false});
+			});
+			test.test.todo('throws when capture is not explicit.', () => {
+				const {stmts} = setupScript(`{
+					val x: int = 42;
+					\\(y: str): void {
+						x; %> error
+						return;
+					};
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				fn.parameters[0].varCheck();
+				return assert.throws(() => fn.block.varCheck());
+			});
+		});
+	});
+
+
+
 	test.suite('Index', () => {
 		test.suite('#index', () => {
 			test.test('returns the cooked value of the integer token.', () => {

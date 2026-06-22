@@ -1,4 +1,7 @@
-import type {Builder} from '../../../index.ts';
+import {
+	type Builder,
+	AssignmentErrorDuplicateDeclaration,
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	runOnceMethod,
@@ -9,6 +12,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
+import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
@@ -24,11 +28,14 @@ export class DeclarationFunction extends Statement {
 	}
 
 
+	private id?: bigint;
+
+
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_function'>,
-		identifier: Serializable | null,
-		parameters: ParameterFunction[],
-		block:      Block,
+		private readonly identifier: Serializable | null,
+		public  readonly parameters: readonly ParameterFunction[],
+		public  readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, block]);
 	}
@@ -36,6 +43,22 @@ export class DeclarationFunction extends Statement {
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		throw new Error('`DeclarationFunction#hasBottomType` not yet supported.');
+	}
+
+	public override varCheck(): void {
+		if (this.identifier) {
+			this.id = this.validator.cookTokenIdentifier(this.identifier.source);
+			if (this.validator.hasSymbol(this.id)) {
+				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
+			}
+			this.validator.addSymbol(new SymbolSchemaVar(
+				this.id,
+				this.identifier,
+				false, // because it should not be manually reassigned
+				false, // because it won’t ever be nullish upon accessing
+			));
+		}
+		super.varCheck(); // must come after identifier checks, because identifier may be referenced inside block
 	}
 
 	@runOnceMethod

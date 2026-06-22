@@ -167,6 +167,68 @@ test.suite('Declaration', () => {
 				}`, {typeCheck: false}); // assert does not throw
 			});
 		});
+
+		test.suite('DeclarationFunction', () => {
+			test.test('throws when declaring duplicate identifier.', () => {
+				setupScript(`{
+					val x: int = 42;
+					func y(z: str): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
+					val x: int = 42;
+					func x(): void { return; };
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+				return assert.throws(() => setupScript(`{
+					func f(): void { return; };
+					func f(a: int): void { return; };
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+			});
+			test.test('allows duplicate blank identifier.', () => {
+				setupScript(`{
+					func _(): void { return; };
+					func _(a: int): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test.todo('allows overloads.', () => {
+				setupScript(`{
+					func f(): void { return; };
+					func f(a: int): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('allows self-reference, but not self-shadowing.', () => {
+				setupScript(`{
+					func f(): void {
+						f;
+						return;
+					};
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
+					func f(): void { %> no error
+						val f: int = 42; %> AssignmentErrorDuplicateDeclaration
+						return;
+					};
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+				return assert.throws(() => setupScript(`{
+					func f( %> no error
+						f: int, %> AssignmentErrorDuplicateDeclaration
+					): void {
+						return;
+					};
+				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
+			});
+			test.test('TEMPORARY: hoisting not yet supported.', () => {
+				assert.throws(() => setupScript(`{
+					f;
+					func f(): void { return; };
+				}`, {typeCheck: false}));
+			});
+			test.test.todo('hoists function name.', () => {
+				setupScript(`{
+					f;
+					func f(): void { return; };
+				}`, {typeCheck: false}); // assert does not throw
+			});
+		});
 	});
 
 

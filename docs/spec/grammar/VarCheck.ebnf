@@ -5,7 +5,6 @@ None! VarCheck(Or<
 	SemanticPropertyType,
 	SemanticProperty,
 	SemanticCase,
-	SemanticParameterFunction,
 	SemanticBlock,
 	SemanticGoal,
 	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall>>,
@@ -18,6 +17,31 @@ None! VarCheck(Or<
 > list) :=
 	1. *For each* `it` in `list.children`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+;
+
+
+
+None! VarCheck(SemanticParameterFunction param) :=
+	1. *For each* `it` in `param.children`:
+		1. *Perform:* *Unwrap:* `VarCheck(it)`.
+	2. *If* `param.id` is not *none*:
+		1. *Let* `parent` be the parent node of `param`.
+		2. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+		3. *Let* `block` be `parent.children.-1`.
+		4. *Assert:* `block` is a SemanticBlock.
+		5. *Let* `validator` be the validator of `block`.
+		6. *If* `validator`’s symbol table contains a SymbolSchema whose `id` is `param.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		7. *Else:*
+			1. *Let* `symbol` be a new SymbolSchemaVar [
+				id=              `param.id`,
+				isWritable=      `param.writable`,
+				isUninitialized= `false`, // TODO: with optional paramers: `param.uninitialized`
+				type=            `Anything`,
+			].
+			2. Add `symbol` as a record for `param.id` to `validator`.
+	3. *Else:*
+		1. *Return.*
 ;
 
 
@@ -122,6 +146,26 @@ None! VarCheck(SemanticDeclarationVariable decl) :=
 			2. Add `symbol` as a record for `decl.id` to the validator.
 	11. *Else:*
 		1. *Return.*
+;
+
+
+
+None! VarCheck(SemanticDeclarationFunction fn) :=
+	1. *If* `fn.id` is not *none*:
+		1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `fn.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		2. *Else:*
+			1. *Let* `symbol` be a new SymbolSchemaVar [ // TODO: we’ll probably want a `SymbolSchemaFunc` type
+				id=              `fn.id`,
+				isWritable=      false,
+				isUninitialized= false,
+				type=            `Anything`,
+			].
+			2. Add `symbol` as a record for `fn.id` to the validator.
+	2. *Else:*
+		1. Fall through.
+	3. *For each* `child` of `fn.children`:
+		1. *Perform:* *Unwrap:* `VarCheck(child)`.
 ;
 
 
