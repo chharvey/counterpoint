@@ -1,16 +1,20 @@
 None! VarCheck(Or<
+	SemanticIndex,
 	SemanticKey,
+	SemanticItemType,
 	SemanticPropertyType,
 	SemanticProperty,
 	SemanticCase,
-	SemanticType,
-	SemanticExpression,
+	SemanticParameterFunction,
+	SemanticBlock,
+	SemanticGoal,
+	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall>>,
+	Difference<SemanticExpression, Or<SemanticExpressionVariable, SemanticExpressionCall>>,
 	SemanticStatementExpression,
 	SemanticStatementClaim,
 	SemanticStatementConditional,
 	SemanticStatementBreak,
 	SemanticStatementReturn,
-	SemanticGoal,
 > list) :=
 	1. *For each* `it` in `list.children`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.

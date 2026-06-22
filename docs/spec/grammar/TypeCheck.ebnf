@@ -1,12 +1,16 @@
 None! TypeCheck(Or<
+	SemanticIndex,
 	SemanticKey,
+	SemanticItemType,
 	SemanticPropertyType
 	SemanticProperty,
 	SemanticCase,
+	SemanticParameterFunction,
+	SemanticBlock,
+	SemanticGoal,
 	SemanticStatementExpression,
 	SemanticStatementBreak,
 	SemanticStatementReturn,
-	SemanticGoal,
 > list) :=
 	1. *For each* `it` in `list.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
