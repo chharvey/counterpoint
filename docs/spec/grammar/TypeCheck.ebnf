@@ -12,8 +12,9 @@ None! TypeCheck(Or<
 
 
 
-None TypeCheck(SemanticType type) :=
-	1. *Return.*
+None TypeCheck(SemanticType typexpr) :=
+	1. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
 

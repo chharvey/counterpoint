@@ -35,7 +35,8 @@ export abstract class Type extends AstNode {
 	 * @final
 	 */
 	public override typeCheck(): void {
-		return; // no type-checking necessary
+		super.typeCheck();
+		this.eval(); // assert does not throw
 	}
 
 	/**
