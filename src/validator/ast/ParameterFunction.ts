@@ -1,5 +1,7 @@
+import * as assert from 'node:assert';
 import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
 import type {Serializable} from '../../parser/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import type {
@@ -21,8 +23,8 @@ export class ParameterFunction extends AstNode {
 		start_node: SyntaxNodeFamily<'parameter_function', ['named']>,
 		private readonly writable:   boolean,
 		private readonly identifier: Serializable | null,
-		key:      Key | null,
-		typenode: AST_TYPE.Type,
+		key: Key | null,
+		private readonly typenode: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [...(key ? [key] : []), typenode]);
 	}
@@ -37,6 +39,17 @@ export class ParameterFunction extends AstNode {
 				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
 			}
 			block.validator.addSymbol(new SymbolSchemaVar(this.id, this.identifier, this.writable, false));
+		}
+	}
+
+	public override typeCheck(): void {
+		super.typeCheck();
+		const param_type: TYPE.Type = this.typenode.eval();
+		if (this.identifier) {
+			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
+			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			const symbol = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
+			symbol.type = param_type;
 		}
 	}
 }

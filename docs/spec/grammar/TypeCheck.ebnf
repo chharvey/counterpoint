@@ -5,7 +5,6 @@ None! TypeCheck(Or<
 	SemanticPropertyType
 	SemanticProperty,
 	SemanticCase,
-	SemanticParameterFunction,
 	SemanticBlock,
 	SemanticGoal,
 	SemanticStatementExpression,
@@ -14,6 +13,26 @@ None! TypeCheck(Or<
 > list) :=
 	1. *For each* `it` in `list.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+;
+
+
+
+None! TypeCheck(SemanticParameterFunction param) :=
+	1. *For each* `it` in `param.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Let* `typenode` be an item `child` in `param.children` such that `child` is a SemanticType.
+	3. *Let* `param_type` be *Unwrap:* `TypeValueOf(typenode)`.
+	4. *If* `param.id` is not *none*:
+		1. *Let* `parent` be the parent node of `param`.
+		2. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+		3. *Let* `block` be `parent.children.-1`.
+		4. *Assert:* `block` is a SemanticBlock.
+		5. *Let* `validator` be the validator of `block`.
+		6. *Assert:* `validator`’s symbol table contains a SymbolSchema `symbol` whose `id` is `decl.id`.
+		7. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+		8. *Set* `symbol.type` to `param_type`.
+	5. *Else:*
+		1. *Return.*
 ;
 
 

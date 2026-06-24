@@ -14,6 +14,8 @@ import {
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
 import {
+	repeat,
+	assert_shallowStrictEqual,
 	assertAssignable,
 	setupScript,
 } from '../utils.ts';
@@ -112,6 +114,34 @@ test.suite('AstNode', () => {
 				const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				fn.parameters[0].varCheck();
 				return assert.throws(() => fn.block.varCheck());
+			});
+		});
+	});
+
+
+
+	test.suite('#typeCheck', () => {
+		test.suite('ParameterFunction', () => {
+			test.test('sets the SymbolSchemaVar `type`.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: float, mut b: str): void { return; };
+				}`, {typeCheck: false});
+				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.ok(fn.block.validator.hasSymbol(0x100n));
+				assert.ok(fn.block.validator.hasSymbol(0x101n));
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(0x100n);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(0x101n);
+				assert_instanceof(info_a, SymbolSchemaVar);
+				assert_instanceof(info_b, SymbolSchemaVar);
+				assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					repeat(TYPE.ANYTHING, 2),
+				);
+				fn.parameters.forEach((param) => param.typeCheck());
+				return assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					[TYPE.FLOAT, TYPE.STR],
+				);
 			});
 		});
 	});
