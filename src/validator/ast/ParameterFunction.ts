@@ -23,8 +23,8 @@ export class ParameterFunction extends AstNode {
 		start_node: SyntaxNodeFamily<'parameter_function', ['named']>,
 		private readonly writable:   boolean,
 		private readonly identifier: Serializable | null,
-		key: Key | null,
-		private readonly typenode: AST_TYPE.Type,
+		public  readonly key:        Key | null,
+		public  readonly typenode:   AST_TYPE.Type,
 	) {
 		super(start_node, {}, [...(key ? [key] : []), typenode]);
 	}

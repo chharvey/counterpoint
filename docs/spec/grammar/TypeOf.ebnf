@@ -426,7 +426,28 @@ Type! TypeOf(SemanticExpressionOperation[operator: COND] expr) :=
 
 
 
-Type! TypeOf(SemanticExpressionFunction expr) :=; // TODO
+Type! TypeOf(SemanticExpressionFunction fn) :=
+	1. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	2. *Let* `positional_params` be a filtering of `parameters` for each `param` such that `param.children.count` is *1*.
+	3. *Let* `positional_param_types` be a new Sequence.
+	4. *For each* `param` in `positional_params`:
+		1. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(param.children.0)`,
+			optional= `false`, // TODO: with optional paramers: `param.optional`
+		].
+		2. Push `typedatum` to `positional_param_types`.
+	5. *Let* `named_params` be a filtering of `parameters` for each `param` such that `param.children.count` is *2*.
+	6. *Let* `named_param_types` be a new Schema.
+	7. *For each* `param` in `named_params`:
+		1. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(param.children.1)`,
+			optional= `false`, // TODO: with optional paramers: `param.optional`
+		].
+		2. Set the property `param.children.0.id` on `named_param_types` to the value `typedatum`.
+	8. *Return:* a new Function type whose positional parameter types are `positional_param_types`,
+		whose named parameter types are `named_param_types`,
+		and who does not contain a return type.
+;
 
 
 

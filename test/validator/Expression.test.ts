@@ -66,6 +66,25 @@ test.suite('Expression', () => {
 				);
 			});
 		});
+
+
+		test.suite('ExpressionFunction', () => {
+			test.test('returns a function type.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: int, mut b: float | null, c= mut c: bool, delta= d: nat): void { return; };
+				}`, {build: false});
+				return assert.deepStrictEqual(
+					(stmts[0] as AST.STMT.StatementExpression).expr!.type(),
+					new TYPE.Function(TYPE.Tuple.fromTypes([
+						TYPE.INT,
+						TYPE.FLOAT.union(TYPE.NULL),
+					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[0x102n, TYPE.BOOL],
+						[0x103n, TYPE.NAT],
+					]))),
+				);
+			});
+		});
 	});
 
 

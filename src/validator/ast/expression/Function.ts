@@ -10,7 +10,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
+import {
+	type EntryType,
+	TYPE,
+} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
@@ -37,7 +40,19 @@ class ExpressionFunction extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		throw new Error('`ExpressionFunction#type` not yet supported.');
+		return new TYPE.Function(
+			new TYPE.Tuple(this.parameters.filter((param) => !param.key).map((param) => ({
+				type:     param.typenode.eval(),
+				optional: false, // TODO: with optional paramers: `parameter.optional`
+			}))),
+			new TYPE.Record(new Map<bigint, EntryType>(this.parameters.filter((param) => param.key).map((param) => [
+				param.key!.id,
+				{
+					type:     param.typenode.eval(),
+					optional: false, // TODO: with optional paramers: `parameter.optional`
+				},
+			]))),
+		);
 	}
 
 
