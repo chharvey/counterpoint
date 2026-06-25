@@ -8,6 +8,7 @@ import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
+	AssignmentErrorDuplicateKey,
 } from '../../src/index.ts';
 import {
 	extract_tokens,
@@ -19,6 +20,26 @@ import {
 
 
 test.suite('Type', () => {
+	test.suite('#varCheck', () => {
+		test.suite('TypeFunction', () => {
+			test.test('throws for duplicate param labels.', () => {
+				const {stmts} = setupScript(`{
+					type T = \\(a: int, b: bool) => void;
+					type U = \\(a: int, b: bool) => void;
+					type V = \\(a: int, a: bool) => void;
+				}`, {varCheck: false});
+				stmts.slice(0, 2).forEach((stmt) => stmt.varCheck());
+				return assert.throws(() => stmts[2].varCheck(), AssignmentErrorDuplicateKey);
+			});
+			test.test('single underscore is considered a word, not an identifier.', () => {
+				const decl: AST.STMT.DeclarationType = AST.STMT.DeclarationType.fromSource('type X = \\(_: bool, _: int) => void;');
+				return assert.throws(() => decl.varCheck(), AssignmentErrorDuplicateKey);
+			});
+		});
+	});
+
+
+
 	test.suite('#eval', () => {
 		test.suite('TypeCollectionLiteral', () => {
 			test.test('TypeTuple', () => {

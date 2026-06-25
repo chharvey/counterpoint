@@ -7,7 +7,7 @@ None! VarCheck(Or<
 	SemanticCase,
 	SemanticBlock,
 	SemanticGoal,
-	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall>>,
+	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall, SemanticTypeFunction>>,
 	Difference<SemanticExpression, Or<SemanticExpressionVariable, SemanticExpressionCall>>,
 	SemanticStatementExpression,
 	SemanticStatementClaim,
@@ -80,6 +80,20 @@ None! VarCheck(SemanticTypeCall call) :=
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 ;
 
+
+
+None! VarCheck(SemanticTypeFunction fn) :=
+	1. *Note:* In function types, all parameter labels are var-checked before all parameter types.
+	2. *Let* `proptypes` be a filtering of `fn.children` for each `child` such that `child` is a SemanticPropertyType.
+	3. *For each* `proptype` in `proptypes`:
+		1. *Let* `key` be `proptype.children.0`.
+		2. *Perform:* *Unwrap:* `VarCheck(key)`.
+		3. *If* `proptypes` already contains a property `prop_dupe` such that `prop_dupe.children.0.id` is `key.id`:
+			1. *Throw:* a new AssignmentErrorDuplicateKey.
+	4. *For each* `param` in `fn.children`:
+		1. *Let* `typenode` be an item `child` in `param` such that `child` is a SemanticType.
+		2. *Peform:* *Unwrap:* `VarCheck(typenode)`.
+;
 
 
 None! VarCheck(SemanticExpressionVariable var) :=
