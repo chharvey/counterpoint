@@ -78,7 +78,7 @@ An assignment error is raised when the compiler detects an illegal declaration o
 
 1.  2200                                             — A general assignment error not covered by one of the following cases.
 1. [2201](#2201-assignmenterrorduplicatedeclaration) — The validator encountered a duplicate declaration.
-1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict key.
+1. [2202](#2202-assignmenterrorduplicatekey)         — The validator encountered a duplicate record/dict/parameter key.
 1. [2210](#2210-assignmenterrorreassignment)         — A reassignment of a read-only variable was attempted.
 1. [2211](#2211-assignmenterrordeletion)             — A deletion of a non-optional variable was attempted.
 1. [2220](#2220-assignmenterrormissingtype)          — A symbol was declared without a type annotation and initialized to a value ineligible for type inference.
@@ -95,12 +95,13 @@ type MyType = float; % AssignmentErrorDuplicateDeclaration: Duplicate declaratio
 Solution(s): Remove the duplicate declaration, or change it to a reassignment (if possible).
 
 #### 2202: AssignmentErrorDuplicateKey
-Cause: A duplicate key in a record type, record literal, or dict literal was encountered.
+Cause: A duplicate key in a record type, function type, record literal, or dict literal was encountered.
 ```
-type MyType = (bar: int, bar: str); % AssignmentErrorDuplicateKey: Duplicate record/dict key `bar`.
+type MyType = (bar: int, bar: str);           % AssignmentErrorDuplicateKey: Duplicate record/dict/parameter key `bar`.
+type MyType = \(bar: int, bar: str) => float; % AssignmentErrorDuplicateKey: Duplicate record/dict/parameter key `bar`.
 
-(foo= "a", foo= "b"); % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
-[foo= "a", foo= "b"]; % AssignmentErrorDuplicateKey: Duplicate record/dict key `foo`.
+(foo= "a", foo= "b"); % AssignmentErrorDuplicateKey: Duplicate record/dict/parameter key `foo`.
+[foo= "a", foo= "b"]; % AssignmentErrorDuplicateKey: Duplicate record/dict/parameter key `foo`.
 ```
 Solution(s): Remove or rename the duplicate key.
 

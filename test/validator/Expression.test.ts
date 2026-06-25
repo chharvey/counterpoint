@@ -569,7 +569,7 @@ test.suite('Expression', () => {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentErrorDuplicateKey,
-								message: `Duplicate record/dict key \`${ k }\`.`,
+								message: `Duplicate record/dict/parameter key \`${ k }\`.`,
 							})),
 						});
 						return true;
