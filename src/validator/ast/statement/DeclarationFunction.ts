@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import {
 	type Builder,
 	AssignmentErrorDuplicateDeclaration,
@@ -11,11 +12,13 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
+import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -59,6 +62,15 @@ export class DeclarationFunction extends Statement {
 			));
 		}
 		super.varCheck(); // must come after identifier checks, because identifier may be referenced inside block
+	}
+
+	public override typeCheck(): void {
+		super.typeCheck();
+		const fn_type: TYPE.Type = EXPR.Function.prototype.type.call(this);
+		if (this.identifier) {
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			(this.validator.getSymbol(this.id!) as SymbolSchemaVar).type = fn_type;
+		}
 	}
 
 	@runOnceMethod

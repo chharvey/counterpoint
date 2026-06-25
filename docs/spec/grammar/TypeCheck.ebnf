@@ -88,6 +88,39 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 
 
 
+None! TypeCheck(SemanticDeclarationFunction fn) :=
+	1. *For each* `it` in `fn.children`:
+		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
+	2. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	3. *Let* `positional_params` be a filtering of `parameters` for each `param` such that `param.children.count` is *1*.
+	4. *Let* `positional_param_types` be a new Sequence.
+	5. *For each* `param` in `positional_params`:
+		1. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(param.children.0)`,
+			optional= `false`, // TODO: with optional paramers: `param.optional`
+		].
+		2. Push `typedatum` to `positional_param_types`.
+	6. *Let* `named_params` be a filtering of `parameters` for each `param` such that `param.children.count` is *2*.
+	7. *Let* `named_param_types` be a new Schema.
+	8. *For each* `param` in `named_params`:
+		1. *Let* `typedatum` be a new EntryTypeSchema [
+			type=     *Unwrap:* `TypeValueOf(param.children.1)`,
+			optional= `false`, // TODO: with optional paramers: `param.optional`
+		].
+		2. Set the property `param.children.0.id` on `named_param_types` to the value `typedatum`.
+	9. *Let* `fn_type` be a new Function type whose positional parameter types are `positional_param_types`,
+		whose named parameter types are `named_param_types`,
+		and who does not contain a return type.
+	10. *If* `fn.id` is not *none*:
+		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `fn.id`.
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`. // TODO: we’ll probably want a `SymbolSchemaFunc` type
+		3. *Set* `symbol.type` to `fn_type`.
+	11. *Else:*
+		1. *Return.*
+;
+
+
+
 Type! TypeCheck(SemanticStatementClaim claim) :=
 	1. *Assert:* `claim.children.count` is 2.
 	2. *Let* `assignee` be `claim.children.0`.

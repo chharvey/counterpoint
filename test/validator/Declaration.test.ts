@@ -619,6 +619,37 @@ test.suite('Declaration', () => {
 				});
 			});
 		});
+
+		test.suite('DeclarationFunction', () => {
+			test.test('sets the SymbolSchemaVar `type`.', () => {
+				const {stmts} = setupScript(`{
+					func f(a: float, mut b: str): void { return; };
+				}`, {typeCheck: false});
+				const fn = stmts[0] as AST.STMT.DeclarationFunction;
+				assert.ok(fn.validator.hasSymbol(0x100n));
+				assert.ok(fn.block.validator.hasSymbol(0x101n));
+				assert.ok(fn.block.validator.hasSymbol(0x102n));
+				const info_f: SymbolSchema | undefined = fn.validator.getSymbol(0x100n);
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(0x101n);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(0x102n);
+				assert_instanceof(info_f, SymbolSchemaVar);
+				assert_instanceof(info_a, SymbolSchemaVar);
+				assert_instanceof(info_b, SymbolSchemaVar);
+				assert_shallowStrictEqual(
+					[info_f.type, info_a.type, info_b.type],
+					repeat(TYPE.ANYTHING, 3),
+				);
+				fn.typeCheck();
+				assertEqualTypes(info_f.type, new TYPE.Function(TYPE.Tuple.fromTypes([
+					TYPE.FLOAT,
+					TYPE.STR,
+				])));
+				return assert_shallowStrictEqual(
+					[info_a.type, info_b.type],
+					[TYPE.FLOAT, TYPE.STR],
+				);
+			});
+		});
 	});
 
 
