@@ -12,7 +12,7 @@ import {AstNode} from '../AstNode.ts';
  * A sematic node representing a type expression.
  * Known subclasses:
  * - Constant
- * - Alias
+ * - TypeAlias
  * - Collection
  * - Access
  * - Call
