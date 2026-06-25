@@ -21,12 +21,18 @@ export class ParameterFunction extends AstNode {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'parameter_function', ['named']>,
+		public  readonly named:      boolean,
 		private readonly writable:   boolean,
 		private readonly identifier: Serializable | null,
 		public  readonly key:        Key | null,
 		public  readonly typenode:   AST_TYPE.Type,
 	) {
 		super(start_node, {}, [...(key ? [key] : []), typenode]);
+	}
+
+
+	public get labelId(): bigint | undefined {
+		return this.key?.id ?? this.id;
 	}
 
 

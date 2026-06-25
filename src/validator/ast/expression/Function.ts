@@ -41,12 +41,12 @@ class ExpressionFunction extends Expression {
 	@memoizeMethod
 	public override type(): TYPE.Type {
 		return new TYPE.Function(
-			new TYPE.Tuple(this.parameters.filter((param) => !param.key).map((param) => ({
+			new TYPE.Tuple(this.parameters.filter((param) => !param.named).map((param) => ({
 				type:     param.typenode.eval(),
 				optional: false, // TODO: with optional paramers: `parameter.optional`
 			}))),
-			new TYPE.Record(new Map<bigint, EntryType>(this.parameters.filter((param) => param.key).map((param) => [
-				param.key!.id,
+			new TYPE.Record(new Map<bigint, EntryType>(this.parameters.filter((param) => param.named).map((param) => [
+				param.labelId!,
 				{
 					type:     param.typenode.eval(),
 					optional: false, // TODO: with optional paramers: `parameter.optional`

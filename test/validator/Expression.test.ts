@@ -71,7 +71,7 @@ test.suite('Expression', () => {
 		test.suite('ExpressionFunction', () => {
 			test.test('returns a function type.', () => {
 				const {stmts} = setupScript(`{
-					\\(a: int, mut b: float | null, c= mut c: bool, delta= d: nat): void { return; };
+					\\(a: int, mut b: float | null, mut $c: bool, delta= d: nat): void { return; };
 				}`, {build: false});
 				return assert.deepStrictEqual(
 					(stmts[0] as AST.STMT.StatementExpression).expr!.type(),

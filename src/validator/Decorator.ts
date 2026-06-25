@@ -305,19 +305,14 @@ export class Decorator {
 			)],
 
 			[/^parameter_function(__named)?$/, (node) => {
-				const is_writable: boolean = !!node.childForFieldName('mut_0');
 				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
 				const word_0       = node.childForFieldName('word_0')       as SyntaxNodeType<'word'>       | null;
-				const key: AST.Key | null = (
-					word_0                        ? this.decorate(word_0) :
-					node.childForFieldName('$_0') ? new AST.Key(identifier_0 as SyntaxNode as SyntaxNodeType<'word'>) :
-					null
-				);
 				return new AST.ParameterFunction(
 					node as SyntaxNodeFamily<'parameter_function', ['named']>,
-					is_writable,
+					!!(word_0 ?? node.childForFieldName('$_0')),
+					!!node.childForFieldName('mut_0'),
 					identifier_0 && to_serializable(identifier_0),
-					key,
+					word_0 && this.decorate(word_0),
 					this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 				);
 			}],

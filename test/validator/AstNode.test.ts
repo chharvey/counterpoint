@@ -27,25 +27,45 @@ test.suite('AstNode', () => {
 		test.suite('ParameterFunction', () => {
 			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 				const {stmts} = setupScript(`{
-					\\(a: int, mut b: int): void { return; };
+					\\(a: int, mut b: int, mut $c: int, delta= d: int): void { return; };
 				}`, {varCheck: false});
 				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				assert.ok(!fn.block.validator.hasSymbol(0x100n));
 				assert.ok(!fn.block.validator.hasSymbol(0x101n));
+				assert.ok(!fn.block.validator.hasSymbol(0x102n));
+				assert.ok(!fn.block.validator.hasSymbol(0x103n));
+				assert.ok(!fn.block.validator.hasSymbol(0x104n));
 				fn.varCheck();
 				assert.ok(fn.block.validator.hasSymbol(0x100n));
 				assert.ok(fn.block.validator.hasSymbol(0x101n));
+				assert.ok(fn.block.validator.hasSymbol(0x102n));
+				assert.ok(!fn.block.validator.hasSymbol(0x103n)); // param key `delta` is not in symbol table
+				assert.ok(fn.block.validator.hasSymbol(0x104n));
 				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(0x100n);
 				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(0x101n);
+				const info_c: SymbolSchema | undefined = fn.block.validator.getSymbol(0x102n);
+				const info_d: SymbolSchema | undefined = fn.block.validator.getSymbol(0x104n);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
+				assert_instanceof(info_c, SymbolSchemaVar);
+				assert_instanceof(info_d, SymbolSchemaVar);
 				assert.partialDeepStrictEqual(info_a, {
 					isWritable:      false,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
 				});
-				return assert.partialDeepStrictEqual(info_b, {
+				assert.partialDeepStrictEqual(info_b, {
 					isWritable:      true,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+				assert.partialDeepStrictEqual(info_c, {
+					isWritable:      true,
+					isUninitialized: false,
+					type:            TYPE.ANYTHING,
+				});
+				return assert.partialDeepStrictEqual(info_d, {
+					isWritable:      false,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
 				});
@@ -63,6 +83,23 @@ test.suite('AstNode', () => {
 				setupScript(`{
 					\\(_: int, _: str): void { return; };
 				}`, {typeCheck: false}); // assert does not throw
+			});
+			test.test('disallows duplicate param ids.', () => {
+				const {stmts} = setupScript(`{
+					\\(a: int, a: float): void { return; };
+				}`, {varCheck: false});
+				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				return assert.throws(() => fn0.varCheck());
+			});
+			test.test.todo('disallows duplicate param keys.', () => {
+				const {stmts} = setupScript(`{
+					\\(a= b: int, a= c: float): void { return; };
+					\\($a: int, a= c: float): void { return; };
+				}`, {varCheck: false});
+				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.throws(() => fn0.varCheck());
+				return assert.throws(() => fn1.varCheck());
 			});
 			test.test('throws when parameter shadows outside scope.', () => {
 				setupScript(`{

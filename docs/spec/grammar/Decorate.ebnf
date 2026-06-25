@@ -340,40 +340,38 @@ Decorate(Case<Break, Return> ::= Expression<+Block><?Break><?Return> "->" Expres
 
 
 Decorate(ParameterFunction<Named> ::= "_" ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=false]
+	:= (SemanticParameterFunction[named=false][writable=false]
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= IDENTIFIER ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=false][id=TokenWorth(IDENTIFIER)]
+	:= (SemanticParameterFunction[named=false][writable=false][id=TokenWorth(IDENTIFIER)]
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= "mut" IDENTIFIER ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=true][id=TokenWorth(IDENTIFIER)]
+	:= (SemanticParameterFunction[named=false][writable=true][id=TokenWorth(IDENTIFIER)]
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= Word "=" "_" ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=false]
+	:= (SemanticParameterFunction[named=true][writable=false]
 		Decorate(Word)
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= Word "=" IDENTIFIER ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=false][id=TokenWorth(IDENTIFIER)]
+	:= (SemanticParameterFunction[named=true][writable=false][id=TokenWorth(IDENTIFIER)]
 		Decorate(Word)
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= Word "=" "mut" IDENTIFIER ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=true][id=TokenWorth(IDENTIFIER)]
+	:= (SemanticParameterFunction[named=true][writable=true][id=TokenWorth(IDENTIFIER)]
 		Decorate(Word)
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= "$" IDENTIFIER ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=false][id=TokenWorth(IDENTIFIER)]
-		(SemanticKey[id=TokenWorth(IDENTIFIER)])
+	:= (SemanticParameterFunction[named=true][writable=false][id=TokenWorth(IDENTIFIER)]
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= "mut" "$" IDENTIFIER ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[writable=true][id=TokenWorth(IDENTIFIER)]
-		(SemanticKey[id=TokenWorth(IDENTIFIER)])
+	:= (SemanticParameterFunction[named=true][writable=true][id=TokenWorth(IDENTIFIER)]
 		Decorate(Type)
 	);
 
