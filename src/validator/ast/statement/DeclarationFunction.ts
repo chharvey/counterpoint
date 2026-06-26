@@ -3,7 +3,6 @@ import * as xjs from 'extrajs';
 import {
 	type Builder,
 	AssignmentErrorDuplicateDeclaration,
-	AssignmentErrorDuplicateKey,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
@@ -18,6 +17,7 @@ import type {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {check_unique_param_keys} from '../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
 import * as EXPR from '../expression/index.ts';
@@ -64,12 +64,7 @@ export class DeclarationFunction extends Statement {
 			));
 		}
 		xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
-		const key_ids: readonly bigint[] = this.parameters.filter((param) => param.named).map((param) => param.labelId!);
-		xjs.Array.forEachAggregated(key_ids, (key_id, i) => {
-			if (key_ids.slice(0, i).includes(key_id)) {
-				throw new AssignmentErrorDuplicateKey(this.parameters[i].key ?? this.parameters[i].identifier!);
-			}
-		});
+		check_unique_param_keys(this.parameters);
 		return this.block.varCheck();
 	}
 

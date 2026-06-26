@@ -53,8 +53,8 @@ None! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressi
 		2. *Perform:* *Unwrap:* `VarCheck(key)`.
 		3. *If* `assoc.children` already contains a property `prop_dupe` such that `prop_dupe.children.0.id` is `key.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
-	3. *For each* `prop` in `assoc.children`:
-		1. *Peform:* *Unwrap:* `VarCheck(prop.children.1)`.
+	3. *For each* `child` in `assoc.children`:
+		1. *Peform:* *Unwrap:* `VarCheck(child)`.
 ;
 
 
@@ -90,10 +90,8 @@ None! VarCheck(SemanticTypeFunction fn) :=
 		2. *Perform:* *Unwrap:* `VarCheck(key)`.
 		3. *If* `proptypes` already contains a property `prop_dupe` such that `prop_dupe.children.0.id` is `key.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
-	4. *For each* `param` in `fn.children`:
-		1. *Let* `typenode` be an item `child` in `param` such that `child` is a SemanticType.
-		2. *Assert:* `typenode` is not *none*.
-		3. *Peform:* *Unwrap:* `VarCheck(typenode)`.
+	4. *For each* `child` in `fn.children`:
+		1. *Peform:* *Unwrap:* `VarCheck(child)`.
 ;
 
 

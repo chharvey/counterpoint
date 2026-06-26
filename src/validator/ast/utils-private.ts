@@ -1,5 +1,7 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
+	AssignmentErrorDuplicateKey,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
@@ -22,6 +24,7 @@ import {
 import {
 	Index,
 	Key,
+	type ParameterFunction,
 	type TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
@@ -39,6 +42,33 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 		types.some((typ) => err instanceof typ) ||
 		err instanceof AggregateError && err.errors.every((suberr) => only_errors_of_type<E>(suberr, types))
 	);
+}
+
+
+
+/** Ensure no duplicate keys in a record/dict expression/type or function type. */
+export function check_unique_keys(keys: readonly Key[]): void {
+	return xjs.Array.forEachAggregated(keys, (key, i) => {
+		key.varCheck();
+		if (keys.slice(0, i).find((k) => k.id === key.id)) {
+			throw new AssignmentErrorDuplicateKey(key);
+		}
+	});
+}
+
+/** Ensure no duplicate parameter keys in a function expression/declaration. */
+export function check_unique_param_keys(params: readonly ParameterFunction[]): void {
+	const key_ids: bigint[] = [];
+	return xjs.Array.forEachAggregated(params, (param, i) => {
+		const key_id: bigint | undefined = param.labelId;
+		if (key_id !== undefined) {
+			if (key_ids.slice(0, i).includes(key_id)) {
+				throw new AssignmentErrorDuplicateKey(param.key ?? param.identifier!);
+			} else {
+				key_ids.push(key_id);
+			}
+		}
+	});
 }
 
 
