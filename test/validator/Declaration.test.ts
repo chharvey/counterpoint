@@ -203,30 +203,28 @@ test.suite('Declaration', () => {
 					};
 				}`, {typeCheck: false}); // assert does not throw
 				assert.throws(() => setupScript(`{
-					func f(): void { %> no error
+					func f(): void { % no error
 						val f: int = 42; %> AssignmentErrorDuplicateDeclaration
 						return;
 					};
 				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
 				return assert.throws(() => setupScript(`{
-					func f( %> no error
+					func f( % no error
 						f: int, %> AssignmentErrorDuplicateDeclaration
 					): void {
 						return;
 					};
 				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
 			});
-			test.test('TEMPORARY: hoisting not yet supported.', () => {
-				assert.throws(() => setupScript(`{
-					f;
-					func f(): void { return; };
-				}`, {typeCheck: false}));
-			});
-			test.test.todo('hoists function name.', () => {
+			test.test('hoists function name.', () => {
 				setupScript(`{
 					f;
 					func f(): void { return; };
-				}`, {typeCheck: false}); // assert does not throw
+				}`, {typeCheck: false});
+				setupScript(`{
+					func f(): void { g; return; };
+					func g(): void { f; return; };
+				}`, {typeCheck: false});
 			});
 		});
 	});

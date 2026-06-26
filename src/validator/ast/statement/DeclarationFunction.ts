@@ -50,7 +50,7 @@ export class DeclarationFunction extends Statement {
 		throw new Error('`DeclarationFunction#hasBottomType` not yet supported.');
 	}
 
-	public override varCheck(): void {
+	public hoist(): void {
 		if (this.identifier) {
 			this.id = this.validator.cookTokenIdentifier(this.identifier.source);
 			if (this.validator.hasSymbol(this.id)) {
@@ -63,6 +63,9 @@ export class DeclarationFunction extends Statement {
 				false, // because it won’t ever be nullish upon accessing
 			));
 		}
+	}
+
+	public override varCheck(): void {
 		xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
 		check_unique_param_keys(this.parameters);
 		return this.block.varCheck();

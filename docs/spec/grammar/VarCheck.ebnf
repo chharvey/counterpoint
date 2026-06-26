@@ -5,7 +5,6 @@ None! VarCheck(Or<
 	SemanticPropertyType,
 	SemanticProperty,
 	SemanticCase,
-	SemanticBlock,
 	SemanticGoal,
 	Difference<SemanticType, Or<SemanticTypeAlias, SemanticTypeCall, SemanticTypeFunction>>,
 	Difference<SemanticExpression, Or<SemanticExpressionVariable, SemanticExpressionCall, SemanticExpressionFunction>>,
@@ -42,6 +41,30 @@ None! VarCheck(SemanticParameterFunction param) :=
 			2. Add `symbol` as a record for `param.id` to `validator`.
 	3. *Else:*
 		1. *Return.*
+;
+
+
+
+None! VarCheck(SemanticBlock block) :=
+	1. *For each* `stmt` in `block.children`:
+		1. *If* `stmt` is a SemanticDeclarationFunction:
+			1. *If* `stmt.id` is not *none*:
+				1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `stmt.id`:
+					1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+				2. *Else:*
+					1. *Let* `symbol` be a new SymbolSchemaVar [ // TODO: we’ll probably want a `SymbolSchemaFunc` type
+						id=              `stmt.id`,
+						isWritable=      false,
+						isUninitialized= false,
+						type=            `Anything`,
+					].
+					2. Add `symbol` as a record for `stmt.id` to the validator.
+			2. *Else:*
+				1. Fall through.
+		2. *Else:*
+			1. Fall through.
+	2. *For each* `stmt` in `block.children`:
+		1. *Peform:* *Unwrap:* `VarCheck(stmt)`.
 ;
 
 
@@ -187,26 +210,13 @@ None! VarCheck(SemanticDeclarationVariable decl) :=
 
 
 None! VarCheck(SemanticDeclarationFunction fn) :=
-	1. *If* `fn.id` is not *none*:
-		1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `fn.id`:
-			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
-		2. *Else:*
-			1. *Let* `symbol` be a new SymbolSchemaVar [ // TODO: we’ll probably want a `SymbolSchemaFunc` type
-				id=              `fn.id`,
-				isWritable=      false,
-				isUninitialized= false,
-				type=            `Anything`,
-			].
-			2. Add `symbol` as a record for `fn.id` to the validator.
-	2. *Else:*
-		1. Fall through.
-	3. *Note:* In function declarations, all parameter labels are var-checked *after* all parameter types and default values. The block/return is var-checked last.
-	4. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
-	5. *For each* `parameter` of `parameters`:
+	1. *Note:* In function declarations, all parameter labels are var-checked *after* all parameter types and default values. The block/return is var-checked last.
+	2. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	3. *For each* `parameter` of `parameters`:
 		1. *Perform:* *Unwrap:* `VarCheck(parameter)`.
-	6. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
-	7. *Let* `labels` be a new Sequence.
-	8. *For each* `param` of `named_params`:
+	4. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
+	5. *Let* `labels` be a new Sequence.
+	5. *For each* `param` of `named_params`:
 		1. *Let* `key` be an item `c` in `param` such that `c` is a SemanticKey.
 		2. *If* `key` is not *none*:
 			1. *Let* `label` be `key.id`.
@@ -217,7 +227,7 @@ None! VarCheck(SemanticDeclarationFunction fn) :=
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		5. *Else:*
 			1. Push `label` to `labels`.
-	9. *Return:* `VarCheck(fn.children.-1)`.
+	7. *Return:* `VarCheck(fn.children.-1)`.
 ;
 
 

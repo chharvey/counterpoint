@@ -1,4 +1,5 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import type {Builder} from '../../index.ts';
 import {
 	type NonemptyArray,
@@ -13,7 +14,7 @@ import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	Goal,
-	type STMT,
+	STMT,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Buildable} from './Buildable.ts';
@@ -54,6 +55,11 @@ export class Block extends AstNode implements Buildable {
 	@memoizeGetter
 	public get hasBottomType(): boolean {
 		return this.children.some((c) => c.hasBottomType);
+	}
+
+	public override varCheck(): void {
+		xjs.Array.forEachAggregated(this.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => fn.hoist());
+		return super.varCheck();
 	}
 
 	/**
