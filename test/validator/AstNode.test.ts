@@ -91,16 +91,6 @@ test.suite('AstNode', () => {
 				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				return assert.throws(() => fn0.varCheck());
 			});
-			test.test.todo('disallows duplicate param keys.', () => {
-				const {stmts} = setupScript(`{
-					\\(a= b: int, a= c: float): void { return; };
-					\\($a: int, a= c: float): void { return; };
-				}`, {varCheck: false});
-				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				assert.throws(() => fn0.varCheck());
-				return assert.throws(() => fn1.varCheck());
-			});
 			test.test('throws when parameter shadows outside scope.', () => {
 				setupScript(`{
 					val x: int = 42;

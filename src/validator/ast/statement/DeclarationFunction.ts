@@ -1,7 +1,9 @@
 import * as assert from 'node:assert';
+import * as xjs from 'extrajs';
 import {
 	type Builder,
 	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorDuplicateKey,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
@@ -61,7 +63,14 @@ export class DeclarationFunction extends Statement {
 				false, // because it won’t ever be nullish upon accessing
 			));
 		}
-		super.varCheck(); // must come after identifier checks, because identifier may be referenced inside block
+		xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
+		const key_ids: readonly bigint[] = this.parameters.filter((param) => param.named).map((param) => param.labelId!);
+		xjs.Array.forEachAggregated(key_ids, (key_id, i) => {
+			if (key_ids.slice(0, i).includes(key_id)) {
+				throw new AssignmentErrorDuplicateKey(this.parameters[i].key ?? this.parameters[i].identifier!);
+			}
+		});
+		return this.block.varCheck();
 	}
 
 	public override typeCheck(): void {

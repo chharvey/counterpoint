@@ -29,6 +29,23 @@ import {
 
 
 test.suite('Expression', () => {
+	test.suite('#varCheck', () => {
+		test.suite('ExpressionFunction (and DeclarationFunction)', () => {
+			test.test('disallows duplicate param keys.', () => {
+				const {stmts} = setupScript(`{
+					\\(a= b: int, a= c: float): void { return; };
+					\\($a: int, a= c: float): void { return; };
+				}`, {varCheck: false});
+				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateKey);
+				return assert.throws(() => fn1.varCheck(), AssignmentErrorDuplicateKey);
+			});
+		});
+	});
+
+
+
 	test.suite('#type', () => {
 		test.suite('Isset', () => {
 			test.test('always returns `bool`.', () => {

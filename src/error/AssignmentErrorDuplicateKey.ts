@@ -1,4 +1,4 @@
-import type {AST} from '../validator/index.ts';
+import type {Serializable} from '../parser/index.ts';
 import {AssignmentError} from './AssignmentError.ts';
 
 
@@ -17,7 +17,7 @@ export class AssignmentErrorDuplicateKey extends AssignmentError {
 	 * Construct a new AssignmentErrorDuplicateKey object.
 	 * @param key the duplicate key
 	 */
-	public constructor(key: AST.Key) {
+	public constructor(key: Serializable) {
 		super(
 			`Duplicate record/dict/parameter key \`${ key.source }\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateKey),
