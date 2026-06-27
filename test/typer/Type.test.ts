@@ -6,9 +6,11 @@ import {
 	VALUE,
 	TYPE,
 } from '../../src/index.ts';
-import {typeUnit} from '../helpers.ts';
-import {assert_shallowStrictEqual} from '../assert-helpers.ts';
-import {repeat} from '../utils.ts';
+import {
+	repeat,
+	assert_shallowStrictEqual,
+	typeUnit,
+} from '../utils.ts';
 
 
 

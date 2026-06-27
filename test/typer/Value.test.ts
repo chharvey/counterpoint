@@ -3,9 +3,9 @@ import * as test from 'node:test';
 import {
 	VALUE,
 	bigint_to_i64,
-	Builder,
+	CodeGenerator,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../assert-helpers.ts';
+import {assertEqualBins} from '../utils.ts';
 
 
 
@@ -211,7 +211,7 @@ test.suite('Value', () => {
 
 	test.suite('#codegen', () => {
 		test.test('Null', () => {
-			const cg = new Builder();
+			const cg = new CodeGenerator();
 			return assertEqualBins(
 				VALUE.NULL.codegen(cg),
 				cg.vm.Value.newPrimitive(cg.vm.Vect.NULL),
@@ -219,7 +219,7 @@ test.suite('Value', () => {
 		});
 
 		test.test('Boolean', () => {
-			const cg = new Builder();
+			const cg = new CodeGenerator();
 			return assertEqualBins([
 				VALUE.FALSE.codegen(cg),
 				VALUE.TRUE .codegen(cg),
@@ -230,7 +230,7 @@ test.suite('Value', () => {
 		});
 
 		test.test('Symbol', () => {
-			const cg = new Builder();
+			const cg = new CodeGenerator();
 			const {vm: {Vect, Value}, mod} = cg;
 			return assertEqualBins([
 				VALUE.SYM_NOTHING.codegen(cg),
@@ -257,7 +257,7 @@ test.suite('Value', () => {
 				(42n ** 2n * 420n) % (2n ** 63n),
 				(-5n) ** (2n * 3n),
 			];
-			const cg = new Builder();
+			const cg = new CodeGenerator();
 			const {vm: {Vect, Value}, mod} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
@@ -273,7 +273,7 @@ test.suite('Value', () => {
 				].map((x) => BigInt(Math.trunc(x))),
 				(42n ** 2n * 420n) % (2n ** 64n),
 			];
-			const cg = new Builder();
+			const cg = new CodeGenerator();
 			const {vm: {Vect, Value}, mod} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
@@ -291,7 +291,7 @@ test.suite('Value', () => {
 					3.0 - 2.7,
 				];
 				/* eslint-enable @stylistic/array-element-newline */
-				const cg = new Builder();
+				const cg = new CodeGenerator();
 				const {vm: {Vect, Value}, mod} = cg;
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
@@ -299,7 +299,7 @@ test.suite('Value', () => {
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
-				const cg = new Builder();
+				const cg = new CodeGenerator();
 				const {vm: {Vect, Value}, mod} = cg;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
@@ -309,7 +309,7 @@ test.suite('Value', () => {
 		});
 
 		test.test('String', () => {
-			const cg = new Builder();
+			const cg = new CodeGenerator();
 			const {vm: {Value}, mod} = cg;
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),

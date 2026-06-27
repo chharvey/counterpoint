@@ -174,11 +174,11 @@ A ParseNode is the resulting output of a **reduction** step in syntactic analysi
 ParseNodes are repesented by [syntactic grammar](./notation.md#the-syntactic-grammar) productions
 such as `ExpressionUnit ::= IDENTIFIER | "(" Expression ")";`.
 
-#### ASTNode
-An ASTNode is the resulting output of a **decoration** step in semantic analysis,
+#### AstNode
+An AstNode is the resulting output of a **decoration** step in semantic analysis,
 which is described by the [Decoration attribute grammar](./notation.md#decoration).
-ASTNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
-such as `SemanticOperation ::= SemanticExpression+;`.
+AstNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
+such as `SemanticExpressionOperation ::= SemanticExpression+;`.
 
 
 
@@ -656,18 +656,18 @@ Boolean Subtype(Type a, Type b) :=
 					1. *Return:* `false`.
 		7. *Return:* `true`.
 	10. *If* `a` is a Record type *and* `b` is a Record type:
-		1. *Let* `struct_a` be a Structure whose properties are exactly the properties in `a`.
-		2. *Let* `struct_b` be a Structure whose properties are exactly the properties in `b`.
-		3. *Let* `struct_a_req` be a filtering of `struct_a`’s values for each `va` such that `va.optional` is `false`.
-		4. *Let* `struct_b_req` be a filtering of `struct_b`’s values for each `vb` such that `vb.optional` is `false`.
-		5. *If* `struct_a_req.count` is less than `struct_b_req.count`:
+		1. *Let* `sch_a` be a Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a Schema whose properties are exactly the properties in `b`.
+		3. *Let* `sch_a_req` be a filtering of `sch_a`’s values for each `va` such that `va.optional` is `false`.
+		4. *Let* `sch_b_req` be a filtering of `sch_b`’s values for each `vb` such that `vb.optional` is `false`.
+		5. *If* `sch_a_req.count` is less than `sch_b_req.count`:
 			1. *Return:* `false`.
-		6. *For key* `k` in `struct_b`:
-			1. *If* `struct_b[k].optional` is `false`:
-				1. *If* `struct_a[k]` is not set *or* `struct_a[k].optional` is `true`:
+		6. *For key* `k` in `sch_b`:
+			1. *If* `sch_b[k].optional` is `false`:
+				1. *If* `sch_a[k]` is not set *or* `sch_a[k].optional` is `true`:
 					1. *Return:* `false`.
-			2. *If* `struct_a[k]` is set:
-				1. *If* *UnwrapAffirm:* `Subtype(struct_a[k].type, struct_b[k].type)` is `false`:
+			2. *If* `sch_a[k]` is set:
+				1. *If* *UchAffirm:* `Subtype(sch_a[k].type, sch_b[k].type)` is `false`:
 					1. *Return:* `false`.
 		7. *Return:* `true`.
 	11. *If* `a` is a List type *and* `b` is a List type:
@@ -740,6 +740,188 @@ Boolean AreDisjoint(Type a, Type b) :=
 	2. *Return:* `IsBottomType(intersection)`.
 ;
 ```
+
+
+
+## Value Operations
+
+
+### ToBoolean
+Returns an associated [boolean value](#boolean), with a Counterpoint Language Value.
+A synonym for “is truthy”.
+```
+Boolean ToBoolean(Value value) :=
+	1. *If* `value` is an instance of `Null`:
+		1. *Return:* `false`.
+	2. *If* `value` is an instance of `Boolean`:
+		1. *Return:* `value`.
+	3. *Return:* `true`.
+```
+
+
+### Identical
+Compares two values and returns whether they are the exact same value.
+```
+Boolean Identical(Value a, Value b) :=
+	1. *If* `a` is the value `null` and `b` is the value `null`:
+		1. *Return:* `true`.
+	2. *If* `a` is the value `false` *and* `b` is the value `false`:
+		1. *Return:* `true`.
+	3. *If* `a` is the value `true` *and* `b` is the value `true`:
+		1. *Return:* `true`.
+	4. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Integer`:
+		1. *If* `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
+	5. *If* `a` is an instance of `Natural` *and* `b` is an instance of `Natural`:
+		1. *If* `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
+	6. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
+		1. *If* `a` and `b` have the same bitwise encoding:
+			1. *Return:* `true`.
+	7. *If* `a` is an instance of `String` *and* `b` is an instance of `String`:
+		1. *If* `a` and `b` are exactly the same sequence of code units
+			(same length and same code units at corresponding indices):
+			1. *Return:* `true`.
+	8. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For index* `i` in `seq_b`:
+			1. *If* *UnwrapAffirm:* `Identical(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	9. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *If* `sch_a.count` is not `sch_b.count`:
+			1. *Return:* `false`.
+		4. Assume *UnwrapAffirm:* `Identical(a, b)` is `true`, and use this assumption when performing the following step.
+			1. *Note:* This assumption prevents an infinite loop,
+				if `a` and `b` ever recursively contain themselves or each other.
+		5. *For key* `k` in `sch_b`:
+			1. *If* `sch_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm:* `Identical(sch_a[k], sch_b[k])` is `false`:
+				1. *Return:* `false`.
+		6. *Return:* `true`.
+	10. *If* `a` and `b` are instances of author-defined data classes:
+		1. *Let* `a_cons` be the constructor for `a`.
+		2. *Let* `b_cons` be the constructor for `b`.
+		3. *If* *UnsrapAffirm:* `Identical(a_cons, b_cons)` is `false`:
+			1. *Return:* `false`.
+		4. *Let* `sch_a` be a new Schema whose properties are exactly the instance properties in `a`.
+		5. *Let* `sch_b` be a new Schema whose properties are exactly the instance properties in `b`.
+		6. *Perform:* Substeps 9.3 through 9.6 of this algorithm.
+	11. *If* `a` and `b` are instances of author-defined reference classes *and* they are the same object:
+		1. *Return:* `true`.
+	12. *Return:* `false`.
+```
+
+
+### Equal
+Compares two values and returns whether they are considered “equal” by some definition.
+```
+Boolean Equal(Value a, Value b) :=
+	1. *If* `Identical(a, b)` is `true`:
+		1. *Return:* `true`.
+	2. *If* `a` is an instance of `Number` *and* `b` is an instance of `Number`:
+		1. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Natural`:
+			1. *Return:* `Equal(Natural(a), b)`.
+		2. *If* `a` is an instance of `Integer` *and* `b` is an instance of `Float`:
+			1. *Return:* `Equal(Float(a), b)`.
+		3. *If* `a` is an instance of `Natural` *and* `b` is an instance of `Integer`:
+			1. *Return:* `Equal(a, Natural(b))`.
+		4. *If* `a` is an instance of `Natural` *and* `b` is an instance of `Float`:
+			1. *Return:* `Equal(Float(a), b)`.
+		5. *If* `a` is an instance of `Float` *and* `b` is an instance of `Integer`:
+			1. *Return:* `Equal(a, Float(b))`.
+		6. *If* `a` is an instance of `Float` *and* `b` is an instance of `Natural`:
+			1. *Return:* `Equal(a, Float(b))`.
+		7. *If* `a` is an instance of `Float` *and* `b` is an instance of `Float`:
+			1. *If* `a` is `0.0` *and* `b` is `-0.0`:
+				1. *Return:* `true`.
+			2. *If* `a` is `-0.0` *and* `b` is `0.0`:
+				1. *Return:* `true`.
+		8. *Return:* `false`.
+	3. Let the substeps of this step be a subroutine for determining equality of given Sequences of items, `seq_a` and `seq_b`.
+		1. *Assert:* `seq_a` is a Sequence of Counterpoint language values.
+		2. *Assert:* `seq_b` is a Sequence of Counterpoint language values.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. *For index* `i` in `seq_b`:
+			1. *If* *UnwrapAffirm:* `Equal(seq_a[i], seq_b[i])` is `false`:
+				1. *Return:* `false`.
+		5. *Return:* `true`.
+	4. Let the substeps of this step be a subroutine for determining equality of given Schemata of values, `sch_a` and `sch_b`.
+		1. *Assert:* `sch_a` is a Schema of Conterpoint language values.
+		2. *Assert:* `sch_b` is a Schema of Conterpoint language values.
+		3. *If* `sch_a.count` is not `sch_b.count`:
+			1. *Return:* `false`.
+		4. *For key* `k` in `sch_b`:
+			1. *If* `sch_a[k]` is not set:
+				1. *Return:* `false`.
+			2. *If* *UnwrapAffirm:* `Equal(sch_a[k], sch_b[k])` is `false`:
+				1. *Return:* `false`.
+		5. *Return:* `true`.
+	5. Assume *UnwrapAffirm:* `Equal(a, b)` is `true`, and use this assumption when performing the following steps.
+		1. *Note:* This assumption prevents an infinite loop,
+			if `a` and `b` ever recursively contain themselves or each other.
+	6. *If* `a` is an instance of `Tuple` *and* `b` is an instance of `Tuple`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *Perform:* The subroutine listed in Step 3 of this algorithm.
+	7. *If* `a` is an instance of `Record` *and* `b` is an instance of `Record`:
+		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
+	8. *If* `a` is an instance of `List` *and* `b` is an instance of `List`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *Perform:* The subroutine listed in Step 3 of this algorithm.
+	9. *If* `a` is an instance of `Dict` *and* `b` is an instance of `Dict`:
+		1. *Let* `sch_a` be a new Schema whose properties are exactly the properties in `a`.
+		2. *Let* `sch_b` be a new Schema whose properties are exactly the properties in `b`.
+		3. *Perform:* The subroutine listed in Step 4 of this algorithm.
+	10. *If* `a` is an instance of `Set` *and* `b` is an instance of `Set`:
+		1. *Let* `seq_a` be a new Sequence whose items are exactly the items in `a`.
+		2. *Let* `seq_b` be a new Sequence whose items are exactly the items in `b`.
+		3. *If* `seq_a.count` is not `seq_b.count`:
+			1. *Return:* `false`.
+		4. *For each* `it_b` in `seq_b`:
+			1. Find an item `it_a` in `seq_a` such that *UnwrapAffirm:* `Equal(it_a, it_b)` is `true`.
+			2. *If* `it_a` is not set:
+				1. *Return:* `false`.
+		5. *Return:* `true`.
+	11. *If* `a` is an instance of `Map` *and* `b` is an instance of `Map`:
+		1. *Let* `data_a` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `a`.
+		2. *Let* `data_b` be a new Sequence of 2-tuples,
+			whose items are exactly the antecedents and consequents in `b`.
+		3. *If* `data_a.count` is not `data_b.count`:
+			1. *Return:* `false`.
+		4. *For each* `it_b` in `data_b`:
+			1. Find an item `it_a` in `data_a` such that *UnwrapAffirm:* `Equal(it_a.0, it_b.0)` is `true`.
+			2. *If* `it_a` is not set:
+				1. *Return:* `false`.
+			3. *If* *UnwrapAffirm:* `Equal(it_a.1, it_b.1)` is `false`:
+				1. *Return:* `false`.
+		5. *Return:* `true`.
+	12. *If* `a` and `b` are instances of author-defined classes (either data classes or reference classes):
+		1. *Let* `a_cons` be the constructor for `a`.
+		2. *Let* `b_cons` be the constructor for `b`.
+		3. *If* *UnsrapAffirm:* `Identical(a_cons, b_cons)` is `false`:
+			1. *Note:* Identity of classes (rather than equality) is used here to ensure the arguments have the same type.
+			2. *Return:* `false`.
+		4. *Let* `sch_a` be a new Schema whose properties are exactly the instance properties in `a`.
+		5. *Let* `sch_b` be a new Schema whose properties are exactly the instance properties in `b`.
+		6. *Perform:* The subroutine listed in Step 4 of this algorithm.
+	13. *Return:* `false`.
+```
+
 
 
 ## Type Laws

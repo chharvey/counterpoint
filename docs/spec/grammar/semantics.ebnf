@@ -1,0 +1,195 @@
+SemanticIndex[index: RealNumber]
+	::= ();
+
+SemanticKey[id: RealNumber]
+	::= ();
+
+
+
+SemanticItemType[optional: Boolean]
+	::= SemanticType;
+
+SemanticPropertyType[optional: Boolean]
+	::= SemanticKey SemanticType;
+
+
+
+SemanticProperty
+	::= SemanticKey SemanticExpression;
+
+SemanticCase
+	::= SemanticExpression SemanticExpression;
+
+
+
+SemanticType =:=
+	| SemanticTypeConstant
+	| SemanticTypeAlias
+	| SemanticTypeCollection
+	| SemanticTypeAccess
+	| SemanticTypeCall
+	| SemanticTypeOperation
+;
+
+
+
+SemanticTypeConstant[value: Type]
+	::= ();
+
+SemanticTypeAlias[id: RealNumber]
+	::= ();
+
+SemanticTypeCollection =:=
+	| SemanticTypeTuple
+	| SemanticTypeRecord
+	| SemanticTypeList
+	| SemanticTypeDict
+	| SemanticTypeSet
+	| SemanticTypeMap
+;
+
+SemanticTypeTuple  ::= SemanticItemType*;
+SemanticTypeRecord ::= SemanticPropertyType+;
+SemanticTypeList   ::= SemanticType;
+SemanticTypeDict   ::= SemanticType;
+SemanticTypeSet    ::= SemanticType;
+SemanticTypeMap    ::= SemanticType SemanticType;
+
+SemanticTypeAccess[kind: NORMAL | MAYBE]
+	::= SemanticType (SemanticIndex | SemanticKey);
+
+SemanticTypeCall
+	::= SemanticType SemanticType+;
+
+SemanticTypeOperation[operator: ORNULL | OREXCP | MUTABLE]
+	::= SemanticType;
+SemanticTypeOperation[operator: AND | OR]
+	::= SemanticType SemanticType;
+
+
+
+SemanticExpression =:=
+	| SemanticExpressionConstant
+	| SemanticExpressionTemplate
+	| SemanticExpressionVariable
+	| SemanticExpressionCollection
+	| SemanticExpressionBlock
+	| SemanticExpressionAccess
+	| SemanticExpressionCall
+	| SemanticExpressionClaim
+	| SemanticExpressionOperation
+;
+
+
+
+SemanticExpressionConstant[value: Null | Boolean | Symbol | Number | String]
+	::= ();
+
+SemanticExpressionTemplate
+	::= (SemanticExpressionConstant SemanticExpression?)* SemanticExpressionConstant;
+
+SemanticExpressionVariable[id: RealNumber]
+	::= ();
+
+SemanticExpressionTemplatePartial
+	::= (SemanticExpressionConstant SemanticExpression?)+;
+
+SemanticExpressionCollection =:=
+	| SemanticExpressionTuple
+	| SemanticExpressionRecord
+	| SemanticExpressionList
+	| SemanticExpressionDict
+	| SemanticExpressionSet
+	| SemanticExpressionMap
+;
+
+SemanticExpressionTuple  ::= SemanticExpression*;
+SemanticExpressionRecord ::= SemanticProperty+;
+SemanticExpressionList   ::= SemanticExpression*;
+SemanticExpressionDict   ::= SemanticProperty+;
+SemanticExpressionSet    ::= SemanticExpression*;
+SemanticExpressionMap    ::= SemanticCase+;
+
+SemanticExpressionBlock
+	::= SemanticBlock;
+
+SemanticExpressionAccess[kind: NORMAL | MAYBE | RESULT]
+	::= SemanticExpression (SemanticIndex | SemanticKey | SemanticExpression);
+
+SemanticExpressionCall
+	::= SemanticExpression SemanticType* SemanticExpression*;
+
+SemanticExpressionClaim
+	::= SemanticExpression SemanticType;
+
+SemanticExpressionOperation[operator: NOT | EMP]
+	::= SemanticExpression;
+SemanticExpressionOperation[operator: NEG | INT | NAT | FLOAT]
+	::= SemanticExpression[type: Number];
+SemanticExpressionOperation[operator: CAST | MAYBE | RESULT | IS]
+	::= SemanticExpression SemanticExpression[type: Class];
+SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
+	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
+SemanticExpressionOperation[operator: ID | EQ | AND | OR]
+	::= SemanticExpression SemanticExpression;
+SemanticExpressionOperation[operator: COND]
+	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
+
+
+
+SemanticStatement =:=
+	| SemanticDeclaration
+	| SemanticStatementExpression
+	| SemanticStatementClaim
+	| SemanticStatementReassignment
+	| SemanticStatementConditional
+	| SemanticStatementLoop
+	| SemanticStatementIteration
+	| SemanticStatementBreak
+;
+
+
+
+SemanticDeclaration =:=
+	| SemanticDeclarationType
+	| SemanticDeclarationVariable
+;
+
+SemanticDeclarationType
+	::= SemanticTypeAlias? SemanticType;
+
+SemanticDeclarationVariable[writable: Boolean]
+	::= SemanticExpressionVariable? SemanticType? SemanticExpression?;
+
+
+
+SemanticStatementExpression
+	::= SemanticExpression?;
+
+SemanticStatementClaim
+	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticType;
+
+SemanticStatementReassignment
+	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression;
+
+SemanticStatementConditional[unless: Boolean]
+	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
+
+SemanticStatementLoop[doFirst: Boolean][until: Boolean]
+	::= SemanticExpression SemanticBlock;
+
+SemanticStatementIteration
+	::= SemanticExpressionVariable? SemanticType SemanticExpression SemanticBlock;
+
+SemanticStatementBreak[skip: Boolean]
+	::= ();
+
+
+
+SemanticBlock
+	::= SemanticStatement+;
+
+
+
+SemanticGoal
+	::= SemanticBlock?;

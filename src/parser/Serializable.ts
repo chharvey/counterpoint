@@ -1,5 +1,5 @@
 import type {SyntaxNode} from 'tree-sitter';
-import {stringifyAttributes} from '../core/index.ts';
+import {stringifyAttributes} from './utils-public.ts';
 import {Punctuator} from './Punctuator.ts';
 
 

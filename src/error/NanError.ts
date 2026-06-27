@@ -1,4 +1,4 @@
-import type {ASTNode} from '../validator/index.ts';
+import type {AST} from '../validator/index.ts';
 import {ErrorCode} from './ErrorCode.ts';
 
 
@@ -22,13 +22,13 @@ class NanError extends ErrorCode {
 }
 export class NanErrorInvalid extends NanError {
 	static readonly #CODE = 1;
-	public constructor(node: ASTNode) {
+	public constructor(node: AST.AstNode) {
 		super('Not a valid number.', NanErrorInvalid.#CODE, node.line_index, node.col_index);
 	}
 }
 export class NanErrorDivZero extends NanError {
 	static readonly #CODE = 2;
-	public constructor(node: ASTNode) {
+	public constructor(node: AST.AstNode) {
 		super('Division by zero.', NanErrorDivZero.#CODE, node.line_index, node.col_index);
 	}
 }

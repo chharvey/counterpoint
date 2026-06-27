@@ -6,7 +6,7 @@ import type {
 	BinaryenModuleUpdates,
 	Field,
 	TypeBuilder,
-} from '../builder/-types.d.ts';
+} from '../code-generator/-types.d.ts';
 import {Vect} from './classes/Vect.ts';
 import {Value} from './classes/Value.ts';
 import {Property} from './classes/Property.ts';

@@ -10,7 +10,7 @@ import tseslint from 'typescript-eslint';
 export default [
 	{
 		ignores: [
-			'**/build/',
+			'**/dist/',
 			'tree-sitter-counterpoint/bindings/node/*.{js,ts}',
 			'tree-sitter-counterpoint/grammar.js',
 		],

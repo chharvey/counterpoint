@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "3.7.1",
+  "version": "3.7.3",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
     "incremental",
@@ -34,7 +34,7 @@
     "pretest": "tsx ./test/build.mts",
     "test": "tree-sitter test",
     "prebuild": "npm run compile && npm run generate && npm run test",
-    "build": "prebuildify --napi --strip --target 22.22.0",
+    "build": "prebuildify --napi --strip",
     "install": "node-gyp-build"
   },
   "dependencies": {

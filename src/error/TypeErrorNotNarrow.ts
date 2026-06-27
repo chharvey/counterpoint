@@ -1,5 +1,5 @@
 import type {TYPE} from '../typer/index.ts';
-import {TypeError} from './TypeError.ts';
+import {TypeError as CplTypeError} from './TypeError.ts';
 
 
 
@@ -9,7 +9,7 @@ import {TypeError} from './TypeError.ts';
  * @example
  * {"a" -> 1, "b" -> 2}.[1]; % TypeErrorNotNarrow: Type `1` is not a subtype of `"a" | "b"`.
  */
-export class TypeErrorNotNarrow extends TypeError {
+export class TypeErrorNotNarrow extends CplTypeError {
 	/**
 	 * Construct a new TypeErrorNotNarrow object.
 	 * @param subtype   - the expected subtype
@@ -18,7 +18,7 @@ export class TypeErrorNotNarrow extends TypeError {
 	public constructor(subtype: TYPE.Type, supertype: TYPE.Type, line_index: number, col_index: number) {
 		super(
 			`Type \`${ subtype }\` is not a subtype of type \`${ supertype }\`.`,
-			TypeError.CODES.get(TypeErrorNotNarrow),
+			CplTypeError.CODES.get(TypeErrorNotNarrow),
 			line_index,
 			col_index,
 		);

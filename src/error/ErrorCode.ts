@@ -29,9 +29,9 @@ type ErrorCodeConstructorProperties = {
  * Known subclasses:
  * - LexError
  * - ParseError
- * - ReferenceError
+ * - CplReferenceError
  * - AssignmentError
- * - TypeError
+ * - CplTypeError
  * - MutabilityError
  * - VoidError
  * - NanError

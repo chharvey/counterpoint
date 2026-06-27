@@ -1,6 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
-import {assert_shallowStrictEqual} from './assert-helpers.ts';
+import {assert_shallowStrictEqual} from './utils.ts';
 
 
 

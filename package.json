@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -8,7 +8,7 @@
   },
   "license": "AGPL-3.0-or-later",
   "author": "Chris Harvey <1362083+chharvey@users.noreply.github.com>",
-  "main": "build/main.js",
+  "main": "dist/main.js",
   "type": "module",
   "bin": {
     "cplc": "bin/cplc.js"
@@ -29,13 +29,13 @@
     "cplc:d-p": "npx cplc d ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
     "cplc:r": "npx cplc r ./sample/test-v0.5.wasm",
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
-    "compile": "tsc && tsc --project ./test/tsconfig.json",
+    "compile": "rm -rf ./dist/ && tsc && tsc --project ./test/tsconfig.json",
     "lint": "eslint",
     "test": "n exec 24 tsx --test --test-isolation=none -- './test/**/*.test.ts'",
     "test:only": "n exec 24 tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
     "justbuild": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
-    "build": "rm -rf ./build/ && npm run compile && npm run lint && npm run test"
+    "build": "npm run compile && npm run lint && npm run test"
   },
   "dependencies": {
     "binaryen": "^129.0.0",
@@ -54,7 +54,7 @@
     "eslint-plugin-import": "^2.31.0",
     "globals": "^17.0.0",
     "n": "^10.2.0",
-    "tsx": "^4.19.3",
+    "tsx": "^4.22.4",
     "typescript": "~5.9.0",
     "typescript-eslint": "^8.18.0"
   },

@@ -15,7 +15,7 @@
 
 		// Emit
 		"noEmitOnError": true,
-		"outDir":        "./build/",
+		"outDir":        "./dist/",
 
 		// Interop Constraints
 		"allowSyntheticDefaultImports": true,

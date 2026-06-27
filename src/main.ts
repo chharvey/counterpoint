@@ -1,8 +1,8 @@
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
+	Program,
 } from './index.ts';
-import {Program} from './Program.ts';
 
 
 /**
@@ -11,7 +11,7 @@ import {Program} from './Program.ts';
  * @param sourcecode - the Counterpoint source text
  * @return the output text
  */
-export function print(sourcecode: string, config: CPConfig = CONFIG_DEFAULT): string {
+export function print(sourcecode: string, config: CplConfig = CONFIG_DEFAULT): string {
 	return new Program(sourcecode, config).print();
 }
 
@@ -21,6 +21,6 @@ export function print(sourcecode: string, config: CPConfig = CONFIG_DEFAULT): st
  * @param sourcecode - the Counterpoint source text
  * @return the output as a binary format
  */
-export function compile(sourcecode: string, config: CPConfig = CONFIG_DEFAULT): Uint8Array {
+export function compile(sourcecode: string, config: CplConfig = CONFIG_DEFAULT): Uint8Array {
 	return new Program(sourcecode, config).compile();
 }

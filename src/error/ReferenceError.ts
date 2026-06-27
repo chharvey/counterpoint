@@ -9,18 +9,18 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * A ReferenceError is thrown when the validator fails to dereference an identifier.
+ * A CplReferenceError is thrown when the validator fails to dereference an identifier.
  *
  * Known subclasses:
  * - ReferenceErrorUndeclared
  * - ReferenceErrorDeadZone
  * - ReferenceErrorKind
  */
-export class ReferenceError extends ErrorCode {
+class CplReferenceError extends ErrorCode {
 	static readonly #CODE = 2100;
 
-	protected static get CODES(): ReadonlyMap<ConstructorType<ReferenceError>, number> {
-		return new Map<ConstructorType<ReferenceError>, number>([
+	protected static get CODES(): ReadonlyMap<ConstructorType<CplReferenceError>, number> {
+		return new Map<ConstructorType<CplReferenceError>, number>([
 			[ReferenceErrorUndeclared, 1],
 			[ReferenceErrorDeadZone,   2],
 			[ReferenceErrorKind,       3],
@@ -38,10 +38,11 @@ export class ReferenceError extends ErrorCode {
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: ReferenceError.name,
-			code: ReferenceError.#CODE + code,
+			name: CplReferenceError.name,
+			code: CplReferenceError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
 	}
 }
+export {CplReferenceError as ReferenceError};

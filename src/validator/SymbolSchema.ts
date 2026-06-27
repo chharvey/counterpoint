@@ -1,8 +1,8 @@
 import {
 	type VALUE,
 	TYPE,
-} from '../index.ts';
-import type * as AST from './astnode-cp/index.ts';
+} from '../typer/index.ts';
+import type * as AST from './ast/index.ts';
 
 
 
@@ -36,7 +36,7 @@ export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.ANYTHING;
 
-	public constructor(node: AST.ASTNodeTypeAlias) {
+	public constructor(node: AST.TYPE.TypeAlias) {
 		super(node.id, node.line_index, node.col_index, node.source);
 	}
 }
@@ -60,7 +60,7 @@ export class SymbolSchemaVar extends SymbolSchema {
 	public value: VALUE.Value | null = null;
 
 	public constructor(
-		node: AST.ASTNodeVariable,
+		node: AST.EXPR.Variable,
 		/** May the symbol be reassigned? */
 		public readonly isWritable: boolean,
 		/** Was the symbol declared without an initial value? */

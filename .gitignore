@@ -69,7 +69,7 @@ typings/
 sample/
 
 # Generated build files
-build/
+dist/
 *.wasm
 
 # Generated documentation & style guides

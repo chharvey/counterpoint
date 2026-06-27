@@ -2,7 +2,7 @@ import type {
 	AST,
 	SymbolKind,
 } from '../validator/index.ts';
-import {ReferenceError} from './ReferenceError.ts';
+import {ReferenceError as CplReferenceError} from './ReferenceError.ts';
 
 
 
@@ -15,17 +15,17 @@ import {ReferenceError} from './ReferenceError.ts';
  * type BAR = int;
  * 42 || BAR;      % ReferenceErrorKind: `BAR` refers to a type, but is used as a value.
  */
-export class ReferenceErrorKind extends ReferenceError {
+export class ReferenceErrorKind extends CplReferenceError {
 	/**
 	 * Construct a new ReferenceErrorKind object.
 	 * @param symbol    the referenced symbol
 	 * @param refers_to what the symbol was declared as
 	 * @param used_as   what the symbol is used as
 	 */
-	public constructor(symbol: AST.ASTNodeTypeAlias | AST.ASTNodeVariable, refers_to: SymbolKind, used_as: SymbolKind) {
+	public constructor(symbol: AST.TYPE.TypeAlias | AST.EXPR.Variable, refers_to: SymbolKind, used_as: SymbolKind) {
 		super(
 			`\`${ symbol.source }\` refers to a ${ refers_to }, but is used as a ${ used_as }.`,
-			ReferenceError.CODES.get(ReferenceErrorKind),
+			CplReferenceError.CODES.get(ReferenceErrorKind),
 			symbol.line_index,
 			symbol.col_index,
 		);

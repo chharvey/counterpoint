@@ -12,7 +12,7 @@ import {ErrorCode} from './ErrorCode.ts';
 
 
 /**
- * A TypeError is thrown when the validator recognizes a type mismatch.
+ * A CplTypeError is thrown when the validator recognizes a type mismatch.
  *
  * Known subclasses:
  * - TypeErrorInvalidOperation
@@ -22,11 +22,11 @@ import {ErrorCode} from './ErrorCode.ts';
  * - TypeErrorNotCallable
  * - TypeErrorArgCount
  */
-export class TypeError extends ErrorCode {
+class CplTypeError extends ErrorCode {
 	static readonly #CODE = 2300;
 
-	protected static get CODES(): ReadonlyMap<ConstructorType<TypeError>, number> {
-		return new Map<ConstructorType<TypeError>, number>([
+	protected static get CODES(): ReadonlyMap<ConstructorType<CplTypeError>, number> {
+		return new Map<ConstructorType<CplTypeError>, number>([
 			[TypeErrorInvalidOperation, 1],
 			[TypeErrorNotNarrow,        2],
 			[TypeErrorNotAssignable,    3],
@@ -38,7 +38,7 @@ export class TypeError extends ErrorCode {
 
 
 	/**
-	 * Construct a new TypeError object.
+	 * Construct a new CplTypeError object.
 	 * @param message - a message to the user
 	 * @param code    - the error number
 	 * @param line    - the line index in source code
@@ -47,10 +47,11 @@ export class TypeError extends ErrorCode {
 	public constructor(message: string, code: number = 0, line?: number, col?: number) {
 		super({
 			message,
-			name: TypeError.name,
-			code: TypeError.#CODE + code,
+			name: CplTypeError.name,
+			code: CplTypeError.#CODE + code,
 			...((line !== void 0) ? {line_index: line} : {}),
 			...((col  !== void 0) ? {col_index:  col}  : {}),
 		});
 	}
 }
+export {CplTypeError as TypeError};

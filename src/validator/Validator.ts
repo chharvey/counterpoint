@@ -1,7 +1,7 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type CPConfig,
+	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {
@@ -288,7 +288,7 @@ export class Validator {
 	 * @param parent - a parent validator from which to inherit symbols
 	 */
 	public constructor(
-		public  readonly config:  CPConfig = CONFIG_DEFAULT,
+		public  readonly config:  CplConfig = CONFIG_DEFAULT,
 		private readonly parent?: Validator,
 	) {
 	}

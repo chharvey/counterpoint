@@ -18,7 +18,7 @@ export class AssignmentErrorMissingType extends AssignmentError {
 	 * Construct a new AssignmentErrorMissingType object.
 	 * @param declaration the variable/parameter/field declaration
 	 */
-	public constructor(declaration: AST.ASTNodeDeclarationVariable) {
+	public constructor(declaration: AST.STMT.DeclarationVariable) {
 		const symbol_kind: 'Variable' | 'Parameter' | 'Field' = 'Variable';
 		const symbol_name: string | undefined                 = declaration.assignee?.source;
 		super(
