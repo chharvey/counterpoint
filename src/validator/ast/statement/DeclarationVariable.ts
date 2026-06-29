@@ -136,8 +136,7 @@ export class DeclarationVariable extends Statement {
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
-			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			symbol.type = assignee_type;
+			(this.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 	}
 
@@ -147,9 +146,9 @@ export class DeclarationVariable extends Statement {
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.irType = value?.type ?? TYPE.NULL;
-			builder.pushInstruction(new OP.Decl(symbol, value));
+			return builder.pushInstruction(new OP.Decl(symbol, value));
 		} else {
-			builder.pushInstruction(new OP.Drop(value!));
+			return builder.pushInstruction(new OP.Drop(value!));
 		}
 	}
 }

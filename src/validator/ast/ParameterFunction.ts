@@ -54,8 +54,7 @@ export class ParameterFunction extends AstNode {
 		if (this.identifier) {
 			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
 			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
-			const symbol = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			symbol.type = param_type;
+			(block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = param_type;
 		}
 	}
 }
