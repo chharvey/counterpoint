@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Builder,
+	OP,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../index.ts';
 import {
@@ -81,7 +82,13 @@ export class DeclarationFunction extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(_builder: Builder): void {
+	public override build(builder: Builder): void {
+		if (this.identifier) {
+			builder.pushInstruction(new OP.Func(
+				this.validator.getSymbol(this.id!) as SymbolSchemaVar,
+				BigInt(this.parameters.length),
+			));
+		}
 		throw new Error('`DeclarationFunction#build` not yet supported.');
 	}
 }
