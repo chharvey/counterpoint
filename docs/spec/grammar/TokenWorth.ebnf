@@ -80,6 +80,16 @@ TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x65;
 
 
 
+TokenWorth(Identifier :::= "Object") -> RealNumber := \x80;
+TokenWorth(Identifier :::= "Integer" -> RealNumber := \x81;
+TokenWorth(Identifier :::= "Natural" -> RealNumber := \x82;
+TokenWorth(Identifier :::= "Float"   -> RealNumber := \x83;
+TokenWorth(Identifier :::= "String"  -> RealNumber := \x84;
+TokenWorth(Identifier :::= "List"    -> RealNumber := \x85;
+TokenWorth(Identifier :::= "Dict"    -> RealNumber := \x86;
+TokenWorth(Identifier :::= "Set"     -> RealNumber := \x87;
+TokenWorth(Identifier :::= "Map"     -> RealNumber := \x88;
+
 TokenWorth(Identifier) -> RealNumber
 	:=; // TO BE DESCRIBED
 

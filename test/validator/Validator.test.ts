@@ -258,6 +258,24 @@ test.suite('Validator', () => {
 			readonly src: string,
 			readonly raw: string[],
 		};
+		test.test('assigns intrinsic ids an index.', () => {
+			const intrinsics = [
+				'Object',
+				'Integer',
+				'Natural',
+				'Float',
+				'String',
+				'List',
+				'Dict',
+				'Set',
+				'Map',
+			];
+			const validator = new Validator();
+			return assert.deepStrictEqual(
+				intrinsics.map((s) => validator.cookTokenIdentifier(s)),
+				Array.from(Array(intrinsics.length), (_, i) => 0x80n + BigInt(i)),
+			);
+		});
 		new Map<string, [Data, Data]>([
 			['basic identifiers.', [
 				{

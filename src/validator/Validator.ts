@@ -308,6 +308,10 @@ export class Validator {
 				ValidFunctionName.NATURAL,
 				ValidFunctionName.FLOAT,
 				ValidFunctionName.STRING,
+				ValidFunctionName.LIST,
+				ValidFunctionName.DICT,
+				ValidFunctionName.SET,
+				ValidFunctionName.MAP,
 			].forEach((name) => {
 				this.intrinsics.add(name);
 			});
