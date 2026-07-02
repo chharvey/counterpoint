@@ -35,8 +35,13 @@ export function assert_shallowStrictEqual<T>(actual: unknown[], expected: T[], m
 	if (actual === expected) {
 		return;
 	}
-	assert.strictEqual(actual.length, expected.length, message);
-	return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i], message));
+	if (message) {
+		assert.strictEqual(actual.length, expected.length, message);
+		return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i], message));
+	} else {
+		assert.strictEqual(actual.length, expected.length);
+		return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i]));
+	}
 }
 
 type ValidationObject = {cons: ConstructorType<Error>} & (
@@ -121,11 +126,17 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Mo
 			assert.strictEqual(arg0.length, (arg1 as Ref[]).length, 'Expected arrays to have the same length.');
 			return xjs.Array.forEachAggregated(arg0, (act, i) => assertEqualBins(act, (arg1 as Ref[])[i]));
 		}
-	} else {
+	} else if (message) {
 		try {
 			return assert.strictEqual(arg0, arg1, message);
 		} catch {
 			return assert.strictEqual(binaryen.emitText(arg0 as Ref), binaryen.emitText(arg1 as Ref), message);
+		}
+	} else {
+		try {
+			return assert.strictEqual(arg0, arg1);
+		} catch {
+			return assert.strictEqual(binaryen.emitText(arg0 as Ref), binaryen.emitText(arg1 as Ref));
 		}
 	}
 }
