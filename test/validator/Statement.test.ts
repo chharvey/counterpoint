@@ -33,7 +33,7 @@ test.suite('Statement', () => {
 					val mut i: int = 42;
 					set i = 43;
 				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('i')), {
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('i')), {
 					isWritable:      true,
 					isUninitialized: false,
 				});
@@ -65,7 +65,7 @@ test.suite('Statement', () => {
 					val mut i?: int;
 					delete i;
 				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('i')), {
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('i')), {
 					isWritable:      true,
 					isUninitialized: true,
 				});
@@ -103,7 +103,7 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				const id: bigint = validator.cookTokenIdentifier('it');
+				const id: bigint = Validator.cookTokenIdentifier('it');
 				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
 				assert.ok(validator.hasSymbol(id));
@@ -122,7 +122,7 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				const id: bigint = validator.cookTokenIdentifier('_');
+				const id: bigint = Validator.cookTokenIdentifier('_');
 				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
 				return assert.ok(!validator.hasSymbol(id));
@@ -407,7 +407,7 @@ test.suite('Statement', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						val mut x?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('x')), {
+					}`, {build: false}).goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('x')), {
 						isWritable:      true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -418,7 +418,7 @@ test.suite('Statement', () => {
 						val mut x?: int;
 						set x = null;
 					}`, {typeCheck: false});
-					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('x')), {
+					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('x')), {
 						isWritable:      true,
 						isUninitialized: true,
 					});

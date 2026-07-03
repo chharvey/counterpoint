@@ -253,7 +253,7 @@ test.suite('Validator', () => {
 	});
 
 
-	test.suite('#cookTokenIdentifier', () => {
+	test.suite('.cookTokenIdentifier', () => {
 		type Data = {
 			readonly src: string,
 			readonly raw: string[],
@@ -270,9 +270,8 @@ test.suite('Validator', () => {
 				'Set',
 				'Map',
 			];
-			const validator = new Validator();
 			return assert.deepStrictEqual(
-				intrinsics.map((s) => validator.cookTokenIdentifier(s)),
+				intrinsics.map((s) => Validator.cookTokenIdentifier(s)),
 				Array.from(Array(intrinsics.length), (_, i) => 0x80n + BigInt(i)),
 			);
 		});
@@ -317,11 +316,10 @@ test.suite('Validator', () => {
 			test.suite(cxt, () => {
 				datas.forEach((data, i) => {
 					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
-					const validator = new Validator();
 					let cooked: bigint[] = [];
 					test.test.before(() => {
 						assert.deepStrictEqual(actual_raw, data.raw);
-						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
+						cooked = actual_raw.map((word) => Validator.cookTokenIdentifier(word));
 					});
 					if (i === 0) {
 						test.test('assigns unique ids 0x100n or greater.', () => {

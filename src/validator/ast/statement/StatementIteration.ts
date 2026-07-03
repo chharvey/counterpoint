@@ -24,6 +24,7 @@ import {
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import type * as EXPR from '../expression/index.ts';
@@ -39,7 +40,7 @@ export class StatementIteration extends StatementBreakable {
 		return statement;
 	}
 
-	private id?: bigint;
+	private readonly id?: bigint;
 
 
 	public constructor(
@@ -50,6 +51,9 @@ export class StatementIteration extends StatementBreakable {
 		public  readonly block:    Block,
 	) {
 		super(start_node, {}, [typenode, iterable, block]);
+		if (this.assignee) {
+			this.id = Validator.cookTokenIdentifier(this.assignee.source);
+		}
 	}
 
 	@memoizeGetter
@@ -61,12 +65,11 @@ export class StatementIteration extends StatementBreakable {
 		// Do not call `super.varCheck()` as we want to VarCheck `this.block` at the end.
 		xjs.Array.forEachAggregated([this.typenode, this.iterable], (c) => c.varCheck());
 		if (this.assignee) {
-			this.id = this.block.validator.cookTokenIdentifier(this.assignee.source);
-			if (this.block.validator.hasSymbol(this.id)) {
+			if (this.block.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
 			this.block.validator.addSymbol(new SymbolSchemaVar(
-				this.id,
+				this.id!,
 				this.assignee,
 				false, // because it should not be manually reassigned
 				false, // because it won’t ever be nullish upon accessing

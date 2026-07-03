@@ -6,7 +6,6 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -19,6 +18,7 @@ import {
 	SymbolSchemaType,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import {
 	ValidIntrinsicName,
 	is_valid_intrinsic_name,
@@ -35,14 +35,13 @@ export class TypeAlias extends Type {
 	}
 
 
+	private readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
+
+
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
-	@memoizeGetter
-	public get id(): bigint {
-		return this.validator.cookTokenIdentifier(this.start_node.text);
-	}
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.

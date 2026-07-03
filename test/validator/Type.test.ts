@@ -90,7 +90,7 @@ test.suite('Type', () => {
 					new VALUE.Symbol(0x54n, 'then').toType(),
 					new VALUE.Symbol(0x46n, 'str').toType(),
 					new VALUE.Symbol(0x49n, 'false').toType(),
-					new VALUE.Symbol(new Validator().cookTokenIdentifier('foobar'), 'foobar').toType(),
+					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),

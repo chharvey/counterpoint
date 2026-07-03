@@ -353,7 +353,7 @@ test.suite('Expression', () => {
 					new VALUE.Symbol(0x54n, 'then'),
 					new VALUE.Symbol(0x46n, 'str'),
 					new VALUE.Symbol(0x49n, 'false'),
-					new VALUE.Symbol(new Validator().cookTokenIdentifier('foobar'), 'foobar'),
+					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar'),
 				]);
 			});
 			test.test('computes int values.', () => {
@@ -505,22 +505,21 @@ test.suite('Expression', () => {
 						(e= [x= 42, w= 4.2], f= f);
 						[g= (w= 42, x= 4.2), f= f];
 					}`, {build: false});
-					const validator = new Validator();
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
-							[validator.cookTokenIdentifier('T'), {source: 'T'}],
-							[validator.cookTokenIdentifier('U'), {source: 'U'}],
-							[validator.cookTokenIdentifier('f'), {source: 'f'}],
+							[Validator.cookTokenIdentifier('T'), {source: 'T'}],
+							[Validator.cookTokenIdentifier('U'), {source: 'U'}],
+							[Validator.cookTokenIdentifier('f'), {source: 'f'}],
 						]),
 					);
 					return assertEqualTypes(
 						(stmts[1] as AST.STMT.DeclarationType).assigned.eval(),
 						TYPE.Record.fromTypes(new Map([
-							[validator.cookTokenIdentifier('a'), TYPE.BOOL],
-							[validator.cookTokenIdentifier('b'), TYPE.Record.fromTypes(new Map([[validator.cookTokenIdentifier('z'), TYPE.INT]]))],
-							[validator.cookTokenIdentifier('c'), TYPE.STR],
-							[validator.cookTokenIdentifier('d'), TYPE.Record.fromTypes(new Map([[validator.cookTokenIdentifier('y'), TYPE.FLOAT]]))],
+							[Validator.cookTokenIdentifier('a'), TYPE.BOOL],
+							[Validator.cookTokenIdentifier('b'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('z'), TYPE.INT]]))],
+							[Validator.cookTokenIdentifier('c'), TYPE.STR],
+							[Validator.cookTokenIdentifier('d'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('y'), TYPE.FLOAT]]))],
 						])),
 					);
 				});
@@ -620,14 +619,14 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
-				const id: bigint = new Validator().cookTokenIdentifier('n');
+				const id: bigint = Validator.cookTokenIdentifier('n');
 				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
 				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
-				const id: bigint = new Validator().cookTokenIdentifier('Name');
+				const id: bigint = Validator.cookTokenIdentifier('Name');
 				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
 				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
 				assert.strictEqual(claim.type(), TYPE.STR);
