@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
+	Validator,
 	AST,
 	TYPE,
 	TypeErrorInvalidOperation,
@@ -229,10 +230,10 @@ test.suite('Access', () => {
 					val mut tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
 					val mut rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
 				`;
-				const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
-				const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
-				const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x104n, TYPE.STR]]));
-				const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
+				const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('a'), TYPE.STR]]));
+				const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('b'), TYPE.STR]]));
+				const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('c'), TYPE.STR]]));
+				const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('d'), TYPE.STR]]));
 				test.test('every constituent has the entry and it’s required in some constituent.', () => {
 					testExprTypes(`{
 						${ DECLS }

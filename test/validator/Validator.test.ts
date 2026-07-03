@@ -21,6 +21,94 @@ test.suite('Validator', () => {
 		});
 	});
 
+
+	test.suite('.cookTokenIdentifier', () => {
+		type Data = {
+			readonly src: string,
+			readonly raw: string[],
+		};
+		test.test('assigns intrinsic ids an index.', () => {
+			const intrinsics = [
+				'Object',
+				'Integer',
+				'Natural',
+				'Float',
+				'String',
+				'List',
+				'Dict',
+				'Set',
+				'Map',
+			];
+			return assert.deepStrictEqual(
+				intrinsics.map((s) => Validator.cookTokenIdentifier(s)),
+				Array.from(Array(intrinsics.length), (_, i) => 0x80n + BigInt(i)),
+			);
+		});
+		new Map<string, [Data, Data]>([
+			['basic identifiers.', [
+				{
+					src: `
+						this be a word
+						_words _can _start _with _underscores_
+						and can1 contain2 numb3rs and under_scores_
+						a word can_ repeat with_ the same id
+					`,
+					raw: ['this', 'be', 'a', 'word', '_words', '_can', '_start', '_with', '_underscores_', 'and', 'can1', 'contain2', 'numb3rs', 'and', 'under_scores_', 'a', 'word', 'can_', 'repeat', 'with_', 'the', 'same', 'id'],
+				},
+				{
+					src: `
+						alpha bravo charlie delta echo
+						echo delta charlie bravo alpha
+					`,
+					raw: ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'echo', 'delta', 'charlie', 'bravo', 'alpha'],
+				},
+			]],
+			['unicode identifiers.', [
+				{
+					src: `
+						'this' 'is' 'a' 'unicode word'
+						'unicode words start and end with' 'apostrophes' 'but cannot contain them'
+						'ány' 'unicödè wörd' 'cán' 'cöntáin' 'ány' 'cháráctèr'
+						'èxcèpt' '‘ápöströphès’' '.'
+					`,
+					raw: ['\'this\'', '\'is\'', '\'a\'', '\'unicode word\'', '\'unicode words start and end with\'', '\'apostrophes\'', '\'but cannot contain them\'', '\'ány\'', '\'unicödè wörd\'', '\'cán\'', '\'cöntáin\'', '\'ány\'', '\'cháráctèr\'', '\'èxcèpt\'', '\'‘ápöströphès’\'', '\'.\''],
+				},
+				{
+					src: `
+						'alpha' 'bravo' 'charlie' 'delta' 'echo'
+						'echo' 'delta' 'charlie' 'bravo' 'alpha'
+					`,
+					raw: ['\'alpha\'', '\'bravo\'', '\'charlie\'', '\'delta\'', '\'echo\'', '\'echo\'', '\'delta\'', '\'charlie\'', '\'bravo\'', '\'alpha\''],
+				},
+			]],
+		]).forEach((datas, cxt) => {
+			test.suite(cxt, () => {
+				datas.forEach((data, i) => {
+					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
+					let cooked: bigint[] = [];
+					test.test.before(() => {
+						assert.deepStrictEqual(actual_raw, data.raw);
+						cooked = actual_raw.map((word) => Validator.cookTokenIdentifier(word));
+					});
+					if (i === 0) {
+						test.test('assigns unique ids 0x100n or greater.', () => {
+							cooked.forEach((value) => assert.ok(value >= 0x100n));
+						});
+					} else {
+						assert.strictEqual(i, 1);
+						test.test('assigns the same value to identical identifier names.', () => {
+							assert.deepStrictEqual(
+								cooked.slice(0, 5),
+								cooked.slice(5).reverse(),
+							);
+						});
+					}
+				});
+			});
+		});
+	});
+
+
 	test.suite('.cookTokenNumber', () => {
 		new Map<string, [string, readonly bigint[] | readonly number[]]>([
 			/* eslint-disable @stylistic/array-element-newline */
@@ -249,80 +337,6 @@ test.suite('Validator', () => {
 					'\u{1f600} \\\u{1f600} \\u{1f600}',
 				],
 			);
-		});
-	});
-
-
-	test.suite('#cookTokenIdentifier', () => {
-		type Data = {
-			readonly src: string,
-			readonly raw: string[],
-		};
-		new Map<string, [Data, Data]>([
-			['basic identifiers.', [
-				{
-					src: `
-						this be a word
-						_words _can _start _with _underscores_
-						and can1 contain2 numb3rs and under_scores_
-						a word can_ repeat with_ the same id
-					`,
-					raw: ['this', 'be', 'a', 'word', '_words', '_can', '_start', '_with', '_underscores_', 'and', 'can1', 'contain2', 'numb3rs', 'and', 'under_scores_', 'a', 'word', 'can_', 'repeat', 'with_', 'the', 'same', 'id'],
-				},
-				{
-					src: `
-						alpha bravo charlie delta echo
-						echo delta charlie bravo alpha
-					`,
-					raw: ['alpha', 'bravo', 'charlie', 'delta', 'echo', 'echo', 'delta', 'charlie', 'bravo', 'alpha'],
-				},
-			]],
-			['unicode identifiers.', [
-				{
-					src: `
-						'this' 'is' 'a' 'unicode word'
-						'unicode words start and end with' 'apostrophes' 'but cannot contain them'
-						'ány' 'unicödè wörd' 'cán' 'cöntáin' 'ány' 'cháráctèr'
-						'èxcèpt' '‘ápöströphès’' '.'
-					`,
-					raw: ['\'this\'', '\'is\'', '\'a\'', '\'unicode word\'', '\'unicode words start and end with\'', '\'apostrophes\'', '\'but cannot contain them\'', '\'ány\'', '\'unicödè wörd\'', '\'cán\'', '\'cöntáin\'', '\'ány\'', '\'cháráctèr\'', '\'èxcèpt\'', '\'‘ápöströphès’\'', '\'.\''],
-				},
-				{
-					src: `
-						'alpha' 'bravo' 'charlie' 'delta' 'echo'
-						'echo' 'delta' 'charlie' 'bravo' 'alpha'
-					`,
-					raw: ['\'alpha\'', '\'bravo\'', '\'charlie\'', '\'delta\'', '\'echo\'', '\'echo\'', '\'delta\'', '\'charlie\'', '\'bravo\'', '\'alpha\''],
-				},
-			]],
-		]).forEach((datas, cxt) => {
-			test.suite(cxt, () => {
-				datas.forEach((data, i) => {
-					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
-					const validator = new Validator();
-					let cooked: bigint[] = [];
-					test.test.before(() => {
-						assert.deepStrictEqual(actual_raw, data.raw);
-						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
-					});
-					if (i === 0) {
-						test.test('assigns ids starting from 0x100n.', () => {
-							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
-						});
-						test.test('assigns unique ids 0x100n or greater.', () => {
-							cooked.forEach((value) => assert.ok(value >= 0x100n));
-						});
-					} else {
-						assert.strictEqual(i, 1);
-						test.test('assigns the same value to identical identifier names.', () => {
-							assert.deepStrictEqual(
-								cooked.slice(0, 5),
-								cooked.slice(5).reverse(),
-							);
-						});
-					}
-				});
-			});
 		});
 	});
 });
