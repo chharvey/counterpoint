@@ -54,10 +54,6 @@ export class Difference extends TypeOperation {
 		return this.left.isReference;
 	}
 
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.left.hasMutable || this.right.hasMutable;
-	}
-
 	@botOrTopString
 	public override toString(): string {
 		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');

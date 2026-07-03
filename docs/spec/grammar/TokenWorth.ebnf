@@ -85,8 +85,21 @@ TokenWorth(KeywordOther :::= "return")   -> RealNumber := \x68;
 
 
 
-TokenWorth(Identifier) -> RealNumber
-	:=; // TO BE DESCRIBED
+TokenWorth(Identifier :::= "Object") -> RealNumber := \x80;
+TokenWorth(Identifier :::= "Integer" -> RealNumber := \x81;
+TokenWorth(Identifier :::= "Natural" -> RealNumber := \x82;
+TokenWorth(Identifier :::= "Float"   -> RealNumber := \x83;
+TokenWorth(Identifier :::= "String"  -> RealNumber := \x84;
+TokenWorth(Identifier :::= "List"    -> RealNumber := \x85;
+TokenWorth(Identifier :::= "Dict"    -> RealNumber := \x86;
+TokenWorth(Identifier :::= "Set"     -> RealNumber := \x87;
+TokenWorth(Identifier :::= "Map"     -> RealNumber := \x88;
+
+TokenWorth(Identifier) -> RealNumber :=
+	1. Convert the source text of `Identifier` to a string of bytes in the UTF-8 encoding.
+	2. Hash each byte, folding in the results from start to end, using a modified Fowler–Noll–Vo hash function.
+	3. *Return:* the sum of the hash and `\x100`.
+;
 
 
 

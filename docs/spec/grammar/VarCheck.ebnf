@@ -200,7 +200,6 @@ None! VarCheck(SemanticDeclarationVariable decl) :=
 				isWritable=      `decl.writable`,
 				isUninitialized= `uninitialized`,
 				type=            `Anything`,
-				value=           *none*,
 			].
 			2. Add `symbol` as a record for `decl.id` to the validator.
 	11. *Else:*
@@ -296,7 +295,6 @@ None! VarCheck(SemanticStatementIteration stmt) :=
 				isWritable=      `false`,
 				isUninitialized= `false`,
 				type=            `Anything`,
-				value=           *none*,
 			].
 			2. Add `symbol` as a record for `stmt.id` to `validator`.
 	10. *Else:*

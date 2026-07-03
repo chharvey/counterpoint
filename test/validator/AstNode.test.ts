@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import {
 	assert_instanceof,
 	TYPE,
+	Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -29,22 +30,27 @@ test.suite('AstNode', () => {
 				const {stmts} = setupScript(`{
 					\\(a: int, mut b: int, mut $c: int, delta= d: int): void { return; };
 				}`, {varCheck: false});
+				const id_a:     bigint = Validator.cookTokenIdentifier('a');
+				const id_b:     bigint = Validator.cookTokenIdentifier('b');
+				const id_c:     bigint = Validator.cookTokenIdentifier('c');
+				const id_delta: bigint = Validator.cookTokenIdentifier('delta');
+				const id_d:     bigint = Validator.cookTokenIdentifier('d');
 				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				assert.ok(!fn.block.validator.hasSymbol(0x100n));
-				assert.ok(!fn.block.validator.hasSymbol(0x101n));
-				assert.ok(!fn.block.validator.hasSymbol(0x102n));
-				assert.ok(!fn.block.validator.hasSymbol(0x103n));
-				assert.ok(!fn.block.validator.hasSymbol(0x104n));
+				assert.ok(!fn.block.validator.hasSymbol(id_a));
+				assert.ok(!fn.block.validator.hasSymbol(id_b));
+				assert.ok(!fn.block.validator.hasSymbol(id_c));
+				assert.ok(!fn.block.validator.hasSymbol(id_delta));
+				assert.ok(!fn.block.validator.hasSymbol(id_d));
 				fn.varCheck();
-				assert.ok(fn.block.validator.hasSymbol(0x100n));
-				assert.ok(fn.block.validator.hasSymbol(0x101n));
-				assert.ok(fn.block.validator.hasSymbol(0x102n));
-				assert.ok(!fn.block.validator.hasSymbol(0x103n)); // param key `delta` is not in symbol table
-				assert.ok(fn.block.validator.hasSymbol(0x104n));
-				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(0x100n);
-				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(0x101n);
-				const info_c: SymbolSchema | undefined = fn.block.validator.getSymbol(0x102n);
-				const info_d: SymbolSchema | undefined = fn.block.validator.getSymbol(0x104n);
+				assert.ok(fn.block.validator.hasSymbol(id_a));
+				assert.ok(fn.block.validator.hasSymbol(id_b));
+				assert.ok(fn.block.validator.hasSymbol(id_c));
+				assert.ok(!fn.block.validator.hasSymbol(id_delta)); // param key `delta` is not in symbol table
+				assert.ok(fn.block.validator.hasSymbol(id_d));
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
+				const info_c: SymbolSchema | undefined = fn.block.validator.getSymbol(id_c);
+				const info_d: SymbolSchema | undefined = fn.block.validator.getSymbol(id_d);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
@@ -153,11 +159,13 @@ test.suite('AstNode', () => {
 				const {stmts} = setupScript(`{
 					\\(a: float, mut b: str): void { return; };
 				}`, {typeCheck: false});
+				const id_a: bigint = Validator.cookTokenIdentifier('a');
+				const id_b: bigint = Validator.cookTokenIdentifier('b');
 				const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				assert.ok(fn.block.validator.hasSymbol(0x100n));
-				assert.ok(fn.block.validator.hasSymbol(0x101n));
-				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(0x100n);
-				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(0x101n);
+				assert.ok(fn.block.validator.hasSymbol(id_a));
+				assert.ok(fn.block.validator.hasSymbol(id_b));
+				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_shallowStrictEqual(

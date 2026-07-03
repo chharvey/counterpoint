@@ -7,7 +7,6 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -20,6 +19,7 @@ import {
 	SymbolSchemaVar,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import {Expression} from './Expression.ts';
 import type {Reassignable} from './Reassignable.ts';
 
@@ -33,14 +33,13 @@ export class Variable extends Expression implements Reassignable {
 	}
 
 
+	public readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
+
+
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
-	@memoizeGetter
-	public get id(): bigint {
-		return this.validator.cookTokenIdentifier(this.start_node.text);
-	}
 
 	public override varCheck(): void {
 		if (!this.validator.hasSymbol(this.id)) {

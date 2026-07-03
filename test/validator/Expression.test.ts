@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaType,
@@ -96,8 +97,8 @@ test.suite('Expression', () => {
 						TYPE.INT,
 						TYPE.FLOAT.union(TYPE.NULL),
 					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-						[0x102n, TYPE.BOOL],
-						[0x103n, TYPE.NAT],
+						[Validator.cookTokenIdentifier('c'),     TYPE.BOOL],
+						[Validator.cookTokenIdentifier('delta'), TYPE.NAT],
 					]))),
 				);
 			});
@@ -385,10 +386,10 @@ test.suite('Expression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x54n,  'then'),
-					new VALUE.Symbol(0x46n,  'str'),
-					new VALUE.Symbol(0x49n,  'false'),
-					new VALUE.Symbol(0x100n, 'foobar'),
+					new VALUE.Symbol(0x54n, 'then'),
+					new VALUE.Symbol(0x46n, 'str'),
+					new VALUE.Symbol(0x49n, 'false'),
+					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar'),
 				]);
 			});
 			test.test('computes int values.', () => {
@@ -543,18 +544,18 @@ test.suite('Expression', () => {
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
-							[0x100n, {source: 'T'}],
-							[0x107n, {source: 'U'}],
-							[0x108n, {source: 'f'}],
+							[Validator.cookTokenIdentifier('T'), {source: 'T'}],
+							[Validator.cookTokenIdentifier('U'), {source: 'U'}],
+							[Validator.cookTokenIdentifier('f'), {source: 'f'}],
 						]),
 					);
 					return assertEqualTypes(
 						(stmts[1] as AST.STMT.DeclarationType).assigned.eval(),
 						TYPE.Record.fromTypes(new Map([
-							[0x101n, TYPE.BOOL],
-							[0x102n, TYPE.Record.fromTypes(new Map([[0x105n, TYPE.INT]]))],
-							[0x103n, TYPE.STR],
-							[0x104n, TYPE.Record.fromTypes(new Map([[0x106n, TYPE.FLOAT]]))],
+							[Validator.cookTokenIdentifier('a'), TYPE.BOOL],
+							[Validator.cookTokenIdentifier('b'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('z'), TYPE.INT]]))],
+							[Validator.cookTokenIdentifier('c'), TYPE.STR],
+							[Validator.cookTokenIdentifier('d'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('y'), TYPE.FLOAT]]))],
 						])),
 					);
 				});
@@ -654,14 +655,16 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
-				claim.validator.addSymbol(new SymbolSchemaVar(0x100n, claim.operand, false, false));
-				(claim.validator.getSymbol(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
+				const id: bigint = Validator.cookTokenIdentifier('n');
+				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
+				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
-				claim.validator.addSymbol(new SymbolSchemaType(0x100n, claim.claimed_type));
-				(claim.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
+				const id: bigint = Validator.cookTokenIdentifier('Name');
+				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
+				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
 				assert.strictEqual(claim.type(), TYPE.STR);
 			});
 			test.test('throws when the operand type and claimed type do not overlap (and neither is `nothing`).', () => {

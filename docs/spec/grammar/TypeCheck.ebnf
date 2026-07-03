@@ -37,8 +37,9 @@ None! TypeCheck(SemanticParameterFunction param) :=
 
 
 
-None TypeCheck(SemanticType type) :=
-	1. *Return.*
+None TypeCheck(SemanticType typexpr) :=
+	1. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
+		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
 
@@ -80,8 +81,6 @@ None! TypeCheck(SemanticDeclarationVariable decl) :=
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `decl.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		3. *Set* `symbol.type` to `assignee_type`.
-		4. *If* `assignee_type` is not mutable and has no mutable parts *and* `decl.writable` is `false`:
-			1. *Assert:* `symbol.isWritable` is `false`.
 	11. *Else:*
 		1. *Return.*
 ;

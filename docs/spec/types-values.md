@@ -159,7 +159,6 @@ Property            | Read-Only? | Description
 \`isWritable\`      | yes        | a Boolean, whether the variable may be reassigned
 \`isUninitialized\` | yes        | a Boolean, whether the variable was declared without an initial value
 \`type\`            | no         | the Counterpoint Language Type of the variable
-\`value\`           | no         | if \`isWritable\` is `false`: the assessed value (if it can be determined, a Counterpoint Language Value) of this symbol; otherwise: *none*
 
 
 ### Nodes

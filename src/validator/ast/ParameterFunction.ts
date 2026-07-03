@@ -4,6 +4,7 @@ import type {Serializable} from '../../parser/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
+import {Validator} from '../Validator.ts';
 import type {
 	Block,
 	TYPE as AST_TYPE,
@@ -16,7 +17,7 @@ import type {Key} from './Key.ts';
 
 
 export class ParameterFunction extends AstNode {
-	private id?: bigint;
+	private readonly id?: bigint;
 
 
 	public constructor(
@@ -28,6 +29,9 @@ export class ParameterFunction extends AstNode {
 		public  readonly typenode:   AST_TYPE.Type,
 	) {
 		super(start_node, {}, [...(key ? [key] : []), typenode]);
+		if (this.identifier) {
+			this.id = Validator.cookTokenIdentifier(this.identifier.source);
+		}
 	}
 
 
@@ -40,11 +44,10 @@ export class ParameterFunction extends AstNode {
 		super.varCheck();
 		if (this.identifier) {
 			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
-			this.id = block.validator.cookTokenIdentifier(this.identifier.source);
-			if (block.validator.hasSymbol(this.id)) {
+			if (block.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
 			}
-			block.validator.addSymbol(new SymbolSchemaVar(this.id, this.identifier, this.writable, false));
+			block.validator.addSymbol(new SymbolSchemaVar(this.id!, this.identifier, this.writable, false));
 		}
 	}
 

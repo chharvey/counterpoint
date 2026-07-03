@@ -17,6 +17,7 @@ import type {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
@@ -33,7 +34,7 @@ export class DeclarationFunction extends Statement {
 	}
 
 
-	private id?: bigint;
+	private readonly id?: bigint;
 
 
 	public constructor(
@@ -43,7 +44,11 @@ export class DeclarationFunction extends Statement {
 		public  readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, block]);
+		if (this.identifier) {
+			this.id = Validator.cookTokenIdentifier(this.identifier.source);
+		}
 	}
+
 
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
@@ -52,12 +57,11 @@ export class DeclarationFunction extends Statement {
 
 	public hoist(): void {
 		if (this.identifier) {
-			this.id = this.validator.cookTokenIdentifier(this.identifier.source);
-			if (this.validator.hasSymbol(this.id)) {
+			if (this.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
 			}
 			this.validator.addSymbol(new SymbolSchemaVar(
-				this.id,
+				this.id!,
 				this.identifier,
 				false, // because it should not be manually reassigned
 				false, // because it won’t ever be nullish upon accessing
