@@ -229,7 +229,7 @@ export class Validator {
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
 
 	/** Hash function for strings. */
-	private static hashString(s: string): bigint {
+	static #hashString(s: string): bigint {
 		return [SEED, ...new TextEncoder().encode(s)].map((n) => BigInt(n)).reduce((a, b) => BigInt.asUintN(64, (a ^ b) * PRIME));
 	}
 
@@ -255,7 +255,7 @@ export class Validator {
 		if (Validator.INTRINSICS.has(source)) {
 			return Validator.MIN_VALUE_INTRINSIC + BigInt([...Validator.INTRINSICS].indexOf(source));
 		}
-		return Validator.MIN_VALUE_IDENTIFIER + Validator.hashString(source);
+		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}
 
 	/**
