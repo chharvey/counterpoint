@@ -15,6 +15,7 @@ import type {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaType} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import {Statement} from './Statement.ts';
 
@@ -28,7 +29,7 @@ export class DeclarationType extends Statement {
 	}
 
 
-	private id?: bigint;
+	private readonly id?: bigint;
 
 
 	public constructor(
@@ -37,6 +38,9 @@ export class DeclarationType extends Statement {
 		public  readonly assigned: AST_TYPE.Type,
 	) {
 		super(start_node, {}, [assigned]);
+		if (this.assignee) {
+			this.id = Validator.cookTokenIdentifier(this.assignee.source);
+		}
 	}
 
 	@noopGetter(memoizeGetter)
@@ -47,11 +51,10 @@ export class DeclarationType extends Statement {
 	public override varCheck(): void {
 		super.varCheck();
 		if (this.assignee) {
-			this.id = this.validator.cookTokenIdentifier(this.assignee.source);
-			if (this.validator.hasSymbol(this.id)) {
+			if (this.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaType(this.id, this.assignee));
+			this.validator.addSymbol(new SymbolSchemaType(this.id!, this.assignee));
 		}
 	}
 

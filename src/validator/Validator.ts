@@ -68,6 +68,12 @@ const COMMENTER_MULTI    = '%%';
 
 
 
+const PRIME = 0x00000100000001b3n; // 64-bit FNV_prime
+const SEED  = 0x48617368416c676fn; // 'HashAlgo' in UTF-8
+//             H a s h A l g o
+
+
+
 /**
  * The UTF-8 encoding of a numeric code point value.
  * @param   codepoint a Unicode code point
@@ -200,6 +206,19 @@ function tokenWorthString(text: string): CodeUnit[] {
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
+	/** A bank of unique intrinsic identifier names. */
+	private static readonly INTRINSICS: ReadonlySet<string> = new Set<string>([
+		ValidIntrinsicName.OBJECT,
+		ValidFunctionName.INTEGER,
+		ValidFunctionName.NATURAL,
+		ValidFunctionName.FLOAT,
+		ValidFunctionName.STRING,
+		ValidFunctionName.LIST,
+		ValidFunctionName.DICT,
+		ValidFunctionName.SET,
+		ValidFunctionName.MAP,
+	]);
+
 	/** The minimum allowed cooked value of a reserved keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
@@ -208,6 +227,11 @@ export class Validator {
 
 	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
+
+	/** Hash function for strings. */
+	static #hashString(s: string): bigint {
+		return [SEED, ...new TextEncoder().encode(s)].map((n) => BigInt(n)).reduce((a, b) => BigInt.asUintN(64, (a ^ b) * PRIME));
+	}
 
 	/**
 	 * Give the unique integer identifier of a reserved keyword token.
@@ -220,6 +244,18 @@ export class Validator {
 		return (0 <= index && index < KEYWORDS.length)
 			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
 			: assert.fail(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
+	}
+
+	/**
+	 * Give a uniquely-generated integer identifier of a custom language identifier token.
+	 * @param source the token’s text
+	 * @return       the unique id identifying the token
+	 */
+	public static cookTokenIdentifier(source: string): bigint {
+		if (Validator.INTRINSICS.has(source)) {
+			return Validator.MIN_VALUE_INTRINSIC + BigInt([...Validator.INTRINSICS].indexOf(source));
+		}
+		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}
 
 	/**
@@ -282,15 +318,23 @@ export class Validator {
 		return new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length));
 	}
 
+	/**
+	 * Return the integer identifier (ID) of a given word,
+	 * whether it be a reserved keyword, the name of a constant, or a language identifier.
+	 * @param word the SyntaxNode to get the ID of
+	 * @return     if the word is reserved or has already been cooked, its existing ID; else a new ID
+	 */
+	public static wordNodeId(word: SyntaxNodeType<'word'>): bigint {
+		return isSyntaxNodeType(word.children[0], 'identifier')
+			? Validator.cookTokenIdentifier(word.children[0].text)
+			: isSyntaxNodeType(word.children[0], 'keyword_type') || isSyntaxNodeType(word.children[0], 'keyword_value')
+				? Validator.cookTokenKeyword(word.children[0].children[0].text as Keyword)
+				: Validator.cookTokenKeyword(word.children[0].text as Keyword);
+	}
+
 
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table = new Map<bigint, SymbolSchema>();
-
-	/** A bank of unique intrinsic identifier names. */
-	private readonly intrinsics = new Set<string>();
-
-	/** A bank of unique user-defined identifier names. */
-	private readonly identifiers = new Set<string>();
 
 	/**
 	 * Construct a new Validator object.
@@ -301,17 +345,6 @@ export class Validator {
 		public  readonly config:  CplConfig = CONFIG_DEFAULT,
 		private readonly parent?: Validator,
 	) {
-		if (!this.parent) {
-			[
-				ValidIntrinsicName.OBJECT,
-				ValidFunctionName.INTEGER,
-				ValidFunctionName.NATURAL,
-				ValidFunctionName.FLOAT,
-				ValidFunctionName.STRING,
-			].forEach((name) => {
-				this.intrinsics.add(name);
-			});
-		}
 	}
 
 	/**
@@ -353,6 +386,15 @@ export class Validator {
 	}
 
 	/**
+	 * Return the information of a symbol in this Validator’s symbol table, given the source name of the symbol.
+	 * @param source the symbol’s name in source code
+	 * @returns the symbol information, or `undefined` if there is no corresponding entry
+	 */
+	public getSymbolBySource(source: string): SymbolSchema | undefined {
+		return this.getSymbol(Validator.cookTokenIdentifier(source));
+	}
+
+	/**
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
@@ -367,35 +409,5 @@ export class Validator {
 	public clearSymbols(): this {
 		this.symbol_table.clear();
 		return this;
-	}
-
-	/**
-	 * Give a uniquely-generated integer identifier of a custom language identifier token.
-	 * @param source the token’s text
-	 * @return       the unique id identifying the token
-	 */
-	public cookTokenIdentifier(source: string): bigint {
-		if (this.parent) {
-			return this.parent.cookTokenIdentifier(source);
-		}
-		if (this.intrinsics.has(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt([...this.intrinsics].indexOf(source));
-		}
-		this.identifiers.add(source);
-		return Validator.MIN_VALUE_IDENTIFIER + BigInt([...this.identifiers].indexOf(source));
-	}
-
-	/**
-	 * Return the integer identifier (ID) of a given word,
-	 * whether it be a reserved keyword, the name of a constant, or a language identifier.
-	 * @param word the SyntaxNode to get the ID of
-	 * @return     if the word is reserved or has already been cooked, its existing ID; else a new ID
-	 */
-	public wordNodeID(word: SyntaxNodeType<'word'>): bigint {
-		return isSyntaxNodeType(word.children[0], 'identifier')
-			? this.cookTokenIdentifier(word.children[0].text)
-			: isSyntaxNodeType(word.children[0], 'keyword_type') || isSyntaxNodeType(word.children[0], 'keyword_value')
-				? Validator.cookTokenKeyword(word.children[0].children[0].text as Keyword)
-				: Validator.cookTokenKeyword(word.children[0].text as Keyword);
 	}
 }

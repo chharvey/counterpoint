@@ -71,19 +71,8 @@ export class Constant extends Expression {
 			default: {
 				assert.strictEqual(children.length, 2);
 				assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
-				return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
+				return new VALUE.Symbol(Validator.wordNodeId(children[1]), children[1].text);
 			}
-		}
-	}
-
-	public override varCheck(): void {
-		super.varCheck();
-		if (
-			isSyntaxNodeType(this.start_node, 'primitive_literal') &&
-			this.start_node.children.length === 2 &&
-			isSyntaxNodeType(this.start_node.children[1], 'word')
-		) {
-			this.validator.wordNodeID(this.start_node.children[1]);
 		}
 	}
 
