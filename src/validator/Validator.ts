@@ -68,6 +68,12 @@ const COMMENTER_MULTI    = '%%';
 
 
 
+const PRIME = 0x00000100000001b3n; // 64-bit FNV_prime
+const SEED  = 0x48617368416c676fn; // 'HashAlgo' in UTF-8
+//             H a s h A l g o
+
+
+
 /**
  * The UTF-8 encoding of a numeric code point value.
  * @param   codepoint a Unicode code point
@@ -208,6 +214,11 @@ export class Validator {
 
 	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
+
+	/** Hash function for strings. */
+	private static hashString(s: string): bigint {
+		return [SEED, ...new TextEncoder().encode(s)].map((n) => BigInt(n)).reduce((a, b) => BigInt.asUintN(64, (a ^ b) * PRIME));
+	}
 
 	/**
 	 * Give the unique integer identifier of a reserved keyword token.
@@ -386,7 +397,7 @@ export class Validator {
 			return Validator.MIN_VALUE_INTRINSIC + BigInt([...this.intrinsics].indexOf(source));
 		}
 		this.identifiers.add(source);
-		return Validator.MIN_VALUE_IDENTIFIER + BigInt([...this.identifiers].indexOf(source));
+		return Validator.MIN_VALUE_IDENTIFIER + Validator.hashString(source);
 	}
 
 	/**

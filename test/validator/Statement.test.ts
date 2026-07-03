@@ -3,7 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
-	type Validator,
+	Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaVar,
@@ -33,7 +33,7 @@ test.suite('Statement', () => {
 					val mut i: int = 42;
 					set i = 43;
 				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('i')), {
 					isWritable:      true,
 					isUninitialized: false,
 				});
@@ -65,7 +65,7 @@ test.suite('Statement', () => {
 					val mut i?: int;
 					delete i;
 				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
+				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('i')), {
 					isWritable:      true,
 					isUninitialized: true,
 				});
@@ -103,10 +103,11 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				assert.ok(!validator.hasSymbol(0x100n));
+				const id: bigint = validator.cookTokenIdentifier('it');
+				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
-				assert.ok(validator.hasSymbol(0x100n));
-				const info_it: SymbolSchema | undefined = validator.getSymbol(0x100n);
+				assert.ok(validator.hasSymbol(id));
+				const info_it: SymbolSchema | undefined = validator.getSymbol(id);
 				assert_instanceof(info_it, SymbolSchemaVar);
 				return assert.partialDeepStrictEqual(info_it, {
 					isWritable:      false,
@@ -121,9 +122,10 @@ test.suite('Statement', () => {
 					};
 				}`);
 				const validator: Validator = (goal.block!.children[0] as AST.STMT.StatementIteration).block.validator;
-				assert.ok(!validator.hasSymbol(0x100n));
+				const id: bigint = validator.cookTokenIdentifier('_');
+				assert.ok(!validator.hasSymbol(id));
 				goal.varCheck();
-				return assert.ok(!validator.hasSymbol(0x100n));
+				return assert.ok(!validator.hasSymbol(id));
 			});
 			test.test('allows duplicate declaration of iteration variable.', () => {
 				setupScript(`{
@@ -405,7 +407,7 @@ test.suite('Statement', () => {
 					assert.partialDeepStrictEqual(setupScript(`{
 						val mut x?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
+					}`, {build: false}).goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('x')), {
 						isWritable:      true,
 						isUninitialized: true,
 						type:            TYPE.INT,
@@ -416,7 +418,7 @@ test.suite('Statement', () => {
 						val mut x?: int;
 						set x = null;
 					}`, {typeCheck: false});
-					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(0x100n), {
+					assert.partialDeepStrictEqual(goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('x')), {
 						isWritable:      true,
 						isUninitialized: true,
 					});

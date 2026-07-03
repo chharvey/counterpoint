@@ -324,9 +324,6 @@ test.suite('Validator', () => {
 						cooked = actual_raw.map((word) => validator.cookTokenIdentifier(word));
 					});
 					if (i === 0) {
-						test.test('assigns ids starting from 0x100n.', () => {
-							assert.deepStrictEqual(cooked.slice(0, 4), [0x100n, 0x101n, 0x102n, 0x103n]);
-						});
 						test.test('assigns unique ids 0x100n or greater.', () => {
 							cooked.forEach((value) => assert.ok(value >= 0x100n));
 						});

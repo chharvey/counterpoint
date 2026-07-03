@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaType,
@@ -31,10 +32,11 @@ test.suite('Declaration', () => {
 				const goal: AST.Goal = AST.Goal.fromSource(`{
 					type T = int;
 				}`);
-				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
+				const id: bigint = goal.block!.validator.cookTokenIdentifier('T');
+				assert.ok(!goal.block!.validator.hasSymbol(id));
 				goal.varCheck();
-				assert.ok(goal.block!.validator.hasSymbol(0x100n));
-				const info: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x100n);
+				assert.ok(goal.block!.validator.hasSymbol(id));
+				const info: SymbolSchema | undefined = goal.block!.validator.getSymbol(id);
 				assert_instanceof(info, SymbolSchemaType);
 				assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 			});
@@ -92,16 +94,19 @@ test.suite('Declaration', () => {
 					val mut b:  int = 42;
 					val mut c?: int;
 				}`);
-				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
-				assert.ok(!goal.block!.validator.hasSymbol(0x101n));
-				assert.ok(!goal.block!.validator.hasSymbol(0x102n));
+				const id_a: bigint = goal.block!.validator.cookTokenIdentifier('a');
+				const id_b: bigint = goal.block!.validator.cookTokenIdentifier('b');
+				const id_c: bigint = goal.block!.validator.cookTokenIdentifier('c');
+				assert.ok(!goal.block!.validator.hasSymbol(id_a));
+				assert.ok(!goal.block!.validator.hasSymbol(id_b));
+				assert.ok(!goal.block!.validator.hasSymbol(id_c));
 				goal.varCheck();
-				assert.ok(goal.block!.validator.hasSymbol(0x100n));
-				assert.ok(goal.block!.validator.hasSymbol(0x101n));
-				assert.ok(goal.block!.validator.hasSymbol(0x102n));
-				const info_a: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x100n);
-				const info_b: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x101n);
-				const info_c: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x102n);
+				assert.ok(goal.block!.validator.hasSymbol(id_a));
+				assert.ok(goal.block!.validator.hasSymbol(id_b));
+				assert.ok(goal.block!.validator.hasSymbol(id_c));
+				const info_a: SymbolSchema | undefined = goal.block!.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = goal.block!.validator.getSymbol(id_b);
+				const info_c: SymbolSchema | undefined = goal.block!.validator.getSymbol(id_c);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
@@ -176,7 +181,7 @@ test.suite('Declaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue,
+					}`, {build: false}).goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('T')) as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -221,32 +226,34 @@ test.suite('Declaration', () => {
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					val mut the_answer?: int | float;
-				}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
+				}`, {build: false}).goal.block!.validator.getSymbol(new Validator().cookTokenIdentifier('the_answer')), {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
 				});
 			});
 			test.suite('type inference.', () => {
+				const validator = new Validator();
+				const sym_hello: symbol = Symbol(validator.cookTokenIdentifier('hello').toString());
 				const PRIMS = new Map<string, [TYPE.Unit, TYPE.Type]>([
-					['null',    [TYPE.NULL,                        TYPE.NULL]],
-					['false',   [TYPE.FALSE,                       TYPE.BOOL]],
-					['true',    [TYPE.TRUE,                        TYPE.BOOL]],
-					['@hello',  [typeUnit(Symbol(0x100), 'hello'), TYPE.SYM]],
-					['-42',     [typeUnit(-42n),                   TYPE.INT]],
-					['+42',     [typeUnit(42n, 'nat'),             TYPE.NAT]],
-					['6.28',    [typeUnit(6.28),                   TYPE.FLOAT]],
-					['"hello"', [typeUnit('hello'),                TYPE.STR]],
+					['null',    [TYPE.NULL,                    TYPE.NULL]],
+					['false',   [TYPE.FALSE,                   TYPE.BOOL]],
+					['true',    [TYPE.TRUE,                    TYPE.BOOL]],
+					['@hello',  [typeUnit(sym_hello, 'hello'), TYPE.SYM]],
+					['-42',     [typeUnit(-42n),               TYPE.INT]],
+					['+42',     [typeUnit(42n, 'nat'),         TYPE.NAT]],
+					['6.28',    [typeUnit(6.28),               TYPE.FLOAT]],
+					['"hello"', [typeUnit('hello'),            TYPE.STR]],
 				]);
 				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
 						val fixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbol(validator.cookTokenIdentifier('fixed')) as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
 						val mut unfixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, unfixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbol(validator.cookTokenIdentifier('unfixed')) as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
 					const {goal} = setupScript(`{
@@ -254,8 +261,8 @@ test.suite('Declaration', () => {
 						val mut str_tpl_unfixed = """hello"""; % type \`str\`
 					}`, {build: false});
 					return assert_shallowStrictEqual([
-						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(validator.cookTokenIdentifier('str_tpl_fixed'))   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(validator.cookTokenIdentifier('str_tpl_unfixed')) as SymbolSchemaVar).type,
 					], repeat(TYPE.STR, 2));
 				});
 				test.test('infers the constructor type, mutable.', () => {
@@ -264,8 +271,8 @@ test.suite('Declaration', () => {
 						val mut dict_unfixed = Dict.<str>((a= "hello", b= "world")); % type \`mut Dict.<str>\`
 					}`, {build: false});
 					return assertEqualTypes([
-						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(0x103n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(validator.cookTokenIdentifier('list_fixed'))   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(validator.cookTokenIdentifier('dict_unfixed')) as SymbolSchemaVar).type,
 					], [
 						new TYPE.List(TYPE.INT, true),
 						new TYPE.Dict(TYPE.STR, true),
@@ -277,18 +284,18 @@ test.suite('Declaration', () => {
 						val mut rec_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type \`(a= int, b= (str,),       c= List.<bool>)\`
 					}`, {build: false});
 					return assertEqualTypes([
-						(goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(0x106n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(validator.cookTokenIdentifier('tup_fixed'))   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbol(validator.cookTokenIdentifier('rec_unfixed')) as SymbolSchemaVar).type,
 					], [
 						TYPE.Tuple.fromTypes([
 							typeUnit(42n),
-							TYPE.Record.fromTypes(new Map([[0x100n, typeUnit('hello')]])),
+							TYPE.Record.fromTypes(new Map([[validator.cookTokenIdentifier('x'), typeUnit('hello')]])),
 							new TYPE.Dict(TYPE.BOOL, true),
 						]),
 						TYPE.Record.fromTypes(new Map([
-							[0x103n, TYPE.INT],
-							[0x104n, TYPE.Tuple.fromTypes([TYPE.STR])],
-							[0x105n, new TYPE.List(TYPE.BOOL, true)],
+							[validator.cookTokenIdentifier('a'), TYPE.INT],
+							[validator.cookTokenIdentifier('b'), TYPE.Tuple.fromTypes([TYPE.STR])],
+							[validator.cookTokenIdentifier('c'), new TYPE.List(TYPE.BOOL, true)],
 						])),
 					]);
 				});
@@ -441,11 +448,17 @@ test.suite('Declaration', () => {
 						);
 						val bob: Employee | Volunteer = ${ BOB };
 					}`, (err) => {
+						const validator = new Validator();
+						const id_name:         bigint = validator.cookTokenIdentifier('name');
+						const id_id:           bigint = validator.cookTokenIdentifier('id');
+						const id_job_title:    bigint = validator.cookTokenIdentifier('job_title');
+						const id_hours_worked: bigint = validator.cookTokenIdentifier('hours_worked');
+						const id_agency:       bigint = validator.cookTokenIdentifier('agency');
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 257: int, 258: str, 259: float)\`.`},
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 261: str, 259: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(${ id_name }: str, ${ id_id }: int, ${ id_job_title }: str, ${ id_hours_worked }: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(${ id_name }: str, ${ id_agency }: str, ${ id_hours_worked }: float)\`.`},
 							],
 						});
 						return true;

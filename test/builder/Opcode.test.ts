@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
+	Validator,
 	AST,
 	VALUE,
 	TYPE,
@@ -71,7 +72,7 @@ test.suite('Opcode', () => {
 				}`), [
 					VALUE.NULL,
 					VALUE.FALSE,
-					new VALUE.Symbol(0x102n, 'hello'),
+					new VALUE.Symbol(new Validator().cookTokenIdentifier('hello'), 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Float(4.2),
 				]);
@@ -97,10 +98,11 @@ test.suite('Opcode', () => {
 					new VALUE.Float(2.0),
 					new VALUE.String('three'),
 				];
+				const validator = new Validator();
 				const expected_pairs = [
-					[0x100n, expected_items[0]],
-					[0x101n, expected_items[1]],
-					[0x102n, expected_items[2]],
+					[validator.cookTokenIdentifier('a'), expected_items[0]],
+					[validator.cookTokenIdentifier('b'), expected_items[1]],
+					[validator.cookTokenIdentifier('c'), expected_items[2]],
 				] as const;
 				return assert.deepStrictEqual(interpret_extracted_drops(`{
 					(1, 2.0, "three");
@@ -844,7 +846,7 @@ test.suite('Opcode', () => {
 					[
 						genConst(cg),
 						genConst(cg, false),
-						genConst(cg, Symbol(0x100)),
+						genConst(cg, Symbol(new Validator().cookTokenIdentifier('hello').toString())),
 						genConst(cg, 42n),
 						genConst(cg, 4.2),
 						genConst(cg, 'hello'),
@@ -996,7 +998,7 @@ test.suite('Opcode', () => {
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.vm.reftypeNull.Value),
 							mod.local.get(2, cg.vm.reftypeNull.Value),
-							genConst(cg, Symbol(0x101)),
+							genConst(cg, Symbol(new Validator().cookTokenIdentifier('e').toString())),
 						])),
 					);
 				});
@@ -1022,7 +1024,7 @@ test.suite('Opcode', () => {
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.vm.reftype.Value),
 							mod.local.get(2, cg.vm.reftype.Value), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-							genConst(cg, Symbol(0x101)),
+							genConst(cg, Symbol(new Validator().cookTokenIdentifier('e').toString())),
 						]))).replaceAll('$4', '$3'),
 					);
 				});
@@ -1043,51 +1045,50 @@ test.suite('Opcode', () => {
 						(a= x, b= 4.2, c= (null,), d= x/2, e= @e);
 					}`);
 					const {Value} = cg.vm;
+					const validator = new Validator();
+					const id_a: bigint = validator.cookTokenIdentifier('a');
+					const id_b: bigint = validator.cookTokenIdentifier('b');
+					const id_c: bigint = validator.cookTokenIdentifier('c');
+					const id_d: bigint = validator.cookTokenIdentifier('d');
+					const id_e: bigint = validator.cookTokenIdentifier('e');
 					return assertEqualBins(
 						(stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenRecord(new Map([
-							[257n, cg.newProperty(257n, mod.local.get(0, cg.vm.reftype.Value))],
-							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
-							[259n, cg.newProperty(259n, mod.local.get(1, cg.vm.reftype.Value))],
-							[260n, cg.newProperty(260n, mod.local.get(2, cg.vm.reftype.Value))], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-							[261n, cg.newProperty(261n, genConst(cg, Symbol(0x105)))],
+							[id_a, cg.newProperty(id_a, mod.local.get(0, cg.vm.reftype.Value))],
+							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
+							[id_c, cg.newProperty(id_c, mod.local.get(1, cg.vm.reftype.Value))],
+							[id_d, cg.newProperty(id_d, mod.local.get(2, cg.vm.reftype.Value))], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
+							[id_e, cg.newProperty(id_e, genConst(cg, Symbol(id_e.toString())))],
 						]))),
 					);
 				});
 				test.test('inserts keys in source order.', () => {
 					const {stmts, builder, cg} = setupScript(`{
-						% sym  | id  | mod 3
-						% ---- | --- | ----
-						@b;    % 256 % 1
-						@c;    % 257 % 2
-						@a;    % 258 % 0
-						@bb;   % 259 % 1
-						@cc;   % 260 % 2
-						@aa;   % 261 % 0
-						@bbb;  % 262 % 1
-						@ccc;  % 263 % 2
-						@aaa;  % 264 % 0
-						(a= 42, aa= false, b= 4.2);  % (258, 261, 256)
-						(aa= true, c= null, a= 42);  % (261, 257, 258)
-						(b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
+						(a= 42, aa= false, b= 4.2);
+						(aa= true, c= null, a= 42);
+						(b= 42, bb= 4.2, bbb= null);
 					}`);
+					const validator = new Validator();
+					const id_b:   bigint = validator.cookTokenIdentifier('b');
+					const id_c:   bigint = validator.cookTokenIdentifier('c');
+					const id_a:   bigint = validator.cookTokenIdentifier('a');
+					const id_bb:  bigint = validator.cookTokenIdentifier('bb');
+					const id_aa:  bigint = validator.cookTokenIdentifier('aa');
+					const id_bbb: bigint = validator.cookTokenIdentifier('bbb');
 					return assertEqualBins(
-						stmts.slice(9).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
+						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[new Map([
-							// (a= 42, aa= false, b= 4.2);  % (258, 261, 256)
-							[258n, cg.newProperty(258n, genConst(cg, 42n))],
-							[261n, cg.newProperty(261n, genConst(cg, false))],
-							[256n, cg.newProperty(256n, genConst(cg, 4.2))],
+							[id_a,  cg.newProperty(id_a,  genConst(cg, 42n))],
+							[id_aa, cg.newProperty(id_aa, genConst(cg, false))],
+							[id_b,  cg.newProperty(id_b,  genConst(cg, 4.2))],
 						]), new Map([
-							// (aa= true, c= null, a= 42);  % (261, 257, 258)
-							[261n, cg.newProperty(261n, genConst(cg, true))],
-							[257n, cg.newProperty(257n, genConst(cg))],
-							[258n, cg.newProperty(258n, genConst(cg, 42n))],
+							[id_aa, cg.newProperty(id_aa, genConst(cg, true))],
+							[id_c,  cg.newProperty(id_c,  genConst(cg))],
+							[id_a,  cg.newProperty(id_a,  genConst(cg, 42n))],
 						]), new Map([
-							// (b= 42, bb= 4.2, bbb= null); % (256, 259, 262)
-							[256n, cg.newProperty(256n, genConst(cg, 42n))],
-							[259n, cg.newProperty(259n, genConst(cg, 4.2))],
-							[262n, cg.newProperty(262n, genConst(cg))],
+							[id_b,   cg.newProperty(id_b,   genConst(cg, 42n))],
+							[id_bb,  cg.newProperty(id_bb,  genConst(cg, 4.2))],
+							[id_bbb, cg.newProperty(id_bbb, genConst(cg))],
 						])].map((props) => cg.vm.Value.newComposite(cg.codegenRecord(props))),
 					);
 				});
@@ -1108,51 +1109,49 @@ test.suite('Opcode', () => {
 						[a= x, b= 4.2, c= (null,), d= x/2, e= @e];
 					}`);
 					const {Value} = cg.vm;
+					const validator = new Validator();
+					const id_a: bigint = validator.cookTokenIdentifier('a');
+					const id_b: bigint = validator.cookTokenIdentifier('b');
+					const id_c: bigint = validator.cookTokenIdentifier('c');
+					const id_d: bigint = validator.cookTokenIdentifier('d');
+					const id_e: bigint = validator.cookTokenIdentifier('e');
 					return assertEqualBins(
 						(stmts[1] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
 						Value.newComposite(cg.codegenDict(new Map([
-							[257n, cg.newProperty(257n, mod.local.get(0, cg.vm.reftype.Value))],
-							[258n, cg.newProperty(258n, genConst(cg, 4.2))],
-							[259n, cg.newProperty(259n, mod.local.get(1, cg.vm.reftype.Value))],
-							[260n, cg.newProperty(260n, mod.local.get(2, cg.vm.reftype.Value))],
-							[261n, cg.newProperty(261n, genConst(cg, Symbol(0x105)))],
+							[id_a, cg.newProperty(id_a, mod.local.get(0, cg.vm.reftype.Value))],
+							[id_b, cg.newProperty(id_b, genConst(cg, 4.2))],
+							[id_c, cg.newProperty(id_c, mod.local.get(1, cg.vm.reftype.Value))],
+							[id_d, cg.newProperty(id_d, mod.local.get(2, cg.vm.reftype.Value))],
+							[id_e, cg.newProperty(id_e, genConst(cg, Symbol(id_e.toString())))],
 						]))),
 					);
 				});
 				test.test('inserts keys in source order.', () => {
 					const {stmts, builder, cg} = setupScript(`{
-						% sym  | id  | mod 8
-						% ---- | --- | ----
-						@b;    % 256 % 0
-						@c;    % 257 % 1
-						@a;    % 258 % 2
-						@bb;   % 259 % 3
-						@cc;   % 260 % 4
-						@aa;   % 261 % 5
-						@bbb;  % 262 % 6
-						@ccc;  % 263 % 7
-						@aaa;  % 264 % 0
-						[a= 42, aa= false, b= 4.2]; % (258, 261, 256)
-						[aa= true, c= null, a= 42]; % (261, 257, 258)
-						[b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
+						[a= 42, aa= false, b= 4.2];
+						[aa= true, c= null, a= 42];
+						[b= 42, c= 4.2, aaa= null];
 					}`);
+					const validator = new Validator();
+					const id_b:   bigint = validator.cookTokenIdentifier('b');
+					const id_c:   bigint = validator.cookTokenIdentifier('c');
+					const id_a:   bigint = validator.cookTokenIdentifier('a');
+					const id_aa:  bigint = validator.cookTokenIdentifier('aa');
+					const id_aaa: bigint = validator.cookTokenIdentifier('aaa');
 					return assertEqualBins(
-						stmts.slice(9).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
+						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[new Map([
-							// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
-							[258n, cg.newProperty(258n, genConst(cg, 42n))],
-							[261n, cg.newProperty(261n, genConst(cg, false))],
-							[256n, cg.newProperty(256n, genConst(cg, 4.2))],
+							[id_a,  cg.newProperty(id_a,  genConst(cg, 42n))],
+							[id_aa, cg.newProperty(id_aa, genConst(cg, false))],
+							[id_b,  cg.newProperty(id_b,  genConst(cg, 4.2))],
 						]), new Map([
-							// [aa= true, c= null, a= 42]; % (261, 257, 258)
-							[261n, cg.newProperty(261n, genConst(cg, true))],
-							[257n, cg.newProperty(257n, genConst(cg))],
-							[258n, cg.newProperty(258n, genConst(cg, 42n))],
+							[id_aa, cg.newProperty(id_aa, genConst(cg, true))],
+							[id_c,  cg.newProperty(id_c,  genConst(cg))],
+							[id_a,  cg.newProperty(id_a,  genConst(cg, 42n))],
 						]), new Map([
-							// [b= 42, c= 4.2, aaa= null]; % (256, 257, 264)
-							[256n, cg.newProperty(256n, genConst(cg, 42n))],
-							[257n, cg.newProperty(257n, genConst(cg, 4.2))],
-							[264n, cg.newProperty(264n, genConst(cg))],
+							[id_b,   cg.newProperty(id_b,   genConst(cg, 42n))],
+							[id_c,   cg.newProperty(id_c,   genConst(cg, 4.2))],
+							[id_aaa, cg.newProperty(id_aaa, genConst(cg))],
 						])].map((props) => cg.vm.Value.newComposite(cg.codegenDict(props))),
 					);
 				});
@@ -1180,7 +1179,7 @@ test.suite('Opcode', () => {
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
 							[genConst(cg, 3.3), mod.local.get(1, cg.vm.reftype.Value)],
 							[genConst(cg, 4.4), mod.local.get(2, cg.vm.reftype.Value)], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-							[genConst(cg, 5.5), genConst(cg, Symbol(0x101))],
+							[genConst(cg, 5.5), genConst(cg, Symbol(new Validator().cookTokenIdentifier('e').toString()))],
 						])))).replaceAll('$4', '$3'),
 					);
 				});
@@ -1225,18 +1224,19 @@ test.suite('Opcode', () => {
 					rec.b;
 				}`);
 				const {Value, Record: VmRecord} = cg.vm;
+				const validator = new Validator();
 				return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Record),
-						bigint_to_i64(mod, 0x103n, true),
+						bigint_to_i64(mod, validator.cookTokenIdentifier('c'), true),
 					)),
 					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Record),
-						bigint_to_i64(mod, 0x101n, true),
+						bigint_to_i64(mod, validator.cookTokenIdentifier('a'), true),
 					)),
 					mod.drop(VmRecord.get(
 						Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Record),
-						bigint_to_i64(mod, 0x102n, true),
+						bigint_to_i64(mod, validator.cookTokenIdentifier('b'), true),
 					)),
 				]);
 			});
@@ -1319,11 +1319,12 @@ test.suite('Opcode', () => {
 						dict.[@c];
 					}`);
 					const {Vect, Value, Property, Dict} = cg.vm;
+					const validator = new Validator();
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						mod.drop(mod.block(null, [
 							mod.local.set(3, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, Symbol(0x104))).primitive),
+								Vect.asNat(Value.field(genConst(cg, Symbol(validator.cookTokenIdentifier('b').toString()))).primitive),
 							), 1)),
 							mod.if(
 								mod.i32.or(
@@ -1337,7 +1338,7 @@ test.suite('Opcode', () => {
 						mod.drop(mod.block(null, [
 							mod.local.set(4, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, Symbol(0x101))).primitive),
+								Vect.asNat(Value.field(genConst(cg, Symbol(validator.cookTokenIdentifier('a').toString()))).primitive),
 							), 1)),
 							mod.if(
 								mod.i32.or(
@@ -1351,7 +1352,7 @@ test.suite('Opcode', () => {
 						mod.drop(mod.block(null, [
 							mod.local.set(5, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, Symbol(0x102))).primitive),
+								Vect.asNat(Value.field(genConst(cg, Symbol(validator.cookTokenIdentifier('c').toString()))).primitive),
 							), 1)),
 							mod.if(
 								mod.i32.or(
@@ -1529,18 +1530,19 @@ test.suite('Opcode', () => {
 						String.(42);
 						String.("hello");
 					}`, {codegen: false});
+					const id_hello = new Validator().cookTokenIdentifier('hello');
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[
 							cg.vm.op.not(genConst(cg)),
 							cg.vm.op.not(genConst(cg, false)),
-							cg.vm.op.not(genConst(cg, Symbol(0x100))),
+							cg.vm.op.not(genConst(cg, Symbol(id_hello.toString()))),
 							cg.vm.op.not(genConst(cg, 42n)),
 							cg.vm.op.not(genConst(cg, 4.2)),
 
 							cg.vm.op.isEmpty(genConst(cg)),
 							cg.vm.op.isEmpty(genConst(cg, false)),
-							cg.vm.op.isEmpty(genConst(cg, Symbol(0x100))),
+							cg.vm.op.isEmpty(genConst(cg, Symbol(id_hello.toString()))),
 							cg.vm.op.isEmpty(genConst(cg, 42n)),
 							cg.vm.op.isEmpty(genConst(cg, 4.2)),
 
@@ -1717,7 +1719,7 @@ test.suite('Opcode', () => {
 					[
 						mod.drop(genConst(cg)),
 						mod.drop(genConst(cg, false)),
-						mod.drop(genConst(cg, Symbol(0x100))),
+						mod.drop(genConst(cg, Symbol(new Validator().cookTokenIdentifier('hello').toString()))),
 						mod.drop(genConst(cg, 42n)),
 						mod.drop(genConst(cg, 4.2)),
 					],
@@ -1741,19 +1743,20 @@ test.suite('Opcode', () => {
 					set f = "hello";
 					delete f;
 				}`, {codegen: false});
+				const validator = new Validator();
 				return assertEqualBins(
 					builder.instructions.map((instr) => instr.codegen(cg)),
 					[
 						mod.local.set(0, genConst(cg)),
 						mod.local.set(1, genConst(cg, false)),
-						mod.local.set(2, genConst(cg, Symbol(0x102))),
+						mod.local.set(2, genConst(cg, Symbol(validator.cookTokenIdentifier('hello').toString()))),
 						mod.local.set(3, genConst(cg, 42n)),
 						mod.local.set(4, genConst(cg, 4.2)),
 						mod.local.set(5, cg.vm.Value.newDefault()),
 
 						mod.local.set(0, genConst(cg)),
 						mod.local.set(1, genConst(cg, true)),
-						mod.local.set(2, genConst(cg, Symbol(0x107))),
+						mod.local.set(2, genConst(cg, Symbol(validator.cookTokenIdentifier('world').toString()))),
 						mod.local.set(3, genConst(cg, 43n)),
 						mod.local.set(4, genConst(cg, 4.3)),
 						mod.local.set(5, genConst(cg, 'hello')),
@@ -1811,20 +1814,21 @@ test.suite('Opcode', () => {
 						set dict.[@c] = 47;
 					}`);
 					const {Vect, Value, Dict} = cg.vm;
+					const validator = new Validator();
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						Dict.set(
 							Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-							Vect.asNat(Value.field(genConst(cg, Symbol(0x104))).primitive),
+							Vect.asNat(Value.field(genConst(cg, Symbol(validator.cookTokenIdentifier('b').toString()))).primitive),
 							genConst(cg, 45n),
 						),
 						Dict.set(
 							Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-							Vect.asNat(Value.field(genConst(cg, Symbol(0x101))).primitive),
+							Vect.asNat(Value.field(genConst(cg, Symbol(validator.cookTokenIdentifier('a').toString()))).primitive),
 							genConst(cg, 46n),
 						),
 						Dict.set(
 							Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-							Vect.asNat(Value.field(genConst(cg, Symbol(0x102))).primitive),
+							Vect.asNat(Value.field(genConst(cg, Symbol(validator.cookTokenIdentifier('c').toString()))).primitive),
 							genConst(cg, 47n),
 						),
 					]);
