@@ -181,7 +181,7 @@ test.suite('Declaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, {build: false}).goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('T')) as SymbolSchemaType).typevalue,
+					}`, {build: false}).goal.block!.validator.getSymbolBySource('T') as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -226,7 +226,7 @@ test.suite('Declaration', () => {
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					val mut the_answer?: int | float;
-				}`, {build: false}).goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('the_answer')), {
+				}`, {build: false}).goal.block!.validator.getSymbolBySource('the_answer'), {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
@@ -247,12 +247,12 @@ test.suite('Declaration', () => {
 				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
 						val fixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('fixed')) as SymbolSchemaVar).type, fixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbolBySource('fixed') as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
 						val mut unfixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('unfixed')) as SymbolSchemaVar).type, unfixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbolBySource('unfixed') as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
 					const {goal} = setupScript(`{
@@ -260,8 +260,8 @@ test.suite('Declaration', () => {
 						val mut str_tpl_unfixed = """hello"""; % type \`str\`
 					}`, {build: false});
 					return assert_shallowStrictEqual([
-						(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('str_tpl_fixed'))   as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('str_tpl_unfixed')) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('str_tpl_fixed')   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('str_tpl_unfixed') as SymbolSchemaVar).type,
 					], repeat(TYPE.STR, 2));
 				});
 				test.test('infers the constructor type, mutable.', () => {
@@ -270,8 +270,8 @@ test.suite('Declaration', () => {
 						val mut dict_unfixed = Dict.<str>((a= "hello", b= "world")); % type \`mut Dict.<str>\`
 					}`, {build: false});
 					return assertEqualTypes([
-						(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('list_fixed'))   as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('dict_unfixed')) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('list_fixed')   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('dict_unfixed') as SymbolSchemaVar).type,
 					], [
 						new TYPE.List(TYPE.INT, true),
 						new TYPE.Dict(TYPE.STR, true),
@@ -283,8 +283,8 @@ test.suite('Declaration', () => {
 						val mut rec_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type \`(a= int, b= (str,),       c= List.<bool>)\`
 					}`, {build: false});
 					return assertEqualTypes([
-						(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('tup_fixed'))   as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(Validator.cookTokenIdentifier('rec_unfixed')) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('tup_fixed')   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('rec_unfixed') as SymbolSchemaVar).type,
 					], [
 						TYPE.Tuple.fromTypes([
 							typeUnit(42n),

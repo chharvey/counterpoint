@@ -386,6 +386,15 @@ export class Validator {
 	}
 
 	/**
+	 * Return the information of a symbol in this Validator’s symbol table, given the source name of the symbol.
+	 * @param source the symbol’s name in source code
+	 * @returns the symbol information, or `undefined` if there is no corresponding entry
+	 */
+	public getSymbolBySource(source: string): SymbolSchema | undefined {
+		return this.getSymbol(Validator.cookTokenIdentifier(source));
+	}
+
+	/**
 	 * Return a copy of this Validator’s symbols.
 	 * @return the symbols in a new map
 	 */
