@@ -845,7 +845,7 @@ test.suite('Opcode', () => {
 					[
 						genConst(cg),
 						genConst(cg, false),
-						genConst(cg, Symbol(Validator.cookTokenIdentifier('hello').toString())),
+						genConst(cg, 'hello', 'sym'),
 						genConst(cg, 42n),
 						genConst(cg, 4.2),
 						genConst(cg, 'hello'),
@@ -997,7 +997,7 @@ test.suite('Opcode', () => {
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.vm.reftypeNull.Value),
 							mod.local.get(2, cg.vm.reftypeNull.Value),
-							genConst(cg, Symbol(Validator.cookTokenIdentifier('e').toString())),
+							genConst(cg, 'e', 'sym'),
 						])),
 					);
 				});
@@ -1023,7 +1023,7 @@ test.suite('Opcode', () => {
 							genConst(cg, 4.2),
 							mod.local.get(1, cg.vm.reftype.Value),
 							mod.local.get(2, cg.vm.reftype.Value), // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-							genConst(cg, Symbol(Validator.cookTokenIdentifier('e').toString())),
+							genConst(cg, 'e', 'sym'),
 						]))).replaceAll('$4', '$3'),
 					);
 				});
@@ -1174,7 +1174,7 @@ test.suite('Opcode', () => {
 							[genConst(cg, 2.2), genConst(cg, 4.2)],
 							[genConst(cg, 3.3), mod.local.get(1, cg.vm.reftype.Value)],
 							[genConst(cg, 4.4), mod.local.get(2, cg.vm.reftype.Value)], // from TAC (local.set $2 (INT.DIV (GET x) (INT.CONST 2)))
-							[genConst(cg, 5.5), genConst(cg, Symbol(Validator.cookTokenIdentifier('e').toString()))],
+							[genConst(cg, 5.5), genConst(cg, 'e', 'sym')],
 						])))).replaceAll('$4', '$3'),
 					);
 				});
@@ -1317,7 +1317,7 @@ test.suite('Opcode', () => {
 						mod.drop(mod.block(null, [
 							mod.local.set(3, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, Symbol(Validator.cookTokenIdentifier('b').toString()))).primitive),
+								Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
 							), 1)),
 							mod.if(
 								mod.i32.or(
@@ -1331,7 +1331,7 @@ test.suite('Opcode', () => {
 						mod.drop(mod.block(null, [
 							mod.local.set(4, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, Symbol(Validator.cookTokenIdentifier('a').toString()))).primitive),
+								Vect.asNat(Value.field(genConst(cg, 'a', 'sym')).primitive),
 							), 1)),
 							mod.if(
 								mod.i32.or(
@@ -1345,7 +1345,7 @@ test.suite('Opcode', () => {
 						mod.drop(mod.block(null, [
 							mod.local.set(5, mod.tuple.extract(Dict.find(
 								Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, Symbol(Validator.cookTokenIdentifier('c').toString()))).primitive),
+								Vect.asNat(Value.field(genConst(cg, 'c', 'sym')).primitive),
 							), 1)),
 							mod.if(
 								mod.i32.or(
@@ -1712,7 +1712,7 @@ test.suite('Opcode', () => {
 					[
 						mod.drop(genConst(cg)),
 						mod.drop(genConst(cg, false)),
-						mod.drop(genConst(cg, Symbol(Validator.cookTokenIdentifier('hello').toString()))),
+						mod.drop(genConst(cg, 'hello', 'sym')),
 						mod.drop(genConst(cg, 42n)),
 						mod.drop(genConst(cg, 4.2)),
 					],
@@ -1741,14 +1741,14 @@ test.suite('Opcode', () => {
 					[
 						mod.local.set(0, genConst(cg)),
 						mod.local.set(1, genConst(cg, false)),
-						mod.local.set(2, genConst(cg, Symbol(Validator.cookTokenIdentifier('hello').toString()))),
+						mod.local.set(2, genConst(cg, 'hello', 'sym')),
 						mod.local.set(3, genConst(cg, 42n)),
 						mod.local.set(4, genConst(cg, 4.2)),
 						mod.local.set(5, cg.vm.Value.newDefault()),
 
 						mod.local.set(0, genConst(cg)),
 						mod.local.set(1, genConst(cg, true)),
-						mod.local.set(2, genConst(cg, Symbol(Validator.cookTokenIdentifier('world').toString()))),
+						mod.local.set(2, genConst(cg, 'world', 'sym')),
 						mod.local.set(3, genConst(cg, 43n)),
 						mod.local.set(4, genConst(cg, 4.3)),
 						mod.local.set(5, genConst(cg, 'hello')),
@@ -1809,17 +1809,17 @@ test.suite('Opcode', () => {
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
 						Dict.set(
 							Value.cast(mod.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-							Vect.asNat(Value.field(genConst(cg, Symbol(Validator.cookTokenIdentifier('b').toString()))).primitive),
+							Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
 							genConst(cg, 45n),
 						),
 						Dict.set(
 							Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-							Vect.asNat(Value.field(genConst(cg, Symbol(Validator.cookTokenIdentifier('a').toString()))).primitive),
+							Vect.asNat(Value.field(genConst(cg, 'a', 'sym')).primitive),
 							genConst(cg, 46n),
 						),
 						Dict.set(
 							Value.cast(mod.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-							Vect.asNat(Value.field(genConst(cg, Symbol(Validator.cookTokenIdentifier('c').toString()))).primitive),
+							Vect.asNat(Value.field(genConst(cg, 'c', 'sym')).primitive),
 							genConst(cg, 47n),
 						),
 					]);

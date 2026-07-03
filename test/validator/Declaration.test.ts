@@ -233,16 +233,15 @@ test.suite('Declaration', () => {
 				});
 			});
 			test.suite('type inference.', () => {
-				const sym_hello: symbol = Symbol(Validator.cookTokenIdentifier('hello').toString());
 				const PRIMS = new Map<string, [TYPE.Unit, TYPE.Type]>([
-					['null',    [TYPE.NULL,                    TYPE.NULL]],
-					['false',   [TYPE.FALSE,                   TYPE.BOOL]],
-					['true',    [TYPE.TRUE,                    TYPE.BOOL]],
-					['@hello',  [typeUnit(sym_hello, 'hello'), TYPE.SYM]],
-					['-42',     [typeUnit(-42n),               TYPE.INT]],
-					['+42',     [typeUnit(42n, 'nat'),         TYPE.NAT]],
-					['6.28',    [typeUnit(6.28),               TYPE.FLOAT]],
-					['"hello"', [typeUnit('hello'),            TYPE.STR]],
+					['null',    [TYPE.NULL,                TYPE.NULL]],
+					['false',   [TYPE.FALSE,               TYPE.BOOL]],
+					['true',    [TYPE.TRUE,                TYPE.BOOL]],
+					['@hello',  [typeUnit('hello', 'sym'), TYPE.SYM]],
+					['-42',     [typeUnit(-42n),           TYPE.INT]],
+					['+42',     [typeUnit(42n, 'nat'),     TYPE.NAT]],
+					['6.28',    [typeUnit(6.28),           TYPE.FLOAT]],
+					['"hello"', [typeUnit('hello'),        TYPE.STR]],
 				]);
 				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
