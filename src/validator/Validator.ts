@@ -318,6 +318,20 @@ export class Validator {
 		return new TextEncoder().encode(source.slice(delim_start.length, -delim_end.length));
 	}
 
+	/**
+	 * Return the integer identifier (ID) of a given word,
+	 * whether it be a reserved keyword, the name of a constant, or a language identifier.
+	 * @param word the SyntaxNode to get the ID of
+	 * @return     if the word is reserved or has already been cooked, its existing ID; else a new ID
+	 */
+	public static wordNodeId(word: SyntaxNodeType<'word'>): bigint {
+		return isSyntaxNodeType(word.children[0], 'identifier')
+			? Validator.cookTokenIdentifier(word.children[0].text)
+			: isSyntaxNodeType(word.children[0], 'keyword_type') || isSyntaxNodeType(word.children[0], 'keyword_value')
+				? Validator.cookTokenKeyword(word.children[0].children[0].text as Keyword)
+				: Validator.cookTokenKeyword(word.children[0].text as Keyword);
+	}
+
 
 	/** A symbol table, which keeps tracks of variables. */
 	private readonly symbol_table = new Map<bigint, SymbolSchema>();
@@ -386,19 +400,5 @@ export class Validator {
 	public clearSymbols(): this {
 		this.symbol_table.clear();
 		return this;
-	}
-
-	/**
-	 * Return the integer identifier (ID) of a given word,
-	 * whether it be a reserved keyword, the name of a constant, or a language identifier.
-	 * @param word the SyntaxNode to get the ID of
-	 * @return     if the word is reserved or has already been cooked, its existing ID; else a new ID
-	 */
-	public wordNodeID(word: SyntaxNodeType<'word'>): bigint {
-		return isSyntaxNodeType(word.children[0], 'identifier')
-			? Validator.cookTokenIdentifier(word.children[0].text)
-			: isSyntaxNodeType(word.children[0], 'keyword_type') || isSyntaxNodeType(word.children[0], 'keyword_value')
-				? Validator.cookTokenKeyword(word.children[0].children[0].text as Keyword)
-				: Validator.cookTokenKeyword(word.children[0].text as Keyword);
 	}
 }
