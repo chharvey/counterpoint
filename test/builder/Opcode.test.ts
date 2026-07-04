@@ -112,7 +112,7 @@ test.suite('Opcode', () => {
 					[a= 1, b= 2.0, c= "three"];
 
 					{
-						% "a" || "" -> 1, % TODO: implement logical binop interp
+						"a" || "" -> 1,
 						21 + 21   -> 2.0,
 						1.5 * 2.0 -> "three",
 					};
@@ -123,7 +123,7 @@ test.suite('Opcode', () => {
 					new VALUE.Record(new Map<bigint, VALUE.Value>(expected_pairs)),
 					new VALUE.Dict(new Map<bigint, VALUE.Value>(expected_pairs)),
 					new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-						// [new VALUE.String('a'),  expected_items[0]], // TODO: implement logical binop interp
+						[new VALUE.String('a'),  expected_items[0]],
 						[new VALUE.Integer(42n), expected_items[1]],
 						[new VALUE.Float(3.0),   expected_items[2]],
 					])),
