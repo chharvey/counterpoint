@@ -35,10 +35,6 @@ class TypeMap extends ReferenceType {
 		super(new Set<VALUE.Map>([new VALUE.Map()]), is_mutable);
 	}
 
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.typearg_ant.hasMutable || this.typearg_con.hasMutable;
-	}
-
 	public override toString(): string {
 		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Map.<${ this.typearg_ant }, ${ this.typearg_con }>`;
 	}

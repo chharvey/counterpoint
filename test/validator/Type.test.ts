@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
+	Validator,
 	AST,
 	type EntryType,
 	TYPE,
@@ -101,8 +102,8 @@ test.suite('Type', () => {
 						TYPE.BOOL,
 						TYPE.INT.union(TYPE.NULL),
 					]), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
-						[0x100n, TYPE.STR],
-						[0x101n, TYPE.FLOAT],
+						[Validator.cookTokenIdentifier('alpha'), TYPE.STR],
+						[Validator.cookTokenIdentifier('bravo'), TYPE.FLOAT],
 					]))),
 				);
 			});
@@ -141,10 +142,10 @@ test.suite('Type', () => {
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
-					new VALUE.Symbol(0x54n,  'then').toType(),
-					new VALUE.Symbol(0x46n,  'str').toType(),
-					new VALUE.Symbol(0x49n,  'false').toType(),
-					new VALUE.Symbol(0x100n, 'foobar').toType(),
+					new VALUE.Symbol(0x54n, 'then').toType(),
+					new VALUE.Symbol(0x46n, 'str').toType(),
+					new VALUE.Symbol(0x49n, 'false').toType(),
+					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),

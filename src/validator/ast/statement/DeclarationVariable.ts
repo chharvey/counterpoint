@@ -21,6 +21,7 @@ import {
 import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
@@ -83,7 +84,7 @@ export class DeclarationVariable extends Statement {
 	}
 
 
-	private id?: bigint;
+	private readonly id?: bigint;
 
 
 	public constructor(
@@ -101,6 +102,9 @@ export class DeclarationVariable extends Statement {
 				...(assigned ? [assigned] : []),
 			],
 		);
+		if (this.assignee) {
+			this.id = Validator.cookTokenIdentifier(this.assignee.source);
+		}
 	}
 
 	@memoizeGetter
@@ -111,11 +115,10 @@ export class DeclarationVariable extends Statement {
 	public override varCheck(): void {
 		super.varCheck();
 		if (this.assignee) {
-			this.id = this.validator.cookTokenIdentifier(this.assignee.source);
-			if (this.validator.hasSymbol(this.id)) {
+			if (this.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaVar(this.id, this.assignee, this.writable, !this.assigned));
+			this.validator.addSymbol(new SymbolSchemaVar(this.id!, this.assignee, this.writable, !this.assigned));
 		}
 	}
 
@@ -136,8 +139,7 @@ export class DeclarationVariable extends Statement {
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
-			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
-			symbol.type = assignee_type;
+			(this.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 	}
 
@@ -147,9 +149,9 @@ export class DeclarationVariable extends Statement {
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.irType = value?.type ?? TYPE.NULL;
-			builder.pushInstruction(new OP.Decl(symbol, value));
+			return builder.pushInstruction(new OP.Decl(symbol, value));
 		} else {
-			builder.pushInstruction(new OP.Drop(value!));
+			return builder.pushInstruction(new OP.Drop(value!));
 		}
 	}
 }

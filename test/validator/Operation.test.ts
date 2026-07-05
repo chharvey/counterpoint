@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	Validator,
 	AST,
 	SymbolSchemaVar,
 	VALUE,
@@ -724,17 +725,17 @@ test.suite('Operation', () => {
 					['null  && false',    TYPE.NULL],
 					['false && null',     TYPE.FALSE],
 					['true  && null',     TYPE.NULL],
-					['@x    && @y',       new TYPE.Unit(new VALUE.Symbol(0x101n, 'y'))],
-					['@x    || @y',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'x'))],
+					['@x    && @y',       typeUnit('y', 'sym')],
+					['@x    || @y',       typeUnit('x', 'sym')],
 					['@z    && false',    TYPE.FALSE],
-					['true  && @z',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'z'))],
+					['true  && @z',       typeUnit('z', 'sym')],
 					['false && 42',       TYPE.FALSE],
 					['4.2   && true',     TYPE.TRUE],
 					['null  || false',    TYPE.FALSE],
 					['false || null',     TYPE.NULL],
 					['true  || null',     TYPE.TRUE],
-					['false || 42',       new TYPE.Unit(new VALUE.Integer(42n))],
-					['4.2   || true',     new TYPE.Unit(new VALUE.Float(4.2))],
+					['false || 42',       typeUnit(42n)],
+					['4.2   || true',     typeUnit(4.2)],
 				]));
 			});
 			test.suite('with constant folding off.', () => {
@@ -842,7 +843,7 @@ test.suite('Operation', () => {
 			});
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.EXPR.OperationTernary = AST.EXPR.OperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar(0x100n, (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
+				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.cookTokenIdentifier('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
 				return assert.ok(ternary.type().isBottomType);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {

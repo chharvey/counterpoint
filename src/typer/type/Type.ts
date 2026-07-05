@@ -349,14 +349,6 @@ export abstract class Type {
 	public abstract get isReference(): boolean;
 
 	/**
-	 * Return whether this type is mutable or has a mutable operand or component.
-	 * @return `true` if this type is mutable or has a mutable operand/component
-	 */
-	public get hasMutable(): boolean {
-		return this.isMutable;
-	}
-
-	/**
 	 * @return a string representation of this type
 	 */
 	public abstract toString(): string;
@@ -548,10 +540,6 @@ export class TypeInterface extends Type {
 
 	public override get isReference(): boolean {
 		return true;
-	}
-
-	public override get hasMutable(): boolean {
-		return super.hasMutable || [...this.properties.values()].some((t) => t.hasMutable);
 	}
 
 	public override toString(): string {
