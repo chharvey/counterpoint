@@ -1,4 +1,7 @@
-import type {Builder} from '../../../index.ts';
+import {
+	type Builder,
+	OP,
+} from '../../../index.ts';
 import {
 	assert_instanceof,
 	noopGetter,
@@ -32,7 +35,8 @@ export class StatementReturn extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(_builder: Builder): void {
-		throw new Error('`StatementReturn#build` not yet supported.');
+	public override build(builder: Builder): void {
+		builder.terminateBlock(new OP.Goto('caller'));
+		builder.initiateBlock(builder.newLabel(true));
 	}
 }

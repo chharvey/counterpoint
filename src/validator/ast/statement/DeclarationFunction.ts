@@ -88,11 +88,15 @@ export class DeclarationFunction extends Statement {
 	@runOnceMethod
 	public override build(builder: Builder): void {
 		if (this.identifier) {
-			builder.pushInstruction(new OP.Func(
-				this.validator.getSymbol(this.id!) as SymbolSchemaVar,
-				BigInt(this.parameters.length),
-			));
+			const label_func:    string = builder.newLabel();
+			const label_endfunc: string = builder.newLabel();
+
+			builder.terminateBlock(new OP.Goto(label_endfunc));
+			builder.initiateBlock(label_func);
+			this.parameters.forEach((param) => param.build(builder));
+			this.block.build(builder);
+			builder.terminateBlock(new OP.Goto(builder.newLabel(true))); // FIXME: should trap
+			builder.initiateBlock(label_endfunc);
 		}
-		throw new Error('`DeclarationFunction#build` not yet supported.');
 	}
 }

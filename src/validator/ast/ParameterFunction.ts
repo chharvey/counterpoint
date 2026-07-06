@@ -1,5 +1,10 @@
 import * as assert from 'node:assert';
-import {AssignmentErrorDuplicateDeclaration} from '../../index.ts';
+import {
+	type Builder,
+	OP,
+	AssignmentErrorDuplicateDeclaration,
+} from '../../index.ts';
+import {runOnceMethod} from '../../lib/index.ts';
 import type {Serializable} from '../../parser/index.ts';
 import type {TYPE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../index.ts';
@@ -58,6 +63,16 @@ export class ParameterFunction extends AstNode {
 			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
 			assert.ok(block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
 			(block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = param_type;
+		}
+	}
+
+	@runOnceMethod
+	public build(builder: Builder): void {
+		if (this.identifier) {
+			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
+			const symbol = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
+			symbol.irType = symbol.type;
+			return builder.pushInstruction(new OP.Decl(symbol));
 		}
 	}
 }
