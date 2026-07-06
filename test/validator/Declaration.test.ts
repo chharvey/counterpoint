@@ -736,7 +736,8 @@ test.suite('Declaration', () => {
 						(GOTO "caller")
 					"unreachable-3":
 						(DROP (INT.CONST 42))
-						(GOTO "unreachable-4")
+						(DROP (TRAP))
+						(ENDPROGRAM)
 					"block-2":
 						(ENDPROGRAM)
 				`.trim());
@@ -745,10 +746,13 @@ test.suite('Declaration', () => {
 				assert.strictEqual(setupScript(`{
 					func f(): void {
 						if 42 < 43 then {
+							44;
+							return;
+						} else {
+							45;
 							return;
 						};
-						return;
-						44;
+						46;
 					}
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
@@ -756,14 +760,19 @@ test.suite('Declaration', () => {
 					"block-1":
 						(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
 					"block-3":
-						(GOTO "caller")
-					"unreachable-5":
-						(GOTO "block-4")
-					"block-4":
+						(DROP (INT.CONST 44))
 						(GOTO "caller")
 					"unreachable-6":
-						(DROP (INT.CONST 44))
-						(GOTO "unreachable-7")
+						(GOTO "block-5")
+					"block-4":
+						(DROP (INT.CONST 45))
+						(GOTO "caller")
+					"unreachable-7":
+						(GOTO "block-5")
+					"block-5":
+						(DROP (INT.CONST 46))
+						(DROP (TRAP))
+						(ENDPROGRAM)
 					"block-2":
 						(ENDPROGRAM)
 				`.trim());
@@ -778,7 +787,8 @@ test.suite('Declaration', () => {
 						(GOTO "block-2")
 					"block-1":
 						(DROP (INT.CONST 42))
-						(GOTO "unreachable-3")
+						(DROP (TRAP))
+						(ENDPROGRAM)
 					"block-2":
 						(ENDPROGRAM)
 				`.trim());
