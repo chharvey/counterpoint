@@ -50,8 +50,8 @@ export class StatementBreak extends Statement {
 			node = node.parent;
 		}
 		// we should already have labels by the time we reach the root node
-		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementLoop.');
-		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementLoop to have its labels already created.');
+		assert.ok(labels, 'Expected StatementBreak to be nested inside (directly or indirectly) a StatementBreakable.');
+		assert.ok(labels.while && labels.endwhile, 'Expected containing StatementBreakable to have its labels already created.');
 		builder.terminateBlock(new OP.Goto(this.skip ? labels.while : labels.endwhile));
 		builder.initiateBlock(builder.newLabel(true));
 	}

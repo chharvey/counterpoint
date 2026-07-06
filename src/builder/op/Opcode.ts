@@ -97,6 +97,8 @@ export enum OpCode {
 	SET_COPY,
 	MAP_COPY,
 
+	FUNC,
+
 	GOTO,
 	GOTO_IF,
 	ENDPROGRAM,

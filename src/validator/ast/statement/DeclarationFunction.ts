@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	type Builder,
+	OP,
 	AssignmentErrorDuplicateDeclaration,
 } from '../../../index.ts';
 import {
@@ -85,7 +86,18 @@ export class DeclarationFunction extends Statement {
 	}
 
 	@runOnceMethod
-	public override build(_builder: Builder): void {
-		throw new Error('`DeclarationFunction#build` not yet supported.');
+	public override build(builder: Builder): void {
+		if (this.identifier) {
+			const label_func:    string = builder.newLabel();
+			const label_endfunc: string = builder.newLabel();
+
+			builder.terminateBlock(new OP.Goto(label_endfunc));
+			builder.initiateBlock(label_func);
+			this.parameters.forEach((param) => param.build(builder));
+			this.block.build(builder);
+			builder.pushInstruction(new OP.Drop(new OP.Trap())); // traps because this part should be unreachable (a return/throw statement should have been encountered in the function body by now)
+			builder.terminateBlock(new OP.EndProgram());
+			builder.initiateBlock(label_endfunc);
+		}
 	}
 }

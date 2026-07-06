@@ -110,6 +110,8 @@ DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
 MAP.COPY ([Value Value]);
 
+FUNC(SymbolSchemaVar Integer);
+
 
 
 
@@ -307,7 +309,11 @@ Build(SemanticDeclarationVariable[writable=true][id: RealNumber] ::= SemanticTyp
 	(DECL <null> `GetSymbolSchema(id)`)
 ];
 
-Build(SemanticDeclarationFunction); // TODO
+Build(SemanticDeclarationFunction[id=*none*]) := [];
+Build(SemanticDeclarationFunction[id: RealNumber] ::= SemanticParameterFunction* SemanticBlock) := [(FUNC
+	`GetSymbolSchema(id)`
+	`SemanticParameterFunction*.length`
+)];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
 	(DROP `Build(stmt.0)`)

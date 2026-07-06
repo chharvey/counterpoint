@@ -14,6 +14,7 @@ import {Opcode} from './Opcode.ts';
  * - Set
  * - CollectionDynamicSet
  * - CollectionDynamicCopy
+ * - Func
  */
 export abstract class Instruction extends Opcode {
 	/**

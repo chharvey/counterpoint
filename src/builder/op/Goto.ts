@@ -7,7 +7,7 @@ import {Terminator} from './Terminator.ts';
 
 
 
-/** Transfer control to the given label, conditionally if specified. */
+/** Transfer control to the given label. */
 export class Goto extends Terminator {
 	public constructor(private readonly label: string) {
 		super(OpCode.GOTO);
@@ -23,7 +23,7 @@ export class Goto extends Terminator {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void {
-		relooper.addBranch(
+		return relooper.addBranch(
 			cg.getBlockRef(this._containerLabel!),
 			cg.getBlockRef(this.label),
 			0, // unconditional

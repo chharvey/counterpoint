@@ -704,5 +704,95 @@ test.suite('Declaration', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
+		test.suite('DeclarationFunction', () => {
+			test.test('function declared with blank identifier builds nothing.', () => {
+				assert.strictEqual(setupScript(`{
+					42;
+					func _(foo: int): void {
+						foo;
+						return;
+					}
+					43;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DROP (INT.CONST 42))
+						(DROP (INT.CONST 43))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('single parameter and return statement.', () => {
+				assert.strictEqual(setupScript(`{
+					func f(foo: int): void {
+						foo;
+						return;
+						42;
+					}
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(GOTO "block-2")
+					"block-1":
+						(DECL <int> foo)
+						(DROP (GET foo))
+						(GOTO "caller")
+					"unreachable-3":
+						(DROP (INT.CONST 42))
+						(DROP (TRAP))
+						(ENDPROGRAM)
+					"block-2":
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('conditional return statements.', () => {
+				assert.strictEqual(setupScript(`{
+					func f(): void {
+						if 42 < 43 then {
+							44;
+							return;
+						} else {
+							45;
+							return;
+						};
+						46;
+					}
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(GOTO "block-2")
+					"block-1":
+						(GOTO.IF (LT (INT.CONST 42) (INT.CONST 43)) "block-3" "block-4")
+					"block-3":
+						(DROP (INT.CONST 44))
+						(GOTO "caller")
+					"unreachable-6":
+						(GOTO "block-5")
+					"block-4":
+						(DROP (INT.CONST 45))
+						(GOTO "caller")
+					"unreachable-7":
+						(GOTO "block-5")
+					"block-5":
+						(DROP (INT.CONST 46))
+						(DROP (TRAP))
+						(ENDPROGRAM)
+					"block-2":
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('no return statement (should be invalid).', () => {
+				assert.strictEqual(setupScript(`{
+					func f(): void {
+						42;
+					}
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(GOTO "block-2")
+					"block-1":
+						(DROP (INT.CONST 42))
+						(DROP (TRAP))
+						(ENDPROGRAM)
+					"block-2":
+						(ENDPROGRAM)
+				`.trim());
+			});
+		});
 	});
 });
