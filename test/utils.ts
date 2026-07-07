@@ -9,7 +9,6 @@ import {
 	VALUE,
 	TYPE,
 	Builder,
-	BinConst,
 	CodeGenerator,
 } from '../src/index.ts';
 
@@ -189,9 +188,9 @@ export function genConst(cg: CodeGenerator, value: bigint, tag?: 'nat'): binarye
 export function genConst(cg: CodeGenerator, value?: null | boolean | number | string): binaryen.ExpressionRef;
 export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, tag?: string): binaryen.ExpressionRef {
 	switch (value) {
-		case null:  { return cg.getConst(BinConst.NULL); }
-		case false: { return cg.getConst(BinConst.FALSE); }
-		case true:  { return cg.getConst(BinConst.TRUE); }
+		case null:
+		case false:
+		case true:  { return cg.getConst(value); }
 	}
 	if (typeof value === 'string' && tag === 'sym') {
 		return new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).codegen(cg);
