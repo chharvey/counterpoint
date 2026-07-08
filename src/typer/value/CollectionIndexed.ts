@@ -1,6 +1,8 @@
 import * as assert from 'node:assert';
-import {VoidErrorOutOfBounds} from '../../index.ts';
-import type {AST} from '../../validator/index.ts';
+import {
+	VoidErrorOutOfBounds,
+	type AST,
+} from '../../index.ts';
 import {NULL} from './index.ts';
 import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
@@ -52,7 +54,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	}
 
 	/** @final */
-	public get(index: bigint, is_access_maybe: boolean, accessor: AST.Index | AST.Expression): T | Null {
+	public get(index: bigint, is_access_maybe: boolean, accessor: AST.Index | AST.EXPR.Expression): T | Null {
 		return 0 <= index && index < this.items.length
 			? this.items.at(Number(index))!
 			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor));

@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type {Optimizer} from '../../index.ts';
+import type {Builder} from '../../index.ts';
 import {
 	type NonemptyArray,
 	memoizeGetter,
@@ -11,17 +11,18 @@ import {
 } from '../../core/index.ts';
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
-import {Goal} from './index.ts';
+import {
+	Goal,
+	type EXPR,
+	type STMT,
+} from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Foldable} from './Foldable.ts';
-import type {Lowerable} from './Lowerable.ts';
-import type {ExpressionBlock} from './ExpressionBlock.ts';
-import type {Statement} from './Statement.ts';
-import type {StatementConditional} from './StatementConditional.ts';
+import type {Buildable} from './Buildable.ts';
 
 
 
-export class Block extends AstNode implements Foldable, Lowerable {
+export class Block extends AstNode implements Foldable, Buildable {
 	/**
 	 * Construct a new Block from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -40,7 +41,7 @@ export class Block extends AstNode implements Foldable, Lowerable {
 
 	public constructor(
 		start_node: SyntaxNodeFamily<'block', ['break']>,
-		public override readonly children: Readonly<NonemptyArray<Statement>>,
+		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
 	) {
 		super(start_node, {}, children);
@@ -48,7 +49,7 @@ export class Block extends AstNode implements Foldable, Lowerable {
 	}
 
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, (this.parent as ExpressionBlock | StatementConditional | Goal | undefined)?.validator);
+		this.#validator ??= new Validator(this.config, (this.parent as EXPR.ExpressionBlock | STMT.StatementConditional | Goal | undefined)?.validator);
 		return this.#validator;
 	}
 
@@ -66,10 +67,10 @@ export class Block extends AstNode implements Foldable, Lowerable {
 
 	/**
 	 * @inheritdoc
-	 * @implements Lowerable
+	 * @implements Buildable
 	 */
 	@runOnceMethod
-	public lower(optimizer: Optimizer): void {
-		return this.children.forEach((stmt) => stmt.lower(optimizer));
+	public build(builder: Builder): void {
+		return this.children.forEach((stmt) => stmt.build(builder));
 	}
 }

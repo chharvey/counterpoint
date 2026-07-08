@@ -1,6 +1,6 @@
 import type * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -51,11 +51,10 @@ export class Float extends ValueNumber<Float> {
 	}
 
 	@memoizeMethod
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
-		const {wasm} = cg.vm.mod;
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.vm.Value.newPrimitive(cg.vm.Vect.newFloat((Object.is(this.data, -0.0)
-			? wasm.f64.ceil(wasm.f64.const(-0.5))
-			: wasm.f64.const(this.data)
+			? cg.mod.wasm.f64.ceil(cg.mod.wasm.f64.const(-0.5))
+			: cg.mod.wasm.f64.const(this.data)
 		)));
 	}
 

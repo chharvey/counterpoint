@@ -685,16 +685,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(
-				s('tuple_literal'),
-				s('tuple_literal', s('identifier')),
-				s('tuple_literal', s('identifier'), s('identifier')),
-				s('tuple_literal', s('identifier'), s('identifier'), s('identifier')),
+				s('expression_tuple_literal'),
+				s('expression_tuple_literal', s('identifier')),
+				s('expression_tuple_literal', s('identifier'), s('identifier')),
+				s('expression_tuple_literal', s('identifier'), s('identifier'), s('identifier')),
 				s(
-					'tuple_literal',
+					'expression_tuple_literal',
 					/* eslint-disable @stylistic/indent */
-					                                      s('primitive_literal', s('integer')),
-					                   s('tuple_literal', s('primitive_literal', s('integer'))),
-					s('tuple_literal', s('tuple_literal', s('primitive_literal', s('integer')))),
+					                                                            s('primitive_literal', s('integer')),
+					                              s('expression_tuple_literal', s('primitive_literal', s('integer'))),
+					s('expression_tuple_literal', s('expression_tuple_literal', s('primitive_literal', s('integer')))),
 					/* eslint-enable @stylistic/indent */
 				),
 			),
@@ -707,7 +707,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(s(
-				'record_literal',
+				'expression_record_literal',
 				s(
 					'property',
 					s('word', s('identifier')),
@@ -717,7 +717,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'property',
 					s('word', s('identifier')),
 					s(
-						'record_literal',
+						'expression_record_literal',
 						s(
 							'property',
 							s('word', s('identifier')),
@@ -729,12 +729,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'property',
 					s('word'),
 					s(
-						'record_literal',
+						'expression_record_literal',
 						s(
 							'property',
 							s('word', s('identifier')),
 							s(
-								'record_literal',
+								'expression_record_literal',
 								s(
 									'property',
 									s('word', s('identifier')),
@@ -769,7 +769,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(s(
-				'list_literal',
+				'expression_list_literal',
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
@@ -783,7 +783,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(s(
-				'dict_literal',
+				'expression_dict_literal',
 				s(
 					'property',
 					s('word', s('identifier')),
@@ -793,7 +793,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'property',
 					s('word', s('identifier')),
 					s(
-						'dict_literal',
+						'expression_dict_literal',
 						s(
 							'property',
 							s('word', s('identifier')),
@@ -805,12 +805,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'property',
 					s('word'),
 					s(
-						'dict_literal',
+						'expression_dict_literal',
 						s(
 							'property',
 							s('word', s('identifier')),
 							s(
-								'dict_literal',
+								'expression_dict_literal',
 								s(
 									'property',
 									s('word', s('identifier')),
@@ -845,7 +845,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(s(
-				'set_literal',
+				'expression_set_literal',
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
 				s('primitive_literal', s('integer')),
@@ -859,7 +859,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(s(
-				'map_literal',
+				'expression_map_literal',
 				s(
 					'case',
 					s('primitive_literal', s('string')),
@@ -1310,14 +1310,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_conditional',
 					s('identifier'),
-					s('set_literal', s('identifier')),
-					s('set_literal', s('identifier')),
+					s('expression_set_literal', s('identifier')),
+					s('expression_set_literal', s('identifier')),
 				),
 				s(
 					'expression_conditional',
 					s('identifier'),
-					s('expression_grouped', s('set_literal', s('identifier'))),
-					s('expression_grouped', s('set_literal', s('identifier'))),
+					s('expression_grouped', s('expression_set_literal', s('identifier'))),
+					s('expression_grouped', s('expression_set_literal', s('identifier'))),
 				),
 				s(
 					'expression_conditional',

@@ -1,12 +1,12 @@
+import {Keyword} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {MUT_OPERATOR} from './utils-private.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -40,7 +40,7 @@ class TypeMap extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Map.<${ this.typearg_ant }, ${ this.typearg_con }>`;
+		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Map.<${ this.typearg_ant }, ${ this.typearg_con }>`;
 	}
 
 	@instanceOf(() => VALUE.Map)
@@ -50,7 +50,7 @@ class TypeMap extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => TypeMap)
 	public override isSubtypeOf(t: Type): boolean {

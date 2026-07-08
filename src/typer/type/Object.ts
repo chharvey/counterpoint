@@ -4,7 +4,7 @@ import {
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {ReferenceType} from './ReferenceType.ts';
@@ -40,7 +40,7 @@ class TypeObject extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}

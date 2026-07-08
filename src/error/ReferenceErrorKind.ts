@@ -22,7 +22,7 @@ export class ReferenceErrorKind extends CplReferenceError {
 	 * @param refers_to what the symbol was declared as
 	 * @param used_as   what the symbol is used as
 	 */
-	public constructor(symbol: AST.TypeAlias | AST.Variable, refers_to: SymbolKind, used_as: SymbolKind) {
+	public constructor(symbol: AST.TYPE.TypeAlias | AST.EXPR.Variable, refers_to: SymbolKind, used_as: SymbolKind) {
 		super(
 			`\`${ symbol.source }\` refers to a ${ refers_to }, but is used as a ${ used_as }.`,
 			CplReferenceError.CODES.get(ReferenceErrorKind),

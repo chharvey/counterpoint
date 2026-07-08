@@ -583,11 +583,16 @@ val quantity:   int        = item.1 as <int>;        % narrowing
 val in_stock:   int | bool = item.1 as <int | bool>; % shifting
 ```
 
-The compiler will throw an error when encountering a type claim if its operand’s computed type
-and its claimed type are disjoint (i.e. if there’s no overlap).
-```
+Unless either type is `nothing` (the Bottom Type), a compiler error is thrown
+when the operand’s computed type is disjoint with the claimed type.
+```cpl
 42 as <str>; %> TypeError
 ```
+To work around this, go up and back down again:
+```cpl
+42 as <anything> as <str>;
+```
+In the future, the syntax `expr as! <T>` may be available.
 
 #### Cast vs Claim
 A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;

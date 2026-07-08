@@ -6,7 +6,7 @@ import {
 } from '../utils-private.ts';
 import type * as VALUE from '../value/index.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -69,7 +69,7 @@ export class Difference extends TypeOperation {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
 	}

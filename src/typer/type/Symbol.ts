@@ -1,7 +1,7 @@
-import {Keyword} from '../../parser/index.ts';
+import {Keyword} from '../../index.ts';
 import {instanceOf} from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
+import {ValueType} from './ValueType.ts';
 
 
 
@@ -9,7 +9,7 @@ import {UnenumeratedPrimitiveType} from './UnenumeratedPrimitiveType.ts';
  * Class for constructing the `sym` type.
  * @final
  */
-class TypeSymbol extends UnenumeratedPrimitiveType {
+class TypeSymbol extends ValueType {
 	public constructor() {
 		super(new Set<VALUE.Symbol>([VALUE.SYM_NOTHING]));
 	}

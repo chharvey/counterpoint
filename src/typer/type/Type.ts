@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
 import {
 	assert_context_name,
+	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
@@ -13,9 +14,11 @@ import {
 	Intersection,
 	Union,
 	Difference,
+	Unit,
 	NOTHING,
 	ANYTHING,
-	FALSY_TYPES,
+	NULL,
+	FALSE,
 	TYPE_CONSTANTS,
 } from './index.ts';
 import {
@@ -48,15 +51,19 @@ export function typeConstant(
 
 /**
  * Decorator for {@link Type#intersect} method and any overrides.
- * Contains shortcuts for constructing type intersections.
+ * Contains type law shortcuts for constructing type intersections.
  * @implements MethodDecorator<Type, Type['intersect']>
  */
-export function intersectionRules(
+export function intersectionLaws(
 	method:  Type['intersect'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'intersect');
 	return function (this: Type, t) {
+		/* 2-1 | `T  & T == T` */
+		if (this === t) {
+			return this;
+		}
 		/* 1-5 | `T  & nothing  == nothing` */
 		if (this.isBottomType || t.isBottomType) {
 			return NOTHING;
@@ -84,15 +91,19 @@ export function intersectionRules(
 
 /**
  * Decorator for {@link Type#union} method and any overrides.
- * Contains shortcuts for constructing type unions.
+ * Contains type law shortcuts for constructing type unions.
  * @implements MethodDecorator<Type, Type['union']>
  */
-export function unionRules(
+export function unionLaws(
 	method:  Type['union'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'union');
 	return function (this: Type, t) {
+		/* 2-2 | `T \| T == T` */
+		if (this === t) {
+			return this;
+		}
 		/* 1-7 | `T \| nothing  == T` */
 		if (this.isBottomType) {
 			return t;
@@ -120,25 +131,27 @@ export function unionRules(
 
 /**
  * Decorator for {@link Type#subtract} method and any overrides.
- * Contains shortcuts for constructing type differences.
+ * Contains type law shortcuts for constructing type differences.
  * @implements MethodDecorator<Type, Type['subtract']>
  */
-export function differenceRules(
+export function differenceLaws(
 	method:  Type['subtract'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'subtract');
 	return function (this: Type, t) {
+		/* 2-3 | `T  - T == nothing` */
+		if (this === t) {
+			return NOTHING;
+		}
 		/* 4-1 | `A - B == A  <->  A & B == nothing` */
 		if (this.isDisjointWith(t)) {
 			return this;
 		}
-
 		/* 4-2 | `A - B == nothing  <->  A <: B` */
 		if (this.isSubtypeOf(t)) {
 			return NOTHING;
 		}
-
 		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
 		if (t instanceof Union) {
 			return Intersection.all(this, ...t.operands.map((s) => this.subtract(s))); // `(A - B) & (A - C) == A & -B & -C`
@@ -152,16 +165,16 @@ export function differenceRules(
 
 /**
  * Decorator for {@link Type#isSubtypeOf} method and any overrides.
- * Contains shortcuts for determining subtypes.
+ * Contains type law shortcuts for determining subtypes.
  * @implements MethodDecorator<Type, Type['isSubtypeOf']>
  */
-export function subtypeRules(
+export function subtypeLaws(
 	method:  Type['isSubtypeOf'],
 	context: ClassMethodDecoratorContext<Type, typeof method>,
 ): typeof method {
 	assert_context_name(context, 'isSubtypeOf');
 	return function (this: Type, t) {
-		/* 2-7 | `A <: A` */
+		/* 2-a | `A <: A` */
 		if (this === t) {
 			return true;
 		}
@@ -255,6 +268,29 @@ export function subtypeRules(
 
 
 /**
+ * Decorator for {@link Type#isDisjointWith} method and any overrides.
+ * Contains type law shortcuts for determining whether two types are disjoint.
+ * @implements MethodDecorator<Type, Type['isDisjointWith']>
+ */
+export function disjointLaws(
+	method:  Type['isDisjointWith'],
+	context: ClassMethodDecoratorContext<Type, typeof method>,
+): typeof method {
+	assert_context_name(context, 'isDisjointWith');
+	return function (this: Type, t) {
+		if (this === t) {
+			return false;
+		}
+		if (this.isBottomType || t.isBottomType) {
+			return true;
+		}
+		return method.call(this, t);
+	};
+}
+
+
+
+/**
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - TypeOperation
@@ -263,6 +299,16 @@ export function subtypeRules(
  * - ReferenceType
  */
 export abstract class Type {
+	static #getFalsyTypes(): Type[] {
+		return [NULL, FALSE];
+	}
+
+	@memoizeMethod
+	static #falsy(): Type {
+		return Union.all(...Type.#getFalsyTypes());
+	}
+
+
 	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
@@ -322,7 +368,7 @@ export abstract class Type {
 	 */
 	@memoizeGetter
 	public get isDefinitelyFalsy(): boolean {
-		return this.isSubtypeOf(Union.all(...FALSY_TYPES));
+		return this.isSubtypeOf(Type.#falsy());
 	}
 
 	/**
@@ -332,7 +378,7 @@ export abstract class Type {
 	 */
 	@memoizeGetter
 	public get isDefinitelyTruthy(): boolean {
-		return !this.isBottomType && !this.isDefinitelyFalsy && [...FALSY_TYPES].every((t) => !t.isSubtypeOf(this));
+		return !this.isBottomType && !this.isDefinitelyFalsy && Type.#getFalsyTypes().every((t) => !t.isSubtypeOf(this));
 	}
 
 	/**
@@ -345,7 +391,7 @@ export abstract class Type {
 		return (
 			this.isDefinitelyFalsy  ? this :
 			this.isDefinitelyTruthy ? NOTHING :
-			this.intersect(Union.all(...FALSY_TYPES))
+			this.intersect(Type.#falsy())
 		);
 	}
 
@@ -359,7 +405,7 @@ export abstract class Type {
 		return (
 			this.isDefinitelyFalsy  ? NOTHING :
 			this.isDefinitelyTruthy ? this :
-			this.subtract(Union.all(...FALSY_TYPES))
+			this.subtract(Type.#falsy())
 		);
 	}
 
@@ -380,9 +426,9 @@ export abstract class Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@intersectionRules
+	@intersectionLaws
 	public intersect(t: Type): Type {
-		/* 2-1 | `A  & B == B  & A` */
+		/* 2-4 | `A  & B == B  & A` */
 		if (t instanceof Intersection) {
 			return t.intersect(this);
 		}
@@ -396,9 +442,9 @@ export abstract class Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@unionRules
+	@unionLaws
 	public union(t: Type): Type {
-		/* 2-2 | `A \| B == B \| A` */
+		/* 2-5 | `A \| B == B \| A` */
 		if (t instanceof Union) {
 			return t.union(this);
 		}
@@ -411,7 +457,7 @@ export abstract class Type {
 	 * @returns the type difference
 	 */
 	@typeConstant
-	@differenceRules
+	@differenceLaws
 	public subtract(t: Type): Type {
 		return new Difference(this, t);
 	}
@@ -423,16 +469,21 @@ export abstract class Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
-	public isSubtypeOf(t: Type): boolean {
-		return [...this.values].every((v) => t.includes(v));
+	@subtypeLaws
+	public isSubtypeOf(_t: Type): boolean {
+		/*
+		 * By default (unless overridden), this type will not be a subtype of anything
+		 * unless that thing is a union having this type as a constituent.
+		 * E.g., `int` is a subtype of a type `T` if and only if `T` is a union `V | int` for some other type `V`.
+		 */
+		return false;
 	}
 
 	/**
 	 * Return whether this type is structurally equal to the given type.
 	 * Two types are structurally equal if they are subtypes of each other.
 	 *
-	 * 2-8 | `A <: B  &&  B <: A  -->  A == B`
+	 * 2-b | `A <: B  &&  B <: A  -->  A == B`
 	 * @param t the type to compare
 	 * @returns Is this type equal to the argument?
 	 */
@@ -447,10 +498,13 @@ export abstract class Type {
 	 * If true, there is no overlap between the types.
 	 * @param t the type to compare
 	 * @return  Is this type disjoint with `t`?
-	 * @final
 	 */
 	@memoizeBinOp(true)
+	@disjointLaws
 	public isDisjointWith(t: Type): boolean {
+		if (t instanceof Intersection || t instanceof Union || t instanceof Unit) {
+			return t.isDisjointWith(this);
+		}
 		return this.intersect(t).isBottomType;
 	}
 
@@ -514,7 +568,7 @@ export class TypeInterface extends Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@intersectionRules
+	@intersectionLaws
 	public override intersect(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>([...this.properties]);
@@ -533,7 +587,7 @@ export class TypeInterface extends Type {
 	 */
 	@memoizeBinOp(true)
 	@typeConstant
-	@unionRules
+	@unionLaws
 	public override union(t: Type): Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>();
@@ -555,7 +609,7 @@ export class TypeInterface extends Type {
 	 */
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		if (t instanceof TypeInterface) {
 			if (![...this.typeparams.entries()].every(([name, this_param]) => {

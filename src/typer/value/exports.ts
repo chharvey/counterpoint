@@ -1,4 +1,4 @@
-import {Keyword} from '../../parser/index.ts';
+import {Keyword} from '../../parser/Keyword.ts';
 import {Null} from './Null.ts';
 import {Boolean as ValueBoolean} from './Boolean.ts';
 import {Symbol as ValueSymbol} from './Symbol.ts';

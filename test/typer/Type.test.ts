@@ -6,7 +6,11 @@ import {
 	VALUE,
 	TYPE,
 } from '../../src/index.ts';
-import {typeUnit} from '../helpers.ts';
+import {
+	repeat,
+	assert_shallowStrictEqual,
+	typeUnit,
+} from '../utils.ts';
 
 
 
@@ -53,16 +57,35 @@ test.suite('Type', () => {
 
 	test.suite('#toString', () => {
 		test.test('properly prioritizes operators.', () => {
-			const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);
+			const a: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.FLOAT]);
 			const b: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.INT]);
 			const c: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.STR]);
 			const tests = new Map<TYPE.Type, string>([
-				[a.intersect(b).union(c), '(bool,) & (int,) | (str,)'],
-				[a.intersect(b.union(c)), '(bool,) & ((int,) | (str,))'],
-				[a.union(b).intersect(c), '((bool,) | (int,)) & (str,)'],
-				[a.union(b.intersect(c)), '(bool,) | (int,) & (str,)'],
+				[a.intersect(b).union(c), '(float,) & (int,) | (str,)'],
+				[a.intersect(b.union(c)), '((int,) | (str,)) & (float,)'],
+				[a.union(b).intersect(c), '((float,) | (int,)) & (str,)'],
+				[a.union(b.intersect(c)), '(float,) | (int,) & (str,)'],
 			]);
-			return assert.deepStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
+			return assert_shallowStrictEqual([...tests.keys()].map((k) => k.toString()), [...tests.values()]);
+		});
+		test.test('with boolean types.', () => {
+			assert_shallowStrictEqual(
+				[
+					TYPE.BOOL,
+					TYPE.NULL.union(TYPE.BOOL),
+					TYPE.BOOL.union(TYPE.NULL),
+					TYPE.Union.all(TYPE.NULL, TYPE.FALSE, TYPE.TRUE),
+					TYPE.Union.all(TYPE.NULL, TYPE.TRUE, TYPE.FALSE),
+					TYPE.Union.all(TYPE.FALSE, TYPE.TRUE, TYPE.NULL),
+					TYPE.Union.all(TYPE.TRUE, TYPE.FALSE, TYPE.NULL),
+					TYPE.Union.all(TYPE.FALSE, TYPE.NULL, TYPE.TRUE),
+					TYPE.Union.all(TYPE.TRUE, TYPE.NULL, TYPE.FALSE),
+				].map((t) => t.toString()),
+				[
+					'bool',
+					...repeat('bool | null', 8),
+				],
+			);
 		});
 	});
 
@@ -215,17 +238,17 @@ test.suite('Type', () => {
 				assert.ok(t.intersect(TYPE.ANYTHING).equals(t), `${ t }`);
 			});
 		});
-		test.test('2-1 | `A  & B == B  & A`', () => {
+		test.test('2-4 | `A  & B == B  & A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.intersect(b).equals(b.intersect(a)), `${ a }, ${ b }`);
 			});
 		});
-		test.test('2-3 | `(A  & B)  & C == A  & (B  & C)`', () => {
+		test.test('2-6 | `(A  & B)  & C == A  & (B  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.intersect(b).intersect(c).equals(a.intersect(b.intersect(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		test.test('2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)`', () => {
+		test.test('2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`);
 			});
@@ -282,17 +305,17 @@ test.suite('Type', () => {
 				assert.ok(t.union(TYPE.ANYTHING).isTopType, `${ t }`);
 			});
 		});
-		test.test('2-2 | `A \| B == B \| A`', () => {
+		test.test('2-5 | `A \| B == B \| A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				assert.ok(a.union(b).equals(b.union(a)), `${ a }, ${ b }`);
 			});
 		});
-		test.test('2-4 | `(A \| B) \| C == A \| (B \| C)`', () => {
+		test.test('2-7 | `(A \| B) \| C == A \| (B \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b).union(c).equals(a.union(b.union(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		test.test('2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)`', () => {
+		test.test('2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`);
 			});
@@ -305,6 +328,10 @@ test.suite('Type', () => {
 			const expected: TYPE.Type = b.union(c);
 			assert.ok(actual.equals(expected), '(4.2 | 42) | float == 42 | float');
 			assert.deepStrictEqual(actual, expected);
+		});
+		test.test('`false | true` (or swapped) returns `bool` by reference.', () => {
+			assert.strictEqual(TYPE.FALSE.union(TYPE.TRUE), TYPE.BOOL);
+			assert.strictEqual(TYPE.TRUE.union(TYPE.FALSE), TYPE.BOOL);
 		});
 		test.suite('Union', () => {
 			test.test('optimizes nested unions: `(A | B) | A === A | B`', () => {
@@ -407,19 +434,19 @@ test.suite('Type', () => {
 				}
 			});
 		});
-		test.test('2-7 | `A <: A`', () => {
+		test.test('2-a | `A <: A`', () => {
 			builtin_types.forEach((a) => {
 				assert.ok(a.isSubtypeOf(a), `${ a }`);
 			});
 		});
-		test.test('2-8 | `A <: B  &&  B <: A  -->  A == B`', () => {
+		test.test('2-b | `A <: B  &&  B <: A  -->  A == B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(a)) {
 					assert.ok(a.equals(b), `${ a }, ${ b }`);
 				}
 			});
 		});
-		test.test('2-9 | `A <: B  &&  B <: C  -->  A <: C`', () => {
+		test.test('2-c | `A <: B  &&  B <: C  -->  A <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(c)) {
 					assert.ok(a.isSubtypeOf(c), `${ a }, ${ b }, ${ c }`);

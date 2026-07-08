@@ -18,7 +18,7 @@ export class TypeErrorNotAssignable extends CplTypeError {
 	 * @param assignee_type - the type to which the expression is assigned
 	 * @param assignment    - the node where the assignment took place
 	 */
-	public constructor(assigned: AST.Expression, assignee_type: TYPE.Type, assignment: AST.AstNode = assigned) {
+	public constructor(assigned: AST.EXPR.Expression, assignee_type: TYPE.Type, assignment: AST.AstNode = assigned) {
 		super(
 			`Expression \`${ assigned.source }\` is not assignable to type \`${ assignee_type }\`.`,
 			CplTypeError.CODES.get(TypeErrorNotAssignable),

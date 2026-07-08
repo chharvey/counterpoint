@@ -1,4 +1,4 @@
-import {Keyword} from '../../parser/index.ts';
+import {Keyword} from '../../index.ts';
 import {
 	strictEqual,
 	memoizeBinOp,

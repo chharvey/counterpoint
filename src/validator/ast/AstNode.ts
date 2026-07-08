@@ -1,20 +1,15 @@
 import * as xjs from 'extrajs';
 import type {SyntaxNode} from 'tree-sitter';
-import {
-	type TYPE,
-	TypeErrorNotAssignable,
-} from '../../index.ts';
+import {TypeErrorNotAssignable} from '../../index.ts';
 import {memoizeGetter} from '../../lib/index.ts';
+import type {TYPE} from '../../typer/index.ts';
 import {
 	stringifyAttributes,
 	type Serializable,
 	to_serializable,
 } from '../../parser/index.ts';
 import type {Validator} from '../Validator.ts';
-import {
-	type Expression,
-	CollectionLiteral,
-} from './index.ts';
+import {EXPR} from './index.ts';
 
 
 
@@ -47,12 +42,12 @@ import {
  *                       or is not entry-wise assignable
  */
 export function typecheck_assign(
-	assigned:      Expression,
+	assigned:      EXPR.Expression,
 	assignee_type: TYPE.Type,
 	node:          AstNode,
 ): void {
 	if (!assigned.type().isSubtypeOf(assignee_type)) {
-		if (assigned instanceof CollectionLiteral) {
+		if (assigned instanceof EXPR.Collection) {
 			return assigned.assignTo(assignee_type);
 		}
 		throw new TypeErrorNotAssignable(assigned, assignee_type, node);
@@ -92,7 +87,7 @@ export function typecheck_assign(
  *
  * Known subinterfaces:
  * - Foldable
- * - Lowerable
+ * - Buildable
  */
 export class AstNode implements Serializable {
 	/** @implements Serializable */

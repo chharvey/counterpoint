@@ -17,7 +17,7 @@ export class AssignmentErrorDuplicateDeclaration extends AssignmentError {
 	 * Construct a new AssignmentErrorDuplicateDeclaration object.
 	 * @param symbol the duplicate symbol
 	 */
-	public constructor(symbol: AST.TypeAlias | AST.Variable) {
+	public constructor(symbol: AST.TYPE.TypeAlias | AST.EXPR.Variable) {
 		super(
 			`Duplicate declaration of \`${ symbol.source }\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateDeclaration),

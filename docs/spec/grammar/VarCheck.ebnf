@@ -16,7 +16,7 @@ None! VarCheck(Or<
 
 
 
-None! VarCheck(Or<SemanticTypeRecord, SemanticRecord, SemanticDict> assoc) :=
+None! VarCheck(Or<SemanticTypeRecord, SemanticExpressionRecord, SemanticExpressionDict> assoc) :=
 	1. *Note:* In keyed collection literals, all keys are var-checked before all values.
 	2. *For each* `prop` in `assoc.children`:
 		1. *Let* `key` be `prop.children.0`.
@@ -52,7 +52,7 @@ None! VarCheck(SemanticTypeCall call) :=
 
 
 
-None! VarCheck(SemanticVariable var) :=
+None! VarCheck(SemanticExpressionVariable var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
@@ -62,7 +62,7 @@ None! VarCheck(SemanticVariable var) :=
 
 
 
-None! VarCheck(SemanticCall call) :=
+None! VarCheck(SemanticExpressionCall call) :=
 	1. *Note:* Skip var-checking of `call.children.0` for now, as semantics is determined by syntax.
 	2. *If* `call.children.0.source` is not one of "List", "Dict", "Set", or "Map":
 		1. *Throw:* a new SyntaxError.
@@ -92,7 +92,7 @@ None! VarCheck(SemanticDeclarationType decl) :=
 
 None! VarCheck(SemanticDeclarationVariable decl) :=
 	1. *Let* `uninitialized` be `true`.
-	2. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
+	2. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticExpressionVariable.
 	3. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
 	4. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
 	5. *If* `decl.writable` is `false`:
@@ -123,7 +123,7 @@ None! VarCheck(SemanticStatementRessignment assign) :=
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
 	2. *Assert:* `assign.children.count` is 2.
 	3. *Let* `assignee` be `assign.children.0`.
-	4. *If* `assignee` is a SemanticVariable:
+	4. *If* `assignee` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		3. *If* `symbol.isWritable` is `false`:
@@ -148,7 +148,7 @@ None! VarCheck(SemanticStatementLoop stmt) :=
 
 
 None! VarCheck(SemanticStatementIteration stmt) :=
-	1. *Let* `assignee` be an item `child` in `stmt.children` such that `child` is a SemanticVariable.
+	1. *Let* `assignee` be an item `child` in `stmt.children` such that `child` is a SemanticExpressionVariable.
 	2. *Let* `typenode` be an item `child` in `stmt.children` such that `child` is a SemanticType.
 	3. *Let* `iterable` be an item `child` in `stmt.children` such that `child` is a SemanticExpression.
 	4. *Let* `block`    be an item `child` in `stmt.children` such that `child` is a SemanticBlock.

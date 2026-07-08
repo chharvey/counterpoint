@@ -1,7 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import {
 	BinConst,
-	type Builder,
+	type CodeGenerator,
 } from '../../index.ts';
 import {
 	noopMethod,
@@ -67,7 +67,7 @@ class ValueBoolean extends Primitive {
 	}
 
 	@noopMethod(memoizeMethod)
-	public override codegen(cg: Builder): binaryen.ExpressionRef {
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.getConst(this.data ? BinConst.TRUE : BinConst.FALSE);
 	}
 }

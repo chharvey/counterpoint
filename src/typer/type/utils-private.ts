@@ -1,4 +1,3 @@
-import {Keyword} from '../../parser/index.ts';
 import type {Type} from './index.ts';
 
 
@@ -12,7 +11,7 @@ export enum Variance {
 
 
 
-export type ReadonlyArrayOfAtLeast2<T> = readonly [T, T, ...readonly T[]];
+export type ArrayOfAtLeast2<T> = [T, T, ...T[]];
 
 
 
@@ -34,7 +33,3 @@ export type GenericParameter = {
 	/** The type argument assigned to the parameter. */
 	readonly assigned: Type,
 };
-
-
-
-export const MUT_OPERATOR = `${ Keyword.MUTABLE } `;

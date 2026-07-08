@@ -1,12 +1,12 @@
+import {Keyword} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {MUT_OPERATOR} from './utils-private.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -38,7 +38,7 @@ export class Dict extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? MUT_OPERATOR : '' }Dict.<${ this.typearg }>`;
+		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Dict.<${ this.typearg }>`;
 	}
 
 	@instanceOf(() => VALUE.Dict)
@@ -48,7 +48,7 @@ export class Dict extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => Dict)
 	public override isSubtypeOf(t: Type): boolean {

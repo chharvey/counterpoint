@@ -1,12 +1,12 @@
+import {Keyword} from '../../index.ts';
 import {
 	strictEqual,
 	instanceOf,
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {MUT_OPERATOR} from './utils-private.ts';
 import {
-	subtypeRules,
+	subtypeLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -38,7 +38,7 @@ export class List extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ (this.isMutable) ? MUT_OPERATOR : '' }List.<${ this.typearg }>`;
+		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }List.<${ this.typearg }>`;
 	}
 
 	@instanceOf(() => VALUE.List)
@@ -48,7 +48,7 @@ export class List extends ReferenceType {
 
 	@strictEqual
 	@memoizeBinOp()
-	@subtypeRules
+	@subtypeLaws
 	@isObjectType
 	@instanceOf(() => List)
 	public override isSubtypeOf(t: Type): boolean {

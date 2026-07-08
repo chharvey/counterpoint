@@ -178,7 +178,7 @@ such as `ExpressionUnit ::= IDENTIFIER | "(" Expression ")";`.
 An AstNode is the resulting output of a **decoration** step in semantic analysis,
 which is described by the [Decoration attribute grammar](./notation.md#decoration).
 AstNodes are represented by [tree node schema grammar](./notation.md#tree-node-schema-grammar) productions
-such as `SemanticOperation ::= SemanticExpression+;`.
+such as `SemanticExpressionOperation ::= SemanticExpression+;`.
 
 
 
@@ -949,26 +949,29 @@ For brevity, this section uses the following notational conventions:
 -- | --- | -----------
 1-1 | `nothing  <: T`        | Bottom is a subtype   of any type.
 1-2 | `T        <: anything` | Top    is a supertype of any type.
-1-3 | `T        <: nothing  <->  T == nothing`  | Any subtype   of Bottom is Bottom (follows from 3-3, 1-5, 2-7)
-1-4 | `anything <: T        <->  T == anything` | Any supertype of Top    is Top    (follows from 3-4, 1-8, 2-7)
-1-5 | `T  & nothing  == nothing`  | Bottom is The Absorption Element of Intersection (follows from 1-1 and 3-3)
-1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection (follows from 1-2 and 3-3)
-1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union        (follows from 1-1 and 3-4)
-1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union        (follows from 1-2 and 3-4)
+1-3 | `T        <: nothing  <->  T == nothing`  | Any subtype   of Bottom is Bottom
+1-4 | `anything <: T        <->  T == anything` | Any supertype of Top    is Top
+1-5 | `T  & nothing  == nothing`  | Bottom is The Absorption Element of Intersection
+1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection
+1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union
+1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union
 
 
 ### Operation Properties
 \# | Law | Description
 -- | --- | -----------
-2-1 | `A  & B == B  & A`               | Intersection is Comutative
-2-2 | `A \| B == B \| A`               | Union        is Commutative
-2-3 | `(A  & B)  & C == A  & (B  & C)` | Intersection is Associative
-2-4 | `(A \| B) \| C == A \| (B \| C)` | Union        is Associative
-2-5 | `A  & (B \| C) == (A  & B) \| (A  & C)` | Intersection Distributes over Union
-2-6 | `A \| (B  & C) == (A \| B)  & (A \| C)` | Union        Distributes over Intersection
-2-7 | `A <: A`                          | Subtype is Reflexive
-2-8 | `A <: B  &&  B <: A  -->  A == B` | Subtype is Anti-Symmetric
-2-9 | `A <: B  &&  B <: C  -->  A <: C` | Subtype is Transitive
+2-1 | `T  & T == T`       | Intersection Idempotence
+2-2 | `T \| T == T`       | Union        Idempotence
+2-3 | `T  - T == nothing` | Subtracting a type from itself yields Bottom.
+2-4 | `A  & B == B  & A`               | Intersection is Comutative
+2-5 | `A \| B == B \| A`               | Union        is Commutative
+2-6 | `(A  & B)  & C == A  & (B  & C)` | Intersection is Associative
+2-7 | `(A \| B) \| C == A \| (B \| C)` | Union        is Associative
+2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)` | Intersection Distributes over Union
+2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)` | Union        Distributes over Intersection
+2-a | `A <: A`                          | Subtype is Reflexive
+2-b | `A <: B  &&  B <: A  -->  A == B` | Subtype is Anti-Symmetric
+2-c | `A <: B  &&  B <: C  -->  A <: C` | Subtype is Transitive
 
 
 ### Other

@@ -39,7 +39,7 @@ None! TypeCheck(SemanticDeclarationType decl) :=
 
 
 None! TypeCheck(SemanticDeclarationVariable decl) :=
-	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticVariable.
+	1. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticExpressionVariable.
 	2. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
 	3. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
 	4. *If* `typenode` is *none*:
@@ -72,12 +72,12 @@ Type! TypeCheck(SemanticStatementClaim claim) :=
 	4. *Let* `claimed_type` be *Unwrap:* `TypeValueOf(claim.children.1)`.
 	5. *If* *UnwrapAffirm:* `Subtype(claimed_type, computed_type)` is `false`:
 		1. *Throw:* a new TypeErrorNotNarrow.
-	6. *If* `assignee` is a SemanticVariable:
+	6. *If* `assignee` is a SemanticExpressionVariable:
 		1. *If* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`:
 			1. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 			2. *Set* `symbol.type` to `claimed_type`.
 	7. *Else:*
-		1. *Assert:* `assignee` is a SemanticAccess.
+		1. *Assert:* `assignee` is a SemanticExpressionAccess.
 		2. *Assert:* `assignee.children.count` is 2.
 		3. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
 		4. *Let* `accessor` be `assignee.children.1`.
@@ -116,7 +116,7 @@ None! TypeCheck(SemanticStatementReassignment assignment) :=
 	3. *Let* `assigned` be `assignment.children.1`.
 	4. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
 	5. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
-	6. *If* `assignee` is a SemanticAccess:
+	6. *If* `assignee` is a SemanticExpressionAccess:
 		2. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
 		3. *If* `base_type` is not mutable:
 			1. *Throw:* a new MutabilityError01.
@@ -181,7 +181,7 @@ None! TypeCheck(SemanticStatementIteration stmt) :=
 None! TypeCheckAssign(SemanticExpression assigned, Type assignee_type) :=
 	1. *Let* `assigned_type` be *Unwrap:* `TypeOf(assigned)`.
 	2. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
-		1. *If* `assigned` is a SemanticCollectionLiteral:
+		1. *If* `assigned` is a SemanticExpressionCollection:
 			1. *Return:* `AssignTo(assigned, assignee_type)`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNotAssignable.

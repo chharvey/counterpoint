@@ -1,5 +1,5 @@
 import type * as binaryen from 'binaryen.ts';
-import type {Builder} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import {TYPE} from '../index.ts';
 import {Value} from './Value.ts';
@@ -25,5 +25,5 @@ export abstract class Primitive extends Value {
 	 * @param cg the CodeGenerator
 	 * @return   the binaryen expression
 	 */
-	public abstract codegen(cg: Builder): binaryen.ExpressionRef;
+	public abstract codegen(cg: CodeGenerator): binaryen.ExpressionRef;
 }

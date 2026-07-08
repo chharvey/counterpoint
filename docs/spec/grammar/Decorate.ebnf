@@ -37,18 +37,18 @@ Decorate(Word ::= KeywordValue) -> SemanticKey
 
 
 
-Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticConstant
-	:= (SemanticConstant[value=Integer(TokenWorth(INTEGER))]);
-Decorate(PrimitiveLiteral ::= NATURAL) -> SemanticConstant
-	:= (SemanticConstant[value=Natural(TokenWorth(NATURAL))]);
-Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticConstant
-	:= (SemanticConstant[value=Float(TokenWorth(FLOAT))]);
-Decorate(PrimitiveLiteral ::= STRING) -> SemanticConstant
-	:= (SemanticConstant[value=String(TokenWorth(STRING))]);
-Decorate(PrimitiveLiteral ::= KeywordValue) -> SemanticConstant
-	:= (SemanticConstant[value=KeywordValue(KeywordValue)]);
-Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticConstant
-	:= (SemanticConstant[value=Symbol(Decorate(Word).id)]);
+Decorate(PrimitiveLiteral ::= INTEGER) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Integer(TokenWorth(INTEGER))]);
+Decorate(PrimitiveLiteral ::= NATURAL) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Natural(TokenWorth(NATURAL))]);
+Decorate(PrimitiveLiteral ::= FLOAT) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Float(TokenWorth(FLOAT))]);
+Decorate(PrimitiveLiteral ::= STRING) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=String(TokenWorth(STRING))]);
+Decorate(PrimitiveLiteral ::= KeywordValue) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=KeywordValue(KeywordValue)]);
+Decorate(PrimitiveLiteral ::= "@" Word) -> SemanticExpressionConstant
+	:= (SemanticExpressionConstant[value=Symbol(Decorate(Word).id)]);
 
 
 
@@ -246,51 +246,51 @@ Decorate(Type ::= TypeUnion) -> SemanticType
 
 
 
-Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticTemplate
-	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_FULL))])
+Decorate(StringTemplate<Break> ::= TEMPLATE_FULL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_FULL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression<+Block><?Break>)
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD StringTemplate__0__List TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
-Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> StringTemplate__0__List TEMPLATE_TAIL) -> SemanticTemplate
-	:= (SemanticTemplate
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
+Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break> StringTemplate__0__List TEMPLATE_TAIL) -> SemanticExpressionTemplate
+	:= (SemanticExpressionTemplate
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_HEAD))])
 		Decorate(Expression<+Block><?Break>)
 		...Decorate(StringTemplate__0__List)
-		(SemanticConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
+		(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_TAIL))])
 	);
 
-	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE) -> Vector<SemanticConstant>
-		:= [SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]];
-	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Vector<SemanticConstant, SemanticExpression>
+	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE) -> Vector<SemanticExpressionConstant>
+		:= [SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]];
+	Decorate(StringTemplate__0__List<Break> ::= TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Vector<SemanticExpressionConstant, SemanticExpression>
 		:= [
-			(SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
+			(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
 			Decorate(Expression<+Block><?Break>),
 		];
-	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> Sequence<...Vector<SemanticConstant, SemanticExpression?>>
+	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE) -> Sequence<...Vector<SemanticExpressionConstant, SemanticExpression?>>
 		:= [
 			...Decorate(StringTemplate__0__List),
-			(SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
+			(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
 		];
-	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Sequence<...Vector<SemanticConstant, SemanticExpression?>>
+	Decorate(StringTemplate__0__List<Break> ::= StringTemplate__0__List TEMPLATE_MIDDLE Expression<+Block><?Break>) -> Sequence<...Vector<SemanticExpressionConstant, SemanticExpression?>>
 		:= [
 			...Decorate(StringTemplate__0__List),
-			(SemanticConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
+			(SemanticExpressionConstant[value=String(TokenWorth(TEMPLATE_MIDDLE))]),
 			Decorate(Expression<+Block><?Break>),
 		];
 
@@ -334,39 +334,39 @@ Decorate(PropertyAccessor<Break> ::= "[" Expression<+Block><?Break> "]") -> Sema
 Decorate(ExpressionGrouped<Break> ::= "(" Expression<+Block><?Break> ")") -> SemanticExpression
 	:= Decorate(Expression<+Block><?Break>);
 
-Decorate(TupleLiteral<Break> ::= "(" ")") -> SemanticTuple
-	:= (SemanticTuple);
-Decorate(TupleLiteral<Break> ::= "(" Items<?Break> ")") -> SemanticTuple
-	:= (SemanticTuple
+Decorate(ExpressionTupleLiteral<Break> ::= "(" ")") -> SemanticExpressionTuple
+	:= (SemanticExpressionTuple);
+Decorate(ExpressionTupleLiteral<Break> ::= "(" Items<?Break> ")") -> SemanticExpressionTuple
+	:= (SemanticExpressionTuple
 		...Decorate(Items<?Break>)
 	);
 
-Decorate(RecordLiteral<Break> ::= "(" ","? Property<?Break># ","? ")") -> SemanticRecord
-	:= (SemanticRecord
+Decorate(ExpressionRecordLiteral<Break> ::= "(" ","? Property<?Break># ","? ")") -> SemanticExpressionRecord
+	:= (SemanticExpressionRecord
 		...ParseList(Property<?Break>, SemanticProperty)
 	);
 
-Decorate(ListLiteral<Break> ::= "[" "]") -> SemanticList
-	:= (SemanticList);
-Decorate(ListLiteral<Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]") -> SemanticList
-	:= (SemanticList
+Decorate(ExpressionListLiteral<Break> ::= "[" "]") -> SemanticExpressionList
+	:= (SemanticExpressionList);
+Decorate(ExpressionListLiteral<Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]") -> SemanticExpressionList
+	:= (SemanticExpressionList
 		...ParseList(Expression<+Block><?Break>, SemanticExpression)
 	);
 
-Decorate(DictLiteral<Break> ::= [" ","? Property<?Break># ","? "]") -> SemanticDict
-	:= (SemanticDict
+Decorate(ExpressionDictLiteral<Break> ::= [" ","? Property<?Break># ","? "]") -> SemanticExpressionDict
+	:= (SemanticExpressionDict
 		...ParseList(Property<?Break>, SemanticProperty)
 	);
 
-Decorate(SetLiteral<Break> ::= "{" "}") -> SemanticSet
-	:= (SemanticSet);
-Decorate(SetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}") -> SemanticSet
-	:= (SemanticSet
+Decorate(ExpressionSetLiteral<Break> ::= "{" "}") -> SemanticExpressionSet
+	:= (SemanticExpressionSet);
+Decorate(ExpressionSetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}") -> SemanticExpressionSet
+	:= (SemanticExpressionSet
 		...ParseList(Expression<+Block><?Break>, SemanticExpression)
 	);
 
-Decorate(MapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticMap
-	:= (SemanticMap
+Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticExpressionMap
+	:= (SemanticExpressionMap
 		...ParseList(Case<?Break>, SemanticCase)
 	);
 
@@ -375,26 +375,26 @@ Decorate(FunctionArguments<Break> ::= "(" (","? Expression<+Block><?Break># ","?
 
 
 
-Decorate(ExpressionUnit<Block, Break> ::= IDENTIFIER) -> SemanticVariable
-	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
-Decorate(ExpressionUnit<Block, Break> ::= PrimitiveLiteral) -> SemanticConstant
+Decorate(ExpressionUnit<Block, Break> ::= IDENTIFIER) -> SemanticExpressionVariable
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+Decorate(ExpressionUnit<Block, Break> ::= PrimitiveLiteral) -> SemanticExpressionConstant
 	:= Decorate(PrimitiveLiteral);
-Decorate(ExpressionUnit<Block, Break> ::= StringTemplate<?Break>) -> SemanticTemplate
+Decorate(ExpressionUnit<Block, Break> ::= StringTemplate<?Break>) -> SemanticExpressionTemplate
 	:= Decorate(StringTemplate<?Break>);
 Decorate(ExpressionUnit<Block, Break> ::= ExpressionGrouped<?Break>) -> SemanticExpression
 	:= Decorate(ExpressionGrouped<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= TupleLiteral<?Break>) -> SemanticTuple
-	:= Decorate(TupleLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= RecordLiteral<?Break>) -> SemanticRecord
-	:= Decorate(RecordLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= ListLiteral<?Break>) -> SemanticList
-	:= Decorate(ListLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= DictLiteral<?Break>) -> SemanticDict
-	:= Decorate(DictLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= SetLiteral<?Break>) -> SemanticSet
-	:= Decorate(SetLiteral<?Break>);
-Decorate(ExpressionUnit<Block, Break> ::= MapLiteral<?Break>) -> SemanticMap
-	:= Decorate(MapLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionTupleLiteral<?Break>) -> SemanticExpressionTuple
+	:= Decorate(ExpressionTupleLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionRecordLiteral<?Break>) -> SemanticExpressionRecord
+	:= Decorate(ExpressionRecordLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionListLiteral<?Break>) -> SemanticExpressionList
+	:= Decorate(ExpressionListLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionDictLiteral<?Break>) -> SemanticExpressionDict
+	:= Decorate(ExpressionDictLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionSetLiteral<?Break>) -> SemanticExpressionSet
+	:= Decorate(ExpressionSetLiteral<?Break>);
+Decorate(ExpressionUnit<Block, Break> ::= ExpressionMapLiteral<?Break>) -> SemanticExpressionMap
+	:= Decorate(ExpressionMapLiteral<?Break>);
 Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBlock
 	:= (SemanticExpressionBlock Decorate(Block<?Break>));
 
@@ -402,28 +402,28 @@ Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBl
 
 Decorate(ExpressionCompound<Block, Break> ::= ExpressionUnit<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnit<?Block><?Break>);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=NORMAL]
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=NORMAL]
 		Decorate(ExpressionCompound<?Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "?." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=MAYBE]
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "?." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=MAYBE]
 		Decorate(ExpressionCompound<?Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "!." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=RESULT]
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "!." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=RESULT]
 		Decorate(ExpressionCompound<?Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." FunctionArguments<?Break>) -> SemanticCall
-	:= (SemanticCall
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." FunctionArguments<?Break>) -> SemanticExpressionCall
+	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break>)
 		...Decorate(FunctionArguments<?Break>)
 	);
-Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." GenericArguments FunctionArguments<?Break>) -> SemanticCall
-	:= (SemanticCall
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." GenericArguments FunctionArguments<?Break>) -> SemanticExpressionCall
+	:= (SemanticExpressionCall
 		Decorate(ExpressionCompound<?Block><?Break>)
 		...Decorate(GenericArguments)
 		...Decorate(FunctionArguments<?Break>)
@@ -433,18 +433,18 @@ Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break>
 
 Decorate(ExpressionUnarySymbol<Block, Break> ::= ExpressionCompound<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionCompound<?Block><?Break>);
-Decorate(ExpressionUnarySymbol<Block, Break> ::= "!" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
+Decorate(ExpressionUnarySymbol<Block, Break> ::= "!" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
 		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
-Decorate(ExpressionUnarySymbol<Block, Break> ::= "?" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=EMP]
+Decorate(ExpressionUnarySymbol<Block, Break> ::= "?" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=EMP]
 		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
 Decorate(ExpressionUnarySymbol<Block, Break> ::= "+" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
-Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NEG]
+Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NEG]
 		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
 
@@ -452,16 +452,16 @@ Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Bloc
 
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=INT]
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=INT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NAT]
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NAT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=FLOAT]
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=FLOAT]
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
 
@@ -469,23 +469,23 @@ Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword
 
 Decorate(ExpressionCast<Block, Break> ::= ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnaryKeyword<?Block><?Break>);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=CAST]
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=CAST]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=MAYBE]
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=MAYBE]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=RESULT]
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=RESULT]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticClaim
-	:= (SemanticClaim
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticExpressionClaim
+	:= (SemanticExpressionClaim
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(Type)
 	);
@@ -494,8 +494,8 @@ Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<
 
 Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionCast<?Block><?Break>);
-Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break> "^" ExpressionExponential<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=EXP]
+Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break> "^" ExpressionExponential<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=EXP]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(ExpressionExponential<?Block><?Break>)
 	);
@@ -504,13 +504,13 @@ Decorate(ExpressionExponential<Block, Break> ::= ExpressionCast<?Block><?Break> 
 
 Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionExponential<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionExponential<?Block><?Break>);
-Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "*" ExpressionExponential<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=MUL]
+Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "*" ExpressionExponential<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=MUL]
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 		Decorate(ExpressionExponential<?Block><?Break>)
 	);
-Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "/" ExpressionExponential<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=DIV]
+Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Block><?Break> "/" ExpressionExponential<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=DIV]
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 		Decorate(ExpressionExponential<?Block><?Break>)
 	);
@@ -519,63 +519,63 @@ Decorate(ExpressionMultiplicative<Block, Break> ::= ExpressionMultiplicative<?Bl
 
 Decorate(ExpressionAdditive<Block, Break> ::= ExpressionMultiplicative<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionMultiplicative<?Block><?Break>);
-Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "+" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=ADD]
+Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "+" ExpressionMultiplicative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=ADD]
 		Decorate(ExpressionAdditive<?Block><?Break>)
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
-Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=SUB]
+Decorate(ExpressionAdditive<Block, Break> ::= ExpressionAdditive<?Block><?Break> "-" ExpressionMultiplicative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=SUB]
 		Decorate(ExpressionAdditive<?Block><?Break>)
 		Decorate(ExpressionMultiplicative<?Block><?Break>)
 	);
 
 
 
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionAdditive<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionAdditive<?Block><?Break>);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=LT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=LT]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=GT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=GT]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<=" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=LE]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "<=" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=LE]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">=" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=GE]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> ">=" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=GE]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!<" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=LT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!<" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=LT]
 			Decorate(ExpressionComparative<?Block><?Break>)
 			Decorate(ExpressionAdditive<?Block><?Break>)
 		)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!>" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=GT]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!>" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=GT]
 			Decorate(ExpressionComparative<?Block><?Break>)
 			Decorate(ExpressionAdditive<?Block><?Break>)
 		)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "is" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=IS]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "is" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=IS]
 		Decorate(ExpressionComparative<?Block><?Break>)
 		Decorate(ExpressionAdditive<?Block><?Break>)
 	);
-Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!is" ExpressionAdditive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=IS]
+Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "!is" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=IS]
 			Decorate(ExpressionComparative<?Block><?Break>)
 			Decorate(ExpressionAdditive<?Block><?Break>)
 		)
@@ -583,28 +583,28 @@ Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?
 
 
 
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionComparative<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionComparative<?Block>);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "===" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=ID]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "===" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=ID]
 		Decorate(ExpressionEquality<?Block><?Break>)
 		Decorate(ExpressionComparative<?Block><?Break>)
 	);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!==" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=ID]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!==" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=ID]
 			Decorate(ExpressionEquality<?Block><?Break>)
 			Decorate(ExpressionComparative<?Block><?Break>)
 		)
 	);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "==" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=EQ]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "==" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=EQ]
 		Decorate(ExpressionEquality<?Block><?Break>)
 		Decorate(ExpressionComparative<?Block><?Break>)
 	);
-Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!=" ExpressionComparative<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=EQ]
+Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "!=" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=EQ]
 			Decorate(ExpressionEquality<?Block><?Break>)
 			Decorate(ExpressionComparative<?Block><?Break>)
 		)
@@ -614,14 +614,14 @@ Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break>
 
 Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionEquality<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionEquality<?Block><?Break>);
-Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "&&" ExpressionEquality<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=AND]
+Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "&&" ExpressionEquality<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=AND]
 		Decorate(ExpressionConjunctive<?Block><?Break>)
 		Decorate(ExpressionEquality<?Block><?Break>)
 	);
-Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "!&" ExpressionEquality<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=AND]
+Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break> "!&" ExpressionEquality<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=AND]
 			Decorate(ExpressionConjunctive<?Block><?Break>)
 			Decorate(ExpressionEquality<?Block><?Break>)
 		)
@@ -629,16 +629,16 @@ Decorate(ExpressionConjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?
 
 
 
-Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break>) -> SemanticOperation
+Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionConjunctive<?Block><?Break>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionConjunctive<?Block><?Break>);
-Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "||" ExpressionConjunctive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=OR]
+Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "||" ExpressionConjunctive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=OR]
 		Decorate(ExpressionDisjunctive<?Block><?Break>)
 		Decorate(ExpressionConjunctive<?Block><?Break>)
 	);
-Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "!|" ExpressionConjunctive<?Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=NOT]
-		(SemanticOperation[operator=OR]
+Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?Break> "!|" ExpressionConjunctive<?Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=NOT]
+		(SemanticExpressionOperation[operator=OR]
 			Decorate(ExpressionDisjunctive<?Block><?Break>)
 			Decorate(ExpressionConjunctive<?Block><?Break>)
 		)
@@ -646,8 +646,8 @@ Decorate(ExpressionDisjunctive<Block, Break> ::= ExpressionDisjunctive<?Block><?
 
 
 
-Decorate(ExpressionConditional<Break> ::= "if" Expression__0<+Block><?Break> "then" Expression__1<-Block><?Break> "else" Expression__2<-Block><?Break>) -> SemanticOperation
-	:= (SemanticOperation[operator=COND]
+Decorate(ExpressionConditional<Break> ::= "if" Expression__0<+Block><?Break> "then" Expression__1<-Block><?Break> "else" Expression__2<-Block><?Break>) -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=COND]
 		Decorate(Expression__0<+Block><?Break>)
 		Decorate(Expression__1<-Block><?Break>)
 		Decorate(Expression__2<-Block><?Break>)
@@ -662,10 +662,10 @@ Decorate(Expression<Block, Break> ::= ExpressionConditional) -> SemanticExpressi
 
 
 
-Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticVariable
-	:= (SemanticVariable[id=TokenWorth(IDENTIFIER)]);
-Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticAccess
-	:= (SemanticAccess[kind=NORMAL]
+Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticExpressionVariable
+	:= (SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
+Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess
+	:= (SemanticExpressionAccess[kind=NORMAL]
 		Decorate(ExpressionCompound<+Block><?Break>)
 		Decorate(PropertyAccessor<?Break>)
 	);
@@ -751,7 +751,7 @@ Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Brea
 	);
 Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration
 	:= (SemanticStatementIteration
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		(SemanticType     Decorate(Type))
 		(SemanticIterable Decorate(Expression<+Block><-Break>))
 		Decorate(Block<+Break>)
@@ -815,29 +815,29 @@ Decorate(DeclarationVariable<Break> ::= "val" "_" ":" Type "=" Expression<+Block
 	);
 Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=false]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=false]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=true]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER ":" Type "=" Expression<+Block><?Break> ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=true]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(DeclarationVariable<Break> ::= "val" "mut" IDENTIFIER "?" ":" Type ";") -> SemanticDeclarationVariable
 	:= (SemanticDeclarationVariable[writable=true]
-		(SemanticVariable[id=TokenWorth(IDENTIFIER)])
+		(SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)])
 		Decorate(Type)
 	);
 

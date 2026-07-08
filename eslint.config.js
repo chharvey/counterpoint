@@ -10,7 +10,7 @@ import tseslint from 'typescript-eslint';
 export default [
 	{
 		ignores: [
-			'**/build/',
+			'**/dist/',
 			'tree-sitter-counterpoint/bindings/node/*.{js,ts}',
 			'tree-sitter-counterpoint/grammar.js',
 		],
@@ -150,7 +150,6 @@ export default [
 			'prefer-template':      'error',
 
 			/* ## Variable Declarations */
-			'init-declarations':    'error',
 			'no-shadow':            'error',
 			'no-use-before-define': 'error',
 			'one-var':              ['error', 'never'],
@@ -227,8 +226,6 @@ export default [
 
 			/* # Best Practices */
 			/* ## Variable Declarations */
-			'init-declarations':                       'off',
-			'@typescript-eslint/init-declarations':    'error',
 			'no-shadow':                               'off',
 			'@typescript-eslint/no-shadow':            'error',
 			'no-use-before-define':                    'off',

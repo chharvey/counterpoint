@@ -274,7 +274,7 @@ export class VirtualMachine {
 	public readonly reftypeNull: ReftypeNullRegistry;
 
 	/** The Binaryen module that holds static types and functions, independent of any source program. */
-	public mod: binaryen.Module = binaryen.parseText(`
+	public readonly mod: binaryen.Module = binaryen.parseText(`
 		(module $wat
 			${ IMPORTS.join('') }
 		)
@@ -311,6 +311,9 @@ export class VirtualMachine {
 			binaryen.Feature.GC
 			/* eslint-enable @stylistic/operator-linebreak */
 		);
+		if (!this.mod.validate()) {
+			throw new Error('Invalid WebAssembly module in VirtualMachine.');
+		}
 
 		({
 			heaptypeRegistry:    this.heaptype,
