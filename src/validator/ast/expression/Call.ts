@@ -16,13 +16,12 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	ValidFunctionName,
+	type ValidGenericFunctionName,
+	GENERIC_FUNCTION_NAMES,
 	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
@@ -175,6 +174,9 @@ export class Call extends Expression {
 					}
 					break;
 				}
+				default: {
+					throw err;
+				}
 			}
 		}
 		return constructor_schema.returnType(resolved_generic_args).mutableOf();
@@ -194,73 +196,29 @@ export class Call extends Expression {
 			);
 		}
 
-		const [name, ctor] = new Map<ValidFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
-			[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
-			[ValidFunctionName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], this.type())]],
-			[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew            (new Map(),            this.type())]],
-			[ValidFunctionName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew             (new Map(),            this.type())]],
-		]).get(this.base.source as ValidFunctionName)!;
-		const new_obj: OP.Value = ctor();
-		if (!this.exprargs.length) {
-			return new_obj;
-		}
-		const dest: Temp = builder.newTemp(new_obj);
-		const get_dest = new OP.Get(dest);
-		builder.pushInstruction(new OP.Decl(dest));
-		builder.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(builder).asTac(builder)));
-		return get_dest;
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const args: readonly (VALUE.Value | null)[] = this.exprargs.map((c) => c.fold()); // TODO: `#fold` should not return native `null` if it cannot assess
-		if (args.includes(null)) {
-			return null;
-		}
-		switch (this.base.source as ValidFunctionName) {
-			case ValidFunctionName.LIST: {
-				if (!args.length) {
-					return new VALUE.List();
-				}
-				const arg: VALUE.Value = args[0]!;
-				return new VALUE.List((
-					arg instanceof VALUE.Set                        ? [...arg.elements] :
-					(assert_instanceof(arg, VALUE.CollectionIndexed), arg.items)
-				));
+		if (GENERIC_FUNCTION_NAMES.includes(this.base.source)) {
+			const [name, ctor] = new Map<ValidGenericFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
+				[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
+				[ValidFunctionName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], this.type())]],
+				[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew            (new Map(),            this.type())]],
+				[ValidFunctionName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew             (new Map(),            this.type())]],
+			]).get(this.base.source as ValidGenericFunctionName)!;
+			const new_obj: OP.Value = ctor();
+			if (!this.exprargs.length) {
+				return new_obj;
 			}
-			case ValidFunctionName.DICT: {
-				if (!args.length) {
-					return new VALUE.Dict();
-				}
-				const arg: VALUE.Value = args[0]!;
-				return new VALUE.Dict((
-					arg instanceof VALUE.CollectionIndexed        ? new Map<bigint, VALUE.Value>((arg.items       as VALUE.Tuple[])                .map((tup) => [(tup.items[0] as VALUE.Symbol).id, tup.items[1]])) :
-					arg instanceof VALUE.Set                      ? new Map<bigint, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>]             .map((tup) => [(tup.items[0] as VALUE.Symbol).id, tup.items[1]])) :
-					arg instanceof VALUE.Map                      ? new Map<bigint, VALUE.Value>([...arg.cases    as Map<VALUE.Value, VALUE.Value>].map((ent) => [(ent[0]       as VALUE.Symbol).id, ent[1]])) :
-					(assert_instanceof(arg, VALUE.CollectionKeyed), arg.properties)
-				));
-			}
-			case ValidFunctionName.SET: {
-				if (!args.length) {
-					return new VALUE.Set();
-				}
-				const arg: VALUE.Value = args[0]!;
-				return new VALUE.Set((
-					arg instanceof VALUE.CollectionIndexed ? new Set<VALUE.Value>(arg.items) :
-					(assert_instanceof(arg, VALUE.Set),      arg.elements)
-				));
-			}
-			case ValidFunctionName.MAP: {
-				if (!args.length) {
-					return new VALUE.Map();
-				}
-				const arg: VALUE.Value = args[0]!;
-				return new VALUE.Map((
-					arg instanceof VALUE.CollectionIndexed ? new Map<VALUE.Value, VALUE.Value>((arg.items       as VALUE.Tuple[])   .map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
-					arg instanceof VALUE.Set               ? new Map<VALUE.Value, VALUE.Value>([...arg.elements as Set<VALUE.Tuple>].map((tup) => tup.items as [VALUE.Value, VALUE.Value])) :
-					(assert_instanceof(arg, VALUE.Map),      arg.cases)
-				));
-			}
+			const dest: Temp = builder.newTemp(new_obj);
+			const get_dest = new OP.Get(dest);
+			builder.pushInstruction(new OP.Decl(dest));
+			builder.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(builder).asTac(builder)));
+			return get_dest;
+		} else {
+			return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
+				[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
+				[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
+				[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],
+				[ValidFunctionName.STRING,  OP.OpCode.TOSTR],
+			]).get(this.base.source as ValidFunctionName)!, this.exprargs[0].build(builder).asTac(builder), this.type());
 		}
 	}
 

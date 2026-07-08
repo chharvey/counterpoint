@@ -4,6 +4,8 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Instruction} from './Instruction.ts';
 import type {Value} from './Value.ts';
@@ -12,7 +14,7 @@ import type {Value} from './Value.ts';
 
 /** Evaluate an expression but then drop it. */
 export class Drop extends Instruction {
-	public constructor(private readonly value: Value) {
+	public constructor(public readonly value: Value) {
 		super(OpCode.DROP);
 	}
 
@@ -21,8 +23,12 @@ export class Drop extends Instruction {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		return this.value.validate();
+	public override validate(builder: Builder): void {
+		return this.value.validate(builder);
+	}
+
+	public override interpret(interp: Interpreter): void {
+		this.value.interpret(interp); // execute any side-effects
 	}
 
 	@memoizeMethod

@@ -4,7 +4,6 @@ import {
 	noopMethod,
 	memoizeMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -53,12 +52,6 @@ class ValueSymbol extends Primitive {
 	@instanceOf(() => ValueSymbol)
 	public override identical(value: Value): boolean {
 		return this.id === (value as ValueSymbol).id;
-	}
-
-	@memoizeMethod
-	public override toType(): TYPE.Unit<this> {
-		// @ts-expect-error --- this class is final, so type `this` will always be type `ValueSymbol`
-		return this.id === 0x80n ? TYPE.SYM_NOTHING : super.toType();
 	}
 
 	@memoizeMethod

@@ -6,7 +6,6 @@ import {
 import {
 	assert_instanceof,
 	memoizeMethod,
-	memoizeGetter,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -16,10 +15,10 @@ import {TYPE} from '../../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
-	SymbolSchemaVar,
 	SymbolSchemaType,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import {
 	ValidIntrinsicName,
 	is_valid_intrinsic_name,
@@ -36,14 +35,13 @@ export class TypeAlias extends Type {
 	}
 
 
+	private readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
+
+
 	public constructor(start_node: SyntaxNodeType<'identifier'>) {
 		super(start_node);
 	}
 
-	@memoizeGetter
-	public get id(): bigint {
-		return this.validator.cookTokenIdentifier(this.start_node.text);
-	}
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.
@@ -53,7 +51,7 @@ export class TypeAlias extends Type {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaVar) {
+		if (!(this.validator.getSymbol(this.id) instanceof SymbolSchemaType)) {
 			throw new ReferenceErrorKind(this, SymbolKind.VALUE, SymbolKind.TYPE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}

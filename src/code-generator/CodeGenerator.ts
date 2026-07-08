@@ -1,17 +1,8 @@
-import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
 import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
 import type {Temp} from '../builder/index.ts';
 import {Local} from './Local.ts';
-
-
-
-export enum BinConst {
-	NULL,
-	FALSE,
-	TRUE,
-}
 
 
 
@@ -60,10 +51,13 @@ export class CodeGenerator {
 
 
 	/** A registry of constant WASM expressions. */
-	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
+	readonly #constRegistry: ReadonlyMap<null | boolean, binaryen.ExpressionRef>;
 
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
+
+	/** A map containing code-generated `CfgNode`s. */
+	readonly #blockRefs = new Map<string, binaryen.RelooperBlockRef>();
 
 	/** The Binaryen module holding the generated code. */
 	public readonly mod: binaryen.Module;
@@ -73,15 +67,14 @@ export class CodeGenerator {
 		this.mod = new binaryen.Module();
 		this.mod.features = vm.mod.features;
 
-		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
-			[BinConst.FALSE, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
-			[BinConst.TRUE,  this.vm.Value.newPrimitive(this.vm.Vect.TRUE)],
+		this.#constRegistry = new Map<null | boolean, binaryen.ExpressionRef>([
+			[null,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
+			[false, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
+			[true,  this.vm.Value.newPrimitive(this.vm.Vect.TRUE)],
 		]);
 	}
 
-	public getConst(key: BinConst): binaryen.ExpressionRef {
-		assert.ok(this.#constRegistry.has(key), `Expected constant registry to have constant \`${ BinConst[key] }\`.`);
+	public getConst(key: null | boolean): binaryen.ExpressionRef {
 		return this.#constRegistry.get(key)!;
 	}
 
@@ -142,6 +135,27 @@ export class CodeGenerator {
 	 */
 	public getAllLocals(): Local[] {
 		return [...this.#locals];
+	}
+
+	/**
+	 * Register a new code-gen’d block.
+	 * @param label the block label
+	 * @param block_ref the code-generated block
+	 */
+	public registerBlockRef(label: string, block_ref: binaryen.RelooperBlockRef): void {
+		this.#blockRefs.set(label, block_ref);
+	}
+
+	/**
+	 * Retrieve a code-gen’d block by label.
+	 * @param label the block label
+	 * @returns     the code-generated block
+	 */
+	public getBlockRef(label: string): binaryen.RelooperBlockRef {
+		if (!this.#blockRefs.has(label)) {
+			throw new Error(`BlockRef with label \`${ label }\` not found in CodeGenerator.`);
+		}
+		return this.#blockRefs.get(label)!;
 	}
 
 	/**
@@ -303,7 +317,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
 	public codegenSet(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(BinConst.NULL)])));
+		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(null)])));
 	}
 
 	/**

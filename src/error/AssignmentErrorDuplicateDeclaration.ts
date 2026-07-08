@@ -1,4 +1,4 @@
-import type {AST} from '../validator/index.ts';
+import type {Serializable} from '../parser/index.ts';
 import {AssignmentError} from './AssignmentError.ts';
 
 
@@ -17,7 +17,7 @@ export class AssignmentErrorDuplicateDeclaration extends AssignmentError {
 	 * Construct a new AssignmentErrorDuplicateDeclaration object.
 	 * @param symbol the duplicate symbol
 	 */
-	public constructor(symbol: AST.TYPE.TypeAlias | AST.EXPR.Variable) {
+	public constructor(symbol: Serializable) {
 		super(
 			`Duplicate declaration of \`${ symbol.source }\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateDeclaration),

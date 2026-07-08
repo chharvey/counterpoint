@@ -12,6 +12,7 @@ export * from './ReferenceErrorKind.ts';
 export * from './AssignmentErrorDuplicateDeclaration.ts';
 export * from './AssignmentErrorDuplicateKey.ts';
 export * from './AssignmentErrorReassignment.ts';
+export * from './AssignmentErrorDeletion.ts';
 export * from './AssignmentErrorMissingType.ts';
 export * from './TypeError.ts';
 export * from './TypeErrorInvalidOperation.ts';

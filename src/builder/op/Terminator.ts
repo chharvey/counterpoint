@@ -1,6 +1,7 @@
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {runOnceSetter} from '../../lib/index.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {Opcode} from './Opcode.ts';
 
 
@@ -22,11 +23,16 @@ export abstract class Terminator extends Opcode {
 	}
 
 	/**
+	 * Execute the interpreter.
+	 * @param interp an Interpreter
+	 */
+	public abstract interpret(interp: Interpreter): void;
+
+	/**
 	 * Generate assembly code.
 	 * Creates an edge from this Terminator’s containing block to a destination block.
 	 * @param cg        code-generator
 	 * @param relooper  Binaryen Relooper for constructing Binaryen `blocks`
-	 * @param blockrefs code-generated `CfgNode`s
 	 */
-	public abstract codegen(cg: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void;
+	public abstract codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void;
 }

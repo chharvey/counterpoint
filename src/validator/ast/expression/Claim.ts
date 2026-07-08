@@ -11,10 +11,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import {Expression} from './Expression.ts';
@@ -56,10 +53,5 @@ export class Claim extends Expression {
 	@memoizeMethod
 	public override build(builder: Builder): OP.Value {
 		return this.operand.build(builder);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		return this.operand.fold();
 	}
 }

@@ -10,10 +10,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	type VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
@@ -93,20 +90,5 @@ export class OperationBinaryLogical extends OperationBinary {
 			conseq,
 			altern,
 		);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const v0: VALUE.Value | null = this.operand0.fold();
-		if (!v0) {
-			return v0;
-		}
-		if (
-			this.operator === Operator.AND && !v0.isTruthy ||
-			this.operator === Operator.OR  &&  v0.isTruthy
-		) {
-			return v0;
-		}
-		return this.operand1.fold();
 	}
 }

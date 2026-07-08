@@ -53,17 +53,26 @@ export class Constant extends Expression {
 
 	@memoizeGetter
 	public get interpreterValue(): VALUE.Primitive {
-		return this.fold();
-	}
-
-	public override varCheck(): void {
-		super.varCheck();
-		if (
-			isSyntaxNodeType(this.start_node, 'primitive_literal') &&
-			this.start_node.children.length === 2 &&
-			isSyntaxNodeType(this.start_node.children[1], 'word')
-		) {
-			this.validator.wordNodeID(this.start_node.children[1]);
+		if (isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) {
+			return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
+		}
+		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+		const node: SyntaxNode = this.start_node.namedChild(0)!;
+		switch (true) {
+			case isSyntaxNodeType(node, /^(integer|natural|float)$/): {
+				return valueOfTokenNumber(node.text);
+			}
+			case isSyntaxNodeType(node, 'string'): {
+				return new VALUE.String(Validator.cookTokenString(node.text));
+			}
+			case isSyntaxNodeType(node, 'keyword_value'): {
+				return Constant.keywordValue(node.children[0].text);
+			}
+			default: {
+				assert.strictEqual(this.start_node.children.length, 2, `Expected ${ this.start_node } to be a symbol.`);
+				assert.ok(isSyntaxNodeType(node, 'word'));
+				return new VALUE.Symbol(Validator.wordNodeId(node), node.text);
+			}
 		}
 	}
 
@@ -75,30 +84,5 @@ export class Constant extends Expression {
 	@memoizeMethod
 	public override build(): OP.Const {
 		return new OP.Const(this.interpreterValue);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Primitive {
-		if (isSyntaxNodeType(this.start_node, /^template_(full|head|middle|tail)$/)) {
-			return new VALUE.String(Validator.cookTokenTemplate(this.start_node.text));
-		}
-		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
-		const children: readonly SyntaxNode[] = this.start_node.children;
-		switch (true) {
-			case isSyntaxNodeType(children[0], /^(integer|natural|float)$/): {
-				return valueOfTokenNumber(children[0].text);
-			}
-			case isSyntaxNodeType(children[0], 'string'): {
-				return new VALUE.String(Validator.cookTokenString(children[0].text));
-			}
-			case isSyntaxNodeType(children[0], 'keyword_value'): {
-				return Constant.keywordValue(children[0].children[0].text);
-			}
-			default: {
-				assert.strictEqual(children.length, 2);
-				assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
-				return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text);
-			}
-		}
 	}
 }

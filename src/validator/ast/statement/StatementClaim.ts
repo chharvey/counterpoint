@@ -40,17 +40,11 @@ export class StatementClaim extends Statement {
 	}
 
 	@noopGetter(memoizeGetter)
-	public override get isFoldable(): boolean {
-		return true;
-	}
-
-	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
-		return false;
+		return this.assignee.type().isBottomType;
 	}
 
 	public override typeCheck(): void {
-		super.typeCheck();
 		const computed_type: TYPE.Type = this.assignee.type();
 		const claimed_type:  TYPE.Type = this.claimed_type.eval();
 		/* Type claim statements can only narrow the expression’s type. */

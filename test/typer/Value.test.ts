@@ -231,13 +231,10 @@ test.suite('Value', () => {
 		test.test('Symbol', () => {
 			const cg = new CodeGenerator();
 			const {vm: {Vect, Value}, mod: {wasm}} = cg;
-			return assertEqualBins([
-				VALUE.SYM_NOTHING.codegen(cg),
+			return assertEqualBins(
 				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
-			], [
-				Value.newPrimitive(Vect.newNat(wasm.i64.const(0x80n))),
 				Value.newPrimitive(Vect.newNat(wasm.i64.const(0x100n))),
-			]);
+			);
 		});
 
 		test.test('Integer', () => {

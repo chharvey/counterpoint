@@ -7,10 +7,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import {STMT} from '../index.ts';
 import {AstNode} from '../AstNode.ts';
 
@@ -23,10 +20,11 @@ import {AstNode} from '../AstNode.ts';
  * - Template
  * - Variable
  * - Collection
- * - ExpressionBlock
  * - Access
  * - Call
  * - Claim
+ * - Isset
+ * - ExpressionBlock
  * - Operation
  *
  * Known subinterfaces:
@@ -66,10 +64,4 @@ export abstract class Expression extends AstNode {
 	 * @return         an IR value
 	 */
 	public abstract build(builder: Builder): OP.Value;
-
-	/**
-	 * Assess the value of this node at compile-time, if possible.
-	 * @return the computed value of this node, or an abrupt completion if the value cannot be computed by the compiler
-	 */
-	public abstract fold(): VALUE.Value | null;
 }

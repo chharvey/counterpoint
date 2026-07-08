@@ -3,13 +3,12 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
+	Validator,
 	AST,
-	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 	TypeErrorNoEntry,
-	VoidErrorOutOfBounds,
 } from '../../src/index.ts';
 import {
 	extract_lines,
@@ -22,12 +21,6 @@ import {
 
 
 test.suite('Access', () => {
-	const TEST_VALUES = [
-		VALUE.INT_1,
-		new VALUE.Float(2.0),
-		new VALUE.String('three'),
-	] as const;
-
 	/**
 	 * Takes a program source text and compares it to the array of expected types.
 	 * The format of the program source text must be
@@ -39,8 +32,7 @@ test.suite('Access', () => {
 	 * @param expecteds the expected types of the expressions
 	 */
 	function testExprTypes(source: string, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-		const goal: AST.Goal = AST.Goal.fromSource(source);
-		goal.varCheck();
+		const {goal} = setupScript(source, {typeCheck: false});
 		try {
 			goal.typeCheck();
 		} catch {
@@ -59,377 +51,6 @@ test.suite('Access', () => {
 				expecteds as TYPE.Type[],
 			);
 	}
-
-
-	/**
-	 * Takes a program source text and compares it to the array of expected folded values.
-	 * The format of the program source text must be
-	 * 0 or more variable declarations and 0 or more nonempty expression-statements, possibly intermixed.
-	 * (The source text must be valid!)
-	 * The expression-statements’ expression folded values, or null if they are not foldable, are compared to the expected values via `deepStrictEqual`.
-	 * If any of the expecteds are Error (or subclasses) constructors, then the expression fold is expected to throw, and is tested against that.
-	 * @param source    the program source text to parse and analyze
-	 * @param expecteds the expected folded values (or null) of the expressions
-	 */
-	function testExprValues(source: string, expecteds: readonly (VALUE.Value | null | ConstructorType<Error>)[]): void {
-		const goal: AST.Goal = AST.Goal.fromSource(source);
-		goal.varCheck();
-		try {
-			goal.typeCheck();
-		} catch {
-			// if type-checking fails, proceed to `assert.throws` below
-		}
-		const statements: readonly AST.STMT.StatementExpression[] = goal.block!.children.filter((stmt) => stmt instanceof AST.STMT.StatementExpression);
-		return expecteds.some((it) => it instanceof Function)
-			? (assert.strictEqual(statements.length, expecteds.length, 'Arrays are not the same length.'), xjs.Array.forEachAggregated(statements, (stmt, i) => {
-				const expected: VALUE.Value | null | ConstructorType<Error> = expecteds[i];
-				return expected instanceof Function
-					? assert.throws(() => stmt.expr!.fold(), expected)
-					: assert.deepStrictEqual(stmt.expr!.fold(), expected);
-			}))
-			: assert.deepStrictEqual(
-				statements.map((stmt) => stmt.expr!.fold()),
-				expecteds,
-			);
-	}
-
-
-	test.suite('access kind: normal access (`a.‹b›`).', () => {
-		test.suite('when base is nullish.', () => {
-			const SRCS = extract_lines`
-				null.3
-				null.four
-				null.[((((),),),)]
-			`;
-			test.test('#fold: throws when base is null.', () => {
-				xjs.Array.forEachAggregated(SRCS, (src, i) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), Error, `access manner: access by ${ ['index', 'key', 'expression'][i] }.`));
-			});
-		});
-
-		test.suite('access manner: by index / by key', () => {
-			const SRC = `{
-				val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
-				val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
-
-				val     rec_fixed:   (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
-				val mut rec_unfixed: (a: int, b: float, _: str) = (a= 1, b= 2.0, _= "three");
-
-				tup_fixed.0;    % type \`1\`       % value \`1\`
-				tup_fixed.1;    % type \`2.0\`     % value \`2.0\`
-				tup_fixed.+2;   % type \`"three"\` % value \`"three"\`
-				tup_unfixed.0;  % type \`int\`     % non-foldable value
-				tup_unfixed.1;  % type \`float\`   % non-foldable value
-				tup_unfixed.+2; % type \`str\`     % non-foldable value
-
-				rec_fixed.a;   % type \`1\`       % value \`1\`
-				rec_fixed.b;   % type \`2.0\`     % value \`2.0\`
-				rec_fixed._;   % type \`"three"\` % value \`"three"\`
-				rec_unfixed.a; % type \`int\`     % non-foldable value
-				rec_unfixed.b; % type \`float\`   % non-foldable value
-				rec_unfixed._; % type \`str\`     % non-foldable value
-			}`;
-			const THROWS = extract_lines`
-				(1, 2.0, "three").3
-				(1, 2.0, "three").-1
-				(1, 2.0, "three").-4
-				(a= 1, b= 2.0, c= "three").d
-			`;
-			test.suite('#fold', () => {
-				test.test('return individual entries.', () => {
-					testExprValues(SRC, [
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-						...repeat(null, 3),
-
-						new VALUE.Integer(1n),
-						new VALUE.Float(2.0),
-						new VALUE.String('three'),
-						...repeat(null, 3),
-					]);
-				});
-				test.test('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						(null, true, @hello).a
-						(a= 42).0
-					`, (src) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), assert.AssertionError));
-				});
-				test.test('throws when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), VoidErrorOutOfBounds));
-				});
-			});
-		});
-
-		test.suite('access manner: access by expression.', () => {
-			const DECLS = `
-				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
-				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
-				val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
-				val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				val mut list_unfixed: List.<     int | float | str> = list_fixed;
-				val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
-				val mut set_unfixed:  Set .<     int | float | str> = set_fixed;
-				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
-			`;
-			const SRC = `{
-				${ DECLS }
-
-				list_fixed.[0];      % type \`1\`       % value \`1\`
-				list_fixed.[1];      % type \`2.0\`     % value \`2.0\`
-				list_fixed.[+2];     % type \`"three"\` % value \`"three"\`
-				dict_fixed.[@a];     % type \`1\`       % value \`1\`
-				dict_fixed.[@b];     % type \`2.0\`     % value \`2.0\`
-				dict_fixed.[@c];     % type \`"three"\` % value \`"three"\`
-				set_fixed.[1];       % type \`true\`    % value \`true\`
-				set_fixed.[2.0];     % type \`true\`    % value \`true\`
-				set_fixed.["three"]; % type \`true\`    % value \`true\`
-				map_fixed.["a"];     % type \`1\`       % value \`1\`
-				map_fixed.["b"];     % type \`2.0\`     % value \`2.0\`
-				map_fixed.["c"];     % type \`"three"\` % value \`"three"\`
-
-				list_unfixed.[0];      % type \`int | float | str\` % non-foldable value
-				list_unfixed.[1];      % type \`int | float | str\` % non-foldable value
-				list_unfixed.[+2];     % type \`int | float | str\` % non-foldable value
-				dict_unfixed.[@a];     % type \`int | float | str\` % non-foldable value
-				dict_unfixed.[@b];     % type \`int | float | str\` % non-foldable value
-				dict_unfixed.[@c];     % type \`int | float | str\` % non-foldable value
-				set_unfixed.[1];       % type \`bool\`              % non-foldable value
-				set_unfixed.[2.0];     % type \`bool\`              % non-foldable value
-				set_unfixed.["three"]; % type \`bool\`              % non-foldable value
-				map_unfixed.["a"];     % type \`int | float | str\` % non-foldable value
-				map_unfixed.["b"];     % type \`int | float | str\` % non-foldable value
-				map_unfixed.["c"];     % type \`int | float | str\` % non-foldable value
-			}`;
-			const ERRS = `{
-				${ DECLS }
-
-				list_fixed.[3];    % type \`nothing\`           % fold throws VoidError
-				list_fixed.[-4];   % type \`nothing\`           % fold throws VoidError
-				dict_fixed.[@d];   % type \`nothing\`           % fold throws VoidError
-				list_unfixed.[3];  % type \`int | float | str\` % non-foldable value
-				list_unfixed.[-4]; % type \`int | float | str\` % non-foldable value
-				dict_unfixed.[@d]; % type \`int | float | str\` % non-foldable value
-			}`;
-			const ALLOWS = `{
-				${ DECLS }
-				val     set_mut_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
-				val     map_mut_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				val mut set_mut_unfixed:  Set .<     int | float | str> = set_fixed;
-				val mut map_mut_unfixed:  Map .<str, int | float | str> = map_fixed;
-
-				% correct type, but out of range
-				set_fixed      .[42.0]; % type \`false\`             % value \`false\`
-				map_fixed      .["d"];  % type \`null\`              % value \`null\`
-				set_unfixed    .[42.0]; % type \`bool\`              % non-foldable value
-				map_unfixed    .["d"];  % type \`int | float | str\` % non-foldable value
-				set_mut_fixed  .[42.0]; % type \`false\`             % value \`false\`
-				map_mut_fixed  .["d"];  % type \`null\`              % value \`null\`
-				set_mut_unfixed.[42.0]; % type \`bool\`              % non-foldable value
-				map_mut_unfixed.["d"];  % type \`int | float | str\` % non-foldable value
-
-				% incorrect type
-				set_fixed      .[true]; % type \`false\`             % value \`false\`
-				map_fixed      .[true]; % type \`null\`              % value \`null\`
-				set_unfixed    .[true]; % type \`bool\`              % non-foldable value
-				map_unfixed    .[true]; % type \`int | float | str\` % non-foldable value
-				set_mut_fixed  .[true]; % type \`false\`             % value \`false\`
-				map_mut_fixed  .[true]; % type \`null\`              % value \`null\`
-				set_mut_unfixed.[true]; % type \`bool\`              % non-foldable value
-				map_mut_unfixed.[true]; % type \`int | float | str\` % non-foldable value
-			}`;
-			test.suite('#fold', () => {
-				test.test('returns individual entries for folded objects.', () => {
-					testExprValues(SRC, [
-						...TEST_VALUES,
-						...TEST_VALUES,
-						...repeat(VALUE.TRUE, 3),
-						...TEST_VALUES,
-
-						...repeat(null, 12),
-					]);
-				});
-				test.test('for Lists/Dicts: when accessor expression is out of bounds/range, throws for folded objects, returns null for unfolded objects.', () => {
-					testExprValues(ERRS, [
-						...repeat(VoidErrorOutOfBounds, 3),
-						...repeat(null, 3),
-					]);
-				});
-				test.test('for Sets/Maps: when expression is correct type but out of range or incorrect type, returns `null` value for folded objects, returns native null for unfolded objects.', () => {
-					testExprValues(ALLOWS, repeat([
-						VALUE.FALSE,
-						VALUE.NULL,
-						...repeat(null, 2),
-					], 4).flat());
-				});
-			});
-		});
-	});
-
-
-	test.suite('access kind: maybe access (`a?.‹b›`).', () => {
-		test.suite('when base is nullish.', () => {
-			const SRC = `{
-				null?.3;
-				null?.four;
-				null?.[((((),),),)];
-			}`;
-			test.suite('#fold', () => {
-				test.test('returns base when it is null.', () => {
-					testExprValues(SRC, repeat(VALUE.NULL, 3));
-				});
-				test.test('chained maybe access.', () => {
-					const prop1 = new VALUE.Tuple([VALUE.TRUE]); // (true,)
-					const prop2 = new VALUE.Tuple();             // ()
-					return testExprValues(`{
-						val bound1: (prop?: (bool,)) = (prop= (true,));
-						val bound2: (prop?: (?: bool)) = (prop= ());
-						bound1;
-						bound1?.prop;
-						bound1?.prop?.0;
-						bound2;
-						bound2?.prop;
-					}`, [
-						new VALUE.Record(new Map([[0x100n, prop1]])), // (prop= (true,))
-						prop1,                                        // (true,)
-						VALUE.TRUE,                                   // true
-						new VALUE.Record(new Map([[0x100n, prop2]])), // (prop= ())
-						prop2,                                        // ()
-					]);
-				});
-				test.test('maybe access of non-existent value returns null (bypassing type-checking).', () => {
-					assert.strictEqual(
-						AST.EXPR.Access.fromSource('(prop= ()).prop?.0').fold(),
-						VALUE.NULL,
-					);
-				});
-			});
-		});
-
-		test.suite('access manner: access by index / by key.', () => {
-			const SRC = `{
-				val     tupo1_f: (int, float, ?: str) = (1, 2.0, "three");
-				val mut tupo1_u: (int, float, ?: str) = (1, 2.0, "three");
-				val mut tupo2_u: (int, float, ?: str) = (1, 2.0);
-
-				val     reco1_f: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
-				val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
-				val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
-
-				tupo1_f?.+2; % type \`"three"\` % value \`"three"\`
-				tupo1_u?.+2; % type \`str?\`    % non-foldable value
-				tupo2_u?.2;  % type \`str?\`    % non-foldable value
-
-				reco1_f?.b; % type \`"three"\` % value \`"three"\`
-				reco1_u?.b; % type \`str?\`    % non-foldable value
-				reco2_u?.b; % type \`str?\`    % non-foldable value
-			}`;
-			const THROWS = extract_lines`
-				(1, 2.0, "three")?.3
-				(1, 2.0, "three")?.-4
-				(a= 1, b= 2.0, c= "three")?.d
-			`;
-			test.suite('#fold', () => {
-				test.test('returns folded values as normal.', () => {
-					testExprValues(SRC, [
-						new VALUE.String('three'),
-						...repeat(null, 2),
-
-						new VALUE.String('three'),
-						...repeat(null, 2),
-					]);
-				});
-				test.test('throws AssertionError when base is of incorrect type (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						(null, true, @hello)?.a
-						(a= 42)?.0
-					`, (src) => assert.throws(() => AST.EXPR.Access.fromSource(src).fold(), assert.AssertionError));
-				});
-				test.test('returns null when index is out of bounds / when key is out of range (bypassing type-checking).', () => {
-					xjs.Array.forEachAggregated(THROWS, (src) => assert.strictEqual(AST.EXPR.Access.fromSource(src).fold(), VALUE.NULL));
-				});
-			});
-		});
-
-		test.suite('access manner: access by expression.', () => {
-			const DECLS = `
-				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
-				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
-				val     map_fixed:    Map .<str, int | float | str> = {"a" -> 1, "b" -> 2.0, "c" -> "three"};
-				val mut list_unfixed: List.<     int | float | str> = list_fixed;
-				val mut dict_unfixed: Dict.<     int | float | str> = dict_fixed;
-				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
-			`;
-			const SRC = `{
-				${ DECLS }
-
-				list_fixed?.[0];  % type \`1\`       % value \`1\`
-				list_fixed?.[1];  % type \`2.0\`     % value \`2.0\`
-				list_fixed?.[+2]; % type \`"three"\` % value \`"three"\`
-				dict_fixed?.[@a]; % type \`1\`       % value \`1\`
-				dict_fixed?.[@b]; % type \`2.0\`     % value \`2.0\`
-				dict_fixed?.[@c]; % type \`"three"\` % value \`"three"\`
-				map_fixed?.["a"]; % type \`1\`       % value \`1\`
-				map_fixed?.["b"]; % type \`2.0\`     % value \`2.0\`
-				map_fixed?.["c"]; % type \`"three"\` % value \`"three"\`
-
-				list_unfixed?.[0];  % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[1];  % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[+2]; % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@a]; % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@b]; % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@c]; % type \`int | float | str | null\` % non-foldable value
-				map_unfixed?.["a"]; % type \`int | float | str | null\` % non-foldable value
-				map_unfixed?.["b"]; % type \`int | float | str | null\` % non-foldable value
-				map_unfixed?.["c"]; % type \`int | float | str | null\` % non-foldable value
-			}`;
-			const ERRS = `{
-				${ DECLS }
-
-				list_fixed?.[3];  % type \`null\`  % value \`null\`
-				list_fixed?.[-4]; % type \`null\`  % value \`null\`
-				dict_fixed?.[@d]; % type \`null\`  % value \`null\`
-				map_fixed?.["d"]; % type \`null\`  % value \`null\`
-
-				list_unfixed?.[3];  % type \`int | float | str | null\` % non-foldable value
-				list_unfixed?.[-4]; % type \`int | float | str | null\` % non-foldable value
-				dict_unfixed?.[@d]; % type \`int | float | str | null\` % non-foldable value
-				map_unfixed?.["d"]; % type \`int | float | str | null\` % non-foldable value
-			}`;
-			test.suite('#fold', () => {
-				test.test('short-circuits evaluation of accessor expression when base is null.', () => {
-					testExprValues(`{
-						val list: List.<int> | null = null;
-						val dict: Dict.<int> | null = [a= 42];
-
-						val mut index: int = 0;
-						val mut key:   sym = @a;
-
-						list?.[index]; % value \`null\`     (\`index\` is never attempted to be folded because \`list\` is null)
-						dict?.[key];   % non-foldable value (\`key\` is attempted to be folded because \`dict\` is not null)
-					}`, [
-						VALUE.NULL,
-						null,
-					]);
-				});
-				test.test('returns individual entries for folded objects.', () => {
-					testExprValues(SRC, [
-						...TEST_VALUES,
-						...TEST_VALUES,
-						...TEST_VALUES,
-
-						...repeat(null, 9),
-					]);
-				});
-				test.test('when accessor expression is out of bounds/range, returns the `null` value for folded objects, returns null for unfolded objects.', () => {
-					testExprValues(ERRS, [
-						...repeat(VALUE.NULL, 4),
-						...repeat(null, 4),
-					]);
-				});
-			});
-		});
-	});
-
 
 
 	test.test.todo('access kind: result access (`a!.‹b›`) is unsupported.', () => { // TODO: Maybe & Result types (#100)
@@ -546,13 +167,13 @@ test.suite('Access', () => {
 						val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
 						val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-						tupo1_f?.2; % type \`str?\`
-						tupo1_u?.2; % type \`str?\`
-						tupo2_u?.2; % type \`str?\`
+						tupo1_f?.2; % type \`str | null\`
+						tupo1_u?.2; % type \`str | null\`
+						tupo2_u?.2; % type \`str | null\`
 
-						reco1_f?.b; % type \`str?\`
-						reco1_u?.b; % type \`str?\`
-						reco2_u?.b; % type \`str?\`
+						reco1_f?.b; % type \`str | null\`
+						reco1_u?.b; % type \`str | null\`
+						reco2_u?.b; % type \`str | null\`
 					}`, [
 						...repeat(TypeErrorInvalidOperation, 4),
 						...repeat(TYPE.STR.union(TYPE.NULL), 6),
@@ -609,10 +230,10 @@ test.suite('Access', () => {
 					val mut tup: (   A,     B,       int) & (   C,  ?: D)        = ((a= "tup.0.a", c= "tup.0.c"), (b= "tup.1.b", d= "tup.1.d"), 42);
 					val mut rec: (x: A, y?: int, z?: B)   & (x: C,        z?: D) = (x= (a= "rec.x.a", c= "rec.x.c"), y= 42, z= (b= "rec.z.b", d= "rec.z.d"));
 				`;
-				const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x100n, TYPE.STR]]));
-				const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x102n, TYPE.STR]]));
-				const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x104n, TYPE.STR]]));
-				const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[0x106n, TYPE.STR]]));
+				const A: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('a'), TYPE.STR]]));
+				const B: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('b'), TYPE.STR]]));
+				const C: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('c'), TYPE.STR]]));
+				const D: TYPE.Record = TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('d'), TYPE.STR]]));
 				test.test('every constituent has the entry and it’s required in some constituent.', () => {
 					testExprTypes(`{
 						${ DECLS }
@@ -750,7 +371,7 @@ test.suite('Access', () => {
 				TYPE_INT_FLOAT_STR      = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
 				TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
 			});
-			test.test('returns individual entry types for folded objects, union types for unfolded objects.', () => {
+			test.test('returns union types.', () => {
 				testExprTypes(`{
 					${ DECLS }
 
@@ -865,7 +486,7 @@ test.suite('Access', () => {
 					TYPE.BOOL.union(TYPE.NULL),
 				]);
 			});
-			test.test('for Lists/Dicts/Maps: when accessor expression is correct type but out of bounds/range, returns `never`/`null` for folded objects, returns union type for unfolded objects.', () => {
+			test.test('for Lists/Dicts/Maps: when accessor expression is correct type but out of bounds/range, returns union type.', () => {
 				testExprTypes(`{
 					${ DECLS }
 

@@ -8,7 +8,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	type VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -26,8 +31,12 @@ export class Template extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		return xjs.Array.forEachAggregated(this.items, (item) => item.validate());
+	public override validate(builder: Builder): void {
+		return xjs.Array.forEachAggregated(this.items, (item) => item.validate(builder));
+	}
+
+	public override interpret(interp: Interpreter): VALUE.String {
+		return this.items.map((value) => value.interpret(interp).toCplString()).reduce((a, b) => a.concatenate(b));
 	}
 
 	@memoizeMethod

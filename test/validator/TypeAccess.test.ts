@@ -13,6 +13,7 @@ import {
 	repeat,
 	assertEqualTypes,
 	typeUnit,
+	setupScript,
 } from '../utils.ts';
 
 
@@ -30,8 +31,7 @@ test.suite('TypeAccess', () => {
 		 * @param expecteds the expected evaluations of the type-expressions
 		 */
 		function testTypeEvals(source: string, start: number, expecteds: readonly (TYPE.Type | ConstructorType<Error>)[]): void {
-			const goal: AST.Goal = AST.Goal.fromSource(source);
-			goal.varCheck();
+			const {goal} = setupScript(source, {typeCheck: false});
 			try {
 				goal.typeCheck();
 			} catch {

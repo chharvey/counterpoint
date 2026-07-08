@@ -10,6 +10,10 @@ export class EndProgram extends Terminator {
 		super(OpCode.ENDPROGRAM);
 	}
 
+	public override interpret(): void {
+		return; // no-op
+	}
+
 	@memoizeMethod
 	public override codegen(): void {
 		return; // no-op

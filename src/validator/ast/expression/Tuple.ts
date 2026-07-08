@@ -13,10 +13,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {EntryType} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
@@ -53,14 +50,6 @@ class ExpressionTuple extends Collection {
 	@memoizeMethod
 	public build(builder: Builder): OP.CollectionLinearNew {
 		return new OP.CollectionLinearNew(OP.TypeName.TUPLE, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const items: readonly (VALUE.Value | null)[] = this.children.map((c) => c.fold());
-		return (items.includes(null))
-			? null
-			: new VALUE.Tuple(items as VALUE.Value[]);
 	}
 
 	@assignToDeco

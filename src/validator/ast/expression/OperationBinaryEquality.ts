@@ -10,10 +10,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
@@ -66,41 +63,14 @@ export class OperationBinaryEquality extends OperationBinary {
 				 */
 				return DISJOINT_TYPES && [t0, t1].some((t) => t.isDisjointWith(TYPE.NUMBER)) ? TYPE.FALSE : TYPE.BOOL;
 			}
-			default: {
-				return TYPE.BOOL;
-			}
 		}
 	}
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Binop {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-			[Operator.ID,  OP.OpCode.ID],
-			[Operator.EQ,  OP.OpCode.EQ],
-			[Operator.NID, OP.OpCode.NID],
-			[Operator.NEQ, OP.OpCode.NEQ],
+			[Operator.ID, OP.OpCode.ID],
+			[Operator.EQ, OP.OpCode.EQ],
 		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const v0: VALUE.Value | null = this.operand0.fold();
-		if (!v0) {
-			return v0;
-		}
-		const v1: VALUE.Value | null = this.operand1.fold();
-		if (!v1) {
-			return v1;
-		}
-		return this.foldEquality(v0, v1);
-	}
-
-	private foldEquality(v0: VALUE.Value, v1: VALUE.Value): VALUE.Boolean {
-		return VALUE.Boolean.fromBoolean(new Map<Operator, (x: VALUE.Value, y: VALUE.Value) => boolean>([
-			[Operator.ID,  (x, y) => x.identical(y)],
-			[Operator.EQ,  (x, y) => x.equal(y)],
-			[Operator.NID, (x, y) => !x.identical(y)],
-			[Operator.NEQ, (x, y) => !x.equal(y)],
-		]).get(this.operator)!(v0, v1));
 	}
 }

@@ -5,7 +5,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import type {TYPE} from '../../typer/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -27,8 +32,12 @@ export class Call extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		return xjs.Array.forEachAggregated([this.callable, ...this.args], (value) => value.validate());
+	public override validate(builder: Builder): void {
+		return xjs.Array.forEachAggregated([this.callable, ...this.args], (value) => value.validate(builder));
+	}
+
+	public override interpret(_interp: Interpreter): VALUE.Value {
+		throw new Error('`OP.Call#interpret` is not yet supported.');
 	}
 
 	@memoizeMethod

@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import {
 	type Builder,
 	OP,
@@ -154,51 +153,6 @@ export class Access extends Expression implements Reassignable {
 			);
 		}
 		return non_nullish_base();
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const base_value: VALUE.Value | null = this.base.fold();
-		if (base_value === null) {
-			return null;
-		}
-		const KIND_MAYBE: boolean = this.kind === Operator.DOT_MAY;
-		if (KIND_MAYBE && base_value.identical(VALUE.NULL)) {
-			return VALUE.NULL;
-		}
-		switch (true) {
-			case this.accessor instanceof Index: {
-				assert_instanceof(base_value, VALUE.Tuple);
-				return base_value.get(this.accessor.index, KIND_MAYBE, this.accessor);
-			}
-			case this.accessor instanceof Key: {
-				assert_instanceof(base_value, VALUE.Record);
-				return base_value.get(this.accessor.id, KIND_MAYBE, this.accessor);
-			}
-			default: {
-				const accessor_value: VALUE.Value | null = this.accessor.fold();
-				if (accessor_value === null) {
-					return null;
-				}
-				switch (true) {
-					case base_value instanceof VALUE.List: {
-						return base_value.get((accessor_value as VALUE.Integer | VALUE.Natural).toBigInt(), KIND_MAYBE, this.accessor);
-					}
-					case base_value instanceof VALUE.Dict: {
-						return base_value.get((accessor_value as VALUE.Symbol).id, KIND_MAYBE, this.accessor);
-					}
-					case base_value instanceof VALUE.Set: {
-						return base_value.get(accessor_value);
-					}
-					case base_value instanceof VALUE.Map: {
-						return base_value.get(accessor_value);
-					}
-					default: {
-						assert.fail(`Expected ${ base_value } to have a \`get\` method.`);
-					}
-				}
-			}
-		}
 	}
 
 	/**

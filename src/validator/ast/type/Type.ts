@@ -12,7 +12,7 @@ import {AstNode} from '../AstNode.ts';
  * A sematic node representing a type expression.
  * Known subclasses:
  * - Constant
- * - Alias
+ * - TypeAlias
  * - Collection
  * - Access
  * - Call
@@ -35,7 +35,8 @@ export abstract class Type extends AstNode {
 	 * @final
 	 */
 	public override typeCheck(): void {
-		return; // no type-checking necessary
+		super.typeCheck();
+		this.eval(); // assert does not throw
 	}
 
 	/**

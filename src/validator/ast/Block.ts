@@ -13,16 +13,14 @@ import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	Goal,
-	type EXPR,
 	type STMT,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
-import type {Foldable} from './Foldable.ts';
 import type {Buildable} from './Buildable.ts';
 
 
 
-export class Block extends AstNode implements Foldable, Buildable {
+export class Block extends AstNode implements Buildable {
 	/**
 	 * Construct a new Block from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -49,17 +47,10 @@ export class Block extends AstNode implements Foldable, Buildable {
 	}
 
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, (this.parent as EXPR.ExpressionBlock | STMT.StatementConditional | Goal | undefined)?.validator);
+		this.#validator ??= new Validator(this.config, this.parent?.validator);
 		return this.#validator;
 	}
 
-	/** @implements Foldable */
-	@memoizeGetter
-	public get isFoldable(): boolean {
-		return this.children.every((stmt) => stmt.isFoldable);
-	}
-
-	/** @implements Foldable */
 	@memoizeGetter
 	public get hasBottomType(): boolean {
 		return this.children.some((c) => c.hasBottomType);

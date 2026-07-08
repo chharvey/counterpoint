@@ -39,46 +39,62 @@ TokenWorth(Punctuator :::= "=")   -> RealNumber := \x25;
 
 
 
-TokenWorth(KeywordType  :::= "nothing")  -> RealNumber := \x80;
-TokenWorth(KeywordType  :::= "bool")     -> RealNumber := \x81;
-TokenWorth(KeywordType  :::= "sym")      -> RealNumber := \x82;
-TokenWorth(KeywordType  :::= "int")      -> RealNumber := \x83;
-TokenWorth(KeywordType  :::= "nat")      -> RealNumber := \x84;
-TokenWorth(KeywordType  :::= "float")    -> RealNumber := \x85;
-TokenWorth(KeywordType  :::= "str")      -> RealNumber := \x86;
-TokenWorth(KeywordType  :::= "anything") -> RealNumber := \x87;
-TokenWorth(KeywordValue :::= "null")     -> RealNumber := \x88;
-TokenWorth(KeywordValue :::= "false")    -> RealNumber := \x89;
-TokenWorth(KeywordValue :::= "true")     -> RealNumber := \x8a;
-TokenWorth(KeywordOther :::= "mut")      -> RealNumber := \x8b;
-TokenWorth(KeywordOther :::= "as")       -> RealNumber := \x8c;
-TokenWorth(KeywordOther :::= "as?")      -> RealNumber := \x8d;
-TokenWorth(KeywordOther :::= "as!")      -> RealNumber := \x8e;
-TokenWorth(KeywordOther :::= "is")       -> RealNumber := \x8f;
-TokenWorth(KeywordOther :::= "!is")      -> RealNumber := \x90;
-TokenWorth(KeywordOther :::= "if")       -> RealNumber := \x91;
-TokenWorth(KeywordOther :::= "then")     -> RealNumber := \x92;
-TokenWorth(KeywordOther :::= "else")     -> RealNumber := \x93;
-TokenWorth(KeywordOther :::= "type")     -> RealNumber := \x94;
-TokenWorth(KeywordOther :::= "val")      -> RealNumber := \x95;
-TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x96;
-TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x97;
-TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x98;
-TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x99;
-TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x9a;
-TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x9b;
-TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x9c;
-TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x9d;
-TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x9e;
-TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x9f;
-TokenWorth(KeywordOther :::= "do")       -> RealNumber := \xa0;
-TokenWorth(KeywordOther :::= "break")    -> RealNumber := \xa1;
-TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \xa2;
+TokenWorth(KeywordType  :::= "nothing")  -> RealNumber := \x40;
+TokenWorth(KeywordType  :::= "bool")     -> RealNumber := \x41;
+TokenWorth(KeywordType  :::= "sym")      -> RealNumber := \x42;
+TokenWorth(KeywordType  :::= "int")      -> RealNumber := \x43;
+TokenWorth(KeywordType  :::= "nat")      -> RealNumber := \x44;
+TokenWorth(KeywordType  :::= "float")    -> RealNumber := \x45;
+TokenWorth(KeywordType  :::= "str")      -> RealNumber := \x46;
+TokenWorth(KeywordType  :::= "anything") -> RealNumber := \x47;
+TokenWorth(KeywordValue :::= "null")     -> RealNumber := \x48;
+TokenWorth(KeywordValue :::= "false")    -> RealNumber := \x49;
+TokenWorth(KeywordValue :::= "true")     -> RealNumber := \x4a;
+TokenWorth(KeywordOther :::= "mut")      -> RealNumber := \x4b;
+TokenWorth(KeywordOther :::= "isset")    -> RealNumber := \x4c;
+TokenWorth(KeywordOther :::= "!isset")   -> RealNumber := \x4d;
+TokenWorth(KeywordOther :::= "as")       -> RealNumber := \x4e;
+TokenWorth(KeywordOther :::= "as?")      -> RealNumber := \x4f;
+TokenWorth(KeywordOther :::= "as!")      -> RealNumber := \x50;
+TokenWorth(KeywordOther :::= "is")       -> RealNumber := \x51;
+TokenWorth(KeywordOther :::= "!is")      -> RealNumber := \x52;
+TokenWorth(KeywordOther :::= "if")       -> RealNumber := \x53;
+TokenWorth(KeywordOther :::= "then")     -> RealNumber := \x54;
+TokenWorth(KeywordOther :::= "else")     -> RealNumber := \x55;
+TokenWorth(KeywordOther :::= "type")     -> RealNumber := \x56;
+TokenWorth(KeywordOther :::= "val")      -> RealNumber := \x57;
+TokenWorth(KeywordOther :::= "claim")    -> RealNumber := \x58;
+TokenWorth(KeywordOther :::= "set")      -> RealNumber := \x59;
+TokenWorth(KeywordOther :::= "delete")   -> RealNumber := \x5a;
+TokenWorth(KeywordOther :::= "_")        -> RealNumber := \x5b;
+TokenWorth(KeywordOther :::= "void")     -> RealNumber := \x5c;
+TokenWorth(KeywordOther :::= "nominal")  -> RealNumber := \x5d;
+TokenWorth(KeywordOther :::= "unless")   -> RealNumber := \x5e;
+TokenWorth(KeywordOther :::= "while")    -> RealNumber := \x5f;
+TokenWorth(KeywordOther :::= "until")    -> RealNumber := \x60;
+TokenWorth(KeywordOther :::= "for")      -> RealNumber := \x61;
+TokenWorth(KeywordOther :::= "in")       -> RealNumber := \x62;
+TokenWorth(KeywordOther :::= "do")       -> RealNumber := \x63;
+TokenWorth(KeywordOther :::= "break")    -> RealNumber := \x64;
+TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x65;
 
 
 
-TokenWorth(Identifier) -> RealNumber
-	:=; // TO BE DESCRIBED
+TokenWorth(Identifier :::= "Object") -> RealNumber := \x80;
+TokenWorth(Identifier :::= "Integer" -> RealNumber := \x81;
+TokenWorth(Identifier :::= "Natural" -> RealNumber := \x82;
+TokenWorth(Identifier :::= "Float"   -> RealNumber := \x83;
+TokenWorth(Identifier :::= "String"  -> RealNumber := \x84;
+TokenWorth(Identifier :::= "List"    -> RealNumber := \x85;
+TokenWorth(Identifier :::= "Dict"    -> RealNumber := \x86;
+TokenWorth(Identifier :::= "Set"     -> RealNumber := \x87;
+TokenWorth(Identifier :::= "Map"     -> RealNumber := \x88;
+
+TokenWorth(Identifier) -> RealNumber :=
+	1. Convert the source text of `Identifier` to a string of bytes in the UTF-8 encoding.
+	2. Hash each byte, folding in the results from start to end, using a modified Fowler–Noll–Vo hash function.
+	3. *Return:* the sum of the hash and `\x100`.
+;
 
 
 

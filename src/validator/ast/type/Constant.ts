@@ -60,20 +60,21 @@ export class Constant extends Type {
 			return Constant.keywordType(this.start_node.children[0].text);
 		}
 		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
-		const children: readonly SyntaxNode[] = this.start_node.children;
+		const node: SyntaxNode = this.start_node.namedChild(0)!;
 		switch (true) {
-			case isSyntaxNodeType(children[0], /^(integer|natural|float)$/): {
-				return valueOfTokenNumber(children[0].text).toType();
+			case isSyntaxNodeType(node, /^(integer|natural|float)$/): {
+				return valueOfTokenNumber(node.text).toType();
 			}
-			case isSyntaxNodeType(children[0], 'string'): {
-				return new VALUE.String(Validator.cookTokenString(children[0].text)).toType();
+			case isSyntaxNodeType(node, 'string'): {
+				return new VALUE.String(Validator.cookTokenString(node.text)).toType();
 			}
-			case isSyntaxNodeType(children[0], 'keyword_value'): {
-				return Constant.keywordType(children[0].children[0].text);
+			case isSyntaxNodeType(node, 'keyword_value'): {
+				return Constant.keywordType(node.children[0].text);
 			}
 			default: {
-				assert.ok(isSyntaxNodeType(children[1], 'word'), `Expected ${ children[1] } to be a symbol.`);
-				return new VALUE.Symbol(this.validator.wordNodeID(children[1]), children[1].text).toType();
+				assert.strictEqual(this.start_node.children.length, 2, `Expected ${ this.start_node } to be a symbol.`);
+				assert.ok(isSyntaxNodeType(node, 'word'));
+				return new VALUE.Symbol(Validator.wordNodeId(node), node.text).toType();
 			}
 		}
 	}

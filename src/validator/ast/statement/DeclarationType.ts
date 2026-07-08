@@ -12,8 +12,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
+import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaType} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import {Statement} from './Statement.ts';
 
@@ -26,17 +28,19 @@ export class DeclarationType extends Statement {
 		return statement;
 	}
 
+
+	private readonly id?: bigint;
+
+
 	public constructor(
 		start_node: SyntaxNodeType<'declaration_type'>,
-		private readonly assignee: AST_TYPE.TypeAlias | null,
+		private readonly assignee: Serializable | null,
 		public  readonly assigned: AST_TYPE.Type,
 	) {
-		super(start_node, {}, assignee ? [assignee, assigned] : [assigned]);
-	}
-
-	@noopGetter(memoizeGetter)
-	public override get isFoldable(): boolean {
-		return true;
+		super(start_node, {}, [assigned]);
+		if (this.assignee) {
+			this.id = Validator.cookTokenIdentifier(this.assignee.source);
+		}
 	}
 
 	@noopGetter(memoizeGetter)
@@ -45,21 +49,20 @@ export class DeclarationType extends Statement {
 	}
 
 	public override varCheck(): void {
-		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
-		this.assigned.varCheck();
+		super.varCheck();
 		if (this.assignee) {
-			if (this.validator.hasSymbol(this.assignee.id)) {
+			if (this.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaType(this.assignee));
+			this.validator.addSymbol(new SymbolSchemaType(this.id!, this.assignee));
 		}
 	}
 
 	public override typeCheck(): void {
 		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
 		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaType;
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}
 	}

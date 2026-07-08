@@ -13,6 +13,7 @@ import {
 	Decorator,
 	AST,
 } from '../../src/index.ts';
+import type {SyntaxNodeType} from '../../src/validator/utils-private.ts';
 
 
 
@@ -55,6 +56,12 @@ test.suite('Decorator', () => {
 				}
 				% (primitive_literal (integer))
 			`]],
+			['Decorate(Type > PrimitiveLiteral ::= NATURAL) -> SemanticTypeConstant', [AST.TYPE.Constant, `
+				{
+					type T = +42;
+				}
+				% (primitive_literal (natural))
+			`]],
 			['Decorate(Type > PrimitiveLiteral ::= FLOAT) -> SemanticTypeConstant', [AST.TYPE.Constant, `
 				{
 					type T = 42.69;
@@ -85,6 +92,12 @@ test.suite('Decorator', () => {
 					42;
 				}
 				% (primitive_literal (integer))
+			`]],
+			['Decorate(Expression > PrimitiveLiteral ::= NATURAL) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
+				{
+					+42;
+				}
+				% (primitive_literal (natural))
 			`]],
 			['Decorate(Expression > PrimitiveLiteral ::= FLOAT) -> SemanticExpressionConstant', [AST.EXPR.Constant, `
 				{
@@ -504,21 +517,15 @@ test.suite('Decorator', () => {
 				% (expression_unary_symbol)
 			`]],
 
-			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "int" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "isset" Assignee<?Break>) -> SemanticExpressionIsset', [AST.EXPR.Isset, `
 				{
-					int v;
+					isset v;
 				}
 				% (expression_unary_keyword)
 			`]],
-			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "nat" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "!isset" Assignee<?Break>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
 				{
-					nat v;
-				}
-				% (expression_unary_keyword)
-			`]],
-			['Decorate(ExpressionUnaryKeyword<Block, Break> ::= "float" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
-				{
-					float v;
+					!isset v;
 				}
 				% (expression_unary_keyword)
 			`]],
@@ -641,6 +648,12 @@ test.suite('Decorator', () => {
 				}
 				% (assignee)
 			`]],
+			['Decorate(Assignee<Break> ::= IDENTIFIER) -> SemanticExpressionVariable', [AST.EXPR.Variable, `
+				{
+					delete v;
+				}
+				% (assignee)
+			`]],
 			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					claim v.1: int;
@@ -650,6 +663,12 @@ test.suite('Decorator', () => {
 			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					set v.1 = 42;
+				}
+				% (assignee)
+			`]],
+			['Decorate(Assignee<Break> ::= ExpressionCompound<+Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
+				{
+					delete v.1;
 				}
 				% (assignee)
 			`]],
@@ -668,11 +687,18 @@ test.suite('Decorator', () => {
 				% (statement_claim)
 			`]],
 
-			['Decorate(StatementReassignment<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
+			['Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
 				{
 					set a = b;
 				}
-				% (statement_reassignment)
+				% (statement_set)
+			`]],
+
+			['Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementReassignment', [AST.STMT.StatementReassignment, `
+				{
+					delete a;
+				}
+				% (statement_delete)
 			`]],
 
 			['Decorate(StatementConditional<Unless, Break> ::= "if" Expression<+Block><?Break> "then" Block<?Break> ";") -> SemanticStatementConditional', [AST.STMT.StatementConditional, `
@@ -725,13 +751,13 @@ test.suite('Decorator', () => {
 				% (statement_loop)
 			`]],
 
-			['Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
+			['Decorate(StatementIteration ::= "for" "_" ":" Type "in" Expression<+Block><+Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
 				{
 					for _: T in iterable do { iterate; };
 				}
 				% (statement_iteration)
 			`]],
-			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
+			['Decorate(StatementIteration ::= "for" IDENTIFIER ":" Type "in" Expression<+Block><+Break> "do" Block<+Break> ";") -> SemanticStatementIteration', [AST.STMT.StatementIteration, `
 				{
 					for it: T in iterable do { iterate; };
 				}
@@ -755,9 +781,10 @@ test.suite('Decorator', () => {
 				{
 					type T = U;
 					val a: T = b;
+					a;
 					claim a: U;
 					set a = b;
-					a;
+					delete a;
 					{
 						b;
 					};
@@ -841,8 +868,19 @@ test.suite('Decorator', () => {
 				todo: description.startsWith('todo:'),
 				only: description.startsWith('only:') || undefined, // `only: false` negates `only: true` in parent suite
 			}, () => {
-				const parsenode: SyntaxNode = captureParseNode(...text.split('%') as [string, string]);
-				return assert_instanceof(new Decorator().decorate(parsenode), klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
+				const [source, query] = text.split('%');
+				const parsenode: SyntaxNode = captureParseNode(source, query);
+				const decorator = new Decorator();
+				const query_is_primlit: boolean = query.includes('primitive_literal');
+				let instance: AST.AstNode;
+				if (query_is_primlit && description.includes('Decorate(Type > PrimitiveLiteral')) {
+					instance = decorator.decorateTypeNode(parsenode as SyntaxNodeType<'primitive_literal'>);
+				} else if (query_is_primlit && description.includes('Decorate(Expression > PrimitiveLiteral')) {
+					instance = decorator.decorateExprNode(parsenode as SyntaxNodeType<'primitive_literal'>);
+				} else {
+					instance = decorator.decorate(parsenode);
+				}
+				return assert_instanceof(instance, klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
 			});
 		});
 		['!'].forEach((op) => {

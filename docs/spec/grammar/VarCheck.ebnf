@@ -36,7 +36,7 @@ None! VarCheck(SemanticTypeAlias var) :=
 	3. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
-	4. *If* `symbol` is an instance of `SymbolSchemaVar`:
+	4. *If* `symbol` is not an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
 ;
 
@@ -56,7 +56,7 @@ None! VarCheck(SemanticExpressionVariable var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
-	2. *If* `symbol` is an instance of `SymbolSchemaType`:
+	2. *If* `symbol` is not an instance of `SymbolSchemaVar`:
 		1. *Throw:* a new ReferenceErrorKind.
 ;
 
@@ -73,61 +73,78 @@ None! VarCheck(SemanticExpressionCall call) :=
 
 
 None! VarCheck(SemanticDeclarationType decl) :=
-	1. *If* `decl.children.count` is 1:
-		1. *Perform:* *Unwrap:* `VarCheck(decl.children.0)`.
-	2. *Else:*
-		1. *Assert:* `decl.children.count` is 2.
-		2. *Perform:* *Unwrap:* `VarCheck(decl.children.1)`.
-		3. *Let* `id` be `decl.children.0.id`.
-		4. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `var.id`:
-			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
-		5. *Let* `symbol` be a new SymbolSchemaType [
-			id=        `id`,
+	1. *Perform:* *Unwrap:* `VarCheck(decl.children.0)`.
+	2. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `decl.id`:
+		1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+	3. *Else:*
+		1. *Let* `symbol` be a new SymbolSchemaType [
+			id=        `decl.id`,
 			typevalue= `Anything`,
 		].
-		6. Add `symbol` as a record for `id` to the validator.
+		2. Add `symbol` as a record for `id` to the validator.
 ;
 
 
 
 None! VarCheck(SemanticDeclarationVariable decl) :=
 	1. *Let* `uninitialized` be `true`.
-	2. *Let* `assignee` be an item `child` in `decl.children` such that `child` is a SemanticExpressionVariable.
-	3. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
-	4. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
-	5. *If* `decl.writable` is `false`:
+	2. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
+	3. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
+	4. *If* `decl.writable` is `false`:
 		1. *Assert:* `assigned` is not *none*.
 		2. *Note:* We can make this assertion due to the language syntax.
+	5. *Else:*
+		1. Fall through.
 	6. *Assert:* `typenode` is not *none*.
 	7. *Perform:* *Unwrap:* `VarCheck(typenode)`.
 	8. *If* `assigned` is not *none*:
 		1. *Set* `uninitialized` to `false`.
 		2. *Perform:* *Unwrap:* `VarCheck(assigned)`.
-	9. *If* `assignee` is not *none*:
-		1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `assignee.id`:
+	9. *Else:*
+		1. Fall through.
+	10. *If* `decl.id` is not *none*:
+		1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `decl.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
-		2. *Let* `symbol` be a new SymbolSchemaVar [
-			id=              `assignee.id`,
-			isWritable=      `decl.writable`,
-			isUninitialized= `uninitialized`,
-			type=            `Anything`,
-			value=           *none*,
-		].
-		3. Add `symbol` as a record for `assignee.id` to the validator.
+		2. *Else:*
+			1. *Let* `symbol` be a new SymbolSchemaVar [
+				id=              `decl.id`,
+				isWritable=      `decl.writable`,
+				isUninitialized= `uninitialized`,
+				type=            `Anything`,
+			].
+			2. Add `symbol` as a record for `decl.id` to the validator.
+	11. *Else:*
+		1. *Return.*
 ;
 
 
 
-None! VarCheck(SemanticStatementRessignment assign) :=
-	1. *For each* `it` in `assign`:
+None! VarCheck(SemanticStatementRessignment stmt) :=
+	1. *For each* `it` in `stmt`:
 		1. *Perform:* *Unwrap:* `VarCheck(it)`.
-	2. *Assert:* `assign.children.count` is 2.
-	3. *Let* `assignee` be `assign.children.0`.
-	4. *If* `assignee` is a SemanticExpressionVariable:
+	2. *Let* `assignee` be `stmt.children.0`.
+	3. *If* `assignee` is a SemanticExpressionVariable:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-		3. *If* `symbol.isWritable` is `false`:
-			1. *Throw:* a new AssignmentErrorReassignment.
+	4. *If* `stmt.children.count` is 2:
+		1. *Note:* This is a `set` statement.
+		2. *If* `symbol` is set:
+			1. *If* `symbol.isWritable` is `false`:
+				1. *Throw:* a new AssignmentErrorReassignment.
+			2. *Else:*
+				1. *Return.*
+		3. *Else:*
+			1. *Return.*
+	5. *Else:*
+		1. *Assert:* `stmt.children.count` is 1.
+		2. *Note:* This is a `delete` statement.
+		3. *If* `symbol` is set:
+			1. *If* `symbol.isWritable` is `false` *or* `symbol.isUninitialized` is `false`:
+				1. *Throw:* a new AssignmentErrorDeletion.
+			2. *Else:*
+				1. *Return.*
+		4. *Else:*
+			1. *Return.*
 ;
 
 
@@ -148,26 +165,27 @@ None! VarCheck(SemanticStatementLoop stmt) :=
 
 
 None! VarCheck(SemanticStatementIteration stmt) :=
-	1. *Let* `assignee` be an item `child` in `stmt.children` such that `child` is a SemanticExpressionVariable.
-	2. *Let* `typenode` be an item `child` in `stmt.children` such that `child` is a SemanticType.
-	3. *Let* `iterable` be an item `child` in `stmt.children` such that `child` is a SemanticExpression.
-	4. *Let* `block`    be an item `child` in `stmt.children` such that `child` is a SemanticBlock.
-	5. *Assert:* `typenode` is not *none*.
-	6. *Perform:* *Unwrap:* `VarCheck(typenode)`.
-	7. *Assert:* `iterable` is not *none*.
-	8. *Perform:* *Unwrap:* `VarCheck(iterable)`.
-	9. *Assert:* `block` is not *none*.
-	10. *If* `assignee` is not *none*:
+	1. *Let* `typenode` be an item `child` in `stmt.children` such that `child` is a SemanticType.
+	2. *Let* `iterable` be an item `child` in `stmt.children` such that `child` is a SemanticExpression.
+	3. *Let* `block`    be an item `child` in `stmt.children` such that `child` is a SemanticBlock.
+	4. *Assert:* `typenode` is not *none*.
+	5. *Perform:* *Unwrap:* `VarCheck(typenode)`.
+	6. *Assert:* `iterable` is not *none*.
+	7. *Perform:* *Unwrap:* `VarCheck(iterable)`.
+	8. *Assert:* `block` is not *none*.
+	9. *If* `stmt.id` is not *none*:
 		1. *Let* `validator` be the validator of `block`.
-		2. *If* `validator`’s symbol table contains a SymbolSchema whose `id` is `assignee.id`:
+		2. *If* `validator`’s symbol table contains a SymbolSchema whose `id` is `stmt.id`:
 			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
-		3. *Let* `symbol` be a new SymbolSchemaVar [
-			id=              `assignee.id`,
-			isWritable=      `false`,
-			isUninitialized= `false`,
-			type=            `Anything`,
-			value=           *none*,
-		].
-		4. Add `symbol` as a record for `assignee.id` to `validator`.
+		3. *Else:*
+			1. *Let* `symbol` be a new SymbolSchemaVar [
+				id=              `stmt.id`,
+				isWritable=      `false`,
+				isUninitialized= `false`,
+				type=            `Anything`,
+			].
+			2. Add `symbol` as a record for `stmt.id` to `validator`.
+	10. *Else:*
+		1. Fall through.
 	11. *Perform:* *Unwrap:* `VarCheck(block)`.
 ;

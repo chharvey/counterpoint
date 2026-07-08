@@ -1,8 +1,3 @@
-import * as assert from 'node:assert';
-import {
-	VoidErrorOutOfBounds,
-	type AST,
-} from '../../index.ts';
 import {NULL} from './index.ts';
 import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
@@ -22,15 +17,19 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 		comparator: (a: T, b: T) => boolean,
 	): boolean {
 		return (
-			a.properties === b.properties ||
-			a.properties.size === b.properties.size &&
-			[...b.properties].every(([thatkey, thatvalue]) => a.properties.has(thatkey) && comparator.call(null, a.properties.get(thatkey)!, thatvalue))
+			a.#properties === b.#properties ||
+			a.#properties.size === b.#properties.size &&
+			[...b.#properties].every(([thatkey, thatvalue]) => a.#properties.has(thatkey) && comparator(a.#properties.get(thatkey)!, thatvalue))
 		);
 	}
 
 
-	public constructor(public readonly properties: ReadonlyMap<bigint, T> = new Map()) {
+	#properties: Map<bigint, T>;
+
+
+	public constructor(properties: ReadonlyMap<bigint, T> = new Map()) {
 		super();
+		this.#properties = new Map<bigint, T>([...properties]);
 	}
 
 	/**
@@ -38,7 +37,7 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	 * @implements Value
 	 */
 	public override get isEmpty(): boolean {
-		return this.properties.size === 0;
+		return this.#properties.size === 0;
 	}
 
 	/**
@@ -46,17 +45,27 @@ export abstract class CollectionKeyed<T extends Value = Value> extends Collectio
 	 * @implements Collection
 	 */
 	public override get count(): bigint {
-		return BigInt(this.properties.size);
+		return BigInt(this.#properties.size);
+	}
+
+	public get properties(): Map<bigint, T> {
+		return new Map([...this.#properties]);
 	}
 
 	public override toString(): string {
-		return [...this.properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ');
+		return [...this.#properties].map(([key, value]) => `${ key }n= ${ value }`).join(', ');
 	}
 
 	/** @final */
-	public get(key: bigint, is_access_maybe: boolean, accessor: AST.Key | AST.EXPR.Expression): T | Null {
-		return this.properties.has(key)
-			? this.properties.get(key)!
-			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('key', this, key, accessor));
+	public get(key: bigint): T | Null {
+		return this.#properties.get(key) ?? NULL;
+	}
+
+	public set(key: bigint, value: T): void {
+		this.#properties.set(key, value);
+	}
+
+	public clear(): void {
+		this.#properties = new Map<bigint, T>();
 	}
 }

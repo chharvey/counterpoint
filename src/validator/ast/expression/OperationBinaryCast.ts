@@ -10,10 +10,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
@@ -47,18 +44,5 @@ export class OperationBinaryCast extends OperationBinary {
 	@memoizeMethod
 	public override build(_: Builder): OP.Value {
 		throw new Error('`OperationBinaryCast#build` not yet supported.');
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const v0: VALUE.Value | null = this.operand0.fold();
-		if (!v0) {
-			return v0;
-		}
-		const v1: VALUE.Value | null = this.operand1.fold();
-		if (!v1) {
-			return v1;
-		}
-		throw new Error('OperationBinaryCast#fold not yet supported.');
 	}
 }

@@ -1,9 +1,17 @@
 import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
-import {memoizeMethod} from '../../lib/index.ts';
+import {
+	memoizeMethod,
+	runOnceMethod,
+} from '../../lib/index.ts';
+import {VALUE} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
-import type {Temp} from '../Builder.ts';
+import type {
+	Temp,
+	Builder,
+} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {ValueTac} from './ValueTac.ts';
 
@@ -17,6 +25,21 @@ export class Get extends ValueTac {
 
 	public override toString(): string {
 		return super.toString(this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name);
+	}
+
+	@runOnceMethod
+	public override validate(builder: Builder): void {
+		if (builder.getLocalStatus(this.target) !== 'set') {
+			throw new ReferenceError(`Local with id \`${ this.target.id }\` must be set before getting!`);
+		}
+	}
+
+	public override interpret(interp: Interpreter): VALUE.Value {
+		const value: VALUE.Value | null | undefined = interp.getLocalValue(this.target);
+		if (value === null) {
+			return VALUE.NULL;
+		}
+		return value ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 
 	@memoizeMethod

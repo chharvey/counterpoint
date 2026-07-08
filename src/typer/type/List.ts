@@ -33,10 +33,6 @@ export class List extends ReferenceType {
 		super(new Set<VALUE.List>([new VALUE.List()]), is_mutable);
 	}
 
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.typearg.hasMutable;
-	}
-
 	public override toString(): string {
 		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }List.<${ this.typearg }>`;
 	}

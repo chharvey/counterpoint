@@ -253,64 +253,6 @@ None! AssignTo(SemanticExpressionCollection expr, Type type) :=
 
 
 
-## PerformBinaryArithmetic
-Performs a binary arithmetic operation.
-```
-Number! PerformBinaryArithmetic(Text op, Number operand0, Number operand1) :=
-	1. *If* `op` is `EXP`:
-		1. *Let* `result` be the power, `operand0 ^ operand1`,
-			obtained by raising `operand0` (the base) to `operand1` (the exponent).
-		2. *Return:* `result`.
-	2. *Else If* `op` is `MUL`:
-		1. *Let* `result` be the product, `operand0 * operand1`,
-			obtained by multiplying `operand0` (the multiplicand) by `operand1` (the multiplier).
-		2. *Return:* `result`.
-	3. *Else If* `op` is `DIV`:
-		1. *Let* `result` be the quotient, `operand0 / operand1`,
-			obtained by dividing `operand0` (the dividend) by `operand1` (the divisor).
-		2. *Return:* `result`.
-	4. *Else If* `op` is `ADD`:
-		1. *Let* `result` be the sum, `operand0 + operand1`,
-			obtained by adding `operand0` (the augend) to `operand1` (the addend).
-		2. *Return:* `result`.
-	5. *Else If* `op` is `SUB`:
-		1. *Let* `result` be the difference, `operand0 - operand1`,
-			obtained by subtracting `operand1` (the subtrahend) from `operand0` (the minuend).
-		2. *Return:* `result`.
-	6. *Throw:* a new TypeErrorInvalidOperation.
-```
-
-
-
-## PerformBinaryCompare
-Performs a binary comparison operation.
-```
-Boolean! PerformBinaryCompare(Text op, Number operand0, Number operand1) :=
-	1. *If* `op` is `LT`:
-		1. *If* `operand0` is strictly less than `operand1`:
-			1. *Return:* `true`.
-		2. *Return:* `false`.
-	2. *Else If* `op` is `GT`:
-		1. *If* `operand1` is strictly less than `operand0`:
-			1. *Return:* `true`.
-		2. *Return:* `false`.
-	3. *Else If* `op` is `LE`:
-		1. *If* `operand0` is equal to `operand1`:
-			1. *Return:* `true`.
-		2. *If* `operand0` is strictly less than `operand1`:
-			1. *Return:* `true`.
-		3. *Return:* `false`.
-	4. *Else If* `op` is `GE`:
-		1. *If* `operand0` is equal to `operand1`:
-			1. *Return:* `true`.
-		2. *If* `operand1` is strictly less than `operand0`:
-			1. *Return:* `true`.
-		3. *Return:* `false`.
-	5. *Throw:* a new TypeErrorInvalidOperation.
-```
-
-
-
 ## GetEntryInfo
 ```
 EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExpressionAccess> access, Boolean is_writing) :=
@@ -401,7 +343,8 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 					optional= `accessor_maybe`,
 				].
 			3. *If* *UnwrapAffirm:* `Subtype(accessor_type, String)` is `true`:
-				1. *Throw:* a new Error "String keys for dict access are not yet supported."
+				1. *Note:* This step will be removed once string keys are supported.
+				2. *Throw:* a new Error "String keys for dict access are not yet supported."
 			4. *Else:*
 				1. *Throw:* a new TypeErrorNotNarrow.
 		6. *Else If* `base_type` is a Set type:

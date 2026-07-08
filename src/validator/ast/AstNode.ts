@@ -86,7 +86,6 @@ export function typecheck_assign(
  * - Goal
  *
  * Known subinterfaces:
- * - Foldable
  * - Buildable
  */
 export class AstNode implements Serializable {
@@ -134,7 +133,7 @@ export class AstNode implements Serializable {
 
 	@memoizeGetter
 	public get validator(): Validator {
-		return this.parent!.validator;
+		return this.#parent!.validator;
 	}
 
 	/** @implements Serializable */

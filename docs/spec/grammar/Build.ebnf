@@ -29,9 +29,9 @@ NAT.CONST  (VALUE.Natural) -> Value;
 FLOAT.CONST(VALUE.Float)   -> Value;
 STR.CONST  (VALUE.String)  -> Value;
 
-STR.TEMPLATE([Value*]) -> String;
-
 GET(SymbolSchemaVar|native-string) -> Value;
+
+STR.TEMPLATE([Value*]) -> String;
 
 TUPLE.NEW([Value*])                       -> Tuple;
 RECORD.NEW(Vector<native-bigint, Value>*) -> Record;
@@ -49,7 +49,8 @@ MAP.GET ([Value Value])           -> Value;
 
 CALL([Value*]) -> Value;
 
-ISNULL([Value]) -> Boolean;
+ISSET (SymbolSchemaVar|native-string) -> Boolean;
+ISNULL([Value])                       -> Boolean;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
@@ -61,11 +62,12 @@ NEG([Number])  -> Number;
 TOINT([Number])   -> Integer;
 TONAT([Number])   -> Natural;
 TOFLOAT([Number]) -> Float;
+TOSTR([Value])    -> String;
 
-LIST.COUNT([Value]) -> Value;
-DICT.COUNT([Value]) -> Value;
-SET.COUNT([Value])  -> Value;
-MAP.COUNT([Value])  -> Value;
+LIST.COUNT([Value]) -> Natural;
+DICT.COUNT([Value]) -> Natural;
+SET.COUNT([Value])  -> Natural;
+MAP.COUNT([Value])  -> Natural;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
@@ -85,22 +87,18 @@ FLOAT.MUL([Float Float]) -> Float;
 FLOAT.DIV([Float Float]) -> Float;
 FLOAT.EXP([Float Float]) -> Float;
 
-LT ([Number Number]) -> Boolean;
-GT ([Number Number]) -> Boolean;
-LE ([Number Number]) -> Boolean;
-GE ([Number Number]) -> Boolean;
-NLT([Number Number]) -> Boolean;
-NGT([Number Number]) -> Boolean;
+LT([Number Number]) -> Boolean;
+GT([Number Number]) -> Boolean;
+LE([Number Number]) -> Boolean;
+GE([Number Number]) -> Boolean;
 
-ID ([Value Value]) -> Boolean;
-EQ ([Value Value]) -> Boolean;
-NID([Value Value]) -> Boolean;
-NEQ([Value Value]) -> Boolean;
+ID([Value Value]) -> Boolean;
+EQ([Value Value]) -> Boolean;
 
 DROP([Value]);
 
-DECL(SymbolSchemaVar|native-string Type [Value]);
-SET (SymbolSchemaVar|native-string      [Value]);
+DECL(SymbolSchemaVar|native-string Type [Value?]);
+SET (SymbolSchemaVar|native-string      [Value?]);
 
 LIST.SET([Value Value Value]);
 DICT.SET([Value Value Value]);
@@ -128,13 +126,13 @@ Build(String  s) := (STR.CONST   s);
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
 
-Build(SemanticExpressionConstant[type=TYPE.Null]    const) := (NULL.CONST  `Build(ValueOf(const)~!)`);
-Build(SemanticExpressionConstant[type=TYPE.Boolean] const) := (BOOL.CONST  `Build(ValueOf(const)~!)`);
-Build(SemanticExpressionConstant[type=TYPE.Symbol]  const) := (SYM.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticExpressionConstant[type=TYPE.Integer] const) := (INT.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticExpressionConstant[type=TYPE.Natural] const) := (NAT.CONST   `Build(ValueOf(const)~!)`);
-Build(SemanticExpressionConstant[type=TYPE.Float]   const) := (FLOAT.CONST `Build(ValueOf(const)~!)`);
-Build(SemanticExpressionConstant[type=TYPE.String]  const) := (STR.CONST   `Build(ValueOf(const)~!)`);
+Build(SemanticExpressionConstant[value: VALUE.Null]    const) := (NULL.CONST  `Build(const.value)`);
+Build(SemanticExpressionConstant[value: VALUE.Boolean] const) := (BOOL.CONST  `Build(const.value)`);
+Build(SemanticExpressionConstant[value: VALUE.Symbol]  const) := (SYM.CONST   `Build(const.value)`);
+Build(SemanticExpressionConstant[value: VALUE.Integer] const) := (INT.CONST   `Build(const.value)`);
+Build(SemanticExpressionConstant[value: VALUE.Natural] const) := (NAT.CONST   `Build(const.value)`);
+Build(SemanticExpressionConstant[value: VALUE.Float]   const) := (FLOAT.CONST `Build(const.value)`);
+Build(SemanticExpressionConstant[value: VALUE.String]  const) := (STR.CONST   `Build(const.value)`);
 
 Build(SemanticExpressionTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Build)`);
 
@@ -151,8 +149,8 @@ Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticIndex
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression SemanticKey)   := (RECORD.GET `SemanticKey.id`      [`Build(SemanticExpression)`]);
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.List] SemanticExpression__1) := (LIST.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
 Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Dict] SemanticExpression__1) := (DICT.GET [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.SET]  SemanticExpression__1) := (SET.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
-Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.MAP]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Set]  SemanticExpression__1) := (SET.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
+Build(SemanticExpressionAccess[kind=NORMAL] ::= SemanticExpression__0[type: TYPE.Map]  SemanticExpression__1) := (MAP.GET  [`Build(SemanticExpression__0)` `Build(SemanticExpression__1)`]);
 
 Build(SemanticExpressionBlock blex) := [
 	...`blex.0.SemanticStatement.slice(0, 1).map(Build)`
@@ -173,31 +171,36 @@ Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	return (GET $result).
 ];
 
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Integer"):has(SemanticExpression*) call) := (TOINT   `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Natural"):has(SemanticExpression*) call) := (TONAT   `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Float")  :has(SemanticExpression*) call) := (TOFLOAT `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "String") :has(SemanticExpression*) call) := (TOSTR   `Build(call.SemanticExpression*.0)`);
+
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List") call) := (LIST.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Dict") call) := (DICT.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set")  call) := (SET.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map")  call) := (MAP.NEW);
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List"):has(SemanticExpression) call) := [
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List"):has(SemanticExpression*) call) := [
 	(DECL <List> $destination (LIST.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
+	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
 	(LIST.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Dict"):has(SemanticExpression) call) := [
 	(DECL <Dict> $destination (DICT.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
+	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
 	(DICT.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set"):has(SemanticExpression) call) := [
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set"):has(SemanticExpression*) call) := [
 	(DECL <Set> $destination (SET.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
+	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
 	(SET.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(SemanticExpression) call) := [
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(SemanticExpression*) call) := [
 	(DECL <Map> $destination (MAP.NEW))
-	(DECL ‹type› $arg `Build(call.SemanticExpression.0)`)
+	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
@@ -205,39 +208,38 @@ Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticEx
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
 
-Build(SemanticExpressionOperation[operator=NOT] ::= SemanticExpression)               := (NOT [`SemanticExpression`]);
-Build(SemanticExpressionOperation[operator=EMP] ::= SemanticExpression)               := (EMP [`SemanticExpression`]);
-Build(SemanticExpressionOperation[operator=NEG] ::= SemanticExpression[type: Number]) := (NEG [`SemanticExpression`]);
+Build(SemanticExpressionIsset ::= SemanticExpressionVariable) := (ISSET `GetSymbolSchema(SemanticExpressionVariable)`);
+Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ISNULL `Build(SemanticExpressionAccess)`);
 
-Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=MUL][0: Integer][1: Integer] op) := (INT.MUL [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=DIV][0: Integer][1: Integer] op) := (INT.DIV [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=EXP][0: Integer][1: Integer] op) := (INT.EXP [`op.0` `op.1`]);
+Build(SemanticExpressionOperation[operator=NOT]     ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=EMP]     ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=NEG]     ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
 
-Build(SemanticExpressionOperation[operator=ADD][0: Natural][1: Natural] op) := (NAT.ADD [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=SUB][0: Natural][1: Natural] op) := (NAT.SUB [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=MUL][0: Natural][1: Natural] op) := (NAT.MUL [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=DIV][0: Natural][1: Natural] op) := (NAT.DIV [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=EXP][0: Natural][1: Natural] op) := (NAT.EXP [`op.0` `op.1`]);
+Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=MUL][0: Integer][1: Integer] op) := (INT.MUL [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=DIV][0: Integer][1: Integer] op) := (INT.DIV [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=EXP][0: Integer][1: Integer] op) := (INT.EXP [`Build(op.0)` `Build(op.1)`]);
 
-Build(SemanticExpressionOperation[operator=ADD][0: Float][1: Float] op) := (FLOAT.ADD [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=SUB][0: Float][1: Float] op) := (FLOAT.SUB [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=MUL][0: Float][1: Float] op) := (FLOAT.MUL [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT.DIV [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT.EXP [`op.0` `op.1`]);
+Build(SemanticExpressionOperation[operator=ADD][0: Natural][1: Natural] op) := (NAT.ADD [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=SUB][0: Natural][1: Natural] op) := (NAT.SUB [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=MUL][0: Natural][1: Natural] op) := (NAT.MUL [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=DIV][0: Natural][1: Natural] op) := (NAT.DIV [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=EXP][0: Natural][1: Natural] op) := (NAT.EXP [`Build(op.0)` `Build(op.1)`]);
 
-Build(SemanticExpressionOperation[operator=LT] [0: Number][1: Number] op) := (LT  [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=GT] [0: Number][1: Number] op) := (GT  [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=LE] [0: Number][1: Number] op) := (LE  [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=GE] [0: Number][1: Number] op) := (GE  [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=NLT][0: Number][1: Number] op) := (NLT [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=NGT][0: Number][1: Number] op) := (NGT [`op.0` `op.1`]);
+Build(SemanticExpressionOperation[operator=ADD][0: Float][1: Float] op) := (FLOAT.ADD [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=SUB][0: Float][1: Float] op) := (FLOAT.SUB [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=MUL][0: Float][1: Float] op) := (FLOAT.MUL [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=DIV][0: Float][1: Float] op) := (FLOAT.DIV [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=EXP][0: Float][1: Float] op) := (FLOAT.EXP [`Build(op.0)` `Build(op.1)`]);
 
-Build(SemanticExpressionOperation[operator=ID]  op) := (ID  [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=EQ]  op) := (EQ  [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=NID] op) := (NID [`op.0` `op.1`]);
-Build(SemanticExpressionOperation[operator=NEQ] op) := (NEQ [`op.0` `op.1`]);
+Build(SemanticExpressionOperation[operator=LT][0: Number][1: Number] op) := (LT  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=GT][0: Number][1: Number] op) := (GT  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=LE][0: Number][1: Number] op) := (LE  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE  [`Build(op.0)` `Build(op.1)`]);
+
+Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
+Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
 
 
 Build(SemanticExpressionOperation[operator=AND] op) := [
@@ -283,14 +285,14 @@ Build(SemanticExpressionOperation[operator=COND] op) := [
 
 Build(SemanticDeclarationType decl) := [];
 
-Build(SemanticDeclarationVariable:has(SemanticExpressionVariable):has(SemanticExpression) decl) := [
-	(DECL ‹type› `GetSymbolSchema(decl.0)` `Build(decl.2)`)
+Build(SemanticDeclarationVariable[id: RealNumber][writable: Boolean] ::= SemanticType? SemanticExpression) := [
+	(DECL ‹type› `GetSymbolSchema(id)` `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable:has(SemanticExpressionVariable) decl) := [
-	(DECL <null> `GetSymbolSchema(decl.0)` (NULL.CONST null))
+Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpression) := [
+	(DROP `Build(SemanticExpression)`)
 ];
-Build(SemanticDeclarationVariable decl):has(SemanticExpressionVariable) := [
-	(DROP `Build(decl.1)`)
+Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
+	(DECL <null> `GetSymbolSchema(id)`)
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
@@ -302,13 +304,18 @@ Build(SemanticStatementClaim stmt) := [
 	(DROP `Build(stmt.0)`)
 ];
 
-Build(SemanticStatementReassignment:has(SemanticExpressionVariable) stmt) := [
-	(SET `GetSymbolSchema(stmt.0)` `Build(stmt.1)`)
+Build(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression) := [
+	(SET `GetSymbolSchema(SemanticExpressionVariable)` `Build(SemanticExpression)`)
 ];
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.List] SemanticExpression) SemanticExpression) := (LIST.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.SET]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.MAP]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Set]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Map]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+
+Build(SemanticStatementDelete ::= SemanticExpressionVariable) := [
+	(SET `GetSymbolSchema(SemanticExpressionVariable)`)
+];
+Build(SemanticStatementDelete ::= SemanticExpressionAccess); // TODO: object/interface support
 
 Build(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock) := [
 	(GOTO.IF `Build(SemanticExpression)` "then" "endif")
@@ -382,14 +389,14 @@ Build(SemanticStatementLoop[doFirst=true][until=true] ::= SemanticExpression Sem
 	"endwhile":
 ];
 
-Build(SemanticStatementIteration ::= SemanticExpressionVariable SemanticType SemanticExpression SemanticBlock) := [
+Build(SemanticStatementIteration[id: RealNumber] ::= SemanticType SemanticExpression SemanticBlock) := [
 	(DECL <List> $iterable `Build(SemanticExpression)`)
 	(DECL <nat> $index (NAT.CONST +0))
 	(GOTO "while")
 	"while":
 	(GOTO.IF (LT (GET $index) (LIST.COUNT (GET $iterable))) "do" "endwhile")
 	"do":
-	(DECL ‹type› `GetSymbolSchema(SemanticExpressionVariable)` (LIST.GET (GET $iterable) (GET $index)))
+	(DECL ‹type› `GetSymbolSchema(id)` (LIST.GET (GET $iterable) (GET $index)))
 	...`Build(SemanticBlock)`
 	(SET $index (NAT.ADD (GET $index) (NAT.CONST +1)))
 	(GOTO "while")

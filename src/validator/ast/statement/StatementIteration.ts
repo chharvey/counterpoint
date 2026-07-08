@@ -21,8 +21,10 @@ import {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
+import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import type * as EXPR from '../expression/index.ts';
@@ -38,19 +40,20 @@ export class StatementIteration extends StatementBreakable {
 		return statement;
 	}
 
+	private readonly id?: bigint;
+
+
 	public constructor(
 		start_node: SyntaxNodeType<'statement_iteration'>,
-		private readonly assignee: EXPR.Variable | null,
+		private readonly assignee: Serializable | null,
 		private readonly typenode: AST_TYPE.Type,
 		public  readonly iterable: EXPR.Expression,
 		public  readonly block:    Block,
 	) {
-		super(start_node, {}, assignee ? [assignee, typenode, iterable, block] : [typenode, iterable, block]);
-	}
-
-	@memoizeGetter
-	public override get isFoldable(): boolean {
-		return !!this.iterable.fold() && this.block.isFoldable;
+		super(start_node, {}, [typenode, iterable, block]);
+		if (this.assignee) {
+			this.id = Validator.cookTokenIdentifier(this.assignee.source);
+		}
 	}
 
 	@memoizeGetter
@@ -59,19 +62,20 @@ export class StatementIteration extends StatementBreakable {
 	}
 
 	public override varCheck(): void {
-		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`.
+		// Do not call `super.varCheck()` as we want to VarCheck `this.block` at the end.
 		xjs.Array.forEachAggregated([this.typenode, this.iterable], (c) => c.varCheck());
 		if (this.assignee) {
-			if (this.block.validator.hasSymbol(this.assignee.id)) {
+			if (this.block.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
 			this.block.validator.addSymbol(new SymbolSchemaVar(
+				this.id!,
 				this.assignee,
 				false, // because it should not be manually reassigned
 				false, // because it won’t ever be nullish upon accessing
 			));
 		}
-		this.block.varCheck(); // VarCheck(block) must come after assignee checks, because assignee may be referenced inside block
+		this.block.varCheck(); // must come after assignee checks, because assignee may be referenced inside block
 	}
 
 	public override typeCheck(): void {
@@ -85,8 +89,8 @@ export class StatementIteration extends StatementBreakable {
 			throw new TypeErrorNotNarrow(item_type, assignee_type, this.line_index, this.col_index);
 		}
 		if (this.assignee) {
-			assert.ok(this.block.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			(this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).type = assignee_type;
+			assert.ok(this.block.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			(this.block.validator.getSymbol(this.id!) as SymbolSchemaVar).type = assignee_type;
 		}
 		this.block.typeCheck();
 	}
@@ -115,7 +119,7 @@ export class StatementIteration extends StatementBreakable {
 
 		builder.initiateBlock(this.labels.do!);
 		if (this.assignee) {
-			const symbol = this.block.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			const symbol = this.block.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.irType = iterable.type.typearg;
 			builder.pushInstruction(new OP.Decl(
 				symbol,

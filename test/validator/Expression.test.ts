@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaType,
@@ -19,6 +20,7 @@ import {
 import {
 	extract_tokens,
 	repeat,
+	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
 	typeUnit,
@@ -28,10 +30,51 @@ import {
 
 
 test.suite('Expression', () => {
+	test.suite('#type', () => {
+		test.suite('Isset', () => {
+			test.test('always returns `bool`.', () => {
+				assert_shallowStrictEqual(
+					setupScript(`{
+						val mut a0?: int;
+						val mut a1?: int;
+						val mut a2?: int;
+
+						val mut b: int = 42;
+						val mut c0: int | null = 42;
+						val mut c1: int | null = 42;
+						val mut d: int | null = null;
+						val e: int = 42;
+						val f: int | null = 42;
+						val g: int | null = null;
+
+						set a1 = 42;
+						set a2 = 42;
+						delete a2;
+						set c1 = null;
+
+						isset a0;
+						isset a1;
+						isset a2;
+						isset b;
+						isset c0;
+						isset c1;
+						isset d;
+						isset e;
+						isset f;
+						isset g;
+					}`, {build: false}).stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					repeat(TYPE.BOOL, 10),
+				);
+			});
+		});
+	});
+
+
+
 	test.suite('#build', () => {
 		test.test('Constant returns an OP.Const.', () => {
 			const value: AST.EXPR.Constant = AST.EXPR.Constant.fromSource('42');
-			return assert.deepStrictEqual(value.build(), new OP.Const(value.fold()));
+			return assert.deepStrictEqual(value.build(), new OP.Const(value.interpreterValue));
 		});
 		test.test('Variable returns an OP.Get.', () => {
 			const {stmts} = setupScript(`{
@@ -208,6 +251,64 @@ test.suite('Expression', () => {
 				assert.strictEqual(builder.instructions.length, 1);
 			});
 		});
+		test.test('Isset', () => {
+			assert.strictEqual(setupScript(`{
+				val mut a0?: int;
+				val mut a1?: int;
+				val mut a2?: int;
+
+				val mut b: int = 42;
+				val mut c0: int | null = 42;
+				val mut c1: int | null = 42;
+				val mut d: int | null = null;
+				val e: int = 42;
+				val f: int | null = 42;
+				val g: int | null = null;
+
+				set a1 = 42;
+				set a2 = 42;
+				delete a2;
+				set c1 = null;
+
+				isset a0;
+				isset a1;
+				isset a2;
+				isset b;
+				isset c0;
+				isset c1;
+				isset d;
+				isset e;
+				isset f;
+				isset g;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <null> a0)
+					(DECL <null> a1)
+					(DECL <null> a2)
+					(DECL <int> b (INT.CONST 42))
+					(DECL <int> c0 (INT.CONST 42))
+					(DECL <int> c1 (INT.CONST 42))
+					(DECL <null> d (NULL.CONST null))
+					(DECL <int> e (INT.CONST 42))
+					(DECL <int> f (INT.CONST 42))
+					(DECL <null> g (NULL.CONST null))
+					(SET a1 (INT.CONST 42))
+					(SET a2 (INT.CONST 42))
+					(SET a2 )
+					(SET c1 (NULL.CONST null))
+					(DROP (ISSET a0))
+					(DROP (ISSET a1))
+					(DROP (ISSET a2))
+					(DROP (ISSET b))
+					(DROP (ISSET c0))
+					(DROP (ISSET c1))
+					(DROP (ISSET d))
+					(DROP (ISSET e))
+					(DROP (ISSET f))
+					(DROP (ISSET g))
+					(ENDPROGRAM)
+			`.trim());
+		});
 	});
 
 
@@ -221,7 +322,7 @@ test.suite('Expression', () => {
 
 
 		test.suite('#type', () => {
-			test.test('returns the result of `this#fold`, wrapped in a `new Unit`.', () => {
+			test.test('returns the result of `this#interpreterValue`, wrapped in a `new Unit`.', () => {
 				const constants: AST.EXPR.Constant[] = extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
@@ -233,33 +334,33 @@ test.suite('Expression', () => {
 				`).map((src) => AST.EXPR.Constant.fromSource(src));
 				return assertEqualTypes(
 					constants.map((c) => c.type()),
-					constants.map((c) => new TYPE.Unit(c.fold())),
+					constants.map((c) => new TYPE.Unit(c.interpreterValue)),
 				);
 			});
 		});
 
 
 		/* eslint-disable @stylistic/array-element-newline */
-		test.suite('#fold', () => {
+		test.suite('#interpreterValue', () => {
 			test.test('computes null, boolean, and symbol values.', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					null  false  true
 					@then  @str  @false  @foobar
-				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).interpreterValue), [
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x92n,  'then'),
-					new VALUE.Symbol(0x86n,  'str'),
-					new VALUE.Symbol(0x89n,  'false'),
-					new VALUE.Symbol(0x100n, 'foobar'),
+					new VALUE.Symbol(0x54n, 'then'),
+					new VALUE.Symbol(0x46n, 'str'),
+					new VALUE.Symbol(0x49n, 'false'),
+					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar'),
 				]);
 			});
 			test.test('computes int values.', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					55  -55  033  -033  0  -0
 					\\o55  -\\o55  \\q033  -\\q033
-				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).interpreterValue), [
 					55, -55, 33, -33, 0, 0,
 					parseInt('55', 8), parseInt('-55', 8), parseInt('33', 4), parseInt('-33', 4),
 				].map((v) => new VALUE.Integer(BigInt(v))));
@@ -268,7 +369,7 @@ test.suite('Expression', () => {
 				assert.deepStrictEqual(extract_tokens(`
 					+55  +033  +0
 					+\\o55  +\\q033
-				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).interpreterValue), [
 					55, 33, 0,
 					parseInt('55', 8), parseInt('33', 4),
 				].map((v) => new VALUE.Natural(BigInt(v))));
@@ -278,16 +379,16 @@ test.suite('Expression', () => {
 					2.007  -2.007
 					91.27e4  -91.27e4  91.27e-4  -91.27e-4
 					-0.0  6.8e+0  6.8e-0  0.0e+0  -0.0e-0
-				`).map((src) => AST.EXPR.Constant.fromSource(src).fold()), [
+				`).map((src) => AST.EXPR.Constant.fromSource(src).interpreterValue), [
 					2.007, -2.007,
 					91.27e4, -91.27e4, 91.27e-4, -91.27e-4,
 					-0, 6.8, 6.8, 0, -0,
 				].map((v) => new VALUE.Float(v)));
 			});
 			test.test('computes string values.', () => {
-				assertEqualTypes(
-					AST.EXPR.Constant.fromSource('"42😀\\u{1f600}"').type(),
-					typeUnit('42😀\u{1f600}'),
+				assert.deepStrictEqual(
+					AST.EXPR.Constant.fromSource('"42😀\\u{1f600}"').interpreterValue,
+					new VALUE.String('42😀\u{1f600}'),
 				);
 			});
 		});
@@ -299,49 +400,49 @@ test.suite('Expression', () => {
 	test.suite('Variable', () => {
 		test.suite('#varCheck', () => {
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					val mut i: int = 42;
 					i;
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 				assert.throws(() => AST.EXPR.Variable.fromSource('i').varCheck(), ReferenceErrorUndeclared);
 			});
 			test.test('throws when declared in an inner scope.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					if true then {
 						val mut i: int = 42;
 					};
 					i;
-				}`).varCheck(), ReferenceErrorUndeclared);
+				}`, {typeCheck: false}), ReferenceErrorUndeclared);
 			});
 			test.test.todo('throws when there is a temporal dead zone.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					i;
 					val mut i: int = 42;
-				}`).varCheck(), ReferenceErrorDeadZone);
+				}`, {typeCheck: false}), ReferenceErrorDeadZone);
 			});
 			test.test('throws if it was declared as a type alias.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					type FOO = int;
 					42 || FOO;
-				}`).varCheck(), ReferenceErrorKind);
+				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
 			test.test('iteration variable of `for` loop is scoped only to the block.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						it;
 					};
-				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
 					for it: float in [1.1, 2.2, 3.3, it] do {
 						42;
 					};
-				}`).varCheck(), ReferenceErrorUndeclared, 'iteraion variable cannot be referenced in the iterator expression.');
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteraion variable cannot be referenced in the iterator expression.');
+				assert.throws(() => setupScript(`{
 					for it: float in [1.1, 2.2, 3.3] do {
 						42;
 					};
 					it;
-				}`).varCheck(), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
+				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
 			});
 		});
 
@@ -362,62 +463,6 @@ test.suite('Expression', () => {
 						TYPE.INT,
 						TYPE.INT.union(TYPE.NULL),
 					],
-				);
-			});
-		});
-
-
-		test.suite('#fold', () => {
-			test.test('assesses the value of a read-only variable.', () => {
-				const {stmts} = setupScript(`{
-					val x: int = 21 * 2;
-					x;
-				}`, {build: false});
-				assert.ok(!(stmts[0] as AST.STMT.DeclarationVariable).writable);
-				assert.deepStrictEqual(
-					(stmts[1] as AST.STMT.StatementExpression).expr!.fold(),
-					new VALUE.Integer(42n),
-				);
-			});
-			test.test('returns null for a writable variable.', () => {
-				const {stmts} = setupScript(`{
-					val mut x: int = 21 * 2;
-					x;
-				}`, {build: false});
-				assert.ok((stmts[0] as AST.STMT.DeclarationVariable).writable);
-				assert.deepStrictEqual(
-					(stmts[1] as AST.STMT.StatementExpression).expr!.fold(),
-					null,
-				);
-			});
-			test.test('returns null for a read-only variable of mutable type.', () => {
-				const {stmts} = setupScript(`{
-					val fixed_mutable: mut {int} = {1, 2, 3};
-					fixed_mutable;
-				}`, {build: false});
-				assert.ok((stmts[0] as AST.STMT.DeclarationVariable).typenode!.eval().hasMutable);
-				assert.deepStrictEqual(
-					(stmts[1] as AST.STMT.StatementExpression).expr!.fold(),
-					null,
-				);
-			});
-			test.test('returns null for an uncomputable read-only variable.', () => {
-				const {stmts} = setupScript(`{
-					val mut x: int = 21 * 2;
-					val y: int = x / 2;
-					y;
-					val z: mut {int} = {11, 22, 33};
-					val w: bool = z.[22];
-					w;
-				}`, {build: false});
-				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).writable);
-				assert.ok(!(stmts[4] as AST.STMT.DeclarationVariable).writable);
-				assert.deepStrictEqual(
-					[
-						(stmts[2] as AST.STMT.StatementExpression).expr!.fold(),
-						(stmts[5] as AST.STMT.StatementExpression).expr!.fold(),
-					],
-					[null, null],
 				);
 			});
 		});
@@ -445,32 +490,6 @@ test.suite('Expression', () => {
 				);
 			});
 		});
-
-
-		test.suite('#fold', () => {
-			let templates: AST.EXPR.Template[] = [];
-			test.test.before(() => {
-				templates = initTemplates();
-			});
-			test.test('returns a constant String for Template with no interpolations.', () => {
-				assert.deepStrictEqual(
-					templates[0].fold(),
-					new VALUE.String('42😀'),
-				);
-			});
-			test.test('returns a constant String for Template with foldable interpolations.', () => {
-				assert.deepStrictEqual(
-					templates[1].fold(),
-					new VALUE.String('the answer is 42 but what is the question?'),
-				);
-			});
-			test.test('returns null for Template with dynamic interpolations.', () => {
-				assert.deepStrictEqual(
-					templates[2].fold(),
-					null,
-				);
-			});
-		});
 	});
 
 
@@ -489,36 +508,20 @@ test.suite('Expression', () => {
 					assert.partialDeepStrictEqual(
 						goal.block!.validator.getAllSymbols(),
 						new Map([
-							[0x100n, {source: 'T'}],
-							[0x107n, {source: 'U'}],
-							[0x108n, {source: 'f'}],
+							[Validator.cookTokenIdentifier('T'), {source: 'T'}],
+							[Validator.cookTokenIdentifier('U'), {source: 'U'}],
+							[Validator.cookTokenIdentifier('f'), {source: 'f'}],
 						]),
 					);
-					assertEqualTypes(
+					return assertEqualTypes(
 						(stmts[1] as AST.STMT.DeclarationType).assigned.eval(),
 						TYPE.Record.fromTypes(new Map([
-							[0x101n, TYPE.BOOL],
-							[0x102n, TYPE.Record.fromTypes(new Map([[0x105n, TYPE.INT]]))],
-							[0x103n, TYPE.STR],
-							[0x104n, TYPE.Record.fromTypes(new Map([[0x106n, TYPE.FLOAT]]))],
+							[Validator.cookTokenIdentifier('a'), TYPE.BOOL],
+							[Validator.cookTokenIdentifier('b'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('z'), TYPE.INT]]))],
+							[Validator.cookTokenIdentifier('c'), TYPE.STR],
+							[Validator.cookTokenIdentifier('d'), TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('y'), TYPE.FLOAT]]))],
 						])),
 					);
-					return assert.deepStrictEqual(stmts.slice(3, 5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.fold()), [
-						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x109n, new VALUE.Dict(new Map<bigint, VALUE.Value>([
-								[0x10an, new VALUE.Integer(42n)],
-								[0x10bn, new VALUE.Float(4.2)],
-							]))],
-							[0x108n, VALUE.NULL],
-						])),
-						new VALUE.Dict(new Map<bigint, VALUE.Value>([
-							[0x10cn, new VALUE.Record(new Map<bigint, VALUE.Value>([
-								[0x10bn, new VALUE.Integer(42n)],
-								[0x10an, new VALUE.Float(4.2)],
-							]))],
-							[0x108n, VALUE.NULL],
-						])),
-					]);
 				});
 				test.test('throws if containing duplicate keys.', () => {
 					[
@@ -602,107 +605,11 @@ test.suite('Expression', () => {
 				}`, {build: false}); // assert does not throw
 			});
 		});
-
-
-		test.suite('#fold', () => {
-			test.test('returns Tuple/Record for constant collections.', () => {
-				assert.deepStrictEqual(
-					[
-						AST.EXPR.Tuple  .fromSource('(   1,    2.0,    "three")'),
-						AST.EXPR.Record .fromSource('(a= 1, b= 2.0, c= "three")'),
-					].map((c) => c.fold()),
-					[
-						new VALUE.Tuple([
-							new VALUE.Integer(1n),
-							new VALUE.Float(2.0),
-							new VALUE.String('three'),
-						]),
-						new VALUE.Record(new Map<bigint, VALUE.Value>([
-							[0x100n, new VALUE.Integer(1n)],
-							[0x101n, new VALUE.Float(2.0)],
-							[0x102n, new VALUE.String('three')],
-						])),
-					],
-				);
-			});
-			test.test('returns a constant List/Dict/Set/Map for foldable entries.', () => {
-				assert.deepStrictEqual(
-					[
-						AST.EXPR.List .fromSource('[1, 2.0, "three"]'),
-						AST.EXPR.Dict .fromSource('[a= 1, b= 2.0, c= "three"]'),
-						AST.EXPR.Set  .fromSource('{1, 2.0, "three"}'),
-						AST.EXPR.Map  .fromSource(`
-							{
-								"a" || "" -> 1,
-								21 + 21   -> 2.0,
-								3.0 * 1.0 -> "three",
-							}
-						`),
-					].map((c) => c.fold()),
-					[
-						new VALUE.List([
-							new VALUE.Integer(1n),
-							new VALUE.Float(2.0),
-							new VALUE.String('three'),
-						]),
-						new VALUE.Dict(new Map<bigint, VALUE.Value>([
-							[0x100n, new VALUE.Integer(1n)],
-							[0x101n, new VALUE.Float(2.0)],
-							[0x102n, new VALUE.String('three')],
-						])),
-						new VALUE.Set(new Set([
-							new VALUE.Integer(1n),
-							new VALUE.Float(2.0),
-							new VALUE.String('three'),
-						])),
-						new VALUE.Map(new Map<VALUE.Value, VALUE.Value>([
-							[new VALUE.String('a'),  new VALUE.Integer(1n)],
-							[new VALUE.Integer(42n), new VALUE.Float(2.0)],
-							[new VALUE.Float(3.0),   new VALUE.String('three')],
-						])),
-					],
-				);
-			});
-			test.test('returns null for non-foldable entries.', () => {
-				xjs.Array.forEachAggregated(setupScript(`{
-					val mut x: int   = 1;
-					val mut y: float = 2.0;
-					val mut z: str   = "three";
-					(x, 2.0, "three");
-					(a= 1, b= y, c= "three");
-					[x, 2.0, "three"];
-					[a= 1, b= y, c= "three"];
-					{1, 2.0, z};
-					{
-						"a" || "" -> 1,
-						21 + 21   -> 2.0,
-						3.0 * 1.0 -> z,
-					};
-				}`, {build: false}).stmts.slice(3), (c) => assert.strictEqual((c as AST.STMT.StatementExpression).expr!.fold(), null));
-			});
-		});
 	});
 
 
 
 	test.suite('Claim', () => {
-		const samples: string[] = [
-			'null',
-			'false',
-			'true',
-			'0',
-			'+0',
-			'-0',
-			'42',
-			'+42',
-			'-42',
-			'0.0',
-			'+0.0',
-			'-0.0',
-			'-4.2e-2',
-		];
-
-
 		test.suite('#type', () => {
 			test.test('returns the type value of the claimed type.', () => {
 				assert.ok(AST.EXPR.Claim.fromSource('3 as <int?>').type().equals(TYPE.INT.union(TYPE.NULL)));
@@ -712,14 +619,16 @@ test.suite('Expression', () => {
 			});
 			test.test('allows claiming a `nothing` expression even though intersection is empty.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('n as <int>');
-				claim.validator.addSymbol(new SymbolSchemaVar(claim.operand as AST.EXPR.Variable, false, false));
-				(claim.validator.getSymbol(0x100n) as SymbolSchemaVar).type = TYPE.NOTHING;
+				const id: bigint = Validator.cookTokenIdentifier('n');
+				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
+				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
 				assert.strictEqual(claim.type(), TYPE.INT);
 			});
 			test.test('allows claiming to a type alias.', () => {
 				const claim: AST.EXPR.Claim = AST.EXPR.Claim.fromSource('"Alice" as <Name>');
-				claim.validator.addSymbol(new SymbolSchemaType(claim.claimed_type as AST.TYPE.TypeAlias));
-				(claim.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue = TYPE.STR;
+				const id: bigint = Validator.cookTokenIdentifier('Name');
+				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
+				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
 				assert.strictEqual(claim.type(), TYPE.STR);
 			});
 			test.test('throws when the operand type and claimed type do not overlap (and neither is `nothing`).', () => {
@@ -727,17 +636,6 @@ test.suite('Expression', () => {
 				assert.throws(() => AST.EXPR.Claim.fromSource('"three" as <int>') .type(), TypeErrorNotAssignable);
 				assert.throws(() => AST.EXPR.Claim.fromSource('3 as <float>')     .type(), TypeErrorNotAssignable);
 				assert.throws(() => AST.EXPR.Claim.fromSource('3.0 as <int>')     .type(), TypeErrorNotAssignable);
-			});
-		});
-
-
-		test.suite('#fold', () => {
-			test.test('returns the fold of the operand.', () => {
-				samples.forEach((expr) => assert.deepStrictEqual(
-					AST.EXPR.Claim      .fromSource(`${ expr } as <anything>`) .fold(),
-					AST.EXPR.Expression .fromSource(expr).fold(),
-					expr,
-				));
 			});
 		});
 	});
@@ -784,55 +682,6 @@ test.suite('Expression', () => {
 					y;
 				}`, {build: false});
 				assertEqualTypes((stmts[1] as AST.STMT.DeclarationVariable).assigned!.type(), TYPE.INT);
-			});
-		});
-
-
-		test.suite('#fold', () => {
-			test.test('returns null if the block is not foldable.', () => {
-				assert.strictEqual(((setupScript(`{
-					val mut x: int = 42;
-					val z: int = 69;
-					val mut y: int | null = {
-						x;
-						z;
-					};
-					x;
-					y;
-				}`, {build: false}).stmts[2] as AST.STMT.DeclarationVariable).assigned as AST.EXPR.ExpressionBlock).fold(), null);
-			});
-			test.test('returns the folded value of the last statement, provided the block is foldable.', () => {
-				const {stmts} = setupScript(`{
-					val x: int = 42;
-					val z: int = 69;
-					val y: int | null = {
-						x;
-						val w: int = x;
-						w;
-						;
-						z;
-					};
-					x;
-					y;
-				}`, {build: false});
-				const block_expression = (stmts[2] as AST.STMT.DeclarationVariable).assigned as AST.EXPR.ExpressionBlock;
-				assert.strictEqual(
-					block_expression.fold(),
-					(block_expression.block.children.at(-1) as AST.STMT.StatementExpression).expr!.fold(),
-				);
-				return assert.deepStrictEqual(
-					(stmts[4] as AST.STMT.StatementExpression).expr!.fold(),
-					new VALUE.Integer(69n),
-				);
-			});
-			test.test('sanity check.', () => {
-				assert.deepStrictEqual(
-					(setupScript(`{
-						val x: int = 42 - { 42; 69; };
-						x;
-					}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr!.fold(),
-					new VALUE.Integer(42n - 69n),
-				);
 			});
 		});
 	});

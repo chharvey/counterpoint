@@ -64,6 +64,8 @@ KeywordValue :::=
 KeywordOther :::=
 	// operator
 		| "mut"
+		| "isset"
+		| "!isset"
 		| "as"
 		| "as?"
 		| "as!"
@@ -77,6 +79,7 @@ KeywordOther :::=
 		| "val"
 		| "claim"
 		| "set"
+		| "delete"
 		| "_"
 		| "void"
 	// modifier

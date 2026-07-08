@@ -43,6 +43,10 @@ export class Const extends ValueTac {
 		return assert.ok(this.interpreterValue.toType().isSubtypeOf(this.type));
 	}
 
+	public override interpret(): VALUE.Primitive {
+		return this.interpreterValue;
+	}
+
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return this.interpreterValue.codegen(cg);

@@ -3,11 +3,12 @@ import {
 	type Builder,
 	OP,
 	AssignmentErrorReassignment,
+	AssignmentErrorDeletion,
+	TypeError as CplTypeError,
 	MutabilityError01,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	noopGetter,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
@@ -15,7 +16,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
@@ -31,28 +32,34 @@ export class StatementReassignment extends Statement {
 		return statement;
 	}
 
-	public constructor(
-		start_node: SyntaxNodeFamily<'statement_reassignment', ['break']>,
-		public readonly assignee: EXPR.Variable | EXPR.Access,
-		public readonly assigned: EXPR.Expression,
-	) {
-		super(start_node, {}, [assignee, assigned]);
-	}
 
-	@noopGetter(memoizeGetter)
-	public override get isFoldable(): boolean {
-		return false;
+	public constructor(
+		start_node: (
+			| SyntaxNodeFamily<'statement_set',    ['break']>
+			| SyntaxNodeFamily<'statement_delete', ['break']>
+		),
+		public readonly assignee:  EXPR.Variable | EXPR.Access,
+		public readonly assigned?: EXPR.Expression,
+	) {
+		super(start_node, {}, assigned ? [assignee, assigned] : [assignee]);
 	}
 
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
-		return this.assigned.type().isBottomType;
+		return this.assignee.type().isBottomType || (this.assigned?.type().isBottomType ?? false);
 	}
 
 	public override varCheck(): void {
-		super.varCheck();
-		if (this.assignee instanceof EXPR.Variable && !(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar).isWritable) {
-			throw new AssignmentErrorReassignment(this.assignee);
+		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
+		if (this.assignee instanceof EXPR.Variable) {
+			const schema = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			if (this.assigned) {
+				if (!schema.isWritable) {
+					throw new AssignmentErrorReassignment(this.assignee);
+				}
+			} else if (!schema.isWritable || !schema.isUninitialized) {
+				throw new AssignmentErrorDeletion(this.assignee);
+			}
 		}
 	}
 
@@ -63,18 +70,26 @@ export class StatementReassignment extends Statement {
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
+			if (!this.assigned && !(base_type instanceof TYPE.TypeInterface)) {
+				throw new CplTypeError('The `delete` statement is only applicable to interface types.');
+			}
 		}
-		typecheck_assign(this.assigned, this.assignee.writeType(), this);
+		this.assigned && typecheck_assign(this.assigned, this.assignee.writeType(), this);
 	}
 
 	@runOnceMethod
 	public override build(builder: Builder): void {
 		if (this.assignee instanceof EXPR.Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
-			const value: OP.Value = this.assigned.build(builder);
-			symbol.irType = value.type;
-			return builder.pushInstruction(new OP.Set(symbol, value));
-		} else {
+			if (this.assigned) {
+				const value: OP.Value = this.assigned.build(builder);
+				symbol.irType = value.type;
+				return builder.pushInstruction(new OP.Set(symbol, value));
+			} else {
+				symbol.irType = TYPE.NULL;
+				return builder.pushInstruction(new OP.Set(symbol));
+			}
+		} else if (this.assigned) {
 			assert_instanceof(this.assignee.accessor, EXPR.Expression);
 			const base_value:    OP.ValueTac = this.assignee.base.build(builder).asTac(builder);
 			const base_typename: OP.TypeName = OP.ast_type_name(base_value.type);
@@ -86,5 +101,6 @@ export class StatementReassignment extends Statement {
 				this.assigned.build(builder).asTac(builder),
 			));
 		}
+		assert.fail('Expected `StatementReassignment#typeCheck` to throw by now.');
 	}
 }

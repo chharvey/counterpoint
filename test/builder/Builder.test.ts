@@ -20,7 +20,7 @@ test.suite('Builder', () => {
 				wasm.block(null, [
 					wasm.local.set(0, genConst(cg, true)),
 					wasm.local.set(1, genConst(cg, 1n)),
-					wasm.local.set(2, wasm.struct.new_default(cg.vm.heaptype.Value)),
+					wasm.local.set(2, cg.vm.Value.newDefault()),
 				]),
 				wasm.if(
 					cg.vm.Value.boolToI32(wasm.local.get(0, cg.vm.reftype.Value)),

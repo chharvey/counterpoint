@@ -13,6 +13,8 @@ Codegen((STR.CONST `v`)) := (call $Value.new-composite
 	(array.new_fixed $String `v.data.map("(i32.const `v.data[i]`)")`)
 );
 
+Codegen((GET `id`)) := (local.get ‹index›);
+
 Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
 	(block (result (ref $String))
 		`values.map("(local.set $str_`i` (call $Value.stringify `Codegen(values[i])`))")`
@@ -33,8 +35,6 @@ Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
 		(local.get $string)
 	)
 );
-
-Codegen((GET `id`)) := (local.get ‹index› `id.type`);
 
 Codegen((TUPLE.NEW)) := (call $Value.new-composite
 	(array.new_fixed $Tuple 0)
@@ -205,7 +205,11 @@ Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
 	)
 );
 
-// Codegen((CALL `values`));
+// Codegen((CALL `callable` `args`));
+
+Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
+	(struct.get $Value $tag (local.get ‹index›))
+)));
 
 Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
 
@@ -214,9 +218,10 @@ Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);
 Codegen((NEG `v`)) := (call $op:negate   `Codegen(v)`);
 
 Codegen((TOBOOL  `v`)) := (call $op:not (call $op:not `Codegen(v)`));
-Codegen((TOINT   `v`)) := (call $op:to-int   `Codegen(v)`);
-Codegen((TONAT   `v`)) := (call $op:to-nat   `Codegen(v)`);
-Codegen((TOFLOAT `v`)) := (call $op:to-float `Codegen(v)`);
+Codegen((TOINT   `v`)) := (call $op:to-int       `Codegen(v)`);
+Codegen((TONAT   `v`)) := (call $op:to-nat       `Codegen(v)`);
+Codegen((TOFLOAT `v`)) := (call $op:to-float     `Codegen(v)`);
+Codegen((TOSTR   `v`)) := (call $Value.stringify `Codegen(v)`);
 
 Codegen((LIST.COUNT `obj`)) := (call $Value.new-primitive
 	(call $Vect.new-nat
@@ -257,22 +262,19 @@ Codegen((FLOAT.MUL `v0` `v1`)) := (call $op:float-mul `Codegen(v0)` `Codegen(v1)
 Codegen((FLOAT.DIV `v0` `v1`)) := (call $op:float-div `Codegen(v0)` `Codegen(v1)`);
 Codegen((FLOAT.EXP `v0` `v1`)) := (call $op:float-exp `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((LT  `v0` `v1`)) := (call $op:lt `Codegen(v0)` `Codegen(v1)`);
-Codegen((GT  `v0` `v1`)) := (call $op:gt `Codegen(v0)` `Codegen(v1)`);
-Codegen((LE  `v0` `v1`)) := (call $op:le `Codegen(v0)` `Codegen(v1)`);
-Codegen((GE  `v0` `v1`)) := (call $op:ge `Codegen(v0)` `Codegen(v1)`);
-Codegen((NLT `v0` `v1`)) := (call $op:not (call $op:lt `Codegen(v0)` `Codegen(v1)`));
-Codegen((NGT `v0` `v1`)) := (call $op:not (call $op:gt `Codegen(v0)` `Codegen(v1)`));
+Codegen((LT `v0` `v1`)) := (call $op:lt `Codegen(v0)` `Codegen(v1)`);
+Codegen((GT `v0` `v1`)) := (call $op:gt `Codegen(v0)` `Codegen(v1)`);
+Codegen((LE `v0` `v1`)) := (call $op:le `Codegen(v0)` `Codegen(v1)`);
+Codegen((GE `v0` `v1`)) := (call $op:ge `Codegen(v0)` `Codegen(v1)`);
 
-Codegen((ID  `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
-Codegen((EQ  `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
-Codegen((NID `v0` `v1`)) := (call $op:not (call $op:id `Codegen(v0)` `Codegen(v1)`));
-Codegen((NEQ `v0` `v1`)) := (call $op:not (call $op:eq `Codegen(v0)` `Codegen(v1)`));
+Codegen((ID `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
+Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 
 Codegen((DROP `v`)) := (drop `Codegen(v)`);
 
 Codegen((DECL `id` `type` `v`)) := (local.set ‹index› `id` `Codegen(v)`);
-Codegen((SET  `id`        `v`)) := (local.set ‹index› `id` `Codegen(v)`);
+Codegen((DECL `id` `type`))     := (local.set ‹index› `id` (struct.new_default $Value));
+Codegen((SET  `id` `v`))        := (local.set ‹index› `id` `Codegen(v)`);
 
 Codegen((LIST.SET `obj` `accessor` `v`)) := (call $List.set
 	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))

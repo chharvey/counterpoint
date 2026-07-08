@@ -60,7 +60,7 @@ function parameterize<RuleName extends string, BaseGrammarRuleName extends strin
 		});
 		return [
 			familyName(family_name, args_arr),
-			parameterized_rule.call(null, args_obj),
+			parameterized_rule(args_obj),
 		];
 	})).forEach((rule, name) => {
 		rules_obj[name] = rule;
@@ -318,6 +318,7 @@ module.exports = grammar({
 		word: $ => choice(
 			// operator
 			'mut',
+			'isset',
 			'as',
 			'is',
 			'if',
@@ -328,6 +329,7 @@ module.exports = grammar({
 			'val',
 			'claim',
 			'set',
+			'delete',
 			'_',
 			'void',
 			// modifier
@@ -444,7 +446,7 @@ module.exports = grammar({
 		...parameterize('expression_map_literal',    ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case',                 {break: brk})), OPT_COM,   '}'), 'break'),
 		...parameterize('function_arguments',        ({break: brk}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ')'), 'break'),
 
-		...parameterize('_expression_unit', ({block, break: brk}) => $ => choice(
+		...parameterize('_expression_unit', ({block, break: brk}) => $ => prec(12, choice(
 			$.identifier,
 			$.primitive_literal,
 			call($, 'string_template',           {break: brk}),
@@ -456,15 +458,15 @@ module.exports = grammar({
 			call($, 'expression_set_literal',    {break: brk}),
 			call($, 'expression_map_literal',    {break: brk}),
 			...iff(block, alias(call($, 'block', {break: brk}), $.expression_block)),
-		), 'block', 'break'),
+		)), 'block', 'break'),
 
 		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(11, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice(
 			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
 			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}))),
 		))), 'block', 'break'),
 
-		...parameterize('expression_unary_symbol',  ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'),    call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_unary_keyword', ({block, break: brk}) => $ => prec( 9, seq(choice('int', 'nat', 'float'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_symbol',  ({block,    break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_keyword', ({block: _, break: brk}) => $ => prec( 9, seq(choice('isset', '!isset'),  call($, 'assignee',             {break: brk}))), 'block', 'break'),
 
 		...parameterize('expression_cast', ({block, break: brk}) => $ => choice(
 			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
@@ -508,15 +510,16 @@ module.exports = grammar({
 
 
 		/* ## Statements */
-		...parameterize('assignee', ({break: brk}) => $ => choice(
+		...parameterize('assignee', ({break: brk}) => $ => prec(13, choice(
 			field('identifier_0', $.identifier),
 			seq(field('expression_0', call($, '_expression', 'block', {break: brk})), '.', field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
-		), 'break'),
+		)), 'break'),
 
 		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
 
-		...parameterize('statement_claim',        ({break: brk}) => $ => seq('claim', call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
-		...parameterize('statement_reassignment', ({break: brk}) => $ => seq('set',   call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
+		...parameterize('statement_claim',  ({break: brk}) => $ => seq('claim',  call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
+		...parameterize('statement_set',    ({break: brk}) => $ => seq('set',    call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
+		...parameterize('statement_delete', ({break: brk}) => $ => seq('delete', call($, 'assignee', {break: brk}),                                                     ';'), 'break'),
 
 		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
 			!unless ? 'if' : 'unless',
@@ -532,20 +535,31 @@ module.exports = grammar({
 		), 'unless', 'break'),
 
 		statement_loop: $ => seq(uSeq(
-			seq(choice('while', 'until'), field('expression_0', call($, '_expression', 'block'))),
-			seq('do',                     field('block_0',      call($, 'block', 'break'))),
+			seq(choice('while', field('until_0', 'until')), field('expression_0', call($, '_expression', 'block'))),
+			seq('do',                                       field('block_0',      call($, 'block', 'break'))),
 		), ';'),
 
-		statement_iteration: $ => seq('for', choice('_', field('identifier_0', $.identifier)), ':', field('type_0', $._type), 'in', field('expression_0', call($, '_expression', 'block')), 'do', field('block_0', call($, 'block', 'break')), ';'),
+		statement_iteration: $ => seq(
+			'for',
+			choice('_', field('identifier_0', $.identifier)),
+			':',
+			field('type_0', $._type),
+			'in',
+			field('expression_0', call($, '_expression', 'block', 'break')),
+			'do',
+			field('block_0', call($, 'block', 'break')),
+			';',
+		),
 
 		statement_break: _$ => seq(choice('break', 'skip'), ';'),
 
 		...parameterize('_statement', ({break: brk}) => $ => choice(
-			call($, '_declaration',                             {break: brk}),
-			call($, 'statement_expression',                     {break: brk}),
-			call($, 'statement_claim',                          {break: brk}),
-			call($, 'statement_reassignment',                   {break: brk}),
-			call($, 'statement_conditional',    ['', 'unless'], {break: brk}),
+			call($, '_declaration',                          {break: brk}),
+			call($, 'statement_expression',                  {break: brk}),
+			call($, 'statement_claim',                       {break: brk}),
+			call($, 'statement_set',                         {break: brk}),
+			call($, 'statement_delete',                      {break: brk}),
+			call($, 'statement_conditional', ['', 'unless'], {break: brk}),
 			$.statement_loop,
 			$.statement_iteration,
 			...iff(brk, $.statement_break),
@@ -556,8 +570,8 @@ module.exports = grammar({
 		declaration_type: $ => seq('type', choice('_', field('identifier_0', $.identifier)), '=', field('type_0', $._type), ';'),
 
 		...parameterize('declaration_variable', ({break: brk}) => $ => choice(
-			seq('val', choice('_', seq(optional('mut'), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk})), ';'),
-			seq('val',                          'mut',  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                              ';'),
+			seq('val', choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier))),      optional(seq(':', field('type_0', $._type))), '=', field('expression_0', call($, '_expression', 'block', {break: brk})), ';'),
+			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                              ';'),
 		), 'break'),
 
 		...parameterize('_declaration', ({break: brk}) => $ => choice(
@@ -599,6 +613,7 @@ module.exports = grammar({
 		global: _$ => [
 			// operator
 			'mut',
+			'isset',
 			'as',
 			'is',
 			'if',
@@ -609,6 +624,7 @@ module.exports = grammar({
 			'val',
 			'claim',
 			'set',
+			'delete',
 			'_',
 			'void',
 			// modifier

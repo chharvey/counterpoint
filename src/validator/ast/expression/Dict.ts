@@ -74,17 +74,6 @@ export class Dict extends Collection {
 		])), this.type());
 	}
 
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const properties: ReadonlyMap<bigint, VALUE.Value | null> = new Map(this.children.map((c) => [
-			c.key.id,
-			c.val.fold(),
-		]));
-		return [...properties].map((p) => p[1]).includes(null)
-			? null
-			: new VALUE.Dict(properties as ReadonlyMap<bigint, VALUE.Value>);
-	}
-
 	@assignToDeco
 	public override assignTo(assignee: TYPE.Type): void {
 		if (assignee instanceof TYPE.Dict) {
