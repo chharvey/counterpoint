@@ -64,7 +64,7 @@ export class Value implements HasFuncData {
 
 	/** Returns `(struct.new_default $Value)`, for deleting variables/parameters/fields. */
 	public newDefault(): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.struct.new_default(this.vm.heaptype.Value);
+		return this.vm.mod.wasm.struct.new_default(this.vm.heaptype.Value);
 	}
 
 	/** Creates a new Value struct storing the given v128 in its primitive slot. */

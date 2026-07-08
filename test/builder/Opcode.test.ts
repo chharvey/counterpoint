@@ -1442,7 +1442,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Isset', () => {
-				const {stmts, builder, cg} = setupScript(`{
+				const {stmts, builder, cg, wasm} = setupScript(`{
 					val mut a0?: int;
 					val mut a1?: int;
 					val mut a2?: int;
@@ -1473,7 +1473,7 @@ test.suite('Opcode', () => {
 				}`);
 				return assertEqualBins(
 					stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
-					Array.from(new Array(10), (_, i) => cg.vm.Value.boolFromI32(cg.mod.i32.eqz(cg.mod.i32.eqz(cg.vm.Value.field(cg.mod.local.get(i, cg.vm.reftype.Value)).tag)))),
+					Array.from(new Array(10), (_, i) => cg.vm.Value.boolFromI32(wasm.i32.eqz(wasm.i32.eqz(cg.vm.Value.field(wasm.local.get(i, cg.vm.reftype.Value)).tag)))),
 				);
 			});
 
