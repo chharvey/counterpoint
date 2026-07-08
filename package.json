@@ -40,7 +40,7 @@
     "build": "npm run compile && npm run lint && npm run test"
   },
   "dependencies": {
-    "binaryen": "^129.0.0",
+    "binaryen.ts": "^0.1.0",
     "extrajs": "^0.27.0",
     "fast-deep-equal": "^3.1.3",
     "minimist": "^1.2.6",
