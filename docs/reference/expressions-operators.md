@@ -216,11 +216,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>14</th>
+			<th rowspan="2">14</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
 			<td><code>if … then … else …</code></td>
+		</tr>
+		<tr>
+			<td>Lambdas</td>
+			<td>n/a</td>
+			<td>n/a</td>
+			<td><code>\(…)… => …</code></td>
 		</tr>
 	</tbody>
 </table>
@@ -999,6 +1005,15 @@ For example, if the condition evalutes to `false`, then only the alternative is 
 the consequent does not even get evaluated.
 This is meaningful when evaluation of an expression produces side-effects, such as a routine call.
 Because one of the branches is not evaluated, its side-effects (if any) will not occur.
+
+
+### Lambdas
+```
+\(‹parameters?›) ‹return-type› => { ‹statements› }
+\(‹parameters?›) ‹return-type› => <anything>
+```
+Lambdas, a.k.a. anonymous functions, a.k.a. function expressions, are expressions that have function values.
+Functions are covered in the [Functions](./functions.md) chapter.
 
 
 
