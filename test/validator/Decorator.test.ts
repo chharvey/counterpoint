@@ -261,7 +261,7 @@ test.suite('Decorator', () => {
 				}
 				% (type_unary_symbol)
 			`]],
-			['todo: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.TYPE.Operation, `
+			['expectFailure: Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation', [AST.TYPE.Operation, `
 				{
 					type T = U!;
 				}
@@ -486,7 +486,7 @@ test.suite('Decorator', () => {
 				}
 				% (expression_compound)
 			`]],
-			['todo: Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
+			['expectFailure: Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "!." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v!.p;
 				}
@@ -602,7 +602,7 @@ test.suite('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', '!is'].map((op) => [`${ ['is', '!is'].includes(op) ? 'todo: ' : '' }Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "${ op }" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.Operation, `
+			...['<', '>', '<=', '>=', '!<', '!>', 'is', '!is'].map((op) => [`${ ['is', '!is'].includes(op) ? 'expectFailure: ' : '' }Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "${ op }" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.Operation, `
 				{
 					a ${ op } b;
 				}
@@ -923,9 +923,10 @@ test.suite('Decorator', () => {
 			`]],
 		]).forEach(([klass, text], description) => {
 			test.test(description, {
-				skip: description.startsWith('skip:'),
-				todo: description.startsWith('todo:'),
-				only: description.startsWith('only:') || undefined, // `only: false` negates `only: true` in parent suite
+				skip:          description.startsWith('skip:'),
+				todo:          description.startsWith('todo:'),
+				expectFailure: description.startsWith('expectFailure:'),
+				only:          description.startsWith('only:') || undefined, // `only: false` negates `only: true` in parent suite
 			}, () => {
 				const [source, query] = text.split('%');
 				const parsenode: SyntaxNode = captureParseNode(source, query);

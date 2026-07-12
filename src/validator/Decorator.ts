@@ -309,7 +309,7 @@ export class Decorator {
 				const word_0       = node.childForFieldName('word_0')       as SyntaxNodeType<'word'>       | null;
 				return new AST.ParameterFunction(
 					node as SyntaxNodeFamily<'parameter_function', ['named']>,
-					!!(word_0 ?? node.childForFieldName('$_0')),
+					!!(word_0 ?? node.childForFieldName('pun_0')),
 					!!node.childForFieldName('mut_0'),
 					identifier_0 && to_serializable(identifier_0),
 					word_0 && this.decorate(word_0),

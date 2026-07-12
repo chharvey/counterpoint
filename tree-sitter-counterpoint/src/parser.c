@@ -2607,17 +2607,17 @@ static const TSSymbolMetadata ts_symbol_metadata[] = {
 };
 
 enum ts_field_identifiers {
-  field_$_0 = 1,
-  field_block_0 = 2,
-  field_block_1 = 3,
-  field_expression_0 = 4,
-  field_expression_1 = 5,
-  field_function_arguments_0 = 6,
-  field_generic_arguments_0 = 7,
-  field_identifier_0 = 8,
-  field_mut_0 = 9,
-  field_property_accessor_0 = 10,
-  field_property_accessor_type_0 = 11,
+  field_block_0 = 1,
+  field_block_1 = 2,
+  field_expression_0 = 3,
+  field_expression_1 = 4,
+  field_function_arguments_0 = 5,
+  field_generic_arguments_0 = 6,
+  field_identifier_0 = 7,
+  field_mut_0 = 8,
+  field_property_accessor_0 = 9,
+  field_property_accessor_type_0 = 10,
+  field_pun_0 = 11,
   field_statement_conditional_0 = 12,
   field_type_0 = 13,
   field_until_0 = 14,
@@ -2626,7 +2626,6 @@ enum ts_field_identifiers {
 
 static const char * const ts_field_names[] = {
   [0] = NULL,
-  [field_$_0] = "$_0",
   [field_block_0] = "block_0",
   [field_block_1] = "block_1",
   [field_expression_0] = "expression_0",
@@ -2637,6 +2636,7 @@ static const char * const ts_field_names[] = {
   [field_mut_0] = "mut_0",
   [field_property_accessor_0] = "property_accessor_0",
   [field_property_accessor_type_0] = "property_accessor_type_0",
+  [field_pun_0] = "pun_0",
   [field_statement_conditional_0] = "statement_conditional_0",
   [field_type_0] = "type_0",
   [field_until_0] = "until_0",
@@ -2760,8 +2760,8 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
   [46] =
     {field_block_0, 5},
   [47] =
-    {field_$_0, 0},
     {field_identifier_0, 1},
+    {field_pun_0, 0},
     {field_type_0, 3},
   [50] =
     {field_block_0, 3},
@@ -2787,9 +2787,9 @@ static const TSFieldMapEntry ts_field_map_entries[] = {
   [65] =
     {field_block_0, 6},
   [66] =
-    {field_$_0, 1},
     {field_identifier_0, 2},
     {field_mut_0, 0},
+    {field_pun_0, 1},
     {field_type_0, 4},
   [70] =
     {field_identifier_0, 2},

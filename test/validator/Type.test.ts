@@ -195,7 +195,7 @@ test.suite('Type', () => {
 					type _ = float | T;
 				}`, {typeCheck: false}), ReferenceErrorUndeclared);
 			});
-			test.test.todo('throws when there is a temporal dead zone.', () => {
+			test.test('throws when there is a temporal dead zone.', {expectFailure: true}, () => {
 				assert.throws(() => setupScript(`{
 					T;
 					type T = int;

@@ -451,7 +451,7 @@ module.exports = grammar({
 
 		...parameterize('parameter_function', ({named}) => $ => seq(choice(
 			seq(...iff(named, seq(field('word_0', $.word), '=')), choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier)))),
-			...iff(named, seq(optional(field('mut_0', 'mut')), field('$_0', '$'), field('identifier_0', $.identifier))),
+			...iff(named, seq(optional(field('mut_0', 'mut')), field('pun_0', '$'), field('identifier_0', $.identifier))),
 		), ':', field('type_0', $._type)), 'named'),
 
 		_parameters_function: $ => {
