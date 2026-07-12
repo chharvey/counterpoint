@@ -16,7 +16,7 @@ import {
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
 import type {Serializable} from '../../../parser/index.ts';
-import {SymbolSchemaVar} from '../../index.ts';
+import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
@@ -61,12 +61,7 @@ export class DeclarationFunction extends Statement {
 			if (this.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.identifier);
 			}
-			this.validator.addSymbol(new SymbolSchemaVar(
-				this.id!,
-				this.identifier,
-				false, // because it should not be manually reassigned
-				false, // because it won’t ever be nullish upon accessing
-			));
+			this.validator.addSymbol(new SymbolSchemaFunc(this.id!, this.identifier));
 		}
 	}
 
@@ -81,7 +76,7 @@ export class DeclarationFunction extends Statement {
 		const fn_type: TYPE.Type = EXPR.Function.prototype.type.call(this);
 		if (this.identifier) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
-			(this.validator.getSymbol(this.id!) as SymbolSchemaVar).type = fn_type;
+			(this.validator.getSymbol(this.id!) as SymbolSchemaFunc).type = fn_type;
 		}
 	}
 

@@ -13,11 +13,14 @@ Type TypeOf(SemanticExpressionTemplate template) :=
 
 Type TypeOf(SemanticExpressionVariable var) :=
 	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
-	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-	3. *If* `symbol.isUninitialized` is `true`:
-		1. *Return:* `Union(symbol.type, Null)`.
-	4. *Else:*
-		1. *Return:* `symbol.type`.
+	2. *If* `symbol` is an instance of `SymbolSchemaVar`:
+		1. *If* `symbol.isUninitialized` is `true`:
+			1. *Return:* `Union(symbol.type, Null)`.
+		2. *Else:*
+			1. *Return:* `symbol.type`.
+	3. *Else*:
+		1. *Assert:* `symbol` is an instance of `SymbolSchemaFunc`.
+		2. *Return:* `symbol.type`.
 ;
 
 

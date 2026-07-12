@@ -8,6 +8,7 @@ import {
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
+	SymbolSchemaFunc,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
@@ -629,7 +630,7 @@ test.suite('Declaration', () => {
 		});
 
 		test.suite('DeclarationFunction', () => {
-			test.test('sets the SymbolSchemaVar `type`.', () => {
+			test.test('sets the SymbolSchemaFunc `type`.', () => {
 				const {stmts} = setupScript(`{
 					func f(a: float, mut b: str): void { return; };
 				}`, {typeCheck: false});
@@ -643,7 +644,7 @@ test.suite('Declaration', () => {
 				const info_f: SymbolSchema | undefined = fn.validator.getSymbol(id_f);
 				const info_a: SymbolSchema | undefined = fn.block.validator.getSymbol(id_a);
 				const info_b: SymbolSchema | undefined = fn.block.validator.getSymbol(id_b);
-				assert_instanceof(info_f, SymbolSchemaVar);
+				assert_instanceof(info_f, SymbolSchemaFunc);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_shallowStrictEqual(
