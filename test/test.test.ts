@@ -39,6 +39,7 @@ test.suite('assert_shallowStrictEqual', () => {
 	});
 	test.test('throws the given Error object.', () => {
 		const err = new Error('not shallow-equal');
+		// @ts-expect-error --- DefinitelyTyped is incomplete
 		assert.throws(() => assert_shallowStrictEqual([], [null], err), (e) => {
 			assert.strictEqual(e, err);
 			return true;

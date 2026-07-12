@@ -279,7 +279,7 @@ export default [
 			/* ## Overrides of `tseslint.configs.recommendedTypeCheckedOnly` */
 			'@typescript-eslint/no-floating-promises': ['error', {
 				allowForKnownSafeCalls: [
-					{from: 'package', name: ['suite', 'test', 'skip', 'todo', 'only'], package: 'node:test'}, // `suite()` and `test()` calls are normally automatically awaited
+					{from: 'package', name: ['suite', 'test', 'skip', 'todo', 'only'], package: 'node:test'}, // `suite()` and `test()` (and related) calls are normally automatically awaited
 				],
 			}],
 			'@typescript-eslint/no-unsafe-enum-comparison':     'off',   // some enums have transparent values
