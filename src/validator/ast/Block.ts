@@ -36,8 +36,6 @@ export class Block extends AstNode implements Buildable {
 	}
 
 
-	#validator?: Validator;
-
 	public constructor(
 		start_node: SyntaxNodeFamily<'block', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
@@ -47,9 +45,9 @@ export class Block extends AstNode implements Buildable {
 		assert.ok(this.children.length, 'Expected Block to contain at least 1 statement.');
 	}
 
+	@memoizeGetter
 	public override get validator(): Validator {
-		this.#validator ??= new Validator(this.config, this.parent?.validator);
-		return this.#validator;
+		return new Validator(this.config, this.parent?.validator);
 	}
 
 	@memoizeGetter
