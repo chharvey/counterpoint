@@ -414,7 +414,7 @@ test.suite('Expression', () => {
 					i;
 				}`, {typeCheck: false}), ReferenceErrorUndeclared);
 			});
-			test.test.todo('throws when there is a temporal dead zone.', () => {
+			test.test('throws when there is a temporal dead zone.', {expectFailure: true}, () => {
 				assert.throws(() => setupScript(`{
 					i;
 					val mut i: int = 42;

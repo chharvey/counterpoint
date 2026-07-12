@@ -434,28 +434,15 @@ test.suite('Statement', () => {
 						set Map.<bool, int>(((true, 42),)).[true] = 42;
 					}`, {build: false}); // assert does not throw
 				});
-				test.test('widens assignee write type for collection literals.', () => { // TODO: use NodeJS v25.5 `test.expectFailure()`
-					const {goal} = setupScript(`{
-						set [1.01].[1]                      = 1.02;  %> TypeErrorNotAssignable
-						set [i= 2.03].[@j]                  = 2.04;  %> TypeErrorNotAssignable
-						set {3.05}.[3.05]                   = false; %  no error
-						set {4.07 -> @a, 4.08 -> @b}.[4.07] = @c;    %> TypeErrorNotAssignable
-						set {3.05}.[3.06]                   = true;  %> TypeErrorNotNarrow
-						set {4.07 -> @a, 4.08 -> @b}.[4.09] = @a;    %> TypeErrorNotNarrow
-					}`, {typeCheck: false});
-					return assert.throws(() => goal.typeCheck(), (err) => {
-						assertAssignable(err as Error, {
-							cons:   AggregateError,
-							errors: [
-								{cons: TypeErrorNotAssignable, message: 'Expression `1.02` is not assignable to type `1.01`.'},
-								{cons: TypeErrorNotAssignable, message: 'Expression `2.04` is not assignable to type `2.03`.'},
-								{cons: TypeErrorNotAssignable, message: 'Expression `@c` is not assignable to type `@a | @b`.'},
-								{cons: TypeErrorNotNarrow,     message: 'Type `3.06` is not a subtype of type `3.05`.'},
-								{cons: TypeErrorNotNarrow,     message: 'Type `4.09` is not a subtype of type `4.07 | 4.08`.'},
-							],
-						});
-						return true;
-					});
+				test.test('widens assignee write type for collection literals.', {expectFailure: true}, () => {
+					setupScript(`{
+						set [1.01].[1]                      = 1.02;
+						set [i= 2.03].[@j]                  = 2.04;
+						set {3.05}.[3.05]                   = false;
+						set {4.07 -> @a, 4.08 -> @b}.[4.07] = @c;
+						set {3.05}.[3.06]                   = true;
+						set {4.07 -> @a, 4.08 -> @b}.[4.09] = @a;
+					}`, {build: false}); // assert does not throw
 				});
 				test.test('throws when property assignee type is not supertype.', () => {
 					[
@@ -539,7 +526,7 @@ test.suite('Statement', () => {
 						assert.throws(() => goal.typeCheck(), /only applicable to interface types/);
 					});
 				});
-				test.test.skip('throws when assignee’s base type is not mutable.', () => {
+				test.test('throws when assignee’s base type is not mutable.', {expectFailure: true}, () => {
 					const {stmts} = setupScript(`{
 						claim p: interface {
 							readonly x: int;
@@ -555,7 +542,7 @@ test.suite('Statement', () => {
 					assert.throws(() => stmts[2].typeCheck(), MutabilityError01);
 					assert.throws(() => stmts[3].typeCheck(), MutabilityError01);
 				});
-				test.test.skip('throws when assignee’s property is read-only or non-optional.', () => {
+				test.test('throws when assignee’s property is read-only or non-optional.', {expectFailure: true}, () => {
 					const {stmts} = setupScript(`{
 						claim p: mut interface {
 							readonly x: int;
