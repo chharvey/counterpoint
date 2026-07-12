@@ -194,7 +194,7 @@ test.suite('Declaration', () => {
 					func _(a: int): void { return; };
 				}`, {typeCheck: false}); // assert does not throw
 			});
-			test.test.todo('allows overloads.', () => {
+			test.test('allows overloads.', {expectFailure: true}, () => {
 				setupScript(`{
 					func f(): void { return; };
 					func f(a: int): void { return; };

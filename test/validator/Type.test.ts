@@ -107,7 +107,7 @@ test.suite('Type', () => {
 					]))),
 				);
 			});
-			test.test.todo('with optional parameters.', () => {
+			test.test('with optional parameters.', {expectFailure: true}, () => {
 				assertEqualTypes(
 					AST.TYPE.Function.fromSource('\\(bool, ?: int | null, alpha?: str, bravo: float) => void').eval(),
 					new TYPE.Function(new TYPE.Tuple([
@@ -119,7 +119,7 @@ test.suite('Type', () => {
 					]))),
 				);
 			});
-			test.test.todo('with return type.', () => {
+			test.test('with return type.', {expectFailure: true}, () => {
 				assertEqualTypes(
 					AST.TYPE.Function.fromSource('\\() => sym').eval(),
 					new TYPE.Function(undefined, undefined, TYPE.SYM),

@@ -135,7 +135,7 @@ test.suite('AstNode', () => {
 					};
 				}`, {typeCheck: false});
 			});
-			test.test.todo('throws when capture is not explicit.', () => {
+			test.test('throws when capture is not explicit.', {expectFailure: true}, () => {
 				const {stmts} = setupScript(`{
 					val x: int = 42;
 					\\(y: str): void {
