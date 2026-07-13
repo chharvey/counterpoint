@@ -10,6 +10,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../core/index.ts';
+import {
+	SymbolSchemaType,
+	SymbolSchemaFunc,
+} from '../index.ts';
 import {Validator} from '../Validator.ts';
 import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
@@ -40,6 +44,7 @@ export class Block extends AstNode implements Buildable {
 		start_node: SyntaxNodeFamily<'block', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
+		private readonly isFuncBlock:      boolean,
 	) {
 		super(start_node, {}, children);
 		assert.ok(this.children.length, 'Expected Block to contain at least 1 statement.');
@@ -47,7 +52,16 @@ export class Block extends AstNode implements Buildable {
 
 	@memoizeGetter
 	public override get validator(): Validator {
-		return new Validator(this.config, this.parent?.validator);
+		const v = new Validator(this.config, this.isFuncBlock ? undefined : this.parent?.validator);
+		if (this.isFuncBlock) {
+			this.parent?.validator.getAllSymbols().forEach((symb) => {
+				// add all implicitly-captured symbols to the function block
+				if (symb instanceof SymbolSchemaType || symb instanceof SymbolSchemaFunc) { // TODO: add a property of SymbolSchema
+					v.addSymbol(symb);
+				}
+			});
+		}
+		return v;
 	}
 
 	@memoizeGetter
