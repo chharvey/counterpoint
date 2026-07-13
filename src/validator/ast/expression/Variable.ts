@@ -16,7 +16,9 @@ import {TYPE} from '../../../typer/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
+	SymbolSchemaType,
 	SymbolSchemaVar,
+	SymbolSchemaFunc,
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
@@ -45,7 +47,7 @@ export class Variable extends Expression implements Reassignable {
 		if (!this.validator.hasSymbol(this.id)) {
 			throw new ReferenceErrorUndeclared(this);
 		}
-		if (!(this.validator.getSymbol(this.id) instanceof SymbolSchemaVar)) {
+		if (this.validator.getSymbol(this.id) instanceof SymbolSchemaType) {
 			throw new ReferenceErrorKind(this, SymbolKind.TYPE, SymbolKind.VALUE);
 			// TODO: When Type objects are allowed as runtime values, this should be removed and checked by the type checker (`this#typeCheck`).
 		}
@@ -55,8 +57,12 @@ export class Variable extends Expression implements Reassignable {
 	public override type(): TYPE.Type {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
-		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+		if (symbol instanceof SymbolSchemaVar) {
+			return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+		} else {
+			assert_instanceof(symbol, SymbolSchemaFunc);
+			return symbol.type;
+		}
 	}
 
 	@memoizeMethod

@@ -160,6 +160,14 @@ Property            | Read-Only? | Description
 \`isUninitialized\` | yes        | a Boolean, whether the variable was declared without an initial value
 \`type\`            | no         | the Counterpoint Language Type of the variable
 
+##### SymbolSchemaFunc
+A **SymbolSchemaFunc** represents the symbol a function declaration.
+
+Property  | Read-Only? | Description
+--------- | ---------- | -----------
+\`id\`    | yes        | the unique identifier of the declared function
+\`type\`  | no         | the Counterpoint Language Type of the function
+
 
 ### Nodes
 

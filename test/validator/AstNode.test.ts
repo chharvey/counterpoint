@@ -97,15 +97,17 @@ test.suite('AstNode', () => {
 				const fn0 = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				return assert.throws(() => fn0.varCheck());
 			});
-			test.test('throws when parameter shadows outside scope.', () => {
+			test.test('parameters do not shadow outside scope.', () => {
 				setupScript(`{
 					val x: int = 42;
-					\\(y: str): void { return; };
+					\\(x: str): void { x; return; };
+					\\(z: float): void {
+						\\(z: bool): void { z; return; };
+						z;
+						return;
+					};
+					x;
 				}`, {typeCheck: false}); // assert does not throw
-				return assert.throws(() => setupScript(`{
-					val x: int = 42;
-					\\(x: str): void { return; };
-				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
 			});
 			test.test('does not throw when parameter name is reused outside of function scope.', () => {
 				setupScript(`{
@@ -126,27 +128,44 @@ test.suite('AstNode', () => {
 				fn.parameters[0].varCheck(); // assert does not throw
 				return assert.throws(() => fn.block.varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
-			test.test('TEMP: allows implicit captures.', () => {
-				setupScript(`{
-					val x: int = 42;
-					\\(y: str): void {
-						x;
-						return;
-					};
-				}`, {typeCheck: false});
-			});
-			test.test('throws when capture is not explicit.', {expectFailure: true}, () => {
-				const {stmts} = setupScript(`{
-					val x: int = 42;
-					\\(y: str): void {
-						x; %> error
-						return;
-					};
-				}`, {varCheck: false});
-				stmts[0].varCheck();
-				const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-				fn.parameters[0].varCheck();
-				return assert.throws(() => fn.block.varCheck());
+		});
+
+
+		test.suite('Block', () => {
+			test.suite('function blocks.', () => {
+				test.test('allows implicit captures for type aliases and function names.', () => {
+					setupScript(`{
+						type T = float;
+						func f(): void { return; }
+						\\(): void {
+							val x: T = 42;
+							f;
+							return;
+						};
+					}`, {typeCheck: false}); // assert does not throw
+				});
+				test.test('throws when variable capture is not explicit.', () => {
+					const {stmts} = setupScript(`{
+						val x: int = 42;
+						\\(): void {
+							x; %> error
+							return;
+						};
+					}`, {varCheck: false});
+					stmts[0].varCheck();
+					const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+				});
+				test.test('throws for undeclared variables.', () => {
+					const {stmts} = setupScript(`{
+						\\(): void {
+							z; %> error
+							return;
+						};
+					}`, {varCheck: false});
+					const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+				});
 			});
 		});
 	});

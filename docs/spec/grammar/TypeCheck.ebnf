@@ -121,7 +121,7 @@ None! TypeCheck(SemanticDeclarationFunction fn) :=
 		and who does not contain a return type.
 	10. *If* `fn.id` is not *none*:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `fn.id`.
-		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`. // TODO: we’ll probably want a `SymbolSchemaFunc` type
+		2. *Assert:* `symbol` is an instance of `SymbolSchemaFunc`.
 		3. *Set* `symbol.type` to `fn_type`.
 	11. *Else:*
 		1. *Return.*

@@ -64,3 +64,16 @@ export class SymbolSchemaVar extends SymbolSchema {
 		super(id, node.line_index, node.col_index, node.source);
 	}
 }
+
+
+
+/** The symbol of a declared function. */
+export class SymbolSchemaFunc extends SymbolSchema {
+	/** The declared function type. */
+	public type: TYPE.Type = TYPE.ANYTHING;
+
+
+	public constructor(id: bigint, node: Serializable) {
+		super(id, node.line_index, node.col_index, node.source);
+	}
+}

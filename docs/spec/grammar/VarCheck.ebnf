@@ -52,11 +52,9 @@ None! VarCheck(SemanticBlock block) :=
 				1. *If* the validator’s symbol table contains a SymbolSchema whose `id` is `stmt.id`:
 					1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
 				2. *Else:*
-					1. *Let* `symbol` be a new SymbolSchemaVar [ // TODO: we’ll probably want a `SymbolSchemaFunc` type
-						id=              `stmt.id`,
-						isWritable=      false,
-						isUninitialized= false,
-						type=            `Anything`,
+					1. *Let* `symbol` be a new SymbolSchemaFunc [
+						id=   `stmt.id`,
+						type= `Anything`,
 					].
 					2. Add `symbol` as a record for `stmt.id` to the validator.
 			2. *Else:*
@@ -122,7 +120,7 @@ None! VarCheck(SemanticExpressionVariable var) :=
 	1. *If* the validator’s symbol table does not contain a SymbolSchema `symbol` whose `id` is `var.id`:
 		1. *Throw:* a new ReferenceErrorUndeclared.
 	// TODO: Throw a ReferenceErrorDeadZone if the variable is declared further down in source.
-	2. *If* `symbol` is not an instance of `SymbolSchemaVar`:
+	2. *If* `symbol` is an instance of `SymbolSchemaType`:
 		1. *Throw:* a new ReferenceErrorKind.
 ;
 
