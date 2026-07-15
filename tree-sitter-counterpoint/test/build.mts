@@ -890,6 +890,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		ExpressionCompound: [
 			xjs.String.dedent`
 				{
+					42.prop;
+					4.2.prop;
 					tuple.0;
 					tuple.-1;
 					tuple.+1;
@@ -911,6 +913,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(
+				s(
+					'expression_compound',
+					f('expression_0', 'primitive_literal', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'primitive_literal', s('float')),
+					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),

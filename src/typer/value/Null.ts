@@ -1,8 +1,5 @@
 import type binaryen from 'binaryen';
-import {
-	BinConst,
-	type CodeGenerator,
-} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -57,6 +54,6 @@ export class Null extends Primitive {
 
 	@noopMethod(memoizeMethod)
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.getConst(BinConst.NULL);
+		return cg.getConst(null);
 	}
 }

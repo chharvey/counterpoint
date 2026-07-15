@@ -1,10 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinConst,
-	type CodeGenerator,
-	type Local,
+import type {
+	CodeGenerator,
+	Local,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -479,7 +478,7 @@ export class CollectionDynamicCopy extends Instruction {
 						return each_item(cg, destset, srcref, reftype.Value, false, (dest_get, item_get) => VmMap.set(
 							dest_get,
 							item_get,
-							cg.getConst(BinConst.NULL),
+							cg.getConst(null),
 						));
 					}
 					// Set.<T>([t, t, t]);
@@ -489,7 +488,7 @@ export class CollectionDynamicCopy extends Instruction {
 						return each_item(cg, destset, srcref, reftypeNull.Value, true, (dest_get, item_get) => VmMap.set(
 							dest_get,
 							mod.ref.as_non_null(item_get),
-							cg.getConst(BinConst.NULL),
+							cg.getConst(null),
 						));
 					}
 					// Set.<T>({t, t, t});

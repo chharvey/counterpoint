@@ -124,6 +124,7 @@ export function memoizeMethod<ProtoThis extends object, Params extends unknown[]
 ): typeof method {
 	const memomap = new WeakMap<ProtoThis, Return>();
 	return function (...args) {
+		// TODO: Map#getOrInsertComputed
 		memomap.has(this) || memomap.set(this, method.call(this, ...args));
 		return memomap.get(this)!;
 	};
@@ -143,6 +144,7 @@ export function memoizeGetter<ProtoThis extends object, Return>(
 ): typeof getter {
 	const memomap = new WeakMap<ProtoThis, Return>();
 	return function () {
+		// TODO: Map#getOrInsertComputed
 		memomap.has(this) || memomap.set(this, getter.call(this));
 		return memomap.get(this)!;
 	};

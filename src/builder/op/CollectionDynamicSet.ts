@@ -1,10 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinConst,
-	type CodeGenerator,
-	type Local,
+import type {
+	CodeGenerator,
+	Local,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -141,7 +140,7 @@ export class CollectionDynamicSet extends Instruction {
 						VmMap.set(
 							base.get(),
 							xsor.get(),
-							cg.getConst(BinConst.NULL),
+							cg.getConst(null),
 						),
 						mod.drop(VmMap.delete(
 							base.get(),

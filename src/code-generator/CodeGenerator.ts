@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import binaryen from 'binaryen';
 import {VirtualMachine} from '../vm/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
@@ -6,14 +5,6 @@ import type {Temp} from '../builder/index.ts';
 import type {BinaryenModuleUpdates} from './-types.js';
 import {bigint_to_i64} from './utils-public.ts';
 import {Local} from './Local.ts';
-
-
-
-export enum BinConst {
-	NULL,
-	FALSE,
-	TRUE,
-}
 
 
 
@@ -62,7 +53,7 @@ export class CodeGenerator {
 
 
 	/** A registry of constant WASM expressions. */
-	readonly #constRegistry: ReadonlyMap<BinConst, binaryen.ExpressionRef>;
+	readonly #constRegistry: ReadonlyMap<null | boolean, binaryen.ExpressionRef>;
 
 	/** A set containing data of WASM local variables. */
 	readonly #locals = new Set<Local>();
@@ -78,15 +69,14 @@ export class CodeGenerator {
 		this.mod = new binaryen.Module() as BinaryenModuleUpdates;
 		this.mod.setFeatures(vm.mod.getFeatures());
 
-		this.#constRegistry = new Map([
-			[BinConst.NULL,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
-			[BinConst.FALSE, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
-			[BinConst.TRUE,  this.vm.Value.newPrimitive(this.vm.Vect.TRUE)],
+		this.#constRegistry = new Map<null | boolean, binaryen.ExpressionRef>([
+			[null,  this.vm.Value.newPrimitive(this.vm.Vect.NULL)],
+			[false, this.vm.Value.newPrimitive(this.vm.Vect.FALSE)],
+			[true,  this.vm.Value.newPrimitive(this.vm.Vect.TRUE)],
 		]);
 	}
 
-	public getConst(key: BinConst): binaryen.ExpressionRef {
-		assert.ok(this.#constRegistry.has(key), `Expected constant registry to have constant \`${ BinConst[key] }\`.`);
+	public getConst(key: null | boolean): binaryen.ExpressionRef {
 		return this.#constRegistry.get(key)!;
 	}
 
@@ -330,7 +320,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
 	public codegenSet(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(BinConst.NULL)])));
+		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(null)])));
 	}
 
 	/**

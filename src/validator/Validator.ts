@@ -228,9 +228,14 @@ export class Validator {
 	/** The minimum allowed cooked value of a user-defined identifier token. */
 	private static readonly MIN_VALUE_IDENTIFIER = 0x100n;
 
+	static readonly #hashStringMemo = new Map<string, bigint>();
+
+
 	/** Hash function for strings. */
 	static #hashString(s: string): bigint {
-		return [SEED, ...new TextEncoder().encode(s)].map((n) => BigInt(n)).reduce((a, b) => BigInt.asUintN(64, (a ^ b) * PRIME));
+		// TODO: Map#getOrInsertComputed
+		this.#hashStringMemo.has(s) || this.#hashStringMemo.set(s, [SEED, ...new TextEncoder().encode(s)].map((n) => BigInt(n)).reduce((a, b) => BigInt.asUintN(64, (a ^ b) * PRIME)));
+		return this.#hashStringMemo.get(s)!;
 	}
 
 	/**
