@@ -307,7 +307,7 @@ export class Decorator {
 
 			[/^expression_record_literal(__break)?$/, (node) => new AST.EXPR.Record(
 				node as SyntaxNodeFamily<'expression_record_literal', ['break']>,
-				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'property'>)) as NonemptyArray<AST.Property>,
+				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'property', ['break']>)) as NonemptyArray<AST.Property>,
 			)],
 
 			[/^expression_list_literal(__break)?$/, (node) => new AST.EXPR.List(
@@ -317,7 +317,7 @@ export class Decorator {
 
 			[/^expression_dict_literal(__break)?$/, (node) => new AST.EXPR.Dict(
 				node as SyntaxNodeFamily<'expression_dict_literal', ['break']>,
-				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'property'>)) as NonemptyArray<AST.Property>,
+				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'property', ['break']>)) as NonemptyArray<AST.Property>,
 			)],
 
 			[/^expression_set_literal(__break)?$/, (node) => new AST.EXPR.Set(
@@ -327,7 +327,7 @@ export class Decorator {
 
 			[/^expression_map_literal(__break)?$/, (node) => new AST.EXPR.Map(
 				node as SyntaxNodeFamily<'expression_map_literal', ['break']>,
-				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'case'>)) as NonemptyArray<AST.Case>,
+				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'case', ['break']>)) as NonemptyArray<AST.Case>,
 			)],
 
 			// NOTE: the following expression types (`_block` through `_disjunctive`) refer to aliases in the grammar --- no need for suffices
