@@ -146,7 +146,7 @@ Items<Break> ::=
 ;
 
 Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
-Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+CaseMap  <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
 
 PropertyAccessor<Break>
 	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break> "]";
@@ -157,7 +157,7 @@ ExpressionRecordLiteral <Break> ::= "("  ","? Property<?Break>#           ","?  
 ExpressionListLiteral   <Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]";
 ExpressionDictLiteral   <Break> ::= "["  ","? Property<?Break>#           ","?   "]";
 ExpressionSetLiteral    <Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}";
-ExpressionMapLiteral    <Break> ::= "{"  ","? Case<?Break>#               ","?   "}";
+ExpressionMapLiteral    <Break> ::= "{"  ","? CaseMap<?Break>#            ","?   "}";
 FunctionArguments       <Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")";
 
 ExpressionUnit<Block, Break> ::=

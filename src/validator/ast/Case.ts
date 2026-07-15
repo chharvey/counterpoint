@@ -6,7 +6,7 @@ import {AstNode} from './AstNode.ts';
 
 export class Case extends AstNode {
 	public constructor(
-		start_node: SyntaxNodeFamily<'case', ['break']>,
+		start_node: SyntaxNodeFamily<'case_map', ['break']>,
 		public readonly antecedent: EXPR.Expression,
 		public readonly consequent: EXPR.Expression,
 	) {

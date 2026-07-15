@@ -322,11 +322,11 @@ test.suite('Decorator', () => {
 				% (property)
 			`]],
 
-			['Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase', [AST.Case, `
+			['Decorate(CaseMap<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase', [AST.Case, `
 				{
 					{42 -> 6.9};
 				}
-				% (case)
+				% (case_map)
 			`]],
 
 			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex', [AST.Index, `
@@ -439,7 +439,7 @@ test.suite('Decorator', () => {
 				% (expression_set_literal)
 			`]],
 
-			['Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticExpressionMap', [AST.EXPR.Map, `
+			['Decorate(ExpressionMapLiteral<Break> ::= "{" ","? CaseMap<?Break># ","? "}") -> SemanticExpressionMap', [AST.EXPR.Map, `
 				{
 					{42 -> 6.9, "hello" -> true};
 				}

@@ -655,7 +655,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// Property
 		// tested in #RecordLiteral
 
-		// Case
+		// CaseMap
 		// tested in #MapLiteral
 
 		// PropertyAccessor
@@ -861,17 +861,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceExpressions(s(
 				'expression_map_literal',
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),

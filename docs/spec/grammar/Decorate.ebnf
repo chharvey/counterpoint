@@ -312,7 +312,7 @@ Decorate(Property<Break> ::= Word "=" Expression<+Block><?Break>) -> SemanticPro
 		Decorate(Expression<+Block><?Break>)
 	);
 
-Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase
+Decorate(CaseMap<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase
 	:= (SemanticCase
 		Decorate(Expression<+Block><?Break>)
 		Decorate(Expression<+Block><?Break>)
@@ -365,9 +365,9 @@ Decorate(ExpressionSetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># "
 		...ParseList(Expression<+Block><?Break>, SemanticExpression)
 	);
 
-Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticExpressionMap
+Decorate(ExpressionMapLiteral<Break> ::= "{" ","? CaseMap<?Break># ","? "}") -> SemanticExpressionMap
 	:= (SemanticExpressionMap
-		...ParseList(Case<?Break>, SemanticCase)
+		...ParseList(CaseMap<?Break>, SemanticCase)
 	);
 
 Decorate(FunctionArguments<Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")") -> Sequence<SemanticExpression>

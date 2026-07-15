@@ -109,7 +109,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                    AST.TYPE.Type;
 	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):       AST.EXPR.Template;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):       AST.Property;
-	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):       AST.Case;
+	public decorate(syntaxnode: SyntaxNodeFamily<'case_map',                  ['break']>):       AST.Case;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):       AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break']>):       AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_tuple_literal',  ['break']>):       AST.EXPR.Tuple;
@@ -286,8 +286,8 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^case(__break)?$/, (node) => new AST.Case(
-				node as SyntaxNodeFamily<'case', ['break']>,
+			[/^case_map(__break)?$/, (node) => new AST.Case(
+				node as SyntaxNodeFamily<'case_map', ['break']>,
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
@@ -327,7 +327,7 @@ export class Decorator {
 
 			[/^expression_map_literal(__break)?$/, (node) => new AST.EXPR.Map(
 				node as SyntaxNodeFamily<'expression_map_literal', ['break']>,
-				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'case'>)) as NonemptyArray<AST.Case>,
+				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'case_map', ['break']>)) as NonemptyArray<AST.Case>,
 			)],
 
 			// NOTE: the following expression types (`_block` through `_disjunctive`) refer to aliases in the grammar --- no need for suffices

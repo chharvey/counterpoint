@@ -436,7 +436,7 @@ module.exports = grammar({
 		), 'break'),
 
 		...parameterize('property', ({break: brk}) => $ => seq($.word,                                        '=',  call($, '_expression', 'block', {break: brk})), 'break'),
-		...parameterize('case',     ({break: brk}) => $ => seq(call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
+		...parameterize('case_map', ({break: brk}) => $ => seq(call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
 
 		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
 
@@ -446,7 +446,7 @@ module.exports = grammar({
 		...parameterize('expression_list_literal',   ({break: brk}) => $ => seq('[', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ']'), 'break'),
 		...parameterize('expression_dict_literal',   ({break: brk}) => $ => seq('[',              OPT_COM, repCom1(call($, 'property',             {break: brk})), OPT_COM,   ']'), 'break'),
 		...parameterize('expression_set_literal',    ({break: brk}) => $ => seq('{', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), '}'), 'break'),
-		...parameterize('expression_map_literal',    ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case',                 {break: brk})), OPT_COM,   '}'), 'break'),
+		...parameterize('expression_map_literal',    ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk})), OPT_COM,   '}'), 'break'),
 		...parameterize('function_arguments',        ({break: brk}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ')'), 'break'),
 
 		...parameterize('_expression_unit', ({block, break: brk}) => $ => prec(12, choice(
