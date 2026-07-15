@@ -288,7 +288,7 @@ export class Decorator {
 
 			[/^case_map(__break)?$/, (node) => new AST.Case(
 				node as SyntaxNodeFamily<'case_map', ['break']>,
-				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
+				[this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>)],
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
