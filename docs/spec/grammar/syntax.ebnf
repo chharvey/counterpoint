@@ -145,8 +145,9 @@ Items<Break> ::=
 	| Expression<+Block><?Break>? "," Expression<+Block><?Break># ","?
 ;
 
-Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
-CaseMap  <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+Property   <Break> ::=                                          Word                       "="  Expression<+Block><?Break>;
+CaseMap    <Break> ::=                                          Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+CaseSwitch <Break> ::= "case" (Expression<+Block><?Break> "|")* Expression<+Block><?Break> "->" Expression<+Block><?Break>;
 
 PropertyAccessor<Break>
 	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break> "]";
@@ -216,9 +217,13 @@ ExpressionConditional<Break> ::=
 	& Expression<-Block><?Break>
 ;
 
+ExpressionSwitch<Break>
+	::= "switch" Expression<+Block><?Break> CaseSwitch<?Break>* "default" Expression<+Block><?Break>;
+
 Expression<Block, Break> ::=
 	| ExpressionDisjunctive<?Block><?Break>
 	| ExpressionConditional<?Break>
+	| ExpressionSwitch<?Break>
 ;
 
 

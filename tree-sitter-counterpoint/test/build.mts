@@ -658,6 +658,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// CaseMap
 		// tested in #MapLiteral
 
+		// CaseSwitch
+		// tested in #ExpressionSwitch
+
 		// PropertyAccessor
 		// tested in #{ExpressionCompound,Assignee}
 
@@ -1338,8 +1341,46 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		ExpressionSwitch: [
+			xjs.String.dedent`
+				{
+					switch a default z;
+					switch a case b -> g default z;
+					switch a case b -> d case e -> g default z;
+					switch a case b | c -> d case e | f -> g default z;
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier')),
+					s('case_switch', s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier'), s('identifier')),
+					s('case_switch', s('identifier'), s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+			),
+		],
+
 		// Expression
-		// consists of #Expression{Disjunctive,Conditional}
+		// consists of #Expression{Disjunctive,Conditional,Switch}
 
 
 		/* ## Statements */

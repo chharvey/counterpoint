@@ -329,6 +329,20 @@ test.suite('Decorator', () => {
 				% (case_map)
 			`]],
 
+			['todo: Decorate(CaseSwitch<Break> ::= "case" Expression__0<+Block><?Break> "->" Expression__1<+Block><?Break>) -> SemanticCase', [AST.Case, `
+				{
+					switch a case b -> g default z;
+				}
+				% (case_switch)
+			`]],
+
+			['todo: Decorate(CaseSwitch<Break> ::= "case" (Expression<+Block><?Break> "|")* Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase', [AST.Case, `
+				{
+					switch a case b | c | d -> g default z;
+				}
+				% (case_switch)
+			`]],
+
 			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex', [AST.Index, `
 				{
 					v.1;
@@ -633,6 +647,20 @@ test.suite('Decorator', () => {
 					if a then b else c;
 				}
 				% (expression_conditional)
+			`]],
+
+			['todo: Decorate(ExpressionSwitch<Break> ::= "switch" Expression<+Block><?Break> "default" Expression<+Block><?Break>) -> ???', [AST.EXPR.Operation, `
+				{
+					switch a default z;
+				}
+				% (expression_switch)
+			`]],
+
+			['todo: Decorate(ExpressionSwitch<Break> ::= "switch" Expression<+Block><?Break> CaseSwitch<?Break>+ "default" Expression<+Block><?Break>) -> ???', [AST.EXPR.Operation, `
+				{
+					switch a case b | c -> d case e | f -> g default z;
+				}
+				% (expression_switch)
 			`]],
 
 			/* ## Statements */
