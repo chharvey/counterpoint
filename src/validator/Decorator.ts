@@ -132,7 +132,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):          AST.EXPR.OperationTernary;
-	public decorate(syntaxnode: SyntaxNodeFamily<'expression_switch',      ['break']>):          AST.EXPR.Operation;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_switch',      ['break']>):          AST.EXPR.Switch;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                              AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',              ['break']>):           AST.EXPR.Variable | AST.EXPR.Access;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',  ['break']>):           AST.STMT.StatementExpression;
@@ -294,10 +294,11 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^case_switch(__break)?$/, (node) => {
-				node as SyntaxNodeFamily<'case_switch', ['break']>;
-				throw new Error('Decorate(CaseSwitch<Break>) not yet supported.');
-			}],
+			[/^case_switch(__break)?$/, (node) => new AST.Case(
+				node as SyntaxNodeFamily<'case_switch', ['break']>,
+				node.namedChildren.slice(0, -1).map((ant) => this.decorateExprNode(ant as SyntaxNodeSupertype<'expression'>)) as NonemptyArray<AST.EXPR.Expression>,
+				this.decorateExprNode(node.namedChildren.at(-1) as SyntaxNodeSupertype<'expression'>),
+			)],
 
 			[/^property_accessor(__break)?$/, (node) => (
 				isSyntaxNodeType(node.firstNamedChild, /integer|natural/) ? new AST.Index(node.firstNamedChild as SyntaxNodeType<'integer' | 'natural'>) :
@@ -547,10 +548,12 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(2) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^expression_switch(__break)?$/, (node) => {
-				node as SyntaxNodeFamily<'expression_switch', ['break']>;
-				throw new Error('Decorate(ExpressionSwitch<Break>) not yet supported.');
-			}],
+			[/^expression_switch(__break)?$/, (node) => new AST.EXPR.Switch(
+				node as SyntaxNodeFamily<'expression_switch', ['break']>,
+				this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+				node.namedChildren.slice(1, -1).map((kase) => this.decorate(kase as SyntaxNodeFamily<'case_switch', ['break']>)),
+				this.decorateExprNode(node.childForFieldName('expression_1') as SyntaxNodeSupertype<'expression'>),
+			)],
 
 			/* ## Statements */
 			[/^assignee(__break)?$/, (node) => {

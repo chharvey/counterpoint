@@ -664,8 +664,17 @@ Decorate(ExpressionConditional<Break> ::= "if" Expression__0<+Block><?Break> "th
 
 
 
-Decorate(ExpressionSwitch<Break> ::= "switch" Expression<+Block><?Break> "default" Expression<+Block><?Break>) -> ???
-Decorate(ExpressionSwitch<Break> ::= "switch" Expression<+Block><?Break> CaseSwitch<?Break>+ "default" Expression<+Block><?Break>) -> ???
+Decorate(ExpressionSwitch<Break> ::= "switch" Expression__0<+Block><?Break> "default" Expression__1<+Block><?Break>) -> SemanticExpressionSwitch
+	:= (SemanticExpressionSwitch
+		Decorate(Expression__0<+Block><?Break>)
+		Decorate(Expression__1<+Block><?Break>)
+	);
+Decorate(ExpressionSwitch<Break> ::= "switch" Expression__0<+Block><?Break> CaseSwitch<?Break>+ "default" Expression__1<+Block><?Break>) -> SemanticExpressionSwitch
+	:= (SemanticExpressionSwitch
+		Decorate(Expression__0<+Block><?Break>)
+		...ParseList(CaseSwitch<?Break>, SemanticCase)
+		Decorate(Expression__1<+Block><?Break>)
+	);
 
 
 
