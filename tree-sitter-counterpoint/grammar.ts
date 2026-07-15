@@ -324,6 +324,9 @@ module.exports = grammar({
 			'if',
 			'then',
 			'else',
+			'switch',
+			'case',
+			'default',
 			// storage
 			'type',
 			'val',
@@ -619,6 +622,9 @@ module.exports = grammar({
 			'if',
 			'then',
 			'else',
+			'switch',
+			'case',
+			'default',
 			// storage
 			'type',
 			'val',
