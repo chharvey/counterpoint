@@ -15,6 +15,7 @@ import {
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
+	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
 import {
@@ -65,6 +66,46 @@ test.suite('Expression', () => {
 					}`, {build: false}).stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 10),
 				);
+			});
+		});
+
+
+		test.suite('Switch', () => {
+			test.test('returns `nothing` if the compared value is type `nothing`.', () => {
+				assert_shallowStrictEqual(
+					setupScript(`{
+						switch 42 default true;
+						switch 42 as <nothing> default 43;
+					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					[
+						TYPE.TRUE,
+						TYPE.NOTHING,
+					],
+				);
+			});
+			test.test('returns the union of all cases’ consequents and the default.', () => {
+				assertEqualTypes(
+					setupScript(`{
+						switch 42 default 4.3;
+						switch 42
+							case 1.1 -> 10
+							case 2.2 -> 20
+						default 43;
+					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					[
+						typeUnit(4.3),
+						TYPE.Union.all(typeUnit(10n), typeUnit(20n), typeUnit(43n)),
+					],
+				);
+			});
+			test.test('throws when at least one antecedent is an error.', () => {
+				const {stmts} = setupScript(`{
+					switch 42
+						case 1.1       | 2.2 -> 15
+						case 33 / 10.0 | 4.4 -> 25
+					default 43;
+				}`, {typeCheck: false});
+				assert.throws(() => (stmts[0] as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorInvalidOperation);
 			});
 		});
 	});
