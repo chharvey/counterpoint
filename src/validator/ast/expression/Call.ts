@@ -1,7 +1,6 @@
 import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
-	type Temp,
 	type Builder,
 	OP,
 	TypeErrorNotNarrow,
@@ -207,11 +206,9 @@ export class Call extends Expression {
 			if (!this.exprargs.length) {
 				return new_obj;
 			}
-			const dest: Temp = builder.newTemp(new_obj);
-			const get_dest = new OP.Get(dest);
-			builder.pushInstruction(new OP.Decl(dest));
-			builder.pushInstruction(new OP.CollectionDynamicCopy(name, get_dest, this.exprargs[0].build(builder).asTac(builder)));
-			return get_dest;
+			const dest: OP.ValueTac = new_obj.asTac(builder);
+			builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
+			return dest;
 		} else {
 			return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
 				[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
