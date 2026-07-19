@@ -1,5 +1,5 @@
-import type {
-	Builder,
+import {
+	type Builder,
 	OP,
 } from '../../../index.ts';
 import {
@@ -44,8 +44,22 @@ export class Switch extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(builder: Builder): OP.Get {
-		builder;
-		throw new Error('Build(SemanticExpressionSwitch) not yet supported.');
+	public override build(builder: Builder): OP.Value {
+		if (!this.cases.length) {
+			builder.pushInstruction(new OP.Drop(this.value.build(builder)));
+			return this.default_.build(builder);
+		}
+		const this_type:  TYPE.Type   = this.type();
+		const this_value: OP.ValueTac = this.value.build(builder).asTac(builder);
+		return this.cases.flatMap((kase) => {
+			const consequent: () => OP.Value = () => kase.consequent.build(builder);
+			return kase.antecedents.map((ant) => ({
+				consequent,
+				condition: () => new OP.Binop(OP.OpCode.ID, this_value, ant.build(builder).asTac(builder), TYPE.BOOL),
+			}));
+		}).reduceRight(
+			(alternative, {condition, consequent}) => () => OP.conditional_expression(builder, this_type, condition, consequent, alternative),
+			() => this.default_.build(builder),
+		)();
 	}
 }
