@@ -43,7 +43,6 @@ export class Block extends AstNode implements Buildable {
 		private readonly config:           CplConfig,
 	) {
 		super(start_node, {}, children);
-		assert.ok(this.children.length, 'Expected Block to contain at least 1 statement.');
 	}
 
 	public override get validator(): Validator {
