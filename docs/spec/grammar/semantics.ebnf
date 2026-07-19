@@ -18,7 +18,7 @@ SemanticProperty
 	::= SemanticKey SemanticExpression;
 
 SemanticCase
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression+ SemanticExpression;
 
 
 
@@ -79,6 +79,7 @@ SemanticExpression =:=
 	| SemanticExpressionClaim
 	| SemanticExpressionIsset
 	| SemanticExpressionOperation
+	| SemanticExpressionSwitch
 ;
 
 
@@ -138,6 +139,9 @@ SemanticExpressionOperation[operator: ID | EQ | AND | OR]
 	::= SemanticExpression SemanticExpression;
 SemanticExpressionOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
+
+SemanticExpressionSwitch
+	::= SemanticExpression SemanticCase* SemanticExpression;
 
 
 

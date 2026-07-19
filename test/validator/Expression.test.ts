@@ -15,6 +15,7 @@ import {
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
 	AssignmentErrorDuplicateKey,
+	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
 import {
@@ -65,6 +66,46 @@ test.suite('Expression', () => {
 					}`, {build: false}).stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 10),
 				);
+			});
+		});
+
+
+		test.suite('Switch', () => {
+			test.test('returns `nothing` if the compared value is type `nothing`.', () => {
+				assert_shallowStrictEqual(
+					setupScript(`{
+						switch 42 default true;
+						switch 42 as <nothing> default 43;
+					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					[
+						TYPE.TRUE,
+						TYPE.NOTHING,
+					],
+				);
+			});
+			test.test('returns the union of all cases’ consequents and the default.', () => {
+				assertEqualTypes(
+					setupScript(`{
+						switch 42 default 4.3;
+						switch 42
+							case 1.1 -> 10
+							case 2.2 -> 20
+							default 43;
+					}`, {build: false}).stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					[
+						typeUnit(4.3),
+						TYPE.Union.all(typeUnit(10n), typeUnit(20n), typeUnit(43n)),
+					],
+				);
+			});
+			test.test('throws when at least one antecedent is an error.', () => {
+				const {stmts} = setupScript(`{
+					switch 42
+						case 1.1       | 2.2 -> 15
+						case 33 / 10.0 | 4.4 -> 25
+						default 43;
+				}`, {typeCheck: false});
+				assert.throws(() => (stmts[0] as AST.STMT.StatementExpression).expr!.typeCheck(), TypeErrorInvalidOperation);
 			});
 		});
 	});
@@ -306,6 +347,83 @@ test.suite('Expression', () => {
 					(DROP (ISSET e))
 					(DROP (ISSET f))
 					(DROP (ISSET g))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('Switch', () => {
+			assert.strictEqual(setupScript(`{
+				switch 42 default true;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (INT.CONST 42))
+					(DROP (BOOL.CONST true))
+					(ENDPROGRAM)
+			`.trim());
+			assert.strictEqual(setupScript(`{
+				switch 21 + 21
+					case 42 -> false
+					default true;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> $0 (INT.ADD (INT.CONST 21) (INT.CONST 21)))
+					(DECL <bool> $1)
+					(GOTO.IF (ID (GET $0) (INT.CONST 42)) "block-1" "block-2")
+				"block-1":
+					(SET $1 (BOOL.CONST false))
+					(GOTO "block-3")
+				"block-2":
+					(SET $1 (BOOL.CONST true))
+					(GOTO "block-3")
+				"block-3":
+					(DROP (GET $1))
+					(ENDPROGRAM)
+			`.trim());
+			assert.strictEqual(setupScript(`{
+				switch 4.2
+					case 1.1       -> 10
+					case 2.0 + 0.2 -> 20
+					case 3.3 | 4.4 -> 10 * 3
+					default 40;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <int> $0)
+					(GOTO.IF (ID (FLOAT.CONST 4.2) (FLOAT.CONST 1.1)) "block-1" "block-2")
+				"block-1":
+					(SET $0 (INT.CONST 10))
+					(GOTO "block-3")
+				"block-2":
+					(DECL <int> $1)
+					(DECL <float> $2 (FLOAT.ADD (FLOAT.CONST 2.0) (FLOAT.CONST 0.2)))
+					(GOTO.IF (ID (FLOAT.CONST 4.2) (GET $2)) "block-4" "block-5")
+				"block-4":
+					(SET $1 (INT.CONST 20))
+					(GOTO "block-6")
+				"block-5":
+					(DECL <int> $3)
+					(GOTO.IF (ID (FLOAT.CONST 4.2) (FLOAT.CONST 3.3)) "block-7" "block-8")
+				"block-7":
+					(SET $3 (INT.MUL (INT.CONST 10) (INT.CONST 3)))
+					(GOTO "block-9")
+				"block-8":
+					(DECL <int> $4)
+					(GOTO.IF (ID (FLOAT.CONST 4.2) (FLOAT.CONST 4.4)) "block-10" "block-11")
+				"block-10":
+					(SET $4 (INT.MUL (INT.CONST 10) (INT.CONST 3)))
+					(GOTO "block-12")
+				"block-11":
+					(SET $4 (INT.CONST 40))
+					(GOTO "block-12")
+				"block-12":
+					(SET $3 (GET $4))
+					(GOTO "block-9")
+				"block-9":
+					(SET $1 (GET $3))
+					(GOTO "block-6")
+				"block-6":
+					(SET $0 (GET $1))
+					(GOTO "block-3")
+				"block-3":
+					(DROP (GET $0))
 					(ENDPROGRAM)
 			`.trim());
 		});

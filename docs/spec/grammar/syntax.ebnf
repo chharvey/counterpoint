@@ -38,6 +38,9 @@ Word ::=
 		| "if"
 		| "then"
 		| "else"
+		| "switch"
+		| "case"
+		| "default"
 	// storage
 		| "type"
 		| "val"
@@ -142,8 +145,9 @@ Items<Break> ::=
 	| Expression<+Block><?Break>? "," Expression<+Block><?Break># ","?
 ;
 
-Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
-Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+Property   <Break> ::=                                          Word                       "="  Expression<+Block><?Break>;
+CaseMap    <Break> ::=                                          Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+CaseSwitch <Break> ::= "case" (Expression<+Block><?Break> "|")* Expression<+Block><?Break> "->" Expression<+Block><?Break>;
 
 PropertyAccessor<Break>
 	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break> "]";
@@ -154,7 +158,7 @@ ExpressionRecordLiteral <Break> ::= "("  ","? Property<?Break>#           ","?  
 ExpressionListLiteral   <Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]";
 ExpressionDictLiteral   <Break> ::= "["  ","? Property<?Break>#           ","?   "]";
 ExpressionSetLiteral    <Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}";
-ExpressionMapLiteral    <Break> ::= "{"  ","? Case<?Break>#               ","?   "}";
+ExpressionMapLiteral    <Break> ::= "{"  ","? CaseMap<?Break>#            ","?   "}";
 FunctionArguments       <Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")";
 
 ExpressionUnit<Block, Break> ::=
@@ -213,9 +217,13 @@ ExpressionConditional<Break> ::=
 	& Expression<-Block><?Break>
 ;
 
+ExpressionSwitch<Break>
+	::= "switch" Expression<+Block><?Break> CaseSwitch<?Break>* "default" Expression<+Block><?Break>;
+
 Expression<Block, Break> ::=
 	| ExpressionDisjunctive<?Block><?Break>
 	| ExpressionConditional<?Break>
+	| ExpressionSwitch<?Break>
 ;
 
 

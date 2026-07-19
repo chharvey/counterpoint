@@ -113,6 +113,7 @@ export type SyntaxNodeSupertype<C extends Category> = C extends 'type' ? (
 	| SyntaxNodeType<'expression_conjunctive'>
 	| SyntaxNodeType<'expression_disjunctive'>
 	| SyntaxNodeFamily<'expression_conditional', ['break']>
+	| SyntaxNodeFamily<'expression_switch',      ['break']>
 ) : C extends 'statement' ? (
 	| SyntaxNodeSupertype<'declaration'>
 	| SyntaxNodeFamily<'statement_expression',  ['break']>
@@ -136,7 +137,7 @@ export function isSyntaxNodeSupertype<C extends Category>(syntaxnode: SyntaxNode
 	}
 	return new Map<Category, (node: SyntaxNode) => boolean>([
 		['type',        (node) => isSyntaxNodeType(node, /^identifier|keyword_type|primitive_literal|type_grouped|type_(tuple|record|list|dict|set|map)_literal|type_(compound|unary_(symbol|keyword)|intersection|union)$/)],
-		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_(grouped|(tuple|record|list|dict|set|map)_literal)(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?)$/)],
+		['expression',  (node) => isSyntaxNodeType(node, /^identifier|primitive_literal|string_template(__break)?|expression_(grouped|(tuple|record|list|dict|set|map)_literal)(__break)?|expression_block|expression_(compound|unary_(symbol|keyword)|cast|exponential|multiplicative|additive|comparative|equality|conjunctive|disjunctive|conditional(__break)?|switch(__break)?)$/)],
 		['statement',   (node) => isSyntaxNodeType(node, /^declaration|statement_((expression|claim|set|delete)(__break)?|conditional(__unless)?(__break)?|loop|iteration|break)$/) || isSyntaxNodeSupertype(node, 'declaration')],
 		['declaration', (node) => isSyntaxNodeType(node, /^declaration_(type|variable(__break)?)$/)],
 	]).get(category)!(syntaxnode);

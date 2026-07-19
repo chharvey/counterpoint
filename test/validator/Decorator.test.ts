@@ -322,11 +322,25 @@ test.suite('Decorator', () => {
 				% (property)
 			`]],
 
-			['Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase', [AST.Case, `
+			['Decorate(CaseMap<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase', [AST.Case, `
 				{
 					{42 -> 6.9};
 				}
-				% (case)
+				% (case_map)
+			`]],
+
+			['Decorate(CaseSwitch<Break> ::= "case" Expression__0<+Block><?Break> "->" Expression__1<+Block><?Break>) -> SemanticCase', [AST.Case, `
+				{
+					switch a case b -> g default z;
+				}
+				% (case_switch)
+			`]],
+
+			['Decorate(CaseSwitch<Break> ::= "case" (Expression__0<+Block><?Break> "|")+ Expression__1<+Block><?Break> "->" Expression__2<+Block><?Break>) -> SemanticCase', [AST.Case, `
+				{
+					switch a case b | c | d -> g default z;
+				}
+				% (case_switch)
 			`]],
 
 			['Decorate(ExpressionCompound<Block, Break> > PropertyAccessor<Break> ::= INTEGER) -> SemanticIndex', [AST.Index, `
@@ -439,7 +453,7 @@ test.suite('Decorator', () => {
 				% (expression_set_literal)
 			`]],
 
-			['Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticExpressionMap', [AST.EXPR.Map, `
+			['Decorate(ExpressionMapLiteral<Break> ::= "{" ","? CaseMap<?Break># ","? "}") -> SemanticExpressionMap', [AST.EXPR.Map, `
 				{
 					{42 -> 6.9, "hello" -> true};
 				}
@@ -633,6 +647,20 @@ test.suite('Decorator', () => {
 					if a then b else c;
 				}
 				% (expression_conditional)
+			`]],
+
+			['Decorate(ExpressionSwitch<Break> ::= "switch" Expression__0<+Block><?Break> "default" Expression__1<+Block><?Break>) -> SemanticExpressionSwitch', [AST.EXPR.Switch, `
+				{
+					switch a default z;
+				}
+				% (expression_switch)
+			`]],
+
+			['Decorate(ExpressionSwitch<Break> ::= "switch" Expression__0<+Block><?Break> CaseSwitch<?Break>+ "default" Expression__1<+Block><?Break>) -> SemanticExpressionSwitch', [AST.EXPR.Switch, `
+				{
+					switch a case b | c -> d case e | f -> g default z;
+				}
+				% (expression_switch)
 			`]],
 
 			/* ## Statements */

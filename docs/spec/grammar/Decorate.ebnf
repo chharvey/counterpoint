@@ -312,10 +312,21 @@ Decorate(Property<Break> ::= Word "=" Expression<+Block><?Break>) -> SemanticPro
 		Decorate(Expression<+Block><?Break>)
 	);
 
-Decorate(Case<Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>) -> SemanticCase
+Decorate(CaseMap<Break> ::= Expression__0<+Block><?Break> "->" Expression__1<+Block><?Break>) -> SemanticCase
 	:= (SemanticCase
-		Decorate(Expression<+Block><?Break>)
-		Decorate(Expression<+Block><?Break>)
+		Decorate(Expression__0<+Block><?Break>)
+		Decorate(Expression__1<+Block><?Break>)
+	);
+
+Decorate(CaseSwitch<Break> ::= "case" Expression__0<+Block><?Break> "->" Expression__1<+Block><?Break>) -> SemanticCase
+	:= (SemanticCase
+		Decorate(Expression__0<+Block><?Break>)
+		Decorate(Expression__1<+Block><?Break>)
+	);
+Decorate(CaseSwitch<Break> ::= "case" (Expression__0<+Block><?Break> "|")+ Expression__1<+Block><?Break> "->" Expression__2<+Block><?Break>) -> SemanticCase
+	:= (SemanticCase
+		...ParseList((Expression__0<+Block><?Break> "|")+ Expression__1<+Block><?Break> =:: Expression<+Block><?Break>__List "|" Expression<+Block><?Break>, SemanticExpression)
+		Decorate(Expression__2<+Block><?Break>)
 	);
 
 
@@ -365,9 +376,9 @@ Decorate(ExpressionSetLiteral<Break> ::= "{" (","? Expression<+Block><?Break># "
 		...ParseList(Expression<+Block><?Break>, SemanticExpression)
 	);
 
-Decorate(ExpressionMapLiteral<Break> ::= "{" ","? Case<?Break># ","? "}") -> SemanticExpressionMap
+Decorate(ExpressionMapLiteral<Break> ::= "{" ","? CaseMap<?Break># ","? "}") -> SemanticExpressionMap
 	:= (SemanticExpressionMap
-		...ParseList(Case<?Break>, SemanticCase)
+		...ParseList(CaseMap<?Break>, SemanticCase)
 	);
 
 Decorate(FunctionArguments<Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")") -> Sequence<SemanticExpression>
@@ -653,10 +664,26 @@ Decorate(ExpressionConditional<Break> ::= "if" Expression__0<+Block><?Break> "th
 
 
 
+Decorate(ExpressionSwitch<Break> ::= "switch" Expression__0<+Block><?Break> "default" Expression__1<+Block><?Break>) -> SemanticExpressionSwitch
+	:= (SemanticExpressionSwitch
+		Decorate(Expression__0<+Block><?Break>)
+		Decorate(Expression__1<+Block><?Break>)
+	);
+Decorate(ExpressionSwitch<Break> ::= "switch" Expression__0<+Block><?Break> CaseSwitch<?Break>+ "default" Expression__1<+Block><?Break>) -> SemanticExpressionSwitch
+	:= (SemanticExpressionSwitch
+		Decorate(Expression__0<+Block><?Break>)
+		...ParseList(CaseSwitch<?Break>, SemanticCase)
+		Decorate(Expression__1<+Block><?Break>)
+	);
+
+
+
 Decorate(Expression<Block, Break> ::= ExpressionDisjunctive<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionDisjunctive<?Block><?Break>);
-Decorate(Expression<Block, Break> ::= ExpressionConditional) -> SemanticExpression
-	:= Decorate(ExpressionConditional);
+Decorate(Expression<Block, Break> ::= ExpressionConditional<?Break>) -> SemanticExpression
+	:= Decorate(ExpressionConditional<?Break>);
+Decorate(Expression<Block, Break> ::= ExpressionSwitch<?Break>) -> SemanticExpression
+	:= Decorate(ExpressionSwitch<?Break>);
 
 
 
@@ -861,7 +888,7 @@ Decorate(SourceFile ::= #x02 Block #x03) -> SemanticGoal
 
 ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode) -> Sequence<AstNode>
 	:= [Decorate(ParseNode)];
-ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode__List ","? ParseNode) -> Sequence<AstNode>
+ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode__List ("," | "|")? ParseNode) -> Sequence<AstNode>
 	:= [
 		...Decorate(ParseNode__List),
 		Decorate(ParseNode),

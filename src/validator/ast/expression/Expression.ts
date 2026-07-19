@@ -20,12 +20,13 @@ import {AstNode} from '../AstNode.ts';
  * - Template
  * - Variable
  * - Collection
+ * - ExpressionBlock
  * - Access
  * - Call
  * - Claim
  * - Isset
- * - ExpressionBlock
  * - Operation
+ * - Switch
  *
  * Known subinterfaces:
  * - Reassignable

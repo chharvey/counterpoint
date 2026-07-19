@@ -426,6 +426,24 @@ Type! TypeOf(SemanticExpressionOperation[operator: COND] expr) :=
 
 
 
+Type! TypeOf(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticCase* SemanticExpression__1) :=
+	1. *Let* `t_value` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(t_value)` is `true`:
+		1. *Return:* `Nothing`.
+	3. *Let* `union` be `Nothing`.
+	4. *For each* `case` in `SemanticCase*`:
+		1. *Assert:* `case` matches `SemanticCase ::= SemanticExpression__2+ SemanticExpression__3`.
+		2. *For each* `ant` in `SemanticExpression__2+`:
+			1. *Perform:* *Unwrap:* `TypeOf(ant)`;
+		3. *Let* `t_con` be *Unwrap:* `TypeOf(SemanticExpression__3)`.
+		4. *Set* `union` to *UnwrapAffirm:* `Union(union, t_con)`.
+	5. *Let* `t_default` be *Unwrap:* `TypeOf(SemanticExpression__1)`.
+	6. *Set* `union` to *UnwrapAffirm:* `Union(union, t_default)`.
+	7. *Return:* `union`.
+;
+
+
+
 Type ToType(Or<Null, Boolean, Symbol, Number, String> v) :=
 	1. *Return:* a new Type containing only the value `v`.
 ;

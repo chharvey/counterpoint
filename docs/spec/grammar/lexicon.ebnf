@@ -74,6 +74,9 @@ KeywordOther :::=
 		| "if"
 		| "then"
 		| "else"
+		| "switch"
+		| "case"
+		| "default"
 	// storage
 		| "type"
 		| "val"
