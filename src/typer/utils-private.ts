@@ -85,7 +85,8 @@ const BINOP_CACHE = new Map<string, WeakMap<object, WeakMap<object, unknown>>>()
  */
 export function memoizeBinOp<Proto extends object, Return>(is_symmetric = false, assumption?: Return): MethodDecorator<Proto, (this: Proto, that: Proto) => Return> {
 	return (method, context) => {
-		const method_name: string = String(context.name);
+		const method_name: string = context.name.toString();
+		// TODO: Map#getOrInsertComputed
 		BINOP_CACHE.has(method_name) || BINOP_CACHE.set(method_name, new WeakMap<Proto, WeakMap<Proto, Return>>());
 		const left_cache = BINOP_CACHE.get(method_name) as WeakMap<Proto, WeakMap<Proto, Return>>;
 		return function (that) {

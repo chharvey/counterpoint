@@ -38,6 +38,9 @@ Word ::=
 		| "if"
 		| "then"
 		| "else"
+		| "switch"
+		| "case"
+		| "default"
 	// storage
 		| "type"
 		| "val"
@@ -153,8 +156,9 @@ Items<Break, Return> ::=
 	| Expression<+Block><?Break><?Return>? "," Expression<+Block><?Break><?Return># ","?
 ;
 
-Property <Break, Return> ::= Word                                "="  Expression<+Block><?Break><?Return>;
-Case     <Break, Return> ::= Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>;
+Property   <Break, Return> ::=                                                   Word                                "="  Expression<+Block><?Break><?Return>;
+CaseMap    <Break, Return> ::=                                                   Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>;
+CaseSwitch <Break, Return> ::= "case" (Expression<+Block><?Break><?Return> "|")* Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>;
 
 ParameterFunction<Named> ::= (
 	| <Named+>(Word "=") ("_" | "mut"? IDENTIFIER)
@@ -175,7 +179,7 @@ ExpressionRecordLiteral <Break, Return> ::= "("  ","? Property           <?Break
 ExpressionListLiteral   <Break, Return> ::= "[" (","? Expression <+Block><?Break><?Return># ","?)? "]";
 ExpressionDictLiteral   <Break, Return> ::= "["  ","? Property           <?Break><?Return># ","?   "]";
 ExpressionSetLiteral    <Break, Return> ::= "{" (","? Expression <+Block><?Break><?Return># ","?)? "}";
-ExpressionMapLiteral    <Break, Return> ::= "{"  ","? Case               <?Break><?Return># ","?   "}";
+ExpressionMapLiteral    <Break, Return> ::= "{"  ","? CaseMap            <?Break><?Return># ","?   "}";
 FunctionArguments       <Break, Return> ::= "(" (","? Expression <+Block><?Break><?Return># ","?)? ")";
 
 ExpressionUnit<Block, Break, Return> ::=
@@ -234,12 +238,16 @@ ExpressionConditional<Break, Return> ::=
 	& Expression<-Block><?Break><?Return>
 ;
 
+ExpressionSwitch<Break, Return>
+	::= "switch" Expression<+Block><?Break><?Return> CaseSwitch<?Break><?Return>* "default" Expression<+Block><?Break><?Return>;
+
 ExpressionFunction
 	::= "\" "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
 
 Expression<Block, Break, Return> ::=
 	| ExpressionDisjunctive<?Block><?Break><?Return>
 	| ExpressionConditional<?Break><?Return>
+	| ExpressionSwitch<?Break><?Return>
 	| ExpressionFunction
 ;
 

@@ -324,6 +324,9 @@ module.exports = grammar({
 			'if',
 			'then',
 			'else',
+			'switch',
+			'case',
+			'default',
 			// storage
 			'type',
 			'val',
@@ -446,8 +449,9 @@ module.exports = grammar({
 			seq(optional(call($, '_expression', 'block', {break: brk}, {return: rtn})), ',', repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM),
 		), 'break', 'return'),
 
-		...parameterize('property', ({break: brk, return: rtn}) => $ => seq($.word,                                                       '=',  call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
-		...parameterize('case',     ({break: brk, return: rtn}) => $ => seq(call($, '_expression', 'block', {break: brk}, {return: rtn}), '->', call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
+		...parameterize('property',    ({break: brk, return: rtn}) => $ => seq(                                                                                        $.word,                                                       '=',  call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
+		...parameterize('case_map',    ({break: brk, return: rtn}) => $ => seq(                                                                                        call($, '_expression', 'block', {break: brk}, {return: rtn}), '->', call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
+		...parameterize('case_switch', ({break: brk, return: rtn}) => $ => seq('case', repeat(seq(call($, '_expression', 'block', {break: brk}, {return: rtn}), '|')), call($, '_expression', 'block', {break: brk}, {return: rtn}), '->', call($, '_expression', 'block', {break: brk}, {return: rtn})), 'break', 'return'),
 
 		...parameterize('parameter_function', ({named}) => $ => seq(choice(
 			seq(...iff(named, seq(field('word_0', $.word), '=')), choice('_', seq(optional(field('mut_0', 'mut')), field('identifier_0', $.identifier)))),
@@ -470,7 +474,7 @@ module.exports = grammar({
 		...parameterize('expression_list_literal',   ({break: brk, return: rtn}) => $ => seq('[', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), ']'), 'break', 'return'),
 		...parameterize('expression_dict_literal',   ({break: brk, return: rtn}) => $ => seq('[',              OPT_COM, repCom1(call($, 'property',             {break: brk}, {return: rtn})), OPT_COM,   ']'), 'break', 'return'),
 		...parameterize('expression_set_literal',    ({break: brk, return: rtn}) => $ => seq('{', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), '}'), 'break', 'return'),
-		...parameterize('expression_map_literal',    ({break: brk, return: rtn}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case',                 {break: brk}, {return: rtn})), OPT_COM,   '}'), 'break', 'return'),
+		...parameterize('expression_map_literal',    ({break: brk, return: rtn}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk}, {return: rtn})), OPT_COM,   '}'), 'break', 'return'),
 		...parameterize('function_arguments',        ({break: brk, return: rtn}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), ')'), 'break', 'return'),
 
 		...parameterize('_expression_unit', ({block, break: brk, return: rtn}) => $ => prec(12, choice(
@@ -517,6 +521,14 @@ module.exports = grammar({
 			call($, '_expression', {break: brk}, {return: rtn}),
 		), 'break', 'return'),
 
+		...parameterize('expression_switch', ({break: brk, return: rtn}) => $ => seq(
+			'switch',
+			field('expression_0', call($, '_expression', 'block', {break: brk}, {return: rtn})),
+			repeat(call($, 'case_switch', {break: brk}, {return: rtn})),
+			'default',
+			field('expression_1', call($, '_expression', 'block', {break: brk}, {return: rtn})),
+		), 'break', 'return'),
+
 		expression_function: $ => seq('\\', '(', optional($._parameters_function), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
 
 		...parameterize('_expression', ({block, break: brk, return: rtn}) => $ => choice(
@@ -535,6 +547,7 @@ module.exports = grammar({
 			alias(call($, 'expression_disjunctive',    {block}, {break: brk}, {return: rtn}), $.expression_disjunctive),
 
 			call($, 'expression_conditional', {break: brk}, {return: rtn}),
+			call($, 'expression_switch',      {break: brk}, {return: rtn}),
 			$.expression_function,
 		), 'block', 'break', 'return'),
 
@@ -656,6 +669,9 @@ module.exports = grammar({
 			'if',
 			'then',
 			'else',
+			'switch',
+			'case',
+			'default',
 			// storage
 			'type',
 			'val',

@@ -331,10 +331,21 @@ Decorate(Property<Break, Return> ::= Word "=" Expression<+Block><?Break><?Return
 		Decorate(Expression<+Block><?Break><?Return>)
 	);
 
-Decorate(Case<Break, Return> ::= Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>) -> SemanticCase
+Decorate(CaseMap<Break, Return> ::= Expression__0<+Block><?Break><?Return> "->" Expression__1<+Block><?Break><?Return>) -> SemanticCase
 	:= (SemanticCase
-		Decorate(Expression<+Block><?Break><?Return>)
-		Decorate(Expression<+Block><?Break><?Return>)
+		Decorate(Expression__0<+Block><?Break><?Return>)
+		Decorate(Expression__1<+Block><?Break><?Return>)
+	);
+
+Decorate(CaseSwitch<Break, Return> ::= "case" Expression__0<+Block><?Break><?Return> "->" Expression__1<+Block><?Break><?Return>) -> SemanticCase
+	:= (SemanticCase
+		Decorate(Expression__0<+Block><?Break><?Return>)
+		Decorate(Expression__1<+Block><?Break><?Return>)
+	);
+Decorate(CaseSwitch<Break, Return> ::= "case" (Expression__0<+Block><?Break><?Return> "|")+ Expression__1<+Block><?Break><?Return> "->" Expression__2<+Block><?Break><?Return>) -> SemanticCase
+	:= (SemanticCase
+		...ParseList((Expression__0<+Block><?Break><?Return> "|")+ Expression__1<+Block><?Break><?Return> =:: Expression<+Block><?Break><?Return>__List "|" Expression<+Block><?Break><?Return>, SemanticExpression)
+		Decorate(Expression__2<+Block><?Break><?Return>)
 	);
 
 
@@ -432,9 +443,9 @@ Decorate(ExpressionSetLiteral<Break, Return> ::= "{" (","? Expression<+Block><?B
 		...ParseList(Expression<+Block><?Break><?Return>, SemanticExpression)
 	);
 
-Decorate(ExpressionMapLiteral<Break, Return> ::= "{" ","? Case<?Break><?Return># ","? "}") -> SemanticExpressionMap
+Decorate(ExpressionMapLiteral<Break, Return> ::= "{" ","? CaseMap<?Break><?Return># ","? "}") -> SemanticExpressionMap
 	:= (SemanticExpressionMap
-		...ParseList(Case<?Break><?Return>, SemanticCase)
+		...ParseList(CaseMap<?Break><?Return>, SemanticCase)
 	);
 
 Decorate(FunctionArguments<Break, Return> ::= "(" (","? Expression<+Block><?Break><?Return># ","?)? ")") -> Sequence<SemanticExpression>
@@ -720,6 +731,20 @@ Decorate(ExpressionConditional<Break, Return> ::= "if" Expression__0<+Block><?Br
 
 
 
+Decorate(ExpressionSwitch<Break, Return> ::= "switch" Expression__0<+Block><?Break><?Return> "default" Expression__1<+Block><?Break><?Return>) -> SemanticExpressionSwitch
+	:= (SemanticExpressionSwitch
+		Decorate(Expression__0<+Block><?Break><?Return>)
+		Decorate(Expression__1<+Block><?Break><?Return>)
+	);
+Decorate(ExpressionSwitch<Break, Return> ::= "switch" Expression__0<+Block><?Break><?Return> CaseSwitch<?Break><?Return>+ "default" Expression__1<+Block><?Break><?Return>) -> SemanticExpressionSwitch
+	:= (SemanticExpressionSwitch
+		Decorate(Expression__0<+Block><?Break><?Return>)
+		...ParseList(CaseSwitch<?Break><?Return>, SemanticCase)
+		Decorate(Expression__1<+Block><?Break><?Return>)
+	);
+
+
+
 Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
 	:= (SemanticExpressionFunction
 		Decorate(Block<-Break><+Return>)
@@ -736,6 +761,8 @@ Decorate(Expression<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Bre
 	:= Decorate(ExpressionDisjunctive<?Block><?Break><?Return>);
 Decorate(Expression<Block, Break, Return> ::= ExpressionConditional<?Break><?Return>) -> SemanticExpressionOperation
 	:= Decorate(ExpressionConditional<?Break><?Return>);
+Decorate(Expression<Block, Break, Return> ::= ExpressionSwitch<?Break><?Return>) -> SemanticExpression
+	:= Decorate(ExpressionSwitch<?Break><?Return>);
 Decorate(Expression<Block, Break, Return> ::= ExpressionFunction) -> SemanticExpressionFunction
 	:= Decorate(ExpressionFunction);
 
@@ -970,7 +997,7 @@ Decorate(SourceFile ::= #x02 Block<-Break><-Return> #x03) -> SemanticGoal
 
 ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode) -> Sequence<AstNode>
 	:= [Decorate(ParseNode)];
-ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode__List ","? ParseNode) -> Sequence<AstNode>
+ParseList(ParseNode, AstNode)(ParseNode__List ::= ParseNode__List ("," | "|")? ParseNode) -> Sequence<AstNode>
 	:= [
 		...Decorate(ParseNode__List),
 		Decorate(ParseNode),

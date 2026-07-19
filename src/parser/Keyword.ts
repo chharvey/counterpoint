@@ -26,6 +26,9 @@ export enum Keyword {
 	IF      = 'if',
 	THEN    = 'then',
 	ELSE    = 'else',
+	SWITCH  = 'switch',
+	CASE    = 'case',
+	DEFAULT = 'default',
 
 	// storage
 	TYPE   = 'type',

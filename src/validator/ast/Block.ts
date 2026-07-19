@@ -47,7 +47,6 @@ export class Block extends AstNode implements Buildable {
 		private readonly isFuncBlock:      boolean,
 	) {
 		super(start_node, {}, children);
-		assert.ok(this.children.length, 'Expected Block to contain at least 1 statement.');
 	}
 
 	@memoizeGetter

@@ -293,6 +293,35 @@ Build(SemanticExpressionOperation[operator=COND] op) := [
 	return (GET $result).
 ];
 
+Build(SemanticExpressionSwitch ::= SemanticExpression__0 (SemanticCase ::= SemanticExpression__1+ SemanticExpression__2)* SemanticExpression__3) := [
+	(DECL ‹type› $result)
+	(GOTO.IF (ID `Build(SemanticExpression__0)` `Build(SemanticCase*[i].children[j])`) "then" "else")
+	"then":
+	(SET $result `Build(SemanticCase*[i].children.-1)`)
+	(GOTO "endif")
+	"else":
+	(SET $result `Build(SemanticExpressionSwitch ::= SemanticExpression__0 (SemanticCase ::= SemanticExpression__1.slice(1)+ SemanticExpression__2)* SemanticExpression__3)`)
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
+Build(SemanticExpressionSwitch ::= SemanticExpression__0 (SemanticCase ::= SemanticExpression__1 SemanticExpression__2)* SemanticExpression__3) := [
+	(DECL ‹type› $result)
+	(GOTO.IF (ID `Build(SemanticExpression__0)` `Build(SemanticCase*[i].children.0)`) "then" "else")
+	"then":
+	(SET $result `Build(SemanticCase*[i].children.1)`)
+	(GOTO "endif")
+	"else":
+	(SET $result `Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticCase.slice(1)* SemanticExpression__3)`)
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
+Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) := [
+	(DROP `Build(SemanticExpression__0)`)
+	return `Build(SemanticExpression__1)`.
+];
+
 Build(SemanticExpressionFunction); // TODO
 
 

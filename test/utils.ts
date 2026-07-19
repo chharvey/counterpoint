@@ -9,7 +9,6 @@ import {
 	VALUE,
 	TYPE,
 	Builder,
-	BinConst,
 	CodeGenerator,
 } from '../src/index.ts';
 
@@ -154,10 +153,12 @@ export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
 export function typeUnit(value: string, tag?: 'sym'): TYPE.Unit<VALUE.String>;
 export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
 	if (typeof value === 'string' && tag === 'sym') {
+		// TODO: Map#getOrInsertComputed
 		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).toType());
 		return TYPE_UNIT_MEMO_SYM.get(value)!;
 	}
 	if (typeof value === 'bigint' && tag === 'nat') {
+		// TODO: Map#getOrInsertComputed
 		TYPE_UNIT_MEMO_NAT.has(value) || TYPE_UNIT_MEMO_NAT.set(value, (
 			value === 0n ? VALUE.NAT_0 :
 			value === 1n ? VALUE.NAT_1 :
@@ -165,6 +166,7 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 		).toType());
 		return TYPE_UNIT_MEMO_NAT.get(value)!;
 	}
+	// TODO: Map#getOrInsertComputed
 	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
@@ -186,9 +188,9 @@ export function genConst(cg: CodeGenerator, value: bigint, tag?: 'nat'): binarye
 export function genConst(cg: CodeGenerator, value?: null | boolean | number | string): binaryen.ExpressionRef;
 export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, tag?: string): binaryen.ExpressionRef {
 	switch (value) {
-		case null:  { return cg.getConst(BinConst.NULL); }
-		case false: { return cg.getConst(BinConst.FALSE); }
-		case true:  { return cg.getConst(BinConst.TRUE); }
+		case null:
+		case false:
+		case true:  { return cg.getConst(value); }
 	}
 	if (typeof value === 'string' && tag === 'sym') {
 		return new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).codegen(cg);

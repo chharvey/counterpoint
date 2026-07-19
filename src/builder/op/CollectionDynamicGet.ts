@@ -1,10 +1,9 @@
 import * as assert from 'node:assert';
 import type binaryen from 'binaryen';
 import * as xjs from 'extrajs';
-import {
-	BinConst,
-	type CodeGenerator,
-	type Local,
+import type {
+	CodeGenerator,
+	Local,
 } from '../../index.ts';
 import {
 	assert_instanceof,
@@ -128,7 +127,7 @@ export class CollectionDynamicGet extends Value {
 					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
 					mod.if(
 						mod.ref.is_null(item.get()),
-						cg.getConst(BinConst.NULL),
+						cg.getConst(null),
 						mod.ref.as_non_null(item.get()),
 					),
 				], cg.vm.reftype.Value);
@@ -147,7 +146,7 @@ export class CollectionDynamicGet extends Value {
 							mod.ref.is_null(maybe_prop.get()),
 							Property.isTombstone(maybe_prop.get()),
 						),
-						cg.getConst(BinConst.NULL),
+						cg.getConst(null),
 						Property.field(maybe_prop.get()).val,
 					),
 				], cg.vm.reftype.Value);
@@ -166,8 +165,8 @@ export class CollectionDynamicGet extends Value {
 							mod.ref.is_null(maybe_case.get()),
 							Case.isTombstone(maybe_case.get()),
 						),
-						cg.getConst(BinConst.FALSE),
-						cg.getConst(BinConst.TRUE),
+						cg.getConst(false),
+						cg.getConst(true),
 					),
 				], cg.vm.reftype.Value);
 			}
@@ -185,7 +184,7 @@ export class CollectionDynamicGet extends Value {
 							mod.ref.is_null(maybe_case.get()),
 							Case.isTombstone(maybe_case.get()),
 						),
-						cg.getConst(BinConst.NULL),
+						cg.getConst(null),
 						Case.field(maybe_case.get()).con,
 					),
 				], cg.vm.reftype.Value);

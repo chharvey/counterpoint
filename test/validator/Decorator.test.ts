@@ -336,11 +336,25 @@ test.suite('Decorator', () => {
 				% (property)
 			`]],
 
-			['Decorate(Case<Break, Return> ::= Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>) -> SemanticCase', [AST.Case, `
+			['Decorate(CaseMap<Break, Return> ::= Expression<+Block><?Break><?Return> "->" Expression<+Block><?Break><?Return>) -> SemanticCase', [AST.Case, `
 				{
 					{42 -> 6.9};
 				}
-				% (case)
+				% (case_map)
+			`]],
+
+			['Decorate(CaseSwitch<Break> ::= "case" Expression__0<+Block><?Break> "->" Expression__1<+Block><?Break>) -> SemanticCase', [AST.Case, `
+				{
+					switch a case b -> g default z;
+				}
+				% (case_switch)
+			`]],
+
+			['Decorate(CaseSwitch<Break> ::= "case" (Expression__0<+Block><?Break> "|")+ Expression__1<+Block><?Break> "->" Expression__2<+Block><?Break>) -> SemanticCase', [AST.Case, `
+				{
+					switch a case b | c | d -> g default z;
+				}
+				% (case_switch)
 			`]],
 
 			['Decorate(ExpressionCompound<Block, Break, Return> > PropertyAccessor<Break, Return> ::= INTEGER) -> SemanticIndex', [AST.Index, `
@@ -453,7 +467,7 @@ test.suite('Decorator', () => {
 				% (expression_set_literal)
 			`]],
 
-			['Decorate(ExpressionMapLiteral<Break, Return> ::= "{" ","? Case<?Break><?Return># ","? "}") -> SemanticExpressionMap', [AST.EXPR.Map, `
+			['Decorate(ExpressionMapLiteral<Break, Return> ::= "{" ","? CaseMap<?Break><?Return># ","? "}") -> SemanticExpressionMap', [AST.EXPR.Map, `
 				{
 					{42 -> 6.9, "hello" -> true};
 				}
@@ -647,6 +661,20 @@ test.suite('Decorator', () => {
 					if a then b else c;
 				}
 				% (expression_conditional)
+			`]],
+
+			['Decorate(ExpressionSwitch<Break, Return> ::= "switch" Expression__0<+Block><?Break><?Return> "default" Expression__1<+Block><?Break><?Return>) -> SemanticExpressionSwitch', [AST.EXPR.Switch, `
+				{
+					switch a default z;
+				}
+				% (expression_switch)
+			`]],
+
+			['Decorate(ExpressionSwitch<Break, Return> ::= "switch" Expression__0<+Block><?Break><?Return> CaseSwitch<?Break><?Return>+ "default" Expression__1<+Block><?Break><?Return>) -> SemanticExpressionSwitch', [AST.EXPR.Switch, `
+				{
+					switch a case b | c -> d case e | f -> g default z;
+				}
+				% (expression_switch)
 			`]],
 
 			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `

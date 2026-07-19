@@ -111,7 +111,8 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                              AST.TYPE.Type;
 	public decorate(syntaxnode: SyntaxNodeFamily<'string_template', ['break', 'return']>):                 AST.EXPR.Template;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',        ['break', 'return']>):                 AST.Property;
-	public decorate(syntaxnode: SyntaxNodeFamily<'case',            ['break', 'return']>):                 AST.Case;
+	public decorate(syntaxnode: SyntaxNodeFamily<'case_map',        ['break', 'return']>):                 AST.Case;
+	public decorate(syntaxnode: SyntaxNodeFamily<'case_switch',     ['break', 'return']>):                 AST.Case;
 	public decorate(syntaxnode: SyntaxNodeFamily<'parameter_function', ['named']>):                        AST.ParameterFunction;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break', 'return']>):       AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break', 'return']>):       AST.EXPR.Expression;
@@ -134,6 +135,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                                 AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                                 AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break', 'return']>):          AST.EXPR.OperationTernary;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_switch',      ['break', 'return']>):          AST.EXPR.Switch;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_function'>):                                    AST.EXPR.Function;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                                        AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',              [          'break', 'return']>): AST.EXPR.Variable | AST.EXPR.Access;
@@ -298,10 +300,16 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^case(__break)?(__return)?$/, (node) => new AST.Case(
-				node as SyntaxNodeFamily<'case', ['break', 'return']>,
-				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
+			[/^case_map(__break)?(__return)?$/, (node) => new AST.Case(
+				node as SyntaxNodeFamily<'case_map', ['break', 'return']>,
+				[this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>)],
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
+			)],
+
+			[/^case_switch(__break)?(__return)?$/, (node) => new AST.Case(
+				node as SyntaxNodeFamily<'case_switch', ['break', 'return']>,
+				node.namedChildren.slice(0, -1).map((ant) => this.decorateExprNode(ant as SyntaxNodeSupertype<'expression'>)) as NonemptyArray<AST.EXPR.Expression>,
+				this.decorateExprNode(node.namedChildren.at(-1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			[/^parameter_function(__named)?$/, (node) => {
@@ -352,7 +360,7 @@ export class Decorator {
 
 			[/^expression_map_literal(__break)?(__return)?$/, (node) => new AST.EXPR.Map(
 				node as SyntaxNodeFamily<'expression_map_literal', ['break', 'return']>,
-				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeType<'case'>)) as NonemptyArray<AST.Case>,
+				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'case_map', ['break', 'return']>)) as NonemptyArray<AST.Case>,
 			)],
 
 			// NOTE: the following expression types (`_block` through `_disjunctive`) refer to aliases in the grammar --- no need for suffices
@@ -563,6 +571,13 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(2) as SyntaxNodeSupertype<'expression'>),
+			)],
+
+			[/^expression_switch(__break)?(__return)?$/, (node) => new AST.EXPR.Switch(
+				node as SyntaxNodeFamily<'expression_switch', ['break', 'return']>,
+				this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+				node.namedChildren.slice(1, -1).map((kase) => this.decorate(kase as SyntaxNodeFamily<'case_switch', ['break', 'return']>)),
+				this.decorateExprNode(node.childForFieldName('expression_1') as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			['expression_function', (node) => new AST.EXPR.Function(

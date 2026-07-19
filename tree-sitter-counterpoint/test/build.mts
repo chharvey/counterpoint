@@ -680,8 +680,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// Property
 		// tested in #RecordLiteral
 
-		// Case
+		// CaseMap
 		// tested in #MapLiteral
+
+		// CaseSwitch
+		// tested in #ExpressionSwitch
 
 		// ParameterFunction
 		// tested in #ParametersFunction
@@ -892,17 +895,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceExpressions(s(
 				'expression_map_literal',
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
@@ -921,6 +924,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		ExpressionCompound: [
 			xjs.String.dedent`
 				{
+					42.prop;
+					4.2.prop;
 					tuple.0;
 					tuple.-1;
 					tuple.+1;
@@ -942,6 +947,16 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				}
 			`,
 			sourceExpressions(
+				s(
+					'expression_compound',
+					f('expression_0', 'primitive_literal', s('integer')),
+					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'primitive_literal', s('float')),
+					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+				),
 				s(
 					'expression_compound',
 					f('expression_0', 'identifier'),
@@ -1357,6 +1372,44 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		ExpressionSwitch: [
+			xjs.String.dedent`
+				{
+					switch a default z;
+					switch a case b -> g default z;
+					switch a case b -> d case e -> g default z;
+					switch a case b | c -> d case e | f -> g default z;
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier')),
+					s('case_switch', s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier'), s('identifier')),
+					s('case_switch', s('identifier'), s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+			),
+		],
+
 		ExpressionFunction: [
 			xjs.String.dedent`
 				{
@@ -1393,7 +1446,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		],
 
 		// Expression
-		// consists of #Expression{Disjunctive,Conditional,Function}
+		// consists of #Expression{Disjunctive,Conditional,Switch,Function}
 
 
 		/* ## Statements */
