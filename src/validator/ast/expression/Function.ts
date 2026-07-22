@@ -1,6 +1,7 @@
 import * as xjs from 'extrajs';
-import type {
-	Builder,
+import {
+	type Temp,
+	type Builder,
 	OP,
 } from '../../../index.ts';
 import {
@@ -47,7 +48,7 @@ class ExpressionFunction extends Expression {
 	}
 
 	@memoizeMethod
-	public override type(): TYPE.Type {
+	public override type(): TYPE.Function {
 		return new TYPE.Function(
 			new TYPE.Tuple(this.parameters.filter((param) => !param.named).map((param) => ({
 				type:     param.typenode.eval(),
@@ -65,8 +66,12 @@ class ExpressionFunction extends Expression {
 
 
 	@memoizeMethod
-	public override build(_builder: Builder): OP.Value {
-		throw new Error('`ExpressionFunction#build` not yet supported.');
+	public override build(builder: Builder): OP.Function {
+		const temp: Temp = builder.newTemp(this.type());
+		return new OP.Function(temp.type as TYPE.Function, temp.name, this.source.replaceAll(/\s+/g, ' '), () => {
+			this.parameters.forEach((param) => param.build(builder));
+			this.block.build(builder);
+		});
 	}
 }
 export {ExpressionFunction as Function};

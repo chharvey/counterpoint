@@ -1,15 +1,10 @@
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
-import {
-	memoizeMethod,
-	runOnceMethod,
-} from '../../lib/index.ts';
-import {
-	type VALUE,
+import {memoizeMethod} from '../../lib/index.ts';
+import type {
+	VALUE,
 	TYPE,
 } from '../../typer/index.ts';
-import type {SymbolSchemaVar} from '../../validator/index.ts';
-import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
@@ -19,20 +14,16 @@ import {Value} from './Value.ts';
 /** A Counterpoint function value. */
 class OpFunction extends Value {
 	public constructor(
-		private readonly target: SymbolSchemaVar,
-		arity: bigint,
+		typ: TYPE.Function,
+		private readonly tempName: string,
+		private readonly source: string,
+		_instrs: () => void,
 	) {
-		super(OpCode.LAMBDA, TYPE.NOTHING);
-		arity;
+		super(OpCode.LAMBDA, typ);
 	}
 
 	public override toString(): string {
-		return super.toString(this.target.source);
-	}
-
-	@runOnceMethod
-	public override validate(builder: Builder): void {
-		return builder.setLocalStatus(this.target, 'set');
+		return super.toString(this.tempName, this.source);
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
