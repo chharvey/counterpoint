@@ -400,6 +400,10 @@ Boolean! Interpret((EQ `v0` `v1`)) :=
 	3. *Return:* `Equal(v0, v1)`.
 ;
 
+Function! Interpret((LAMBDA `name` `source`)) :=
+	1. *Return:* a new `Function`.
+;
+
 None! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;

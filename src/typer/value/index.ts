@@ -21,4 +21,6 @@ export * from './Dict.ts';
 export * from './Set.ts';
 export * from './Map.ts';
 
+export * from './Function.ts';
+
 export * from './exports.ts';

@@ -27,6 +27,7 @@ export function identical(
  * Known subclasses:
  * - Primitive
  * - Collection
+ * - ValueFunction
  */
 export abstract class Value {
 	/**

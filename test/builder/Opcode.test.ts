@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import binaryen from 'binaryen';
 import {
+	assert_instanceof,
 	Validator,
 	AST,
 	VALUE,
@@ -821,6 +822,21 @@ test.suite('Opcode', () => {
 						]);
 					});
 				});
+			});
+
+			test.suite('OpFunction', () => {
+				const {stmts, builder} = setupScript(`{
+					\\(x: int): void {
+						x;
+						return;
+					};
+				}`, {codegen: false});
+				const typ: TYPE.Type = (stmts[0] as AST.STMT.StatementExpression).expr!.type();
+				assert_instanceof(typ, TYPE.Function);
+				return assert.deepStrictEqual(
+					(builder.instructions[0] as OP.Drop).value.interpret(new Interpreter()),
+					new VALUE.Function(typ, '\\(x: int): void { x; return; }'),
+				);
 			});
 		});
 
