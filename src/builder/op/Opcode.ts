@@ -83,6 +83,8 @@ export enum OpCode {
 	/** @deprecated Phi nodes are unused for now but may be used later when we add SSA. SSA will be implemented as an IR optimization later. */
 	PHI,
 
+	LAMBDA,
+
 	DROP,
 	DECL,
 	SET,
@@ -96,8 +98,6 @@ export enum OpCode {
 	DICT_COPY,
 	SET_COPY,
 	MAP_COPY,
-
-	FUNC,
 
 	GOTO,
 	GOTO_IF,

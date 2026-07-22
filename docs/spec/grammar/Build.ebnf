@@ -95,6 +95,8 @@ GE([Number Number]) -> Boolean;
 ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
 
+LAMBDA(SymbolSchemaVar Integer);
+
 DROP([Value]);
 
 DECL(SymbolSchemaVar|native-string Type [Value?]);
@@ -109,8 +111,6 @@ LIST.COPY([Value Value]);
 DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
 MAP.COPY ([Value Value]);
-
-FUNC(SymbolSchemaVar Integer);
 
 
 
