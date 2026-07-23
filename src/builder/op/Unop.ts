@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
@@ -12,6 +12,7 @@ import {
 } from '../../typer/index.ts';
 import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
+import {drop_then} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -106,7 +107,7 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod} = cg;
+		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
 			case OpCode.ISNULL: { return op.isNull(code); }
@@ -121,36 +122,36 @@ export class Unop extends Value {
 			case OpCode.TOFLOAT: { return op.toFloat(code); }
 			case OpCode.TOSTR:   { return VmValue.stringify(code); }
 
-			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(List .count(VmValue.cast(code, reftype.List))))); }
-			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }
-			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
-			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
+			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List .count(VmValue.cast(code, reftype.List))))); }
+			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }
+			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
+			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
 		}
 	}
 
 	/* eslint-disable */
-	#optimizationStrategy(this: any, cg: CodeGenerator, Operator: any, t0: any, arg0: any, drop_then: any): number {
-		const {mod, vm: {Vect}} = cg;
+	#optimizationStrategy(this: any, cg: CodeGenerator, Operator: any, t0: any, arg0: any): number {
+		const {vm: {Vect}, mod: {wasm}} = cg;
 		if (this.type().isSubtypeOf(TYPE.TRUE)) {
-			return drop_then(mod, [arg0], true);
+			return drop_then(cg, [arg0], true);
 		} else if (this.type().isSubtypeOf(TYPE.FALSE)) {
-			return drop_then(mod, [arg0], false);
+			return drop_then(cg, [arg0], false);
 		}
 		if (this.operator === Operator.NOT) {
 			if (t0.isDefinitelyFalsy) {
-				return mod.block(null, [
-					mod.drop(arg0),
+				return wasm.block(null, [
+					wasm.drop(arg0),
 					Vect.TRUE,
 				], binaryen.v128);
 			} else if (t0.isDefinitelyTruthy) {
-				return mod.block(null, [
-					mod.drop(arg0),
+				return wasm.block(null, [
+					wasm.drop(arg0),
 					Vect.FALSE,
 				], binaryen.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
-			return mod.block(null, [
-				mod.drop(arg0),
+			return wasm.block(null, [
+				wasm.drop(arg0),
 				Vect.TRUE,
 			], binaryen.v128);
 		}

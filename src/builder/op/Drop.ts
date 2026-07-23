@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
@@ -33,13 +33,13 @@ export class Drop extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.mod.drop(this.value.codegen(cg));
+		return cg.mod.wasm.drop(this.value.codegen(cg));
 	}
 
 	/* eslint-disable */
 	#optimizationStrategy(this: any, cg: CodeGenerator): number {
-		if (!this.expr || !!this.expr.fold()) return cg.mod.nop();
-		return cg.mod.drop(this.expr!.build());
+		if (!this.expr || !!this.expr.fold()) return cg.mod.wasm.nop();
+		return cg.mod.wasm.drop(this.expr!.build());
 	}
 	/* eslint-enable */
 }

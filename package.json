@@ -32,7 +32,7 @@
     "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
     "precompile": "rm -rf ./dist/ && mkdir -p ./dist/vm/wat/ && cp -R ./src/vm/wat/ ./dist/vm/wat/",
     "compile": "tsc && tsc --project ./test/tsconfig.json",
-    "lint": "eslint",
+    "lint": "eslint ./",
     "test": "n exec 26 tsx --test --test-isolation=none -- './test/**/*.test.ts'",
     "test:only": "n exec 26 tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
     "justbuild": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
@@ -40,7 +40,7 @@
     "build": "npm run compile && npm run lint && npm run test"
   },
   "dependencies": {
-    "binaryen": "^129.0.0",
+    "binaryen.ts": "^0.1.0",
     "extrajs": "^0.27.0",
     "fast-deep-equal": "^3.1.3",
     "minimist": "^1.2.6",

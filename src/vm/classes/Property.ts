@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 import type {
@@ -34,10 +34,10 @@ export class Property implements HasFuncData {
 		/** @return `(struct.get $Property $key <ref>)` */ readonly key: binaryen.ExpressionRef /* i64 */,
 		/** @return `(struct.get $Property $val <ref>)` */ readonly val: binaryen.ExpressionRef /* (ref $Value) */,
 	} {
-		const {mod, reftype} = this.vm;
+		const {mod: {wasm}, reftype} = this.vm;
 		return {
-			get key() { return mod.struct.get(FIELD.KEY, ref, binaryen.i64); },
-			get val() { return mod.struct.get(FIELD.VAL, ref, reftype.Value); },
+			get key() { return wasm.struct.get(FIELD.KEY, ref, binaryen.i64); },
+			get val() { return wasm.struct.get(FIELD.VAL, ref, reftype.Value); },
 		};
 	}
 
@@ -58,6 +58,6 @@ export class Property implements HasFuncData {
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
 	 */
 	public isTombstone(prop: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Property.is-tombstone', [prop], binaryen.i32);
+		return this.vm.mod.wasm.call('Property.is-tombstone', [prop], binaryen.i32);
 	}
 }

@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
@@ -60,13 +60,10 @@ export class GotoConditional extends Terminator {
 			cg.getBlockRef(this._containerLabel!),
 			cg.getBlockRef(this.labelIfTrue),
 			cg.vm.Value.boolToI32(this.condition.codegen(cg)),
-			0,
 		);
 		relooper.addBranch(
 			cg.getBlockRef(this._containerLabel!),
 			cg.getBlockRef(this.labelIfFalse),
-			0, // else (default)
-			0,
-		);
+		); // else (default)
 	}
 }

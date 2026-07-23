@@ -1,8 +1,5 @@
-import type binaryen from 'binaryen';
-import {
-	bigint_to_i64,
-	type CodeGenerator,
-} from '../../index.ts';
+import type * as binaryen from 'binaryen.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -54,7 +51,7 @@ export class RecordGet extends Value {
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		return cg.vm.Record.get(
 			cg.vm.Value.cast(this.record.codegen(cg), cg.vm.reftype.Record),
-			bigint_to_i64(cg.mod, this.accessor.keyid, true),
+			cg.mod.wasm.i64.const(this.accessor.keyid),
 		);
 	}
 }

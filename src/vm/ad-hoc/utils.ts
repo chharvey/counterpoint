@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 import type {FuncImportData} from '../classes/HasFuncData.ts';
 
@@ -19,7 +19,7 @@ export function utils(vm: VirtualMachine) {
 
 
 		capacityNeeded: (param0: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* i32 */ => (
-			vm.mod.call('util:capacity-needed', [param0], binaryen.i32)
+			vm.mod.wasm.call('util:capacity-needed', [param0], binaryen.i32)
 		),
 	} as const;
 }

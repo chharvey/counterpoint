@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
 import type {Interpreter} from '../Interpreter.ts';
@@ -26,8 +26,6 @@ export class Goto extends Terminator {
 		relooper.addBranch(
 			cg.getBlockRef(this._containerLabel!),
 			cg.getBlockRef(this.label),
-			0, // unconditional
-			0,
-		);
+		); // unconditional
 	}
 }

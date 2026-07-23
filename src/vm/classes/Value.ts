@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 import type {
@@ -43,11 +43,11 @@ export class Value implements HasFuncData {
 		/** @return `(struct.get $Value $primitive <ref>)` */ readonly primitive: binaryen.ExpressionRef /* v128 */,
 		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* eqref */,
 	} {
-		const {mod} = this.vm;
+		const {wasm} = this.vm.mod;
 		return {
-			get tag()       { return mod.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
-			get primitive() { return mod.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
-			get composite() { return mod.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
+			get tag()       { return wasm.struct.get(FIELD.TAG,       ref, binaryen.i32, false); },
+			get primitive() { return wasm.struct.get(FIELD.PRIMITIVE, ref, binaryen.v128); },
+			get composite() { return wasm.struct.get(FIELD.COMPOSITE, ref, binaryen.eqref); },
 		};
 	}
 
@@ -59,46 +59,46 @@ export class Value implements HasFuncData {
 	 * @return        `(ref.cast (struct.get $Value $composite <value>) <reftype>)`
 	 */
 	public cast(value: binaryen.ExpressionRef /* (ref $Value) */, reftype: binaryen.Type): binaryen.ExpressionRef /* <reftype> */ {
-		return this.vm.mod.ref.cast(this.field(value).composite, reftype);
+		return this.vm.mod.wasm.ref.cast(this.field(value).composite, reftype);
 	}
 
 	/** Returns `(struct.new_default $Value)`, for deleting variables/parameters/fields. */
 	public newDefault(): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.struct.new_default(this.vm.heaptype.Value);
+		return this.vm.mod.wasm.struct.new_default(this.vm.heaptype.Value);
 	}
 
 	/** Creates a new Value struct storing the given v128 in its primitive slot. */
 	public newPrimitive(primitive: binaryen.ExpressionRef /* v128 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('Value.new-primitive', [primitive], this.vm.reftype.Value);
+		return this.vm.mod.wasm.call('Value.new-primitive', [primitive], this.vm.reftype.Value);
 	}
 
 	/** Creates a new Value struct storing the given reference in its composite slot. */
 	public newComposite(composite: binaryen.ExpressionRef /* (ref eq) */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('Value.new-composite', [composite], this.vm.reftype.Value);
+		return this.vm.mod.wasm.call('Value.new-composite', [composite], this.vm.reftype.Value);
 	}
 
 	/** Whether the value is primitive (tag == 1). */
 	public isPrimitive(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Value.is-primitive', [value], binaryen.i32);
+		return this.vm.mod.wasm.call('Value.is-primitive', [value], binaryen.i32);
 	}
 
 	/** Whether the value is composite (tag == 2). */
 	public isComposite(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Value.is-composite', [value], binaryen.i32);
+		return this.vm.mod.wasm.call('Value.is-composite', [value], binaryen.i32);
 	}
 
 	/** Converts this value (assuming it’s primitive and boolean) to i32. */
 	public boolToI32(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Value.bool-to-i32', [value], binaryen.i32);
+		return this.vm.mod.wasm.call('Value.bool-to-i32', [value], binaryen.i32);
 	}
 
 	/** Converts an i32 value to a $Value with a boolean primitive. */
 	public boolFromI32(bool: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('Value.bool-from-i32', [bool], this.vm.reftype.Value);
+		return this.vm.mod.wasm.call('Value.bool-from-i32', [bool], this.vm.reftype.Value);
 	}
 
 	/** Return a string representation of the value. */
 	public stringify(value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $String) */ {
-		return this.vm.mod.call('Value.stringify', [value], this.vm.reftype.String);
+		return this.vm.mod.wasm.call('Value.stringify', [value], this.vm.reftype.String);
 	}
 }

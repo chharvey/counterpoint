@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	VALUE,
-	bigint_to_i64,
 	CodeGenerator,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../utils.ts';
@@ -231,10 +230,10 @@ test.suite('Value', () => {
 
 		test.test('Symbol', () => {
 			const cg = new CodeGenerator();
-			const {vm: {Vect, Value}, mod} = cg;
+			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
-				[new VALUE.Symbol(0x100n, 'hello').codegen(cg)],
-				[Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, 0x100n)))],
+				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
+				Value.newPrimitive(Vect.newNat(wasm.i64.const(0x100n))),
 			);
 		});
 
@@ -255,10 +254,10 @@ test.suite('Value', () => {
 				(-5n) ** (2n * 3n),
 			];
 			const cg = new CodeGenerator();
-			const {vm: {Vect, Value}, mod} = cg;
+			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newInt(bigint_to_i64(mod, x)))),
+				data.map((x) => Value.newPrimitive(Vect.newInt(wasm.i64.const(x)))),
 			);
 		});
 
@@ -271,10 +270,10 @@ test.suite('Value', () => {
 				(42n ** 2n * 420n) % (2n ** 64n),
 			];
 			const cg = new CodeGenerator();
-			const {vm: {Vect, Value}, mod} = cg;
+			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, x, true)))),
+				data.map((x) => Value.newPrimitive(Vect.newNat(wasm.i64.const(x)))),
 			);
 		});
 
@@ -289,28 +288,28 @@ test.suite('Value', () => {
 				];
 				/* eslint-enable @stylistic/array-element-newline */
 				const cg = new CodeGenerator();
-				const {vm: {Vect, Value}, mod} = cg;
+				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
-					data.map((x) => Value.newPrimitive(Vect.newFloat(mod.f64.const(x)))),
+					data.map((x) => Value.newPrimitive(Vect.newFloat(wasm.f64.const(x)))),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
 				const cg = new CodeGenerator();
-				const {vm: {Vect, Value}, mod} = cg;
+				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
+					[wasm.f64.const(0.0), wasm.f64.ceil(wasm.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
 				);
 			});
 		});
 
 		test.test('String', () => {
 			const cg = new CodeGenerator();
-			const {vm: {Value}, mod} = cg;
+			const {vm: {Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),
-				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => mod.i32.const(c)))),
+				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => wasm.i32.const(c)))),
 			);
 		});
 	});

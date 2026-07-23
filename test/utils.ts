@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
@@ -113,10 +113,10 @@ export function assertEqualTypes(arg0: TYPE.Type | readonly TYPE.Type[] | Readon
 	}
 }
 
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(bins: ReadonlyMap<Ref, Ref>): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(arg0: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, arg1?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: readonly Ref[], expected: readonly Ref[]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(bins: ReadonlyMap<Ref, Ref>): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, arg1?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
 	if (arg0 instanceof Map) {
 		return assertEqualBins([...arg0.keys()], [...arg0.values()]);
 	} else if (Array.isArray(arg0)) {
@@ -236,7 +236,7 @@ export function setupScript(
 	readonly stmts:   NonNullable<typeof goal.block>['children'],
 	readonly builder: Builder,
 	readonly cg:      CodeGenerator,
-	readonly mod:     CodeGenerator['mod'],
+	readonly wasm:    binaryen.ExpressionBuilder,
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
 	const builder = new Builder();
@@ -255,6 +255,6 @@ export function setupScript(
 		builder,
 		cg,
 		stmts: goal.block.children,
-		mod:   cg.mod,
+		wasm:  cg.mod.wasm,
 	};
 }

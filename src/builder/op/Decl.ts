@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
@@ -94,11 +94,11 @@ export class Decl extends Instruction {
 		 * - `val mut _:     T = assigned_foldable;`
 		 * - `val mut _:     T = assigned_non_foldable;`
 		 */
-		if (!!this.assigned?.fold() && (!this.assignee || !this.writable)) return cg.mod.nop();
+		if (!!this.assigned?.fold() && (!this.assignee || !this.writable)) return cg.mod.wasm.nop();
 		const value: binaryen.ExpressionRef = this.assigned?.build() ?? VALUE.NULL.build(cg);
 		return this.assignee
 			? cg.teeLocal(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar, value).set()
-			: cg.mod.drop(value);
+			: cg.mod.wasm.drop(value);
 	}
 	/* eslint-enable */
 }
