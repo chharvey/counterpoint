@@ -95,7 +95,7 @@ GE([Number Number]) -> Boolean;
 ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
 
-LAMBDA(native-string native-string);
+LAMBDA(native-string native-bigint native-string);
 
 DROP([Value]);
 
@@ -322,7 +322,7 @@ Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) 
 	return `Build(SemanticExpression__1)`.
 ];
 
-Build(SemanticExpressionFunction) := (LAMBDA ‹temp_name› SemanticExpressionFunction.source);
+Build(SemanticExpressionFunction) := (LAMBDA ‹temp_name› ‹arity› `SemanticExpressionFunction.source`);
 
 
 
