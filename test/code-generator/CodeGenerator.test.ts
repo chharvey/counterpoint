@@ -262,6 +262,15 @@ test.suite('CodeGenerator', () => {
 				], cg.vm.reftype.Map),
 			);
 		});
+		test.test('`#codegenFunction` (struct.new) with id and arity.', () => {
+			assertEqualBins(
+				cg.codegenFunction(3n),
+				mod.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					mod.i32.const(3),
+				], cg.vm.heaptype.Function),
+			);
+		});
 
 		test.test('Records: hashing collisions are resolved in source order.', () => {
 			`{
