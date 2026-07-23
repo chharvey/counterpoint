@@ -31,8 +31,7 @@ class OpFunction extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		cg;
-		throw new Error('`OpFunction#codegen` not yet supported.');
+		return cg.vm.Value.newComposite(cg.codegenFunction(this.type.minArity));
 	}
 }
 export {OpFunction as Function};

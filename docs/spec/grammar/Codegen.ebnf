@@ -270,6 +270,13 @@ Codegen((GE `v0` `v1`)) := (call $op:ge `Codegen(v0)` `Codegen(v1)`);
 Codegen((ID `v0` `v1`)) := (call $op:id `Codegen(v0)` `Codegen(v1)`);
 Codegen((EQ `v0` `v1`)) := (call $op:eq `Codegen(v0)` `Codegen(v1)`);
 
+Codegen((LAMBDA `name` `source`)) := (call $Value.new-composite
+	(struct.new $Function
+		(call $Object.ctr-plus-plus)
+		(i32.const `LAMBDA.type.minArity`)
+	)
+);
+
 Codegen((DROP `v`)) := (drop `Codegen(v)`);
 
 Codegen((DECL `id` `type` `v`)) := (local.set ‹index› `id` `Codegen(v)`);

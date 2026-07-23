@@ -1708,6 +1708,19 @@ test.suite('Opcode', () => {
 					],
 				);
 			});
+
+			test.test('OpFunction', () => {
+				const {stmts, builder, cg} = setupScript(`{
+					\\(x: int, $y: int, zulu= z: int): void {
+						x * y + z;
+						return;
+					};
+				}`);
+				return assertEqualBins(
+					(stmts[0] as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg),
+					cg.vm.Value.newComposite(cg.codegenFunction(3n)),
+				);
+			});
 		});
 	});
 
