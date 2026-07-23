@@ -86,4 +86,15 @@
 		;; the array of Map cases; mutable to allow reallocation
 		(field $internal (mut (ref $MapInternal)))
 	)))
+
+	;; precursor to the `Function` class
+	(type $Function (sub $Object (struct
+		;; --- inherited ---
+		;; unique id for hashing
+		(field $id i64)
+
+		;; --- own ---
+		;; number of functional parameters
+		(field $arity (mut i32))
+	)))
 )
