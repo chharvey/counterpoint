@@ -35,6 +35,7 @@ type TypeKey = (
 	| 'List'
 	| 'Dict'
 	| 'Map'
+	| 'Function'
 );
 
 
@@ -291,6 +292,16 @@ export class VirtualMachine {
 		tb.setSubType(i_map, tb.getTempHeapType(i_object));
 		tb.setOpen(i_map);
 
+		/* (type $Function ...) */
+		const i_function: number = tb.getSize();
+		tb.grow(1);
+		tb.setStructType(i_function, [
+			/* $id */    TypeBuilder_makeField(binaryen.i64),
+			/* $arity */ TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
+		]);
+		tb.setSubType(i_function, tb.getTempHeapType(i_object));
+		tb.setOpen(i_function);
+
 		const heaptypes: readonly binaryen.Type[] = tb.buildAndDispose();
 
 		// @ts-expect-error --- WASM 3.0 (incl. GC) not typed yet
@@ -311,6 +322,7 @@ export class VirtualMachine {
 				List:         heaptypes[i_list],
 				Dict:         heaptypes[i_dict],
 				Map:          heaptypes[i_map],
+				Function:     heaptypes[i_function],
 			},
 
 			reftypeRegistry: {
@@ -327,6 +339,7 @@ export class VirtualMachine {
 				List:         getTypeFromHeapType(heaptypes[i_list],          false),
 				Dict:         getTypeFromHeapType(heaptypes[i_dict],          false),
 				Map:          getTypeFromHeapType(heaptypes[i_map],           false),
+				Function:     getTypeFromHeapType(heaptypes[i_function],      false),
 			},
 
 			reftypeNullRegistry: {

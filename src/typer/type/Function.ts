@@ -36,6 +36,12 @@ class TypeFunction extends ReferenceType {
 		super(new Set<VALUE.Value>(), false); // TODO: VALUE.Function
 	}
 
+
+	public get minArity(): bigint {
+		return this.typeargParamsPosit.minCount + this.typeargParamsNamed.minCount;
+	}
+
+
 	public override toString(): string {
 		const posit_params: string = this.typeargParamsPosit.typeargs.length > 1
 			? this.typeargParamsPosit.toString().slice(1, -1)

@@ -95,6 +95,8 @@ GE([Number Number]) -> Boolean;
 ID([Value Value]) -> Boolean;
 EQ([Value Value]) -> Boolean;
 
+LAMBDA(native-string native-bigint native-string);
+
 DROP([Value]);
 
 DECL(SymbolSchemaVar|native-string Type [Value?]);
@@ -109,8 +111,6 @@ LIST.COPY([Value Value]);
 DICT.COPY([Value Value]);
 SET.COPY ([Value Value]);
 MAP.COPY ([Value Value]);
-
-FUNC(SymbolSchemaVar Integer);
 
 
 
@@ -322,7 +322,7 @@ Build(SemanticExpressionSwitch ::= SemanticExpression__0 SemanticExpression__1) 
 	return `Build(SemanticExpression__1)`.
 ];
 
-Build(SemanticExpressionFunction); // TODO
+Build(SemanticExpressionFunction) := (LAMBDA ‹temp_name› ‹arity› `SemanticExpressionFunction.source`);
 
 
 

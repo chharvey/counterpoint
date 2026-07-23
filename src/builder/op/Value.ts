@@ -37,6 +37,7 @@ import {
  * - Unop
  * - Binop
  * - Phi
+ * - OpFunction
  */
 export abstract class Value extends Opcode {
 	/**

@@ -414,7 +414,7 @@ test.suite('Expression', () => {
 					(DROP (GET $1))
 					(ENDPROGRAM)
 			`.trim());
-			assert.strictEqual(setupScript(`{
+			return assert.strictEqual(setupScript(`{
 				switch 4.2
 					case 1.1       -> 10
 					case 2.0 + 0.2 -> 20
@@ -460,6 +460,23 @@ test.suite('Expression', () => {
 					(GOTO "block-3")
 				"block-3":
 					(DROP (GET $0))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('ExpressionFunction', () => {
+			assert.strictEqual(setupScript(`{
+				\\(x: int): void {
+					x;
+					return;
+				};
+				\\(x: float, y: float): void {
+					x + y;
+					return;
+				};
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (LAMBDA $0 \\(x: int): void { x; return; }))
+					(DROP (LAMBDA $1 \\(x: float, y: float): void { x + y; return; }))
 					(ENDPROGRAM)
 			`.trim());
 		});

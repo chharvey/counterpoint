@@ -11,10 +11,9 @@ import {Opcode} from './Opcode.ts';
  * Known subclasses:
  * - Drop
  * - Decl
- * - Set
+ * - OpSet
  * - CollectionDynamicSet
  * - CollectionDynamicCopy
- * - Func
  */
 export abstract class Instruction extends Opcode {
 	/**

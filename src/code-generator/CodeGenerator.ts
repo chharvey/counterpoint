@@ -353,6 +353,19 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Function`.
+	 * @param arity the number of functional arguments
+	 * @return      `(struct.new $Function <arity>)`
+	 */
+	public codegenFunction(arity: bigint): binaryen.ExpressionRef /* Function */ {
+		const {vm: {heaptype, Object: VmObject}, mod} = this;
+		return mod.struct.new([
+			VmObject.ctrPlusPlus(),
+			mod.i32.const(Number(arity)),
+		], heaptype.Function);
+	}
+
+	/**
 	 * Prepare the main function in this binaryen Module, then performs validation.
 	 * The main function should contain generated code for a program.
 	 * @param body the body of the main function
