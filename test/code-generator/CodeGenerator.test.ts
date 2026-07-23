@@ -1,9 +1,6 @@
 import * as test from 'node:test';
-import type binaryen from 'binaryen';
-import {
-	bigint_to_i64,
-	CodeGenerator,
-} from '../../src/index.ts';
+import type * as binaryen from 'binaryen.ts';
+import {CodeGenerator} from '../../src/index.ts';
 import {
 	repeat,
 	assertEqualBins,
@@ -14,36 +11,36 @@ import {
 
 
 test.suite('CodeGenerator', () => {
-	let cg:  CodeGenerator;
-	let mod: CodeGenerator['mod'];
+	let cg:   CodeGenerator;
+	let wasm: binaryen.ExpressionBuilder;
 
 	test.beforeEach(() => {
 		cg = new CodeGenerator();
-		mod = cg.mod;
+		wasm = cg.vm.mod.wasm;
 	});
 
 
 	test.suite('#newVect', () => {
 		test.test('returns `unreachable` arg.', () => {
 			assertEqualBins(
-				cg.newVect(mod.unreachable()),
-				mod.unreachable(),
+				cg.newVect(wasm.unreachable()),
+				wasm.unreachable(),
 			);
 		});
 		test.test('returns v128.', () => {
 			const {Vect} = cg.vm;
 			assertEqualBins([
-				cg.newVect(bigint_to_i64(mod, 42n)),
-				cg.newVect(bigint_to_i64(mod, 42n, true), {unsigned: true}),
-				cg.newVect(mod.f64.const(4.2)),
+				cg.newVect(wasm.i64.const(42n)),
+				cg.newVect(wasm.i64.const(42n), {unsigned: true}),
+				cg.newVect(wasm.f64.const(4.2)),
 				cg.newVect(Vect.TRUE),
-				cg.newVect(Vect.newInt(bigint_to_i64(mod, 42n))),
+				cg.newVect(Vect.newInt(wasm.i64.const(42n))),
 			], ([
-				Vect.newInt(bigint_to_i64(mod, 42n)),
-				Vect.newNat(bigint_to_i64(mod, 42n, true)),
-				Vect.newFloat(mod.f64.const(4.2)),
+				Vect.newInt(wasm.i64.const(42n)),
+				Vect.newNat(wasm.i64.const(42n)),
+				Vect.newFloat(wasm.f64.const(4.2)),
 				Vect.TRUE,
-				Vect.newInt(bigint_to_i64(mod, 42n)),
+				Vect.newInt(wasm.i64.const(42n)),
 			]));
 		});
 	});
@@ -52,8 +49,8 @@ test.suite('CodeGenerator', () => {
 	test.suite('#newProperty', () => {
 		test.test('returns `unreachable` arg.', () => {
 			assertEqualBins(
-				cg.newProperty(0x10n, mod.unreachable()),
-				mod.unreachable(),
+				cg.newProperty(0x10n, wasm.unreachable()),
+				wasm.unreachable(),
 			);
 		});
 		test.test('returns `(struct.new $Property)`.', () => {
@@ -68,8 +65,8 @@ test.suite('CodeGenerator', () => {
 				[0x103n, genConst(cg, 42n)],
 				[0x104n, Value.newPrimitive(Vect.FALSE)],
 				[0x105n, genConst(cg, 4.2)],
-			] as const).map(([id, code]) => mod.struct.new([
-				bigint_to_i64(mod, id, true),
+			] as const).map(([id, code]) => wasm.struct.new([
+				wasm.i64.const(id),
 				code,
 			], cg.vm.heaptype.Property)));
 		});
@@ -80,20 +77,20 @@ test.suite('CodeGenerator', () => {
 		test.test('empty `#codegenString`.', () => {
 			assertEqualBins(
 				cg.codegenString(),
-				mod.array.new_fixed(cg.vm.heaptype.String, []),
+				wasm.array.new_fixed(cg.vm.heaptype.String, []),
 			);
 		});
 		test.test('`#codegenTuple` returns (array.new_fixed).', () => {
 			const codeunits = [0x68, 0x65, 0x6c, 0x6c, 0x6f] as const; // 'hello' in UTF-8
 			return assertEqualBins(
-				cg.codegenString(codeunits.map((c) => mod.i32.const(c))),
-				mod.array.new_fixed(cg.vm.heaptype.String, codeunits.map((c) => mod.i32.const(c))),
+				cg.codegenString(codeunits.map((c) => wasm.i32.const(c))),
+				wasm.array.new_fixed(cg.vm.heaptype.String, codeunits.map((c) => wasm.i32.const(c))),
 			);
 		});
 		test.test('empty `#codegenTuple`.', () => {
 			assertEqualBins(
 				cg.codegenTuple(),
-				mod.array.new_fixed(cg.vm.heaptype.Tuple, []),
+				wasm.array.new_fixed(cg.vm.heaptype.Tuple, []),
 			);
 		});
 		test.test('`#codegenTuple` returns (array.new_fixed).', () => {
@@ -102,7 +99,7 @@ test.suite('CodeGenerator', () => {
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
-				mod.array.new_fixed(cg.vm.heaptype.Tuple, [
+				wasm.array.new_fixed(cg.vm.heaptype.Tuple, [
 					genConst(cg, true),
 					genConst(cg, 42n),
 				]),
@@ -111,7 +108,7 @@ test.suite('CodeGenerator', () => {
 		test.test('empty `#codegenRecord`.', () => {
 			assertEqualBins(
 				cg.codegenRecord(),
-				mod.array.new_fixed(cg.vm.heaptype.Record, []),
+				wasm.array.new_fixed(cg.vm.heaptype.Record, []),
 			);
 		});
 		test.test('`#codegenRecord` returns (array.new_fixed).', () => {
@@ -121,7 +118,7 @@ test.suite('CodeGenerator', () => {
 					[0x101n, cg.newProperty(0x101n, genConst(cg, 42n))],
 					[0x102n, cg.newProperty(0x102n, genConst(cg, 4.2))],
 				])),
-				mod.array.new_fixed(cg.vm.heaptype.Record, [
+				wasm.array.new_fixed(cg.vm.heaptype.Record, [
 					cg.newProperty(0x102n, genConst(cg, 4.2)),
 					cg.newProperty(0x100n, genConst(cg, true)),
 					cg.newProperty(0x101n, genConst(cg, 42n)),
@@ -131,12 +128,12 @@ test.suite('CodeGenerator', () => {
 		test.test('empty `#codegenList`.', () => {
 			assertEqualBins(
 				cg.codegenList(),
-				mod.struct.new([
+				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					mod.i32.const(0),
-					mod.array.new_fixed(
+					wasm.i32.const(0),
+					wasm.array.new_fixed(
 						cg.vm.heaptype.ListInternal,
-						repeat(mod.ref.null(cg.vm.reftypeNull.Value), 8),
+						repeat(wasm.ref.null(cg.vm.reftypeNull.Value), 8),
 					),
 				], cg.vm.heaptype.List),
 			);
@@ -148,16 +145,16 @@ test.suite('CodeGenerator', () => {
 					genConst(cg, 2.2),
 					genConst(cg, 3.3),
 				]),
-				mod.struct.new([
+				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					mod.i32.const(3),
-					mod.array.new_fixed(
+					wasm.i32.const(3),
+					wasm.array.new_fixed(
 						cg.vm.heaptype.ListInternal,
 						[
 							genConst(cg, 1.1),
 							genConst(cg, 2.2),
 							genConst(cg, 3.3),
-							...repeat(mod.ref.null(cg.vm.reftypeNull.Value), 5),
+							...repeat(wasm.ref.null(cg.vm.reftypeNull.Value), 5),
 						],
 					),
 				], cg.vm.heaptype.List),
@@ -166,12 +163,12 @@ test.suite('CodeGenerator', () => {
 		test.test('empty `#codegenDict`.', () => {
 			assertEqualBins(
 				cg.codegenDict(),
-				mod.struct.new([
+				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					mod.i32.const(0),
-					mod.array.new_fixed(
+					wasm.i32.const(0),
+					wasm.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
-						repeat(mod.ref.null(cg.vm.reftypeNull.Property), 8),
+						repeat(wasm.ref.null(cg.vm.reftypeNull.Property), 8),
 					),
 				], cg.vm.heaptype.Dict),
 			);
@@ -185,16 +182,16 @@ test.suite('CodeGenerator', () => {
 					[0x109n, cg.newProperty(0x109n, genConst(cg, 4.4))],
 					[0x10an, cg.newProperty(0x10an, genConst(cg, 5.5))],
 				])),
-				mod.struct.new([
+				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					mod.i32.const(5),
-					mod.array.new_fixed(
+					wasm.i32.const(5),
+					wasm.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
 						[
 							cg.newProperty(0x108n, genConst(cg, 3.3)),
 							cg.newProperty(0x109n, genConst(cg, 4.4)),
 							cg.newProperty(0x10an, genConst(cg, 5.5)),
-							...repeat(mod.ref.null(cg.vm.reftypeNull.Property), 3),
+							...repeat(wasm.ref.null(cg.vm.reftypeNull.Property), 3),
 							cg.newProperty(0x106n, genConst(cg, 1.1)),
 							cg.newProperty(0x107n, genConst(cg, 2.2)),
 						],
@@ -229,16 +226,16 @@ test.suite('CodeGenerator', () => {
 		test.test('empty `#codegenMap`.', () => {
 			assertEqualBins(
 				cg.codegenMap(),
-				mod.struct.new([
+				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					mod.i32.const(0),
-					mod.array.new_default(cg.vm.heaptype.MapInternal, mod.i32.const(8)),
+					wasm.i32.const(0),
+					wasm.array.new_default(cg.vm.heaptype.MapInternal, wasm.i32.const(8)),
 				], cg.vm.heaptype.Map),
 			);
 		});
 		test.test('`#codegenMap` (block) containing (struct.new) with id, count, and internal array, with (call $Map.set).', () => {
 			const {Object: VmObject, Map: VmMap} = cg.vm;
-			const map_get: binaryen.ExpressionRef = mod.local.get(0, cg.vm.reftype.Map);
+			const map_get: binaryen.ExpressionRef = wasm.local.get(0, cg.vm.reftype.Map);
 			return assertEqualBins(
 				cg.codegenMap(new Map([
 					[genConst(cg, 10n), genConst(cg, 1.1)],
@@ -247,11 +244,11 @@ test.suite('CodeGenerator', () => {
 					[genConst(cg, 40n), genConst(cg, 4.4)],
 					[genConst(cg, 50n), genConst(cg, 5.5)],
 				])),
-				mod.block(null, [
-					mod.local.set(0, mod.struct.new([
+				wasm.block(null, [
+					wasm.local.set(0, wasm.struct.new([
 						VmObject.ctrPlusPlus(),
-						mod.i32.const(5),
-						mod.array.new_default(cg.vm.heaptype.MapInternal, mod.i32.const(8)),
+						wasm.i32.const(5),
+						wasm.array.new_default(cg.vm.heaptype.MapInternal, wasm.i32.const(8)),
 					], cg.vm.heaptype.Map)),
 					VmMap.set(map_get, genConst(cg, 10n), genConst(cg, 1.1)),
 					VmMap.set(map_get, genConst(cg, 20n), genConst(cg, 2.2)),
@@ -265,9 +262,9 @@ test.suite('CodeGenerator', () => {
 		test.test('`#codegenFunction` (struct.new) with id and arity.', () => {
 			assertEqualBins(
 				cg.codegenFunction(3n),
-				mod.struct.new([
+				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					mod.i32.const(3),
+					wasm.i32.const(3),
 				], cg.vm.heaptype.Function),
 			);
 		});
@@ -344,7 +341,7 @@ test.suite('CodeGenerator', () => {
 					cg.newProperty(262n, genConst(cg)),
 					cg.newProperty(256n, genConst(cg, 42n)),
 					cg.newProperty(259n, genConst(cg, 4.2)),
-				]].map((entries) => mod.array.new_fixed(cg.vm.heaptype.Record, entries)),
+				]].map((entries) => wasm.array.new_fixed(cg.vm.heaptype.Record, entries)),
 			);
 		});
 
@@ -385,7 +382,7 @@ test.suite('CodeGenerator', () => {
 					(256,         257,         264,         ???,         ???,         ???,         ???,         ???) % (b, c, aaa, -, -, -, -, -)
 				%%
 			}`;
-			const WASM_NULL: binaryen.ExpressionRef = mod.ref.null(cg.vm.reftypeNull.Property);
+			const WASM_NULL: binaryen.ExpressionRef = wasm.ref.null(cg.vm.reftypeNull.Property);
 			return assertEqualBins(
 				[new Map([
 					// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
@@ -433,10 +430,10 @@ test.suite('CodeGenerator', () => {
 					WASM_NULL,
 					WASM_NULL,
 					WASM_NULL,
-				]].map((entries) => mod.struct.new([
+				]].map((entries) => wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					mod.i32.const(3),
-					mod.array.new_fixed(cg.vm.heaptype.DictInternal, entries),
+					wasm.i32.const(3),
+					wasm.array.new_fixed(cg.vm.heaptype.DictInternal, entries),
 				], cg.vm.heaptype.Dict)),
 			);
 		});
@@ -445,7 +442,7 @@ test.suite('CodeGenerator', () => {
 
 	test.suite('#setupMain', () => {
 		test.test('empty WASM module validates successfully.', () => {
-			cg.setupMain(mod.nop()); // assert does not throw
+			cg.setupMain(wasm.nop()); // assert does not throw
 		});
 		test.test('nonempty WASM module validates successfully.', () => {
 			const constants = `

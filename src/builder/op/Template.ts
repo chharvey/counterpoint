@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import type {
 	CodeGenerator,
@@ -41,26 +41,26 @@ export class Template extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {mod, vm: {Value: VmValue}} = cg;
+		const {vm: {Value: VmValue}, mod: {wasm}} = cg;
 		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.stringify(item.codegen(cg))));
-		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => mod.array.len(strarr.get()));
+		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => wasm.array.len(strarr.get()));
 
-		const result: Local = cg.newLocal(mod.array.new_default(cg.vm.heaptype.String, lengths.reduce((a, b) => mod.i32.add(a, b))), cg.vm.reftype.String);
-		const offset: Local = cg.newLocal(mod.i32.const(0));
+		const result: Local = cg.newLocal(wasm.array.new_default(cg.vm.heaptype.String, lengths.reduce((a, b) => wasm.i32.add(a, b))), cg.vm.reftype.String);
+		const offset: Local = cg.newLocal(wasm.i32.const(0));
 
-		return VmValue.newComposite(mod.block(null, [
+		return VmValue.newComposite(wasm.block(null, [
 			...strings.map((strarr) => strarr.set()),
 			result.set(),
 			offset.set(),
 			...strings.flatMap((strarr, i) => [
-				mod.array.copy(
+				wasm.array.copy(
 					result.get(),
 					offset.get(),
 					strarr.get(),
-					mod.i32.const(0),
+					wasm.i32.const(0),
 					lengths[i],
 				),
-				offset.set(mod.i32.add(offset.get(), lengths[i])),
+				offset.set(wasm.i32.add(offset.get(), lengths[i])),
 			]).slice(0, -1), // slice off the last `offset.set`
 			result.get(),
 		], cg.vm.reftype.String));

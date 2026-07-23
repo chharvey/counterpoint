@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
@@ -45,9 +45,9 @@ export class TupleGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.mod.array.get(
+		return cg.mod.wasm.array.get(
 			cg.vm.Value.cast(this.tuple.codegen(cg), cg.vm.reftype.Tuple),
-			cg.mod.i32.const(Number(this.accessor)),
+			cg.mod.wasm.i32.const(Number(this.accessor)),
 			cg.vm.reftype.Value,
 		);
 	}

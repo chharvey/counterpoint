@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 import type {
@@ -53,13 +53,13 @@ export class List implements HasFuncData {
 		/** @return `(struct.set $List $size     <ref> <val>)` */ setSize    (val: binaryen.ExpressionRef /* i32 */):                 binaryen.ExpressionRef /* void */,
 		/** @return `(struct.set $List $internal <ref> <val>)` */ setInternal(val: binaryen.ExpressionRef /* (ref $ListInternal) */): binaryen.ExpressionRef /* void */,
 	} {
-		const {mod, reftype} = this.vm;
+		const {mod: {wasm}, reftype} = this.vm;
 		return {
-			get size()     { return mod.struct.get(FIELD.SIZE,     ref, binaryen.i32); },
-			get internal() { return mod.struct.get(FIELD.INTERNAL, ref, reftype.ListInternal); },
+			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.i32); },
+			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.ListInternal); },
 
-			setSize(val)     { return mod.struct.set(FIELD.SIZE,     ref, val); },
-			setInternal(val) { return mod.struct.set(FIELD.INTERNAL, ref, val); },
+			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
+			setInternal(val) { return wasm.struct.set(FIELD.INTERNAL, ref, val); },
 		};
 	}
 
@@ -69,7 +69,7 @@ export class List implements HasFuncData {
 	 * this should always be equal to the List’s size.
 	 */
 	public count(list: binaryen.ExpressionRef /* (ref $List) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('List.count', [list], binaryen.i32);
+		return this.vm.mod.wasm.call('List.count', [list], binaryen.i32);
 	}
 
 	/**
@@ -77,7 +77,7 @@ export class List implements HasFuncData {
 	 * The List’s items are copied over to the new array, preserving the order from the original array.
 	 */
 	public adjustCapacity(list: binaryen.ExpressionRef /* (ref $List) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('List.adjust-capacity', [list, capacity], binaryen.none);
+		return this.vm.mod.wasm.call('List.adjust-capacity', [list, capacity], binaryen.none);
 	}
 
 	/**
@@ -87,7 +87,7 @@ export class List implements HasFuncData {
 	 * This method first reallocates if necessary, then adds the item.
 	 */
 	public set(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */, value: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('List.set', [list, index, value], binaryen.none);
+		return this.vm.mod.wasm.call('List.set', [list, index, value], binaryen.none);
 	}
 
 	/**
@@ -97,6 +97,6 @@ export class List implements HasFuncData {
 	 * This method removes the item first, then reallocates if necessary.
 	 */
 	public delete(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
-		return this.vm.mod.call('List.delete', [list, index], this.vm.reftype.Value);
+		return this.vm.mod.wasm.call('List.delete', [list, index], this.vm.reftype.Value);
 	}
 }

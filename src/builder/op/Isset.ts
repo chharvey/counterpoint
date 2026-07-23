@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
@@ -43,6 +43,6 @@ export class Isset extends Value {
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		const local: binaryen.ExpressionRef = cg.getLocal(this.target)?.get() ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be declared first!`));
-		return cg.vm.Value.boolFromI32(cg.mod.i32.eqz(cg.mod.i32.eqz(cg.vm.Value.field(local).tag)));
+		return cg.vm.Value.boolFromI32(cg.mod.wasm.i32.eqz(cg.mod.wasm.i32.eqz(cg.vm.Value.field(local).tag)));
 	}
 }

@@ -1,8 +1,5 @@
-import type binaryen from 'binaryen';
-import {
-	bigint_to_i64,
-	type CodeGenerator,
-} from '../../index.ts';
+import type * as binaryen from 'binaryen.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	noopMethod,
 	memoizeMethod,
@@ -59,7 +56,7 @@ class ValueSymbol extends Primitive {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(bigint_to_i64(cg.mod, this.id, true)));
+		return cg.vm.Value.newPrimitive(cg.vm.Vect.newNat(cg.mod.wasm.i64.const(this.id)));
 	}
 }
 export {ValueSymbol as Symbol};

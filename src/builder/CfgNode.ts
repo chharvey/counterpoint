@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import type {CodeGenerator} from '../index.ts';
 import {
@@ -67,6 +67,6 @@ export class CfgNode {
 
 	@memoizeMethod
 	public codegen(cg: CodeGenerator, relooper: binaryen.Relooper): binaryen.RelooperBlockRef {
-		return relooper.addBlock(cg.mod.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
+		return relooper.addBlock(cg.mod.wasm.block(this.label, this.#instructions.map((instr) => instr.codegen(cg)))); // leaving off terminator for branching later
 	}
 }
