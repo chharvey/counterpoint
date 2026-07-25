@@ -335,6 +335,8 @@ module.exports = grammar({
 			'set',
 			'delete',
 			'_',
+			'with',
+			'ref',
 			'void',
 			// modifier
 			'nominal',
@@ -680,6 +682,8 @@ module.exports = grammar({
 			'set',
 			'delete',
 			'_',
+			'with',
+			'ref',
 			'void',
 			// modifier
 			'nominal',

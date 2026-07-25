@@ -39,6 +39,8 @@ export enum Keyword {
 	DELETE = 'delete',
 	BLANK  = '_',
 	PUN    = '$',
+	WITH   = 'with',
+	REF    = 'ref',
 	VOID   = 'void',
 
 	// modifier

@@ -89,6 +89,8 @@ KeywordOther :::=
 		| "delete"
 		| "_"
 		| "$"
+		| "with"
+		| "ref"
 		| "void"
 	// modifier
 		| "nominal"

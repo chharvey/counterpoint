@@ -49,6 +49,8 @@ Word ::=
 		| "set"
 		| "delete"
 		| "_"
+		| "with"
+		| "ref"
 		| "void"
 	// modifier
 		| "nominal"
