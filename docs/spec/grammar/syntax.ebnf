@@ -172,6 +172,12 @@ ParametersFunction ::=
 	| ","?                                 ParameterFunction<+Named>#   ","?
 ;
 
+Capture<Ref>
+	::= <Ref+>"ref"? IDENTIFIER;
+
+CaptureClause<Ref>
+	::= "with" "(" ","? Capture<?Ref># ","? ")";
+
 PropertyAccessor<Break, Return>
 	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break><?Return> "]";
 
@@ -244,7 +250,7 @@ ExpressionSwitch<Break, Return>
 	::= "switch" Expression<+Block><?Break><?Return> CaseSwitch<?Break><?Return>* "default" Expression<+Block><?Break><?Return>;
 
 ExpressionFunction
-	::= "\" "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
+	::= "\" "(" ParametersFunction? ")" CaptureClause<-Ref>? ":" "void" Block<-Break><+Return>;
 
 Expression<Block, Break, Return> ::=
 	| ExpressionDisjunctive<?Block><?Break><?Return>
@@ -322,7 +328,7 @@ DeclarationVariable<Break, Return> ::=
 ;
 
 DeclarationFunction
-	::= "func" ("_" | IDENTIFIER) "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>
+	::= "func" ("_" | IDENTIFIER) "(" ParametersFunction? ")" CaptureClause<+Ref>? ":" "void" Block<-Break><+Return>
 
 Declaration<Break, Return> ::=
 	| DeclarationType

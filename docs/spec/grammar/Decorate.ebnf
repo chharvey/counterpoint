@@ -398,6 +398,13 @@ Decorate(ParametersFunction ::= ","? ParameterFunction<-Named># "," ParameterFun
 
 
 
+Decorate(Capture<Ref> ::= IDENTIFIER) -> ???
+Decorate(Capture<Ref> ::= "ref" IDENTIFIER) -> ???
+Decorate(CaptureClause<Ref> ::= "with" "(" ","? Capture<?Ref># ","? ")") -> Sequence<???>
+	:= ParseList(Capture<?Ref>, ???);
+
+
+
 Decorate(PropertyAccessor<Break, Return> ::= INTEGER) -> SemanticIndex
 	:= (SemanticIndex[index=TokenWorth(INTEGER)]);
 Decorate(PropertyAccessor<Break, Return> ::= NATURAL) -> SemanticIndex
@@ -749,9 +756,20 @@ Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" Block<-Break><+Return>) -
 	:= (SemanticExpressionFunction
 		Decorate(Block<-Break><+Return>)
 	);
+Decorate(ExpressionFunction ::= "\" "(" ")" CaptureClause<-Ref> ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(CaptureClause<-Ref>)
+		Decorate(Block<-Break><+Return>)
+	);
 Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
 	:= (SemanticExpressionFunction
 		...Decorate(ParametersFunction)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		...Decorate(CaptureClause<-Ref>)
 		Decorate(Block<-Break><+Return>)
 	);
 
@@ -960,18 +978,40 @@ Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" Block<-Break><+Re
 	:= (SemanticDeclarationFunction
 		Decorate(Block<-Break><+Return>)
 	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction
+		...Decorate(CaptureClause<+Ref>)
+		Decorate(Block<-Break><+Return>)
+	);
 Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
 	:= (SemanticDeclarationFunction
 		...Decorate(ParametersFunction)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction
+		...Decorate(ParametersFunction)
+		...Decorate(CaptureClause<+Ref>)
 		Decorate(Block<-Break><+Return>)
 	);
 Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
 	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
 		Decorate(Block<-Break><+Return>)
 	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		...Decorate(CaptureClause<+Ref>)
+		Decorate(Block<-Break><+Return>)
+	);
 Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
 	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
 		...Decorate(ParametersFunction)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=TokenWorth(IDENTIFIER)]
+		...Decorate(ParametersFunction)
+		...Decorate(CaptureClause<+Ref>)
 		Decorate(Block<-Break><+Return>)
 	);
 

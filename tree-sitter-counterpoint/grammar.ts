@@ -468,6 +468,10 @@ module.exports = grammar({
 			);
 		},
 
+		...parameterize('capture', ({ref}) => $ => seq(...iff(ref, optional(field('ref_0', 'ref'))), field('identifier_0', $.identifier)), 'ref'),
+
+		...parameterize('_capture_clause', ({ref}) => $ => seq('with', '(', OPT_COM, repCom1(call($, 'capture', {ref})), OPT_COM, ')'), 'ref'),
+
 		...parameterize('property_accessor', ({break: brk, return: rtn}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}, {return: rtn}), ']')), 'break', 'return'),
 
 		...parameterize('expression_grouped',        ({break: brk, return: rtn}) => $ => seq('(',                               call($, '_expression', 'block', {break: brk}, {return: rtn}),             ')'), 'break', 'return'),
@@ -531,7 +535,7 @@ module.exports = grammar({
 			field('expression_1', call($, '_expression', 'block', {break: brk}, {return: rtn})),
 		), 'break', 'return'),
 
-		expression_function: $ => seq('\\', '(', optional($._parameters_function), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
+		expression_function: $ => seq('\\', '(', optional($._parameters_function), ')', optional(call($, '_capture_clause')), ':', 'void', field('block_0', call($, 'block', 'return'))),
 
 		...parameterize('_expression', ({block, break: brk, return: rtn}) => $ => choice(
 			call($, '_expression_unit', {block}, {break: brk}, {return: rtn}),
@@ -621,7 +625,7 @@ module.exports = grammar({
 			seq('val',                          field('mut_0', 'mut'),  field('identifier_0', $.identifier),   '?',              ':', field('type_0', $._type),                                                                                             ';'),
 		), 'break', 'return'),
 
-		declaration_function: $ => seq('func', choice('_', field('identifier_0', $.identifier)), '(', optional($._parameters_function), ')', ':', 'void', field('block_0', call($, 'block', 'return'))),
+		declaration_function: $ => seq('func', choice('_', field('identifier_0', $.identifier)), '(', optional($._parameters_function), ')', optional(call($, '_capture_clause', 'ref')), ':', 'void', field('block_0', call($, 'block', 'return'))),
 
 		...parameterize('_declaration', ({break: brk, return: rtn}) => $ => choice(
 			$.declaration_type,

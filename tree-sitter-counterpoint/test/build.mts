@@ -692,6 +692,9 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// ParametersFunction
 		// tested in #{Expression,Declaration}Function
 
+		// CaptureClause
+		// tested in #{Expression,Declaration}Function
+
 		// PropertyAccessor
 		// tested in #{ExpressionCompound,Assignee}
 
@@ -1415,6 +1418,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					\\(): void {;};
 					\\(a: A, $b: B, c= charlie: C): void { return; };
+					\\() with (x, y): void { return; };
 				}
 			`,
 			sourceExpressions(
@@ -1440,6 +1444,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						f('identifier_0', 'identifier'),
 						f('type_0',       'identifier'),
 					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'expression_function',
+					s('capture', f('identifier_0', 'identifier')),
+					s('capture', f('identifier_0', 'identifier')),
 					f('block_0', 'block__return', s('statement_return')),
 				),
 			),
@@ -2016,6 +2026,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					func foo(): void {;}
 					func foo(a: A, $b: B, c= charlie: C): void { return; }
+					func foo() with (x, ref y): void { return; }
 				}
 			`,
 			sourceStatements(
@@ -2043,6 +2054,13 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						f('identifier_0', 'identifier'),
 						f('type_0',       'identifier'),
 					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					s('capture__ref', f('identifier_0', 'identifier')),
+					s('capture__ref', f('identifier_0', 'identifier')),
 					f('block_0', 'block__return', s('statement_return')),
 				),
 			),
