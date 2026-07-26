@@ -80,6 +80,7 @@ export function typecheck_assign(
  * - Property
  * - Case
  * - ParameterFunction
+ * - Capture
  * - Type
  * - Expression
  * - Statement

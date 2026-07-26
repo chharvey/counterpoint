@@ -21,6 +21,7 @@ import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
+import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
@@ -42,6 +43,7 @@ export class DeclarationFunction extends Statement {
 		start_node: SyntaxNodeType<'declaration_function'>,
 		private readonly identifier: Serializable | null,
 		public  readonly parameters: readonly ParameterFunction[],
+		captures: readonly Capture[],
 		public  readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, block]);

@@ -114,6 +114,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'case_map',        ['break', 'return']>):                 AST.Case;
 	public decorate(syntaxnode: SyntaxNodeFamily<'case_switch',     ['break', 'return']>):                 AST.Case;
 	public decorate(syntaxnode: SyntaxNodeFamily<'parameter_function', ['named']>):                        AST.ParameterFunction;
+	public decorate(syntaxnode: SyntaxNodeFamily<'capture', ['ref']>):                                     AST.Capture;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break', 'return']>):       AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break', 'return']>):       AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_tuple_literal',  ['break', 'return']>):       AST.EXPR.Tuple;
@@ -324,6 +325,11 @@ export class Decorator {
 					this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 				);
 			}],
+
+			[/^capture(__ref)?$/, (node) => new AST.Capture(
+				node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>,
+				!!node.childForFieldName('ref_0'),
+			)],
 
 			[/^property_accessor(__break)?(__return)?$/, (node) => (
 				isSyntaxNodeType(node.firstNamedChild, /integer|natural/) ? new AST.Index(node.firstNamedChild as SyntaxNodeType<'integer' | 'natural'>) :
@@ -583,6 +589,7 @@ export class Decorator {
 			['expression_function', (node) => new AST.EXPR.Function(
 				node as SyntaxNodeType<'expression_function'>,
 				node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
+				node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture', ['ref'])).map((c) => this.decorate(c)),
 				this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>, true),
 			)],
 
@@ -711,6 +718,7 @@ export class Decorator {
 					node as SyntaxNodeType<'declaration_function'>,
 					identifier_0 && to_serializable(identifier_0),
 					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
+					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'capture', ['ref'])).map((c) => this.decorate(c)),
 					this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>, true),
 				);
 			}],

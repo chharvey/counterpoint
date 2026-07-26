@@ -359,13 +359,13 @@ test.suite('Decorator', () => {
 
 			// TODO: Decorate(ParameterFunction<Named>)
 
-			['todo: Decorate(Capture<Ref> ::= IDENTIFIER) -> ???', [AST.AstNode, `
+			['Decorate(Capture<Ref> ::= IDENTIFIER) -> SemanticCapture', [AST.Capture, `
 				{
 					\\() with (x): void {;};
 				}
 				% (capture)
 			`]],
-			['todo: Decorate(Capture<Ref> ::= "ref" IDENTIFIER) -> ???', [AST.AstNode, `
+			['Decorate(Capture<Ref> ::= "ref" IDENTIFIER) -> SemanticCapture', [AST.Capture, `
 				{
 					func _() with (ref x): void {;};
 				}

@@ -19,6 +19,7 @@ import {
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
+import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
 import {Expression} from './Expression.ts';
 
@@ -35,6 +36,7 @@ class ExpressionFunction extends Expression {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
 		public readonly parameters: readonly ParameterFunction[],
+		captures: readonly Capture[],
 		public readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, block]);
