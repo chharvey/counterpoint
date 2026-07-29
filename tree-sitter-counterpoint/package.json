@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "4.0.2",
+  "version": "4.0.3",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
     "incremental",
@@ -57,6 +57,6 @@
     "typescript": "~6.0.3"
   },
   "engines": {
-    "node": "^22.22"
+    "node": "^26.5"
   }
 }
