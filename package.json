@@ -29,7 +29,7 @@
     "cplc:d-o": "npx cplc d ./sample/test-v0.5.cpls -o ./sample/testout.wat",
     "cplc:d-p": "npx cplc d ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
     "cplc:r": "npx cplc r ./sample/test-v0.5.wasm",
-    "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
+    "fresh-install": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
     "precompile": "rm -rf ./dist/ && mkdir -p ./dist/vm/wat/ && cp -R ./src/vm/wat/ ./dist/vm/wat/",
     "compile": "tsc && tsc --project ./test/tsconfig.json",
     "lint": "eslint",
