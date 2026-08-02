@@ -37,6 +37,11 @@ export class Dict implements HasFuncData {
 				param:  binaryen.createType([reftype.Dict, binaryen.i32]),
 				result: binaryen.none,
 			}],
+			['Dict#get', {
+				name:   'Dict.get',
+				param:  binaryen.createType([reftype.Dict, binaryen.i64]),
+				result: reftype.Value,
+			}],
 			['Dict#set', {
 				name:   'Dict.set',
 				param:  binaryen.createType([reftype.Dict, binaryen.i64, reftype.Value]),
@@ -104,6 +109,14 @@ export class Dict implements HasFuncData {
 	 */
 	public adjustCapacity(dict: binaryen.ExpressionRef /* (ref $Dict) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Dict.adjust-capacity', [dict, capacity], binaryen.none);
+	}
+
+	/**
+	 * Get a Dict value given a key.
+	 * If there is no value at the given key, Counterpoint’s `null` value is returned.
+	 */
+	public get(dict: binaryen.ExpressionRef /* (ref $Dict) */, key: binaryen.ExpressionRef /* i64 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Dict.get', [dict, key], this.vm.reftype.Value);
 	}
 
 	/**
