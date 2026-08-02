@@ -136,44 +136,21 @@ Codegen((RECORD.GET `key` `obj`)) := (call $Record.get
 	(i64.const `key`)
 );
 
-Codegen((LIST.GET `obj` `accessor`)) := (block (result (ref $Value))
-	(local.set $item (array.get
-		(struct.get $List $internal (ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`)))
-		(i32.wrap_i64 (i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`)))
-	))
-	(if (result (ref $Value))
-		(ref.is_null (local.get $item))
-		(then `Codegen((NULL.CONST null))`)
-		(else (ref.as_non_null (local.get $item)))
-	)
+Codegen((LIST.GET `obj` `accessor`)) := (call $List.get
+	(ref.cast (ref $List) (struct.get $Value $composite `Codegen(obj)`))
+	(i32.wrap_i64 (call $Vect.as-int (struct.get $Value $primitive `Codegen(accessor)`)))
 );
 
-Codegen((DICT.GET `obj` `accessor`)) := (block (result (ref $Value))
-	(drop
-		(local.set $maybe-prop
-			(call $Dict.find
-				(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))
-				(i64x2.extract_lane 1 (struct.get $Value $primitive `Codegen(accessor)`))
-			)
-		)
-	)
-	(if (result (ref $Value))
-		(i32.or
-			(ref.is_null (local.get $maybe-prop))
-			(call $Property.is-tombstone (local.get $maybe-prop))
-		)
-		(then `Codegen((NULL.CONST null))`)
-		(else (struct.get $Property $val (local.get $maybe-prop)))
-	)
+Codegen((DICT.GET `obj` `accessor`)) := (call $Dict.get
+	(ref.cast (ref $Dict) (struct.get $Value $composite `Codegen(obj)`))
+	(call $Vect.as-nat (struct.get $Value $primitive `Codegen(accessor)`))
 );
 
 Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
-	(drop
-		(local.set $maybe-case
-			(call $Map.find
-				(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
-				`Codegen(accessor)`
-			)
+	(local.set $maybe-case
+		(call $Map.find
+			(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+			`Codegen(accessor)`
 		)
 	)
 	(if (result (ref $Value))
@@ -186,23 +163,9 @@ Codegen((SET.GET `obj` `accessor`)) := (block (result (ref $Value))
 	)
 );
 
-Codegen((MAP.GET `obj` `accessor`)) := (block (result (ref $Value))
-	(drop
-		(local.set $maybe-case
-			(call $Map.find
-				(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
-				`Codegen(accessor)`
-			)
-		)
-	)
-	(if (result (ref $Value))
-		(i32.or
-			(ref.is_null (local.get $maybe-case))
-			(call $Case.is-tombstone (local.get $maybe-case))
-		)
-		(then `Codegen((NULL.CONST null))`)
-		(else (struct.get $Case $con (local.get $maybe-case)))
-	)
+Codegen((MAP.GET `obj` `accessor`)) := (call $Map.get
+	(ref.cast (ref $Map) (struct.get $Value $composite `Codegen(obj)`))
+	`Codegen(accessor)`
 );
 
 // Codegen((CALL `callable` `args`));
