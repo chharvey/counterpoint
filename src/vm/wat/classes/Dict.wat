@@ -135,10 +135,28 @@
 
 
 
+(func $Dict.get (export "Dict#get") (param $dict (ref $Dict)) (param $key i64) (result (ref $Value))
+	;; property at the specified key.
+	(local $prop (ref null $Property))
+	(call $Dict.find (local.get $dict) (local.get $key))
+	(local.set $prop)
+	(drop)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $prop))
+			(call $Property.is-tombstone (local.get $prop))
+		)
+		(then (call $Value.new-primitive (global.get $Vect.NULL)))
+		(else (struct.get $Property $val (local.get $prop)))
+	)
+)
+
+
+
 (func $Dict.set (export "Dict#set") (param $dict (ref $Dict)) (param $key i64) (param $val (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
-	;; property at the specified index.
+	;; property at the specified key.
 	(local $prop (ref null $Property))
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)

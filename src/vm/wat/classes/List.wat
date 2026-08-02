@@ -27,6 +27,19 @@
 
 
 
+(func $List.get (export "List#get") (param $list (ref $List)) (param $index i32) (result (ref $Value))
+	;; item at the specified index.
+	(local $item (ref null $Value))
+	(local.set $item (array.get $ListInternal (struct.get $List $internal (local.get $list)) (local.get $index)))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $item))
+		(then (call $Value.new-primitive (global.get $Vect.NULL)))
+		(else (ref.as_non_null (local.get $item)))
+	)
+)
+
+
+
 (func $List.set (export "List#set") (param $list (ref $List)) (param $index i32) (param $value (ref $Value))
 	;; item at the specified index.
 	(local $item (ref null $Value))

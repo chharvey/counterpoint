@@ -15,8 +15,8 @@ test.suite('CodeGenerator', () => {
 	let wasm: binaryen.ExpressionBuilder;
 
 	test.beforeEach(() => {
-		cg = new CodeGenerator();
-		wasm = cg.vm.mod.wasm;
+		cg   = new CodeGenerator();
+		wasm = cg.mod.wasm;
 	});
 
 
