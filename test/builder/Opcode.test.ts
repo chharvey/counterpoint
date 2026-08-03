@@ -55,25 +55,28 @@ test.suite('Opcode', () => {
 				], (val) => assert.deepStrictEqual(new OP.Const(val).interpret(), val));
 			});
 
-			test.test('Get returns validator’s symbol table value.', () => {
+			test.test('Get returns interpreter’s symbol table value.', () => {
 				assert.deepStrictEqual(interpret_extracted_drops(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
 					val mut d: int   = 42;
 					val mut e: float = 4.2;
+					val mut f?: str;
 
 					a;
 					b;
 					c;
 					d;
 					e;
+					f;
 				}`), [
 					VALUE.NULL,
 					VALUE.FALSE,
 					new VALUE.Symbol(Validator.cookTokenIdentifier('hello'), 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Float(4.2),
+					VALUE.NULL,
 				]);
 			});
 
@@ -859,21 +862,24 @@ test.suite('Opcode', () => {
 					val mut c: sym   = @hello;
 					val mut d: int   = 42;
 					val mut e: float = 4.2;
+					val mut f?: str;
 
 					a;
 					b;
 					c;
 					d;
 					e;
+					f;
 				}`);
 				return assertEqualBins(
-					stmts.slice(5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
+					stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 					[
 						wasm.local.get(0, cg.vm.reftype.Value),
 						wasm.local.get(1, cg.vm.reftype.Value),
 						wasm.local.get(2, cg.vm.reftype.Value),
 						wasm.local.get(3, cg.vm.reftype.Value),
 						wasm.local.get(4, cg.vm.reftype.Value),
+						wasm.local.get(5, cg.vm.reftype.Value),
 					],
 				);
 			});
