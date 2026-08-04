@@ -56,7 +56,7 @@ export class Variable extends Expression implements Reassignable {
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;
 		assert_instanceof(symbol, SymbolSchemaVar);
-		return symbol.isUninitialized ? symbol.type.union(TYPE.NULL) : symbol.type;
+		return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
 	}
 
 	@memoizeMethod

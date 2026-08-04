@@ -179,6 +179,74 @@ test.suite('Access', () => {
 						...repeat(TYPE.STR.union(TYPE.NULL), 6),
 					]);
 				});
+				test.test('base is an optional variable.', () => {
+					testExprTypes(`{
+						val mut tup_a?: (int, int, ?: int);
+						val mut tup_b?: (int, int, ?: int);
+						set tup_a = (10, 20);
+
+						val mut rec_a?: (x: int, y?: int, z: int);
+						val mut rec_b?: (x: int, y?: int, z: int);
+						set rec_a = (x= 10, z= 20);
+
+						tup_a.1;
+						tup_a.2;
+						tup_b.1;
+						tup_b.2;
+
+						rec_a.x;
+						rec_a.y;
+						rec_b.x;
+						rec_b.y;
+
+						tup_a?.1;
+						tup_a?.2;
+						tup_b?.1;
+						tup_b?.2;
+
+						rec_a?.z;
+						rec_a?.y;
+						rec_b?.z;
+						rec_b?.y;
+					}`, repeat(TypeErrorNoEntry, 16));
+				});
+				test.test('base is an explicit Maybe.', {expectFailure: true}, () => {
+					testExprTypes(`{
+						val mut tup_a: Maybe[(int, int, ?: int)] = None[(int, int, ?: int)]();
+						val mut tup_b: Maybe[(int, int, ?: int)] = None[(int, int, ?: int)]();
+						set tup_a = Some[(int, int, ?: int)]((10, 20));
+
+						val mut rec_a?: Maybe[(x: int, y?: int, z: int)] = None[(x: int, y?: int, z: int)]();
+						val mut rec_b?: Maybe[(x: int, y?: int, z: int)] = None[(x: int, y?: int, z: int)]();
+						set rec_a = Some[(x: int, y?: int, z: int)]((x= 10, z= 20));
+
+						tup_a.1;
+						tup_a.2;
+						tup_b.1;
+						tup_b.2;
+
+						rec_a.x;
+						rec_a.y;
+						rec_b.x;
+						rec_b.y;
+
+						tup_a?.1; % type \`Maybe[int]\`
+						tup_a?.2; % type \`Maybe[Maybe[int]]\`
+						tup_b?.1; % type \`Maybe[int]\`
+						tup_b?.2; % type \`Maybe[Maybe[int]]\`
+
+						rec_a?.z; % type \`Maybe[int]\`
+						rec_a?.y; % type \`Maybe[Maybe[int]]\`
+						rec_b?.z; % type \`Maybe[int]\`
+						rec_b?.y; % type \`Maybe[Maybe[int]]\`
+					}`, [
+						...repeat(TypeErrorNoEntry, 8),
+						...repeat([
+							new TYPE.Maybe(TYPE.INT),
+							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
+						], 4).flat(),
+					]);
+				});
 				test.test('throws when base object is of incorrect type.', () => {
 					testExprTypes(`{
 						val mut a:                    anything = (   10,    20);

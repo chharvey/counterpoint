@@ -32,6 +32,27 @@ import {
 
 test.suite('Expression', () => {
 	test.suite('#type', () => {
+		test.suite('Variable', () => {
+			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
+				const {stmts} = setupScript(`{
+					val mut w:  int = 42;
+					val mut x?: int;
+					w;
+					x;
+				}`, {build: false});
+				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
+				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
+				return assertEqualTypes(
+					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					[
+						TYPE.INT,
+						new TYPE.Maybe(TYPE.INT),
+					],
+				);
+			});
+		});
+
+
 		test.suite('Isset', () => {
 			test.test('always returns `bool`.', () => {
 				assert_shallowStrictEqual(
@@ -561,27 +582,6 @@ test.suite('Expression', () => {
 					};
 					it;
 				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
-			});
-		});
-
-
-		test.suite('#type', () => {
-			test.test('unions with `null` when accessed variable is uninitialized.', () => {
-				const {stmts} = setupScript(`{
-					val mut w:  int = 42;
-					val mut x?: int;
-					w;
-					x;
-				}`, {build: false});
-				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
-				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
-				return assertEqualTypes(
-					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					[
-						TYPE.INT,
-						TYPE.INT.union(TYPE.NULL),
-					],
-				);
 			});
 		});
 	});

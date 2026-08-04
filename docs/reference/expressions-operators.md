@@ -496,6 +496,8 @@ This is important to mention because it could also affect how we write
 
 
 ### Is-Set
+**WARNING:** *This section is obsolete.*
+
 ```
 `isset`  <Assignee>
 `!isset` <Assignee>
