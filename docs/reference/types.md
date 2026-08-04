@@ -1125,3 +1125,30 @@ We can avoid the potential crash using the
 ```
 bases?.[a]; % produces the consequent if it exists, else `null`
 ```
+
+
+
+## Control Abstraction Types
+
+
+### Maybes
+Maybe objects are containers of possible values.
+The Maybe type is an abstract type with exactly two concrete subtypes: Some, which contains a value, and None, which contains no value.
+Maybe objects are used for representing optional variables/parameters/entries, and in general, any value that might or might not exist.
+
+Maybe types are declared via the **generic maybe type syntax**: `Maybe[T]`
+where `T` indicates the type of the possible value.
+`T` may be any type, including a type unioned with Null or even another Maybe type. Nested Maybe types do not flatten.
+Some and None objects are constructed via the constructor syntaxes `Some[T](value)` and `None[T]()` respectively.
+```cpl
+val mut x: Maybe[int] = Some[int](42);
+set x = None[int]();
+```
+
+A shorthand for the generic syntax `Maybe[T]` is `T?`.
+```cpl
+val mut x: int? = Some[int](42);
+set x = None[int]();
+```
+
+The [maybe access operator](./expressions-operators.md#maybe-access) works very well with the Maybe type.

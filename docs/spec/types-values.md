@@ -399,6 +399,17 @@ Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 <sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
 
 
+### Control Abstraction Types
+
+#### Maybe Types
+A **Maybe** type describes instances of [`Maybe`](./intrinsics.md#maybe) and is parameterized by a single type,
+called a *type argument*, representing its possibly held value.
+The objects that any given Maybe type describes are `Maybe` objects whose
+value, if it exists, is assignable to the type argument of the Maybe type.
+The **Maybe** class is abstract and enumerated by two concrete subclasses:
+**Some**, which holds a value, and **None**, which does not.
+
+
 ### Nominal Types
 Nominal types form a type hierarchy where assignability is determined by name alone.
 
