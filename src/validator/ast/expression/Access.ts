@@ -11,7 +11,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {
-	type EntryType,
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
@@ -25,8 +24,7 @@ import {
 } from '../../Operator.ts';
 import {
 	get_entry_info,
-	validate_access_kind,
-	update_accessed_type,
+	access_type,
 } from '../utils-private.ts';
 import {Index} from '../Index-.ts';
 import {Key} from '../Key.ts';
@@ -59,18 +57,21 @@ export class Access extends Expression implements Reassignable {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		if (this.base.type().isBottomType) {
+		const base_type: TYPE.Type = this.base.type();
+		if (base_type.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		const entry: EntryType = get_entry_info(this.base.type(), this);
-		validate_access_kind(this.kind, entry.optional, this);
-		return update_accessed_type(entry.type, this.kind);
+		return access_type(this.kind, base_type, get_entry_info(base_type, this), this);
 	}
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Value {
-		const typ:        TYPE.Type   = this.type();
+		let typ:          TYPE.Type   = this.type();
 		const base_value: OP.ValueTac = this.base.build(builder).asTac(builder);
+
+		if (typ instanceof TYPE.Maybe) {
+			typ = typ.typearg.union(TYPE.NULL);
+		}
 
 		const non_nullish_base = (): OP.Value => {
 			switch (true) {
@@ -139,14 +140,14 @@ export class Access extends Expression implements Reassignable {
 					}
 				}
 			}
-			// else, it was a union with null (the only other valid option)
+			// else, it was a `None` (the only other valid option)
 			return new OP.Const(VALUE.NULL);
 		};
 
 		if (this.kind === Operator.DOT_MAY) {
 			return OP.conditional_expression(
 				builder,
-				this.type(),
+				typ,
 				() => new OP.Unop(OP.OpCode.ISNULL, base_value, TYPE.BOOL),
 				() => new OP.Const(VALUE.NULL),
 				non_nullish_base,

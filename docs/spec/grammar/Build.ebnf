@@ -158,9 +158,9 @@ Build(SemanticExpressionBlock blex) := [
 ];
 
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
-	(DECL ‹type› $tuple `Build(access.0)`)
+	(DECL ‹type› $base `Build(access.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (ISNULL (GET $tuple)) "then" "else")
+	(GOTO.IF (ISNULL (GET $base)) "then" "else")
 	"then":
 	(SET $result (NULL.CONST null))
 	(GOTO "endif")

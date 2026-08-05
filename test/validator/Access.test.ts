@@ -66,14 +66,13 @@ test.suite('Access', () => {
 					null.3;
 					null.four;
 					null.[((((),),),)];
-				}`, repeat(TypeErrorInvalidOperation, 3));
-			});
-			test.test('maybe access returns null.', () => {
-				testExprTypes(`{
 					null?.3;
 					null?.four;
 					null?.[((((),),),)];
-				}`, repeat(TYPE.NULL, 3));
+				}`, repeat([
+					...repeat(TypeErrorNoEntry, 2),
+					TypeErrorInvalidOperation,
+				], 2).flat());
 			});
 			test.test('chained maybe access.', () => {
 				const prop1: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.BOOL]);       // (bool,)
@@ -89,11 +88,11 @@ test.suite('Access', () => {
 					bound2?.prop?.0;
 				}`, [
 					new TYPE.Record(new Map([[0x100n, {type: prop1, optional: true}]])), // (prop?: (bool,))
-					prop1.union(TYPE.NULL),                                              // (bool,) | null
-					TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
+					new TYPE.Maybe(prop1),                                               // Maybe[(bool,)]
+					new TYPE.Maybe(TYPE.BOOL),                                           // Maybe[bool]
 					new TYPE.Record(new Map([[0x100n, {type: prop2, optional: true}]])), // (prop?: (?: bool))
-					prop2.union(TYPE.NULL),                                              // (?: bool) | null
-					TYPE.BOOL.union(TYPE.NULL),                                          // bool | null
+					new TYPE.Maybe(prop2),                                               // Maybe[(?: bool)]
+					new TYPE.Maybe(new TYPE.Maybe(TYPE.BOOL)),                           // Maybe[Maybe[bool]]
 				]);
 			});
 		});
@@ -167,16 +166,16 @@ test.suite('Access', () => {
 						val mut reco1_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0, b= "three");
 						val mut reco2_u: (a: int, c: float, b?: str) = (a= 1, c= 2.0);
 
-						tupo1_f?.2; % type \`str | null\`
-						tupo1_u?.2; % type \`str | null\`
-						tupo2_u?.2; % type \`str | null\`
+						tupo1_f?.2; % type \`Maybe[str]\`
+						tupo1_u?.2; % type \`Maybe[str]\`
+						tupo2_u?.2; % type \`Maybe[str]\`
 
-						reco1_f?.b; % type \`str | null\`
-						reco1_u?.b; % type \`str | null\`
-						reco2_u?.b; % type \`str | null\`
+						reco1_f?.b; % type \`Maybe[str]\`
+						reco1_u?.b; % type \`Maybe[str]\`
+						reco2_u?.b; % type \`Maybe[str]\`
 					}`, [
 						...repeat(TypeErrorInvalidOperation, 4),
-						...repeat(TYPE.STR.union(TYPE.NULL), 6),
+						...repeat(new TYPE.Maybe(TYPE.STR), 6),
 					]);
 				});
 				test.test('base is an optional variable.', () => {
@@ -199,16 +198,22 @@ test.suite('Access', () => {
 						rec_b.x;
 						rec_b.y;
 
-						tup_a?.1;
-						tup_a?.2;
-						tup_b?.1;
-						tup_b?.2;
+						tup_a?.1; % type \`Maybe[int]\`
+						tup_a?.2; % type \`Maybe[Maybe[int]]\`
+						tup_b?.1; % type \`Maybe[int]\`
+						tup_b?.2; % type \`Maybe[Maybe[int]]\`
 
-						rec_a?.z;
-						rec_a?.y;
-						rec_b?.z;
-						rec_b?.y;
-					}`, repeat(TypeErrorNoEntry, 16));
+						rec_a?.z; % type \`Maybe[int]\`
+						rec_a?.y; % type \`Maybe[Maybe[int]]\`
+						rec_b?.z; % type \`Maybe[int]\`
+						rec_b?.y; % type \`Maybe[Maybe[int]]\`
+					}`, [
+						...repeat(TypeErrorNoEntry, 8),
+						...repeat([
+							new TYPE.Maybe(TYPE.INT),
+							new TYPE.Maybe(new TYPE.Maybe(TYPE.INT)),
+						], 4).flat(),
+					]);
 				});
 				test.test('base is an explicit Maybe.', {expectFailure: true}, () => {
 					testExprTypes(`{
@@ -321,28 +326,28 @@ test.suite('Access', () => {
 					testExprTypes(`{
 						${ DECLS }
 						rec.z;  % optional & optional
-						rec?.z; % optional & optional % type \`B & D | null\`
+						rec?.z; % optional & optional % type \`Maybe[B & D]\`
 					}`, [
 						TypeErrorInvalidOperation,
-						B.intersect(D).union(TYPE.NULL),
+						new TYPE.Maybe(B.intersect(D)),
 					]);
 				});
 				test.test('some constituent does not have the entry.', () => {
 					testExprTypes(`{
 						${ DECLS }
-						tup.2;  % required & missing
+						tup.2;  % required & missing % type \`int\`
 						tup.3;  % missing  & missing
 						rec.y;  % optional & missing
 						tup?.2; % required & missing
 						tup?.3; % missing  & missing
-						rec?.y; % optional & missing
+						rec?.y; % optional & missing % type \`Maybe[int]\`
 					}`, [
 						TYPE.INT,
 						AggregateError,
 						TypeErrorInvalidOperation,
 						TypeErrorInvalidOperation,
 						AggregateError,
-						TYPE.INT.union(TYPE.NULL),
+						new TYPE.Maybe(TYPE.INT),
 					]);
 				});
 				test.test('an intersection with union constituents.', () => {
@@ -350,39 +355,43 @@ test.suite('Access', () => {
 						val mut collectionA: ((alpha: bool, bravo: 1) | (bravo: 2 | 3 | 4)) & (bravo: 3 | 4 | 5) = (bravo= 3);
 						val mut collectionB: ((alpha: bool, bravo?: 1) | (bravo?: 2 | 3 | 4)) & (bravo?: 3 | 4 | 5) = (alpha= true);
 						collectionA.bravo;  % type \`3 | 4\`
-						collectionB?.bravo; % type \`3 | 4 | null\`
+						collectionB?.bravo; % type \`Maybe[3 | 4]\`
 					}`, [
 						typeUnit(3n).union(typeUnit(4n)),
-						typeUnit(3n).union(typeUnit(4n).union(TYPE.NULL)),
+						new TYPE.Maybe(typeUnit(3n).union(typeUnit(4n))),
 					]);
 				});
 			});
 
 			test.suite('union base types.', () => {
 				const DECLS = `
-					val mut tup: (   null,     bool,     sym) | (   int, ?: float)          = (null, true, @hello);
-					val mut rec: (a: null, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
+					val mut tup: (   str,     bool,     sym) | (   int, ?: float)          = ("hello", true, @hello);
+					val mut rec: (a: str, b?: bool, c?: sym) | (a: int,           c?: str) = (a= 42);
 				`;
 				test.test('throws when some constituent is of incorrect type.', () => { // test only needed for unions (invalid for intersections)
 					testExprTypes(`{
 						val mut mixed_tup: (str, bool, sym) | (a: str,  b?: bool, c?: sym) = ("hello", true, @world);
 						val mut mixed_rec: (int, ?: float)  | (a: int, c?: str)            = (a= 42);
 
+						mixed_tup.0;
 						mixed_tup.a;
 						mixed_rec.0;
+						mixed_rec.a;
+						mixed_tup?.0;
 						mixed_tup?.a;
 						mixed_rec?.0;
-					}`, repeat(TypeErrorInvalidOperation, 4));
+						mixed_rec?.a;
+					}`, repeat(TypeErrorInvalidOperation, 8));
 				});
 				test.test('every constituent has the entry and it’s required in every constituent.', () => {
 					testExprTypes(`{
 						${ DECLS }
-						tup.0; % type \`null | int\`
-						rec.a; % type \`null | int\`
+						tup.0; % type \`str | int\`
+						rec.a; % type \`str | int\`
 						tup?.0;
 						rec?.a;
 					}`, [
-						...repeat(TYPE.NULL.union(TYPE.INT), 2),
+						...repeat(TYPE.STR.union(TYPE.INT), 2),
 						...repeat(TypeErrorInvalidOperation, 2),
 					]);
 				});
@@ -391,12 +400,12 @@ test.suite('Access', () => {
 						${ DECLS }
 						tup.1;  % required | optional
 						rec.c;  % optional | optional
-						tup?.1; % required | optional % type \`bool | float | null\`
-						rec?.c; % optional | optional % type \`sym  | str   | null\`
+						tup?.1; % required | optional % type \`Maybe[bool | float]\`
+						rec?.c; % optional | optional % type \`Maybe[sym  | str]\`
 					}`, [
 						...repeat(TypeErrorInvalidOperation, 2),
-						TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT, TYPE.NULL),
-						TYPE.Union.all(TYPE.SYM,  TYPE.STR,   TYPE.NULL),
+						new TYPE.Maybe(TYPE.Union.all(TYPE.BOOL, TYPE.FLOAT)),
+						new TYPE.Maybe(TYPE.Union.all(TYPE.SYM,  TYPE.STR)),
 					]);
 				});
 				test.test('some constituent does not have the entry.', () => {
@@ -413,18 +422,18 @@ test.suite('Access', () => {
 						val mut collectionA: (alpha: bool, bravo: 2 | 3 | 4) & (bravo: 3 | 4 | 5, charlie: str) | (bravo: 6) = (bravo= 6);
 						val mut collectionB: (alpha: bool, bravo?: 2 | 3 | 4) & (bravo?: 3 | 4 | 5, charlie: str) | (bravo?: 6) = (bravo= 6);
 						collectionA.bravo;  % type \`3 | 4 | 6\`
-						collectionB?.bravo; % type \`3 | 4 | 6 | null\`
+						collectionB?.bravo; % type \`Maybe[3 | 4 | 6]\`
 					}`, [
 						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)),
-						typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n)).union(TYPE.NULL),
+						new TYPE.Maybe(typeUnit(3n).union(typeUnit(4n)).union(typeUnit(6n))),
 					]);
 				});
 			});
 		});
 
 		test.suite('access manner: access by expression.', () => {
-			let TYPE_INT_FLOAT_STR:      TYPE.Type;
-			let TYPE_INT_FLOAT_STR_NULL: TYPE.Type;
+			let TYPE_INT_FLOAT_STR:       TYPE.Type;
+			let TYPE_MAYBE_INT_FLOAT_STR: TYPE.Type;
 			const DECLS = `
 				val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
 				val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
@@ -436,8 +445,8 @@ test.suite('Access', () => {
 				val mut map_unfixed:  Map .<str, int | float | str> = map_fixed;
 			`;
 			test.before(() => {
-				TYPE_INT_FLOAT_STR      = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
-				TYPE_INT_FLOAT_STR_NULL = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR, TYPE.NULL);
+				TYPE_INT_FLOAT_STR       = TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR);
+				TYPE_MAYBE_INT_FLOAT_STR = new TYPE.Maybe(TYPE.Union.all(TYPE.INT, TYPE.FLOAT, TYPE.STR));
 			});
 			test.test('returns union types.', () => {
 				testExprTypes(`{
@@ -469,32 +478,32 @@ test.suite('Access', () => {
 					map_unfixed.["b"];     % type \`int | float | str\`
 					map_unfixed.["c"];     % type \`int | float | str\`
 
-					list_fixed?.[0];  % type \`int | float | str | null\`
-					list_fixed?.[1];  % type \`int | float | str | null\`
-					list_fixed?.[2];  % type \`int | float | str | null\`
-					dict_fixed?.[@a]; % type \`int | float | str | null\`
-					dict_fixed?.[@b]; % type \`int | float | str | null\`
-					dict_fixed?.[@c]; % type \`int | float | str | null\`
-					map_fixed?.["a"]; % type \`int | float | str | null\`
-					map_fixed?.["b"]; % type \`int | float | str | null\`
-					map_fixed?.["c"]; % type \`int | float | str | null\`
+					list_fixed?.[0];  % type \`Maybe[int | float | str]\`
+					list_fixed?.[1];  % type \`Maybe[int | float | str]\`
+					list_fixed?.[2];  % type \`Maybe[int | float | str]\`
+					dict_fixed?.[@a]; % type \`Maybe[int | float | str]\`
+					dict_fixed?.[@b]; % type \`Maybe[int | float | str]\`
+					dict_fixed?.[@c]; % type \`Maybe[int | float | str]\`
+					map_fixed?.["a"]; % type \`Maybe[int | float | str]\`
+					map_fixed?.["b"]; % type \`Maybe[int | float | str]\`
+					map_fixed?.["c"]; % type \`Maybe[int | float | str]\`
 
-					list_unfixed?.[0];  % type \`int | float | str | null\`
-					list_unfixed?.[1];  % type \`int | float | str | null\`
-					list_unfixed?.[2];  % type \`int | float | str | null\`
-					dict_unfixed?.[@a]; % type \`int | float | str | null\`
-					dict_unfixed?.[@b]; % type \`int | float | str | null\`
-					dict_unfixed?.[@c]; % type \`int | float | str | null\`
-					map_unfixed?.["a"]; % type \`int | float | str | null\`
-					map_unfixed?.["b"]; % type \`int | float | str | null\`
-					map_unfixed?.["c"]; % type \`int | float | str | null\`
+					list_unfixed?.[0];  % type \`Maybe[int | float | str]\`
+					list_unfixed?.[1];  % type \`Maybe[int | float | str]\`
+					list_unfixed?.[2];  % type \`Maybe[int | float | str]\`
+					dict_unfixed?.[@a]; % type \`Maybe[int | float | str]\`
+					dict_unfixed?.[@b]; % type \`Maybe[int | float | str]\`
+					dict_unfixed?.[@c]; % type \`Maybe[int | float | str]\`
+					map_unfixed?.["a"]; % type \`Maybe[int | float | str]\`
+					map_unfixed?.["b"]; % type \`Maybe[int | float | str]\`
+					map_unfixed?.["c"]; % type \`Maybe[int | float | str]\`
 				}`, [
 					...repeat([
 						...repeat(TYPE_INT_FLOAT_STR, 6),
 						...repeat(TYPE.BOOL, 3),
 						...repeat(TYPE_INT_FLOAT_STR, 3),
 					], 2).flat(),
-					...repeat(TYPE_INT_FLOAT_STR_NULL, 18),
+					...repeat(TYPE_MAYBE_INT_FLOAT_STR, 18),
 				]);
 			});
 			test.test('unsupported: throws for string access of dict.', () => {
@@ -527,32 +536,24 @@ test.suite('Access', () => {
 					set_unfixed?.[42.0];
 				}`, repeat(TypeErrorInvalidOperation, 8));
 			});
-			test.test('throws when constituents are of different types (allowing null).', () => {
+			test.test('throws when constituents are of different types.', () => {
 				testExprTypes(`{
 					val mut mixed_list: List.<str | bool | sym> | Dict.<str | bool | sym> = ["hello", true, @world];
 					val mut mixed_dict: List.<int | float>      | Dict.<int | str>        = [a= 42];
 
 					val mut mixed_set:   {int} | {int -> int} = {42, 43};
 					val mut mixed_map:   {int} | {int -> int} = {42 -> 43};
-					val mut nullish_map: {int -> bool} | null = {42 -> false};
 
 					mixed_list.[@a];
 					mixed_dict.[0];
-
 					mixed_set.[21];
 					mixed_map.[21];
-					nullish_map.[42];
 
 					mixed_list?.[@a];
 					mixed_dict?.[0];
-
 					mixed_set?.[21];
 					mixed_map?.[21];
-					nullish_map?.[42]; % type \`bool | null\`
-				}`, [
-					...repeat(TypeErrorInvalidOperation, 9),
-					TYPE.BOOL.union(TYPE.NULL),
-				]);
+				}`, repeat(TypeErrorInvalidOperation, 8));
 			});
 			test.test('for Lists/Dicts/Maps: when accessor expression is correct type but out of bounds/range, returns union type.', () => {
 				testExprTypes(`{
@@ -570,12 +571,12 @@ test.suite('Access', () => {
 					list_fixed?.[-4]; % type \`int | float | str | null\`
 					dict_fixed?.[@d]; % type \`int | float | str | null\`
 
-					list_unfixed?.[3];  % type \`int | float | str | null\`
-					list_unfixed?.[-4]; % type \`int | float | str | null\`
-					dict_unfixed?.[@d]; % type \`int | float | str | null\`
+					list_unfixed?.[3];  % type \`Maybe[int | float | str]\`
+					list_unfixed?.[-4]; % type \`Maybe[int | float | str]\`
+					dict_unfixed?.[@d]; % type \`Maybe[int | float | str]\`
 				}`, [
 					...repeat(TYPE_INT_FLOAT_STR, 6),
-					...repeat(TYPE_INT_FLOAT_STR_NULL, 6),
+					...repeat(TYPE_MAYBE_INT_FLOAT_STR, 6),
 				]);
 			});
 			test.test('for Lists/Dicts: throws when accessor expression is of incorrect type.', () => {
@@ -604,10 +605,10 @@ test.suite('Access', () => {
 					set_mut_unfixed.[42.0]; % type \`bool\`
 					map_mut_unfixed.["d"];  % type \`int | float | str\`
 
-					map_fixed      ?.["d"];  % type \`int | float | str | null\`
-					map_unfixed    ?.["d"];  % type \`int | float | str | null\`
-					map_mut_fixed  ?.["d"];  % type \`int | float | str | null\`
-					map_mut_unfixed?.["d"];  % type \`int | float | str | null\`
+					map_fixed      ?.["d"];  % type \`Maybe[int | float | str]\`
+					map_unfixed    ?.["d"];  % type \`Maybe[int | float | str]\`
+					map_mut_fixed  ?.["d"];  % type \`Maybe[int | float | str]\`
+					map_mut_unfixed?.["d"];  % type \`Maybe[int | float | str]\`
 
 					% incorrect type
 					set_fixed      .[true]; % type \`bool\`
@@ -619,16 +620,16 @@ test.suite('Access', () => {
 					set_mut_unfixed.[true]; % type \`bool\`
 					map_mut_unfixed.[true]; % type \`int | float | str\`
 
-					map_fixed      ?.[true]; % type \`int | float | str | null\`
-					map_unfixed    ?.[true]; % type \`int | float | str | null\`
-					map_mut_fixed  ?.[true]; % type \`int | float | str | null\`
-					map_mut_unfixed?.[true]; % type \`int | float | str | null\`
+					map_fixed      ?.[true]; % type \`Maybe[int | float | str]\`
+					map_unfixed    ?.[true]; % type \`Maybe[int | float | str]\`
+					map_mut_fixed  ?.[true]; % type \`Maybe[int | float | str]\`
+					map_mut_unfixed?.[true]; % type \`Maybe[int | float | str]\`
 				}`, repeat([
 					...repeat([
 						TYPE.BOOL,
 						TYPE_INT_FLOAT_STR,
 					], 4).flat(),
-					...repeat(TYPE_INT_FLOAT_STR_NULL, 4),
+					...repeat(TYPE_MAYBE_INT_FLOAT_STR, 4),
 				], 2).flat());
 			});
 		});
@@ -868,13 +869,13 @@ test.suite('Access', () => {
 						(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
 				`.trim().concat(maybe_access_output(1, '$0', 1, '(MAP.GET (GET $0) (GET accessor))'), '\n\t(ENDPROGRAM)'));
 			});
-			test.test('returns null when base is null.', () => {
+			test.test('returns null when base is optional and unset; short-circuits evaluation of dynamic accessor.', () => {
 				assert.strictEqual(setupScript(`{
-					val mut my_tup:  (int, bool)  | null = null;
-					val mut my_rec:  (a: int)     | null = null;
-					val mut my_list: [int]        | null = null;
-					val mut my_dict: [:int]       | null = null;
-					val mut my_map:  {int -> int} | null = null;
+					val mut my_tup?:  (int, bool);
+					val mut my_rec?:  (a: int);
+					val mut my_list?: [int];
+					val mut my_dict?: [:int];
+					val mut my_map?:  {int -> int};
 					my_tup?.1;
 					my_rec?.a;
 					my_list?.[2 * 2 - 3];
@@ -882,11 +883,11 @@ test.suite('Access', () => {
 					my_map?.[5 + 3 * 2];
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> my_tup (NULL.CONST null))
-						(DECL <null> my_rec (NULL.CONST null))
-						(DECL <null> my_list (NULL.CONST null))
-						(DECL <null> my_dict (NULL.CONST null))
-						(DECL <null> my_map (NULL.CONST null))
+						(DECL <null> my_tup)
+						(DECL <null> my_rec)
+						(DECL <null> my_list)
+						(DECL <null> my_dict)
+						(DECL <null> my_map)
 				`.trim().concat(
 					maybe_access_output( 1, 'my_tup',  0, '(NULL.CONST null)'),
 					maybe_access_output( 4, 'my_rec',  1, '(NULL.CONST null)'),
@@ -896,19 +897,25 @@ test.suite('Access', () => {
 					'\n\t(ENDPROGRAM)',
 				));
 			});
-			test.test('short-circuits evaluation of dynamic accessor when base is non-null.', () => {
+			test.test('evaluates dynamic accessor when base is set.', () => {
 				assert.strictEqual(setupScript(`{
-					val mut my_list: [int]        | null = [42];
-					val mut my_dict: [:int]       | null = [a= 42];
-					val mut my_map:  {int -> int} | null = {42 -> 11};
+					val mut my_list?: [int];
+					val mut my_dict?: [:int];
+					val mut my_map?:  {int -> int};
+					set my_list = [42];
+					set my_dict = [a= 42];
+					set my_map  = {42 -> 11};
 					my_list?.[2 * 2 - 3];
 					my_dict?.[@b && @a];
 					my_map?.[5 + 3 * 2];
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <List> my_list (LIST.NEW (INT.CONST 42)))
-						(DECL <Dict> my_dict (DICT.NEW @a->(INT.CONST 42)))
-						(DECL <Map> my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
+						(DECL <null> my_list)
+						(DECL <null> my_dict)
+						(DECL <null> my_map)
+						(SET my_list (LIST.NEW (INT.CONST 42)))
+						(SET my_dict (DICT.NEW @a->(INT.CONST 42)))
+						(SET my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
 				`.trim().concat(
 					maybe_access_output(1, 'my_list', 0, (decl) => extract_lines`
 						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))

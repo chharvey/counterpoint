@@ -136,7 +136,7 @@ export class Maybe extends TypeRecord {
 	 * Constructs a Record type resembling the `Maybe[T]` type, with the given generic argument.
 	 * @param typearg the generic argument to `Maybe[T]`
 	 */
-	public constructor(private readonly typearg: Type) {
+	public constructor(public readonly typearg: Type) {
 		super(new Map<bigint, EntryType>([
 			[Maybe.MAYBE_PROPS.isMaybe.id, {type: TRUE,    optional: false}],
 			[Maybe.MAYBE_PROPS.value.id,   {type: typearg, optional: true}],
