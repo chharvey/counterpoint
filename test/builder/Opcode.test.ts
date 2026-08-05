@@ -15,7 +15,7 @@ import {
 import {
 	extract_lines,
 	repeat,
-	assert_shallowStrictEqual,
+	assert_equal_values,
 	assertEqualBins,
 	genConst,
 	setupScript,
@@ -52,11 +52,11 @@ test.suite('Opcode', () => {
 					new VALUE.Natural(42n),
 					new VALUE.Float(4.2),
 					new VALUE.String('hello'),
-				], (val) => assert.deepStrictEqual(new OP.Const(val).interpret(), val));
+				], (val) => assert_equal_values(new OP.Const(val).interpret(), val));
 			});
 
 			test.test('Get returns interpreter’s symbol table value.', () => {
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
@@ -81,7 +81,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('Template interprets each child, stringifies, and concatenates.', () => {
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val mut x: int = 85;
 
 					"""42😀""";
@@ -105,7 +105,7 @@ test.suite('Opcode', () => {
 					[Validator.cookTokenIdentifier('b'), expected_items[1]],
 					[Validator.cookTokenIdentifier('c'), expected_items[2]],
 				] as const;
-				return assert.deepStrictEqual(interpret_extracted_drops(`{
+				return assert_equal_values(interpret_extracted_drops(`{
 					(1, 2.0, "three");
 					[1, 2.0, "three"];
 					{1, 2.0, "three"};
@@ -133,7 +133,7 @@ test.suite('Opcode', () => {
 			});
 
 			test.test('TupleGet, RecordGet', () => {
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
 					val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
@@ -166,7 +166,7 @@ test.suite('Opcode', () => {
 					new VALUE.Float(2.0),
 					new VALUE.String('three'),
 				];
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
 					val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
 					val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
@@ -212,7 +212,7 @@ test.suite('Opcode', () => {
 			test.test.todo('Call', () => undefined);
 
 			test.test('Isset', () => {
-				assert_shallowStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val mut a0?: int;
 					val mut a1?: int;
 					val mut a2?: int;
@@ -290,7 +290,7 @@ test.suite('Opcode', () => {
 						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
 						TYPE.BOOL,
 					))));
-					return assert.deepStrictEqual(
+					return assert_equal_values(
 						builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
 							: instr.interpret(interp)
@@ -302,13 +302,13 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('[operator=NOT]', () => {
-					assert.deepStrictEqual(interpret_unops('!'), [
+					assert_equal_values(interpret_unops('!'), [
 						...repeat(VALUE.TRUE, 2),
 						...repeat(VALUE.FALSE, 19),
 					]);
 				});
 				test.test('[operator=EMP]', () => {
-					assert.deepStrictEqual(interpret_unops('?'), [
+					assert_equal_values(interpret_unops('?'), [
 						VALUE.TRUE,
 						VALUE.TRUE,
 						VALUE.FALSE,
@@ -333,7 +333,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('[operator=NEG]', () => {
-					assert.deepStrictEqual(interpret_unops('-', operands.slice(3, 8)), [
+					assert_equal_values(interpret_unops('-', operands.slice(3, 8)), [
 						VALUE.INT_0,
 						new VALUE.Integer(-42n),
 						VALUE.FLOAT_N0,
@@ -349,7 +349,7 @@ test.suite('Opcode', () => {
 						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
 						TYPE.BOOL,
 					))));
-					return assert.deepStrictEqual(
+					return assert_equal_values(
 						builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
 							: instr.interpret(interp)
@@ -361,7 +361,7 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('[operator=TOINT]', () => {
-					assert.deepStrictEqual(interpret_calls('Integer', operands.slice(3, 10)), [
+					assert_equal_values(interpret_calls('Integer', operands.slice(3, 10)), [
 						VALUE.INT_0,
 						new VALUE.Integer(42n),
 						VALUE.INT_0,
@@ -372,7 +372,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('[operator=TONAT]', () => {
-					assert.deepStrictEqual(interpret_calls('Natural', operands.slice(3, 10)), [
+					assert_equal_values(interpret_calls('Natural', operands.slice(3, 10)), [
 						VALUE.NAT_0,
 						new VALUE.Natural(42n),
 						VALUE.NAT_0,
@@ -383,7 +383,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('[operator=TOFLOAT]', () => {
-					assert.deepStrictEqual(interpret_calls('Float', operands.slice(3, 10)), [
+					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
 						VALUE.FLOAT_0,
 						new VALUE.Float(42.0),
 						VALUE.FLOAT_0,
@@ -429,7 +429,7 @@ test.suite('Opcode', () => {
 						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)),
 						TYPE.NAT,
 					)));
-					return assert.deepStrictEqual(
+					return assert_equal_values(
 						builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
 							: instr.interpret(interp)
@@ -446,7 +446,7 @@ test.suite('Opcode', () => {
 					}`);
 				}
 				test.test('integer operations.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						42 + 420
 						42 - 420
 						 126 /  3
@@ -475,7 +475,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('float operations.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						3.0e1 - 201.0e-1
 						3.0 * 2.1
 					`), [
@@ -484,7 +484,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('overflows integers properly.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						2 ^ 63 + 2 ^ 62
 						-(2 ^ 62) - 2 ^ 63
 						42 ^ 2 * 420
@@ -495,13 +495,13 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('overflows naturals properly.', () => {
-					assert.deepStrictEqual(
+					assert_equal_values(
 						interpret_binops(['+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63']),
 						[new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n)],
 					);
 				});
 				test.test('does not underflow naturals.', () => {
-					assert.deepStrictEqual(
+					assert_equal_values(
 						interpret_binops(['+5 - +9']),
 						[VALUE.NAT_0],
 					);
@@ -511,7 +511,7 @@ test.suite('Opcode', () => {
 					assert.throws(() => interpret_binops(['-4.0 ^ -0.5']), xjs.NaNError);
 				});
 				test.test('comparative operations.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						3   <  3
 						3   >  3
 						3   <= 3
@@ -639,7 +639,7 @@ test.suite('Opcode', () => {
 				});
 				test.suite('equality operations.', () => {
 					test.test('simple non-numeric types.', () => {
-						assert.deepStrictEqual(interpret_binops(extract_lines`
+						assert_equal_values(interpret_binops(extract_lines`
 							null === null
 							null ==  null
 							null === 5
@@ -711,7 +711,7 @@ test.suite('Opcode', () => {
 					});
 					test.suite('numeric types.', () => {
 						test.test('for identity (`===`), always returns `false` for distinct values.', () => {
-							assert.deepStrictEqual(interpret_binops(extract_lines`
+							assert_equal_values(interpret_binops(extract_lines`
 								0   === -0
 								0.0 === -0.0
 								0   === 0.0
@@ -725,7 +725,7 @@ test.suite('Opcode', () => {
 							]);
 						});
 						test.test('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
-							assert.deepStrictEqual(interpret_binops(extract_lines`
+							assert_equal_values(interpret_binops(extract_lines`
 								0   == -0
 								0.0 == -0.0
 								0   == 0.0
@@ -737,7 +737,7 @@ test.suite('Opcode', () => {
 						});
 					});
 					test.test('compound types.', () => {
-						assert.deepStrictEqual(interpret_extracted_drops(`{
+						assert_equal_values(interpret_extracted_drops(`{
 							val a: anything = ();
 							val b: anything = (42,);
 							val c: anything = (x= 42);
@@ -802,7 +802,7 @@ test.suite('Opcode', () => {
 						}`), repeat(VALUE.TRUE, 44));
 					});
 					test.test('compound value types’ constituents are compared using same operand.', () => {
-						assert.deepStrictEqual(interpret_binops(extract_lines`
+						assert_equal_values(interpret_binops(extract_lines`
 							(   42.0,)  === (   42,)
 							(   42.0,)  ==  (   42,)
 							(a= 42.0)   === (a= 42)
