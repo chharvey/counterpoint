@@ -57,9 +57,6 @@ test.suite('Statement', () => {
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
-		});
-
-		test.suite('StatementDelete', () => {
 			test.test('does not throw if the variable was uninitialized.', () => {
 				const {goal} = setupScript(`{
 					val mut i?: int;
@@ -511,9 +508,6 @@ test.suite('Statement', () => {
 					});
 				});
 			});
-		});
-
-		test.suite('StatementDelete', () => {
 			test.suite('for property deletion.', () => {
 				test.test('throws for deletion on non-interface objects.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
@@ -739,6 +733,17 @@ test.suite('Statement', () => {
 						(SET x (INT.CONST 43))
 						(SET x (INT.CONST 44))
 						(SET x (INT.CONST -42))
+				`.trim());
+			});
+			test.test('deletion: pushes OP.Set instruction.', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x?: int;
+					delete x;
+				}`, {build: false});
+				(stmts[1] as AST.STMT.StatementReassignment).build(builder);
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
+					"block-0":
+						(SET x)
 				`.trim());
 			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {

@@ -356,7 +356,7 @@ test.suite('Expression', () => {
 					(DECL <null> g (NULL.CONST null))
 					(SET a1 (INT.CONST 42))
 					(SET a2 (INT.CONST 42))
-					(SET a2 )
+					(SET a2)
 					(SET c1 (NULL.CONST null))
 					(DROP (ISSET a0))
 					(DROP (ISSET a1))

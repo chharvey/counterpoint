@@ -33,7 +33,7 @@ class OpSet extends Instruction {
 	public override toString(): string {
 		return super.toString(
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
-			...(this.value ? [this.value] : ['']),
+			...(this.value ? [this.value] : []),
 		);
 	}
 

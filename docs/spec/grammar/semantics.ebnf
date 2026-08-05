@@ -150,7 +150,6 @@ SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticStatementClaim
 	| SemanticStatementReassignment
-	| SemanticStatementDelete
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration

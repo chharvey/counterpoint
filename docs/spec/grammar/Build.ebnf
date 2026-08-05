@@ -340,11 +340,10 @@ Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticEx
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Set]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Map]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-
-Build(SemanticStatementDelete ::= SemanticExpressionVariable) := [
+Build(SemanticStatementReassignment ::= SemanticExpressionVariable) := [
 	(SET `GetSymbolSchema(SemanticExpressionVariable)`)
 ];
-Build(SemanticStatementDelete ::= SemanticExpressionAccess); // TODO: object/interface support
+Build(SemanticStatementReassignment ::= SemanticExpressionAccess); // TODO: object/interface support
 
 Build(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock) := [
 	(GOTO.IF `Build(SemanticExpression)` "then" "endif")
