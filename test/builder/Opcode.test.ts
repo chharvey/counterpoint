@@ -27,11 +27,17 @@ test.suite('Opcode', () => {
 	test.suite('Value', () => {
 		test.suite('#interpret', () => {
 			function interpret_extracted_drops(src: string): VALUE.Value[] {
-				const interp = new Interpreter();
-				return setupScript(src, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
-					? instr.value.interpret(interp)
-					: instr.interpret(interp)
-				)).filter((value) => !!value);
+				const values: VALUE.Value[] = [];
+				const {builder} = setupScript(src, {codegen: false});
+				builder.instructions.filter((instr) => instr instanceof OP.Drop).forEach((drop) => {
+					Reflect.defineProperty(drop, 'interpret', {
+						value: function (this: OP.Drop, itp: Interpreter): void {
+							values.push(this.value.interpret(itp));
+						},
+					});
+				});
+				builder.interpret(new Interpreter());
+				return values;
 			}
 
 			test.test('Trap always throws.', () => {
