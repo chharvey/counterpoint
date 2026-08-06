@@ -768,7 +768,7 @@ test.suite('Access', () => {
 				block_n:      number,
 				base_name:    string,
 				result_n:     number,
-				result_value: string | ((decl: (value: string) => string) => string),
+				result_value: string | ((result_setter: (value: string) => string) => string),
 			): string {
 				const block_then:  string = `block-${ block_n }`;
 				const block_else:  string = `block-${ block_n + 1 }`;
@@ -786,7 +786,7 @@ test.suite('Access', () => {
 					"${ block_else }":
 						${ typeof result_value === 'string'
 							? set_result(result_value)
-							: result_value((value) => set_result(value)) }
+							: result_value((res_val) => set_result(res_val)) }
 						(GOTO "${ block_endif }")
 					"${ block_endif }":
 						(DROP (GET ${ result_name }))
@@ -810,9 +810,9 @@ test.suite('Access', () => {
 						(DECL <tuple> my_tupleB (TUPLE.NEW (GET $3) (GET $4)))
 				`.trim().concat(
 					maybe_access_output(1, 'my_tupleA', 5, '(TUPLE.GET 2 (GET my_tupleA))'),
-					maybe_access_output(4, 'my_tupleB', 6, (decl) => extract_lines`
+					maybe_access_output(4, 'my_tupleB', 6, (result_setter) => extract_lines`
 						(DROP (GET my_tupleB))
-						${ decl('(NULL.CONST null)') }
+						${ result_setter('(NULL.CONST null)') }
 					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));
@@ -834,9 +834,9 @@ test.suite('Access', () => {
 						(DECL <record> my_recordY (RECORD.NEW @a->(GET $3) @c->(GET $4)))
 				`.trim().concat(
 					maybe_access_output(1, 'my_recordX', 5, '(RECORD.GET @b (GET my_recordX))'),
-					maybe_access_output(4, 'my_recordY', 6, (decl) => extract_lines`
+					maybe_access_output(4, 'my_recordY', 6, (result_setter) => extract_lines`
 						(DROP (GET my_recordY))
-						${ decl('(NULL.CONST null)') }
+						${ result_setter('(NULL.CONST null)') }
 					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));
@@ -917,12 +917,12 @@ test.suite('Access', () => {
 						(SET my_dict (DICT.NEW @a->(INT.CONST 42)))
 						(SET my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
 				`.trim().concat(
-					maybe_access_output(1, 'my_list', 0, (decl) => extract_lines`
+					maybe_access_output(1, 'my_list', 0, (result_setter) => extract_lines`
 						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
 						(DECL <int> $2 (INT.SUB (GET $1) (INT.CONST 3)))
-						${ decl('(LIST.GET (GET my_list) (GET $2))') }
+						${ result_setter('(LIST.GET (GET my_list) (GET $2))') }
 					`.join('\n\t')),
-					maybe_access_output(4, 'my_dict', 3, (decl) => xjs.String.dedent`
+					maybe_access_output(4, 'my_dict', 3, (result_setter) => xjs.String.dedent`
 						${ '\t' }(DECL <sym> $4)
 						${ '\t' }(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-7" "block-8")
 						"block-7":
@@ -932,12 +932,12 @@ test.suite('Access', () => {
 							(SET $4 (SYM.CONST @b))
 							(GOTO "block-9")
 						"block-9":
-							${ decl('(DICT.GET (GET my_dict) (GET $4))') }
+							${ result_setter('(DICT.GET (GET my_dict) (GET $4))') }
 					`.trim()),
-					maybe_access_output(10, 'my_map', 5, (decl) => extract_lines`
+					maybe_access_output(10, 'my_map', 5, (result_setter) => extract_lines`
 						(DECL <int> $6 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
 						(DECL <int> $7 (INT.ADD (INT.CONST 5) (GET $6)))
-						${ decl('(MAP.GET (GET my_map) (GET $7))') }
+						${ result_setter('(MAP.GET (GET my_map) (GET $7))') }
 					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));

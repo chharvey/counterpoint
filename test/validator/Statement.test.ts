@@ -739,11 +739,13 @@ test.suite('Statement', () => {
 				const {stmts, builder} = setupScript(`{
 					val mut x?: int;
 					delete x;
+					set x = 42;
 				}`, {build: false});
-				(stmts[1] as AST.STMT.StatementReassignment).build(builder);
+				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
 						(SET x)
+						(SET x (INT.CONST 42))
 				`.trim());
 			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
