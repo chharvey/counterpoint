@@ -175,6 +175,7 @@ Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
 )));
 
 Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
+Codegen((ISNONE `v`)) := (call $op:is-none `Codegen(v)`);
 
 Codegen((NOT `v`)) := (call $op:not      `Codegen(v)`);
 Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);

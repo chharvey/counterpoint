@@ -16,6 +16,7 @@ export function ops(vm: VirtualMachine) {
 				const binary_params: binaryen.Type = binaryen.createType([reftype.Value, reftype.Value]);
 				func_import_memo = new Map<string, FuncImportData>([
 					['op::isNull',   {name: 'op:is-null',   param: reftype.Value,  result: reftype.Value}],
+					['op::isNone',   {name: 'op:is-none',   param: reftype.Value,  result: reftype.Value}],
 					['op::not',      {name: 'op:not',       param: reftype.Value,  result: reftype.Value}],
 					['op::isEmpty',  {name: 'op:is-empty',  param: reftype.Value,  result: reftype.Value}],
 					['op::negate',   {name: 'op:negate',    param: reftype.Value,  result: reftype.Value}],
@@ -49,9 +50,14 @@ export function ops(vm: VirtualMachine) {
 		},
 
 
-		/** Is the value equal to the counterpoint value `null`? */
+		/** Is the value equal to the Counterpoint value `null`? */
 		isNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-null', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a `None` Counterpoint value? */
+		isNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-none', [param0], vm.reftype.Value)
 		),
 
 		/** Is the value falsy? */

@@ -4,6 +4,29 @@
 		(call $Vect.is-null (struct.get $Value $primitive (local.get $value)))
 	))
 )
+(func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
+	(local $record (ref $Record))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+			(ref.test (ref $Record) (local.get $value))
+			(then
+				(local.set $record (ref.cast (ref $Record) (struct.get $Value $composite (local.get $value))))
+				(i32.and
+					(call $Record.has-key
+						(local.get $record)
+						(i64.const 0xd8da8b0157ad009a) ;; TYPE.Maybe.MAYBE_PROPS.isMaybe.id
+					)
+					(i32.eqz (call $Record.has-key
+						(local.get $record)
+						(i64.const 0x6898c8e63b375fe1) ;; TYPE.Maybe.MAYBE_PROPS.value.id
+					))
+				)
+			)
+			(else (i32.const 0))
+		)
+	))
+)
 
 
 

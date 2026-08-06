@@ -51,6 +51,7 @@ CALL([Value*]) -> Value;
 
 ISSET (SymbolSchemaVar|native-string) -> Boolean;
 ISNULL([Value])                       -> Boolean;
+ISNONE([Value])                       -> Boolean;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;

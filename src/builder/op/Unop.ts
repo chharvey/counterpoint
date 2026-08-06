@@ -22,6 +22,7 @@ import type {ValueTac} from './ValueTac.ts';
 /** An enum of allowed unary operations. */
 export type OpCodeUn = (
 	| OpCode.ISNULL
+	| OpCode.ISNONE
 
 	| OpCode.NOT
 	| OpCode.EMP
@@ -87,6 +88,7 @@ export class Unop extends Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		switch (this.operator) {
 			case OpCode.ISNULL: { return VALUE.Boolean.fromBoolean(operand.identical(VALUE.NULL)); }
+			case OpCode.ISNONE: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Record && operand.isNone); }
 
 			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
 			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }
@@ -111,6 +113,7 @@ export class Unop extends Value {
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
 			case OpCode.ISNULL: { return op.isNull(code); }
+			case OpCode.ISNONE: { return op.isNone(code); }
 
 			case OpCode.NOT: { return op.not(code); }
 			case OpCode.EMP: { return op.isEmpty(code); }

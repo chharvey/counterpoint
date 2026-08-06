@@ -159,6 +159,18 @@ Boolean! Interpret((ISNULL `v`)) :=
 	2. *Return:* `Identical(v, null)`.
 ;
 
+Boolean! Interpret((ISNONE `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `Record`:
+		1. *If* `v` has a key named `'%isMaybe'` *and* `v` does not have a key named `'%value'`:
+			1. *Return:* `true`.
+		2. *Else:*
+			1. Fall through.
+	3. *Else:*
+		1. Fall through.
+	4. *Return:* `false`.
+;
+
 Boolean! Interpret((NOT `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:

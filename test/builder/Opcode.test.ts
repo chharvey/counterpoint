@@ -17,6 +17,7 @@ import {
 	repeat,
 	assert_equal_values,
 	assertEqualBins,
+	src_maybe_string,
 	genConst,
 	setupScript,
 } from '../utils.ts';
@@ -280,6 +281,8 @@ test.suite('Opcode', () => {
 					{}
 					{42}
 					{41 -> 42}
+					${ src_maybe_string() }
+					${ src_maybe_string('42') }
 				`;
 				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
 					return interpret_extracted_drops(`{
@@ -306,14 +309,34 @@ test.suite('Opcode', () => {
 						)).filter((value) => !!value),
 						[
 							VALUE.TRUE,
-							...repeat(VALUE.FALSE, 20),
+							...repeat(VALUE.FALSE, 22),
+						],
+					);
+				});
+				test.test('[operator=ISNONE]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.ISNONE,
+						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
+						TYPE.BOOL,
+					))));
+					return assert_equal_values(
+						builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value),
+						[
+							...repeat(VALUE.FALSE, 21),
+							VALUE.TRUE,
+							VALUE.FALSE,
 						],
 					);
 				});
 				test.test('[operator=NOT]', () => {
 					assert_equal_values(interpret_unops('!'), [
 						...repeat(VALUE.TRUE, 2),
-						...repeat(VALUE.FALSE, 19),
+						...repeat(VALUE.FALSE, 21), // TODO: None should be falsy and empty
 					]);
 				});
 				test.test('[operator=EMP]', () => {
@@ -338,6 +361,8 @@ test.suite('Opcode', () => {
 						VALUE.FALSE,
 						VALUE.TRUE,
 						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.FALSE, // TODO: None should be falsy and empty
 						VALUE.FALSE,
 					]);
 				});
@@ -365,7 +390,7 @@ test.suite('Opcode', () => {
 						)).filter((value) => !!value),
 						[
 							...repeat(VALUE.FALSE, 2),
-							...repeat(VALUE.TRUE, 19),
+							...repeat(VALUE.TRUE, 21), // TODO: None should be falsy and empty
 						],
 					);
 				});
@@ -1412,6 +1437,14 @@ test.suite('Opcode', () => {
 					assertEqualBins(
 						new OP.Unop(OP.OpCode.ISNULL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
 						cg.vm.op.isNull(genConst(cg)),
+					);
+				});
+				test.test('ISNONE operator returns custom WASM function `$op:is-none`.', () => {
+					// there exists no syntax for “is None” operator, so constructing it manually
+					const cg = new CodeGenerator();
+					assertEqualBins(
+						new OP.Unop(OP.OpCode.ISNONE, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						cg.vm.op.isNone(genConst(cg)),
 					);
 				});
 				test.test('TOBOOL operator returns custom WASM function `$op:not` applied twice.', () => {

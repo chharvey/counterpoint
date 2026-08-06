@@ -39,6 +39,7 @@ export enum OpCode {
 
 	ISSET,
 	ISNULL,
+	ISNONE,
 
 	NOT,
 	EMP,
