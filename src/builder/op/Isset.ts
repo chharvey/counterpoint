@@ -35,10 +35,9 @@ export class Isset extends Value {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
-		const value: VALUE.Value | null | undefined = interp.getLocalValue(this.target);
+		const value: VALUE.Value | undefined = interp.getLocalValue(this.target);
 		switch (value) {
 			case undefined: { throw new ReferenceError(`Local with id \`${ this.target.id }\` must be declared first!`); };
-			case null:      { return VALUE.FALSE; }
 			default:        { return VALUE.TRUE; }
 		}
 	}

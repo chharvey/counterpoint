@@ -5,9 +5,9 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {
+import type {
 	VALUE,
-	type TYPE,
+	TYPE,
 } from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {
@@ -40,11 +40,7 @@ export class Get extends ValueTac {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
-		const value: VALUE.Value | null | undefined = interp.getLocalValue(this.target);
-		if (value === null) {
-			return VALUE.NULL;
-		}
-		return value ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
+		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 
 	@memoizeMethod

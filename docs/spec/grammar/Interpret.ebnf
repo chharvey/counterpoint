@@ -27,10 +27,7 @@ String Interpret((STR.CONST `s`)) :=
 Value! Interpret((GET `id`)) :=
 	1. *If* the interpreter’s symbol table contains `id`:
 		1. *Let* `value` be the value stored at `id`.
-		2. *If* `value` is *none*:
-			1. *Return:* `null`;
-		3. *Else:*
-			1. *Return:* `value`.
+		2. *Return:* `value`.
 	2. *Else:*
 		1. *Throw:* a new ReferenceError.
 ;
@@ -152,11 +149,7 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 
 Boolean! Interpret((ISSET `id`)) :=
 	1. *If* the interpreter’s symbol table contains `id`:
-		1. *Let* `value` be the value stored at `id`.
-		2. *If* `value` is *none*:
-			1. *Return:* `false`;
-		3. *Else:*
-			1. *Return:* `true`.
+		1. *Return:* `true`.
 	2. *Else:*
 		1. *Throw:* a new ReferenceError.
 ;
