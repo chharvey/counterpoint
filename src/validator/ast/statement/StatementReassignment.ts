@@ -84,10 +84,10 @@ export class StatementReassignment extends Statement {
 			if (this.assigned) {
 				const value: OP.Value = this.assigned.build(builder);
 				symbol.irType = value.type;
-				return builder.pushInstruction(new OP.Set(symbol, value));
+				return builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));
 			} else {
 				symbol.irType = TYPE.NULL;
-				return builder.pushInstruction(new OP.Set(symbol));
+				return builder.pushInstruction(new OP.Set(symbol, symbol.irType));
 			}
 		} else if (this.assigned) {
 			assert_instanceof(this.assignee.accessor, EXPR.Expression);

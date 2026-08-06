@@ -21,13 +21,28 @@ import type {Value} from './Value.ts';
 /** Write a value to a variable/local. */
 class OpSet extends Instruction {
 	private readonly targetType: TYPE.Type;
+	private readonly value?:     Value;
 
+
+	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
+	public constructor(target: Temp, value?: Value);
 	public constructor(
 		private readonly target: SymbolSchemaVar | Temp,
-		private readonly value?: Value,
+		arg1?: TYPE.Type | Value,
+		arg2?: Value,
 	) {
 		super(OpCode.SET);
-		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
+		if (this.target instanceof SymbolSchemaVar) {
+			this.targetType = arg1 as TYPE.Type;
+			if (arg2) {
+				this.value = arg2;
+			}
+		} else {
+			this.targetType = this.target.type;
+			if (arg1) {
+				this.value = arg1 as Value;
+			}
+		}
 	}
 
 	public override toString(): string {

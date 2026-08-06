@@ -25,14 +25,15 @@ export class Decl extends Instruction {
 	private readonly targetType: TYPE.Type;
 	private readonly value?:     Value;
 
-	public constructor(target: SymbolSchemaVar, value?: Value);
+	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
 		private readonly target: SymbolSchemaVar | Temp,
+		typ?:   TYPE.Type,
 		value?: Value,
 	) {
 		super(OpCode.DECL);
-		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
+		this.targetType = this.target instanceof SymbolSchemaVar ? typ! : this.target.type;
 		if (target instanceof SymbolSchemaVar) {
 			if (value) {
 				this.value = value;

@@ -150,7 +150,7 @@ export class DeclarationVariable extends Statement {
 		if (this.assignee) {
 			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.irType = value?.type ?? TYPE.NULL;
-			builder.pushInstruction(new OP.Decl(symbol, value));
+			builder.pushInstruction(new OP.Decl(symbol, symbol.irType, value));
 		} else {
 			builder.pushInstruction(new OP.Drop(value!));
 		}

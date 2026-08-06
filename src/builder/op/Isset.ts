@@ -5,7 +5,10 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {VALUE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../validator/index.ts';
 import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
@@ -17,7 +20,7 @@ import {Value} from './Value.ts';
 /** Return whether a variable has been assigned/reassigned. */
 export class Isset extends Value {
 	public constructor(private readonly target: SymbolSchemaVar) {
-		super(OpCode.ISSET, target.irType);
+		super(OpCode.ISSET, TYPE.BOOL);
 	}
 
 	public override toString(): string {

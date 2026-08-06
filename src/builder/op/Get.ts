@@ -5,7 +5,10 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {VALUE} from '../../typer/index.ts';
+import {
+	VALUE,
+	type TYPE,
+} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {
 	Temp,
@@ -19,8 +22,10 @@ import {ValueTac} from './ValueTac.ts';
 
 /** Read the value of a variable/local. */
 export class Get extends ValueTac {
-	public constructor(private readonly target: SymbolSchemaVar | Temp) {
-		super(OpCode.GET, target instanceof SymbolSchemaVar ? target.irType : target.type);
+	public constructor(target: SymbolSchemaVar, typ: TYPE.Type);
+	public constructor(target: Temp);
+	public constructor(private readonly target: SymbolSchemaVar | Temp, typ?: TYPE.Type) {
+		super(OpCode.GET, target instanceof SymbolSchemaVar ? typ! : target.type);
 	}
 
 	public override toString(): string {

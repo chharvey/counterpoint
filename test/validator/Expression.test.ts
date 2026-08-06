@@ -146,7 +146,7 @@ test.suite('Expression', () => {
 			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol));
+			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol, typeUnit(42n)));
 		});
 		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
