@@ -583,11 +583,11 @@ test.suite('Declaration', () => {
 				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
 
 				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(DECL <null> assignee_b)\`
-				val mut assignee_c:  int = 42;         % \`(DECL <int> assignee_c (INT.CONST 42))\`
-				val     _:           int = assignee_c; % \`(DROP (GET assignee_c))\`
-				val     assignee_d:  int = assignee_c; % \`(DECL <int> assignee_d (GET assignee_c))\`
-				val mut assignee_e:  int = assignee_c; % \`(DECL <int> assignee_e (GET assignee_c))\`
+				val mut assignee_b?: int;
+				val mut assignee_c:  int = 42;
+				val     _:           int = assignee_c;
+				val     assignee_d:  int = assignee_c;
+				val mut assignee_e:  int = assignee_c;
 
 				%% Syntactically impossible cases (for completion):
 				val _?:          int;
@@ -602,7 +602,7 @@ test.suite('Declaration', () => {
 				"block-0":
 					(DROP (INT.CONST 42))
 					(DECL <int> assignee_a (INT.CONST 42))
-					(DECL <null> assignee_b)
+					(DECL <record> assignee_b (RECORD.NEW @'%isMaybe'->(BOOL.CONST true)))
 					(DECL <int> assignee_c (INT.CONST 42))
 					(DROP (GET assignee_c))
 					(DECL <int> assignee_d (GET assignee_c))

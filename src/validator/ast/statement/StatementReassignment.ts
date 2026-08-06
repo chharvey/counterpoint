@@ -81,14 +81,17 @@ export class StatementReassignment extends Statement {
 	public override build(builder: Builder): void {
 		if (this.assignee instanceof EXPR.Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			let value: OP.Value;
 			if (this.assigned) {
-				const value: OP.Value = this.assigned.build(builder);
-				symbol.irType = value.type;
-				return builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));
+				value = this.assigned.build(builder);
+				if (symbol.isUninitialized) {
+					value = new OP.Maybe(symbol.type, value);
+				}
 			} else {
-				symbol.irType = TYPE.NULL;
-				return builder.pushInstruction(new OP.Set(symbol, symbol.irType));
+				value = new OP.Maybe(symbol.type);
 			}
+			symbol.irType = value.type;
+			return builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));
 		} else if (this.assigned) {
 			assert_instanceof(this.assignee.accessor, EXPR.Expression);
 			const base_value:    OP.ValueTac = this.assignee.base.build(builder).asTac(builder);

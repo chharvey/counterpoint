@@ -66,8 +66,8 @@ export class Access extends Expression implements Reassignable {
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Value {
-		let typ:          TYPE.Type   = this.type();
-		const base_value: OP.ValueTac = this.base.build(builder).asTac(builder);
+		let typ:        TYPE.Type   = this.type();
+		let base_value: OP.ValueTac = this.base.build(builder).asTac(builder);
 
 		if (typ instanceof TYPE.Maybe) {
 			typ = typ.typearg.union(TYPE.NULL);
@@ -150,7 +150,12 @@ export class Access extends Expression implements Reassignable {
 				typ,
 				() => new OP.Unop(OP.OpCode.ISNULL, base_value, TYPE.BOOL),
 				() => new OP.Const(VALUE.NULL),
-				non_nullish_base,
+				() => {
+					if (base_value.type instanceof TYPE.Maybe) {
+						base_value = OP.Maybe.unwrap(base_value).asTac(builder);
+					}
+					return non_nullish_base();
+				},
 			);
 		}
 		return non_nullish_base();

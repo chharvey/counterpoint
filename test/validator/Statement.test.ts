@@ -20,6 +20,7 @@ import {
 import {
 	extract_lines,
 	assertAssignable,
+	op_maybe_string,
 	setupScript,
 } from '../utils.ts';
 
@@ -744,8 +745,8 @@ test.suite('Statement', () => {
 				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
-						(SET x)
-						(SET x (INT.CONST 42))
+						(SET x ${ op_maybe_string() })
+						(SET x ${ op_maybe_string('(INT.CONST 42)') })
 				`.trim());
 			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
@@ -888,8 +889,8 @@ test.suite('Statement', () => {
 					};
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> cond)
-						(SET cond (BOOL.CONST true))
+						(DECL <record> cond ${ op_maybe_string() })
+						(SET cond ${ op_maybe_string('(BOOL.CONST true)') })
 						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":
 						(DROP (INT.CONST 10))

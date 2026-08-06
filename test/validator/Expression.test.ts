@@ -24,6 +24,7 @@ import {
 	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
+	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -344,9 +345,9 @@ test.suite('Expression', () => {
 				isset g;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <null> a0)
-					(DECL <null> a1)
-					(DECL <null> a2)
+					(DECL <record> a0 ${ op_maybe_string() })
+					(DECL <record> a1 ${ op_maybe_string() })
+					(DECL <record> a2 ${ op_maybe_string() })
 					(DECL <int> b (INT.CONST 42))
 					(DECL <int> c0 (INT.CONST 42))
 					(DECL <int> c1 (INT.CONST 42))
@@ -354,9 +355,9 @@ test.suite('Expression', () => {
 					(DECL <int> e (INT.CONST 42))
 					(DECL <int> f (INT.CONST 42))
 					(DECL <null> g (NULL.CONST null))
-					(SET a1 (INT.CONST 42))
-					(SET a2 (INT.CONST 42))
-					(SET a2)
+					(SET a1 ${ op_maybe_string('(INT.CONST 42)') })
+					(SET a2 ${ op_maybe_string('(INT.CONST 42)') })
+					(SET a2 ${ op_maybe_string() })
 					(SET c1 (NULL.CONST null))
 					(DROP (ISSET a0))
 					(DROP (ISSET a1))

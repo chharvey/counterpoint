@@ -122,7 +122,7 @@ export class Maybe extends TypeRecord {
 	/** Enumeration of the properties of the `Maybe` type precursor. */
 	// need to use a getter due to import order
 	@memoizeGetter
-	private static get MAYBE_PROPS() { // eslint-disable-line @typescript-eslint/explicit-function-return-type
+	public static get MAYBE_PROPS() { // eslint-disable-line @typescript-eslint/explicit-function-return-type
 		const key_is_maybe = '\'%isMaybe\'';
 		const key_value    = '\'%value\'';
 		return {

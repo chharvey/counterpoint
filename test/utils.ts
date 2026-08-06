@@ -177,6 +177,13 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | 
 
 
 
+const {isMaybe, value: mval} = TYPE.Maybe.MAYBE_PROPS;
+export function op_maybe_string(val?: string): string {
+	return `(RECORD.NEW @${ isMaybe.name }->(BOOL.CONST true)${ val ? ` @${ mval.name }->${ val }` : '' })`;
+}
+
+
+
 const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
 const TYPE_UNIT_MEMO_SYM = new Map<string, TYPE.Unit<VALUE.Symbol>>();
 const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();

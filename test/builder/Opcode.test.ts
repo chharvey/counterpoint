@@ -24,8 +24,16 @@ import {
 
 
 test.suite('Opcode', () => {
+	const {isMaybe, value: mval} = TYPE.Maybe.MAYBE_PROPS;
 	test.suite('Value', () => {
 		test.suite('#interpret', () => {
+			function itp_maybe(value?: VALUE.Value): VALUE.Value {
+				return new VALUE.Record(new Map<bigint, VALUE.Value>([
+					[isMaybe.id, VALUE.TRUE],
+					...(value ? [[mval.id, value]] as const : []),
+				]));
+			}
+
 			function interpret_extracted_drops(src: string): VALUE.Value[] {
 				const values: VALUE.Value[] = [];
 				const {builder} = setupScript(src, {codegen: false});
@@ -82,7 +90,7 @@ test.suite('Opcode', () => {
 					new VALUE.Symbol(Validator.cookTokenIdentifier('hello'), 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Float(4.2),
-					VALUE.NULL,
+					itp_maybe(),
 				]);
 			});
 
@@ -236,9 +244,9 @@ test.suite('Opcode', () => {
 					delete a2;
 					set c1 = null;
 
-					isset a0; % false
+					isset a0; % true
 					isset a1; % true
-					isset a2; % false
+					isset a2; % true
 					isset b;  % true
 					isset c0; % true
 					isset c1; % true
@@ -246,12 +254,7 @@ test.suite('Opcode', () => {
 					isset e;  % true
 					isset f;  % true
 					isset g;  % true
-				}`), [
-					VALUE.FALSE,
-					VALUE.TRUE,
-					VALUE.FALSE,
-					...repeat(VALUE.TRUE, 7),
-				]);
+				}`), repeat(VALUE.TRUE, 10));
 			});
 
 			test.suite('Unop', () => {
@@ -1623,6 +1626,13 @@ test.suite('Opcode', () => {
 
 	test.suite('Instruction', () => {
 		test.suite('#codegen', () => {
+			function gen_maybe(cg: CodeGenerator, value?: binaryen.ExpressionRef): binaryen.ExpressionRef {
+				return cg.vm.Value.newComposite(cg.codegenRecord(new Map([
+					[isMaybe.id, cg.newProperty(isMaybe.id, genConst(cg, true))],
+					...(value ? [[mval.id, cg.newProperty(mval.id, value)]] as const : []),
+				])));
+			}
+
 			test.test('Drop returns (drop).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					null;
@@ -1668,15 +1678,15 @@ test.suite('Opcode', () => {
 						wasm.local.set(2, genConst(cg, 'hello', 'sym')),
 						wasm.local.set(3, genConst(cg, 42n)),
 						wasm.local.set(4, genConst(cg, 4.2)),
-						wasm.local.set(5, cg.vm.Value.newDefault()),
+						wasm.local.set(5, gen_maybe(cg)),
 
 						wasm.local.set(0, genConst(cg)),
 						wasm.local.set(1, genConst(cg, true)),
 						wasm.local.set(2, genConst(cg, 'world', 'sym')),
 						wasm.local.set(3, genConst(cg, 43n)),
 						wasm.local.set(4, genConst(cg, 4.3)),
-						wasm.local.set(5, genConst(cg, 'hello')),
-						wasm.local.set(5, cg.vm.Value.newDefault()),
+						wasm.local.set(5, gen_maybe(cg, genConst(cg, 'hello'))),
+						wasm.local.set(5, gen_maybe(cg)),
 					],
 				);
 			});

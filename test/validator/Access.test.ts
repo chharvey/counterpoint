@@ -14,6 +14,7 @@ import {
 	extract_lines,
 	repeat,
 	assertEqualTypes,
+	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -764,6 +765,9 @@ test.suite('Access', () => {
 			});
 		});
 		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
+			function op_maybe_unwrap_string(mab: string): string {
+				return `(RECORD.GET @${ TYPE.Maybe.MAYBE_PROPS.value.name } ${ mab })`;
+			}
 			function maybe_access_output(
 				block_n:      number,
 				base_name:    string,
@@ -883,17 +887,45 @@ test.suite('Access', () => {
 					my_map?.[5 + 3 * 2];
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> my_tup)
-						(DECL <null> my_rec)
-						(DECL <null> my_list)
-						(DECL <null> my_dict)
-						(DECL <null> my_map)
+						(DECL <record> my_tup ${ op_maybe_string() })
+						(DECL <record> my_rec ${ op_maybe_string() })
+						(DECL <record> my_list ${ op_maybe_string() })
+						(DECL <record> my_dict ${ op_maybe_string() })
+						(DECL <record> my_map ${ op_maybe_string() })
 				`.trim().concat(
-					maybe_access_output( 1, 'my_tup',  0, '(NULL.CONST null)'),
-					maybe_access_output( 4, 'my_rec',  1, '(NULL.CONST null)'),
-					maybe_access_output( 7, 'my_list', 2, '(NULL.CONST null)'),
-					maybe_access_output(10, 'my_dict', 3, '(NULL.CONST null)'),
-					maybe_access_output(13, 'my_map',  4, '(NULL.CONST null)'),
+					maybe_access_output(1, 'my_tup', 0, (result_setter) => extract_lines`
+						(DECL <tuple> $1 ${ op_maybe_unwrap_string('(GET my_tup)') })
+						${ result_setter('(TUPLE.GET 1 (GET $1))') }
+					`.join('\n\t')),
+					maybe_access_output(4, 'my_rec', 2, (result_setter) => extract_lines`
+						(DECL <record> $3 ${ op_maybe_unwrap_string('(GET my_rec)') })
+						${ result_setter('(RECORD.GET @a (GET $3))') }
+					`.join('\n\t')),
+					maybe_access_output(7, 'my_list', 4, (result_setter) => extract_lines`
+						(DECL <List> $5 ${ op_maybe_unwrap_string('(GET my_list)') })
+						(DECL <int> $6 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
+						(DECL <int> $7 (INT.SUB (GET $6) (INT.CONST 3)))
+						${ result_setter('(LIST.GET (GET $5) (GET $7))') }
+					`.join('\n\t')),
+					maybe_access_output(10, 'my_dict', 8, (result_setter) => xjs.String.dedent`
+						${ '\t' }(DECL <Dict> $9 ${ op_maybe_unwrap_string('(GET my_dict)') })
+						${ '\t' }(DECL <sym> $10)
+						${ '\t' }(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-13" "block-14")
+						"block-13":
+							(SET $10 (SYM.CONST @a))
+							(GOTO "block-15")
+						"block-14":
+							(SET $10 (SYM.CONST @b))
+							(GOTO "block-15")
+						"block-15":
+							${ result_setter('(DICT.GET (GET $9) (GET $10))') }
+					`.trim()),
+					maybe_access_output(16, 'my_map', 11, (result_setter) => extract_lines`
+						(DECL <Map> $12 ${ op_maybe_unwrap_string('(GET my_map)') })
+						(DECL <int> $13 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL <int> $14 (INT.ADD (INT.CONST 5) (GET $13)))
+						${ result_setter('(MAP.GET (GET $12) (GET $14))') }
+					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));
 			});
@@ -910,34 +942,37 @@ test.suite('Access', () => {
 					my_map?.[5 + 3 * 2];
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> my_list)
-						(DECL <null> my_dict)
-						(DECL <null> my_map)
-						(SET my_list (LIST.NEW (INT.CONST 42)))
-						(SET my_dict (DICT.NEW @a->(INT.CONST 42)))
-						(SET my_map (MAP.NEW (INT.CONST 42)->(INT.CONST 11)))
+						(DECL <record> my_list ${ op_maybe_string() })
+						(DECL <record> my_dict ${ op_maybe_string() })
+						(DECL <record> my_map ${ op_maybe_string() })
+						(SET my_list ${ op_maybe_string('(LIST.NEW (INT.CONST 42))') })
+						(SET my_dict ${ op_maybe_string('(DICT.NEW @a->(INT.CONST 42))') })
+						(SET my_map ${ op_maybe_string('(MAP.NEW (INT.CONST 42)->(INT.CONST 11))') })
 				`.trim().concat(
 					maybe_access_output(1, 'my_list', 0, (result_setter) => extract_lines`
-						(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
-						(DECL <int> $2 (INT.SUB (GET $1) (INT.CONST 3)))
-						${ result_setter('(LIST.GET (GET my_list) (GET $2))') }
+						(DECL <List> $1 ${ op_maybe_unwrap_string('(GET my_list)') })
+						(DECL <int> $2 (INT.MUL (INT.CONST 2) (INT.CONST 2)))
+						(DECL <int> $3 (INT.SUB (GET $2) (INT.CONST 3)))
+						${ result_setter('(LIST.GET (GET $1) (GET $3))') }
 					`.join('\n\t')),
-					maybe_access_output(4, 'my_dict', 3, (result_setter) => xjs.String.dedent`
-						${ '\t' }(DECL <sym> $4)
+					maybe_access_output(4, 'my_dict', 4, (result_setter) => xjs.String.dedent`
+						${ '\t' }(DECL <Dict> $5 ${ op_maybe_unwrap_string('(GET my_dict)') })
+						${ '\t' }(DECL <sym> $6)
 						${ '\t' }(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-7" "block-8")
 						"block-7":
-							(SET $4 (SYM.CONST @a))
+							(SET $6 (SYM.CONST @a))
 							(GOTO "block-9")
 						"block-8":
-							(SET $4 (SYM.CONST @b))
+							(SET $6 (SYM.CONST @b))
 							(GOTO "block-9")
 						"block-9":
-							${ result_setter('(DICT.GET (GET my_dict) (GET $4))') }
+							${ result_setter('(DICT.GET (GET $5) (GET $6))') }
 					`.trim()),
-					maybe_access_output(10, 'my_map', 5, (result_setter) => extract_lines`
-						(DECL <int> $6 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
-						(DECL <int> $7 (INT.ADD (INT.CONST 5) (GET $6)))
-						${ result_setter('(MAP.GET (GET my_map) (GET $7))') }
+					maybe_access_output(10, 'my_map', 7, (result_setter) => extract_lines`
+						(DECL <Map> $8 ${ op_maybe_unwrap_string('(GET my_map)') })
+						(DECL <int> $9 (INT.MUL (INT.CONST 3) (INT.CONST 2)))
+						(DECL <int> $10 (INT.ADD (INT.CONST 5) (GET $9)))
+						${ result_setter('(MAP.GET (GET $8) (GET $10))') }
 					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));
