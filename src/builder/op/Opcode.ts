@@ -27,6 +27,7 @@ export enum OpCode {
 	DICT_NEW,
 	SET_NEW,
 	MAP_NEW,
+	MAYBE_NEW,
 
 	TUPLE_GET,
 	RECORD_GET,

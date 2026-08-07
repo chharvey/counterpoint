@@ -85,10 +85,10 @@ export class StatementReassignment extends Statement {
 			if (this.assigned) {
 				value = this.assigned.build(builder);
 				if (symbol.isUninitialized) {
-					value = new OP.Maybe(symbol.type, value);
+					value = new OP.MaybeNew(symbol.type, value);
 				}
 			} else {
-				value = new OP.Maybe(symbol.type);
+				value = new OP.MaybeNew(symbol.type);
 			}
 			symbol.irType = value.type;
 			return builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));

@@ -889,7 +889,7 @@ test.suite('Statement', () => {
 					};
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <record> cond ${ op_maybe_string() })
+						(DECL <Maybe> cond ${ op_maybe_string() })
 						(SET cond ${ op_maybe_string('(BOOL.CONST true)') })
 						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":

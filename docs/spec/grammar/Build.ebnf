@@ -39,6 +39,7 @@ LIST.NEW([Value*])                        -> List;
 DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
 SET.NEW([Value*])                         -> Set;
 MAP.NEW(Vector<Value, Value>*)            -> Map;
+MAYBE.NEW(Value?)                         -> Maybe;
 
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
@@ -163,10 +164,10 @@ Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $result)
 	(GOTO.IF (ISNONE (GET $base)) "then" "else")
 	"then":
-	(SET $result (RECORD.NEW @'%isMaybe'->(BOOL.CONST true)))
+	(SET $result (MAYBE.NEW))
 	(GOTO "endif")
 	"else":
-	(SET $result (RECORD.NEW @'%isMaybe'->(BOOL.CONST true) @'%value'->`Build(access[kind=NORMAL])`))
+	(SET $result (MAYBE.NEW `Build(access[kind=NORMAL])`))
 	(GOTO "endif")
 	"endif":
 	return (GET $result).
@@ -322,7 +323,7 @@ Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpr
 	(DROP `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
-	(DECL ‹type› `GetSymbolSchema(id)` (RECORD.NEW @'%isMaybe'->(BOOL.CONST true)))
+	(DECL ‹type› `GetSymbolSchema(id)` (MAYBE.NEW))
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
@@ -338,14 +339,14 @@ Build(SemanticStatementReassignment ::= SemanticExpressionVariable:of(SymbolSche
 	(SET `GetSymbolSchema(SemanticExpressionVariable)` `Build(SemanticExpression)`)
 ];
 Build(SemanticStatementReassignment ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=true]) SemanticExpression) := [
-	(SET `GetSymbolSchema(SemanticExpressionVariable)` (RECORD.NEW @'%isMaybe'->(BOOL.CONST true) @'%value'->`Build(SemanticExpression)`))
+	(SET `GetSymbolSchema(SemanticExpressionVariable)` (MAYBE.NEW `Build(SemanticExpression)`))
 ];
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.List] SemanticExpression) SemanticExpression) := (LIST.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Set]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Map]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= SemanticExpressionVariable) := [
-	(SET `GetSymbolSchema(SemanticExpressionVariable)` (RECORD.NEW @'%isMaybe'->(BOOL.CONST true)))
+	(SET `GetSymbolSchema(SemanticExpressionVariable)` (MAYBE.NEW))
 ];
 Build(SemanticStatementReassignment ::= SemanticExpressionAccess); // TODO: object/interface support
 

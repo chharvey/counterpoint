@@ -29,6 +29,7 @@ export enum TypeName {
 	DICT,
 	SET,
 	MAP,
+	MAYBE,
 	ANY,
 }
 
@@ -60,7 +61,7 @@ export function ast_type_name(typ: TYPE.Type): TypeName {
 		case typ instanceof TYPE.Dict:   { return TypeName.DICT; }
 		case typ instanceof TYPE.Set:    { return TypeName.SET; }
 		case typ instanceof TYPE.Map:    { return TypeName.MAP; }
-		case typ instanceof TYPE.Maybe:  { return TypeName.RECORD; } // TODO: remove this after converting OP.Maybe
+		case typ instanceof TYPE.Maybe:  { return TypeName.MAYBE; }
 	}
 
 	if (typ instanceof TYPE.Union || typ instanceof TYPE.Intersection) {

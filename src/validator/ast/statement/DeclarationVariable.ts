@@ -147,7 +147,7 @@ export class DeclarationVariable extends Statement {
 	@runOnceMethod
 	public override build(builder: Builder): void {
 		const symbol: SymbolSchemaVar | undefined = this.assignee ? this.validator.getSymbol(this.id!) as SymbolSchemaVar : undefined;
-		const value:  OP.Value                    = this.assigned?.build(builder) ?? new OP.Maybe(symbol!.type);
+		const value:  OP.Value                    = this.assigned?.build(builder) ?? new OP.MaybeNew(symbol!.type);
 		if (this.assignee) {
 			symbol!.irType = value.type;
 			builder.pushInstruction(new OP.Decl(symbol!, symbol!.irType, value));

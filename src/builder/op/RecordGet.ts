@@ -41,7 +41,7 @@ export class RecordGet extends Value {
 		try {
 			return assert_instanceof(this.record.type, TYPE.Record);
 		} catch {
-			return assert_instanceof(this.record.type, TYPE.Maybe); // TODO: remove this after converting OP.Maybe
+			return assert_instanceof(this.record.type, TYPE.Maybe); // TODO: remove this after adding OpCode.MAYBE_UNWRAP
 		}
 	}
 

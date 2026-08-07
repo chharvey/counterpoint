@@ -19,6 +19,7 @@ import {
 	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
+	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -602,7 +603,7 @@ test.suite('Declaration', () => {
 				"block-0":
 					(DROP (INT.CONST 42))
 					(DECL <int> assignee_a (INT.CONST 42))
-					(DECL <record> assignee_b (RECORD.NEW @'%isMaybe'->(BOOL.CONST true)))
+					(DECL <Maybe> assignee_b ${ op_maybe_string() })
 					(DECL <int> assignee_c (INT.CONST 42))
 					(DROP (GET assignee_c))
 					(DECL <int> assignee_d (GET assignee_c))

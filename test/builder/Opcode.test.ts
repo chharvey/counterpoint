@@ -138,11 +138,11 @@ test.suite('Opcode', () => {
 				]);
 			});
 
-			test.test('RecordNew representing Maybe.', () => {
+			test.test('MaybeNew', () => {
 				const interp = new Interpreter();
 				return assert_equal_values([
-					new OP.Maybe(TYPE.STR),
-					new OP.Maybe(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
+					new OP.MaybeNew(TYPE.STR),
+					new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
 				].map((opcode) => opcode.interpret(interp)), [
 					new VALUE.Maybe(TYPE.STR),
 					new VALUE.Maybe(new VALUE.String('hello')),
@@ -331,9 +331,9 @@ test.suite('Opcode', () => {
 						],
 					);
 					return assert_equal_values([
-						new OP.Maybe(TYPE.STR),
-						new OP.Maybe(TYPE.NULL, new OP.Const(VALUE.NULL)),
-						new OP.Maybe(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
+						new OP.MaybeNew(TYPE.STR),
+						new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
+						new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
 					].map((irval) => new OP.Unop(OP.OpCode.ISNONE, irval, TYPE.BOOL).interpret(interp)), [
 						VALUE.TRUE,
 						VALUE.FALSE,
@@ -1133,16 +1133,6 @@ test.suite('Opcode', () => {
 						])].map((props) => cg.vm.Value.newComposite(cg.codegenRecord(props))),
 					);
 				});
-				test.test('RecordNew representing Maybe.', () => {
-					const cg = new CodeGenerator();
-					return assertEqualBins([
-						new OP.Maybe(TYPE.STR),
-						new OP.Maybe(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
-					].map((opcode) => opcode.codegen(cg)), [
-						cg.codegenMaybe(),
-						cg.codegenMaybe(new VALUE.String('hello').codegen(cg)),
-					].map((mab) => cg.vm.Value.newComposite(mab)));
-				});
 			});
 
 			test.suite('DictNew', () => {
@@ -1232,6 +1222,17 @@ test.suite('Opcode', () => {
 						])))).replaceAll('$4', '$3'),
 					);
 				});
+			});
+
+			test.test('MaybeNew', () => {
+				const cg = new CodeGenerator();
+				return assertEqualBins([
+					new OP.MaybeNew(TYPE.STR),
+					new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
+				].map((opcode) => opcode.codegen(cg)), [
+					cg.codegenMaybe(),
+					cg.codegenMaybe(new VALUE.String('hello').codegen(cg)),
+				].map((mab) => cg.vm.Value.newComposite(mab)));
 			});
 
 			test.test('TupleGet returns (array.get).', () => {

@@ -345,9 +345,9 @@ test.suite('Expression', () => {
 				isset g;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <record> a0 ${ op_maybe_string() })
-					(DECL <record> a1 ${ op_maybe_string() })
-					(DECL <record> a2 ${ op_maybe_string() })
+					(DECL <Maybe> a0 ${ op_maybe_string() })
+					(DECL <Maybe> a1 ${ op_maybe_string() })
+					(DECL <Maybe> a2 ${ op_maybe_string() })
 					(DECL <int> b (INT.CONST 42))
 					(DECL <int> c0 (INT.CONST 42))
 					(DECL <int> c1 (INT.CONST 42))
