@@ -178,9 +178,6 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | 
 
 
 const {isMaybe, value: mval} = TYPE.Maybe.MAYBE_PROPS;
-export function src_maybe_string(val?: string): string {
-	return `(${ isMaybe.name }= true${ val ? `, ${ mval.name }= ${ val }` : '' })`;
-}
 export function op_maybe_string(val?: string): string {
 	return `(RECORD.NEW @${ isMaybe.name }->(BOOL.CONST true)${ val ? ` @${ mval.name }->${ val }` : '' })`;
 }

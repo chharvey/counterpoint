@@ -17,7 +17,6 @@ import {
 	repeat,
 	assert_equal_values,
 	assertEqualBins,
-	src_maybe_string,
 	genConst,
 	setupScript,
 } from '../utils.ts';
@@ -25,16 +24,8 @@ import {
 
 
 test.suite('Opcode', () => {
-	const {isMaybe, value: mval} = TYPE.Maybe.MAYBE_PROPS;
 	test.suite('Value', () => {
 		test.suite('#interpret', () => {
-			function itp_maybe(value?: VALUE.Value): VALUE.Value {
-				return new VALUE.Record(new Map<bigint, VALUE.Value>([
-					[isMaybe.id, VALUE.TRUE],
-					...(value ? [[mval.id, value]] as const : []),
-				]));
-			}
-
 			function interpret_extracted_drops(src: string): VALUE.Value[] {
 				const values: VALUE.Value[] = [];
 				const {builder} = setupScript(src, {codegen: false});
@@ -91,7 +82,7 @@ test.suite('Opcode', () => {
 					new VALUE.Symbol(Validator.cookTokenIdentifier('hello'), 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Float(4.2),
-					itp_maybe(),
+					new VALUE.Maybe(TYPE.STR),
 				]);
 			});
 
@@ -144,6 +135,17 @@ test.suite('Opcode', () => {
 						[new VALUE.Integer(42n), expected_items[1]],
 						[new VALUE.Float(3.0),   expected_items[2]],
 					])),
+				]);
+			});
+
+			test.test('RecordNew representing Maybe.', () => {
+				const interp = new Interpreter();
+				return assert_equal_values([
+					new OP.Maybe(TYPE.STR),
+					new OP.Maybe(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
+				].map((opcode) => opcode.interpret(interp)), [
+					new VALUE.Maybe(TYPE.STR),
+					new VALUE.Maybe(new VALUE.String('hello')),
 				]);
 			});
 
@@ -281,8 +283,6 @@ test.suite('Opcode', () => {
 					{}
 					{42}
 					{41 -> 42}
-					${ src_maybe_string() }
-					${ src_maybe_string('42') }
 				`;
 				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
 					return interpret_extracted_drops(`{
@@ -309,7 +309,7 @@ test.suite('Opcode', () => {
 						)).filter((value) => !!value),
 						[
 							VALUE.TRUE,
-							...repeat(VALUE.FALSE, 22),
+							...repeat(VALUE.FALSE, 20),
 						],
 					);
 				});
@@ -321,24 +321,29 @@ test.suite('Opcode', () => {
 						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
 						TYPE.BOOL,
 					))));
-					return assert_equal_values(
+					assert_equal_values(
 						builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
 							: instr.interpret(interp)
 						)).filter((value) => !!value),
 						[
 							...repeat(VALUE.FALSE, 21),
-							VALUE.TRUE,
-							VALUE.FALSE,
 						],
 					);
+					return assert_equal_values([
+						new OP.Maybe(TYPE.STR),
+						new OP.Maybe(TYPE.NULL, new OP.Const(VALUE.NULL)),
+						new OP.Maybe(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
+					].map((irval) => new OP.Unop(OP.OpCode.ISNONE, irval, TYPE.BOOL).interpret(interp)), [
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+					]);
 				});
 				test.test('[operator=NOT]', () => {
 					assert_equal_values(interpret_unops('!'), [
 						...repeat(VALUE.TRUE, 2),
 						...repeat(VALUE.FALSE, 19),
-						VALUE.TRUE,
-						VALUE.FALSE,
 					]);
 				});
 				test.test('[operator=EMP]', () => {
@@ -363,8 +368,6 @@ test.suite('Opcode', () => {
 						VALUE.FALSE,
 						VALUE.TRUE,
 						VALUE.FALSE,
-						VALUE.FALSE,
-						VALUE.TRUE,
 						VALUE.FALSE,
 					]);
 				});
@@ -393,8 +396,6 @@ test.suite('Opcode', () => {
 						[
 							...repeat(VALUE.FALSE, 2),
 							...repeat(VALUE.TRUE, 19),
-							VALUE.FALSE,
-							VALUE.TRUE,
 						],
 					);
 				});
@@ -1132,6 +1133,16 @@ test.suite('Opcode', () => {
 						])].map((props) => cg.vm.Value.newComposite(cg.codegenRecord(props))),
 					);
 				});
+				test.test('RecordNew representing Maybe.', () => {
+					const cg = new CodeGenerator();
+					return assertEqualBins([
+						new OP.Maybe(TYPE.STR),
+						new OP.Maybe(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
+					].map((opcode) => opcode.codegen(cg)), [
+						cg.codegenMaybe(),
+						cg.codegenMaybe(new VALUE.String('hello').codegen(cg)),
+					].map((mab) => cg.vm.Value.newComposite(mab)));
+				});
 			});
 
 			test.suite('DictNew', () => {
@@ -1664,10 +1675,7 @@ test.suite('Opcode', () => {
 	test.suite('Instruction', () => {
 		test.suite('#codegen', () => {
 			function gen_maybe(cg: CodeGenerator, value?: binaryen.ExpressionRef): binaryen.ExpressionRef {
-				return cg.vm.Value.newComposite(cg.codegenRecord(new Map([
-					[isMaybe.id, cg.newProperty(isMaybe.id, genConst(cg, true))],
-					...(value ? [[mval.id, cg.newProperty(mval.id, value)]] as const : []),
-				])));
+				return cg.vm.Value.newComposite(cg.codegenMaybe(value));
 			}
 
 			test.test('Drop returns (drop).', () => {

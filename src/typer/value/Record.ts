@@ -1,4 +1,3 @@
-import {memoizeGetter} from '../../lib/decorators.ts';
 import {TYPE} from '../index.ts';
 import {
 	language_values_identical,
@@ -20,18 +19,6 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
-	public override get isTruthy(): boolean {
-		return !this.isNone;
-	}
-
-	@memoizeGetter
-	public get isNone(): boolean {
-		const {isMaybe, value} = TYPE.Maybe.MAYBE_PROPS;
-		const props: ReadonlyMap<bigint, T> = this.properties;
-		return props.has(isMaybe.id) && !props.has(value.id);
-	}
-
-
 	public override toString(): string {
 		return `(${ super.toString() })`;
 	}

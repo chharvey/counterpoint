@@ -35,11 +35,7 @@ export class RecordNew extends Value {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		try {
-			assert_instanceof(this.type, TYPE.Record);
-		} catch {
-			assert_instanceof(this.type, TYPE.Maybe); // TODO: remove this after converting OP.Maybe
-		}
+		assert_instanceof(this.type, TYPE.Record);
 		return xjs.Map.forEachAggregated(this.props, ({value}) => value.validate(builder));
 	}
 
@@ -77,5 +73,22 @@ export class Maybe extends RecordNew {
 			[isMaybe.id, {keysrc: isMaybe.name, value: new Const(VALUE.TRUE)}],
 			...(value ? [[mval.id, {keysrc: mval.name, value}]] as const : []),
 		]), new TYPE.Maybe(typ));
+	}
+
+
+	@runOnceMethod
+	public override validate(builder: Builder): void {
+		assert_instanceof(this.type, TYPE.Maybe);
+		return this.value?.validate(builder);
+	}
+
+	// @ts-expect-error --- TODO: convert to own class
+	public override interpret(interp: Interpreter): VALUE.Maybe {
+		return new VALUE.Maybe(this.value?.interpret(interp) ?? (this.type as TYPE.Maybe).typearg);
+	}
+
+	@memoizeMethod
+	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
+		return cg.vm.Value.newComposite(cg.codegenMaybe(this.value?.codegen(cg)));
 	}
 }

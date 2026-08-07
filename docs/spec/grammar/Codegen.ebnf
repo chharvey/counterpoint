@@ -49,6 +49,18 @@ Codegen((RECORD.NEW)) := (call $Value.new-composite
 Codegen((RECORD.NEW `pairs`)) := (call $Value.new-composite
 	(array.new_fixed $Record `pairs.count` `pairs.hashMap("(struct.new $Property (i64.const `pairs[i].0`) `Codegen(pairs[i].1)`)")`)
 );
+Codegen((RECORD.NEW @'%isMaybe'->(BOOL.CONST true))) := (call $Value.new-composite
+	(struct.new $Maybe
+		(call $Object.ctr-plus-plus)
+		(ref.null $Value)
+	)
+);
+Codegen((RECORD.NEW @'%isMaybe'->(BOOL.CONST true) @'%value'->`value`)) := (call $Value.new-composite
+	(struct.new $Maybe
+		(call $Object.ctr-plus-plus)
+		`Codegen(value)`
+	)
+);
 
 Codegen((LIST.NEW)) := (call $Value.new-composite
 	(struct.new $List
