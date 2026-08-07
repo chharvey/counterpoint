@@ -161,12 +161,12 @@ Build(SemanticExpressionBlock blex) := [
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $base `Build(access.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (ISNULL (GET $base)) "then" "else")
+	(GOTO.IF (ISNONE (GET $base)) "then" "else")
 	"then":
-	(SET $result (NULL.CONST null))
+	(SET $result (RECORD.NEW @'%isMaybe'->(BOOL.CONST true)))
 	(GOTO "endif")
 	"else":
-	(SET $result `Build(access[kind=NORMAL])`)
+	(SET $result (RECORD.NEW @'%isMaybe'->(BOOL.CONST true) @'%value'->`Build(access[kind=NORMAL])`))
 	(GOTO "endif")
 	"endif":
 	return (GET $result).

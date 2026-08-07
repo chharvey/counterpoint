@@ -772,25 +772,22 @@ test.suite('Access', () => {
 				block_n:      number,
 				base_name:    string,
 				result_n:     number,
-				result_value: string | ((result_setter: (value: string) => string) => string),
+				result_value: string | ((result_setter: (value?: string) => string) => string),
 			): string {
 				const block_then:  string = `block-${ block_n }`;
 				const block_else:  string = `block-${ block_n + 1 }`;
 				const block_endif: string = `block-${ block_n + 2 }`;
 				const result_name: string = `$${ result_n }`;
-				function set_result(res_val: string = '(NULL.CONST null)'): string {
-					return `(SET ${ result_name } ${ res_val })`;
-				}
 				return xjs.String.dedent`
-					${ '\t' }(DECL <anything> ${ result_name })
-					${ '\t' }(GOTO.IF (ISNULL (GET ${ base_name })) "${ block_then }" "${ block_else }")
+					${ '\t' }(DECL <record> ${ result_name })
+					${ '\t' }(GOTO.IF (ISNONE (GET ${ base_name })) "${ block_then }" "${ block_else }")
 					"${ block_then }":
-						${ set_result() }
+						(SET ${ result_name } ${ op_maybe_string() })
 						(GOTO "${ block_endif }")
 					"${ block_else }":
 						${ typeof result_value === 'string'
-							? set_result(result_value)
-							: result_value((res_val) => set_result(res_val)) }
+							? `(SET ${ result_name } ${ op_maybe_string(result_value) })`
+							: result_value((res_val) => `(SET ${ result_name } ${ op_maybe_string(res_val) })`) }
 						(GOTO "${ block_endif }")
 					"${ block_endif }":
 						(DROP (GET ${ result_name }))
@@ -816,7 +813,7 @@ test.suite('Access', () => {
 					maybe_access_output(1, 'my_tupleA', 5, '(TUPLE.GET 2 (GET my_tupleA))'),
 					maybe_access_output(4, 'my_tupleB', 6, (result_setter) => extract_lines`
 						(DROP (GET my_tupleB))
-						${ result_setter('(NULL.CONST null)') }
+						${ result_setter() }
 					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));
@@ -840,7 +837,7 @@ test.suite('Access', () => {
 					maybe_access_output(1, 'my_recordX', 5, '(RECORD.GET @b (GET my_recordX))'),
 					maybe_access_output(4, 'my_recordY', 6, (result_setter) => extract_lines`
 						(DROP (GET my_recordY))
-						${ result_setter('(NULL.CONST null)') }
+						${ result_setter() }
 					`.join('\n\t')),
 					'\n\t(ENDPROGRAM)',
 				));
@@ -873,7 +870,7 @@ test.suite('Access', () => {
 						(DECL <Map> $0 (MAP.NEW (INT.CONST 21)->(INT.CONST 41) (INT.CONST 22)->(INT.CONST 42) (INT.CONST 23)->(INT.CONST 43)))
 				`.trim().concat(maybe_access_output(1, '$0', 1, '(MAP.GET (GET $0) (GET accessor))'), '\n\t(ENDPROGRAM)'));
 			});
-			test.test('returns null when base is optional and unset; short-circuits evaluation of dynamic accessor.', () => {
+			test.test('returns None when base is optional and unset; short-circuits evaluation of dynamic accessor.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_tup?:  (int, bool);
 					val mut my_rec?:  (a: int);
@@ -929,7 +926,7 @@ test.suite('Access', () => {
 					'\n\t(ENDPROGRAM)',
 				));
 			});
-			test.test('evaluates dynamic accessor when base is set.', () => {
+			test.test('returns Some when base is optional and set; short-circuits evaluation of dynamic accessor.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_list?: [int];
 					val mut my_dict?: [:int];
