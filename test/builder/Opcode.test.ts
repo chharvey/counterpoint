@@ -336,7 +336,9 @@ test.suite('Opcode', () => {
 				test.test('[operator=NOT]', () => {
 					assert_equal_values(interpret_unops('!'), [
 						...repeat(VALUE.TRUE, 2),
-						...repeat(VALUE.FALSE, 21), // TODO: None should be falsy and empty
+						...repeat(VALUE.FALSE, 19),
+						VALUE.TRUE,
+						VALUE.FALSE,
 					]);
 				});
 				test.test('[operator=EMP]', () => {
@@ -362,7 +364,7 @@ test.suite('Opcode', () => {
 						VALUE.TRUE,
 						VALUE.FALSE,
 						VALUE.FALSE,
-						VALUE.FALSE, // TODO: None should be falsy and empty
+						VALUE.TRUE,
 						VALUE.FALSE,
 					]);
 				});
@@ -390,7 +392,9 @@ test.suite('Opcode', () => {
 						)).filter((value) => !!value),
 						[
 							...repeat(VALUE.FALSE, 2),
-							...repeat(VALUE.TRUE, 21), // TODO: None should be falsy and empty
+							...repeat(VALUE.TRUE, 19),
+							VALUE.FALSE,
+							VALUE.TRUE,
 						],
 					);
 				});

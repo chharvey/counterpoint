@@ -20,6 +20,10 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
+	public override get isTruthy(): boolean {
+		return !this.isNone;
+	}
+
 	@memoizeGetter
 	public get isNone(): boolean {
 		const {isMaybe, value} = TYPE.Maybe.MAYBE_PROPS;

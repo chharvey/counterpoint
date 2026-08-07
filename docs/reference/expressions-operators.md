@@ -447,6 +447,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 |                | `0.0`, `-0.0`    | all floats      |
 |                | `""`             | all strings     |
 |                | `()`, `[]`, `{}` | all collections |
+| all `None`s    | all `None`s      | all `Some`s     |
 |                |                  | any other value |
 
 

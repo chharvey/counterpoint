@@ -1151,4 +1151,28 @@ val mut x: int? = Some[int](42);
 set x = None[int]();
 ```
 
+`None` objects are considered falsy (and thus empty), and therefore return `true` when operated on by the
+[logical negation `!` and emptiness `?` operators](./expressions-operators.md#logical-negation-emptiness).
+```cpl
+val mut x: str? = Some[str]("hello");
+!x; %== false
+?x; %== false
+
+set x = None[str]();
+!x; %== true
+?x; %== true
+```
+Likewise, a `None` behaves like a falsy value in the
+[logical conjunction `&&`](./expressions-operators.md#conjunctive) and
+[logical disjunction `||`](./expressions-operators.md#disjunctive) operators.
+```cpl
+None[anything]() && "hello"; %== None()
+None[anything]() || "hello"; %== "hello"
+```
+A `Some` object is always truthy, regardless of its held value (even if that value itself is falsy).
+```cpl
+Some[bool](false) && "hello"; %== "hello"
+Some[bool](false) || "hello"; %== Some[bool](false)
+```
+
 The [maybe access operator](./expressions-operators.md#maybe-access) works very well with the Maybe type.
