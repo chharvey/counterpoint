@@ -14,10 +14,10 @@ Counterpoint Specification Types are only used internally within this specificat
 They are not directly observable from Counterpoint code.
 
 
-### None
-The **None** type has one value called *none*.
+### Nil
+The **Nil** type has one value called *nil*.
 It signifies a variable with no meaningful value.
-An algorithm with output type None returns a [CompletionSchema](#completionschema)
+An algorithm with output type Nil returns a [CompletionSchema](#completionschema)
 with no \`value\` property.
 
 

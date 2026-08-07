@@ -109,7 +109,7 @@ RealNumber Multiply(Sequence<RealNumber> ns) :=
 		1. *Return:* 0.
 	2. *Return:* *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
 ;
-None! Continue(Sequence<RealNumber> units) :=
+Nil! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
 		1. *If* `i` is 0:
 			1. *Skip.*
@@ -194,7 +194,7 @@ Performs the type-checking piece during semantic analysis.
 Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(SemanticExpressionCollection expr, Type type) :=
+Nil! AssignTo(SemanticExpressionCollection expr, Type type) :=
 	1. *If* `expr` is a SemanticExpressionTuple *and* `type` is a Tuple type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.

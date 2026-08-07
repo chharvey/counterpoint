@@ -405,22 +405,22 @@ Boolean! Interpret((EQ `v0` `v1`)) :=
 	3. *Return:* `Equal(v0, v1)`.
 ;
 
-None! Interpret((DROP `v`)) :=
+Nil! Interpret((DROP `v`)) :=
 	1. *Perform:* `Interpret(v)`.
 ;
 
-None! Interpret((DECL `id` `type` `v`)) :=
+Nil! Interpret((DECL `id` `type` `v`)) :=
 	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
 ;
-None! Interpret((DECL `id` `type`)) :=
-	1. Set the key `id` to *none* in the interpreter’s symbol table.
+Nil! Interpret((DECL `id` `type`)) :=
+	1. Set the key `id` to *nil* in the interpreter’s symbol table.
 ;
 
-None! Interpret((SET `id` `v`)) :=
+Nil! Interpret((SET `id` `v`)) :=
 	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
 ;
 
-None! Interpret((LIST.SET `obj` `accessor` `v`)) :=
+Nil! Interpret((LIST.SET `obj` `accessor` `v`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Let* `index` be *Unwrap:* `Interpret(accessor)`.
 	3. *Let* `item` be *Unwrap:* `Interpret(v)`.
@@ -429,7 +429,7 @@ None! Interpret((LIST.SET `obj` `accessor` `v`)) :=
 	6. Set the item at index `index` in `base` to `item`.
 ;
 
-None! Interpret((DICT.SET `obj` `accessor` `v`)) :=
+Nil! Interpret((DICT.SET `obj` `accessor` `v`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Let* `key` be *Unwrap:* `Interpret(accessor)`.
 	3. *Let* `value` be *Unwrap:* `Interpret(v)`.
@@ -441,7 +441,7 @@ None! Interpret((DICT.SET `obj` `accessor` `v`)) :=
 	7. Set the value at key `key` in `base` to `value`.
 ;
 
-None! Interpret((SET.SET `obj` `accessor` `v`)) :=
+Nil! Interpret((SET.SET `obj` `accessor` `v`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Let* `elem` be *Unwrap:* `Interpret(accessor)`.
 	3. *Let* `put` be *Unwrap:* `Interpret(v)`.
@@ -459,7 +459,7 @@ None! Interpret((SET.SET `obj` `accessor` `v`)) :=
 			1. *Return.*
 ;
 
-None! Interpret((MAP.SET `obj` `accessor` `v`)) :=
+Nil! Interpret((MAP.SET `obj` `accessor` `v`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Let* `ant` be *Unwrap:* `Interpret(accessor)`.
 	3. *Let* `con` be *Unwrap:* `Interpret(v)`.
@@ -467,7 +467,7 @@ None! Interpret((MAP.SET `obj` `accessor` `v`)) :=
 	5. Set the consequent at antecedent `ant` in `base` to `con`.
 ;
 
-None! Interpret((LIST.COPY `dest` `src`)) :=
+Nil! Interpret((LIST.COPY `dest` `src`)) :=
 	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
 	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
 	3. *Assert:* `dest` is an instance of `List`.
@@ -483,7 +483,7 @@ None! Interpret((LIST.COPY `dest` `src`)) :=
 		1. *Throw:* a new TypeError.
 ;
 
-None! Interpret((DICT.COPY `dest` `src`)) :=
+Nil! Interpret((DICT.COPY `dest` `src`)) :=
 	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
 	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
 	3. *Assert:* `dest` is an instance of `Dict`.
@@ -522,7 +522,7 @@ None! Interpret((DICT.COPY `dest` `src`)) :=
 		1. *Throw:* a new TypeError.
 ;
 
-None! Interpret((SET.COPY `dest` `src`)) :=
+Nil! Interpret((SET.COPY `dest` `src`)) :=
 	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
 	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
 	3. *Assert:* `dest` is an instance of `Set`.
@@ -544,7 +544,7 @@ None! Interpret((SET.COPY `dest` `src`)) :=
 		1. *Throw:* a new TypeError.
 ;
 
-None! Interpret((MAP.COPY `dest` `src`)) :=
+Nil! Interpret((MAP.COPY `dest` `src`)) :=
 	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
 	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
 	3. *Assert:* `dest` is an instance of `Set`.
