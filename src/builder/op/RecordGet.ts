@@ -38,7 +38,11 @@ export class RecordGet extends Value {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		this.record.validate(builder);
-		return assert_instanceof(this.record.type, TYPE.Record);
+		try {
+			return assert_instanceof(this.record.type, TYPE.Record);
+		} catch {
+			return assert_instanceof(this.record.type, TYPE.Maybe); // TODO: remove this after converting OP.Maybe
+		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {

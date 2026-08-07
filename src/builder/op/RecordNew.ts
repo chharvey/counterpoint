@@ -35,7 +35,11 @@ export class RecordNew extends Value {
 
 	@runOnceMethod
 	public override validate(builder: Builder): void {
-		assert_instanceof(this.type, TYPE.Record);
+		try {
+			assert_instanceof(this.type, TYPE.Record);
+		} catch {
+			assert_instanceof(this.type, TYPE.Maybe); // TODO: remove this after converting OP.Maybe
+		}
 		return xjs.Map.forEachAggregated(this.props, ({value}) => value.validate(builder));
 	}
 
