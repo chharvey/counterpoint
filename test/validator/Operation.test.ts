@@ -229,7 +229,31 @@ test.suite('Operation', () => {
 					(ENDPROGRAM)
 			`.trim());
 		});
-
+		test.test('OperationUnary[operator=UN_MAYBE]', () => {
+			assert.strictEqual(setupScript(`{
+				val mut x?: int;
+				val mut y?: nat;
+				val mut z?: float;
+				set y = +42;
+				set z = 4.2;
+				delete y;
+				x~?;
+				y~?;
+				z~?;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <Maybe> x (MAYBE.NEW))
+					(DECL <Maybe> y (MAYBE.NEW))
+					(DECL <Maybe> z (MAYBE.NEW))
+					(SET y (MAYBE.NEW (NAT.CONST +42)))
+					(SET z (MAYBE.NEW (FLOAT.CONST 4.2)))
+					(SET y (MAYBE.NEW))
+					(DROP (MAYBE.UNWRAP (GET x)))
+					(DROP (MAYBE.UNWRAP (GET y)))
+					(DROP (MAYBE.UNWRAP (GET z)))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('OperationUnary[operator=NOT]', () => {
 			assert.strictEqual(setupScript(`{
 				!42;
