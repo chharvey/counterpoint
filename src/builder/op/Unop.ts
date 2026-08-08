@@ -88,7 +88,7 @@ export class Unop extends Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		switch (this.operator) {
 			case OpCode.ISNULL: { return VALUE.Boolean.fromBoolean(operand.identical(VALUE.NULL)); }
-			case OpCode.ISNONE: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Record && operand.isNone); }
+			case OpCode.ISNONE: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
 
 			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
 			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }

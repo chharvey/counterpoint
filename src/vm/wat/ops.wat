@@ -5,26 +5,18 @@
 	))
 )
 (func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
-	(local $record (ref $Record))
-	(call $Value.bool-from-i32 (i32.and
+	(local $composite eqref)
+	(call $Value.bool-from-i32 (if (result i32)
 		(call $Value.is-composite (local.get $value))
-		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-			(ref.test (ref $Record) (local.get $value))
-			(then
-				(local.set $record (ref.cast (ref $Record) (struct.get $Value $composite (local.get $value))))
-				(i32.and
-					(call $Record.has-key
-						(local.get $record)
-						(i64.const 0xd8da8b0157ad009a) ;; TYPE.Maybe.MAYBE_PROPS.isMaybe.id
-					)
-					(i32.eqz (call $Record.has-key
-						(local.get $record)
-						(i64.const 0x6898c8e63b375fe1) ;; TYPE.Maybe.MAYBE_PROPS.value.id
-					))
-				)
+		(then
+			(local.set $composite (struct.get $Value $composite (local.get $value)))
+			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+				(ref.test (ref $Maybe) (local.get $composite))
+				(then (i32.eqz (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite))))))
+				(else (i32.const 0))
 			)
-			(else (i32.const 0))
 		)
+		(else (i32.const 0))
 	))
 )
 

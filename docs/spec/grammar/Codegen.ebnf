@@ -126,6 +126,19 @@ Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
 	)
 );
 
+Codegen((MAYBE.NEW)) := (call $Value.new-composite
+	(struct.new $Maybe
+		(call $Object.ctr-plus-plus)
+		(ref.null $Value)
+	)
+);
+Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
+	(struct.new $Maybe
+		(call $Object.ctr-plus-plus)
+		`Codegen(value)`
+	)
+);
+
 Codegen((TUPLE.GET `index` `obj`)) := (array.get
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`))
 	(i32.const `index`)

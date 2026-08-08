@@ -2,6 +2,7 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	VALUE,
+	TYPE,
 	CodeGenerator,
 } from '../../src/index.ts';
 import {assertEqualBins} from '../utils.ts';
@@ -63,6 +64,16 @@ test.suite('Value', () => {
 					[0x101n, new VALUE.String('wind')],
 					[0x102n, new VALUE.String('fire')],
 				]))), '[a= "earth", b= "wind", c= "fire"] !== [a= "earth", b= "wind", c= "fire"]');
+			});
+		});
+
+		test.suite('Maybe', () => {
+			test.test('different Nones are not identical.', () => {
+				assert.ok(!new VALUE.Maybe(TYPE.STR).identical(new VALUE.Maybe(TYPE.STR)));
+			});
+			test.test('Somes with identical values are not identical.', () => {
+				const v = new VALUE.String('water');
+				return assert.ok(!new VALUE.Maybe(v).identical(new VALUE.Maybe(v)));
 			});
 		});
 	});
@@ -203,6 +214,37 @@ test.suite('Value', () => {
 					new VALUE.String('fire'),
 					new VALUE.String('wind'),
 				]))));
+			});
+		});
+
+		test.suite('Maybe', () => {
+			test.test('different Nones are equal.', () => {
+				assert.ok(new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(TYPE.STR)));
+			});
+			test.test('Somes with equal values are equal.', () => {
+				assert.ok(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]))));
+			});
+			test.test('Somes with unequal values are not equal.', () => {
+				assert.ok(!new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('clubs'),
+					new VALUE.String('spades'),
+					new VALUE.String('diamonds'),
+				]))));
+			});
+			test.test('None and Some are never equal.', () => {
+				assert.ok(!new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(new VALUE.String('hearts'))));
 			});
 		});
 	});

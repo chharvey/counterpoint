@@ -2,9 +2,7 @@ import * as assert from 'node:assert';
 import {
 	TypeErrorNoEntry,
 	type AST,
-	Validator,
 } from '../../index.ts';
-import {memoizeGetter} from '../../lib/index.ts';
 import type {EntryType} from '../utils-public.ts';
 import {
 	strictEqual,
@@ -12,7 +10,6 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {TRUE} from './index.ts';
 import {
 	subtypeLaws,
 	type Type,
@@ -24,9 +21,7 @@ import {ValueType} from './ValueType.ts';
 
 /**
  * Class for constructing record literal types.
- *
- * Known subclasses:
- * - Maybe
+ * @final
  */
 class TypeRecord extends ValueType {
 	/**
@@ -109,42 +104,3 @@ class TypeRecord extends ValueType {
 	}
 }
 export {TypeRecord as Record};
-
-
-
-/**
- * Precursor to the `Maybe` type.
- *
- * This is only temporary until classes and interfaces are implemented.
- * Once that happens, `Maybe` should be defined as an interface type (a reference type).
- */
-export class Maybe extends TypeRecord {
-	/** Enumeration of the properties of the `Maybe` type precursor. */
-	// need to use a getter due to import order
-	@memoizeGetter
-	public static get MAYBE_PROPS() { // eslint-disable-line @typescript-eslint/explicit-function-return-type
-		const key_is_maybe = '\'%isMaybe\'';
-		const key_value    = '\'%value\'';
-		return {
-			isMaybe: {name: key_is_maybe, id: Validator.cookTokenIdentifier(key_is_maybe)},
-			value:   {name: key_value,    id: Validator.cookTokenIdentifier(key_value)},
-		} as const;
-	}
-
-
-	/**
-	 * Constructs a Record type resembling the `Maybe[T]` type, with the given generic argument.
-	 * @param typearg the generic argument to `Maybe[T]`
-	 */
-	public constructor(public readonly typearg: Type) {
-		super(new Map<bigint, EntryType>([
-			[Maybe.MAYBE_PROPS.isMaybe.id, {type: TRUE,    optional: false}],
-			[Maybe.MAYBE_PROPS.value.id,   {type: typearg, optional: true}],
-		]));
-	}
-
-
-	public override toString(): string {
-		return `Maybe[${ this.typearg }]`;
-	}
-}

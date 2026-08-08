@@ -779,7 +779,7 @@ test.suite('Access', () => {
 				const block_endif: string = `block-${ block_n + 2 }`;
 				const result_name: string = `$${ result_n }`;
 				return xjs.String.dedent`
-					${ '\t' }(DECL <record> ${ result_name })
+					${ '\t' }(DECL <Maybe> ${ result_name })
 					${ '\t' }(GOTO.IF (ISNONE (GET ${ base_name })) "${ block_then }" "${ block_else }")
 					"${ block_then }":
 						(SET ${ result_name } ${ op_maybe_string() })
@@ -884,11 +884,11 @@ test.suite('Access', () => {
 					my_map?.[5 + 3 * 2];
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <record> my_tup ${ op_maybe_string() })
-						(DECL <record> my_rec ${ op_maybe_string() })
-						(DECL <record> my_list ${ op_maybe_string() })
-						(DECL <record> my_dict ${ op_maybe_string() })
-						(DECL <record> my_map ${ op_maybe_string() })
+						(DECL <Maybe> my_tup ${ op_maybe_string() })
+						(DECL <Maybe> my_rec ${ op_maybe_string() })
+						(DECL <Maybe> my_list ${ op_maybe_string() })
+						(DECL <Maybe> my_dict ${ op_maybe_string() })
+						(DECL <Maybe> my_map ${ op_maybe_string() })
 				`.trim().concat(
 					maybe_access_output(1, 'my_tup', 0, (result_setter) => extract_lines`
 						(DECL <tuple> $1 ${ op_maybe_unwrap_string('(GET my_tup)') })
@@ -939,9 +939,9 @@ test.suite('Access', () => {
 					my_map?.[5 + 3 * 2];
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <record> my_list ${ op_maybe_string() })
-						(DECL <record> my_dict ${ op_maybe_string() })
-						(DECL <record> my_map ${ op_maybe_string() })
+						(DECL <Maybe> my_list ${ op_maybe_string() })
+						(DECL <Maybe> my_dict ${ op_maybe_string() })
+						(DECL <Maybe> my_map ${ op_maybe_string() })
 						(SET my_list ${ op_maybe_string('(LIST.NEW (INT.CONST 42))') })
 						(SET my_dict ${ op_maybe_string('(DICT.NEW @a->(INT.CONST 42))') })
 						(SET my_map ${ op_maybe_string('(MAP.NEW (INT.CONST 42)->(INT.CONST 11))') })

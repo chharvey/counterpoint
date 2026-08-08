@@ -29,6 +29,7 @@ import {
  * - RecordNew
  * - DictNew
  * - MapNew
+ * - MaybeNew
  * - TupleGet
  * - RecordGet
  * - CollectionDynamicGet

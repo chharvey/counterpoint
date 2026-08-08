@@ -81,6 +81,14 @@ Map! Interpret((MAP.NEW `pairs`)) :=
 	2. *Return:* a new Map containing the pairs in `data`.
 ;
 
+Record! Interpret((MAYBE.NEW)) :=
+	1. *Return:* a new Maybe containing no value.
+;
+Record! Interpret((MAYBE.NEW `value`)) :=
+	1. *Let* `mval` be *Unwrap:* `Interpret(value)`.
+	2. *Return:* a new Maybe containing the value `mval`.
+;
+
 Value! Interpret((TUPLE.GET `index` `obj`)) :=
 	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
 	2. *Assert:* `base` is an instance of `Tuple`.
@@ -161,8 +169,8 @@ Boolean! Interpret((ISNULL `v`)) :=
 
 Boolean! Interpret((ISNONE `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *If* `v` is an instance of `Record`:
-		1. *If* `v` has a key named `'%isMaybe'` *and* `v` does not have a key named `'%value'`:
+	2. *If* `v` is an instance of `Maybe`:
+		1. *If* `v` does not have a value:
 			1. *Return:* `true`.
 		2. *Else:*
 			1. Fall through.
