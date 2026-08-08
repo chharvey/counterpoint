@@ -20,7 +20,6 @@ import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
 	ValidFunctionName,
 	type ValidGenericFunctionName,
-	GENERIC_FUNCTION_NAMES,
 	check_valid_function_name,
 	type ConstructorSchema,
 	CLASS_API,
@@ -195,27 +194,37 @@ export class Call extends Expression {
 			);
 		}
 
-		if (GENERIC_FUNCTION_NAMES.includes(this.base.source)) {
-			const [name, ctor] = new Map<ValidGenericFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
-				[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
-				[ValidFunctionName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], this.type())]],
-				[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew            (new Map(),            this.type())]],
-				[ValidFunctionName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew             (new Map(),            this.type())]],
-			]).get(this.base.source as ValidGenericFunctionName)!;
-			const new_obj: OP.Value = ctor();
-			if (!this.exprargs.length) {
-				return new_obj;
+		const base_source = this.base.source as ValidFunctionName;
+		switch (base_source) {
+			case ValidFunctionName.INTEGER:
+			case ValidFunctionName.NATURAL:
+			case ValidFunctionName.FLOAT:
+			case ValidFunctionName.STRING: {
+				return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
+					[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
+					[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
+					[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],
+					[ValidFunctionName.STRING,  OP.OpCode.TOSTR],
+				]).get(base_source)!, this.exprargs[0].build(builder).asTac(builder), this.type());
 			}
-			const dest: OP.ValueTac = new_obj.asTac(builder);
-			builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
-			return dest;
-		} else {
-			return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
-				[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
-				[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
-				[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],
-				[ValidFunctionName.STRING,  OP.OpCode.TOSTR],
-			]).get(this.base.source as ValidFunctionName)!, this.exprargs[0].build(builder).asTac(builder), this.type());
+			case ValidFunctionName.LIST:
+			case ValidFunctionName.DICT:
+			case ValidFunctionName.SET:
+			case ValidFunctionName.MAP: {
+				const [name, ctor] = new Map<ValidGenericFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
+					[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
+					[ValidFunctionName.SET, [OP.TypeName.SET, () => new OP.CollectionLinearNew(OP.TypeName.SET, [], this.type())]],
+					[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew(new Map(), this.type())]],
+					[ValidFunctionName.MAP, [OP.TypeName.MAP, () => new OP.MapNew(new Map(), this.type())]],
+				]).get(base_source)!;
+				const new_obj: OP.Value = ctor();
+				if (!this.exprargs.length) {
+					return new_obj;
+				}
+				const dest: OP.ValueTac = new_obj.asTac(builder);
+				builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
+				return dest;
+			}
 		}
 	}
 

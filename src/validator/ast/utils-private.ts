@@ -67,7 +67,7 @@ export type ValidGenericFunctionName = (
 
 const FUNCTION_NAMES: readonly string[] = Object.values(ValidFunctionName);
 
-export const GENERIC_FUNCTION_NAMES: readonly string[] = [
+const GENERIC_FUNCTION_NAMES: readonly string[] = [
 	ValidFunctionName.LIST,
 	ValidFunctionName.DICT,
 	ValidFunctionName.SET,
