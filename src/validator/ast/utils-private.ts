@@ -270,12 +270,12 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 	[ValidFunctionName.NONE, {
 		genericParams: [{positional: true}],
 		overloads:     [[]],
-		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]), // TODO: subtype into None and Some
+		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
 	}],
 	[ValidFunctionName.SOME, {
 		genericParams: [{positional: true}],
 		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
-		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]), // TODO: subtype into None and Some
+		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
 	}],
 ]);
 

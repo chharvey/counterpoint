@@ -422,6 +422,17 @@ test.suite('Statement', () => {
 					});
 					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
+				test.test('does not allow None/Some to be assigned to each other.', () => {
+					xjs.Array.forEachAggregated([
+						'val x: None.<int> = Some.<int>(42);',
+						'val y: Some.<int> = None.<int>();',
+					], (stmt) => {
+						const {goal} = setupScript(`{
+							${ stmt }
+						}`, {typeCheck: false});
+						return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					});
+				});
 			});
 			test.suite('for property reassignment.', () => {
 				test.test('allows assignment directly on objects.', () => {

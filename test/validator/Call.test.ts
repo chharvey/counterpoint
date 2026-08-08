@@ -211,8 +211,8 @@ test.suite('Call', () => {
 					new TYPE.Dict(TYPE.INT, true),
 					new TYPE.Set(TYPE.INT, true),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
-					new TYPE.Maybe(TYPE.INT),
-					new TYPE.Maybe(TYPE.INT),
+					new TYPE.None(TYPE.INT),
+					new TYPE.Some(TYPE.INT),
 				],
 			);
 		});

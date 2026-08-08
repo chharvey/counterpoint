@@ -43,8 +43,8 @@ test.suite('TypeCall', () => {
 					new TYPE.Dict(TYPE.BOOL),
 					new TYPE.Set(TYPE.STR),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT),
-					new TYPE.Maybe(TYPE.INT),
-					new TYPE.Maybe(TYPE.INT),
+					new TYPE.None(TYPE.INT),
+					new TYPE.Some(TYPE.INT),
 				],
 			);
 		});
@@ -69,6 +69,9 @@ test.suite('TypeCall', () => {
 				None.<int, int>
 				Some.<int, int>
 			`, (src) => assert.throws(() => AST.TYPE.Call.fromSource(src).eval(), TypeErrorArgCount));
+		});
+		test.test('None and Some are disjoint.', () => {
+			assert.ok(AST.TYPE.Call.fromSource('None.<int>').eval().isDisjointWith(AST.TYPE.Call.fromSource('Some.<int>').eval()));
 		});
 	});
 });
