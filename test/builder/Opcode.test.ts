@@ -1482,8 +1482,6 @@ test.suite('Opcode', () => {
 					const builder = new Builder();
 					const cg      = new CodeGenerator();
 					const {vm, mod: {wasm}} = cg;
-					const get2: binaryen.ExpressionRef = wasm.local.get(2, vm.reftypeNull.Value);
-					const get3: binaryen.ExpressionRef = wasm.local.get(3, vm.reftypeNull.Value);
 					[
 						new OP.Unop(
 							OP.OpCode.MAYBE_UNWRAP,
@@ -1502,22 +1500,8 @@ test.suite('Opcode', () => {
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
 						wasm.local.set(0, vm.Value.newComposite(cg.codegenMaybe())),
 						wasm.local.set(1, vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(2, vm.Maybe.field(vm.Value.cast(wasm.local.get(0, vm.reftype.Value), vm.reftype.Maybe)).value),
-							wasm.if(
-								wasm.ref.is_null(get2),
-								wasm.unreachable(),
-								wasm.ref.as_non_null(get2),
-							),
-						], vm.reftype.Value)),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(3, vm.Maybe.field(vm.Value.cast(wasm.local.get(1, vm.reftype.Value), vm.reftype.Maybe)).value),
-							wasm.if(
-								wasm.ref.is_null(get3),
-								wasm.unreachable(),
-								wasm.ref.as_non_null(get3),
-							),
-						], vm.reftype.Value)),
+						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(0, vm.reftype.Value))),
+						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(1, vm.reftype.Value))),
 					]);
 				});
 				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {

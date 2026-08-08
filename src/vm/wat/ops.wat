@@ -22,6 +22,18 @@
 
 
 
+(func $op:unwrap-maybe (export "op::unwrapMaybe") (param $value (ref $Value)) (result (ref $Value))
+	(local $mval (ref null $Value))
+	(local.set $mval (struct.get $Maybe $value (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value)))))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $mval))
+		(then (unreachable))
+		(else (ref.as_non_null (local.get $mval)))
+	)
+)
+
+
+
 (func $op:not (export "op::not") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.or
 		(i32.and

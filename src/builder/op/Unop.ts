@@ -1,9 +1,6 @@
 import * as assert from 'node:assert';
 import * as binaryen from 'binaryen.ts';
-import type {
-	CodeGenerator,
-	Local,
-} from '../../index.ts';
+import type {CodeGenerator} from '../../index.ts';
 import {
 	assert_instanceof,
 	memoizeMethod,
@@ -121,22 +118,10 @@ export class Unop extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap, Maybe}, mod: {wasm}} = cg;
+		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
-			case OpCode.MAYBE_UNWRAP: {
-				// TODO: convert this to a WASM function `$op:unwrap-maybe`
-				// return op.unwrapMaybe(code);
-				const value: Local = cg.newLocal(Maybe.field(VmValue.cast(code, reftype.Maybe)).value);
-				return wasm.block(null, [
-					value.set(),
-					wasm.if(
-						wasm.ref.is_null(value.get()),
-						wasm.unreachable(),
-						wasm.ref.as_non_null(value.get()),
-					),
-				], reftype.Value);
-			}
+			case OpCode.MAYBE_UNWRAP: { return op.unwrapMaybe(code); }
 
 			case OpCode.ISNULL: { return op.isNull(code); }
 			case OpCode.ISNONE: { return op.isNone(code); }
