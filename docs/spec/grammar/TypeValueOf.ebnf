@@ -122,13 +122,13 @@ Type! TypeValueOf(SemanticTypeCall call) :=
 
 
 
-Type! TypeValueOf(SemanticTypeOperation[operator: ORNULL] oper) :=
+Type! TypeValueOf(SemanticTypeOperation[operator: MAYBE] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeValueOf(oper.children.0)`.
 	3. *Return:* `Union(t0, Null)`.
 ;
 
-Type! TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
+Type! TypeValueOf(SemanticTypeOperation[operator: RESULT] oper) :=
 	// TODO: implement
 ;
 

@@ -39,8 +39,8 @@ export class Decorator {
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
-		[Punctuator.QUST,    Operator.ORNULL],
-		[Punctuator.BANG,    Operator.OREXCP],
+		[Punctuator.QUST,    Operator.MAYBE],
+		[Punctuator.BANG,    Operator.RESULT],
 		[Keyword   .MUTABLE, Operator.MUTABLE],
 	]);
 

@@ -61,7 +61,7 @@ SemanticTypeAccess[kind: NORMAL | MAYBE]
 SemanticTypeCall
 	::= SemanticType SemanticType+;
 
-SemanticTypeOperation[operator: ORNULL | OREXCP | MUTABLE]
+SemanticTypeOperation[operator: MAYBE | RESULT | MUTABLE]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
