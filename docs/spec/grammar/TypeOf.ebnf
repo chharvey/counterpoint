@@ -301,6 +301,18 @@ Type! TypeOf(SemanticExpressionIsset expr) :=
 
 
 
+Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *If* `operand` is not a Maybe type:
+		1. *Throw:* a new TypeErrorInvalidOperation.
+	3. *Let* `valuetype` be the type argument to `operand`.
+	4. *Return:* `valuetype`.
+;
+
+Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+	// TODO:
+;
+
 Type! TypeOf(SemanticExpressionOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.

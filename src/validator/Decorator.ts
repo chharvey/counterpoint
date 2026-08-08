@@ -34,8 +34,8 @@ import {
 export class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
 		[Punctuator.DOT,      Operator.DOT],
-		[Punctuator.QUST_DOT, Operator.DOT_MAY],
-		[Punctuator.BANG_DOT, Operator.DOT_RES],
+		[Punctuator.QUST_DOT, Operator.DOT_MAYBE],
+		[Punctuator.BANG_DOT, Operator.DOT_RESULT],
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
@@ -50,15 +50,17 @@ export class Decorator {
 	]);
 
 	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, ValidOperatorUnary> = new Map<Punctuator, ValidOperatorUnary>([
-		[Punctuator.BANG,  Operator.NOT],
-		[Punctuator.QUST,  Operator.EMP],
-		[Punctuator.MINUS, Operator.NEG],
+		[Punctuator.TILD_QST, Operator.UN_MAYBE],
+		[Punctuator.TILD_BNG, Operator.UN_RESULT],
+		[Punctuator.BANG,     Operator.NOT],
+		[Punctuator.QUST,     Operator.EMP],
+		[Punctuator.MINUS,    Operator.NEG],
 	]);
 
 	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
 		[Keyword.AS,     Operator.CAST],
-		[Keyword.AS_MAY, Operator.CAST_MAY],
-		[Keyword.AS_RES, Operator.CAST_RES],
+		[Keyword.AS_MAY, Operator.CAST_MAYBE],
+		[Keyword.AS_RES, Operator.CAST_RESULT],
 	]);
 
 	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
@@ -348,16 +350,21 @@ export class Decorator {
 			['expression_compound', (node) => {
 				const expression_0        = node.childForFieldName('expression_0')        as SyntaxNodeSupertype<'expression'>;
 				const property_accessor_0 = node.childForFieldName('property_accessor_0') as SyntaxNodeFamily<'property_accessor', ['break']> | null;
+				const is_function_call    = !!(node.childForFieldName('generic_arguments_0') ?? node.childForFieldName('function_arguments_0'));
 				return property_accessor_0 ? new AST.EXPR.Access(
 					node as SyntaxNodeType<'expression_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].type as Punctuator)!,
 					this.decorateExprNode(expression_0),
 					this.decorate(property_accessor_0),
-				) : new AST.EXPR.Call(
+				) : is_function_call ? new AST.EXPR.Call(
 					node as SyntaxNodeType<'expression_compound'>,
 					this.decorateExprNode(expression_0),
 					node.childForFieldName('generic_arguments_0') ?.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) ?? [],
 					node.childForFieldName('function_arguments_0')!.namedChildren.map((c) => this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)),
+				) : new AST.EXPR.OperationUnary(
+					node as SyntaxNodeType<'expression_compound'>,
+					Decorator.OPERATORS_UNARY.get(node.children[1].type as Punctuator)!,
+					this.decorateExprNode(expression_0),
 				);
 			}],
 

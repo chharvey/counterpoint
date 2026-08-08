@@ -215,9 +215,11 @@ Build(SemanticExpressionClaim claim) := Build(claim.0);
 Build(SemanticExpressionIsset ::= SemanticExpressionVariable) := (ISSET `GetSymbolSchema(SemanticExpressionVariable)`);
 Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ISNULL `Build(SemanticExpressionAccess)`);
 
-Build(SemanticExpressionOperation[operator=NOT]     ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
-Build(SemanticExpressionOperation[operator=EMP]     ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
-Build(SemanticExpressionOperation[operator=NEG]     ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := TODO:;
+Build(SemanticExpressionOperation[operator=NOT]       ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=EMP]       ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=NEG]       ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
 
 Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`Build(op.0)` `Build(op.1)`]);

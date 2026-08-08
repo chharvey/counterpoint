@@ -413,6 +413,14 @@ Decorate(ExpressionUnit<Block, Break> ::= Block<?Break>) -> SemanticExpressionBl
 
 Decorate(ExpressionCompound<Block, Break> ::= ExpressionUnit<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnit<?Block><?Break>);
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "~?") -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=UN_MAYBE]
+		Decorate(ExpressionCompound<?Block><?Break>)
+	);
+Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "~!") -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=UN_RESULT]
+		Decorate(ExpressionCompound<?Block><?Break>)
+	);
 Decorate(ExpressionCompound<Block, Break> ::= ExpressionCompound<?Block><?Break> "." PropertyAccessor<?Break>) -> SemanticExpressionAccess
 	:= (SemanticExpressionAccess[kind=NORMAL]
 		Decorate(ExpressionCompound<?Block><?Break>)

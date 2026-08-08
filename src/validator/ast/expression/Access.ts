@@ -48,7 +48,7 @@ export class Access extends Expression implements Reassignable {
 		public readonly accessor: Index | Key | Expression,
 	) {
 		super(start_node, {kind}, [base, accessor]);
-		if ([Operator.DOT_RES].includes(this.kind)) {
+		if (this.kind === Operator.DOT_RESULT) {
 			throw new TypeError(`Operator ${ this.kind } not yet supported.`);
 		}
 	}
@@ -67,7 +67,7 @@ export class Access extends Expression implements Reassignable {
 		const typ:        TYPE.Type   = this.type();
 		const base_value: OP.ValueTac = this.base.build(builder).asTac(builder);
 
-		if (this.kind === Operator.DOT_MAY) {
+		if (this.kind === Operator.DOT_MAYBE) {
 			assert_instanceof(typ, TYPE.Maybe);
 			return OP.conditional_expression(
 				builder,
