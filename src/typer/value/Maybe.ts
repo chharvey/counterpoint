@@ -16,7 +16,7 @@ import {
  */
 export class Maybe<T extends Value = Value> extends Value {
 	private readonly type:   TYPE.Type;
-	private readonly value?: T;
+	public  readonly value?: T;
 
 
 	public constructor(value_or_type: T | TYPE.Type) {

@@ -153,6 +153,15 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 		1. *Return:* `null`.
 ;
 
+Value! Interpret((MAYBE.UNWRAP `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `obj` is instance of `Maybe`.
+	3. *If* `obj` does not have a value:
+		1. Throw a new Error "Unwrapped a None value". // TODO: create a more specific error type
+	4. *Else:*
+		1. *Return:* the value contained in `obj`.
+;
+
 // Value! Interpret((CALL `callable` `args`));
 
 Boolean! Interpret((ISSET `id`)) :=

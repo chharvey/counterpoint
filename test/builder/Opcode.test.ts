@@ -294,6 +294,34 @@ test.suite('Opcode', () => {
 						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
 					}`);
 				}
+				test.suite('[operator=MAYBE_UNWRAP]', () => {
+					test.test('throws when operand is a None.', () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						builder.pushInstruction(new OP.Drop(new OP.Unop(
+							OP.OpCode.MAYBE_UNWRAP,
+							new OP.MaybeNew(TYPE.STR).asTac(builder),
+							TYPE.STR,
+						)));
+						return assert.throws(() => builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)), /Unwrapped a None value/);
+					});
+					test.test('returns the value when operand is a Some.', () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						builder.pushInstruction(new OP.Drop(new OP.Unop(
+							OP.OpCode.MAYBE_UNWRAP,
+							new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))).asTac(builder),
+							TYPE.STR,
+						)));
+						return assert.ok(builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).find((value) => !!value)!.identical(new VALUE.String('hello')));
+					});
+				});
 				test.test('[operator=ISNULL]', () => {
 					const builder = new Builder();
 					const interp  = new Interpreter();
@@ -1450,6 +1478,48 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
+				test.test('MAYBE_UNWRAP', () => {
+					const builder = new Builder();
+					const cg      = new CodeGenerator();
+					const {vm, mod: {wasm}} = cg;
+					const get2: binaryen.ExpressionRef = wasm.local.get(2, vm.reftypeNull.Value);
+					const get3: binaryen.ExpressionRef = wasm.local.get(3, vm.reftypeNull.Value);
+					[
+						new OP.Unop(
+							OP.OpCode.MAYBE_UNWRAP,
+							new OP.MaybeNew(TYPE.STR).asTac(builder),
+							TYPE.STR,
+						),
+						new OP.Unop(
+							OP.OpCode.MAYBE_UNWRAP,
+							new OP.MaybeNew(TYPE.INT, new OP.Const(new VALUE.Integer(42n))).asTac(builder),
+							TYPE.INT,
+						),
+					].forEach((irval) => builder.pushInstruction(new OP.Drop(irval)));
+					builder.terminateBlock(new OP.EndProgram());
+					builder.validate();
+					builder.codegen(cg);
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						wasm.local.set(0, vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
+						wasm.drop(wasm.block(null, [
+							wasm.local.set(2, vm.Maybe.field(vm.Value.cast(wasm.local.get(0, vm.reftype.Value), vm.reftype.Maybe)).value),
+							wasm.if(
+								wasm.ref.is_null(get2),
+								wasm.unreachable(),
+								wasm.ref.as_non_null(get2),
+							),
+						], vm.reftype.Value)),
+						wasm.drop(wasm.block(null, [
+							wasm.local.set(3, vm.Maybe.field(vm.Value.cast(wasm.local.get(1, vm.reftype.Value), vm.reftype.Maybe)).value),
+							wasm.if(
+								wasm.ref.is_null(get3),
+								wasm.unreachable(),
+								wasm.ref.as_non_null(get3),
+							),
+						], vm.reftype.Value)),
+					]);
+				});
 				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
 					// there exists no syntax for “is null” operator, so constructing it manually
 					const cg = new CodeGenerator();

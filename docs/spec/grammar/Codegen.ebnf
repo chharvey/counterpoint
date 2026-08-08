@@ -181,6 +181,16 @@ Codegen((MAP.GET `obj` `accessor`)) := (call $Map.get
 	`Codegen(accessor)`
 );
 
+Codegen((MAYBE.UNWRAP `obj`)) := (block
+	// TODO: convert this to a WASM function `$op:unwrap-maybe`
+	(local.set $mval (struct.get $Maybe $value (ref.cast (ref $Maybe) (struct.get $Value $composite `Codegen(obj)`))))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $mval))
+		(then (unreachable))
+		(else (ref.as_non_null (local.get $mval)))
+	)
+);
+
 // Codegen((CALL `callable` `args`));
 
 Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
