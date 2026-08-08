@@ -14,6 +14,8 @@ export enum Punctuator {
 	DOT      = '.',
 	QUST_DOT = '?.',
 	BANG_DOT = '!.',
+	TILD_QST = '~?',
+	TILD_BNG = '~!',
 
 	// unary
 	BANG  = '!',
