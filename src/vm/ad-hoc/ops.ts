@@ -61,6 +61,7 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:is-none', [param0], vm.reftype.Value)
 		),
 
+		/** Return the value of the given `Maybe` if it exists, else trap. */
 		unwrapMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:unwrap-maybe', [param0], vm.reftype.Value)
 		),
