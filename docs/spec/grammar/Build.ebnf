@@ -48,6 +48,8 @@ DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
 
+MAYBE.UNWRAP([Value]) -> Value;
+
 CALL([Value*]) -> Value;
 
 ISSET (SymbolSchemaVar|native-string) -> Boolean;
@@ -167,7 +169,7 @@ Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(SET $result (MAYBE.NEW))
 	(GOTO "endif")
 	"else":
-	(SET $result (MAYBE.NEW `Build(access[kind=NORMAL])`))
+	(SET $result (MAYBE.NEW `Build(access[kind=NORMAL] ::= (MAYBE.UNWRAP (GET $base)) access.1)`))
 	(GOTO "endif")
 	"endif":
 	return (GET $result).

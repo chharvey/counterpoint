@@ -76,7 +76,7 @@ export class Access extends Expression implements Reassignable {
 				() => new OP.MaybeNew(typ.typearg),
 				() => new OP.MaybeNew(typ.typearg, this.#buildNonMaybeBase(
 					builder,
-					base_value.type instanceof TYPE.Maybe ? OP.Maybe.unwrap(base_value).asTac(builder) : base_value,
+					base_value.type instanceof TYPE.Maybe ? new OP.Unop(OP.OpCode.MAYBE_UNWRAP, base_value, base_value.type.typearg).asTac(builder) : base_value,
 					typ.typearg,
 				)?.asTac(builder)),
 			);

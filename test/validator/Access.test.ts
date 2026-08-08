@@ -766,7 +766,7 @@ test.suite('Access', () => {
 		});
 		test.suite('access kind: maybe access (`a?.‹b›`).', () => {
 			function op_maybe_unwrap_string(mab: string): string {
-				return `(RECORD.GET @${ TYPE.Maybe.MAYBE_PROPS.value.name } ${ mab })`;
+				return `(MAYBE.UNWRAP ${ mab })`;
 			}
 			function maybe_access_output(
 				block_n:      number,

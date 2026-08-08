@@ -1,5 +1,3 @@
-import {Validator} from '../../index.ts';
-import {memoizeGetter} from '../../lib/index.ts';
 import {
 	strictEqual,
 	instanceOf,
@@ -22,19 +20,6 @@ import {
  * A `Maybe` repesents presence or absence of a value.
  */
 export class Maybe extends ReferenceType {
-	/** Enumeration of the properties of the `Maybe` type precursor. */
-	// need to use a getter due to import order
-	@memoizeGetter
-	public static get MAYBE_PROPS() { // eslint-disable-line @typescript-eslint/explicit-function-return-type
-		const key_is_maybe = '\'%isMaybe\'';
-		const key_value    = '\'%value\'';
-		return {
-			isMaybe: {name: key_is_maybe, id: Validator.cookTokenIdentifier(key_is_maybe)},
-			value:   {name: key_value,    id: Validator.cookTokenIdentifier(key_value)},
-		} as const;
-	}
-
-
 	/**
 	 * Constructs a Record type resembling the `Maybe[T]` type, with the given generic argument.
 	 * @param typearg the generic argument to `Maybe[T]`

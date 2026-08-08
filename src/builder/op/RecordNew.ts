@@ -15,7 +15,6 @@ import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
-import {RecordGet} from './index.ts';
 
 
 
@@ -51,15 +50,5 @@ export class RecordNew extends Value {
 			id,
 			cg.newProperty(id, value.codegen(cg)),
 		]))));
-	}
-}
-
-
-
-const {value: mval} = TYPE.Maybe.MAYBE_PROPS;
-export class Maybe extends RecordNew {
-	public static unwrap(some: ValueTac): Value {
-		assert_instanceof(some.type, TYPE.Maybe);
-		return new RecordGet(some, {keyid: mval.id, keysrc: mval.name}, some.type.typearg);
 	}
 }

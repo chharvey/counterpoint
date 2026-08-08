@@ -36,6 +36,7 @@ export enum OpCode {
 	SET_GET,
 	MAP_GET,
 
+	MAYBE_UNWRAP,
 	CALL,
 
 	ISSET,

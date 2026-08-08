@@ -21,6 +21,8 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** An enum of allowed unary operations. */
 export type OpCodeUn = (
+	| OpCode.MAYBE_UNWRAP
+
 	| OpCode.ISNULL
 	| OpCode.ISNONE
 
@@ -60,6 +62,11 @@ export class Unop extends Value {
 	public override validate(builder: Builder): void {
 		this.operand.validate(builder);
 		switch (this.operator) {
+			case OpCode.MAYBE_UNWRAP: {
+				assert_instanceof(this.operand.type, TYPE.Maybe);
+				return assert.ok(this.type.isSubtypeOf(this.operand.type.typearg));
+			}
+
 			case OpCode.NEG:
 			case OpCode.TOINT:
 			case OpCode.TONAT:
@@ -87,6 +94,8 @@ export class Unop extends Value {
 	public override interpret(interp: Interpreter): VALUE.Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		switch (this.operator) {
+			case OpCode.MAYBE_UNWRAP: { throw new Error('not yet supported.'); }
+
 			case OpCode.ISNULL: { return VALUE.Boolean.fromBoolean(operand.identical(VALUE.NULL)); }
 			case OpCode.ISNONE: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
 
@@ -112,6 +121,8 @@ export class Unop extends Value {
 		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
+			case OpCode.MAYBE_UNWRAP: { throw new Error('not yet supported.'); }
+
 			case OpCode.ISNULL: { return op.isNull(code); }
 			case OpCode.ISNONE: { return op.isNone(code); }
 
