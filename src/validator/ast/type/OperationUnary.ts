@@ -47,7 +47,7 @@ export class OperationUnary extends Operation {
 			throw new TypeErrorInvalidOperation(this);
 		}
 		return (
-			this.operator === Operator.MAYBE   ? t.union(TYPE.NULL) :
+			this.operator === Operator.MAYBE   ? new TYPE.Maybe(t) :
 			this.operator === Operator.MUTABLE ? t.mutableOf() :
 			assert.fail(`TypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);

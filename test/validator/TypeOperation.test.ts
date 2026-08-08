@@ -18,7 +18,7 @@ test.suite('TypeOperation', () => {
 		test.test('TypeOperationUnary[operator=MAYBE]', () => {
 			assertEqualTypes(
 				AST.TYPE.OperationUnary.fromSource('int?').eval(),
-				TYPE.INT.union(TYPE.NULL),
+				new TYPE.Maybe(TYPE.INT),
 			);
 		});
 

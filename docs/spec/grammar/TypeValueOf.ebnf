@@ -125,7 +125,7 @@ Type! TypeValueOf(SemanticTypeCall call) :=
 Type! TypeValueOf(SemanticTypeOperation[operator: MAYBE] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeValueOf(oper.children.0)`.
-	3. *Return:* `Union(t0, Null)`.
+	3. *Return:* `Maybe(t0)`.
 ;
 
 Type! TypeValueOf(SemanticTypeOperation[operator: RESULT] oper) :=
