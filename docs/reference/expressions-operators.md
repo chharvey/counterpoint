@@ -34,10 +34,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>{ … }</code></td>
 		</tr>
 		<tr>
-			<th rowspan="6">2</th>
+			<th rowspan="8">2</th>
 			<td>Property Access</td>
-			<td rowspan="6">unary postfix</td>
-			<td rowspan="6">left-to-right</td>
+			<td rowspan="8">unary postfix</td>
+			<td rowspan="8">left-to-right</td>
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
@@ -53,12 +53,20 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… ?.[ … ]</code></td>
 		</tr>
 		<tr>
+			<td>Maybe Unwrapper</td>
+			<td><code>… ~?</code></td>
+		</tr>
+		<tr>
 			<td>Result Access</td>
 			<td><code>… !. …</code></td>
 		</tr>
 		<tr>
 			<td>Computed Result Access</td>
 			<td><code>… !.[ … ]</code></td>
+		</tr>
+		<tr>
+			<td>Result Unwrapper</td>
+			<td><code>… ~!</code></td>
 		</tr>
 		<tr>
 			<th>3</th>
@@ -416,8 +424,28 @@ dict.[@prop];  %: float
 dict?.[@prop]; %: Maybe[float]
 ```
 
+#### Maybe Unwrapper
+The **maybe unwrapping** operator `~?`, if the operand is a `Maybe[T]` type, ‘unwraps’ the value of the Maybe, returning type `T`.
+Additionally, if the value is actually a `None` at runtime, the `~?` operator throws an error.
+```cpl
+claim rec_maybe: Maybe[(item: int)];
+
+val rec: (item: int) = rec_maybe;   %> TypeError
+val rec: (item: int) = rec_maybe~?; % no TypeError, but unsafe!
+if rec_maybe is Some then {
+	val rec: (item: int) = rec_maybe~?; % no TypeError, and safe
+};
+
+rec_maybe.item;   %> TypeErrorNoEntry
+rec_maybe?.item;  % maybe access: returns type `Maybe[int]`
+rec_maybe~?.item; % unwraps `rec_maybe` to `(item: int)`; returns type `int`; but throws at runtime if `rec_maybe` is a `None`
+```
+
 #### Result Access
-// TODO: v0.5.0
+// TODO:
+
+#### Result Unwrapper
+// TODO:
 
 
 ### Logical Negation, Emptiness
