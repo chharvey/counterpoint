@@ -58,7 +58,7 @@ test.suite('Opcode', () => {
 					new VALUE.Natural(42n),
 					new VALUE.Float(4.2),
 					new VALUE.String('hello'),
-				], (val) => assert_equal_values(new OP.Const(val).interpret(), val));
+				], (val) => assert.ok(new OP.Const(val).interpret().identical(val)));
 			});
 
 			test.test('Get returns interpreter’s symbol table value.', () => {
@@ -321,6 +321,15 @@ test.suite('Opcode', () => {
 						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
 						TYPE.BOOL,
 					))));
+					[
+						new OP.MaybeNew(TYPE.STR),
+						new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
+						new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
+					].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.ISNONE,
+						irval.asTac(builder),
+						TYPE.BOOL,
+					))));
 					assert_equal_values(
 						builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
@@ -328,17 +337,11 @@ test.suite('Opcode', () => {
 						)).filter((value) => !!value),
 						[
 							...repeat(VALUE.FALSE, 21),
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
 						],
 					);
-					return assert_equal_values([
-						new OP.MaybeNew(TYPE.STR),
-						new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
-						new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
-					].map((irval) => new OP.Unop(OP.OpCode.ISNONE, irval, TYPE.BOOL).interpret(interp)), [
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.FALSE,
-					]);
 				});
 				test.test('[operator=NOT]', () => {
 					assert_equal_values(interpret_unops('!'), [
@@ -442,7 +445,7 @@ test.suite('Opcode', () => {
 					];
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
 						OP.OpCode.LIST_COUNT,
-						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)),
+						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
@@ -451,12 +454,12 @@ test.suite('Opcode', () => {
 							[new VALUE.Symbol(0x100n, 'a'), items[0]],
 							[new VALUE.Symbol(0x101n, 'b'), items[1]],
 							[new VALUE.Symbol(0x102n, 'c'), items[2]],
-						]), new TYPE.Dict(TYPE.ANYTHING)),
+						]), new TYPE.Dict(TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
 						OP.OpCode.SET_COUNT,
-						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)),
+						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
@@ -465,7 +468,7 @@ test.suite('Opcode', () => {
 							[new OP.Const(new VALUE.Symbol(0x100n, 'a')), items[0]],
 							[new OP.Const(new VALUE.Symbol(0x101n, 'b')), items[1]],
 							[new OP.Const(new VALUE.Symbol(0x102n, 'c')), items[2]],
-						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)),
+						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
 					return assert_equal_values(

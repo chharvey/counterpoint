@@ -58,7 +58,7 @@ export class RecordNew extends Value {
 
 const {value: mval} = TYPE.Maybe.MAYBE_PROPS;
 export class Maybe extends RecordNew {
-	public static unwrap(some: Value): Value {
+	public static unwrap(some: ValueTac): Value {
 		assert_instanceof(some.type, TYPE.Maybe);
 		return new RecordGet(some, {keyid: mval.id, keysrc: mval.name}, some.type.typearg);
 	}
