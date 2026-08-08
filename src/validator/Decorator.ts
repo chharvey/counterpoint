@@ -34,8 +34,8 @@ import {
 export class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
 		[Punctuator.DOT,      Operator.DOT],
-		[Punctuator.QUST_DOT, Operator.DOT_MAY],
-		[Punctuator.BANG_DOT, Operator.DOT_RES],
+		[Punctuator.QUST_DOT, Operator.DOT_MAYBE],
+		[Punctuator.BANG_DOT, Operator.DOT_RESULT],
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
@@ -57,8 +57,8 @@ export class Decorator {
 
 	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
 		[Keyword.AS,     Operator.CAST],
-		[Keyword.AS_MAY, Operator.CAST_MAY],
-		[Keyword.AS_RES, Operator.CAST_RES],
+		[Keyword.AS_MAY, Operator.CAST_MAYBE],
+		[Keyword.AS_RES, Operator.CAST_RESULT],
 	]);
 
 	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
