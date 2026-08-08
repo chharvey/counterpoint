@@ -127,7 +127,7 @@ SemanticExpressionClaim
 SemanticExpressionIsset
 	::= SemanticExpressionVariable | SemanticExpressionAccess;
 
-SemanticExpressionOperation[operator: NOT | EMP]
+SemanticExpressionOperation[operator: UN_MAYBE | UN_RESULT | NOT | EMP]
 	::= SemanticExpression;
 SemanticExpressionOperation[operator: NEG]
 	::= SemanticExpression[type: Number];

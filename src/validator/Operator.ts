@@ -5,6 +5,8 @@ export enum Operator {
 	MAYBE,
 	RESULT,
 	MUTABLE,
+	UN_MAYBE,
+	UN_RESULT,
 	NOT,
 	EMP,
 	AFF,
@@ -51,6 +53,8 @@ export type ValidTypeOperator = (
 );
 
 export type ValidOperatorUnary = (
+	| Operator.UN_MAYBE
+	| Operator.UN_RESULT
 	| Operator.NOT
 	| Operator.EMP
 	| Operator.NEG

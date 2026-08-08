@@ -301,6 +301,14 @@ Type! TypeOf(SemanticExpressionIsset expr) :=
 
 
 
+Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+	// TODO:
+;
+
+Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+	// TODO:
+;
+
 Type! TypeOf(SemanticExpressionOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
