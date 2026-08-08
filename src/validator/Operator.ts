@@ -2,8 +2,8 @@ export enum Operator {
 	DOT,
 	DOT_MAY,
 	DOT_RES,
-	ORNULL,
-	OREXCP,
+	MAYBE,
+	RESULT,
 	MUTABLE,
 	NOT,
 	EMP,
@@ -43,8 +43,8 @@ export type ValidAccessOperator = (
 );
 
 export type ValidTypeOperator = (
-	| Operator.ORNULL
-	| Operator.OREXCP
+	| Operator.MAYBE
+	| Operator.RESULT
 	| Operator.MUTABLE
 	| Operator.AND
 	| Operator.OR

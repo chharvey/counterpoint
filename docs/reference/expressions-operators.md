@@ -1107,18 +1107,13 @@ type Rd = R.d;                       %> TypeError
 ```
 
 
-### Nullish
+### To-Maybe
 ```
 <Type> `?`
 ```
-The **nullish** operator creates a [union](#union) of the operand and the `null` type.
-```
-type T = int?; % equivalent to `type T = int | null;`
-```
-This operator is useful for describing values that might be null.
-```
-val mut hello: str? = null;
-set hello = "world";
+The **to-maybe** operator creates a new [Maybe type](./types.md#maybes) containing the operand.
+```cpl
+type T = int?; % equivalent to `type T = Maybe[int];`
 ```
 
 

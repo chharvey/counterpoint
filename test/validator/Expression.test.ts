@@ -731,7 +731,7 @@ test.suite('Expression', () => {
 	test.suite('Claim', () => {
 		test.suite('#type', () => {
 			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('3 as <int?>').type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(AST.EXPR.Claim.fromSource('3 as <int | null>').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			test.test('allows claiming to `nothing` even though intersection is empty.', () => {
 				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);

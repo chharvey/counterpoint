@@ -35,7 +35,7 @@ export class OperationUnary extends Operation {
 		private readonly operand: Type,
 	) {
 		super(start_node, operator, [operand]);
-		if ([Operator.OREXCP].includes(this.operator)) {
+		if ([Operator.RESULT].includes(this.operator)) {
 			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
 		}
 	}
@@ -47,8 +47,8 @@ export class OperationUnary extends Operation {
 			throw new TypeErrorInvalidOperation(this);
 		}
 		return (
-			(this.operator === Operator.ORNULL)  ? t.union(TYPE.NULL) :
-			(this.operator === Operator.MUTABLE) ? t.mutableOf()      :
+			this.operator === Operator.MAYBE   ? new TYPE.Maybe(t) :
+			this.operator === Operator.MUTABLE ? t.mutableOf() :
 			assert.fail(`TypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}

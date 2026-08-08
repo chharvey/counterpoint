@@ -480,11 +480,11 @@ test.suite('Declaration', () => {
 						val s4: mut ({int} | {str -> bool}) = {42};
 						val s5: mut ({int} | Object)        = {42};
 
-						val m1: mut {int -> float}            = {42 -> 4.3};
-						val m2: mut {int? -> float?}          = {42 -> 4.3};
-						val m3: mut Object                    = {42 -> 4.3};
-						val m4: mut ({int -> float} | {str})  = {42 -> 4.3};
-						val m5: mut ({int -> float} | Object) = {42 -> 4.3};
+						val m1: mut {int -> float}               = {42 -> 4.3};
+						val m2: mut {int | null -> float | null} = {42 -> 4.3};
+						val m3: mut Object                       = {42 -> 4.3};
+						val m4: mut ({int -> float} | {str})     = {42 -> 4.3};
+						val m5: mut ({int -> float} | Object)    = {42 -> 4.3};
 					}`);
 				});
 				test.test('throws when entries mismatch.', () => {
