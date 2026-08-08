@@ -85,7 +85,7 @@ export class StatementReassignment extends Statement {
 			if (this.assigned) {
 				value = this.assigned.build(builder);
 				if (symbol.isUninitialized) {
-					value = new OP.MaybeNew(symbol.type, value);
+					value = new OP.MaybeNew(symbol.type, value.asTac(builder));
 				}
 			} else {
 				value = new OP.MaybeNew(symbol.type);

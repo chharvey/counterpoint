@@ -78,7 +78,7 @@ export class Access extends Expression implements Reassignable {
 					builder,
 					base_value.type instanceof TYPE.Maybe ? OP.Maybe.unwrap(base_value).asTac(builder) : base_value,
 					typ.typearg,
-				)),
+				)?.asTac(builder)),
 			);
 		}
 		return this.#buildNonMaybeBase(builder, base_value, typ)!; // if not Maybe access, asserts it will always return a value

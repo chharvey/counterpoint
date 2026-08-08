@@ -13,6 +13,7 @@ import type {Builder} from '../Builder.ts';
 import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
+import type {ValueTac} from './ValueTac.ts';
 
 
 
@@ -20,7 +21,7 @@ import {Value} from './Value.ts';
 export class MaybeNew extends Value {
 	public constructor(
 		typ: TYPE.Type,
-		public readonly value?: Value,
+		public readonly value?: ValueTac,
 	) {
 		super(OpCode.MAYBE_NEW, new TYPE.Maybe(typ));
 	}
