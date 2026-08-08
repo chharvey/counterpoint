@@ -46,6 +46,12 @@ export class OperationUnary extends Operation {
 			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
+			case Operator.UN_MAYBE: {
+				return t instanceof TYPE.Maybe ? t.typearg : assert.fail(new TypeErrorInvalidOperation(this));
+			}
+			case Operator.UN_RESULT: {
+				throw new Error('not yet supported.');
+			}
 			case Operator.NOT: {
 				return (
 					t.isDefinitelyFalsy  ? TYPE.TRUE :
@@ -64,10 +70,14 @@ export class OperationUnary extends Operation {
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Unop {
+		if (this.operator === Operator.UN_RESULT) {
+			throw new Error('not yet supported.');
+		}
 		return new OP.Unop(new Map<Operator, OP.OpCodeUn>([
-			[Operator.NOT, OP.OpCode.NOT],
-			[Operator.EMP, OP.OpCode.EMP],
-			[Operator.NEG, OP.OpCode.NEG],
+			[Operator.UN_MAYBE, OP.OpCode.MAYBE_UNWRAP],
+			[Operator.NOT,      OP.OpCode.NOT],
+			[Operator.EMP,      OP.OpCode.EMP],
+			[Operator.NEG,      OP.OpCode.NEG],
 		]).get(this.operator)!, this.operand.build(builder).asTac(builder), this.type());
 	}
 }

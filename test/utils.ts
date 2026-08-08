@@ -113,6 +113,40 @@ export function assertEqualTypes(arg0: TYPE.Type | readonly TYPE.Type[] | Readon
 	}
 }
 
+/**
+ * Assert equal interpreter values.
+ * but if that fails, compares by `Value#equal` (Counterpoint equality).
+ * @param actual   the actual value
+ * @param expected what `actual` is expected to equal
+ * @throws {AssertionError} actual and expected fail equality
+ */
+export function assert_equal_values(actual: VALUE.Value, expected: VALUE.Value): void;
+/**
+ * Assert equal interpreter values.
+ * but if that fails, compares by `Value#equal` (Counterpoint equality).
+ * @param actual   an array of actual values
+ * @param expected an array of what `actual` is expected to equal
+ * @throws {AssertionError} if a corresponding type fails equality
+ */
+export function assert_equal_values(actual: readonly VALUE.Value[], expected: readonly VALUE.Value[]): void;
+/**
+ * Assert equal interpreter values.
+ * but if that fails, compares by `Value#equal` (Counterpoint equality).
+ * @param types a map of keys and values to compare
+ * @throws {AssertionError} if one of the pairs fails equality
+ */
+export function assert_equal_values(types: ReadonlyMap<VALUE.Value, VALUE.Value>): void;
+export function assert_equal_values(arg0: VALUE.Value | readonly VALUE.Value[] | ReadonlyMap<VALUE.Value, VALUE.Value>, arg1?: VALUE.Value | readonly VALUE.Value[]): void {
+	if (arg0 instanceof Map) {
+		return assert_equal_values([...arg0.keys()], [...arg0.values()]);
+	} else if (Array.isArray(arg0)) {
+		assert.strictEqual(arg0.length, (arg1 as VALUE.Value[]).length, 'Expected arrays to have the same length.');
+		return xjs.Array.forEachAggregated(arg0, (act, i) => assert_equal_values(act as VALUE.Value, (arg1 as VALUE.Value[])[i]));
+	} else {
+		return assert.ok((arg0 as VALUE.Value).equal(arg1 as VALUE.Value), `${ arg0 as VALUE.Value } == ${ arg1 }`);
+	}
+}
+
 export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
 export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: readonly Ref[], expected: readonly Ref[]): void;
 export function assertEqualBins<Ref extends binaryen.ExpressionRef>(bins: ReadonlyMap<Ref, Ref>): void;
@@ -139,6 +173,12 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | 
 			return assert.strictEqual(binaryen.emitText(arg0 as Ref), binaryen.emitText(arg1 as Ref));
 		}
 	}
+}
+
+
+
+export function op_maybe_string(val?: string): string {
+	return `(MAYBE.NEW${ val ? ` ${ val }` : '' })`;
 }
 
 

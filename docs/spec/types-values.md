@@ -14,10 +14,10 @@ Counterpoint Specification Types are only used internally within this specificat
 They are not directly observable from Counterpoint code.
 
 
-### None
-The **None** type has one value called *none*.
+### Nil
+The **Nil** type has one value called *nil*.
 It signifies a variable with no meaningful value.
-An algorithm with output type None returns a [CompletionSchema](#completionschema)
+An algorithm with output type Nil returns a [CompletionSchema](#completionschema)
 with no \`value\` property.
 
 
@@ -399,6 +399,17 @@ Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 <sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
 
 
+### Control Abstraction Types
+
+#### Maybe Types
+A **Maybe** type describes instances of [`Maybe`](./intrinsics.md#maybe) and is parameterized by a single type,
+called a *type argument*, representing its possibly held value.
+The objects that any given Maybe type describes are `Maybe` objects whose
+value, if it exists, is assignable to the type argument of the Maybe type.
+The **Maybe** class is abstract and enumerated by two concrete subclasses:
+**Some**, which holds a value, and **None**, which does not.
+
+
 ### Nominal Types
 Nominal types form a type hierarchy where assignability is determined by name alone.
 
@@ -754,7 +765,13 @@ Boolean ToBoolean(Value value) :=
 		1. *Return:* `false`.
 	2. *If* `value` is an instance of `Boolean`:
 		1. *Return:* `value`.
-	3. *Return:* `true`.
+	3. *If* `value` is an instance of `Maybe`:
+		1. *Note:* These steps are copied from `Interpret((ISNONE))`.
+		2. *If* `v` does not have a value:
+			1. *Return:* `false`.
+		3. *Else:*
+			1. Fall through..
+	4. *Return:* `true`.
 ```
 
 

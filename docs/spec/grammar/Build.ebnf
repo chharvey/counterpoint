@@ -39,6 +39,7 @@ LIST.NEW([Value*])                        -> List;
 DICT.NEW(Vector<VALUE.Symbol, Value>*)    -> Dict;
 SET.NEW([Value*])                         -> Set;
 MAP.NEW(Vector<Value, Value>*)            -> Map;
+MAYBE.NEW(Value?)                         -> Maybe;
 
 TUPLE.GET (native-bigint [Value]) -> Value;
 RECORD.GET(native-bigint [Value]) -> Value;
@@ -47,10 +48,13 @@ DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
 
+MAYBE.UNWRAP([Value]) -> Value;
+
 CALL([Value*]) -> Value;
 
 ISSET (SymbolSchemaVar|native-string) -> Boolean;
 ISNULL([Value])                       -> Boolean;
+ISNONE([Value])                       -> Boolean;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
@@ -126,13 +130,13 @@ Build(String  s) := (STR.CONST   s);
 Build(SemanticProperty prop) := Sequence [`Symbol(prop.0)`, `Build(prop.1)`];
 Build(SemanticCase     case) := Sequence [`Build(case.0)`, `Build(case.1)`];
 
-Build(SemanticExpressionConstant[value: VALUE.Null]    const) := (NULL.CONST  `Build(const.value)`);
-Build(SemanticExpressionConstant[value: VALUE.Boolean] const) := (BOOL.CONST  `Build(const.value)`);
-Build(SemanticExpressionConstant[value: VALUE.Symbol]  const) := (SYM.CONST   `Build(const.value)`);
-Build(SemanticExpressionConstant[value: VALUE.Integer] const) := (INT.CONST   `Build(const.value)`);
-Build(SemanticExpressionConstant[value: VALUE.Natural] const) := (NAT.CONST   `Build(const.value)`);
-Build(SemanticExpressionConstant[value: VALUE.Float]   const) := (FLOAT.CONST `Build(const.value)`);
-Build(SemanticExpressionConstant[value: VALUE.String]  const) := (STR.CONST   `Build(const.value)`);
+Build(SemanticExpressionConstant[value: VALUE.Null]    const) := `Build(const.value)`;
+Build(SemanticExpressionConstant[value: VALUE.Boolean] const) := `Build(const.value)`;
+Build(SemanticExpressionConstant[value: VALUE.Symbol]  const) := `Build(const.value)`;
+Build(SemanticExpressionConstant[value: VALUE.Integer] const) := `Build(const.value)`;
+Build(SemanticExpressionConstant[value: VALUE.Natural] const) := `Build(const.value)`;
+Build(SemanticExpressionConstant[value: VALUE.Float]   const) := `Build(const.value)`;
+Build(SemanticExpressionConstant[value: VALUE.String]  const) := `Build(const.value)`;
 
 Build(SemanticExpressionTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Build)`);
 
@@ -158,14 +162,14 @@ Build(SemanticExpressionBlock blex) := [
 ];
 
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
-	(DECL ‹type› $tuple `Build(access.0)`)
+	(DECL ‹type› $base `Build(access.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (ISNULL (GET $tuple)) "then" "else")
+	(GOTO.IF (ISNONE (GET $base)) "then" "else")
 	"then":
-	(SET $result (NULL.CONST null))
+	(SET $result (MAYBE.NEW))
 	(GOTO "endif")
 	"else":
-	(SET $result `Build(access[kind=NORMAL])`)
+	(SET $result (MAYBE.NEW `Build(access[kind=NORMAL] ::= (MAYBE.UNWRAP (GET $base)) access.1)`))
 	(GOTO "endif")
 	"endif":
 	return (GET $result).
@@ -211,9 +215,11 @@ Build(SemanticExpressionClaim claim) := Build(claim.0);
 Build(SemanticExpressionIsset ::= SemanticExpressionVariable) := (ISSET `GetSymbolSchema(SemanticExpressionVariable)`);
 Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ISNULL `Build(SemanticExpressionAccess)`);
 
-Build(SemanticExpressionOperation[operator=NOT]     ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
-Build(SemanticExpressionOperation[operator=EMP]     ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
-Build(SemanticExpressionOperation[operator=NEG]     ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := TODO:;
+Build(SemanticExpressionOperation[operator=NOT]       ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=EMP]       ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
+Build(SemanticExpressionOperation[operator=NEG]       ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
 
 Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`Build(op.0)` `Build(op.1)`]);
@@ -321,7 +327,7 @@ Build(SemanticDeclarationVariable[writable=false] ::= SemanticType? SemanticExpr
 	(DROP `Build(SemanticExpression)`)
 ];
 Build(SemanticDeclarationVariable[id: RealNumber][writable=true] ::= SemanticType) := [
-	(DECL <null> `GetSymbolSchema(id)`)
+	(DECL ‹type› `GetSymbolSchema(id)` (MAYBE.NEW))
 ];
 
 Build(SemanticStatementExpression:has(SemanticExpression) stmt) := [
@@ -333,18 +339,20 @@ Build(SemanticStatementClaim stmt) := [
 	(DROP `Build(stmt.0)`)
 ];
 
-Build(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression) := [
+Build(SemanticStatementReassignment ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=false]) SemanticExpression) := [
 	(SET `GetSymbolSchema(SemanticExpressionVariable)` `Build(SemanticExpression)`)
+];
+Build(SemanticStatementReassignment ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=true]) SemanticExpression) := [
+	(SET `GetSymbolSchema(SemanticExpressionVariable)` (MAYBE.NEW `Build(SemanticExpression)`))
 ];
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.List] SemanticExpression) SemanticExpression) := (LIST.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Set]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
 Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Map]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-
-Build(SemanticStatementDelete ::= SemanticExpressionVariable) := [
-	(SET `GetSymbolSchema(SemanticExpressionVariable)`)
+Build(SemanticStatementReassignment ::= SemanticExpressionVariable) := [
+	(SET `GetSymbolSchema(SemanticExpressionVariable)` (MAYBE.NEW))
 ];
-Build(SemanticStatementDelete ::= SemanticExpressionAccess); // TODO: object/interface support
+Build(SemanticStatementReassignment ::= SemanticExpressionAccess); // TODO: object/interface support
 
 Build(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock) := [
 	(GOTO.IF `Build(SemanticExpression)` "then" "endif")

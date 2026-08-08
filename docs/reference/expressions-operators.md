@@ -34,10 +34,10 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>{ … }</code></td>
 		</tr>
 		<tr>
-			<th rowspan="6">2</th>
+			<th rowspan="8">2</th>
 			<td>Property Access</td>
-			<td rowspan="6">unary postfix</td>
-			<td rowspan="6">left-to-right</td>
+			<td rowspan="8">unary postfix</td>
+			<td rowspan="8">left-to-right</td>
 			<td><code>… . …</code></td>
 		</tr>
 		<tr>
@@ -53,12 +53,20 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… ?.[ … ]</code></td>
 		</tr>
 		<tr>
+			<td>Maybe Unwrapper</td>
+			<td><code>… ~?</code></td>
+		</tr>
+		<tr>
 			<td>Result Access</td>
 			<td><code>… !. …</code></td>
 		</tr>
 		<tr>
 			<td>Computed Result Access</td>
 			<td><code>… !.[ … ]</code></td>
+		</tr>
+		<tr>
+			<td>Result Unwrapper</td>
+			<td><code>… ~!</code></td>
 		</tr>
 		<tr>
 			<th>3</th>
@@ -366,66 +374,78 @@ The expression in the brackets evaluates to an index, key, element, or anteceden
 of the binding object and must be of the correct type.
 
 More information about property access when used on collections
-can be found in the [Types](./types) chapter.
+can be found in the [Types](./types.md) chapter.
 
 #### Maybe Access
 The **maybe access** syntax is almost the same as property access, except that
-the operator produces the `null` value if and when there is no such bound property
-on the binding object at runtime. This operator is designed to work with
-optional entries on types, such as optional properties on a record type, as well as
-[the `Maybe` algeraic sum type] (link pending).
+the operator always produces a `Maybe` object — a `None` object if and when there is no such bound property
+on the binding object at runtime, else a `Some` object containing the accesssed value.
+This operator is designed to work with optional entries on types, such as optional properties on a record type, as well as
+[the `Maybe` algeraic sum type](./types.md#maybes).
 
 Given a record `record` of type `(a: bool, b?: int)`,
 the expression `record.b` would result in a crash if there’s no actual value at that location,
 so the compiler raises an error when using that syntax.
-Using the maybe access operator though, `record?.b` will produce the value at `record.b`
-if it exists, but otherwise will produce `null` and avoid the crash.
+Using the maybe access operator though, `record?.b` will produce a `Some` containing the value at `record.b`
+if it exists, but otherwise will produce a `None` and avoid the crash.
 An equivalent syntax exists for dynamic access: `map?.[expr]`, etc.
 
 Conversely, maybe access syntax is not allowed for required properties: `record?.a` would raise a compiler error.
 
-Note that if `foo?.bar` produces `null`, it either means that `foo.bar` does exist and is equal to `null`,
-or that there’s no value for the `bar` property bound to `foo`,
-and the maybe access operator is doing its job.
-Thus the recommended approach is to use
-[the `Maybe` discriminated union type] (link pending)
-for all entries in a collection that may contain `null`.
-
-If the *binding object is `null`*, then the maybe access operator also produces `null`.
-For example, `null.property` is a type error (and if the compiler were bypassed,
-it would cause a runtime error), but `null?.property` will simply produce `null`.
+If the *binding object is a `Maybe`*, then the maybe access operator produces another `Maybe`.
+For example, `None[T]().property` is a type error, but `None[T]()?.property` will simply produce a new `None[U]`
+(and not the same `None[T]` reference object).
 This facet makes maybe access safe to use when chained.
 
-When the maybe access operator is chained, it should be chained down the line, e.g., `x?.y?.z`.
-This is equivalent to `(x?.y)?.z`, and if `x?.y` (or `x.y` for that matter) is `null`,
-then the whole expression also results in `null`.
+When the maybe access operator is chained, it should be chained down the line,
+e.g., `x?.y?.z` is equivalent to `(x?.y)?.z`.
 However, `x?.y.z` (which can be thought of as `(x?.y).z`) is not the same,
-and will result in a runtime error if `x?.y` is `null`.
+and will result in a type-error if `z` is not a property of `Maybe`.
 
 **Type-Checking Note:**
 
 For static types (e.g., tuples and records),
 either the normal or maybe access operator is allowed, corresponding to the optionality of the entry being accessed.
-When the maybe access operator is used for an optional entry, the entry type is unioned with `null`.
-```
+When the maybe access operator is used for an optional entry, the entry type is wrapped in a `Maybe`.
+```cpl
 claim record: (required: bool, optional?: int);
 record.required;  %: bool
 record?.required; %> TypeErrorInvalidOperation
 record.optional;  %> TypeErrorInvalidOperation
-record?.optional; %: int | null
+record?.optional; %: int?
 ```
 For dynamic types (e.g., lists and dicts),
 both normal and maybe access operators are allowed.
-The normal access operator treats all entries as required (does not modify the declared type), and
-the maybe access operator treats all entries as optional (unions the property type with `null`).
-```
-claim dict: [: float];
+The normal access operator treats all entries as required (does not wrap the declared type in `Maybe`), and
+the maybe access operator treats all entries as optional (wraps the property type in `Maybe`).
+```cpl
+claim dict: [:float];
 dict.[@prop];  %: float
-dict?.[@prop]; %: float | null
+dict?.[@prop]; %: Maybe[float]
+```
+
+#### Maybe Unwrapper
+The **maybe unwrapping** operator `~?`, if the operand is a `Maybe[T]` type, ‘unwraps’ the value of the Maybe, returning type `T`.
+Additionally, if the value is actually a `None` at runtime, the `~?` operator throws an error.
+```cpl
+claim rec_maybe: Maybe[(item: int)];
+
+val rec: (item: int) = rec_maybe;   %> TypeError
+val rec: (item: int) = rec_maybe~?; % no TypeError, but unsafe!
+if rec_maybe is Some then {
+	val rec: (item: int) = rec_maybe~?; % no TypeError, and safe
+};
+
+rec_maybe.item;   %> TypeErrorNoEntry
+rec_maybe?.item;  % maybe access: returns type `Maybe[int]`
+rec_maybe~?.item; % unwraps `rec_maybe` to `(item: int)`; returns type `int`; but throws at runtime if `rec_maybe` is a `None`
 ```
 
 #### Result Access
-// TODO: v0.5.0
+// TODO:
+
+#### Result Unwrapper
+// TODO:
 
 
 ### Logical Negation, Emptiness
@@ -455,6 +475,7 @@ or if it’s an empty string or empty collection (such as an array or set).
 |                | `0.0`, `-0.0`    | all floats      |
 |                | `""`             | all strings     |
 |                | `()`, `[]`, `{}` | all collections |
+| all `None`s    | all `None`s      | all `Some`s     |
 |                |                  | any other value |
 
 
@@ -496,6 +517,8 @@ This is important to mention because it could also affect how we write
 
 
 ### Is-Set
+**WARNING:** *This section is obsolete.*
+
 ```
 `isset`  <Assignee>
 `!isset` <Assignee>
@@ -1112,18 +1135,13 @@ type Rd = R.d;                       %> TypeError
 ```
 
 
-### Nullish
+### To-Maybe
 ```
 <Type> `?`
 ```
-The **nullish** operator creates a [union](#union) of the operand and the `null` type.
-```
-type T = int?; % equivalent to `type T = int | null;`
-```
-This operator is useful for describing values that might be null.
-```
-val mut hello: str? = null;
-set hello = "world";
+The **to-maybe** operator creates a new [Maybe type](./types.md#maybes) containing the operand.
+```cpl
+type T = int?; % equivalent to `type T = Maybe[int];`
 ```
 
 

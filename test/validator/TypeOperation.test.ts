@@ -15,15 +15,15 @@ import {
 
 test.suite('TypeOperation', () => {
 	test.suite('#eval', () => {
-		test.test('TypeOperationUnary[operator=ORNULL]', () => {
+		test.test('TypeOperationUnary[operator=MAYBE]', () => {
 			assertEqualTypes(
 				AST.TYPE.OperationUnary.fromSource('int?').eval(),
-				TYPE.INT.union(TYPE.NULL),
+				new TYPE.Maybe(TYPE.INT),
 			);
 		});
 
 
-		test.test.todo('TypeOperationUnary[operator=OREXCP]', () => {
+		test.test.todo('TypeOperationUnary[operator=RESULT]', () => {
 			assert.ok('TODO:');
 		});
 

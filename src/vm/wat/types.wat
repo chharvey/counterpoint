@@ -86,4 +86,14 @@
 		;; the array of Map cases; mutable to allow reallocation
 		(field $internal (mut (ref $MapInternal)))
 	)))
+
+	;; precursor to the `Maybe` class
+	(type $Maybe (sub final $Object (struct
+		;; --- inherited ---
+		;; unique id for hashing
+		(field $id i64)
+
+		;; --- own ---
+		(field $value (ref null $Value))
+	)))
 )

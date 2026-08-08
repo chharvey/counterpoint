@@ -61,7 +61,7 @@ SemanticTypeAccess[kind: NORMAL | MAYBE]
 SemanticTypeCall
 	::= SemanticType SemanticType+;
 
-SemanticTypeOperation[operator: ORNULL | OREXCP | MUTABLE]
+SemanticTypeOperation[operator: MAYBE | RESULT | MUTABLE]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
@@ -127,7 +127,7 @@ SemanticExpressionClaim
 SemanticExpressionIsset
 	::= SemanticExpressionVariable | SemanticExpressionAccess;
 
-SemanticExpressionOperation[operator: NOT | EMP]
+SemanticExpressionOperation[operator: UN_MAYBE | UN_RESULT | NOT | EMP]
 	::= SemanticExpression;
 SemanticExpressionOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
@@ -150,7 +150,6 @@ SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticStatementClaim
 	| SemanticStatementReassignment
-	| SemanticStatementDelete
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration

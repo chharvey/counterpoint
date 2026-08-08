@@ -126,6 +126,19 @@ Codegen((MAP.NEW `pairs`)) := (call $Value.new-composite
 	)
 );
 
+Codegen((MAYBE.NEW)) := (call $Value.new-composite
+	(struct.new $Maybe
+		(call $Object.ctr-plus-plus)
+		(ref.null $Value)
+	)
+);
+Codegen((MAYBE.NEW `value`)) := (call $Value.new-composite
+	(struct.new $Maybe
+		(call $Object.ctr-plus-plus)
+		`Codegen(value)`
+	)
+);
+
 Codegen((TUPLE.GET `index` `obj`)) := (array.get
 	(ref.cast (ref $Tuple) (struct.get $Value $composite `Codegen(obj)`))
 	(i32.const `index`)
@@ -168,6 +181,8 @@ Codegen((MAP.GET `obj` `accessor`)) := (call $Map.get
 	`Codegen(accessor)`
 );
 
+Codegen((MAYBE.UNWRAP `obj`)) := (call $op:unwrap-maybe `Codegen(obj)`);
+
 // Codegen((CALL `callable` `args`));
 
 Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
@@ -175,6 +190,7 @@ Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
 )));
 
 Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
+Codegen((ISNONE `v`)) := (call $op:is-none `Codegen(v)`);
 
 Codegen((NOT `v`)) := (call $op:not      `Codegen(v)`);
 Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);

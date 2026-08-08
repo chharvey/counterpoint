@@ -109,7 +109,7 @@ RealNumber Multiply(Sequence<RealNumber> ns) :=
 		1. *Return:* 0.
 	2. *Return:* *UnwrapAffirm:* `Multiply(ns[0, -1])` * \x40 + `ns.lastItem`.
 ;
-None! Continue(Sequence<RealNumber> units) :=
+Nil! Continue(Sequence<RealNumber> units) :=
 	1. *For index* `i` in `units`:
 		1. *If* `i` is 0:
 			1. *Skip.*
@@ -194,7 +194,7 @@ Performs the type-checking piece during semantic analysis.
 Attempt to assign a mutable collection literal to a mutable type when type-checking fails.
 This assignment is attempted on an entry-by-entry basis.
 ```
-None! AssignTo(SemanticExpressionCollection expr, Type type) :=
+Nil! AssignTo(SemanticExpressionCollection expr, Type type) :=
 	1. *If* `expr` is a SemanticExpressionTuple *and* `type` is a Tuple type:
 		1. *Note:* These steps are copied from the Subtype algorithm and modified slightly.
 		2. *Let* `seq_b` be a Sequence whose items are exactly the items in `type`.
@@ -266,15 +266,15 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 				type=     `Nothing`,
 				optional= `accessor_maybe`,
 			].
-	6. *If* *UnwrapAffirm:* `Subtype(Null, base_type)` is `true`:
-		1. *Let* `nonnull_base_type` be *UnwrapAffirm:* `Difference(base_type, Null)`.
-		2. *Let* `entry_info` be *Unwrap*: `GetEntryInfo(nonnull_base_type, access, is_writing)`.
-		3. *Let* `result` be *UnwrapAffirm:* `Union(entry_info, Null)`.
-		4. *Return:* a new EntryTypeSchema [
-				type=     `result`,
-				optional= `true`,
-			].
-	7. *If* `base_type` is the intersection or union of some types `a` and `b`:
+	6. *If* `base_type` is a Maybe type *and* `access.kind` is MAYBE:
+		1. *Let* `entry_info` be *Unwrap*: `GetEntryInfo(base_type.typearg, access, is_writing)`.
+		2. *Return:* a new EntryTypeSchema [
+			type=     `Maybe(entry_info.type)`,
+			optional= `entry_info.optional`,
+		].
+	7. *Else:*
+		1. Fall through.
+	8. *If* `base_type` is the intersection or union of some types `a` and `b`:
 		1. If `a` and `b` are of different types:
 			1. *Throw:* a new TypeErrorInvalidOperation.
 		2. *Let* `entry_infos` be the Sequence [`GetEntryInfo(a, access, is_writing)`, `GetEntryInfo(b, access, is_writing)`].
@@ -307,17 +307,17 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 					type=     `union`,
 					optional= `any_optional`,
 				].
-	8. *If* `accessor` is a SemanticIndex:
+	9. *If* `accessor` is a SemanticIndex:
 		1. *If* `base_type` is a Tuple type *and* `accessor.index` is an index in `base_type`:
 			1. *Return:* the item accessed at index `accessor.index` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	9. *Else If* `accessor` is a SemanticKey:
+	10. *Else If* `accessor` is a SemanticKey:
 		1. *If* `base_type` is a Record type *and* `accessor.id` is a key in `base_type`:
 			1. *Return:* the value accessed at key `accessor.id` in `base_type`.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorNoEntry.
-	10. *Else:*
+	11. *Else:*
 		1. *Assert:* `accessor` is a SemanticExpression.
 		2. *Let* `accessor_type` be *Unwrap:* `TypeOf(accessor)`.
 		3. *If* *UnwrapAffirm:* `IsBottomType(accessor_type)` is `true`:
@@ -373,38 +373,28 @@ EntryTypeSchema! GetEntryInfo(Type base_type, Or<SemanticTypeAccess, SemanticExp
 
 
 
-## ValidateAccessKind
-Checks for correctness, matching access kind with accessed bound entry of a collection.
+## AccessType
+Checks for correctness, matching access kind with accessed bound entry of a collection,
+then returns either the resulting type unwrapped or wrapped a Maybe.
 If access kind is normal, the entry must be non-optioal.
-If access kind is maybe, the entry must be optional.
+If access kind is maybe, the entry must be optional, or base must be a Maybe.
 Otherwise, the access kind may be result.
-For dynamic collections, entries behave as both non-optional and optional.
 ```
-None! ValidateAccessKind(Or<NORMAL, MAYBE, RESULT> access_kind, Boolean is_entry_optional) :=
-	1. *If* `access_kind` is *NORMAL* *and* `is_entry_optional` is `false`:
-		1. *Return.*
-	2. *If* `access_kind` is *MAYBE* *and* `is_entry_optional` is `true`:
-		1. *Return.*
-	3. *If* `access_kind` is *RESULT*:
-		// TODO: implement
-	4. *Throw:* a new TypeErrorInvalidOperation.
-;
-```
-
-
-
-## UpdateAccessedType
-Possibly modifies the type of an accessed bound property of a data type.
-Under maybe access, unions with Null; else returns unmodified type.
-```
-Type UpdateAccessedType(Type type, Or<NORMAL, MAYBE, RESULT> access_kind) :=
-	1. *If* `access_kind` is *MAYBE*:
-		1. *Return:* `Union(type, Null)`.
-	2. *Else If* `access_kind` is *RESULT*:
-		// TODO: implement
+Type! AccessType(Or<NORMAL, MAYBE, RESULT> access_kind, Type base_type, EntryTypeSchema entry) :=
+	1. *If* `access_kind` is *NORMAL* *and* `entry.optional` is `true`:
+		1. *Throw:* a new TypeErrorInvalidOperation.
+	2. *Else If* `access_kind` is *MAYBE*:
+		1. *If* `entry.optional` is `false` *and* `base_type` is not a Maybe type:
+			1. *Throw:* a new TypeErrorInvalidOperation.
+		2. *Else:*
+			1. Fall through.
 	3. *Else:*
-		1. *Assert:* `access_kind` is *NORMAL*.
-		2. *Return:* `type`.
+		1. *Assert:* `access_kind` is *RESULT*.
+		// TODO: implement
+	4. *If* `entry.optional` is `true`:
+		1. *Return:* `Maybe(entry.type)`.
+	5. *Else:*
+		1. *Return:* `entry.type`.
 ;
 ```
 

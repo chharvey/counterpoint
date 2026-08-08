@@ -260,6 +260,23 @@ test.suite('CodeGenerator', () => {
 			);
 		});
 
+		test.test('#codegenMaybe', () => {
+			assertEqualBins(
+				cg.codegenMaybe(),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					wasm.ref.null(cg.vm.reftypeNull.Value),
+				], cg.vm.heaptype.Maybe),
+			);
+			return assertEqualBins(
+				cg.codegenMaybe(genConst(cg, 42)),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					genConst(cg, 42),
+				], cg.vm.heaptype.Maybe),
+			);
+		});
+
 		test.test('Records: hashing collisions are resolved in source order.', () => {
 			`{
 				% sym  | id  | mod 3

@@ -15,43 +15,54 @@ export function ops(vm: VirtualMachine) {
 				const {reftype} = vm;
 				const binary_params: binaryen.Type = binaryen.createType([reftype.Value, reftype.Value]);
 				func_import_memo = new Map<string, FuncImportData>([
-					['op::isNull',   {name: 'op:is-null',   param: reftype.Value,  result: reftype.Value}],
-					['op::not',      {name: 'op:not',       param: reftype.Value,  result: reftype.Value}],
-					['op::isEmpty',  {name: 'op:is-empty',  param: reftype.Value,  result: reftype.Value}],
-					['op::negate',   {name: 'op:negate',    param: reftype.Value,  result: reftype.Value}],
-					['op::toInt',    {name: 'op:to-int',    param: reftype.Value,  result: reftype.Value}],
-					['op::toNat',    {name: 'op:to-nat',    param: reftype.Value,  result: reftype.Value}],
-					['op::toFloat',  {name: 'op:to-float',  param: reftype.Value,  result: reftype.Value}],
-					['op::intAdd',   {name: 'op:int-add',   param: binary_params,  result: reftype.Value}],
-					['op::natAdd',   {name: 'op:nat-add',   param: binary_params,  result: reftype.Value}],
-					['op::floatAdd', {name: 'op:float-add', param: binary_params,  result: reftype.Value}],
-					['op::intSub',   {name: 'op:int-sub',   param: binary_params,  result: reftype.Value}],
-					['op::natSub',   {name: 'op:nat-sub',   param: binary_params,  result: reftype.Value}],
-					['op::floatSub', {name: 'op:float-sub', param: binary_params,  result: reftype.Value}],
-					['op::intMul',   {name: 'op:int-mul',   param: binary_params,  result: reftype.Value}],
-					['op::natMul',   {name: 'op:nat-mul',   param: binary_params,  result: reftype.Value}],
-					['op::floatMul', {name: 'op:float-mul', param: binary_params,  result: reftype.Value}],
-					['op::intDiv',   {name: 'op:int-div',   param: binary_params,  result: reftype.Value}],
-					['op::natDiv',   {name: 'op:nat-div',   param: binary_params,  result: reftype.Value}],
-					['op::floatDiv', {name: 'op:float-div', param: binary_params,  result: reftype.Value}],
-					['op::intExp',   {name: 'op:int-exp',   param: binary_params,  result: reftype.Value}],
-					['op::natExp',   {name: 'op:nat-exp',   param: binary_params,  result: reftype.Value}],
-					['op::floatExp', {name: 'op:float-exp', param: binary_params,  result: reftype.Value}],
-					['op::lt',       {name: 'op:lt',        param: binary_params,  result: reftype.Value}],
-					['op::gt',       {name: 'op:gt',        param: binary_params,  result: reftype.Value}],
-					['op::le',       {name: 'op:le',        param: binary_params,  result: reftype.Value}],
-					['op::ge',       {name: 'op:ge',        param: binary_params,  result: reftype.Value}],
-					['op::id',       {name: 'op:id',        param: binary_params,  result: reftype.Value}],
-					['op::eq',       {name: 'op:eq',        param: binary_params,  result: reftype.Value}],
+					['op::isNull',      {name: 'op:is-null',      param: reftype.Value,  result: reftype.Value}],
+					['op::isNone',      {name: 'op:is-none',      param: reftype.Value,  result: reftype.Value}],
+					['op::unwrapMaybe', {name: 'op:unwrap-maybe', param: reftype.Value,  result: reftype.Value}],
+					['op::not',         {name: 'op:not',          param: reftype.Value,  result: reftype.Value}],
+					['op::isEmpty',     {name: 'op:is-empty',     param: reftype.Value,  result: reftype.Value}],
+					['op::negate',      {name: 'op:negate',       param: reftype.Value,  result: reftype.Value}],
+					['op::toInt',       {name: 'op:to-int',       param: reftype.Value,  result: reftype.Value}],
+					['op::toNat',       {name: 'op:to-nat',       param: reftype.Value,  result: reftype.Value}],
+					['op::toFloat',     {name: 'op:to-float',     param: reftype.Value,  result: reftype.Value}],
+					['op::intAdd',      {name: 'op:int-add',      param: binary_params,  result: reftype.Value}],
+					['op::natAdd',      {name: 'op:nat-add',      param: binary_params,  result: reftype.Value}],
+					['op::floatAdd',    {name: 'op:float-add',    param: binary_params,  result: reftype.Value}],
+					['op::intSub',      {name: 'op:int-sub',      param: binary_params,  result: reftype.Value}],
+					['op::natSub',      {name: 'op:nat-sub',      param: binary_params,  result: reftype.Value}],
+					['op::floatSub',    {name: 'op:float-sub',    param: binary_params,  result: reftype.Value}],
+					['op::intMul',      {name: 'op:int-mul',      param: binary_params,  result: reftype.Value}],
+					['op::natMul',      {name: 'op:nat-mul',      param: binary_params,  result: reftype.Value}],
+					['op::floatMul',    {name: 'op:float-mul',    param: binary_params,  result: reftype.Value}],
+					['op::intDiv',      {name: 'op:int-div',      param: binary_params,  result: reftype.Value}],
+					['op::natDiv',      {name: 'op:nat-div',      param: binary_params,  result: reftype.Value}],
+					['op::floatDiv',    {name: 'op:float-div',    param: binary_params,  result: reftype.Value}],
+					['op::intExp',      {name: 'op:int-exp',      param: binary_params,  result: reftype.Value}],
+					['op::natExp',      {name: 'op:nat-exp',      param: binary_params,  result: reftype.Value}],
+					['op::floatExp',    {name: 'op:float-exp',    param: binary_params,  result: reftype.Value}],
+					['op::lt',          {name: 'op:lt',           param: binary_params,  result: reftype.Value}],
+					['op::gt',          {name: 'op:gt',           param: binary_params,  result: reftype.Value}],
+					['op::le',          {name: 'op:le',           param: binary_params,  result: reftype.Value}],
+					['op::ge',          {name: 'op:ge',           param: binary_params,  result: reftype.Value}],
+					['op::id',          {name: 'op:id',           param: binary_params,  result: reftype.Value}],
+					['op::eq',          {name: 'op:eq',           param: binary_params,  result: reftype.Value}],
 				]);
 			}
 			return func_import_memo;
 		},
 
 
-		/** Is the value equal to the counterpoint value `null`? */
+		/** Is the value equal to the Counterpoint value `null`? */
 		isNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-null', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a `None` Counterpoint value? */
+		isNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-none', [param0], vm.reftype.Value)
+		),
+
+		unwrapMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:unwrap-maybe', [param0], vm.reftype.Value)
 		),
 
 		/** Is the value falsy? */

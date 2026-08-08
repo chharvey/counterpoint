@@ -19,6 +19,7 @@ import {
 	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
+	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -479,11 +480,11 @@ test.suite('Declaration', () => {
 						val s4: mut ({int} | {str -> bool}) = {42};
 						val s5: mut ({int} | Object)        = {42};
 
-						val m1: mut {int -> float}            = {42 -> 4.3};
-						val m2: mut {int? -> float?}          = {42 -> 4.3};
-						val m3: mut Object                    = {42 -> 4.3};
-						val m4: mut ({int -> float} | {str})  = {42 -> 4.3};
-						val m5: mut ({int -> float} | Object) = {42 -> 4.3};
+						val m1: mut {int -> float}               = {42 -> 4.3};
+						val m2: mut {int | null -> float | null} = {42 -> 4.3};
+						val m3: mut Object                       = {42 -> 4.3};
+						val m4: mut ({int -> float} | {str})     = {42 -> 4.3};
+						val m5: mut ({int -> float} | Object)    = {42 -> 4.3};
 					}`);
 				});
 				test.test('throws when entries mismatch.', () => {
@@ -583,11 +584,11 @@ test.suite('Declaration', () => {
 				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
 
 				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(DECL <null> assignee_b)\`
-				val mut assignee_c:  int = 42;         % \`(DECL <int> assignee_c (INT.CONST 42))\`
-				val     _:           int = assignee_c; % \`(DROP (GET assignee_c))\`
-				val     assignee_d:  int = assignee_c; % \`(DECL <int> assignee_d (GET assignee_c))\`
-				val mut assignee_e:  int = assignee_c; % \`(DECL <int> assignee_e (GET assignee_c))\`
+				val mut assignee_b?: int;
+				val mut assignee_c:  int = 42;
+				val     _:           int = assignee_c;
+				val     assignee_d:  int = assignee_c;
+				val mut assignee_e:  int = assignee_c;
 
 				%% Syntactically impossible cases (for completion):
 				val _?:          int;
@@ -602,7 +603,7 @@ test.suite('Declaration', () => {
 				"block-0":
 					(DROP (INT.CONST 42))
 					(DECL <int> assignee_a (INT.CONST 42))
-					(DECL <null> assignee_b)
+					(DECL <Maybe> assignee_b ${ op_maybe_string() })
 					(DECL <int> assignee_c (INT.CONST 42))
 					(DROP (GET assignee_c))
 					(DECL <int> assignee_d (GET assignee_c))

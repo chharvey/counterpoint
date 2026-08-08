@@ -16,5 +16,6 @@ export * from './List.ts';
 export * from './Dict.ts';
 export * from './Set.ts';
 export * from './Map.ts';
+export * from './Maybe.ts';
 
 export * from './exports.ts';

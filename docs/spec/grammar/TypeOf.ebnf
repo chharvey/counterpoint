@@ -15,7 +15,7 @@ Type TypeOf(SemanticExpressionVariable var) :=
 	1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
 	2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 	3. *If* `symbol.isUninitialized` is `true`:
-		1. *Return:* `Union(symbol.type, Null)`.
+		1. *Return:* `Maybe(symbol.type)`.
 	4. *Else:*
 		1. *Return:* `symbol.type`.
 ;
@@ -124,8 +124,11 @@ Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
 	4. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Never`.
 	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	6. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
-	7. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
+	6. *If* `entry.type` is a Maybe type:
+		1. *Set* `use_maybe` to `true`.
+	7. *Else:*
+		1. *Set* `use_maybe` to `false`.
+	8. *Return:* `AccessType(access.kind, base_type, entry)`.
 ;
 
 
@@ -297,6 +300,18 @@ Type! TypeOf(SemanticExpressionIsset expr) :=
 ;
 
 
+
+Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *If* `operand` is not a Maybe type:
+		1. *Throw:* a new TypeErrorInvalidOperation.
+	3. *Let* `valuetype` be the type argument to `operand`.
+	4. *Return:* `valuetype`.
+;
+
+Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+	// TODO:
+;
 
 Type! TypeOf(SemanticExpressionOperation[operator: NOT] expr) :=
 	1. *Assert:* `expr.children.count` is 1.

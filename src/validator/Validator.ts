@@ -120,9 +120,9 @@ function tokenWorthFloat(text: string): number {
 	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT));
 	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT)) * base ** -fracpart.length;
 	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
-		exppart.startsWith(Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
-		exppart.startsWith(Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
-		                                     `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT) }` // eslint-disable-line @stylistic/indent
+		exppart.startsWith(Punctuator.PLUS)  ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
+		exppart.startsWith(Punctuator.MINUS) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
+		                                       `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT) }` // eslint-disable-line @stylistic/indent
 	));
 	return (wholevalue + fracvalue) * expvalue;
 }
@@ -271,10 +271,10 @@ export class Validator {
 	 * @return       the numeric value, cooked
 	 */
 	public static cookTokenNumber(source: string): {type: 'int' | 'nat', value: bigint} | {type: 'float', value: number} {
-		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
-		const multiplier: number    = (has_unary && source.startsWith(Punctuator.NEG)) ? -1 : 1;
-		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source.startsWith(ESCAPER);
-		const radix:      RadixType = (has_radix) ? new Map<string, RadixType>([
+		const has_unary:  boolean   = ([Punctuator.PLUS, Punctuator.MINUS] as string[]).includes(source[0]);
+		const multiplier: number    = has_unary && source.startsWith(Punctuator.MINUS) ? -1 : 1;
+		const has_radix:  boolean   = has_unary ? source[1] === ESCAPER : source.startsWith(ESCAPER);
+		const radix:      RadixType = has_radix ? new Map<string, RadixType>([
 			['b',  2n],
 			['q',  4n],
 			['s',  6n],
