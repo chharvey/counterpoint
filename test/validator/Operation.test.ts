@@ -40,6 +40,30 @@ test.suite('Operation', () => {
 
 	test.suite('#type', () => {
 		test.suite('OperationUnary', () => {
+			test.test('[operator=UN_MAYBE]', () => {
+				assert.deepStrictEqual(setupScript(`{
+					val mut x?: int;
+					val mut y?: nat;
+					val mut z?: float;
+					set y = +42;
+					set z = 4.2;
+					delete y;
+					x;
+					y;
+					z;
+					x~?;
+					y~?;
+					z~?;
+				}`, {build: false}).stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
+					new TYPE.Maybe(TYPE.INT),
+					new TYPE.Maybe(TYPE.NAT),
+					new TYPE.Maybe(TYPE.FLOAT),
+					TYPE.INT,
+					TYPE.NAT,
+					TYPE.FLOAT,
+				]);
+			});
+
 			test.suite('[operator=EMP]', () => {
 				test.test('without constant folding: returns type `bool` for anything else.', () => {
 					assert_shallowStrictEqual(

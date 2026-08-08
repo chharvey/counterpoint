@@ -302,7 +302,11 @@ Type! TypeOf(SemanticExpressionIsset expr) :=
 
 
 Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
-	// TODO:
+	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
+	2. *If* `operand` is not a Maybe type:
+		1. *Throw:* a new TypeErrorInvalidOperation.
+	3. *Let* `valuetype` be the type argument to `operand`.
+	4. *Return:* `valuetype`.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=

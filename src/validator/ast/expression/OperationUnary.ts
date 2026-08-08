@@ -46,7 +46,9 @@ export class OperationUnary extends Operation {
 			return TYPE.NOTHING;
 		}
 		switch (this.operator) {
-			case Operator.UN_MAYBE:
+			case Operator.UN_MAYBE: {
+				return t instanceof TYPE.Maybe ? t.typearg : assert.fail(new TypeErrorInvalidOperation(this));
+			}
 			case Operator.UN_RESULT: {
 				throw new Error('not yet supported.');
 			}
