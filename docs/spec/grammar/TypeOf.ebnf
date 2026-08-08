@@ -223,9 +223,8 @@ Type! TypeOf(SemanticExpressionCall call) :=
 			2. *Else:*
 				1. Fall through.
 		2. *Throw:* a new TypeErrorArgCount.
-	6. *Else:*
-		1. *Assert:* `base.source` is "Map".
-		2. *If* `call.children.count` is 2 or 3 or 4:
+	6. *Else If* `base.source` is "Map":
+		1. *If* `call.children.count` is 2 or 3 or 4:
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `call.children.count` is 2:
@@ -273,7 +272,9 @@ Type! TypeOf(SemanticExpressionCall call) :=
 					and a consequent type argument `consequenttype`.
 			2. *Else:*
 				1. Fall through.
-		3. *Throw:* a new TypeErrorArgCount.
+		2. *Throw:* a new TypeErrorArgCount.
+	7. *Else:*
+		// TODO: see Class API
 ;
 
 

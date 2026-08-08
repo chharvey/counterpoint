@@ -32,6 +32,8 @@ test.suite('Call', () => {
 			(2, 0.2),
 			(3, 0.4),
 		))`,
+		'None.<int>()',
+		'Some.<int>(42)',
 	] as const;
 	const INT_CONS = [
 		'Integer.(-42)',
@@ -197,7 +199,7 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
-		test.test('evaluates Integer, Natural, Float, String, List, Dict, Set, and Map.', () => {
+		test.test('evaluates Integer, Natural, Float, String, List, Dict, Set, Map, None, and Some.', () => {
 			assertEqualTypes(
 				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
 				[
@@ -209,6 +211,8 @@ test.suite('Call', () => {
 					new TYPE.Dict(TYPE.INT, true),
 					new TYPE.Set(TYPE.INT, true),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.Maybe(TYPE.INT),
+					new TYPE.Maybe(TYPE.INT),
 				],
 			);
 		});
@@ -295,6 +299,8 @@ test.suite('Call', () => {
 				Dict.<int>((), ())
 				Set.<int>((), ())
 				Map.<int>((), ())
+				None.<int>(42)
+				Some.<int>()
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorArgCount));
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
@@ -338,6 +344,7 @@ test.suite('Call', () => {
 				Dict.<int>((a= 4.2))
 				Set.<int>((42, "42"))
 				Map.<int>(((42, "42"),))
+				Some.<int>(4.2)
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
 		});
 	});
@@ -694,6 +701,24 @@ test.suite('Call', () => {
 					(DECL <Map> $46 (MAP.NEW (INT.CONST 1)->(FLOAT.CONST 0.1) (INT.CONST 2)->(FLOAT.CONST 0.2) (INT.CONST 3)->(FLOAT.CONST 0.4)))
 					(MAP.COPY (GET $45) (GET $46))
 					(DROP (GET $45))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`None.()`', () => {
+			assert.strictEqual(setupScript(`{
+				None.<int>();
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (MAYBE.NEW))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Some.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				Some.<int>(42);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (MAYBE.NEW (INT.CONST 42)))
 					(ENDPROGRAM)
 			`.trim());
 		});

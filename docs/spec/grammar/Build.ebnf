@@ -184,6 +184,7 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List") call) :=
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Dict") call) := (DICT.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set")  call) := (SET.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map")  call) := (MAP.NEW);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "None") call) := (MAYBE.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List"):has(SemanticExpression*) call) := [
 	(DECL <List> $destination (LIST.NEW))
 	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
@@ -208,6 +209,7 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(Seman
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Some"):has(SemanticExpression*) call) := (MAYBE.NEW `Build(call.SemanticExpression*.0)`);
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);

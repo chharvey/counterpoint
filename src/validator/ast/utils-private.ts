@@ -56,6 +56,8 @@ export enum ValidFunctionName {
 	DICT    = 'Dict',
 	SET     = 'Set',
 	MAP     = 'Map',
+	NONE    = 'None',
+	SOME    = 'Some',
 }
 
 export type ValidGenericFunctionName = (
@@ -72,6 +74,8 @@ const GENERIC_FUNCTION_NAMES: readonly string[] = [
 	ValidFunctionName.DICT,
 	ValidFunctionName.SET,
 	ValidFunctionName.MAP,
+	ValidFunctionName.NONE,
+	ValidFunctionName.SOME,
 ];
 
 export function is_valid_intrinsic_name(source: string): source is ValidIntrinsicName {
@@ -195,6 +199,12 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(K, V)>);
  * 	new (map:   Map.<K, V>);
  * }
+ * declare class None<T> {
+ * 	new ();
+ * }
+ * declare class Some<T> {
+ * 	new (value: T);
+ * }
  * ```
  */
 export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
@@ -256,6 +266,16 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 			[{positional: true, type: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1])}],
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
+	}],
+	[ValidFunctionName.NONE, {
+		genericParams: [{positional: true}],
+		overloads:     [[]],
+		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]), // TODO: subtype into None and Some
+	}],
+	[ValidFunctionName.SOME, {
+		genericParams: [{positional: true}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
+		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]), // TODO: subtype into None and Some
 	}],
 ]);
 

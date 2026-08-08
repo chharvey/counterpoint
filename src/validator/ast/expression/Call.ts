@@ -225,6 +225,10 @@ export class Call extends Expression {
 				builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
 				return dest;
 			}
+			case ValidFunctionName.NONE:
+			case ValidFunctionName.SOME: {
+				return new OP.MaybeNew(this.typeargs[0].eval(), this.exprargs[0]?.build(builder).asTac(builder));
+			}
 		}
 	}
 
