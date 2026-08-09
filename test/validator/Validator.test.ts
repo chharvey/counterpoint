@@ -86,7 +86,7 @@ test.suite('Validator', () => {
 				datas.forEach((data, i) => {
 					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
 					let cooked: bigint[] = [];
-					test.test.before(() => {
+					test.before(() => {
 						assert.deepStrictEqual(actual_raw, data.raw);
 						cooked = actual_raw.map((word) => Validator.cookTokenIdentifier(word));
 					});

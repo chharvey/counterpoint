@@ -87,8 +87,19 @@
 		(field $internal (mut (ref $MapInternal)))
 	)))
 
+	;; precursor to the `Maybe` class
+	(type $Maybe (sub final $Object (struct
+		;; --- inherited ---
+		;; unique id for hashing
+		(field $id i64)
+
+		;; --- own ---
+		;; the potentially held value
+		(field $value (ref null $Value))
+	)))
+
 	;; precursor to the `Function` class
-	(type $Function (sub $Object (struct
+	(type $Function (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)

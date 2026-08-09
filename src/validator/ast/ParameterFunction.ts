@@ -72,7 +72,7 @@ export class ParameterFunction extends AstNode {
 			const block: Block = (this.parent as EXPR.Function | STMT.DeclarationFunction).block;
 			const symbol = block.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.irType = symbol.type;
-			return builder.pushInstruction(new OP.Decl(symbol));
+			return builder.pushInstruction(new OP.Decl(symbol, symbol.irType));
 		}
 	}
 }

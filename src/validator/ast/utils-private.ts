@@ -307,12 +307,13 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 }
 
 export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
-	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
+	const accessor_maybe: boolean = access.kind === Operator.DOT_MAYBE;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
 	}
-	if (TYPE.NULL.isSubtypeOf(base_type)) {
-		return {type: get_entry_info(base_type.subtract(TYPE.NULL), access, is_writing).type.union(TYPE.NULL), optional: true};
+	if (base_type instanceof TYPE.Maybe && accessor_maybe) {
+		const info: EntryType = get_entry_info(base_type.typearg, access, is_writing);
+		return {...info, type: new TYPE.Maybe(info.type)};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const constituents: readonly TYPE.Type[] = decombine(base_type);
@@ -427,30 +428,20 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 
 
 
-export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST_TYPE.Access | EXPR.Access): void {
+export function access_type(
+	access_kind: ValidTypeAccessOperator | ValidAccessOperator,
+	base_type:   TYPE.Type,
+	entry:       EntryType,
+	access:      AST_TYPE.Access | EXPR.Access,
+): TYPE.Type {
 	if (
-		access_kind === Operator.DOT     &&  is_entry_optional ||
-		access_kind === Operator.DOT_MAY && !is_entry_optional
+		access_kind === Operator.DOT     && entry.optional ||
+		access_kind === Operator.DOT_MAYBE && !entry.optional && !(base_type instanceof TYPE.Maybe)
 	) {
 		throw new TypeErrorInvalidOperation(access);
 	}
-	if (access_kind === Operator.DOT_RES) {
-		assert.fail('Operator `!.` not yet supported.');
+	if (access_kind === Operator.DOT_RESULT) {
+		throw new Error('Operator `!.` not yet supported.');
 	}
-}
-
-
-
-export function update_accessed_type(type: TYPE.Type, access_kind: ValidTypeAccessOperator | ValidAccessOperator): TYPE.Type {
-	switch (access_kind) {
-		case Operator.DOT: {
-			return type;
-		}
-		case Operator.DOT_MAY: {
-			return type.union(TYPE.NULL);
-		}
-		case Operator.DOT_RES: {
-			assert.fail('Operator `!.` not yet supported.');
-		}
-	}
+	return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 }

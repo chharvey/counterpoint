@@ -926,6 +926,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					42.prop;
 					4.2.prop;
+					maybe~?;
+					result~!;
 					tuple.0;
 					tuple.-1;
 					tuple.+1;
@@ -956,6 +958,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'expression_compound',
 					f('expression_0', 'primitive_literal', s('float')),
 					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'expression_compound',

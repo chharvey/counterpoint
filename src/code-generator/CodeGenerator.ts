@@ -350,6 +350,19 @@ export class CodeGenerator {
 	}
 
 	/**
+	 * Return a new `$Maybe` from a given optional value.
+	 * @param value the optional value; if not given, `(ref.null $Value)` is used
+	 * @return      `(struct.new $Maybe <value?>)`
+	 */
+	public codegenMaybe(value?: binaryen.ExpressionRef): binaryen.ExpressionRef {
+		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
+		return wasm.struct.new([
+			VmObject.ctrPlusPlus(),
+			value ?? wasm.ref.null(reftypeNull.Value),
+		], heaptype.Maybe);
+	}
+
+	/**
 	 * Return a new `$Function`.
 	 * @param arity the number of functional arguments
 	 * @return      `(struct.new $Function <arity>)`
@@ -386,6 +399,7 @@ export class CodeGenerator {
 			this.vm.List.funcImportDataMap,
 			this.vm.Dict.funcImportDataMap,
 			this.vm.Map.funcImportDataMap,
+			this.vm.Maybe.funcImportDataMap,
 		].forEach((datamap) => datamap.forEach((data, export_name) => (
 			mod.imports.addFunction(data.name, extern_mod_name, export_name, data.param, data.result)
 		)));

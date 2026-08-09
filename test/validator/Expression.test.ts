@@ -24,6 +24,7 @@ import {
 	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
+	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -49,6 +50,27 @@ test.suite('Expression', () => {
 
 
 	test.suite('#type', () => {
+		test.suite('Variable', () => {
+			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
+				const {stmts} = setupScript(`{
+					val mut w:  int = 42;
+					val mut x?: int;
+					w;
+					x;
+				}`, {build: false});
+				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
+				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
+				return assertEqualTypes(
+					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					[
+						TYPE.INT,
+						new TYPE.Maybe(TYPE.INT),
+					],
+				);
+			});
+		});
+
+
 		test.suite('Isset', () => {
 			test.test('always returns `bool`.', () => {
 				assert_shallowStrictEqual(
@@ -161,7 +183,7 @@ test.suite('Expression', () => {
 			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol));
+			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol, typeUnit(42n)));
 		});
 		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
@@ -359,9 +381,9 @@ test.suite('Expression', () => {
 				isset g;
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <null> a0)
-					(DECL <null> a1)
-					(DECL <null> a2)
+					(DECL <Maybe> a0 ${ op_maybe_string() })
+					(DECL <Maybe> a1 ${ op_maybe_string() })
+					(DECL <Maybe> a2 ${ op_maybe_string() })
 					(DECL <int> b (INT.CONST 42))
 					(DECL <int> c0 (INT.CONST 42))
 					(DECL <int> c1 (INT.CONST 42))
@@ -369,9 +391,9 @@ test.suite('Expression', () => {
 					(DECL <int> e (INT.CONST 42))
 					(DECL <int> f (INT.CONST 42))
 					(DECL <null> g (NULL.CONST null))
-					(SET a1 (INT.CONST 42))
-					(SET a2 (INT.CONST 42))
-					(SET a2 )
+					(SET a1 ${ op_maybe_string('(INT.CONST 42)') })
+					(SET a2 ${ op_maybe_string('(INT.CONST 42)') })
+					(SET a2 ${ op_maybe_string() })
 					(SET c1 (NULL.CONST null))
 					(DROP (ISSET a0))
 					(DROP (ISSET a1))
@@ -616,27 +638,6 @@ test.suite('Expression', () => {
 				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
 			});
 		});
-
-
-		test.suite('#type', () => {
-			test.test('unions with `null` when accessed variable is uninitialized.', () => {
-				const {stmts} = setupScript(`{
-					val mut w:  int = 42;
-					val mut x?: int;
-					w;
-					x;
-				}`, {build: false});
-				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
-				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
-				return assertEqualTypes(
-					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					[
-						TYPE.INT,
-						TYPE.INT.union(TYPE.NULL),
-					],
-				);
-			});
-		});
 	});
 
 
@@ -783,7 +784,7 @@ test.suite('Expression', () => {
 	test.suite('Claim', () => {
 		test.suite('#type', () => {
 			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('3 as <int?>').type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(AST.EXPR.Claim.fromSource('3 as <int | null>').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			test.test('allows claiming to `nothing` even though intersection is empty.', () => {
 				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);

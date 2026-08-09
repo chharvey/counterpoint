@@ -20,6 +20,7 @@ import {
 import {
 	extract_lines,
 	assertAssignable,
+	op_maybe_string,
 	setupScript,
 } from '../utils.ts';
 
@@ -57,9 +58,6 @@ test.suite('Statement', () => {
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
-		});
-
-		test.suite('StatementDelete', () => {
 			test.test('does not throw if the variable was uninitialized.', () => {
 				const {goal} = setupScript(`{
 					val mut i?: int;
@@ -511,9 +509,6 @@ test.suite('Statement', () => {
 					});
 				});
 			});
-		});
-
-		test.suite('StatementDelete', () => {
 			test.suite('for property deletion.', () => {
 				test.test('throws for deletion on non-interface objects.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
@@ -741,6 +736,19 @@ test.suite('Statement', () => {
 						(SET x (INT.CONST -42))
 				`.trim());
 			});
+			test.test('deletion: pushes OP.Set instruction.', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x?: int;
+					delete x;
+					set x = 42;
+				}`, {build: false});
+				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
+					"block-0":
+						(SET x ${ op_maybe_string() })
+						(SET x ${ op_maybe_string('(INT.CONST 42)') })
+				`.trim());
+			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
 				assert.strictEqual(setupScript(`{
 					val mut my_list: mut [int]        = [41, 42];
@@ -881,8 +889,8 @@ test.suite('Statement', () => {
 					};
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> cond)
-						(SET cond (BOOL.CONST true))
+						(DECL <Maybe> cond ${ op_maybe_string() })
+						(SET cond ${ op_maybe_string('(BOOL.CONST true)') })
 						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":
 						(DROP (INT.CONST 10))

@@ -199,6 +199,7 @@ ExpressionUnit<Block, Break, Return> ::=
 ExpressionCompound<Block, Break, Return> ::=
 	| ExpressionUnit<?Block><?Break><?Return>
 	| ExpressionCompound<?Block><?Break><?Return> (
+		| "~?" | "~!"
 		| ("." | "?." | "!.") PropertyAccessor<?Break><?Return>
 		|  "."                GenericArguments? FunctionArguments<?Break><?Return>
 	)

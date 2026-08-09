@@ -6,17 +6,20 @@ import type {CfgNode} from './CfgNode.ts';
 
 
 export class Interpreter {
-	/** A map of local variable/temp values. Native `null` means the variable is declared but uninitialized/deleted. */
-	readonly #symbolTable = new Map<SymbolSchemaVar | Temp, VALUE.Value | null>();
+	/**
+	 * A map of local variable/temp values.
+	 * If the variable is declared but uninitialized/deleted, its value is an empty `Maybe` object (a `None`).
+	 */
+	readonly #symbolTable = new Map<SymbolSchemaVar | Temp, VALUE.Value>();
 
 	readonly #blocks = new Map<string, CfgNode>();
 
 
-	public setLocalValue(local: SymbolSchemaVar | Temp, value?: VALUE.Value): void {
-		this.#symbolTable.set(local, value ?? null);
+	public setLocalValue(local: SymbolSchemaVar | Temp, value: VALUE.Value): void {
+		this.#symbolTable.set(local, value);
 	}
 
-	public getLocalValue(local: SymbolSchemaVar | Temp): VALUE.Value | null | undefined {
+	public getLocalValue(local: SymbolSchemaVar | Temp): VALUE.Value | undefined {
 		return this.#symbolTable.get(local);
 	}
 

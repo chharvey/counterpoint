@@ -488,6 +488,18 @@ test.suite('Decorator', () => {
 				% (expression_block)
 			`]],
 
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "~?") -> SemanticExpressionAccess', [AST.EXPR.OperationUnary, `
+				{
+					v~?;
+				}
+				% (expression_compound)
+			`]],
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "~!") -> SemanticExpressionAccess', [AST.EXPR.OperationUnary, `
+				{
+					v~!;
+				}
+				% (expression_compound)
+			`]],
 			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v.p;

@@ -492,6 +492,8 @@ module.exports = grammar({
 		)), 'block', 'break', 'return'),
 
 		...parameterize('expression_compound', ({block, break: brk, return: rtn}) => $ => prec(11, seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice(
+			'~?',
+			'~!',
 			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}, {return: rtn}))),
 			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}, {return: rtn}))),
 		))), 'block', 'break', 'return'),

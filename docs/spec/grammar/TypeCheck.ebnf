@@ -1,4 +1,4 @@
-None! TypeCheck(Or<
+Nil! TypeCheck(Or<
 	SemanticIndex,
 	SemanticKey,
 	SemanticItemType,
@@ -17,12 +17,12 @@ None! TypeCheck(Or<
 
 
 
-None! TypeCheck(SemanticParameterFunction param) :=
+Nil! TypeCheck(SemanticParameterFunction param) :=
 	1. *For each* `it` in `param.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
 	2. *Let* `typenode` be an item `child` in `param.children` such that `child` is a SemanticType.
 	3. *Let* `param_type` be *Unwrap:* `TypeValueOf(typenode)`.
-	4. *If* `param.id` is not *none*:
+	4. *If* `param.id` is not *nil*:
 		1. *Let* `parent` be the parent node of `param`.
 		2. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
 		3. *Let* `block` be `parent.children.-1`.
@@ -37,21 +37,21 @@ None! TypeCheck(SemanticParameterFunction param) :=
 
 
 
-None TypeCheck(SemanticType typexpr) :=
+Nil TypeCheck(SemanticType typexpr) :=
 	1. *Perform:* *Unwrap:* `TypeValueOf(typexpr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
 
 
-None! TypeCheck(SemanticExpression expr) :=
+Nil! TypeCheck(SemanticExpression expr) :=
 	1. *Perform:* *Unwrap:* `TypeOf(expr)`.
 		1. *Note:* The result of this step is not used; it is only performed to rethrow any TypeErrors.
 ;
 
 
 
-None! TypeCheck(SemanticDeclarationType decl) :=
+Nil! TypeCheck(SemanticDeclarationType decl) :=
 	1. *Let* `typevalue` be *Unwrap:* `TypeValueOf(decl.children.0)`.
 	2. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `decl.id`.
 	3. *Assert:* `symbol` is an instance of `SymbolSchemaType`.
@@ -60,24 +60,24 @@ None! TypeCheck(SemanticDeclarationType decl) :=
 
 
 
-None! TypeCheck(SemanticDeclarationVariable decl) :=
+Nil! TypeCheck(SemanticDeclarationVariable decl) :=
 	1. *Let* `typenode` be an item `child` in `decl.children` such that `child` is a SemanticType.
 	2. *Let* `assigned` be an item `child` in `decl.children` such that `child` is a SemanticExpression.
-	3. *If* `typenode` is *none*:
-		1. *Assert:* `assigned` is not *none*.
+	3. *If* `typenode` is *nil*:
+		1. *Assert:* `assigned` is not *nil*.
 		2. *Set* `typenode` to an inferred type of `assigned`.
 	4. *Else:*
 		1. Fall through.
-	5. *If* `assigned` is not *none*:
+	5. *If* `assigned` is not *nil*:
 		1. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
 	6. *Else:*
 		1. Fall through.
 	7. *Let* `assignee_type` be *Unwrap:* `TypeValueOf(typenode)`.
-	8. *If* `assigned` is not *none*:
+	8. *If* `assigned` is not *nil*:
 		1. *Perform:* *Unwrap:* `TypeCheckAssign(assigned, assignee_type)`.
 	9. *Else:*
 		1. Fall through.
-	10. *If* `decl.id` is not *none*:
+	10. *If* `decl.id` is not *nil*:
 		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `decl.id`.
 		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
 		3. *Set* `symbol.type` to `assignee_type`.
@@ -174,7 +174,7 @@ Type! TypeCheck(SemanticStatementClaim claim) :=
 
 
 
-None! TypeCheck(SemanticStatementReassignment stmt) :=
+Nil! TypeCheck(SemanticStatementReassignment stmt) :=
 	1. *Let* `assignee` be `stmt.children.0`.
 	2. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
 	3. *If* `stmt.children.count` is 2:
@@ -205,7 +205,7 @@ None! TypeCheck(SemanticStatementReassignment stmt) :=
 
 
 
-None! TypeCheck(SemanticStatementConditional stmt) :=
+Nil! TypeCheck(SemanticStatementConditional stmt) :=
 	1. *For each* `it` in `stmt.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
 	2. *Assert:* `stmt.children.count` is greater than 1.
@@ -219,11 +219,11 @@ None! TypeCheck(SemanticStatementConditional stmt) :=
 
 
 
-None! TypeCheck(SemanticStatementLoop stmt) :=
+Nil! TypeCheck(SemanticStatementLoop stmt) :=
 	1. *For each* `it` in `stmt.children`:
 		1. *Perform:* *Unwrap:* `TypeCheck(it)`.
 	2. *Let* `condition` be an item `child` in `stmt.children` such that `child` is a SemanticExpression.
-	3. *Assert:* `condition` is not *none*.
+	3. *Assert:* `condition` is not *nil*.
 	4. *Let* `condition_type` be *Unwrap:* `TypeOf(condition)`.
 	5. *If* *UnwrapAffirm:* `Subtype(condition_type, Boolean)` is `true`:
 		1. *Return.*
@@ -233,21 +233,21 @@ None! TypeCheck(SemanticStatementLoop stmt) :=
 
 
 
-None! TypeCheck(SemanticStatementIteration stmt) :=
+Nil! TypeCheck(SemanticStatementIteration stmt) :=
 	1. *Let* `typenode` be an item `child` in `stmt.children` such that `child` is a SemanticType.
 	2. *Let* `iterable` be an item `child` in `stmt.children` such that `child` is a SemanticExpression.
 	3. *Let* `block`    be an item `child` in `stmt.children` such that `child` is a SemanticBlock.
-	4. *Assert:* `typenode` is not *none*.
+	4. *Assert:* `typenode` is not *nil*.
 	5. *Let* `assignee_type` be *Unwrap:* `TypeValueOf(typenode)`.
-	6. *Assert:* `iterable` is not *none*.
+	6. *Assert:* `iterable` is not *nil*.
 	7. *Let* `iterable_type` be *Unwrap:* `TypeOf(iterable)`.
 	8. *If* `iterable_type` is not a List type:
 		1. *Throw:* a new TypeErrorNotAssignable.
 	9. *Let* `item_type` be the type argument over `iterable_type`.
 	10. *If* *UnwrapAffirm:* `Subtype(item_type, assignee_type)` is `false`:
 		1. *Throw:* a new TypeErrorNotNarrow.
-	11. *Assert:* `block` is not *none*.
-	12. *If* `assignee` is not *none*:
+	11. *Assert:* `block` is not *nil*.
+	12. *If* `assignee` is not *nil*:
 		1. *Let* `validator` be the validator of `block`.
 		2. *Assert:* `validator`’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
 		3. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
@@ -257,7 +257,7 @@ None! TypeCheck(SemanticStatementIteration stmt) :=
 
 
 
-None! TypeCheckAssign(SemanticExpression assigned, Type assignee_type) :=
+Nil! TypeCheckAssign(SemanticExpression assigned, Type assignee_type) :=
 	1. *Let* `assigned_type` be *Unwrap:* `TypeOf(assigned)`.
 	2. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:
 		1. *If* `assigned` is a SemanticExpressionCollection:

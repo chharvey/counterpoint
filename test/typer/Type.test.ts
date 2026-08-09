@@ -877,6 +877,20 @@ test.suite('Type', () => {
 			});
 		});
 
+		test.suite('Maybe', () => {
+			test.test('is a subtype but not a supertype of `Object`.', () => {
+				const maybe = new TYPE.Maybe(TYPE.STR);
+				assert.ok(maybe.isSubtypeOf(TYPE.OBJ), 'Maybe[str] <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(maybe), 'Object !<: Maybe[str]');
+			});
+			test.test('always covariant: `A <: B --> Maybe[A] <: Maybe[B]`.', () => {
+				const sub = new TYPE.Maybe(TYPE.INT);
+				const sup = new TYPE.Maybe(TYPE.INT.union(TYPE.FLOAT));
+				assert.ok(sub.isSubtypeOf(sup), 'Maybe[int] <: Maybe[int | float]');
+				assert.ok(!sup.isSubtypeOf(sub), 'Maybe[int | float] !<: Maybe[int]');
+			});
+		});
+
 		test.suite('TypeFunction', () => {
 			test.test('is a subtype but not a supertype of `anything` and `Object`.', () => {
 				const fn = new TYPE.Function();

@@ -212,11 +212,11 @@ Decorate(TypeCompound ::= TypeCompound "." GenericArguments) -> SemanticTypeCall
 Decorate(TypeUnarySymbol ::= TypeCompound) -> SemanticType
 	:= Decorate(TypeCompound);
 Decorate(TypeUnarySymbol ::= TypeUnarySymbol "?") -> SemanticTypeOperation
-	:= (SemanticTypeOperation[operator=ORNULL]
+	:= (SemanticTypeOperation[operator=MAYBE]
 		Decorate(TypeUnarySymbol)
 	);
 Decorate(TypeUnarySymbol ::= TypeUnarySymbol "!") -> SemanticTypeOperation
-	:= (SemanticTypeOperation[operator=OREXCP]
+	:= (SemanticTypeOperation[operator=RESULT]
 		Decorate(TypeUnarySymbol)
 	);
 
@@ -480,6 +480,14 @@ Decorate(ExpressionUnit<Block, Break, Return> ::= Block<?Break><?Return>) -> Sem
 
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionUnit<?Block><?Break><?Return>) -> SemanticExpression
 	:= Decorate(ExpressionUnit<?Block><?Break><?Return>);
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "~?") -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=UN_MAYBE]
+		Decorate(ExpressionCompound<?Block><?Break><?Return>)
+	);
+Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "~!") -> SemanticExpressionOperation
+	:= (SemanticExpressionOperation[operator=UN_RESULT]
+		Decorate(ExpressionCompound<?Block><?Break><?Return>)
+	);
 Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess
 	:= (SemanticExpressionAccess[kind=NORMAL]
 		Decorate(ExpressionCompound<?Block><?Break><?Return>)
