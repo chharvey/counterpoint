@@ -870,6 +870,23 @@ test.suite('Opcode', () => {
 							i != {41 -> 43};
 							i != {43 -> 42};
 						}`), repeat(VALUE.TRUE, 44));
+						return assert_equal_values(interpret_extracted_drops(`{
+							val mut x?: int;
+							val mut y?: float;
+							val z: Some.<int> = Some.<int>(42);
+							x === y;    %== false
+							x == y;     %== true
+							set x = 42;
+							x == y;     %== false
+							x === z;    %== false
+							x == z;     %== true
+						}`), [
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+						]);
 					});
 					test.test('compound value types’ constituents are compared using same operand.', () => {
 						assert_equal_values(interpret_binops(extract_lines`

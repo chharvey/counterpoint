@@ -665,6 +665,16 @@
 				(ref.cast (ref $Map) (local.get $ref1))
 			)))
 		)
+		(if
+			(i32.and
+				(ref.test (ref $Maybe) (local.get $ref0))
+				(ref.test (ref $Maybe) (local.get $ref1))
+			)
+			(then (br $exit (call $!Maybe.equal
+				(ref.cast (ref $Maybe) (local.get $ref0))
+				(ref.cast (ref $Maybe) (local.get $ref1))
+			)))
+		)
 		(i32.const 0)
 	))
 )
@@ -927,6 +937,43 @@
 		)
 	)
 	(i32.const 1)
+)
+;; Returns whether two Maybes are equal —
+;; whether they are both None, or are both Some with equal values.
+(func $!Maybe.equal (param $maybe0 (ref $Maybe)) (param $maybe1 (ref $Maybe)) (result i32)
+	(local $value0 (ref null $Value))
+	(local $value1 (ref null $Value))
+
+	;; Maybes that are identical are always equal
+	(if
+		(ref.eq (local.get $maybe0) (local.get $maybe1))
+		(then (return (i32.const 1)))
+	)
+
+	(local.set $value0 (struct.get $Maybe $value (local.get $maybe0)))
+	(local.set $value1 (struct.get $Maybe $value (local.get $maybe1)))
+
+	;; if both are None, return true; else if any is None, return false; else continue
+	(if
+		(i32.and
+			(ref.is_null (local.get $value0))
+			(ref.is_null (local.get $value1))
+		)
+		(then (return (i32.const 1)))
+		(else (if
+			(i32.or
+				(ref.is_null (local.get $value0))
+				(ref.is_null (local.get $value1))
+			)
+			(then (return (i32.const 0)))
+		))
+	)
+
+	;; return whether values are equal
+	(call $Value.bool-to-i32 (call $op:eq
+		(ref.as_non_null (local.get $value0))
+		(ref.as_non_null (local.get $value1))
+	))
 )
 
 
