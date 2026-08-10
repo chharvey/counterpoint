@@ -112,10 +112,10 @@ type GenericArgsSpec = readonly TYPE.Type[]; // TODO: intersect with `Readonly<R
 type GenericParameterSchema = (
 	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
 	& {
-		readonly covariant?:     'never' | 'always' | 'when_mutable',
-		readonly contravariant?: 'never' | 'always' | 'when_mutable',
-		readonly constraint?:    {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
-		readonly default?:       (generic_params: GenericArgsSpec) => TYPE.Type,
+		readonly readonlyVariance?: 'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to 'invariant'
+		readonly mutableVariance?:  'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to the value of `readonlyVariance` if given, else 'invariant'
+		readonly constraint?:       {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
+		readonly default?:          (generic_params: GenericArgsSpec) => TYPE.Type,
 	}
 );
 
@@ -159,7 +159,7 @@ export type ConstructorSchema = {
  * declare class data String {
  * 	new (x: anything);
  * }
- * declare class List<T> {
+ * declare class List<out mut T> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -168,7 +168,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Dict<T> {
+ * declare class Dict<out mut T> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((sym, T),));
@@ -182,7 +182,7 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(sym, T)>);
  * 	new (map:   Map.<sym, T>);
  * }
- * declare class Set<T> {
+ * declare class Set<out mut T> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -191,7 +191,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Map<K, V> {
+ * declare class Map<out mut K, out mut V> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((K, V),));
@@ -201,11 +201,11 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(K, V)>);
  * 	new (map:   Map.<K, V>);
  * }
- * declare abstract class Maybe<T> {}
- * declare class None<T> {
+ * declare abstract class Maybe<out T> {}
+ * declare class None<out T> {
  * 	new ();
  * }
- * declare class Some<T> {
+ * declare class Some<out T> {
  * 	new (value: T);
  * }
  * ```
@@ -232,7 +232,7 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		returnType:    () => TYPE.STR,
 	}],
 	[ValidFunctionName.LIST, {
-		genericParams: [{positional: true}],
+		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
@@ -241,7 +241,7 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		returnType: (generic_params) => new TYPE.List(generic_params[0]),
 	}],
 	[ValidFunctionName.DICT, {
-		genericParams: [{positional: true}],
+		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
@@ -252,7 +252,7 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
 	[ValidFunctionName.SET, {
-		genericParams: [{positional: true}],
+		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
@@ -261,8 +261,11 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
 	}],
 	[ValidFunctionName.MAP, {
-		genericParams: [{positional: true}, {positional: true, default: (generic_params) => generic_params[0]}],
-		overloads:     [
+		genericParams: [
+			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
+			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
+		],
+		overloads: [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
 			[{positional: true, type: (generic_params) => new TYPE.Set (TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
@@ -271,17 +274,17 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
 	[ValidFunctionName.MAYBE, {
-		genericParams: [{positional: true}],
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [],
 		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]),
 	}],
 	[ValidFunctionName.NONE, {
-		genericParams: [{positional: true}],
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [[]],
 		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
 	}],
 	[ValidFunctionName.SOME, {
-		genericParams: [{positional: true}],
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
 	}],
