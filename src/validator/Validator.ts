@@ -217,6 +217,9 @@ export class Validator {
 		ValidFunctionName.DICT,
 		ValidFunctionName.SET,
 		ValidFunctionName.MAP,
+		ValidFunctionName.MAYBE,
+		ValidFunctionName.NONE,
+		ValidFunctionName.SOME,
 	]);
 
 	/** The minimum allowed cooked value of a reserved keyword token. */

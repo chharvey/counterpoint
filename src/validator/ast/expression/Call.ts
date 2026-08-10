@@ -242,9 +242,10 @@ export class Call extends Expression {
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
-			if (this.base.source === ValidFunctionName.MAYBE) {
-				throw new TypeErrorNotCallable(new TYPE.Maybe(resolved_generic_args[0]), this.base);
-			}
+			throw new TypeErrorNotCallable(
+				this.base.source === ValidFunctionName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) : this.base.type(),
+				this.base,
+			);
 		}
 		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {
 			/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
