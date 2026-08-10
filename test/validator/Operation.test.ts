@@ -98,6 +98,30 @@ test.suite('Operation', () => {
 		});
 
 
+		test.suite('OperationBinaryCast', () => {
+			test.test('always returns `bool`.', () => {
+				assert_shallowStrictEqual(
+					setupScript(`{
+						val n: null = null;
+						n is Object;
+						n is Integer;
+						n is Natural;
+						n is Float;
+						n is String;
+						n is List;
+						n is Dict;
+						n is Set;
+						n is Map;
+						n is Maybe;
+						n is None;
+						n is Some;
+					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					repeat(TYPE.BOOL, 12),
+				);
+			});
+		});
+
+
 		test.suite('OperationBinaryArithmetic', () => {
 			test.test('without constant folding: returns Integer/Natural/Float respectively for valid ops.', () => {
 				assert_shallowStrictEqual(

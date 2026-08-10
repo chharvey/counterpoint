@@ -10,9 +10,16 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
-import type {ValidOperatorCast} from '../../Operator.ts';
+import {
+	Operator,
+	type ValidOperatorCast,
+} from '../../Operator.ts';
+import {
+	is_valid_intrinsic_name,
+	check_valid_function_name,
+} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -32,6 +39,45 @@ export class OperationBinaryCast extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
+	}
+
+	public override varCheck(): void {
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be a `ValidFunctionName`)
+			this.operand0.varCheck();
+			return is_valid_intrinsic_name(this.operand1.source)
+				? undefined
+				: check_valid_function_name(this.operand1.source);
+		} else {
+			return super.varCheck();
+		}
+	}
+
+	public override typeCheck(): void {
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be a `ValidFunctionName`)
+			this.operand0.typeCheck();
+			this.type(); // assert does not throw
+		} else {
+			return super.typeCheck();
+		}
+	}
+
+	@memoizeMethod
+	public override type(): TYPE.Type {
+		const t0 = this.operand0.type();
+		if (t0.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be a `ValidFunctionName`)
+			return TYPE.BOOL;
+		} else {
+			return this.type_do(t0, this.operand1.type());
+		}
 	}
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
