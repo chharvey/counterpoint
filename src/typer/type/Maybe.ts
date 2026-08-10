@@ -56,7 +56,8 @@ export class None extends Maybe {
 	}
 
 	public override isSubtypeOf(t: Type): boolean {
-		return super.isSubtypeOf(t) && t instanceof None;
+		// eslint-disable-next-line @typescript-eslint/no-use-before-define
+		return !(t instanceof Some) && super.isSubtypeOf(t);
 	}
 }
 
@@ -66,6 +67,6 @@ export class Some extends Maybe {
 	}
 
 	public override isSubtypeOf(t: Type): boolean {
-		return super.isSubtypeOf(t) && t instanceof Some;
+		return !(t instanceof None) && super.isSubtypeOf(t);
 	}
 }
