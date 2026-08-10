@@ -64,6 +64,7 @@ export type ValidOperatorCast = (
 	| Operator.CAST
 	| Operator.CAST_MAYBE
 	| Operator.CAST_RESULT
+	| Operator.IS
 );
 
 export type ValidOperatorArithmetic = (

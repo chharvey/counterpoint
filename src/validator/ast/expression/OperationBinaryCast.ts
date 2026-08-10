@@ -12,10 +12,7 @@ import {
 } from '../../../core/index.ts';
 import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
-import {
-	Operator,
-	type ValidOperatorCast,
-} from '../../Operator.ts';
+import type {ValidOperatorCast} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -34,7 +31,7 @@ export class OperationBinaryCast extends OperationBinary {
 		operand0: Expression,
 		operand1: Expression,
 	) {
-		super(start_node, Operator.CAST, operand0, operand1);
+		super(start_node, operator, operand0, operand1);
 	}
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
