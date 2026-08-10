@@ -252,13 +252,13 @@ export class Call extends Expression {
 				min: BigInt(func_params.filter((param) => !param.optional).length),
 				max: BigInt(func_params.length),
 			} as const;
-			const actual_generic: bigint = BigInt(this.exprargs.length);
+			const actual_function: bigint = BigInt(this.exprargs.length);
 			// TODO: throw AggregateError if both
-			if (actual_generic < expected_function.min) {
-				throw new TypeErrorArgCount(actual_generic, expected_function.min, false, this);
+			if (actual_function < expected_function.min) {
+				throw new TypeErrorArgCount(actual_function, expected_function.min, false, this);
 			}
-			if (actual_generic > expected_function.max) {
-				throw new TypeErrorArgCount(actual_generic, expected_function.max, false, this);
+			if (actual_function > expected_function.max) {
+				throw new TypeErrorArgCount(actual_function, expected_function.max, false, this);
 			}
 
 			/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */

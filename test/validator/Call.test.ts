@@ -337,7 +337,7 @@ test.suite('Call', () => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorArgCount, message: 'Got `1` arguments, but expected `0`.'},
+							{cons: TypeErrorArgCount, message: 'Got 1 arguments, but expected 0.'},
 							...allowed_types.map((allowed_type) => ({
 								cons:    TypeErrorNotAssignable,
 								message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
