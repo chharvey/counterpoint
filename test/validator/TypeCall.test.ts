@@ -28,13 +28,14 @@ test.suite('TypeCall', () => {
 
 
 	test.suite('#eval', () => {
-		test.test('evaluates List, Dict, Set, Map, None, and Some.', () => {
+		test.test('evaluates List, Dict, Set, Map, Maybe, None, and Some.', () => {
 			assertEqualTypes(
 				[
 					'List.<null>',
 					'Dict.<bool>',
 					'Set.<str>',
 					'Map.<int, float>',
+					'Maybe.<int>',
 					'None.<int>',
 					'Some.<int>',
 				].map((src) => AST.TYPE.Call.fromSource(src).eval()),
@@ -43,6 +44,7 @@ test.suite('TypeCall', () => {
 					new TYPE.Dict(TYPE.BOOL),
 					new TYPE.Set(TYPE.STR),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT),
+					new TYPE.Maybe(TYPE.INT),
 					new TYPE.None(TYPE.INT),
 					new TYPE.Some(TYPE.INT),
 				],

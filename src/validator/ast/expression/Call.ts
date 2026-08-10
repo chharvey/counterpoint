@@ -229,6 +229,9 @@ export class Call extends Expression {
 			case ValidFunctionName.SOME: {
 				return new OP.MaybeNew(this.typeargs[0].eval(), this.exprargs[0]?.build(builder).asTac(builder));
 			}
+			default: {
+				assert.fail(`Did not expect base '${ base_source }'.`);
+			}
 		}
 	}
 
@@ -238,6 +241,11 @@ export class Call extends Expression {
 	 * @param resolved_generic_args the resolved type arguments, returned by {@link AST_TYPE.Call.checkGenericArgs}
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
+		if (!constructor_schema.overloads.length) {
+			if (this.base.source === ValidFunctionName.MAYBE) {
+				throw new TypeErrorNotCallable(new TYPE.Maybe(resolved_generic_args[0]), this.base);
+			}
+		}
 		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {
 			/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 			const expected_function = {

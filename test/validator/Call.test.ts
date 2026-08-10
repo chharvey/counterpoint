@@ -264,6 +264,15 @@ test.suite('Call', () => {
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
 			);
 		});
+		test.test('`Maybe.()` throws.', () => {
+			xjs.Array.forEachAggregated([
+				'Maybe.<int>()',
+				'Maybe.<int>(42)',
+			], (src) => {
+				const call: AST.EXPR.Call = AST.EXPR.Call.fromSource(src);
+				return assert.throws(() => call.type(), TypeErrorNotCallable);
+			});
+		});
 		test.test('bypasses invariance for generic arguments.', () => {
 			extract_lines`
 				List.<mut {int}>((   {42},))
