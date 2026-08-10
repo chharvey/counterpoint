@@ -74,6 +74,9 @@ export class Call extends Expression {
 		if (!(this.base instanceof Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
+		if (this.exprargs.some((arg) => arg.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
 		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
 		const resolved_generic_args: TYPE.Type[]       = AST_TYPE.Call.checkGenericArgs(constructor_schema, this.typeargs, this);
 		try {
