@@ -204,10 +204,10 @@ export class Call extends Expression {
 			case ValidFunctionName.FLOAT:
 			case ValidFunctionName.STRING: {
 				return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
-					[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
-					[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
-					[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],
-					[ValidFunctionName.STRING,  OP.OpCode.TOSTR],
+					[ValidFunctionName.INTEGER, OP.OpCode.INT_FROM],
+					[ValidFunctionName.NATURAL, OP.OpCode.NAT_FROM],
+					[ValidFunctionName.FLOAT,   OP.OpCode.FLOAT_FROM],
+					[ValidFunctionName.STRING,  OP.OpCode.STR_FROM],
 				]).get(base_source)!, this.exprargs[0].build(builder).asTac(builder), this.type());
 			}
 			case ValidFunctionName.LIST:

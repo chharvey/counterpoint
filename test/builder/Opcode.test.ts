@@ -411,11 +411,11 @@ test.suite('Opcode', () => {
 						new VALUE.Float(-4.2e+1),
 					]);
 				});
-				test.test('[operator=TOBOOL]', () => {
+				test.test('[operator=BOOL.FROM]', () => {
 					const builder = new Builder();
 					const interp  = new Interpreter();
 					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.TOBOOL,
+						OP.OpCode.BOOL_FROM,
 						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
 						TYPE.BOOL,
 					))));
@@ -430,7 +430,7 @@ test.suite('Opcode', () => {
 						],
 					);
 				});
-				test.test('[operator=TOINT]', () => {
+				test.test('[operator=INT.FROM]', () => {
 					assert_equal_values(interpret_calls('Integer', operands.slice(3, 10)), [
 						VALUE.INT_0,
 						new VALUE.Integer(42n),
@@ -441,7 +441,7 @@ test.suite('Opcode', () => {
 						new VALUE.Integer(42n),
 					]);
 				});
-				test.test('[operator=TONAT]', () => {
+				test.test('[operator=NAT.FROM]', () => {
 					assert_equal_values(interpret_calls('Natural', operands.slice(3, 10)), [
 						VALUE.NAT_0,
 						new VALUE.Natural(42n),
@@ -452,7 +452,7 @@ test.suite('Opcode', () => {
 						new VALUE.Natural(42n),
 					]);
 				});
-				test.test('[operator=TOFLOAT]', () => {
+				test.test('[operator=FLOAT.FROM]', () => {
 					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
 						VALUE.FLOAT_0,
 						new VALUE.Float(42.0),
@@ -1537,11 +1537,11 @@ test.suite('Opcode', () => {
 						cg.vm.op.isNone(genConst(cg)),
 					);
 				});
-				test.test('TOBOOL operator returns custom WASM function `$op:not` applied twice.', () => {
+				test.test('BOOL.FROM operator returns custom WASM function `$op:not` applied twice.', () => {
 					// there exists no syntax for “to bool” operator, so constructing it manually
 					const cg = new CodeGenerator();
 					assertEqualBins(
-						new OP.Unop(OP.OpCode.TOBOOL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
+						new OP.Unop(OP.OpCode.BOOL_FROM, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
 						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
 					);
 				});

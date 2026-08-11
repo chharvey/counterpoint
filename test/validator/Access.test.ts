@@ -932,7 +932,7 @@ test.suite('Access', () => {
 					maybe_access_output(10, 'my_dict', 11, (result_setter) => xjs.String.dedent`
 						${ '\t' }(DECL <Dict> $12 ${ op_maybe_unwrap_string('(GET my_dict)') })
 						${ '\t' }(DECL <sym> $13)
-						${ '\t' }(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-13" "block-14")
+						${ '\t' }(GOTO.IF (BOOL.FROM (SYM.CONST @b)) "block-13" "block-14")
 						"block-13":
 							(SET $13 (SYM.CONST @a))
 							(GOTO "block-15")

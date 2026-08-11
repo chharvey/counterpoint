@@ -421,7 +421,7 @@ test.suite('Operation', () => {
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET a)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET b))
 						(GOTO "block-3")
@@ -432,7 +432,7 @@ test.suite('Operation', () => {
 						(DROP (GET $0))
 						(DECL <bool> $1 (NOT (GET a)))
 						(DECL <bool> $2)
-						(GOTO.IF (TOBOOL (GET $1)) "block-4" "block-5")
+						(GOTO.IF (BOOL.FROM (GET $1)) "block-4" "block-5")
 					"block-4":
 						(SET $2 (NOT (GET b)))
 						(GOTO "block-6")
@@ -455,7 +455,7 @@ test.suite('Operation', () => {
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET c)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET c))
 						(GOTO "block-3")
@@ -467,7 +467,7 @@ test.suite('Operation', () => {
 						(DECL <int> $1 (NEG (GET c)))
 						(DECL <int> $2 (INT.ADD (GET $1) (INT.CONST 1)))
 						(DECL <anything> $3)
-						(GOTO.IF (TOBOOL (GET $2)) "block-4" "block-5")
+						(GOTO.IF (BOOL.FROM (GET $2)) "block-4" "block-5")
 					"block-4":
 						(SET $3 (GET $2))
 						(GOTO "block-6")
@@ -489,7 +489,7 @@ test.suite('Operation', () => {
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET a)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET b))
 						(GOTO "block-3")
@@ -511,7 +511,7 @@ test.suite('Operation', () => {
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET c)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET c))
 						(GOTO "block-3")

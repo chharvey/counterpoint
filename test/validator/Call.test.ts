@@ -365,9 +365,9 @@ test.suite('Call', () => {
 				${ INT_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TOINT (INT.CONST -42)))
-					(DROP (TOINT (NAT.CONST +42)))
-					(DROP (TOINT (FLOAT.CONST 4.2)))
+					(DROP (INT.FROM (INT.CONST -42)))
+					(DROP (INT.FROM (NAT.CONST +42)))
+					(DROP (INT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -376,9 +376,9 @@ test.suite('Call', () => {
 				${ NAT_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TONAT (INT.CONST -42)))
-					(DROP (TONAT (NAT.CONST +42)))
-					(DROP (TONAT (FLOAT.CONST 4.2)))
+					(DROP (NAT.FROM (INT.CONST -42)))
+					(DROP (NAT.FROM (NAT.CONST +42)))
+					(DROP (NAT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -387,9 +387,9 @@ test.suite('Call', () => {
 				${ FLOAT_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TOFLOAT (INT.CONST -42)))
-					(DROP (TOFLOAT (NAT.CONST +42)))
-					(DROP (TOFLOAT (FLOAT.CONST 4.2)))
+					(DROP (FLOAT.FROM (INT.CONST -42)))
+					(DROP (FLOAT.FROM (NAT.CONST +42)))
+					(DROP (FLOAT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -398,24 +398,24 @@ test.suite('Call', () => {
 				${ STRING_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TOSTR (NULL.CONST null)))
-					(DROP (TOSTR (BOOL.CONST true)))
-					(DROP (TOSTR (INT.CONST -42)))
-					(DROP (TOSTR (NAT.CONST +42)))
-					(DROP (TOSTR (FLOAT.CONST 4.2)))
-					(DROP (TOSTR (STR.CONST "hello")))
+					(DROP (STR.FROM (NULL.CONST null)))
+					(DROP (STR.FROM (BOOL.CONST true)))
+					(DROP (STR.FROM (INT.CONST -42)))
+					(DROP (STR.FROM (NAT.CONST +42)))
+					(DROP (STR.FROM (FLOAT.CONST 4.2)))
+					(DROP (STR.FROM (STR.CONST "hello")))
 					(DECL <tuple> $0 (TUPLE.NEW))
-					(DROP (TOSTR (GET $0)))
+					(DROP (STR.FROM (GET $0)))
 					(DECL <record> $1 (RECORD.NEW @a->(INT.CONST 1)))
-					(DROP (TOSTR (GET $1)))
+					(DROP (STR.FROM (GET $1)))
 					(DECL <List> $2 (LIST.NEW))
-					(DROP (TOSTR (GET $2)))
+					(DROP (STR.FROM (GET $2)))
 					(DECL <Dict> $3 (DICT.NEW @a->(INT.CONST 1)))
-					(DROP (TOSTR (GET $3)))
+					(DROP (STR.FROM (GET $3)))
 					(DECL <Set> $4 (SET.NEW))
-					(DROP (TOSTR (GET $4)))
+					(DROP (STR.FROM (GET $4)))
 					(DECL <Map> $5 (MAP.NEW (STR.CONST "a")->(INT.CONST 1)))
-					(DROP (TOSTR (GET $5)))
+					(DROP (STR.FROM (GET $5)))
 					(ENDPROGRAM)
 			`.trim());
 		});

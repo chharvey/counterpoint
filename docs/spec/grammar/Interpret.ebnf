@@ -219,12 +219,12 @@ Number! Interpret((NEG `v`)) :=
 	3. *Return:* `negation`.
 ;
 
-Boolean! Interpret((TOBOOL `v`)) :=
+Boolean! Interpret((BOOL.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *Return:* `ToBoolean(v)`.
 ;
 
-Integer! Interpret((TOINT `v`)) :=
+Integer! Interpret((INT.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `Natural`:
 		1. *Let* `as_int` be the reinterpretation of `v` as a 64-bit signed integer value.
@@ -236,7 +236,7 @@ Integer! Interpret((TOINT `v`)) :=
 	5. *Return:* `v`.
 ;
 
-Natural! Interpret((TONAT `v`)) :=
+Natural! Interpret((NAT.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `Integer`:
 		1. *Let* `as_nat` be the reinterpretation of `v` to a 64-bit unsigned integer value.
@@ -248,7 +248,7 @@ Natural! Interpret((TONAT `v`)) :=
 	5. *Return:* `v`.
 ;
 
-Float! Interpret((TOFLOAT `v`)) :=
+Float! Interpret((FLOAT.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `Integer` *or* `v` is an instance of `Natural`:
 		1. *Let* `as_float` be the conversion of `v` to a 64-bit binary floating-point value.
@@ -257,7 +257,7 @@ Float! Interpret((TOFLOAT `v`)) :=
 	4. *Return:* `v`.
 ;
 
-String! Interpret((TOSTR `v`)) :=
+String! Interpret((STR.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `String`:
 		1. *Return:* `v`.

@@ -30,11 +30,11 @@ export type OpCodeUn = (
 	| OpCode.EMP
 	| OpCode.NEG
 
-	| OpCode.TOBOOL
-	| OpCode.TOINT
-	| OpCode.TONAT
-	| OpCode.TOFLOAT
-	| OpCode.TOSTR
+	| OpCode.BOOL_FROM
+	| OpCode.INT_FROM
+	| OpCode.NAT_FROM
+	| OpCode.FLOAT_FROM
+	| OpCode.STR_FROM
 
 	| OpCode.LIST_COUNT
 	| OpCode.DICT_COUNT
@@ -68,9 +68,9 @@ export class Unop extends Value {
 			}
 
 			case OpCode.NEG:
-			case OpCode.TOINT:
-			case OpCode.TONAT:
-			case OpCode.TOFLOAT: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.INT_FROM:
+			case OpCode.NAT_FROM:
+			case OpCode.FLOAT_FROM: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
 
 			case OpCode.LIST_COUNT: {
 				assert_instanceof(this.operand.type, TYPE.List);
@@ -103,11 +103,11 @@ export class Unop extends Value {
 			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }
 			case OpCode.NEG: { return (operand as VALUE.Integer | VALUE.Float).neg(); }
 
-			case OpCode.TOBOOL:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
-			case OpCode.TOINT:   { return (operand as VALUE.Number).toInt(); }
-			case OpCode.TONAT:   { return (operand as VALUE.Number).toNat(); }
-			case OpCode.TOFLOAT: { return (operand as VALUE.Number).toFloat(); }
-			case OpCode.TOSTR:   { return (operand as VALUE.Number).toCplString(); }
+			case OpCode.BOOL_FROM:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
+			case OpCode.INT_FROM:   { return (operand as VALUE.Number).toInt(); }
+			case OpCode.NAT_FROM:   { return (operand as VALUE.Number).toNat(); }
+			case OpCode.FLOAT_FROM: { return (operand as VALUE.Number).toFloat(); }
+			case OpCode.STR_FROM:   { return (operand as VALUE.Number).toCplString(); }
 
 			case OpCode.LIST_COUNT: { return new VALUE.Natural((operand as VALUE.List).count); }
 			case OpCode.DICT_COUNT: { return new VALUE.Natural((operand as VALUE.Dict).count); }
@@ -130,11 +130,11 @@ export class Unop extends Value {
 			case OpCode.EMP: { return op.isEmpty(code); }
 			case OpCode.NEG: { return op.negate(code); }
 
-			case OpCode.TOBOOL:  { return op.not(op.not(code)); }
-			case OpCode.TOINT:   { return op.toInt(code); }
-			case OpCode.TONAT:   { return op.toNat(code); }
-			case OpCode.TOFLOAT: { return op.toFloat(code); }
-			case OpCode.TOSTR:   { return VmValue.stringify(code); }
+			case OpCode.BOOL_FROM:  { return op.not(op.not(code)); }
+			case OpCode.INT_FROM:   { return op.toInt(code); }
+			case OpCode.NAT_FROM:   { return op.toNat(code); }
+			case OpCode.FLOAT_FROM: { return op.toFloat(code); }
+			case OpCode.STR_FROM:   { return VmValue.stringify(code); }
 
 			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List .count(VmValue.cast(code, reftype.List))))); }
 			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }
