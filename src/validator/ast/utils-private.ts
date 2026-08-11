@@ -159,7 +159,7 @@ export type ConstructorSchema = {
  * declare class data String {
  * 	new (x: anything);
  * }
- * declare class List<out mut T> {
+ * declare class List<out(in) T> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -168,7 +168,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Dict<out mut T> {
+ * declare class Dict<out(in) T> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((sym, T),));
@@ -182,7 +182,7 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(sym, T)>);
  * 	new (map:   Map.<sym, T>);
  * }
- * declare class Set<out mut T> {
+ * declare class Set<out(in) T> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -191,7 +191,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Map<out mut K, out mut V> {
+ * declare class Map<out(in) K, out(in) V> {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((K, V),));
