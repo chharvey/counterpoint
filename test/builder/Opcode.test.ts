@@ -296,30 +296,22 @@ test.suite('Opcode', () => {
 				}
 				test.suite('[operator=MAYBE_UNWRAP]', () => {
 					test.test('throws when operand is a None.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						builder.pushInstruction(new OP.Drop(new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR).asTac(builder),
-							TYPE.STR,
-						)));
+						const {builder} = setupScript(`{
+							val mut x?: str;
+							x~?;
+						}`, {codegen: false});
+						const interp = new Interpreter();
 						return assert.throws(() => builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
 							: instr.interpret(interp)
 						)), /Unwrapped a None value/);
 					});
 					test.test('returns the value when operand is a Some.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						builder.pushInstruction(new OP.Drop(new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))).asTac(builder),
-							TYPE.STR,
-						)));
-						return assert.ok(builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).find((value) => !!value)!.identical(new VALUE.String('hello')));
+						assert_equal_values(interpret_extracted_drops(`{
+							val mut y?: str;
+							set y = "hello";
+							y~?;
+						}`), [new VALUE.String('hello')]);
 					});
 				});
 				test.test('[operator=ISNULL]', () => {
@@ -1478,30 +1470,20 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
-				test.test('MAYBE_UNWRAP', () => {
-					const builder = new Builder();
-					const cg      = new CodeGenerator();
-					const {vm, mod: {wasm}} = cg;
-					[
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR).asTac(builder),
-							TYPE.STR,
-						),
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.INT, new OP.Const(new VALUE.Integer(42n))).asTac(builder),
-							TYPE.INT,
-						),
-					].forEach((irval) => builder.pushInstruction(new OP.Drop(irval)));
-					builder.terminateBlock(new OP.EndProgram());
-					builder.validate();
-					builder.codegen(cg);
+				test.test('MAYBE.UNWRAP', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						val mut x?: str;
+						val mut y?: int;
+						set y = 42;
+						x~?;
+						y~?;
+					}`);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
-						wasm.local.set(0, vm.Value.newComposite(cg.codegenMaybe())),
-						wasm.local.set(1, vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(0, vm.reftype.Value))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(1, vm.reftype.Value))),
+						wasm.local.set(0, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(0, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
 					]);
 				});
 				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
