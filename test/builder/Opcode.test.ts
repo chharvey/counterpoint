@@ -1549,9 +1549,9 @@ test.suite('Opcode', () => {
 							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toFloat(genConst(cg, 42n)),
 
-							cg.vm.Value.stringify(genConst(cg)),
-							cg.vm.Value.stringify(genConst(cg, 42n)),
-							cg.vm.Value.stringify(genConst(cg, 'hello')),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 42n))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 'hello'))),
 						],
 					);
 				});
