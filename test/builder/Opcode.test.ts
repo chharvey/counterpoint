@@ -1495,32 +1495,6 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
-				test.test('MAYBE_UNWRAP', () => {
-					const builder = new Builder();
-					const cg      = new CodeGenerator();
-					const {vm, mod: {wasm}} = cg;
-					[
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR).asTac(builder),
-							TYPE.STR,
-						),
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.INT, new OP.Const(new VALUE.Integer(42n))).asTac(builder),
-							TYPE.INT,
-						),
-					].forEach((irval) => builder.pushInstruction(new OP.Drop(irval)));
-					builder.terminateBlock(new OP.EndProgram());
-					builder.validate();
-					builder.codegen(cg);
-					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
-						wasm.local.set(0, vm.Value.newComposite(cg.codegenMaybe())),
-						wasm.local.set(1, vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(0, vm.reftype.Value))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(1, vm.reftype.Value))),
-					]);
-				});
 				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
 					// there exists no syntax for “is null” operator, so constructing it manually
 					const cg = new CodeGenerator();
@@ -1547,6 +1521,17 @@ test.suite('Opcode', () => {
 				});
 				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
+						Integer.(+42);
+						Integer.(4.2);
+						Natural.(42);
+						Natural.(4.2);
+						Float.(+42);
+						Float.(42);
+
+						String.(null);
+						String.(42);
+						String.("hello");
+
 						!null;
 						!false;
 						!@hello;
@@ -1561,22 +1546,22 @@ test.suite('Opcode', () => {
 
 						-(42);
 						-(4.2);
-
-						Integer.(+42);
-						Integer.(4.2);
-						Natural.(42);
-						Natural.(4.2);
-						Float.(+42);
-						Float.(42);
-
-						String.(null);
-						String.(42);
-						String.("hello");
 					}`, {codegen: false});
 					const id_hello = Validator.cookTokenIdentifier('hello');
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[
+							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toInt(genConst(cg, 4.2)),
+							cg.vm.op.toNat(genConst(cg, 42n)),
+							cg.vm.op.toNat(genConst(cg, 4.2)),
+							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toFloat(genConst(cg, 42n)),
+
+							cg.vm.Value.stringify(genConst(cg)),
+							cg.vm.Value.stringify(genConst(cg, 42n)),
+							cg.vm.Value.stringify(genConst(cg, 'hello')),
+
 							cg.vm.op.not(genConst(cg)),
 							cg.vm.op.not(genConst(cg, false)),
 							cg.vm.op.not(genConst(cg, Symbol(id_hello.toString()))),
@@ -1591,17 +1576,6 @@ test.suite('Opcode', () => {
 
 							cg.vm.op.negate(genConst(cg, 42n)),
 							cg.vm.op.negate(genConst(cg, 4.2)),
-
-							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toInt(genConst(cg, 4.2)),
-							cg.vm.op.toNat(genConst(cg, 42n)),
-							cg.vm.op.toNat(genConst(cg, 4.2)),
-							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toFloat(genConst(cg, 42n)),
-
-							cg.vm.Value.stringify(genConst(cg)),
-							cg.vm.Value.stringify(genConst(cg, 42n)),
-							cg.vm.Value.stringify(genConst(cg, 'hello')),
 						],
 					);
 				});
@@ -1680,6 +1654,32 @@ test.suite('Opcode', () => {
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(map.codegen(cg), cg.vm.reftype.Map))))),
 					);
+				});
+				test.test('MAYBE.UNWRAP', () => {
+					const builder = new Builder();
+					const cg      = new CodeGenerator();
+					const {vm, mod: {wasm}} = cg;
+					[
+						new OP.Unop(
+							OP.OpCode.MAYBE_UNWRAP,
+							new OP.MaybeNew(TYPE.STR).asTac(builder),
+							TYPE.STR,
+						),
+						new OP.Unop(
+							OP.OpCode.MAYBE_UNWRAP,
+							new OP.MaybeNew(TYPE.INT, new OP.Const(new VALUE.Integer(42n))).asTac(builder),
+							TYPE.INT,
+						),
+					].forEach((irval) => builder.pushInstruction(new OP.Drop(irval)));
+					builder.terminateBlock(new OP.EndProgram());
+					builder.validate();
+					builder.codegen(cg);
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						wasm.local.set(0, vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
+						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(0, vm.reftype.Value))),
+						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(1, vm.reftype.Value))),
+					]);
 				});
 			});
 

@@ -36,16 +36,11 @@ export enum OpCode {
 	SET_GET,
 	MAP_GET,
 
-	MAYBE_UNWRAP,
 	CALL,
 
 	ISSET,
 	ISNULL,
 	ISNONE,
-
-	NOT,
-	EMP,
-	NEG,
 
 	BOOL_FROM,
 	INT_FROM,
@@ -53,10 +48,16 @@ export enum OpCode {
 	FLOAT_FROM,
 	STR_FROM,
 
+	NOT,
+	EMP,
+	NEG,
+
 	LIST_COUNT,
 	DICT_COUNT,
 	SET_COUNT,
 	MAP_COUNT,
+
+	MAYBE_UNWRAP,
 
 	INT_ADD,
 	INT_SUB,
