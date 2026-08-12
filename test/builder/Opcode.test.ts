@@ -260,6 +260,116 @@ test.suite('Opcode', () => {
 				}`), repeat(VALUE.TRUE, 10));
 			});
 
+			test.suite('InstanceOf', () => {
+				const srcs: readonly string[] = extract_lines`
+					null
+					false
+					true
+					0
+					42
+					0.0
+					-0.0
+					4.2e+1
+					+0
+					+42
+					""
+					"hello"
+					()
+					(42,)
+					(a= 42)
+					[]
+					[42]
+					[a= 42]
+					{}
+					{42}
+					{41 -> 42}
+				`;
+				test.suite('primitives & countables.', () => {
+					let expecteds: readonly VALUE.Value[];
+					test.before(() => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder))));
+						expecteds = builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value);
+					});
+					[
+						OP.InstanceOfName.BOOLEAN,
+						OP.InstanceOfName.SYMBOL,
+						OP.InstanceOfName.INTEGER,
+						OP.InstanceOfName.NATURAL,
+						OP.InstanceOfName.FLOAT,
+						OP.InstanceOfName.STRING,
+						OP.InstanceOfName.LIST,
+						OP.InstanceOfName.DICT,
+						OP.InstanceOfName.SET,
+						OP.InstanceOfName.MAP,
+						OP.InstanceOfName.MAYBE,
+					].forEach((name, i) => {
+						test.test(OP.InstanceOfName[name], () => {
+							const builder = new Builder();
+							const interp  = new Interpreter();
+							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+								name,
+								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+							))));
+							assert_equal_values(
+								builder.instructions.map((instr) => (instr instanceof OP.Drop
+									? instr.value.interpret(interp)
+									: instr.interpret(interp)
+								)).filter((value) => !!value),
+								expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof [
+									VALUE.Boolean,
+									VALUE.Symbol,
+									VALUE.Integer,
+									VALUE.Natural,
+									VALUE.Float,
+									VALUE.String,
+									VALUE.List,
+									VALUE.Dict,
+									VALUE.Set,
+									VALUE.Map,
+									VALUE.Maybe,
+								][i])),
+							);
+						});
+					});
+				});
+				test.suite('Maybes.', () => {
+					[
+						OP.InstanceOfName.MAYBE,
+						OP.InstanceOfName.NONE,
+						OP.InstanceOfName.SOME,
+					].forEach((name, i) => {
+						test.test(OP.InstanceOfName[name], () => {
+							const builder = new Builder();
+							const interp  = new Interpreter();
+							[
+								new OP.MaybeNew(TYPE.STR),
+								new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
+								new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
+							].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+								name,
+								irval.asTac(builder),
+							))));
+							assert_equal_values(
+								builder.instructions.map((instr) => (instr instanceof OP.Drop
+									? instr.value.interpret(interp)
+									: instr.interpret(interp)
+								)).filter((value) => !!value),
+								[
+									repeat(VALUE.TRUE, 3),
+									[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
+									[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
+								][i],
+							);
+						});
+					});
+				});
+			});
+
 			test.suite('Unop', () => {
 				const operands: readonly string[] = extract_lines`
 					null
@@ -1471,6 +1581,73 @@ test.suite('Opcode', () => {
 					stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 					Array.from(new Array(10), (_, i) => cg.vm.Value.boolFromI32(wasm.i32.eqz(wasm.i32.eqz(cg.vm.Value.field(wasm.local.get(i, cg.vm.reftype.Value)).tag)))),
 				);
+			});
+
+			test.suite('InstanceOf', () => {
+				const cg         = new CodeGenerator();
+				const test_value = new OP.Const(VALUE.NULL);
+				const operand = genConst(cg);
+				const {vm, mod: {wasm}} = cg;
+				test.test('BOOLEAN', () => {
+					// there exists no syntax for “is Boolean” operator, so constructing it manually
+					assertEqualBins(
+						new OP.InstanceOf(OP.InstanceOfName.BOOLEAN, test_value).codegen(cg),
+						vm.Value.boolFromI32(wasm.i32.and(
+							vm.Value.isPrimitive(operand),
+							wasm.i32.or(
+								vm.Vect.isConst(vm.Value.field(operand).primitive, false),
+								vm.Vect.isConst(vm.Value.field(operand).primitive, true),
+							),
+						)),
+					);
+				});
+				test.test('SYMBOL', {expectFailure: true}, () => {
+					assertEqualBins(new OP.InstanceOf(OP.InstanceOfName.SYMBOL, test_value).codegen(cg), vm.Value.boolFromI32(wasm.i32.and(
+						vm.Value.isPrimitive(operand),
+						vm.Vect.isNat(vm.Value.field(operand).primitive),
+					)));
+				});
+				test.test('INTEGER, NATURAL, FLOAT', () => {
+					assertEqualBins([
+						OP.InstanceOfName.INTEGER,
+						OP.InstanceOfName.NATURAL,
+						OP.InstanceOfName.FLOAT,
+					].map((name) => new OP.InstanceOf(name, test_value).codegen(cg)), [
+						(vect: binaryen.ExpressionRef) => vm.Vect.isInt(vect),
+						(vect: binaryen.ExpressionRef) => vm.Vect.isNat(vect),
+						(vect: binaryen.ExpressionRef) => vm.Vect.isFloat(vect),
+					].map((callable) => vm.Value.boolFromI32(wasm.i32.and(
+						vm.Value.isPrimitive(operand),
+						callable(vm.Value.field(operand).primitive),
+					))));
+				});
+				test.test('STRING, LIST, DICT, MAP, MAYBE', () => {
+					assertEqualBins([
+						OP.InstanceOfName.STRING,
+						OP.InstanceOfName.LIST,
+						OP.InstanceOfName.DICT,
+						OP.InstanceOfName.MAP,
+						OP.InstanceOfName.MAYBE,
+					].map((name) => new OP.InstanceOf(name, test_value).codegen(cg)), [
+						vm.reftype.String,
+						vm.reftype.List,
+						vm.reftype.Dict,
+						vm.reftype.Map,
+						vm.reftype.Maybe,
+					].map((reftype) => vm.Value.boolFromI32(wasm.i32.and(
+						vm.Value.isComposite(operand),
+						wasm.ref.test(vm.Value.field(operand).composite, reftype),
+					))));
+				});
+				test.test('NONE, SOME', () => {
+					assertEqualBins([
+						new OP.InstanceOf(OP.InstanceOfName.NONE, test_value).codegen(cg),
+						new OP.InstanceOf(OP.InstanceOfName.SOME, test_value).codegen(cg),
+					], [
+						vm.op.isNone(operand),
+						vm.op.isSome(operand),
+					]);
+				});
 			});
 
 			test.suite('Unop', () => {

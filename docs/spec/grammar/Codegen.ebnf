@@ -192,6 +192,53 @@ Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
 Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
 Codegen((ISNONE `v`)) := (call $op:is-none `Codegen(v)`);
 
+Codegen((INSTANCEOF "Boolean" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-primitive `Codegen(v)`)
+	(i32.or
+		(call $Vect.is-false (struct.get $Value $primitive `Codegen(v)`))
+		(call $Vect.is-true  (struct.get $Value $primitive `Codegen(v)`))
+	)
+));
+Codegen((INSTANCEOF "Symbol" `v`)) :=; // TODO:
+Codegen((INSTANCEOF "Integer" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-primitive `Codegen(v)`)
+	(call $Vect.is-int (struct.get $Value $primitive `Codegen(v)`))
+));
+Codegen((INSTANCEOF "Natural" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-primitive `Codegen(v)`)
+	(call $Vect.is-nat (struct.get $Value $primitive `Codegen(v)`))
+));
+Codegen((INSTANCEOF "Float" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-primitive `Codegen(v)`)
+	(call $Vect.is-float (struct.get $Value $primitive `Codegen(v)`))
+));
+Codegen((INSTANCEOF "String" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-composite `Codegen(v)`)
+	(ref.test (ref $String) (struct.get $Value $composite `Codegen(v)`))
+));
+Codegen((INSTANCEOF "String" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-composite `Codegen(v)`)
+	(ref.test (ref $String) (struct.get $Value $composite `Codegen(v)`))
+));
+Codegen((INSTANCEOF "List" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-composite `Codegen(v)`)
+	(ref.test (ref $List) (struct.get $Value $composite `Codegen(v)`))
+));
+Codegen((INSTANCEOF "Dict" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-composite `Codegen(v)`)
+	(ref.test (ref $Dict) (struct.get $Value $composite `Codegen(v)`))
+));
+Codegen((INSTANCEOF "Map" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-composite `Codegen(v)`)
+	(ref.test (ref $Map) (struct.get $Value $composite `Codegen(v)`))
+));
+Codegen((INSTANCEOF "Maybe" `v`)) := (call $Value.bool-from-i32 (i32.and
+	(call $Value.is-composite `Codegen(v)`)
+	(ref.test (ref $Maybe) (struct.get $Value $composite `Codegen(v)`))
+));
+Codegen((INSTANCEOF "None" `v`)) := (call $op:is-none `Codegen(v)`);
+Codegen((INSTANCEOF "Some" `v`)) := (call $op:is-some `Codegen(v)`);
+
 Codegen((NOT `v`)) := (call $op:not      `Codegen(v)`);
 Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);
 Codegen((NEG `v`)) := (call $op:negate   `Codegen(v)`);

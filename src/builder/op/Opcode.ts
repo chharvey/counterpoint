@@ -48,6 +48,8 @@ export enum OpCode {
 	FLOAT_FROM,
 	STR_FROM,
 
+	INSTANCEOF,
+
 	NOT,
 	EMP,
 	NEG,

@@ -188,6 +188,33 @@ Boolean! Interpret((ISNONE `v`)) :=
 	4. *Return:* `false`.
 ;
 
+Boolean! Interpret((INSTANCEOF `src` `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* any of the following conditions is `true`:
+		- `src` is "Boolean" *and* `v` is an instance of `Boolean`
+		- `src` is "Symbol"  *and* `v` is an instance of `Symbol`
+		- `src` is "Integer" *and* `v` is an instance of `Integer`
+		- `src` is "Natural" *and* `v` is an instance of `Natural`
+		- `src` is "Float"   *and* `v` is an instance of `Float`
+		- `src` is "String"  *and* `v` is an instance of `String`
+		- `src` is "List"    *and* `v` is an instance of `List`
+		- `src` is "Dict"    *and* `v` is an instance of `Dict`
+		- `src` is "Set"     *and* `v` is an instance of `Set`
+		- `src` is "Map"     *and* `v` is an instance of `Map`
+		- `src` is "Maybe"   *and* `v` is an instance of `Maybe`
+		1. *Return:* `true`.
+	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
+		1. *Return:* `Interpret((ISNONE `v`))`.
+	4. *Else If* `src` is "SOME" *and* `v` is an instance of `Maybe`:
+		1. *Let* `isnone` be *Unwrap:* `Interpret((ISNONE `v`))`
+		2. *If* `isnone` is `true`:
+			1. *Return:* `false`.
+		3. *Else:*
+			1. *Return:* `true`.
+	5. *Else*:
+		1. *Return:* `false`.
+;
+
 Boolean! Interpret((NOT `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
