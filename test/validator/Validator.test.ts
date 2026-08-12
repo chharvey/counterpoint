@@ -29,15 +29,20 @@ test.suite('Validator', () => {
 		};
 		test.test('assigns intrinsic ids an index.', () => {
 			const intrinsics = [
-				'Object',
+				'Boolean',
+				'Symbol',
 				'Integer',
 				'Natural',
 				'Float',
 				'String',
+				'Object',
 				'List',
 				'Dict',
 				'Set',
 				'Map',
+				'Maybe',
+				'None',
+				'Some',
 			];
 			return assert.deepStrictEqual(
 				intrinsics.map((s) => Validator.cookTokenIdentifier(s)),

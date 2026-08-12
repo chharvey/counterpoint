@@ -207,12 +207,14 @@ function tokenWorthString(text: string): CodeUnit[] {
  */
 export class Validator {
 	/** A bank of unique intrinsic identifier names. */
-	private static readonly INTRINSICS: ReadonlySet<string> = new Set<string>([
-		ValidIntrinsicName.OBJECT,
+	private static readonly INTRINSICS: readonly string[] = [...new Set<string>([ // Array -> Set -> Array dedupes any potential items
+		ValidFunctionName.BOOLEAN,
+		'Symbol',
 		ValidFunctionName.INTEGER,
 		ValidFunctionName.NATURAL,
 		ValidFunctionName.FLOAT,
 		ValidFunctionName.STRING,
+		ValidIntrinsicName.OBJECT,
 		ValidFunctionName.LIST,
 		ValidFunctionName.DICT,
 		ValidFunctionName.SET,
@@ -220,7 +222,7 @@ export class Validator {
 		ValidFunctionName.MAYBE,
 		ValidFunctionName.NONE,
 		ValidFunctionName.SOME,
-	]);
+	])];
 
 	/** The minimum allowed cooked value of a reserved keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x40n;
@@ -260,8 +262,8 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
-		if (Validator.INTRINSICS.has(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt([...Validator.INTRINSICS].indexOf(source));
+		if (Validator.INTRINSICS.includes(source)) {
+			return Validator.MIN_VALUE_INTRINSIC + BigInt(Validator.INTRINSICS.indexOf(source));
 		}
 		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}
