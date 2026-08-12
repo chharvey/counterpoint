@@ -214,6 +214,7 @@ export class Call extends Expression {
 			return get_dest;
 		} else {
 			return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
+				[ValidFunctionName.BOOLEAN, OP.OpCode.TOBOOL],
 				[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
 				[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
 				[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],

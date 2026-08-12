@@ -48,6 +48,7 @@ export enum ValidIntrinsicName {
 }
 
 export enum ValidFunctionName {
+	BOOLEAN = 'Boolean',
 	INTEGER = 'Integer',
 	NATURAL = 'Natural',
 	FLOAT   = 'Float',
@@ -141,6 +142,9 @@ export type ConstructorSchema = {
 
 /**
  * ```cpl
+ * declare class data Boolean {
+ * 	new (x: anything);
+ * }
  * declare class data Integer {
  * 	new (x: int | nat | float);
  * }
@@ -198,6 +202,11 @@ export type ConstructorSchema = {
  * ```
  */
 export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
+	[ValidFunctionName.BOOLEAN, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
+		returnType:    () => TYPE.BOOL,
+	}],
 	[ValidFunctionName.INTEGER, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
