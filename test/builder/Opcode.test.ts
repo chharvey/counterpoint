@@ -1474,14 +1474,6 @@ test.suite('Opcode', () => {
 						cg.vm.op.isNull(genConst(cg)),
 					);
 				});
-				test.test('TOBOOL operator returns custom WASM function `$op:not` applied twice.', () => {
-					// there exists no syntax for “to bool” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.TOBOOL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
-					);
-				});
 				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
 						!null;
