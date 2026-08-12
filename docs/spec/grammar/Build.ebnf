@@ -175,6 +175,7 @@ Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	return (GET $result).
 ];
 
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Boolean"):has(SemanticExpression*) call) := (TOBOOL  `Build(call.SemanticExpression*.0)`);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Integer"):has(SemanticExpression*) call) := (TOINT   `Build(call.SemanticExpression*.0)`);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Natural"):has(SemanticExpression*) call) := (TONAT   `Build(call.SemanticExpression*.0)`);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Float")  :has(SemanticExpression*) call) := (TOFLOAT `Build(call.SemanticExpression*.0)`);
