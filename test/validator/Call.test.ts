@@ -20,6 +20,7 @@ import {
 
 test.suite('Call', () => {
 	const EVALUATE = [
+		'Boolean.(42)',
 		'Integer.(42)',
 		'Natural.(42)',
 		'Float.(42)',
@@ -32,6 +33,19 @@ test.suite('Call', () => {
 			(2, 0.2),
 			(3, 0.4),
 		))`,
+	] as const;
+	const BOOL_CONS = [
+		'Boolean.(null)',
+		'Boolean.(false)',
+		'Boolean.(true)',
+		'Boolean.(@hello)',
+		'Boolean.(-0)',
+		'Boolean.(-42)',
+		'Boolean.(+0)',
+		'Boolean.(+42)',
+		'Boolean.(0.0)',
+		'Boolean.(4.2)',
+		'Boolean.("hello")',
 	] as const;
 	const INT_CONS = [
 		'Integer.(-42)',
@@ -197,10 +211,11 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
-		test.test('evaluates Integer, Natural, Float, String, List, Dict, Set, and Map.', () => {
+		test.test('evaluates Boolean, Integer, Natural, Float, String, List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
 				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
 				[
+					TYPE.BOOL,
 					TYPE.INT,
 					TYPE.NAT,
 					TYPE.FLOAT,
@@ -210,6 +225,12 @@ test.suite('Call', () => {
 					new TYPE.Set(TYPE.INT, true),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
 				],
+			);
+		});
+		test.test('`Boolean.(‹…›)`', () => {
+			assertEqualTypes(
+				BOOL_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.BOOL, BOOL_CONS.length),
 			);
 		});
 		test.test('`Integer.(‹…›)`', () => {
@@ -344,6 +365,25 @@ test.suite('Call', () => {
 
 
 	test.suite('#build', () => {
+		test.test('`Boolean.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ BOOL_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOBOOL (NULL.CONST null)))
+					(DROP (TOBOOL (BOOL.CONST false)))
+					(DROP (TOBOOL (BOOL.CONST true)))
+					(DROP (TOBOOL (SYM.CONST @hello)))
+					(DROP (TOBOOL (INT.CONST 0)))
+					(DROP (TOBOOL (INT.CONST -42)))
+					(DROP (TOBOOL (NAT.CONST +0)))
+					(DROP (TOBOOL (NAT.CONST +42)))
+					(DROP (TOBOOL (FLOAT.CONST 0.0)))
+					(DROP (TOBOOL (FLOAT.CONST 4.2)))
+					(DROP (TOBOOL (STR.CONST "hello")))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('`Integer.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ INT_CONS.map((src) => `${ src };`).join('\n') }

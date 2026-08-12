@@ -340,23 +340,10 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('[operator=TOBOOL]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.TOBOOL,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					return assert.deepStrictEqual(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							...repeat(VALUE.FALSE, 2),
-							...repeat(VALUE.TRUE, 19),
-						],
-					);
+					assert.deepStrictEqual(interpret_calls('Boolean', operands), [
+						...repeat(VALUE.FALSE, 2),
+						...repeat(VALUE.TRUE, 19),
+					]);
 				});
 				test.test('[operator=TOINT]', () => {
 					assert.deepStrictEqual(interpret_calls('Integer', operands.slice(3, 10)), [
@@ -1512,6 +1499,18 @@ test.suite('Opcode', () => {
 						-(42);
 						-(4.2);
 
+						Boolean.(null);
+						Boolean.(false);
+						Boolean.(true);
+						Boolean.(@hello);
+						Boolean.(-0);
+						Boolean.(-42);
+						Boolean.(+0);
+						Boolean.(+42);
+						Boolean.(0.0);
+						Boolean.(4.2);
+						Boolean.("hello");
+
 						Integer.(+42);
 						Integer.(4.2);
 						Natural.(42);
@@ -1542,6 +1541,18 @@ test.suite('Opcode', () => {
 							cg.vm.op.negate(genConst(cg, 42n)),
 							cg.vm.op.negate(genConst(cg, 4.2)),
 
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, null))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, false))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, true))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, Symbol(id_hello.toString())))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -0n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -42n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 42n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0.0))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 4.2))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 'hello'))),
+
 							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toInt(genConst(cg, 4.2)),
 							cg.vm.op.toNat(genConst(cg, 42n)),
@@ -1549,9 +1560,9 @@ test.suite('Opcode', () => {
 							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toFloat(genConst(cg, 42n)),
 
-							cg.vm.Value.stringify(genConst(cg)),
-							cg.vm.Value.stringify(genConst(cg, 42n)),
-							cg.vm.Value.stringify(genConst(cg, 'hello')),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 42n))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 'hello'))),
 						],
 					);
 				});
