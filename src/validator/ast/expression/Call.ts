@@ -18,9 +18,9 @@ import {
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
-	ValidFunctionName,
-	type ValidGenericFunctionName,
-	check_valid_function_name,
+	IntrinsicName,
+	type CallableClassName,
+	validate_callable_class_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
@@ -51,8 +51,8 @@ export class Call extends Expression {
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `ValidFunctionName`)
-		check_valid_function_name(this.base.source);
+		// (`this.base.source` must be a `CallableClassName`)
+		validate_callable_class_name(this.base.source);
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
@@ -61,7 +61,7 @@ export class Call extends Expression {
 
 	public override typeCheck(): void {
 		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `ValidFunctionName`)
+		// (`this.base.source` must be a `CallableClassName`)
 		xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
@@ -77,7 +77,7 @@ export class Call extends Expression {
 		if (this.exprargs.some((arg) => arg.type().isBottomType)) {
 			return TYPE.NOTHING;
 		}
-		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;
 		const resolved_generic_args: TYPE.Type[]       = AST_TYPE.Call.checkGenericArgs(constructor_schema, this.typeargs, this);
 		try {
 			this.checkFunctionArgs(constructor_schema, resolved_generic_args);
@@ -88,8 +88,8 @@ export class Call extends Expression {
 				// FIXME: should report whole AggregateError
 				throw err.errors[0];
 			}
-			switch (this.base.source as ValidFunctionName) {
-				case ValidFunctionName.LIST: {
+			switch (this.base.source as CallableClassName) {
+				case IntrinsicName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:      Expression = this.exprargs[0];
@@ -108,7 +108,7 @@ export class Call extends Expression {
 					}
 					break;
 				}
-				case ValidFunctionName.DICT: {
+				case IntrinsicName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type  = this.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
@@ -135,7 +135,7 @@ export class Call extends Expression {
 					}
 					break;
 				}
-				case ValidFunctionName.SET: {
+				case IntrinsicName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:    Expression = this.exprargs[0];
@@ -154,7 +154,7 @@ export class Call extends Expression {
 					}
 					break;
 				}
-				case ValidFunctionName.MAP: {
+				case IntrinsicName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const anttype:   TYPE.Type  = this.typeargs[0].eval();
 					const contype:   TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
@@ -197,30 +197,30 @@ export class Call extends Expression {
 			);
 		}
 
-		const base_source = this.base.source as ValidFunctionName;
+		const base_source = this.base.source as CallableClassName;
 		switch (base_source) {
-			case ValidFunctionName.BOOLEAN:
-			case ValidFunctionName.INTEGER:
-			case ValidFunctionName.NATURAL:
-			case ValidFunctionName.FLOAT:
-			case ValidFunctionName.STRING: {
-				return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
-					[ValidFunctionName.BOOLEAN, OP.OpCode.BOOL_FROM],
-					[ValidFunctionName.INTEGER, OP.OpCode.INT_FROM],
-					[ValidFunctionName.NATURAL, OP.OpCode.NAT_FROM],
-					[ValidFunctionName.FLOAT,   OP.OpCode.FLOAT_FROM],
-					[ValidFunctionName.STRING,  OP.OpCode.STR_FROM],
+			case IntrinsicName.BOOLEAN:
+			case IntrinsicName.INTEGER:
+			case IntrinsicName.NATURAL:
+			case IntrinsicName.FLOAT:
+			case IntrinsicName.STRING: {
+				return new OP.Unop(new Map<IntrinsicName, OP.OpCodeUn>([
+					[IntrinsicName.BOOLEAN, OP.OpCode.BOOL_FROM],
+					[IntrinsicName.INTEGER, OP.OpCode.INT_FROM],
+					[IntrinsicName.NATURAL, OP.OpCode.NAT_FROM],
+					[IntrinsicName.FLOAT,   OP.OpCode.FLOAT_FROM],
+					[IntrinsicName.STRING,  OP.OpCode.STR_FROM],
 				]).get(base_source)!, this.exprargs[0].build(builder).asTac(builder), this.type());
 			}
-			case ValidFunctionName.LIST:
-			case ValidFunctionName.DICT:
-			case ValidFunctionName.SET:
-			case ValidFunctionName.MAP: {
-				const [name, ctor] = new Map<ValidGenericFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
-					[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
-					[ValidFunctionName.SET, [OP.TypeName.SET, () => new OP.CollectionLinearNew(OP.TypeName.SET, [], this.type())]],
-					[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew(new Map(), this.type())]],
-					[ValidFunctionName.MAP, [OP.TypeName.MAP, () => new OP.MapNew(new Map(), this.type())]],
+			case IntrinsicName.LIST:
+			case IntrinsicName.DICT:
+			case IntrinsicName.SET:
+			case IntrinsicName.MAP: {
+				const [name, ctor] = new Map<IntrinsicName, [OP.CollectionDynamicName, () => OP.Value]>([
+					[IntrinsicName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
+					[IntrinsicName.SET, [OP.TypeName.SET, () => new OP.CollectionLinearNew(OP.TypeName.SET, [], this.type())]],
+					[IntrinsicName.DICT, [OP.TypeName.DICT, () => new OP.DictNew(new Map(), this.type())]],
+					[IntrinsicName.MAP, [OP.TypeName.MAP, () => new OP.MapNew(new Map(), this.type())]],
 				]).get(base_source)!;
 				const new_obj: OP.Value = ctor();
 				if (!this.exprargs.length) {
@@ -230,8 +230,8 @@ export class Call extends Expression {
 				builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
 				return dest;
 			}
-			case ValidFunctionName.NONE:
-			case ValidFunctionName.SOME: {
+			case IntrinsicName.NONE:
+			case IntrinsicName.SOME: {
 				return new OP.MaybeNew(this.typeargs[0].eval(), this.exprargs[0]?.build(builder).asTac(builder));
 			}
 			default: {
@@ -248,7 +248,7 @@ export class Call extends Expression {
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
 		if (!constructor_schema.overloads.length) {
 			throw new TypeErrorNotCallable(
-				this.base.source === ValidFunctionName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) : this.base.type(),
+				this.base.source === IntrinsicName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) : this.base.type(),
 				this.base,
 			);
 		}

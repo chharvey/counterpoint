@@ -18,8 +18,8 @@ import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {EXPR} from '../index.ts';
 import {
-	type ValidGenericFunctionName,
-	check_valid_generic_function_name,
+	type CallableInterfaceName,
+	validate_callable_interface_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
@@ -90,8 +90,8 @@ export class Call extends Type {
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `ValidGenericFunctionName`)
-		check_valid_generic_function_name(this.base.source);
+		// (`this.base.source` must be a `CallableInterfaceName`)
+		validate_callable_interface_name(this.base.source);
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 
@@ -100,7 +100,7 @@ export class Call extends Type {
 		if (!(this.base instanceof TypeAlias)) {
 			throw new TypeErrorNotCallable(this.base.eval(), this.base);
 		}
-		const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as ValidGenericFunctionName)!;
+		const constructor_schema: ConstructorSchema = CLASS_API.get(this.base.source as CallableInterfaceName)!;
 		return constructor_schema.returnType(Call.checkGenericArgs(constructor_schema, this.args, this));
 	}
 }

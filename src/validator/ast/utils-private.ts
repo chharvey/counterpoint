@@ -43,16 +43,15 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 
 
-export enum ValidIntrinsicName {
-	OBJECT = 'Object',
-}
-
-export enum ValidFunctionName {
+/** Built-in class names. May be referenced as types or as constructors. */
+export enum IntrinsicName {
 	BOOLEAN = 'Boolean',
+	SYMBOL  = 'Symbol',
 	INTEGER = 'Integer',
 	NATURAL = 'Natural',
 	FLOAT   = 'Float',
 	STRING  = 'String',
+	OBJECT  = 'Object',
 	LIST    = 'List',
 	DICT    = 'Dict',
 	SET     = 'Set',
@@ -61,39 +60,68 @@ export enum ValidFunctionName {
 	NONE    = 'None',
 	SOME    = 'Some',
 }
-
-export type ValidGenericFunctionName = (
-	| ValidFunctionName.LIST
-	| ValidFunctionName.DICT
-	| ValidFunctionName.SET
-	| ValidFunctionName.MAP
-);
-
-const FUNCTION_NAMES: readonly string[] = Object.values(ValidFunctionName);
-
-const GENERIC_FUNCTION_NAMES: readonly string[] = [
-	ValidFunctionName.LIST,
-	ValidFunctionName.DICT,
-	ValidFunctionName.SET,
-	ValidFunctionName.MAP,
-	ValidFunctionName.MAYBE,
-	ValidFunctionName.NONE,
-	ValidFunctionName.SOME,
-];
-
-export function is_valid_intrinsic_name(source: string): source is ValidIntrinsicName {
-	return Object.values<string>(ValidIntrinsicName).includes(source);
-}
-
-export function check_valid_function_name(source: string): asserts source is ValidFunctionName {
-	if (!FUNCTION_NAMES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ FUNCTION_NAMES.join(' | ') }\`.`);
+export const INTRINSICS: readonly string[] = Object.values<string>(IntrinsicName);
+export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
+	if (!INTRINSICS.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ INTRINSICS.join(' | ') }\`.`);
 	}
 }
 
-export function check_valid_generic_function_name(source: string): asserts source is ValidGenericFunctionName {
-	if (!GENERIC_FUNCTION_NAMES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ GENERIC_FUNCTION_NAMES.join(' | ') }\`.`);
+/** Callable type interfaces that have generic parameters. */
+export type CallableInterfaceName = (
+	| IntrinsicName.LIST
+	| IntrinsicName.DICT
+	| IntrinsicName.SET
+	| IntrinsicName.MAP
+	| IntrinsicName.MAYBE
+	| IntrinsicName.NONE
+	| IntrinsicName.SOME
+);
+const CALLABLE_INTERFACES: readonly string[] = [
+	IntrinsicName.LIST,
+	IntrinsicName.DICT,
+	IntrinsicName.SET,
+	IntrinsicName.MAP,
+	IntrinsicName.MAYBE,
+	IntrinsicName.NONE,
+	IntrinsicName.SOME,
+];
+export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
+	if (!CALLABLE_INTERFACES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ CALLABLE_INTERFACES.join(' | ') }\`.`);
+	}
+}
+
+/** Callable classes that have value parameters. */
+export type CallableClassName = (
+	| IntrinsicName.BOOLEAN
+	| IntrinsicName.INTEGER
+	| IntrinsicName.NATURAL
+	| IntrinsicName.FLOAT
+	| IntrinsicName.STRING
+	| IntrinsicName.LIST
+	| IntrinsicName.DICT
+	| IntrinsicName.SET
+	| IntrinsicName.MAP
+	| IntrinsicName.NONE
+	| IntrinsicName.SOME
+);
+const CALLABLE_CLASSES: readonly string[] = [
+	IntrinsicName.BOOLEAN,
+	IntrinsicName.INTEGER,
+	IntrinsicName.NATURAL,
+	IntrinsicName.FLOAT,
+	IntrinsicName.STRING,
+	IntrinsicName.LIST,
+	IntrinsicName.DICT,
+	IntrinsicName.SET,
+	IntrinsicName.MAP,
+	IntrinsicName.NONE,
+	IntrinsicName.SOME,
+];
+export function validate_callable_class_name(source: string): asserts source is CallableClassName {
+	if (!CALLABLE_CLASSES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ CALLABLE_CLASSES.join(' | ') }\`.`);
 	}
 }
 
@@ -214,33 +242,33 @@ export type ConstructorSchema = {
  * }
  * ```
  */
-export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
-	[ValidFunctionName.BOOLEAN, {
+export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
+	[IntrinsicName.BOOLEAN, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
 		returnType:    () => TYPE.BOOL,
 	}],
-	[ValidFunctionName.INTEGER, {
+	[IntrinsicName.INTEGER, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.INT,
 	}],
-	[ValidFunctionName.NATURAL, {
+	[IntrinsicName.NATURAL, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.NAT,
 	}],
-	[ValidFunctionName.FLOAT, {
+	[IntrinsicName.FLOAT, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.FLOAT,
 	}],
-	[ValidFunctionName.STRING, {
+	[IntrinsicName.STRING, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
 		returnType:    () => TYPE.STR,
 	}],
-	[ValidFunctionName.LIST, {
+	[IntrinsicName.LIST, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
@@ -249,7 +277,7 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		],
 		returnType: (generic_params) => new TYPE.List(generic_params[0]),
 	}],
-	[ValidFunctionName.DICT, {
+	[IntrinsicName.DICT, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
@@ -260,7 +288,7 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		],
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
-	[ValidFunctionName.SET, {
+	[IntrinsicName.SET, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
@@ -269,7 +297,7 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		],
 		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
 	}],
-	[ValidFunctionName.MAP, {
+	[IntrinsicName.MAP, {
 		genericParams: [
 			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
 			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
@@ -282,17 +310,17 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
-	[ValidFunctionName.MAYBE, {
+	[IntrinsicName.MAYBE, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [],
 		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]),
 	}],
-	[ValidFunctionName.NONE, {
+	[IntrinsicName.NONE, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [[]],
 		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
 	}],
-	[ValidFunctionName.SOME, {
+	[IntrinsicName.SOME, {
 		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
 		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
 		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),

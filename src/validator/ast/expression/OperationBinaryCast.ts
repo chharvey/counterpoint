@@ -16,10 +16,7 @@ import {
 	Operator,
 	type ValidOperatorCast,
 } from '../../Operator.ts';
-import {
-	is_valid_intrinsic_name,
-	check_valid_function_name,
-} from '../utils-private.ts';
+import {validate_intrinsic_name} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -44,11 +41,9 @@ export class OperationBinaryCast extends OperationBinary {
 	public override varCheck(): void {
 		if (this.operator === Operator.IS) {
 			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
-			// (`this.operand1.source` must be a `ValidFunctionName`)
+			// (`this.operand1.source` must be an `IntrinsicName`)
 			this.operand0.varCheck();
-			return is_valid_intrinsic_name(this.operand1.source)
-				? undefined
-				: check_valid_function_name(this.operand1.source);
+			validate_intrinsic_name(this.operand1.source);
 		} else {
 			return super.varCheck();
 		}
@@ -57,7 +52,7 @@ export class OperationBinaryCast extends OperationBinary {
 	public override typeCheck(): void {
 		if (this.operator === Operator.IS) {
 			// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-			// (`this.operand1.source` must be a `ValidFunctionName`)
+			// (`this.operand1.source` must be an `IntrinsicName`)
 			this.operand0.typeCheck();
 			this.type(); // assert does not throw
 		} else {
@@ -73,7 +68,7 @@ export class OperationBinaryCast extends OperationBinary {
 		}
 		if (this.operator === Operator.IS) {
 			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
-			// (`this.operand1.source` must be a `ValidFunctionName`)
+			// (`this.operand1.source` must be an `IntrinsicName`)
 			return TYPE.BOOL;
 		} else {
 			return this.type_do(t0, this.operand1.type());
