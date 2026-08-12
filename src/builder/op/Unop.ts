@@ -101,7 +101,7 @@ export class Unop extends Value {
 			case OpCode.INT_FROM:   { return (operand as VALUE.Number).toInt(); }
 			case OpCode.NAT_FROM:   { return (operand as VALUE.Number).toNat(); }
 			case OpCode.FLOAT_FROM: { return (operand as VALUE.Number).toFloat(); }
-			case OpCode.STR_FROM:   { return (operand as VALUE.Number).toCplString(); }
+			case OpCode.STR_FROM:   { return operand.toCplString(); }
 
 			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
 			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }
@@ -128,7 +128,7 @@ export class Unop extends Value {
 			case OpCode.INT_FROM:   { return op.toInt(code); }
 			case OpCode.NAT_FROM:   { return op.toNat(code); }
 			case OpCode.FLOAT_FROM: { return op.toFloat(code); }
-			case OpCode.STR_FROM:   { return VmValue.stringify(code); }
+			case OpCode.STR_FROM:   { return VmValue.newComposite(VmValue.stringify(code)); }
 
 			case OpCode.NOT: { return op.not(code); }
 			case OpCode.EMP: { return op.isEmpty(code); }

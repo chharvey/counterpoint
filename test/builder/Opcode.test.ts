@@ -296,30 +296,22 @@ test.suite('Opcode', () => {
 				}
 				test.suite('[operator=MAYBE_UNWRAP]', () => {
 					test.test('throws when operand is a None.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						builder.pushInstruction(new OP.Drop(new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR).asTac(builder),
-							TYPE.STR,
-						)));
+						const {builder} = setupScript(`{
+							val mut x?: str;
+							x~?;
+						}`, {codegen: false});
+						const interp = new Interpreter();
 						return assert.throws(() => builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
 							: instr.interpret(interp)
 						)), /Unwrapped a None value/);
 					});
 					test.test('returns the value when operand is a Some.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						builder.pushInstruction(new OP.Drop(new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))).asTac(builder),
-							TYPE.STR,
-						)));
-						return assert.ok(builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).find((value) => !!value)!.identical(new VALUE.String('hello')));
+						assert_equal_values(interpret_extracted_drops(`{
+							val mut y?: str;
+							set y = "hello";
+							y~?;
+						}`), [new VALUE.String('hello')]);
 					});
 				});
 				test.test('[operator=ISNULL]', () => {
@@ -411,26 +403,13 @@ test.suite('Opcode', () => {
 						new VALUE.Float(-4.2e+1),
 					]);
 				});
-				test.test('[operator=BOOL.FROM]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.BOOL_FROM,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					return assert_equal_values(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							...repeat(VALUE.FALSE, 2),
-							...repeat(VALUE.TRUE, 19),
-						],
-					);
+				test.test('[operator=BOOL_FROM]', () => {
+					assert_equal_values(interpret_calls('Boolean', operands), [
+						...repeat(VALUE.FALSE, 2),
+						...repeat(VALUE.TRUE, 19),
+					]);
 				});
-				test.test('[operator=INT.FROM]', () => {
+				test.test('[operator=INT_FROM]', () => {
 					assert_equal_values(interpret_calls('Integer', operands.slice(3, 10)), [
 						VALUE.INT_0,
 						new VALUE.Integer(42n),
@@ -441,7 +420,7 @@ test.suite('Opcode', () => {
 						new VALUE.Integer(42n),
 					]);
 				});
-				test.test('[operator=NAT.FROM]', () => {
+				test.test('[operator=NAT_FROM]', () => {
 					assert_equal_values(interpret_calls('Natural', operands.slice(3, 10)), [
 						VALUE.NAT_0,
 						new VALUE.Natural(42n),
@@ -452,7 +431,7 @@ test.suite('Opcode', () => {
 						new VALUE.Natural(42n),
 					]);
 				});
-				test.test('[operator=FLOAT.FROM]', () => {
+				test.test('[operator=FLOAT_FROM]', () => {
 					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
 						VALUE.FLOAT_0,
 						new VALUE.Float(42.0),
@@ -1521,6 +1500,18 @@ test.suite('Opcode', () => {
 				});
 				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
+						Boolean.(null);
+						Boolean.(false);
+						Boolean.(true);
+						Boolean.(@hello);
+						Boolean.(-0);
+						Boolean.(-42);
+						Boolean.(+0);
+						Boolean.(+42);
+						Boolean.(0.0);
+						Boolean.(4.2);
+						Boolean.("hello");
+
 						Integer.(+42);
 						Integer.(4.2);
 						Natural.(42);
@@ -1551,6 +1542,18 @@ test.suite('Opcode', () => {
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, null))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, false))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, true))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, Symbol(id_hello.toString())))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -0n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -42n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 42n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0.0))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 4.2))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 'hello'))),
+
 							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toInt(genConst(cg, 4.2)),
 							cg.vm.op.toNat(genConst(cg, 42n)),
@@ -1558,9 +1561,9 @@ test.suite('Opcode', () => {
 							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
 							cg.vm.op.toFloat(genConst(cg, 42n)),
 
-							cg.vm.Value.stringify(genConst(cg)),
-							cg.vm.Value.stringify(genConst(cg, 42n)),
-							cg.vm.Value.stringify(genConst(cg, 'hello')),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 42n))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 'hello'))),
 
 							cg.vm.op.not(genConst(cg)),
 							cg.vm.op.not(genConst(cg, false)),
@@ -1656,29 +1659,19 @@ test.suite('Opcode', () => {
 					);
 				});
 				test.test('MAYBE.UNWRAP', () => {
-					const builder = new Builder();
-					const cg      = new CodeGenerator();
-					const {vm, mod: {wasm}} = cg;
-					[
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR).asTac(builder),
-							TYPE.STR,
-						),
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.INT, new OP.Const(new VALUE.Integer(42n))).asTac(builder),
-							TYPE.INT,
-						),
-					].forEach((irval) => builder.pushInstruction(new OP.Drop(irval)));
-					builder.terminateBlock(new OP.EndProgram());
-					builder.validate();
-					builder.codegen(cg);
+					const {builder, cg, wasm} = setupScript(`{
+						val mut x?: str;
+						val mut y?: int;
+						set y = 42;
+						x~?;
+						y~?;
+					}`);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
-						wasm.local.set(0, vm.Value.newComposite(cg.codegenMaybe())),
-						wasm.local.set(1, vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(0, vm.reftype.Value))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(1, vm.reftype.Value))),
+						wasm.local.set(0, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(0, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
 					]);
 				});
 			});

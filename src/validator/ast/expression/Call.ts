@@ -199,11 +199,13 @@ export class Call extends Expression {
 
 		const base_source = this.base.source as ValidFunctionName;
 		switch (base_source) {
+			case ValidFunctionName.BOOLEAN:
 			case ValidFunctionName.INTEGER:
 			case ValidFunctionName.NATURAL:
 			case ValidFunctionName.FLOAT:
 			case ValidFunctionName.STRING: {
 				return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
+					[ValidFunctionName.BOOLEAN, OP.OpCode.BOOL_FROM],
 					[ValidFunctionName.INTEGER, OP.OpCode.INT_FROM],
 					[ValidFunctionName.NATURAL, OP.OpCode.NAT_FROM],
 					[ValidFunctionName.FLOAT,   OP.OpCode.FLOAT_FROM],
