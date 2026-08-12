@@ -912,24 +912,16 @@ test.suite('Type', () => {
 			[
 				...builtin_types,
 				...examples,
-			].forEach((t) => {
-				assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`);
-			});
+			].forEach((t) => assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`));
 		});
 		test.test('constant mutable types are equal to their immutable counterparts.', () => {
-			builtin_types.forEach((t) => {
-				assert.ok(t.mutableOf().equals(t), `mut ${ t } == ${ t }`);
-			});
+			builtin_types.forEach((t) => assert.ok(t.mutableOf().equals(t), `mut ${ t } == ${ t }`));
 		});
 		test.test('non-constant mutable types are not equal to their immutable counterparts.', () => {
-			examples.forEach((t) => {
-				assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`);
-			});
+			examples.forEach((t) => assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`));
 		});
 		test.test('non-constant immutable types are not subtypes of their mutable counterparts.', () => {
-			examples.forEach((t) => {
-				assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`);
-			});
+			examples.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`));
 		});
 		test.suite('disributes over binary operations.', () => {
 			const types: TYPE.Type[] = [

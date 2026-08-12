@@ -218,9 +218,9 @@ Codegen((EMP `v`)) := (call $op:is-empty `Codegen(v)`);
 Codegen((NEG `v`)) := (call $op:negate   `Codegen(v)`);
 
 Codegen((TOBOOL  `v`)) := (call $op:not (call $op:not `Codegen(v)`));
-Codegen((TOINT   `v`)) := (call $op:to-int       `Codegen(v)`);
-Codegen((TONAT   `v`)) := (call $op:to-nat       `Codegen(v)`);
-Codegen((TOFLOAT `v`)) := (call $op:to-float     `Codegen(v)`);
+Codegen((TOINT   `v`)) := (call $op:to-int   `Codegen(v)`);
+Codegen((TONAT   `v`)) := (call $op:to-nat   `Codegen(v)`);
+Codegen((TOFLOAT `v`)) := (call $op:to-float `Codegen(v)`);
 Codegen((TOSTR   `v`)) := (call $Value.new-composite (call $Value.stringify `Codegen(v)`));
 
 Codegen((LIST.COUNT `obj`)) := (call $Value.new-primitive
