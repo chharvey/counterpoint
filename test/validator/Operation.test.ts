@@ -103,11 +103,13 @@ test.suite('Operation', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
-						n is Object;
+						n is Boolean;
+						n is Symbol;
 						n is Integer;
 						n is Natural;
 						n is Float;
 						n is String;
+						n is Object;
 						n is List;
 						n is Dict;
 						n is Set;
@@ -116,7 +118,7 @@ test.suite('Operation', () => {
 						n is None;
 						n is Some;
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 12),
+					repeat(TYPE.BOOL, 14),
 				);
 			});
 		});
@@ -334,6 +336,43 @@ test.suite('Operation', () => {
 				"block-3":
 					(DECL <anything> z (GET $1))
 					(DROP (NEG (GET z)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+
+		test.test('OperationBinaryCast', () => {
+			assert.strictEqual(setupScript(`{
+				val n: null = null;
+				n is Boolean;
+				n is Symbol;
+				n is Integer;
+				n is Natural;
+				n is Float;
+				n is String;
+				% n is Object; % FIXME: support
+				n is List;
+				n is Dict;
+				n is Set;
+				n is Map;
+				n is Maybe;
+				n is None;
+				n is Some;
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DECL <null> n (NULL.CONST null))
+					(DROP (INSTANCEOF BOOLEAN (GET n)))
+					(DROP (INSTANCEOF SYMBOL (GET n)))
+					(DROP (INSTANCEOF INTEGER (GET n)))
+					(DROP (INSTANCEOF NATURAL (GET n)))
+					(DROP (INSTANCEOF FLOAT (GET n)))
+					(DROP (INSTANCEOF STRING (GET n)))
+					(DROP (INSTANCEOF LIST (GET n)))
+					(DROP (INSTANCEOF DICT (GET n)))
+					(DROP (INSTANCEOF SET (GET n)))
+					(DROP (INSTANCEOF MAP (GET n)))
+					(DROP (INSTANCEOF MAYBE (GET n)))
+					(DROP (INSTANCEOF NONE (GET n)))
+					(DROP (INSTANCEOF SOME (GET n)))
 					(ENDPROGRAM)
 			`.trim());
 		});

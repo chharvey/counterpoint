@@ -1,5 +1,5 @@
-import type {
-	Builder,
+import {
+	type Builder,
 	OP,
 } from '../../../index.ts';
 import {
@@ -16,7 +16,10 @@ import {
 	Operator,
 	type ValidOperatorCast,
 } from '../../Operator.ts';
-import {validate_intrinsic_name} from '../utils-private.ts';
+import {
+	IntrinsicName,
+	validate_intrinsic_name,
+} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -80,7 +83,28 @@ export class OperationBinaryCast extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(_: Builder): OP.Value {
+	public override build(builder: Builder): OP.Value {
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be an `IntrinsicName`)
+			const op1_source = this.operand1.source as IntrinsicName;
+			return new OP.InstanceOf(new Map<IntrinsicName, OP.InstanceOfName>([
+				[IntrinsicName.BOOLEAN, OP.InstanceOfName.BOOLEAN],
+				[IntrinsicName.SYMBOL,  OP.InstanceOfName.SYMBOL],
+				[IntrinsicName.INTEGER, OP.InstanceOfName.INTEGER],
+				[IntrinsicName.NATURAL, OP.InstanceOfName.NATURAL],
+				[IntrinsicName.FLOAT,   OP.InstanceOfName.FLOAT],
+				[IntrinsicName.STRING,  OP.InstanceOfName.STRING],
+				// [IntrinsicName.OBJECT,  OP.InstanceOfName.OBJECT], // FIXME: support
+				[IntrinsicName.LIST,    OP.InstanceOfName.LIST],
+				[IntrinsicName.DICT,    OP.InstanceOfName.DICT],
+				[IntrinsicName.SET,     OP.InstanceOfName.SET],
+				[IntrinsicName.MAP,     OP.InstanceOfName.MAP],
+				[IntrinsicName.MAYBE,   OP.InstanceOfName.MAYBE],
+				[IntrinsicName.NONE,    OP.InstanceOfName.NONE],
+				[IntrinsicName.SOME,    OP.InstanceOfName.SOME],
+			]).get(op1_source)!, this.operand0.build(builder).asTac(builder));
+		}
 		throw new Error('`OperationBinaryCast#build` not yet supported.');
 	}
 }
