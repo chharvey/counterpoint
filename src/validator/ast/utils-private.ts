@@ -45,6 +45,7 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 /** Built-in class names. May be referenced as types or as constructors. */
 export enum IntrinsicName {
+	NULL    = 'Null',
 	BOOLEAN = 'Boolean',
 	SYMBOL  = 'Symbol',
 	INTEGER = 'Integer',

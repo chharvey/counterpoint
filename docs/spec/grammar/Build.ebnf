@@ -250,8 +250,23 @@ Build(SemanticExpressionOperation[operator=GT][0: Number][1: Number] op) := (GT 
 Build(SemanticExpressionOperation[operator=LE][0: Number][1: Number] op) := (LE  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE  [`Build(op.0)` `Build(op.1)`]);
 
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Null")
+	:= (ID `Build(SemanticExpression)` (NULL.CONST null));
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean") := [
+	(DECL <bool> $left (ID `Build(SemanticExpression)` (BOOL.CONST false)))
+	(DECL <bool> $result)
+	(GOTO.IF (GET $left) "then" "else")
+	"then":
+	(SET $result (GET $left))
+	(GOTO "endif")
+	"else":
+	(SET $result (ID `Build(SemanticExpression)` (BOOL.CONST true)))
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
 Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`)
+	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
 
 Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);

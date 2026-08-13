@@ -297,7 +297,6 @@ test.suite('Opcode', () => {
 						)).filter((value) => !!value);
 					});
 					[
-						OP.InstanceOfName.BOOLEAN,
 						OP.InstanceOfName.SYMBOL,
 						OP.InstanceOfName.INTEGER,
 						OP.InstanceOfName.NATURAL,
@@ -322,7 +321,6 @@ test.suite('Opcode', () => {
 									: instr.interpret(interp)
 								)).filter((value) => !!value),
 								expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof [
-									VALUE.Boolean,
 									VALUE.Symbol,
 									VALUE.Integer,
 									VALUE.Natural,
@@ -1603,16 +1601,6 @@ test.suite('Opcode', () => {
 						actual:  irvalue.codegen(cg),
 					};
 				}
-				test.test('BOOLEAN', () => {
-					const {wasm, vm, operand, actual} = common('Boolean');
-					return assertEqualBins(actual, vm.Value.boolFromI32(wasm.i32.and(
-						vm.Value.isPrimitive(operand),
-						wasm.i32.or(
-							vm.Vect.isConst(vm.Value.field(operand).primitive, false),
-							vm.Vect.isConst(vm.Value.field(operand).primitive, true),
-						),
-					)));
-				});
 				test.test('SYMBOL', {expectFailure: true}, () => {
 					const {wasm, vm, operand, actual} = common('Symbol');
 					return assertEqualBins(actual, vm.Value.boolFromI32(wasm.i32.and(

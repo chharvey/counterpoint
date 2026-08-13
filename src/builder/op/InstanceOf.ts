@@ -18,7 +18,6 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** An enum of allowed class names. */
 export enum InstanceOfName {
-	BOOLEAN,
 	SYMBOL,
 	INTEGER,
 	NATURAL,
@@ -56,7 +55,6 @@ export class InstanceOf extends Value {
 	public override interpret(interp: Interpreter): VALUE.Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		switch (this.name) {
-			case InstanceOfName.BOOLEAN: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Boolean); }
 			case InstanceOfName.SYMBOL:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Symbol); }
 			case InstanceOfName.INTEGER: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Integer); }
 			case InstanceOfName.NATURAL: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Natural); }
@@ -76,16 +74,9 @@ export class InstanceOf extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {reftype, op, Vect}, mod: {wasm}} = cg;
+		const {vm: {reftype, op, Vect}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.name) {
-			case InstanceOfName.BOOLEAN: {
-				return this.#instanceOfPrimitive(cg, code, (vect) => wasm.i32.or(
-					Vect.isConst(vect, false),
-					Vect.isConst(vect, true),
-				));
-			}
-
 			case InstanceOfName.INTEGER: { return this.#instanceOfPrimitive(cg, code, Vect.isInt.bind(Vect)); }
 			case InstanceOfName.NATURAL: { return this.#instanceOfPrimitive(cg, code, Vect.isNat.bind(Vect)); }
 			case InstanceOfName.FLOAT:   { return this.#instanceOfPrimitive(cg, code, Vect.isFloat.bind(Vect)); }

@@ -340,41 +340,68 @@ test.suite('Operation', () => {
 			`.trim());
 		});
 
-		test.test('OperationBinaryCast', () => {
-			assert.strictEqual(setupScript(`{
-				val n: null = null;
-				n is Boolean;
-				n is Symbol;
-				n is Integer;
-				n is Natural;
-				n is Float;
-				n is String;
-				% n is Object; % FIXME: support
-				n is List;
-				n is Dict;
-				n is Set;
-				n is Map;
-				n is Maybe;
-				n is None;
-				n is Some;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <null> n (NULL.CONST null))
-					(DROP (INSTANCEOF BOOLEAN (GET n)))
-					(DROP (INSTANCEOF SYMBOL (GET n)))
-					(DROP (INSTANCEOF INTEGER (GET n)))
-					(DROP (INSTANCEOF NATURAL (GET n)))
-					(DROP (INSTANCEOF FLOAT (GET n)))
-					(DROP (INSTANCEOF STRING (GET n)))
-					(DROP (INSTANCEOF LIST (GET n)))
-					(DROP (INSTANCEOF DICT (GET n)))
-					(DROP (INSTANCEOF SET (GET n)))
-					(DROP (INSTANCEOF MAP (GET n)))
-					(DROP (INSTANCEOF MAYBE (GET n)))
-					(DROP (INSTANCEOF NONE (GET n)))
-					(DROP (INSTANCEOF SOME (GET n)))
-					(ENDPROGRAM)
-			`.trim());
+		test.suite('OperationBinaryCast', () => {
+			test.test('"Null"', () => {
+				assert.strictEqual(setupScript(`{
+					42 is Null;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DROP (ID (INT.CONST 42) (NULL.CONST null)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('"Boolean"', () => {
+				assert.strictEqual(setupScript(`{
+					42 is Boolean;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <bool> $0)
+						(GOTO.IF (ID (INT.CONST 42) (BOOL.CONST false)) "block-1" "block-2")
+					"block-1":
+						(SET $0 (ID (INT.CONST 42) (BOOL.CONST false)))
+						(GOTO "block-3")
+					"block-2":
+						(SET $0 (ID (INT.CONST 42) (BOOL.CONST true)))
+						(GOTO "block-3")
+					"block-3":
+						(DROP (GET $0))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
+				assert.strictEqual(setupScript(`{
+					val n: null = null;
+					n is Symbol;
+					n is Integer;
+					n is Natural;
+					n is Float;
+					n is String;
+					% n is Object; % FIXME: support
+					n is List;
+					n is Dict;
+					n is Set;
+					n is Map;
+					n is Maybe;
+					n is None;
+					n is Some;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <null> n (NULL.CONST null))
+						(DROP (INSTANCEOF SYMBOL (GET n)))
+						(DROP (INSTANCEOF INTEGER (GET n)))
+						(DROP (INSTANCEOF NATURAL (GET n)))
+						(DROP (INSTANCEOF FLOAT (GET n)))
+						(DROP (INSTANCEOF STRING (GET n)))
+						(DROP (INSTANCEOF LIST (GET n)))
+						(DROP (INSTANCEOF DICT (GET n)))
+						(DROP (INSTANCEOF SET (GET n)))
+						(DROP (INSTANCEOF MAP (GET n)))
+						(DROP (INSTANCEOF MAYBE (GET n)))
+						(DROP (INSTANCEOF NONE (GET n)))
+						(DROP (INSTANCEOF SOME (GET n)))
+						(ENDPROGRAM)
+				`.trim());
+			});
 		});
 
 		test.test('OperationBinaryArithmetic', () => {

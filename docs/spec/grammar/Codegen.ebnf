@@ -192,13 +192,6 @@ Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
 Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
 Codegen((ISNONE `v`)) := (call $op:is-none `Codegen(v)`);
 
-Codegen((INSTANCEOF "Boolean" `v`)) := (call $Value.bool-from-i32 (i32.and
-	(call $Value.is-primitive `Codegen(v)`)
-	(i32.or
-		(call $Vect.is-false (struct.get $Value $primitive `Codegen(v)`))
-		(call $Vect.is-true  (struct.get $Value $primitive `Codegen(v)`))
-	)
-));
 Codegen((INSTANCEOF "Symbol" `v`)) :=; // TODO:
 Codegen((INSTANCEOF "Integer" `v`)) := (call $Value.bool-from-i32 (i32.and
 	(call $Value.is-primitive `Codegen(v)`)

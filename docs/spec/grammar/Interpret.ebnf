@@ -191,7 +191,6 @@ Boolean! Interpret((ISNONE `v`)) :=
 Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* any of the following conditions is `true`:
-		- `src` is "Boolean" *and* `v` is an instance of `Boolean`
 		- `src` is "Symbol"  *and* `v` is an instance of `Symbol`
 		- `src` is "Integer" *and* `v` is an instance of `Integer`
 		- `src` is "Natural" *and* `v` is an instance of `Natural`

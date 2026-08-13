@@ -29,6 +29,7 @@ test.suite('Validator', () => {
 		};
 		test.test('assigns intrinsic ids an index.', () => {
 			const intrinsics = [
+				'Null',
 				'Boolean',
 				'Symbol',
 				'Integer',

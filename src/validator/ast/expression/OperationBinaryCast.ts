@@ -10,7 +10,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
@@ -88,8 +91,23 @@ export class OperationBinaryCast extends OperationBinary {
 			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
 			// (`this.operand1.source` must be an `IntrinsicName`)
 			const op1_source = this.operand1.source as IntrinsicName;
+			const op0: OP.ValueTac = this.operand0.build(builder).asTac(builder);
+			switch (op1_source) {
+				case IntrinsicName.NULL: {
+					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);
+				}
+				case IntrinsicName.BOOLEAN: {
+					const left = new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.FALSE), TYPE.BOOL);
+					return OP.conditional_expression(
+						builder,
+						TYPE.BOOL,
+						() => left,
+						() => left,
+						() => new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.TRUE), TYPE.BOOL),
+					);
+				}
+			}
 			return new OP.InstanceOf(new Map<IntrinsicName, OP.InstanceOfName>([
-				[IntrinsicName.BOOLEAN, OP.InstanceOfName.BOOLEAN],
 				[IntrinsicName.SYMBOL,  OP.InstanceOfName.SYMBOL],
 				[IntrinsicName.INTEGER, OP.InstanceOfName.INTEGER],
 				[IntrinsicName.NATURAL, OP.InstanceOfName.NATURAL],
@@ -103,7 +121,7 @@ export class OperationBinaryCast extends OperationBinary {
 				[IntrinsicName.MAYBE,   OP.InstanceOfName.MAYBE],
 				[IntrinsicName.NONE,    OP.InstanceOfName.NONE],
 				[IntrinsicName.SOME,    OP.InstanceOfName.SOME],
-			]).get(op1_source)!, this.operand0.build(builder).asTac(builder));
+			]).get(op1_source)!, op0);
 		}
 		throw new Error('`OperationBinaryCast#build` not yet supported.');
 	}
