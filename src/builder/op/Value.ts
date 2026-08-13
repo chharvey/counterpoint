@@ -35,6 +35,7 @@ import {
  * - CollectionDynamicGet
  * - Call
  * - Isset
+ * - InstanceOf
  * - Unop
  * - Binop
  * - Phi

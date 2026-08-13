@@ -422,6 +422,19 @@ test.suite('Statement', () => {
 					});
 					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
+				test.test('None/Some assignable to Maybe, but not to each other.', () => {
+					setupScript(`{
+						val a: Maybe.<int> = None.<int>();
+						val b: Maybe.<int> = Some.<int>(42);
+					}`, {build: false}); // assert does not throw
+					const {stmts} = setupScript(`{
+						val c: Maybe.<float> = None.<int>();
+						val d: Maybe.<float> = Some.<int>(42);
+						val e: Some.<int> = None.<int>();
+						val f: None.<int> = Some.<int>(42);
+					}`, {typeCheck: false});
+					return stmts.forEach((stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+				});
 			});
 			test.suite('for property reassignment.', () => {
 				test.test('allows assignment directly on objects.', () => {

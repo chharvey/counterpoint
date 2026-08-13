@@ -780,7 +780,7 @@ test.suite('Access', () => {
 				const result_name: string = `$${ result_n }`;
 				return xjs.String.dedent`
 					${ '\t' }(DECL <Maybe> ${ result_name })
-					${ '\t' }(GOTO.IF (ISNONE (GET ${ base_name })) "${ block_then }" "${ block_else }")
+					${ '\t' }(GOTO.IF (INSTANCEOF NONE (GET ${ base_name })) "${ block_then }" "${ block_else }")
 					"${ block_then }":
 						(SET ${ result_name } ${ op_maybe_string() })
 						(GOTO "${ block_endif }")
@@ -932,7 +932,7 @@ test.suite('Access', () => {
 					maybe_access_output(10, 'my_dict', 11, (result_setter) => xjs.String.dedent`
 						${ '\t' }(DECL <Dict> $12 ${ op_maybe_unwrap_string('(GET my_dict)') })
 						${ '\t' }(DECL <sym> $13)
-						${ '\t' }(GOTO.IF (TOBOOL (SYM.CONST @b)) "block-13" "block-14")
+						${ '\t' }(GOTO.IF (BOOL.FROM (SYM.CONST @b)) "block-13" "block-14")
 						"block-13":
 							(SET $13 (SYM.CONST @a))
 							(GOTO "block-15")

@@ -14,10 +14,7 @@ import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from './utils-private.ts';
-import {
-	ValidIntrinsicName,
-	ValidFunctionName,
-} from './ast/utils-private.ts';
+import {INTRINSICS} from './ast/utils-private.ts';
 
 
 
@@ -206,19 +203,6 @@ function tokenWorthString(text: string): CodeUnit[] {
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
-	/** A bank of unique intrinsic identifier names. */
-	private static readonly INTRINSICS: ReadonlySet<string> = new Set<string>([
-		ValidIntrinsicName.OBJECT,
-		ValidFunctionName.INTEGER,
-		ValidFunctionName.NATURAL,
-		ValidFunctionName.FLOAT,
-		ValidFunctionName.STRING,
-		ValidFunctionName.LIST,
-		ValidFunctionName.DICT,
-		ValidFunctionName.SET,
-		ValidFunctionName.MAP,
-	]);
-
 	/** The minimum allowed cooked value of a reserved keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
@@ -257,8 +241,8 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
-		if (Validator.INTRINSICS.has(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt([...Validator.INTRINSICS].indexOf(source));
+		if (INTRINSICS.includes(source)) {
+			return Validator.MIN_VALUE_INTRINSIC + BigInt(INTRINSICS.indexOf(source));
 		}
 		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}

@@ -53,8 +53,8 @@ MAYBE.UNWRAP([Value]) -> Value;
 CALL([Value*]) -> Value;
 
 ISSET (SymbolSchemaVar|native-string) -> Boolean;
-ISNULL([Value])                       -> Boolean;
-ISNONE([Value])                       -> Boolean;
+
+INSTANCEOF(native-enum [Value]) -> Boolean;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
@@ -63,10 +63,11 @@ NEG([Natural]) -> Natural;
 NEG([Float])   -> Float;
 NEG([Number])  -> Number;
 
-TOINT([Number])   -> Integer;
-TONAT([Number])   -> Natural;
-TOFLOAT([Number]) -> Float;
-TOSTR([Value])    -> String;
+BOOL.FROM([Value])   -> Boolean;
+INT.FROM([Number])   -> Integer;
+NAT.FROM([Number])   -> Natural;
+FLOAT.FROM([Number]) -> Float;
+STR.FROM([Value])    -> String;
 
 LIST.COUNT([Value]) -> Natural;
 DICT.COUNT([Value]) -> Natural;
@@ -164,7 +165,7 @@ Build(SemanticExpressionBlock blex) := [
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $base `Build(access.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (ISNONE (GET $base)) "then" "else")
+	(GOTO.IF (INSTANCEOF "None" (GET $base)) "then" "else")
 	"then":
 	(SET $result (MAYBE.NEW))
 	(GOTO "endif")
@@ -175,16 +176,17 @@ Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	return (GET $result).
 ];
 
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Boolean"):has(SemanticExpression*) call) := (TOBOOL  `Build(call.SemanticExpression*.0)`);
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Integer"):has(SemanticExpression*) call) := (TOINT   `Build(call.SemanticExpression*.0)`);
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Natural"):has(SemanticExpression*) call) := (TONAT   `Build(call.SemanticExpression*.0)`);
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Float")  :has(SemanticExpression*) call) := (TOFLOAT `Build(call.SemanticExpression*.0)`);
-Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "String") :has(SemanticExpression*) call) := (TOSTR   `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Boolean"):has(SemanticExpression*) call) := (BOOL.FROM  `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Integer"):has(SemanticExpression*) call) := (INT.FROM   `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Natural"):has(SemanticExpression*) call) := (NAT.FROM   `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Float")  :has(SemanticExpression*) call) := (FLOAT.FROM `Build(call.SemanticExpression*.0)`);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "String") :has(SemanticExpression*) call) := (STR.FROM   `Build(call.SemanticExpression*.0)`);
 
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List") call) := (LIST.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Dict") call) := (DICT.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Set")  call) := (SET.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map")  call) := (MAP.NEW);
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "None") call) := (MAYBE.NEW);
 Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "List"):has(SemanticExpression*) call) := [
 	(DECL <List> $destination (LIST.NEW))
 	(DECL ‹type› $arg `Build(call.SemanticExpression*.0)`)
@@ -209,12 +211,13 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Map"):has(Seman
 	(MAP.COPY (GET $destination) (GET $arg))
 	return (GET $destination).
 ];
+Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Some"):has(SemanticExpression*) call) := (MAYBE.NEW `Build(call.SemanticExpression*.0)`);
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
 
 Build(SemanticExpressionIsset ::= SemanticExpressionVariable) := (ISSET `GetSymbolSchema(SemanticExpressionVariable)`);
-Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ISNULL `Build(SemanticExpressionAccess)`);
+Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ID `Build(SemanticExpressionAccess)` (NULL.CONST null));
 
 Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := TODO:;
@@ -245,6 +248,24 @@ Build(SemanticExpressionOperation[operator=GT][0: Number][1: Number] op) := (GT 
 Build(SemanticExpressionOperation[operator=LE][0: Number][1: Number] op) := (LE  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE  [`Build(op.0)` `Build(op.1)`]);
 
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Null")
+	:= (ID `Build(SemanticExpression)` (NULL.CONST null));
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean") := [
+	(DECL <bool> $left (ID `Build(SemanticExpression)` (BOOL.CONST false)))
+	(DECL <bool> $result)
+	(GOTO.IF (GET $left) "then" "else")
+	"then":
+	(SET $result (GET $left))
+	(GOTO "endif")
+	"else":
+	(SET $result (ID `Build(SemanticExpression)` (BOOL.CONST true)))
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
+	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
+
 Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);
 
@@ -252,7 +273,7 @@ Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build
 Build(SemanticExpressionOperation[operator=AND] op) := [
 	(DECL ‹type› $left `Build(op.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (TOBOOL (GET $left)) "then" "else")
+	(GOTO.IF (BOOL.FROM (GET $left)) "then" "else")
 	"then":
 	(SET $result `Build(op.1)`)
 	(GOTO "endif")
@@ -266,7 +287,7 @@ Build(SemanticExpressionOperation[operator=AND] op) := [
 Build(SemanticExpressionOperation[operator=OR] op) := [
 	(DECL ‹type› $left `Build(op.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (TOBOOL (GET $left)) "then" "else")
+	(GOTO.IF (BOOL.FROM (GET $left)) "then" "else")
 	"then":
 	(SET $result (GET $left))
 	(GOTO "endif")

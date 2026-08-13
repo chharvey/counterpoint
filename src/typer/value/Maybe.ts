@@ -13,6 +13,7 @@ import {
 
 /**
  * A `Maybe` repesents presence or absence of a value.
+ * @final
  */
 export class Maybe<T extends Value = Value> extends Value {
 	private readonly type:   TYPE.Type;
@@ -27,6 +28,10 @@ export class Maybe<T extends Value = Value> extends Value {
 		}
 	}
 
+
+	public override get isReference(): boolean {
+		return true;
+	}
 
 	public override get isTruthy(): boolean {
 		return !this.isNone;

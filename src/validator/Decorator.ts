@@ -76,7 +76,6 @@ export class Decorator {
 		[Punctuator.GT,    Operator.GT],
 		[Punctuator.LT_EQ, Operator.LE],
 		[Punctuator.GT_EQ, Operator.GE],
-		[Keyword   .IS,    Operator.IS as ValidOperatorComparative], // TODO: make a new class for comparing object instances
 	]);
 
 	private static readonly OPERATORS_EQUALITY: ReadonlyMap<Punctuator, ValidOperatorEquality> = new Map<Punctuator, ValidOperatorEquality>([
@@ -129,7 +128,7 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                       AST.EXPR.OperationBinaryArithmetic;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                    AST.EXPR.OperationBinaryArithmetic;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_additive'>):                          AST.EXPR.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryComparative;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryComparative | AST.EXPR.OperationBinaryCast;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_equality'>):                          AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryEquality;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
@@ -450,13 +449,18 @@ export class Decorator {
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryComparative(n, Operator.GT, ...operands),
 				) :
+				punct === Keyword.IS ? new AST.EXPR.OperationBinaryCast(
+					n,
+					Operator.IS,
+					...operands,
+				) :
 				// `a !is b` is syntax sugar for `!(a is b)`
 				punct === Keyword.ISNT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryComparative(
+					new AST.EXPR.OperationBinaryCast(
 						n,
-						Operator.IS as ValidOperatorComparative, // TODO: make a new class for comparing object instances
+						Operator.IS,
 						...operands,
 					),
 				) :

@@ -15,6 +15,12 @@ import {Value} from './Value.ts';
  * - ValueString
  */
 export abstract class Primitive extends Value {
+	/** @final */
+	public override get isReference(): boolean {
+		return false;
+	}
+
+
 	@memoizeMethod
 	public override toType(): TYPE.Unit<this> {
 		return new TYPE.Unit<this>(this);

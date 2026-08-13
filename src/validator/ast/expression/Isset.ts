@@ -10,7 +10,10 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {TYPE} from '../../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../../typer/index.ts';
 import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Operator} from '../../Operator.ts';
@@ -45,10 +48,10 @@ export class Isset extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(builder: Builder): OP.Isset | OP.Unop {
+	public override build(builder: Builder): OP.Isset | OP.Binop {
 		if (this.assignee instanceof Variable) {
 			return new OP.Isset(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar);
 		}
-		return new OP.Unop(OP.OpCode.ISNULL, this.assignee.build(builder).asTac(builder), TYPE.BOOL);
+		return new OP.Binop(OP.OpCode.ID, this.assignee.build(builder).asTac(builder), new OP.Const(VALUE.NULL), TYPE.BOOL);
 	}
 }

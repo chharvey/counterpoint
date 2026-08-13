@@ -85,15 +85,20 @@ TokenWorth(KeywordOther :::= "skip")     -> RealNumber := \x68;
 
 
 
-TokenWorth(Identifier :::= "Object") -> RealNumber := \x80;
-TokenWorth(Identifier :::= "Integer" -> RealNumber := \x81;
-TokenWorth(Identifier :::= "Natural" -> RealNumber := \x82;
-TokenWorth(Identifier :::= "Float"   -> RealNumber := \x83;
-TokenWorth(Identifier :::= "String"  -> RealNumber := \x84;
-TokenWorth(Identifier :::= "List"    -> RealNumber := \x85;
-TokenWorth(Identifier :::= "Dict"    -> RealNumber := \x86;
-TokenWorth(Identifier :::= "Set"     -> RealNumber := \x87;
-TokenWorth(Identifier :::= "Map"     -> RealNumber := \x88;
+TokenWorth(Identifier :::= "Boolean") -> RealNumber := \x80;
+TokenWorth(Identifier :::= "Symbol")  -> RealNumber := \x81;
+TokenWorth(Identifier :::= "Integer") -> RealNumber := \x82;
+TokenWorth(Identifier :::= "Natural") -> RealNumber := \x83;
+TokenWorth(Identifier :::= "Float")   -> RealNumber := \x84;
+TokenWorth(Identifier :::= "String")  -> RealNumber := \x85;
+TokenWorth(Identifier :::= "Object")  -> RealNumber := \x86;
+TokenWorth(Identifier :::= "List")    -> RealNumber := \x87;
+TokenWorth(Identifier :::= "Dict")    -> RealNumber := \x88;
+TokenWorth(Identifier :::= "Set")     -> RealNumber := \x89;
+TokenWorth(Identifier :::= "Map")     -> RealNumber := \x8a;
+TokenWorth(Identifier :::= "Maybe")   -> RealNumber := \x8b;
+TokenWorth(Identifier :::= "None")    -> RealNumber := \x8c;
+TokenWorth(Identifier :::= "Some")    -> RealNumber := \x8d;
 
 TokenWorth(Identifier) -> RealNumber :=
 	1. Convert the source text of `Identifier` to a string of bytes in the UTF-8 encoding.

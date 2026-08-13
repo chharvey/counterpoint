@@ -98,6 +98,32 @@ test.suite('Operation', () => {
 		});
 
 
+		test.suite('OperationBinaryCast', () => {
+			test.test('always returns `bool`.', () => {
+				assert_shallowStrictEqual(
+					setupScript(`{
+						val n: null = null;
+						n is Boolean;
+						n is Symbol;
+						n is Integer;
+						n is Natural;
+						n is Float;
+						n is String;
+						n is Object;
+						n is List;
+						n is Dict;
+						n is Set;
+						n is Map;
+						n is Maybe;
+						n is None;
+						n is Some;
+					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					repeat(TYPE.BOOL, 14),
+				);
+			});
+		});
+
+
 		test.suite('OperationBinaryArithmetic', () => {
 			test.test('without constant folding: returns Integer/Natural/Float respectively for valid ops.', () => {
 				assert_shallowStrictEqual(
@@ -314,6 +340,71 @@ test.suite('Operation', () => {
 			`.trim());
 		});
 
+		test.suite('OperationBinaryCast', () => {
+			test.test('"Null"', () => {
+				assert.strictEqual(setupScript(`{
+					42 is Null;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DROP (ID (INT.CONST 42) (NULL.CONST null)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('"Boolean"', () => {
+				assert.strictEqual(setupScript(`{
+					42 is Boolean;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <bool> $0)
+						(GOTO.IF (ID (INT.CONST 42) (BOOL.CONST false)) "block-1" "block-2")
+					"block-1":
+						(SET $0 (ID (INT.CONST 42) (BOOL.CONST false)))
+						(GOTO "block-3")
+					"block-2":
+						(SET $0 (ID (INT.CONST 42) (BOOL.CONST true)))
+						(GOTO "block-3")
+					"block-3":
+						(DROP (GET $0))
+						(ENDPROGRAM)
+				`.trim());
+			});
+			test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
+				assert.strictEqual(setupScript(`{
+					val n: null = null;
+					n is Symbol;
+					n is Integer;
+					n is Natural;
+					n is Float;
+					n is String;
+					n is Object;
+					n is List;
+					n is Dict;
+					n is Set;
+					n is Map;
+					n is Maybe;
+					n is None;
+					n is Some;
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <null> n (NULL.CONST null))
+						(DROP (INSTANCEOF SYMBOL (GET n)))
+						(DROP (INSTANCEOF INTEGER (GET n)))
+						(DROP (INSTANCEOF NATURAL (GET n)))
+						(DROP (INSTANCEOF FLOAT (GET n)))
+						(DROP (INSTANCEOF STRING (GET n)))
+						(DROP (INSTANCEOF OBJECT (GET n)))
+						(DROP (INSTANCEOF LIST (GET n)))
+						(DROP (INSTANCEOF DICT (GET n)))
+						(DROP (INSTANCEOF SET (GET n)))
+						(DROP (INSTANCEOF MAP (GET n)))
+						(DROP (INSTANCEOF MAYBE (GET n)))
+						(DROP (INSTANCEOF NONE (GET n)))
+						(DROP (INSTANCEOF SOME (GET n)))
+						(ENDPROGRAM)
+				`.trim());
+			});
+		});
+
 		test.test('OperationBinaryArithmetic', () => {
 			assert.strictEqual(setupScript(`{
 				val mut x: int = 42;
@@ -397,7 +488,7 @@ test.suite('Operation', () => {
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET a)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET b))
 						(GOTO "block-3")
@@ -408,7 +499,7 @@ test.suite('Operation', () => {
 						(DROP (GET $0))
 						(DECL <bool> $1 (NOT (GET a)))
 						(DECL <bool> $2)
-						(GOTO.IF (TOBOOL (GET $1)) "block-4" "block-5")
+						(GOTO.IF (BOOL.FROM (GET $1)) "block-4" "block-5")
 					"block-4":
 						(SET $2 (NOT (GET b)))
 						(GOTO "block-6")
@@ -431,7 +522,7 @@ test.suite('Operation', () => {
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET c)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET c))
 						(GOTO "block-3")
@@ -443,7 +534,7 @@ test.suite('Operation', () => {
 						(DECL <int> $1 (NEG (GET c)))
 						(DECL <int> $2 (INT.ADD (GET $1) (INT.CONST 1)))
 						(DECL <anything> $3)
-						(GOTO.IF (TOBOOL (GET $2)) "block-4" "block-5")
+						(GOTO.IF (BOOL.FROM (GET $2)) "block-4" "block-5")
 					"block-4":
 						(SET $3 (GET $2))
 						(GOTO "block-6")
@@ -465,7 +556,7 @@ test.suite('Operation', () => {
 						(DECL <null> a (NULL.CONST null))
 						(DECL <bool> b (BOOL.CONST false))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET a)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET a)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET b))
 						(GOTO "block-3")
@@ -487,7 +578,7 @@ test.suite('Operation', () => {
 						(DECL <int> c (INT.CONST 10))
 						(DECL <float> d (FLOAT.CONST 0.1))
 						(DECL <anything> $0)
-						(GOTO.IF (TOBOOL (GET c)) "block-1" "block-2")
+						(GOTO.IF (BOOL.FROM (GET c)) "block-1" "block-2")
 					"block-1":
 						(SET $0 (GET c))
 						(GOTO "block-3")

@@ -122,7 +122,7 @@ Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
 	2. *Let* `base` be `access.children.0`.
 	3. *Let* `base_type` be *Unwrap:* `TypeOf(base)`.
 	4. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
-		1. *Return:* `Never`.
+		1. *Return:* `Nothing`.
 	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
 	6. *If* `entry.type` is a Maybe type:
 		1. *Set* `use_maybe` to `true`.
@@ -139,7 +139,12 @@ Type! TypeOf(SemanticExpressionCall call) :=
 	3. *If* `base` is not a SemanticExpressionVariable:
 		1. *Note:* Currently, the only allowed generics are `List.<T>(arg)`, `Dict.<T>(arg)`, `Set.<T>(arg)`, `Map.<K, V>(arg)`.
 		2. *Throw:* a new TypeErrorNotCallable.
-	4. *If* `base.source` is one of "Integer", "Natural", "Float", or "String":
+	4. *Let* `args` be a filtering of `call.children.slice(1)` for each `arg` such that `arg` is a SemanticExpression.
+	5. *For each* `arg` in `args`:
+		1. *Let* `t` be `t_arg`.
+		2. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
+			1. *Return:* `Nothing`.
+	6. *If* `base.source` is one of "Integer", "Natural", "Float", or "String":
 		1. *If* `call.children.count` is 2:
 			1. *Let* `arg` be `call.children.1`.
 			2. *If* `arg` is a SemanticExpression:
@@ -159,7 +164,7 @@ Type! TypeOf(SemanticExpressionCall call) :=
 				1. *Throw:* a new TypeErrorArgCount.
 		2. *Else:*
 			1. *Throw:* a new TypeErrorArgCount.
-	5. *Else If* `base.source` is one of "List", "Dict", or "Set":
+	7. *Else If* `base.source` is one of "List", "Dict", or "Set":
 		1. *If* `call.children.count` is 2 or 3:
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `genericarg` be *Unwrap:* `TypeValueOf(call.children.1)`.
@@ -223,9 +228,8 @@ Type! TypeOf(SemanticExpressionCall call) :=
 			2. *Else:*
 				1. Fall through.
 		2. *Throw:* a new TypeErrorArgCount.
-	6. *Else:*
-		1. *Assert:* `base.source` is "Map".
-		2. *If* `call.children.count` is 2 or 3 or 4:
+	8. *Else If* `base.source` is "Map":
+		1. *If* `call.children.count` is 2 or 3 or 4:
 			1. *If* `call.children.1` is a SemanticType:
 				1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
 				2. *If* `call.children.count` is 2:
@@ -273,7 +277,9 @@ Type! TypeOf(SemanticExpressionCall call) :=
 					and a consequent type argument `consequenttype`.
 			2. *Else:*
 				1. Fall through.
-		3. *Throw:* a new TypeErrorArgCount.
+		2. *Throw:* a new TypeErrorArgCount.
+	9. *Else:*
+		// TODO: see Class API
 ;
 
 
@@ -346,6 +352,13 @@ Type! TypeOf(SemanticExpressionOperation[operator: NEG] expr) :=
 		1. *Return:* `t0`.
 	5. *Else:*
 		1. *Throw:* a new TypeErrorInvalidOperation.
+;
+
+Type! TypeOf(SemanticExpressionOperation[operator: IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+	1. *Let* `t0` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Nothing`.
+	3. *Return:* `Boolean`.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
