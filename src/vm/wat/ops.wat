@@ -350,6 +350,60 @@
 
 
 
+(func $op:is-int (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-primitive (local.get $value))
+		(call $Vect.is-int (struct.get $Value $primitive (local.get $value)))
+	))
+)
+(func $op:is-nat (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-primitive (local.get $value))
+		(call $Vect.is-nat (struct.get $Value $primitive (local.get $value)))
+	))
+)
+(func $op:is-float (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-primitive (local.get $value))
+		(call $Vect.is-float (struct.get $Value $primitive (local.get $value)))
+	))
+)
+(func $op:is-string (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $String) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-object (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Object) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-list (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $List) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-dict (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Dict) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-map (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Map) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-maybe (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Maybe) (struct.get $Value $composite (local.get $value)))
+	))
+)
 (func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
 	(local $composite eqref)
 	(local.set $composite (struct.get $Value $composite (local.get $value)))

@@ -74,47 +74,21 @@ export class InstanceOf extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {reftype, op, Vect}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.name) {
-			case InstanceOfName.INTEGER: { return this.#instanceOfPrimitive(cg, code, Vect.isInt.bind(Vect)); }
-			case InstanceOfName.NATURAL: { return this.#instanceOfPrimitive(cg, code, Vect.isNat.bind(Vect)); }
-			case InstanceOfName.FLOAT:   { return this.#instanceOfPrimitive(cg, code, Vect.isFloat.bind(Vect)); }
-
-			case InstanceOfName.STRING: { return this.#instanceOfComposite(cg, code, reftype.String); }
-			case InstanceOfName.OBJECT: { return this.#instanceOfComposite(cg, code, reftype.Object); }
-			case InstanceOfName.LIST:   { return this.#instanceOfComposite(cg, code, reftype.List); }
-			case InstanceOfName.DICT:   { return this.#instanceOfComposite(cg, code, reftype.Dict); }
-			case InstanceOfName.MAP:    { return this.#instanceOfComposite(cg, code, reftype.Map); }
-			case InstanceOfName.MAYBE:  { return this.#instanceOfComposite(cg, code, reftype.Maybe); }
-
-			case InstanceOfName.NONE:  { return op.isNone(code); }
-			case InstanceOfName.SOME:  { return op.isSome(code); }
+			case InstanceOfName.SYMBOL:  { return cg.vm.op.isInt(code); }
+			case InstanceOfName.INTEGER: { return cg.vm.op.isInt(code); }
+			case InstanceOfName.NATURAL: { return cg.vm.op.isNat(code); }
+			case InstanceOfName.FLOAT:   { return cg.vm.op.isFloat(code); }
+			case InstanceOfName.STRING:  { return cg.vm.op.isString(code); }
+			case InstanceOfName.OBJECT:  { return cg.vm.op.isObject(code); }
+			case InstanceOfName.LIST:    { return cg.vm.op.isList(code); }
+			case InstanceOfName.DICT:    { return cg.vm.op.isDict(code); }
+			case InstanceOfName.SET:     { return cg.vm.op.isMap(code); }
+			case InstanceOfName.MAP:     { return cg.vm.op.isMap(code); }
+			case InstanceOfName.MAYBE:   { return cg.vm.op.isMaybe(code); }
+			case InstanceOfName.NONE:    { return cg.vm.op.isNone(code); }
+			case InstanceOfName.SOME:    { return cg.vm.op.isSome(code); }
 		}
-		throw new Error(`instance-of '${ InstanceOfName[this.name] }' not yet supported.`);
-	}
-
-	#instanceOfPrimitive(
-		cg:       CodeGenerator,
-		operand:  binaryen.ExpressionRef /* (ref $Value) */,
-		callable: (vect: binaryen.ExpressionRef /* v128 */) => binaryen.ExpressionRef /* i32 */,
-	): binaryen.ExpressionRef /* (ref $Value) */ {
-		const {vm: {Value: VmValue}, mod: {wasm}} = cg;
-		return VmValue.boolFromI32(wasm.i32.and(
-			VmValue.isPrimitive(operand),
-			callable(VmValue.field(operand).primitive),
-		));
-	}
-
-	#instanceOfComposite(
-		cg:      CodeGenerator,
-		operand: binaryen.ExpressionRef /* (ref $Value) */,
-		reftype: binaryen.Type,
-	): binaryen.ExpressionRef /* (ref $Value) */ {
-		const {vm: {Value: VmValue}, mod: {wasm}} = cg;
-		return VmValue.boolFromI32(wasm.i32.and(
-			VmValue.isComposite(operand),
-			wasm.ref.test(VmValue.field(operand).composite, reftype),
-		));
 	}
 }

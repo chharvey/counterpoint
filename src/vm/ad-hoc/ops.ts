@@ -41,6 +41,15 @@ export function ops(vm: VirtualMachine) {
 					['op::gt',          {name: 'op:gt',           param: binary_params,  result: reftype.Value}],
 					['op::le',          {name: 'op:le',           param: binary_params,  result: reftype.Value}],
 					['op::ge',          {name: 'op:ge',           param: binary_params,  result: reftype.Value}],
+					['op::isInt',       {name: 'op:is-int',       param: reftype.Value,  result: reftype.Value}],
+					['op::isNat',       {name: 'op:is-nat',       param: reftype.Value,  result: reftype.Value}],
+					['op::isFloat',     {name: 'op:is-float',     param: reftype.Value,  result: reftype.Value}],
+					['op::isString',    {name: 'op:is-string',    param: reftype.Value,  result: reftype.Value}],
+					['op::isObject',    {name: 'op:is-object',    param: reftype.Value,  result: reftype.Value}],
+					['op::isList',      {name: 'op:is-list',      param: reftype.Value,  result: reftype.Value}],
+					['op::isDict',      {name: 'op:is-dict',      param: reftype.Value,  result: reftype.Value}],
+					['op::isMap',       {name: 'op:is-map',       param: reftype.Value,  result: reftype.Value}],
+					['op::isMaybe',     {name: 'op:is-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::isNone',      {name: 'op:is-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::isSome',      {name: 'op:is-some',      param: reftype.Value,  result: reftype.Value}],
 					['op::id',          {name: 'op:id',           param: binary_params,  result: reftype.Value}],
@@ -181,12 +190,57 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:ge', [param0, param1], vm.reftype.Value)
 		),
 
-		/** Is the value an instance of the Counterpoint class `None`? */
+		/** Is the value a primitive holding an int? */
+		isInt: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-int', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a primitive holding a nat? */
+		isNat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-nat', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a primitive holding a float? */
+		isFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-float', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `String` type? */
+		isString: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-string', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Object` type? */
+		isObject: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-object', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `List` type? */
+		isList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-list', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Dict` type? */
+		isDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-dict', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Map` type? */
+		isMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-map', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Maybe` type? */
+		isMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-maybe', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Maybe` type with a null value? */
 		isNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-none', [param0], vm.reftype.Value)
 		),
 
-		/** Is the value an instance of the Counterpoint class `Some`? */
+		/** Is the value a composite `Maybe` type with a non-null value? */
 		isSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-some', [param0], vm.reftype.Value)
 		),
