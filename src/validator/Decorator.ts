@@ -376,21 +376,6 @@ export class Decorator {
 				)
 			)],
 
-			['expression_unary_keyword', (node) => ((
-				n:        SyntaxNodeType<'expression_unary_keyword'>,
-				punct:    Keyword,
-				operand:  AST.EXPR.Variable | AST.EXPR.Access,
-			) => {
-				n;
-				punct;
-				operand;
-				throw new Error('no longer supported');
-			})(
-				node as SyntaxNodeType<'expression_unary_keyword'>,
-				node.children[0].type as Keyword,
-				this.decorate(node.firstNamedChild as SyntaxNodeFamily<'assignee', ['break']>),
-			)],
-
 			['expression_cast', (node) => {
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>;
 				const expression_1 = node.childForFieldName('expression_1') as SyntaxNodeSupertype<'expression'> | null;

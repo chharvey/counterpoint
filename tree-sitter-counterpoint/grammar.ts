@@ -318,7 +318,6 @@ module.exports = grammar({
 		word: $ => choice(
 			// operator
 			'mut',
-			'isset',
 			'as',
 			'is',
 			'if',
@@ -471,8 +470,7 @@ module.exports = grammar({
 			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}))),
 		))), 'block', 'break'),
 
-		...parameterize('expression_unary_symbol',  ({block,    break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_unary_keyword', ({block: _, break: brk}) => $ => prec( 9, seq(choice('isset', '!isset'),  call($, 'assignee',             {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_symbol', ({block, break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
 		...parameterize('expression_cast', ({block, break: brk}) => $ => choice(
 			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
@@ -509,7 +507,6 @@ module.exports = grammar({
 
 			alias(call($, 'expression_compound',       {block}, {break: brk}), $.expression_compound),
 			alias(call($, 'expression_unary_symbol',   {block}, {break: brk}), $.expression_unary_symbol),
-			alias(call($, 'expression_unary_keyword',  {block}, {break: brk}), $.expression_unary_keyword),
 			alias(call($, 'expression_cast',           {block}, {break: brk}), $.expression_cast),
 			alias(call($, 'expression_exponential',    {block}, {break: brk}), $.expression_exponential),
 			alias(call($, 'expression_multiplicative', {block}, {break: brk}), $.expression_multiplicative),
@@ -628,7 +625,6 @@ module.exports = grammar({
 		global: _$ => [
 			// operator
 			'mut',
-			'isset',
 			'as',
 			'is',
 			'if',

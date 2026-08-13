@@ -11,7 +11,6 @@ export enum Operator {
 	EMP,
 	AFF,
 	NEG,
-	ISSET,
 	CAST,
 	CAST_MAYBE,
 	CAST_RESULT,
