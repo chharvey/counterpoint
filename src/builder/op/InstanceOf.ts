@@ -61,8 +61,7 @@ export class InstanceOf extends Value {
 			case InstanceOfName.NATURAL: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Natural); }
 			case InstanceOfName.FLOAT:   { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Float); }
 			case InstanceOfName.STRING:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.String); }
-			// @ts-expect-error --- VALUE.Object doesn’t exist yet
-			case InstanceOfName.OBJECT:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Object); }
+			case InstanceOfName.OBJECT:  { return VALUE.Boolean.fromBoolean(operand.isReference); }
 			case InstanceOfName.LIST:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.List); }
 			case InstanceOfName.DICT:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Dict); }
 			case InstanceOfName.SET:     { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Set); }

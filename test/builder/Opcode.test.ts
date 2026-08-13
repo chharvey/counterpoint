@@ -315,7 +315,7 @@ test.suite('Opcode', () => {
 								name,
 								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 							))));
-							assert_equal_values(
+							return assert_equal_values(
 								builder.instructions.map((instr) => (instr instanceof OP.Drop
 									? instr.value.interpret(interp)
 									: instr.interpret(interp)
@@ -335,20 +335,19 @@ test.suite('Opcode', () => {
 							);
 						});
 					});
-					test.test('OBJECT', {expectFailure: true}, () => {
+					test.test('OBJECT', () => {
 						const builder = new Builder();
 						const interp  = new Interpreter();
 						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
 							OP.InstanceOfName.OBJECT,
 							AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 						))));
-						assert_equal_values(
+						return assert_equal_values(
 							builder.instructions.map((instr) => (instr instanceof OP.Drop
 								? instr.value.interpret(interp)
 								: instr.interpret(interp)
 							)).filter((value) => !!value),
-							// @ts-expect-error --- VALUE.Object doesn’t exist yet
-							expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof VALUE.Object)),
+							expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand.isReference)),
 						);
 					});
 				});

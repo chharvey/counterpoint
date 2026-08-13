@@ -19,6 +19,11 @@ import {CollectionKeyed} from './CollectionKeyed.ts';
  * @final
  */
 class ValueRecord<T extends Value = Value> extends CollectionKeyed<T> {
+	public override get isReference(): boolean {
+		return false;
+	}
+
+
 	public override toString(): string {
 		return `(${ super.toString() })`;
 	}
