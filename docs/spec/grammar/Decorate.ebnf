@@ -469,29 +469,22 @@ Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Bloc
 
 
 
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
+Decorate(ExpressionCast<Block, Break> ::= ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "isset" Assignee<?Break>) -> "no longer supported";
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "!isset" Assignee<?Break>) -> "no longer supported";
-
-
-
-Decorate(ExpressionCast<Block, Break> ::= ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpression
-	:= Decorate(ExpressionUnaryKeyword<?Block><?Break>);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=CAST]
 		Decorate(ExpressionCast<?Block><?Break>)
-		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
+		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=MAYBE]
 		Decorate(ExpressionCast<?Block><?Break>)
-		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
+		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnaryKeyword<?Block><?Break>) -> SemanticExpressionOperation
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=RESULT]
 		Decorate(ExpressionCast<?Block><?Break>)
-		Decorate(ExpressionUnaryKeyword<?Block><?Break>)
+		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
 Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticExpressionClaim
 	:= (SemanticExpressionClaim
