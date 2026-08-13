@@ -179,6 +179,7 @@ Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 		- `src` is "Natural" *and* `v` is an instance of `Natural`
 		- `src` is "Float"   *and* `v` is an instance of `Float`
 		- `src` is "String"  *and* `v` is an instance of `String`
+		- `src` is "Object"  *and* `v` is an instance of `Object`
 		- `src` is "List"    *and* `v` is an instance of `List`
 		- `src` is "Dict"    *and* `v` is an instance of `Dict`
 		- `src` is "Set"     *and* `v` is an instance of `Set`

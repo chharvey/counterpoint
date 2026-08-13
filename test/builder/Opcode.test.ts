@@ -335,6 +335,22 @@ test.suite('Opcode', () => {
 							);
 						});
 					});
+					test.test('OBJECT', {expectFailure: true}, () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+							OP.InstanceOfName.OBJECT,
+							AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+						))));
+						assert_equal_values(
+							builder.instructions.map((instr) => (instr instanceof OP.Drop
+								? instr.value.interpret(interp)
+								: instr.interpret(interp)
+							)).filter((value) => !!value),
+							// @ts-expect-error --- VALUE.Object doesn’t exist yet
+							expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof VALUE.Object)),
+						);
+					});
 				});
 				test.suite('Maybes.', () => {
 					[
@@ -1572,13 +1588,14 @@ test.suite('Opcode', () => {
 						)));
 					});
 				});
-				test.test('STRING, LIST, DICT, MAP, MAYBE', () => {
-					xjs.Array.forEachAggregated(['String', 'List', 'Dict', 'Map', 'Maybe'], (classname, i) => {
+				test.test('STRING, OBJECT, LIST, DICT, MAP, MAYBE', () => {
+					xjs.Array.forEachAggregated(['String', 'Object', 'List', 'Dict', 'Map', 'Maybe'], (classname, i) => {
 						const {wasm, vm, operand, actual} = common(classname);
 						return assertEqualBins(actual, vm.Value.boolFromI32(wasm.i32.and(
 							vm.Value.isComposite(operand),
 							wasm.ref.test(vm.Value.field(operand).composite, [
 								vm.reftype.String,
+								vm.reftype.Object,
 								vm.reftype.List,
 								vm.reftype.Dict,
 								vm.reftype.Map,

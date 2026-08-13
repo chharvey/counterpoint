@@ -376,7 +376,7 @@ test.suite('Operation', () => {
 					n is Natural;
 					n is Float;
 					n is String;
-					% n is Object; % FIXME: support
+					n is Object;
 					n is List;
 					n is Dict;
 					n is Set;
@@ -392,6 +392,7 @@ test.suite('Operation', () => {
 						(DROP (INSTANCEOF NATURAL (GET n)))
 						(DROP (INSTANCEOF FLOAT (GET n)))
 						(DROP (INSTANCEOF STRING (GET n)))
+						(DROP (INSTANCEOF OBJECT (GET n)))
 						(DROP (INSTANCEOF LIST (GET n)))
 						(DROP (INSTANCEOF DICT (GET n)))
 						(DROP (INSTANCEOF SET (GET n)))

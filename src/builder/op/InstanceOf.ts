@@ -23,6 +23,7 @@ export enum InstanceOfName {
 	NATURAL,
 	FLOAT,
 	STRING,
+	OBJECT,
 	LIST,
 	DICT,
 	SET,
@@ -60,15 +61,15 @@ export class InstanceOf extends Value {
 			case InstanceOfName.NATURAL: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Natural); }
 			case InstanceOfName.FLOAT:   { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Float); }
 			case InstanceOfName.STRING:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.String); }
-
-			case InstanceOfName.LIST: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.List); }
-			case InstanceOfName.DICT: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Dict); }
-			case InstanceOfName.SET:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Set); }
-			case InstanceOfName.MAP:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Map); }
-
-			case InstanceOfName.MAYBE: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe); }
-			case InstanceOfName.NONE:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
-			case InstanceOfName.SOME:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && !operand.isNone); }
+			// @ts-expect-error --- VALUE.Object doesn’t exist yet
+			case InstanceOfName.OBJECT:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Object); }
+			case InstanceOfName.LIST:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.List); }
+			case InstanceOfName.DICT:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Dict); }
+			case InstanceOfName.SET:     { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Set); }
+			case InstanceOfName.MAP:     { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Map); }
+			case InstanceOfName.MAYBE:   { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe); }
+			case InstanceOfName.NONE:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
+			case InstanceOfName.SOME:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && !operand.isNone); }
 		}
 	}
 
@@ -82,6 +83,7 @@ export class InstanceOf extends Value {
 			case InstanceOfName.FLOAT:   { return this.#instanceOfPrimitive(cg, code, Vect.isFloat.bind(Vect)); }
 
 			case InstanceOfName.STRING: { return this.#instanceOfComposite(cg, code, reftype.String); }
+			case InstanceOfName.OBJECT: { return this.#instanceOfComposite(cg, code, reftype.Object); }
 			case InstanceOfName.LIST:   { return this.#instanceOfComposite(cg, code, reftype.List); }
 			case InstanceOfName.DICT:   { return this.#instanceOfComposite(cg, code, reftype.Dict); }
 			case InstanceOfName.MAP:    { return this.#instanceOfComposite(cg, code, reftype.Map); }

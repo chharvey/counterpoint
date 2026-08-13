@@ -192,7 +192,7 @@ export type ConstructorSchema = {
  * declare class data String {
  * 	new (x: anything);
  * }
- * declare class List<out(in) T> {
+ * declare class List<out(in) T> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -201,7 +201,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Dict<out(in) T> {
+ * declare class Dict<out(in) T> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((sym, T),));
@@ -215,7 +215,7 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(sym, T)>);
  * 	new (map:   Map.<sym, T>);
  * }
- * declare class Set<out(in) T> {
+ * declare class Set<out(in) T> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -224,7 +224,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Map<out(in) K, out(in) V> {
+ * declare class Map<out(in) K, out(in) V> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((K, V),));
@@ -234,11 +234,11 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(K, V)>);
  * 	new (map:   Map.<K, V>);
  * }
- * declare abstract class Maybe<out T> {}
- * declare class None<out T> {
+ * declare abstract class Maybe<out T> extends Object {}
+ * declare class None<out T> extends Maybe.<T> {
  * 	new ();
  * }
- * declare class Some<out T> {
+ * declare class Some<out T> extends Maybe.<T> {
  * 	new (value: T);
  * }
  * ```

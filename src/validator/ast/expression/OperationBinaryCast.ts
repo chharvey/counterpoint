@@ -113,7 +113,7 @@ export class OperationBinaryCast extends OperationBinary {
 				[IntrinsicName.NATURAL, OP.InstanceOfName.NATURAL],
 				[IntrinsicName.FLOAT,   OP.InstanceOfName.FLOAT],
 				[IntrinsicName.STRING,  OP.InstanceOfName.STRING],
-				// [IntrinsicName.OBJECT,  OP.InstanceOfName.OBJECT], // FIXME: support
+				[IntrinsicName.OBJECT,  OP.InstanceOfName.OBJECT],
 				[IntrinsicName.LIST,    OP.InstanceOfName.LIST],
 				[IntrinsicName.DICT,    OP.InstanceOfName.DICT],
 				[IntrinsicName.SET,     OP.InstanceOfName.SET],

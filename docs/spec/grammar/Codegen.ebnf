@@ -206,9 +206,9 @@ Codegen((INSTANCEOF "String" `v`)) := (call $Value.bool-from-i32 (i32.and
 	(call $Value.is-composite `Codegen(v)`)
 	(ref.test (ref $String) (struct.get $Value $composite `Codegen(v)`))
 ));
-Codegen((INSTANCEOF "String" `v`)) := (call $Value.bool-from-i32 (i32.and
+Codegen((INSTANCEOF "Object" `v`)) := (call $Value.bool-from-i32 (i32.and
 	(call $Value.is-composite `Codegen(v)`)
-	(ref.test (ref $String) (struct.get $Value $composite `Codegen(v)`))
+	(ref.test (ref $Object) (struct.get $Value $composite `Codegen(v)`))
 ));
 Codegen((INSTANCEOF "List" `v`)) := (call $Value.bool-from-i32 (i32.and
 	(call $Value.is-composite `Codegen(v)`)
