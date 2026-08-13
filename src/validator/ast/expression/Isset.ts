@@ -14,7 +14,6 @@ import {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
-import type {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Operator} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
@@ -48,9 +47,9 @@ export class Isset extends Expression {
 	}
 
 	@memoizeMethod
-	public override build(builder: Builder): OP.Isset | OP.Binop {
+	public override build(builder: Builder): OP.Binop {
 		if (this.assignee instanceof Variable) {
-			return new OP.Isset(this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar);
+			throw new Error('no longer supported.');
 		}
 		return new OP.Binop(OP.OpCode.ID, this.assignee.build(builder).asTac(builder), new OP.Const(VALUE.NULL), TYPE.BOOL);
 	}
