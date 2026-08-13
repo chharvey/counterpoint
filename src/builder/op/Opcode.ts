@@ -39,7 +39,6 @@ export enum OpCode {
 	CALL,
 
 	ISSET,
-	ISNONE,
 
 	BOOL_FROM,
 	INT_FROM,

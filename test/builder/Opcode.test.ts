@@ -423,36 +423,6 @@ test.suite('Opcode', () => {
 						}`), [new VALUE.String('hello')]);
 					});
 				});
-				test.test('[operator=ISNONE]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.ISNONE,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					[
-						new OP.MaybeNew(TYPE.STR),
-						new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
-						new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
-					].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.ISNONE,
-						irval.asTac(builder),
-						TYPE.BOOL,
-					))));
-					assert_equal_values(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							...repeat(VALUE.FALSE, 21),
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.FALSE,
-						],
-					);
-				});
 				test.test('[operator=NOT]', () => {
 					assert_equal_values(interpret_unops('!'), [
 						...repeat(VALUE.TRUE, 2),
@@ -1629,14 +1599,6 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
-				test.test('ISNONE operator returns custom WASM function `$op:is-none`.', () => {
-					// there exists no syntax for “is None” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.ISNONE, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.isNone(genConst(cg)),
-					);
-				});
 				test.test('BOOL.FROM operator returns custom WASM function `$op:not` applied twice.', () => {
 					// there exists no syntax for “to bool” operator, so constructing it manually
 					const cg = new CodeGenerator();

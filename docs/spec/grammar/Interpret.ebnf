@@ -171,18 +171,6 @@ Boolean! Interpret((ISSET `id`)) :=
 		1. *Throw:* a new ReferenceError.
 ;
 
-Boolean! Interpret((ISNONE `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *If* `v` is an instance of `Maybe`:
-		1. *If* `v` does not have a value:
-			1. *Return:* `true`.
-		2. *Else:*
-			1. Fall through.
-	3. *Else:*
-		1. Fall through.
-	4. *Return:* `false`.
-;
-
 Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* any of the following conditions is `true`:
@@ -198,13 +186,15 @@ Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 		- `src` is "Maybe"   *and* `v` is an instance of `Maybe`
 		1. *Return:* `true`.
 	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
-		1. *Return:* `Interpret((ISNONE `v`))`.
-	4. *Else If* `src` is "SOME" *and* `v` is an instance of `Maybe`:
-		1. *Let* `isnone` be *Unwrap:* `Interpret((ISNONE `v`))`
-		2. *If* `isnone` is `true`:
+		1. *If* `v` has a value:
 			1. *Return:* `false`.
-		3. *Else:*
+		2. *Else:*
 			1. *Return:* `true`.
+	4. *Else If* `src` is "Some" *and* `v` is an instance of `Maybe`:
+		1. *If* `v` has a value:
+			1. *Return:* `true`.
+		2. *Else:*
+			1. *Return:* `false`.
 	5. *Else*:
 		1. *Return:* `false`.
 ;

@@ -21,8 +21,6 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** An enum of allowed unary operations. */
 export type OpCodeUn = (
-	| OpCode.ISNONE
-
 	| OpCode.BOOL_FROM
 	| OpCode.INT_FROM
 	| OpCode.NAT_FROM
@@ -93,8 +91,6 @@ export class Unop extends Value {
 	public override interpret(interp: Interpreter): VALUE.Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		switch (this.operator) {
-			case OpCode.ISNONE: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
-
 			case OpCode.BOOL_FROM:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
 			case OpCode.INT_FROM:   { return (operand as VALUE.Number).toInt(); }
 			case OpCode.NAT_FROM:   { return (operand as VALUE.Number).toNat(); }
@@ -119,8 +115,6 @@ export class Unop extends Value {
 		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
-			case OpCode.ISNONE: { return op.isNone(code); }
-
 			case OpCode.BOOL_FROM:  { return op.not(op.not(code)); }
 			case OpCode.INT_FROM:   { return op.toInt(code); }
 			case OpCode.NAT_FROM:   { return op.toNat(code); }

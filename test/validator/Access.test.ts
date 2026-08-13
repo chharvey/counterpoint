@@ -780,7 +780,7 @@ test.suite('Access', () => {
 				const result_name: string = `$${ result_n }`;
 				return xjs.String.dedent`
 					${ '\t' }(DECL <Maybe> ${ result_name })
-					${ '\t' }(GOTO.IF (ISNONE (GET ${ base_name })) "${ block_then }" "${ block_else }")
+					${ '\t' }(GOTO.IF (INSTANCEOF NONE (GET ${ base_name })) "${ block_then }" "${ block_else }")
 					"${ block_then }":
 						(SET ${ result_name } ${ op_maybe_string() })
 						(GOTO "${ block_endif }")

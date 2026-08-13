@@ -72,7 +72,7 @@ export class Access extends Expression implements Reassignable {
 			return OP.conditional_expression(
 				builder,
 				typ,
-				() => new OP.Unop(OP.OpCode.ISNONE, base_value, TYPE.BOOL),
+				() => new OP.InstanceOf(OP.InstanceOfName.NONE, base_value),
 				() => new OP.MaybeNew(typ.typearg),
 				() => new OP.MaybeNew(typ.typearg, this.#buildNonMaybeBase(
 					builder,

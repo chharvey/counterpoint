@@ -53,7 +53,6 @@ MAYBE.UNWRAP([Value]) -> Value;
 CALL([Value*]) -> Value;
 
 ISSET (SymbolSchemaVar|native-string) -> Boolean;
-ISNONE([Value])                       -> Boolean;
 
 INSTANCEOF(native-enum [Value]) -> Boolean;
 
@@ -166,7 +165,7 @@ Build(SemanticExpressionBlock blex) := [
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $base `Build(access.0)`)
 	(DECL ‹type› $result)
-	(GOTO.IF (ISNONE (GET $base)) "then" "else")
+	(GOTO.IF (INSTANCEOF "None" (GET $base)) "then" "else")
 	"then":
 	(SET $result (MAYBE.NEW))
 	(GOTO "endif")
