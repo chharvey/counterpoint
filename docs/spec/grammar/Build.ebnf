@@ -214,9 +214,6 @@ Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticEx
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
 
-Build(SemanticExpressionIsset ::= SemanticExpressionVariable) := "no longer supported";
-Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ID `Build(SemanticExpressionAccess)` (NULL.CONST null));
-
 Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := TODO:;
 Build(SemanticExpressionOperation[operator=NOT]       ::= SemanticExpression)               := (NOT [`Build(SemanticExpression)`]);

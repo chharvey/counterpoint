@@ -380,15 +380,12 @@ export class Decorator {
 				n:        SyntaxNodeType<'expression_unary_keyword'>,
 				punct:    Keyword,
 				operand:  AST.EXPR.Variable | AST.EXPR.Access,
-			) => (
-				// `!isset a` is syntax sugar for `!(isset a)`
-				punct === Keyword.ISNTSET ? new AST.EXPR.OperationUnary(
-					n,
-					Operator.NOT,
-					new AST.EXPR.Isset(n, operand),
-				) :
-				new AST.EXPR.Isset(n, operand)
-			))(
+			) => {
+				n;
+				punct;
+				operand;
+				throw new Error('no longer supported');
+			})(
 				node as SyntaxNodeType<'expression_unary_keyword'>,
 				node.children[0].type as Keyword,
 				this.decorate(node.firstNamedChild as SyntaxNodeFamily<'assignee', ['break']>),

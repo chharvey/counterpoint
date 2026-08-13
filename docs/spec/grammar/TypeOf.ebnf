@@ -296,17 +296,6 @@ Type! TypeOf(SemanticExpressionClaim claim) :=
 
 
 
-Type! TypeOf(SemanticExpressionIsset expr) :=
-	1. *Assert:* `expr.children.count` is 1.
-	2. *Let* `t0` be *Unwrap:* `TypeOf(expr.children.0)`.
-	3. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
-		1. *Return:* `Nothing`.
-	4. *Else:*
-		1. *Return:* `Boolean`.
-;
-
-
-
 Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
 	1. *Let* `operand` be *Unwrap:* `TypeOf(SemanticExpression)`.
 	2. *If* `operand` is not a Maybe type:
