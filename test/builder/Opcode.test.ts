@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import {
+	assert_instanceof,
 	Validator,
 	AST,
 	VALUE,
@@ -1584,69 +1585,77 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('InstanceOf', () => {
-				const cg         = new CodeGenerator();
-				const test_value = new OP.Const(VALUE.NULL);
-				const operand = genConst(cg);
-				const {vm, mod: {wasm}} = cg;
+				function common(classname: string): {
+					wasm:    binaryen.ExpressionBuilder,
+					vm:      CodeGenerator['vm'],
+					operand: binaryen.ExpressionRef,
+					actual:  binaryen.ExpressionRef,
+				} {
+					const {builder, cg, wasm} = setupScript(`{
+						null is ${ classname };
+					}`);
+					const irvalue: OP.Value = (builder.instructions.at(-1) as OP.Drop).value;
+					assert_instanceof(irvalue, OP.InstanceOf);
+					return {
+						wasm,
+						vm:      cg.vm,
+						operand: genConst(cg),
+						actual:  irvalue.codegen(cg),
+					};
+				}
 				test.test('BOOLEAN', () => {
-					// there exists no syntax for “is Boolean” operator, so constructing it manually
-					assertEqualBins(
-						new OP.InstanceOf(OP.InstanceOfName.BOOLEAN, test_value).codegen(cg),
-						vm.Value.boolFromI32(wasm.i32.and(
-							vm.Value.isPrimitive(operand),
-							wasm.i32.or(
-								vm.Vect.isConst(vm.Value.field(operand).primitive, false),
-								vm.Vect.isConst(vm.Value.field(operand).primitive, true),
-							),
-						)),
-					);
+					const {wasm, vm, operand, actual} = common('Boolean');
+					return assertEqualBins(actual, vm.Value.boolFromI32(wasm.i32.and(
+						vm.Value.isPrimitive(operand),
+						wasm.i32.or(
+							vm.Vect.isConst(vm.Value.field(operand).primitive, false),
+							vm.Vect.isConst(vm.Value.field(operand).primitive, true),
+						),
+					)));
 				});
 				test.test('SYMBOL', {expectFailure: true}, () => {
-					assertEqualBins(new OP.InstanceOf(OP.InstanceOfName.SYMBOL, test_value).codegen(cg), vm.Value.boolFromI32(wasm.i32.and(
+					const {wasm, vm, operand, actual} = common('Symbol');
+					return assertEqualBins(actual, vm.Value.boolFromI32(wasm.i32.and(
 						vm.Value.isPrimitive(operand),
 						vm.Vect.isNat(vm.Value.field(operand).primitive),
 					)));
 				});
 				test.test('INTEGER, NATURAL, FLOAT', () => {
-					assertEqualBins([
-						OP.InstanceOfName.INTEGER,
-						OP.InstanceOfName.NATURAL,
-						OP.InstanceOfName.FLOAT,
-					].map((name) => new OP.InstanceOf(name, test_value).codegen(cg)), [
-						(vect: binaryen.ExpressionRef) => vm.Vect.isInt(vect),
-						(vect: binaryen.ExpressionRef) => vm.Vect.isNat(vect),
-						(vect: binaryen.ExpressionRef) => vm.Vect.isFloat(vect),
-					].map((callable) => vm.Value.boolFromI32(wasm.i32.and(
-						vm.Value.isPrimitive(operand),
-						callable(vm.Value.field(operand).primitive),
-					))));
+					xjs.Array.forEachAggregated(['Integer', 'Natural', 'Float'], (classname, i) => {
+						const {wasm, vm, operand, actual} = common(classname);
+						return assertEqualBins(actual, vm.Value.boolFromI32(wasm.i32.and(
+							vm.Value.isPrimitive(operand),
+							[
+								vm.Vect.isInt(vm.Value.field(operand).primitive),
+								vm.Vect.isNat(vm.Value.field(operand).primitive),
+								vm.Vect.isFloat(vm.Value.field(operand).primitive),
+							][i],
+						)));
+					});
 				});
 				test.test('STRING, LIST, DICT, MAP, MAYBE', () => {
-					assertEqualBins([
-						OP.InstanceOfName.STRING,
-						OP.InstanceOfName.LIST,
-						OP.InstanceOfName.DICT,
-						OP.InstanceOfName.MAP,
-						OP.InstanceOfName.MAYBE,
-					].map((name) => new OP.InstanceOf(name, test_value).codegen(cg)), [
-						vm.reftype.String,
-						vm.reftype.List,
-						vm.reftype.Dict,
-						vm.reftype.Map,
-						vm.reftype.Maybe,
-					].map((reftype) => vm.Value.boolFromI32(wasm.i32.and(
-						vm.Value.isComposite(operand),
-						wasm.ref.test(vm.Value.field(operand).composite, reftype),
-					))));
+					xjs.Array.forEachAggregated(['String', 'List', 'Dict', 'Map', 'Maybe'], (classname, i) => {
+						const {wasm, vm, operand, actual} = common(classname);
+						return assertEqualBins(actual, vm.Value.boolFromI32(wasm.i32.and(
+							vm.Value.isComposite(operand),
+							wasm.ref.test(vm.Value.field(operand).composite, [
+								vm.reftype.String,
+								vm.reftype.List,
+								vm.reftype.Dict,
+								vm.reftype.Map,
+								vm.reftype.Maybe,
+							][i]),
+						)));
+					});
 				});
 				test.test('NONE, SOME', () => {
-					assertEqualBins([
-						new OP.InstanceOf(OP.InstanceOfName.NONE, test_value).codegen(cg),
-						new OP.InstanceOf(OP.InstanceOfName.SOME, test_value).codegen(cg),
-					], [
-						vm.op.isNone(operand),
-						vm.op.isSome(operand),
-					]);
+					xjs.Array.forEachAggregated(['None', 'Some'], (classname, i) => {
+						const {vm, operand, actual} = common(classname);
+						return assertEqualBins(actual, [
+							vm.op.isNone(operand),
+							vm.op.isSome(operand),
+						][i]);
+					});
 				});
 			});
 
