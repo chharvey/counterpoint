@@ -26,5 +26,9 @@ class TypeBoolean extends Union {
 	public override includes(_: VALUE.Value): boolean {
 		return true;
 	}
+
+	public override mutableOf(): Union {
+		return this;
+	}
 }
 export {TypeBoolean as Boolean};

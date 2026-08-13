@@ -1,35 +1,56 @@
-(func $op:is-null (export "op::isNull") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-null (struct.get $Value $primitive (local.get $value)))
+(func $op:to-int (export "op::toInt") (param $value (ref $Value)) (result (ref $Value))
+	(local $primitive v128)
+	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+
+	(call $Value.new-primitive (if (result v128)
+		(call $Vect.is-int (local.get $primitive))
+		(then (local.get $primitive))
+		(else (if (result v128)
+			(call $Vect.is-nat (local.get $primitive))
+			(then (call $Vect.new-int (call $Vect.nat-to-int (local.get $primitive))))
+			(else (if (result v128)
+				(call $Vect.is-float (local.get $primitive))
+				(then (call $Vect.new-int (call $Vect.float-to-int (local.get $primitive))))
+				(else (unreachable))
+			))
+		))
 	))
 )
-(func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
-	(local $composite eqref)
-	(call $Value.bool-from-i32 (if (result i32)
-		(call $Value.is-composite (local.get $value))
-		(then
-			(local.set $composite (struct.get $Value $composite (local.get $value)))
-			(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
-				(ref.test (ref $Maybe) (local.get $composite))
-				(then (i32.eqz (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite))))))
-				(else (i32.const 0))
-			)
-		)
-		(else (i32.const 0))
+(func $op:to-nat (export "op::toNat") (param $value (ref $Value)) (result (ref $Value))
+	(local $primitive v128)
+	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
+
+	(call $Value.new-primitive (if (result v128)
+		(call $Vect.is-int (local.get $primitive))
+		(then (call $Vect.new-nat (call $Vect.int-to-nat (local.get $primitive))))
+		(else (if (result v128)
+			(call $Vect.is-nat (local.get $primitive))
+			(then (local.get $primitive))
+			(else (if (result v128)
+				(call $Vect.is-float (local.get $primitive))
+				(then (call $Vect.new-nat (call $Vect.float-to-nat (local.get $primitive))))
+				(else (unreachable))
+			))
+		))
 	))
 )
+(func $op:to-float (export "op::toFloat") (param $value (ref $Value)) (result (ref $Value))
+	(local $primitive v128)
+	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 
-
-
-(func $op:unwrap-maybe (export "op::unwrapMaybe") (param $value (ref $Value)) (result (ref $Value))
-	(local $mval (ref null $Value))
-	(local.set $mval (struct.get $Maybe $value (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value)))))
-	(if (result (ref $Value))
-		(ref.is_null (local.get $mval))
-		(then (unreachable))
-		(else (ref.as_non_null (local.get $mval)))
-	)
+	(call $Value.new-primitive (if (result v128)
+		(call $Vect.is-int (local.get $primitive))
+		(then (call $Vect.new-float (call $Vect.int-to-float (local.get $primitive))))
+		(else (if (result v128)
+			(call $Vect.is-nat (local.get $primitive))
+			(then (call $Vect.new-float (call $Vect.nat-to-float (local.get $primitive))))
+			(else (if (result v128)
+				(call $Vect.is-float (local.get $primitive))
+				(then (local.get $primitive))
+				(else (unreachable))
+			))
+		))
+	))
 )
 
 
@@ -97,59 +118,14 @@
 
 
 
-(func $op:to-int (export "op::toInt") (param $value (ref $Value)) (result (ref $Value))
-	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (local.get $primitive))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (call $Vect.new-int (call $Vect.nat-to-int (local.get $primitive))))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (call $Vect.new-int (call $Vect.float-to-int (local.get $primitive))))
-				(else (unreachable))
-			))
-		))
-	))
-)
-(func $op:to-nat (export "op::toNat") (param $value (ref $Value)) (result (ref $Value))
-	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-nat (call $Vect.int-to-nat (local.get $primitive))))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (local.get $primitive))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (call $Vect.new-nat (call $Vect.float-to-nat (local.get $primitive))))
-				(else (unreachable))
-			))
-		))
-	))
-)
-(func $op:to-float (export "op::toFloat") (param $value (ref $Value)) (result (ref $Value))
-	(local $primitive v128)
-	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
-
-	(call $Value.new-primitive (if (result v128)
-		(call $Vect.is-int (local.get $primitive))
-		(then (call $Vect.new-float (call $Vect.int-to-float (local.get $primitive))))
-		(else (if (result v128)
-			(call $Vect.is-nat (local.get $primitive))
-			(then (call $Vect.new-float (call $Vect.nat-to-float (local.get $primitive))))
-			(else (if (result v128)
-				(call $Vect.is-float (local.get $primitive))
-				(then (local.get $primitive))
-				(else (unreachable))
-			))
-		))
-	))
+(func $op:unwrap-maybe (export "op::unwrapMaybe") (param $value (ref $Value)) (result (ref $Value))
+	(local $mval (ref null $Value))
+	(local.set $mval (struct.get $Maybe $value (ref.cast (ref $Maybe) (struct.get $Value $composite (local.get $value)))))
+	(if (result (ref $Value))
+		(ref.is_null (local.get $mval))
+		(then (unreachable))
+		(else (ref.as_non_null (local.get $mval)))
+	)
 )
 
 
@@ -374,11 +350,92 @@
 
 
 
+(func $op:is-int (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-primitive (local.get $value))
+		(call $Vect.is-int (struct.get $Value $primitive (local.get $value)))
+	))
+)
+(func $op:is-nat (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-primitive (local.get $value))
+		(call $Vect.is-nat (struct.get $Value $primitive (local.get $value)))
+	))
+)
+(func $op:is-float (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-primitive (local.get $value))
+		(call $Vect.is-float (struct.get $Value $primitive (local.get $value)))
+	))
+)
+(func $op:is-string (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $String) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-object (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Object) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-list (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $List) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-dict (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Dict) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-map (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Map) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-maybe (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Maybe) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-none (export "op::isNone") (param $value (ref $Value)) (result (ref $Value))
+	(local $composite (ref null eq))
+	(local.set $composite (struct.get $Value $composite (local.get $value)))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+			(ref.test (ref $Maybe) (local.get $composite))
+			(then (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite)))))
+			(else (i32.const 0))
+		)
+	))
+)
+(func $op:is-some (export "op::isSome") (param $value (ref $Value)) (result (ref $Value))
+	(local $composite (ref null eq))
+	(local.set $composite (struct.get $Value $composite (local.get $value)))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(if (result i32) ;; `(i32.and)` doesn’t short-circuit, so using conditional
+			(ref.test (ref $Maybe) (local.get $composite))
+			(then (i32.eqz (ref.is_null (struct.get $Maybe $value (ref.cast (ref $Maybe) (local.get $composite))))))
+			(else (i32.const 0))
+		)
+	))
+)
+
+
+
 (func $op:id (export "op::id") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 eqref)
-	(local $ref1 eqref)
+	(local $ref0 (ref null eq))
+	(local $ref1 (ref null eq))
 	(local.set $vect0 (struct.get $Value $primitive (local.get 0)))
 	(local.set $vect1 (struct.get $Value $primitive (local.get 1)))
 	(local.set $ref0  (struct.get $Value $composite (local.get 0)))
@@ -570,8 +627,8 @@
 (func $op:eq (export "op::eq") (param (ref $Value) (ref $Value)) (result (ref $Value))
 	(local $vect0 v128)
 	(local $vect1 v128)
-	(local $ref0 eqref)
-	(local $ref1 eqref)
+	(local $ref0 (ref null eq))
+	(local $ref1 (ref null eq))
 
 	;; identical values are necessarily equal
 	(if
@@ -663,6 +720,16 @@
 			(then (br $exit (call $!Map.equal
 				(ref.cast (ref $Map) (local.get $ref0))
 				(ref.cast (ref $Map) (local.get $ref1))
+			)))
+		)
+		(if
+			(i32.and
+				(ref.test (ref $Maybe) (local.get $ref0))
+				(ref.test (ref $Maybe) (local.get $ref1))
+			)
+			(then (br $exit (call $!Maybe.equal
+				(ref.cast (ref $Maybe) (local.get $ref0))
+				(ref.cast (ref $Maybe) (local.get $ref1))
 			)))
 		)
 		(i32.const 0)
@@ -927,6 +994,43 @@
 		)
 	)
 	(i32.const 1)
+)
+;; Returns whether two Maybes are equal —
+;; whether they are both None, or are both Some with equal values.
+(func $!Maybe.equal (param $maybe0 (ref $Maybe)) (param $maybe1 (ref $Maybe)) (result i32)
+	(local $value0 (ref null $Value))
+	(local $value1 (ref null $Value))
+
+	;; Maybes that are identical are always equal
+	(if
+		(ref.eq (local.get $maybe0) (local.get $maybe1))
+		(then (return (i32.const 1)))
+	)
+
+	(local.set $value0 (struct.get $Maybe $value (local.get $maybe0)))
+	(local.set $value1 (struct.get $Maybe $value (local.get $maybe1)))
+
+	;; if both are None, return true; else if any is None, return false; else continue
+	(if
+		(i32.and
+			(ref.is_null (local.get $value0))
+			(ref.is_null (local.get $value1))
+		)
+		(then (return (i32.const 1)))
+		(else (if
+			(i32.or
+				(ref.is_null (local.get $value0))
+				(ref.is_null (local.get $value1))
+			)
+			(then (return (i32.const 0)))
+		))
+	)
+
+	;; return whether values are equal
+	(call $Value.bool-to-i32 (call $op:eq
+		(ref.as_non_null (local.get $value0))
+		(ref.as_non_null (local.get $value1))
+	))
 )
 
 

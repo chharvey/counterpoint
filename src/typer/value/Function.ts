@@ -15,6 +15,11 @@ class ValueFunction extends Value {
 	}
 
 
+	public override get isReference(): boolean {
+		return true;
+	}
+
+
 	public override toString(): string {
 		return this.source;
 	}

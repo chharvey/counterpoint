@@ -19,7 +19,7 @@ export * from './TupleGet.ts';
 export * from './RecordGet.ts';
 export * from './CollectionDynamicGet.ts';
 export * from './Call.ts';
-export * from './Isset.ts';
+export * from './InstanceOf.ts';
 export * from './Unop.ts';
 export * from './Binop.ts';
 export * from './Function.ts';

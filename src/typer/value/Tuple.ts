@@ -19,6 +19,11 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
+	public override get isReference(): boolean {
+		return false;
+	}
+
+
 	public override toString(): string {
 		return `(${ super.toString() }${ this.items.length === 1 ? ',' : '' })`;
 	}

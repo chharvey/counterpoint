@@ -536,37 +536,22 @@ Decorate(ExpressionUnarySymbol<Block, Break, Return> ::= "-" ExpressionUnarySymb
 
 
 
-Decorate(ExpressionUnaryKeyword<Block, Break, Return> ::= ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpression
+Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break><?Return>);
-Decorate(ExpressionUnaryKeyword<Block, Break, Return> ::= "isset" Assignee<?Break><?Return>) -> SemanticExpressionIsset
-	:= (SemanticExpressionIsset
-		Decorate(Assignee<?Break><?Return>)
-	);
-Decorate(ExpressionUnaryKeyword<Block, Break, Return> ::= "!isset" Assignee<?Break><?Return>) -> SemanticExpressionOperation
-	:= (SemanticExpressionOperation[operator=NOT]
-		(SemanticExpressionIsset
-			Decorate(Assignee<?Break><?Return>)
-		)
-	);
-
-
-
-Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionUnaryKeyword<?Block><?Break><?Return>) -> SemanticExpression
-	:= Decorate(ExpressionUnaryKeyword<?Block><?Break><?Return>);
-Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as" ExpressionUnaryKeyword<?Block><?Break><?Return>) -> SemanticExpressionOperation
+Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=CAST]
 		Decorate(ExpressionCast<?Block><?Break><?Return>)
-		Decorate(ExpressionUnaryKeyword<?Block><?Break><?Return>)
+		Decorate(ExpressionUnarySymbol<?Block><?Break><?Return>)
 	);
-Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as?" ExpressionUnaryKeyword<?Block><?Break><?Return>) -> SemanticExpressionOperation
+Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as?" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=MAYBE]
 		Decorate(ExpressionCast<?Block><?Break><?Return>)
-		Decorate(ExpressionUnaryKeyword<?Block><?Break><?Return>)
+		Decorate(ExpressionUnarySymbol<?Block><?Break><?Return>)
 	);
-Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" ExpressionUnaryKeyword<?Block><?Break><?Return>) -> SemanticExpressionOperation
+Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation
 	:= (SemanticExpressionOperation[operator=RESULT]
 		Decorate(ExpressionCast<?Block><?Break><?Return>)
-		Decorate(ExpressionUnaryKeyword<?Block><?Break><?Return>)
+		Decorate(ExpressionUnarySymbol<?Block><?Break><?Return>)
 	);
 Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as" "<" Type ">") -> SemanticExpressionClaim
 	:= (SemanticExpressionClaim

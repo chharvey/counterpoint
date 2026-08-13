@@ -1,5 +1,5 @@
-import type {
-	Builder,
+import {
+	type Builder,
 	OP,
 } from '../../../index.ts';
 import {
@@ -10,12 +10,19 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {TYPE} from '../../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorCast,
 } from '../../Operator.ts';
+import {
+	IntrinsicName,
+	validate_intrinsic_name,
+} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
 
@@ -34,7 +41,44 @@ export class OperationBinaryCast extends OperationBinary {
 		operand0: Expression,
 		operand1: Expression,
 	) {
-		super(start_node, Operator.CAST, operand0, operand1);
+		super(start_node, operator, operand0, operand1);
+	}
+
+	public override varCheck(): void {
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be an `IntrinsicName`)
+			this.operand0.varCheck();
+			validate_intrinsic_name(this.operand1.source);
+		} else {
+			return super.varCheck();
+		}
+	}
+
+	public override typeCheck(): void {
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be an `IntrinsicName`)
+			this.operand0.typeCheck();
+			this.type(); // assert does not throw
+		} else {
+			return super.typeCheck();
+		}
+	}
+
+	@memoizeMethod
+	public override type(): TYPE.Type {
+		const t0 = this.operand0.type();
+		if (t0.isBottomType) {
+			return TYPE.NOTHING;
+		}
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be an `IntrinsicName`)
+			return TYPE.BOOL;
+		} else {
+			return this.type_do(t0, this.operand1.type());
+		}
 	}
 
 	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
@@ -42,7 +86,43 @@ export class OperationBinaryCast extends OperationBinary {
 	}
 
 	@memoizeMethod
-	public override build(_: Builder): OP.Value {
+	public override build(builder: Builder): OP.Value {
+		if (this.operator === Operator.IS) {
+			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
+			// (`this.operand1.source` must be an `IntrinsicName`)
+			const op1_source = this.operand1.source as IntrinsicName;
+			const op0: OP.ValueTac = this.operand0.build(builder).asTac(builder);
+			switch (op1_source) {
+				case IntrinsicName.NULL: {
+					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);
+				}
+				case IntrinsicName.BOOLEAN: {
+					const left = new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.FALSE), TYPE.BOOL);
+					return OP.conditional_expression(
+						builder,
+						TYPE.BOOL,
+						() => left,
+						() => left,
+						() => new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.TRUE), TYPE.BOOL),
+					);
+				}
+			}
+			return new OP.InstanceOf(new Map<IntrinsicName, OP.InstanceOfName>([
+				[IntrinsicName.SYMBOL,  OP.InstanceOfName.SYMBOL],
+				[IntrinsicName.INTEGER, OP.InstanceOfName.INTEGER],
+				[IntrinsicName.NATURAL, OP.InstanceOfName.NATURAL],
+				[IntrinsicName.FLOAT,   OP.InstanceOfName.FLOAT],
+				[IntrinsicName.STRING,  OP.InstanceOfName.STRING],
+				[IntrinsicName.OBJECT,  OP.InstanceOfName.OBJECT],
+				[IntrinsicName.LIST,    OP.InstanceOfName.LIST],
+				[IntrinsicName.DICT,    OP.InstanceOfName.DICT],
+				[IntrinsicName.SET,     OP.InstanceOfName.SET],
+				[IntrinsicName.MAP,     OP.InstanceOfName.MAP],
+				[IntrinsicName.MAYBE,   OP.InstanceOfName.MAYBE],
+				[IntrinsicName.NONE,    OP.InstanceOfName.NONE],
+				[IntrinsicName.SOME,    OP.InstanceOfName.SOME],
+			]).get(op1_source)!, op0);
+		}
 		throw new Error('`OperationBinaryCast#build` not yet supported.');
 	}
 }

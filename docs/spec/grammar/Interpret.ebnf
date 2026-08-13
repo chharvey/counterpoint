@@ -164,28 +164,33 @@ Value! Interpret((MAYBE.UNWRAP `obj`)) :=
 
 // Value! Interpret((CALL `callable` `args`));
 
-Boolean! Interpret((ISSET `id`)) :=
-	1. *If* the interpreter’s symbol table contains `id`:
+Boolean! Interpret((INSTANCEOF `src` `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* any of the following conditions is `true`:
+		- `src` is "Symbol"  *and* `v` is an instance of `Symbol`
+		- `src` is "Integer" *and* `v` is an instance of `Integer`
+		- `src` is "Natural" *and* `v` is an instance of `Natural`
+		- `src` is "Float"   *and* `v` is an instance of `Float`
+		- `src` is "String"  *and* `v` is an instance of `String`
+		- `src` is "Object"  *and* `v` is an instance of `Object`
+		- `src` is "List"    *and* `v` is an instance of `List`
+		- `src` is "Dict"    *and* `v` is an instance of `Dict`
+		- `src` is "Set"     *and* `v` is an instance of `Set`
+		- `src` is "Map"     *and* `v` is an instance of `Map`
+		- `src` is "Maybe"   *and* `v` is an instance of `Maybe`
 		1. *Return:* `true`.
-	2. *Else:*
-		1. *Throw:* a new ReferenceError.
-;
-
-Boolean! Interpret((ISNULL `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *Return:* `Identical(v, null)`.
-;
-
-Boolean! Interpret((ISNONE `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *If* `v` is an instance of `Maybe`:
-		1. *If* `v` does not have a value:
+	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
+		1. *If* `v` has a value:
+			1. *Return:* `false`.
+		2. *Else:*
+			1. *Return:* `true`.
+	4. *Else If* `src` is "Some" *and* `v` is an instance of `Maybe`:
+		1. *If* `v` has a value:
 			1. *Return:* `true`.
 		2. *Else:*
-			1. Fall through.
-	3. *Else:*
-		1. Fall through.
-	4. *Return:* `false`.
+			1. *Return:* `false`.
+	5. *Else*:
+		1. *Return:* `false`.
 ;
 
 Boolean! Interpret((NOT `v`)) :=
@@ -219,12 +224,12 @@ Number! Interpret((NEG `v`)) :=
 	3. *Return:* `negation`.
 ;
 
-Boolean! Interpret((TOBOOL `v`)) :=
+Boolean! Interpret((BOOL.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *Return:* `ToBoolean(v)`.
 ;
 
-Integer! Interpret((TOINT `v`)) :=
+Integer! Interpret((INT.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `Natural`:
 		1. *Let* `as_int` be the reinterpretation of `v` as a 64-bit signed integer value.
@@ -236,7 +241,7 @@ Integer! Interpret((TOINT `v`)) :=
 	5. *Return:* `v`.
 ;
 
-Natural! Interpret((TONAT `v`)) :=
+Natural! Interpret((NAT.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `Integer`:
 		1. *Let* `as_nat` be the reinterpretation of `v` to a 64-bit unsigned integer value.
@@ -248,7 +253,7 @@ Natural! Interpret((TONAT `v`)) :=
 	5. *Return:* `v`.
 ;
 
-Float! Interpret((TOFLOAT `v`)) :=
+Float! Interpret((FLOAT.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `Integer` *or* `v` is an instance of `Natural`:
 		1. *Let* `as_float` be the conversion of `v` to a 64-bit binary floating-point value.
@@ -257,7 +262,7 @@ Float! Interpret((TOFLOAT `v`)) :=
 	4. *Return:* `v`.
 ;
 
-String! Interpret((TOSTR `v`)) :=
+String! Interpret((STR.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `String`:
 		1. *Return:* `v`.

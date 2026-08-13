@@ -107,17 +107,18 @@ Type! TypeValueOf(SemanticTypeCall call) :=
 			4. *If* `base.source` is "Set":
 				1. *Return:* a Set type under the type argument `genericarg`.
 		2. *Throw:* a new TypeError.
-	5. *Else:*
-		1. *Assert:* `base.source` is "Map".
-		2. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
-		3. *If* `call.children.count` is 2:
+	5. *Else If* `base.source` is "Map":
+		1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
+		2. *If* `call.children.count` is 2:
 			1. *Let* `consequenttype` be `antecedenttype`.
-		4. *Else If* `call.children.count` is 3:
+		3. *Else If* `call.children.count` is 3:
 			1. *Let* `consequenttype` be *Unwrap:* `TypeValueOf(call.children.2)`.
-		5. *Else:*
+		4. *Else:*
 			1. *Throw:* a new TypeError.
-		6. *Return:* a Map type under an antecedent type argument `antecedenttype`
+		5. *Return:* a Map type under an antecedent type argument `antecedenttype`
 			and a consequent type argument `consequenttype`.
+	6. *Else:*
+		// TODO: see Class API
 ;
 
 

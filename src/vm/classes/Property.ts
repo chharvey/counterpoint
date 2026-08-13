@@ -50,8 +50,8 @@ export class Property implements HasFuncData {
 	 * Application code should treat tombstones as non-entries —
 	 * they should be treated the same as null when getting, and should be replaced when setting.
 	 *
-	 * A Property tombstone is implemented as a Property with a key of `\xff`.
-	 * This will not conflict with real Properties, whose keys are all at least `\x100`
+	 * A Property tombstone is implemented as a Property with a key of `\x7f`.
+	 * This will not conflict with real Properties, whose keys are all at least `\x80`
 	 * per the Counterpoint spec (see **TokenWorth** algorithm).
 	 *
 	 * Property tombstones contribute to the load factor of a Dict:

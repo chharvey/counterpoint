@@ -229,36 +229,127 @@ test.suite('Opcode', () => {
 
 			test.test.todo('Call', () => undefined);
 
-			test.test('Isset', () => {
-				assert_equal_values(interpret_extracted_drops(`{
-					val mut a0?: int;
-					val mut a1?: int;
-					val mut a2?: int;
-
-					val mut b: int = 42;
-					val mut c0: int | null = 42;
-					val mut c1: int | null = 42;
-					val mut d: int | null = null;
-					val e: int = 42;
-					val f: int | null = 42;
-					val g: int | null = null;
-
-					set a1 = 42;
-					set a2 = 42;
-					delete a2;
-					set c1 = null;
-
-					isset a0; % true
-					isset a1; % true
-					isset a2; % true
-					isset b;  % true
-					isset c0; % true
-					isset c1; % true
-					isset d;  % true
-					isset e;  % true
-					isset f;  % true
-					isset g;  % true
-				}`), repeat(VALUE.TRUE, 10));
+			test.suite('InstanceOf', () => {
+				const srcs: readonly string[] = extract_lines`
+					null
+					false
+					true
+					0
+					42
+					0.0
+					-0.0
+					4.2e+1
+					+0
+					+42
+					""
+					"hello"
+					()
+					(42,)
+					(a= 42)
+					[]
+					[42]
+					[a= 42]
+					{}
+					{42}
+					{41 -> 42}
+				`;
+				test.suite('primitives & countables.', () => {
+					let expecteds: readonly VALUE.Value[];
+					test.before(() => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder))));
+						expecteds = builder.instructions.map((instr) => (instr instanceof OP.Drop
+							? instr.value.interpret(interp)
+							: instr.interpret(interp)
+						)).filter((value) => !!value);
+					});
+					[
+						OP.InstanceOfName.SYMBOL,
+						OP.InstanceOfName.INTEGER,
+						OP.InstanceOfName.NATURAL,
+						OP.InstanceOfName.FLOAT,
+						OP.InstanceOfName.STRING,
+						OP.InstanceOfName.LIST,
+						OP.InstanceOfName.DICT,
+						OP.InstanceOfName.SET,
+						OP.InstanceOfName.MAP,
+						OP.InstanceOfName.MAYBE,
+					].forEach((name, i) => {
+						test.test(OP.InstanceOfName[name], () => {
+							const builder = new Builder();
+							const interp  = new Interpreter();
+							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+								name,
+								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+							))));
+							return assert_equal_values(
+								builder.instructions.map((instr) => (instr instanceof OP.Drop
+									? instr.value.interpret(interp)
+									: instr.interpret(interp)
+								)).filter((value) => !!value),
+								expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof [
+									VALUE.Symbol,
+									VALUE.Integer,
+									VALUE.Natural,
+									VALUE.Float,
+									VALUE.String,
+									VALUE.List,
+									VALUE.Dict,
+									VALUE.Set,
+									VALUE.Map,
+									VALUE.Maybe,
+								][i])),
+							);
+						});
+					});
+					test.test('OBJECT', () => {
+						const builder = new Builder();
+						const interp  = new Interpreter();
+						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+							OP.InstanceOfName.OBJECT,
+							AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+						))));
+						return assert_equal_values(
+							builder.instructions.map((instr) => (instr instanceof OP.Drop
+								? instr.value.interpret(interp)
+								: instr.interpret(interp)
+							)).filter((value) => !!value),
+							expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand.isReference)),
+						);
+					});
+				});
+				test.suite('Maybes.', () => {
+					[
+						OP.InstanceOfName.MAYBE,
+						OP.InstanceOfName.NONE,
+						OP.InstanceOfName.SOME,
+					].forEach((name, i) => {
+						test.test(OP.InstanceOfName[name], () => {
+							const builder = new Builder();
+							const interp  = new Interpreter();
+							[
+								new OP.MaybeNew(TYPE.STR),
+								new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
+								new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
+							].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+								name,
+								irval.asTac(builder),
+							))));
+							assert_equal_values(
+								builder.instructions.map((instr) => (instr instanceof OP.Drop
+									? instr.value.interpret(interp)
+									: instr.interpret(interp)
+								)).filter((value) => !!value),
+								[
+									repeat(VALUE.TRUE, 3),
+									[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
+									[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
+								][i],
+							);
+						});
+					});
+				});
 			});
 
 			test.suite('Unop', () => {
@@ -297,80 +388,23 @@ test.suite('Opcode', () => {
 				}
 				test.suite('[operator=MAYBE_UNWRAP]', () => {
 					test.test('throws when operand is a None.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						builder.pushInstruction(new OP.Drop(new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR).asTac(builder),
-							TYPE.STR,
-						)));
+						const {builder} = setupScript(`{
+							val mut x?: str;
+							x~?;
+						}`, {codegen: false});
+						const interp = new Interpreter();
 						return assert.throws(() => builder.instructions.map((instr) => (instr instanceof OP.Drop
 							? instr.value.interpret(interp)
 							: instr.interpret(interp)
 						)), /Unwrapped a None value/);
 					});
 					test.test('returns the value when operand is a Some.', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						builder.pushInstruction(new OP.Drop(new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))).asTac(builder),
-							TYPE.STR,
-						)));
-						return assert.ok(builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).find((value) => !!value)!.identical(new VALUE.String('hello')));
+						assert_equal_values(interpret_extracted_drops(`{
+							val mut y?: str;
+							set y = "hello";
+							y~?;
+						}`), [new VALUE.String('hello')]);
 					});
-				});
-				test.test('[operator=ISNULL]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.ISNULL,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					return assert_equal_values(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							VALUE.TRUE,
-							...repeat(VALUE.FALSE, 20),
-						],
-					);
-				});
-				test.test('[operator=ISNONE]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.ISNONE,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					[
-						new OP.MaybeNew(TYPE.STR),
-						new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
-						new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
-					].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.ISNONE,
-						irval.asTac(builder),
-						TYPE.BOOL,
-					))));
-					assert_equal_values(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							...repeat(VALUE.FALSE, 21),
-							VALUE.TRUE,
-							VALUE.FALSE,
-							VALUE.FALSE,
-						],
-					);
 				});
 				test.test('[operator=NOT]', () => {
 					assert_equal_values(interpret_unops('!'), [
@@ -412,26 +446,13 @@ test.suite('Opcode', () => {
 						new VALUE.Float(-4.2e+1),
 					]);
 				});
-				test.test('[operator=TOBOOL]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.TOBOOL,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					return assert_equal_values(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							...repeat(VALUE.FALSE, 2),
-							...repeat(VALUE.TRUE, 19),
-						],
-					);
+				test.test('[operator=BOOL_FROM]', () => {
+					assert_equal_values(interpret_calls('Boolean', operands), [
+						...repeat(VALUE.FALSE, 2),
+						...repeat(VALUE.TRUE, 19),
+					]);
 				});
-				test.test('[operator=TOINT]', () => {
+				test.test('[operator=INT_FROM]', () => {
 					assert_equal_values(interpret_calls('Integer', operands.slice(3, 10)), [
 						VALUE.INT_0,
 						new VALUE.Integer(42n),
@@ -442,7 +463,7 @@ test.suite('Opcode', () => {
 						new VALUE.Integer(42n),
 					]);
 				});
-				test.test('[operator=TONAT]', () => {
+				test.test('[operator=NAT_FROM]', () => {
 					assert_equal_values(interpret_calls('Natural', operands.slice(3, 10)), [
 						VALUE.NAT_0,
 						new VALUE.Natural(42n),
@@ -453,7 +474,7 @@ test.suite('Opcode', () => {
 						new VALUE.Natural(42n),
 					]);
 				});
-				test.test('[operator=TOFLOAT]', () => {
+				test.test('[operator=FLOAT_FROM]', () => {
 					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
 						VALUE.FLOAT_0,
 						new VALUE.Float(42.0),
@@ -871,6 +892,23 @@ test.suite('Opcode', () => {
 							i != {41 -> 43};
 							i != {43 -> 42};
 						}`), repeat(VALUE.TRUE, 44));
+						return assert_equal_values(interpret_extracted_drops(`{
+							val mut x?: int;
+							val mut y?: float;
+							val z: Some.<int> = Some.<int>(42);
+							x === y;    %== false
+							x == y;     %== true
+							set x = 42;
+							x == y;     %== false
+							x === z;    %== false
+							x == z;     %== true
+						}`), [
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+						]);
 					});
 					test.test('compound value types’ constituents are compared using same operand.', () => {
 						assert_equal_values(interpret_binops(extract_lines`
@@ -1457,95 +1495,71 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.test('Isset', () => {
-				const {stmts, builder, cg, wasm} = setupScript(`{
-					val mut a0?: int;
-					val mut a1?: int;
-					val mut a2?: int;
-
-					val mut b: int = 42;
-					val mut c0: int | null = 42;
-					val mut c1: int | null = 42;
-					val mut d: int | null = null;
-					val e: int = 42;
-					val f: int | null = 42;
-					val g: int | null = null;
-
-					set a1 = 42;
-					set a2 = 42;
-					delete a2;
-					set c1 = null;
-
-					isset a0;
-					isset a1;
-					isset a2;
-					isset b;
-					isset c0;
-					isset c1;
-					isset d;
-					isset e;
-					isset f;
-					isset g;
+			test.test('InstanceOf', () => {
+				const {builder, cg} = setupScript(`{
+					${ [
+						'Symbol',
+						'Integer',
+						'Natural',
+						'Float',
+						'String',
+						'Object',
+						'List',
+						'Dict',
+						'Set',
+						'Map',
+						'Maybe',
+						'None',
+						'Some',
+					].map((classname) => `null is ${ classname };`).join('\n') };
 				}`);
+				const operand: binaryen.ExpressionRef = genConst(cg);
 				return assertEqualBins(
-					stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
-					Array.from(new Array(10), (_, i) => cg.vm.Value.boolFromI32(wasm.i32.eqz(wasm.i32.eqz(cg.vm.Value.field(wasm.local.get(i, cg.vm.reftype.Value)).tag)))),
+					builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.value.codegen(cg)),
+					[
+						cg.vm.op.isInt(operand),
+						cg.vm.op.isInt(operand),
+						cg.vm.op.isNat(operand),
+						cg.vm.op.isFloat(operand),
+						cg.vm.op.isString(operand),
+						cg.vm.op.isObject(operand),
+						cg.vm.op.isList(operand),
+						cg.vm.op.isDict(operand),
+						cg.vm.op.isMap(operand),
+						cg.vm.op.isMap(operand),
+						cg.vm.op.isMaybe(operand),
+						cg.vm.op.isNone(operand),
+						cg.vm.op.isSome(operand),
+					],
 				);
 			});
 
 			test.suite('Unop', () => {
-				test.test('MAYBE_UNWRAP', () => {
-					const builder = new Builder();
-					const cg      = new CodeGenerator();
-					const {vm, mod: {wasm}} = cg;
-					[
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.STR).asTac(builder),
-							TYPE.STR,
-						),
-						new OP.Unop(
-							OP.OpCode.MAYBE_UNWRAP,
-							new OP.MaybeNew(TYPE.INT, new OP.Const(new VALUE.Integer(42n))).asTac(builder),
-							TYPE.INT,
-						),
-					].forEach((irval) => builder.pushInstruction(new OP.Drop(irval)));
-					builder.terminateBlock(new OP.EndProgram());
-					builder.validate();
-					builder.codegen(cg);
-					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
-						wasm.local.set(0, vm.Value.newComposite(cg.codegenMaybe())),
-						wasm.local.set(1, vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(0, vm.reftype.Value))),
-						wasm.drop(vm.op.unwrapMaybe(wasm.local.get(1, vm.reftype.Value))),
-					]);
-				});
-				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
-					// there exists no syntax for “is null” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.ISNULL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.isNull(genConst(cg)),
-					);
-				});
-				test.test('ISNONE operator returns custom WASM function `$op:is-none`.', () => {
-					// there exists no syntax for “is None” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.ISNONE, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.isNone(genConst(cg)),
-					);
-				});
-				test.test('TOBOOL operator returns custom WASM function `$op:not` applied twice.', () => {
-					// there exists no syntax for “to bool” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.TOBOOL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
-					);
-				});
 				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
+						Boolean.(null);
+						Boolean.(false);
+						Boolean.(true);
+						Boolean.(@hello);
+						Boolean.(-0);
+						Boolean.(-42);
+						Boolean.(+0);
+						Boolean.(+42);
+						Boolean.(0.0);
+						Boolean.(4.2);
+						Boolean.("hello");
+
+						Integer.(+42);
+						Integer.(4.2);
+						Natural.(42);
+						Natural.(4.2);
+						Float.(+42);
+						Float.(42);
+
+						String.(null);
+						String.(42);
+						String.("hello");
+
 						!null;
 						!false;
 						!@hello;
@@ -1560,22 +1574,34 @@ test.suite('Opcode', () => {
 
 						-(42);
 						-(4.2);
-
-						Integer.(+42);
-						Integer.(4.2);
-						Natural.(42);
-						Natural.(4.2);
-						Float.(+42);
-						Float.(42);
-
-						String.(null);
-						String.(42);
-						String.("hello");
 					}`, {codegen: false});
 					const id_hello = Validator.cookTokenIdentifier('hello');
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, null))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, false))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, true))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, Symbol(id_hello.toString())))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -0n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -42n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 42n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0.0))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 4.2))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 'hello'))),
+
+							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toInt(genConst(cg, 4.2)),
+							cg.vm.op.toNat(genConst(cg, 42n)),
+							cg.vm.op.toNat(genConst(cg, 4.2)),
+							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toFloat(genConst(cg, 42n)),
+
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 42n))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 'hello'))),
+
 							cg.vm.op.not(genConst(cg)),
 							cg.vm.op.not(genConst(cg, false)),
 							cg.vm.op.not(genConst(cg, Symbol(id_hello.toString()))),
@@ -1590,17 +1616,6 @@ test.suite('Opcode', () => {
 
 							cg.vm.op.negate(genConst(cg, 42n)),
 							cg.vm.op.negate(genConst(cg, 4.2)),
-
-							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toInt(genConst(cg, 4.2)),
-							cg.vm.op.toNat(genConst(cg, 42n)),
-							cg.vm.op.toNat(genConst(cg, 4.2)),
-							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toFloat(genConst(cg, 42n)),
-
-							cg.vm.Value.stringify(genConst(cg)),
-							cg.vm.Value.stringify(genConst(cg, 42n)),
-							cg.vm.Value.stringify(genConst(cg, 'hello')),
 						],
 					);
 				});
@@ -1679,6 +1694,22 @@ test.suite('Opcode', () => {
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(map.codegen(cg), cg.vm.reftype.Map))))),
 					);
+				});
+				test.test('MAYBE.UNWRAP', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						val mut x?: str;
+						val mut y?: int;
+						set y = 42;
+						x~?;
+						y~?;
+					}`);
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						wasm.local.set(0, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(0, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
+					]);
 				});
 			});
 

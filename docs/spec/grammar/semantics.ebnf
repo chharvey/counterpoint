@@ -100,7 +100,6 @@ SemanticExpression =:=
 	| SemanticExpressionAccess
 	| SemanticExpressionCall
 	| SemanticExpressionClaim
-	| SemanticExpressionIsset
 	| SemanticExpressionOperation
 	| SemanticExpressionSwitch
 	| SemanticExpressionFunction
@@ -147,9 +146,6 @@ SemanticExpressionCall
 
 SemanticExpressionClaim
 	::= SemanticExpression SemanticType;
-
-SemanticExpressionIsset
-	::= SemanticExpressionVariable | SemanticExpressionAccess;
 
 SemanticExpressionOperation[operator: UN_MAYBE | UN_RESULT | NOT | EMP]
 	::= SemanticExpression;

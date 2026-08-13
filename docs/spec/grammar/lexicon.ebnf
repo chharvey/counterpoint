@@ -67,8 +67,6 @@ KeywordValue :::=
 KeywordOther :::=
 	// operator
 		| "mut"
-		| "isset"
-		| "!isset"
 		| "as"
 		| "as?"
 		| "as!"

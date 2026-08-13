@@ -19,10 +19,7 @@ import {
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
-import {
-	ValidIntrinsicName,
-	is_valid_intrinsic_name,
-} from '../utils-private.ts';
+import {IntrinsicName} from '../utils-private.ts';
 import {Type} from './Type.ts';
 
 
@@ -45,7 +42,7 @@ export class TypeAlias extends Type {
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this` for now if source is an intrinsic identifier, as semantics is determined by syntax.
-		if (is_valid_intrinsic_name(this.source)) {
+		if (this.source === IntrinsicName.OBJECT) {
 			return;
 		}
 		if (!this.validator.hasSymbol(this.id)) {
@@ -59,10 +56,8 @@ export class TypeAlias extends Type {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		if (is_valid_intrinsic_name(this.source)) {
-			return new Map<ValidIntrinsicName, TYPE.Type>([
-				[ValidIntrinsicName.OBJECT, TYPE.OBJ],
-			]).get(this.source)!;
+		if (this.source === IntrinsicName.OBJECT) {
+			return TYPE.OBJ;
 		}
 		assert.ok(this.validator.hasSymbol(this.id), `Expected ${ this.source } (${ this.id }) to be in the symbol table.`);
 		const symbol: SymbolSchema = this.validator.getSymbol(this.id)!;

@@ -39,9 +39,6 @@ export abstract class OperationBinary extends Operation {
 		super(start_node, operator, [operand0, operand1]);
 	}
 
-	/**
-	 * @final
-	 */
 	@memoizeMethod
 	public override type(): TYPE.Type {
 		return this.type_do(

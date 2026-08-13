@@ -318,7 +318,6 @@ module.exports = grammar({
 		word: $ => choice(
 			// operator
 			'mut',
-			'isset',
 			'as',
 			'is',
 			'if',
@@ -498,8 +497,7 @@ module.exports = grammar({
 			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}, {return: rtn}))),
 		))), 'block', 'break', 'return'),
 
-		...parameterize('expression_unary_symbol',  ({block,    break: brk, return: rtn}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
-		...parameterize('expression_unary_keyword', ({block: _, break: brk, return: rtn}) => $ => prec( 9, seq(choice('isset', '!isset'),  call($, 'assignee',             {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
+		...parameterize('expression_unary_symbol', ({block, break: brk, return: rtn}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
 
 		...parameterize('expression_cast', ({block, break: brk, return: rtn}) => $ => choice(
 			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk}, {return: rtn})))),
@@ -538,7 +536,6 @@ module.exports = grammar({
 
 			alias(call($, 'expression_compound',       {block}, {break: brk}, {return: rtn}), $.expression_compound),
 			alias(call($, 'expression_unary_symbol',   {block}, {break: brk}, {return: rtn}), $.expression_unary_symbol),
-			alias(call($, 'expression_unary_keyword',  {block}, {break: brk}, {return: rtn}), $.expression_unary_keyword),
 			alias(call($, 'expression_cast',           {block}, {break: brk}, {return: rtn}), $.expression_cast),
 			alias(call($, 'expression_exponential',    {block}, {break: brk}, {return: rtn}), $.expression_exponential),
 			alias(call($, 'expression_multiplicative', {block}, {break: brk}, {return: rtn}), $.expression_multiplicative),
@@ -665,7 +662,6 @@ module.exports = grammar({
 		global: _$ => [
 			// operator
 			'mut',
-			'isset',
 			'as',
 			'is',
 			'if',

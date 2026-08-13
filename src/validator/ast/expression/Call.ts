@@ -18,10 +18,9 @@ import {
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {
-	ValidFunctionName,
-	type ValidGenericFunctionName,
-	GENERIC_FUNCTION_NAMES,
-	check_valid_function_name,
+	IntrinsicName,
+	type CallableClassName,
+	validate_callable_class_name,
 	type ConstructorSchema,
 	CLASS_API,
 } from '../utils-private.ts';
@@ -52,8 +51,8 @@ export class Call extends Expression {
 
 	public override varCheck(): void {
 		// NOTE: ignore var-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `ValidFunctionName`)
-		check_valid_function_name(this.base.source);
+		// (`this.base.source` must be a `CallableClassName`)
+		validate_callable_class_name(this.base.source);
 		return xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
@@ -62,7 +61,7 @@ export class Call extends Expression {
 
 	public override typeCheck(): void {
 		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
-		// (`this.base.source` must be a `ValidFunctionName`)
+		// (`this.base.source` must be a `CallableClassName`)
 		xjs.Array.forEachAggregated([
 			...this.typeargs,
 			...this.exprargs,
@@ -75,7 +74,10 @@ export class Call extends Expression {
 		if (!(this.base instanceof Variable)) {
 			throw new TypeErrorNotCallable(this.base.type(), this.base);
 		}
-		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as ValidFunctionName)!;
+		if (this.exprargs.some((arg) => arg.type().isBottomType)) {
+			return TYPE.NOTHING;
+		}
+		const constructor_schema:    ConstructorSchema = CLASS_API.get(this.base.source as CallableClassName)!;
 		const resolved_generic_args: TYPE.Type[]       = AST_TYPE.Call.checkGenericArgs(constructor_schema, this.typeargs, this);
 		try {
 			this.checkFunctionArgs(constructor_schema, resolved_generic_args);
@@ -86,8 +88,8 @@ export class Call extends Expression {
 				// FIXME: should report whole AggregateError
 				throw err.errors[0];
 			}
-			switch (this.base.source as ValidFunctionName) {
-				case ValidFunctionName.LIST: {
+			switch (this.base.source as CallableClassName) {
+				case IntrinsicName.LIST: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const itemtype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:      Expression = this.exprargs[0];
@@ -106,7 +108,7 @@ export class Call extends Expression {
 					}
 					break;
 				}
-				case ValidFunctionName.DICT: {
+				case IntrinsicName.DICT: {
 					// If function overload checking failed, `arg` is either a tuple/record literal or an expression with a tuple/record type.
 					const valuetype: TYPE.Type  = this.typeargs[0].eval();
 					const entrytype: TYPE.Tuple = TYPE.Tuple.fromTypes([TYPE.SYM, valuetype]);
@@ -133,7 +135,7 @@ export class Call extends Expression {
 					}
 					break;
 				}
-				case ValidFunctionName.SET: {
+				case IntrinsicName.SET: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const eltype: TYPE.Type  = this.typeargs[0].eval();
 					const arg:    Expression = this.exprargs[0];
@@ -152,7 +154,7 @@ export class Call extends Expression {
 					}
 					break;
 				}
-				case ValidFunctionName.MAP: {
+				case IntrinsicName.MAP: {
 					// If function overload checking failed, `arg` is either a tuple literal or an expression with a tuple type.
 					const anttype:   TYPE.Type  = this.typeargs[0].eval();
 					const contype:   TYPE.Type  = this.typeargs[1]?.eval() ?? anttype;
@@ -195,27 +197,46 @@ export class Call extends Expression {
 			);
 		}
 
-		if (GENERIC_FUNCTION_NAMES.includes(this.base.source)) {
-			const [name, ctor] = new Map<ValidGenericFunctionName, [OP.CollectionDynamicName, () => OP.Value]>([
-				[ValidFunctionName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
-				[ValidFunctionName.SET,  [OP.TypeName.SET,  () => new OP.CollectionLinearNew(OP.TypeName.SET,  [], this.type())]],
-				[ValidFunctionName.DICT, [OP.TypeName.DICT, () => new OP.DictNew            (new Map(),            this.type())]],
-				[ValidFunctionName.MAP,  [OP.TypeName.MAP,  () => new OP.MapNew             (new Map(),            this.type())]],
-			]).get(this.base.source as ValidGenericFunctionName)!;
-			const new_obj: OP.Value = ctor();
-			if (!this.exprargs.length) {
-				return new_obj;
+		const base_source = this.base.source as CallableClassName;
+		switch (base_source) {
+			case IntrinsicName.BOOLEAN:
+			case IntrinsicName.INTEGER:
+			case IntrinsicName.NATURAL:
+			case IntrinsicName.FLOAT:
+			case IntrinsicName.STRING: {
+				return new OP.Unop(new Map<IntrinsicName, OP.OpCodeUn>([
+					[IntrinsicName.BOOLEAN, OP.OpCode.BOOL_FROM],
+					[IntrinsicName.INTEGER, OP.OpCode.INT_FROM],
+					[IntrinsicName.NATURAL, OP.OpCode.NAT_FROM],
+					[IntrinsicName.FLOAT,   OP.OpCode.FLOAT_FROM],
+					[IntrinsicName.STRING,  OP.OpCode.STR_FROM],
+				]).get(base_source)!, this.exprargs[0].build(builder).asTac(builder), this.type());
 			}
-			const dest: OP.ValueTac = new_obj.asTac(builder);
-			builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
-			return dest;
-		} else {
-			return new OP.Unop(new Map<ValidFunctionName, OP.OpCodeUn>([
-				[ValidFunctionName.INTEGER, OP.OpCode.TOINT],
-				[ValidFunctionName.NATURAL, OP.OpCode.TONAT],
-				[ValidFunctionName.FLOAT,   OP.OpCode.TOFLOAT],
-				[ValidFunctionName.STRING,  OP.OpCode.TOSTR],
-			]).get(this.base.source as ValidFunctionName)!, this.exprargs[0].build(builder).asTac(builder), this.type());
+			case IntrinsicName.LIST:
+			case IntrinsicName.DICT:
+			case IntrinsicName.SET:
+			case IntrinsicName.MAP: {
+				const [name, ctor] = new Map<IntrinsicName, [OP.CollectionDynamicName, () => OP.Value]>([
+					[IntrinsicName.LIST, [OP.TypeName.LIST, () => new OP.CollectionLinearNew(OP.TypeName.LIST, [], this.type())]],
+					[IntrinsicName.SET, [OP.TypeName.SET, () => new OP.CollectionLinearNew(OP.TypeName.SET, [], this.type())]],
+					[IntrinsicName.DICT, [OP.TypeName.DICT, () => new OP.DictNew(new Map(), this.type())]],
+					[IntrinsicName.MAP, [OP.TypeName.MAP, () => new OP.MapNew(new Map(), this.type())]],
+				]).get(base_source)!;
+				const new_obj: OP.Value = ctor();
+				if (!this.exprargs.length) {
+					return new_obj;
+				}
+				const dest: OP.ValueTac = new_obj.asTac(builder);
+				builder.pushInstruction(new OP.CollectionDynamicCopy(name, dest, this.exprargs[0].build(builder).asTac(builder)));
+				return dest;
+			}
+			case IntrinsicName.NONE:
+			case IntrinsicName.SOME: {
+				return new OP.MaybeNew(this.typeargs[0].eval(), this.exprargs[0]?.build(builder).asTac(builder));
+			}
+			default: {
+				assert.fail(`Did not expect base '${ base_source }'.`);
+			}
 		}
 	}
 
@@ -225,19 +246,25 @@ export class Call extends Expression {
 	 * @param resolved_generic_args the resolved type arguments, returned by {@link AST_TYPE.Call.checkGenericArgs}
 	 */
 	private checkFunctionArgs(constructor_schema: ConstructorSchema, resolved_generic_args: readonly TYPE.Type[]): void {
+		if (!constructor_schema.overloads.length) {
+			throw new TypeErrorNotCallable(
+				this.base.source === IntrinsicName.MAYBE ? new TYPE.Maybe(resolved_generic_args[0]) : this.base.type(),
+				this.base,
+			);
+		}
 		xjs.Array.forEither(constructor_schema.overloads, (func_params) => {
 			/* Argument Counting. Throws if the number of given args does not match the number of expected parameters. */
 			const expected_function = {
 				min: BigInt(func_params.filter((param) => !param.optional).length),
 				max: BigInt(func_params.length),
 			} as const;
-			const actual_generic: bigint = BigInt(this.exprargs.length);
+			const actual_function: bigint = BigInt(this.exprargs.length);
 			// TODO: throw AggregateError if both
-			if (actual_generic < expected_function.min) {
-				throw new TypeErrorArgCount(actual_generic, expected_function.min, false, this);
+			if (actual_function < expected_function.min) {
+				throw new TypeErrorArgCount(actual_function, expected_function.min, false, this);
 			}
-			if (actual_generic > expected_function.max) {
-				throw new TypeErrorArgCount(actual_generic, expected_function.max, false, this);
+			if (actual_function > expected_function.max) {
+				throw new TypeErrorArgCount(actual_function, expected_function.max, false, this);
 			}
 
 			/* Argument Typing. Handles optionality and default values. Also checks if each argument matches the constraints given. */

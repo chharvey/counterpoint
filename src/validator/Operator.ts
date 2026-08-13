@@ -11,7 +11,6 @@ export enum Operator {
 	EMP,
 	AFF,
 	NEG,
-	ISSET,
 	CAST,
 	CAST_MAYBE,
 	CAST_RESULT,
@@ -64,6 +63,7 @@ export type ValidOperatorCast = (
 	| Operator.CAST
 	| Operator.CAST_MAYBE
 	| Operator.CAST_RESULT
+	| Operator.IS
 );
 
 export type ValidOperatorArithmetic = (

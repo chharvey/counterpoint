@@ -1,7 +1,7 @@
 ;; ## Main Stringify Function ##
 (func $Value.stringify (export "Value#stringify") (param $value (ref $Value)) (result (ref $String))
 	(local $primitive v128)
-	(local $composite eqref)
+	(local $composite (ref null eq))
 
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))
 	(local.set $composite (struct.get $Value $composite (local.get $value)))

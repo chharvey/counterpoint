@@ -21,25 +21,22 @@ import type {ValueTac} from './ValueTac.ts';
 
 /** An enum of allowed unary operations. */
 export type OpCodeUn = (
-	| OpCode.MAYBE_UNWRAP
-
-	| OpCode.ISNULL
-	| OpCode.ISNONE
+	| OpCode.BOOL_FROM
+	| OpCode.INT_FROM
+	| OpCode.NAT_FROM
+	| OpCode.FLOAT_FROM
+	| OpCode.STR_FROM
 
 	| OpCode.NOT
 	| OpCode.EMP
 	| OpCode.NEG
 
-	| OpCode.TOBOOL
-	| OpCode.TOINT
-	| OpCode.TONAT
-	| OpCode.TOFLOAT
-	| OpCode.TOSTR
-
 	| OpCode.LIST_COUNT
 	| OpCode.DICT_COUNT
 	| OpCode.SET_COUNT
 	| OpCode.MAP_COUNT
+
+	| OpCode.MAYBE_UNWRAP
 );
 
 
@@ -62,15 +59,10 @@ export class Unop extends Value {
 	public override validate(builder: Builder): void {
 		this.operand.validate(builder);
 		switch (this.operator) {
-			case OpCode.MAYBE_UNWRAP: {
-				assert_instanceof(this.operand.type, TYPE.Maybe);
-				return assert.ok(this.type.isSubtypeOf(this.operand.type.typearg));
-			}
-
-			case OpCode.NEG:
-			case OpCode.TOINT:
-			case OpCode.TONAT:
-			case OpCode.TOFLOAT: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
+			case OpCode.INT_FROM:
+			case OpCode.NAT_FROM:
+			case OpCode.FLOAT_FROM:
+			case OpCode.NEG: { return assert.ok(this.operand.type.isSubtypeOf(TYPE.NUMBER)); }
 
 			case OpCode.LIST_COUNT: {
 				assert_instanceof(this.operand.type, TYPE.List);
@@ -88,31 +80,33 @@ export class Unop extends Value {
 				assert_instanceof(this.operand.type, TYPE.Map);
 				return assert.ok(this.type.isSubtypeOf(TYPE.NAT));
 			}
+
+			case OpCode.MAYBE_UNWRAP: {
+				assert_instanceof(this.operand.type, TYPE.Maybe);
+				return assert.ok(this.type.isSubtypeOf(this.operand.type.typearg));
+			}
 		}
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		switch (this.operator) {
-			case OpCode.MAYBE_UNWRAP: { return (operand as VALUE.Maybe).value ?? assert.fail(new Error('Unwrapped a None value.')); }
-
-			case OpCode.ISNULL: { return VALUE.Boolean.fromBoolean(operand.identical(VALUE.NULL)); }
-			case OpCode.ISNONE: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
+			case OpCode.BOOL_FROM:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
+			case OpCode.INT_FROM:   { return (operand as VALUE.Number).toInt(); }
+			case OpCode.NAT_FROM:   { return (operand as VALUE.Number).toNat(); }
+			case OpCode.FLOAT_FROM: { return (operand as VALUE.Number).toFloat(); }
+			case OpCode.STR_FROM:   { return operand.toCplString(); }
 
 			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
 			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }
 			case OpCode.NEG: { return (operand as VALUE.Integer | VALUE.Float).neg(); }
 
-			case OpCode.TOBOOL:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
-			case OpCode.TOINT:   { return (operand as VALUE.Number).toInt(); }
-			case OpCode.TONAT:   { return (operand as VALUE.Number).toNat(); }
-			case OpCode.TOFLOAT: { return (operand as VALUE.Number).toFloat(); }
-			case OpCode.TOSTR:   { return (operand as VALUE.Number).toCplString(); }
-
 			case OpCode.LIST_COUNT: { return new VALUE.Natural((operand as VALUE.List).count); }
 			case OpCode.DICT_COUNT: { return new VALUE.Natural((operand as VALUE.Dict).count); }
 			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
 			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
+
+			case OpCode.MAYBE_UNWRAP: { return (operand as VALUE.Maybe).value ?? assert.fail(new Error('Unwrapped a None value.')); }
 		}
 	}
 
@@ -121,25 +115,22 @@ export class Unop extends Value {
 		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 		const code: binaryen.ExpressionRef = this.operand.codegen(cg);
 		switch (this.operator) {
-			case OpCode.MAYBE_UNWRAP: { return op.unwrapMaybe(code); }
-
-			case OpCode.ISNULL: { return op.isNull(code); }
-			case OpCode.ISNONE: { return op.isNone(code); }
+			case OpCode.BOOL_FROM:  { return op.not(op.not(code)); }
+			case OpCode.INT_FROM:   { return op.toInt(code); }
+			case OpCode.NAT_FROM:   { return op.toNat(code); }
+			case OpCode.FLOAT_FROM: { return op.toFloat(code); }
+			case OpCode.STR_FROM:   { return VmValue.newComposite(VmValue.stringify(code)); }
 
 			case OpCode.NOT: { return op.not(code); }
 			case OpCode.EMP: { return op.isEmpty(code); }
 			case OpCode.NEG: { return op.negate(code); }
 
-			case OpCode.TOBOOL:  { return op.not(op.not(code)); }
-			case OpCode.TOINT:   { return op.toInt(code); }
-			case OpCode.TONAT:   { return op.toNat(code); }
-			case OpCode.TOFLOAT: { return op.toFloat(code); }
-			case OpCode.TOSTR:   { return VmValue.stringify(code); }
-
 			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(List .count(VmValue.cast(code, reftype.List))))); }
 			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }
 			case OpCode.SET_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
 			case OpCode.MAP_COUNT:  { return VmValue.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(VmValue.cast(code, reftype.Map))))); }
+
+			case OpCode.MAYBE_UNWRAP: { return op.unwrapMaybe(code); }
 		}
 	}
 

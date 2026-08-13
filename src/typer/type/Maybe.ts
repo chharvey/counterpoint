@@ -47,3 +47,26 @@ export class Maybe extends ReferenceType {
 		return this.typearg.isSubtypeOf((t as Maybe).typearg); // Maybe is always covariant
 	}
 }
+
+
+
+export class None extends Maybe {
+	public override toString(): string {
+		return `None[${ this.typearg }]`;
+	}
+
+	public override isSubtypeOf(t: Type): boolean {
+		// eslint-disable-next-line @typescript-eslint/no-use-before-define
+		return !(t instanceof Some) && super.isSubtypeOf(t);
+	}
+}
+
+export class Some extends Maybe {
+	public override toString(): string {
+		return `Some[${ this.typearg }]`;
+	}
+
+	public override isSubtypeOf(t: Type): boolean {
+		return !(t instanceof None) && super.isSubtypeOf(t);
+	}
+}

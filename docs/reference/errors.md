@@ -177,23 +177,23 @@ Solution(s): Ensure the index/property/parameter access has the correct index or
 
 #### 2305: TypeErrorNotCallable
 Cause: A non-callable object was called.
-```
+```cpl
 type U = int;
-type T = U.<V>;  % TypeError: Type `U` is not callable.
+type T = U.<V>; % TypeErrorNotCallable: Type `U` is not callable.
 
 val x: int = 42;
-x.(24);          % TypeError: Type `int` is not callable.
+x.(24);          % TypeErrorNotCallable: Type `int` is not callable.
 ```
 Solution(s): Callable objects are limited to functions, generic type aliases, and generic type functions.
 
 #### 2306: TypeErrorArgCount
 Cause: A function or generic call was given an incorrect number of arguments.
-```
+```cpl
 type U<V, W> = V | W;
-type T = U.<V>;       % TypeError: Got 1 type arguments, but expected 2.
+type T = U.<V>;       % TypeErrorArgCount: Got 1 type arguments, but expected 2.
 
 func x(y: int): int => y + 42;
-x.(2, 4);                      % TypeError: Got 2 arguments, but expected 1.
+x.(2, 4);                      % TypeErrorArgCount: Got 2 arguments, but expected 1.
 ```
 Solution(s): Pass in an expected number of arguments.
 

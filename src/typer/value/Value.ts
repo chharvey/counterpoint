@@ -32,6 +32,12 @@ export function identical(
  */
 export abstract class Value {
 	/**
+	 * Return whether this type is a reference type or a value type.
+	 * @return `true` if this type is a reference type
+	 */
+	public abstract get isReference(): boolean;
+
+	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value
 	 */
