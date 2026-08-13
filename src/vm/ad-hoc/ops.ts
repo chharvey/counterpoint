@@ -15,7 +15,6 @@ export function ops(vm: VirtualMachine) {
 				const {reftype} = vm;
 				const binary_params: binaryen.Type = binaryen.createType([reftype.Value, reftype.Value]);
 				func_import_memo = new Map<string, FuncImportData>([
-					['op::isNull',      {name: 'op:is-null',      param: reftype.Value,  result: reftype.Value}],
 					['op::toInt',       {name: 'op:to-int',       param: reftype.Value,  result: reftype.Value}],
 					['op::toNat',       {name: 'op:to-nat',       param: reftype.Value,  result: reftype.Value}],
 					['op::toFloat',     {name: 'op:to-float',     param: reftype.Value,  result: reftype.Value}],
@@ -51,11 +50,6 @@ export function ops(vm: VirtualMachine) {
 			return func_import_memo;
 		},
 
-
-		/** Is the value equal to the Counterpoint value `null`? @deprecated use `=== null` instead. */
-		isNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
-			vm.mod.wasm.call('op:is-null', [param0], vm.reftype.Value)
-		),
 
 		/** Cast the argument to type `int`. */
 		toInt: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (

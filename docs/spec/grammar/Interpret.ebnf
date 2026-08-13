@@ -171,11 +171,6 @@ Boolean! Interpret((ISSET `id`)) :=
 		1. *Throw:* a new ReferenceError.
 ;
 
-Boolean! Interpret((ISNULL `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *Return:* `Identical(v, null)`.
-;
-
 Boolean! Interpret((ISNONE `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
 	2. *If* `v` is an instance of `Maybe`:

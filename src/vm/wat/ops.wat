@@ -1,12 +1,3 @@
-(func $op:is-null (export "op::isNull") (param $value (ref $Value)) (result (ref $Value))
-	(call $Value.bool-from-i32 (i32.and
-		(call $Value.is-primitive (local.get $value))
-		(call $Vect.is-null (struct.get $Value $primitive (local.get $value)))
-	))
-)
-
-
-
 (func $op:to-int (export "op::toInt") (param $value (ref $Value)) (result (ref $Value))
 	(local $primitive v128)
 	(local.set $primitive (struct.get $Value $primitive (local.get $value)))

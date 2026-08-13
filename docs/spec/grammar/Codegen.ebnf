@@ -189,7 +189,6 @@ Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
 	(struct.get $Value $tag (local.get ‹index›))
 )));
 
-Codegen((ISNULL `v`)) := (call $op:is-null `Codegen(v)`);
 Codegen((ISNONE `v`)) := (call $op:is-none `Codegen(v)`);
 
 Codegen((INSTANCEOF "Symbol" `v`)) :=; // TODO:

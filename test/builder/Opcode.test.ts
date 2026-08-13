@@ -423,25 +423,6 @@ test.suite('Opcode', () => {
 						}`), [new VALUE.String('hello')]);
 					});
 				});
-				test.test('[operator=ISNULL]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.ISNULL,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					return assert_equal_values(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							VALUE.TRUE,
-							...repeat(VALUE.FALSE, 20),
-						],
-					);
-				});
 				test.test('[operator=ISNONE]', () => {
 					const builder = new Builder();
 					const interp  = new Interpreter();
@@ -1648,14 +1629,6 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
-				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
-					// there exists no syntax for “is null” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.ISNULL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.isNull(genConst(cg)),
-					);
-				});
 				test.test('ISNONE operator returns custom WASM function `$op:is-none`.', () => {
 					// there exists no syntax for “is None” operator, so constructing it manually
 					const cg = new CodeGenerator();
