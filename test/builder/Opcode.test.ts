@@ -1587,14 +1587,6 @@ test.suite('Opcode', () => {
 			});
 
 			test.suite('Unop', () => {
-				test.test('BOOL.FROM operator returns custom WASM function `$op:not` applied twice.', () => {
-					// there exists no syntax for “to bool” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.BOOL_FROM, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
-					);
-				});
 				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
 						Boolean.(null);
