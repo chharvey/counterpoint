@@ -28,7 +28,7 @@ export class Value implements HasFuncData {
 		const {reftype} = this.vm;
 		return new Map<string, FuncImportData>([
 			['Value#newPrimitive', {name: 'Value.new-primitive', param: binaryen.v128,  result: reftype.Value}],
-			['Value#newComposite', {name: 'Value.new-composite', param: binaryen.eqref, result: reftype.Value}], // TODO: `(ref eq)` (non-null)
+			['Value#newComposite', {name: 'Value.new-composite', param: binaryen.eqref, result: reftype.Value}], // FIXME: `(ref eq)` (non-null)
 			['Value#isPrimitive',  {name: 'Value.is-primitive',  param: reftype.Value,  result: binaryen.i32}],
 			['Value#isComposite',  {name: 'Value.is-composite',  param: reftype.Value,  result: binaryen.i32}],
 			['Value#boolToI32',    {name: 'Value.bool-to-i32',   param: reftype.Value,  result: binaryen.i32}],
@@ -41,7 +41,7 @@ export class Value implements HasFuncData {
 	public field(ref: binaryen.ExpressionRef /* (ref null $Value) */): {
 		/** @return `(struct.get $Value $tag       <ref>)` */ readonly tag:       binaryen.ExpressionRef /* i32 */,
 		/** @return `(struct.get $Value $primitive <ref>)` */ readonly primitive: binaryen.ExpressionRef /* v128 */,
-		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* eqref */,
+		/** @return `(struct.get $Value $primitive <ref>)` */ readonly composite: binaryen.ExpressionRef /* (ref null eq) */,
 	} {
 		const {wasm} = this.vm.mod;
 		return {

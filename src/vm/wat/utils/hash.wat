@@ -6,7 +6,7 @@
 
 ;; ## Main Hash Function ##
 (func $Value.hash (param $value (ref $Value)) (result i64)
-	(local $composite eqref)
+	(local $composite (ref null eq))
 
 	(local.set $composite (struct.get $Value $composite (local.get $value)))
 

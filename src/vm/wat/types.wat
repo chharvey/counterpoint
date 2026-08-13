@@ -10,7 +10,7 @@
 	(type $Value (struct
 		(field $tag       i8) ;; 1 = primitive, 2 = composite
 		(field $primitive v128)
-		(field $composite eqref) ;; (ref null eq)
+		(field $composite (ref null eq))
 	))
 	;; type of entry in records/Dicts
 	(type $Property (struct
