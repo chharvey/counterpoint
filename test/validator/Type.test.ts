@@ -87,7 +87,7 @@ test.suite('Type', () => {
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
-					new VALUE.Symbol(0x54n, 'then').toType(),
+					new VALUE.Symbol(0x52n, 'then').toType(),
 					new VALUE.Symbol(0x46n, 'str').toType(),
 					new VALUE.Symbol(0x49n, 'false').toType(),
 					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar').toType(),

@@ -52,8 +52,6 @@ MAYBE.UNWRAP([Value]) -> Value;
 
 CALL([Value*]) -> Value;
 
-ISSET (SymbolSchemaVar|native-string) -> Boolean;
-
 INSTANCEOF(native-enum [Value]) -> Boolean;
 
 NOT([Value])   -> Boolean;
@@ -215,9 +213,6 @@ Build(SemanticExpressionCall:has(SemanticExpressionVariable ::= "Some"):has(Sema
 Build(SemanticExpressionCall call) := (CALL [`Build(call.0)` `...call.SemanticExpression*.map(Build)`]);
 
 Build(SemanticExpressionClaim claim) := Build(claim.0);
-
-Build(SemanticExpressionIsset ::= SemanticExpressionVariable) := (ISSET `GetSymbolSchema(SemanticExpressionVariable)`);
-Build(SemanticExpressionIsset ::= SemanticExpressionAccess)   := (ID `Build(SemanticExpressionAccess)` (NULL.CONST null));
 
 Build(SemanticExpressionOperation[operator=UN_MAYBE]  ::= SemanticExpression)               := (MAYBE.UNWRAP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=UN_RESULT] ::= SemanticExpression)               := TODO:;

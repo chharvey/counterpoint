@@ -38,8 +38,6 @@ export enum OpCode {
 
 	CALL,
 
-	ISSET,
-
 	BOOL_FROM,
 	INT_FROM,
 	NAT_FROM,

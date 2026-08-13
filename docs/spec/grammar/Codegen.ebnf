@@ -185,10 +185,6 @@ Codegen((MAYBE.UNWRAP `obj`)) := (call $op:unwrap-maybe `Codegen(obj)`);
 
 // Codegen((CALL `callable` `args`));
 
-Codegen((ISSET `id`)) := (call $Value.bool-from-i32 (i32.eqz (i32.eqz
-	(struct.get $Value $tag (local.get ‹index›))
-)));
-
 Codegen((INSTANCEOF "Symbol"  `v`)) := (call $op:is-int    `Codegen(v)`);
 Codegen((INSTANCEOF "Integer" `v`)) := (call $op:is-int    `Codegen(v)`);
 Codegen((INSTANCEOF "Natural" `v`)) := (call $op:is-nat    `Codegen(v)`);

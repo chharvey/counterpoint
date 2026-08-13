@@ -32,7 +32,6 @@ KeywordValue ::=
 Word ::=
 	// operator
 		| "mut"
-		| "isset"
 		| "as"
 		| "is"
 		| "if"
@@ -187,11 +186,6 @@ ExpressionCompound<Block, Break> ::=
 ExpressionUnarySymbol<Block, Break> ::=
 	| ExpressionCompound<?Block><?Break>
 	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Block><?Break>
-;
-
-ExpressionUnaryKeyword<Block, Break> ::=
-	| ExpressionUnarySymbol<?Block><?Break>
-	| ("isset" | "!isset") Assignee<?Break>
 ;
 
 ExpressionCast<Block, Break> ::=

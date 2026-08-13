@@ -471,16 +471,8 @@ Decorate(ExpressionUnarySymbol<Block, Break> ::= "-" ExpressionUnarySymbol<?Bloc
 
 Decorate(ExpressionUnaryKeyword<Block, Break> ::= ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpression
 	:= Decorate(ExpressionUnarySymbol<?Block><?Break>);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "isset" Assignee<?Break>) -> SemanticExpressionIsset
-	:= (SemanticExpressionIsset
-		Decorate(Assignee<?Break>)
-	);
-Decorate(ExpressionUnaryKeyword<Block, Break> ::= "!isset" Assignee<?Break>) -> SemanticExpressionOperation
-	:= (SemanticExpressionOperation[operator=NOT]
-		(SemanticExpressionIsset
-			Decorate(Assignee<?Break>)
-		)
-	);
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "isset" Assignee<?Break>) -> "no longer supported";
+Decorate(ExpressionUnaryKeyword<Block, Break> ::= "!isset" Assignee<?Break>) -> "no longer supported";
 
 
 

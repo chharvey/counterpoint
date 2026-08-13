@@ -24,7 +24,6 @@ import {AstNode} from '../AstNode.ts';
  * - Access
  * - Call
  * - Claim
- * - Isset
  * - Operation
  * - Switch
  *

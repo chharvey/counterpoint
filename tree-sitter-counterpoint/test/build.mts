@@ -1059,19 +1059,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
-		ExpressionUnaryKeyword: [
-			xjs.String.dedent`
-				{
-					isset value;
-					!isset value;
-				}
-			`,
-			sourceExpressions(
-				s('expression_unary_keyword', s('assignee', s('identifier'))),
-				s('expression_unary_keyword', s('assignee', s('identifier'))),
-			),
-		],
-
 		ExpressionCast: [
 			xjs.String.dedent`
 				{

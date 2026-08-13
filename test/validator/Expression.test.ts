@@ -24,7 +24,6 @@ import {
 	assert_shallowStrictEqual,
 	assertAssignable,
 	assertEqualTypes,
-	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -49,44 +48,6 @@ test.suite('Expression', () => {
 						TYPE.INT,
 						new TYPE.Maybe(TYPE.INT),
 					],
-				);
-			});
-		});
-
-
-		test.suite('Isset', () => {
-			test.test('always returns `bool`.', () => {
-				assert_shallowStrictEqual(
-					setupScript(`{
-						val mut a0?: int;
-						val mut a1?: int;
-						val mut a2?: int;
-
-						val mut b: int = 42;
-						val mut c0: int | null = 42;
-						val mut c1: int | null = 42;
-						val mut d: int | null = null;
-						val e: int = 42;
-						val f: int | null = 42;
-						val g: int | null = null;
-
-						set a1 = 42;
-						set a2 = 42;
-						delete a2;
-						set c1 = null;
-
-						isset a0;
-						isset a1;
-						isset a2;
-						isset b;
-						isset c0;
-						isset c1;
-						isset d;
-						isset e;
-						isset f;
-						isset g;
-					}`, {build: false}).stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 10),
 				);
 			});
 		});
@@ -314,64 +275,6 @@ test.suite('Expression', () => {
 				assert.strictEqual(builder.instructions.length, 1);
 			});
 		});
-		test.test('Isset', () => {
-			assert.strictEqual(setupScript(`{
-				val mut a0?: int;
-				val mut a1?: int;
-				val mut a2?: int;
-
-				val mut b: int = 42;
-				val mut c0: int | null = 42;
-				val mut c1: int | null = 42;
-				val mut d: int | null = null;
-				val e: int = 42;
-				val f: int | null = 42;
-				val g: int | null = null;
-
-				set a1 = 42;
-				set a2 = 42;
-				delete a2;
-				set c1 = null;
-
-				isset a0;
-				isset a1;
-				isset a2;
-				isset b;
-				isset c0;
-				isset c1;
-				isset d;
-				isset e;
-				isset f;
-				isset g;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <Maybe> a0 ${ op_maybe_string() })
-					(DECL <Maybe> a1 ${ op_maybe_string() })
-					(DECL <Maybe> a2 ${ op_maybe_string() })
-					(DECL <int> b (INT.CONST 42))
-					(DECL <int> c0 (INT.CONST 42))
-					(DECL <int> c1 (INT.CONST 42))
-					(DECL <null> d (NULL.CONST null))
-					(DECL <int> e (INT.CONST 42))
-					(DECL <int> f (INT.CONST 42))
-					(DECL <null> g (NULL.CONST null))
-					(SET a1 ${ op_maybe_string('(INT.CONST 42)') })
-					(SET a2 ${ op_maybe_string('(INT.CONST 42)') })
-					(SET a2 ${ op_maybe_string() })
-					(SET c1 (NULL.CONST null))
-					(DROP (ISSET a0))
-					(DROP (ISSET a1))
-					(DROP (ISSET a2))
-					(DROP (ISSET b))
-					(DROP (ISSET c0))
-					(DROP (ISSET c1))
-					(DROP (ISSET d))
-					(DROP (ISSET e))
-					(DROP (ISSET f))
-					(DROP (ISSET g))
-					(ENDPROGRAM)
-			`.trim());
-		});
 		test.test('Switch', () => {
 			assert.strictEqual(setupScript(`{
 				switch 42 default true;
@@ -490,7 +393,7 @@ test.suite('Expression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x54n, 'then'),
+					new VALUE.Symbol(0x52n, 'then'),
 					new VALUE.Symbol(0x46n, 'str'),
 					new VALUE.Symbol(0x49n, 'false'),
 					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar'),
