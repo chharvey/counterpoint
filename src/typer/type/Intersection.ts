@@ -58,6 +58,7 @@ export class Intersection extends Combinable {
 				xjs.Set.intersection(operand0.values, operand1.values, language_values_identical),
 			),
 			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Intersection ? operand.operands : [operand]) as ArrayOfAtLeast2<Type>,
+			[operand0, operand1, ...operands].some((operand) => operand.isMutable),
 		);
 	}
 

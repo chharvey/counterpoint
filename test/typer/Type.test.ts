@@ -958,27 +958,18 @@ test.suite('Type', () => {
 				predicate2(types, (a, b) => {
 					const difference: TYPE.Type = a.subtract(b).mutableOf();
 					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
-					if (difference instanceof TYPE.Difference) {
-						assert.ok(!difference.isMutable, 'Difference#isMutable === false');
-					}
 				});
 			});
 			test.test('mut (A & B) == mut A & mut B', () => {
 				predicate2(types, (a, b) => {
 					const intersection: TYPE.Type = a.intersect(b).mutableOf();
 					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
-					if (intersection instanceof TYPE.Intersection) {
-						assert.ok(!intersection.isMutable, 'Intersection#isMutable === false');
-					}
 				});
 			});
 			test.test('mut (A | B) == mut A | mut B', () => {
 				predicate2(types, (a, b) => {
 					const union: TYPE.Type = a.union(b).mutableOf();
 					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);
-					if (union instanceof TYPE.Union) {
-						assert.ok(!union.isMutable, 'Union#isMutable === false');
-					}
 				});
 			});
 		});
