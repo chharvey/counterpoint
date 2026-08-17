@@ -368,11 +368,11 @@ test.suite('Type', () => {
 	test.suite('#subtract', () => {
 		test.test('4-1 | `A - B == A  <->  A /= B`', () => {
 			predicate2(builtin_types, (a, b) => {
-				if (a.intersect(b).isBottomType) {
-					assert.ok(a.subtract(b).equals(a), `forward: ${ a }, ${ b }`);
-				}
 				if (a.subtract(b).equals(a)) {
-					assert.ok(a.intersect(b).isBottomType, `backward: ${ a }, ${ b }`);
+					assert.ok(a.isDisjointWith(b), `forward: ${ a }, ${ b }`);
+				}
+				if (a.isDisjointWith(b)) {
+					assert.ok(a.subtract(b).equals(a), `backward: ${ a }, ${ b }`);
 				}
 			});
 		});
@@ -382,17 +382,17 @@ test.suite('Type', () => {
 					assert.ok(a.subtract(b).isBottomType, `forward: ${ a }, ${ b }`);
 				}
 				if (a.subtract(b).isBottomType) {
-					assert.ok(a.isSubtypeOf(b), `forward: ${ a }, ${ b }`);
+					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`);
 				}
 			});
 		});
 		test.test('4-3 | `A <: B - C  <->  A <: B  &&  A /= C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b.subtract(c))) {
-					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isBottomType, `forward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(b) && a.isDisjointWith(c), `forward: ${ a }, ${ b }, ${ c }`);
 				}
-				if (a.isSubtypeOf(b) && a.intersect(c).isBottomType) {
-					assert.ok(a.isSubtypeOf(b.subtract(c)), `forward: ${ a }, ${ b }, ${ c }`);
+				if (a.isSubtypeOf(b) && a.isDisjointWith(c)) {
+					assert.ok(a.isSubtypeOf(b.subtract(c)), `backward: ${ a }, ${ b }, ${ c }`);
 				}
 			});
 		});

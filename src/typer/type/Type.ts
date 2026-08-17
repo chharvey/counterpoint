@@ -278,11 +278,11 @@ export function disjointLaws(
 ): typeof method {
 	assert_context_name(context, 'isDisjointWith');
 	return function (this: Type, t) {
-		if (this === t) {
-			return false;
-		}
 		if (this.isBottomType || t.isBottomType) {
 			return true;
+		}
+		if (this === t) {
+			return false;
 		}
 		return method.call(this, t);
 	};
