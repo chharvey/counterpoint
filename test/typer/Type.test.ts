@@ -396,6 +396,18 @@ test.suite('Type', () => {
 				}
 			});
 		});
+		test.test('4-4 | `A /= B - C  <--  A <: C  ||  A /= B`', () => {
+			predicate3(builtin_types, (a, b, c) => {
+				if (a.isSubtypeOf(c) || a.isDisjointWith(b)) {
+					assert.ok(a.isDisjointWith(b.subtract(c)), `backward: ${ a }, ${ b }, ${ c }`);
+				}
+			});
+			const [t1, t2, t3, t4, t5] = [1n, 2n, 3n, 4n, 5n].map((n) => new TYPE.Unit(new VALUE.Integer(n)));
+			const b: TYPE.Type = TYPE.Union.all(t2, t3, t4);
+			const c: TYPE.Type = TYPE.Union.all(t4, t5);
+			const a: TYPE.Type = t1.union(t4);
+			return assert.ok(a.isDisjointWith(b.subtract(c)) && !a.isSubtypeOf(c) && !a.isDisjointWith(b), 'forward direction can be false.');
+		});
 		test.test('4-5 | `(A \| B) - C == (A - C) \| (B - C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b).subtract(c).equals(a.subtract(c).union(b.subtract(c))), `${ a }, ${ b }, ${ c }`);

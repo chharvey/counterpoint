@@ -1012,5 +1012,6 @@ For brevity, this section uses the following notational conventions:
 4-1 | `A - B == A  <->  A /= B`       | The difference of two types is the first type iff they are disjoint.
 4-2 | `A - B == nothing  <->  A <: B` | The difference of two types is empty iff the first type is a subtype of the second type.
 4-3 | `A <: B - C  <->  A <: B  &&  A /= C` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
+4-4 | `A /= B - C  <--  A <: C  ||  A /= B` | Any type that is a subtype of a difference’s second part or disjoint with its first part is disjoint with the difference.
 4-5 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
 4-6 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union

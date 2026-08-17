@@ -494,7 +494,7 @@ export abstract class Type {
 	@memoizeBinOp(true)
 	@disjointLaws
 	public isDisjointWith(t: Type): boolean {
-		if (t instanceof Intersection || t instanceof Union || t instanceof Unit) {
+		if (t instanceof Intersection || t instanceof Union || t instanceof Difference || t instanceof Unit) {
 			return t.isDisjointWith(this);
 		}
 		return this.intersect(t).isBottomType;

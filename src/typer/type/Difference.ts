@@ -7,6 +7,7 @@ import {
 import type * as VALUE from '../value/index.ts';
 import {
 	subtypeLaws,
+	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -68,6 +69,16 @@ export class Difference extends TypeOperation {
 	@subtypeLaws
 	public override isSubtypeOf(t: Type): boolean {
 		return this.left.isSubtypeOf(t) || super.isSubtypeOf(t);
+	}
+
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		/* 4-4 | `A /= B - C  <--  A <: C  ||  A /= B` */
+		if (t.isDisjointWith(this.left) || t.isSubtypeOf(this.right)) {
+			return true;
+		}
+		return super.isDisjointWith(t);
 	}
 
 	public override mutableOf(): Difference {
