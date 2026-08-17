@@ -144,7 +144,7 @@ export function differenceLaws(
 		if (this === t) {
 			return NOTHING;
 		}
-		/* 4-1 | `A - B == A  <->  A & B == nothing` */
+		/* 4-1 | `A - B == A  <->  A /= B` */
 		if (this.isDisjointWith(t)) {
 			return this;
 		}
@@ -152,7 +152,7 @@ export function differenceLaws(
 		if (this.isSubtypeOf(t)) {
 			return NOTHING;
 		}
-		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
+		/* 4-6 | `A - (B \| C) == (A - B)  & (A - C)` */
 		if (t instanceof Union) {
 			return Intersection.all(this, ...t.operands.map((s) => this.subtract(s))); // `(A - B) & (A - C) == A & -B & -C`
 		}
@@ -256,7 +256,7 @@ export function subtypeLaws(
 				return true;
 			}
 		}
-		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` */
+		/* 4-3 | `A <: B - C  <->  A <: B  &&  A /= C` */
 		if (t instanceof Difference) {
 			return this.isSubtypeOf(t.left) && this.isDisjointWith(t.right);
 		}

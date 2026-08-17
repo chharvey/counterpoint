@@ -366,7 +366,7 @@ test.suite('Type', () => {
 
 
 	test.suite('#subtract', () => {
-		test.test('4-1 | `A - B == A  <->  A & B == nothing`', () => {
+		test.test('4-1 | `A - B == A  <->  A /= B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.intersect(b).isBottomType) {
 					assert.ok(a.subtract(b).equals(a), `forward: ${ a }, ${ b }`);
@@ -386,7 +386,7 @@ test.suite('Type', () => {
 				}
 			});
 		});
-		test.test('4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing`', () => {
+		test.test('4-3 | `A <: B - C  <->  A <: B  &&  A /= C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b.subtract(c))) {
 					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isBottomType, `forward: ${ a }, ${ b }, ${ c }`);
@@ -396,12 +396,12 @@ test.suite('Type', () => {
 				}
 			});
 		});
-		test.test('4-4 | `(A \| B) - C == (A - C) \| (B - C)`', () => {
+		test.test('4-5 | `(A \| B) - C == (A - C) \| (B - C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b).subtract(c).equals(a.subtract(c).union(b.subtract(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		test.test('4-5 | `A - (B \| C) == (A - B)  & (A - C)`', () => {
+		test.test('4-6 | `A - (B \| C) == (A - B)  & (A - C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.subtract(b.union(c)).equals(a.subtract(b).intersect(a.subtract(c))), `${ a }, ${ b }, ${ c }`);
 			});

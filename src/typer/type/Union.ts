@@ -117,7 +117,7 @@ export class Union extends Combinable {
 	@typeConstant
 	@differenceLaws
 	public override subtract(t: Type): Type {
-		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
+		/* 4-5 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return Union.all(...this.operands.map((s) => s.subtract(t)));
 	}
 
