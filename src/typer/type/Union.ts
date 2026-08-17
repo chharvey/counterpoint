@@ -26,7 +26,9 @@ import {Combinable} from './Combinable.ts';
 /**
  * A type union of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
- * @final
+ *
+ * Known subclasses:
+ * - TypeBoolean
  */
 export class Union extends Combinable {
 	/**
