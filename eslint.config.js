@@ -261,12 +261,8 @@ export default [
 			globals:       {...globals.node},
 			parser:        tseslint.parser,
 			parserOptions: {
-				project: [
-					'./tsconfig.json',
-					'./test/tsconfig.json',
-					'./tree-sitter-counterpoint/tsconfig.json',
-					'./tree-sitter-counterpoint/test/tsconfig.json',
-				],
+				projectService:  true,
+				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 		plugins: {'@typescript-eslint': tseslint.plugin},
