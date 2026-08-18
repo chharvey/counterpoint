@@ -160,17 +160,15 @@ export default [
 			'prefer-arrow-callback': ['error', {allowUnboundThis: false}],
 			'require-await':         'error',
 
-			/* ### eslint-plugin-import: Helpful Warnings */
-			'@import/no-deprecated':         'warn',
+			/* ### eslint-plugin-import-x: Helpful Warnings */
 			'@import/no-empty-named-blocks': 'error',
 			'@import/no-mutable-exports':    'error',
 
-			/* ### eslint-plugin-import: Style Guide */
+			/* ### eslint-plugin-import-x: Style Guide */
 			'@import/first':                'error',
 			'@import/newline-after-import': ['error', {count: 3}],
-			'@import/no-duplicates':        'error',
-			'@import/no-named-default':     'error',
 			'@import/no-default-export':    'error',
+			'@import/no-duplicates':        'error',
 		},
 	},
 	...[
