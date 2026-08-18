@@ -42,7 +42,7 @@ class TypeRecord extends ValueType {
 	 * @param typeargs a map of this type’s property ids along with their associated types
 	 */
 	public constructor(public readonly typeargs: ReadonlyMap<bigint, EntryType> = new Map()) {
-		super(new Set<VALUE.Record>([VALUE.RECORD_EMPTY]));
+		super();
 	}
 
 	/** The minimum possible number of properties in this record type. */

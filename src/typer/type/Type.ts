@@ -1,11 +1,9 @@
-import * as xjs from 'extrajs';
 import {
 	assert_context_name,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -334,12 +332,8 @@ export abstract class Type {
 	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
-	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
-	public constructor(
-		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
-		public readonly isMutable: boolean = false,
-	) {
+	public constructor(public readonly isMutable: boolean = false) {
 	}
 
 	/**
@@ -429,9 +423,7 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	public includes(v: VALUE.Value): boolean {
-		return xjs.Set.has(this.values, v, language_values_identical);
-	}
+	public abstract includes(v: VALUE.Value): boolean;
 
 	/**
 	 * Return the type intersection of this type with another.
@@ -570,7 +562,7 @@ export class TypeInterface extends Type {
 		is_mutable: boolean = false,
 		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
-		super(new Set<VALUE.Value>(), is_mutable);
+		super(is_mutable);
 	}
 
 	@memoizeGetter

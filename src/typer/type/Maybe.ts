@@ -4,7 +4,6 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {ANYTHING} from './index.ts';
 import {
 	subtypeLaws,
 	disjointLaws,
@@ -26,7 +25,7 @@ export class Maybe extends ReferenceType {
 	 * @param typearg the generic argument to `Maybe[T]`
 	 */
 	public constructor(public readonly typearg: Type) {
-		super(new Set<VALUE.Maybe>([new VALUE.Maybe(ANYTHING)]));
+		super();
 	}
 
 

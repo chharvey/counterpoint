@@ -1,5 +1,4 @@
 import {assert_context_name} from '../../lib/index.ts';
-import type * as VALUE from '../value/index.ts';
 import {
 	NOTHING,
 	ANYTHING,
@@ -45,11 +44,10 @@ export abstract class TypeOperation extends Type {
 	 * @param operands the operands of this operation
 	 */
 	public constructor(
-		values:     ReadonlySet<VALUE.Value>,
 		operands:   Readonly<ArrayOfAtLeast2<Type>>,
 		is_mutable: boolean,
 	) {
-		super(values, is_mutable);
+		super(is_mutable);
 		this.operands = operands;
 	}
 }

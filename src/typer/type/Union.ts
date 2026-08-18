@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	language_types_equal,
-	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -53,10 +52,6 @@ export class Union extends Combinable {
 		...operands: readonly Type[]
 	) {
 		super(
-			operands.reduce(
-				(accum, next) => xjs.Set.union(accum, next.values, language_values_identical),
-				xjs.Set.union(operand0.values, operand1.values, language_values_identical),
-			),
 			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Union ? operand.operands : [operand]) as ArrayOfAtLeast2<Type>,
 			[operand0, operand1, ...operands].every((operand) => operand.isMutable),
 		);
