@@ -972,6 +972,9 @@ For brevity, this section uses the following notational conventions:
 1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection
 1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union
 1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union
+1-9 | `T  - nothing  == T`       | Bottom is The Right-Identity      Element of Subtraction
+1-a | `T  - anything == nothing` | Top    is The Right-Anti-Identity Element of Subtraction
+1-b | `nothing - T == nothing`   | Bottom is The Left-Absorption     Element of Subtraction
 
 
 ### Operation Properties

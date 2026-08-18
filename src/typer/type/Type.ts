@@ -144,6 +144,18 @@ export function differenceLaws(
 		if (this === t) {
 			return NOTHING;
 		}
+		/* 1-b | `nothing - T == nothing` */
+		if (this.isBottomType) {
+			return NOTHING;
+		}
+		/* 1-9 | `T  - nothing  == T` */
+		if (t.isBottomType) {
+			return this;
+		}
+		/* 1-a | `T  - anything == nothing` */
+		if (t.isTopType) {
+			return NOTHING;
+		}
 		/* 4-1 | `A - B == A  <->  A /= B` */
 		if (this.isDisjointWith(t)) {
 			return this;

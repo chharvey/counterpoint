@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	type EntryType,
@@ -366,6 +367,15 @@ test.suite('Type', () => {
 
 
 	test.suite('#subtract', () => {
+		test.test('1-9 | `T  - nothing  == T`', () => {
+			xjs.Array.forEachAggregated(builtin_types, (t) => assert.strictEqual(t.subtract(TYPE.NOTHING), t, t.toString()));
+		});
+		test.test('1-a | `T  - anything == nothing`', () => {
+			xjs.Array.forEachAggregated(builtin_types, (t) => assert.strictEqual(t.subtract(TYPE.ANYTHING), TYPE.NOTHING, t.toString()));
+		});
+		test.test('1-b | `nothing - T == nothing`', () => {
+			xjs.Array.forEachAggregated(builtin_types, (t) => assert.strictEqual(TYPE.NOTHING.subtract(t), TYPE.NOTHING, t.toString()));
+		});
 		test.test('4-1 | `A - B == A  <->  A /= B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.subtract(b).equals(a)) {
