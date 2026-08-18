@@ -917,9 +917,11 @@ test.suite('Type', () => {
 			assert.ok(TYPE.BOOL.equals(TYPE.TRUE.union(TYPE.FALSE)), 'bool == true | false');
 		});
 		test.test('0.0 != -0.0', () => {
-			assert.ok(!VALUE.FLOAT_0.identical(VALUE.FLOAT_N0), 'the values 0.0 and -0.0 are not identical (by value identity `===`)');
-			assert.ok(VALUE.FLOAT_0.equal(VALUE.FLOAT_N0),      'the values 0.0 and -0.0 are equal (by value equality `==`)');
-			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
+			const VALUE_FLOAT_0  = new VALUE.Float();
+			const VALUE_FLOAT_N0 = new VALUE.Float(-0.0);
+			assert.ok(!VALUE_FLOAT_0.identical(VALUE_FLOAT_N0), 'the values 0.0 and -0.0 are not identical (by value identity `===`)');
+			assert.ok(VALUE_FLOAT_0.equal(VALUE_FLOAT_N0),      'the values 0.0 and -0.0 are equal (by value equality `==`)');
+			assert.ok(!VALUE_FLOAT_0.toType().equals(VALUE_FLOAT_N0.toType()));
 		});
 		test.test('built-in types do not equal unit types of their canonical values.', () => {
 			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),                       'bool  != false');
