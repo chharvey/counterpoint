@@ -4,11 +4,11 @@ import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
 	assert_instanceof,
+	Validator,
 	AST,
 	VALUE,
 	TYPE,
 	Builder,
-	BinConst,
 	CodeGenerator,
 } from '../src/index.ts';
 
@@ -35,8 +35,13 @@ export function assert_shallowStrictEqual<T>(actual: unknown[], expected: T[], m
 	if (actual === expected) {
 		return;
 	}
-	assert.strictEqual(actual.length, expected.length, message);
-	return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i], message));
+	if (message) {
+		assert.strictEqual(actual.length, expected.length, message);
+		return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i], message));
+	} else {
+		assert.strictEqual(actual.length, expected.length);
+		return xjs.Array.forEachAggregated(actual, (item, i) => assert.strictEqual(item, expected[i]));
+	}
 }
 
 type ValidationObject = {cons: ConstructorType<Error>} & (
@@ -121,11 +126,17 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Mo
 			assert.strictEqual(arg0.length, (arg1 as Ref[]).length, 'Expected arrays to have the same length.');
 			return xjs.Array.forEachAggregated(arg0, (act, i) => assertEqualBins(act, (arg1 as Ref[])[i]));
 		}
-	} else {
+	} else if (message) {
 		try {
 			return assert.strictEqual(arg0, arg1, message);
 		} catch {
 			return assert.strictEqual(binaryen.emitText(arg0 as Ref), binaryen.emitText(arg1 as Ref), message);
+		}
+	} else {
+		try {
+			return assert.strictEqual(arg0, arg1);
+		} catch {
+			return assert.strictEqual(binaryen.emitText(arg0 as Ref), binaryen.emitText(arg1 as Ref));
 		}
 	}
 }
@@ -133,22 +144,29 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Mo
 
 
 const TYPE_UNIT_MEMO = new Map<symbol | bigint | number | string, TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Float | VALUE.String>>();
+const TYPE_UNIT_MEMO_SYM = new Map<string, TYPE.Unit<VALUE.Symbol>>();
 const TYPE_UNIT_MEMO_NAT = new Map<bigint, TYPE.Unit<VALUE.Natural>>();
 export function typeUnit(value: symbol, name?: string): TYPE.Unit<VALUE.Symbol>;
 export function typeUnit(value: bigint): TYPE.Unit<VALUE.Integer>;
-export function typeUnit(value: bigint, t: 'nat'): TYPE.Unit<VALUE.Natural>;
+export function typeUnit(value: bigint, tag: 'nat'): TYPE.Unit<VALUE.Natural>;
 export function typeUnit(value: number): TYPE.Unit<VALUE.Float>;
-export function typeUnit(value: string): TYPE.Unit<VALUE.String>;
+export function typeUnit(value: string, tag?: 'sym'): TYPE.Unit<VALUE.String>;
 export function typeUnit(value: symbol | bigint | number | string, tag?: string): TYPE.Unit<VALUE.Symbol | VALUE.Integer | VALUE.Natural | VALUE.Float | VALUE.String> {
+	if (typeof value === 'string' && tag === 'sym') {
+		// TODO: Map#getOrInsertComputed
+		TYPE_UNIT_MEMO_SYM.has(value) || TYPE_UNIT_MEMO_SYM.set(value, new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).toType());
+		return TYPE_UNIT_MEMO_SYM.get(value)!;
+	}
 	if (typeof value === 'bigint' && tag === 'nat') {
+		// TODO: Map#getOrInsertComputed
 		TYPE_UNIT_MEMO_NAT.has(value) || TYPE_UNIT_MEMO_NAT.set(value, (
-			value === 0n              ? VALUE.NAT_0 :
-			value === 1n              ? VALUE.NAT_1 :
-			typeof value === 'bigint' ? new VALUE.Natural(value) :
-			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+			value === 0n ? VALUE.NAT_0 :
+			value === 1n ? VALUE.NAT_1 :
+			new VALUE.Natural(value)
 		).toType());
 		return TYPE_UNIT_MEMO_NAT.get(value)!;
 	}
+	// TODO: Map#getOrInsertComputed
 	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
@@ -164,20 +182,24 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 	return TYPE_UNIT_MEMO.get(value)!;
 }
 
-export function genConst(cg: CodeGenerator, value?: null | boolean | symbol | number | string): binaryen.ExpressionRef;
-export function genConst(cg: CodeGenerator, value: bigint, t?: 'nat'): binaryen.ExpressionRef;
-export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, t?: 'nat'): binaryen.ExpressionRef {
+export function genConst(cg: CodeGenerator, value: symbol, name?: string): binaryen.ExpressionRef;
+export function genConst(cg: CodeGenerator, value: string, tag?: 'sym'): binaryen.ExpressionRef;
+export function genConst(cg: CodeGenerator, value: bigint, tag?: 'nat'): binaryen.ExpressionRef;
+export function genConst(cg: CodeGenerator, value?: null | boolean | number | string): binaryen.ExpressionRef;
+export function genConst(cg: CodeGenerator, value: null | boolean | symbol | bigint | number | string = null, tag?: string): binaryen.ExpressionRef {
 	switch (value) {
-		case null:  { return cg.getConst(BinConst.NULL); }
-		case false: { return cg.getConst(BinConst.FALSE); }
-		case true:  { return cg.getConst(BinConst.TRUE); }
+		case null:
+		case false:
+		case true:  { return cg.getConst(value); }
 	}
-	if (t === 'nat') {
+	if (typeof value === 'string' && tag === 'sym') {
+		return new VALUE.Symbol(Validator.cookTokenIdentifier(value), value).codegen(cg);
+	}
+	if (typeof value === 'bigint' && tag === 'nat') {
 		return (
-			value === 0n              ? VALUE.NAT_0 :
-			value === 1n              ? VALUE.NAT_1 :
-			typeof value === 'bigint' ? new VALUE.Natural(value) :
-			assert.fail(new TypeError(`Did not expect type ${ typeof value }.`))
+			value === 0n ? VALUE.NAT_0 :
+			value === 1n ? VALUE.NAT_1 :
+			new VALUE.Natural(value)
 		).codegen(cg);
 	}
 	return (
@@ -185,7 +207,7 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
 		value === 1n              ? VALUE.INT_1 :
 		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
 		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
-		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), '') :
+		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
 		typeof value === 'string' ? new VALUE.String(value) :

@@ -48,19 +48,46 @@ export enum ValidIntrinsicName {
 }
 
 export enum ValidFunctionName {
-	LIST = 'List',
-	DICT = 'Dict',
-	SET  = 'Set',
-	MAP  = 'Map',
+	BOOLEAN = 'Boolean',
+	INTEGER = 'Integer',
+	NATURAL = 'Natural',
+	FLOAT   = 'Float',
+	STRING  = 'String',
+	LIST    = 'List',
+	DICT    = 'Dict',
+	SET     = 'Set',
+	MAP     = 'Map',
 }
+
+export type ValidGenericFunctionName = (
+	| ValidFunctionName.LIST
+	| ValidFunctionName.DICT
+	| ValidFunctionName.SET
+	| ValidFunctionName.MAP
+);
+
+const FUNCTION_NAMES: readonly string[] = Object.values(ValidFunctionName);
+
+export const GENERIC_FUNCTION_NAMES: readonly string[] = [
+	ValidFunctionName.LIST,
+	ValidFunctionName.DICT,
+	ValidFunctionName.SET,
+	ValidFunctionName.MAP,
+];
 
 export function is_valid_intrinsic_name(source: string): source is ValidIntrinsicName {
 	return Object.values<string>(ValidIntrinsicName).includes(source);
 }
 
 export function check_valid_function_name(source: string): asserts source is ValidFunctionName {
-	if (!Object.values<string>(ValidFunctionName).includes(source)) {
-		throw new SyntaxError(`Unexpected token: ${ source }; expected \`${ Object.values(ValidFunctionName).join(' | ') }\`.`);
+	if (!FUNCTION_NAMES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ FUNCTION_NAMES.join(' | ') }\`.`);
+	}
+}
+
+export function check_valid_generic_function_name(source: string): asserts source is ValidGenericFunctionName {
+	if (!GENERIC_FUNCTION_NAMES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ GENERIC_FUNCTION_NAMES.join(' | ') }\`.`);
 	}
 }
 
@@ -115,6 +142,21 @@ export type ConstructorSchema = {
 
 /**
  * ```cpl
+ * declare class data Boolean {
+ * 	new (x: anything);
+ * }
+ * declare class data Integer {
+ * 	new (x: int | nat | float);
+ * }
+ * declare class data Natural {
+ * 	new (x: int | nat | float);
+ * }
+ * declare class data Float {
+ * 	new (x: int | nat | float);
+ * }
+ * declare class data String {
+ * 	new (x: anything);
+ * }
  * declare class List<T> {
  * 	new ();
  * 	new (tup0:  ());
@@ -160,6 +202,31 @@ export type ConstructorSchema = {
  * ```
  */
 export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
+	[ValidFunctionName.BOOLEAN, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
+		returnType:    () => TYPE.BOOL,
+	}],
+	[ValidFunctionName.INTEGER, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		returnType:    () => TYPE.INT,
+	}],
+	[ValidFunctionName.NATURAL, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		returnType:    () => TYPE.NAT,
+	}],
+	[ValidFunctionName.FLOAT, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
+		returnType:    () => TYPE.FLOAT,
+	}],
+	[ValidFunctionName.STRING, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
+		returnType:    () => TYPE.STR,
+	}],
 	[ValidFunctionName.LIST, {
 		genericParams: [{positional: true}],
 		overloads:     [
@@ -200,24 +267,6 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
 	}],
 ]);
-
-
-
-export function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
-}
-
-export function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
-}
-
-export function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
-}
-
-export function bothNumbers(t0: TYPE.Type, t1: TYPE.Type): boolean {
-	return t0.isSubtypeOf(TYPE.NUMBER) && t1.isSubtypeOf(TYPE.NUMBER);
-}
 
 
 

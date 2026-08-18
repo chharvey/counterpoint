@@ -11,10 +11,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import type {Operator} from '../../Operator.ts';
 import {Expression} from './Expression.ts';
@@ -63,16 +60,5 @@ export class OperationTernary extends Operation {
 			() => this.operand1.build(builder),
 			() => this.operand2.build(builder),
 		);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const v0: VALUE.Value | null = this.operand0.fold();
-		if (!v0) {
-			return v0;
-		}
-		return (v0 === VALUE.TRUE)
-			? this.operand1.fold()
-			: this.operand2.fold();
 	}
 }

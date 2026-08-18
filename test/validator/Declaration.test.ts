@@ -3,11 +3,11 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	Validator,
 	AST,
 	type SymbolSchema,
 	SymbolSchemaType,
 	SymbolSchemaVar,
-	VALUE,
 	TYPE,
 	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorMissingType,
@@ -32,10 +32,11 @@ test.suite('Declaration', () => {
 				const goal: AST.Goal = AST.Goal.fromSource(`{
 					type T = int;
 				}`);
-				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
+				const id: bigint = Validator.cookTokenIdentifier('T');
+				assert.ok(!goal.block!.validator.hasSymbol(id));
 				goal.varCheck();
-				assert.ok(goal.block!.validator.hasSymbol(0x100n));
-				const info: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x100n);
+				assert.ok(goal.block!.validator.hasSymbol(id));
+				const info: SymbolSchema | undefined = goal.block!.validator.getSymbol(id);
 				assert_instanceof(info, SymbolSchemaType);
 				assert.strictEqual(info.typevalue, TYPE.ANYTHING);
 			});
@@ -48,65 +49,64 @@ test.suite('Declaration', () => {
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the symbol.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					type T = int;
 					type T = float;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val FOO: int = 42;
 					type FOO = float;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					for it: float in [1.1, 2.2, 3.3] do {
 						type it = int;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					type T = int;
 					if true then {
 						type T = float;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					type T = int;
 					while false do {
 						type T = float;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					type T = int;
 					for it: float in [1.1, 2.2, 3.3] do {
 						type T = float;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('allows duplicate declaration of blank identifier.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					type _ = int | float;
 					type _ = (str, bool);
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 			});
 		});
 
 		test.suite('DeclarationVariable', () => {
-			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything` and a preset null `value` value.', () => {
+			test.test('adds a SymbolSchema to the symbol table with a preset `type` value of `anything`.', () => {
 				const goal: AST.Goal = AST.Goal.fromSource(`{
 					val     a:  int = 42;
 					val mut b:  int = 42;
 					val mut c?: int;
 				}`);
-				assert.ok(!goal.block!.validator.hasSymbol(0x100n));
-				assert.ok(!goal.block!.validator.hasSymbol(0x101n));
-				assert.ok(!goal.block!.validator.hasSymbol(0x102n));
+				const id_a: bigint = Validator.cookTokenIdentifier('a');
+				const id_b: bigint = Validator.cookTokenIdentifier('b');
+				const id_c: bigint = Validator.cookTokenIdentifier('c');
+				assert.ok(!goal.block!.validator.hasSymbol(id_a));
+				assert.ok(!goal.block!.validator.hasSymbol(id_b));
+				assert.ok(!goal.block!.validator.hasSymbol(id_c));
 				goal.varCheck();
-				assert.ok(goal.block!.validator.hasSymbol(0x100n));
-				assert.ok(goal.block!.validator.hasSymbol(0x101n));
-				assert.ok(goal.block!.validator.hasSymbol(0x102n));
-				const info_a: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x100n);
-				const info_b: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x101n);
-				const info_c: SymbolSchema | undefined = goal.block!.validator.getSymbol(0x102n);
+				assert.ok(goal.block!.validator.hasSymbol(id_a));
+				assert.ok(goal.block!.validator.hasSymbol(id_b));
+				assert.ok(goal.block!.validator.hasSymbol(id_c));
+				const info_a: SymbolSchema | undefined = goal.block!.validator.getSymbol(id_a);
+				const info_b: SymbolSchema | undefined = goal.block!.validator.getSymbol(id_b);
+				const info_c: SymbolSchema | undefined = goal.block!.validator.getSymbol(id_c);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
 				assert_instanceof(info_c, SymbolSchemaVar);
@@ -114,19 +114,16 @@ test.suite('Declaration', () => {
 					isWritable:      false,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
-					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_b, {
 					isWritable:      true,
 					isUninitialized: false,
 					type:            TYPE.ANYTHING,
-					value:           null,
 				});
 				assert.partialDeepStrictEqual(info_c, {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.ANYTHING,
-					value:           null,
 				});
 			});
 			test.test('for blank identifiers, does not add to symbol table.', () => {
@@ -138,45 +135,41 @@ test.suite('Declaration', () => {
 				return assert.ok(!goal.block!.validator.hasSymbol(0x100n));
 			});
 			test.test('throws if the validator already contains a record for the variable.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					val i: int = 42;
 					val i: int = 43;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					type FOO = float;
 					val FOO: int = 42;
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					for it: float in [1.1, 2.2, 3.3] do {
 						val it: int = 42;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('throws if the same identifier was declared in an outer scope (shadowing).', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				xjs.Array.forEachAggregated([`{
 					val mut x: int = 42;
 					if true then {
 						val mut x: float = 4.2;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val mut x: int = 42;
 					while false do {
 						val mut x: float = 4.2;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, `{
 					val mut x: int = 42;
 					for it: float in [1.1, 2.2, 3.3] do {
 						val mut x: float = 4.2;
 					};
-				}`).varCheck(), AssignmentErrorDuplicateDeclaration);
+				}`], (src) => assert.throws(() => setupScript(src, {typeCheck: false}), AssignmentErrorDuplicateDeclaration));
 			});
 			test.test('allows duplicate declaration of blank identifier.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					val _: int = 42;
 					val _: str = "the answer";
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 			});
 		});
 	});
@@ -188,7 +181,7 @@ test.suite('Declaration', () => {
 				assert.strictEqual(
 					(setupScript(`{
 						type T = int;
-					}`, {build: false}).goal.block!.validator.getSymbol(0x100n) as SymbolSchemaType).typevalue,
+					}`, {build: false}).goal.block!.validator.getSymbolBySource('T') as SymbolSchemaType).typevalue,
 					TYPE.INT,
 				);
 			});
@@ -202,8 +195,7 @@ test.suite('Declaration', () => {
 						.filter((s) => !!s)
 						.forEach((s) => typeCheckGoal(`{${ s }}`, expect_thrown));
 				}
-				const goal: AST.Goal = AST.Goal.fromSource(src);
-				goal.varCheck();
+				const {goal} = setupScript(src, {typeCheck: false});
 				return (expect_thrown)
 					? assert.throws(() => goal.typeCheck(), expect_thrown)
 					: goal.typeCheck();
@@ -234,33 +226,32 @@ test.suite('Declaration', () => {
 			test.test('passes typechecking when uninitialized.', () => {
 				assert.partialDeepStrictEqual(setupScript(`{
 					val mut the_answer?: int | float;
-				}`, {build: false}).goal.block!.validator.getSymbol(0x100n), {
+				}`, {build: false}).goal.block!.validator.getSymbolBySource('the_answer'), {
 					isWritable:      true,
 					isUninitialized: true,
 					type:            TYPE.INT.union(TYPE.FLOAT),
-					value:           null,
 				});
 			});
 			test.suite('type inference.', () => {
 				const PRIMS = new Map<string, [TYPE.Unit, TYPE.Type]>([
-					['null',    [TYPE.NULL,                        TYPE.NULL]],
-					['false',   [TYPE.FALSE,                       TYPE.BOOL]],
-					['true',    [TYPE.TRUE,                        TYPE.BOOL]],
-					['@hello',  [typeUnit(Symbol(0x100), 'hello'), TYPE.SYM]],
-					['-42',     [typeUnit(-42n),                   TYPE.INT]],
-					['+42',     [typeUnit(42n, 'nat'),             TYPE.NAT]],
-					['6.28',    [typeUnit(6.28),                   TYPE.FLOAT]],
-					['"hello"', [typeUnit('hello'),                TYPE.STR]],
+					['null',    [TYPE.NULL,                TYPE.NULL]],
+					['false',   [TYPE.FALSE,               TYPE.BOOL]],
+					['true',    [TYPE.TRUE,                TYPE.BOOL]],
+					['@hello',  [typeUnit('hello', 'sym'), TYPE.SYM]],
+					['-42',     [typeUnit(-42n),           TYPE.INT]],
+					['+42',     [typeUnit(42n, 'nat'),     TYPE.NAT]],
+					['6.28',    [typeUnit(6.28),           TYPE.FLOAT]],
+					['"hello"', [typeUnit('hello'),        TYPE.STR]],
 				]);
 				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
 						val fixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, fixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbolBySource('fixed') as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
 						val mut unfixed = ${ src };
-					}`, {build: false}).goal.block!.validator.getSymbol(src === '@hello' ? 0x101n : 0x100n) as SymbolSchemaVar).type, unfixedtype));
+					}`, {build: false}).goal.block!.validator.getSymbolBySource('unfixed') as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
 					const {goal} = setupScript(`{
@@ -268,8 +259,8 @@ test.suite('Declaration', () => {
 						val mut str_tpl_unfixed = """hello"""; % type \`str\`
 					}`, {build: false});
 					return assert_shallowStrictEqual([
-						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('str_tpl_fixed')   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('str_tpl_unfixed') as SymbolSchemaVar).type,
 					], repeat(TYPE.STR, 2));
 				});
 				test.test('infers the constructor type, mutable.', () => {
@@ -278,8 +269,8 @@ test.suite('Declaration', () => {
 						val mut dict_unfixed = Dict.<str>((a= "hello", b= "world")); % type \`mut Dict.<str>\`
 					}`, {build: false});
 					return assertEqualTypes([
-						(goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(0x103n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('list_fixed')   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('dict_unfixed') as SymbolSchemaVar).type,
 					], [
 						new TYPE.List(TYPE.INT, true),
 						new TYPE.Dict(TYPE.STR, true),
@@ -291,18 +282,18 @@ test.suite('Declaration', () => {
 						val mut rec_unfixed = (a= 42, b= ("hello",),   c= List.<bool>((   false,    true))); % type \`(a= int, b= (str,),       c= List.<bool>)\`
 					}`, {build: false});
 					return assertEqualTypes([
-						(goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar).type,
-						(goal.block!.validator.getSymbol(0x106n) as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('tup_fixed')   as SymbolSchemaVar).type,
+						(goal.block!.validator.getSymbolBySource('rec_unfixed') as SymbolSchemaVar).type,
 					], [
 						TYPE.Tuple.fromTypes([
 							typeUnit(42n),
-							TYPE.Record.fromTypes(new Map([[0x100n, typeUnit('hello')]])),
+							TYPE.Record.fromTypes(new Map([[Validator.cookTokenIdentifier('x'), typeUnit('hello')]])),
 							new TYPE.Dict(TYPE.BOOL, true),
 						]),
 						TYPE.Record.fromTypes(new Map([
-							[0x103n, TYPE.INT],
-							[0x104n, TYPE.Tuple.fromTypes([TYPE.STR])],
-							[0x105n, new TYPE.List(TYPE.BOOL, true)],
+							[Validator.cookTokenIdentifier('a'), TYPE.INT],
+							[Validator.cookTokenIdentifier('b'), TYPE.Tuple.fromTypes([TYPE.STR])],
+							[Validator.cookTokenIdentifier('c'), new TYPE.List(TYPE.BOOL, true)],
 						])),
 					]);
 				});
@@ -326,34 +317,6 @@ test.suite('Declaration', () => {
 				assert.throws(() => AST.STMT.DeclarationVariable.fromSource(`
 					val x: float = 42;
 				`).typeCheck(), TypeErrorNotAssignable);
-			});
-			test.test('does not set `SymbolSchemaVar#value` when assignee type has mutable.', () => {
-				const {goal} = setupScript(`{
-					val immut:  (int, int, int)                   = (42, 420, 4200);
-					val 'mut':  mut [int]                         = [42, 420, 4200];
-					val mutmut: (mut [int], mut [int], mut [int]) = ([42], [420], [4200]);
-				}`, {build: false});
-				const [immut, mut, mutmut] = [
-					goal.block!.validator.getSymbol(0x100n) as SymbolSchemaVar,
-					goal.block!.validator.getSymbol(0x101n) as SymbolSchemaVar,
-					goal.block!.validator.getSymbol(0x102n) as SymbolSchemaVar,
-				];
-				assert.deepStrictEqual(
-					[immut.source, immut.value],
-					['immut',      new VALUE.Tuple<VALUE.Integer>([
-						new VALUE.Integer(  42n),
-						new VALUE.Integer( 420n),
-						new VALUE.Integer(4200n),
-					])],
-				);
-				assert.deepStrictEqual(
-					[mut.source, mut.value],
-					['\'mut\'',  null],
-				);
-				return assert.deepStrictEqual(
-					[mutmut.source, mutmut.value],
-					['mutmut',      null],
-				);
 			});
 			test.test('immutable lists/dicts/sets/maps should be covariant.', () => {
 				typeCheckGoal(extract_lines`
@@ -483,11 +446,16 @@ test.suite('Declaration', () => {
 						);
 						val bob: Employee | Volunteer = ${ BOB };
 					}`, (err) => {
+						const id_name:         bigint = Validator.cookTokenIdentifier('name');
+						const id_id:           bigint = Validator.cookTokenIdentifier('id');
+						const id_job_title:    bigint = Validator.cookTokenIdentifier('job_title');
+						const id_hours_worked: bigint = Validator.cookTokenIdentifier('hours_worked');
+						const id_agency:       bigint = Validator.cookTokenIdentifier('agency');
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 257: int, 258: str, 259: float)\`.`},
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(256: str, 261: str, 259: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(${ id_name }: str, ${ id_id }: int, ${ id_job_title }: str, ${ id_hours_worked }: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(${ id_name }: str, ${ id_agency }: str, ${ id_hours_worked }: float)\`.`},
 							],
 						});
 						return true;
@@ -615,11 +583,11 @@ test.suite('Declaration', () => {
 				val assignee_a: int = 42; % \`(DECL <int> assignee_a (INT.CONST 42))\`
 
 				% Non-Foldable cases:
-				val mut assignee_b?: int;              % \`(DECL <null> assignee_b null)\`
-				val mut assignee_c:  int = 42;         % \`(DECL <int> assignee_c 42)\`
-				val     _:           int = assignee_c; % \`(DROP assignee_c)\`
-				val     assignee_d:  int = assignee_c; % \`(DECL <int> assignee_d assignee_c)\`
-				val mut assignee_e:  int = assignee_c; % \`(DECL <int> assignee_e assignee_c)\`
+				val mut assignee_b?: int;              % \`(DECL <null> assignee_b)\`
+				val mut assignee_c:  int = 42;         % \`(DECL <int> assignee_c (INT.CONST 42))\`
+				val     _:           int = assignee_c; % \`(DROP (GET assignee_c))\`
+				val     assignee_d:  int = assignee_c; % \`(DECL <int> assignee_d (GET assignee_c))\`
+				val mut assignee_e:  int = assignee_c; % \`(DECL <int> assignee_e (GET assignee_c))\`
 
 				%% Syntactically impossible cases (for completion):
 				val _?:          int;
@@ -634,7 +602,7 @@ test.suite('Declaration', () => {
 				"block-0":
 					(DROP (INT.CONST 42))
 					(DECL <int> assignee_a (INT.CONST 42))
-					(DECL <null> assignee_b (NULL.CONST null))
+					(DECL <null> assignee_b)
 					(DECL <int> assignee_c (INT.CONST 42))
 					(DROP (GET assignee_c))
 					(DECL <int> assignee_d (GET assignee_c))

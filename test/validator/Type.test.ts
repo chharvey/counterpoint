@@ -1,6 +1,7 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
+	Validator,
 	AST,
 	type EntryType,
 	TYPE,
@@ -86,10 +87,10 @@ test.suite('Type', () => {
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
-					new VALUE.Symbol(0x92n,  'then').toType(),
-					new VALUE.Symbol(0x86n,  'str').toType(),
-					new VALUE.Symbol(0x89n,  'false').toType(),
-					new VALUE.Symbol(0x100n, 'foobar').toType(),
+					new VALUE.Symbol(0x54n, 'then').toType(),
+					new VALUE.Symbol(0x46n, 'str').toType(),
+					new VALUE.Symbol(0x49n, 'false').toType(),
+					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar').toType(),
 					typeUnit(42n),
 					typeUnit(42n, 'nat'),
 					typeUnit(4.2e+3),
@@ -117,44 +118,44 @@ test.suite('Type', () => {
 	test.suite('TypeAlias', () => {
 		test.suite('#varCheck', () => {
 			test.test('does not throw when referencing intrinsic identifiers.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					type T = Object;
 					val obj: Object = 42;
-				}`).varCheck(); // assert does not throw
+				}`, {typeCheck: false}); // assert does not throw
 			});
 			test.test('throws if the validator does not contain a record for the identifier.', () => {
-				AST.Goal.fromSource(`{
+				setupScript(`{
 					type T = int;
 					type U = float | T;
-				}`).varCheck(); // assert does not throw
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, {typeCheck: false}); // assert does not throw
+				assert.throws(() => setupScript(`{
 					type U = float | T;
-				}`).varCheck(), ReferenceErrorUndeclared);
+				}`, {typeCheck: false}), ReferenceErrorUndeclared);
 			});
 			test.test('throws when declared in an inner scope.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					if true then {
 						type T = int;
 					};
 					type _ = float | T;
-				}`).varCheck(), ReferenceErrorUndeclared);
+				}`, {typeCheck: false}), ReferenceErrorUndeclared);
 			});
 			test.test.todo('throws when there is a temporal dead zone.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					T;
 					type T = int;
-				}`).varCheck(), ReferenceErrorDeadZone);
+				}`, {typeCheck: false}), ReferenceErrorDeadZone);
 			});
 			test.test('throws if was declared as a value variable.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					val FOO: int = 42;
 					type _ = FOO | float;
-				}`).varCheck(), ReferenceErrorKind);
-				assert.throws(() => AST.Goal.fromSource(`{
+				}`, {typeCheck: false}), ReferenceErrorKind);
+				assert.throws(() => setupScript(`{
 					for FOO: int in [42] do {
 						type _ = FOO | float;
 					};
-				}`).varCheck(), ReferenceErrorKind);
+				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
 		});
 

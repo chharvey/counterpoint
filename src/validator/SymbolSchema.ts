@@ -1,8 +1,5 @@
-import {
-	type VALUE,
-	TYPE,
-} from '../typer/index.ts';
-import type * as AST from './ast/index.ts';
+import {TYPE} from '../typer/index.ts';
+import type {Serializable} from '../parser/index.ts';
 
 
 
@@ -36,8 +33,8 @@ export class SymbolSchemaType extends SymbolSchema {
 	/** The assessed value of the symbol. */
 	public typevalue: TYPE.Type = TYPE.ANYTHING;
 
-	public constructor(node: AST.TYPE.TypeAlias) {
-		super(node.id, node.line_index, node.col_index, node.source);
+	public constructor(id: bigint, node: Serializable) {
+		super(id, node.line_index, node.col_index, node.source);
 	}
 }
 
@@ -56,16 +53,14 @@ export class SymbolSchemaVar extends SymbolSchema {
 	 */
 	public irType: TYPE.Type = TYPE.NOTHING;
 
-	/** The assessed value of the symbol, or `null` if it cannot be statically determined or if the symbol is unfixed. */
-	public value: VALUE.Value | null = null;
-
 	public constructor(
-		node: AST.EXPR.Variable,
+		id:   bigint,
+		node: Serializable,
 		/** May the symbol be reassigned? */
 		public readonly isWritable: boolean,
 		/** Was the symbol declared without an initial value? */
 		public readonly isUninitialized: boolean,
 	) {
-		super(node.id, node.line_index, node.col_index, node.source);
+		super(id, node.line_index, node.col_index, node.source);
 	}
 }

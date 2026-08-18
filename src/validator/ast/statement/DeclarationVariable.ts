@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	type Builder,
 	OP,
@@ -19,8 +18,10 @@ import {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
+import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaVar} from '../../index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
+import {Validator} from '../../Validator.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
@@ -82,10 +83,14 @@ export class DeclarationVariable extends Statement {
 		return statement;
 	}
 
+
+	private readonly id?: bigint;
+
+
 	public constructor(
 		start_node: SyntaxNodeFamily<'declaration_variable', ['break']>,
 		public  readonly writable: boolean,
-		public  readonly assignee: EXPR.Variable | null,
+		public  readonly assignee: Serializable | null,
 		public  readonly typenode: AST_TYPE.Type | null,
 		public  readonly assigned: EXPR.Expression | null,
 	) {
@@ -93,35 +98,13 @@ export class DeclarationVariable extends Statement {
 			start_node,
 			{writable},
 			[
-				...(assignee ? [assignee] : []),
 				...(typenode ? [typenode] : []),
 				...(assigned ? [assigned] : []),
 			],
 		);
-	}
-
-	@memoizeGetter
-	public override get isFoldable(): boolean {
-		/*
-		 * Foldable cases:
-		 * - `val _:        T = assigned_foldable;`
-		 * - `val assignee: T = assigned_foldable;`
-		 *
-		 * Non-Foldable cases:
-		 * - `val mut assignee?: T;`
-		 * - `val mut assignee:  T = assigned_foldable;`
-		 * - `val     _:         T = assigned_non_foldable;`
-		 * - `val     assignee:  T = assigned_non_foldable;`
-		 * - `val mut assignee:  T = assigned_non_foldable;`
-		 *
-		 * Syntactically impossible cases (for completion):
-		 * - `val _?:        T;`
-		 * - `val assignee?: T;`
-		 * - `val mut _?:    T;`
-		 * - `val mut _:     T = assigned_foldable;`
-		 * - `val mut _:     T = assigned_non_foldable;`
-		 */
-		return !!this.assigned?.fold() && (!this.assignee || !this.writable);
+		if (this.assignee) {
+			this.id = Validator.cookTokenIdentifier(this.assignee.source);
+		}
 	}
 
 	@memoizeGetter
@@ -130,16 +113,12 @@ export class DeclarationVariable extends Statement {
 	}
 
 	public override varCheck(): void {
-		if (!this.writable) {
-			assert.ok(this.assigned, `Symbol \`${ this.source }\` should be initialized with a value.`);
-		}
-		// Do not call `super.varCheck()` as we don’t want to VarCheck `this.assignee`. It’s called only during reassignment.
-		xjs.Array.forEachAggregated([this.typenode, this.assigned], (c) => c?.varCheck());
+		super.varCheck();
 		if (this.assignee) {
-			if (this.validator.hasSymbol(this.assignee.id)) {
+			if (this.validator.hasSymbol(this.id!)) {
 				throw new AssignmentErrorDuplicateDeclaration(this.assignee);
 			}
-			this.validator.addSymbol(new SymbolSchemaVar(this.assignee, this.writable, !this.assigned));
+			this.validator.addSymbol(new SymbolSchemaVar(this.id!, this.assignee, this.writable, !this.assigned));
 		}
 	}
 
@@ -159,26 +138,21 @@ export class DeclarationVariable extends Statement {
 		);
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.assignee.id), `The validator symbol table should include ${ this.assignee.id }.`);
-			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.type = assignee_type;
-			// TODO: move these next lines to the interpreter
-			if (!symbol.type.hasMutable && !this.writable) {
-				assert.ok(!symbol.isWritable, `Symbol \`${ symbol.source }\` should not be writable.`);
-				symbol.value = this.assigned?.fold() ?? null;
-			}
 		}
 	}
 
 	@runOnceMethod
 	public override build(builder: Builder): void {
-		const value: OP.Value = this.assigned?.build(builder) ?? new OP.Const(VALUE.NULL);
+		const value: OP.Value | undefined = this.assigned?.build(builder);
 		if (this.assignee) {
-			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
-			symbol.irType = value.type;
+			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
+			symbol.irType = value?.type ?? TYPE.NULL;
 			builder.pushInstruction(new OP.Decl(symbol, value));
 		} else {
-			builder.pushInstruction(new OP.Drop(value));
+			builder.pushInstruction(new OP.Drop(value!));
 		}
 	}
 }

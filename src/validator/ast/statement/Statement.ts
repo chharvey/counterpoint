@@ -5,7 +5,6 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {AstNode} from '../AstNode.ts';
-import type {Foldable} from '../Foldable.ts';
 import type {Buildable} from '../Buildable.ts';
 import {Block} from '../Block.ts';
 
@@ -23,7 +22,7 @@ import {Block} from '../Block.ts';
  * - StatementBreakable
  * - StatementBreak
  */
-export abstract class Statement extends AstNode implements Foldable, Buildable {
+export abstract class Statement extends AstNode implements Buildable {
 	/**
 	 * Construct a new Statement from a source text and optionally a configuration.
 	 * The source text must parse successfully.
@@ -38,10 +37,6 @@ export abstract class Statement extends AstNode implements Foldable, Buildable {
 	}
 
 
-	/** @implements Foldable */
-	public abstract get isFoldable(): boolean;
-
-	/** @implements Foldable */
 	public abstract get hasBottomType(): boolean;
 
 	/**

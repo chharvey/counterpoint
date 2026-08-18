@@ -5,7 +5,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 import type {Value} from './Value.ts';
@@ -35,22 +40,31 @@ export class GotoConditional extends Terminator {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		this.condition.validate();
+	public override validate(builder: Builder): void {
+		this.condition.validate(builder);
 		return assert.ok(this.condition.type.isSubtypeOf(TYPE.BOOL));
 	}
 
+	public override interpret(interp: Interpreter): void {
+		const condition: VALUE.Value = this.condition.interpret(interp);
+		return interp.interpretNextBlock((
+			condition.equal(VALUE.TRUE)  ? this.labelIfTrue :
+			condition.equal(VALUE.FALSE) ? this.labelIfFalse :
+			assert.fail(new TypeError('Expected condition of a `GotoConditional` to be of type `Boolean`.'))
+		));
+	}
+
 	@memoizeMethod
-	public override codegen(cg: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+	public override codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void {
 		relooper.addBranch(
-			blockrefs.get(this._containerLabel!)!,
-			blockrefs.get(this.labelIfTrue)!,
+			cg.getBlockRef(this._containerLabel!),
+			cg.getBlockRef(this.labelIfTrue),
 			cg.vm.Value.boolToI32(this.condition.codegen(cg)),
 			0,
 		);
 		relooper.addBranch(
-			blockrefs.get(this._containerLabel!)!,
-			blockrefs.get(this.labelIfFalse)!,
+			cg.getBlockRef(this._containerLabel!),
+			cg.getBlockRef(this.labelIfFalse),
 			0, // else (default)
 			0,
 		);

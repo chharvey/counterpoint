@@ -13,10 +13,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import type {Case} from '../Case.ts';
@@ -60,17 +57,6 @@ class ExpressionMap extends Collection {
 			c.antecedent.build(builder).asTac(builder),
 			c.consequent.build(builder).asTac(builder),
 		])), this.type());
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const cases: ReadonlyMap<VALUE.Value | null, VALUE.Value | null> = new Map(this.children.map((c) => [
-			c.antecedent.fold(),
-			c.consequent.fold(),
-		]));
-		return ([...cases].some((c) => c[0] === null || c[1] === null))
-			? null
-			: new VALUE.Map(cases as ReadonlyMap<VALUE.Value, VALUE.Value>);
 	}
 
 	@assignToDeco

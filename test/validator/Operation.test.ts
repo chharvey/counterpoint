@@ -3,13 +3,12 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	Validator,
 	AST,
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
-	NanErrorInvalid,
-	NanErrorDivZero,
 } from '../../src/index.ts';
 import {
 	extract_lines,
@@ -25,12 +24,6 @@ import {
 function typeOperations(tests: ReadonlyMap<string, TYPE.Type>): void {
 	return assertEqualTypes(
 		[...tests.keys()].map((src) => AST.EXPR.Operation.fromSource(src).type()),
-		[...tests.values()],
-	);
-}
-function foldOperations(tests: Map<string, VALUE.Value>): void {
-	return assert.deepStrictEqual(
-		[...tests.keys()].map((src) => AST.EXPR.Operation.fromSource(src).fold()),
 		[...tests.values()],
 	);
 }
@@ -106,7 +99,7 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryComparative', () => {
-			test.test('without constant folding: returns `bool` for numeric operands.', () => {
+			test.test('returns `bool` for numeric operands.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val mut i1: int   = 7;
@@ -202,7 +195,7 @@ test.suite('Operation', () => {
 				val mut x: int = 42;
 				val mut y: int = 69;
 				x + { x; x * y; };
-			}`).builder.print(), xjs.String.dedent`
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <int> x (INT.CONST 42))
 					(DECL <int> y (INT.CONST 69))
@@ -269,38 +262,6 @@ test.suite('Operation', () => {
 				"block-3":
 					(DECL <anything> z (GET $1))
 					(DROP (NEG (GET z)))
-					(ENDPROGRAM)
-			`.trim());
-		});
-		test.test('OperationUnary[operator=INT | NAT | FLOAT]', () => {
-			assert.strictEqual(setupScript(`{
-				val mut my_int: int   = -7;
-				val mut my_nat: nat   = +42;
-				val mut my_flt: float = -3.5;
-
-				int   my_int;
-				int   my_nat;
-				int   my_flt;
-				nat   my_int;
-				nat   my_nat;
-				nat   my_flt;
-				float my_int;
-				float my_nat;
-				float my_flt;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <int> my_int (INT.CONST -7))
-					(DECL <nat> my_nat (NAT.CONST +42))
-					(DECL <float> my_flt (FLOAT.CONST -3.5))
-					(DROP (TOINT (GET my_int)))
-					(DROP (TOINT (GET my_nat)))
-					(DROP (TOINT (GET my_flt)))
-					(DROP (TONAT (GET my_int)))
-					(DROP (TONAT (GET my_nat)))
-					(DROP (TONAT (GET my_flt)))
-					(DROP (TOFLOAT (GET my_int)))
-					(DROP (TOFLOAT (GET my_nat)))
-					(DROP (TOFLOAT (GET my_flt)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -629,137 +590,6 @@ test.suite('Operation', () => {
 					assert.throws(() => ((stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary).type(), TypeErrorInvalidOperation);
 				});
 			});
-			test.suite('[operator=INT | NAT | FLOAT]', () => {
-				test.test('returns the respective type for numeric operands.', () => {
-					assert.deepStrictEqual(setupScript(`{
-						val mut my_int: int   = 7;
-						val mut my_nat: nat   = +42;
-						val mut my_flt: float = -3.5;
-
-						int   my_int;
-						int   my_nat;
-						int   my_flt;
-						nat   my_int;
-						nat   my_nat;
-						nat   my_flt;
-						float my_int;
-						float my_nat;
-						float my_flt;
-					}`, {build: false}).stmts.slice(3).map((stmt) => typeOfStmtExpr(stmt)), [
-						TYPE.INT,
-						TYPE.INT,
-						TYPE.INT,
-						TYPE.NAT,
-						TYPE.NAT,
-						TYPE.NAT,
-						TYPE.FLOAT,
-						TYPE.FLOAT,
-						TYPE.FLOAT,
-					]);
-				});
-				test.test('throws for non-numeric operands.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
-						int   null
-						int   @symb
-						int   "string"
-						int   ["string tuple"]
-						int   [record= "string"]
-						nat   null
-						nat   @symb
-						nat   "string"
-						nat   ["string tuple"]
-						nat   [record= "string"]
-						float null
-						float @symb
-						float "string"
-						float ["string tuple"]
-						float [record= "string"]
-					`, (src) => assert.throws(() => AST.EXPR.OperationUnary.fromSource(src).type(), TypeErrorInvalidOperation));
-				});
-			});
-		});
-
-
-		test.suite('#fold', () => {
-			test.test('[operator=NOT]', () => {
-				foldOperations(new Map([
-					['!false',      VALUE.TRUE],
-					['!true',       VALUE.FALSE],
-					['!null',       VALUE.TRUE],
-					['!0',          VALUE.FALSE],
-					['!42',         VALUE.FALSE],
-					['!0.0',        VALUE.FALSE],
-					['!-0.0',       VALUE.FALSE],
-					['!4.2e+1',     VALUE.FALSE],
-					['!""',         VALUE.FALSE],
-					['!"hello"',    VALUE.FALSE],
-					['!()',         VALUE.FALSE],
-					['!(42,)',      VALUE.FALSE],
-					['!(a= 42)',    VALUE.FALSE],
-					['![]',         VALUE.FALSE],
-					['![42]',       VALUE.FALSE],
-					['![a= 42]',    VALUE.FALSE],
-					['!{}',         VALUE.FALSE],
-					['!{42}',       VALUE.FALSE],
-					['!{41 -> 42}', VALUE.FALSE],
-				]));
-			});
-			test.test('[operator=EMP]', () => {
-				foldOperations(new Map([
-					['?false',      VALUE.TRUE],
-					['?true',       VALUE.FALSE],
-					['?null',       VALUE.TRUE],
-					['?0',          VALUE.TRUE],
-					['?42',         VALUE.FALSE],
-					['?0.0',        VALUE.TRUE],
-					['?-0.0',       VALUE.TRUE],
-					['?4.2e+1',     VALUE.FALSE],
-					['?""',         VALUE.TRUE],
-					['?"hello"',    VALUE.FALSE],
-					['?()',         VALUE.TRUE],
-					['?(42,)',      VALUE.FALSE],
-					['?(a= 42)',    VALUE.FALSE],
-					['?[]',         VALUE.TRUE],
-					['?[42]',       VALUE.FALSE],
-					['?[a= 42]',    VALUE.FALSE],
-					['?{}',         VALUE.TRUE],
-					['?{42}',       VALUE.FALSE],
-					['?{41 -> 42}', VALUE.FALSE],
-				]));
-			});
-			test.test('[operator=INT | NAT | FLOAT]: returns a numeric conversion only if needed.', () => {
-				const exprs: readonly AST.EXPR.OperationUnary[] = setupScript(`{
-					val my_int: int   = -7;
-					val my_nat: nat   = +42;
-					val my_flt: float = -3.5;
-
-					int   my_int;
-					int   my_nat;
-					int   my_flt;
-					nat   my_int;
-					nat   my_nat;
-					nat   my_flt;
-					float my_int;
-					float my_nat;
-					float my_flt;
-				}`, {build: false}).stmts.slice(3).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.OperationUnary);
-				const values:   readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.fold());
-				const operands: readonly (VALUE.Value | null)[] = exprs.map((expr) => expr.operand.fold());
-				assert.strictEqual(values[0], operands[0]);
-				assert.strictEqual(values[4], operands[4]);
-				assert.strictEqual(values[8], operands[8]);
-				return assert.deepStrictEqual(values, [
-					new VALUE.Integer(-7n),
-					new VALUE.Integer(42n),
-					new VALUE.Integer(-3n),
-					new VALUE.Natural(-7n),
-					new VALUE.Natural(42n),
-					new VALUE.Natural(0n),
-					new VALUE.Float(-7.0),
-					new VALUE.Float(42.0),
-					new VALUE.Float(-3.5),
-				]);
-			});
 		});
 	});
 
@@ -791,80 +621,6 @@ test.suite('Operation', () => {
 				].forEach((src) => {
 					assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource(src).type(), TypeErrorInvalidOperation);
 				});
-			});
-		});
-
-
-		test.suite('#fold', () => {
-			test.test('computes the value of an integer operation of constants.', () => {
-				foldOperations(new Map<string, VALUE.Value>([
-					['42 + 420',        new VALUE.Integer(42n + 420n)],
-					['42 - 420',        new VALUE.Integer(42n + -420n)],
-					[' 126 /  3',       new VALUE.Integer( 126n /  3n)],
-					['-126 /  3',       new VALUE.Integer(-126n /  3n)],
-					[' 126 / -3',       new VALUE.Integer( 126n / -3n)],
-					['-126 / -3',       new VALUE.Integer(-126n / -3n)],
-					[' 200 /  3',       new VALUE.Integer( 200n /  3n)],
-					[' 200 / -3',       new VALUE.Integer( 200n / -3n)],
-					['-200 /  3',       new VALUE.Integer(-200n /  3n)],
-					['-200 / -3',       new VALUE.Integer(-200n / -3n)],
-					['-(5) ^ +(2 * 3)', new VALUE.Integer((-5n) ** (2n * 3n))],
-					['+5 ^ (+2 * +3)',  new VALUE.Natural(5n ** (2n * 3n))],
-				]));
-			});
-			test.test('overflows integers properly.', () => {
-				assert.deepStrictEqual([
-					'2 ^ 63 + 2 ^ 62',
-					'-(2 ^ 62) - 2 ^ 63',
-					'42 ^ 2 * 420',
-				].map((src) => AST.EXPR.OperationBinaryArithmetic.fromSource(src).fold()), [
-					new VALUE.Integer(-(2n ** 62n)),
-					new VALUE.Integer(2n ** 62n),
-					new VALUE.Integer((42n ** 2n * 420n) % (2n ** 64n)),
-				]);
-			});
-			test.test('overflows naturals properly.', () => {
-				assert.deepStrictEqual(
-					AST.EXPR.OperationBinaryArithmetic.fromSource('+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63').fold(),
-					new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n),
-				);
-			});
-			test.test('does not underflow naturals.', () => {
-				assert.deepStrictEqual(AST.EXPR.OperationBinaryArithmetic.fromSource('+5 - +9').fold(), VALUE.NAT_0);
-			});
-			test.test('computes the value of a float operation of constants.', () => {
-				foldOperations(new Map<string, VALUE.Value>([
-					['3.0e1 - 201.0e-1', new VALUE.Float(30 - 20.1)],
-					['3.0 * 2.1',        new VALUE.Float(3.0 * 2.1)],
-				]));
-			});
-			test.test('short-circuits when multiplicand is zero.', () => {
-				const {stmts} = setupScript(`{
-					val mut i: int   = 42;
-					val mut f: float = 4.2;
-
-					0 * i;    % value \`0\`
-					0.0 * f;  % value \`0.0\`
-					-0.0 * f; % value \`-0.0\`
-
-					1 * i;    % non-foldable value
-					1.0 * f;  % non-foldable value
-					-1.0 * f; % non-foldable value
-				}`);
-				const exprs:     readonly AST.EXPR.Expression[]  = stmts.slice(2).map((stmt) => ((stmt as AST.STMT.StatementExpression).expr!));
-				const expecteds: readonly (VALUE.Value | null)[] = exprs.slice(0, 3).map((op) => (op as AST.EXPR.OperationBinaryArithmetic).operand0.fold());
-				assert.deepStrictEqual(
-					exprs.map((op) => op.fold()),
-					[...expecteds, null, null, null],
-				);
-				return assert.deepStrictEqual(
-					expecteds,
-					[VALUE.INT_0, VALUE.FLOAT_0, VALUE.FLOAT_N0],
-				);
-			});
-			test.test('throws when performing an operation that does not yield a valid number.', () => {
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('42 / 0')     .fold(), NanErrorDivZero);
-				assert.throws(() => AST.EXPR.OperationBinaryArithmetic.fromSource('-4.0 ^ -0.5').fold(), NanErrorInvalid);
 			});
 		});
 	});
@@ -901,74 +657,6 @@ test.suite('Operation', () => {
 			test.test('throws for comparative operation of non-numbers.', () => {
 				assert.throws(() => AST.EXPR.OperationBinaryComparative.fromSource('7.0 <= null').type(), TypeErrorInvalidOperation);
 			});
-		});
-
-
-		test.test('#fold', () => {
-			foldOperations(new Map([
-				['3   <  3',   VALUE.FALSE],
-				['3   >  3',   VALUE.FALSE],
-				['3   <= 3',   VALUE.TRUE],
-				['3   >= 3',   VALUE.TRUE],
-				['+3  <  +3',  VALUE.FALSE],
-				['+3  >  +3',  VALUE.FALSE],
-				['+3  <= +3',  VALUE.TRUE],
-				['+3  >= +3',  VALUE.TRUE],
-				['5.2 <  7.0', VALUE.TRUE],
-				['5.2 >  7.0', VALUE.FALSE],
-				['5.2 <= 7.0', VALUE.TRUE],
-				['5.2 >= 7.0', VALUE.FALSE],
-				['5   <  +9',  VALUE.TRUE],
-				['5   >  +9',  VALUE.FALSE],
-				['5   <= +9',  VALUE.TRUE],
-				['5   >= +9',  VALUE.FALSE],
-				['+5  <  9',   VALUE.TRUE],
-				['+5  >  9',   VALUE.FALSE],
-				['+5  <= 9',   VALUE.TRUE],
-				['+5  >= 9',   VALUE.FALSE],
-				['5.2 <  9',   VALUE.TRUE],
-				['5.2 >  9',   VALUE.FALSE],
-				['5.2 <= 9',   VALUE.TRUE],
-				['5.2 >= 9',   VALUE.FALSE],
-				['5   <  9.2', VALUE.TRUE],
-				['5   >  9.2', VALUE.FALSE],
-				['5   <= 9.2', VALUE.TRUE],
-				['5   >= 9.2', VALUE.FALSE],
-				['5.2 <  +9',  VALUE.TRUE],
-				['5.2 >  +9',  VALUE.FALSE],
-				['5.2 <= +9',  VALUE.TRUE],
-				['5.2 >= +9',  VALUE.FALSE],
-				['+5  <  9.2', VALUE.TRUE],
-				['+5  >  9.2', VALUE.FALSE],
-				['+5  <= 9.2', VALUE.TRUE],
-				['+5  >= 9.2', VALUE.FALSE],
-				['+3  <  3',   VALUE.FALSE],
-				['+3  >  3',   VALUE.FALSE],
-				['+3  <= 3',   VALUE.TRUE],
-				['+3  >= 3',   VALUE.TRUE],
-				['3   <  +3',  VALUE.FALSE],
-				['3   >  +3',  VALUE.FALSE],
-				['3   <= +3',  VALUE.TRUE],
-				['3   >= +3',  VALUE.TRUE],
-				['3.0 <  +3',  VALUE.FALSE],
-				['3.0 >  +3',  VALUE.FALSE],
-				['3.0 <= +3',  VALUE.TRUE],
-				['3.0 >= +3',  VALUE.TRUE],
-				['+3  <  3.0', VALUE.FALSE],
-				['+3  >  3.0', VALUE.FALSE],
-				['+3  <= 3.0', VALUE.TRUE],
-				['+3  >= 3.0', VALUE.TRUE],
-				['3.0 <  3',   VALUE.FALSE],
-				['3.0 >  3',   VALUE.FALSE],
-				['3.0 <= 3',   VALUE.TRUE],
-				['3.0 >= 3',   VALUE.TRUE],
-				['3   <  3.0', VALUE.FALSE],
-				['3   >  3.0', VALUE.FALSE],
-				['3   <= 3.0', VALUE.TRUE],
-				['3   >= 3.0', VALUE.TRUE],
-
-				['-2 > (+2 ^ +64 - +3)', VALUE.TRUE],
-			]));
 		});
 	});
 
@@ -1026,150 +714,6 @@ test.suite('Operation', () => {
 				});
 			});
 		});
-
-
-		test.suite('#fold', () => {
-			test.test('simple non-numeric types.', () => {
-				foldOperations(new Map([
-					['null === null',                          VALUE.TRUE],
-					['null ==  null',                          VALUE.TRUE],
-					['null === 5',                             VALUE.FALSE],
-					['null ==  5',                             VALUE.FALSE],
-					['true === 1',                             VALUE.FALSE],
-					['true ==  1',                             VALUE.FALSE],
-					['true === 1.0',                           VALUE.FALSE],
-					['true ==  1.0',                           VALUE.FALSE],
-					['true === 5.1',                           VALUE.FALSE],
-					['true ==  5.1',                           VALUE.FALSE],
-					['true === true',                          VALUE.TRUE],
-					['true ==  true',                          VALUE.TRUE],
-					['@a === @a',                              VALUE.TRUE],
-					['@a ==  @a',                              VALUE.TRUE],
-					['@a === @b',                              VALUE.FALSE],
-					['@a ==  @b',                              VALUE.FALSE],
-					['@a === 256',                             VALUE.FALSE], // TODO: use \x100
-					['@a ==  256',                             VALUE.FALSE], // TODO: use \x100
-					['@a === @\'a\'',                          VALUE.FALSE],
-					['@a ==  @\'a\'',                          VALUE.FALSE],
-					['@\'a\' === @\'\\u{61}\'',                VALUE.FALSE],
-					['@\'a\' ==  @\'\\u{61}\'',                VALUE.FALSE],
-					['@\'\\u{61}\' === @\'\\u{61}\'',          VALUE.TRUE],
-					['@\'\\u{61}\' ==  @\'\\u{61}\'',          VALUE.TRUE],
-					['"" == ""',                               VALUE.TRUE],
-					['"a" === "a"',                            VALUE.TRUE],
-					['"a" ==  "a"',                            VALUE.TRUE],
-					['"hello\\u{20}world" === "hello world"',  VALUE.TRUE],
-					['"hello\\u{20}world" ==  "hello world"',  VALUE.TRUE],
-					['"a" !== "b"',                            VALUE.TRUE],
-					['"a" !=  "b"',                            VALUE.TRUE],
-					['"hello\\u{20}world" !== "hello20world"', VALUE.TRUE],
-					['"hello\\u{20}world" !=  "hello20world"', VALUE.TRUE],
-				]));
-			});
-			test.suite('numeric types.', () => {
-				test.test('for identity (`===`), always returns `false` for distinct values.', () => {
-					foldOperations(new Map<string, VALUE.Value>([
-						['0   === -0',   VALUE.TRUE],
-						['0.0 === -0.0', VALUE.FALSE],
-						['0   === 0.0',  VALUE.FALSE],
-						['0   === -0.0', VALUE.FALSE],
-						['-0  === 0.0',  VALUE.FALSE],
-						['-0  === -0.0', VALUE.FALSE],
-						['3   === 3.0',  VALUE.FALSE],
-					]));
-				});
-				test.test('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
-					foldOperations(new Map<string, VALUE.Value>([
-						['0   == -0',   VALUE.TRUE],
-						['0.0 == -0.0', VALUE.TRUE],
-						['0   == 0.0',  VALUE.TRUE],
-						['0   == -0.0', VALUE.TRUE],
-						['-0  == 0.0',  VALUE.TRUE],
-						['-0  == -0.0', VALUE.TRUE],
-						['3   == 3.0',  VALUE.TRUE],
-					]));
-				});
-			});
-			test.test('compound types.', () => {
-				setupScript(`{
-					val a: anything = ();
-					val b: anything = (42,);
-					val c: anything = (x= 42);
-					val d: Object   = [];
-					val e: Object   = [42];
-					val f: Object   = [x= 42];
-					val g: Object   = {};
-					val h: Object   = {42};
-					val i: Object   = {41 -> 42};
-
-					val bb: anything = ((42,),);
-					val cc: anything = (x= (42,));
-					val hh: Object   = {(42,)};
-					val ii: Object   = {(41,) -> (42,)};
-
-					a === ();
-					b === (42,);
-					c === (x= 42);
-					d !== [];
-					e !== [42];
-					f !== [x= 42];
-					g !== {};
-					h !== {42};
-					i !== {41 -> 42};
-					a === a;
-					b === b;
-					c === c;
-					d === d;
-					e === e;
-					f === f;
-					g === g;
-					h === h;
-					i === i;
-					a == ();
-					b == (42,);
-					c == (x= 42);
-					d == [];
-					e == [42];
-					f == [x= 42];
-					g == {};
-					h == {42};
-					i == {41 -> 42};
-
-					bb === ((42,),);
-					cc === (x= (42,));
-					hh !== {(42,)};
-					ii !== {(41,) -> (42,)};
-					bb === bb;
-					cc === cc;
-					hh === hh;
-					ii === ii;
-					bb == ((42,),);
-					cc == (x= (42,));
-					hh == {(42,)};
-					ii == {(41,) -> (42,)};
-
-					b != (42, 43);
-					c != (x= 43);
-					c != (y= 42);
-					i != {41 -> 43};
-					i != {43 -> 42};
-				}`, {build: false}).stmts.slice(13).forEach((stmt) => {
-					assert.strictEqual((stmt as AST.STMT.StatementExpression).expr!.fold(), VALUE.TRUE, stmt.source);
-				});
-			});
-			test.test('compound value types’ constituents are compared using same operand.', () => {
-				foldOperations(new Map([
-					['(   42.0,)  === (   42,)',   VALUE.FALSE],
-					['(   42.0,)  ==  (   42,)',   VALUE.TRUE],
-					['(a= 42.0)   === (a= 42)',    VALUE.FALSE],
-					['(a= 42.0)   ==  (a= 42)',    VALUE.TRUE],
-					['(    0.0,)  === (   -0.0,)', VALUE.FALSE],
-					['(    0.0,)  ==  (   -0.0,)', VALUE.TRUE],
-					['(a=  0.0)   === (a= -0.0)',  VALUE.FALSE],
-					['(a=  0.0)   ==  (a= -0.0)',  VALUE.TRUE],
-				]));
-			});
-		});
 	});
 
 
@@ -1178,22 +722,20 @@ test.suite('Operation', () => {
 		test.suite('#type', () => {
 			test.test('with constant folding on.', () => {
 				typeOperations(new Map<string, TYPE.Type>([
-					['null     && false',    TYPE.NULL],
-					['false    && null',     TYPE.FALSE],
-					['true     && null',     TYPE.NULL],
-					['@nothing && @x',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'x'))],
-					['@x       && @nothing', TYPE.SYM_NOTHING],
-					['@nothing || @y',       TYPE.SYM_NOTHING],
-					['@y       || @nothing', new TYPE.Unit(new VALUE.Symbol(0x100n, 'y'))],
-					['@z       && false',    TYPE.FALSE],
-					['true     && @z',       new TYPE.Unit(new VALUE.Symbol(0x100n, 'z'))],
-					['false    && 42',       TYPE.FALSE],
-					['4.2      && true',     TYPE.TRUE],
-					['null     || false',    TYPE.FALSE],
-					['false    || null',     TYPE.NULL],
-					['true     || null',     TYPE.TRUE],
-					['false    || 42',       new TYPE.Unit(new VALUE.Integer(42n))],
-					['4.2      || true',     new TYPE.Unit(new VALUE.Float(4.2))],
+					['null  && false',    TYPE.NULL],
+					['false && null',     TYPE.FALSE],
+					['true  && null',     TYPE.NULL],
+					['@x    && @y',       typeUnit('y', 'sym')],
+					['@x    || @y',       typeUnit('x', 'sym')],
+					['@z    && false',    TYPE.FALSE],
+					['true  && @z',       typeUnit('z', 'sym')],
+					['false && 42',       TYPE.FALSE],
+					['4.2   && true',     TYPE.TRUE],
+					['null  || false',    TYPE.FALSE],
+					['false || null',     TYPE.NULL],
+					['true  || null',     TYPE.TRUE],
+					['false || 42',       typeUnit(42n)],
+					['4.2   || true',     typeUnit(4.2)],
 				]));
 			});
 			test.suite('with constant folding off.', () => {
@@ -1283,28 +825,6 @@ test.suite('Operation', () => {
 				});
 			});
 		});
-
-
-		test.test('#fold', () => {
-			foldOperations(new Map<string, VALUE.Value>([
-				['@nothing && @x',       new VALUE.Symbol(0x100n, 'x')],
-				['@x       && @nothing', VALUE.SYM_NOTHING],
-				['@nothing || @y',       VALUE.SYM_NOTHING],
-				['@y       || @nothing', new VALUE.Symbol(0x100n, 'y')],
-				['@z       && false',    VALUE.FALSE],
-				['true     && @z',       new VALUE.Symbol(0x100n, 'z')],
-				['null     && 5',        VALUE.NULL],
-				['null     || 5',        new VALUE.Integer(5n)],
-				['5        && null',     VALUE.NULL],
-				['5        || null',     new VALUE.Integer(5n)],
-				['5.1      && true',     VALUE.TRUE],
-				['5.1      || true',     new VALUE.Float(5.1)],
-				['3.1      && 5',        new VALUE.Integer(5n)],
-				['3.1      || 5',        new VALUE.Float(3.1)],
-				['false    && null',     VALUE.FALSE],
-				['false    || null',     VALUE.NULL],
-			]));
-		});
 	});
 
 
@@ -1323,22 +843,12 @@ test.suite('Operation', () => {
 			});
 			test.test('returns `nothing` when condition is `nothing`.', () => {
 				const ternary: AST.EXPR.OperationTernary = AST.EXPR.OperationTernary.fromSource('if n as <nothing> then true else false');
-				ternary.validator.addSymbol(new SymbolSchemaVar((ternary.operand0 as AST.EXPR.Claim).operand as AST.EXPR.Variable, false, false));
+				ternary.validator.addSymbol(new SymbolSchemaVar(Validator.cookTokenIdentifier('n'), (ternary.operand0 as AST.EXPR.Claim).operand, false, false));
 				return assert.ok(ternary.type().isBottomType);
 			});
 			test.test('throws when condition is not a subtype of `boolean`.', () => {
 				assert.throws(() => AST.EXPR.OperationTernary.fromSource('if 2 then true else false').type(), TypeErrorInvalidOperation);
 			});
-		});
-
-
-		test.test('#fold', () => {
-			foldOperations(new Map<string, VALUE.Value>([
-				['if true then false else 2',          VALUE.FALSE],
-				['if false then 3.0 else null',        VALUE.NULL],
-				['if true then 2 else 3.0',            new VALUE.Integer(2n)],
-				['if false then 2 + 3 else 1.0 * 2.0', new VALUE.Float(2.0)],
-			]));
 		});
 	});
 });

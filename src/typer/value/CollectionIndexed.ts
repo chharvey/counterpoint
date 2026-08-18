@@ -1,8 +1,3 @@
-import * as assert from 'node:assert';
-import {
-	VoidErrorOutOfBounds,
-	type AST,
-} from '../../index.ts';
 import {NULL} from './index.ts';
 import type {Value} from './Value.ts';
 import type {Null} from './Null.ts';
@@ -22,15 +17,19 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 		comparator: (a: T, b: T) => boolean,
 	): boolean {
 		return (
-			a.items === b.items ||
-			a.items.length === b.items.length &&
-			b.items.every((thatvalue, i) => comparator.call(null, a.items[i], thatvalue))
+			a.#items === b.#items ||
+			a.#items.length === b.#items.length &&
+			b.#items.every((thatvalue, i) => comparator(a.#items[i], thatvalue))
 		);
 	}
 
 
-	public constructor(public readonly items: readonly T[] = []) {
+	#items: T[];
+
+
+	public constructor(items: readonly T[] = []) {
 		super();
+		this.#items = [...items];
 	}
 
 	/**
@@ -38,7 +37,7 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	 * @implements Value
 	 */
 	public override get isEmpty(): boolean {
-		return this.items.length === 0;
+		return this.#items.length === 0;
 	}
 
 	/**
@@ -46,17 +45,27 @@ export abstract class CollectionIndexed<T extends Value = Value> extends Collect
 	 * @implements Collection
 	 */
 	public override get count(): bigint {
-		return BigInt(this.items.length);
+		return BigInt(this.#items.length);
+	}
+
+	public get items(): T[] {
+		return [...this.#items];
 	}
 
 	public override toString(): string {
-		return this.items.map((it) => it.toString()).join(', ');
+		return this.#items.map((it) => it.toString()).join(', ');
 	}
 
 	/** @final */
-	public get(index: bigint, is_access_maybe: boolean, accessor: AST.Index | AST.EXPR.Expression): T | Null {
-		return 0 <= index && index < this.items.length
-			? this.items.at(Number(index))!
-			: is_access_maybe ? NULL : assert.fail(new VoidErrorOutOfBounds('index', this, index, accessor));
+	public get(index: bigint): T | Null {
+		return this.#items.at(Number(index)) ?? NULL;
+	}
+
+	public set(index: bigint, value: T): void {
+		this.#items[Number(index)] = value;
+	}
+
+	public clear(): void {
+		this.#items = [];
 	}
 }

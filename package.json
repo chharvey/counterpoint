@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -21,6 +21,7 @@
     "cplc": "npx cplc",
     "cplc-h": "npx cplc -h",
     "cplc-v": "npx cplc -v",
+    "cplc:i": "npx cplc i ./sample/test-v0.5.cpls",
     "cplc:c": "npx cplc c ./sample/test-v0.5.cpls",
     "cplc:c-o": "npx cplc c ./sample/test-v0.5.cpls -o ./sample/testout.wasm",
     "cplc:c-p": "npx cplc c ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
@@ -28,11 +29,12 @@
     "cplc:d-o": "npx cplc d ./sample/test-v0.5.cpls -o ./sample/testout.wat",
     "cplc:d-p": "npx cplc d ./sample/test-v0.5.cpls -p ./sample/counterpoint-config.json",
     "cplc:r": "npx cplc r ./sample/test-v0.5.wasm",
-    "npmplease": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
-    "compile": "rm -rf ./dist/ && tsc && tsc --project ./test/tsconfig.json",
-    "lint": "eslint",
-    "test": "n exec 24 tsx --test --test-isolation=none -- './test/**/*.test.ts'",
-    "test:only": "n exec 24 tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
+    "fresh-install": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
+    "precompile": "rm -rf ./dist/ && mkdir -p ./dist/vm/wat/ && cp -R ./src/vm/wat/ ./dist/vm/wat/",
+    "compile": "tsc && tsc --project ./test/tsconfig.json",
+    "lint": "eslint ./",
+    "test": "tsx --test --test-isolation=none -- './test/**/*.test.ts'",
+    "test:only": "tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
     "justbuild": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
     "prebuild": "npm run build -w ./tree-sitter-counterpoint/ && npm rebuild",
     "build": "npm run compile && npm run lint && npm run test"
@@ -45,21 +47,25 @@
     "tree-sitter": "^0.25.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.8.0",
+    "@eslint/js": "^10.0.0",
     "@stylistic/eslint-plugin": "^5.2.0",
     "@types/minimist": "^1.2.0",
-    "@types/node": "^24.0.14",
+    "@types/node": "^26.0.0",
     "@types/utf8": "^3.0.0",
-    "eslint": "^9.16.0",
-    "eslint-plugin-import": "^2.31.0",
+    "eslint": "^10.8.0",
+    "eslint-plugin-import-x": "^4.17.1",
     "globals": "^17.0.0",
     "n": "^10.2.0",
     "tsx": "^4.22.4",
-    "typescript": "~5.9.0",
+    "typescript": "~6.0.3",
     "typescript-eslint": "^8.18.0"
   },
+  "allowScripts": {
+    "tree-sitter@0.25.1": true,
+    "tree-sitter-cli@0.26.11": true
+  },
   "engines": {
-    "node": "^22.22"
+    "node": "^26.5"
   },
   "private": true,
   "workspaces": [

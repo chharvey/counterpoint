@@ -3,7 +3,6 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	AST,
-	VALUE,
 	TYPE,
 	TypeErrorNotAssignable,
 	TypeErrorNotCallable,
@@ -21,6 +20,11 @@ import {
 
 test.suite('Call', () => {
 	const EVALUATE = [
+		'Boolean.(42)',
+		'Integer.(42)',
+		'Natural.(42)',
+		'Float.(42)',
+		'String.(42)',
 		'List.<int>((1, 2, 3))',
 		'Dict.<int>((a= 1, b= 2, c= 3))',
 		'Set.<int>((1, 2, 3))',
@@ -29,6 +33,48 @@ test.suite('Call', () => {
 			(2, 0.2),
 			(3, 0.4),
 		))`,
+	] as const;
+	const BOOL_CONS = [
+		'Boolean.(null)',
+		'Boolean.(false)',
+		'Boolean.(true)',
+		'Boolean.(@hello)',
+		'Boolean.(-0)',
+		'Boolean.(-42)',
+		'Boolean.(+0)',
+		'Boolean.(+42)',
+		'Boolean.(0.0)',
+		'Boolean.(4.2)',
+		'Boolean.("hello")',
+	] as const;
+	const INT_CONS = [
+		'Integer.(-42)',
+		'Integer.(+42)',
+		'Integer.(4.2)',
+	] as const;
+	const NAT_CONS = [
+		'Natural.(-42)',
+		'Natural.(+42)',
+		'Natural.(4.2)',
+	] as const;
+	const FLOAT_CONS = [
+		'Float.(-42)',
+		'Float.(+42)',
+		'Float.(4.2)',
+	] as const;
+	const STRING_CONS = [
+		'String.(null)',
+		'String.(true)',
+		'String.(-42)',
+		'String.(+42)',
+		'String.(4.2)',
+		'String.("hello")',
+		'String.(())',
+		'String.((a= 1))',
+		'String.([])',
+		'String.([a= 1])',
+		'String.({})',
+		'String.({"a" -> 1})',
 	] as const;
 	const LIST_CONS = [
 		'List.<int>()',
@@ -165,15 +211,50 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
-		test.test('evaluates List, Dict, Set, and Map.', () => {
+		test.test('evaluates Boolean, Integer, Natural, Float, String, List, Dict, Set, and Map.', () => {
 			assertEqualTypes(
 				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
 				[
+					TYPE.BOOL,
+					TYPE.INT,
+					TYPE.NAT,
+					TYPE.FLOAT,
+					TYPE.STR,
 					new TYPE.List(TYPE.INT, true),
 					new TYPE.Dict(TYPE.INT, true),
 					new TYPE.Set(TYPE.INT, true),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
 				],
+			);
+		});
+		test.test('`Boolean.(‹…›)`', () => {
+			assertEqualTypes(
+				BOOL_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.BOOL, BOOL_CONS.length),
+			);
+		});
+		test.test('`Integer.(‹…›)`', () => {
+			assertEqualTypes(
+				INT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.INT, INT_CONS.length),
+			);
+		});
+		test.test('`Natural.(‹…›)`', () => {
+			assertEqualTypes(
+				NAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.NAT, NAT_CONS.length),
+			);
+		});
+		test.test('`Float.(‹…›)`', () => {
+			assertEqualTypes(
+				FLOAT_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.FLOAT, FLOAT_CONS.length),
+			);
+		});
+		test.test('`String.(‹…›)`', () => {
+			assertEqualTypes(
+				STRING_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.STR, STRING_CONS.length),
 			);
 		});
 		test.test('`List.(‹…›)`', () => {
@@ -223,6 +304,14 @@ test.suite('Call', () => {
 		});
 		test.test('throws when providing incorrect number of arguments.', () => {
 			xjs.Array.forEachAggregated(extract_lines`
+				Integer.()
+				Integer.(1, 2)
+				Natural.()
+				Natural.(1, 2)
+				Float.()
+				Float.(1, 2)
+				String.()
+				String.(1, 2)
 				List.<int>((), ())
 				Dict.<int>((), ())
 				Set.<int>((), ())
@@ -231,6 +320,18 @@ test.suite('Call', () => {
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
 			// API overload checks
+			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>(['Integer', 'Natural', 'Float'].flatMap((basesrc) => ['()', '[]', '{}'].map((argsrc) => (
+				[`${ basesrc }.(${ argsrc })`, [argsrc, ['int', 'nat', 'float']]] as const
+			)))), ([argexpr, allowed_types], src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), (thrown) => {
+				assertAssignable(thrown as Error, {
+					cons:   AggregateError,
+					errors: allowed_types.map((allowed_type) => ({
+						cons:    TypeErrorNotAssignable,
+						message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
+					})),
+				});
+				return true;
+			}));
 			xjs.Map.forEachAggregated(new Map<string, readonly [string, readonly string[]]>([
 				['List.<int>(42)', ['42', ['List.<int>', 'Set.<int>']]],
 				['Dict.<int>(42)', ['42', ['List.<(sym, int)>', 'Dict.<int>', 'Set.<(sym, int)>', 'Map.<sym, int>']]],
@@ -264,6 +365,84 @@ test.suite('Call', () => {
 
 
 	test.suite('#build', () => {
+		test.test('`Boolean.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ BOOL_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOBOOL (NULL.CONST null)))
+					(DROP (TOBOOL (BOOL.CONST false)))
+					(DROP (TOBOOL (BOOL.CONST true)))
+					(DROP (TOBOOL (SYM.CONST @hello)))
+					(DROP (TOBOOL (INT.CONST 0)))
+					(DROP (TOBOOL (INT.CONST -42)))
+					(DROP (TOBOOL (NAT.CONST +0)))
+					(DROP (TOBOOL (NAT.CONST +42)))
+					(DROP (TOBOOL (FLOAT.CONST 0.0)))
+					(DROP (TOBOOL (FLOAT.CONST 4.2)))
+					(DROP (TOBOOL (STR.CONST "hello")))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Integer.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ INT_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOINT (INT.CONST -42)))
+					(DROP (TOINT (NAT.CONST +42)))
+					(DROP (TOINT (FLOAT.CONST 4.2)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Natural.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ NAT_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TONAT (INT.CONST -42)))
+					(DROP (TONAT (NAT.CONST +42)))
+					(DROP (TONAT (FLOAT.CONST 4.2)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Float.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ FLOAT_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOFLOAT (INT.CONST -42)))
+					(DROP (TOFLOAT (NAT.CONST +42)))
+					(DROP (TOFLOAT (FLOAT.CONST 4.2)))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`String.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ STRING_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (TOSTR (NULL.CONST null)))
+					(DROP (TOSTR (BOOL.CONST true)))
+					(DROP (TOSTR (INT.CONST -42)))
+					(DROP (TOSTR (NAT.CONST +42)))
+					(DROP (TOSTR (FLOAT.CONST 4.2)))
+					(DROP (TOSTR (STR.CONST "hello")))
+					(DECL <tuple> $0 (TUPLE.NEW))
+					(DROP (TOSTR (GET $0)))
+					(DECL <record> $1 (RECORD.NEW @a->(INT.CONST 1)))
+					(DROP (TOSTR (GET $1)))
+					(DECL <List> $2 (LIST.NEW))
+					(DROP (TOSTR (GET $2)))
+					(DECL <Dict> $3 (DICT.NEW @a->(INT.CONST 1)))
+					(DROP (TOSTR (GET $3)))
+					(DECL <Set> $4 (SET.NEW))
+					(DROP (TOSTR (GET $4)))
+					(DECL <Map> $5 (MAP.NEW (STR.CONST "a")->(INT.CONST 1)))
+					(DROP (TOSTR (GET $5)))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('`List.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ LIST_CONS.map((src) => `${ src };`).join('\n') }
@@ -557,66 +736,6 @@ test.suite('Call', () => {
 					(DROP (GET $45))
 					(ENDPROGRAM)
 			`.trim());
-		});
-	});
-
-
-	test.suite('#fold', () => {
-		const TEST_VALUES = [
-			VALUE.INT_1,
-			new VALUE.Integer(2n),
-			new VALUE.Integer(3n),
-		] as const;
-		test.test('evaluates List, Dict, Set, and Map.', () => {
-			assert.deepStrictEqual(
-				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).fold()),
-				[
-					new VALUE.List<VALUE.Integer>(TEST_VALUES),
-					new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
-						[0x100n, TEST_VALUES[0]],
-						[0x101n, TEST_VALUES[1]],
-						[0x102n, TEST_VALUES[2]],
-					])),
-					new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)),
-					new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
-						[TEST_VALUES[0], new VALUE.Float(0.1)],
-						[TEST_VALUES[1], new VALUE.Float(0.2)],
-						[TEST_VALUES[2], new VALUE.Float(0.4)],
-					])),
-				],
-			);
-		});
-		test.test('`List.(‹…›)`', () => {
-			assert.deepStrictEqual(LIST_CONS.map((src) => AST.EXPR.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.List<never>(), 6),
-				...repeat(new VALUE.List<VALUE.Integer>(TEST_VALUES), 5),
-			]);
-		});
-		test.test('`Dict.(‹…›)`', () => {
-			assert.deepStrictEqual(DICT_CONS.map((src) => AST.EXPR.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.Dict<never>(), 8),
-				...repeat(new VALUE.Dict<VALUE.Integer>(new Map<bigint, VALUE.Integer>([
-					[0x100n, TEST_VALUES[0]],
-					[0x101n, TEST_VALUES[1]],
-					[0x102n, TEST_VALUES[2]],
-				])), 10),
-			]);
-		});
-		test.test('`Set.(‹…›)`', () => {
-			assert.deepStrictEqual(SET_CONS.map((src) => AST.EXPR.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.Set<never>(), 6),
-				...repeat(new VALUE.Set<VALUE.Integer>(new Set<VALUE.Integer>(TEST_VALUES)), 5),
-			]);
-		});
-		test.test('`Map.(‹…›)`', () => {
-			assert.deepStrictEqual(MAP_CONS.map((src) => AST.EXPR.Call.fromSource(src).fold()), [
-				...repeat(new VALUE.Map<never, never>(), 7),
-				...repeat(new VALUE.Map<VALUE.Integer, VALUE.Float>(new Map<VALUE.Integer, VALUE.Float>([
-					[TEST_VALUES[0], new VALUE.Float(0.1)],
-					[TEST_VALUES[1], new VALUE.Float(0.2)],
-					[TEST_VALUES[2], new VALUE.Float(0.4)],
-				])), 7),
-			]);
 		});
 	});
 });

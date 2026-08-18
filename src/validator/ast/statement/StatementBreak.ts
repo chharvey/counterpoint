@@ -35,11 +35,6 @@ export class StatementBreak extends Statement {
 	}
 
 	@noopGetter(memoizeGetter)
-	public override get isFoldable(): boolean {
-		return false; // break statements will always have side-effects
-	}
-
-	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
 		return false;
 	}

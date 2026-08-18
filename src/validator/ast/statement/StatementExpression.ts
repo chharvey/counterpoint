@@ -32,11 +32,6 @@ export class StatementExpression extends Statement {
 	}
 
 	@memoizeGetter
-	public override get isFoldable(): boolean {
-		return !this.expr || !!this.expr.fold();
-	}
-
-	@memoizeGetter
 	public override get hasBottomType(): boolean {
 		return this.expr?.type().isBottomType ?? false;
 	}

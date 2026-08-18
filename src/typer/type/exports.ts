@@ -33,9 +33,6 @@ export const FALSE = new Unit<VALUE.Boolean>(VALUE.FALSE);
 /** A Unit Type containing only the Counterpoint Language Value `true`. */
 export const TRUE = new Unit<VALUE.Boolean>(VALUE.TRUE);
 
-/** A Unit Type containing only the Counterpoint Language Value `@nothing`. */
-export const SYM_NOTHING = new Unit<VALUE.Symbol>(VALUE.SYM_NOTHING);
-
 
 
 /** The Counterpoint Language Boolean Type `bool`. */
@@ -57,5 +54,4 @@ export const TYPE_CONSTANTS = [
 	OBJ,
 	FALSE,
 	TRUE,
-	SYM_NOTHING,
 ] as const;

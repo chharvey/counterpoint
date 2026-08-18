@@ -77,6 +77,7 @@ SemanticExpression =:=
 	| SemanticExpressionAccess
 	| SemanticExpressionCall
 	| SemanticExpressionClaim
+	| SemanticExpressionIsset
 	| SemanticExpressionOperation
 ;
 
@@ -122,9 +123,12 @@ SemanticExpressionCall
 SemanticExpressionClaim
 	::= SemanticExpression SemanticType;
 
+SemanticExpressionIsset
+	::= SemanticExpressionVariable | SemanticExpressionAccess;
+
 SemanticExpressionOperation[operator: NOT | EMP]
 	::= SemanticExpression;
-SemanticExpressionOperation[operator: NEG | INT | NAT | FLOAT]
+SemanticExpressionOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
 SemanticExpressionOperation[operator: CAST | MAYBE | RESULT | IS]
 	::= SemanticExpression SemanticExpression[type: Class];
@@ -142,6 +146,7 @@ SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticStatementClaim
 	| SemanticStatementReassignment
+	| SemanticStatementDelete
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration
@@ -155,11 +160,15 @@ SemanticDeclaration =:=
 	| SemanticDeclarationVariable
 ;
 
-SemanticDeclarationType
-	::= SemanticTypeAlias? SemanticType;
+SemanticDeclarationType[id: RealNumber]
+	::= SemanticType;
 
-SemanticDeclarationVariable[writable: Boolean]
-	::= SemanticExpressionVariable? SemanticType? SemanticExpression?;
+SemanticDeclarationVariable[id: RealNumber][writable: Boolean]
+	::= SemanticType? SemanticExpression;
+SemanticDeclarationVariable[writable=false]
+	::= SemanticType? SemanticExpression;
+SemanticDeclarationVariable[id: RealNumber][writable=true]
+	::= SemanticType;
 
 
 
@@ -170,7 +179,7 @@ SemanticStatementClaim
 	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticType;
 
 SemanticStatementReassignment
-	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression;
+	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression?;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;
@@ -178,8 +187,8 @@ SemanticStatementConditional[unless: Boolean]
 SemanticStatementLoop[doFirst: Boolean][until: Boolean]
 	::= SemanticExpression SemanticBlock;
 
-SemanticStatementIteration
-	::= SemanticExpressionVariable? SemanticType SemanticExpression SemanticBlock;
+SemanticStatementIteration[id?: RealNumber]
+	::= SemanticType SemanticExpression SemanticBlock;
 
 SemanticStatementBreak[skip: Boolean]
 	::= ();

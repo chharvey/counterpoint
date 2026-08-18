@@ -20,7 +20,7 @@ test.suite('Builder', () => {
 				mod.block(null, [
 					mod.local.set(0, genConst(cg, true)),
 					mod.local.set(1, genConst(cg, 1n)),
-					mod.local.set(2, mod.struct.new_default(cg.vm.reftype.Value)),
+					mod.local.set(2, cg.vm.Value.newDefault()),
 				]),
 				mod.if(
 					cg.vm.Value.boolToI32(mod.local.get(0, cg.vm.reftype.Value)),

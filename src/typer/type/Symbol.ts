@@ -11,7 +11,7 @@ import {ValueType} from './ValueType.ts';
  */
 class TypeSymbol extends ValueType {
 	public constructor() {
-		super(new Set<VALUE.Symbol>([VALUE.SYM_NOTHING]));
+		super(new Set<VALUE.Symbol>([new VALUE.Symbol(0x100n, 'hello')]));
 	}
 
 	public override toString(): string {

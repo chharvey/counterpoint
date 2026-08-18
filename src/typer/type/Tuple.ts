@@ -45,10 +45,6 @@ class TypeTuple extends ValueType {
 		super(new Set<VALUE.Tuple>([VALUE.TUPLE_EMPTY]));
 	}
 
-	public override get hasMutable(): boolean {
-		return super.hasMutable || this.typeargs.some((t) => t.type.hasMutable);
-	}
-
 	/** The minimum possible number of items in this tuple type. */
 	public get minCount(): bigint {
 		return BigInt(this.typeargs.filter((it) => !it.optional).length);

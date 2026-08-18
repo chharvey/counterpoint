@@ -74,7 +74,7 @@
 
 ;; hash a $String.
 ;; ```
-;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_u(b)) * PRIME);
+;; [SEED, ...$string.codeunits].reduce((a, b) => (a xor i64.extend_i32_u(b)) * PRIME);
 ;; ```
 (func $!String.hash (param $string (ref $String)) (result i64)
 	(local $result i64)

@@ -10,10 +10,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	type VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {Expression} from './Expression.ts';
 import type {Constant} from './Constant.ts';
@@ -48,15 +45,5 @@ export class Template extends Expression {
 	@memoizeMethod
 	public override build(builder: Builder): OP.Template {
 		return new OP.Template(this.children.map((c) => c.build(builder).asTac(builder)));
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.String | null {
-		const values: readonly (VALUE.Value | null)[] = [...this.children].map((expr) => expr.fold());
-		return (values.includes(null))
-			? null
-			: (values as readonly VALUE.Value[])
-				.map((value) => value.toCplString())
-				.reduce((a, b) => a.concatenate(b));
 	}
 }

@@ -8,7 +8,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -34,9 +39,15 @@ export class RecordGet extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		this.record.validate();
+	public override validate(builder: Builder): void {
+		this.record.validate(builder);
 		return assert_instanceof(this.record.type, TYPE.Record);
+	}
+
+	public override interpret(interp: Interpreter): VALUE.Value {
+		const base: VALUE.Value = this.record.interpret(interp);
+		assert_instanceof(base, VALUE.Record);
+		return base.get(this.accessor.keyid);
 	}
 
 	@memoizeMethod

@@ -6,7 +6,12 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {TYPE} from '../../typer/index.ts';
+import {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
+import type {Builder} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Value} from './Value.ts';
 import type {ValueTac} from './ValueTac.ts';
@@ -25,6 +30,7 @@ export type OpCodeUn = (
 	| OpCode.TOINT
 	| OpCode.TONAT
 	| OpCode.TOFLOAT
+	| OpCode.TOSTR
 
 	| OpCode.LIST_COUNT
 	| OpCode.DICT_COUNT
@@ -49,8 +55,8 @@ export class Unop extends Value {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		this.operand.validate();
+	public override validate(builder: Builder): void {
+		this.operand.validate(builder);
 		switch (this.operator) {
 			case OpCode.NEG:
 			case OpCode.TOINT:
@@ -76,6 +82,28 @@ export class Unop extends Value {
 		}
 	}
 
+	public override interpret(interp: Interpreter): VALUE.Value {
+		const operand: VALUE.Value = this.operand.interpret(interp);
+		switch (this.operator) {
+			case OpCode.ISNULL: { return VALUE.Boolean.fromBoolean(operand.identical(VALUE.NULL)); }
+
+			case OpCode.NOT: { return VALUE.Boolean.fromBoolean(!operand.isTruthy); }
+			case OpCode.EMP: { return VALUE.Boolean.fromBoolean(!operand.isTruthy || operand.isEmpty); }
+			case OpCode.NEG: { return (operand as VALUE.Integer | VALUE.Float).neg(); }
+
+			case OpCode.TOBOOL:  { return VALUE.Boolean.fromBoolean(operand.isTruthy); }
+			case OpCode.TOINT:   { return (operand as VALUE.Number).toInt(); }
+			case OpCode.TONAT:   { return (operand as VALUE.Number).toNat(); }
+			case OpCode.TOFLOAT: { return (operand as VALUE.Number).toFloat(); }
+			case OpCode.TOSTR:   { return operand.toCplString(); }
+
+			case OpCode.LIST_COUNT: { return new VALUE.Natural((operand as VALUE.List).count); }
+			case OpCode.DICT_COUNT: { return new VALUE.Natural((operand as VALUE.Dict).count); }
+			case OpCode.SET_COUNT:  { return new VALUE.Natural((operand as VALUE.Set).count); }
+			case OpCode.MAP_COUNT:  { return new VALUE.Natural((operand as VALUE.Map).count); }
+		}
+	}
+
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
 		const {vm: {reftype, op, Vect, Value: VmValue, List, Dict, Map: VmMap}, mod} = cg;
@@ -91,6 +119,7 @@ export class Unop extends Value {
 			case OpCode.TOINT:   { return op.toInt(code); }
 			case OpCode.TONAT:   { return op.toNat(code); }
 			case OpCode.TOFLOAT: { return op.toFloat(code); }
+			case OpCode.TOSTR:   { return VmValue.newComposite(VmValue.stringify(code)); }
 
 			case OpCode.LIST_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(List .count(VmValue.cast(code, reftype.List))))); }
 			case OpCode.DICT_COUNT: { return VmValue.newPrimitive(Vect.newNat(mod.i64.extend_u(Dict .count(VmValue.cast(code, reftype.Dict))))); }

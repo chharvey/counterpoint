@@ -4,7 +4,10 @@ import {
 	CONFIG_DEFAULT,
 } from '../core/index.ts';
 import {AST} from '../validator/index.ts';
-import {Builder} from '../builder/index.ts';
+import {
+	Builder,
+	Interpreter,
+} from '../builder/index.ts';
 import {CodeGenerator} from '../code-generator/index.ts';
 
 
@@ -23,19 +26,24 @@ export class Program {
 		this.#astGoal = AST.Goal.fromSource(source, config);
 	}
 
-
 	@memoizeMethod
-	#precompile(): CodeGenerator {
+	#build(): Builder {
 		const builder = new Builder();
-		const cg      = new CodeGenerator();
-
 		this.#astGoal.varCheck();
 		this.#astGoal.typeCheck();
 		this.#astGoal.build(builder);
+		return builder;
+	}
 
-		cg.setupMain(builder.codegen(cg));
-
+	@memoizeMethod
+	#precompile(): CodeGenerator {
+		const cg = new CodeGenerator();
+		cg.setupMain(this.#build().codegen(cg));
 		return cg;
+	}
+
+	public interpret(): void {
+		return this.#build().interpret(new Interpreter());
 	}
 
 	/**

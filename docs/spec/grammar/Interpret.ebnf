@@ -1,0 +1,569 @@
+Interpret((TRAP)) :=
+	1. *Throw:* a new Error.
+;
+
+Null Interpret((NULL.CONST `n`)) :=
+	1. *Return:* `n`.
+;
+Boolean Interpret((BOOL.CONST `b`)) :=
+	1. *Return:* `b`.
+;
+Symbol Interpret((SYM.CONST `s`)) :=
+	1. *Return:* `s`.
+;
+Integer Interpret((INT.CONST `i`)) :=
+	1. *Return:* `i`.
+;
+Natural Interpret((NAT.CONST `n`)) :=
+	1. *Return:* `n`.
+;
+Float Interpret((FLOAT.CONST `f`)) :=
+	1. *Return:* `f`.
+;
+String Interpret((STR.CONST `s`)) :=
+	1. *Return:* `s`.
+;
+
+Value! Interpret((GET `id`)) :=
+	1. *If* the interpreter’s symbol table contains `id`:
+		1. *Let* `value` be the value stored at `id`.
+		2. *If* `value` is *none*:
+			1. *Return:* `null`;
+		3. *Else:*
+			1. *Return:* `value`.
+	2. *Else:*
+		1. *Throw:* a new ReferenceError.
+;
+
+String! Interpret((STR.TEMPLATE `values`)) :=
+	1. *Let* `values` be a mapping for each `value` in `values` to *Unwrap:* `Interpret(value)`.
+	2. *Let* `strings` be a mapping for each `value` in `values` to `String(value)`.
+	3. *Return:* the string-concatenation of each item in `strings`, preserving order.
+;
+
+Tuple! Interpret((TUPLE.NEW `values`)) :=
+	1. *Let* `data` be a mapping of `values` for each `it` to *Unwrap:* `Interpret(it)`.
+	2. *Return:* a new Tuple containing the items in `data`.
+;
+
+Record! Interpret((RECORD.NEW `pairs`)) :=
+	1. *Let* `data` be a new Schema.
+	2. *For index* `i` in `pairs`:
+		1. Set `data` to a new Schema [
+			...data,
+			`pairs[i].0`= *Unwrap:* `Interpret(pairs[i].1)`,
+		].
+	3. *Return:* a new Record containing the properties in `data`.
+;
+
+List! Interpret((LIST.NEW `values`)) :=
+	1. *Let* `data` be a mapping of `values` for each `it` to *Unwrap:* `Interpret(it)`.
+	2. *Return:* a new List containing the items in `data`.
+;
+
+Dict! Interpret((DICT.NEW `pairs`)) :=
+	1. *Let* `data` be a new Schema.
+	2. *For index* `i` in `pairs`:
+		1. Set `data` to a new Schema [
+			...data,
+			`pairs[i].0.id`= *Unwrap:* `Interpret(pairs[i].1)`,
+		].
+	3. *Return:* a new Dict containing the properties in `data`.
+;
+
+Set! Interpret((SET.NEW `values`)) :=
+	1. *Let* `data` be a mapping of `values` for each `it` to *Unwrap:* `Interpret(it)`.
+	2. *Return:* a new Set containing the items in `data`.
+;
+
+Map! Interpret((MAP.NEW `pairs`)) :=
+	1. *Let* `data` be a mapping of `pairs` for each `case` to a new Vector [
+		*Unwrap:* `Interpret(case.0)`,
+		*Unwrap:* `Interpret(case.1)`,
+	].
+	2. *Return:* a new Map containing the pairs in `data`.
+;
+
+Value! Interpret((TUPLE.GET `index` `obj`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `base` is an instance of `Tuple`.
+	3. *If* `index` is an index in `base`:
+		1. *Return:* the item accessed at index `index` in `base`.
+	4. *Else:*
+		1. *Return:* `null`.
+;
+
+Value! Interpret((RECORD.GET `key` `obj`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `base` is an instance of `Record`.
+	3. *If* `key` is a key in `base`:
+		1. *Return:* the value accessed at key `key` in `base`.
+	4. *Else:*
+		1. *Return:* `null`.
+;
+
+Value! Interpret((LIST.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `index` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `List`.
+	4. *Assert:* `index` is an instance of `Integer` *or* `index` is an instance of `Natural`.
+	5. *If* `index` is an index in `base`:
+		1. *Return:* the item accessed at index `index` in `base`.
+	6. *Else:*
+		1. *Return:* `null`.
+;
+
+Value! Interpret((DICT.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `key` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `Dict`.
+	4. *Assert:* `key` is an instance of `Symbol` *or* `key` is an instance of `String`.
+	5. *If* `key` is an instance of `String`:
+		1. *Note:* This step will be updated once string keys are supported.
+		2. *Throw:* a new Error "String keys for dict access are not yet supported."
+	6. *If* `key` is a key in `base`:
+		1. *Return:* the value accessed at key `key` in `base`.
+	7. *Else:*
+		1. *Return:* `null`.
+;
+
+Boolean! Interpret((SET.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `value` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `Set`.
+	4. *If* `value` is in `base`:
+		1. *Return:* `true`.
+	5. *Else:*
+		1. *Return:* `false`.
+;
+
+Value! Interpret((MAP.GET `obj` `accessor`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `ant` be *Unwrap:* `Interpret(accessor)`.
+	3. *Assert:* `base` is an instance of `Map`.
+	4. Find an antecedent `k` in `base` such that *UnwrapAffirm:* `Identical(k, ant)`.
+	5. *If* `k` is set:
+		1. *Return:* the consequent accessed at antecedent `k` in `base`.
+	6. *Else:*
+		1. *Return:* `null`.
+;
+
+// Value! Interpret((CALL `callable` `args`));
+
+Boolean! Interpret((ISSET `id`)) :=
+	1. *If* the interpreter’s symbol table contains `id`:
+		1. *Let* `value` be the value stored at `id`.
+		2. *If* `value` is *none*:
+			1. *Return:* `false`;
+		3. *Else:*
+			1. *Return:* `true`.
+	2. *Else:*
+		1. *Throw:* a new ReferenceError.
+;
+
+Boolean! Interpret((ISNULL `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *Return:* `Identical(v, null)`.
+;
+
+Boolean! Interpret((NOT `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
+		1. *Return:* `false`.
+	3. *Return:* `true`.
+;
+
+Boolean! Interpret((EMP `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `false`:
+		1. *Return:* `true`.
+	3. *If* `v` is an instance of `Integer` *and* `v` is `0`:
+		1. *Return:* `true`.
+	4. *If* `v` is an instance of `Natural` *and* `v` is `+0`:
+		1. *Return:* `true`.
+	5. *If* `v` is an instance of `Float` *and* `v` is `0.0` or `-0.0`:
+		1. *Return:* `true`.
+	6. *If* `v` is an instance of `String` *and* `v` contains 0 codepoints:
+		1. *Return:* `true`.
+	7. *If* `v` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v.count` is 0:
+		1. *Return:* `true`.
+	8. *Return:* `false`.
+;
+
+Number! Interpret((NEG `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *Let* `negation` be the additive inverse, `-v`,
+		obtained by negating `v`.
+	3. *Return:* `negation`.
+;
+
+Boolean! Interpret((TOBOOL `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *Return:* `ToBoolean(v)`.
+;
+
+Integer! Interpret((TOINT `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `Natural`:
+		1. *Let* `as_int` be the reinterpretation of `v` as a 64-bit signed integer value.
+		2. *Return:* `as_int`.
+	3. *If* `v` is an instance of `Float`:
+		1. *Let* `as_int` be the conversion of `v` to a 64-bit signed integer value.
+		2. *Return:* `as_int`.
+	4. *Assert:* `v` is an instance of `Integer`.
+	5. *Return:* `v`.
+;
+
+Natural! Interpret((TONAT `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `Integer`:
+		1. *Let* `as_nat` be the reinterpretation of `v` to a 64-bit unsigned integer value.
+		2. *Return:* `as_nat`.
+	3. *If* `v` is an instance of `Float`:
+		1. *Let* `as_nat` be the conversion of `v` to a 64-bit unsigned integer value.
+		2. *Return:* `as_nat`.
+	4. *Assert:* `v` is an instance of `Natural`.
+	5. *Return:* `v`.
+;
+
+Float! Interpret((TOFLOAT `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `Integer` *or* `v` is an instance of `Natural`:
+		1. *Let* `as_float` be the conversion of `v` to a 64-bit binary floating-point value.
+		2. *Return:* `as_float`.
+	3. *Assert:* `v` is an instance of `Float`.
+	4. *Return:* `v`.
+;
+
+String! Interpret((TOSTR `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* `v` is an instance of `String`:
+		1. *Return:* `v`.
+	3. *Else:*
+		1. *Let* `native_string` be a native string representation of `v`.
+		2. *Let* `encoding` be the UTF-8 encoding of `native_string`.
+		3. *Return:* `encoding`.
+;
+
+Natural! Interpret((LIST.COUNT `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `List`.
+	3. *Return:* `Natural(obj.count)`.
+;
+
+Natural! Interpret((DICT.COUNT `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `Dict`.
+	3. *Return:* `Natural(obj.count)`.
+;
+
+Natural! Interpret((SET.COUNT `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `Set`.
+	3. *Return:* `Natural(obj.count)`.
+;
+
+Natural! Interpret((MAP.COUNT `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
+	2. *Assert:* `obj` is an instance of `Map`.
+	3. *Return:* `Natural(obj.count)`.
+;
+
+Integer! Interpret((INT.ADD `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the sum, `v0 + v1`,
+		obtained by adding `v0` (the augend) to `v1` (the addend).
+	4. *Return:* `result`.
+;
+Natural! Interpret((NAT.ADD `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.ADD `v0` `v1`))».
+;
+Float! Interpret((FLOAT.ADD `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.ADD `v0` `v1`))».
+;
+
+Integer! Interpret((INT.SUB `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the difference, `v0 - v1`,
+		obtained by subtracting `v1` (the subtrahend) from `v0` (the minuend).
+	4. *Return:* `result`.
+;
+Natural! Interpret((NAT.SUB `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v0` is less than `v1`:
+		1. *Return:* `0`.
+	4. *Else:*
+		1. *Perform:* the steps listed under «Interpret((INT.SUB `v0` `v1`))», starting with step 3.
+;
+Float! Interpret((FLOAT.SUB `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.SUB `v0` `v1`))».
+;
+
+Integer! Interpret((INT.MUL `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the product, `v0 * v1`,
+		obtained by multiplying `v0` (the multiplicand) by `v1` (the multiplier).
+	4. *Return:* `result`.
+;
+Natural! Interpret((NAT.MUL `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.MUL `v0` `v1`))».
+;
+Float! Interpret((FLOAT.MUL `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.MUL `v0` `v1`))».
+;
+
+Integer! Interpret((INT.DIV `v0` `v1`)) :=
+	1. *Let* `quotient` be the result of performing the steps listed under «Interpret((FLOAT.DIV `v0` `v1`))», starting with step 3.
+	2. *If* `quotient` is not a whole number:
+		1. Set `quotient` to a truncation of `quotient` (rounding towards zero to the nearest whole number).
+	3. *Else:*
+		1. Fall through.
+	4. *Return:* `quotient`.
+;
+Natural! Interpret((NAT.DIV `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.DIV `v0` `v1`))».
+;
+Float! Interpret((FLOAT.DIV `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v1` is `0`:
+		1. *Throw:* a new NanErrorDivZero.
+	4. *Else:*
+		1. *Let* `result` be the quotient, `v0 / v1`,
+			obtained by dividing `v0` (the dividend) by `v1` (the divisor).
+		2. *Return:* `result`.
+;
+
+Integer! Interpret((INT.EXP `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Let* `result` be the power, `v0 ^ v1`,
+		obtained by raising `v0` (the base) to `v1` (the exponent).
+	4. *Return:* `result`.
+;
+Natural! Interpret((NAT.EXP `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.EXP `v0` `v1`))».
+;
+Float! Interpret((FLOAT.EXP `v0` `v1`)) :=
+	1. *Perform:* the steps listed under «Interpret((INT.EXP `v0` `v1`))».
+;
+
+Boolean! Interpret((LT `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v0` is strictly less than `v1`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((GT `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v1` is strictly less than `v0`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((LE `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v0` is equal to `v1` *or* `v0` is strictly less than `v1`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((GE `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *If* `v1` is equal to `v0` *or* `v1` is strictly less than `v0`:
+		1. *Return:* `true`.
+	4. *Else:*
+		1. *Return:* `false`.
+;
+
+Boolean! Interpret((ID `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Return:* `Identical(v0, v1)`.
+;
+
+Boolean! Interpret((EQ `v0` `v1`)) :=
+	1. *Set* `v0` to *Unwrap:* `Interpret(v0)`;
+	2. *Set* `v1` to *Unwrap:* `Interpret(v1)`;
+	3. *Return:* `Equal(v0, v1)`.
+;
+
+None! Interpret((DROP `v`)) :=
+	1. *Perform:* `Interpret(v)`.
+;
+
+None! Interpret((DECL `id` `type` `v`)) :=
+	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
+;
+None! Interpret((DECL `id` `type`)) :=
+	1. Set the key `id` to *none* in the interpreter’s symbol table.
+;
+
+None! Interpret((SET `id` `v`)) :=
+	1. Set the key `id` to the value `Interpret(v)` in the interpreter’s symbol table.
+;
+
+None! Interpret((LIST.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `index` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `item` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `List`.
+	5. *Assert:* `index` is an instance of `Integer` *or* `index` is an instance of `Natural`.
+	6. Set the item at index `index` in `base` to `item`.
+;
+
+None! Interpret((DICT.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `key` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `value` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `Dict`.
+	5. *Assert:* `key` is an instance of `Symbol` *or* `key` is an instance of `String`.
+	6. *If* `key` is an instance of `String`:
+		1. *Note:* This step will be updated once string keys are supported.
+		2. *Throw:* a new Error "String keys for dict access are not yet supported."
+	7. Set the value at key `key` in `base` to `value`.
+;
+
+None! Interpret((SET.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `elem` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `put` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `Set`.
+	5. *If* `Identical(put, true)` is `true`:
+		1. *If*: `elem` is not in `base`:
+			1. Put `elem` in `base`.
+		2. *Else:*
+			1. *Return.*
+	6. *Else:*
+		1. *Assert:* `Identical(put, false)` is `true`.
+		2. *If*: `elem` is in `base`:
+			1. Delete `elem` from `base`.
+		3. *Else:*
+			1. *Return.*
+;
+
+None! Interpret((MAP.SET `obj` `accessor` `v`)) :=
+	1. *Let* `base` be *Unwrap:* `Interpret(obj)`.
+	2. *Let* `ant` be *Unwrap:* `Interpret(accessor)`.
+	3. *Let* `con` be *Unwrap:* `Interpret(v)`.
+	4. *Assert:* `base` is an instance of `Map`.
+	5. Set the consequent at antecedent `ant` in `base` to `con`.
+;
+
+None! Interpret((LIST.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `List`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the items in `src`.
+		2. *For index* `i` in `items`:
+			1. Set the item at index `i` in `dest` to `items[i]`.
+	5. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For index* `i` in `elems`:
+			1. Set the item at index `i` in `dest` to `elems[i]`.
+	6. *Else:*
+		1. *Throw:* a new TypeError.
+;
+
+None! Interpret((DICT.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `Dict`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `items`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. *Assert:* `tup_items.0` is an instance of `Symbol`.
+			5. *Let* `key` be the name of `tup_items.0`.
+			6. Set the value at key `key` in `dest` to `tup_items.1`.
+	5. *Else If* `src` is an instance of `Record` *or* `src` is an instance of `Dict`:
+		1. *Let* `props` be a Schema of the properties in `src`.
+		2. *For key* `key` in `props`:
+			1. Set the value at key `key` in `dest` to `props[key]`.
+	6. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `elems`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. *Assert:* `tup_items.0` is an instance of `Symbol`.
+			5. *Let* `key` be the name of `tup_items.0`.
+			6. Set the value at key `key` in `dest` to `tup_items.1`.
+	7. *Else If* `src` is an instance of `Map`:
+		1. *Let* `cases` be a Sequence of the cases in `src`.
+		2. *For each* `item` in `cases`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. *Assert:* `tup_items.0` is an instance of `Symbol`.
+			5. *Let* `key` be the name of `tup_items.0`.
+			6. Set the value at key `key` in `dest` to `tup_items.1`.
+	8. *Else:*
+		1. *Throw:* a new TypeError.
+;
+
+None! Interpret((SET.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `Set`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the items in `src`.
+		2. *For each* `item` in `items`:
+			1. *If*: `item` is not in `dest`:
+				1. Put `item` in `dest`.
+			2. *Else:*
+				1. Continue.
+	5. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `items`:
+			1. *If*: `item` is not in `dest`:
+				1. Put `item` in `dest`.
+			2. *Else:*
+				1. Continue.
+	6. *Else:*
+		1. *Throw:* a new TypeError.
+;
+
+None! Interpret((MAP.COPY `dest` `src`)) :=
+	1. *Set* `dest` to *Unwrap:* `Interpret(dest)`.
+	2. *Set* `src` to *Unwrap:* `Interpret(src)`.
+	3. *Assert:* `dest` is an instance of `Set`.
+	4. *If* `src` is an instance of `Tuple` *or* `src` is an instance of `List`:
+		1. *Let* `items` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `items`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. Set the consequent at antecedent `tup_items.0` in `dest` to `tup_items.1`.
+	5. *Else If* `src` is an instance of `Set`:
+		1. *Let* `elems` be a Sequence of the elements in `src`.
+		2. *For each* `item` in `elems`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. Set the consequent at antecedent `tup_items.0` in `dest` to `tup_items.1`.
+	6. *Else If* `src` is an instance of `MAP`:
+		1. *Let* `cases` be a Sequence of the cases in `src`.
+		2. *For each* `item` in `cases`:
+			1. *Assert:* `item` is an instance of `Tuple`.
+			2. *Let* `tup_items` be a Sequence of the items in `item`.
+			3. *Assert:* `tup_items.count` is *2*.
+			4. Set the consequent at antecedent `tup_items.0` in `dest` to `tup_items.1`.
+	7. *Else:*
+		1. *Throw:* a new TypeError.
+;

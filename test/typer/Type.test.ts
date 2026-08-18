@@ -876,8 +876,9 @@ test.suite('Type', () => {
 
 
 	test.suite('#equals', () => {
-		test.test('bool == false | true', () => {
-			assert.ok(TYPE.BOOL.equals(TYPE.FALSE.union(TYPE.TRUE)));
+		test.test('BOOL is equal to the union of its units.', () => {
+			assert.ok(TYPE.BOOL.equals(TYPE.FALSE.union(TYPE.TRUE)), 'bool == false | true');
+			assert.ok(TYPE.BOOL.equals(TYPE.TRUE.union(TYPE.FALSE)), 'bool == true | false');
 		});
 		test.test('0.0 != -0.0', () => {
 			assert.ok(!VALUE.FLOAT_0.identical(VALUE.FLOAT_N0), 'the values 0.0 and -0.0 are not identical (by value identity `===`)');
@@ -885,14 +886,14 @@ test.suite('Type', () => {
 			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
 		});
 		test.test('built-in types do not equal unit types of their canonical values.', () => {
-			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),       'bool  != false');
-			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),        'bool  != true');
-			assert.ok(!TYPE.SYM   .equals(TYPE.SYM_NOTHING), 'sym   != @nothing');
-			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),     'int   != 0');
-			assert.ok(!TYPE.INT   .equals(typeUnit(1n)),     'int   != 1');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),    'float != 0.0');
-			assert.ok(!TYPE.FLOAT .equals(typeUnit(-0.0)),   'float != -0.0');
-			assert.ok(!TYPE.STR   .equals(typeUnit('')),     'str   != ""');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),                       'bool  != false');
+			assert.ok(!TYPE.BOOL  .equals(TYPE.TRUE),                        'bool  != true');
+			assert.ok(!TYPE.SYM   .equals(typeUnit(Symbol(0x100), 'hello')), 'sym   != @hello');
+			assert.ok(!TYPE.INT   .equals(typeUnit(0n)),                     'int   != 0');
+			assert.ok(!TYPE.INT   .equals(typeUnit(1n)),                     'int   != 1');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(0.0)),                    'float != 0.0');
+			assert.ok(!TYPE.FLOAT .equals(typeUnit(-0.0)),                   'float != -0.0');
+			assert.ok(!TYPE.STR   .equals(typeUnit('')),                     'str   != ""');
 
 			assert.ok(!TYPE.INT  .equals(typeUnit(0n) .union(typeUnit(1n))),   'int   != 0   | 1');
 			assert.ok(!TYPE.FLOAT.equals(typeUnit(0.0).union(typeUnit(-0.0))), 'float != 0.0 | -0.0');
@@ -911,19 +912,16 @@ test.suite('Type', () => {
 			[
 				...builtin_types,
 				...examples,
-			].forEach((t) => {
-				assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`);
-			});
+			].forEach((t) => assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`));
+		});
+		test.test('constant mutable types are equal to their immutable counterparts.', () => {
+			builtin_types.forEach((t) => assert.ok(t.mutableOf().equals(t), `mut ${ t } == ${ t }`));
 		});
 		test.test('non-constant mutable types are not equal to their immutable counterparts.', () => {
-			examples.forEach((t) => {
-				assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`);
-			});
+			examples.forEach((t) => assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`));
 		});
 		test.test('non-constant immutable types are not subtypes of their mutable counterparts.', () => {
-			examples.forEach((t) => {
-				assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`);
-			});
+			examples.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`));
 		});
 		test.suite('disributes over binary operations.', () => {
 			const types: TYPE.Type[] = [

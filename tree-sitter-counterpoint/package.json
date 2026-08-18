@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-counterpoint",
-  "version": "3.7.3",
+  "version": "4.0.3",
   "description": "Tree-sitter parser for the Counterpoint Programming Language.",
   "keywords": [
     "incremental",
@@ -54,9 +54,9 @@
     "prebuildify": "^6.0.0",
     "tree-sitter-cli": "^0.26.0",
     "tsx": "^4.19.3",
-    "typescript": "~5.9.0"
+    "typescript": "~6.0.3"
   },
   "engines": {
-    "node": "^22.22"
+    "node": "^26.5"
   }
 }

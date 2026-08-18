@@ -32,6 +32,7 @@ KeywordValue ::=
 Word ::=
 	// operator
 		| "mut"
+		| "isset"
 		| "as"
 		| "is"
 		| "if"
@@ -42,6 +43,7 @@ Word ::=
 		| "val"
 		| "claim"
 		| "set"
+		| "delete"
 		| "_"
 		| "void"
 	// modifier
@@ -177,8 +179,15 @@ ExpressionCompound<Block, Break> ::=
 	)
 ;
 
-ExpressionUnarySymbol  <Block, Break> ::= ExpressionCompound    <?Block><?Break> | ("!" | "?" | "+" | "-")   ExpressionUnarySymbol  <?Block><?Break>;
-ExpressionUnaryKeyword <Block, Break> ::= ExpressionUnarySymbol <?Block><?Break> | ("int" | "nat" | "float") ExpressionUnaryKeyword <?Block><?Break>;
+ExpressionUnarySymbol<Block, Break> ::=
+	| ExpressionCompound<?Block><?Break>
+	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Block><?Break>
+;
+
+ExpressionUnaryKeyword<Block, Break> ::=
+	| ExpressionUnarySymbol<?Block><?Break>
+	| ("isset" | "!isset") Assignee<?Break>
+;
 
 ExpressionCast<Block, Break> ::=
 	| (ExpressionCast<?Block><?Break> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block><?Break>
@@ -221,8 +230,9 @@ Assignee<Break> ::=
 StatementExpression<Break>
 	::= Expression<+Block><?Break>? ";";
 
-StatementClaim        <Break> ::= "claim" Assignee<?Break> ":" Type                       ";";
-StatementReassignment <Break> ::= "set"   Assignee<?Break> "=" Expression<+Block><?Break> ";";
+StatementClaim  <Break> ::= "claim"  Assignee<?Break> ":" Type                       ";";
+StatementSet    <Break> ::= "set"    Assignee<?Break> "=" Expression<+Block><?Break> ";";
+StatementDelete <Break> ::= "delete" Assignee<?Break>                                ";";
 
 StatementConditional<Unless, Break> ::=
 	& <Unless->"if" <Unless+>"unless" Expression<+Block><?Break>
@@ -239,18 +249,21 @@ StatementLoop ::= (
 	&& "do"                Block<+Break>
 ) ";";
 
-StatementIteration
-	::= "for" ("_" | IDENTIFIER) ":" Type "in" Expression<+Block><-Break> "do" Block<+Break> ";";
+StatementIteration ::=
+	& "for" ("_" | IDENTIFIER) ":" Type
+	& "in" Expression<+Block><+Break>
+	& "do" Block<+Break> ";";
 
 StatementBreak
 	::= ("break" | "skip") ";";
 
 Statement<Break> ::=
-	| Declaration                     <?Break>
-	| StatementExpression             <?Break>
-	| StatementClaim                  <?Break>
-	| StatementReassignment           <?Break>
-	| StatementConditional   <∓Unless><?Break>
+	| Declaration                   <?Break>
+	| StatementExpression           <?Break>
+	| StatementClaim                <?Break>
+	| StatementSet                  <?Break>
+	| StatementDelete               <?Break>
+	| StatementConditional <∓Unless><?Break>
 	| StatementLoop
 	| StatementIteration
 	| <Break+>StatementBreak

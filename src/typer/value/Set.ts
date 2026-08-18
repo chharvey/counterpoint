@@ -25,31 +25,37 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueSet<T extends Value = Value> extends Collection {
-	public constructor(public readonly elements: ReadonlySet<T> = new Set()) {
+	#elements: Set<T>;
+
+
+	public constructor(elements: ReadonlySet<T> = new Set()) {
 		super();
-		const uniques = new Set<T>();
-		[...elements].forEach((el) => {
-			xjs.Set.add(uniques, el, language_values_identical);
+		this.#elements = new Set<T>();
+		elements.forEach((el) => {
+			xjs.Set.add(this.#elements, el, language_values_identical);
 		});
-		this.elements = uniques;
 	}
 
 	/**
 	 * @implements Value
 	 */
 	public override get isEmpty(): boolean {
-		return this.elements.size === 0;
+		return this.#elements.size === 0;
 	}
 
 	/**
 	 * @implements Collection
 	 */
 	public override get count(): bigint {
-		return BigInt(this.elements.size);
+		return BigInt(this.#elements.size);
+	}
+
+	public get elements(): Set<T> {
+		return new Set([...this.#elements]);
 	}
 
 	public override toString(): string {
-		return `{${ [...this.elements].map((el) => el.toString()).join(', ') }}`;
+		return `{${ [...this.#elements].map((el) => el.toString()).join(', ') }}`;
 	}
 
 	@strictEqual
@@ -57,7 +63,7 @@ class ValueSet<T extends Value = Value> extends Collection {
 	@memoizeBinOp(true, true)
 	@instanceOf(() => ValueSet)
 	public override equal(value: Value): boolean {
-		return xjs.Set.is<Value>(this.elements, (value as ValueSet).elements, language_values_equal);
+		return xjs.Set.is<Value>(this.#elements, (value as ValueSet).#elements, language_values_equal);
 	}
 
 	/**
@@ -65,11 +71,23 @@ class ValueSet<T extends Value = Value> extends Collection {
 	 * Returns a TYPE.Set whose type argument is the union of the types of this ValueSet’s elements.
 	 */
 	public override toType(): TYPE.Set {
-		return new TYPE.Set(TYPE.Union.all(...[...this.elements].map<TYPE.Type>((el) => el.toType())));
+		return new TYPE.Set(TYPE.Union.all(...[...this.#elements].map<TYPE.Type>((el) => el.toType())));
 	}
 
 	public get(el: Value): ValueBoolean {
-		return xjs.Set.has<Value>(this.elements, el, language_values_identical) ? TRUE : FALSE;
+		return xjs.Set.has<Value>(this.#elements, el, language_values_identical) ? TRUE : FALSE;
+	}
+
+	public put(el: T): void {
+		this.#elements.add(el);
+	}
+
+	public delete(el: T): void {
+		this.#elements.delete(el);
+	}
+
+	public clear(): void {
+		this.#elements = new Set<T>();
 	}
 }
 export {ValueSet as Set};

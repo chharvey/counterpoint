@@ -16,7 +16,6 @@ import {
 } from '../../../core/index.ts';
 import {
 	type EntryType,
-	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
@@ -73,17 +72,6 @@ class ExpressionRecord extends Collection {
 			c.key.id,
 			{keysrc: c.key.source, value: c.val.build(builder).asTac(builder)},
 		]))), this.type());
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const properties: ReadonlyMap<bigint, VALUE.Value | null> = new Map(this.children.map((c) => [
-			c.key.id,
-			c.val.fold(),
-		]));
-		return ([...properties].map((p) => p[1]).includes(null))
-			? null
-			: new VALUE.Record(properties as ReadonlyMap<bigint, VALUE.Value>);
 	}
 
 	@assignToDeco

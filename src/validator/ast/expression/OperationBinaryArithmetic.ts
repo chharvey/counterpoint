@@ -1,11 +1,8 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	type Builder,
 	OP,
 	TypeErrorInvalidOperation,
-	NanErrorInvalid,
-	NanErrorDivZero,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
@@ -15,22 +12,28 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	type VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorArithmetic,
 } from '../../Operator.ts';
-import {
-	bothInts,
-	bothNats,
-	bothFloats,
-} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
+
+
+
+function bothInts(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.INT) && t1.isSubtypeOf(TYPE.INT);
+}
+
+function bothNats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.NAT) && t1.isSubtypeOf(TYPE.NAT);
+}
+
+function bothFloats(t0: TYPE.Type, t1: TYPE.Type): boolean {
+	return t0.isSubtypeOf(TYPE.FLOAT) && t1.isSubtypeOf(TYPE.FLOAT);
+}
 
 
 
@@ -90,44 +93,5 @@ export class OperationBinaryArithmetic extends OperationBinary {
 				[Operator.SUB, OP.OpCode.FLOAT_SUB],
 			]).get(this.operator)!, v0, v1, typ))
 		);
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const v0: VALUE.Value | null = this.operand0.fold();
-		if (!v0) {
-			return v0;
-		}
-		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq0()) {
-			return v0;
-		}
-		const v1: VALUE.Value | null = this.operand1.fold();
-		if (!v1) {
-			return v1;
-		}
-		if (this.operator === Operator.MUL && (v0 as VALUE.Number).eq1() || this.operator === Operator.ADD && (v0 as VALUE.Number).eq0()) {
-			return v1;
-		}
-		if (this.operator === Operator.DIV && (v1 as VALUE.Number).eq0()) {
-			throw new NanErrorDivZero(this.operand1);
-		}
-		return this.foldNumeric(
-			(v0 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
-			(v1 as VALUE.Number<VALUE.Integer | VALUE.Natural | VALUE.Float>),
-		);
-	}
-
-	private foldNumeric<T extends VALUE.Number<T>>(v0: T, v1: T): T {
-		try {
-			return new Map<Operator, (x: T, y: T) => T>([
-				[Operator.EXP, (x, y) => x.exp(y)],
-				[Operator.MUL, (x, y) => x.times(y)],
-				[Operator.DIV, (x, y) => x.divide(y)],
-				[Operator.ADD, (x, y) => x.plus(y)],
-				[Operator.SUB, (x, y) => x.minus(y)],
-			]).get(this.operator)!(v0, v1);
-		} catch (err) {
-			throw (err instanceof xjs.NaNError) ? new NanErrorInvalid(this) : err;
-		}
 	}
 }

@@ -1,6 +1,7 @@
 import type binaryen from 'binaryen';
 import type {CodeGenerator} from '../../index.ts';
 import {memoizeMethod} from '../../lib/index.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {OpCode} from './Opcode.ts';
 import {Terminator} from './Terminator.ts';
 
@@ -16,11 +17,15 @@ export class Goto extends Terminator {
 		return super.toString(`"${ this.label }"`);
 	}
 
+	public override interpret(interp: Interpreter): void {
+		return interp.interpretNextBlock(this.label);
+	}
+
 	@memoizeMethod
-	public override codegen(_: CodeGenerator, relooper: binaryen.Relooper, blockrefs: ReadonlyMap<string, binaryen.RelooperBlockRef>): void {
+	public override codegen(cg: CodeGenerator, relooper: binaryen.Relooper): void {
 		relooper.addBranch(
-			blockrefs.get(this._containerLabel!)!,
-			blockrefs.get(this.label)!,
+			cg.getBlockRef(this._containerLabel!),
+			cg.getBlockRef(this.label),
 			0, // unconditional
 			0,
 		);

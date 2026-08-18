@@ -39,7 +39,7 @@ test.suite('AstNode', () => {
 	test.suite('Goal', () => {
 		test.suite('#varCheck', () => {
 			test.test('aggregates multiple errors.', () => {
-				assert.throws(() => AST.Goal.fromSource(`{
+				assert.throws(() => setupScript(`{
 					a + b || c * d;
 					val y: V & W | X & Y = null;
 					val x: int = 42;
@@ -49,7 +49,7 @@ test.suite('AstNode', () => {
 					type T = float;
 					val z: x = null;
 					val z: int = T;
-				}`).varCheck(), (err) => {
+				}`, {typeCheck: false}), (err) => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,
 						errors: [
@@ -106,7 +106,7 @@ test.suite('AstNode', () => {
 
 		test.suite('#typeCheck', () => {
 			test.test('aggregates multiple errors.', () => {
-				const goal: AST.Goal = AST.Goal.fromSource(`{
+				const {goal} = setupScript(`{
 					val a: null = null;
 					val b: null = null;
 					val c: null = null;
@@ -119,8 +119,7 @@ test.suite('AstNode', () => {
 					e * f + g * h;
 					if null then 42 else 4.2;
 					val x: int = 4.2;
-				}`);
-				goal.varCheck();
+				}`, {typeCheck: false});
 				assert.throws(() => goal.typeCheck(), (err) => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,

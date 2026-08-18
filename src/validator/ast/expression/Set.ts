@@ -12,10 +12,7 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import {
-	VALUE,
-	TYPE,
-} from '../../../typer/index.ts';
+import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeFamily} from '../../utils-private.ts';
 import {typecheck_assign} from '../AstNode.ts';
 import {Expression} from './Expression.ts';
@@ -54,14 +51,6 @@ class ExpressionSet extends Collection {
 	@memoizeMethod
 	public override build(builder: Builder): OP.CollectionLinearNew {
 		return new OP.CollectionLinearNew(OP.TypeName.SET, this.children.map((c) => c.build(builder).asTac(builder)), this.type());
-	}
-
-	@memoizeMethod
-	public override fold(): VALUE.Value | null {
-		const elements: readonly (VALUE.Value | null)[] = this.children.map((c) => c.fold());
-		return (elements.includes(null))
-			? null
-			: new VALUE.Set(new Set(elements as VALUE.Value[]));
 	}
 
 	@assignToDeco

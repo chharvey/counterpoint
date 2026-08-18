@@ -475,8 +475,10 @@ In that case, the pointer \`x\` is changed to the new value.
 Conditional and loop programming structures may appear in algorithms.
 For conditionals, the ‘if branch’ and ‘else branch’ are parallel steps,
 each containing the substeps respective to that branch.
-(The ‘else branch’ is not always necessary, e.g. if the ‘if branch’ completes the algorithm.)
 ‘If’ steps begin with «*If* …:» and ‘else’ steps begin with «*Else:*».
+Every ‘if branch’ must be paired with exactly one ‘else’ branch.
+If the ‘else branch’ is semantically unnecessary, it is best to include an explicit step
+such as «*Return.*» or «Fall through.».
 
 A step that specifies a loop must have as its substeps the steps to be performed for each iteration.
 A loop step begins with «*While* …:».

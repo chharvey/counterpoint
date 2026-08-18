@@ -7,7 +7,11 @@ import {
 } from '../../lib/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {TYPE} from '../../typer/index.ts';
-import type {Temp} from '../Builder.ts';
+import type {
+	Temp,
+	Builder,
+} from '../Builder.ts';
+import type {Interpreter} from '../Interpreter.ts';
 import {ast_type_name} from './utils-public.ts';
 import {stringify_type_name} from './utils-private.ts';
 import {OpCode} from './Opcode.ts';
@@ -21,7 +25,7 @@ export class Decl extends Instruction {
 	private readonly targetType: TYPE.Type;
 	private readonly value?:     Value;
 
-	public constructor(target: SymbolSchemaVar, value: Value);
+	public constructor(target: SymbolSchemaVar, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
 		private readonly target: SymbolSchemaVar | Temp,
@@ -30,7 +34,9 @@ export class Decl extends Instruction {
 		super(OpCode.DECL);
 		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
 		if (target instanceof SymbolSchemaVar) {
-			this.value = value!;
+			if (value) {
+				this.value = value;
+			}
 		} else if (target.value) {
 			this.value = target.value;
 		}
@@ -45,14 +51,25 @@ export class Decl extends Instruction {
 	}
 
 	@runOnceMethod
-	public override validate(): void {
-		this.value?.validate();
+	public override validate(builder: Builder): void {
+		// Use 'declared' only for declared, unset temps. Enforces setting before getting.
+		// Uninitialized variables can use 'set' becuase they can be get before setting (in which case CPL `null` will be returned).
+		builder.setLocalStatus(this.target, (this.target instanceof SymbolSchemaVar || this.value) ? 'set' : 'declared');
+		this.value?.validate(builder);
 		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
+	}
+
+	public override interpret(interp: Interpreter): void {
+		if (this.target instanceof SymbolSchemaVar) {
+			interp.setLocalValue(this.target, this.value?.interpret(interp));
+		} else if (this.target.value) {
+			interp.setLocalValue(this.target, this.target.value.interpret(interp));
+		}
 	}
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.mod.struct.new_default(cg.vm.reftype.Value)).set();
+		return cg.teeLocal(this.target, this.value?.codegen(cg) ?? cg.vm.Value.newDefault()).set();
 	}
 
 	/* eslint-disable */
