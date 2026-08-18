@@ -1,6 +1,6 @@
 {
   "name": "@chharvey/counterpoint",
-  "version": "0.5.2-beta.5",
+  "version": "0.5.2",
   "description": "A robust programming language.",
   "homepage": "https://github.com/chharvey/counterpoint#readme",
   "bugs": {
@@ -32,7 +32,7 @@
     "fresh-install": "rm -rf ./node_modules/ ./tree-sitter-counterpoint/node_modules/ ./package-lock.json && npm install",
     "precompile": "rm -rf ./dist/ && mkdir -p ./dist/vm/wat/ && cp -R ./src/vm/wat/ ./dist/vm/wat/",
     "compile": "tsc && tsc --project ./test/tsconfig.json",
-    "lint": "eslint",
+    "lint": "eslint ./",
     "test": "tsx --test --test-isolation=none -- './test/**/*.test.ts'",
     "test:only": "tsx --test --test-only --test-isolation=none -- './test/**/*.test.ts'",
     "justbuild": "npm run build --ignore-scripts -w ./tree-sitter-counterpoint/ && npm rebuild",
@@ -47,13 +47,13 @@
     "tree-sitter": "^0.25.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.8.0",
+    "@eslint/js": "^10.0.0",
     "@stylistic/eslint-plugin": "^5.2.0",
     "@types/minimist": "^1.2.0",
     "@types/node": "^26.0.0",
     "@types/utf8": "^3.0.0",
-    "eslint": "^9.16.0",
-    "eslint-plugin-import": "^2.31.0",
+    "eslint": "^10.8.0",
+    "eslint-plugin-import-x": "^4.17.1",
     "globals": "^17.0.0",
     "n": "^10.2.0",
     "tsx": "^4.22.4",
