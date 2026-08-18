@@ -65,7 +65,7 @@ export class Intersection extends Combinable {
 	@memoizeGetter
 	public override get isBottomType(): boolean {
 		/* This could be bottom if the operands are disjoint. */
-		return this.operands.some((s) => s.isBottomType) || this.values.size === 0;
+		return this.operands.some((s) => this.operands.some((r) => s.isDisjointWith(r)));
 	}
 
 	/*
@@ -104,7 +104,7 @@ export class Intersection extends Combinable {
 				return assert.fail('`@intersectionLaws` should have already returned.');
 			}
 		} else {
-			return new Intersection(this, t).normalize();
+			return new Intersection(this, t).normalize(); // super.intersect(t);
 		}
 	}
 

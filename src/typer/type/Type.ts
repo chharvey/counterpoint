@@ -15,8 +15,15 @@ import {
 	Union,
 	Difference,
 	Unit,
+	None,
+	Some,
 	NOTHING,
 	ANYTHING,
+	SYM,
+	INT,
+	NAT,
+	FLOAT,
+	STR,
 	NULL,
 	FALSE,
 	TYPE_CONSTANTS,
@@ -296,6 +303,9 @@ export function disjointLaws(
 		if (this === t) {
 			return false;
 		}
+		if (this.isSubtypeOf(t) || t.isSubtypeOf(this)) {
+			return false;
+		}
 		return method.call(this, t);
 	};
 }
@@ -506,10 +516,32 @@ export abstract class Type {
 	@memoizeBinOp(true)
 	@disjointLaws
 	public isDisjointWith(t: Type): boolean {
-		if (t instanceof Intersection || t instanceof Union || t instanceof Difference || t instanceof Unit) {
+		if ([
+			Intersection,
+			Union,
+			Difference,
+			Unit,
+			None,
+			Some,
+		].some((klass) => t instanceof klass)) {
 			return t.isDisjointWith(this);
 		}
-		return this.intersect(t).isBottomType;
+		return this.isDisjointWith_do(t);
+	}
+
+	/** @final */
+	protected isDisjointWith_do(t: Type): boolean {
+		const value_types = [
+			SYM,
+			INT,
+			NAT,
+			FLOAT,
+			STR,
+		];
+		if (value_types.includes(this) || value_types.includes(t)) {
+			return true;
+		}
+		return false; // assume not disjoint by default
 	}
 
 	public mutableOf(): Type {

@@ -113,7 +113,7 @@ export class Union extends Combinable {
 				return assert.fail('`@unionLaws` should have already returned.');
 			}
 		} else {
-			return new Union(this, t).normalize();
+			return new Union(this, t).normalize(); // super.union(t);
 		}
 	}
 

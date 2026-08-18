@@ -78,7 +78,7 @@ export class Difference extends TypeOperation {
 		if (t.isDisjointWith(this.left) || t.isSubtypeOf(this.right)) {
 			return true;
 		}
-		return super.isDisjointWith(t);
+		return super.isDisjointWith_do(t);
 	}
 
 	public override mutableOf(): Difference {
