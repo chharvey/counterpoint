@@ -9,7 +9,6 @@ export * from './Union.ts';
 export * from './Difference.ts';
 export * from './Unit.ts';
 
-
 export * from './Tuple.ts';
 export * from './Record.ts';
 export * from './List.ts';

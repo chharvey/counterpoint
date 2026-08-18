@@ -11,7 +11,7 @@ import {ValueType} from './ValueType.ts';
  */
 export class Float extends ValueType {
 	public constructor() {
-		super(new Set<VALUE.Float>([VALUE.FLOAT_0, VALUE.FLOAT_N0]));
+		super();
 	}
 
 	public override toString(): string {

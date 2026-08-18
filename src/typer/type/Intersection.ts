@@ -3,7 +3,6 @@ import * as xjs from 'extrajs';
 import {memoizeGetter} from '../../lib/index.ts';
 import {
 	language_types_equal,
-	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -53,18 +52,15 @@ export class Intersection extends Combinable {
 		...operands: readonly Type[]
 	) {
 		super(
-			operands.reduce(
-				(accum, next) => xjs.Set.intersection(accum, next.values, language_values_identical),
-				xjs.Set.intersection(operand0.values, operand1.values, language_values_identical),
-			),
 			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Intersection ? operand.operands : [operand]) as ArrayOfAtLeast2<Type>,
+			[operand0, operand1, ...operands].some((operand) => operand.isMutable),
 		);
 	}
 
 	@memoizeGetter
 	public override get isBottomType(): boolean {
 		/* This could be bottom if the operands are disjoint. */
-		return this.operands.some((s) => s.isBottomType) || this.values.size === 0;
+		return this.operands.some((s) => this.operands.some((r) => s.isDisjointWith(r)));
 	}
 
 	/*
@@ -103,7 +99,7 @@ export class Intersection extends Combinable {
 				return assert.fail('`@intersectionLaws` should have already returned.');
 			}
 		} else {
-			return new Intersection(this, t).normalize();
+			return new Intersection(this, t).normalize(); // super.intersect(t);
 		}
 	}
 

@@ -30,7 +30,7 @@ export class Dict extends ReferenceType {
 		public readonly typearg: Type,
 		is_mutable: boolean = false,
 	) {
-		super(new Set<VALUE.Dict>([new VALUE.Dict()]), is_mutable);
+		super(is_mutable);
 	}
 
 	public override toString(): string {

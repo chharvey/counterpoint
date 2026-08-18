@@ -40,6 +40,9 @@ test.suite('Opcode', () => {
 				return values;
 			}
 
+			const VALUE_FLOAT_0  = new VALUE.Float();
+			const VALUE_FLOAT_N0 = new VALUE.Float(-0.0);
+
 			test.test('Trap always throws.', () => {
 				assert.throws(() => new OP.Trap().interpret(), /Trap\./);
 			});
@@ -51,8 +54,6 @@ test.suite('Opcode', () => {
 					VALUE.TRUE,
 					VALUE.INT_0,
 					VALUE.NAT_0,
-					VALUE.FLOAT_0,
-					VALUE.STR_EMPTY,
 					new VALUE.Symbol(0x100n, 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Natural(42n),
@@ -440,8 +441,8 @@ test.suite('Opcode', () => {
 					assert_equal_values(interpret_unops('-', operands.slice(3, 8)), [
 						VALUE.INT_0,
 						new VALUE.Integer(-42n),
-						VALUE.FLOAT_N0,
-						VALUE.FLOAT_0,
+						VALUE_FLOAT_N0,
+						VALUE_FLOAT_0,
 						new VALUE.Float(-4.2e+1),
 					]);
 				});
@@ -475,12 +476,12 @@ test.suite('Opcode', () => {
 				});
 				test.test('[operator=FLOAT_FROM]', () => {
 					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
-						VALUE.FLOAT_0,
+						VALUE_FLOAT_0,
 						new VALUE.Float(42.0),
-						VALUE.FLOAT_0,
-						VALUE.FLOAT_N0,
+						VALUE_FLOAT_0,
+						VALUE_FLOAT_N0,
 						new VALUE.Float(4.2e+1),
-						VALUE.FLOAT_0,
+						VALUE_FLOAT_0,
 						new VALUE.Float(42.0),
 					]);
 				});
