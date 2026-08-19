@@ -772,8 +772,8 @@ The parser receives these tokens and produces the correct expression.
 <Number> `!<` <Number>
 <Number> `!>` <Number>
 
-<Object> `is`  <Class>
-<Object> `!is` <Class>
+<anything> `is`  <Class>
+<anything> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -804,8 +804,21 @@ int --> nat --> float
 Conversions are made only for determining mathematical inequality; the value of the operand does not change.
 Note that conversions may be lossy; see [Numeric Conversions](./built-ins.md#numeric-conversions) for details.
 
-The object comparative operators `is` and `!is` are not currently available,
-but they are reserved for future semantics.
+The object comparative operators `is` and `!is` determine whether the left-hand operand (any value)
+is an instance of the right-hand operand (a class).
+```cpl
+x is Null;    % sugar for `x === null`
+x is Boolean; % sugar for `x === false || x === true`
+
+42     is Symbol;  %== false
+@hello is Symbol;  %== true
+42     is Integer; %== true
+@hello is Integer; %== false
+
+x !is Null;    % sugar for `!(x is Null)`
+x !is Boolean; % sugar for `!(x is Boolean)`
+x !is Integer; % sugar for `!(x is Integer)`
+```
 
 
 ### Equality

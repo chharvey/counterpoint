@@ -767,9 +767,6 @@ test.suite('Operation', () => {
 
 
 	test.suite('OperationBinaryComparative', () => {
-		test.test.todo('OperationUnary[operator=IS]', () => {
-			assert.ok('TODO:');
-		});
 		test.suite('#type', () => {
 			test.test('with folding on, returns a constant value.', () => {
 				xjs.Array.forEachAggregated(extract_lines`
