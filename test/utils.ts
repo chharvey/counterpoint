@@ -210,9 +210,6 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
-		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
-		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
-		value === ''              ? VALUE.STR_EMPTY :
 		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
@@ -245,8 +242,6 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
 	return (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
-		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
-		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
 		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :

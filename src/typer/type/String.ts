@@ -11,7 +11,7 @@ import {ValueType} from './ValueType.ts';
  */
 class TypeString extends ValueType {
 	public constructor() {
-		super(new Set<VALUE.String>([VALUE.STR_EMPTY]));
+		super();
 	}
 
 	public override toString(): string {

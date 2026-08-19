@@ -33,7 +33,7 @@ class TypeFunction extends ReferenceType {
 		private readonly typeargParamsNamed: Record = new Record(),
 		private readonly typearg_return?: Type,
 	) {
-		super(new Set<VALUE.Value>(), false); // TODO: VALUE.Function
+		super();
 	}
 
 

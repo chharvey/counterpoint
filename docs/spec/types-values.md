@@ -1001,13 +1001,15 @@ For brevity, this section uses the following notational conventions:
 - The [difference](#difference)               of `A` and `B`, `Minus<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `&`.
 - The [union](#union)                         of `A` and `B`, `Or<A, B>`,    is written `A | B`. The symbol `|`  is weaker than `&` and `-`.
 - The [disjunctive union](#disjunctive-union) of `A` and `B`, `Xor<A, B>`,   is written `A ^ B`. The symbol `^`  has the same precedence as `|`.
-- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                                     The symbol `<:` is weaker than `|` and `^`.
-- If `A` is [equal](#equality)    to `B`, we write `A == B`.                                     The symbol `==` is weaker than `<:`.
+- If `A` is a [subtype](#subtype) of `B`,   we write `A <: B`.                                   The symbol `<:` is weaker than `|` and `^`.
+- If `A` is [equal](#equality)    to `B`,   we write `A == B`.                                   The symbol `==` has the same precedence as `<:`.
+- If `A` is [disjoint](#disjoint) with `B`, we write `A /= B`.                                   The symbol `/=` has the same precedence as `==`.
 - Where ‹X› and ‹Y› represent statements in prose:
-	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`.
+	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`, `==`, and `/=`.
 	- `‹X› ||  ‹Y›` denotes “‹X› or             ‹Y›”. The symbol `||`  is weaker than `&&`.
 	- `‹X› --> ‹Y›` denotes “‹X› implies        ‹Y›”. The symbol `-->` is weaker than `||`.
-	- `‹X› <-> ‹Y›` denotes “‹X› if and only if ‹Y›”. The symbol `<->` is weaker than `-->`.
+	- `‹X› <-- ‹Y›` denotes “‹X› is implied by  ‹Y›”. The symbol `<--` has the same precedence as `-->`.
+	- `‹X› <-> ‹Y›` denotes “‹X› if and only if ‹Y›”. The symbol `<->` is weaker than `-->` and `<--`.
 
 
 ### Special Elements
@@ -1021,6 +1023,9 @@ For brevity, this section uses the following notational conventions:
 1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection
 1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union
 1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union
+1-9 | `T  - nothing  == T`       | Bottom is The Right-Identity      Element of Subtraction
+1-a | `T  - anything == nothing` | Top    is The Right-Anti-Identity Element of Subtraction
+1-b | `nothing - T == nothing`   | Bottom is The Left-Absorption     Element of Subtraction
 
 
 ### Operation Properties
@@ -1058,8 +1063,9 @@ For brevity, this section uses the following notational conventions:
 ### Difference Properties
 \# | Law | Description
 -- | --- | -----------
-4-1 | `A - B == A  <->  A & B == nothing`             | The difference of two types is the first type iff they are disjoint.
-4-2 | `A - B == nothing  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
-4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
-4-4 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
-4-5 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union
+4-1 | `A - B == A  <->  A /= B`       | The difference of two types is the first type iff they are disjoint.
+4-2 | `A - B == nothing  <->  A <: B` | The difference of two types is empty iff the first type is a subtype of the second type.
+4-3 | `A <: B - C  <->  A <: B  &&  A /= C` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
+4-4 | `A /= B - C  <--  A <: C  ||  A /= B` | Any type that is a subtype of a difference’s second part or disjoint with its first part is disjoint with the difference.
+4-5 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
+4-6 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union

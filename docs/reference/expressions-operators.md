@@ -224,11 +224,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">14</th>
+			<th rowspan="3">14</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
 			<td><code>if … then … else …</code></td>
+		</tr>
+		<tr>
+			<td>Switch</td>
+			<td>n-ary infix</td>
+			<td>n/a</td>
+			<td><code>switch …</code> (<code>case</code> (<code>… |</code>)* <code>… -> …</code>)* <code>default …</code></td>
 		</tr>
 		<tr>
 			<td>Lambdas</td>
@@ -1028,6 +1034,39 @@ For example, if the condition evalutes to `false`, then only the alternative is 
 the consequent does not even get evaluated.
 This is meaningful when evaluation of an expression produces side-effects, such as a routine call.
 Because one of the branches is not evaluated, its side-effects (if any) will not occur.
+
+
+### Switch
+```
+`switch` <anything> ( `case` ( <anything> `|` )* <anything> `->` <anything> )* `default` <anything>
+```
+The switch expression takes an operand, compares it (via identity) to the other operands,
+finds the first match, and produces the corresponding value. Once an operand is matched,
+a result is produced and the other operands and values are skipped.
+
+Switch expressions can have 0 or more cases, with each case having 1 or more **antecedents** and exactly 1 **consequent**.
+Every switch expression must have a **default** value, which is produced if no antecedent matches the operand.
+The cases, antecedents, consequents are evaluated in source order.
+```cpl
+switch operand
+	case option1           -> result_a
+	case option2 | option3 -> result_b
+	case option4 | option5 -> result_c
+default result_d;
+```
+This essentially desugars to a nested if–else chain, though it is more optimized.
+```cpl
+if operand === option1 then result_a else
+if operand === option2 then result_b else
+if operand === option3 then result_b else
+if operand === option4 then result_c else
+if operand === option5 then result_c else
+result_d;
+```
+
+All values in a switch expression may be any expression, including other expressions with operators,
+and they don't need to be the same type.
+The result type of the switch expression is the union of the types of all the consequents and the type of the default value.
 
 
 ### Lambdas

@@ -17,12 +17,7 @@ import {ReferenceType} from './ReferenceType.ts';
  */
 class TypeObject extends ReferenceType {
 	public constructor() {
-		super(new Set<VALUE.Collection>([
-			new VALUE.List(),
-			new VALUE.Dict(),
-			new VALUE.Set(),
-			new VALUE.Map(),
-		]));
+		super();
 	}
 
 	public override toString(): string {

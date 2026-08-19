@@ -2,7 +2,6 @@ import * as assert from 'node:assert';
 import * as xjs from 'extrajs';
 import {
 	language_types_equal,
-	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -26,7 +25,9 @@ import {Combinable} from './Combinable.ts';
 /**
  * A type union of two types `T` and `U` is the type
  * that contains values either assignable to `T` *or* assignable to `U`.
- * @final
+ *
+ * Known subclasses:
+ * - TypeBoolean
  */
 export class Union extends Combinable {
 	/**
@@ -51,11 +52,8 @@ export class Union extends Combinable {
 		...operands: readonly Type[]
 	) {
 		super(
-			operands.reduce(
-				(accum, next) => xjs.Set.union(accum, next.values, language_values_identical),
-				xjs.Set.union(operand0.values, operand1.values, language_values_identical),
-			),
 			[operand0, operand1, ...operands].flatMap((operand) => operand instanceof Union ? operand.operands : [operand]) as ArrayOfAtLeast2<Type>,
+			[operand0, operand1, ...operands].every((operand) => operand.isMutable),
 		);
 	}
 
@@ -110,14 +108,14 @@ export class Union extends Combinable {
 				return assert.fail('`@unionLaws` should have already returned.');
 			}
 		} else {
-			return new Union(this, t).normalize();
+			return new Union(this, t).normalize(); // super.union(t);
 		}
 	}
 
 	@typeConstant
 	@differenceLaws
 	public override subtract(t: Type): Type {
-		/* 4-4 | `(A \| B) - C == (A - C) \| (B - C)` */
+		/* 4-5 | `(A \| B) - C == (A - C) \| (B - C)` */
 		return Union.all(...this.operands.map((s) => s.subtract(t)));
 	}
 

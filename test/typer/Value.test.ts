@@ -374,8 +374,8 @@ test.suite('Value', () => {
 			});
 			test.test('does not overwrite non-identical (even if equal) elements.', () => {
 				assert.strictEqual(new VALUE.Set(new Set([
-					VALUE.FLOAT_0,
-					VALUE.FLOAT_N0,
+					new VALUE.Float(),
+					new VALUE.Float(-0.0),
 				])).count, 2n);
 			});
 		});
@@ -388,8 +388,8 @@ test.suite('Value', () => {
 				const lists = new VALUE.Set(new Set([new VALUE.List()]));
 				assert.strictEqual(lists.get(new VALUE.List()), VALUE.FALSE, 'returns false when testing non-identical, even if equal, reference types.');
 
-				const floats = new VALUE.Set(new Set([VALUE.FLOAT_0]));
-				assert.strictEqual(floats.get(VALUE.FLOAT_N0), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
+				const floats = new VALUE.Set(new Set([new VALUE.Float()]));
+				assert.strictEqual(floats.get(new VALUE.Float(-0.0)), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
 			});
 		});
 	});

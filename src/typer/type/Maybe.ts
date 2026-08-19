@@ -4,9 +4,9 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import * as VALUE from '../value/index.ts';
-import {ANYTHING} from './index.ts';
 import {
 	subtypeLaws,
+	disjointLaws,
 	type Type,
 } from './Type.ts';
 import {
@@ -25,7 +25,7 @@ export class Maybe extends ReferenceType {
 	 * @param typearg the generic argument to `Maybe[T]`
 	 */
 	public constructor(public readonly typearg: Type) {
-		super(new Set<VALUE.Maybe>([new VALUE.Maybe(ANYTHING)]));
+		super();
 	}
 
 
@@ -59,6 +59,16 @@ export class None extends Maybe {
 		// eslint-disable-next-line @typescript-eslint/no-use-before-define
 		return !(t instanceof Some) && super.isSubtypeOf(t);
 	}
+
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		// eslint-disable-next-line @typescript-eslint/no-use-before-define
+		if (t instanceof Some) {
+			return true;
+		}
+		return super.isDisjointWith_do(t);
+	}
 }
 
 export class Some extends Maybe {
@@ -68,5 +78,14 @@ export class Some extends Maybe {
 
 	public override isSubtypeOf(t: Type): boolean {
 		return !(t instanceof None) && super.isSubtypeOf(t);
+	}
+
+	@memoizeBinOp(true)
+	@disjointLaws
+	public override isDisjointWith(t: Type): boolean {
+		if (t instanceof None) {
+			return true;
+		}
+		return super.isDisjointWith_do(t);
 	}
 }
