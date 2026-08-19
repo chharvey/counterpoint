@@ -106,7 +106,7 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 /* # LEXER HELPERS */
 function rg(s: string | RegExp): RegExp { // s -> (s)
-	return new RegExp(`(${ typeof s === 'string' ? s.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&') : s.source })`); // TODO: in Node 24, use `RegExp.escape()`
+	return new RegExp(`(${ typeof s === 'string' ? RegExp.escape(s) : s.source })`);
 }
 function ro(s: string | RegExp): RegExp { // s -> (s)?
 	return new RegExp(rg(s).source.concat('?'));

@@ -304,7 +304,7 @@ Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpress
 	4. *Return:* `valuetype`.
 ;
 
-Type! TypeOf(SemanticExpressionOperation[operator: UN_MAYBE] ::= SemanticExpression) :=
+Type! TypeOf(SemanticExpressionOperation[operator: UN_RESULT] ::= SemanticExpression) :=
 	// TODO:
 ;
 
@@ -376,10 +376,6 @@ Type! TypeOf(SemanticExpressionOperation[operator: LT | GT | LE | GE] expr) :=
 		1. *Return:* `Boolean`.
 	6. *Else:*
 		1. *Throw:* a new TypeErrorInvalidOperation.
-;
-
-Type! TypeOf(SemanticExpressionOperation[operator: IS] expr) :=
-	// TODO: implement
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: ID | EQ] expr) :=

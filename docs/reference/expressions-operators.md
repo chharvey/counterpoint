@@ -95,14 +95,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
-			<td>Is-Set</td>
-			<td>unary prefix</td>
-			<td>right-to-left</td>
-			<td><code>isset …</code></td>
-		</tr>
-		<tr>
-			<th rowspan="4">6</th>
+			<th rowspan="4">5</th>
 			<td rowspan="3">Type Cast</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -119,14 +112,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… as &lt; … &gt;</code></td>
 		</tr>
 		<tr>
-			<th>7</th>
+			<th>6</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">8</th>
+			<th rowspan="2">7</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -137,7 +130,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">9</th>
+			<th rowspan="2">8</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -148,7 +141,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">10</th>
+			<th rowspan="8">9</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -183,7 +176,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">11</th>
+			<th rowspan="4">10</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -202,7 +195,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">12</th>
+			<th rowspan="2">11</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -213,7 +206,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">13</th>
+			<th rowspan="2">12</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -224,14 +217,14 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th>14</th>
+			<th>13</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
 			<td><code>if … then … else …</code></td>
 		</tr>
 		<tr>
-			<th>15</th>
+			<th>14</th>
 			<td>Switch</td>
 			<td>n-ary infix</td>
 			<td>n/a</td>
@@ -523,85 +516,6 @@ This is important to mention because it could also affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
-### Is-Set
-**WARNING:** *This section is obsolete.*
-
-```
-`isset`  <Assignee>
-`!isset` <Assignee>
-```
-The `isset` operator returns a boolean indicating whether a variable or property has been assigned, regardless of its value.
-For non-optional variables and properties, it always returns `true`.
-For [optional variables](./variables.md#optional-variables)/properties that have been set or reassigned to a value, the operator returns `true`.
-If the variable/property has never been assigned, or has been assigned and then deleted, the operator returns `false`.
-This operator is dynamic and may return different results at various points in a program.
-
-`!isset` is a single operator that returns the negation of `isset`.
-
-```cpl
-val mut greeting?: str;
-print.(greeting);        %> null
-print.(isset greeting);  %> false
-print.(!isset greeting); %> true
-
-set greeting = "hello";
-print.(greeting);        %> "hello"
-print.(isset greeting);  %> true
-print.(!isset greeting); %> false
-
-delete greeting;
-print.(greeting);        %> null
-print.(isset greeting);  %> false
-print.(!isset greeting); %> true
-```
-
-Even if a variable has the `null` value, the `isset` operator returns `true`.
-Thus comparing an optional variable to `null` is not sufficient.
-```cpl
-val mut amount?: float | null;
-print.(amount == null); %> true
-print.(isset amount);   %> false
-
-set amount = null;
-print.(amount == null); %> true
-print.(isset amount);   %> true
-```
-
-Syntactically, `isset` may only be applied to variables and property accessors
-(that is, anything that can be assigned in a [`set` statement](./variables.md#variable-reassignment)).
-It is not applicable to arbitrary expressions.
-```cpl
-% well-formed syntax:
-isset variable;
-isset object.property;
-isset tuple.0;
-isset chained.1.calls.("and").prop.2.().xsors; % ending with an accessor
-
-% syntax errors:
-isset (x);
-isset (a || b);
-isset -c;
-isset f.();
-isset if a then b else c;
-isset { x; };
-```
-Like other unary operators, `isset` binds tighter than binary operators.
-The following pairs are well-formed and equivalent:
-```cpl
-isset a || b;
-(isset a) || b;
-
-isset a && isset b;
-(isset a) && (isset b);
-```
-`isset` binds looser than the symbolic unary operators.
-```cpl
-+isset c;   %> SyntaxError
-+(isset c); % well-formed
-```
-`!isset` is a single parse token. `!isset c` is syntax sugar for `!(isset c)`.
-
-
 ### Type Cast/Claim
 ```
 <Object>   as  <Class>
@@ -858,8 +772,8 @@ The parser receives these tokens and produces the correct expression.
 <Number> `!<` <Number>
 <Number> `!>` <Number>
 
-<Object> `is`  <Class>
-<Object> `!is` <Class>
+<anything> `is`  <Class>
+<anything> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -890,8 +804,21 @@ int --> nat --> float
 Conversions are made only for determining mathematical inequality; the value of the operand does not change.
 Note that conversions may be lossy; see [Numeric Conversions](./built-ins.md#numeric-conversions) for details.
 
-The object comparative operators `is` and `!is` are not currently available,
-but they are reserved for future semantics.
+The object comparative operators `is` and `!is` determine whether the left-hand operand (any value)
+is an instance of the right-hand operand (a class).
+```cpl
+x is Null;    % sugar for `x === null`
+x is Boolean; % sugar for `x === false || x === true`
+
+42     is Symbol;  %== false
+@hello is Symbol;  %== true
+42     is Integer; %== true
+@hello is Integer; %== false
+
+x !is Null;    % sugar for `!(x is Null)`
+x !is Boolean; % sugar for `!(x is Boolean)`
+x !is Integer; % sugar for `!(x is Integer)`
+```
 
 
 ### Equality
