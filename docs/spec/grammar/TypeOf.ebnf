@@ -124,11 +124,7 @@ Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
 	4. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Nothing`.
 	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	6. *If* `entry.type` is a Maybe type:
-		1. *Set* `use_maybe` to `true`.
-	7. *Else:*
-		1. *Set* `use_maybe` to `false`.
-	8. *Return:* `AccessType(access.kind, base_type, entry)`.
+	6. *Return:* `AccessType(access.kind, base_type, entry)`.
 ;
 
 
