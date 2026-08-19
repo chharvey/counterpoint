@@ -3,9 +3,13 @@ import * as test from 'node:test';
 import {
 	VALUE,
 	TYPE,
+	Interpreter,
 	CodeGenerator,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../utils.ts';
+import {
+	assertEqualBins,
+	setupScript,
+} from '../utils.ts';
 
 
 
@@ -153,16 +157,20 @@ test.suite('Value', () => {
 					new VALUE.String('fire'),
 				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
 			});
-			test.test.todo('Lists may contain circular references.', () => {
-				// TODO: need an interpreter to test this
-				`
-					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
-					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
-					a.append.(b);
-					b.append.(a);
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
+			test.test('Lists may contain circular references.', () => {
+				const interp = new Interpreter();
+				setupScript(`{
+					val a: mut [[Object]] = [];
+					val b: mut [[Object]] = [];
+					set a.[0] = b; % a.append.(b);
+					set b.[0] = a; % b.append.(a);
+					a == b; %== true
+					b == a; %== true
+				}`, {codegen: false}).builder.interpret(interp);
+				return assert.deepStrictEqual(interp.drops, [
+					VALUE.TRUE,
+					VALUE.TRUE,
+				]);
 			});
 		});
 
@@ -178,16 +186,20 @@ test.suite('Value', () => {
 					[0x101n, new VALUE.String('wind')],
 				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
 			});
-			test.test.todo('Dicts may contain circular references.', () => {
-				// TODO: need an interpreter to test this
-				`
-					val a: mut Dict.<anything> = [x= null];
-					val b: mut Dict.<anything> = [x= null];
-					a.set.(@x, b);
-					b.set.(@x, a);
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
+			test.test('Dicts may contain circular references.', () => {
+				const interp = new Interpreter();
+				setupScript(`{
+					val a: mut [:anything] = [x= null];
+					val b: mut [:anything] = [x= null];
+					set a.[@x] = b; % a.set.(@x, b);
+					set b.[@x] = a; % b.set.(@x, a);
+					a == b; %== true
+					b == a; %== true
+				}`, {codegen: false}).builder.interpret(interp);
+				return assert.deepStrictEqual(interp.drops, [
+					VALUE.TRUE,
+					VALUE.TRUE,
+				]);
 			});
 		});
 
