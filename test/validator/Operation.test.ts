@@ -9,6 +9,7 @@ import {
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
+	TypeErrorNotAssignable,
 } from '../../src/index.ts';
 import {
 	extract_lines,
@@ -99,26 +100,105 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryCast', () => {
-			test.test('always returns `bool`.', () => {
+			const intrinsics = [
+				'Null',
+				'Boolean',
+				'Symbol',
+				'Integer',
+				'Natural',
+				'Float',
+				'String',
+				'Object',
+				'List',
+				'Dict',
+				'Set',
+				'Map',
+				'Maybe',
+				'None',
+				'Some',
+			];
+
+			test.suite('[operator=CAST]', () => {
+				test.test('returns the referenced type.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val n: anything = null;
+							${ intrinsics.map((t) => `n as ${ t };`).join('\n') }
+						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[
+							TYPE.NULL,
+							TYPE.BOOL,
+							TYPE.SYM,
+							TYPE.INT,
+							TYPE.NAT,
+							TYPE.FLOAT,
+							TYPE.STR,
+							TYPE.OBJ,
+							new TYPE.List(TYPE.ANYTHING),
+							new TYPE.Dict(TYPE.ANYTHING),
+							new TYPE.Set(TYPE.ANYTHING),
+							new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
+							new TYPE.Maybe(TYPE.ANYTHING),
+							new TYPE.None(TYPE.ANYTHING),
+							new TYPE.Some(TYPE.ANYTHING),
+						],
+					);
+				});
+				test.test('throws when the assigned type is not equal or narrower.', () => {
+					const {stmts} = setupScript(`{
+						val n: int = 42;
+						n as Float;
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+				});
+			});
+
+			test.suite('[operator=MAYBE]', () => {
+				test.test('returns the referenced type, wrapped in a Maybe.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val n: anything = null;
+							${ intrinsics.map((t) => `n as? ${ t };`).join('\n') }
+						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[
+							new TYPE.Maybe(TYPE.NULL),
+							new TYPE.Maybe(TYPE.BOOL),
+							new TYPE.Maybe(TYPE.SYM),
+							new TYPE.Maybe(TYPE.INT),
+							new TYPE.Maybe(TYPE.NAT),
+							new TYPE.Maybe(TYPE.FLOAT),
+							new TYPE.Maybe(TYPE.STR),
+							new TYPE.Maybe(TYPE.OBJ),
+							new TYPE.Maybe(new TYPE.List(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Dict(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Set(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Maybe(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
+						],
+					);
+				});
+				test.test('throws when the assigned type is not equal or narrower.', () => {
+					const {stmts} = setupScript(`{
+						val n: int = 42;
+						n as? Float;
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+				});
+			});
+
+			test.test.todo('[operator=RESULT');
+
+			test.test('[operator=IS] always returns `bool`.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
-						n is Boolean;
-						n is Symbol;
-						n is Integer;
-						n is Natural;
-						n is Float;
-						n is String;
-						n is Object;
-						n is List;
-						n is Dict;
-						n is Set;
-						n is Map;
-						n is Maybe;
-						n is None;
-						n is Some;
+						${ intrinsics.map((t) => `n is ${ t };`).join('\n') }
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 14),
+					repeat(TYPE.BOOL, 15),
 				);
 			});
 		});

@@ -1,6 +1,7 @@
 import {
 	type Builder,
 	OP,
+	TypeErrorNotAssignable,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
@@ -45,25 +46,17 @@ export class OperationBinaryCast extends OperationBinary {
 	}
 
 	public override varCheck(): void {
-		if (this.operator === Operator.IS) {
-			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
-			// (`this.operand1.source` must be an `IntrinsicName`)
-			this.operand0.varCheck();
-			validate_intrinsic_name(this.operand1.source);
-		} else {
-			return super.varCheck();
-		}
+		// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
+		// (`this.operand1.source` must be an `IntrinsicName`)
+		this.operand0.varCheck();
+		return validate_intrinsic_name(this.operand1.source);
 	}
 
 	public override typeCheck(): void {
-		if (this.operator === Operator.IS) {
-			// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-			// (`this.operand1.source` must be an `IntrinsicName`)
-			this.operand0.typeCheck();
-			this.type(); // assert does not throw
-		} else {
-			return super.typeCheck();
-		}
+		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
+		// (`this.operand1.source` must be an `IntrinsicName`)
+		this.operand0.typeCheck();
+		this.type(); // assert does not throw
 	}
 
 	@memoizeMethod
@@ -72,17 +65,55 @@ export class OperationBinaryCast extends OperationBinary {
 		if (t0.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		if (this.operator === Operator.IS) {
-			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
-			// (`this.operand1.source` must be an `IntrinsicName`)
-			return TYPE.BOOL;
-		} else {
-			return this.type_do(t0, this.operand1.type());
+		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
+		// (`this.operand1.source` must be an `IntrinsicName`)
+		const t1: TYPE.Type = new Map<IntrinsicName, TYPE.Type>([
+			[IntrinsicName.NULL,    TYPE.NULL],
+			[IntrinsicName.BOOLEAN, TYPE.BOOL],
+			[IntrinsicName.SYMBOL,  TYPE.SYM],
+			[IntrinsicName.INTEGER, TYPE.INT],
+			[IntrinsicName.NATURAL, TYPE.NAT],
+			[IntrinsicName.FLOAT,   TYPE.FLOAT],
+			[IntrinsicName.STRING,  TYPE.STR],
+			[IntrinsicName.OBJECT,  TYPE.OBJ],
+			[IntrinsicName.LIST,    new TYPE.List(TYPE.ANYTHING)],
+			[IntrinsicName.DICT,    new TYPE.Dict(TYPE.ANYTHING)],
+			[IntrinsicName.SET,     new TYPE.Set(TYPE.ANYTHING)],
+			[IntrinsicName.MAP,     new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
+			[IntrinsicName.MAYBE,   new TYPE.Maybe(TYPE.ANYTHING)],
+			[IntrinsicName.NONE,    new TYPE.None(TYPE.ANYTHING)],
+			[IntrinsicName.SOME,    new TYPE.Some(TYPE.ANYTHING)],
+		]).get(this.operand1.source as IntrinsicName)!;
+		switch (this.operator) {
+			case Operator.CAST: {
+				if (t1.isSubtypeOf(t0)) {
+					return t1;
+				} else {
+					throw new TypeErrorNotAssignable(this.operand0, t1, this);
+				}
+			}
+			case Operator.CAST_MAYBE: {
+				if (t1.isSubtypeOf(t0)) {
+					return new TYPE.Maybe(t1);
+				} else {
+					throw new TypeErrorNotAssignable(this.operand0, t1, this);
+				}
+			}
+			case Operator.CAST_RESULT: {
+				if (t1.isSubtypeOf(t0)) {
+					throw new Error('`OperationBinaryCast[operator=RESULT]#type` not yet supported.');
+				} else {
+					throw new TypeErrorNotAssignable(this.operand0, t1, this);
+				}
+			}
+			case Operator.IS: {
+				return TYPE.BOOL;
+			}
 		}
 	}
 
-	protected override type_do(_t0: TYPE.Type, _t1: TYPE.Type): TYPE.Type {
-		throw new Error('OperationBinaryCast#type not yet supported.');
+	protected override type_do(): never {
+		throw new Error('`OperationBinaryCast#type_do` is not ever called.');
 	}
 
 	@memoizeMethod
