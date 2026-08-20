@@ -60,10 +60,10 @@ export type ValidOperatorUnary = (
 );
 
 export type ValidOperatorCast = (
+	| Operator.IS
 	| Operator.CAST
 	| Operator.CAST_MAYBE
 	| Operator.CAST_RESULT
-	| Operator.IS
 );
 
 export type ValidOperatorArithmetic = (

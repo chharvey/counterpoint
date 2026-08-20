@@ -59,12 +59,10 @@ export class OperationBinaryCast extends OperationBinary {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		const t0 = this.operand0.type();
+		const t0: TYPE.Type = this.operand0.type();
 		if (t0.isBottomType) {
 			return TYPE.NOTHING;
 		}
-		// NOTE: ignore type-checking `this.operand1` for now, as semantics is determined by syntax.
-		// (`this.operand1.source` must be an `IntrinsicName`)
 		const t1: TYPE.Type = new Map<IntrinsicName, TYPE.Type>([
 			[IntrinsicName.NULL,    TYPE.NULL],
 			[IntrinsicName.BOOLEAN, TYPE.BOOL],
@@ -83,6 +81,9 @@ export class OperationBinaryCast extends OperationBinary {
 			[IntrinsicName.SOME,    new TYPE.Some(TYPE.ANYTHING)],
 		]).get(this.operand1.source as IntrinsicName)!;
 		switch (this.operator) {
+			case Operator.IS: {
+				return TYPE.BOOL;
+			}
 			case Operator.CAST: {
 				if (t1.isSubtypeOf(t0)) {
 					return t1;
@@ -104,9 +105,6 @@ export class OperationBinaryCast extends OperationBinary {
 					throw new TypeErrorNotAssignable(this.operand0, t1, this);
 				}
 			}
-			case Operator.IS: {
-				return TYPE.BOOL;
-			}
 		}
 	}
 
@@ -117,10 +115,8 @@ export class OperationBinaryCast extends OperationBinary {
 	@memoizeMethod
 	public override build(builder: Builder): OP.Value {
 		if (this.operator === Operator.IS) {
-			// NOTE: ignore var-checking `this.operand1` for now, as semantics is determined by syntax.
-			// (`this.operand1.source` must be an `IntrinsicName`)
-			const op1_source = this.operand1.source as IntrinsicName;
 			const op0: OP.ValueTac = this.operand0.build(builder).asTac(builder);
+			const op1_source = this.operand1.source as IntrinsicName;
 			switch (op1_source) {
 				case IntrinsicName.NULL: {
 					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);

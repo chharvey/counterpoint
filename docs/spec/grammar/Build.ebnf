@@ -238,6 +238,15 @@ Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean")
 Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
 	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
 
+Build(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
+	:=TODO:;
+
+Build(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
+	:=TODO:;
+
+Build(SemanticExpressionOperation[operator=RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
+	:=TODO:;
+
 Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=MUL][0: Integer][1: Integer] op) := (INT.MUL [`Build(op.0)` `Build(op.1)`]);

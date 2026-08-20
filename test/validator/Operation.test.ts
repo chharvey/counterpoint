@@ -101,6 +101,16 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryCast', () => {
+			test.test('[operator=IS] always returns `bool`.', () => {
+				assert_shallowStrictEqual(
+					setupScript(`{
+						val n: null = null;
+						${ INTRINSICS.map((t) => `n is ${ t };`).join('\n') }
+					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					repeat(TYPE.BOOL, 15),
+				);
+			});
+
 			test.suite('[operator=CAST]', () => {
 				test.test('returns the referenced type.', () => {
 					assertEqualTypes(
@@ -174,16 +184,6 @@ test.suite('Operation', () => {
 			});
 
 			test.test.todo('[operator=RESULT');
-
-			test.test('[operator=IS] always returns `bool`.', () => {
-				assert_shallowStrictEqual(
-					setupScript(`{
-						val n: null = null;
-						${ INTRINSICS.map((t) => `n is ${ t };`).join('\n') }
-					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 15),
-				);
-			});
 		});
 
 
@@ -404,44 +404,52 @@ test.suite('Operation', () => {
 		});
 
 		test.suite('OperationBinaryCast', () => {
-			test.test('"Null"', () => {
-				assert.strictEqual(setupScript(`{
-					42 is Null;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DROP (ID (INT.CONST 42) (NULL.CONST null)))
-						(ENDPROGRAM)
-				`.trim());
+			test.suite('[operator=IS]', () => {
+				test.test('"Null"', () => {
+					assert.strictEqual(setupScript(`{
+						42 is Null;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DROP (ID (INT.CONST 42) (NULL.CONST null)))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('"Boolean"', () => {
+					assert.strictEqual(setupScript(`{
+						42 is Boolean;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <bool> $0)
+							(GOTO.IF (ID (INT.CONST 42) (BOOL.CONST false)) "block-1" "block-2")
+						"block-1":
+							(SET $0 (ID (INT.CONST 42) (BOOL.CONST false)))
+							(GOTO "block-3")
+						"block-2":
+							(SET $0 (ID (INT.CONST 42) (BOOL.CONST true)))
+							(GOTO "block-3")
+						"block-3":
+							(DROP (GET $0))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
+					assert.strictEqual(setupScript(`{
+						val n: null = null;
+						${ INTRINSICS.slice(2).map((t) => `n is ${ t };`).join('\n') }
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							${ INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${ t } (GET n)))`).join('\n\t') }
+							(ENDPROGRAM)
+					`.trim());
+				});
 			});
-			test.test('"Boolean"', () => {
-				assert.strictEqual(setupScript(`{
-					42 is Boolean;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <bool> $0)
-						(GOTO.IF (ID (INT.CONST 42) (BOOL.CONST false)) "block-1" "block-2")
-					"block-1":
-						(SET $0 (ID (INT.CONST 42) (BOOL.CONST false)))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (ID (INT.CONST 42) (BOOL.CONST true)))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET $0))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
-				assert.strictEqual(setupScript(`{
-					val n: null = null;
-					${ INTRINSICS.slice(2).map((t) => `n is ${ t };`).join('\n') }
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <null> n (NULL.CONST null))
-						${ INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${ t } (GET n)))`).join('\n\t') }
-						(ENDPROGRAM)
-				`.trim());
-			});
+
+			test.suite.todo('[operator=CAST]');
+
+			test.suite.todo('[operator=MAYBE]');
+
+			test.suite.todo('[operator=RESULT]');
 		});
 
 		test.test('OperationBinaryArithmetic', () => {
