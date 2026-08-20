@@ -17,8 +17,8 @@ import {
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {IntrinsicName} from '../utils-public.ts';
 import {
-	IntrinsicName,
 	type CallableClassName,
 	validate_callable_class_name,
 	type ConstructorSchema,

@@ -25,6 +25,7 @@ import {
 	type TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
+import {IntrinsicName} from './utils-public.ts';
 
 
 
@@ -43,24 +44,6 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 
 
-/** Built-in class names. May be referenced as types or as constructors. */
-export enum IntrinsicName {
-	NULL    = 'Null',
-	BOOLEAN = 'Boolean',
-	SYMBOL  = 'Symbol',
-	INTEGER = 'Integer',
-	NATURAL = 'Natural',
-	FLOAT   = 'Float',
-	STRING  = 'String',
-	OBJECT  = 'Object',
-	LIST    = 'List',
-	DICT    = 'Dict',
-	SET     = 'Set',
-	MAP     = 'Map',
-	MAYBE   = 'Maybe',
-	NONE    = 'None',
-	SOME    = 'Some',
-}
 export const INTRINSICS: readonly string[] = Object.values<string>(IntrinsicName);
 export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
 	if (!INTRINSICS.includes(source)) {

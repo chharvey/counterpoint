@@ -11,6 +11,7 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
 } from '../../src/index.ts';
+import {INTRINSICS} from '../../src/validator/ast/utils-private.ts';
 import {
 	extract_lines,
 	repeat,
@@ -100,30 +101,12 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryCast', () => {
-			const intrinsics = [
-				'Null',
-				'Boolean',
-				'Symbol',
-				'Integer',
-				'Natural',
-				'Float',
-				'String',
-				'Object',
-				'List',
-				'Dict',
-				'Set',
-				'Map',
-				'Maybe',
-				'None',
-				'Some',
-			];
-
 			test.suite('[operator=CAST]', () => {
 				test.test('returns the referenced type.', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${ intrinsics.map((t) => `n as ${ t };`).join('\n') }
+							${ INTRINSICS.map((t) => `n as ${ t };`).join('\n') }
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							TYPE.NULL,
@@ -159,7 +142,7 @@ test.suite('Operation', () => {
 					assertEqualTypes(
 						setupScript(`{
 							val n: anything = null;
-							${ intrinsics.map((t) => `n as? ${ t };`).join('\n') }
+							${ INTRINSICS.map((t) => `n as? ${ t };`).join('\n') }
 						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 						[
 							new TYPE.Maybe(TYPE.NULL),
@@ -196,7 +179,7 @@ test.suite('Operation', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
-						${ intrinsics.map((t) => `n is ${ t };`).join('\n') }
+						${ INTRINSICS.map((t) => `n is ${ t };`).join('\n') }
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
 					repeat(TYPE.BOOL, 15),
 				);
@@ -451,19 +434,7 @@ test.suite('Operation', () => {
 			test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
 				assert.strictEqual(setupScript(`{
 					val n: null = null;
-					n is Symbol;
-					n is Integer;
-					n is Natural;
-					n is Float;
-					n is String;
-					n is Object;
-					n is List;
-					n is Dict;
-					n is Set;
-					n is Map;
-					n is Maybe;
-					n is None;
-					n is Some;
+					${ INTRINSICS.slice(2).map((t) => `n is ${ t };`).join('\n') }
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> n (NULL.CONST null))

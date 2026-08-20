@@ -19,7 +19,7 @@ import {
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
-import {IntrinsicName} from '../utils-private.ts';
+import {IntrinsicName} from '../utils-public.ts';
 import {Type} from './Type.ts';
 
 

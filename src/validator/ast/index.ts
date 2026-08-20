@@ -1,3 +1,5 @@
+export * from './utils-public.ts';
+
 export * from './AstNode.ts';
 
 export * from './Index-.ts';
