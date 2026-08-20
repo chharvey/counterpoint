@@ -138,7 +138,7 @@ export class OperationBinaryCast extends OperationBinary {
 					);
 				}
 			}
-			return new OP.InstanceOf(new Map<IntrinsicName, OP.InstanceOfName>([
+			return new OP.Instance(new Map<IntrinsicName, OP.InstanceOfName>([
 				[IntrinsicName.SYMBOL,  OP.InstanceOfName.SYMBOL],
 				[IntrinsicName.INTEGER, OP.InstanceOfName.INTEGER],
 				[IntrinsicName.NATURAL, OP.InstanceOfName.NATURAL],

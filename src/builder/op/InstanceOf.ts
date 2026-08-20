@@ -36,7 +36,7 @@ export enum InstanceOfName {
 
 
 /** Tests whether an operand is an instance of a class. */
-export class InstanceOf extends Value {
+export class Instance extends Value {
 	public constructor(
 		private readonly name:     InstanceOfName,
 		private readonly operand:  ValueTac,

@@ -221,7 +221,7 @@ test.suite('Opcode', () => {
 
 			test.test.todo('Call', () => undefined);
 
-			test.suite('InstanceOf', () => {
+			test.suite('Instance', () => {
 				const srcs: readonly string[] = extract_lines`
 					null
 					false
@@ -269,7 +269,7 @@ test.suite('Opcode', () => {
 						test.test(OP.InstanceOfName[name], () => {
 							const builder = new Builder();
 							const interp  = new Interpreter();
-							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								name,
 								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 							))));
@@ -291,7 +291,7 @@ test.suite('Opcode', () => {
 					test.test('OBJECT', () => {
 						const builder = new Builder();
 						const interp  = new Interpreter();
-						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 							OP.InstanceOfName.OBJECT,
 							AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 						))));
@@ -312,7 +312,7 @@ test.suite('Opcode', () => {
 								new OP.MaybeNew(TYPE.STR),
 								new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
 								new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
-							].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.InstanceOf(
+							].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								name,
 								irval.asTac(builder),
 							))));
@@ -1448,7 +1448,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.test('InstanceOf', () => {
+			test.test('Instance', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					${ [
 						'Symbol',
