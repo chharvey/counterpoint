@@ -136,21 +136,7 @@ export class OperationBinaryCast extends OperationBinary {
 					);
 				}
 			}
-			return new OP.Instance(new Map<IntrinsicName, OP.InstanceOfName>([
-				[IntrinsicName.SYMBOL,  OP.InstanceOfName.SYMBOL],
-				[IntrinsicName.INTEGER, OP.InstanceOfName.INTEGER],
-				[IntrinsicName.NATURAL, OP.InstanceOfName.NATURAL],
-				[IntrinsicName.FLOAT,   OP.InstanceOfName.FLOAT],
-				[IntrinsicName.STRING,  OP.InstanceOfName.STRING],
-				[IntrinsicName.OBJECT,  OP.InstanceOfName.OBJECT],
-				[IntrinsicName.LIST,    OP.InstanceOfName.LIST],
-				[IntrinsicName.DICT,    OP.InstanceOfName.DICT],
-				[IntrinsicName.SET,     OP.InstanceOfName.SET],
-				[IntrinsicName.MAP,     OP.InstanceOfName.MAP],
-				[IntrinsicName.MAYBE,   OP.InstanceOfName.MAYBE],
-				[IntrinsicName.NONE,    OP.InstanceOfName.NONE],
-				[IntrinsicName.SOME,    OP.InstanceOfName.SOME],
-			]).get(op1_source)!, op0);
+			return new OP.Instance(OP.OpCode.INSTANCEOF, op1_source, op0);
 		}
 		throw new Error('`OperationBinaryCast#build` not yet supported.');
 	}

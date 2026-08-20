@@ -438,19 +438,7 @@ test.suite('Operation', () => {
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> n (NULL.CONST null))
-						(DROP (INSTANCEOF SYMBOL (GET n)))
-						(DROP (INSTANCEOF INTEGER (GET n)))
-						(DROP (INSTANCEOF NATURAL (GET n)))
-						(DROP (INSTANCEOF FLOAT (GET n)))
-						(DROP (INSTANCEOF STRING (GET n)))
-						(DROP (INSTANCEOF OBJECT (GET n)))
-						(DROP (INSTANCEOF LIST (GET n)))
-						(DROP (INSTANCEOF DICT (GET n)))
-						(DROP (INSTANCEOF SET (GET n)))
-						(DROP (INSTANCEOF MAP (GET n)))
-						(DROP (INSTANCEOF MAYBE (GET n)))
-						(DROP (INSTANCEOF NONE (GET n)))
-						(DROP (INSTANCEOF SOME (GET n)))
+						${ INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${ t } (GET n)))`).join('\n\t') }
 						(ENDPROGRAM)
 				`.trim());
 			});

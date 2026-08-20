@@ -254,22 +254,23 @@ test.suite('Opcode', () => {
 						builder.instructions.forEach((instr) => instr.interpret(interp));
 						expecteds = interp.drops;
 					});
-					[
-						OP.InstanceOfName.SYMBOL,
-						OP.InstanceOfName.INTEGER,
-						OP.InstanceOfName.NATURAL,
-						OP.InstanceOfName.FLOAT,
-						OP.InstanceOfName.STRING,
-						OP.InstanceOfName.LIST,
-						OP.InstanceOfName.DICT,
-						OP.InstanceOfName.SET,
-						OP.InstanceOfName.MAP,
-						OP.InstanceOfName.MAYBE,
-					].forEach((name, i) => {
-						test.test(OP.InstanceOfName[name], () => {
+					([
+						AST.IntrinsicName.SYMBOL,
+						AST.IntrinsicName.INTEGER,
+						AST.IntrinsicName.NATURAL,
+						AST.IntrinsicName.FLOAT,
+						AST.IntrinsicName.STRING,
+						AST.IntrinsicName.LIST,
+						AST.IntrinsicName.DICT,
+						AST.IntrinsicName.SET,
+						AST.IntrinsicName.MAP,
+						AST.IntrinsicName.MAYBE,
+					] as const).forEach((name, i) => {
+						test.test(name, () => {
 							const builder = new Builder();
 							const interp  = new Interpreter();
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+								OP.OpCode.INSTANCEOF,
 								name,
 								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 							))));
@@ -292,7 +293,8 @@ test.suite('Opcode', () => {
 						const builder = new Builder();
 						const interp  = new Interpreter();
 						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
-							OP.InstanceOfName.OBJECT,
+							OP.OpCode.INSTANCEOF,
+							AST.IntrinsicName.OBJECT,
 							AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 						))));
 						builder.instructions.forEach((instr) => instr.interpret(interp));
@@ -300,12 +302,12 @@ test.suite('Opcode', () => {
 					});
 				});
 				test.suite('Maybes.', () => {
-					[
-						OP.InstanceOfName.MAYBE,
-						OP.InstanceOfName.NONE,
-						OP.InstanceOfName.SOME,
-					].forEach((name, i) => {
-						test.test(OP.InstanceOfName[name], () => {
+					([
+						AST.IntrinsicName.MAYBE,
+						AST.IntrinsicName.NONE,
+						AST.IntrinsicName.SOME,
+					] as const).forEach((name, i) => {
+						test.test(name, () => {
 							const builder = new Builder();
 							const interp  = new Interpreter();
 							[
@@ -313,6 +315,7 @@ test.suite('Opcode', () => {
 								new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
 								new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
 							].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+								OP.OpCode.INSTANCEOF,
 								name,
 								irval.asTac(builder),
 							))));
