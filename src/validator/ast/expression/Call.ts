@@ -16,8 +16,8 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
+import {IntrinsicName} from '../../../parser/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
-import {IntrinsicName} from '../utils-public.ts';
 import {
 	type CallableClassName,
 	validate_callable_class_name,

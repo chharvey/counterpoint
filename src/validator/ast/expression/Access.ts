@@ -12,7 +12,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
-import {IntrinsicName} from '../utils-public.ts';
+import {IntrinsicName} from '../../../parser/index.ts';
 import type {
 	SyntaxNodeType,
 	SyntaxNodeFamily,

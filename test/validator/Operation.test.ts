@@ -3,6 +3,7 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	INTRINSICS,
 	Validator,
 	AST,
 	SymbolSchemaVar,
@@ -11,7 +12,6 @@ import {
 	TypeErrorInvalidOperation,
 	TypeErrorNotNarrow,
 } from '../../src/index.ts';
-import {INTRINSICS} from '../../src/validator/ast/utils-private.ts';
 import {
 	extract_lines,
 	repeat,

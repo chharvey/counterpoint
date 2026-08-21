@@ -16,3 +16,7 @@ export enum IntrinsicName {
 	NONE    = 'None',
 	SOME    = 'Some',
 }
+
+
+
+export const INTRINSICS: readonly IntrinsicName[] = Object.values(IntrinsicName);

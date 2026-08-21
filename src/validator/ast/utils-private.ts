@@ -14,6 +14,10 @@ import {
 	TYPE,
 } from '../../typer/index.ts';
 import {
+	IntrinsicName,
+	INTRINSICS,
+} from '../../parser/index.ts';
+import {
 	Operator,
 	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
@@ -25,7 +29,6 @@ import {
 	type TYPE as AST_TYPE,
 	EXPR,
 } from './index.ts';
-import {IntrinsicName} from './utils-public.ts';
 
 
 
@@ -44,9 +47,8 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 
 
-export const INTRINSICS: readonly string[] = Object.values<string>(IntrinsicName);
 export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
-	if (!INTRINSICS.includes(source)) {
+	if (!(INTRINSICS as readonly string[]).includes(source)) {
 		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ INTRINSICS.join(' | ') }\`.`);
 	}
 }

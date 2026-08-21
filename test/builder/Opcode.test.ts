@@ -7,12 +7,13 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	IntrinsicName,
+	INTRINSICS,
 	Builder,
 	Interpreter,
 	OP,
 	CodeGenerator,
 } from '../../src/index.ts';
-import {INTRINSICS} from '../../src/validator/ast/utils-private.ts';
 import {
 	extract_lines,
 	repeat,
@@ -429,15 +430,15 @@ test.suite('Opcode', () => {
 				test.suite('INSTANCEOF', () => {
 					test.suite('non-Maybes.', () => {
 						([
-							AST.IntrinsicName.SYMBOL,
-							AST.IntrinsicName.INTEGER,
-							AST.IntrinsicName.NATURAL,
-							AST.IntrinsicName.FLOAT,
-							AST.IntrinsicName.STRING,
-							AST.IntrinsicName.LIST,
-							AST.IntrinsicName.DICT,
-							AST.IntrinsicName.SET,
-							AST.IntrinsicName.MAP,
+							IntrinsicName.SYMBOL,
+							IntrinsicName.INTEGER,
+							IntrinsicName.NATURAL,
+							IntrinsicName.FLOAT,
+							IntrinsicName.STRING,
+							IntrinsicName.LIST,
+							IntrinsicName.DICT,
+							IntrinsicName.SET,
+							IntrinsicName.MAP,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
 								const builder = new Builder();
@@ -466,7 +467,7 @@ test.suite('Opcode', () => {
 							const interp  = new Interpreter();
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
 								OP.OpCode.INSTANCEOF,
-								AST.IntrinsicName.OBJECT,
+								IntrinsicName.OBJECT,
 								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 							))));
 							builder.instructions.forEach((instr) => instr.interpret(interp));
@@ -475,9 +476,9 @@ test.suite('Opcode', () => {
 					});
 					test.suite('Maybes.', () => {
 						([
-							AST.IntrinsicName.MAYBE,
-							AST.IntrinsicName.NONE,
-							AST.IntrinsicName.SOME,
+							IntrinsicName.MAYBE,
+							IntrinsicName.NONE,
+							IntrinsicName.SOME,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
 								const builder = new Builder();
@@ -503,21 +504,21 @@ test.suite('Opcode', () => {
 				});
 				test.suite('CAST', () => {
 					([
-						AST.IntrinsicName.NULL,
-						AST.IntrinsicName.BOOLEAN,
-						AST.IntrinsicName.SYMBOL,
-						AST.IntrinsicName.INTEGER,
-						AST.IntrinsicName.NATURAL,
-						AST.IntrinsicName.FLOAT,
-						AST.IntrinsicName.STRING,
-						AST.IntrinsicName.OBJECT,
-						AST.IntrinsicName.LIST,
-						AST.IntrinsicName.DICT,
-						AST.IntrinsicName.SET,
-						AST.IntrinsicName.MAP,
-						AST.IntrinsicName.MAYBE,
-						AST.IntrinsicName.NONE,
-						AST.IntrinsicName.SOME,
+						IntrinsicName.NULL,
+						IntrinsicName.BOOLEAN,
+						IntrinsicName.SYMBOL,
+						IntrinsicName.INTEGER,
+						IntrinsicName.NATURAL,
+						IntrinsicName.FLOAT,
+						IntrinsicName.STRING,
+						IntrinsicName.OBJECT,
+						IntrinsicName.LIST,
+						IntrinsicName.DICT,
+						IntrinsicName.SET,
+						IntrinsicName.MAP,
+						IntrinsicName.MAYBE,
+						IntrinsicName.NONE,
+						IntrinsicName.SOME,
 					] as const).forEach((name) => {
 						test.test(name, () => {
 							const builder = new Builder();
@@ -1678,19 +1679,19 @@ test.suite('Opcode', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
 						${ [
-							AST.IntrinsicName.SYMBOL,
-							AST.IntrinsicName.INTEGER,
-							AST.IntrinsicName.NATURAL,
-							AST.IntrinsicName.FLOAT,
-							AST.IntrinsicName.STRING,
-							AST.IntrinsicName.OBJECT,
-							AST.IntrinsicName.LIST,
-							AST.IntrinsicName.DICT,
-							AST.IntrinsicName.SET,
-							AST.IntrinsicName.MAP,
-							AST.IntrinsicName.MAYBE,
-							AST.IntrinsicName.NONE,
-							AST.IntrinsicName.SOME,
+							IntrinsicName.SYMBOL,
+							IntrinsicName.INTEGER,
+							IntrinsicName.NATURAL,
+							IntrinsicName.FLOAT,
+							IntrinsicName.STRING,
+							IntrinsicName.OBJECT,
+							IntrinsicName.LIST,
+							IntrinsicName.DICT,
+							IntrinsicName.SET,
+							IntrinsicName.MAP,
+							IntrinsicName.MAYBE,
+							IntrinsicName.NONE,
+							IntrinsicName.SOME,
 						].map((classname) => `null is ${ classname };`).join('\n') };
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);

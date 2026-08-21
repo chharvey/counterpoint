@@ -15,12 +15,12 @@ import {
 	VALUE,
 	TYPE,
 } from '../../../typer/index.ts';
+import {IntrinsicName} from '../../../parser/index.ts';
 import type {SyntaxNodeSupertype} from '../../utils-private.ts';
 import {
 	Operator,
 	type ValidOperatorCast,
 } from '../../Operator.ts';
-import {IntrinsicName} from '../utils-public.ts';
 import {validate_intrinsic_name} from '../utils-private.ts';
 import {Expression} from './Expression.ts';
 import {OperationBinary} from './OperationBinary.ts';
