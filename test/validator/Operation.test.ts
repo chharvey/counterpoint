@@ -3,18 +3,21 @@ import * as test from 'node:test';
 import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
+	INTRINSICS,
 	Validator,
 	AST,
 	SymbolSchemaVar,
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
+	TypeErrorNotNarrow,
 } from '../../src/index.ts';
 import {
 	extract_lines,
 	repeat,
 	assert_shallowStrictEqual,
 	assertEqualTypes,
+	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -99,28 +102,89 @@ test.suite('Operation', () => {
 
 
 		test.suite('OperationBinaryCast', () => {
-			test.test('always returns `bool`.', () => {
+			test.test('[operator=IS] always returns `bool`.', () => {
 				assert_shallowStrictEqual(
 					setupScript(`{
 						val n: null = null;
-						n is Boolean;
-						n is Symbol;
-						n is Integer;
-						n is Natural;
-						n is Float;
-						n is String;
-						n is Object;
-						n is List;
-						n is Dict;
-						n is Set;
-						n is Map;
-						n is Maybe;
-						n is None;
-						n is Some;
+						${ INTRINSICS.map((t) => `n is ${ t };`).join('\n') }
 					}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 14),
+					repeat(TYPE.BOOL, 15),
 				);
 			});
+
+			test.suite('[operator=CAST]', () => {
+				test.test('returns the referenced type.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val n: anything = null;
+							${ INTRINSICS.map((t) => `n as ${ t };`).join('\n') }
+						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[
+							TYPE.NULL,
+							TYPE.BOOL,
+							TYPE.SYM,
+							TYPE.INT,
+							TYPE.NAT,
+							TYPE.FLOAT,
+							TYPE.STR,
+							TYPE.OBJ,
+							new TYPE.List(TYPE.ANYTHING),
+							new TYPE.Dict(TYPE.ANYTHING),
+							new TYPE.Set(TYPE.ANYTHING),
+							new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING),
+							new TYPE.Maybe(TYPE.ANYTHING),
+							new TYPE.None(TYPE.ANYTHING),
+							new TYPE.Some(TYPE.ANYTHING),
+						],
+					);
+				});
+				test.test('throws when the assigned type is not equal or narrower.', () => {
+					const {stmts} = setupScript(`{
+						val n: int = 42;
+						n as Float;
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+				});
+			});
+
+			test.suite('[operator=MAYBE]', () => {
+				test.test('returns the referenced type, wrapped in a Maybe.', () => {
+					assertEqualTypes(
+						setupScript(`{
+							val n: anything = null;
+							${ INTRINSICS.map((t) => `n as? ${ t };`).join('\n') }
+						}`, {build: false}).stmts.slice(1).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+						[
+							new TYPE.Maybe(TYPE.NULL),
+							new TYPE.Maybe(TYPE.BOOL),
+							new TYPE.Maybe(TYPE.SYM),
+							new TYPE.Maybe(TYPE.INT),
+							new TYPE.Maybe(TYPE.NAT),
+							new TYPE.Maybe(TYPE.FLOAT),
+							new TYPE.Maybe(TYPE.STR),
+							new TYPE.Maybe(TYPE.OBJ),
+							new TYPE.Maybe(new TYPE.List(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Dict(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Set(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Maybe(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.None(TYPE.ANYTHING)),
+							new TYPE.Maybe(new TYPE.Some(TYPE.ANYTHING)),
+						],
+					);
+				});
+				test.test('throws when the assigned type is not equal or narrower.', () => {
+					const {stmts} = setupScript(`{
+						val n: int = 42;
+						n as? Float;
+					}`, {typeCheck: false});
+					stmts[0].typeCheck();
+					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
+				});
+			});
+
+			test.test.todo('[operator=RESULT');
 		});
 
 
@@ -341,68 +405,178 @@ test.suite('Operation', () => {
 		});
 
 		test.suite('OperationBinaryCast', () => {
-			test.test('"Null"', () => {
-				assert.strictEqual(setupScript(`{
-					42 is Null;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DROP (ID (INT.CONST 42) (NULL.CONST null)))
-						(ENDPROGRAM)
-				`.trim());
+			test.suite('[operator=IS]', () => {
+				test.test('"Null"', () => {
+					assert.strictEqual(setupScript(`{
+						42 is Null;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DROP (ID (INT.CONST 42) (NULL.CONST null)))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('"Boolean"', () => {
+					assert.strictEqual(setupScript(`{
+						42 is Boolean;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <bool> $0 (ID (INT.CONST 42) (BOOL.CONST false)))
+							(DECL <bool> $1)
+							(GOTO.IF (GET $0) "block-1" "block-2")
+						"block-1":
+							(SET $1 (GET $0))
+							(GOTO "block-3")
+						"block-2":
+							(SET $1 (ID (INT.CONST 42) (BOOL.CONST true)))
+							(GOTO "block-3")
+						"block-3":
+							(DROP (GET $1))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
+					assert.strictEqual(setupScript(`{
+						val n: null = null;
+						${ INTRINSICS.slice(2).map((t) => `n is ${ t };`).join('\n') }
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							${ INTRINSICS.slice(2).map((t) => `(DROP (INSTANCEOF ${ t } (GET n)))`).join('\n\t') }
+							(ENDPROGRAM)
+					`.trim());
+				});
 			});
-			test.test('"Boolean"', () => {
+
+			test.test('[operator=CAST]', () => {
 				assert.strictEqual(setupScript(`{
-					42 is Boolean;
-				}`, {codegen: false}).builder.print(), xjs.String.dedent`
-					"block-0":
-						(DECL <bool> $0)
-						(GOTO.IF (ID (INT.CONST 42) (BOOL.CONST false)) "block-1" "block-2")
-					"block-1":
-						(SET $0 (ID (INT.CONST 42) (BOOL.CONST false)))
-						(GOTO "block-3")
-					"block-2":
-						(SET $0 (ID (INT.CONST 42) (BOOL.CONST true)))
-						(GOTO "block-3")
-					"block-3":
-						(DROP (GET $0))
-						(ENDPROGRAM)
-				`.trim());
-			});
-			test.test('if not "Null" nor "Boolean", returns INSTANCEOF.', () => {
-				assert.strictEqual(setupScript(`{
-					val n: null = null;
-					n is Symbol;
-					n is Integer;
-					n is Natural;
-					n is Float;
-					n is String;
-					n is Object;
-					n is List;
-					n is Dict;
-					n is Set;
-					n is Map;
-					n is Maybe;
-					n is None;
-					n is Some;
+					val n: anything = null;
+					${ INTRINSICS.map((t) => `n as ${ t };`).join('\n') }
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
 						(DECL <null> n (NULL.CONST null))
-						(DROP (INSTANCEOF SYMBOL (GET n)))
-						(DROP (INSTANCEOF INTEGER (GET n)))
-						(DROP (INSTANCEOF NATURAL (GET n)))
-						(DROP (INSTANCEOF FLOAT (GET n)))
-						(DROP (INSTANCEOF STRING (GET n)))
-						(DROP (INSTANCEOF OBJECT (GET n)))
-						(DROP (INSTANCEOF LIST (GET n)))
-						(DROP (INSTANCEOF DICT (GET n)))
-						(DROP (INSTANCEOF SET (GET n)))
-						(DROP (INSTANCEOF MAP (GET n)))
-						(DROP (INSTANCEOF MAYBE (GET n)))
-						(DROP (INSTANCEOF NONE (GET n)))
-						(DROP (INSTANCEOF SOME (GET n)))
+						${ INTRINSICS.map((t) => `(DROP (CAST ${ t } (GET n)))`).join('\n\t') }
 						(ENDPROGRAM)
 				`.trim());
 			});
+
+			test.suite('[operator=MAYBE]', () => {
+				test.test('"Null"', () => {
+					assert.strictEqual(setupScript(`{
+						val n: anything = null;
+						val i: anything = 42;
+						n as? Null;
+						i as? Null;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							(DECL <int> i (INT.CONST 42))
+							(DECL <Maybe> $0)
+							(GOTO.IF (ID (GET n) (NULL.CONST null)) "block-1" "block-2")
+						"block-1":
+							(SET $0 ${ op_maybe_string('(CAST Null (GET n))') })
+							(GOTO "block-3")
+						"block-2":
+							(SET $0 ${ op_maybe_string() })
+							(GOTO "block-3")
+						"block-3":
+							(DROP (GET $0))
+							(DECL <Maybe> $1)
+							(GOTO.IF (ID (GET i) (NULL.CONST null)) "block-4" "block-5")
+						"block-4":
+							(SET $1 ${ op_maybe_string('(CAST Null (GET i))') })
+							(GOTO "block-6")
+						"block-5":
+							(SET $1 ${ op_maybe_string() })
+							(GOTO "block-6")
+						"block-6":
+							(DROP (GET $1))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('"Boolean"', () => {
+					assert.strictEqual(setupScript(`{
+						val n: anything = null;
+						val i: anything = 42;
+						n as? Boolean;
+						i as? Boolean;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							(DECL <int> i (INT.CONST 42))
+							(DECL <Maybe> $0)
+							(DECL <bool> $1 (ID (GET n) (BOOL.CONST false)))
+							(DECL <bool> $2)
+							(GOTO.IF (GET $1) "block-4" "block-5")
+						"block-4":
+							(SET $2 (GET $1))
+							(GOTO "block-6")
+						"block-5":
+							(SET $2 (ID (GET n) (BOOL.CONST true)))
+							(GOTO "block-6")
+						"block-6":
+							(GOTO.IF (GET $2) "block-1" "block-2")
+						"block-1":
+							(SET $0 ${ op_maybe_string('(CAST Boolean (GET n))') })
+							(GOTO "block-3")
+						"block-2":
+							(SET $0 ${ op_maybe_string() })
+							(GOTO "block-3")
+						"block-3":
+							(DROP (GET $0))
+							(DECL <Maybe> $3)
+							(DECL <bool> $4 (ID (GET i) (BOOL.CONST false)))
+							(DECL <bool> $5)
+							(GOTO.IF (GET $4) "block-10" "block-11")
+						"block-10":
+							(SET $5 (GET $4))
+							(GOTO "block-12")
+						"block-11":
+							(SET $5 (ID (GET i) (BOOL.CONST true)))
+							(GOTO "block-12")
+						"block-12":
+							(GOTO.IF (GET $5) "block-7" "block-8")
+						"block-7":
+							(SET $3 ${ op_maybe_string('(CAST Boolean (GET i))') })
+							(GOTO "block-9")
+						"block-8":
+							(SET $3 ${ op_maybe_string() })
+							(GOTO "block-9")
+						"block-9":
+							(DROP (GET $3))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('not "Null" nor "Boolean".', () => {
+					assert.strictEqual(setupScript(`{
+						val n: anything = null;
+						${ INTRINSICS.slice(2).map((t) => `n as? ${ t };`).join('\n') }
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							${ INTRINSICS.slice(2).map((t, i) => {
+								const block_then:  string = `block-${ 3 * i + 1 }`;
+								const block_else:  string = `block-${ 3 * i + 2 }`;
+								const block_endif: string = `block-${ 3 * i + 3 }`;
+								const result_name: string = `$${ i }`;
+								return xjs.String.dedent`
+									${ '\t' }(DECL <Maybe> ${ result_name })
+									${ '\t' }(GOTO.IF (INSTANCEOF ${ t } (GET n)) "${ block_then }" "${ block_else }")
+									"${ block_then }":
+										(SET ${ result_name } ${ op_maybe_string(`(CAST ${ t } (GET n))`) })
+										(GOTO "${ block_endif }")
+									"${ block_else }":
+										(SET ${ result_name } ${ op_maybe_string() })
+										(GOTO "${ block_endif }")
+									"${ block_endif }":
+										(DROP (GET ${ result_name }))
+								`.trim();
+							}).join('\n\t').trimStart() }
+							(ENDPROGRAM)
+					`.trim());
+				});
+			});
+
+			test.suite.todo('[operator=RESULT]');
 		});
 
 		test.test('OperationBinaryArithmetic', () => {

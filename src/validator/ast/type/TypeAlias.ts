@@ -12,6 +12,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
+import {IntrinsicName} from '../../../parser/index.ts';
 import {
 	SymbolKind,
 	type SymbolSchema,
@@ -19,7 +20,6 @@ import {
 } from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
-import {IntrinsicName} from '../utils-private.ts';
 import {Type} from './Type.ts';
 
 

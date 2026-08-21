@@ -34,8 +34,8 @@ import {
  * - RecordGet
  * - CollectionDynamicGet
  * - Call
- * - InstanceOf
  * - Unop
+ * - Instance
  * - Binop
  * - Phi
  */

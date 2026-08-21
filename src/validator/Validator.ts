@@ -8,13 +8,13 @@ import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
+	INTRINSICS,
 } from '../parser/index.ts';
 import type {SymbolSchema} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from './utils-private.ts';
-import {INTRINSICS} from './ast/utils-private.ts';
 
 
 
@@ -241,8 +241,8 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
-		if (INTRINSICS.includes(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt(INTRINSICS.indexOf(source));
+		if ((INTRINSICS as readonly string[]).includes(source)) {
+			return Validator.MIN_VALUE_INTRINSIC + BigInt((INTRINSICS as readonly string[]).indexOf(source));
 		}
 		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}

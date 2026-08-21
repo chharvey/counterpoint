@@ -127,7 +127,7 @@ SemanticExpressionOperation[operator: UN_MAYBE | UN_RESULT | NOT | EMP]
 	::= SemanticExpression;
 SemanticExpressionOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-SemanticExpressionOperation[operator: CAST | MAYBE | RESULT | IS]
+SemanticExpressionOperation[operator: IS | CAST | MAYBE | RESULT]
 	::= SemanticExpression SemanticExpression[type: Class];
 SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];

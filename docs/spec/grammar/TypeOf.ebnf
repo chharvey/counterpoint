@@ -124,11 +124,7 @@ Type! TypeOf(SemanticExpressionAccess[kind: NORMAL | MAYBE] access) :=
 	4. *If* *UnwrapAffirm:* `IsBottomType(base_type)` is `true`:
 		1. *Return:* `Nothing`.
 	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	6. *If* `entry.type` is a Maybe type:
-		1. *Set* `use_maybe` to `true`.
-	7. *Else:*
-		1. *Set* `use_maybe` to `false`.
-	8. *Return:* `AccessType(access.kind, base_type, entry)`.
+	6. *Return:* `AccessType(access.kind, base_type, entry)`.
 ;
 
 
@@ -348,6 +344,39 @@ Type! TypeOf(SemanticExpressionOperation[operator: IS] ::= SemanticExpression__0
 	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
 		1. *Return:* `Nothing`.
 	3. *Return:* `Boolean`.
+;
+
+Type! TypeOf(SemanticExpressionOperation[operator: CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+	1. *Let* `t0` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Nothing`.
+	3. *Let* `t1` be the class identified by `SemanticExpression__1`.
+	4. *If* `Subtype(t1, t0)` is `true`:
+		1. *Return:* `t1`.
+	5. *Else:*
+		1. *Throw:* a new TypeErrorNotNarrow.
+;
+
+Type! TypeOf(SemanticExpressionOperation[operator: MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+	1. *Let* `t0` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Nothing`.
+	3. *Let* `t1` be the class identified by `SemanticExpression__1`.
+	4. *If* `Subtype(t1, t0)` is `true`:
+		1. *Return:* `Maybe(t1)`.
+	5. *Else:*
+		1. *Throw:* a new TypeErrorNotNarrow.
+;
+
+Type! TypeOf(SemanticExpressionOperation[operator: RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) :=
+	1. *Let* `t0` be *Unwrap:* `TypeOf(SemanticExpression__0)`.
+	2. *If* *UnwrapAffirm:* `IsBottomType(t0)` is `true`:
+		1. *Return:* `Nothing`.
+	3. *Let* `t1` be the class identified by `SemanticExpression__1`.
+	4. *If* `Subtype(t1, t0)` is `true`:
+		// TODO: return a new result type
+	5. *Else:*
+		1. *Throw:* a new TypeErrorNotNarrow.
 ;
 
 Type! TypeOf(SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB] expr) :=
