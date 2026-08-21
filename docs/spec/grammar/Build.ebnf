@@ -163,7 +163,7 @@ Build(SemanticExpressionBlock blex) := [
 
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $base `Build(access.0)`)
-	(DECL ‹type› $result)
+	(DECL <Maybe> $result)
 	(GOTO.IF (INSTANCEOF "None" (GET $base)) "then" "else")
 	"then":
 	(SET $result (MAYBE.NEW))
