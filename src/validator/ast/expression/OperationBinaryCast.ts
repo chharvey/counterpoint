@@ -122,7 +122,7 @@ export class OperationBinaryCast extends OperationBinary {
 					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);
 				}
 				case IntrinsicName.BOOLEAN: {
-					const left = new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.FALSE), TYPE.BOOL);
+					const left: OP.ValueTac = new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.FALSE), TYPE.BOOL).asTac(builder);
 					return OP.conditional_expression(
 						builder,
 						TYPE.BOOL,

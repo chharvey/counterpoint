@@ -420,16 +420,17 @@ test.suite('Operation', () => {
 						42 is Boolean;
 					}`, {codegen: false}).builder.print(), xjs.String.dedent`
 						"block-0":
-							(DECL <bool> $0)
-							(GOTO.IF (ID (INT.CONST 42) (BOOL.CONST false)) "block-1" "block-2")
+							(DECL <bool> $0 (ID (INT.CONST 42) (BOOL.CONST false)))
+							(DECL <bool> $1)
+							(GOTO.IF (GET $0) "block-1" "block-2")
 						"block-1":
-							(SET $0 (ID (INT.CONST 42) (BOOL.CONST false)))
+							(SET $1 (GET $0))
 							(GOTO "block-3")
 						"block-2":
-							(SET $0 (ID (INT.CONST 42) (BOOL.CONST true)))
+							(SET $1 (ID (INT.CONST 42) (BOOL.CONST true)))
 							(GOTO "block-3")
 						"block-3":
-							(DROP (GET $0))
+							(DROP (GET $1))
 							(ENDPROGRAM)
 					`.trim());
 				});
@@ -503,16 +504,17 @@ test.suite('Operation', () => {
 							(DECL <null> n (NULL.CONST null))
 							(DECL <int> i (INT.CONST 42))
 							(DECL <Maybe> $0)
-							(DECL <bool> $1)
-							(GOTO.IF (ID (GET n) (BOOL.CONST false)) "block-4" "block-5")
+							(DECL <bool> $1 (ID (GET n) (BOOL.CONST false)))
+							(DECL <bool> $2)
+							(GOTO.IF (GET $1) "block-4" "block-5")
 						"block-4":
-							(SET $1 (ID (GET n) (BOOL.CONST false)))
+							(SET $2 (GET $1))
 							(GOTO "block-6")
 						"block-5":
-							(SET $1 (ID (GET n) (BOOL.CONST true)))
+							(SET $2 (ID (GET n) (BOOL.CONST true)))
 							(GOTO "block-6")
 						"block-6":
-							(GOTO.IF (GET $1) "block-1" "block-2")
+							(GOTO.IF (GET $2) "block-1" "block-2")
 						"block-1":
 							(SET $0 ${ op_maybe_string('(CAST Boolean (GET n))') })
 							(GOTO "block-3")
@@ -521,25 +523,26 @@ test.suite('Operation', () => {
 							(GOTO "block-3")
 						"block-3":
 							(DROP (GET $0))
-							(DECL <Maybe> $2)
-							(DECL <bool> $3)
-							(GOTO.IF (ID (GET i) (BOOL.CONST false)) "block-10" "block-11")
+							(DECL <Maybe> $3)
+							(DECL <bool> $4 (ID (GET i) (BOOL.CONST false)))
+							(DECL <bool> $5)
+							(GOTO.IF (GET $4) "block-10" "block-11")
 						"block-10":
-							(SET $3 (ID (GET i) (BOOL.CONST false)))
+							(SET $5 (GET $4))
 							(GOTO "block-12")
 						"block-11":
-							(SET $3 (ID (GET i) (BOOL.CONST true)))
+							(SET $5 (ID (GET i) (BOOL.CONST true)))
 							(GOTO "block-12")
 						"block-12":
-							(GOTO.IF (GET $3) "block-7" "block-8")
+							(GOTO.IF (GET $5) "block-7" "block-8")
 						"block-7":
-							(SET $2 ${ op_maybe_string('(CAST Boolean (GET i))') })
+							(SET $3 ${ op_maybe_string('(CAST Boolean (GET i))') })
 							(GOTO "block-9")
 						"block-8":
-							(SET $2 ${ op_maybe_string() })
+							(SET $3 ${ op_maybe_string() })
 							(GOTO "block-9")
 						"block-9":
-							(DROP (GET $2))
+							(DROP (GET $3))
 							(ENDPROGRAM)
 					`.trim());
 				});
