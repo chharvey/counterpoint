@@ -44,9 +44,6 @@ export enum OpCode {
 	FLOAT_FROM,
 	STR_FROM,
 
-	INSTANCEOF,
-	CAST,
-
 	NOT,
 	EMP,
 	NEG,
@@ -57,6 +54,9 @@ export enum OpCode {
 	MAP_COUNT,
 
 	MAYBE_UNWRAP,
+
+	INSTANCEOF,
+	CAST,
 
 	INT_ADD,
 	INT_SUB,

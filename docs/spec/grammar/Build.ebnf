@@ -48,12 +48,13 @@ DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
 
-MAYBE.UNWRAP([Value]) -> Value;
-
 CALL([Value*]) -> Value;
 
-INSTANCEOF(native-enum [Value]) -> Boolean;
-CAST      (native-enum [Value]) -> Value;
+BOOL.FROM([Value])   -> Boolean;
+INT.FROM([Number])   -> Integer;
+NAT.FROM([Number])   -> Natural;
+FLOAT.FROM([Number]) -> Float;
+STR.FROM([Value])    -> String;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
@@ -62,16 +63,15 @@ NEG([Natural]) -> Natural;
 NEG([Float])   -> Float;
 NEG([Number])  -> Number;
 
-BOOL.FROM([Value])   -> Boolean;
-INT.FROM([Number])   -> Integer;
-NAT.FROM([Number])   -> Natural;
-FLOAT.FROM([Number]) -> Float;
-STR.FROM([Value])    -> String;
-
 LIST.COUNT([Value]) -> Natural;
 DICT.COUNT([Value]) -> Natural;
 SET.COUNT([Value])  -> Natural;
 MAP.COUNT([Value])  -> Natural;
+
+MAYBE.UNWRAP([Value]) -> Value;
+
+INSTANCEOF(native-enum [Value]) -> Boolean;
+CAST      (native-enum [Value]) -> Value;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;

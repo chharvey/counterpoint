@@ -221,6 +221,178 @@ test.suite('Opcode', () => {
 
 			test.test.todo('Call', () => undefined);
 
+			test.suite('Unop', () => {
+				const operands: readonly string[] = extract_lines`
+					null
+					false
+					true
+					0
+					42
+					0.0
+					-0.0
+					4.2e+1
+					+0
+					+42
+					""
+					"hello"
+					()
+					(42,)
+					(a= 42)
+					[]
+					[42]
+					[a= 42]
+					{}
+					{42}
+					{41 -> 42}
+				`;
+				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
+					return interpret_extracted_drops(`{
+						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
+					}`);
+				}
+				function interpret_calls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
+					return interpret_extracted_drops(`{
+						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
+					}`);
+				}
+				test.test('[operator=BOOL_FROM]', () => {
+					assert_equal_values(interpret_calls('Boolean', operands), [
+						...repeat(VALUE.FALSE, 2),
+						...repeat(VALUE.TRUE, 19),
+					]);
+				});
+				test.test('[operator=INT_FROM]', () => {
+					assert_equal_values(interpret_calls('Integer', operands.slice(3, 10)), [
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+					]);
+				});
+				test.test('[operator=NAT_FROM]', () => {
+					assert_equal_values(interpret_calls('Natural', operands.slice(3, 10)), [
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+					]);
+				});
+				test.test('[operator=FLOAT_FROM]', () => {
+					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
+						VALUE_FLOAT_0,
+						new VALUE.Float(42.0),
+						VALUE_FLOAT_0,
+						VALUE_FLOAT_N0,
+						new VALUE.Float(4.2e+1),
+						VALUE_FLOAT_0,
+						new VALUE.Float(42.0),
+					]);
+				});
+				test.test('[operator=NOT]', () => {
+					assert_equal_values(interpret_unops('!'), [
+						...repeat(VALUE.TRUE, 2),
+						...repeat(VALUE.FALSE, 19),
+					]);
+				});
+				test.test('[operator=EMP]', () => {
+					assert_equal_values(interpret_unops('?'), [
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+						VALUE.TRUE,
+						VALUE.FALSE,
+						VALUE.FALSE,
+					]);
+				});
+				test.test('[operator=NEG]', () => {
+					assert_equal_values(interpret_unops('-', operands.slice(3, 8)), [
+						VALUE.INT_0,
+						new VALUE.Integer(-42n),
+						VALUE_FLOAT_N0,
+						VALUE_FLOAT_0,
+						new VALUE.Float(-4.2e+1),
+					]);
+				});
+				test.test('[operator={LIST,DICT,SET,MAP}_COUNT]', () => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					const items: readonly OP.ValueTac[] = [
+						new OP.Const(VALUE.INT_1),
+						new OP.Const(new VALUE.Float(2.0)),
+						new OP.Const(new VALUE.String('three')),
+					];
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.LIST_COUNT,
+						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)).asTac(builder),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.DICT_COUNT,
+						new OP.DictNew(new Map([
+							[new VALUE.Symbol(0x100n, 'a'), items[0]],
+							[new VALUE.Symbol(0x101n, 'b'), items[1]],
+							[new VALUE.Symbol(0x102n, 'c'), items[2]],
+						]), new TYPE.Dict(TYPE.ANYTHING)).asTac(builder),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.SET_COUNT,
+						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)).asTac(builder),
+						TYPE.NAT,
+					)));
+					builder.pushInstruction(new OP.Drop(new OP.Unop(
+						OP.OpCode.MAP_COUNT,
+						new OP.MapNew(new Map([
+							[new OP.Const(new VALUE.Symbol(0x100n, 'a')), items[0]],
+							[new OP.Const(new VALUE.Symbol(0x101n, 'b')), items[1]],
+							[new OP.Const(new VALUE.Symbol(0x102n, 'c')), items[2]],
+						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)).asTac(builder),
+						TYPE.NAT,
+					)));
+					builder.instructions.forEach((instr) => instr.interpret(interp));
+					return assert_equal_values(interp.drops, repeat(new VALUE.Natural(3n), 4));
+				});
+				test.suite('[operator=MAYBE_UNWRAP]', () => {
+					test.test('throws when operand is a None.', () => {
+						const instrs: readonly OP.Instruction[] = setupScript(`{
+							val mut x?: str;
+							x~?;
+						}`, {codegen: false}).builder.instructions;
+						const interp = new Interpreter();
+						instrs[0].interpret(interp);
+						return assert.throws(() => instrs[1].interpret(interp), /Unwrapped a None value/);
+					});
+					test.test('returns the value when operand is a Some.', () => {
+						assert_equal_values(interpret_extracted_drops(`{
+							val mut y?: str;
+							set y = "hello";
+							y~?;
+						}`), [new VALUE.String('hello')]);
+					});
+				});
+			});
+
 			test.suite('Instance', () => {
 				const srcs: readonly string[] = extract_lines`
 					null
@@ -370,178 +542,6 @@ test.suite('Opcode', () => {
 							});
 						});
 					});
-				});
-			});
-
-			test.suite('Unop', () => {
-				const operands: readonly string[] = extract_lines`
-					null
-					false
-					true
-					0
-					42
-					0.0
-					-0.0
-					4.2e+1
-					+0
-					+42
-					""
-					"hello"
-					()
-					(42,)
-					(a= 42)
-					[]
-					[42]
-					[a= 42]
-					{}
-					{42}
-					{41 -> 42}
-				`;
-				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
-					return interpret_extracted_drops(`{
-						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
-					}`);
-				}
-				function interpret_calls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
-					return interpret_extracted_drops(`{
-						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
-					}`);
-				}
-				test.suite('[operator=MAYBE_UNWRAP]', () => {
-					test.test('throws when operand is a None.', () => {
-						const instrs: readonly OP.Instruction[] = setupScript(`{
-							val mut x?: str;
-							x~?;
-						}`, {codegen: false}).builder.instructions;
-						const interp = new Interpreter();
-						instrs[0].interpret(interp);
-						return assert.throws(() => instrs[1].interpret(interp), /Unwrapped a None value/);
-					});
-					test.test('returns the value when operand is a Some.', () => {
-						assert_equal_values(interpret_extracted_drops(`{
-							val mut y?: str;
-							set y = "hello";
-							y~?;
-						}`), [new VALUE.String('hello')]);
-					});
-				});
-				test.test('[operator=NOT]', () => {
-					assert_equal_values(interpret_unops('!'), [
-						...repeat(VALUE.TRUE, 2),
-						...repeat(VALUE.FALSE, 19),
-					]);
-				});
-				test.test('[operator=EMP]', () => {
-					assert_equal_values(interpret_unops('?'), [
-						VALUE.TRUE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.TRUE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.FALSE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.FALSE,
-						VALUE.TRUE,
-						VALUE.FALSE,
-						VALUE.FALSE,
-					]);
-				});
-				test.test('[operator=NEG]', () => {
-					assert_equal_values(interpret_unops('-', operands.slice(3, 8)), [
-						VALUE.INT_0,
-						new VALUE.Integer(-42n),
-						VALUE_FLOAT_N0,
-						VALUE_FLOAT_0,
-						new VALUE.Float(-4.2e+1),
-					]);
-				});
-				test.test('[operator=BOOL_FROM]', () => {
-					assert_equal_values(interpret_calls('Boolean', operands), [
-						...repeat(VALUE.FALSE, 2),
-						...repeat(VALUE.TRUE, 19),
-					]);
-				});
-				test.test('[operator=INT_FROM]', () => {
-					assert_equal_values(interpret_calls('Integer', operands.slice(3, 10)), [
-						VALUE.INT_0,
-						new VALUE.Integer(42n),
-						VALUE.INT_0,
-						VALUE.INT_0,
-						new VALUE.Integer(42n),
-						VALUE.INT_0,
-						new VALUE.Integer(42n),
-					]);
-				});
-				test.test('[operator=NAT_FROM]', () => {
-					assert_equal_values(interpret_calls('Natural', operands.slice(3, 10)), [
-						VALUE.NAT_0,
-						new VALUE.Natural(42n),
-						VALUE.NAT_0,
-						VALUE.NAT_0,
-						new VALUE.Natural(42n),
-						VALUE.NAT_0,
-						new VALUE.Natural(42n),
-					]);
-				});
-				test.test('[operator=FLOAT_FROM]', () => {
-					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
-						VALUE_FLOAT_0,
-						new VALUE.Float(42.0),
-						VALUE_FLOAT_0,
-						VALUE_FLOAT_N0,
-						new VALUE.Float(4.2e+1),
-						VALUE_FLOAT_0,
-						new VALUE.Float(42.0),
-					]);
-				});
-				test.test('[operator={LIST,DICT,SET,MAP}_COUNT]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					const items: readonly OP.ValueTac[] = [
-						new OP.Const(VALUE.INT_1),
-						new OP.Const(new VALUE.Float(2.0)),
-						new OP.Const(new VALUE.String('three')),
-					];
-					builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.LIST_COUNT,
-						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)).asTac(builder),
-						TYPE.NAT,
-					)));
-					builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.DICT_COUNT,
-						new OP.DictNew(new Map([
-							[new VALUE.Symbol(0x100n, 'a'), items[0]],
-							[new VALUE.Symbol(0x101n, 'b'), items[1]],
-							[new VALUE.Symbol(0x102n, 'c'), items[2]],
-						]), new TYPE.Dict(TYPE.ANYTHING)).asTac(builder),
-						TYPE.NAT,
-					)));
-					builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.SET_COUNT,
-						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)).asTac(builder),
-						TYPE.NAT,
-					)));
-					builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.MAP_COUNT,
-						new OP.MapNew(new Map([
-							[new OP.Const(new VALUE.Symbol(0x100n, 'a')), items[0]],
-							[new OP.Const(new VALUE.Symbol(0x101n, 'b')), items[1]],
-							[new OP.Const(new VALUE.Symbol(0x102n, 'c')), items[2]],
-						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)).asTac(builder),
-						TYPE.NAT,
-					)));
-					builder.instructions.forEach((instr) => instr.interpret(interp));
-					return assert_equal_values(interp.drops, repeat(new VALUE.Natural(3n), 4));
 				});
 			});
 
@@ -1494,42 +1494,6 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.test('Instance', () => {
-				const {builder, cg, wasm} = setupScript(`{
-					${ [
-						'Symbol',
-						'Integer',
-						'Natural',
-						'Float',
-						'String',
-						'Object',
-						'List',
-						'Dict',
-						'Set',
-						'Map',
-						'Maybe',
-						'None',
-						'Some',
-					].map((classname) => `null is ${ classname };`).join('\n') };
-				}`);
-				const operand: binaryen.ExpressionRef = genConst(cg);
-				return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
-					cg.vm.op.isInt(operand),
-					cg.vm.op.isInt(operand),
-					cg.vm.op.isNat(operand),
-					cg.vm.op.isFloat(operand),
-					cg.vm.op.isString(operand),
-					cg.vm.op.isObject(operand),
-					cg.vm.op.isList(operand),
-					cg.vm.op.isDict(operand),
-					cg.vm.op.isMap(operand),
-					cg.vm.op.isMap(operand),
-					cg.vm.op.isMaybe(operand),
-					cg.vm.op.isNone(operand),
-					cg.vm.op.isSome(operand),
-				].map((expr) => wasm.drop(expr)));
-			});
-
 			test.suite('Unop', () => {
 				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
@@ -1706,6 +1670,44 @@ test.suite('Opcode', () => {
 						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(0, cg.vm.reftype.Value))),
 						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
 					]);
+				});
+			});
+
+			test.suite('Instance', () => {
+				test.test('INSTANCEOF', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						${ [
+							'Symbol',
+							'Integer',
+							'Natural',
+							'Float',
+							'String',
+							'Object',
+							'List',
+							'Dict',
+							'Set',
+							'Map',
+							'Maybe',
+							'None',
+							'Some',
+						].map((classname) => `null is ${ classname };`).join('\n') };
+					}`);
+					const operand: binaryen.ExpressionRef = genConst(cg);
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						cg.vm.op.isInt(operand),
+						cg.vm.op.isInt(operand),
+						cg.vm.op.isNat(operand),
+						cg.vm.op.isFloat(operand),
+						cg.vm.op.isString(operand),
+						cg.vm.op.isObject(operand),
+						cg.vm.op.isList(operand),
+						cg.vm.op.isDict(operand),
+						cg.vm.op.isMap(operand),
+						cg.vm.op.isMap(operand),
+						cg.vm.op.isMaybe(operand),
+						cg.vm.op.isNone(operand),
+						cg.vm.op.isSome(operand),
+					].map((expr) => wasm.drop(expr)));
 				});
 			});
 

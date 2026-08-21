@@ -153,84 +153,7 @@ Value! Interpret((MAP.GET `obj` `accessor`)) :=
 		1. *Return:* `null`.
 ;
 
-Value! Interpret((MAYBE.UNWRAP `obj`)) :=
-	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
-	2. *Assert:* `obj` is instance of `Maybe`.
-	3. *If* `obj` does not have a value:
-		1. *Throw:* a new Error "Unwrapped a None value.".
-	4. *Else:*
-		1. *Return:* the value contained in `obj`.
-;
-
 // Value! Interpret((CALL `callable` `args`));
-
-Boolean! Interpret((INSTANCEOF `src` `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *If* any of the following conditions is `true`:
-		- `src` is "Symbol"  *and* `v` is an instance of `Symbol`
-		- `src` is "Integer" *and* `v` is an instance of `Integer`
-		- `src` is "Natural" *and* `v` is an instance of `Natural`
-		- `src` is "Float"   *and* `v` is an instance of `Float`
-		- `src` is "String"  *and* `v` is an instance of `String`
-		- `src` is "Object"  *and* `v` is an instance of `Object`
-		- `src` is "List"    *and* `v` is an instance of `List`
-		- `src` is "Dict"    *and* `v` is an instance of `Dict`
-		- `src` is "Set"     *and* `v` is an instance of `Set`
-		- `src` is "Map"     *and* `v` is an instance of `Map`
-		- `src` is "Maybe"   *and* `v` is an instance of `Maybe`
-		1. *Return:* `true`.
-	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
-		1. *If* `v` has a value:
-			1. *Return:* `false`.
-		2. *Else:*
-			1. *Return:* `true`.
-	4. *Else If* `src` is "Some" *and* `v` is an instance of `Maybe`:
-		1. *If* `v` has a value:
-			1. *Return:* `true`.
-		2. *Else:*
-			1. *Return:* `false`.
-	5. *Else*:
-		1. *Return:* `false`.
-;
-
-Value! Interpret((CAST `src` `v`)) :=
-	1. *Let* `is_instance` be the result of performing `Interpret((INSTANCEOF `src` `v`))`.
-	2. *If* `is_instance` is `true`:
-		1. *Return:* `v`.
-	3. *Else:*
-		1. *Throw:* a new Error "Invalid cast to `src`.".
-;
-
-Boolean! Interpret((NOT `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
-		1. *Return:* `false`.
-	3. *Return:* `true`.
-;
-
-Boolean! Interpret((EMP `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `false`:
-		1. *Return:* `true`.
-	3. *If* `v` is an instance of `Integer` *and* `v` is `0`:
-		1. *Return:* `true`.
-	4. *If* `v` is an instance of `Natural` *and* `v` is `+0`:
-		1. *Return:* `true`.
-	5. *If* `v` is an instance of `Float` *and* `v` is `0.0` or `-0.0`:
-		1. *Return:* `true`.
-	6. *If* `v` is an instance of `String` *and* `v` contains 0 codepoints:
-		1. *Return:* `true`.
-	7. *If* `v` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v.count` is 0:
-		1. *Return:* `true`.
-	8. *Return:* `false`.
-;
-
-Number! Interpret((NEG `v`)) :=
-	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
-	2. *Let* `negation` be the additive inverse, `-v`,
-		obtained by negating `v`.
-	3. *Return:* `negation`.
-;
 
 Boolean! Interpret((BOOL.FROM `v`)) :=
 	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
@@ -280,6 +203,37 @@ String! Interpret((STR.FROM `v`)) :=
 		3. *Return:* `encoding`.
 ;
 
+Boolean! Interpret((NOT `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `true`:
+		1. *Return:* `false`.
+	3. *Return:* `true`.
+;
+
+Boolean! Interpret((EMP `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* *UnwrapAffirm:* `ToBoolean(v)` is `false`:
+		1. *Return:* `true`.
+	3. *If* `v` is an instance of `Integer` *and* `v` is `0`:
+		1. *Return:* `true`.
+	4. *If* `v` is an instance of `Natural` *and* `v` is `+0`:
+		1. *Return:* `true`.
+	5. *If* `v` is an instance of `Float` *and* `v` is `0.0` or `-0.0`:
+		1. *Return:* `true`.
+	6. *If* `v` is an instance of `String` *and* `v` contains 0 codepoints:
+		1. *Return:* `true`.
+	7. *If* `v` is an instance of `Tuple` or `Record` or `List` or `Dict` or `Set` or `Map` *and* `v.count` is 0:
+		1. *Return:* `true`.
+	8. *Return:* `false`.
+;
+
+Number! Interpret((NEG `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *Let* `negation` be the additive inverse, `-v`,
+		obtained by negating `v`.
+	3. *Return:* `negation`.
+;
+
 Natural! Interpret((LIST.COUNT `obj`)) :=
 	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
 	2. *Assert:* `obj` is an instance of `List`.
@@ -302,6 +256,52 @@ Natural! Interpret((MAP.COUNT `obj`)) :=
 	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`;
 	2. *Assert:* `obj` is an instance of `Map`.
 	3. *Return:* `Natural(obj.count)`.
+;
+
+Value! Interpret((MAYBE.UNWRAP `obj`)) :=
+	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
+	2. *Assert:* `obj` is instance of `Maybe`.
+	3. *If* `obj` does not have a value:
+		1. *Throw:* a new Error "Unwrapped a None value.".
+	4. *Else:*
+		1. *Return:* the value contained in `obj`.
+;
+
+Boolean! Interpret((INSTANCEOF `src` `v`)) :=
+	1. *Set* `v` to *Unwrap:* `Interpret(v)`;
+	2. *If* any of the following conditions is `true`:
+		- `src` is "Symbol"  *and* `v` is an instance of `Symbol`
+		- `src` is "Integer" *and* `v` is an instance of `Integer`
+		- `src` is "Natural" *and* `v` is an instance of `Natural`
+		- `src` is "Float"   *and* `v` is an instance of `Float`
+		- `src` is "String"  *and* `v` is an instance of `String`
+		- `src` is "Object"  *and* `v` is an instance of `Object`
+		- `src` is "List"    *and* `v` is an instance of `List`
+		- `src` is "Dict"    *and* `v` is an instance of `Dict`
+		- `src` is "Set"     *and* `v` is an instance of `Set`
+		- `src` is "Map"     *and* `v` is an instance of `Map`
+		- `src` is "Maybe"   *and* `v` is an instance of `Maybe`
+		1. *Return:* `true`.
+	3. *Else If* `src` is "None" *and* `v` is an instance of `Maybe`:
+		1. *If* `v` has a value:
+			1. *Return:* `false`.
+		2. *Else:*
+			1. *Return:* `true`.
+	4. *Else If* `src` is "Some" *and* `v` is an instance of `Maybe`:
+		1. *If* `v` has a value:
+			1. *Return:* `true`.
+		2. *Else:*
+			1. *Return:* `false`.
+	5. *Else*:
+		1. *Return:* `false`.
+;
+
+Value! Interpret((CAST `src` `v`)) :=
+	1. *Let* `is_instance` be the result of performing `Interpret((INSTANCEOF `src` `v`))`.
+	2. *If* `is_instance` is `true`:
+		1. *Return:* `v`.
+	3. *Else:*
+		1. *Throw:* a new Error "Invalid cast to `src`.".
 ;
 
 Integer! Interpret((INT.ADD `v0` `v1`)) :=
