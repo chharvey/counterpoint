@@ -1,7 +1,7 @@
 import {
 	type Builder,
 	OP,
-	TypeErrorNotAssignable,
+	TypeErrorNotNarrow,
 } from '../../../index.ts';
 import {
 	assert_instanceof,
@@ -88,21 +88,21 @@ export class OperationBinaryCast extends OperationBinary {
 				if (t1.isSubtypeOf(t0)) {
 					return t1;
 				} else {
-					throw new TypeErrorNotAssignable(this.operand0, t1, this);
+					throw new TypeErrorNotNarrow(t1, t0, this.line_index, this.col_index);
 				}
 			}
 			case Operator.CAST_MAYBE: {
 				if (t1.isSubtypeOf(t0)) {
 					return new TYPE.Maybe(t1);
 				} else {
-					throw new TypeErrorNotAssignable(this.operand0, t1, this);
+					throw new TypeErrorNotNarrow(t1, t0, this.line_index, this.col_index);
 				}
 			}
 			case Operator.CAST_RESULT: {
 				if (t1.isSubtypeOf(t0)) {
 					throw new Error('`OperationBinaryCast[operator=RESULT]#type` not yet supported.');
 				} else {
-					throw new TypeErrorNotAssignable(this.operand0, t1, this);
+					throw new TypeErrorNotNarrow(t1, t0, this.line_index, this.col_index);
 				}
 			}
 		}

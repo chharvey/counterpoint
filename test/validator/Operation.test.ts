@@ -9,7 +9,7 @@ import {
 	VALUE,
 	TYPE,
 	TypeErrorInvalidOperation,
-	TypeErrorNotAssignable,
+	TypeErrorNotNarrow,
 } from '../../src/index.ts';
 import {INTRINSICS} from '../../src/validator/ast/utils-private.ts';
 import {
@@ -143,7 +143,7 @@ test.suite('Operation', () => {
 						n as Float;
 					}`, {typeCheck: false});
 					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
 				});
 			});
 
@@ -179,7 +179,7 @@ test.suite('Operation', () => {
 						n as? Float;
 					}`, {typeCheck: false});
 					stmts[0].typeCheck();
-					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => stmts[1].typeCheck(), TypeErrorNotNarrow);
 				});
 			});
 
