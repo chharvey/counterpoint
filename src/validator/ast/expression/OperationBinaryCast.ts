@@ -114,9 +114,9 @@ export class OperationBinaryCast extends OperationBinary {
 
 	@memoizeMethod
 	public override build(builder: Builder): OP.Value {
-		if (this.operator === Operator.IS) {
-			const op0: OP.ValueTac = this.operand0.build(builder).asTac(builder);
-			const op1_source = this.operand1.source as IntrinsicName;
+		const op0: OP.ValueTac = this.operand0.build(builder).asTac(builder);
+		const op1_source = this.operand1.source as IntrinsicName;
+		function isInstance(): OP.Value {
 			switch (op1_source) {
 				case IntrinsicName.NULL: {
 					return new OP.Binop(OP.OpCode.ID, op0, new OP.Const(VALUE.NULL), TYPE.BOOL);
@@ -134,6 +134,26 @@ export class OperationBinaryCast extends OperationBinary {
 			}
 			return new OP.Instance(OP.OpCode.INSTANCEOF, op1_source, op0);
 		}
-		throw new Error('`OperationBinaryCast#build` not yet supported.');
+		switch (this.operator) {
+			case Operator.IS: {
+				return isInstance();
+			}
+			case Operator.CAST: {
+				return new OP.Instance(OP.OpCode.CAST, op1_source, op0);
+			}
+			case Operator.CAST_MAYBE: {
+				const this_type = this.type() as TYPE.Maybe;
+				return OP.conditional_expression(
+					builder,
+					this_type,
+					isInstance,
+					() => new OP.MaybeNew(this_type.typearg, new OP.Instance(OP.OpCode.CAST, op1_source, op0)),
+					() => new OP.MaybeNew(this_type.typearg),
+				);
+			}
+			case Operator.CAST_RESULT: {
+				throw new Error('`OperationBinaryCast[operator=RESULT]#build` not yet supported.');
+			}
+		}
 	}
 }

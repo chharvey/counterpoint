@@ -17,6 +17,7 @@ import {
 	repeat,
 	assert_shallowStrictEqual,
 	assertEqualTypes,
+	op_maybe_string,
 	typeUnit,
 	setupScript,
 } from '../utils.ts';
@@ -445,9 +446,132 @@ test.suite('Operation', () => {
 				});
 			});
 
-			test.suite.todo('[operator=CAST]');
+			test.test('[operator=CAST]', () => {
+				assert.strictEqual(setupScript(`{
+					val n: anything = null;
+					${ INTRINSICS.map((t) => `n as ${ t };`).join('\n') }
+				}`, {codegen: false}).builder.print(), xjs.String.dedent`
+					"block-0":
+						(DECL <null> n (NULL.CONST null))
+						${ INTRINSICS.map((t) => `(DROP (CAST ${ t } (GET n)))`).join('\n\t') }
+						(ENDPROGRAM)
+				`.trim());
+			});
 
-			test.suite.todo('[operator=MAYBE]');
+			test.suite('[operator=MAYBE]', () => {
+				test.test('"Null"', () => {
+					assert.strictEqual(setupScript(`{
+						val n: anything = null;
+						val i: anything = 42;
+						n as? Null;
+						i as? Null;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							(DECL <int> i (INT.CONST 42))
+							(DECL <Maybe> $0)
+							(GOTO.IF (ID (GET n) (NULL.CONST null)) "block-1" "block-2")
+						"block-1":
+							(SET $0 ${ op_maybe_string('(CAST Null (GET n))') })
+							(GOTO "block-3")
+						"block-2":
+							(SET $0 ${ op_maybe_string() })
+							(GOTO "block-3")
+						"block-3":
+							(DROP (GET $0))
+							(DECL <Maybe> $1)
+							(GOTO.IF (ID (GET i) (NULL.CONST null)) "block-4" "block-5")
+						"block-4":
+							(SET $1 ${ op_maybe_string('(CAST Null (GET i))') })
+							(GOTO "block-6")
+						"block-5":
+							(SET $1 ${ op_maybe_string() })
+							(GOTO "block-6")
+						"block-6":
+							(DROP (GET $1))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('"Boolean"', () => {
+					assert.strictEqual(setupScript(`{
+						val n: anything = null;
+						val i: anything = 42;
+						n as? Boolean;
+						i as? Boolean;
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							(DECL <int> i (INT.CONST 42))
+							(DECL <Maybe> $0)
+							(DECL <bool> $1)
+							(GOTO.IF (ID (GET n) (BOOL.CONST false)) "block-4" "block-5")
+						"block-4":
+							(SET $1 (ID (GET n) (BOOL.CONST false)))
+							(GOTO "block-6")
+						"block-5":
+							(SET $1 (ID (GET n) (BOOL.CONST true)))
+							(GOTO "block-6")
+						"block-6":
+							(GOTO.IF (GET $1) "block-1" "block-2")
+						"block-1":
+							(SET $0 ${ op_maybe_string('(CAST Boolean (GET n))') })
+							(GOTO "block-3")
+						"block-2":
+							(SET $0 ${ op_maybe_string() })
+							(GOTO "block-3")
+						"block-3":
+							(DROP (GET $0))
+							(DECL <Maybe> $2)
+							(DECL <bool> $3)
+							(GOTO.IF (ID (GET i) (BOOL.CONST false)) "block-10" "block-11")
+						"block-10":
+							(SET $3 (ID (GET i) (BOOL.CONST false)))
+							(GOTO "block-12")
+						"block-11":
+							(SET $3 (ID (GET i) (BOOL.CONST true)))
+							(GOTO "block-12")
+						"block-12":
+							(GOTO.IF (GET $3) "block-7" "block-8")
+						"block-7":
+							(SET $2 ${ op_maybe_string('(CAST Boolean (GET i))') })
+							(GOTO "block-9")
+						"block-8":
+							(SET $2 ${ op_maybe_string() })
+							(GOTO "block-9")
+						"block-9":
+							(DROP (GET $2))
+							(ENDPROGRAM)
+					`.trim());
+				});
+				test.test('not "Null" nor "Boolean".', () => {
+					assert.strictEqual(setupScript(`{
+						val n: anything = null;
+						${ INTRINSICS.slice(2).map((t) => `n as? ${ t };`).join('\n') }
+					}`, {codegen: false}).builder.print(), xjs.String.dedent`
+						"block-0":
+							(DECL <null> n (NULL.CONST null))
+							${ INTRINSICS.slice(2).map((t, i) => {
+								const block_then:  string = `block-${ 3 * i + 1 }`;
+								const block_else:  string = `block-${ 3 * i + 2 }`;
+								const block_endif: string = `block-${ 3 * i + 3 }`;
+								const result_name: string = `$${ i }`;
+								return xjs.String.dedent`
+									${ '\t' }(DECL <Maybe> ${ result_name })
+									${ '\t' }(GOTO.IF (INSTANCEOF ${ t } (GET n)) "${ block_then }" "${ block_else }")
+									"${ block_then }":
+										(SET ${ result_name } ${ op_maybe_string(`(CAST ${ t } (GET n))`) })
+										(GOTO "${ block_endif }")
+									"${ block_else }":
+										(SET ${ result_name } ${ op_maybe_string() })
+										(GOTO "${ block_endif }")
+									"${ block_endif }":
+										(DROP (GET ${ result_name }))
+								`.trim();
+							}).join('\n\t').trimStart() }
+							(ENDPROGRAM)
+					`.trim());
+				});
+			});
 
 			test.suite.todo('[operator=RESULT]');
 		});

@@ -53,6 +53,7 @@ MAYBE.UNWRAP([Value]) -> Value;
 CALL([Value*]) -> Value;
 
 INSTANCEOF(native-enum [Value]) -> Boolean;
+CAST      (native-enum [Value]) -> Value;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
@@ -239,13 +240,33 @@ Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 Semanti
 	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
 
 Build(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:=TODO:;
+	:= (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
 
-Build(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:=TODO:;
+Build(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
+	(DECL <Maybe> $result)
+	(GOTO.IF `Build(SemanticExpressionOperation[operator=IS])` "then" "else")
+	"then":
+	(SET $result (MAYBE.NEW (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`)))
+	(GOTO "endif")
+	"else":
+	(SET $result (MAYBE.NEW))
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
 
-Build(SemanticExpressionOperation[operator=RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:=TODO:;
+Build(SemanticExpressionOperation[operator=RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
+	(DECL <Result> $result)
+	(GOTO.IF `Build(SemanticExpressionOperation[operator=IS])` "then" "else")
+	"then":
+	(SET $result (RESULT.OK.NEW (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`)))
+	(GOTO "endif")
+	"else":
+	TODO: (SET $result (RESULT.FAIL.NEW exception))
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
 
 Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`Build(op.0)` `Build(op.1)`]);

@@ -45,6 +45,7 @@ export enum OpCode {
 	STR_FROM,
 
 	INSTANCEOF,
+	CAST,
 
 	NOT,
 	EMP,
