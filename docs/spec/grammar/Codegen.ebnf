@@ -230,6 +230,22 @@ Codegen((INSTANCEOF "Maybe"   `v`)) := (call $op:is-maybe  `Codegen(v)`);
 Codegen((INSTANCEOF "None"    `v`)) := (call $op:is-none   `Codegen(v)`);
 Codegen((INSTANCEOF "Some"    `v`)) := (call $op:is-some   `Codegen(v)`);
 
+Codegen((CAST "Null"    `v`)) := (call $op:as-null   `Codegen(v)`);
+Codegen((CAST "Boolean" `v`)) := (call $op:as-bool   `Codegen(v)`);
+Codegen((CAST "Symbol"  `v`)) := (call $op:as-int    `Codegen(v)`);
+Codegen((CAST "Integer" `v`)) := (call $op:as-int    `Codegen(v)`);
+Codegen((CAST "Natural" `v`)) := (call $op:as-nat    `Codegen(v)`);
+Codegen((CAST "Float"   `v`)) := (call $op:as-float  `Codegen(v)`);
+Codegen((CAST "String"  `v`)) := (call $op:as-string `Codegen(v)`);
+Codegen((CAST "Object"  `v`)) := (call $op:as-object `Codegen(v)`);
+Codegen((CAST "List"    `v`)) := (call $op:as-list   `Codegen(v)`);
+Codegen((CAST "Dict"    `v`)) := (call $op:as-dict   `Codegen(v)`);
+Codegen((CAST "Set"     `v`)) := (call $op:as-map    `Codegen(v)`);
+Codegen((CAST "Map"     `v`)) := (call $op:as-map    `Codegen(v)`);
+Codegen((CAST "Maybe"   `v`)) := (call $op:as-maybe  `Codegen(v)`);
+Codegen((CAST "None"    `v`)) := (call $op:as-none   `Codegen(v)`);
+Codegen((CAST "Some"    `v`)) := (call $op:as-some   `Codegen(v)`);
+
 Codegen((INT.ADD `v0` `v1`)) := (call $op:int-add `Codegen(v0)` `Codegen(v1)`);
 Codegen((INT.SUB `v0` `v1`)) := (call $op:int-sub `Codegen(v0)` `Codegen(v1)`);
 Codegen((INT.MUL `v0` `v1`)) := (call $op:int-mul `Codegen(v0)` `Codegen(v1)`);

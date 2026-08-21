@@ -12,6 +12,7 @@ import {
 	OP,
 	CodeGenerator,
 } from '../../src/index.ts';
+import {INTRINSICS} from '../../src/validator/ast/utils-private.ts';
 import {
 	extract_lines,
 	repeat,
@@ -1677,19 +1678,19 @@ test.suite('Opcode', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
 						${ [
-							'Symbol',
-							'Integer',
-							'Natural',
-							'Float',
-							'String',
-							'Object',
-							'List',
-							'Dict',
-							'Set',
-							'Map',
-							'Maybe',
-							'None',
-							'Some',
+							AST.IntrinsicName.SYMBOL,
+							AST.IntrinsicName.INTEGER,
+							AST.IntrinsicName.NATURAL,
+							AST.IntrinsicName.FLOAT,
+							AST.IntrinsicName.STRING,
+							AST.IntrinsicName.OBJECT,
+							AST.IntrinsicName.LIST,
+							AST.IntrinsicName.DICT,
+							AST.IntrinsicName.SET,
+							AST.IntrinsicName.MAP,
+							AST.IntrinsicName.MAYBE,
+							AST.IntrinsicName.NONE,
+							AST.IntrinsicName.SOME,
 						].map((classname) => `null is ${ classname };`).join('\n') };
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
@@ -1707,6 +1708,29 @@ test.suite('Opcode', () => {
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
+					].map((expr) => wasm.drop(expr)));
+				});
+				test.test('CAST', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						${ INTRINSICS.map((classname) => `null as <anything> as ${ classname };`).join('\n') };
+					}`);
+					const operand: binaryen.ExpressionRef = genConst(cg);
+					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
+						cg.vm.op.asNull(operand),
+						cg.vm.op.asBool(operand),
+						cg.vm.op.asInt(operand),
+						cg.vm.op.asInt(operand),
+						cg.vm.op.asNat(operand),
+						cg.vm.op.asFloat(operand),
+						cg.vm.op.asString(operand),
+						cg.vm.op.asObject(operand),
+						cg.vm.op.asList(operand),
+						cg.vm.op.asDict(operand),
+						cg.vm.op.asMap(operand),
+						cg.vm.op.asMap(operand),
+						cg.vm.op.asMaybe(operand),
+						cg.vm.op.asNone(operand),
+						cg.vm.op.asSome(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 			});

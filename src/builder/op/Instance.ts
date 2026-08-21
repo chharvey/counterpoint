@@ -122,7 +122,23 @@ export class Instance extends Value {
 				break;
 			}
 			case OpCode.CAST: {
-				throw new Error('`Instance[operator=CAST]#codegen` not yet supported.');
+				switch (this.name) {
+					case AST.IntrinsicName.NULL:    { return cg.vm.op.asNull(code); }
+					case AST.IntrinsicName.BOOLEAN: { return cg.vm.op.asBool(code); }
+					case AST.IntrinsicName.SYMBOL:  { return cg.vm.op.asInt(code); }
+					case AST.IntrinsicName.INTEGER: { return cg.vm.op.asInt(code); }
+					case AST.IntrinsicName.NATURAL: { return cg.vm.op.asNat(code); }
+					case AST.IntrinsicName.FLOAT:   { return cg.vm.op.asFloat(code); }
+					case AST.IntrinsicName.STRING:  { return cg.vm.op.asString(code); }
+					case AST.IntrinsicName.OBJECT:  { return cg.vm.op.asObject(code); }
+					case AST.IntrinsicName.LIST:    { return cg.vm.op.asList(code); }
+					case AST.IntrinsicName.DICT:    { return cg.vm.op.asDict(code); }
+					case AST.IntrinsicName.SET:     { return cg.vm.op.asMap(code); }
+					case AST.IntrinsicName.MAP:     { return cg.vm.op.asMap(code); }
+					case AST.IntrinsicName.MAYBE:   { return cg.vm.op.asMaybe(code); }
+					case AST.IntrinsicName.NONE:    { return cg.vm.op.asNone(code); }
+					case AST.IntrinsicName.SOME:    { return cg.vm.op.asSome(code); }
+				}
 			}
 		}
 	}

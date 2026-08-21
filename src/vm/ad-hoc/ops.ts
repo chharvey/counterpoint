@@ -33,6 +33,19 @@ export function ops(vm: VirtualMachine) {
 					['op::isMaybe',     {name: 'op:is-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::isNone',      {name: 'op:is-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::isSome',      {name: 'op:is-some',      param: reftype.Value,  result: reftype.Value}],
+					['op::asNull',      {name: 'op:as-null',      param: reftype.Value,  result: reftype.Value}],
+					['op::asBool',      {name: 'op:as-bool',      param: reftype.Value,  result: reftype.Value}],
+					['op::asInt',       {name: 'op:as-int',       param: reftype.Value,  result: reftype.Value}],
+					['op::asNat',       {name: 'op:as-nat',       param: reftype.Value,  result: reftype.Value}],
+					['op::asFloat',     {name: 'op:as-float',     param: reftype.Value,  result: reftype.Value}],
+					['op::asString',    {name: 'op:as-string',    param: reftype.Value,  result: reftype.Value}],
+					['op::asObject',    {name: 'op:as-object',    param: reftype.Value,  result: reftype.Value}],
+					['op::asList',      {name: 'op:as-list',      param: reftype.Value,  result: reftype.Value}],
+					['op::asDict',      {name: 'op:as-dict',      param: reftype.Value,  result: reftype.Value}],
+					['op::asMap',       {name: 'op:as-map',       param: reftype.Value,  result: reftype.Value}],
+					['op::asMaybe',     {name: 'op:as-maybe',     param: reftype.Value,  result: reftype.Value}],
+					['op::asNone',      {name: 'op:as-none',      param: reftype.Value,  result: reftype.Value}],
+					['op::asSome',      {name: 'op:as-some',      param: reftype.Value,  result: reftype.Value}],
 					['op::intAdd',      {name: 'op:int-add',      param: binary_params,  result: reftype.Value}],
 					['op::natAdd',      {name: 'op:nat-add',      param: binary_params,  result: reftype.Value}],
 					['op::floatAdd',    {name: 'op:float-add',    param: binary_params,  result: reftype.Value}],
@@ -148,6 +161,71 @@ export function ops(vm: VirtualMachine) {
 		/** Is the value a composite `Maybe` type with a non-null value? */
 		isSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-some', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `null`. */
+		asNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-null', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `bool`. */
+		asBool: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-bool', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `int`. */
+		asInt: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-int', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `nat`. */
+		asNat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-nat', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `float`. */
+		asFloat: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-float', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `String`. */
+		asString: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-string', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Object`. */
+		asObject: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-object', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `List`. */
+		asList: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-list', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Dict`. */
+		asDict: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-dict', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Map`. */
+		asMap: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-map', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Maybe`. */
+		asMaybe: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-maybe', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `None`. */
+		asNone: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-none', [param0], vm.reftype.Value)
+		),
+
+		/** Cast the value to type `Some`. */
+		asSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-some', [param0], vm.reftype.Value)
 		),
 
 		/** Adds two `int`s. */
