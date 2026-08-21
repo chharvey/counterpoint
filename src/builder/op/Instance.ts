@@ -67,27 +67,34 @@ export class Instance extends Value {
 
 	public override interpret(interp: Interpreter): VALUE.Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
+		let is_instance: boolean;
+		switch (this.name) {
+			case AST.IntrinsicName.NULL:    { is_instance = operand instanceof VALUE.Null;                     break; }
+			case AST.IntrinsicName.BOOLEAN: { is_instance = operand instanceof VALUE.Boolean;                  break; }
+			case AST.IntrinsicName.SYMBOL:  { is_instance = operand instanceof VALUE.Symbol;                   break; }
+			case AST.IntrinsicName.INTEGER: { is_instance = operand instanceof VALUE.Integer;                  break; }
+			case AST.IntrinsicName.NATURAL: { is_instance = operand instanceof VALUE.Natural;                  break; }
+			case AST.IntrinsicName.FLOAT:   { is_instance = operand instanceof VALUE.Float;                    break; }
+			case AST.IntrinsicName.STRING:  { is_instance = operand instanceof VALUE.String;                   break; }
+			case AST.IntrinsicName.OBJECT:  { is_instance = operand.isReference;                               break; }
+			case AST.IntrinsicName.LIST:    { is_instance = operand instanceof VALUE.List;                     break; }
+			case AST.IntrinsicName.DICT:    { is_instance = operand instanceof VALUE.Dict;                     break; }
+			case AST.IntrinsicName.SET:     { is_instance = operand instanceof VALUE.Set;                      break; }
+			case AST.IntrinsicName.MAP:     { is_instance = operand instanceof VALUE.Map;                      break; }
+			case AST.IntrinsicName.MAYBE:   { is_instance = operand instanceof VALUE.Maybe;                    break; }
+			case AST.IntrinsicName.NONE:    { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
+			case AST.IntrinsicName.SOME:    { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
+		}
 		switch (this.operator) {
 			case OpCode.INSTANCEOF: {
-				switch (this.name as InstanceOfName) {
-					case AST.IntrinsicName.SYMBOL:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Symbol); }
-					case AST.IntrinsicName.INTEGER: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Integer); }
-					case AST.IntrinsicName.NATURAL: { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Natural); }
-					case AST.IntrinsicName.FLOAT:   { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Float); }
-					case AST.IntrinsicName.STRING:  { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.String); }
-					case AST.IntrinsicName.OBJECT:  { return VALUE.Boolean.fromBoolean(operand.isReference); }
-					case AST.IntrinsicName.LIST:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.List); }
-					case AST.IntrinsicName.DICT:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Dict); }
-					case AST.IntrinsicName.SET:     { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Set); }
-					case AST.IntrinsicName.MAP:     { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Map); }
-					case AST.IntrinsicName.MAYBE:   { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe); }
-					case AST.IntrinsicName.NONE:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && operand.isNone); }
-					case AST.IntrinsicName.SOME:    { return VALUE.Boolean.fromBoolean(operand instanceof VALUE.Maybe && !operand.isNone); }
-				}
-				break;
+				return VALUE.Boolean.fromBoolean(is_instance);
 			}
 			case OpCode.CAST: {
-				throw new Error('`Instance[operator=CAST]#interpret` not yet supported.');
+				if (is_instance) {
+					return operand;
+				} else {
+					throw new Error(`Invalid cast to ${ this.name }.`);
+				}
 			}
 		}
 	}

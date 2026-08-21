@@ -245,86 +245,129 @@ test.suite('Opcode', () => {
 					{42}
 					{41 -> 42}
 				`;
-				test.suite('primitives & countables.', () => {
-					let expecteds: readonly VALUE.Value[];
-					test.before(() => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder))));
-						builder.instructions.forEach((instr) => instr.interpret(interp));
-						expecteds = interp.drops;
+				let expecteds: readonly VALUE.Value[];
+				test.before(() => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					srcs.forEach((src) => builder.pushInstruction(new OP.Drop(AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder))));
+					builder.instructions.forEach((instr) => instr.interpret(interp));
+					expecteds = interp.drops;
+				});
+				test.suite('INSTANCEOF', () => {
+					test.suite('non-Maybes.', () => {
+						([
+							AST.IntrinsicName.SYMBOL,
+							AST.IntrinsicName.INTEGER,
+							AST.IntrinsicName.NATURAL,
+							AST.IntrinsicName.FLOAT,
+							AST.IntrinsicName.STRING,
+							AST.IntrinsicName.LIST,
+							AST.IntrinsicName.DICT,
+							AST.IntrinsicName.SET,
+							AST.IntrinsicName.MAP,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								const builder = new Builder();
+								const interp  = new Interpreter();
+								srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+									OP.OpCode.INSTANCEOF,
+									name,
+									AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+								))));
+								builder.instructions.forEach((instr) => instr.interpret(interp));
+								return assert_equal_values(interp.drops, expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof [
+									VALUE.Symbol,
+									VALUE.Integer,
+									VALUE.Natural,
+									VALUE.Float,
+									VALUE.String,
+									VALUE.List,
+									VALUE.Dict,
+									VALUE.Set,
+									VALUE.Map,
+								][i])));
+							});
+						});
+						test.test('"Object"', () => {
+							const builder = new Builder();
+							const interp  = new Interpreter();
+							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+								OP.OpCode.INSTANCEOF,
+								AST.IntrinsicName.OBJECT,
+								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+							))));
+							builder.instructions.forEach((instr) => instr.interpret(interp));
+							return assert_equal_values(interp.drops, expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand.isReference)));
+						});
 					});
+					test.suite('Maybes.', () => {
+						([
+							AST.IntrinsicName.MAYBE,
+							AST.IntrinsicName.NONE,
+							AST.IntrinsicName.SOME,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								const builder = new Builder();
+								const interp  = new Interpreter();
+								[
+									new OP.MaybeNew(TYPE.STR),
+									new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
+									new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
+								].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+									OP.OpCode.INSTANCEOF,
+									name,
+									irval.asTac(builder),
+								))));
+								builder.instructions.forEach((instr) => instr.interpret(interp));
+								return assert_equal_values(interp.drops, [
+									repeat(VALUE.TRUE, 3),
+									[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
+									[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
+								][i]);
+							});
+						});
+					});
+				});
+				test.suite('CAST', () => {
 					([
+						AST.IntrinsicName.NULL,
+						AST.IntrinsicName.BOOLEAN,
 						AST.IntrinsicName.SYMBOL,
 						AST.IntrinsicName.INTEGER,
 						AST.IntrinsicName.NATURAL,
 						AST.IntrinsicName.FLOAT,
 						AST.IntrinsicName.STRING,
+						AST.IntrinsicName.OBJECT,
 						AST.IntrinsicName.LIST,
 						AST.IntrinsicName.DICT,
 						AST.IntrinsicName.SET,
 						AST.IntrinsicName.MAP,
 						AST.IntrinsicName.MAYBE,
-					] as const).forEach((name, i) => {
+						AST.IntrinsicName.NONE,
+						AST.IntrinsicName.SOME,
+					] as const).forEach((name) => {
 						test.test(name, () => {
 							const builder = new Builder();
 							const interp  = new Interpreter();
 							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
-								OP.OpCode.INSTANCEOF,
+								OP.OpCode.CAST,
 								name,
 								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
 							))));
-							builder.instructions.forEach((instr) => instr.interpret(interp));
-							return assert_equal_values(interp.drops, expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof [
-								VALUE.Symbol,
-								VALUE.Integer,
-								VALUE.Natural,
-								VALUE.Float,
-								VALUE.String,
-								VALUE.List,
-								VALUE.Dict,
-								VALUE.Set,
-								VALUE.Map,
-								VALUE.Maybe,
-							][i])));
-						});
-					});
-					test.test('OBJECT', () => {
-						const builder = new Builder();
-						const interp  = new Interpreter();
-						srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
-							OP.OpCode.INSTANCEOF,
-							AST.IntrinsicName.OBJECT,
-							AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
-						))));
-						builder.instructions.forEach((instr) => instr.interpret(interp));
-						return assert_equal_values(interp.drops, expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand.isReference)));
-					});
-				});
-				test.suite('Maybes.', () => {
-					([
-						AST.IntrinsicName.MAYBE,
-						AST.IntrinsicName.NONE,
-						AST.IntrinsicName.SOME,
-					] as const).forEach((name, i) => {
-						test.test(name, () => {
-							const builder = new Builder();
-							const interp  = new Interpreter();
-							[
-								new OP.MaybeNew(TYPE.STR),
-								new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
-								new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
-							].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
-								OP.OpCode.INSTANCEOF,
-								name,
-								irval.asTac(builder),
-							))));
-							builder.instructions.forEach((instr) => instr.interpret(interp));
-							return assert_equal_values(interp.drops, [
-								repeat(VALUE.TRUE, 3),
-								[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
-								[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
-							][i]);
+							let i: number = -1;
+							return builder.instructions.forEach((instr) => {
+								if (instr instanceof OP.Drop) {
+									i++;
+								}
+								try {
+									instr.interpret(interp);
+								} catch (err) {
+									return assert.deepStrictEqual(err, new Error(`Invalid cast to ${ name }.`));
+								}
+								if (instr instanceof OP.Drop) {
+									return assert_equal_values(interp.drops.at(-1)!, expecteds[i]);
+								}
+							});
 						});
 					});
 				});

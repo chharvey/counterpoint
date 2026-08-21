@@ -157,7 +157,7 @@ Value! Interpret((MAYBE.UNWRAP `obj`)) :=
 	1. *Set* `obj` to *Unwrap:* `Interpret(obj)`.
 	2. *Assert:* `obj` is instance of `Maybe`.
 	3. *If* `obj` does not have a value:
-		1. Throw a new Error "Unwrapped a None value". // TODO: create a more specific error type
+		1. *Throw:* a new Error "Unwrapped a None value.".
 	4. *Else:*
 		1. *Return:* the value contained in `obj`.
 ;
@@ -191,6 +191,14 @@ Boolean! Interpret((INSTANCEOF `src` `v`)) :=
 			1. *Return:* `false`.
 	5. *Else*:
 		1. *Return:* `false`.
+;
+
+Value! Interpret((CAST `src` `v`)) :=
+	1. *Let* `is_instance` be the result of performing `Interpret((INSTANCEOF `src` `v`))`.
+	2. *If* `is_instance` is `true`:
+		1. *Return:* `v`.
+	3. *Else:*
+		1. *Throw:* a new Error "Invalid cast to `src`.".
 ;
 
 Boolean! Interpret((NOT `v`)) :=
