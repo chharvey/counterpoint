@@ -219,7 +219,7 @@ const OPT_COM = optional(',');
  * Otherwise, spread it into a rule:
  * @example
  * {
- * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?:', $._type), 'named'),
+ * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?', ':', $._type), 'named'),
  * }
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
@@ -362,7 +362,7 @@ module.exports = grammar({
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, '?:'), field('type_0', $._type))
+			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, seq('?', ':')), field('type_0', $._type))
 		), 'named', 'optional'),
 
 		_items_type: $ => {
@@ -449,7 +449,7 @@ module.exports = grammar({
 		...parameterize('expression_map_literal',    ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk})), OPT_COM,   '}'), 'break'),
 		...parameterize('function_arguments',        ({break: brk}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ')'), 'break'),
 
-		...parameterize('_expression_unit', ({block, break: brk}) => $ => prec(11, choice(
+		...parameterize('_expression_unit', ({block, break: brk}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
 			call($, 'string_template',           {break: brk}),
@@ -461,7 +461,7 @@ module.exports = grammar({
 			call($, 'expression_set_literal',    {break: brk}),
 			call($, 'expression_map_literal',    {break: brk}),
 			...iff(block, alias(call($, 'block', {break: brk}), $.expression_block)),
-		)), 'block', 'break'),
+		), 'block', 'break'),
 
 		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(10, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice(
 			'~?',
@@ -601,9 +601,11 @@ module.exports = grammar({
 	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
 	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
 	 */
-	conflicts: _$ => [
+	conflicts: $ => [
 		// example:
-		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => _$[rulename]),
+		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => $[rulename]),
+		[$.word, $.primitive_literal],
+		[$.word, $._type_unit],
 	],
 
 	/**
