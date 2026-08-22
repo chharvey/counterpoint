@@ -177,8 +177,10 @@ SemanticStatementExpression
 SemanticStatementClaim
 	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticType;
 
-SemanticStatementReassignment
+SemanticStatementReassignment[elided=false]
 	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression?;
+SemanticStatementReassignment[elided=true]
+	::= (SemanticExpressionVariable | SemanticExpressionAccess) SemanticExpression;
 
 SemanticStatementConditional[unless: Boolean]
 	::= SemanticExpression SemanticBlock (SemanticBlock | SemanticStatementConditional)?;

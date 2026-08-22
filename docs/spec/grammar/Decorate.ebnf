@@ -706,12 +706,12 @@ Decorate(StatementClaim<Break> ::= "claim" Assignee<?Break> ":" Type ";") -> Sem
 
 
 Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment
-	:= (SemanticStatementReassignment
+	:= (SemanticStatementReassignment[elided=false]
 		Decorate(Assignee<?Break>)
 		Decorate(Expression<+Block><?Break>)
 	);
 Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "?" "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment
-	:= (SemanticStatementReassignment
+	:= (SemanticStatementReassignment[elided=true]
 		Decorate(Assignee<?Break>)
 		Decorate(Expression<+Block><?Break>)
 	);
@@ -719,7 +719,7 @@ Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "?" "=" Expression<+Bloc
 
 
 Decorate(StatementDelete<Break> ::= "delete" Assignee<?Break> ";") -> SemanticStatementReassignment
-	:= (SemanticStatementReassignment
+	:= (SemanticStatementReassignment[elided=false]
 		Decorate(Assignee<?Break>)
 	);
 

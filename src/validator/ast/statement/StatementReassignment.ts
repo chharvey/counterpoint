@@ -38,10 +38,14 @@ export class StatementReassignment extends Statement {
 			| SyntaxNodeFamily<'statement_set',    ['break']>
 			| SyntaxNodeFamily<'statement_delete', ['break']>
 		),
-		public readonly assignee:  EXPR.Variable | EXPR.Access,
-		public readonly assigned?: EXPR.Expression,
+		public  readonly assignee:  EXPR.Variable | EXPR.Access,
+		public  readonly assigned?: EXPR.Expression,
+		private readonly elided:    boolean = false,
 	) {
-		super(start_node, {}, assigned ? [assignee, assigned] : [assignee]);
+		super(start_node, {elided}, assigned ? [assignee, assigned] : [assignee]);
+		if (elided) {
+			assert.ok(assigned);
+		}
 	}
 
 	@memoizeGetter
