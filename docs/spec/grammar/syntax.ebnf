@@ -233,9 +233,9 @@ Assignee<Break> ::=
 StatementExpression<Break>
 	::= Expression<+Block><?Break>? ";";
 
-StatementClaim  <Break> ::= "claim"  Assignee<?Break> ":" Type                       ";";
-StatementSet    <Break> ::= "set"    Assignee<?Break> "=" Expression<+Block><?Break> ";";
-StatementDelete <Break> ::= "delete" Assignee<?Break>                                ";";
+StatementClaim  <Break> ::= "claim"  Assignee<?Break>      ":" Type                       ";";
+StatementSet    <Break> ::= "set"    Assignee<?Break> "?"? "=" Expression<+Block><?Break> ";";
+StatementDelete <Break> ::= "delete" Assignee<?Break>                                     ";";
 
 StatementConditional<Unless, Break> ::=
 	& <Unless->"if" <Unless+>"unless" Expression<+Block><?Break>

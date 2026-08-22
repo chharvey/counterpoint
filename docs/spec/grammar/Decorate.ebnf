@@ -710,6 +710,11 @@ Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "=" Expression<+Block><?
 		Decorate(Assignee<?Break>)
 		Decorate(Expression<+Block><?Break>)
 	);
+Decorate(StatementSet<Break> ::= "set" Assignee<?Break> "?" "=" Expression<+Block><?Break> ";") -> SemanticStatementReassignment
+	:= (SemanticStatementReassignment
+		Decorate(Assignee<?Break>)
+		Decorate(Expression<+Block><?Break>)
+	);
 
 
 

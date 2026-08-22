@@ -1497,14 +1497,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		StatementSet: [
 			xjs.String.dedent`
 				{
-					set my_var       = a;
-					set tuple.1      = b;
-					set record.prop  = c;
-					set record._     = c;
-					set list.[index] = d;
-					set record.type  = 1;
-					set record.bool  = 2;
-					set record.true  = 3;
+					set my_var        = a;
+					set tuple.1       = b;
+					set record.prop   = c;
+					set record._      = c;
+					set list.[index]  = d;
+					set record.type   = 1;
+					set record.bool   = 2;
+					set record.true   = 3;
+					set my_var?       = a;
+					set record.prop?  = c;
+					set list.[index]? = d;
 				}
 			`,
 			sourceStatements(
@@ -1578,6 +1581,32 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						f('property_accessor_0', 'property_accessor', s('word', s('keyword_value'))),
 					),
 					s('primitive_literal', s('integer')),
+				),
+				s(
+					'statement_set',
+					s(
+						'assignee',
+						f('identifier_0', 'identifier'),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_set',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+					),
+					s('identifier'),
+				),
+				s(
+					'statement_set',
+					s(
+						'assignee',
+						f('expression_0', 'identifier'),
+						f('property_accessor_0', 'property_accessor', s('identifier')),
+					),
+					s('identifier'),
 				),
 			),
 		],
