@@ -1497,14 +1497,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		StatementSet: [
 			xjs.String.dedent`
 				{
-					set my_var        = a;
-					set tuple.1       = b;
-					set record.prop   = c;
-					set record._      = c;
-					set list.[index]  = d;
-					set record.type   = 1;
-					set record.bool   = 2;
-					set record.true   = 3;
+					set my_var       = a;
+					set tuple.1      = b;
+					set record.prop  = c;
+					set record._     = c;
+					set list.[index] = d;
+					set record.type  = 1;
+					set record.bool  = 2;
+					set record.true  = 3;
 				}
 			`,
 			sourceStatements(

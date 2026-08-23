@@ -38,10 +38,10 @@ export class StatementReassignment extends Statement {
 			| SyntaxNodeFamily<'statement_set',    ['break']>
 			| SyntaxNodeFamily<'statement_delete', ['break']>
 		),
-		public  readonly assignee:  EXPR.Variable | EXPR.Access,
-		public  readonly assigned?: EXPR.Expression,
+		public readonly assignee:  EXPR.Variable | EXPR.Access,
+		public readonly assigned?: EXPR.Expression,
 	) {
-		super(start_node, {}, assigned ? [assignee, assigned] : [assignee]);
+		super(start_node, {}, [assignee, ...(assigned ? [assigned] : [])]);
 	}
 
 	@memoizeGetter
@@ -70,10 +70,8 @@ export class StatementReassignment extends Statement {
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
-			if (!(base_type instanceof TYPE.TypeInterface)) {
-				if (!this.assigned) {
-					throw new CplTypeError('The `delete` statement is only applicable to interface types.');
-				}
+			if (!this.assigned && !(base_type instanceof TYPE.TypeInterface)) {
+				throw new CplTypeError('The `delete` statement is only applicable to interface types.');
 			}
 		}
 		this.assigned && typecheck_assign(this.assigned, this.assignee.writeType(), this);
