@@ -4,6 +4,7 @@ import {
 	OP,
 	AssignmentErrorReassignment,
 	AssignmentErrorDeletion,
+	AssignmentError,
 	TypeError as CplTypeError,
 	MutabilityError01,
 } from '../../../index.ts';
@@ -57,11 +58,15 @@ export class StatementReassignment extends Statement {
 		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
 		if (this.assignee instanceof EXPR.Variable) {
 			const schema = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
-			if (this.assigned) {
+			if (this.elided) {
+				if (!schema.isUninitialized) {
+					throw new AssignmentError(`Elidable assignment of non-optional variable \`${ this.assignee.source }\`.`);
+				}
+			} else if (this.assigned) {
 				if (!schema.isWritable) {
 					throw new AssignmentErrorReassignment(this.assignee);
 				}
-			} else if (!schema.isWritable || !schema.isUninitialized) {
+			} else if (!schema.isUninitialized) {
 				throw new AssignmentErrorDeletion(this.assignee);
 			}
 		}

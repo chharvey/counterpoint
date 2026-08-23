@@ -29,62 +29,80 @@ import {
 test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('StatementReassignment', () => {
-			test.test('does not throw if the variable is writable.', () => {
-				const {goal} = setupScript(`{
+			test.test('`set` throws if the variable is read-only.', () => {
+				const {goal, stmts} = setupScript(`{
 					val mut i: int = 42;
-					set i = 43;
-				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
+					val     j: int = 42;
+					set i = 24;
+					set j = 24;
+				}`, {varCheck: false});
+				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: false,
 				});
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
+					isWritable:      false,
+					isUninitialized: false,
+				});
+				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorReassignment);
 			});
-			test.test('throws if the variable is read-only.', () => {
-				assert.throws(() => setupScript(`{
-					val i: int = 42;
-					set i = 43;
-				}`, {typeCheck: false}), AssignmentErrorReassignment);
-			});
-			test.test('always throws for type alias reassignment.', () => {
+			test.test('`set` always throws for type alias reassignment.', () => {
 				assert.throws(() => setupScript(`{
 					type T = 42;
 					set T = 43;
 				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
-			test.test('disallows manual reassignment of the iteration variable.', () => {
+			test.test('`set` disallows manual reassignment of the iteration variable.', () => {
 				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						set it = 44;
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
-			test.test('does not throw if the variable was uninitialized.', () => {
-				const {goal} = setupScript(`{
+			test.test('elidable `set` throws if the variable was initialized.', () => {
+				const {goal, stmts} = setupScript(`{
 					val mut i?: int;
-					delete i;
-				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
+					val mut j:  int = 42;
+					set i? = 24;
+					set j? = 24;
+				}`, {varCheck: false});
+				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: true,
 				});
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
+					isWritable:      true,
+					isUninitialized: false,
+				});
+				return assert.throws(() => stmts[3].varCheck(), /Elidable assignment of non-optional variable/);
 			});
-			test.test('throws if the variable was initialized.', () => {
-				assert.throws(() => setupScript(`{
-					val mut i: int = 42;
+			test.test('`delete` throws if the variable was initialized.', () => {
+				const {goal, stmts} = setupScript(`{
+					val mut i?: int;
+					val mut j:  int = 42;
 					delete i;
-				}`, {typeCheck: false}), AssignmentErrorDeletion);
-				assert.throws(() => setupScript(`{
-					val i: int = 42;
-					delete i;
-				}`, {typeCheck: false}), AssignmentErrorDeletion);
+					delete j;
+				}`, {varCheck: false});
+				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
+					isWritable:      true,
+					isUninitialized: true,
+				});
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
+					isWritable:      true,
+					isUninitialized: false,
+				});
+				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorDeletion);
 			});
-			test.test('always throws for type alias deletion.', () => {
+			test.test('`delete` always throws for type alias deletion.', () => {
 				assert.throws(() => setupScript(`{
 					type T = 42;
 					delete T;
 				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
-			test.test('disallows deletion of the iteration variable.', () => {
+			test.test('`delete` disallows deletion of the iteration variable.', () => {
 				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						delete it;
