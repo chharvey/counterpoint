@@ -41,7 +41,7 @@ export class StatementReassignment extends Statement {
 		public readonly assignee:  EXPR.Variable | EXPR.Access,
 		public readonly assigned?: EXPR.Expression,
 	) {
-		super(start_node, {}, assigned ? [assignee, assigned] : [assignee]);
+		super(start_node, {}, [assignee, ...(assigned ? [assigned] : [])]);
 	}
 
 	@memoizeGetter
@@ -57,7 +57,7 @@ export class StatementReassignment extends Statement {
 				if (!schema.isWritable) {
 					throw new AssignmentErrorReassignment(this.assignee);
 				}
-			} else if (!schema.isWritable || !schema.isUninitialized) {
+			} else if (!schema.isUninitialized) {
 				throw new AssignmentErrorDeletion(this.assignee);
 			}
 		}
