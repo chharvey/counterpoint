@@ -576,7 +576,6 @@ export class Decorator {
 				node as SyntaxNodeFamily<'statement_set', ['break']>,
 				this.decorate(node.namedChild(0) as SyntaxNodeFamily<'assignee', ['break']>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
-				!!node.childForFieldName('elide_0'),
 			)],
 
 			[/^statement_delete(__break)?$/, (node) => new AST.STMT.StatementReassignment(

@@ -4,7 +4,6 @@ import {
 	OP,
 	AssignmentErrorReassignment,
 	AssignmentErrorDeletion,
-	AssignmentError,
 	TypeError as CplTypeError,
 	MutabilityError01,
 } from '../../../index.ts';
@@ -41,12 +40,8 @@ export class StatementReassignment extends Statement {
 		),
 		public  readonly assignee:  EXPR.Variable | EXPR.Access,
 		public  readonly assigned?: EXPR.Expression,
-		private readonly elided:    boolean = false,
 	) {
-		super(start_node, {elided}, assigned ? [assignee, assigned] : [assignee]);
-		if (elided) {
-			assert.ok(assigned);
-		}
+		super(start_node, {}, assigned ? [assignee, assigned] : [assignee]);
 	}
 
 	@memoizeGetter
@@ -58,11 +53,7 @@ export class StatementReassignment extends Statement {
 		super.varCheck(); // runtime asserts the var is in the symbol table and is a SymbolSchemaVar
 		if (this.assignee instanceof EXPR.Variable) {
 			const schema = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
-			if (this.elided) {
-				if (!schema.isUninitialized) {
-					throw new AssignmentError(`Elidable assignment of non-optional variable \`${ this.assignee.source }\`.`);
-				}
-			} else if (this.assigned) {
+			if (this.assigned) {
 				if (!schema.isWritable) {
 					throw new AssignmentErrorReassignment(this.assignee);
 				}
@@ -74,11 +65,7 @@ export class StatementReassignment extends Statement {
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		if (this.assignee instanceof EXPR.Variable) {
-			if (this.elided) {
-				return typecheck_assign(this.assigned!, new TYPE.Maybe(this.assignee.writeType()), this);
-			}
-		} else if (this.assignee instanceof EXPR.Access) {
+		if (this.assignee instanceof EXPR.Access) {
 			const base_type: TYPE.Type = this.assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
@@ -86,8 +73,6 @@ export class StatementReassignment extends Statement {
 			if (!(base_type instanceof TYPE.TypeInterface)) {
 				if (!this.assigned) {
 					throw new CplTypeError('The `delete` statement is only applicable to interface types.');
-				} else if (this.elided) {
-					throw new CplTypeError('The elidable `set` statement is only applicable to interface types.');
 				}
 			}
 		}
@@ -101,7 +86,7 @@ export class StatementReassignment extends Statement {
 			let value: OP.Value;
 			if (this.assigned) {
 				value = this.assigned.build(builder);
-				if (symbol.isUninitialized && !this.elided) {
+				if (symbol.isUninitialized) {
 					value = new OP.MaybeNew(symbol.type, value.asTac(builder));
 				}
 			} else {

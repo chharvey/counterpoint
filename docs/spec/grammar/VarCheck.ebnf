@@ -119,7 +119,7 @@ Nil! VarCheck(SemanticDeclarationVariable decl) :=
 
 
 
-Nil! VarCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionVariable) :=
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionVariable) :=
 	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionVariable)`.
 	2. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
 	3. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
@@ -129,7 +129,7 @@ Nil! VarCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpression
 		1. Fall through.
 	6. *Return.*
 ;
-Nil! VarCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionVariable SemanticExpression) :=
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression) :=
 	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionVariable)`.
 	2. *Perform:* *Unwrap:* `VarCheck(SemanticExpression)`.
 	3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
@@ -140,27 +140,11 @@ Nil! VarCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpression
 		1. Fall through.
 	7. *Return.*
 ;
-Nil! VarCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionAccess) :=
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionAccess) :=
 	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionAccess)`.
 	2. *Return.*
 ;
-Nil! VarCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionAccess SemanticExpression) :=
-	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionAccess)`.
-	2. *Perform:* *Unwrap:* `VarCheck(SemanticExpression)`.
-	3. *Return.*
-;
-Nil! VarCheck(SemanticStatementReassignment[elided=true] ::= SemanticExpressionVariable SemanticExpression) :=
-	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionVariable)`.
-	2. *Perform:* *Unwrap:* `VarCheck(SemanticExpression)`.
-	3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
-	4. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-	5. *If* `symbol.isUninitialized` is `false`:
-		1. *Throw:* a new AssignmentError "Elidable assignment of non-optional variable `stmt.children.1`.". // TODO: make a new AssignmentError type
-	6. *Else:*
-		1. Fall through.
-	7. *Return.*
-;
-Nil! VarCheck(SemanticStatementReassignment[elided=true] ::= SemanticExpressionAccess SemanticExpression) :=
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionAccess SemanticExpression) :=
 	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionAccess)`.
 	2. *Perform:* *Unwrap:* `VarCheck(SemanticExpression)`.
 	3. *Return.*

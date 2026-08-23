@@ -60,24 +60,6 @@ test.suite('Statement', () => {
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
-			test.test('elidable `set` throws if the variable was initialized.', () => {
-				const {goal, stmts} = setupScript(`{
-					val mut i?: int;
-					val mut j:  int = 42;
-					set i? = 24;
-					set j? = 24;
-				}`, {varCheck: false});
-				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
-				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
-					isWritable:      true,
-					isUninitialized: true,
-				});
-				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
-					isWritable:      true,
-					isUninitialized: false,
-				});
-				return assert.throws(() => stmts[3].varCheck(), /Elidable assignment of non-optional variable/);
-			});
 			test.test('`delete` throws if the variable was initialized.', () => {
 				const {goal, stmts} = setupScript(`{
 					val mut i?: int;
@@ -434,23 +416,6 @@ test.suite('Statement', () => {
 					});
 					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
-				test.test('allows elided reassignment of `Maybe` when uninitialized.', () => {
-					const {goal, stmts} = setupScript(`{
-						val mut x?: int;
-						val mut y?: int;
-						val mut z?: float;
-						set x? = y;
-						set x? = z;
-						set x? = 42;
-						set x? = null;
-					}`, {typeCheck: false});
-					stmts.slice(0, 4).forEach((stmt) => stmt.typeCheck());
-					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('x'), {
-						isWritable:      true,
-						isUninitialized: true,
-					});
-					return xjs.Array.forEachAggregated(stmts.slice(4), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
-				});
 				test.test('None/Some assignable to Maybe, but not to each other.', () => {
 					setupScript(`{
 						val a: Maybe.<int> = None.<int>();
@@ -787,20 +752,6 @@ test.suite('Statement', () => {
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
 						(SET x ${ op_maybe_string('(INT.CONST 42)') })
-				`.trim());
-			});
-			test.test('for optional variables with elision: does not wrap.', () => {
-				const {stmts, builder} = setupScript(`{
-					val mut x?: int;
-					val mut y?: int;
-					set x = 42;
-					set x? = y;
-				}`, {build: false});
-				stmts.slice(2).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
-				return assert.strictEqual(builder.print(), xjs.String.dedent`
-					"block-0":
-						(SET x ${ op_maybe_string('(INT.CONST 42)') })
-						(SET x (GET y))
 				`.trim());
 			});
 			test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {

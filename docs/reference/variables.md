@@ -188,45 +188,6 @@ greeting == None[str]();    %== true
 The `delete` statement can only be used on optional variables or optional entries on mutable objects.
 
 
-### Elidable Assignments
-When an optional variable is accessed, its read type is `Maybe[T]`.
-This poses a problem when we want to forward one variable to another.
-```cpl
-val mut x?: int;
-set x = 42;
-
-val mut y?: int;
-set y = x; %> TypeError: Expression of type `Maybe[int]` is not assignable to type `int`.
-```
-We would have to handle the Maybe value explicitly, by using conditionals, pattern matching, unwrapping, or methods.
-```cpl
-if !!x then { set y = x~?; } else { delete y; };
-```
-Instead, the Maybe value may be forwarded to an optional variable by appending `?` to the assignee.
-```cpl
-set y? = x;
-```
-This syntax is allowed only when the variable/entry assignee (`y`) is optional and when the assigned value (`x`) is of type `Maybe`.
-
-Elidable assignment can also be used for optional fields, as well as operations/methods that produce Maybe values.
-```cpl
-claim z: interface { mut prop?: int; };
-set z.prop  = x;  %> TypeError
-set z.prop? = x; % ok
-
-set y  = z?.prop; %> TypeError
-% all ok:
-set y? = z?.prop;
-set y? = x || Some[int](43);
-set y? = Some[int](44);
-set y? = x.map(\(v) => v + 2);
-```
-
-With regular assignment `set y = 43;`, the assigned value is actually wrapped in a `Some` before being assigned to the variable.
-With delete statements `delete y;`, the deleted variable `y` is assigned a `None` under the hood.
-But with elidable forwarding `set y? = x;`, since `x` is already a `Maybe`, it is simply assigned to `y`, with no wrapping needed.
-
-
 
 ## Type Claim Declarations
 A type claim declaration is a [type claim](./expressions-operators.md#type-claim) for a variable at the block level.

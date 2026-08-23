@@ -529,9 +529,9 @@ module.exports = grammar({
 
 		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
 
-		...parameterize('statement_claim',  ({break: brk}) => $ => seq('claim',  call($, 'assignee', {break: brk}),                                  ':', $._type,                                       ';'), 'break'),
-		...parameterize('statement_set',    ({break: brk}) => $ => seq('set',    call($, 'assignee', {break: brk}), optional(field('elide_0', '?')), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
-		...parameterize('statement_delete', ({break: brk}) => $ => seq('delete', call($, 'assignee', {break: brk}),                                                                                      ';'), 'break'),
+		...parameterize('statement_claim',  ({break: brk}) => $ => seq('claim',  call($, 'assignee', {break: brk}), ':', $._type,                                       ';'), 'break'),
+		...parameterize('statement_set',    ({break: brk}) => $ => seq('set',    call($, 'assignee', {break: brk}), '=', call($, '_expression', 'block', {break: brk}), ';'), 'break'),
+		...parameterize('statement_delete', ({break: brk}) => $ => seq('delete', call($, 'assignee', {break: brk}),                                                     ';'), 'break'),
 
 		...parameterize('statement_conditional', ({unless, break: brk}) => $ => seq(
 			!unless ? 'if' : 'unless',
