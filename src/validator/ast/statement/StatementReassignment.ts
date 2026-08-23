@@ -101,7 +101,7 @@ export class StatementReassignment extends Statement {
 			let value: OP.Value;
 			if (this.assigned) {
 				value = this.assigned.build(builder);
-				if (symbol.isUninitialized) {
+				if (symbol.isUninitialized && !this.elided) {
 					value = new OP.MaybeNew(symbol.type, value.asTac(builder));
 				}
 			} else {

@@ -386,20 +386,23 @@ Build(SemanticStatementClaim stmt) := [
 	(DROP `Build(stmt.0)`)
 ];
 
-Build(SemanticStatementReassignment ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=false]) SemanticExpression) := [
+Build(SemanticStatementReassignment[elided=false] ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=false]) SemanticExpression) := [
 	(SET `GetSymbolSchema(SemanticExpressionVariable)` `Build(SemanticExpression)`)
 ];
-Build(SemanticStatementReassignment ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=true]) SemanticExpression) := [
+Build(SemanticStatementReassignment[elided=false] ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=true]) SemanticExpression) := [
 	(SET `GetSymbolSchema(SemanticExpressionVariable)` (MAYBE.NEW `Build(SemanticExpression)`))
 ];
-Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.List] SemanticExpression) SemanticExpression) := (LIST.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Set]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Map]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
-Build(SemanticStatementReassignment ::= SemanticExpressionVariable) := [
+Build(SemanticStatementReassignment[elided=true] ::= SemanticExpressionVariable:of(SymbolSchemaVar[isUninitialized=true]) SemanticExpression) := [
+	(SET `GetSymbolSchema(SemanticExpressionVariable)` `Build(SemanticExpression)`)
+];
+Build(SemanticStatementReassignment[elided=false] ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.List] SemanticExpression) SemanticExpression) := (LIST.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment[elided=false] ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Dict] SemanticExpression) SemanticExpression) := (DICT.SET [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment[elided=false] ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Set]  SemanticExpression) SemanticExpression) := (SET.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment[elided=false] ::= (SemanticExpressionAccess ::= SemanticExpression[type: TYPE.Map]  SemanticExpression) SemanticExpression) := (MAP.SET  [`Build(SemanticExpressionAccess.0)` `Build(SemanticExpressionAccess.1)` `Build(SemanticExpression)`]);
+Build(SemanticStatementReassignment[elided=false] ::= SemanticExpressionVariable) := [
 	(SET `GetSymbolSchema(SemanticExpressionVariable)` (MAYBE.NEW))
 ];
-Build(SemanticStatementReassignment ::= SemanticExpressionAccess); // TODO: object/interface support
+Build(SemanticStatementReassignment[elided=false] ::= SemanticExpressionAccess); // TODO: object/interface support
 
 Build(SemanticStatementConditional[unless=false] ::= SemanticExpression SemanticBlock) := [
 	(GOTO.IF `Build(SemanticExpression)` "then" "endif")

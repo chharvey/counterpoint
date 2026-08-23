@@ -763,7 +763,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementReassignment', () => {
-			test.test('for variables: pushes OP.Set instruction.', () => {
+			test.test('for variables: pushes (SET) with a value.', () => {
 				const {stmts, builder} = setupScript(`{
 					val mut x: int = 42;
 					set x = 43;
@@ -778,17 +778,40 @@ test.suite('Statement', () => {
 						(SET x (INT.CONST -42))
 				`.trim());
 			});
-			test.test('deletion: pushes OP.Set instruction.', () => {
+			test.test('for optional variables: wraps value in (MAYBE.NEW).', () => {
 				const {stmts, builder} = setupScript(`{
 					val mut x?: int;
-					delete x;
 					set x = 42;
 				}`, {build: false});
 				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
-						(SET x ${ op_maybe_string() })
 						(SET x ${ op_maybe_string('(INT.CONST 42)') })
+				`.trim());
+			});
+			test.test('for optional variables with elision: does not wrap.', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x?: int;
+					val mut y?: int;
+					set x = 42;
+					set x? = y;
+				}`, {build: false});
+				stmts.slice(2).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
+					"block-0":
+						(SET x ${ op_maybe_string('(INT.CONST 42)') })
+						(SET x (GET y))
+				`.trim());
+			});
+			test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x?: int;
+					delete x;
+				}`, {build: false});
+				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
+					"block-0":
+						(SET x ${ op_maybe_string() })
 				`.trim());
 			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
