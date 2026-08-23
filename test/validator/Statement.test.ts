@@ -417,28 +417,39 @@ test.suite('Statement', () => {
 						val mut i: int = 42;
 						set i = 4.3;
 					}`, {typeCheck: false});
-					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
-				test.test('allows reassignment when uninitialized.', () => {
-					assert.partialDeepStrictEqual(setupScript(`{
+				test.test('does not allow reassignment of `null` or `Maybe` when uninitialized.', () => {
+					const {goal, stmts} = setupScript(`{
 						val mut x?: int;
+						val mut y?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbolBySource('x'), {
-						isWritable:      true,
-						isUninitialized: true,
-						type:            TYPE.INT,
-					});
-				});
-				test.test('does not allow reassignment of `null` when uninitialized.', () => {
-					const {goal} = setupScript(`{
-						val mut x?: int;
 						set x = null;
+						set x = y;
 					}`, {typeCheck: false});
+					stmts.slice(0, 3).forEach((stmt) => stmt.typeCheck());
 					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('x'), {
 						isWritable:      true,
 						isUninitialized: true,
 					});
-					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+				});
+				test.test('allows elided reassignment of `Maybe` when uninitialized.', () => {
+					const {goal, stmts} = setupScript(`{
+						val mut x?: int;
+						val mut y?: int;
+						val mut z?: float;
+						set x? = y;
+						set x? = z;
+						set x? = 42;
+						set x? = null;
+					}`, {typeCheck: false});
+					stmts.slice(0, 4).forEach((stmt) => stmt.typeCheck());
+					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('x'), {
+						isWritable:      true,
+						isUninitialized: true,
+					});
+					return xjs.Array.forEachAggregated(stmts.slice(4), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
 				test.test('None/Some assignable to Maybe, but not to each other.', () => {
 					setupScript(`{
@@ -451,7 +462,7 @@ test.suite('Statement', () => {
 						val e: Some.<int> = None.<int>();
 						val f: None.<int> = Some.<int>(42);
 					}`, {typeCheck: false});
-					return stmts.forEach((stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
 			});
 			test.suite('for property reassignment.', () => {

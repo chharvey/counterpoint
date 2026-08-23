@@ -74,13 +74,21 @@ export class StatementReassignment extends Statement {
 
 	public override typeCheck(): void {
 		super.typeCheck();
-		if (this.assignee instanceof EXPR.Access) {
+		if (this.assignee instanceof EXPR.Variable) {
+			if (this.elided) {
+				return typecheck_assign(this.assigned!, new TYPE.Maybe(this.assignee.writeType()), this);
+			}
+		} else if (this.assignee instanceof EXPR.Access) {
 			const base_type: TYPE.Type = this.assignee.base.type();
 			if (!base_type.isMutable) {
 				throw new MutabilityError01(base_type, this);
 			}
-			if (!this.assigned && !(base_type instanceof TYPE.TypeInterface)) {
-				throw new CplTypeError('The `delete` statement is only applicable to interface types.');
+			if (!(base_type instanceof TYPE.TypeInterface)) {
+				if (!this.assigned) {
+					throw new CplTypeError('The `delete` statement is only applicable to interface types.');
+				} else if (this.elided) {
+					throw new CplTypeError('The elidable `set` statement is only applicable to interface types.');
+				}
 			}
 		}
 		this.assigned && typecheck_assign(this.assigned, this.assignee.writeType(), this);

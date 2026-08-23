@@ -107,33 +107,52 @@ Type! TypeCheck(SemanticStatementClaim claim) :=
 
 
 
-Nil! TypeCheck(SemanticStatementReassignment stmt) :=
-	1. *Let* `assignee` be `stmt.children.0`.
-	2. *Perform:* *UnwrapAffirm:* `TypeCheck(assignee)`.
-	3. *If* `stmt.children.count` is 2:
-		1. *Set* `statement_kind` to *SET*.
-		2. *Let* `assigned` be `stmt.children.1`.
-		3. *Perform:* *UnwrapAffirm:* `TypeCheck(assigned)`.
-	4. *Else:*
-		1. *Set* `statement_kind` to *DELETE*.
-	5. *If* `assignee` is a SemanticExpressionAccess:
-		1. *Let* `base_type` be *Unwrap:* `TypeOf(assignee.children.0)`.
-		2. *If* `base_type` is not mutable:
-			1. *Throw:* a new MutabilityError01.
-		3. *Else If* `statement_kind` is *DELETE*:
-			1. *If* `base_type` is not an interface type:
-				1. *Throw:* a new TypeError.
-			2. *Else:*
-				1. *Return.*
-		4. *Else:*
-			1. *Fall through.*
-	6. *Else:*
-		1. *Fall through.*
-	7. *If* `assigned` is set:
-		8. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(assignee)`.
-		9. *Return:* `TypeCheckAssign(assigned, assignee_type)`.
-	8. *Else:*
-		1. *Return.*
+Nil! TypeCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionVariable) :=
+	1. *Return:* `TypeCheck(SemanticExpressionVariable)`.
+;
+Nil! TypeCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionVariable SemanticExpression) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionVariable)`.
+	2. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression)`.
+	3. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionVariable)`.
+	4. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
+;
+Nil! TypeCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionAccess) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionAccess)`.
+	2. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpressionAccess)`.
+	3. *If* `base_type` is not mutable:
+		1. *Throw:* a new MutabilityError01.
+	4. *If* `base_type` is not an interface type:
+		1. *Throw:* a new TypeError "The `delete` statement is only applicable to interface types.". // TODO: temporary error type until we get interfaces
+	// TODO: if entry is not optional, throw.
+	5. *Return.*
+;
+Nil! TypeCheck(SemanticStatementReassignment[elided=false] ::= SemanticExpressionAccess SemanticExpression) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionAccess)`.
+	2. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression)`.
+	3. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpressionAccess)`.
+	4. *If* `base_type` is not mutable:
+		1. *Throw:* a new MutabilityError01.
+	5. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionAccess)`.
+	6. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
+;
+Nil! TypeCheck(SemanticStatementReassignment[elided=true] ::= SemanticExpressionVariable SemanticExpression) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionVariable)`.
+	2. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression)`.
+	3. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionVariable)`.
+	4. *Set* `assignee_type` to `Maybe(assignee_type)`.
+	5. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
+;
+Nil! TypeCheck(SemanticStatementReassignment[elided=true] ::= SemanticExpressionAccess SemanticExpression) :=
+	1. *Perform:* *Unwrap:* `TypeCheck(SemanticExpressionAccess)`.
+	2. *Perform:* *Unwrap:* `TypeCheck(SemanticExpression)`.
+	3. *Let* `base_type` be *Unwrap:* `TypeOf(SemanticExpressionAccess)`.
+	4. *If* `base_type` is not mutable:
+		1. *Throw:* a new MutabilityError01.
+	5. *If* `base_type` is not an interface type:
+		1. *Throw:* a new TypeError "The elidable `set` statement is only applicable to interface types.". // TODO: temporary error type until we get interfaces
+	6. *Let* `assignee_type` be *Unwrap:* `WriteTypeOf(SemanticExpressionAccess)`.
+	7. *Set* `assignee_type` to `Maybe(assignee_type)`.
+	8. *Return:* `TypeCheckAssign(SemanticExpression, assignee_type)`.
 ;
 
 
