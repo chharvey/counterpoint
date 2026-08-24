@@ -1,0 +1,50 @@
+from "cplvm" import ('::op::toInt');
+from "./utils.cplm" import (
+	DIGITS,
+	mod,
+);
+from "./Natural.cplm" import (
+	DIGITS,
+	Natural,
+);
+
+
+
+%%% Wrapper class for `int`-type values. %%%
+public class Integer {
+	public new (private readonly data?: int = 0) {;}
+	public new (arg: nat | float) {
+		this('::op::toInt'(arg) as :int:);
+	}
+
+	internal toString(radix?: nat = +10): Result[str, RangeException] {
+		if radix < +2 || +36 < radix then {
+			return Fail[str, RangeException](RangeException("""Invalid radix: {{ radix }}. Must be between 2 and 36 (inclusive)."""));
+		};
+
+		if this.data == 0 then {
+			return Ok[str, RangeException]("0");
+		};
+
+		val is_negative: bool = this.data < 0;
+
+		% `copy` is always non-positive since we have to handle the `-(2 ^ 63)` case (there is no positive `2 ^ 63` int value)
+		val mut copy:     int = if is_negative then this.data else -this.data;
+		val mut returned: str = "";
+
+		do {
+			val mut rem: int = Integer(mod(copy, radix));
+			if rem != 0 then {
+				rem = rem - Integer(radix);
+			};
+			set returned  = """{{ DIGITS.get(rem)~? }}{{ returned }}""";
+			set copy     /= Integer(radix);
+		} until copy == 0;
+
+		if is_negative then {
+			set returned = """-{{ returned }}""";
+		};
+
+		return returned;
+	}
+}

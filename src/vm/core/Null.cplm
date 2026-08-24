@@ -1,0 +1,5 @@
+%%% Wrapper class for the `null` value. %%%
+public class Null {
+	internal toString(): str
+		=> "null";
+}

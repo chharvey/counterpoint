@@ -1,0 +1,15 @@
+from "cplvm" import ('::Value::hash');
+from "./String.cplm" import (String);
+
+
+
+public class abstract Object {
+	%%%
+	Return a string representation of this object.
+	Used internally in the `String()` constructor.
+	@return a string representation of this object
+	%%%
+	public open '%%toString%%'(): str {
+		return """<Object instance {{ String('::Value::hash'(this), 16) }}>""";
+	}
+}
