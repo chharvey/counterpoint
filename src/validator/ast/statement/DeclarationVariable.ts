@@ -123,10 +123,10 @@ export class DeclarationVariable extends Statement {
 	}
 
 	public override typeCheck(): void {
+		super.typeCheck();
 		if (!this.typenode && !is_inferrable(this.assigned ?? undefined)) {
 			throw new AssignmentErrorMissingType(this);
 		}
-		this.assigned?.typeCheck();
 		const assignee_type: TYPE.Type = this.typenode?.eval() ?? (
 			this.writable && ([
 				EXPR.Constant,

@@ -8,7 +8,6 @@ export enum Punctuator {
 	BRACE_CLS = '}',
 	COMMA     = ',',
 	THIN_ARR  = '->',
-	ELVIS     = '?:',
 
 	// compound
 	DOT      = '.',

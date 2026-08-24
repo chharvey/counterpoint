@@ -48,11 +48,13 @@ DICT.GET([Value Value])           -> Value;
 SET.GET ([Value Value])           -> Value;
 MAP.GET ([Value Value])           -> Value;
 
-MAYBE.UNWRAP([Value]) -> Value;
-
 CALL([Value*]) -> Value;
 
-INSTANCEOF(native-enum [Value]) -> Boolean;
+BOOL.FROM([Value])   -> Boolean;
+INT.FROM([Number])   -> Integer;
+NAT.FROM([Number])   -> Natural;
+FLOAT.FROM([Number]) -> Float;
+STR.FROM([Value])    -> String;
 
 NOT([Value])   -> Boolean;
 EMP([Value])   -> Boolean;
@@ -61,16 +63,15 @@ NEG([Natural]) -> Natural;
 NEG([Float])   -> Float;
 NEG([Number])  -> Number;
 
-BOOL.FROM([Value])   -> Boolean;
-INT.FROM([Number])   -> Integer;
-NAT.FROM([Number])   -> Natural;
-FLOAT.FROM([Number]) -> Float;
-STR.FROM([Value])    -> String;
-
 LIST.COUNT([Value]) -> Natural;
 DICT.COUNT([Value]) -> Natural;
 SET.COUNT([Value])  -> Natural;
 MAP.COUNT([Value])  -> Natural;
+
+MAYBE.UNWRAP([Value]) -> Value;
+
+INSTANCEOF(native-enum [Value]) -> Boolean;
+CAST      (native-enum [Value]) -> Value;
 
 INT.ADD([Integer Integer]) -> Integer;
 INT.SUB([Integer Integer]) -> Integer;
@@ -173,7 +174,7 @@ Build(SemanticExpressionBlock blex) := [
 
 Build(SemanticExpressionAccess[kind=MAYBE] access) := [
 	(DECL ‹type› $base `Build(access.0)`)
-	(DECL ‹type› $result)
+	(DECL <Maybe> $result)
 	(GOTO.IF (INSTANCEOF "None" (GET $base)) "then" "else")
 	"then":
 	(SET $result (MAYBE.NEW))
@@ -231,6 +232,53 @@ Build(SemanticExpressionOperation[operator=NOT]       ::= SemanticExpression)   
 Build(SemanticExpressionOperation[operator=EMP]       ::= SemanticExpression)               := (EMP [`Build(SemanticExpression)`]);
 Build(SemanticExpressionOperation[operator=NEG]       ::= SemanticExpression[type: Number]) := (NEG [`Build(SemanticExpression)`]);
 
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Null")
+	:= (ID `Build(SemanticExpression)` (NULL.CONST null));
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean") := [
+	(DECL <bool> $left (ID `Build(SemanticExpression)` (BOOL.CONST false)))
+	(DECL <bool> $result)
+	(GOTO.IF (GET $left) "then" "else")
+	"then":
+	(SET $result (GET $left))
+	(GOTO "endif")
+	"else":
+	(SET $result (ID `Build(SemanticExpression)` (BOOL.CONST true)))
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
+Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
+	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
+
+Build(SemanticExpressionOperation[operator=CAST] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
+	:= (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
+
+Build(SemanticExpressionOperation[operator=MAYBE] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
+	(DECL <Maybe> $result)
+	(GOTO.IF `Build(SemanticExpressionOperation[operator=IS])` "then" "else")
+	"then":
+	(SET $result (MAYBE.NEW (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`)))
+	(GOTO "endif")
+	"else":
+	(SET $result (MAYBE.NEW))
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
+
+Build(SemanticExpressionOperation[operator=RESULT] ::= SemanticExpression__0 SemanticExpression__1[type: Class]) := [
+	(DECL <Result> $result)
+	(GOTO.IF `Build(SemanticExpressionOperation[operator=IS])` "then" "else")
+	"then":
+	(SET $result (RESULT.OK.NEW (CAST `SemanticExpression__1.source` `Build(SemanticExpression__0)`)))
+	(GOTO "endif")
+	"else":
+	TODO: (SET $result (RESULT.FAIL.NEW exception))
+	(GOTO "endif")
+	"endif":
+	return (GET $result).
+];
+
 Build(SemanticExpressionOperation[operator=ADD][0: Integer][1: Integer] op) := (INT.ADD [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=SUB][0: Integer][1: Integer] op) := (INT.SUB [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=MUL][0: Integer][1: Integer] op) := (INT.MUL [`Build(op.0)` `Build(op.1)`]);
@@ -253,24 +301,6 @@ Build(SemanticExpressionOperation[operator=LT][0: Number][1: Number] op) := (LT 
 Build(SemanticExpressionOperation[operator=GT][0: Number][1: Number] op) := (GT  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=LE][0: Number][1: Number] op) := (LE  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=GE][0: Number][1: Number] op) := (GE  [`Build(op.0)` `Build(op.1)`]);
-
-Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Null")
-	:= (ID `Build(SemanticExpression)` (NULL.CONST null));
-Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression "Boolean") := [
-	(DECL <bool> $left (ID `Build(SemanticExpression)` (BOOL.CONST false)))
-	(DECL <bool> $result)
-	(GOTO.IF (GET $left) "then" "else")
-	"then":
-	(SET $result (GET $left))
-	(GOTO "endif")
-	"else":
-	(SET $result (ID `Build(SemanticExpression)` (BOOL.CONST true)))
-	(GOTO "endif")
-	"endif":
-	return (GET $result).
-];
-Build(SemanticExpressionOperation[operator=IS] ::= SemanticExpression__0 SemanticExpression__1[type: Class])
-	:= (INSTANCEOF `SemanticExpression__1.source` `Build(SemanticExpression__0)`);
 
 Build(SemanticExpressionOperation[operator=ID] op) := (ID  [`Build(op.0)` `Build(op.1)`]);
 Build(SemanticExpressionOperation[operator=EQ] op) := (EQ  [`Build(op.0)` `Build(op.1)`]);

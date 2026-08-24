@@ -106,7 +106,7 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 /* # LEXER HELPERS */
 function rg(s: string | RegExp): RegExp { // s -> (s)
-	return new RegExp(`(${ typeof s === 'string' ? s.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&') : s.source })`); // TODO: in Node 24, use `RegExp.escape()`
+	return new RegExp(`(${ typeof s === 'string' ? RegExp.escape(s) : s.source })`);
 }
 function ro(s: string | RegExp): RegExp { // s -> (s)?
 	return new RegExp(rg(s).source.concat('?'));
@@ -219,7 +219,7 @@ const OPT_COM = optional(',');
  * Otherwise, spread it into a rule:
  * @example
  * {
- * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?:', $._type), 'named'),
+ * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?', ':', $._type), 'named'),
  * }
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
@@ -364,7 +364,7 @@ module.exports = grammar({
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, '?:'), field('type_0', $._type))
+			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, seq('?', ':')), field('type_0', $._type))
 		), 'named', 'optional'),
 
 		_items_type: $ => {
@@ -476,7 +476,7 @@ module.exports = grammar({
 		...parameterize('expression_map_literal',    ({break: brk, return: rtn}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk}, {return: rtn})), OPT_COM,   '}'), 'break', 'return'),
 		...parameterize('function_arguments',        ({break: brk, return: rtn}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk}, {return: rtn})), OPT_COM)), ')'), 'break', 'return'),
 
-		...parameterize('_expression_unit', ({block, break: brk, return: rtn}) => $ => prec(11, choice(
+		...parameterize('_expression_unit', ({block, break: brk, return: rtn}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
 			call($, 'string_template',           {break: brk}, {return: rtn}),
@@ -488,7 +488,7 @@ module.exports = grammar({
 			call($, 'expression_set_literal',    {break: brk}, {return: rtn}),
 			call($, 'expression_map_literal',    {break: brk}, {return: rtn}),
 			...iff(block, alias(call($, 'block', {break: brk}, {return: rtn}), $.expression_block)),
-		)), 'block', 'break', 'return'),
+		), 'block', 'break', 'return'),
 
 		...parameterize('expression_compound', ({block, break: brk, return: rtn}) => $ => prec(10, seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice(
 			'~?',
@@ -639,6 +639,8 @@ module.exports = grammar({
 	conflicts: $ => [
 		// example:
 		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => $[rulename]),
+		[$.word, $.primitive_literal],
+		[$.word, $._type_unit],
 		[$._parameters_type],
 		[$._parameters_function],
 	],

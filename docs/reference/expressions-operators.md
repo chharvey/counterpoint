@@ -95,14 +95,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>- …</code></td>
 		</tr>
 		<tr>
-			<th>5</th>
-			<td>Is-Set</td>
-			<td>unary prefix</td>
-			<td>right-to-left</td>
-			<td><code>isset …</code></td>
-		</tr>
-		<tr>
-			<th rowspan="4">6</th>
+			<th rowspan="4">5</th>
 			<td rowspan="3">Type Cast</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -116,17 +109,17 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 		</tr>
 		<tr>
 			<td>Type Claim</td>
-			<td><code>… as &lt; … &gt;</code></td>
+			<td><code>… as : … :</code></td>
 		</tr>
 		<tr>
-			<th>7</th>
+			<th>6</th>
 			<td>Exponentiation</td>
 			<td>binary infix</td>
 			<td>right-to-left</td>
 			<td><code>… ^ …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">8</th>
+			<th rowspan="2">7</th>
 			<td>Multiplication</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -137,7 +130,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… / …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">9</th>
+			<th rowspan="2">8</th>
 			<td>Addition</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -148,7 +141,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… - …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="8">10</th>
+			<th rowspan="8">9</th>
 			<td>Less Than</td>
 			<td rowspan="8">binary infix</td>
 			<td rowspan="8">left-to-right</td>
@@ -183,7 +176,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !is …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="4">11</th>
+			<th rowspan="4">10</th>
 			<td>Identity</td>
 			<td rowspan="4">binary infix</td>
 			<td rowspan="4">left-to-right</td>
@@ -202,7 +195,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… != …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">12</th>
+			<th rowspan="2">11</th>
 			<td>Conjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -213,7 +206,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !& …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="2">13</th>
+			<th rowspan="2">12</th>
 			<td>Disjunction</td>
 			<td rowspan="2">binary infix</td>
 			<td rowspan="2">left-to-right</td>
@@ -224,7 +217,7 @@ In the table below, the horizontal ellipsis character `…` represents an allowe
 			<td><code>… !| …</code></td>
 		</tr>
 		<tr>
-			<th rowspan="3">14</th>
+			<th rowspan="3">13</th>
 			<td>Conditional</td>
 			<td>ternary infix</td>
 			<td>n/a</td>
@@ -528,190 +521,100 @@ This is important to mention because it could also affect how we write
 [additive expressions](#parsing-additive-expressions).
 
 
-### Is-Set
-**WARNING:** *This section is obsolete.*
-
-```
-`isset`  <Assignee>
-`!isset` <Assignee>
-```
-The `isset` operator returns a boolean indicating whether a variable or property has been assigned, regardless of its value.
-For non-optional variables and properties, it always returns `true`.
-For [optional variables](./variables.md#optional-variables)/properties that have been set or reassigned to a value, the operator returns `true`.
-If the variable/property has never been assigned, or has been assigned and then deleted, the operator returns `false`.
-This operator is dynamic and may return different results at various points in a program.
-
-`!isset` is a single operator that returns the negation of `isset`.
-
-```cpl
-val mut greeting?: str;
-print.(greeting);        %> null
-print.(isset greeting);  %> false
-print.(!isset greeting); %> true
-
-set greeting = "hello";
-print.(greeting);        %> "hello"
-print.(isset greeting);  %> true
-print.(!isset greeting); %> false
-
-delete greeting;
-print.(greeting);        %> null
-print.(isset greeting);  %> false
-print.(!isset greeting); %> true
-```
-
-Even if a variable has the `null` value, the `isset` operator returns `true`.
-Thus comparing an optional variable to `null` is not sufficient.
-```cpl
-val mut amount?: float | null;
-print.(amount == null); %> true
-print.(isset amount);   %> false
-
-set amount = null;
-print.(amount == null); %> true
-print.(isset amount);   %> true
-```
-
-Syntactically, `isset` may only be applied to variables and property accessors
-(that is, anything that can be assigned in a [`set` statement](./variables.md#variable-reassignment)).
-It is not applicable to arbitrary expressions.
-```cpl
-% well-formed syntax:
-isset variable;
-isset object.property;
-isset tuple.0;
-isset chained.1.calls.("and").prop.2.().xsors; % ending with an accessor
-
-% syntax errors:
-isset (x);
-isset (a || b);
-isset -c;
-isset f.();
-isset if a then b else c;
-isset { x; };
-```
-Like other unary operators, `isset` binds tighter than binary operators.
-The following pairs are well-formed and equivalent:
-```cpl
-isset a || b;
-(isset a) || b;
-
-isset a && isset b;
-(isset a) && (isset b);
-```
-`isset` binds looser than the symbolic unary operators.
-```cpl
-+isset c;   %> SyntaxError
-+(isset c); % well-formed
-```
-`!isset` is a single parse token. `!isset c` is syntax sugar for `!(isset c)`.
-
-
 ### Type Cast/Claim
 ```
-<Object>   as  <Class>
-<Object>   as? <Class>
-<Object>   as! <Class>
-<anything> as  `<` <Type> `>`
+<Object>   `as`  <Class>
+<Object>   `as?` <Class>
+<Object>   `as!` <Class>
+<anything> `as`  `:` <Type> `:`
 ```
 The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
 This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
-and the object to which `expr` evaluates is converted to a `Klass` instance at runtime.
+and the object to which `expr` evaluates is dynamically converted to a `Klass` instance at runtime.
+`Klass` must be a type narrower than (or equal to) the original type of `expr`,
+and the runtime object can only be converted if it is an instance of `Klass` (or is structurally compatible).
 If the runtime conversion is not possible, than an error is thrown.
 
-`expr as? Klass` always returns a `Maybe` object and never throws.
-If `expr` is a `Klass` instance, a `Some` is returned; otherwise it returns a `None`.
+`expr as? Klass` always returns a `Maybe[Klass]` object and never throws.
+If `expr` is a `Klass` instance (or structural equivalent), a `Some[Klass]` is returned; otherwise it returns a `None[Klass]`.
 
-`expr as! Klass` always returns a `Result` object and never throws.
-If `expr` is a `Klass` instance, an `Ok` is returned; otherwise it returns a `Fail`.
+`expr as! Klass` always returns a `Result[Klass]` object and never throws.
+If `expr` is a `Klass` instance (or structural equivalent), an `Ok[Klass]` is returned; otherwise it returns a `Fail[Klass]`.
 
-The expression `expr as <T>` tells the type system to treat `expr` as type `T`,
+The expression `expr as :T:` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
 This is called a **type claim**, because we’re *claiming* that `expr` is of type `T`.
 (We say “claim” instead of “assert”, because no runtime error is thrown.)
+This is simply a static type declaration; it has no effect at runtime.
 
 Normally, the compiler will compute the type of an expression, but sometimes the compiler gets it wrong,
 or we as programmers know more than the compiler does, based on conditions or circumstances of our code.
 We can use a claim to tell the compiler, “I know what I’m doing and the type should be *that*.”
 
-Type claims are a general form of [non-null assertions] (link pending).
-For example, we could use non-null assertion to say that an optional entry exists on an object:
-```
-val mut item: (str, ?: int) = ("apples", 42);
-val quantity: int = item?.1~?;
-```
-Since `item.1` is optional, `item?.1` is of type `int | null`.
-By using the non-null assertion `~?`, we can subtract type null.
-
-The more general form of this is simply claiming that `item?.1` is of type `int`:
-```
-val mut item: (str, ?: int) = ("apples", 42);
-val quantity: int = item?.1 as <int>;
-```
-
-Type claims can be used in situations where non-null assertion cannot.
-Whereas non-null assertions can only tell the compiler that a property *exists*,
-type claims can widen, narrow, or shift the type of an expression.
-```
+Type claims can widen, narrow, or shift the type of an expression.
+```cpl
 val mut item: (str, int | str) = ("apples", 42);
-val ingredient: anything   = item.0 as <anything>;   % widening
-val quantity:   int        = item.1 as <int>;        % narrowing
-val in_stock:   int | bool = item.1 as <int | bool>; % shifting
+val ingredient: anything   = item.0 as :anything:;   % widening
+val quantity:   int        = item.1 as :int:;        % narrowing
+val in_stock:   int | bool = item.1 as :int | bool:; % shifting
 ```
 
 Unless either type is `nothing` (the Bottom Type), a compiler error is thrown
 when the operand’s computed type is disjoint with the claimed type.
 ```cpl
-42 as <str>; %> TypeError
+42 as :str:; %> TypeError
 ```
 To work around this, go up and back down again:
 ```cpl
-42 as <anything> as <str>;
+42 as :anything: as ::str;
 ```
-In the future, the syntax `expr as! <T>` may be available.
+In the future, the syntax `expr as! :T:` may be available.
 
 #### Cast vs Claim
 A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
-if not, then the program throws. This operator is preferred in such circumstances.
-```
-val animal: Animal = Cat.();
+if it’s not a true instance or structurally compatible with the class, then the program throws. This operator is preferred in such circumstances.
+```cpl
+val animal: Animal = Cat();
 val cat: Cat = animal as Cat; % cast is allowed (`Cat` can be converted to `Cat`)
-cat.meow.();                  % calls `meow` on the `Cat` instance
+cat.meow();                   % calls `meow` on the `Cat` instance
 
 val dog: Dog = animal as Dog; % throws error: `Cat` cannot be converted to `Dog`
-dog.woof.();                  % unreachable
+dog.woof();                   % unreachable
 ```
 The `as?` and `as!` casts can be useful in tandem with maybe/result access respectively.
+```cpl
+val cat_m: Maybe[Cat] = animal as? Cat; %== Some.<Cat>
+cat_m?.meow();                          % calls `meow`
+
+val dog_m: Maybe[Dog] = animal as? Dog; %== None
+dog_m?.woof();                          %== None
+
+val cat_r: Result[Cat] = animal as! Cat; %== Ok.<Cat>
+cat_r!.meow();                           % calls `meow`
+
+val dog_r: Result[Dog] = animal as! Dog; %== Fail
+dog_r?.woof();                           %== Fail
 ```
-val cat_m: Maybe.<Cat> = animal as? Cat; %== Some.<Cat>
-cat_m?.meow.();                          % calls `meow`
 
-val dog_m: Maybe.<Dog> = animal as? Dog; %== None
-dog_m?.woof.();                          %== None
-
-val cat_r: Result.<Cat> = animal as! Cat; %== Ok.<Cat>
-cat_r!.meow.();                           % calls `meow`
-
-val dog_r: Result.<Dog> = animal as! Dog; %== Fail
-dog_r?.woof.();                           %== Fail
-```
-
-A compile-time claim (`expr as <Klass>`) *claims* to the type-checker that `expr` is already of type `Klass`,
+A compile-time claim (`expr as :Klass:`) *claims* to the type-checker that `expr` is already of type `Klass`,
 but no double-check is performed at runtime. The program will proceed as usual, assuming `expr` is assignable to type `Klass`.
 That means that if it’s *not* such an instance, an error could be thrown down the line,
 for example, when attempting to access a nonexistent method.
-```
-val animal: Animal = Cat.();
-val cat: Cat = animal as <Cat>; % claim is allowed (`Animal` and `Cat` overlap)
-cat.meow.();                    % calls `meow` on the `Cat` instance
+```cpl
+val animal: Animal = Cat();
+val cat: Cat = animal as :Cat:; % claim is allowed (`Animal` and `Cat` overlap)
+cat.meow();                     % calls `meow` on the `Cat` instance
 
-val dog: Dog = animal as <Dog>; % claim is allowed (`Animal` and `Dog` overlap)
-dog.woof.();                    % throws error: method `woof` not found on `Cat` instance
+val dog: Dog = animal as :Dog:; % claim is allowed (`Animal` and `Dog` overlap)
+dog.woof();                     % throws error: method `woof` not found on `Cat` instance
 ```
+If we had written `animal as Dog` (a cast) instead of `animal as :Dog:` (a claim),
+an error would be thrown early, before `dog.woof()` is reached.
 
-The benefits that type claim over type cast include the following, as demonstrated in the last section.
+There are benefits that type claims have over type casts, however.
 - We can narrow types that would otherwise be too wide.
 - We can use type operator syntax like intersections and unions.
+- We can supply generic arguments to classes, interfaces, and type functions.
 - We can reference non-class types and type aliases by name.
 
 A note of caution: **Type claims should never be used to “hack” the compiler**.
@@ -863,8 +766,8 @@ The parser receives these tokens and produces the correct expression.
 <Number> `!<` <Number>
 <Number> `!>` <Number>
 
-<Object> `is`  <Class>
-<Object> `!is` <Class>
+<anything> `is`  <Class>
+<anything> `!is` <Class>
 ```
 The numerical comparative operators,
 
@@ -895,8 +798,21 @@ int --> nat --> float
 Conversions are made only for determining mathematical inequality; the value of the operand does not change.
 Note that conversions may be lossy; see [Numeric Conversions](./built-ins.md#numeric-conversions) for details.
 
-The object comparative operators `is` and `!is` are not currently available,
-but they are reserved for future semantics.
+The object comparative operators `is` and `!is` determine whether the left-hand operand (any value)
+is an instance of the right-hand operand (a class).
+```cpl
+x is Null;    % sugar for `x === null`
+x is Boolean; % sugar for `x === false || x === true`
+
+42     is Symbol;  %== false
+@hello is Symbol;  %== true
+42     is Integer; %== true
+@hello is Integer; %== false
+
+x !is Null;    % sugar for `!(x is Null)`
+x !is Boolean; % sugar for `!(x is Boolean)`
+x !is Integer; % sugar for `!(x is Integer)`
+```
 
 
 ### Equality

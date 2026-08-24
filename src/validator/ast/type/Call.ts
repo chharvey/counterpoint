@@ -95,6 +95,13 @@ export class Call extends Type {
 		return xjs.Array.forEachAggregated(this.args, (arg) => arg.varCheck());
 	}
 
+	public override typeCheck(): void {
+		// NOTE: ignore type-checking `this.base` for now, as semantics is determined by syntax.
+		// (`this.base.source` must be a `CallableInterfaceName`)
+		xjs.Array.forEachAggregated(this.args, (arg) => arg.typeCheck());
+		this.eval(); // assert does not throw
+	}
+
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		if (!(this.base instanceof TypeAlias)) {

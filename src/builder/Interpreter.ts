@@ -14,6 +14,14 @@ export class Interpreter {
 
 	readonly #blocks = new Map<string, CfgNode>();
 
+	readonly #drops: VALUE.Value[] = [];
+
+
+	/** Outputs of `OP.Drop` instructions. */
+	public get drops(): VALUE.Value[] {
+		return [...this.#drops];
+	}
+
 
 	public setLocalValue(local: SymbolSchemaVar | Temp, value: VALUE.Value): void {
 		this.#symbolTable.set(local, value);
@@ -32,5 +40,9 @@ export class Interpreter {
 			throw new Error(`CfgNode with label \`${ label }\` not found in Interpreter.`);
 		}
 		return this.#blocks.get(label)!.interpret(this);
+	}
+
+	public pushDrop(value: VALUE.Value): void {
+		this.#drops.push(value);
 	}
 }

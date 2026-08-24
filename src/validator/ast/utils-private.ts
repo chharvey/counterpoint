@@ -16,6 +16,10 @@ import {
 	TYPE,
 } from '../../typer/index.ts';
 import {
+	IntrinsicName,
+	INTRINSICS,
+} from '../../parser/index.ts';
+import {
 	Operator,
 	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
@@ -73,27 +77,8 @@ export function check_unique_param_keys(params: readonly ParameterFunction[]): v
 
 
 
-/** Built-in class names. May be referenced as types or as constructors. */
-export enum IntrinsicName {
-	NULL    = 'Null',
-	BOOLEAN = 'Boolean',
-	SYMBOL  = 'Symbol',
-	INTEGER = 'Integer',
-	NATURAL = 'Natural',
-	FLOAT   = 'Float',
-	STRING  = 'String',
-	OBJECT  = 'Object',
-	LIST    = 'List',
-	DICT    = 'Dict',
-	SET     = 'Set',
-	MAP     = 'Map',
-	MAYBE   = 'Maybe',
-	NONE    = 'None',
-	SOME    = 'Some',
-}
-export const INTRINSICS: readonly string[] = Object.values<string>(IntrinsicName);
 export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
-	if (!INTRINSICS.includes(source)) {
+	if (!(INTRINSICS as readonly string[]).includes(source)) {
 		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ INTRINSICS.join(' | ') }\`.`);
 	}
 }

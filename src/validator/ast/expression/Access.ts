@@ -12,6 +12,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import {TYPE} from '../../../typer/index.ts';
+import {IntrinsicName} from '../../../parser/index.ts';
 import type {
 	SyntaxNodeType,
 	SyntaxNodeFamily,
@@ -72,7 +73,7 @@ export class Access extends Expression implements Reassignable {
 			return OP.conditional_expression(
 				builder,
 				typ,
-				() => new OP.InstanceOf(OP.InstanceOfName.NONE, base_value),
+				() => new OP.Instance(OP.OpCode.INSTANCEOF, IntrinsicName.NONE, base_value),
 				() => new OP.MaybeNew(typ.typearg),
 				() => new OP.MaybeNew(typ.typearg, this.#buildNonMaybeBase(
 					builder,

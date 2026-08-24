@@ -29,62 +29,62 @@ import {
 test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('StatementReassignment', () => {
-			test.test('does not throw if the variable is writable.', () => {
-				const {goal} = setupScript(`{
+			test.test('`set` throws if the variable is read-only.', () => {
+				const {goal, stmts} = setupScript(`{
 					val mut i: int = 42;
-					set i = 43;
-				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
+					val     j: int = 42;
+					set i = 24;
+					set j = 24;
+				}`, {varCheck: false});
+				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: false,
 				});
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
+					isWritable:      false,
+					isUninitialized: false,
+				});
+				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorReassignment);
 			});
-			test.test('throws if the variable is read-only.', () => {
-				assert.throws(() => setupScript(`{
-					val i: int = 42;
-					set i = 43;
-				}`, {typeCheck: false}), AssignmentErrorReassignment);
-			});
-			test.test('always throws for type alias reassignment.', () => {
+			test.test('`set` always throws for type alias reassignment.', () => {
 				assert.throws(() => setupScript(`{
 					type T = 42;
 					set T = 43;
 				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
-			test.test('disallows manual reassignment of the iteration variable.', () => {
+			test.test('`set` disallows manual reassignment of the iteration variable.', () => {
 				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						set it = 44;
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
-			test.test('does not throw if the variable was uninitialized.', () => {
-				const {goal} = setupScript(`{
+			test.test('`delete` throws if the variable was initialized.', () => {
+				const {goal, stmts} = setupScript(`{
 					val mut i?: int;
+					val mut j:  int = 42;
 					delete i;
-				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
+					delete j;
+				}`, {varCheck: false});
+				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: true,
 				});
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
+					isWritable:      true,
+					isUninitialized: false,
+				});
+				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorDeletion);
 			});
-			test.test('throws if the variable was initialized.', () => {
-				assert.throws(() => setupScript(`{
-					val mut i: int = 42;
-					delete i;
-				}`, {typeCheck: false}), AssignmentErrorDeletion);
-				assert.throws(() => setupScript(`{
-					val i: int = 42;
-					delete i;
-				}`, {typeCheck: false}), AssignmentErrorDeletion);
-			});
-			test.test('always throws for type alias deletion.', () => {
+			test.test('`delete` always throws for type alias deletion.', () => {
 				assert.throws(() => setupScript(`{
 					type T = 42;
 					delete T;
 				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
-			test.test('disallows deletion of the iteration variable.', () => {
+			test.test('`delete` disallows deletion of the iteration variable.', () => {
 				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						delete it;
@@ -399,28 +399,22 @@ test.suite('Statement', () => {
 						val mut i: int = 42;
 						set i = 4.3;
 					}`, {typeCheck: false});
-					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
-				test.test('allows reassignment when uninitialized.', () => {
-					assert.partialDeepStrictEqual(setupScript(`{
+				test.test('does not allow reassignment of `null` or `Maybe` when uninitialized.', () => {
+					const {goal, stmts} = setupScript(`{
 						val mut x?: int;
+						val mut y?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbolBySource('x'), {
-						isWritable:      true,
-						isUninitialized: true,
-						type:            TYPE.INT,
-					});
-				});
-				test.test('does not allow reassignment of `null` when uninitialized.', () => {
-					const {goal} = setupScript(`{
-						val mut x?: int;
 						set x = null;
+						set x = y;
 					}`, {typeCheck: false});
+					stmts.slice(0, 3).forEach((stmt) => stmt.typeCheck());
 					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('x'), {
 						isWritable:      true,
 						isUninitialized: true,
 					});
-					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
 				test.test('None/Some assignable to Maybe, but not to each other.', () => {
 					setupScript(`{
@@ -433,7 +427,7 @@ test.suite('Statement', () => {
 						val e: Some.<int> = None.<int>();
 						val f: None.<int> = Some.<int>(42);
 					}`, {typeCheck: false});
-					return stmts.forEach((stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+					return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
 			});
 			test.suite('for property reassignment.', () => {
@@ -734,7 +728,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementReassignment', () => {
-			test.test('for variables: pushes OP.Set instruction.', () => {
+			test.test('for variables: pushes (SET) with a value.', () => {
 				const {stmts, builder} = setupScript(`{
 					val mut x: int = 42;
 					set x = 43;
@@ -749,17 +743,26 @@ test.suite('Statement', () => {
 						(SET x (INT.CONST -42))
 				`.trim());
 			});
-			test.test('deletion: pushes OP.Set instruction.', () => {
+			test.test('for optional variables: wraps value in (MAYBE.NEW).', () => {
 				const {stmts, builder} = setupScript(`{
 					val mut x?: int;
-					delete x;
 					set x = 42;
 				}`, {build: false});
 				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
 				return assert.strictEqual(builder.print(), xjs.String.dedent`
 					"block-0":
-						(SET x ${ op_maybe_string() })
 						(SET x ${ op_maybe_string('(INT.CONST 42)') })
+				`.trim());
+			});
+			test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x?: int;
+					delete x;
+				}`, {build: false});
+				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
+					"block-0":
+						(SET x ${ op_maybe_string() })
 				`.trim());
 			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {

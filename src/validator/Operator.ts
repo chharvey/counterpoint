@@ -14,6 +14,8 @@ export enum Operator {
 	CAST,
 	CAST_MAYBE,
 	CAST_RESULT,
+	IS,
+	ISNT,
 	EXP,
 	MUL,
 	DIV,
@@ -23,8 +25,6 @@ export enum Operator {
 	GT,
 	LE,
 	GE,
-	IS,
-	ISNT,
 	ID,
 	EQ,
 	AND,
@@ -60,10 +60,10 @@ export type ValidOperatorUnary = (
 );
 
 export type ValidOperatorCast = (
+	| Operator.IS
 	| Operator.CAST
 	| Operator.CAST_MAYBE
 	| Operator.CAST_RESULT
-	| Operator.IS
 );
 
 export type ValidOperatorArithmetic = (

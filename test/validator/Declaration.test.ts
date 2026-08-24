@@ -360,14 +360,14 @@ test.suite('Declaration', () => {
 					]);
 				});
 				test.test('throws when assigned expression is not a primitive literal, string template, constructor call, or inferrable tuple/record literal.', () => {
-					xjs.Array.forEachAggregated(extract_lines`
+					xjs.Array.forEachAggregated(setupScript(`{
 						val operation = 21 * 2;
 						val block_expr = { 42; };
 						val tup_literal = (42, "hello", operation);
 						val rec_literal = (a= 69, b= "world", c= operation);
 						val list_literal = [42, 69];
 						val dict_literal = [a= "hello", b= "world"];
-					`, (src) => assert.throws(() => AST.STMT.DeclarationVariable.fromSource(src).typeCheck(), AssignmentErrorMissingType));
+					}`, {typeCheck: false}).stmts, (stmt) => assert.throws(() => stmt.typeCheck(), AssignmentErrorMissingType));
 				});
 			});
 			test.test('throws when the assigned expression’s type is not compatible with the variable assignee’s type.', () => {
