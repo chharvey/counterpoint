@@ -298,6 +298,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type B = (bool,);
 					type C = (?: bool);
 					type D = (bool, int);
+					type D = (bool?, int);
 					type E = (bool, ?: int);
 					type U = (
 						V.0,
@@ -318,6 +319,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'type_tuple_literal',
 					s('entry_type', f('type_0', 'keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
+					s('entry_type', f('type_0', 'type_unary_symbol', s('keyword_type'))),
 					s('entry_type', f('type_0', 'keyword_type')),
 				),
 				s(
@@ -352,7 +358,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		TypeRecordLiteral: [
 			xjs.String.dedent`
 				{
-					type T = (a: bool, b?: int, _: str);
+					type T = (a:  bool, b?: int, _: str);
+					type T = (a?: bool, b:  int, _: str);
 					type U = (
 						a: V.0,
 						b: W.<float>,
@@ -365,6 +372,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'type_record_literal',
 					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
 					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named',           f('word_0', 'word'),                  f('type_0', 'keyword_type')),
+				),
+				s(
+					'type_record_literal',
+					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
 					s('entry_type__named',           f('word_0', 'word'),                  f('type_0', 'keyword_type')),
 				),
 				s(

@@ -119,32 +119,35 @@ Nil! VarCheck(SemanticDeclarationVariable decl) :=
 
 
 
-Nil! VarCheck(SemanticStatementRessignment stmt) :=
-	1. *For each* `it` in `stmt`:
-		1. *Perform:* *Unwrap:* `VarCheck(it)`.
-	2. *Let* `assignee` be `stmt.children.0`.
-	3. *If* `assignee` is a SemanticExpressionVariable:
-		1. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
-		2. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
-	4. *If* `stmt.children.count` is 2:
-		1. *Note:* This is a `set` statement.
-		2. *If* `symbol` is set:
-			1. *If* `symbol.isWritable` is `false`:
-				1. *Throw:* a new AssignmentErrorReassignment.
-			2. *Else:*
-				1. *Return.*
-		3. *Else:*
-			1. *Return.*
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionVariable) :=
+	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionVariable)`.
+	2. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
+	3. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+	4. *If* `symbol.isUninitialized` is `false`:
+		1. *Throw:* a new AssignmentErrorDeletion.
 	5. *Else:*
-		1. *Assert:* `stmt.children.count` is 1.
-		2. *Note:* This is a `delete` statement.
-		3. *If* `symbol` is set:
-			1. *If* `symbol.isWritable` is `false` *or* `symbol.isUninitialized` is `false`:
-				1. *Throw:* a new AssignmentErrorDeletion.
-			2. *Else:*
-				1. *Return.*
-		4. *Else:*
-			1. *Return.*
+		1. Fall through.
+	6. *Return.*
+;
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionVariable SemanticExpression) :=
+	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionVariable)`.
+	2. *Perform:* *Unwrap:* `VarCheck(SemanticExpression)`.
+	3. *Assert:* The validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `assignee.id`.
+	4. *Assert:* `symbol` is an instance of `SymbolSchemaVar`.
+	5. *If* `symbol.isWritable` is `false`:
+		1. *Throw:* a new AssignmentErrorReassignment.
+	6. *Else:*
+		1. Fall through.
+	7. *Return.*
+;
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionAccess) :=
+	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionAccess)`.
+	2. *Return.*
+;
+Nil! VarCheck(SemanticStatementReassignment ::= SemanticExpressionAccess SemanticExpression) :=
+	1. *Perform:* *Unwrap:* `VarCheck(SemanticExpressionAccess)`.
+	2. *Perform:* *Unwrap:* `VarCheck(SemanticExpression)`.
+	3. *Return.*
 ;
 
 
