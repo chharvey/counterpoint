@@ -175,6 +175,9 @@ export function ops(vm: VirtualMachine) {
 			vm.mod.wasm.call('op:is-some', [param0], vm.reftype.Value)
 		),
 
+		/** Is the value a composite `Function` type? */
+		isFunction: (_: number) => vm.mod.wasm.nop(),
+
 		/** Cast the value to type `null`. */
 		asNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:as-null', [param0], vm.reftype.Value)
@@ -239,6 +242,9 @@ export function ops(vm: VirtualMachine) {
 		asSome: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:as-some', [param0], vm.reftype.Value)
 		),
+
+		/** Cast the value to type `Function`. */
+		asFunction: (_: number) => vm.mod.wasm.nop(),
 
 		/** Adds two `int`s. */
 		intAdd: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (

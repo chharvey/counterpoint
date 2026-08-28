@@ -85,7 +85,7 @@ export class Instance extends Value {
 			case IntrinsicName.MAYBE:    { is_instance = operand instanceof VALUE.Maybe;                    break; }
 			case IntrinsicName.NONE:     { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
 			case IntrinsicName.SOME:     { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
-			case IntrinsicName.FUNCTION: { throw new Error('not yet supported.'); }
+			case IntrinsicName.FUNCTION: { is_instance = operand instanceof VALUE.Function;                 break; }
 		}
 		switch (this.operator) {
 			case OpCode.INSTANCEOF: {
@@ -120,7 +120,7 @@ export class Instance extends Value {
 					case IntrinsicName.MAYBE:    { return cg.vm.op.isMaybe(code); }
 					case IntrinsicName.NONE:     { return cg.vm.op.isNone(code); }
 					case IntrinsicName.SOME:     { return cg.vm.op.isSome(code); }
-					case IntrinsicName.FUNCTION: { throw new Error('not yet supported.'); }
+					case IntrinsicName.FUNCTION: { return cg.vm.op.isFunction(code); }
 				}
 				break;
 			}
@@ -141,7 +141,7 @@ export class Instance extends Value {
 					case IntrinsicName.MAYBE:    { return cg.vm.op.asMaybe(code); }
 					case IntrinsicName.NONE:     { return cg.vm.op.asNone(code); }
 					case IntrinsicName.SOME:     { return cg.vm.op.asSome(code); }
-					case IntrinsicName.FUNCTION: { throw new Error('not yet supported.'); }
+					case IntrinsicName.FUNCTION: { return cg.vm.op.asFunction(code); }
 				}
 			}
 		}

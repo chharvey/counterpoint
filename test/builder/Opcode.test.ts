@@ -440,6 +440,7 @@ test.suite('Opcode', () => {
 							IntrinsicName.DICT,
 							IntrinsicName.SET,
 							IntrinsicName.MAP,
+							IntrinsicName.FUNCTION,
 						] as const).forEach((name, i) => {
 							test.test(name, () => {
 								const builder = new Builder();
@@ -460,6 +461,7 @@ test.suite('Opcode', () => {
 									VALUE.Dict,
 									VALUE.Set,
 									VALUE.Map,
+									VALUE.Function,
 								][i])));
 							});
 						});
@@ -1695,7 +1697,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ INTRINSICS.slice(2, -1).map((classname) => `null is ${ classname };`).join('\n') };
+						${ INTRINSICS.slice(2).map((classname) => `null is ${ classname };`).join('\n') };
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1712,11 +1714,12 @@ test.suite('Opcode', () => {
 						cg.vm.op.isMaybe(operand),
 						cg.vm.op.isNone(operand),
 						cg.vm.op.isSome(operand),
+						cg.vm.op.isFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ INTRINSICS.slice(0, -1).map((classname) => `null as <anything> as ${ classname };`).join('\n') };
+						${ INTRINSICS.map((classname) => `null as <anything> as ${ classname };`).join('\n') };
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
@@ -1735,6 +1738,7 @@ test.suite('Opcode', () => {
 						cg.vm.op.asMaybe(operand),
 						cg.vm.op.asNone(operand),
 						cg.vm.op.asSome(operand),
+						cg.vm.op.asFunction(operand),
 					].map((expr) => wasm.drop(expr)));
 				});
 			});
