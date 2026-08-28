@@ -154,6 +154,18 @@
 		(ref.test (ref $String) (struct.get $Value $composite (local.get $value)))
 	))
 )
+(func $op:is-tuple (export "op::isTuple") (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Tuple) (struct.get $Value $composite (local.get $value)))
+	))
+)
+(func $op:is-record (export "op::isRecord") (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Record) (struct.get $Value $composite (local.get $value)))
+	))
+)
 (func $op:is-object (export "op::isObject") (param $value (ref $Value)) (result (ref $Value))
 	(call $Value.bool-from-i32 (i32.and
 		(call $Value.is-composite (local.get $value))

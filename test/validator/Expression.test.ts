@@ -112,10 +112,15 @@ test.suite('Expression', () => {
 		});
 		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
-				"""hello {{ 42 }} world""";
+					val user: (name: str) = (name= "Alan");
+					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new {{ "messages" }}.""";
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world")))
+					(DECL <record> user (RECORD.NEW @name->(STR.CONST "Alan")))
+					(DECL <str> $0 (RECORD.GET @name (GET user)))
+					(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 3)))
+					(DECL <str> $2 (STR.FROM (GET $1)))
+					(DROP (STR.TEMPLATE (STR.CONST "Hello, ") (GET $0) (STR.CONST ", you have ") (GET $2) (STR.CONST " new ") (STR.CONST "messages") (STR.CONST ".")))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -124,8 +129,9 @@ test.suite('Expression', () => {
 				"""hello {{ """great {{ 42 }} big""" }} world""";
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <str> $0 (STR.TEMPLATE (STR.CONST "great ") (INT.CONST 42) (STR.CONST " big")))
-					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $0) (STR.CONST " world")))
+					(DECL <str> $0 (STR.FROM (INT.CONST 42)))
+					(DECL <str> $1 (STR.TEMPLATE (STR.CONST "great ") (GET $0) (STR.CONST " big")))
+					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $1) (STR.CONST " world")))
 					(ENDPROGRAM)
 			`.trim());
 		});

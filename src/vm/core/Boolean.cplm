@@ -1,0 +1,10 @@
+%%% Wrapper class for the `false` and `true` values. %%%
+public class Boolean {
+	public new (private readonly data?: bool = false) {;}
+	public new (arg: anything) {
+		this(!!arg);
+	}
+
+	internal toString(): str
+		=> if this.data then "true" else "false";
+}
