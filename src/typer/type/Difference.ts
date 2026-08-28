@@ -49,10 +49,6 @@ export class Difference extends TypeOperation {
 	 * which is impossible because the algorithm would have already produced the `anything` type.
 	 */
 
-	public override get isReference(): boolean {
-		return this.left.isReference;
-	}
-
 	@botOrTopString
 	public override toString(): string {
 		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');

@@ -361,12 +361,6 @@ export abstract class Type {
 	}
 
 	/**
-	 * Return whether this type is a reference type or a value type.
-	 * @return `true` if this type is a reference type
-	 */
-	public abstract get isReference(): boolean;
-
-	/**
 	 * @return a string representation of this type
 	 */
 	public abstract toString(): string;
@@ -570,10 +564,6 @@ export class TypeInterface extends Type {
 
 	public override get isTopType(): boolean {
 		return this.properties.size === 0;
-	}
-
-	public override get isReference(): boolean {
-		return true;
 	}
 
 	public override toString(): string {

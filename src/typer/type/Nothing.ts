@@ -21,10 +21,6 @@ export class Nothing extends Type {
 		return true;
 	}
 
-	public override get isReference(): boolean {
-		return false;
-	}
-
 	public override toString(): string {
 		return Keyword.NOTHING;
 	}

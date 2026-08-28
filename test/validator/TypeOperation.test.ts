@@ -39,10 +39,8 @@ test.suite('TypeOperation', () => {
 					type B = (int, int, int);
 					type F = [Object];
 
-					type C = mut (A & F);
-					type D = mut (A | B);
-
 					type E = mut Object; % equivalent to \`Object\`
+					type G = mut [int] | mut [Object];
 				}`, {build: false}); // assert does not throw
 			});
 
@@ -58,6 +56,7 @@ test.suite('TypeOperation', () => {
 					'mut int',
 					'mut float',
 					'mut str',
+					'mut ([int] | [Object])',
 				].forEach((src) => assert.throws(() => AST.TYPE.Operation.fromSource(src).eval(), TypeErrorInvalidOperation));
 			});
 		});

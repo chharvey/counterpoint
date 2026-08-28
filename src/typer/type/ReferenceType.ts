@@ -32,8 +32,4 @@ export function isObjectType(
  * - Maybe
  */
 export abstract class ReferenceType extends Type {
-	/** @final */
-	public override get isReference(): boolean {
-		return true;
-	}
 }

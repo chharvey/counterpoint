@@ -15,8 +15,4 @@ import {Type} from './Type.ts';
  * - TypeRecord
  */
 export abstract class ValueType extends Type {
-	/** @final */
-	public override get isReference(): boolean {
-		return false;
-	}
 }
