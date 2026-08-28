@@ -1030,23 +1030,24 @@ test.suite('Opcode', () => {
 					val user: (name: str) = (name= "Alan");
 					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
 				}`);
-				const {Value} = cg.vm;
+				const {reftype, Value} = cg.vm;
 
 				const strings = [
 					genConst(cg, 'Hello, '),
-					wasm.local.get(1, cg.vm.reftype.Value),
+					wasm.local.get(1, reftype.Value),
 					genConst(cg, ', you have '),
-					wasm.local.get(2, cg.vm.reftype.Value),
+					wasm.local.get(3, reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => Value.stringify(code));
+				].map((code) => Value.cast(code, reftype.String));
 
-				const OFFSET_IDX = 9;
+				const RESULT_IDX =  9;
+				const OFFSET_IDX = 10;
 
-				const string_0_get: binaryen.ExpressionRef = wasm.local.get(3, cg.vm.reftype.String);
-				const string_1_get: binaryen.ExpressionRef = wasm.local.get(4, cg.vm.reftype.String);
-				const string_2_get: binaryen.ExpressionRef = wasm.local.get(5, cg.vm.reftype.String);
-				const string_3_get: binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftype.String);
-				const string_4_get: binaryen.ExpressionRef = wasm.local.get(7, cg.vm.reftype.String);
+				const string_0_get: binaryen.ExpressionRef = wasm.local.get(4, reftype.String);
+				const string_1_get: binaryen.ExpressionRef = wasm.local.get(5, reftype.String);
+				const string_2_get: binaryen.ExpressionRef = wasm.local.get(6, reftype.String);
+				const string_3_get: binaryen.ExpressionRef = wasm.local.get(7, reftype.String);
+				const string_4_get: binaryen.ExpressionRef = wasm.local.get(8, reftype.String);
 
 				const string_0_len: binaryen.ExpressionRef = wasm.array.len(string_0_get);
 				const string_1_len: binaryen.ExpressionRef = wasm.array.len(string_1_get);
@@ -1054,17 +1055,17 @@ test.suite('Opcode', () => {
 				const string_3_len: binaryen.ExpressionRef = wasm.array.len(string_3_get);
 				const string_4_len: binaryen.ExpressionRef = wasm.array.len(string_4_get);
 
-				const result_get: binaryen.ExpressionRef = wasm.local.get(8, cg.vm.reftype.String);
+				const result_get: binaryen.ExpressionRef = wasm.local.get(RESULT_IDX, reftype.String);
 				const offset_get: binaryen.ExpressionRef = wasm.local.get(OFFSET_IDX, binaryen.i32);
 				return assertEqualBins(
-					builder.instructions[3].codegen(cg),
+					builder.instructions.at(-1)!.codegen(cg),
 					wasm.drop(Value.newComposite(wasm.block(null, [
-						wasm.local.set(3, strings[0]),
-						wasm.local.set(4, strings[1]),
-						wasm.local.set(5, strings[2]),
-						wasm.local.set(6, strings[3]),
-						wasm.local.set(7, strings[4]),
-						wasm.local.set(8, wasm.array.new_default(
+						wasm.local.set(4, strings[0]),
+						wasm.local.set(5, strings[1]),
+						wasm.local.set(6, strings[2]),
+						wasm.local.set(7, strings[3]),
+						wasm.local.set(8, strings[4]),
+						wasm.local.set(RESULT_IDX, wasm.array.new_default(
 							cg.vm.heaptype.String,
 							wasm.i32.add(
 								wasm.i32.add(
@@ -1092,7 +1093,7 @@ test.suite('Opcode', () => {
 						]),
 						wasm.array.copy(result_get, offset_get, string_4_get, wasm.i32.const(0), string_4_len),
 						result_get,
-					], cg.vm.reftype.String))),
+					], reftype.String))),
 				);
 			});
 

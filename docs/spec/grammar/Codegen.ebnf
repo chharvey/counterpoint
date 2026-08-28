@@ -15,14 +15,14 @@ Codegen((STR.CONST `v`)) := (call $Value.new-composite
 
 Codegen((GET `id`)) := (local.get ‹index›);
 
-Codegen((STR.TEMPLATE `values`)) := (call $Value.new-composite
+Codegen((STR.TEMPLATE `strings`)) := (call $Value.new-composite
 	(block (result (ref $String))
-		`values.map("(local.set $str_`i` (call $Value.stringify `Codegen(values[i])`))")`
+		`strings.map("(local.set $str_`i` (ref.cast (ref $String) (struct.get $Value $composite `Codegen(strings[i])`)))")`
 		(local.set $string
-			(array.new_default $String `values.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
+			(array.new_default $String `strings.map("(array.len (local.get $str_`i`))").reduce("(i32.add `a` `b`)")`)
 		)
 		(local.set $offset (i32.const 0))
-		`values.flatMap([
+		`strings.flatMap([
 			"(array.COPY
 				(local.get $string)
 				(local.get $offset)

@@ -149,7 +149,11 @@ Build(SemanticExpressionConstant[value: VALUE.Natural] const) := `Build(const.va
 Build(SemanticExpressionConstant[value: VALUE.Float]   const) := `Build(const.value)`;
 Build(SemanticExpressionConstant[value: VALUE.String]  const) := `Build(const.value)`;
 
-Build(SemanticExpressionTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(Build)`);
+Build(SemanticExpressionTemplate tpl) := (STR.TEMPLATE `...tpl.children.map(
+	if Subtype(TypeOf(tpl.children[i]), String)
+	then Build(tpl.children[i])
+	else "(STR.FROM `Build(tpl.children[i])`)"
+)`);
 
 Build(SemanticExpressionVariable var) := (GET `GetSymbolSchema(var)`);
 
