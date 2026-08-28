@@ -64,21 +64,22 @@ export class OperationBinaryCast extends OperationBinary {
 			return TYPE.NOTHING;
 		}
 		const t1: TYPE.Type = new Map<IntrinsicName, TYPE.Type>([
-			[IntrinsicName.NULL,    TYPE.NULL],
-			[IntrinsicName.BOOLEAN, TYPE.BOOL],
-			[IntrinsicName.SYMBOL,  TYPE.SYM],
-			[IntrinsicName.INTEGER, TYPE.INT],
-			[IntrinsicName.NATURAL, TYPE.NAT],
-			[IntrinsicName.FLOAT,   TYPE.FLOAT],
-			[IntrinsicName.STRING,  TYPE.STR],
-			[IntrinsicName.OBJECT,  TYPE.OBJ],
-			[IntrinsicName.LIST,    new TYPE.List(TYPE.ANYTHING)],
-			[IntrinsicName.DICT,    new TYPE.Dict(TYPE.ANYTHING)],
-			[IntrinsicName.SET,     new TYPE.Set(TYPE.ANYTHING)],
-			[IntrinsicName.MAP,     new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
-			[IntrinsicName.MAYBE,   new TYPE.Maybe(TYPE.ANYTHING)],
-			[IntrinsicName.NONE,    new TYPE.None(TYPE.ANYTHING)],
-			[IntrinsicName.SOME,    new TYPE.Some(TYPE.ANYTHING)],
+			[IntrinsicName.NULL,     TYPE.NULL],
+			[IntrinsicName.BOOLEAN,  TYPE.BOOL],
+			[IntrinsicName.SYMBOL,   TYPE.SYM],
+			[IntrinsicName.INTEGER,  TYPE.INT],
+			[IntrinsicName.NATURAL,  TYPE.NAT],
+			[IntrinsicName.FLOAT,    TYPE.FLOAT],
+			[IntrinsicName.STRING,   TYPE.STR],
+			[IntrinsicName.OBJECT,   TYPE.OBJ],
+			[IntrinsicName.LIST,     new TYPE.List(TYPE.ANYTHING)],
+			[IntrinsicName.DICT,     new TYPE.Dict(TYPE.ANYTHING)],
+			[IntrinsicName.SET,      new TYPE.Set(TYPE.ANYTHING)],
+			[IntrinsicName.MAP,      new TYPE.Map(TYPE.ANYTHING, TYPE.ANYTHING)],
+			[IntrinsicName.MAYBE,    new TYPE.Maybe(TYPE.ANYTHING)],
+			[IntrinsicName.NONE,     new TYPE.None(TYPE.ANYTHING)],
+			[IntrinsicName.SOME,     new TYPE.Some(TYPE.ANYTHING)],
+			[IntrinsicName.FUNCTION, new TYPE.Function(new TYPE.Tuple(), new TYPE.Record(), TYPE.ANYTHING)],
 		]).get(this.operand1.source as IntrinsicName)!;
 		switch (this.operator) {
 			case Operator.IS: {

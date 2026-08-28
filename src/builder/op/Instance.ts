@@ -40,6 +40,7 @@ type InstanceOfName = (
 	| IntrinsicName.MAYBE
 	| IntrinsicName.NONE
 	| IntrinsicName.SOME
+	| IntrinsicName.FUNCTION
 );
 
 
@@ -69,21 +70,22 @@ export class Instance extends Value {
 		const operand: VALUE.Value = this.operand.interpret(interp);
 		let is_instance: boolean;
 		switch (this.name) {
-			case IntrinsicName.NULL:    { is_instance = operand instanceof VALUE.Null;                     break; }
-			case IntrinsicName.BOOLEAN: { is_instance = operand instanceof VALUE.Boolean;                  break; }
-			case IntrinsicName.SYMBOL:  { is_instance = operand instanceof VALUE.Symbol;                   break; }
-			case IntrinsicName.INTEGER: { is_instance = operand instanceof VALUE.Integer;                  break; }
-			case IntrinsicName.NATURAL: { is_instance = operand instanceof VALUE.Natural;                  break; }
-			case IntrinsicName.FLOAT:   { is_instance = operand instanceof VALUE.Float;                    break; }
-			case IntrinsicName.STRING:  { is_instance = operand instanceof VALUE.String;                   break; }
-			case IntrinsicName.OBJECT:  { is_instance = operand.isReference;                               break; }
-			case IntrinsicName.LIST:    { is_instance = operand instanceof VALUE.List;                     break; }
-			case IntrinsicName.DICT:    { is_instance = operand instanceof VALUE.Dict;                     break; }
-			case IntrinsicName.SET:     { is_instance = operand instanceof VALUE.Set;                      break; }
-			case IntrinsicName.MAP:     { is_instance = operand instanceof VALUE.Map;                      break; }
-			case IntrinsicName.MAYBE:   { is_instance = operand instanceof VALUE.Maybe;                    break; }
-			case IntrinsicName.NONE:    { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
-			case IntrinsicName.SOME:    { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
+			case IntrinsicName.NULL:     { is_instance = operand instanceof VALUE.Null;                     break; }
+			case IntrinsicName.BOOLEAN:  { is_instance = operand instanceof VALUE.Boolean;                  break; }
+			case IntrinsicName.SYMBOL:   { is_instance = operand instanceof VALUE.Symbol;                   break; }
+			case IntrinsicName.INTEGER:  { is_instance = operand instanceof VALUE.Integer;                  break; }
+			case IntrinsicName.NATURAL:  { is_instance = operand instanceof VALUE.Natural;                  break; }
+			case IntrinsicName.FLOAT:    { is_instance = operand instanceof VALUE.Float;                    break; }
+			case IntrinsicName.STRING:   { is_instance = operand instanceof VALUE.String;                   break; }
+			case IntrinsicName.OBJECT:   { is_instance = operand.isReference;                               break; }
+			case IntrinsicName.LIST:     { is_instance = operand instanceof VALUE.List;                     break; }
+			case IntrinsicName.DICT:     { is_instance = operand instanceof VALUE.Dict;                     break; }
+			case IntrinsicName.SET:      { is_instance = operand instanceof VALUE.Set;                      break; }
+			case IntrinsicName.MAP:      { is_instance = operand instanceof VALUE.Map;                      break; }
+			case IntrinsicName.MAYBE:    { is_instance = operand instanceof VALUE.Maybe;                    break; }
+			case IntrinsicName.NONE:     { is_instance = operand instanceof VALUE.Maybe && operand.isNone;  break; }
+			case IntrinsicName.SOME:     { is_instance = operand instanceof VALUE.Maybe && !operand.isNone; break; }
+			case IntrinsicName.FUNCTION: { throw new Error('not yet supported.'); }
 		}
 		switch (this.operator) {
 			case OpCode.INSTANCEOF: {
@@ -105,39 +107,41 @@ export class Instance extends Value {
 		switch (this.operator) {
 			case OpCode.INSTANCEOF: {
 				switch (this.name as InstanceOfName) {
-					case IntrinsicName.SYMBOL:  { return cg.vm.op.isInt(code); }
-					case IntrinsicName.INTEGER: { return cg.vm.op.isInt(code); }
-					case IntrinsicName.NATURAL: { return cg.vm.op.isNat(code); }
-					case IntrinsicName.FLOAT:   { return cg.vm.op.isFloat(code); }
-					case IntrinsicName.STRING:  { return cg.vm.op.isString(code); }
-					case IntrinsicName.OBJECT:  { return cg.vm.op.isObject(code); }
-					case IntrinsicName.LIST:    { return cg.vm.op.isList(code); }
-					case IntrinsicName.DICT:    { return cg.vm.op.isDict(code); }
-					case IntrinsicName.SET:     { return cg.vm.op.isMap(code); }
-					case IntrinsicName.MAP:     { return cg.vm.op.isMap(code); }
-					case IntrinsicName.MAYBE:   { return cg.vm.op.isMaybe(code); }
-					case IntrinsicName.NONE:    { return cg.vm.op.isNone(code); }
-					case IntrinsicName.SOME:    { return cg.vm.op.isSome(code); }
+					case IntrinsicName.SYMBOL:   { return cg.vm.op.isInt(code); }
+					case IntrinsicName.INTEGER:  { return cg.vm.op.isInt(code); }
+					case IntrinsicName.NATURAL:  { return cg.vm.op.isNat(code); }
+					case IntrinsicName.FLOAT:    { return cg.vm.op.isFloat(code); }
+					case IntrinsicName.STRING:   { return cg.vm.op.isString(code); }
+					case IntrinsicName.OBJECT:   { return cg.vm.op.isObject(code); }
+					case IntrinsicName.LIST:     { return cg.vm.op.isList(code); }
+					case IntrinsicName.DICT:     { return cg.vm.op.isDict(code); }
+					case IntrinsicName.SET:      { return cg.vm.op.isMap(code); }
+					case IntrinsicName.MAP:      { return cg.vm.op.isMap(code); }
+					case IntrinsicName.MAYBE:    { return cg.vm.op.isMaybe(code); }
+					case IntrinsicName.NONE:     { return cg.vm.op.isNone(code); }
+					case IntrinsicName.SOME:     { return cg.vm.op.isSome(code); }
+					case IntrinsicName.FUNCTION: { throw new Error('not yet supported.'); }
 				}
 				break;
 			}
 			case OpCode.CAST: {
 				switch (this.name) {
-					case IntrinsicName.NULL:    { return cg.vm.op.asNull(code); }
-					case IntrinsicName.BOOLEAN: { return cg.vm.op.asBool(code); }
-					case IntrinsicName.SYMBOL:  { return cg.vm.op.asInt(code); }
-					case IntrinsicName.INTEGER: { return cg.vm.op.asInt(code); }
-					case IntrinsicName.NATURAL: { return cg.vm.op.asNat(code); }
-					case IntrinsicName.FLOAT:   { return cg.vm.op.asFloat(code); }
-					case IntrinsicName.STRING:  { return cg.vm.op.asString(code); }
-					case IntrinsicName.OBJECT:  { return cg.vm.op.asObject(code); }
-					case IntrinsicName.LIST:    { return cg.vm.op.asList(code); }
-					case IntrinsicName.DICT:    { return cg.vm.op.asDict(code); }
-					case IntrinsicName.SET:     { return cg.vm.op.asMap(code); }
-					case IntrinsicName.MAP:     { return cg.vm.op.asMap(code); }
-					case IntrinsicName.MAYBE:   { return cg.vm.op.asMaybe(code); }
-					case IntrinsicName.NONE:    { return cg.vm.op.asNone(code); }
-					case IntrinsicName.SOME:    { return cg.vm.op.asSome(code); }
+					case IntrinsicName.NULL:     { return cg.vm.op.asNull(code); }
+					case IntrinsicName.BOOLEAN:  { return cg.vm.op.asBool(code); }
+					case IntrinsicName.SYMBOL:   { return cg.vm.op.asInt(code); }
+					case IntrinsicName.INTEGER:  { return cg.vm.op.asInt(code); }
+					case IntrinsicName.NATURAL:  { return cg.vm.op.asNat(code); }
+					case IntrinsicName.FLOAT:    { return cg.vm.op.asFloat(code); }
+					case IntrinsicName.STRING:   { return cg.vm.op.asString(code); }
+					case IntrinsicName.OBJECT:   { return cg.vm.op.asObject(code); }
+					case IntrinsicName.LIST:     { return cg.vm.op.asList(code); }
+					case IntrinsicName.DICT:     { return cg.vm.op.asDict(code); }
+					case IntrinsicName.SET:      { return cg.vm.op.asMap(code); }
+					case IntrinsicName.MAP:      { return cg.vm.op.asMap(code); }
+					case IntrinsicName.MAYBE:    { return cg.vm.op.asMaybe(code); }
+					case IntrinsicName.NONE:     { return cg.vm.op.asNone(code); }
+					case IntrinsicName.SOME:     { return cg.vm.op.asSome(code); }
+					case IntrinsicName.FUNCTION: { throw new Error('not yet supported.'); }
 				}
 			}
 		}

@@ -1695,21 +1695,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ [
-							IntrinsicName.SYMBOL,
-							IntrinsicName.INTEGER,
-							IntrinsicName.NATURAL,
-							IntrinsicName.FLOAT,
-							IntrinsicName.STRING,
-							IntrinsicName.OBJECT,
-							IntrinsicName.LIST,
-							IntrinsicName.DICT,
-							IntrinsicName.SET,
-							IntrinsicName.MAP,
-							IntrinsicName.MAYBE,
-							IntrinsicName.NONE,
-							IntrinsicName.SOME,
-						].map((classname) => `null is ${ classname };`).join('\n') };
+						${ INTRINSICS.slice(2, -1).map((classname) => `null is ${ classname };`).join('\n') };
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1730,7 +1716,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ INTRINSICS.map((classname) => `null as <anything> as ${ classname };`).join('\n') };
+						${ INTRINSICS.slice(0, -1).map((classname) => `null as <anything> as ${ classname };`).join('\n') };
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
