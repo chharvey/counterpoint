@@ -236,7 +236,7 @@ export class CodeGenerator {
 	 * @param units items in the array; must be of type `i32`
 	 * @return      `(array.new_fixed $String <...items>)`
 	 */
-	public codegenString(units: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+	public codegenString(units: readonly (binaryen.ExpressionRef /* i32 */)[] = []): binaryen.ExpressionRef /* (ref $String) */ {
 		return this.mod.wasm.array.new_fixed(this.vm.heaptype.String, units);
 	}
 
@@ -245,7 +245,7 @@ export class CodeGenerator {
 	 * @param items items in the array; must be of type `(ref $Value)`
 	 * @return      `(array.new_fixed $Tuple <...items>)`
 	 */
-	public codegenTuple(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+	public codegenTuple(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Tuple) */ {
 		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Tuple, items);
 	}
 
@@ -255,7 +255,7 @@ export class CodeGenerator {
 	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Property)`) are items in the array
 	 * @return      `(array.new_fixed $Record <...props>)`
 	 */
-	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+	public codegenRecord(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Record) */ {
 		const entries = new Array<binaryen.ExpressionRef | undefined>(props.size);
 		props.forEach((code, id) => insert_entry(entries, Number(id) % entries.length, code));
 		return this.mod.wasm.array.new_fixed(this.vm.heaptype.Record, entries as binaryen.ExpressionRef[]);
@@ -264,10 +264,10 @@ export class CodeGenerator {
 	/**
 	 * Return a new `$List` from items.
 	 * This method automatically populates blank slots with the WASM expression `(ref.null $Value)`.
-	 * @param items items in the array; must be of type `(ref null $Value)`
+	 * @param items items in the array; must be of type `(ref $Value)`
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
-	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+	public codegenList(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $List) */ {
 		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
@@ -288,10 +288,10 @@ export class CodeGenerator {
 	 * Return a new `$Dict` from properties.
 	 * This method automatically hashes the property keys and inserts them at the correct indices,
 	 * as well as populates blank slots with the WASM expression `(ref.null $Property)`.
-	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Value)`) are items in the array
+	 * @param props key–value pairs whose keys are key ids (`bigint`s) and whose values (of type `(ref $Property)`) are items in the array
 	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
-	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef /* (ref $Property) */> = new Map()): binaryen.ExpressionRef /* (ref $Dict) */ {
 		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
@@ -316,7 +316,7 @@ export class CodeGenerator {
 	 * @param items items to be used as antecedents in the array of cases; must be of type `(ref null $Value)`
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
-	public codegenSet(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
+	public codegenSet(items: readonly (binaryen.ExpressionRef /* (ref $Value) */)[] = []): binaryen.ExpressionRef /* (ref $Map) */ {
 		return this.codegenMap(new Map(items.map((item) => [item, this.getConst(null)])));
 	}
 
@@ -327,7 +327,7 @@ export class CodeGenerator {
 	 * @param props antecedent–consequent pairs of values (of type `(ref $Value)`) in the array
 	 * @return      `(struct.new $Map <count> (array.new_fixed $MapInternal <...cases>))`
 	 */
-	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
+	public codegenMap(cases: ReadonlyMap<binaryen.ExpressionRef /* (ref $Value) */, binaryen.ExpressionRef /* (ref $Value) */> = new Map()): binaryen.ExpressionRef /* (ref $Map) */ {
 		const {vm: {heaptype, reftype, Object: VmObject, Map: VmMap}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (cases.size > capacity * CodeGenerator.#LOAD_FACTOR) {
@@ -354,7 +354,7 @@ export class CodeGenerator {
 	 * @param value the optional value; if not given, `(ref.null $Value)` is used
 	 * @return      `(struct.new $Maybe <value?>)`
 	 */
-	public codegenMaybe(value?: binaryen.ExpressionRef): binaryen.ExpressionRef {
+	public codegenMaybe(value?: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Maybe) */ {
 		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
@@ -367,7 +367,7 @@ export class CodeGenerator {
 	 * @param arity the number of functional arguments
 	 * @return      `(struct.new $Function <arity>)`
 	 */
-	public codegenFunction(arity: bigint): binaryen.ExpressionRef /* Function */ {
+	public codegenFunction(arity: bigint): binaryen.ExpressionRef /* (ref $Function) */ {
 		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
