@@ -46,6 +46,11 @@ export class Maybe extends ReferenceType {
 	public override isSubtypeOf(t: Type): boolean {
 		return this.typearg.isSubtypeOf((t as Maybe).typearg); // Maybe is always covariant
 	}
+
+	/** @final */
+	public override mutableOf(): Type {
+		return this;
+	}
 }
 
 

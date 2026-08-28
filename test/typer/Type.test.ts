@@ -939,55 +939,6 @@ test.suite('Type', () => {
 	});
 
 
-	test.suite('#mutableOf', () => {
-		const examples: readonly TYPE.Type[] = [
-			new TYPE.List(TYPE.BOOL),
-			new TYPE.Dict(TYPE.BOOL),
-			new TYPE.Set(TYPE.NULL),
-			new TYPE.Map(TYPE.INT, TYPE.FLOAT),
-		];
-		test.test('mutable types are subtypes of their immutable counterparts.', () => {
-			[
-				...builtin_types,
-				...examples,
-			].forEach((t) => assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`));
-		});
-		test.test('constant mutable types are equal to their immutable counterparts.', () => {
-			builtin_types.forEach((t) => assert.ok(t.mutableOf().equals(t), `mut ${ t } == ${ t }`));
-		});
-		test.test('non-constant mutable types are not equal to their immutable counterparts.', () => {
-			examples.forEach((t) => assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`));
-		});
-		test.test('non-constant immutable types are not subtypes of their mutable counterparts.', () => {
-			examples.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`));
-		});
-		test.suite('disributes over binary operations.', () => {
-			const types: TYPE.Type[] = [
-				...builtin_types,
-				...examples,
-			];
-			test.test('mut (A - B) == mut A - mut B', () => {
-				predicate2(types, (a, b) => {
-					const difference: TYPE.Type = a.subtract(b).mutableOf();
-					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
-				});
-			});
-			test.test('mut (A & B) == mut A & mut B', () => {
-				predicate2(types, (a, b) => {
-					const intersection: TYPE.Type = a.intersect(b).mutableOf();
-					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
-				});
-			});
-			test.test('mut (A | B) == mut A | mut B', () => {
-				predicate2(types, (a, b) => {
-					const union: TYPE.Type = a.union(b).mutableOf();
-					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);
-				});
-			});
-		});
-	});
-
-
 	test.suite('Combinable', () => {
 		const a: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x100n, TYPE.INT]]));
 		const b: TYPE.Record = TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([[0x101n, TYPE.FLOAT]]));
@@ -1041,4 +992,33 @@ test.suite('Type', () => {
 		});
 	});
 	/* eslint-enable no-useless-escape */
+
+
+	test.suite('ReferenceType#mutableOf', () => {
+		const without_mutability: readonly TYPE.ReferenceType[] = [
+			TYPE.OBJ,
+			...builtin_types.map((t) => new TYPE.Maybe(t)),
+		];
+		const with_mutability: readonly TYPE.ReferenceType[] = [
+			new TYPE.List(TYPE.BOOL),
+			new TYPE.Dict(TYPE.INT),
+			new TYPE.Set(TYPE.NAT),
+			new TYPE.Map(TYPE.FLOAT, TYPE.STR),
+		];
+		test.test('mutable types are subtypes of their immutable counterparts.', () => {
+			[
+				...without_mutability,
+				...with_mutability,
+			].forEach((t) => assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`));
+		});
+		test.test('mutable types with no mutability are equal to their immutable counterparts.', () => {
+			without_mutability.forEach((t) => assert.ok(t.mutableOf().equals(t), `mut ${ t } == ${ t }`));
+		});
+		test.test('mutable types with mutability are not equal to their immutable counterparts.', () => {
+			with_mutability.forEach((t) => assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`));
+		});
+		test.test('immutable counterparts of types with mutability are not subtypes of their mutable types.', () => {
+			with_mutability.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`));
+		});
+	});
 });

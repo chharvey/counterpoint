@@ -56,8 +56,4 @@ export class List extends ReferenceType {
 	public override mutableOf(): List {
 		return new List(this.typearg, true);
 	}
-
-	public override immutableOf(): List {
-		return new List(this.typearg, false);
-	}
 }

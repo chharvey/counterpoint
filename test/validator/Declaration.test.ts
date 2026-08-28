@@ -352,15 +352,11 @@ test.suite('Declaration', () => {
 					val s: (a: int, b: str) = (a= 42, b= "hello");
 				}`);
 			});
-			test.test('allows assigning a collection literal to super reference type (autoboxing at runtime).', () => {
+			test.test('allows assigning a collection literal to `anything` (autoboxing at runtime).', () => {
 				typeCheckGoal(`{
 					val v: anything = (   42,    "hello");
 					val s: anything = (a= 42, b= "hello");
 				}`);
-				typeCheckGoal(`{
-					val v: mut anything = (   42,    "hello");
-					val s: mut anything = (a= 42, b= "hello");
-				}`); // mut anything == anything
 			});
 			test.suite('assigning a collection literal to a wider mutable type.', () => {
 				test.test('disallows assigning Tuples/Records to Lists/Dicts', () => {
@@ -468,24 +464,24 @@ test.suite('Declaration', () => {
 						val s: mut {int | str}  = {42 -> "43"};
 					`.split('\n'), TypeErrorNotAssignable);
 					typeCheckGoal(`{
-						val t1: mut anything              = (42, "43");
-						val t4: mut ((int, str) | Object) = (42, "43");
+						val t1: anything              = (42, "43");
+						val t4: ((int, str) | Object) = (42, "43");
 
-						val r1: mut anything                    = (a= 42, b= "43");
-						val r4: mut ((a: int, b: str) | Object) = (a= 42, b= "43");
+						val r1: anything                    = (a= 42, b= "43");
+						val r4: ((a: int, b: str) | Object) = (a= 42, b= "43");
 
-						val s1: mut {42 | 4.3}              = {42};
-						val s2: mut {int | float}           = {42};
-						val s3: mut Object                  = {42};
-						val s4: mut ({int} | {str -> bool}) = {42};
-						val s5: mut ({int} | Object)        = {42};
+						val s1: mut {42 | 4.3}          = {42};
+						val s2: mut {int | float}       = {42};
+						val s3: mut Object              = {42};
+						val s4: ({int} | {str -> bool}) = {42};
+						val s5: ({int} | Object)        = {42};
 
 						val m1: mut {int -> float}               = {42 -> 4.3};
 						val m2: mut {int | null -> float | null} = {42 -> 4.3};
 						val m3: mut Object                       = {42 -> 4.3};
-						val m4: mut ({int -> float} | {str})     = {42 -> 4.3};
-						val m5: mut ({int -> float} | Object)    = {42 -> 4.3};
-					}`);
+						val m4: ({int -> float} | {str})         = {42 -> 4.3};
+						val m5: ({int -> float} | Object)        = {42 -> 4.3};
+					}`); // assert does not throw
 				});
 				test.test('throws when entries mismatch.', () => {
 					typeCheckGoal(`
