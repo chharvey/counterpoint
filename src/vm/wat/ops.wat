@@ -220,6 +220,12 @@
 		)
 	))
 )
+(func $op:is-function (export "op::isFunction") (param $value (ref $Value)) (result (ref $Value))
+	(call $Value.bool-from-i32 (i32.and
+		(call $Value.is-composite (local.get $value))
+		(ref.test (ref $Function) (struct.get $Value $composite (local.get $value)))
+	))
+)
 
 
 
@@ -302,6 +308,9 @@
 		(then (unreachable))
 		(else (return_call $Value.new-composite (local.get $maybe)))
 	)
+)
+(func $op:as-function (export "op::asFunction") (param $value (ref $Value)) (result (ref $Value))
+	(return_call $Value.new-composite (ref.cast (ref $Function) (struct.get $Value $composite (local.get $value))))
 )
 
 

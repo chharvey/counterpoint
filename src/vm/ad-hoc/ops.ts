@@ -35,6 +35,7 @@ export function ops(vm: VirtualMachine) {
 					['op::isMaybe',     {name: 'op:is-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::isNone',      {name: 'op:is-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::isSome',      {name: 'op:is-some',      param: reftype.Value,  result: reftype.Value}],
+					['op::isFunction',  {name: 'op:is-function',  param: reftype.Value,  result: reftype.Value}],
 					['op::asNull',      {name: 'op:as-null',      param: reftype.Value,  result: reftype.Value}],
 					['op::asBool',      {name: 'op:as-bool',      param: reftype.Value,  result: reftype.Value}],
 					['op::asInt',       {name: 'op:as-int',       param: reftype.Value,  result: reftype.Value}],
@@ -48,6 +49,7 @@ export function ops(vm: VirtualMachine) {
 					['op::asMaybe',     {name: 'op:as-maybe',     param: reftype.Value,  result: reftype.Value}],
 					['op::asNone',      {name: 'op:as-none',      param: reftype.Value,  result: reftype.Value}],
 					['op::asSome',      {name: 'op:as-some',      param: reftype.Value,  result: reftype.Value}],
+					['op::asFunction',  {name: 'op:as-function',  param: reftype.Value,  result: reftype.Value}],
 					['op::intAdd',      {name: 'op:int-add',      param: binary_params,  result: reftype.Value}],
 					['op::natAdd',      {name: 'op:nat-add',      param: binary_params,  result: reftype.Value}],
 					['op::floatAdd',    {name: 'op:float-add',    param: binary_params,  result: reftype.Value}],
@@ -176,7 +178,9 @@ export function ops(vm: VirtualMachine) {
 		),
 
 		/** Is the value a composite `Function` type? */
-		isFunction: (_: number) => vm.mod.wasm.nop(),
+		isFunction: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-function', [param0], vm.reftype.Value)
+		),
 
 		/** Cast the value to type `null`. */
 		asNull: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
@@ -244,7 +248,9 @@ export function ops(vm: VirtualMachine) {
 		),
 
 		/** Cast the value to type `Function`. */
-		asFunction: (_: number) => vm.mod.wasm.nop(),
+		asFunction: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:as-function', [param0], vm.reftype.Value)
+		),
 
 		/** Adds two `int`s. */
 		intAdd: (param0: binaryen.ExpressionRef /* (ref $Value) */, param1: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
