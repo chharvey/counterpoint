@@ -539,10 +539,6 @@ export abstract class Type {
 	public mutableOf(): Type {
 		return this;
 	}
-
-	public immutableOf(): Type {
-		return this;
-	}
 }
 
 
@@ -668,9 +664,5 @@ export class TypeInterface extends Type {
 
 	public override mutableOf(): TypeInterface {
 		return new TypeInterface(this.properties, true);
-	}
-
-	public override immutableOf(): TypeInterface {
-		return new TypeInterface(this.properties, false);
 	}
 }

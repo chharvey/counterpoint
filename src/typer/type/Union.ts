@@ -137,10 +137,6 @@ export class Union extends Combinable {
 		return new Union(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
 	}
 
-	public override immutableOf(): Union {
-		return new Union(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
-	}
-
 	public override normalize(): Type {
 		/*
 		 * 2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)`

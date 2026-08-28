@@ -82,8 +82,4 @@ export class Difference extends TypeOperation {
 	public override mutableOf(): Difference {
 		return new Difference(this.left.mutableOf(), this.right.mutableOf());
 	}
-
-	public override immutableOf(): Difference {
-		return new Difference(this.left.immutableOf(), this.right.immutableOf());
-	}
 }

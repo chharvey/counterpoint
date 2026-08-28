@@ -128,10 +128,6 @@ export class Intersection extends Combinable {
 		return new Intersection(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
 	}
 
-	public override immutableOf(): Intersection {
-		return new Intersection(...this.operands.map((s) => s.immutableOf()) as [Type, Type, ...Type[]]);
-	}
-
 	public override normalize(): Type {
 		/*
 		 * 2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)`
