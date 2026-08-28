@@ -26,6 +26,8 @@ export function ops(vm: VirtualMachine) {
 					['op::isNat',       {name: 'op:is-nat',       param: reftype.Value,  result: reftype.Value}],
 					['op::isFloat',     {name: 'op:is-float',     param: reftype.Value,  result: reftype.Value}],
 					['op::isString',    {name: 'op:is-string',    param: reftype.Value,  result: reftype.Value}],
+					['op::isTuple',     {name: 'op:is-tuple',     param: reftype.Value,  result: reftype.Value}],
+					['op::isRecord',    {name: 'op:is-record',    param: reftype.Value,  result: reftype.Value}],
 					['op::isObject',    {name: 'op:is-object',    param: reftype.Value,  result: reftype.Value}],
 					['op::isList',      {name: 'op:is-list',      param: reftype.Value,  result: reftype.Value}],
 					['op::isDict',      {name: 'op:is-dict',      param: reftype.Value,  result: reftype.Value}],
@@ -126,6 +128,16 @@ export function ops(vm: VirtualMachine) {
 		/** Is the value a composite `String` type? */
 		isString: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
 			vm.mod.wasm.call('op:is-string', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Tuple` type? */
+		isTuple: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-tuple', [param0], vm.reftype.Value)
+		),
+
+		/** Is the value a composite `Record` type? */
+		isRecord: (param0: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ => (
+			vm.mod.wasm.call('op:is-record', [param0], vm.reftype.Value)
 		),
 
 		/** Is the value a composite `Object` type? */
