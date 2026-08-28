@@ -531,10 +531,6 @@ export abstract class Type {
 		}
 		return false; // assume not disjoint by default
 	}
-
-	public mutableOf(): Type {
-		return this;
-	}
 }
 
 
@@ -652,9 +648,5 @@ export class TypeInterface extends Type {
 		} else {
 			return super.isSubtypeOf(t);
 		}
-	}
-
-	public override mutableOf(): TypeInterface {
-		return new TypeInterface(this.properties, true);
 	}
 }

@@ -34,8 +34,4 @@ export class Nothing extends Type {
 	public override equals(t: Type): boolean {
 		return t.isBottomType;
 	}
-
-	public override mutableOf(): Type {
-		return this;
-	}
 }

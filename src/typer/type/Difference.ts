@@ -74,8 +74,4 @@ export class Difference extends TypeOperation {
 		}
 		return super.isDisjointWith_do(t);
 	}
-
-	public override mutableOf(): Difference {
-		return new Difference(this.left.mutableOf(), this.right.mutableOf());
-	}
 }

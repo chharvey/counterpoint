@@ -124,10 +124,6 @@ export class Intersection extends Combinable {
 		return this.operands.some((s) => s.isDisjointWith(t));
 	}
 
-	public override mutableOf(): Intersection {
-		return new Intersection(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
-	}
-
 	public override normalize(): Type {
 		/*
 		 * 2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)`

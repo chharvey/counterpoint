@@ -133,10 +133,6 @@ export class Union extends Combinable {
 		return this.operands.every((s) => s.isDisjointWith(t));
 	}
 
-	public override mutableOf(): Union {
-		return new Union(...this.operands.map((s) => s.mutableOf()) as [Type, Type, ...Type[]]);
-	}
-
 	public override normalize(): Type {
 		/*
 		 * 2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)`
