@@ -4,8 +4,7 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../value/index.ts';
-import type {Type} from './Type.ts';
-import {ReferenceType} from './ReferenceType.ts';
+import {Type} from './Type.ts';
 
 
 
@@ -13,13 +12,17 @@ import {ReferenceType} from './ReferenceType.ts';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class Anything extends ReferenceType {
+export class Anything extends Type {
 	public constructor() {
 		super();
 	}
 
 	public override get isTopType(): boolean {
 		return true;
+	}
+
+	public override get isReference(): boolean {
+		return false;
 	}
 
 	public override toString(): string {
@@ -34,5 +37,9 @@ export class Anything extends ReferenceType {
 	@memoizeBinOp(true)
 	public override equals(t: Type): boolean {
 		return t.isTopType;
+	}
+
+	public override mutableOf(): Type {
+		return this;
 	}
 }

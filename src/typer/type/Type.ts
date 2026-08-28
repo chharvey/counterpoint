@@ -314,6 +314,8 @@ export function disjointLaws(
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - TypeOperation
+ * - Nothing
+ * - Anything
  * - ValueType
  * - TypeInterface
  * - ReferenceType
