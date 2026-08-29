@@ -295,10 +295,21 @@ test.suite('Decorator', () => {
 				}
 				% (type_function)
 			`]],
-
+			['Decorate(TypeFunction ::= "\\" "(" ")" "=>" Type) -> SemanticType', [AST.TYPE.Function, `
+				{
+					type T = \\() => int | float;
+				}
+				% (type_function)
+			`]],
 			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" "void") -> SemanticType', [AST.TYPE.Function, `
 				{
 					type T = \\(A, b: B, c: \\() => void) => void;
+				}
+				% (type_function)
+			`]],
+			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" Type) -> SemanticType', [AST.TYPE.Function, `
+				{
+					type T = \\(A, b: B, c: \\() => void) => int | float;
 				}
 				% (type_function)
 			`]],

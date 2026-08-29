@@ -284,6 +284,7 @@ export class Decorator {
 				node as SyntaxNodeType<'type_function'>,
 				node.namedChildren.filter((c) => isSyntaxNodeType(c, 'entry_type'))        .map((c) => this.decorate(c)),
 				node.namedChildren.filter((c) => isSyntaxNodeType(c, 'entry_type__named')) .map((c) => this.decorate(c)),
+				node.childForFieldName('type_0') && this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 			)],
 
 			/* ## Expressions */

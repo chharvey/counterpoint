@@ -87,7 +87,7 @@ SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
 
 SemanticTypeFunction
-	::= SemanticItemType* SemanticPropertyType*;
+	::= SemanticItemType* SemanticPropertyType* SemanticType?;
 
 
 

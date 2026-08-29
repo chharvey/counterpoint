@@ -29,8 +29,9 @@ class TypeFunction extends Type {
 		start_node: SyntaxNodeType<'type_function'>,
 		private readonly paramPositTypes: readonly ItemType[],
 		private readonly paramNamedTypes: readonly PropertyType[],
+		private readonly returnType:      Type | null,
 	) {
-		super(start_node, {}, [...paramPositTypes, ...paramNamedTypes]);
+		super(start_node, {}, [...paramPositTypes, ...paramNamedTypes, ...(returnType ? [returnType] : [])]);
 	}
 
 
