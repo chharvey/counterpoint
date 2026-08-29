@@ -35,9 +35,9 @@ class ExpressionFunction extends Expression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
-		public readonly parameters: readonly ParameterFunction[],
-		public readonly returnType: AST_TYPE.Type | null,
-		public readonly block:      Block,
+		public  readonly parameters: readonly ParameterFunction[],
+		private readonly returnType: AST_TYPE.Type | null,
+		public  readonly block:      Block,
 	) {
 		super(start_node, {}, [...parameters, ...(returnType ? [returnType] : []), block]);
 	}
