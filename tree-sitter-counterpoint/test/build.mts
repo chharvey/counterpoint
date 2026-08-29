@@ -1428,6 +1428,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					\\(): void {;};
 					\\(a: A, $b: B, c= charlie: C): void { return; };
 					\\(): bool { return; };
+					\\(): bool => false;
 				}
 			`,
 			sourceExpressions(
@@ -1459,6 +1460,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'expression_function',
 					f('type_0', 'keyword_type'),
 					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'expression_function',
+					f('type_0', 'keyword_type'),
+					f('expression_0', 'primitive_literal', s('keyword_value')),
 				),
 			),
 		],
@@ -2036,6 +2042,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					func foo(): void {;}
 					func foo(a: A, $b: B, c= charlie: C): void { return; }
 					func foo(): bool { return; }
+					func foo(): bool => false;
 				}
 			`,
 			sourceStatements(
@@ -2074,6 +2081,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					f('identifier_0', 'identifier'),
 					f('type_0', 'keyword_type'),
 					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('type_0', 'keyword_type'),
+					f('expression_0', 'primitive_literal', s('keyword_value')),
 				),
 			),
 		],

@@ -533,7 +533,10 @@ module.exports = grammar({
 		expression_function: $ => seq(
 			'\\', '(', optional($._parameters_function), ')',
 			':', choice('void', field('type_0', $._type)),
-			field('block_0', call($, 'block', {break: false}, 'return')),
+			choice(
+				field('block_0', call($, 'block', {break: false}, 'return')),
+				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return'))),
+			),
 		),
 		/* eslint-enable @stylistic/function-call-argument-newline */
 
@@ -629,7 +632,10 @@ module.exports = grammar({
 			'func', choice('_', field('identifier_0', $.identifier)),
 			'(', optional($._parameters_function), ')',
 			':', choice('void', field('type_0', $._type)),
-			field('block_0', call($, 'block', {break: false}, 'return')),
+			choice(
+				field('block_0', call($, 'block', {break: false}, 'return')),
+				seq('=>', field('expression_0', call($, '_expression', 'block', {break: false}, 'return')), ';'),
+			),
 		),
 		/* eslint-enable @stylistic/function-call-argument-newline */
 
