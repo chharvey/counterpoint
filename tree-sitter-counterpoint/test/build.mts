@@ -621,6 +621,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type T = \\() => void;
 					type T = \\(A, b: B) => void;
 					type T = \\(\\() => void) => void;
+					type T = \\() => bool;
 				}
 			`,
 			sourceTypes(
@@ -634,6 +635,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'type_function',
 					s('entry_type', f('type_0', 'type_function')),
 				),
+				s('type_function', f('type_0', 'keyword_type')),
 			),
 		],
 
@@ -1425,6 +1427,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					\\(): void {;};
 					\\(a: A, $b: B, c= charlie: C): void { return; };
+					\\(): bool { return; };
 				}
 			`,
 			sourceExpressions(
@@ -1450,6 +1453,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						f('identifier_0', 'identifier'),
 						f('type_0',       'identifier'),
 					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'expression_function',
+					f('type_0', 'keyword_type'),
 					f('block_0', 'block__return', s('statement_return')),
 				),
 			),
@@ -2024,11 +2032,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		DeclarationFunction: [
 			xjs.String.dedent`
 				{
+					func _(): void {;}
 					func foo(): void {;}
 					func foo(a: A, $b: B, c= charlie: C): void { return; }
+					func foo(): bool { return; }
 				}
 			`,
 			sourceStatements(
+				s(
+					'declaration_function',
+					f('block_0', 'block__return', s('statement_expression__return')),
+				),
 				s(
 					'declaration_function',
 					f('identifier_0', 'identifier'),
@@ -2053,6 +2067,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 						f('identifier_0', 'identifier'),
 						f('type_0',       'identifier'),
 					),
+					f('block_0', 'block__return', s('statement_return')),
+				),
+				s(
+					'declaration_function',
+					f('identifier_0', 'identifier'),
+					f('type_0', 'keyword_type'),
 					f('block_0', 'block__return', s('statement_return')),
 				),
 			),

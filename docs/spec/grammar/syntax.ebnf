@@ -136,7 +136,7 @@ TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
 TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
 
 TypeFunction
-	::= "\" "(" ParametersType? ")" "=>" "void";
+	::= "\" "(" ParametersType? ")" "=>" ("void" | Type);
 
 Type ::=
 	| TypeUnion
@@ -237,7 +237,7 @@ ExpressionSwitch<Break, Return>
 	::= "switch" Expression<+Block><?Break><?Return> CaseSwitch<?Break><?Return>* "default" Expression<+Block><?Break><?Return>;
 
 ExpressionFunction
-	::= "\" "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>;
+	::= "\" "(" ParametersFunction? ")" ":" ("void" | Type) Block<-Break><+Return>;
 
 Expression<Block, Break, Return> ::=
 	| ExpressionDisjunctive<?Block><?Break><?Return>
@@ -315,7 +315,7 @@ DeclarationVariable<Break, Return> ::=
 ;
 
 DeclarationFunction
-	::= "func" ("_" | IDENTIFIER) "(" ParametersFunction? ")" ":" "void" Block<-Break><+Return>
+	::= "func" ("_" | IDENTIFIER) "(" ParametersFunction? ")" ":" ("void" | Type) Block<-Break><+Return>
 
 Declaration<Break, Return> ::=
 	| DeclarationType
