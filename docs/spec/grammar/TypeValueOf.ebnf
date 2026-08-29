@@ -170,7 +170,9 @@ Type! TypeValueOf(SemanticTypeFunction fn) :=
 			optional= `propertytype.optional`,
 		].
 		3. Set the property `propertytype.children.0.id` on `named_params` to the value `typedatum`.
-	7. *Return:* a new Function type whose positional parameter types are `positional_params`,
+	7. *Let* `return_type` be an item `child` in `fn.children` such that `child` is a SemanticType.
+	8. *Return:* a new Function type whose positional parameter types are `positional_params`,
 		whose named parameter types are `named_params`,
-		and who does not contain a return type.
+		and, if `return_type` is set, whose return type is `return_type`,
+		otherwise, who does not contain a return type.
 ;

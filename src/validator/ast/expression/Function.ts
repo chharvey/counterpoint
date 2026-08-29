@@ -63,6 +63,7 @@ class ExpressionFunction extends Expression {
 					optional: false, // TODO: with optional paramers: `parameter.optional`
 				},
 			]))),
+			this.returnType?.eval(),
 		);
 	}
 

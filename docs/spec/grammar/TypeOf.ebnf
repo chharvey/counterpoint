@@ -516,9 +516,11 @@ Type! TypeOf(SemanticExpressionFunction fn) :=
 			optional= `false`, // TODO: with optional paramers: `param.optional`
 		].
 		4. Set the property `key_id` on `named_param_types` to the value `typedatum`.
-	8. *Return:* a new Function type whose positional parameter types are `positional_param_types`,
+	8. *Let* `return_type` be an item `child` in `fn.children` such that `child` is a SemanticType.
+	9. *Return:* a new Function type whose positional parameter types are `positional_param_types`,
 		whose named parameter types are `named_param_types`,
-		and who does not contain a return type.
+		and, if `return_type` is set, whose return type is `return_type`,
+		otherwise, who does not contain a return type.
 ;
 
 

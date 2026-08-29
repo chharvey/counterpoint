@@ -119,7 +119,7 @@ test.suite('Type', () => {
 					]))),
 				);
 			});
-			test.test('with return type.', {expectFailure: true}, () => {
+			test.test('with return type.', () => {
 				assertEqualTypes(
 					AST.TYPE.Function.fromSource('\\() => sym').eval(),
 					new TYPE.Function(undefined, undefined, TYPE.SYM),

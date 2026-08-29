@@ -45,6 +45,7 @@ class TypeFunction extends Type {
 		return new TYPE.Function(
 			Tuple .prototype.eval.call({children: this.paramPositTypes}) as TYPE.Tuple,
 			Record.prototype.eval.call({children: this.paramNamedTypes}) as TYPE.Record,
+			this.returnType?.eval(),
 		);
 	}
 }
