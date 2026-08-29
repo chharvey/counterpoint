@@ -870,9 +870,15 @@ test.suite('Decorator', () => {
 				% (statement_break)
 			`]],
 
-			['Decorate(StatementReturn ::= "return" ";") ->', [AST.STMT.StatementReturn, `
+			['Decorate(StatementReturn<Break> ::= "return" ";") -> SemanticStatementReturn', [AST.STMT.StatementReturn, `
 				{
 					func foo(): void { return; }
+				}
+				% (statement_return)
+			`]],
+			['Decorate(StatementReturn<Break> ::= "return" Expression<+Block><?Break><+Return> ";") -> SemanticStatementReturn', [AST.STMT.StatementReturn, `
+				{
+					func foo(): void { return bar; }
 				}
 				% (statement_return)
 			`]],

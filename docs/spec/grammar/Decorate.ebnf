@@ -876,8 +876,10 @@ Decorate(StatementBreak ::= "break" ";") -> SemanticStatementBreak
 Decorate(StatementBreak ::= "skip" ";") -> SemanticStatementBreak
 	:= (SemanticStatementBreak[skip=true]);
 
-Decorate(StatementReturn ::= "return" ";") -> SemanticStatementReturn
+Decorate(StatementReturn<Break> ::= "return" ";") -> SemanticStatementReturn
 	:= (SemanticStatementReturn);
+Decorate(StatementReturn<Break> ::= "return" Expression<+Block><?Break><+Return> ";") -> SemanticStatementReturn
+	:= (SemanticStatementReturn Decorate(Expression<+Block><?Break><+Return>));
 
 
 
@@ -899,8 +901,8 @@ Decorate(Statement<Break, Return> ::= StatementIteration<?Return>) -> SemanticSt
 	:= Decorate(StatementIteration<?Return>);
 Decorate(Statement<Break, Return> ::= StatementBreak) -> SemanticStatementBreak
 	:= Decorate(StatementBreak);
-Decorate(Statement<Break, Return> ::= StatementReturn) -> SemanticStatementReturn
-	:= Decorate(StatementReturn);
+Decorate(Statement<Break, Return> ::= StatementReturn<?Break>) -> SemanticStatementReturn
+	:= Decorate(StatementReturn<?Break>);
 
 
 

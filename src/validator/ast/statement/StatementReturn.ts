@@ -13,6 +13,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import type * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 
@@ -25,8 +26,11 @@ export class StatementReturn extends Statement {
 	}
 
 
-	public constructor(start_node: SyntaxNodeType<'statement_return'>) {
-		super(start_node);
+	public constructor(
+		start_node: SyntaxNodeType<'statement_return'>,
+		private readonly expression: EXPR.Expression | null,
+	) {
+		super(start_node, {}, expression ? [expression] : []);
 	}
 
 	@noopGetter(memoizeGetter)
