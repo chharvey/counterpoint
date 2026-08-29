@@ -351,7 +351,7 @@ Decorate(CaseSwitch<Break, Return> ::= "case" (Expression__0<+Block><?Break><?Re
 
 
 Decorate(ParameterFunction<Named> ::= "_" ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[named=false][writable=false]
+	:= (SemanticParameterFunction[named=false][writable=false][id=*nil*]
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= IDENTIFIER ":" Type) -> SemanticParameterFunction
@@ -363,7 +363,7 @@ Decorate(ParameterFunction<Named> ::= "mut" IDENTIFIER ":" Type) -> SemanticPara
 		Decorate(Type)
 	);
 Decorate(ParameterFunction<Named> ::= Word "=" "_" ":" Type) -> SemanticParameterFunction
-	:= (SemanticParameterFunction[named=true][writable=false]
+	:= (SemanticParameterFunction[named=true][writable=false][id=*nil*]
 		Decorate(Word)
 		Decorate(Type)
 	);
@@ -950,11 +950,11 @@ Decorate(DeclarationVariable<Break, Return> ::= "val" "mut" IDENTIFIER "?" ":" T
 
 
 Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
-	:= (SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
 		Decorate(Block<-Break><+Return>)
 	);
 Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction
-	:= (SemanticDeclarationFunction
+	:= (SemanticDeclarationFunction[id=*nil*]
 		...Decorate(ParametersFunction)
 		Decorate(Block<-Break><+Return>)
 	);

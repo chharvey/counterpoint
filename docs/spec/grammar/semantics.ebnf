@@ -22,7 +22,7 @@ SemanticCase
 
 
 
-SemanticParameterFunction[named: true][writable: Boolean]
+SemanticParameterFunction[named: true][writable: Boolean][id: Nil]
 	::= SemanticKey SemanticType;
 SemanticParameterFunction[named: true][writable: Boolean][id: RealNumber]
 	::= SemanticKey? SemanticType;
