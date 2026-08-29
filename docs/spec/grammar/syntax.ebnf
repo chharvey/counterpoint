@@ -283,8 +283,8 @@ StatementIteration<Return> ::=
 	& "do" Block<+Break><?Return> ";"
 ;
 
-StatementBreak  ::= ("break" | "skip") ";";
-StatementReturn ::=  "return"          ";";
+StatementBreak         ::= ("break" | "skip")                                      ";";
+StatementReturn<Break> ::=  "return"          Expression<+Block><?Break><+Return>? ";";
 
 Statement<Break, Return> ::=
 	| Declaration                   <?Break><?Return>
@@ -296,7 +296,7 @@ Statement<Break, Return> ::=
 	| StatementLoop                         <?Return>
 	| StatementIteration                    <?Return>
 	| <Break+> StatementBreak
-	| <Return+>StatementReturn
+	| <Return+>StatementReturn<?Break>
 ;
 
 

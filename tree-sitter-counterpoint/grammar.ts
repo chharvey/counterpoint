@@ -602,8 +602,9 @@ module.exports = grammar({
 			';',
 		), 'return'),
 
-		statement_break:  _$ => seq(choice('break', 'skip'), ';'),
-		statement_return: _$ => seq('return',                ';'),
+		statement_break: _$ => seq(choice('break', 'skip'), ';'),
+
+		...parameterize('statement_return', ({break: brk}) => $ => seq('return', optional(field('expression_0', call($, '_expression', 'block', {break: brk}, 'return'))), ';'), 'break'),
 
 		...parameterize('_statement', ({break: brk, return: rtn}) => $ => choice(
 			call($, '_declaration',                          {break: brk}, {return: rtn}),
@@ -615,7 +616,7 @@ module.exports = grammar({
 			call($, 'statement_loop',                                      {return: rtn}),
 			call($, 'statement_iteration',                                 {return: rtn}),
 			...iff(brk, $.statement_break),
-			...iff(rtn, $.statement_return),
+			...iff(rtn, call($, 'statement_return', {break: brk})),
 		), 'break', 'return'),
 
 		...parameterize('block', ({break: brk, return: rtn}) => $ => seq('{', repeat1(call($, '_statement', {break: brk}, {return: rtn})), '}'), 'break', 'return'),
