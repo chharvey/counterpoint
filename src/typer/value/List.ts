@@ -18,6 +18,9 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 export class List<T extends Value = Value> extends CollectionIndexed<T> {
+	public override readonly isReference = true;
+
+
 	public override toString(): string {
 		return `[${ super.toString() }]`;
 	}

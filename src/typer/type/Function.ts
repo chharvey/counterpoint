@@ -78,5 +78,9 @@ class TypeFunction extends ReferenceType {
 			)
 		);
 	}
+
+	public override mutableOf(): Type {
+		return this;
+	}
 }
 export {TypeFunction as Function};

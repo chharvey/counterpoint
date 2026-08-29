@@ -15,9 +15,7 @@ class ValueFunction extends Value {
 	}
 
 
-	public override get isReference(): boolean {
-		return true;
-	}
+	public override readonly isReference = true;
 
 
 	public override toString(): string {
