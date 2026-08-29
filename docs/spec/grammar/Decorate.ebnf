@@ -749,10 +749,41 @@ Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" Block<-Break><+Return>) -
 	:= (SemanticExpressionFunction
 		Decorate(Block<-Break><+Return>)
 	);
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		Decorate("{ return `Expression<+Block><-Break><+Return>`; }")
+	);
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		Decorate(Type)
+		Decorate("{ return `Expression<+Block><-Break><+Return>`; }")
+	);
 Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction
 	:= (SemanticExpressionFunction
 		...Decorate(ParametersFunction)
 		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		Decorate("{ return `Expression<+Block><-Break><+Return>`; }")
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate(Block<-Break><+Return>)
+	);
+Decorate(ExpressionFunction ::= "\" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction
+	:= (SemanticExpressionFunction
+		...Decorate(ParametersFunction)
+		Decorate(Type)
+		Decorate("{ return `Expression<+Block><-Break><+Return>`; }")
 	);
 
 

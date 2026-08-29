@@ -20,6 +20,7 @@ import type {SyntaxNodeType} from '../../utils-private.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
+import type * as AST_TYPE from '../type/index.ts';
 import {Expression} from './Expression.ts';
 
 
@@ -35,9 +36,10 @@ class ExpressionFunction extends Expression {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
 		public readonly parameters: readonly ParameterFunction[],
+		public readonly returnType: AST_TYPE.Type | null,
 		public readonly block:      Block,
 	) {
-		super(start_node, {}, [...parameters, block]);
+		super(start_node, {}, [...parameters, ...(returnType ? [returnType] : []), block]);
 	}
 
 

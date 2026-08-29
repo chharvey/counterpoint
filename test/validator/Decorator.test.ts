@@ -721,9 +721,45 @@ test.suite('Decorator', () => {
 				}
 				% (expression_function)
 			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): int | float {;};
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): int | float => "done";
+				}
+				% (expression_function)
+			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
 					\\(a: A, $b: B, c= charlie: C): void { return; };
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): int | float { return; };
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): int | float => "done";
 				}
 				% (expression_function)
 			`]],

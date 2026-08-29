@@ -164,7 +164,7 @@ SemanticExpressionSwitch
 	::= SemanticExpression SemanticCase* SemanticExpression;
 
 SemanticExpressionFunction
-	::= SemanticParameterFunction* SemanticBlock;
+	::= SemanticParameterFunction* SemanticType? SemanticBlock;
 
 
 
