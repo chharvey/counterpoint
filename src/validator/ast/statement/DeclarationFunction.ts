@@ -22,6 +22,7 @@ import {Validator} from '../../Validator.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
+import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
@@ -42,9 +43,10 @@ export class DeclarationFunction extends Statement {
 		start_node: SyntaxNodeType<'declaration_function'>,
 		private readonly identifier: Serializable | null,
 		public  readonly parameters: readonly ParameterFunction[],
+		public  readonly returnType: AST_TYPE.Type | null,
 		public  readonly block:      Block,
 	) {
-		super(start_node, {}, [...parameters, block]);
+		super(start_node, {}, [...parameters, ...(returnType ? [returnType] : []), block]);
 		if (this.identifier) {
 			this.id = Validator.cookTokenIdentifier(this.identifier.source);
 		}

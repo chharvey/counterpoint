@@ -999,9 +999,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func _(a: A, $b: B, c= charlie: C): void {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): int | float => bar;
 				}
 				% (declaration_function)
 			`]],
@@ -1011,9 +1047,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func foo(a: A, $b: B, c= charlie: C): void { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): int | float => bar;
 				}
 				% (declaration_function)
 			`]],

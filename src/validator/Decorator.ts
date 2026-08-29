@@ -712,11 +712,20 @@ export class Decorator {
 			}],
 
 			['declaration_function', (node) => {
-				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'> | null;
-				return new AST.STMT.DeclarationFunction(
+				const identifier_0 = node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>      | null;
+				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
+				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
+				return expression_0 ? AST.STMT.DeclarationFunction.fromSource(`
+					func ${ identifier_0?.text ?? '_' }(
+						${ node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => c.text).join(', ') }
+					): ${ type_0?.text ?? 'void' } {
+						return ${ expression_0.text };
+					}
+				`) : new AST.STMT.DeclarationFunction(
 					node as SyntaxNodeType<'declaration_function'>,
 					identifier_0 && to_serializable(identifier_0),
 					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
+					type_0 && this.decorateTypeNode(type_0),
 					this.decorateBlockNode(node.childForFieldName('block_0') as SyntaxNodeFamily<'block', ['return']>, true),
 				);
 			}],
