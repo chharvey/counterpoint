@@ -577,11 +577,12 @@ export class Decorator {
 			['expression_function', (node) => {
 				const type_0       = node.childForFieldName('type_0')       as SyntaxNodeSupertype<'type'>       | null;
 				const expression_0 = node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'> | null;
-				return expression_0 ? AST.EXPR.Function.fromSource(`\\(
-					${ node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => c.text).join(', ') }
-				): ${ type_0?.text ?? 'void' } {
-					return ${ expression_0.text };
-				}`) : new AST.EXPR.Function(
+				return expression_0 ? new AST.EXPR.Function(
+					node as SyntaxNodeType<'expression_function'>,
+					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
+					type_0 && this.decorateTypeNode(type_0),
+					AST.Block.fromFunctionSource(`{ return ${ expression_0.text }; }`),
+				) : new AST.EXPR.Function(
 					node as SyntaxNodeType<'expression_function'>,
 					node.namedChildren.filter((c) => isSyntaxNodeFamily(c, 'parameter_function', ['named'])).map((c) => this.decorate(c)),
 					type_0 && this.decorateTypeNode(type_0),

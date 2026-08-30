@@ -19,6 +19,7 @@ import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {
 	Goal,
 	STMT,
+	EXPR,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
 import type {Buildable} from './Buildable.ts';
@@ -37,6 +38,10 @@ export class Block extends AstNode implements Buildable {
 		const goal: Goal = Goal.fromSource(src, config);
 		assert.ok(goal.block, 'semantic goal should have 1 child');
 		return goal.block;
+	}
+
+	public static fromFunctionSource(src: string, config: CplConfig = CONFIG_DEFAULT): Block {
+		return EXPR.Function.fromSource(`\\(): anything ${ src }`, config).block;
 	}
 
 
