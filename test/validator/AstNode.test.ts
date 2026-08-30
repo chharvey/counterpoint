@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	TYPE,
@@ -142,29 +143,52 @@ test.suite('AstNode', () => {
 							f;
 							return;
 						};
+						\\(): void => f as <T>;
+						func g(): void {
+							val x: T = 42;
+							f;
+							return;
+						}
+						func h(): void => f as <T>;
 					}`, {typeCheck: false}); // assert does not throw
 				});
 				test.test('throws when variable capture is not explicit.', () => {
 					const {stmts} = setupScript(`{
 						val x: int = 42;
 						\\(): void {
-							x; %> error
+							x;
 							return;
 						};
+						\\(): int => x;
+						func f(): void {
+							x;
+							return;
+						}
+						func g(): int => x;
 					}`, {varCheck: false});
 					stmts[0].varCheck();
-					const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+					return xjs.Array.forEachAggregated([
+						...(stmts.slice(1, 3) as AST.STMT.StatementExpression[]).map((stmt) => stmt.expr as AST.EXPR.Function),
+						...(stmts.slice(3) as AST.STMT.DeclarationFunction[]),
+					], (fn) => assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared));
 				});
 				test.test('throws for undeclared variables.', () => {
 					const {stmts} = setupScript(`{
 						\\(): void {
-							z; %> error
+							x;
 							return;
 						};
+						\\(): int => x;
+						func f(): void {
+							x;
+							return;
+						}
+						func g(): int => x;
 					}`, {varCheck: false});
-					const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+					xjs.Array.forEachAggregated([
+						...(stmts.slice(0, 2) as AST.STMT.StatementExpression[]).map((stmt) => stmt.expr as AST.EXPR.Function),
+						...(stmts.slice(2) as AST.STMT.DeclarationFunction[]),
+					], (fn) => assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared));
 				});
 			});
 		});
