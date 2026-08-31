@@ -56,7 +56,7 @@ export class DeclarationFunction extends Statement implements Functionlike {
 
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
-		throw new Error('`DeclarationFunction#hasBottomType` not yet supported.');
+		return false; // evaluation of a function declaration will never throw
 	}
 
 	public hoist(): void {

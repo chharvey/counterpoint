@@ -257,6 +257,36 @@ Nil! TypeCheck(SemanticStatementIteration stmt) :=
 
 
 
+Nil! TypeCheck(SemanticStatementReturn ::= ()) :=
+	1. *Let* `parent` be the result of walking up the AST and finding a node
+		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	2. *If* `parent` is set:
+		1. *Let* `return_node` be an item `node` in `parent` such that `item` is a SemanticType.
+		2. *If* `return_node` is set:
+			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
+			2. *Throw:* a new Error """A function with return type \`{{ return_type.value }}\` does not return a value."""
+		3. *Else:*
+			1. *Note:* The function is a void function and the return statement has no expression.
+			2. *Return.*
+	3. *Else:*
+		1. *Return.*
+;
+Nil! TypeCheck(SemanticStatementReturn ::= SemanticExpression) :=
+	1. *Let* `parent` be the result of walking up the AST and finding a node
+		that is either a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	2. *If* `parent` is set:
+		1. *Let* `return_node` be an item `node` in `parent` such that `item` is a SemanticType.
+		2. *If* `return_node` is set:
+			1. *Let* `return_type` be *Unwrap:* `TypeValueOf(return_node)`.
+			2. *Return:* `TypeCheckAssign(SemanticExpression, return_type.value)`.
+		3. *Else:*
+			1. *Throw:* a new Error """Expression \`{{ SemanticExpression }}\` is returned from a void function."""
+	3. *Else:*
+		1. *Return.*
+;
+
+
+
 Nil! TypeCheckAssign(SemanticExpression assigned, Type assignee_type) :=
 	1. *Let* `assigned_type` be *Unwrap:* `TypeOf(assigned)`.
 	2. *If* *UnwrapAffirm:* `Subtype(assigned_type, assignee_type)` is `false`:

@@ -14,6 +14,7 @@ import {
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import type {AstNode} from '../AstNode.ts';
 import {Statement} from './Statement.ts';
 import {StatementBreakable} from './StatementBreakable.ts';
 
@@ -42,7 +43,7 @@ export class StatementBreak extends Statement {
 	@runOnceMethod
 	public override build(builder: Builder): void {
 		let labels: StatementBreakable['labels'] | undefined = undefined;
-		let node = this.parent;
+		let node:   AstNode | undefined                      = this.parent;
 		while (node && labels === undefined) {
 			if (node instanceof StatementBreakable) {
 				labels = node.labels;

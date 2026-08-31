@@ -12,7 +12,13 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
+import {
+	typecheck_assign,
+	type AstNode,
+} from '../AstNode.ts';
+import {is_Functionlike} from '../Functionlike.ts';
 import type * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
@@ -33,9 +39,30 @@ export class StatementReturn extends Statement {
 		super(start_node, {}, expression ? [expression] : []);
 	}
 
+	public override typeCheck(): void {
+		super.typeCheck();
+		let parent: AstNode | undefined = this.parent;
+		while (parent && !is_Functionlike(parent)) {
+			parent = parent.parent;
+		}
+		if (!parent) {
+			return;
+		}
+		const return_type: TYPE.Type | undefined = parent.returnType?.eval();
+		if (this.expression) {
+			if (return_type) {
+				return typecheck_assign(this.expression, return_type, this);
+			} else {
+				throw new Error(`Expression \`${ this.expression.source }\` is returned from a void function.`); // TODO: create new TypeError subclass
+			}
+		} else if (return_type) {
+			throw new Error(`A function with return type \`${ return_type }\` does not return a value.`); // TODO: create new TypeError subclass
+		}
+	}
+
 	@noopGetter(memoizeGetter)
 	public override get hasBottomType(): boolean {
-		throw new Error('`StatementReturn#hasBottomType` not yet supported.');
+		return this.expression?.type().isBottomType ?? false;
 	}
 
 	@runOnceMethod

@@ -115,7 +115,7 @@ test.suite('Expression', () => {
 				const {stmts} = setupScript(`{
 					\\(a: int, mut b: float | null, mut $c: bool, delta= d: nat): void { return; };
 					% TODO: test optional parameters (steal from 'test/validator/Type.test.ts')
-					\\(): int? => 4.2; % TODO: type-check return value
+					\\(): int | float => 4.2;
 				}`, {build: false});
 				return assertEqualTypes(stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
 					new TYPE.Function(TYPE.Tuple.fromTypes([
@@ -125,7 +125,7 @@ test.suite('Expression', () => {
 						[Validator.cookTokenIdentifier('c'),     TYPE.BOOL],
 						[Validator.cookTokenIdentifier('delta'), TYPE.NAT],
 					]))),
-					new TYPE.Function(undefined, undefined, new TYPE.Maybe(TYPE.INT)),
+					new TYPE.Function(undefined, undefined, TYPE.INT.union(TYPE.FLOAT)),
 				]);
 			});
 		});

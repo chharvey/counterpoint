@@ -222,6 +222,26 @@ test.suite('AstNode', () => {
 				);
 			});
 		});
+
+		test.suite('Block', () => {
+			test.test('throws for lack of return statement in non-void function.', {expectFailure: true}, () => {
+				const {stmts} = setupScript(`{
+					func foo0(): float { "hello"; }
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { "world"; };
+					}
+				}`, {typeCheck: false});
+				const fn1 = stmts[1] as AST.STMT.DeclarationFunction;
+				const block0:  AST.Block = (stmts[0] as AST.STMT.DeclarationFunction).block;
+				const block1a: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent;
+				const block1b: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block;
+				const expected: RegExp = /does not return a value/;
+				assert.throws(() => block0.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
+				block1a.typeCheck(); // assert does not throw
+				return assert.throws(() => block1b.typeCheck(), expected);
+			});
+		});
 	});
 
 
