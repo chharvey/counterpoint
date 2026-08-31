@@ -268,7 +268,7 @@ export function setupScript(
 	opts:   {varCheck?: boolean, typeCheck?: boolean, build?: boolean, codegen?: boolean} = {},
 ): {
 	readonly goal:    AST.Goal,
-	readonly stmts:   NonNullable<typeof goal.block>['children'],
+	readonly stmts:   AST.Block['children'],
 	readonly builder: Builder,
 	readonly cg:      CodeGenerator,
 	readonly wasm:    binaryen.ExpressionBuilder,

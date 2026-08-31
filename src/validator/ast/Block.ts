@@ -41,6 +41,14 @@ export class Block extends AstNode implements Buildable {
 		return goal.block;
 	}
 
+	/**
+	 * Construct a new function Block from a source text and optionally a configuration.
+	 * The source text must parse successfully.
+	 * Useful when needing to parse `Block<?Break><+Return>`.
+	 * @param src    the source text
+	 * @param config the configuration
+	 * @returns      a new Block representing the given source
+	 */
 	public static fromFunctionSource(src: string, config: CplConfig = CONFIG_DEFAULT): Block {
 		return EXPR.Function.fromSource(`\\(): anything ${ src }`, config).block;
 	}
