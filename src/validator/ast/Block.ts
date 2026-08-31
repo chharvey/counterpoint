@@ -22,6 +22,7 @@ import {
 	EXPR,
 } from './index.ts';
 import {AstNode} from './AstNode.ts';
+import {is_Functionlike} from './Functionlike.ts';
 import type {Buildable} from './Buildable.ts';
 
 
@@ -49,15 +50,15 @@ export class Block extends AstNode implements Buildable {
 		start_node: SyntaxNodeFamily<'block', ['break', 'return']>,
 		public override readonly children: Readonly<NonemptyArray<STMT.Statement>>,
 		private readonly config:           CplConfig,
-		private readonly isFuncBlock:      boolean,
 	) {
 		super(start_node, {}, children);
 	}
 
 	@memoizeGetter
 	public override get validator(): Validator {
-		const v = new Validator(this.config, this.isFuncBlock ? undefined : this.parent?.validator);
-		if (this.isFuncBlock) {
+		const is_func_block: boolean = !!this.parent && is_Functionlike(this.parent);
+		const v = new Validator(this.config, is_func_block ? undefined : this.parent?.validator);
+		if (is_func_block) {
 			this.parent?.validator.getAllSymbols().forEach((symb) => {
 				// add all implicitly-captured symbols to the function block
 				if (symb instanceof SymbolSchemaType || symb instanceof SymbolSchemaFunc) { // TODO: add a property of SymbolSchema
