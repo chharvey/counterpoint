@@ -20,6 +20,7 @@ import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
+import type {Functionlike} from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
@@ -28,7 +29,7 @@ import {Statement} from './Statement.ts';
 
 
 
-export class DeclarationFunction extends Statement {
+export class DeclarationFunction extends Statement implements Functionlike {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): DeclarationFunction {
 		const statement: Statement = Statement.fromSource(src, config);
 		assert_instanceof(statement, DeclarationFunction);
