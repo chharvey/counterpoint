@@ -132,6 +132,28 @@ test.suite('AstNode', () => {
 
 
 		test.suite('Block', () => {
+			test.suite('hoisting.', () => {
+				test.test('allows function declaration overloads.', () => {
+					const {stmts} = setupScript(`{
+						{
+							func f(): void { return; };
+							func f(a: int): void { return; };
+						};
+						{
+							type f = \\(int) => void;
+							func f(a: int): void { return; };
+						};
+						{
+							val f = \\(): void { return; };
+							func f(a: int): void { return; };
+						};
+					}`, {varCheck: false});
+					const blocks: readonly AST.Block[] = stmts.map((stmt) => ((stmt as AST.STMT.StatementExpression).expr as AST.EXPR.ExpressionBlock).block);
+					blocks[0].varCheck(); // assert does not throw
+					assert.throws(() => blocks[1].varCheck(), AssignmentErrorDuplicateDeclaration);
+					return assert.throws(() => blocks[2].varCheck(), AssignmentErrorDuplicateDeclaration);
+				});
+			});
 			test.suite('function blocks.', () => {
 				test.test('allows implicit captures for type aliases and function names.', () => {
 					setupScript(`{

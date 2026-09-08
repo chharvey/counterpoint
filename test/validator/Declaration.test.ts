@@ -176,31 +176,22 @@ test.suite('Declaration', () => {
 		});
 
 		test.suite('DeclarationFunction', () => {
-			test.test('throws when declaring duplicate identifier.', () => {
-				setupScript(`{
-					val x: int = 42;
-					func y(z: str): void { return; };
-				}`, {typeCheck: false}); // assert does not throw
-				assert.throws(() => setupScript(`{
-					val x: int = 42;
-					func x(): void { return; };
-				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
-				return assert.throws(() => setupScript(`{
-					func f(): void { return; };
-					func f(a: int): void { return; };
-				}`, {typeCheck: false}), AssignmentErrorDuplicateDeclaration);
-			});
 			test.test('allows duplicate blank identifier.', () => {
 				setupScript(`{
 					func _(): void { return; };
 					func _(a: int): void { return; };
 				}`, {typeCheck: false}); // assert does not throw
 			});
-			test.test('allows overloads.', {expectFailure: true}, () => {
-				setupScript(`{
+			test.test('does not var-check function names.', () => {
+				const {stmts} = setupScript(`{
 					func f(): void { return; };
 					func f(a: int): void { return; };
-				}`, {typeCheck: false}); // assert does not throw
+					type T = \\(int) => void;
+					func T(a: int): void { return; };
+					val x = \\(): void { return; };
+					func x(a: int): void { return; };
+				}`, {varCheck: false});
+				xjs.Array.forEachAggregated(stmts, (stmt) => stmt.varCheck()); // assert does not throw
 			});
 			test.test('allows self-reference, but not self-shadowing.', () => {
 				setupScript(`{
