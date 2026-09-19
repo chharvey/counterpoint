@@ -45,6 +45,34 @@ Nil! VarCheck(SemanticParameterFunction param) :=
 
 
 
+Nil! VarCheck(SemanticCapture capture) :=
+	1. *Assert:* `capture.children.count` is 1.
+	2. *Let* `var` be `capture.children.0`.
+	3. *Perform:* *Unwrap:* `VarCheck(var)`.
+	4. *Assert:* the validator’s symbol table contains a SymbolSchema `symbol` whose `id` is `var.id`.
+	5. *Let* `parent` be the parent node of `capture`.
+	6. *Assert:* `parent` is a SemanticExpressionFunction or a SemanticDeclarationFunction.
+	7. *Let* `block` be `parent.children.-1`.
+	8. *Assert:* `block` is a SemanticBlock.
+	9. *Let* `validator` be the validator of `block`.
+	10. *Let* `isWritable` be `true`.
+	11. *If* `symbol.writable` is `false`:
+		1. *Set* `isWritable` to `false`.
+	12. *Else If* `capture.ref` is `false`:
+		1. *Set* `isWritable` to `false`.
+	13. *Else:*
+		1. Fall through.
+	14. *Let* `schema` be a new SymbolSchemaVar [
+		id=              `symbol.id`,
+		isWritable=      `isWritable`,
+		isUninitialized= `false`,
+		type=            `Anything`,
+	].
+	15. Add `schema` as a record for `symbol.id` to `validator`.
+;
+
+
+
 Nil! VarCheck(SemanticBlock block) :=
 	1. *For each* `stmt` in `block.children`:
 		1. *If* `stmt` is a SemanticDeclarationFunction:

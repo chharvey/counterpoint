@@ -152,6 +152,23 @@ test.suite('AstNode', () => {
 						func h(): void => f as <T>;
 					}`, {typeCheck: false}); // assert does not throw
 				});
+				test.test('allows explicit variable captures.', () => {
+					setupScript(`{
+						val x: int = 42;
+						val mut y: float = 4.2;
+						\\() with (x, y): void {
+							x;
+							return;
+						};
+						\\() with (x, y): int => x;
+						func f() with (x, ref y): void {
+							x;
+							set y = 5.2;
+							return;
+						}
+						func g() with (x, ref y): int => x;
+					}`, {typeCheck: false}); // assert does not throw
+				});
 				test.test('throws when variable capture is not explicit.', () => {
 					const {stmts} = setupScript(`{
 						val x: int = 42;
@@ -189,6 +206,53 @@ test.suite('AstNode', () => {
 						...(stmts.slice(0, 2) as AST.STMT.StatementExpression[]).map((stmt) => stmt.expr as AST.EXPR.Function),
 						...(stmts.slice(2) as AST.STMT.DeclarationFunction[]),
 					], (fn) => assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared));
+				});
+				test.test('throws for duplicate variable declaration.', () => {
+					const {stmts} = setupScript(`{
+						val x: int = 42;
+						\\() with (x): void {
+							val x: float = 4.2;
+							return;
+						};
+						func f() with (x): void {
+							val x: float = 4.2;
+							return;
+						}
+					}`, {varCheck: false});
+					stmts[0].varCheck();
+					return xjs.Array.forEachAggregated([
+						(stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function,
+						stmts[2] as AST.STMT.DeclarationFunction,
+					], (fn) => {
+						fn.captures[0].varCheck();
+						return assert.throws(() => fn.block.varCheck(), AssignmentErrorDuplicateDeclaration);
+					});
+				});
+				test.test('throws when reassigning non-ref capture.', () => {
+					const {stmts} = setupScript(`{
+						val mut x: int = 42;
+						\\() with (x): void {
+							set x = 43;
+							return;
+						};
+						func f() with (x): void {
+							set x = 43;
+							return;
+						}
+						func g() with (ref x): void {
+							set x = 43;
+							return;
+						}
+					}`, {varCheck: false});
+					stmts[0].varCheck();
+					xjs.Array.forEachAggregated([
+						(stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function,
+						stmts[2] as AST.STMT.DeclarationFunction,
+					], (fn) => {
+						fn.captures[0].varCheck();
+						return assert.throws(() => fn.block.varCheck(), AssignmentErrorReassignment);
+					});
+					return stmts[3].varCheck(); // assert does not throw
 				});
 			});
 		});
