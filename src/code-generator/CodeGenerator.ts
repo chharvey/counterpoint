@@ -268,14 +268,14 @@ export class CodeGenerator {
 	 * @return      `(struct.new $List <count> (array.new_fixed $ListInternal <...items>))`
 	 */
 	public codegenList(items: readonly binaryen.ExpressionRef[] = []): binaryen.ExpressionRef {
-		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (items.length > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
 		}
 		const entries: binaryen.ExpressionRef[] = Array.from(
 			new Array(capacity),
-			(_, i) => items[i] ?? wasm.ref.null(reftypeNull.Value),
+			(_, i) => items[i] ?? wasm.ref.null(heaptype.Value),
 		);
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
@@ -292,7 +292,7 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Dict <count> (array.new_fixed $DictInternal <...props>))`
 	 */
 	public codegenDict(props: ReadonlyMap<bigint, binaryen.ExpressionRef> = new Map()): binaryen.ExpressionRef {
-		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		let capacity: number = 8;
 		while (props.size > capacity * CodeGenerator.#LOAD_FACTOR) {
 			capacity *= 2;
@@ -304,7 +304,7 @@ export class CodeGenerator {
 			wasm.i32.const(props.size),
 			wasm.array.new_fixed(
 				heaptype.DictInternal,
-				entries.map((entry) => entry ?? wasm.ref.null(reftypeNull.Property)),
+				entries.map((entry) => entry ?? wasm.ref.null(heaptype.Property)),
 			),
 		], heaptype.Dict);
 	}
@@ -355,10 +355,10 @@ export class CodeGenerator {
 	 * @return      `(struct.new $Maybe <value?>)`
 	 */
 	public codegenMaybe(value?: binaryen.ExpressionRef): binaryen.ExpressionRef {
-		const {vm: {heaptype, reftypeNull, Object: VmObject}, mod: {wasm}} = this;
+		const {vm: {heaptype, Object: VmObject}, mod: {wasm}} = this;
 		return wasm.struct.new([
 			VmObject.ctrPlusPlus(),
-			value ?? wasm.ref.null(reftypeNull.Value),
+			value ?? wasm.ref.null(heaptype.Value),
 		], heaptype.Maybe);
 	}
 

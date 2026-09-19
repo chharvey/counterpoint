@@ -133,7 +133,7 @@ test.suite('CodeGenerator', () => {
 					wasm.i32.const(0),
 					wasm.array.new_fixed(
 						cg.vm.heaptype.ListInternal,
-						repeat(wasm.ref.null(cg.vm.reftypeNull.Value), 8),
+						repeat(wasm.ref.null(cg.vm.heaptype.Value), 8),
 					),
 				], cg.vm.heaptype.List),
 			);
@@ -154,7 +154,7 @@ test.suite('CodeGenerator', () => {
 							genConst(cg, 1.1),
 							genConst(cg, 2.2),
 							genConst(cg, 3.3),
-							...repeat(wasm.ref.null(cg.vm.reftypeNull.Value), 5),
+							...repeat(wasm.ref.null(cg.vm.heaptype.Value), 5),
 						],
 					),
 				], cg.vm.heaptype.List),
@@ -168,7 +168,7 @@ test.suite('CodeGenerator', () => {
 					wasm.i32.const(0),
 					wasm.array.new_fixed(
 						cg.vm.heaptype.DictInternal,
-						repeat(wasm.ref.null(cg.vm.reftypeNull.Property), 8),
+						repeat(wasm.ref.null(cg.vm.heaptype.Property), 8),
 					),
 				], cg.vm.heaptype.Dict),
 			);
@@ -191,7 +191,7 @@ test.suite('CodeGenerator', () => {
 							cg.newProperty(0x108n, genConst(cg, 3.3)),
 							cg.newProperty(0x109n, genConst(cg, 4.4)),
 							cg.newProperty(0x10an, genConst(cg, 5.5)),
-							...repeat(wasm.ref.null(cg.vm.reftypeNull.Property), 3),
+							...repeat(wasm.ref.null(cg.vm.heaptype.Property), 3),
 							cg.newProperty(0x106n, genConst(cg, 1.1)),
 							cg.newProperty(0x107n, genConst(cg, 2.2)),
 						],
@@ -265,7 +265,7 @@ test.suite('CodeGenerator', () => {
 				cg.codegenMaybe(),
 				wasm.struct.new([
 					cg.vm.Object.ctrPlusPlus(),
-					wasm.ref.null(cg.vm.reftypeNull.Value),
+					wasm.ref.null(cg.vm.heaptype.Value),
 				], cg.vm.heaptype.Maybe),
 			);
 			return assertEqualBins(
@@ -390,7 +390,7 @@ test.suite('CodeGenerator', () => {
 					(256,         257,         264,         ???,         ???,         ???,         ???,         ???) % (b, c, aaa, -, -, -, -, -)
 				%%
 			}`;
-			const WASM_NULL: binaryen.ExpressionRef = wasm.ref.null(cg.vm.reftypeNull.Property);
+			const WASM_NULL: binaryen.ExpressionRef = wasm.ref.null(cg.vm.heaptype.Property);
 			return assertEqualBins(
 				[new Map([
 					// [a= 42, aa= false, b= 4.2]; % (258, 261, 256)
