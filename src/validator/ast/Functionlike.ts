@@ -47,5 +47,6 @@ export function Functionlike_varCheck(this: Functionlike): void {
 		}
 	});
 
+	this.returnType?.varCheck();
 	return this.block.varCheck();
 }
