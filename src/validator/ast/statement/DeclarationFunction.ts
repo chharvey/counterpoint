@@ -46,7 +46,7 @@ export class DeclarationFunction extends Statement implements Functionlike {
 		start_node: SyntaxNodeType<'declaration_function'>,
 		private readonly identifier: Serializable | null,
 		public  readonly parameters: readonly ParameterFunction[],
-		captures: readonly Capture[],
+		public  readonly captures:   readonly Capture[],
 		public  readonly returnType: AST_TYPE.Type | null,
 		public  readonly block:      Block,
 	) {

@@ -2,6 +2,7 @@ import * as xjs from 'extrajs';
 import {AssignmentErrorDuplicateKey} from '../../index.ts';
 import type {AstNode} from './AstNode.ts';
 import type {ParameterFunction} from './ParameterFunction.ts';
+import type {Capture} from './Capture.ts';
 import type {Block} from './Block.ts';
 import type * as AST_TYPE from './type/index.ts';
 import * as EXPR from './expression/index.ts';
@@ -16,6 +17,7 @@ import * as STMT from './statement/index.ts';
  */
 export interface Functionlike extends AstNode {
 	readonly parameters: readonly ParameterFunction[];
+	readonly captures:   readonly Capture[];
 	readonly returnType: AST_TYPE.Type | null;
 	readonly block:      Block;
 }

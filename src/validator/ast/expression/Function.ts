@@ -39,7 +39,7 @@ class ExpressionFunction extends Expression implements Functionlike {
 	public constructor(
 		start_node: SyntaxNodeType<'expression_function'>,
 		public readonly parameters: readonly ParameterFunction[],
-		captures: readonly Capture[],
+		public readonly captures: readonly Capture[],
 		public readonly returnType: AST_TYPE.Type | null,
 		public readonly block:      Block,
 	) {
