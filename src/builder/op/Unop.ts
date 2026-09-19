@@ -147,18 +147,18 @@ export class Unop extends Value {
 				return wasm.block(null, [
 					wasm.drop(arg0),
 					Vect.TRUE,
-				], binaryen.v128);
+				], binaryen.Type.v128);
 			} else if (t0.isDefinitelyTruthy) {
 				return wasm.block(null, [
 					wasm.drop(arg0),
 					Vect.FALSE,
-				], binaryen.v128);
+				], binaryen.Type.v128);
 			}
 		} else if (this.operator === Operator.EMP && t0.isDefinitelyFalsy) {
 			return wasm.block(null, [
 				wasm.drop(arg0),
 				Vect.TRUE,
-			], binaryen.v128);
+			], binaryen.Type.v128);
 		}
 		return 0;
 	}

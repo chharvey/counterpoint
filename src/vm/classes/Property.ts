@@ -25,7 +25,7 @@ export class Property implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
-			['Property#isTombstone', {name: 'Property.is-tombstone', param: this.vm.reftypeNull.Property, result: binaryen.i32}],
+			['Property#isTombstone', {name: 'Property.is-tombstone', param: this.vm.reftypeNull.Property, result: binaryen.Type.i32}],
 		]);
 	}
 
@@ -37,7 +37,7 @@ export class Property implements HasFuncData {
 	} {
 		const {mod: {wasm}, reftype} = this.vm;
 		return {
-			get key() { return wasm.struct.get(FIELD.KEY, ref, binaryen.i64); },
+			get key() { return wasm.struct.get(FIELD.KEY, ref, binaryen.Type.i64); },
 			get val() { return wasm.struct.get(FIELD.VAL, ref, reftype.Value); },
 		};
 	}
@@ -60,6 +60,6 @@ export class Property implements HasFuncData {
 	 * @deprecated TODO: This is dead code. Remove when removing Case class.
 	 */
 	public isTombstone(prop: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Property.is-tombstone', [prop], binaryen.i32);
+		return this.vm.mod.wasm.call('Property.is-tombstone', [prop], binaryen.Type.i32);
 	}
 }
