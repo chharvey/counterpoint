@@ -406,9 +406,9 @@ Decorate(ParametersFunction ::= ","? ParameterFunction<-Named># "," ParameterFun
 
 
 Decorate(Capture<Ref> ::= IDENTIFIER) -> SemanticCapture
-	:= (SemanticCapture[id=TokenWorth(IDENTIFIER)][ref=false]);
+	:= (SemanticCapture[ref=false] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
 Decorate(Capture<Ref> ::= "ref" IDENTIFIER) -> SemanticCapture
-	:= (SemanticCapture[id=TokenWorth(IDENTIFIER)][ref=true]);
+	:= (SemanticCapture[ref=true] SemanticExpressionVariable[id=TokenWorth(IDENTIFIER)]);
 
 Decorate(CaptureClause<Ref> ::= "with" "(" ","? Capture<?Ref># ","? ")") -> Sequence<SemanticCapture>
 	:= ParseList(Capture<?Ref>, SemanticCapture);

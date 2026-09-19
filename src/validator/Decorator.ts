@@ -329,7 +329,8 @@ export class Decorator {
 			}],
 
 			[/^capture(__ref)?$/, (node) => new AST.Capture(
-				node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>,
+				node as SyntaxNodeFamily<'capture', ['ref']>,
+				new AST.EXPR.Variable(node.childForFieldName('identifier_0') as SyntaxNodeType<'identifier'>),
 				!!node.childForFieldName('ref_0'),
 			)],
 

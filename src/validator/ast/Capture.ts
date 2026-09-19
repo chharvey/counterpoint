@@ -1,17 +1,15 @@
-import type {SyntaxNodeType} from '../utils-private.ts';
-import {Validator} from '../Validator.ts';
+import type {SyntaxNodeFamily} from '../utils-private.ts';
 import {AstNode} from './AstNode.ts';
+import type * as EXPR from './expression/index.ts';
 
 
 
 export class Capture extends AstNode {
-	public readonly id: bigint = Validator.cookTokenIdentifier(this.start_node.text);
-
-
 	public constructor(
-		start_node: SyntaxNodeType<'identifier'>,
-		private readonly ref: boolean,
+		start_node: SyntaxNodeFamily<'capture', ['ref']>,
+		private readonly variable: EXPR.Variable,
+		private readonly ref:      boolean,
 	) {
-		super(start_node);
+		super(start_node, {ref}, [variable]);
 	}
 }

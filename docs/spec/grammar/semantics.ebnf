@@ -31,8 +31,8 @@ SemanticParameterFunction[named: false][writable: Boolean][id?: RealNumber]
 
 
 
-SemanticCapture[id: RealNumber][ref: Bolean]
-	::= ();
+SemanticCapture[ref: Boolean]
+	::= SemanticExpressionVariable;
 
 
 
