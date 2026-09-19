@@ -1,5 +1,4 @@
 import * as assert from 'node:assert';
-import * as xjs from 'extrajs';
 import {
 	type Builder,
 	OP,
@@ -19,8 +18,10 @@ import type {Serializable} from '../../../parser/index.ts';
 import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
-import {check_unique_param_keys} from '../utils-private.ts';
-import type {Functionlike} from '../Functionlike.ts';
+import {
+	type Functionlike,
+	Functionlike_varCheck,
+} from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Block} from '../Block.ts';
 import type * as AST_TYPE from '../type/index.ts';
@@ -69,9 +70,7 @@ export class DeclarationFunction extends Statement implements Functionlike {
 	}
 
 	public override varCheck(): void {
-		xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
-		check_unique_param_keys(this.parameters);
-		return this.block.varCheck();
+		return Functionlike_varCheck.call(this);
 	}
 
 	public override typeCheck(): void {
