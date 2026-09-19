@@ -125,6 +125,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_string,
 		binaryen.Type.i32,
+		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.i8,
 		true,
 	);
@@ -135,6 +136,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_tuple,
 		tb.getTempRefType(tb.getTempHeapType(i_value), false),
+		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		false,
 	);
@@ -145,6 +147,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_record,
 		tb.getTempRefType(tb.getTempHeapType(i_property), false),
+		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		false,
 	);
@@ -155,6 +158,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_list_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_value), true),
+		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		true,
 	);
@@ -165,6 +169,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_dict_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_property), true),
+		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		true,
 	);
@@ -175,6 +180,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_map_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_case), true),
+		// @ts-expect-error --- incorrect `setArrayType` signature
 		binaryen.PackedType.notPacked,
 		true,
 	);
@@ -195,6 +201,7 @@ const TYPES: {
 		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_list, tb.getTempHeapType(i_object));
 	tb.setOpen(i_list);
 
@@ -206,6 +213,7 @@ const TYPES: {
 		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_dict, tb.getTempHeapType(i_object));
 	tb.setOpen(i_dict);
 
@@ -217,6 +225,7 @@ const TYPES: {
 		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
 	tb.setOpen(i_map);
 
@@ -226,6 +235,7 @@ const TYPES: {
 		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
 		/* $value */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
 	]);
+	// @ts-expect-error --- incorrect `setSubType` signature
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
 	// `$Maybe` is final
 
