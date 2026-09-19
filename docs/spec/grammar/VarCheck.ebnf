@@ -154,7 +154,12 @@ Nil! VarCheck(SemanticExpressionFunction fn) :=
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		5. *Else:*
 			1. Push `label` to `labels`.
-	7. *Return:* `VarCheck(fn.children.-1)`.
+	7. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
+	8. *If* `returntype` is set:
+		1. *Perform:* *Unwrap:* `VarCheck(returntype)`.
+	9. *Else:*
+		1. Fall through.
+	10. *Return:* `VarCheck(fn.children.-1)`.
 ;
 
 
@@ -213,29 +218,6 @@ Nil! VarCheck(SemanticDeclarationFunction fn) :=
 		1. *Perform:* *Unwrap:* `VarCheck(parameter)`.
 	4. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
 	5. *Let* `labels` be a new Sequence.
-	5. *For each* `param` of `named_params`:
-		1. *Let* `key` be an item `c` in `param` such that `c` is a SemanticKey.
-		2. *If* `key` is not *nil*:
-			1. *Let* `label` be `key.id`.
-		3. *Else:*
-			1. *Assert* `param.id` is set.
-			2. *Let* `label` be `param.id`.
-		4. *If* `labels` already contains `label`:
-			1. *Throw:* a new AssignmentErrorDuplicateKey.
-		5. *Else:*
-			1. Push `label` to `labels`.
-	7. *Return:* `VarCheck(fn.children.-1)`.
-;
-
-
-
-Nil! VarCheck(SemanticDeclarationFunction fn) :=
-	1. *Note:* In function declarations, all parameter labels are var-checked *after* all parameter types and default values. The block/return is var-checked last.
-	2. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
-	3. *For each* `parameter` of `parameters`:
-		1. *Perform:* *Unwrap:* `VarCheck(parameter)`.
-	4. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
-	5. *Let* `labels` be a new Sequence.
 	6. *For each* `param` of `named_params`:
 		1. *Let* `key` be an item `c` in `param` such that `c` is a SemanticKey.
 		2. *If* `key` is not *nil*:
@@ -247,7 +229,12 @@ Nil! VarCheck(SemanticDeclarationFunction fn) :=
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		5. *Else:*
 			1. Push `label` to `labels`.
-	7. *Return:* `VarCheck(fn.children.-1)`.
+	7. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
+	8. *If* `returntype` is set:
+		1. *Perform:* *Unwrap:* `VarCheck(returntype)`.
+	9. *Else:*
+		1. Fall through.
+	10. *Return:* `VarCheck(fn.children.-1)`.
 ;
 
 
