@@ -138,14 +138,17 @@ Nil! VarCheck(SemanticExpressionCall call) :=
 
 Nil! VarCheck(SemanticExpressionFunction fn) :=
 	1. *Note:* In function expressions, all parameter labels are var-checked *after* all parameter types and default values. The block/return is var-checked last.
-	2. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
-	3. *For each* `parameter` of `parameters`:
+	2. *Let* `captures` be a filtering of `fn.children` for each `child` such that `child` is a SemanticCapture.
+	3. *For each* `capture` of `captures`:
+		1. *Perform:* *Unwrap:* `VarCheck(capture)`.
+	4. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	5. *For each* `parameter` of `parameters`:
 		1. *Perform:* *Unwrap:* `VarCheck(parameter)`.
-	4. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
-	5. *Let* `labels` be a new Sequence.
-	6. *For each* `param` of `named_params`:
+	6. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
+	7. *Let* `labels` be a new Sequence.
+	8. *For each* `param` of `named_params`:
 		1. *Let* `key` be an item `c` in `param` such that `c` is a SemanticKey.
-		2. *If* `key` is not *nil*:
+		2. *If* `key` is set:
 			1. *Let* `label` be `key.id`.
 		3. *Else:*
 			1. *Assert* `param.id` is set.
@@ -154,12 +157,20 @@ Nil! VarCheck(SemanticExpressionFunction fn) :=
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		5. *Else:*
 			1. Push `label` to `labels`.
-	7. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
-	8. *If* `returntype` is set:
+	9. *Set* `labels` to a new Sequence.
+	10. *For each* `capture` of `captures`:
+		1. *Assert:* `capture.children.count` is *1*.
+		2. *Let* `label` be `capture.children.0.id`.
+		3. *If* `labels` already contains `label`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		4. *Else:*
+			1. Push `label` to `labels`.
+	11. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
+	12. *If* `returntype` is set:
 		1. *Perform:* *Unwrap:* `VarCheck(returntype)`.
-	9. *Else:*
+	13. *Else:*
 		1. Fall through.
-	10. *Return:* `VarCheck(fn.children.-1)`.
+	14. *Return:* `VarCheck(fn.children.-1)`.
 ;
 
 
@@ -213,14 +224,17 @@ Nil! VarCheck(SemanticDeclarationVariable decl) :=
 
 Nil! VarCheck(SemanticDeclarationFunction fn) :=
 	1. *Note:* In function declarations, all parameter labels are var-checked *after* all parameter types and default values. The block/return is var-checked last.
-	2. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
-	3. *For each* `parameter` of `parameters`:
+	2. *Let* `captures` be a filtering of `fn.children` for each `child` such that `child` is a SemanticCapture.
+	3. *For each* `capture` of `captures`:
+		1. *Perform:* *Unwrap:* `VarCheck(capture)`.
+	4. *Let* `parameters` be a filtering of `fn.children` for each `child` such that `child` is a SemanticParameterFunction.
+	5. *For each* `parameter` of `parameters`:
 		1. *Perform:* *Unwrap:* `VarCheck(parameter)`.
-	4. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
-	5. *Let* `labels` be a new Sequence.
-	6. *For each* `param` of `named_params`:
+	6. *Let* `named_params` be a filtering of `parameters` for each `parameter` such that `parameter.named` is `true`.
+	7. *Let* `labels` be a new Sequence.
+	8. *For each* `param` of `named_params`:
 		1. *Let* `key` be an item `c` in `param` such that `c` is a SemanticKey.
-		2. *If* `key` is not *nil*:
+		2. *If* `key` is set:
 			1. *Let* `label` be `key.id`.
 		3. *Else:*
 			1. *Assert* `param.id` is set.
@@ -229,12 +243,20 @@ Nil! VarCheck(SemanticDeclarationFunction fn) :=
 			1. *Throw:* a new AssignmentErrorDuplicateKey.
 		5. *Else:*
 			1. Push `label` to `labels`.
-	7. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
-	8. *If* `returntype` is set:
+	9. *Set* `labels` to a new Sequence.
+	10. *For each* `capture` of `captures`:
+		1. *Assert:* `capture.children.count` is *1*.
+		2. *Let* `label` be `capture.children.0.id`.
+		3. *If* `labels` already contains `label`:
+			1. *Throw:* a new AssignmentErrorDuplicateDeclaration.
+		4. *Else:*
+			1. Push `label` to `labels`.
+	11. *Let* `returntype` be an item `c` in `fn.children` such that `c` is a SemanticType.
+	12. *If* `returntype` is set:
 		1. *Perform:* *Unwrap:* `VarCheck(returntype)`.
-	9. *Else:*
+	13. *Else:*
 		1. Fall through.
-	10. *Return:* `VarCheck(fn.children.-1)`.
+	14. *Return:* `VarCheck(fn.children.-1)`.
 ;
 
 

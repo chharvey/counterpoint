@@ -14,6 +14,7 @@ import {
 	ReferenceErrorUndeclared,
 	ReferenceErrorDeadZone,
 	ReferenceErrorKind,
+	AssignmentErrorDuplicateDeclaration,
 	AssignmentErrorDuplicateKey,
 	TypeErrorInvalidOperation,
 	TypeErrorNotAssignable,
@@ -42,6 +43,21 @@ test.suite('Expression', () => {
 				const fn1 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
 				assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateKey);
 				return assert.throws(() => fn1.varCheck(), AssignmentErrorDuplicateKey);
+			});
+			test.test('throws when capture is not declared.', () => {
+				const {stmts} = setupScript(`{
+					\\() with (x): void { return; };
+				}`, {varCheck: false});
+				return assert.throws(() => stmts[0].varCheck(), ReferenceErrorUndeclared);
+			});
+			test.test('disallows duplicate captures.', () => {
+				const {stmts} = setupScript(`{
+					val x: int = 42;
+					\\() with (x, x): void { return; };
+				}`, {varCheck: false});
+				stmts[0].varCheck();
+				const fn0 = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
+				return assert.throws(() => fn0.varCheck(), AssignmentErrorDuplicateDeclaration);
 			});
 		});
 	});

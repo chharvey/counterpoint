@@ -1,5 +1,8 @@
 import * as xjs from 'extrajs';
-import {AssignmentErrorDuplicateKey} from '../../index.ts';
+import {
+	AssignmentErrorDuplicateDeclaration,
+	AssignmentErrorDuplicateKey,
+} from '../../index.ts';
 import type {AstNode} from './AstNode.ts';
 import type {ParameterFunction} from './ParameterFunction.ts';
 import type {Capture} from './Capture.ts';
@@ -34,6 +37,7 @@ export function is_Functionlike(node: AstNode): node is Functionlike {
  * Default implementation of `Functionlike#varCheck`.
  */
 export function Functionlike_varCheck(this: Functionlike): void {
+	xjs.Array.forEachAggregated(this.captures, (capt) => capt.varCheck());
 	xjs.Array.forEachAggregated(this.parameters, (param) => param.varCheck());
 
 	// ensure no duplicate parameter keys
@@ -46,6 +50,16 @@ export function Functionlike_varCheck(this: Functionlike): void {
 			} else {
 				key_ids.add(key_id);
 			}
+		}
+	});
+
+	// ensure no duplicate captures
+	const capt_ids = new Set<bigint>();
+	xjs.Array.forEachAggregated(this.captures, (capt) => {
+		if (capt_ids.has(capt.variable.id)) {
+			throw new AssignmentErrorDuplicateDeclaration(capt.variable);
+		} else {
+			capt_ids.add(capt.variable.id);
 		}
 	});
 
