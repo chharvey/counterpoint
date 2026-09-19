@@ -55,7 +55,7 @@ function TypeBuilder_makeField(typ: binaryen.Type, packedType: 'notPacked' | 'i8
 } {
 	return {
 		type:       typ,
-		packedType: binaryen[packedType],
+		packedType: binaryen.PackedType[packedType],
 		mutable,
 	};
 }
@@ -98,16 +98,16 @@ const TYPES: {
 	const i_value: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_value, [
-		/* $tag */       TypeBuilder_makeField(binaryen.i32, 'i8'),
-		/* $primitive */ TypeBuilder_makeField(binaryen.v128),
-		/* $composite */ TypeBuilder_makeField(binaryen.eqref),
+		/* $tag */       TypeBuilder_makeField(binaryen.Type.i32, 'i8'),
+		/* $primitive */ TypeBuilder_makeField(binaryen.Type.v128),
+		/* $composite */ TypeBuilder_makeField(binaryen.Type.eqref),
 	]);
 
 	/* (type $Property ...) */
 	const i_property: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_property, [
-		/* $key */ TypeBuilder_makeField(binaryen.i64),
+		/* $key */ TypeBuilder_makeField(binaryen.Type.i64),
 		/* $val */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), false)),
 	]);
 
@@ -124,8 +124,8 @@ const TYPES: {
 	tb.grow(1);
 	tb.setArrayType(
 		i_string,
-		binaryen.i32,
-		binaryen.i8,
+		binaryen.Type.i32,
+		binaryen.PackedType.i8,
 		true,
 	);
 
@@ -135,7 +135,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_tuple,
 		tb.getTempRefType(tb.getTempHeapType(i_value), false),
-		binaryen.notPacked,
+		binaryen.PackedType.notPacked,
 		false,
 	);
 
@@ -145,7 +145,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_record,
 		tb.getTempRefType(tb.getTempHeapType(i_property), false),
-		binaryen.notPacked,
+		binaryen.PackedType.notPacked,
 		false,
 	);
 
@@ -155,7 +155,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_list_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_value), true),
-		binaryen.notPacked,
+		binaryen.PackedType.notPacked,
 		true,
 	);
 
@@ -165,7 +165,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_dict_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_property), true),
-		binaryen.notPacked,
+		binaryen.PackedType.notPacked,
 		true,
 	);
 
@@ -175,7 +175,7 @@ const TYPES: {
 	tb.setArrayType(
 		i_map_internal,
 		tb.getTempRefType(tb.getTempHeapType(i_case), true),
-		binaryen.notPacked,
+		binaryen.PackedType.notPacked,
 		true,
 	);
 
@@ -183,7 +183,7 @@ const TYPES: {
 	const i_object: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_object, [
-		/* $id */ TypeBuilder_makeField(binaryen.i64),
+		/* $id */ TypeBuilder_makeField(binaryen.Type.i64),
 	]);
 	tb.setOpen(i_object);
 
@@ -191,8 +191,8 @@ const TYPES: {
 	const i_list: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_list, [
-		/* $id */       TypeBuilder_makeField(binaryen.i64),
-		/* $size */     TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
+		/* $id */       TypeBuilder_makeField(binaryen.Type.i64),
+		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_list_internal), false), 'notPacked', true),
 	]);
 	tb.setSubType(i_list, tb.getTempHeapType(i_object));
@@ -202,8 +202,8 @@ const TYPES: {
 	const i_dict: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_dict, [
-		/* $id */       TypeBuilder_makeField(binaryen.i64),
-		/* $size */     TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
+		/* $id */       TypeBuilder_makeField(binaryen.Type.i64),
+		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_dict_internal), false), 'notPacked', true),
 	]);
 	tb.setSubType(i_dict, tb.getTempHeapType(i_object));
@@ -213,8 +213,8 @@ const TYPES: {
 	const i_map: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_map, [
-		/* $id */       TypeBuilder_makeField(binaryen.i64),
-		/* $size */     TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
+		/* $id */       TypeBuilder_makeField(binaryen.Type.i64),
+		/* $size */     TypeBuilder_makeField(binaryen.Type.i32, 'notPacked', true),
 		/* $internal */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_map_internal), false), 'notPacked', true),
 	]);
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
@@ -223,7 +223,7 @@ const TYPES: {
 	const i_maybe: number = tb.getSize();
 	tb.grow(1);
 	tb.setStructType(i_maybe, [
-		/* $id */    TypeBuilder_makeField(binaryen.i64),
+		/* $id */    TypeBuilder_makeField(binaryen.Type.i64),
 		/* $value */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
 	]);
 	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
@@ -294,9 +294,9 @@ export class VirtualMachine {
 	`);
 
 	public readonly globalImportDataMap: ReadonlyMap<string, {readonly name: string, readonly type: binaryen.Type}> = new Map([
-		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.v128}],
-		['Vect#FALSE', {name: 'Vect.FALSE', type: binaryen.v128}],
-		['Vect#TRUE',  {name: 'Vect.TRUE',  type: binaryen.v128}],
+		['Vect#NULL',  {name: 'Vect.NULL',  type: binaryen.Type.v128}],
+		['Vect#FALSE', {name: 'Vect.FALSE', type: binaryen.Type.v128}],
+		['Vect#TRUE',  {name: 'Vect.TRUE',  type: binaryen.Type.v128}],
 	]);
 
 	public readonly util = utils(this);

@@ -176,16 +176,16 @@ export class CodeGenerator {
 	): binaryen.ExpressionRef /* v128 */ {
 		const {Vect} = this.vm;
 		switch (binaryen.getExpressionType(arg)) {
-			case binaryen.v128: {
+			case binaryen.Type.v128: {
 				return arg;
 			}
-			case binaryen.unreachable: {
+			case binaryen.Type.unreachable: {
 				return arg;
 			}
-			case binaryen.i64: {
+			case binaryen.Type.i64: {
 				return opts.unsigned ? Vect.newNat(arg) : Vect.newInt(arg);
 			}
-			case binaryen.f64: {
+			case binaryen.Type.f64: {
 				return Vect.newFloat(arg);
 			}
 			default: {
@@ -210,11 +210,11 @@ export class CodeGenerator {
 	public newProperty(key: bigint, arg: binaryen.ExpressionRef /* unreachable | (ref $Value) | (ref null $Value) */): binaryen.ExpressionRef /* (ref $Property) */ {
 		const {vm: {heaptype, reftype, reftypeNull}, mod: {wasm}} = this;
 		switch (binaryen.getExpressionType(arg)) {
-			case binaryen.unreachable: {
+			case binaryen.Type.unreachable: {
 				return arg;
 			}
 			// WARNING: leaky abstraction! bitwise-ORing with 4 provides the “exact” type, i.e. `(ref (exact $Value))` --- see WebAssembly/binaryen/src/wasm-type.h
-			case binaryen.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
+			case binaryen.Type.nullref: // `(ref null none)` // BUG: Binaryen treats all nullish values the same. See NOTE below.
 			case reftypeNull.Value | 4:
 			case reftype.Value     | 4:
 			case reftypeNull.Value:
@@ -394,8 +394,8 @@ export class CodeGenerator {
 		const fn_name: string = 'main';
 		mod.functions.add(
 			fn_name,
-			binaryen.none,
-			binaryen.none,
+			binaryen.Type.none,
+			binaryen.Type.none,
 			this.getAllLocals().map((local) => local.type),
 			body,
 		);

@@ -25,7 +25,7 @@ export class Case implements HasFuncData {
 	@memoizeGetter
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		return new Map<string, FuncImportData>([
-			['Case#isTombstone', {name: 'Case.is-tombstone', param: this.vm.reftypeNull.Case, result: binaryen.i32}],
+			['Case#isTombstone', {name: 'Case.is-tombstone', param: this.vm.reftypeNull.Case, result: binaryen.Type.i32}],
 		]);
 	}
 
@@ -58,6 +58,6 @@ export class Case implements HasFuncData {
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
 	 */
 	public isTombstone(case_: binaryen.ExpressionRef /* (ref null $Case) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call('Case.is-tombstone', [case_], binaryen.i32);
+		return this.vm.mod.wasm.call('Case.is-tombstone', [case_], binaryen.Type.i32);
 	}
 }
