@@ -11,7 +11,7 @@ import {ValueType} from './ValueType.ts';
  */
 export class Natural extends ValueType {
 	public constructor() {
-		super(new Set<VALUE.Natural>([VALUE.NAT_0, VALUE.NAT_1]));
+		super();
 	}
 
 	public override toString(): string {

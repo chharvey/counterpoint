@@ -13,7 +13,6 @@ export * from './ExpressionBlock.ts';
 export * from './Access.ts';
 export * from './Call.ts';
 export * from './Claim.ts';
-export * from './Isset.ts';
 export * from './Operation.ts';
 export * from './OperationUnary.ts';
 export * from './OperationBinary.ts';

@@ -43,10 +43,6 @@ class ValueSymbol extends Primitive {
 		return `@${ this.name }`;
 	}
 
-	public override get isTruthy(): boolean {
-		return true;
-	}
-
 	@strictEqual
 	@noopMethod(memoizeBinOp(true, true))
 	@instanceOf(() => ValueSymbol)

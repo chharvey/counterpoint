@@ -37,6 +37,11 @@ class VmMap implements HasFuncData {
 				param:  binaryen.createType([reftype.Map, binaryen.i32]),
 				result: binaryen.none,
 			}],
+			['Map#get', {
+				name:   'Map.get',
+				param:  binaryen.createType([reftype.Map, reftype.Value]),
+				result: reftype.Value,
+			}],
 			['Map#set', {
 				name:   'Map.set',
 				param:  binaryen.createType([reftype.Map, reftype.Value, reftype.Value]),
@@ -104,6 +109,14 @@ class VmMap implements HasFuncData {
 	 */
 	public adjustCapacity(map: binaryen.ExpressionRef /* (ref $Map) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
 		return this.vm.mod.wasm.call('Map.adjust-capacity', [map, capacity], binaryen.none);
+	}
+
+	/**
+	 * Get a Map consequent given an antecedent.
+	 * If there is no consequent at the given antecedent, Counterpoint’s `null` value is returned.
+	 */
+	public get(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Map.get', [map, ant], this.vm.reftype.Value);
 	}
 
 	/**

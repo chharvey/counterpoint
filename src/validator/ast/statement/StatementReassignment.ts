@@ -41,7 +41,7 @@ export class StatementReassignment extends Statement {
 		public readonly assignee:  EXPR.Variable | EXPR.Access,
 		public readonly assigned?: EXPR.Expression,
 	) {
-		super(start_node, {}, assigned ? [assignee, assigned] : [assignee]);
+		super(start_node, {}, [assignee, ...(assigned ? [assigned] : [])]);
 	}
 
 	@memoizeGetter
@@ -57,7 +57,7 @@ export class StatementReassignment extends Statement {
 				if (!schema.isWritable) {
 					throw new AssignmentErrorReassignment(this.assignee);
 				}
-			} else if (!schema.isWritable || !schema.isUninitialized) {
+			} else if (!schema.isUninitialized) {
 				throw new AssignmentErrorDeletion(this.assignee);
 			}
 		}
@@ -81,14 +81,17 @@ export class StatementReassignment extends Statement {
 	public override build(builder: Builder): void {
 		if (this.assignee instanceof EXPR.Variable) {
 			const symbol = this.validator.getSymbol(this.assignee.id) as SymbolSchemaVar;
+			let value: OP.Value;
 			if (this.assigned) {
-				const value: OP.Value = this.assigned.build(builder);
-				symbol.irType = value.type;
-				return builder.pushInstruction(new OP.Set(symbol, value));
+				value = this.assigned.build(builder);
+				if (symbol.isUninitialized) {
+					value = new OP.MaybeNew(symbol.type, value.asTac(builder));
+				}
 			} else {
-				symbol.irType = TYPE.NULL;
-				return builder.pushInstruction(new OP.Set(symbol));
+				value = new OP.MaybeNew(symbol.type);
 			}
+			symbol.irType = value.type;
+			return builder.pushInstruction(new OP.Set(symbol, symbol.irType, value));
 		} else if (this.assigned) {
 			assert_instanceof(this.assignee.accessor, EXPR.Expression);
 			const base_value:    OP.ValueTac = this.assignee.base.build(builder).asTac(builder);

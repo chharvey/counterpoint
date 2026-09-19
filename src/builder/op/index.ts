@@ -14,12 +14,13 @@ export * from './CollectionLinearNew.ts';
 export * from './RecordNew.ts';
 export * from './DictNew.ts';
 export * from './MapNew.ts';
+export * from './MaybeNew.ts';
 export * from './TupleGet.ts';
 export * from './RecordGet.ts';
 export * from './CollectionDynamicGet.ts';
 export * from './Call.ts';
-export * from './Isset.ts';
 export * from './Unop.ts';
+export * from './Instance.ts';
 export * from './Binop.ts';
 export * from './Function.ts';
 

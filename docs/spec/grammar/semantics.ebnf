@@ -22,7 +22,7 @@ SemanticCase
 
 
 
-SemanticParameterFunction[named: true][writable: Boolean]
+SemanticParameterFunction[named: true][writable: Boolean][id: Nil]
 	::= SemanticKey SemanticType;
 SemanticParameterFunction[named: true][writable: Boolean][id: RealNumber]
 	::= SemanticKey? SemanticType;
@@ -86,13 +86,13 @@ SemanticTypeAccess[kind: NORMAL | MAYBE]
 SemanticTypeCall
 	::= SemanticType SemanticType+;
 
-SemanticTypeOperation[operator: ORNULL | OREXCP | MUTABLE]
+SemanticTypeOperation[operator: MAYBE | RESULT | MUTABLE]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
 
 SemanticTypeFunction
-	::= SemanticItemType* SemanticPropertyType*;
+	::= SemanticItemType* SemanticPropertyType* SemanticType?;
 
 
 
@@ -105,7 +105,6 @@ SemanticExpression =:=
 	| SemanticExpressionAccess
 	| SemanticExpressionCall
 	| SemanticExpressionClaim
-	| SemanticExpressionIsset
 	| SemanticExpressionOperation
 	| SemanticExpressionSwitch
 	| SemanticExpressionFunction
@@ -153,14 +152,11 @@ SemanticExpressionCall
 SemanticExpressionClaim
 	::= SemanticExpression SemanticType;
 
-SemanticExpressionIsset
-	::= SemanticExpressionVariable | SemanticExpressionAccess;
-
-SemanticExpressionOperation[operator: NOT | EMP]
+SemanticExpressionOperation[operator: UN_MAYBE | UN_RESULT | NOT | EMP]
 	::= SemanticExpression;
 SemanticExpressionOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-SemanticExpressionOperation[operator: CAST | MAYBE | RESULT | IS]
+SemanticExpressionOperation[operator: IS | CAST | MAYBE | RESULT]
 	::= SemanticExpression SemanticExpression[type: Class];
 SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
@@ -173,7 +169,7 @@ SemanticExpressionSwitch
 	::= SemanticExpression SemanticCase* SemanticExpression;
 
 SemanticExpressionFunction
-	::= SemanticParameterFunction* SemanticCapture* SemanticBlock;
+	::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock;
 
 
 
@@ -208,7 +204,7 @@ SemanticDeclarationVariable[writable=true][id: RealNumber]
 	::= SemanticType;
 
 SemanticDeclarationFunction[id?: RealNumber]
-	::= SemanticParameterFunction* SemanticCapture* SemanticBlock;
+	::= SemanticParameterFunction* SemanticCapture* SemanticType? SemanticBlock;
 
 
 
@@ -234,4 +230,4 @@ SemanticStatementBreak[skip: Boolean]
 	::= ();
 
 SemanticStatementReturn
-	::= ();
+	::= SemanticExpression?;

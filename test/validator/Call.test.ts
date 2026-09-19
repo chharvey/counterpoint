@@ -20,6 +20,7 @@ import {
 
 test.suite('Call', () => {
 	const EVALUATE = [
+		'Boolean.(42)',
 		'Integer.(42)',
 		'Natural.(42)',
 		'Float.(42)',
@@ -32,6 +33,21 @@ test.suite('Call', () => {
 			(2, 0.2),
 			(3, 0.4),
 		))`,
+		'None.<int>()',
+		'Some.<int>(42)',
+	] as const;
+	const BOOL_CONS = [
+		'Boolean.(null)',
+		'Boolean.(false)',
+		'Boolean.(true)',
+		'Boolean.(@hello)',
+		'Boolean.(-0)',
+		'Boolean.(-42)',
+		'Boolean.(+0)',
+		'Boolean.(+42)',
+		'Boolean.(0.0)',
+		'Boolean.(4.2)',
+		'Boolean.("hello")',
 	] as const;
 	const INT_CONS = [
 		'Integer.(-42)',
@@ -197,10 +213,11 @@ test.suite('Call', () => {
 
 
 	test.suite('#type', () => {
-		test.test('evaluates Integer, Natural, Float, String, List, Dict, Set, and Map.', () => {
+		test.test('evaluates Boolean, Integer, Natural, Float, String, List, Dict, Set, Map, None, and Some.', () => {
 			assertEqualTypes(
 				EVALUATE.map((src) => AST.EXPR.Call.fromSource(src).type()),
 				[
+					TYPE.BOOL,
 					TYPE.INT,
 					TYPE.NAT,
 					TYPE.FLOAT,
@@ -209,7 +226,15 @@ test.suite('Call', () => {
 					new TYPE.Dict(TYPE.INT, true),
 					new TYPE.Set(TYPE.INT, true),
 					new TYPE.Map(TYPE.INT, TYPE.FLOAT, true),
+					new TYPE.None(TYPE.INT),
+					new TYPE.Some(TYPE.INT),
 				],
+			);
+		});
+		test.test('`Boolean.(‹…›)`', () => {
+			assertEqualTypes(
+				BOOL_CONS.map((src) => AST.EXPR.Call.fromSource(src).type()),
+				repeat(TYPE.BOOL, BOOL_CONS.length),
 			);
 		});
 		test.test('`Integer.(‹…›)`', () => {
@@ -260,6 +285,15 @@ test.suite('Call', () => {
 				repeat(new TYPE.Map(TYPE.INT, TYPE.FLOAT, true), MAP_CONS.length),
 			);
 		});
+		test.test('`Maybe.()` throws.', () => {
+			xjs.Array.forEachAggregated([
+				'Maybe.<int>()',
+				'Maybe.<int>(42)',
+			], (src) => {
+				const call: AST.EXPR.Call = AST.EXPR.Call.fromSource(src);
+				return assert.throws(() => call.type(), TypeErrorNotCallable);
+			});
+		});
 		test.test('bypasses invariance for generic arguments.', () => {
 			extract_lines`
 				List.<mut {int}>((   {42},))
@@ -295,6 +329,8 @@ test.suite('Call', () => {
 				Dict.<int>((), ())
 				Set.<int>((), ())
 				Map.<int>((), ())
+				None.<int>(42)
+				Some.<int>()
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorArgCount));
 		});
 		test.test('throws when providing incorrect type of arguments.', () => {
@@ -322,7 +358,7 @@ test.suite('Call', () => {
 					assertAssignable(err as Error, {
 						cons:   AggregateError,
 						errors: [
-							{cons: TypeErrorArgCount, message: 'Got `1` arguments, but expected `0`.'},
+							{cons: TypeErrorArgCount, message: 'Got 1 arguments, but expected 0.'},
 							...allowed_types.map((allowed_type) => ({
 								cons:    TypeErrorNotAssignable,
 								message: `Expression \`${ argexpr }\` is not assignable to type \`${ allowed_type }\`.`,
@@ -338,20 +374,40 @@ test.suite('Call', () => {
 				Dict.<int>((a= 4.2))
 				Set.<int>((42, "42"))
 				Map.<int>(((42, "42"),))
+				Some.<int>(4.2)
 			`, (src) => assert.throws(() => AST.EXPR.Call.fromSource(src).type(), TypeErrorNotAssignable));
 		});
 	});
 
 
 	test.suite('#build', () => {
+		test.test('`Boolean.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				${ BOOL_CONS.map((src) => `${ src };`).join('\n') }
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (BOOL.FROM (NULL.CONST null)))
+					(DROP (BOOL.FROM (BOOL.CONST false)))
+					(DROP (BOOL.FROM (BOOL.CONST true)))
+					(DROP (BOOL.FROM (SYM.CONST @hello)))
+					(DROP (BOOL.FROM (INT.CONST 0)))
+					(DROP (BOOL.FROM (INT.CONST -42)))
+					(DROP (BOOL.FROM (NAT.CONST +0)))
+					(DROP (BOOL.FROM (NAT.CONST +42)))
+					(DROP (BOOL.FROM (FLOAT.CONST 0.0)))
+					(DROP (BOOL.FROM (FLOAT.CONST 4.2)))
+					(DROP (BOOL.FROM (STR.CONST "hello")))
+					(ENDPROGRAM)
+			`.trim());
+		});
 		test.test('`Integer.(‹…›)`', () => {
 			assert.strictEqual(setupScript(`{
 				${ INT_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TOINT (INT.CONST -42)))
-					(DROP (TOINT (NAT.CONST +42)))
-					(DROP (TOINT (FLOAT.CONST 4.2)))
+					(DROP (INT.FROM (INT.CONST -42)))
+					(DROP (INT.FROM (NAT.CONST +42)))
+					(DROP (INT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -360,9 +416,9 @@ test.suite('Call', () => {
 				${ NAT_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TONAT (INT.CONST -42)))
-					(DROP (TONAT (NAT.CONST +42)))
-					(DROP (TONAT (FLOAT.CONST 4.2)))
+					(DROP (NAT.FROM (INT.CONST -42)))
+					(DROP (NAT.FROM (NAT.CONST +42)))
+					(DROP (NAT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -371,9 +427,9 @@ test.suite('Call', () => {
 				${ FLOAT_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TOFLOAT (INT.CONST -42)))
-					(DROP (TOFLOAT (NAT.CONST +42)))
-					(DROP (TOFLOAT (FLOAT.CONST 4.2)))
+					(DROP (FLOAT.FROM (INT.CONST -42)))
+					(DROP (FLOAT.FROM (NAT.CONST +42)))
+					(DROP (FLOAT.FROM (FLOAT.CONST 4.2)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -382,24 +438,24 @@ test.suite('Call', () => {
 				${ STRING_CONS.map((src) => `${ src };`).join('\n') }
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (TOSTR (NULL.CONST null)))
-					(DROP (TOSTR (BOOL.CONST true)))
-					(DROP (TOSTR (INT.CONST -42)))
-					(DROP (TOSTR (NAT.CONST +42)))
-					(DROP (TOSTR (FLOAT.CONST 4.2)))
-					(DROP (TOSTR (STR.CONST "hello")))
+					(DROP (STR.FROM (NULL.CONST null)))
+					(DROP (STR.FROM (BOOL.CONST true)))
+					(DROP (STR.FROM (INT.CONST -42)))
+					(DROP (STR.FROM (NAT.CONST +42)))
+					(DROP (STR.FROM (FLOAT.CONST 4.2)))
+					(DROP (STR.FROM (STR.CONST "hello")))
 					(DECL <tuple> $0 (TUPLE.NEW))
-					(DROP (TOSTR (GET $0)))
+					(DROP (STR.FROM (GET $0)))
 					(DECL <record> $1 (RECORD.NEW @a->(INT.CONST 1)))
-					(DROP (TOSTR (GET $1)))
+					(DROP (STR.FROM (GET $1)))
 					(DECL <List> $2 (LIST.NEW))
-					(DROP (TOSTR (GET $2)))
+					(DROP (STR.FROM (GET $2)))
 					(DECL <Dict> $3 (DICT.NEW @a->(INT.CONST 1)))
-					(DROP (TOSTR (GET $3)))
+					(DROP (STR.FROM (GET $3)))
 					(DECL <Set> $4 (SET.NEW))
-					(DROP (TOSTR (GET $4)))
+					(DROP (STR.FROM (GET $4)))
 					(DECL <Map> $5 (MAP.NEW (STR.CONST "a")->(INT.CONST 1)))
-					(DROP (TOSTR (GET $5)))
+					(DROP (STR.FROM (GET $5)))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -694,6 +750,24 @@ test.suite('Call', () => {
 					(DECL <Map> $46 (MAP.NEW (INT.CONST 1)->(FLOAT.CONST 0.1) (INT.CONST 2)->(FLOAT.CONST 0.2) (INT.CONST 3)->(FLOAT.CONST 0.4)))
 					(MAP.COPY (GET $45) (GET $46))
 					(DROP (GET $45))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`None.()`', () => {
+			assert.strictEqual(setupScript(`{
+				None.<int>();
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (MAYBE.NEW))
+					(ENDPROGRAM)
+			`.trim());
+		});
+		test.test('`Some.(‹…›)`', () => {
+			assert.strictEqual(setupScript(`{
+				Some.<int>(42);
+			}`, {codegen: false}).builder.print(), xjs.String.dedent`
+				"block-0":
+					(DROP (MAYBE.NEW (INT.CONST 42)))
 					(ENDPROGRAM)
 			`.trim());
 		});

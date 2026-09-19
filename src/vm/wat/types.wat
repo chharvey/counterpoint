@@ -10,7 +10,7 @@
 	(type $Value (struct
 		(field $tag       i8) ;; 1 = primitive, 2 = composite
 		(field $primitive v128)
-		(field $composite eqref) ;; (ref null eq)
+		(field $composite (ref null eq))
 	))
 	;; type of entry in records/Dicts
 	(type $Property (struct
@@ -87,8 +87,19 @@
 		(field $internal (mut (ref $MapInternal)))
 	)))
 
+	;; precursor to the `Maybe` class
+	(type $Maybe (sub final $Object (struct
+		;; --- inherited ---
+		;; unique id for hashing
+		(field $id i64)
+
+		;; --- own ---
+		;; the potentially held value
+		(field $value (ref null $Value))
+	)))
+
 	;; precursor to the `Function` class
-	(type $Function (sub $Object (struct
+	(type $Function (sub final $Object (struct
 		;; --- inherited ---
 		;; unique id for hashing
 		(field $id i64)

@@ -5,7 +5,10 @@ import {
 	memoizeMethod,
 	runOnceMethod,
 } from '../../lib/index.ts';
-import {VALUE} from '../../typer/index.ts';
+import type {
+	VALUE,
+	TYPE,
+} from '../../typer/index.ts';
 import {SymbolSchemaVar} from '../../validator/index.ts';
 import type {
 	Temp,
@@ -19,8 +22,10 @@ import {ValueTac} from './ValueTac.ts';
 
 /** Read the value of a variable/local. */
 export class Get extends ValueTac {
-	public constructor(private readonly target: SymbolSchemaVar | Temp) {
-		super(OpCode.GET, target instanceof SymbolSchemaVar ? target.irType : target.type);
+	public constructor(target: SymbolSchemaVar, typ: TYPE.Type);
+	public constructor(target: Temp);
+	public constructor(private readonly target: SymbolSchemaVar | Temp, typ?: TYPE.Type) {
+		super(OpCode.GET, target instanceof SymbolSchemaVar ? typ! : target.type);
 	}
 
 	public override toString(): string {
@@ -35,11 +40,7 @@ export class Get extends ValueTac {
 	}
 
 	public override interpret(interp: Interpreter): VALUE.Value {
-		const value: VALUE.Value | null | undefined = interp.getLocalValue(this.target);
-		if (value === null) {
-			return VALUE.NULL;
-		}
-		return value ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
+		return interp.getLocalValue(this.target) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
 	}
 
 	@memoizeMethod

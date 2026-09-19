@@ -1,6 +1,6 @@
 import eslint from '@eslint/js';
 import stylistic from '@stylistic/eslint-plugin';
-import import_plugin from 'eslint-plugin-import';
+import import_plugin from 'eslint-plugin-import-x';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -160,17 +160,15 @@ export default [
 			'prefer-arrow-callback': ['error', {allowUnboundThis: false}],
 			'require-await':         'error',
 
-			/* ### eslint-plugin-import: Helpful Warnings */
-			'@import/no-deprecated':         'warn',
+			/* ### eslint-plugin-import-x: Helpful Warnings */
 			'@import/no-empty-named-blocks': 'error',
 			'@import/no-mutable-exports':    'error',
 
-			/* ### eslint-plugin-import: Style Guide */
+			/* ### eslint-plugin-import-x: Style Guide */
 			'@import/first':                'error',
 			'@import/newline-after-import': ['error', {count: 3}],
-			'@import/no-duplicates':        'error',
-			'@import/no-named-default':     'error',
 			'@import/no-default-export':    'error',
+			'@import/no-duplicates':        'error',
 		},
 	},
 	...[
@@ -261,12 +259,8 @@ export default [
 			globals:       {...globals.node},
 			parser:        tseslint.parser,
 			parserOptions: {
-				project: [
-					'./tsconfig.json',
-					'./test/tsconfig.json',
-					'./tree-sitter-counterpoint/tsconfig.json',
-					'./tree-sitter-counterpoint/test/tsconfig.json',
-				],
+				projectService:  true,
+				tsconfigRootDir: import.meta.dirname,
 			},
 		},
 		plugins: {'@typescript-eslint': tseslint.plugin},

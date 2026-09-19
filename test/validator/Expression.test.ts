@@ -49,39 +49,22 @@ test.suite('Expression', () => {
 
 
 	test.suite('#type', () => {
-		test.suite('Isset', () => {
-			test.test('always returns `bool`.', () => {
-				assert_shallowStrictEqual(
-					setupScript(`{
-						val mut a0?: int;
-						val mut a1?: int;
-						val mut a2?: int;
-
-						val mut b: int = 42;
-						val mut c0: int | null = 42;
-						val mut c1: int | null = 42;
-						val mut d: int | null = null;
-						val e: int = 42;
-						val f: int | null = 42;
-						val g: int | null = null;
-
-						set a1 = 42;
-						set a2 = 42;
-						delete a2;
-						set c1 = null;
-
-						isset a0;
-						isset a1;
-						isset a2;
-						isset b;
-						isset c0;
-						isset c1;
-						isset d;
-						isset e;
-						isset f;
-						isset g;
-					}`, {build: false}).stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					repeat(TYPE.BOOL, 10),
+		test.suite('Variable', () => {
+			test.test('wraps in `Maybe` when accessed variable is uninitialized.', () => {
+				const {stmts} = setupScript(`{
+					val mut w:  int = 42;
+					val mut x?: int;
+					w;
+					x;
+				}`, {build: false});
+				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
+				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
+				return assertEqualTypes(
+					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
+					[
+						TYPE.INT,
+						new TYPE.Maybe(TYPE.INT),
+					],
 				);
 			});
 		});
@@ -131,9 +114,10 @@ test.suite('Expression', () => {
 			test.test('returns a function type.', () => {
 				const {stmts} = setupScript(`{
 					\\(a: int, mut b: float | null, mut $c: bool, delta= d: nat): void { return; };
+					% TODO: test optional parameters (steal from 'test/validator/Type.test.ts')
+					\\(): int | float => 4.2;
 				}`, {build: false});
-				return assert.deepStrictEqual(
-					(stmts[0] as AST.STMT.StatementExpression).expr!.type(),
+				return assertEqualTypes(stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()), [
 					new TYPE.Function(TYPE.Tuple.fromTypes([
 						TYPE.INT,
 						TYPE.FLOAT.union(TYPE.NULL),
@@ -141,7 +125,8 @@ test.suite('Expression', () => {
 						[Validator.cookTokenIdentifier('c'),     TYPE.BOOL],
 						[Validator.cookTokenIdentifier('delta'), TYPE.NAT],
 					]))),
-				);
+					new TYPE.Function(undefined, undefined, TYPE.INT.union(TYPE.FLOAT)),
+				]);
 			});
 		});
 	});
@@ -161,14 +146,19 @@ test.suite('Expression', () => {
 			const expr = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Variable;
 			const symbol: SymbolSchema | undefined = expr.validator.getSymbol(expr.id);
 			assert_instanceof(symbol, SymbolSchemaVar);
-			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol));
+			return assert.deepStrictEqual(expr.build(), new OP.Get(symbol, typeUnit(42n)));
 		});
 		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
-				"""hello {{ 42 }} world""";
+					val user: (name: str) = (name= "Alan");
+					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new {{ "messages" }}.""";
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DROP (STR.TEMPLATE (STR.CONST "hello ") (INT.CONST 42) (STR.CONST " world")))
+					(DECL <record> user (RECORD.NEW @name->(STR.CONST "Alan")))
+					(DECL <str> $0 (RECORD.GET @name (GET user)))
+					(DECL <int> $1 (INT.MUL (INT.CONST 2) (INT.CONST 3)))
+					(DECL <str> $2 (STR.FROM (GET $1)))
+					(DROP (STR.TEMPLATE (STR.CONST "Hello, ") (GET $0) (STR.CONST ", you have ") (GET $2) (STR.CONST " new ") (STR.CONST "messages") (STR.CONST ".")))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -177,8 +167,9 @@ test.suite('Expression', () => {
 				"""hello {{ """great {{ 42 }} big""" }} world""";
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
-					(DECL <str> $0 (STR.TEMPLATE (STR.CONST "great ") (INT.CONST 42) (STR.CONST " big")))
-					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $0) (STR.CONST " world")))
+					(DECL <str> $0 (STR.FROM (INT.CONST 42)))
+					(DECL <str> $1 (STR.TEMPLATE (STR.CONST "great ") (GET $0) (STR.CONST " big")))
+					(DROP (STR.TEMPLATE (STR.CONST "hello ") (GET $1) (STR.CONST " world")))
 					(ENDPROGRAM)
 			`.trim());
 		});
@@ -328,64 +319,6 @@ test.suite('Expression', () => {
 				assert.strictEqual(builder.instructions.length, 1);
 			});
 		});
-		test.test('Isset', () => {
-			assert.strictEqual(setupScript(`{
-				val mut a0?: int;
-				val mut a1?: int;
-				val mut a2?: int;
-
-				val mut b: int = 42;
-				val mut c0: int | null = 42;
-				val mut c1: int | null = 42;
-				val mut d: int | null = null;
-				val e: int = 42;
-				val f: int | null = 42;
-				val g: int | null = null;
-
-				set a1 = 42;
-				set a2 = 42;
-				delete a2;
-				set c1 = null;
-
-				isset a0;
-				isset a1;
-				isset a2;
-				isset b;
-				isset c0;
-				isset c1;
-				isset d;
-				isset e;
-				isset f;
-				isset g;
-			}`, {codegen: false}).builder.print(), xjs.String.dedent`
-				"block-0":
-					(DECL <null> a0)
-					(DECL <null> a1)
-					(DECL <null> a2)
-					(DECL <int> b (INT.CONST 42))
-					(DECL <int> c0 (INT.CONST 42))
-					(DECL <int> c1 (INT.CONST 42))
-					(DECL <null> d (NULL.CONST null))
-					(DECL <int> e (INT.CONST 42))
-					(DECL <int> f (INT.CONST 42))
-					(DECL <null> g (NULL.CONST null))
-					(SET a1 (INT.CONST 42))
-					(SET a2 (INT.CONST 42))
-					(SET a2 )
-					(SET c1 (NULL.CONST null))
-					(DROP (ISSET a0))
-					(DROP (ISSET a1))
-					(DROP (ISSET a2))
-					(DROP (ISSET b))
-					(DROP (ISSET c0))
-					(DROP (ISSET c1))
-					(DROP (ISSET d))
-					(DROP (ISSET e))
-					(DROP (ISSET f))
-					(DROP (ISSET g))
-					(ENDPROGRAM)
-			`.trim());
-		});
 		test.test('Switch', () => {
 			assert.strictEqual(setupScript(`{
 				switch 42 default true;
@@ -521,7 +454,7 @@ test.suite('Expression', () => {
 					VALUE.NULL,
 					VALUE.FALSE,
 					VALUE.TRUE,
-					new VALUE.Symbol(0x54n, 'then'),
+					new VALUE.Symbol(0x52n, 'then'),
 					new VALUE.Symbol(0x46n, 'str'),
 					new VALUE.Symbol(0x49n, 'false'),
 					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar'),
@@ -614,27 +547,6 @@ test.suite('Expression', () => {
 					};
 					it;
 				}`, {typeCheck: false}), ReferenceErrorUndeclared, 'iteration variable cannot be referenced after the iteration statement.');
-			});
-		});
-
-
-		test.suite('#type', () => {
-			test.test('unions with `null` when accessed variable is uninitialized.', () => {
-				const {stmts} = setupScript(`{
-					val mut w:  int = 42;
-					val mut x?: int;
-					w;
-					x;
-				}`, {build: false});
-				assert.ok( (stmts[0] as AST.STMT.DeclarationVariable).assigned);
-				assert.ok(!(stmts[1] as AST.STMT.DeclarationVariable).assigned);
-				return assertEqualTypes(
-					stmts.slice(2).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.type()),
-					[
-						TYPE.INT,
-						TYPE.INT.union(TYPE.NULL),
-					],
-				);
 			});
 		});
 	});
@@ -783,7 +695,7 @@ test.suite('Expression', () => {
 	test.suite('Claim', () => {
 		test.suite('#type', () => {
 			test.test('returns the type value of the claimed type.', () => {
-				assert.ok(AST.EXPR.Claim.fromSource('3 as <int?>').type().equals(TYPE.INT.union(TYPE.NULL)));
+				assert.ok(AST.EXPR.Claim.fromSource('3 as <int | null>').type().equals(TYPE.INT.union(TYPE.NULL)));
 			});
 			test.test('allows claiming to `nothing` even though intersection is empty.', () => {
 				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);

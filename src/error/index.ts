@@ -9,6 +9,7 @@ export * from './ParseError.ts';
 export * from './ReferenceErrorUndeclared.ts';
 export * from './ReferenceErrorDeadZone.ts';
 export * from './ReferenceErrorKind.ts';
+export * from './AssignmentError.ts';
 export * from './AssignmentErrorDuplicateDeclaration.ts';
 export * from './AssignmentErrorDuplicateKey.ts';
 export * from './AssignmentErrorReassignment.ts';

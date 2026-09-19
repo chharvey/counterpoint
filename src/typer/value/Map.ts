@@ -22,6 +22,8 @@ import {Collection} from './Collection.ts';
  * @final
  */
 class ValueMap<K extends Value = Value, V extends Value = Value> extends Collection {
+	public override readonly isReference = true;
+
 	#cases: Map<K, V>;
 
 

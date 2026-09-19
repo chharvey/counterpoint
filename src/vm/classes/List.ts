@@ -32,6 +32,11 @@ export class List implements HasFuncData {
 				param:  binaryen.createType([reftype.List, binaryen.i32]),
 				result: binaryen.none,
 			}],
+			['List#get', {
+				name:   'List.get',
+				param:  binaryen.createType([reftype.List, binaryen.i32]),
+				result: reftype.Value,
+			}],
 			['List#set', {
 				name:   'List.set',
 				param:  binaryen.createType([reftype.List, binaryen.i32, reftype.Value]),
@@ -81,7 +86,17 @@ export class List implements HasFuncData {
 	}
 
 	/**
-	 * Set a List value given an index.
+	 * Get a List item given an index.
+	 * The provided index must be non-negative and strictly less than the List’s length
+	 * (but may be greater than its count).
+	 * If there is no item at the given index, Counterpoint’s `null` value is returned.
+	 */
+	public get(list: binaryen.ExpressionRef /* (ref $List) */, index: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('List.get', [list, index], this.vm.reftype.Value);
+	}
+
+	/**
+	 * Set a List item given an index.
 	 * The provided index must be non-negative and less than or equal to the List’s count.
 	 * (‘Equal to’ is allowed when appending to the List.)
 	 * This method first reallocates if necessary, then adds the item.

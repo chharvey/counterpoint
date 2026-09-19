@@ -431,7 +431,7 @@ The output type of an algorithm is the type of the \`value\` (if it exists) of
 a returned normal completion, and it is specified before
 the name of the algorithm in its header.
 If an algorithm outputs a normal CompletionSchema without a \`value\`,
-the output type is specified as [None](./types-values.md#none).
+the output type is specified as [Nil](./types-values.md#nil).
 
 If an algorithm outputs an *abrupt* completion, its \`value\`, if it exists,
 though it is still included in the returned CompletionSchema, is *not* indicated in the output type,
@@ -509,7 +509,7 @@ where ‹CS› represents an actual CompletionSchema object (such as the result 
 is also to be interpreted as-is, as returning the CompletionSchema itself.
 
 An algorithm step that reads «*Return.*» is shorthand for «*Return:* [kind= *normal*].», that is,
-it outputs a normal completion without a \`value\` (thus the output type is None).
+it outputs a normal completion without a \`value\` (thus the output type is Nil).
 
 An algorithm with no Return statement is implied to return a normal completion with no value.
 
@@ -537,7 +537,7 @@ The step is shorthand for the following steps:
 3. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «`‹s›.value`».
 4. *Else:*
-	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «*none*».
+	1. Perform the step in which «*Unwrap:*» appeared, replacing «*Unwrap:* ‹s›» with «*nil*».
 ```
 
 For example, setting a variable to an unwrap step …
@@ -554,7 +554,7 @@ For example, setting a variable to an unwrap step …
 4. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 5. *Else:*
-	1. *Let* `v` be *none*.
+	1. *Let* `v` be *nil*.
 ```
 
 #### UnwrapAffirm
@@ -566,7 +566,7 @@ The step is shorthand for the following steps:
 2. *If* ‹s› has a `value` property:
 	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «`‹s›.value`».
 3. *Else:*
-	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «*none*».
+	1. Perform the step in which «*UnwrapAffirm:*» appeared, replacing «*UnwrapAffirm:* ‹s›» with «*nil*».
 ```
 
 For example, setting a variable to an unwrap-affirm step …
@@ -581,7 +581,7 @@ For example, setting a variable to an unwrap-affirm step …
 3. *If* `call` has a `value` property:
 	1. *Let* `v` be `call.value`.
 4. *Else:*
-	1. *Let* `v` be *none*.
+	1. *Let* `v` be *nil*.
 ```
 
 #### Shorthand Notation
@@ -793,7 +793,7 @@ is shorthand for
 
 ##### Find
 A step that contains «an item ‹it› in ‹s› such that ‹e›» is shorthand for
-the first item of a filtering of ‹s› satisfying the predicate ‹e›, else *none*.
+the first item of a filtering of ‹s› satisfying the predicate ‹e›, else *nil*.
 
 (In the example below, assume `sequence` is a sequence of RealNumber values.)
 ```
@@ -802,11 +802,11 @@ the first item of a filtering of ‹s› satisfying the predicate ‹e›, else 
 ```
 is shorthand for
 ```
-1. *Let* `result1` be *none*.
+1. *Let* `result1` be *nil*.
 2. *Let* `result1_filter` be a filtering of `sequence` for each `it` such that `it > 0`.
 3. *If* `result1_filter.count` is greater than 0:
 	1. *Set* `result1` to `result1_filter.0`.
-4. *Let* `result2` be *none*.
+4. *Let* `result2` be *nil*.
 5. *Let* `result2_filter` be a filtering of `sequence` for each `it` such that `it` is even.
 6. *If* `result2_filter.count` is greater than 0:
 	1. *Set* `result2` to `result2_filter.0`.
@@ -875,7 +875,7 @@ are delimited with \`back-ticks\`.
 Algorithm instructions (*If*, *Perform*, etc.) are written in *italics*.
 
 ```
-None AlgorithmName(RealNumber param) :=
+Nil AlgorithmName(RealNumber param) :=
 	1. Step 1.
 	2. Step 2.
 		1. Substep 2.1.

@@ -41,11 +41,11 @@ export class Template extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {Value: VmValue}, mod: {wasm}} = cg;
-		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.stringify(item.codegen(cg))));
+		const {vm: {reftype, Value: VmValue}, mod: {wasm}} = cg;
+		const strings: readonly Local[]                  = this.items.map((item) => cg.newLocal(VmValue.cast(item.codegen(cg), reftype.String)));
 		const lengths: readonly binaryen.ExpressionRef[] = strings.map((strarr) => wasm.array.len(strarr.get()));
 
-		const result: Local = cg.newLocal(wasm.array.new_default(cg.vm.heaptype.String, lengths.reduce((a, b) => wasm.i32.add(a, b))), cg.vm.reftype.String);
+		const result: Local = cg.newLocal(wasm.array.new_default(cg.vm.heaptype.String, lengths.reduce((a, b) => wasm.i32.add(a, b))), reftype.String);
 		const offset: Local = cg.newLocal(wasm.i32.const(0));
 
 		return VmValue.newComposite(wasm.block(null, [
@@ -63,6 +63,6 @@ export class Template extends Value {
 				offset.set(wasm.i32.add(offset.get(), lengths[i])),
 			]).slice(0, -1), // slice off the last `offset.set`
 			result.get(),
-		], cg.vm.reftype.String));
+		], reftype.String));
 	}
 }

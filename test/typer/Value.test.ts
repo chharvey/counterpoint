@@ -2,9 +2,14 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	VALUE,
+	TYPE,
+	Interpreter,
 	CodeGenerator,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../utils.ts';
+import {
+	assertEqualBins,
+	setupScript,
+} from '../utils.ts';
 
 
 
@@ -63,6 +68,16 @@ test.suite('Value', () => {
 					[0x101n, new VALUE.String('wind')],
 					[0x102n, new VALUE.String('fire')],
 				]))), '[a= "earth", b= "wind", c= "fire"] !== [a= "earth", b= "wind", c= "fire"]');
+			});
+		});
+
+		test.suite('Maybe', () => {
+			test.test('different Nones are not identical.', () => {
+				assert.ok(!new VALUE.Maybe(TYPE.STR).identical(new VALUE.Maybe(TYPE.STR)));
+			});
+			test.test('Somes with identical values are not identical.', () => {
+				const v = new VALUE.String('water');
+				return assert.ok(!new VALUE.Maybe(v).identical(new VALUE.Maybe(v)));
 			});
 		});
 	});
@@ -142,16 +157,20 @@ test.suite('Value', () => {
 					new VALUE.String('fire'),
 				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
 			});
-			test.test.todo('Lists may contain circular references.', () => {
-				// TODO: need an interpreter to test this
-				`
-					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
-					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
-					a.append.(b);
-					b.append.(a);
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
+			test.test('Lists may contain circular references.', () => {
+				const interp = new Interpreter();
+				setupScript(`{
+					val a: mut [[Object]] = [];
+					val b: mut [[Object]] = [];
+					set a.[0] = b; % a.append.(b);
+					set b.[0] = a; % b.append.(a);
+					a == b; %== true
+					b == a; %== true
+				}`, {codegen: false}).builder.interpret(interp);
+				return assert.deepStrictEqual(interp.drops, [
+					VALUE.TRUE,
+					VALUE.TRUE,
+				]);
 			});
 		});
 
@@ -167,16 +186,20 @@ test.suite('Value', () => {
 					[0x101n, new VALUE.String('wind')],
 				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
 			});
-			test.test.todo('Dicts may contain circular references.', () => {
-				// TODO: need an interpreter to test this
-				`
-					val a: mut Dict.<anything> = [x= null];
-					val b: mut Dict.<anything> = [x= null];
-					a.set.(@x, b);
-					b.set.(@x, a);
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
+			test.test('Dicts may contain circular references.', () => {
+				const interp = new Interpreter();
+				setupScript(`{
+					val a: mut [:anything] = [x= null];
+					val b: mut [:anything] = [x= null];
+					set a.[@x] = b; % a.set.(@x, b);
+					set b.[@x] = a; % b.set.(@x, a);
+					a == b; %== true
+					b == a; %== true
+				}`, {codegen: false}).builder.interpret(interp);
+				return assert.deepStrictEqual(interp.drops, [
+					VALUE.TRUE,
+					VALUE.TRUE,
+				]);
 			});
 		});
 
@@ -203,6 +226,37 @@ test.suite('Value', () => {
 					new VALUE.String('fire'),
 					new VALUE.String('wind'),
 				]))));
+			});
+		});
+
+		test.suite('Maybe', () => {
+			test.test('different Nones are equal.', () => {
+				assert.ok(new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(TYPE.STR)));
+			});
+			test.test('Somes with equal values are equal.', () => {
+				assert.ok(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]))));
+			});
+			test.test('Somes with unequal values are not equal.', () => {
+				assert.ok(!new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('clubs'),
+					new VALUE.String('spades'),
+					new VALUE.String('diamonds'),
+				]))));
+			});
+			test.test('None and Some are never equal.', () => {
+				assert.ok(!new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(new VALUE.String('hearts'))));
 			});
 		});
 	});
@@ -332,8 +386,8 @@ test.suite('Value', () => {
 			});
 			test.test('does not overwrite non-identical (even if equal) elements.', () => {
 				assert.strictEqual(new VALUE.Set(new Set([
-					VALUE.FLOAT_0,
-					VALUE.FLOAT_N0,
+					new VALUE.Float(),
+					new VALUE.Float(-0.0),
 				])).count, 2n);
 			});
 		});
@@ -346,8 +400,8 @@ test.suite('Value', () => {
 				const lists = new VALUE.Set(new Set([new VALUE.List()]));
 				assert.strictEqual(lists.get(new VALUE.List()), VALUE.FALSE, 'returns false when testing non-identical, even if equal, reference types.');
 
-				const floats = new VALUE.Set(new Set([VALUE.FLOAT_0]));
-				assert.strictEqual(floats.get(VALUE.FLOAT_N0), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
+				const floats = new VALUE.Set(new Set([new VALUE.Float()]));
+				assert.strictEqual(floats.get(new VALUE.Float(-0.0)), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
 			});
 		});
 	});

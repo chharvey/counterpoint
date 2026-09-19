@@ -33,7 +33,7 @@ class TypeFunction extends ReferenceType {
 		private readonly typeargParamsNamed: Record = new Record(),
 		private readonly typearg_return?: Type,
 	) {
-		super(new Set<VALUE.Value>(), false); // TODO: VALUE.Function
+		super();
 	}
 
 
@@ -77,6 +77,10 @@ class TypeFunction extends ReferenceType {
 				!!that_return && !!this_return?.isSubtypeOf(that_return)
 			)
 		);
+	}
+
+	public override mutableOf(): Type {
+		return this;
 	}
 }
 export {TypeFunction as Function};

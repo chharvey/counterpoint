@@ -20,6 +20,7 @@ export function stringify_type_name(typename: TypeName): string | undefined {
 		[TypeName.DICT,   'Dict'],
 		[TypeName.SET,    'Set'],
 		[TypeName.MAP,    'Map'],
+		[TypeName.MAYBE,  'Maybe'],
 		[TypeName.ANY,    'anything'],
 	]).get(typename);
 }

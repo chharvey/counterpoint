@@ -32,7 +32,7 @@ class TypeMap extends ReferenceType {
 		public readonly typearg_con: Type,
 		is_mutable: boolean = false,
 	) {
-		super(new Set<VALUE.Map>([new VALUE.Map()]), is_mutable);
+		super(is_mutable);
 	}
 
 	public override toString(): string {
@@ -57,10 +57,6 @@ class TypeMap extends ReferenceType {
 
 	public override mutableOf(): TypeMap {
 		return new TypeMap(this.typearg_ant, this.typearg_con, true);
-	}
-
-	public override immutableOf(): TypeMap {
-		return new TypeMap(this.typearg_ant, this.typearg_con, false);
 	}
 }
 export {TypeMap as Map};

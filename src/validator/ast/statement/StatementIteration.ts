@@ -123,6 +123,7 @@ export class StatementIteration extends StatementBreakable {
 			symbol.irType = iterable.type.typearg;
 			builder.pushInstruction(new OP.Decl(
 				symbol,
+				symbol.irType,
 				new OP.CollectionDynamicGet(OP.TypeName.LIST, iterable, get_index, iterable.type.typearg),
 			));
 		}

@@ -1,0 +1,35 @@
+from "cplvm" import ('::op::toNat');
+from "./utils.cplm" import (
+	DIGITS,
+	mod,
+);
+
+
+
+%%% Wrapper class for `nat`-type values. %%%
+public class Natural {
+	public new (private readonly data?: nat = +0) {;}
+	public new (arg: int | float) {
+		this('::op::toNat'(arg) as :nat:);
+	}
+
+	internal toString(radix?: nat = +10): Result[str, RangeException] {
+		if radix < +2 || +36 < radix then {
+			return Fail[str, RangeException](RangeException("""Invalid radix: {{ radix }}. Must be between 2 and 36 (inclusive)."""));
+		};
+
+		if this.data < radix then {
+			return Ok[str, RangeException](DIGITS.get(this.data)~?);
+		};
+
+		val mut copy:     nat = this.data;
+		val mut returned: str = "";
+
+		do {
+			set returned  = """{{ DIGITS.get(mod(copy, radix))~? }}{{ returned }}""";
+			set copy     /= radix;
+		} until copy == +0;
+
+		return Ok[str, RangeException](returned);
+	}
+}

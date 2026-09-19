@@ -8,6 +8,8 @@ import {
 	AST,
 	VALUE,
 	TYPE,
+	IntrinsicName,
+	INTRINSICS,
 	Builder,
 	Interpreter,
 	OP,
@@ -16,7 +18,7 @@ import {
 import {
 	extract_lines,
 	repeat,
-	assert_shallowStrictEqual,
+	assert_equal_values,
 	assertEqualBins,
 	genConst,
 	setupScript,
@@ -29,11 +31,12 @@ test.suite('Opcode', () => {
 		test.suite('#interpret', () => {
 			function interpret_extracted_drops(src: string): VALUE.Value[] {
 				const interp = new Interpreter();
-				return setupScript(src, {codegen: false}).builder.instructions.map((instr) => (instr instanceof OP.Drop
-					? instr.value.interpret(interp)
-					: instr.interpret(interp)
-				)).filter((value) => !!value);
+				setupScript(src, {codegen: false}).builder.interpret(interp);
+				return interp.drops;
 			}
+
+			const VALUE_FLOAT_0  = new VALUE.Float();
+			const VALUE_FLOAT_N0 = new VALUE.Float(-0.0);
 
 			test.test('Trap always throws.', () => {
 				assert.throws(() => new OP.Trap().interpret(), /Trap\./);
@@ -46,40 +49,41 @@ test.suite('Opcode', () => {
 					VALUE.TRUE,
 					VALUE.INT_0,
 					VALUE.NAT_0,
-					VALUE.FLOAT_0,
-					VALUE.STR_EMPTY,
 					new VALUE.Symbol(0x100n, 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Natural(42n),
 					new VALUE.Float(4.2),
 					new VALUE.String('hello'),
-				], (val) => assert.deepStrictEqual(new OP.Const(val).interpret(), val));
+				], (val) => assert.ok(new OP.Const(val).interpret().identical(val)));
 			});
 
-			test.test('Get returns validator’s symbol table value.', () => {
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+			test.test('Get returns interpreter’s symbol table value.', () => {
+				assert_equal_values(interpret_extracted_drops(`{
 					val mut a: null  = null;
 					val mut b: bool  = false;
 					val mut c: sym   = @hello;
 					val mut d: int   = 42;
 					val mut e: float = 4.2;
+					val mut f?: str;
 
 					a;
 					b;
 					c;
 					d;
 					e;
+					f;
 				}`), [
 					VALUE.NULL,
 					VALUE.FALSE,
 					new VALUE.Symbol(Validator.cookTokenIdentifier('hello'), 'hello'),
 					new VALUE.Integer(42n),
 					new VALUE.Float(4.2),
+					new VALUE.Maybe(TYPE.STR),
 				]);
 			});
 
 			test.test('Template interprets each child, stringifies, and concatenates.', () => {
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val mut x: int = 85;
 
 					"""42😀""";
@@ -103,7 +107,7 @@ test.suite('Opcode', () => {
 					[Validator.cookTokenIdentifier('b'), expected_items[1]],
 					[Validator.cookTokenIdentifier('c'), expected_items[2]],
 				] as const;
-				return assert.deepStrictEqual(interpret_extracted_drops(`{
+				return assert_equal_values(interpret_extracted_drops(`{
 					(1, 2.0, "three");
 					[1, 2.0, "three"];
 					{1, 2.0, "three"};
@@ -130,8 +134,19 @@ test.suite('Opcode', () => {
 				]);
 			});
 
+			test.test('MaybeNew', () => {
+				const interp = new Interpreter();
+				return assert_equal_values([
+					new OP.MaybeNew(TYPE.STR),
+					new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
+				].map((opcode) => opcode.interpret(interp)), [
+					new VALUE.Maybe(TYPE.STR),
+					new VALUE.Maybe(new VALUE.String('hello')),
+				]);
+			});
+
 			test.test('TupleGet, RecordGet', () => {
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val     tup_fixed:   (int, float, str) = (1, 2.0, "three");
 					val mut tup_unfixed: (int, float, str) = (1, 2.0, "three");
 
@@ -164,7 +179,7 @@ test.suite('Opcode', () => {
 					new VALUE.Float(2.0),
 					new VALUE.String('three'),
 				];
-				assert.deepStrictEqual(interpret_extracted_drops(`{
+				assert_equal_values(interpret_extracted_drops(`{
 					val     list_fixed:   List.<     int | float | str> = [   1,    2.0,    "three"];
 					val     dict_fixed:   Dict.<     int | float | str> = [a= 1, b= 2.0, c= "three"];
 					val     set_fixed:    Set .<     int | float | str> = {1, 2.0, "three"};
@@ -209,43 +224,6 @@ test.suite('Opcode', () => {
 
 			test.test.todo('Call', () => undefined);
 
-			test.test('Isset', () => {
-				assert_shallowStrictEqual(interpret_extracted_drops(`{
-					val mut a0?: int;
-					val mut a1?: int;
-					val mut a2?: int;
-
-					val mut b: int = 42;
-					val mut c0: int | null = 42;
-					val mut c1: int | null = 42;
-					val mut d: int | null = null;
-					val e: int = 42;
-					val f: int | null = 42;
-					val g: int | null = null;
-
-					set a1 = 42;
-					set a2 = 42;
-					delete a2;
-					set c1 = null;
-
-					isset a0; % false
-					isset a1; % true
-					isset a2; % false
-					isset b;  % true
-					isset c0; % true
-					isset c1; % true
-					isset d;  % true
-					isset e;  % true
-					isset f;  % true
-					isset g;  % true
-				}`), [
-					VALUE.FALSE,
-					VALUE.TRUE,
-					VALUE.FALSE,
-					...repeat(VALUE.TRUE, 7),
-				]);
-			});
-
 			test.suite('Unop', () => {
 				const operands: readonly string[] = extract_lines`
 					null
@@ -280,33 +258,53 @@ test.suite('Opcode', () => {
 						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
 					}`);
 				}
-				test.test('[operator=ISNULL]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.ISNULL,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					return assert.deepStrictEqual(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							VALUE.TRUE,
-							...repeat(VALUE.FALSE, 20),
-						],
-					);
+				test.test('[operator=BOOL_FROM]', () => {
+					assert_equal_values(interpret_calls('Boolean', operands), [
+						...repeat(VALUE.FALSE, 2),
+						...repeat(VALUE.TRUE, 19),
+					]);
+				});
+				test.test('[operator=INT_FROM]', () => {
+					assert_equal_values(interpret_calls('Integer', operands.slice(3, 10)), [
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+						VALUE.INT_0,
+						new VALUE.Integer(42n),
+					]);
+				});
+				test.test('[operator=NAT_FROM]', () => {
+					assert_equal_values(interpret_calls('Natural', operands.slice(3, 10)), [
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+						VALUE.NAT_0,
+						new VALUE.Natural(42n),
+					]);
+				});
+				test.test('[operator=FLOAT_FROM]', () => {
+					assert_equal_values(interpret_calls('Float', operands.slice(3, 10)), [
+						VALUE_FLOAT_0,
+						new VALUE.Float(42.0),
+						VALUE_FLOAT_0,
+						VALUE_FLOAT_N0,
+						new VALUE.Float(4.2e+1),
+						VALUE_FLOAT_0,
+						new VALUE.Float(42.0),
+					]);
 				});
 				test.test('[operator=NOT]', () => {
-					assert.deepStrictEqual(interpret_unops('!'), [
+					assert_equal_values(interpret_unops('!'), [
 						...repeat(VALUE.TRUE, 2),
 						...repeat(VALUE.FALSE, 19),
 					]);
 				});
 				test.test('[operator=EMP]', () => {
-					assert.deepStrictEqual(interpret_unops('?'), [
+					assert_equal_values(interpret_unops('?'), [
 						VALUE.TRUE,
 						VALUE.TRUE,
 						VALUE.FALSE,
@@ -331,64 +329,12 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('[operator=NEG]', () => {
-					assert.deepStrictEqual(interpret_unops('-', operands.slice(3, 8)), [
+					assert_equal_values(interpret_unops('-', operands.slice(3, 8)), [
 						VALUE.INT_0,
 						new VALUE.Integer(-42n),
-						VALUE.FLOAT_N0,
-						VALUE.FLOAT_0,
+						VALUE_FLOAT_N0,
+						VALUE_FLOAT_0,
 						new VALUE.Float(-4.2e+1),
-					]);
-				});
-				test.test('[operator=TOBOOL]', () => {
-					const builder = new Builder();
-					const interp  = new Interpreter();
-					operands.forEach((operand) => builder.pushInstruction(new OP.Drop(new OP.Unop(
-						OP.OpCode.TOBOOL,
-						AST.EXPR.Expression.fromSource(operand).build(builder).asTac(builder),
-						TYPE.BOOL,
-					))));
-					return assert.deepStrictEqual(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						[
-							...repeat(VALUE.FALSE, 2),
-							...repeat(VALUE.TRUE, 19),
-						],
-					);
-				});
-				test.test('[operator=TOINT]', () => {
-					assert.deepStrictEqual(interpret_calls('Integer', operands.slice(3, 10)), [
-						VALUE.INT_0,
-						new VALUE.Integer(42n),
-						VALUE.INT_0,
-						VALUE.INT_0,
-						new VALUE.Integer(42n),
-						VALUE.INT_0,
-						new VALUE.Integer(42n),
-					]);
-				});
-				test.test('[operator=TONAT]', () => {
-					assert.deepStrictEqual(interpret_calls('Natural', operands.slice(3, 10)), [
-						VALUE.NAT_0,
-						new VALUE.Natural(42n),
-						VALUE.NAT_0,
-						VALUE.NAT_0,
-						new VALUE.Natural(42n),
-						VALUE.NAT_0,
-						new VALUE.Natural(42n),
-					]);
-				});
-				test.test('[operator=TOFLOAT]', () => {
-					assert.deepStrictEqual(interpret_calls('Float', operands.slice(3, 10)), [
-						VALUE.FLOAT_0,
-						new VALUE.Float(42.0),
-						VALUE.FLOAT_0,
-						VALUE.FLOAT_N0,
-						new VALUE.Float(4.2e+1),
-						VALUE.FLOAT_0,
-						new VALUE.Float(42.0),
 					]);
 				});
 				test.test('[operator={LIST,DICT,SET,MAP}_COUNT]', () => {
@@ -401,7 +347,7 @@ test.suite('Opcode', () => {
 					];
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
 						OP.OpCode.LIST_COUNT,
-						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)),
+						new OP.CollectionLinearNew(OP.TypeName.LIST, items, new TYPE.List(TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
@@ -410,12 +356,12 @@ test.suite('Opcode', () => {
 							[new VALUE.Symbol(0x100n, 'a'), items[0]],
 							[new VALUE.Symbol(0x101n, 'b'), items[1]],
 							[new VALUE.Symbol(0x102n, 'c'), items[2]],
-						]), new TYPE.Dict(TYPE.ANYTHING)),
+						]), new TYPE.Dict(TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
 						OP.OpCode.SET_COUNT,
-						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)),
+						new OP.CollectionLinearNew(OP.TypeName.SET, items, new TYPE.Set(TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
 					builder.pushInstruction(new OP.Drop(new OP.Unop(
@@ -424,16 +370,183 @@ test.suite('Opcode', () => {
 							[new OP.Const(new VALUE.Symbol(0x100n, 'a')), items[0]],
 							[new OP.Const(new VALUE.Symbol(0x101n, 'b')), items[1]],
 							[new OP.Const(new VALUE.Symbol(0x102n, 'c')), items[2]],
-						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)),
+						]), new TYPE.Map(TYPE.SYM, TYPE.ANYTHING)).asTac(builder),
 						TYPE.NAT,
 					)));
-					return assert.deepStrictEqual(
-						builder.instructions.map((instr) => (instr instanceof OP.Drop
-							? instr.value.interpret(interp)
-							: instr.interpret(interp)
-						)).filter((value) => !!value),
-						repeat(new VALUE.Natural(3n), 4),
-					);
+					builder.instructions.forEach((instr) => instr.interpret(interp));
+					return assert_equal_values(interp.drops, repeat(new VALUE.Natural(3n), 4));
+				});
+				test.suite('[operator=MAYBE_UNWRAP]', () => {
+					test.test('throws when operand is a None.', () => {
+						const instrs: readonly OP.Instruction[] = setupScript(`{
+							val mut x?: str;
+							x~?;
+						}`, {codegen: false}).builder.instructions;
+						const interp = new Interpreter();
+						instrs[0].interpret(interp);
+						return assert.throws(() => instrs[1].interpret(interp), /Unwrapped a None value/);
+					});
+					test.test('returns the value when operand is a Some.', () => {
+						assert_equal_values(interpret_extracted_drops(`{
+							val mut y?: str;
+							set y = "hello";
+							y~?;
+						}`), [new VALUE.String('hello')]);
+					});
+				});
+			});
+
+			test.suite('Instance', () => {
+				const srcs: readonly string[] = extract_lines`
+					null
+					false
+					true
+					0
+					42
+					0.0
+					-0.0
+					4.2e+1
+					+0
+					+42
+					""
+					"hello"
+					()
+					(42,)
+					(a= 42)
+					[]
+					[42]
+					[a= 42]
+					{}
+					{42}
+					{41 -> 42}
+				`;
+				let expecteds: readonly VALUE.Value[];
+				test.before(() => {
+					const builder = new Builder();
+					const interp  = new Interpreter();
+					srcs.forEach((src) => builder.pushInstruction(new OP.Drop(AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder))));
+					builder.instructions.forEach((instr) => instr.interpret(interp));
+					expecteds = interp.drops;
+				});
+				test.suite('INSTANCEOF', () => {
+					test.suite('non-Maybes.', () => {
+						([
+							IntrinsicName.SYMBOL,
+							IntrinsicName.INTEGER,
+							IntrinsicName.NATURAL,
+							IntrinsicName.FLOAT,
+							IntrinsicName.STRING,
+							IntrinsicName.LIST,
+							IntrinsicName.DICT,
+							IntrinsicName.SET,
+							IntrinsicName.MAP,
+							IntrinsicName.FUNCTION,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								const builder = new Builder();
+								const interp  = new Interpreter();
+								srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+									OP.OpCode.INSTANCEOF,
+									name,
+									AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+								))));
+								builder.instructions.forEach((instr) => instr.interpret(interp));
+								return assert_equal_values(interp.drops, expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand instanceof [
+									VALUE.Symbol,
+									VALUE.Integer,
+									VALUE.Natural,
+									VALUE.Float,
+									VALUE.String,
+									VALUE.List,
+									VALUE.Dict,
+									VALUE.Set,
+									VALUE.Map,
+									VALUE.Function,
+								][i])));
+							});
+						});
+						test.test('"Object"', () => {
+							const builder = new Builder();
+							const interp  = new Interpreter();
+							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+								OP.OpCode.INSTANCEOF,
+								IntrinsicName.OBJECT,
+								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+							))));
+							builder.instructions.forEach((instr) => instr.interpret(interp));
+							return assert_equal_values(interp.drops, expecteds.map((operand) => VALUE.Boolean.fromBoolean(operand.isReference)));
+						});
+					});
+					test.suite('Maybes.', () => {
+						([
+							IntrinsicName.MAYBE,
+							IntrinsicName.NONE,
+							IntrinsicName.SOME,
+						] as const).forEach((name, i) => {
+							test.test(name, () => {
+								const builder = new Builder();
+								const interp  = new Interpreter();
+								[
+									new OP.MaybeNew(TYPE.STR),
+									new OP.MaybeNew(TYPE.NULL, new OP.Const(VALUE.NULL)),
+									new OP.MaybeNew(TYPE.INT,  new OP.Const(new VALUE.Integer(42n))),
+								].forEach((irval) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+									OP.OpCode.INSTANCEOF,
+									name,
+									irval.asTac(builder),
+								))));
+								builder.instructions.forEach((instr) => instr.interpret(interp));
+								return assert_equal_values(interp.drops, [
+									repeat(VALUE.TRUE, 3),
+									[VALUE.TRUE,  ...repeat(VALUE.FALSE, 2)],
+									[VALUE.FALSE, ...repeat(VALUE.TRUE, 2)],
+								][i]);
+							});
+						});
+					});
+				});
+				test.suite('CAST', () => {
+					([
+						IntrinsicName.NULL,
+						IntrinsicName.BOOLEAN,
+						IntrinsicName.SYMBOL,
+						IntrinsicName.INTEGER,
+						IntrinsicName.NATURAL,
+						IntrinsicName.FLOAT,
+						IntrinsicName.STRING,
+						IntrinsicName.OBJECT,
+						IntrinsicName.LIST,
+						IntrinsicName.DICT,
+						IntrinsicName.SET,
+						IntrinsicName.MAP,
+						IntrinsicName.MAYBE,
+						IntrinsicName.NONE,
+						IntrinsicName.SOME,
+					] as const).forEach((name) => {
+						test.test(name, () => {
+							const builder = new Builder();
+							const interp  = new Interpreter();
+							srcs.forEach((src) => builder.pushInstruction(new OP.Drop(new OP.Instance(
+								OP.OpCode.CAST,
+								name,
+								AST.EXPR.Expression.fromSource(src).build(builder).asTac(builder),
+							))));
+							let i: number = -1;
+							return builder.instructions.forEach((instr) => {
+								if (instr instanceof OP.Drop) {
+									i++;
+								}
+								try {
+									instr.interpret(interp);
+								} catch (err) {
+									return assert.deepStrictEqual(err, new Error(`Invalid cast to ${ name }.`));
+								}
+								if (instr instanceof OP.Drop) {
+									return assert_equal_values(interp.drops.at(-1)!, expecteds[i]);
+								}
+							});
+						});
+					});
 				});
 			});
 
@@ -444,7 +557,7 @@ test.suite('Opcode', () => {
 					}`);
 				}
 				test.test('integer operations.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						42 + 420
 						42 - 420
 						 126 /  3
@@ -473,7 +586,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('float operations.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						3.0e1 - 201.0e-1
 						3.0 * 2.1
 					`), [
@@ -482,7 +595,7 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('overflows integers properly.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						2 ^ 63 + 2 ^ 62
 						-(2 ^ 62) - 2 ^ 63
 						42 ^ 2 * 420
@@ -493,13 +606,13 @@ test.suite('Opcode', () => {
 					]);
 				});
 				test.test('overflows naturals properly.', () => {
-					assert.deepStrictEqual(
+					assert_equal_values(
 						interpret_binops(['+2 ^ +63  +  +2 ^ +62  +  +2 ^ +63']),
 						[new VALUE.Natural(2n ** 63n + 2n ** 62n + 2n ** 63n)],
 					);
 				});
 				test.test('does not underflow naturals.', () => {
-					assert.deepStrictEqual(
+					assert_equal_values(
 						interpret_binops(['+5 - +9']),
 						[VALUE.NAT_0],
 					);
@@ -509,7 +622,7 @@ test.suite('Opcode', () => {
 					assert.throws(() => interpret_binops(['-4.0 ^ -0.5']), xjs.NaNError);
 				});
 				test.test('comparative operations.', () => {
-					assert.deepStrictEqual(interpret_binops(extract_lines`
+					assert_equal_values(interpret_binops(extract_lines`
 						3   <  3
 						3   >  3
 						3   <= 3
@@ -637,7 +750,7 @@ test.suite('Opcode', () => {
 				});
 				test.suite('equality operations.', () => {
 					test.test('simple non-numeric types.', () => {
-						assert.deepStrictEqual(interpret_binops(extract_lines`
+						assert_equal_values(interpret_binops(extract_lines`
 							null === null
 							null ==  null
 							null === 5
@@ -709,7 +822,7 @@ test.suite('Opcode', () => {
 					});
 					test.suite('numeric types.', () => {
 						test.test('for identity (`===`), always returns `false` for distinct values.', () => {
-							assert.deepStrictEqual(interpret_binops(extract_lines`
+							assert_equal_values(interpret_binops(extract_lines`
 								0   === -0
 								0.0 === -0.0
 								0   === 0.0
@@ -723,7 +836,7 @@ test.suite('Opcode', () => {
 							]);
 						});
 						test.test('for equality (`==`), only returns `true` for mathematically equal values (coerces ints to floats when mixed).', () => {
-							assert.deepStrictEqual(interpret_binops(extract_lines`
+							assert_equal_values(interpret_binops(extract_lines`
 								0   == -0
 								0.0 == -0.0
 								0   == 0.0
@@ -735,7 +848,7 @@ test.suite('Opcode', () => {
 						});
 					});
 					test.test('compound types.', () => {
-						assert.deepStrictEqual(interpret_extracted_drops(`{
+						assert_equal_values(interpret_extracted_drops(`{
 							val a: anything = ();
 							val b: anything = (42,);
 							val c: anything = (x= 42);
@@ -798,9 +911,26 @@ test.suite('Opcode', () => {
 							i != {41 -> 43};
 							i != {43 -> 42};
 						}`), repeat(VALUE.TRUE, 44));
+						return assert_equal_values(interpret_extracted_drops(`{
+							val mut x?: int;
+							val mut y?: float;
+							val z: Some.<int> = Some.<int>(42);
+							x === y;    %== false
+							x == y;     %== true
+							set x = 42;
+							x == y;     %== false
+							x === z;    %== false
+							x == z;     %== true
+						}`), [
+							VALUE.FALSE,
+							VALUE.TRUE,
+							VALUE.FALSE,
+							VALUE.FALSE,
+							VALUE.TRUE,
+						]);
 					});
 					test.test('compound value types’ constituents are compared using same operand.', () => {
-						assert.deepStrictEqual(interpret_binops(extract_lines`
+						assert_equal_values(interpret_binops(extract_lines`
 							(   42.0,)  === (   42,)
 							(   42.0,)  ==  (   42,)
 							(a= 42.0)   === (a= 42)
@@ -823,7 +953,7 @@ test.suite('Opcode', () => {
 				});
 			});
 
-			test.suite('OpFunction', () => {
+			test.test('OpFunction', () => {
 				const {stmts, builder} = setupScript(`{
 					\\(x: int): void {
 						x;
@@ -875,21 +1005,24 @@ test.suite('Opcode', () => {
 					val mut c: sym   = @hello;
 					val mut d: int   = 42;
 					val mut e: float = 4.2;
+					val mut f?: str;
 
 					a;
 					b;
 					c;
 					d;
 					e;
+					f;
 				}`);
 				return assertEqualBins(
-					stmts.slice(5).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
+					stmts.slice(6).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 					[
 						wasm.local.get(0, cg.vm.reftype.Value),
 						wasm.local.get(1, cg.vm.reftype.Value),
 						wasm.local.get(2, cg.vm.reftype.Value),
 						wasm.local.get(3, cg.vm.reftype.Value),
 						wasm.local.get(4, cg.vm.reftype.Value),
+						wasm.local.get(5, cg.vm.reftype.Value),
 					],
 				);
 			});
@@ -899,23 +1032,24 @@ test.suite('Opcode', () => {
 					val user: (name: str) = (name= "Alan");
 					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
 				}`);
-				const {Value} = cg.vm;
+				const {reftype, Value} = cg.vm;
 
 				const strings = [
 					genConst(cg, 'Hello, '),
-					wasm.local.get(1, cg.vm.reftype.Value),
+					wasm.local.get(1, reftype.Value),
 					genConst(cg, ', you have '),
-					wasm.local.get(2, cg.vm.reftype.Value),
+					wasm.local.get(3, reftype.Value),
 					genConst(cg, ' new messages.'),
-				].map((code) => Value.stringify(code));
+				].map((code) => Value.cast(code, reftype.String));
 
-				const OFFSET_IDX = 9;
+				const RESULT_IDX =  9;
+				const OFFSET_IDX = 10;
 
-				const string_0_get: binaryen.ExpressionRef = wasm.local.get(3, cg.vm.reftype.String);
-				const string_1_get: binaryen.ExpressionRef = wasm.local.get(4, cg.vm.reftype.String);
-				const string_2_get: binaryen.ExpressionRef = wasm.local.get(5, cg.vm.reftype.String);
-				const string_3_get: binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftype.String);
-				const string_4_get: binaryen.ExpressionRef = wasm.local.get(7, cg.vm.reftype.String);
+				const string_0_get: binaryen.ExpressionRef = wasm.local.get(4, reftype.String);
+				const string_1_get: binaryen.ExpressionRef = wasm.local.get(5, reftype.String);
+				const string_2_get: binaryen.ExpressionRef = wasm.local.get(6, reftype.String);
+				const string_3_get: binaryen.ExpressionRef = wasm.local.get(7, reftype.String);
+				const string_4_get: binaryen.ExpressionRef = wasm.local.get(8, reftype.String);
 
 				const string_0_len: binaryen.ExpressionRef = wasm.array.len(string_0_get);
 				const string_1_len: binaryen.ExpressionRef = wasm.array.len(string_1_get);
@@ -923,17 +1057,17 @@ test.suite('Opcode', () => {
 				const string_3_len: binaryen.ExpressionRef = wasm.array.len(string_3_get);
 				const string_4_len: binaryen.ExpressionRef = wasm.array.len(string_4_get);
 
-				const result_get: binaryen.ExpressionRef = wasm.local.get(8, cg.vm.reftype.String);
+				const result_get: binaryen.ExpressionRef = wasm.local.get(RESULT_IDX, reftype.String);
 				const offset_get: binaryen.ExpressionRef = wasm.local.get(OFFSET_IDX, binaryen.i32);
 				return assertEqualBins(
-					builder.instructions[3].codegen(cg),
+					builder.instructions.at(-1)!.codegen(cg),
 					wasm.drop(Value.newComposite(wasm.block(null, [
-						wasm.local.set(3, strings[0]),
-						wasm.local.set(4, strings[1]),
-						wasm.local.set(5, strings[2]),
-						wasm.local.set(6, strings[3]),
-						wasm.local.set(7, strings[4]),
-						wasm.local.set(8, wasm.array.new_default(
+						wasm.local.set(4, strings[0]),
+						wasm.local.set(5, strings[1]),
+						wasm.local.set(6, strings[2]),
+						wasm.local.set(7, strings[3]),
+						wasm.local.set(8, strings[4]),
+						wasm.local.set(RESULT_IDX, wasm.array.new_default(
 							cg.vm.heaptype.String,
 							wasm.i32.add(
 								wasm.i32.add(
@@ -961,7 +1095,7 @@ test.suite('Opcode', () => {
 						]),
 						wasm.array.copy(result_get, offset_get, string_4_get, wasm.i32.const(0), string_4_len),
 						result_get,
-					], cg.vm.reftype.String))),
+					], reftype.String))),
 				);
 			});
 
@@ -1195,6 +1329,17 @@ test.suite('Opcode', () => {
 				});
 			});
 
+			test.test('MaybeNew', () => {
+				const cg = new CodeGenerator();
+				return assertEqualBins([
+					new OP.MaybeNew(TYPE.STR),
+					new OP.MaybeNew(TYPE.STR, new OP.Const(new VALUE.String('hello'))),
+				].map((opcode) => opcode.codegen(cg)), [
+					cg.codegenMaybe(),
+					cg.codegenMaybe(new VALUE.String('hello').codegen(cg)),
+				].map((mab) => cg.vm.Value.newComposite(mab)));
+			});
+
 			test.test('TupleGet returns (array.get).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					val mut x:   int                = 42;
@@ -1261,61 +1406,25 @@ test.suite('Opcode', () => {
 						list.[3];
 						list.[-1];
 					}`);
-					const {Vect, Value, List} = cg.vm;
-					const list_get:   binaryen.ExpressionRef = wasm.local.get(1, cg.vm.reftype.Value);
-					const item_0_get: binaryen.ExpressionRef = wasm.local.get(4, cg.vm.reftypeNull.Value);
-					const item_1_get: binaryen.ExpressionRef = wasm.local.get(5, cg.vm.reftypeNull.Value);
-					const item_2_get: binaryen.ExpressionRef = wasm.local.get(6, cg.vm.reftypeNull.Value);
-					const item_3_get: binaryen.ExpressionRef = wasm.local.get(7, cg.vm.reftypeNull.Value);
+					const {reftype, Vect, Value, List} = cg.vm;
+					const list_cast: binaryen.ExpressionRef = Value.cast(wasm.local.get(1, reftype.Value), reftype.List);
 					return assertEqualBins(builder.instructions.slice(4).map((instr) => instr.codegen(cg)), [
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(4, wasm.array.get(
-								List.field(Value.cast(wasm.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.List)).internal,
-								wasm.i32.wrap(Vect.asInt(Value.field(wasm.local.get(3, cg.vm.reftype.Value)).primitive)),
-								cg.vm.reftypeNull.Value,
-							)),
-							wasm.if(
-								wasm.ref.is_null(item_0_get),
-								genConst(cg),
-								wasm.ref.as_non_null(item_0_get),
-							),
-						], cg.vm.reftype.Value)),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(5, wasm.array.get(
-								List.field(Value.cast(list_get, cg.vm.reftype.List)).internal,
-								wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
-								cg.vm.reftypeNull.Value,
-							)),
-							wasm.if(
-								wasm.ref.is_null(item_1_get),
-								genConst(cg),
-								wasm.ref.as_non_null(item_1_get),
-							),
-						], cg.vm.reftype.Value)),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(6, wasm.array.get(
-								List.field(Value.cast(list_get, cg.vm.reftype.List)).internal,
-								wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 3n)).primitive)),
-								cg.vm.reftypeNull.Value,
-							)),
-							wasm.if(
-								wasm.ref.is_null(item_2_get),
-								genConst(cg),
-								wasm.ref.as_non_null(item_2_get),
-							),
-						], cg.vm.reftype.Value)),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(7, wasm.array.get(
-								List.field(Value.cast(list_get, cg.vm.reftype.List)).internal,
-								wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, -1n)).primitive)),
-								cg.vm.reftypeNull.Value,
-							)),
-							wasm.if(
-								wasm.ref.is_null(item_3_get),
-								genConst(cg),
-								wasm.ref.as_non_null(item_3_get),
-							),
-						], cg.vm.reftype.Value)),
+						wasm.drop(List.get(
+							Value.cast(wasm.local.get(2, reftype.Value), reftype.List),
+							wasm.i32.wrap(Vect.asInt(Value.field(wasm.local.get(3, reftype.Value)).primitive)),
+						)),
+						wasm.drop(List.get(
+							list_cast,
+							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 0n)).primitive)),
+						)),
+						wasm.drop(List.get(
+							list_cast,
+							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, 3n)).primitive)),
+						)),
+						wasm.drop(List.get(
+							list_cast,
+							wasm.i32.wrap_i64(Vect.asInt(Value.field(genConst(cg, -1n)).primitive)),
+						)),
 					]);
 				});
 				test.test('DICT.GET', () => {
@@ -1327,50 +1436,21 @@ test.suite('Opcode', () => {
 						dict.[@a];
 						dict.[@c];
 					}`);
-					const {Vect, Value, Property, Dict} = cg.vm;
+					const {reftype, Vect, Value, Dict} = cg.vm;
+					const dict_cast: binaryen.ExpressionRef = Value.cast(wasm.local.get(1, reftype.Value), reftype.Dict);
 					return assertEqualBins(builder.instructions.slice(3).map((instr) => instr.codegen(cg)), [
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(3, wasm.tuple.extract(Dict.find(
-								Value.cast(wasm.local.get(2, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
-							), 1)),
-							wasm.if(
-								wasm.i32.or(
-									wasm.ref.is_null(wasm.local.get(3, cg.vm.reftypeNull.Property)),
-									Property.isTombstone(wasm.local.get(3, cg.vm.reftypeNull.Property)),
-								),
-								genConst(cg),
-								Property.field(wasm.local.get(3, cg.vm.reftypeNull.Property)).val,
-							),
-						], cg.vm.reftype.Value)),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(4, wasm.tuple.extract(Dict.find(
-								Value.cast(wasm.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, 'a', 'sym')).primitive),
-							), 1)),
-							wasm.if(
-								wasm.i32.or(
-									wasm.ref.is_null(wasm.local.get(4, cg.vm.reftypeNull.Property)),
-									Property.isTombstone(wasm.local.get(4, cg.vm.reftypeNull.Property)),
-								),
-								genConst(cg),
-								Property.field(wasm.local.get(4, cg.vm.reftypeNull.Property)).val,
-							),
-						], cg.vm.reftype.Value)),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(5, wasm.tuple.extract(Dict.find(
-								Value.cast(wasm.local.get(1, cg.vm.reftype.Value), cg.vm.reftype.Dict),
-								Vect.asNat(Value.field(genConst(cg, 'c', 'sym')).primitive),
-							), 1)),
-							wasm.if(
-								wasm.i32.or(
-									wasm.ref.is_null(wasm.local.get(5, cg.vm.reftypeNull.Property)),
-									Property.isTombstone(wasm.local.get(5, cg.vm.reftypeNull.Property)),
-								),
-								genConst(cg),
-								Property.field(wasm.local.get(5, cg.vm.reftypeNull.Property)).val,
-							),
-						], cg.vm.reftype.Value)),
+						wasm.drop(Dict.get(
+							Value.cast(wasm.local.get(2, reftype.Value), reftype.Dict),
+							Vect.asNat(Value.field(genConst(cg, 'b', 'sym')).primitive),
+						)),
+						wasm.drop(Dict.get(
+							dict_cast,
+							Vect.asNat(Value.field(genConst(cg, 'a', 'sym')).primitive),
+						)),
+						wasm.drop(Dict.get(
+							dict_cast,
+							Vect.asNat(Value.field(genConst(cg, 'c', 'sym')).primitive),
+						)),
 					]);
 				});
 				test.test('SET.GET', () => {
@@ -1379,14 +1459,14 @@ test.suite('Opcode', () => {
 						'set'.[4.2];
 						'set'.[3.3];
 					}`);
-					const {Value, Case, Map: VmMap} = cg.vm;
-					const base:         binaryen.ExpressionRef = wasm.local.get(1, cg.vm.reftype.Value); // index 0 = nonempty map setup (implementation of Set)
-					const maybe_case_0: binaryen.ExpressionRef = wasm.local.get(2, cg.vm.reftypeNull.Case);
-					const maybe_case_1: binaryen.ExpressionRef = wasm.local.get(3, cg.vm.reftypeNull.Case);
+					const {reftype, reftypeNull, Value, Case, Map: VmMap} = cg.vm;
+					const base:         binaryen.ExpressionRef = wasm.local.get(1, reftype.Value); // index 0 = nonempty map setup (implementation of Set)
+					const maybe_case_0: binaryen.ExpressionRef = wasm.local.get(2, reftypeNull.Case);
+					const maybe_case_1: binaryen.ExpressionRef = wasm.local.get(3, reftypeNull.Case);
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(2, wasm.tuple.extract(VmMap.find(
-								Value.cast(base, cg.vm.reftype.Map),
+								Value.cast(base, reftype.Map),
 								genConst(cg, 4.2),
 							), 1)),
 							wasm.if(
@@ -1397,10 +1477,10 @@ test.suite('Opcode', () => {
 								genConst(cg, false),
 								genConst(cg, true),
 							),
-						], cg.vm.reftype.Value)),
+						], reftype.Value)),
 						wasm.drop(wasm.block(null, [
 							wasm.local.set(3, wasm.tuple.extract(VmMap.find(
-								Value.cast(base, cg.vm.reftype.Map),
+								Value.cast(base, reftype.Map),
 								genConst(cg, 3.3),
 							), 1)),
 							wasm.if(
@@ -1411,7 +1491,7 @@ test.suite('Opcode', () => {
 								genConst(cg, false),
 								genConst(cg, true),
 							),
-						], cg.vm.reftype.Value)),
+						], reftype.Value)),
 					]);
 				});
 				test.test('MAP.GET', () => {
@@ -1420,98 +1500,47 @@ test.suite('Opcode', () => {
 						map.[4.2];
 						map.[3.3];
 					}`);
-					const {Value, Case, Map: VmMap} = cg.vm;
-					const base:         binaryen.ExpressionRef = wasm.local.get(1, cg.vm.reftype.Value); // index 0 = nonempty map setup
-					const maybe_case_0: binaryen.ExpressionRef = wasm.local.get(2, cg.vm.reftypeNull.Case);
-					const maybe_case_1: binaryen.ExpressionRef = wasm.local.get(3, cg.vm.reftypeNull.Case);
+					const {reftype, Value, Map: VmMap} = cg.vm;
+					const map_cast: binaryen.ExpressionRef = Value.cast(wasm.local.get(1, reftype.Value), reftype.Map); // index 0 = nonempty map setup
 					return assertEqualBins(builder.instructions.slice(1).map((instr) => instr.codegen(cg)), [
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(2, wasm.tuple.extract(VmMap.find(
-								Value.cast(base, cg.vm.reftype.Map),
-								genConst(cg, 4.2),
-							), 1)),
-							wasm.if(
-								wasm.i32.or(
-									wasm.ref.is_null(maybe_case_0),
-									Case.isTombstone(maybe_case_0),
-								),
-								genConst(cg),
-								Case.field(maybe_case_0).con,
-							),
-						], cg.vm.reftype.Value)),
-						wasm.drop(wasm.block(null, [
-							wasm.local.set(3, wasm.tuple.extract(VmMap.find(
-								Value.cast(base, cg.vm.reftype.Map),
-								genConst(cg, 3.3),
-							), 1)),
-							wasm.if(
-								wasm.i32.or(
-									wasm.ref.is_null(maybe_case_1),
-									Case.isTombstone(maybe_case_1),
-								),
-								genConst(cg),
-								Case.field(maybe_case_1).con,
-							),
-						], cg.vm.reftype.Value)),
+						wasm.drop(VmMap.get(
+							map_cast,
+							genConst(cg, 4.2),
+						)),
+						wasm.drop(VmMap.get(
+							map_cast,
+							genConst(cg, 3.3),
+						)),
 					]);
 				});
 			});
 
-			test.test('Isset', () => {
-				const {stmts, builder, cg, wasm} = setupScript(`{
-					val mut a0?: int;
-					val mut a1?: int;
-					val mut a2?: int;
-
-					val mut b: int = 42;
-					val mut c0: int | null = 42;
-					val mut c1: int | null = 42;
-					val mut d: int | null = null;
-					val e: int = 42;
-					val f: int | null = 42;
-					val g: int | null = null;
-
-					set a1 = 42;
-					set a2 = 42;
-					delete a2;
-					set c1 = null;
-
-					isset a0;
-					isset a1;
-					isset a2;
-					isset b;
-					isset c0;
-					isset c1;
-					isset d;
-					isset e;
-					isset f;
-					isset g;
-				}`);
-				return assertEqualBins(
-					stmts.slice(14).map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
-					Array.from(new Array(10), (_, i) => cg.vm.Value.boolFromI32(wasm.i32.eqz(wasm.i32.eqz(cg.vm.Value.field(wasm.local.get(i, cg.vm.reftype.Value)).tag)))),
-				);
-			});
-
 			test.suite('Unop', () => {
-				test.test('ISNULL operator returns custom WASM function `$op:is-null`.', () => {
-					// there exists no syntax for “is null” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.ISNULL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.isNull(genConst(cg)),
-					);
-				});
-				test.test('TOBOOL operator returns custom WASM function `$op:not` applied twice.', () => {
-					// there exists no syntax for “to bool” operator, so constructing it manually
-					const cg = new CodeGenerator();
-					assertEqualBins(
-						new OP.Unop(OP.OpCode.TOBOOL, new OP.Const(VALUE.NULL), TYPE.BOOL).codegen(cg),
-						cg.vm.op.not(cg.vm.op.not(genConst(cg))),
-					);
-				});
 				test.test('Returns custom WASM functions.', () => {
 					const {stmts, builder, cg} = setupScript(`{
+						Boolean.(null);
+						Boolean.(false);
+						Boolean.(true);
+						Boolean.(@hello);
+						Boolean.(-0);
+						Boolean.(-42);
+						Boolean.(+0);
+						Boolean.(+42);
+						Boolean.(0.0);
+						Boolean.(4.2);
+						Boolean.("hello");
+
+						Integer.(+42);
+						Integer.(4.2);
+						Natural.(42);
+						Natural.(4.2);
+						Float.(+42);
+						Float.(42);
+
+						String.(null);
+						String.(42);
+						String.("hello");
+
 						!null;
 						!false;
 						!@hello;
@@ -1526,22 +1555,34 @@ test.suite('Opcode', () => {
 
 						-(42);
 						-(4.2);
-
-						Integer.(+42);
-						Integer.(4.2);
-						Natural.(42);
-						Natural.(4.2);
-						Float.(+42);
-						Float.(42);
-
-						String.(null);
-						String.(42);
-						String.("hello");
 					}`, {codegen: false});
 					const id_hello = Validator.cookTokenIdentifier('hello');
 					return assertEqualBins(
 						stmts.map((stmt) => (stmt as AST.STMT.StatementExpression).expr!.build(builder).codegen(cg)),
 						[
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, null))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, false))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, true))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, Symbol(id_hello.toString())))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -0n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, -42n))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 42n, 'nat'))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 0.0))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 4.2))),
+							cg.vm.op.not(cg.vm.op.not(genConst(cg, 'hello'))),
+
+							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toInt(genConst(cg, 4.2)),
+							cg.vm.op.toNat(genConst(cg, 42n)),
+							cg.vm.op.toNat(genConst(cg, 4.2)),
+							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
+							cg.vm.op.toFloat(genConst(cg, 42n)),
+
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 42n))),
+							cg.vm.Value.newComposite(cg.vm.Value.stringify(genConst(cg, 'hello'))),
+
 							cg.vm.op.not(genConst(cg)),
 							cg.vm.op.not(genConst(cg, false)),
 							cg.vm.op.not(genConst(cg, Symbol(id_hello.toString()))),
@@ -1556,17 +1597,6 @@ test.suite('Opcode', () => {
 
 							cg.vm.op.negate(genConst(cg, 42n)),
 							cg.vm.op.negate(genConst(cg, 4.2)),
-
-							cg.vm.op.toInt(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toInt(genConst(cg, 4.2)),
-							cg.vm.op.toNat(genConst(cg, 42n)),
-							cg.vm.op.toNat(genConst(cg, 4.2)),
-							cg.vm.op.toFloat(genConst(cg, 42n, 'nat')),
-							cg.vm.op.toFloat(genConst(cg, 42n)),
-
-							cg.vm.Value.stringify(genConst(cg)),
-							cg.vm.Value.stringify(genConst(cg, 42n)),
-							cg.vm.Value.stringify(genConst(cg, 'hello')),
 						],
 					);
 				});
@@ -1645,6 +1675,71 @@ test.suite('Opcode', () => {
 						unop.codegen(cg),
 						Value.newPrimitive(Vect.newNat(wasm.i64.extend_i32_u(VmMap.count(Value.cast(map.codegen(cg), cg.vm.reftype.Map))))),
 					);
+				});
+				test.test('MAYBE.UNWRAP', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						val mut x?: str;
+						val mut y?: int;
+						set y = 42;
+						x~?;
+						y~?;
+					}`);
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						wasm.local.set(0, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe())),
+						wasm.local.set(1, cg.vm.Value.newComposite(cg.codegenMaybe(genConst(cg, 42n)))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(0, cg.vm.reftype.Value))),
+						wasm.drop(cg.vm.op.unwrapMaybe(wasm.local.get(1, cg.vm.reftype.Value))),
+					]);
+				});
+			});
+
+			test.suite('Instance', () => {
+				test.test('INSTANCEOF', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						${ INTRINSICS.slice(2).map((classname) => `null is ${ classname };`).join('\n') };
+					}`);
+					const operand: binaryen.ExpressionRef = genConst(cg);
+					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
+						cg.vm.op.isInt(operand),
+						cg.vm.op.isInt(operand),
+						cg.vm.op.isNat(operand),
+						cg.vm.op.isFloat(operand),
+						cg.vm.op.isString(operand),
+						cg.vm.op.isObject(operand),
+						cg.vm.op.isList(operand),
+						cg.vm.op.isDict(operand),
+						cg.vm.op.isMap(operand),
+						cg.vm.op.isMap(operand),
+						cg.vm.op.isMaybe(operand),
+						cg.vm.op.isNone(operand),
+						cg.vm.op.isSome(operand),
+						cg.vm.op.isFunction(operand),
+					].map((expr) => wasm.drop(expr)));
+				});
+				test.test('CAST', () => {
+					const {builder, cg, wasm} = setupScript(`{
+						${ INTRINSICS.map((classname) => `null as <anything> as ${ classname };`).join('\n') };
+					}`);
+					const operand: binaryen.ExpressionRef = genConst(cg);
+					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [
+						cg.vm.op.asNull(operand),
+						cg.vm.op.asBool(operand),
+						cg.vm.op.asInt(operand),
+						cg.vm.op.asInt(operand),
+						cg.vm.op.asNat(operand),
+						cg.vm.op.asFloat(operand),
+						cg.vm.op.asString(operand),
+						cg.vm.op.asObject(operand),
+						cg.vm.op.asList(operand),
+						cg.vm.op.asDict(operand),
+						cg.vm.op.asMap(operand),
+						cg.vm.op.asMap(operand),
+						cg.vm.op.asMaybe(operand),
+						cg.vm.op.asNone(operand),
+						cg.vm.op.asSome(operand),
+						cg.vm.op.asFunction(operand),
+					].map((expr) => wasm.drop(expr)));
 				});
 			});
 
@@ -1727,6 +1822,10 @@ test.suite('Opcode', () => {
 
 	test.suite('Instruction', () => {
 		test.suite('#codegen', () => {
+			function gen_maybe(cg: CodeGenerator, value?: binaryen.ExpressionRef): binaryen.ExpressionRef {
+				return cg.vm.Value.newComposite(cg.codegenMaybe(value));
+			}
+
 			test.test('Drop returns (drop).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					null;
@@ -1772,15 +1871,15 @@ test.suite('Opcode', () => {
 						wasm.local.set(2, genConst(cg, 'hello', 'sym')),
 						wasm.local.set(3, genConst(cg, 42n)),
 						wasm.local.set(4, genConst(cg, 4.2)),
-						wasm.local.set(5, cg.vm.Value.newDefault()),
+						wasm.local.set(5, gen_maybe(cg)),
 
 						wasm.local.set(0, genConst(cg)),
 						wasm.local.set(1, genConst(cg, true)),
 						wasm.local.set(2, genConst(cg, 'world', 'sym')),
 						wasm.local.set(3, genConst(cg, 43n)),
 						wasm.local.set(4, genConst(cg, 4.3)),
-						wasm.local.set(5, genConst(cg, 'hello')),
-						wasm.local.set(5, cg.vm.Value.newDefault()),
+						wasm.local.set(5, gen_maybe(cg, genConst(cg, 'hello'))),
+						wasm.local.set(5, gen_maybe(cg)),
 					],
 				);
 			});

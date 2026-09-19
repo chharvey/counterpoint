@@ -30,6 +30,7 @@ export class Property implements HasFuncData {
 	}
 
 
+	/** @deprecated TODO: This is dead code. Remove when removing Case class. */
 	public field(ref: binaryen.ExpressionRef /* (ref null $Property) */): {
 		/** @return `(struct.get $Property $key <ref>)` */ readonly key: binaryen.ExpressionRef /* i64 */,
 		/** @return `(struct.get $Property $val <ref>)` */ readonly val: binaryen.ExpressionRef /* (ref $Value) */,
@@ -49,13 +50,14 @@ export class Property implements HasFuncData {
 	 * Application code should treat tombstones as non-entries —
 	 * they should be treated the same as null when getting, and should be replaced when setting.
 	 *
-	 * A Property tombstone is implemented as a Property with a key of `\xff`.
-	 * This will not conflict with real Properties, whose keys are all at least `\x100`
+	 * A Property tombstone is implemented as a Property with a key of `\x7f`.
+	 * This will not conflict with real Properties, whose keys are all at least `\x80`
 	 * per the Counterpoint spec (see **TokenWorth** algorithm).
 	 *
 	 * Property tombstones contribute to the load factor of a Dict:
 	 * they are counted when determining when a Dict’s array should be grown or shrunk.
 	 * When growing/shrinking an array, tombstones are not copied over to the new array.
+	 * @deprecated TODO: This is dead code. Remove when removing Case class.
 	 */
 	public isTombstone(prop: binaryen.ExpressionRef /* (ref null $Property) */): binaryen.ExpressionRef /* i32 */ {
 		return this.vm.mod.wasm.call('Property.is-tombstone', [prop], binaryen.i32);

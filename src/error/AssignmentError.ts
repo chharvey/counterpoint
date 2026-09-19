@@ -17,6 +17,7 @@ import {ErrorCode} from './ErrorCode.ts';
  * - AssignmentErrorDuplicateDeclaration
  * - AssignmentErrorDuplicateKey
  * - AssignmentErrorReassignment
+ * - AssignmentErrorDeletion
  * - AssignmentErrorMissingType
  */
 export class AssignmentError extends ErrorCode {

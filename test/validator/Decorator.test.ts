@@ -295,10 +295,21 @@ test.suite('Decorator', () => {
 				}
 				% (type_function)
 			`]],
-
+			['Decorate(TypeFunction ::= "\\" "(" ")" "=>" Type) -> SemanticType', [AST.TYPE.Function, `
+				{
+					type T = \\() => int | float;
+				}
+				% (type_function)
+			`]],
 			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" "void") -> SemanticType', [AST.TYPE.Function, `
 				{
 					type T = \\(A, b: B, c: \\() => void) => void;
+				}
+				% (type_function)
+			`]],
+			['Decorate(TypeFunction ::= "\\" "(" ParametersType ")" "=>" Type) -> SemanticType', [AST.TYPE.Function, `
+				{
+					type T = \\(A, b: B, c: \\() => void) => int | float;
 				}
 				% (type_function)
 			`]],
@@ -503,6 +514,18 @@ test.suite('Decorator', () => {
 				% (expression_block)
 			`]],
 
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "~?") -> SemanticExpressionAccess', [AST.EXPR.OperationUnary, `
+				{
+					v~?;
+				}
+				% (expression_compound)
+			`]],
+			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "~!") -> SemanticExpressionAccess', [AST.EXPR.OperationUnary, `
+				{
+					v~!;
+				}
+				% (expression_compound)
+			`]],
 			['Decorate(ExpressionCompound<Block, Break, Return> ::= ExpressionCompound<?Block><?Break><?Return> "." PropertyAccessor<?Break><?Return>) -> SemanticExpressionAccess', [AST.EXPR.Access, `
 				{
 					v.p;
@@ -534,13 +557,13 @@ test.suite('Decorator', () => {
 				% (expression_compound)
 			`]],
 
-			['Decorate(ExpressionUnarySymbol<Block, Break, Return> ::= "!" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionUnarySymbol<Block, Break, Return> ::= "!" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationUnary, `
 				{
 					!v;
 				}
 				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Block, Break, Return> ::= "?" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionUnarySymbol<Block, Break, Return> ::= "?" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationUnary, `
 				{
 					?v;
 				}
@@ -553,39 +576,26 @@ test.suite('Decorator', () => {
 				}
 				% (expression_unary_symbol)
 			`]],
-			['Decorate(ExpressionUnarySymbol<Block, Break, Return> ::= "-" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionUnarySymbol<Block, Break, Return> ::= "-" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationUnary, `
 				{
 					-v;
 				}
 				% (expression_unary_symbol)
 			`]],
 
-			['Decorate(ExpressionUnaryKeyword<Block, Break, Return> ::= "isset" Assignee<?Break><?Return>) -> SemanticExpressionIsset', [AST.EXPR.Isset, `
-				{
-					isset v;
-				}
-				% (expression_unary_keyword)
-			`]],
-			['Decorate(ExpressionUnaryKeyword<Block, Break, Return> ::= "!isset" Assignee<?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
-				{
-					!isset v;
-				}
-				% (expression_unary_keyword)
-			`]],
-
-			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as" ExpressionUnaryKeyword<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryCast, `
 				{
 					a as Klass;
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as?" ExpressionUnaryKeyword<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as?" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryCast, `
 				{
 					a as? Klass;
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" ExpressionUnaryKeyword<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryCast, `
 				{
 					a as! Klass;
 				}
@@ -598,80 +608,108 @@ test.suite('Decorator', () => {
 				% (expression_cast)
 			`]],
 
-			['Decorate(ExpressionExponential<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "^" ExpressionExponential<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionExponential<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "^" ExpressionExponential<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryArithmetic, `
 				{
 					a ^ b;
 				}
 				% (expression_exponential)
 			`]],
 
-			['Decorate(ExpressionMultiplicative<Block, Break, Return> ::= ExpressionMultiplicative<?Block><?Break><?Return> "*" ExpressionExponential<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionMultiplicative<Block, Break, Return> ::= ExpressionMultiplicative<?Block><?Break><?Return> "*" ExpressionExponential<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryArithmetic, `
 				{
 					a * b;
 				}
 				% (expression_multiplicative)
 			`]],
-			['Decorate(ExpressionMultiplicative<Block, Break, Return> ::= ExpressionMultiplicative<?Block><?Break><?Return> "/" ExpressionExponential<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionMultiplicative<Block, Break, Return> ::= ExpressionMultiplicative<?Block><?Break><?Return> "/" ExpressionExponential<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryArithmetic, `
 				{
 					a / b;
 				}
 				% (expression_multiplicative)
 			`]],
 
-			['Decorate(ExpressionAdditive<Block, Break, Return> ::= ExpressionAdditive<?Block><?Break><?Return> "+" ExpressionMultiplicative<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionAdditive<Block, Break, Return> ::= ExpressionAdditive<?Block><?Break><?Return> "+" ExpressionMultiplicative<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryArithmetic, `
 				{
 					a + b;
 				}
 				% (expression_additive)
 			`]],
-			['Decorate(ExpressionAdditive<Block, Break, Return> ::= ExpressionAdditive<?Block><?Break><?Return> "-" ExpressionMultiplicative<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionAdditive<Block, Break, Return> ::= ExpressionAdditive<?Block><?Break><?Return> "-" ExpressionMultiplicative<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryArithmetic, `
 				{
 					a - b;
 				}
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>=', '!<', '!>', 'is', '!is'].map((op) => [`${ ['is', '!is'].includes(op) ? 'expectFailure: ' : '' }Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "${ op }" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.Operation, `
+			...['<', '>', '<=', '>='].map((op) => [`Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "${ op }" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.OperationBinaryComparative, `
 				{
 					a ${ op } b;
 				}
 				% (expression_comparative)
 			`]] as const),
 
-			...['===', '!==', '==', '!='].map((op) => [`Decorate(ExpressionEquality<Block, Break, Return> ::= ExpressionEquality<?Block><?Break><?Return> "${ op }" ExpressionComparative<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.Operation, `
+			...['!<', '!>'].map((op) => [`Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "${ op }" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.OperationUnary, `
+				{
+					a ${ op } b;
+				}
+				% (expression_comparative)
+			`]] as const),
+
+			['Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "is" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryCast, `
+				{
+					a is b;
+				}
+				% (expression_comparative)
+			`]],
+
+			['Decorate(ExpressionComparative<Block, Break, Return> ::= ExpressionComparative<?Block><?Break><?Return> "!is" ExpressionAdditive<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationUnary, `
+				{
+					a !is b;
+				}
+				% (expression_comparative)
+			`]],
+
+			...['===', '=='].map((op) => [`Decorate(ExpressionEquality<Block, Break, Return> ::= ExpressionEquality<?Block><?Break><?Return> "${ op }" ExpressionComparative<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.OperationBinaryEquality, `
 				{
 					a ${ op } b;
 				}
 				% (expression_equality)
 			`]] as const),
 
-			['Decorate(ExpressionConjunctive<Block, Break, Return> ::= ExpressionConjunctive<?Block><?Break><?Return> "&&" ExpressionEquality<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			...['!==', '!='].map((op) => [`Decorate(ExpressionEquality<Block, Break, Return> ::= ExpressionEquality<?Block><?Break><?Return> "${ op }" ExpressionComparative<?Block><?Break><?Return>) -> SemanticExpressionOperation`, [AST.EXPR.OperationUnary, `
+				{
+					a ${ op } b;
+				}
+				% (expression_equality)
+			`]] as const),
+
+			['Decorate(ExpressionConjunctive<Block, Break, Return> ::= ExpressionConjunctive<?Block><?Break><?Return> "&&" ExpressionEquality<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryLogical, `
 				{
 					a && b;
 				}
 				% (expression_conjunctive)
 			`]],
-			['Decorate(ExpressionConjunctive<Block, Break, Return> ::= ExpressionConjunctive<?Block><?Break><?Return> "!&" ExpressionEquality<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionConjunctive<Block, Break, Return> ::= ExpressionConjunctive<?Block><?Break><?Return> "!&" ExpressionEquality<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationUnary, `
 				{
 					a !& b;
 				}
 				% (expression_conjunctive)
 			`]],
 
-			['Decorate(ExpressionDisjunctive<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Break><?Return> "||" ExpressionConjunctive<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionDisjunctive<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Break><?Return> "||" ExpressionConjunctive<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryLogical, `
 				{
 					a || b;
 				}
 				% (expression_disjunctive)
 			`]],
-			['Decorate(ExpressionDisjunctive<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Break><?Return> "!|" ExpressionConjunctive<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionDisjunctive<Block, Break, Return> ::= ExpressionDisjunctive<?Block><?Break><?Return> "!|" ExpressionConjunctive<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationUnary, `
 				{
 					a !| b;
 				}
 				% (expression_disjunctive)
 			`]],
 
-			['Decorate(ExpressionConditional<Break, Return> ::= "if" Expression__0<+Block><?Break><?Return> "then" Expression__1<-Block><?Break><?Return> "else" Expression__2<-Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.Operation, `
+			['Decorate(ExpressionConditional<Break, Return> ::= "if" Expression__0<+Block><?Break><?Return> "then" Expression__1<-Block><?Break><?Return> "else" Expression__2<-Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationTernary, `
 				{
 					if a then b else c;
 				}
@@ -698,9 +736,45 @@ test.suite('Decorator', () => {
 				}
 				% (expression_function)
 			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): int | float {;};
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(): int | float => "done";
+				}
+				% (expression_function)
+			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ")" CaptureClause<-Ref> ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
 					\\() with (x, y): void {;};
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" CaptureClause<-Ref> ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\() with (x, y): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" CaptureClause<-Ref> ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\() with (x, y): int | float {;};
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ")" CaptureClause<-Ref> ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\() with (x, y): int | float => "done";
 				}
 				% (expression_function)
 			`]],
@@ -710,9 +784,45 @@ test.suite('Decorator', () => {
 				}
 				% (expression_function)
 			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): int | float { return; };
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C): int | float => "done";
+				}
+				% (expression_function)
+			`]],
 			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" "void" Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
 				{
 					\\(a: A, $b: B, c= charlie: C) with (x, y): void { return; };
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" "void" "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C) with (x, y): void => "done";
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" Type Block<-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C) with (x, y): int | float { return; };
+				}
+				% (expression_function)
+			`]],
+			['Decorate(ExpressionFunction ::= "\\" "(" ParametersFunction ")" CaptureClause<-Ref> ":" Type "=>" Expression<+Block><-Break><+Return>) -> SemanticExpressionFunction', [AST.EXPR.Function, `
+				{
+					\\(a: A, $b: B, c= charlie: C) with (x, y): int | float => "done";
 				}
 				% (expression_function)
 			`]],
@@ -859,9 +969,15 @@ test.suite('Decorator', () => {
 				% (statement_break)
 			`]],
 
-			['Decorate(StatementReturn ::= "return" ";") ->', [AST.STMT.StatementReturn, `
+			['Decorate(StatementReturn<Break> ::= "return" ";") -> SemanticStatementReturn', [AST.STMT.StatementReturn, `
 				{
 					func foo(): void { return; }
+				}
+				% (statement_return)
+			`]],
+			['Decorate(StatementReturn<Break> ::= "return" Expression<+Block><?Break><+Return> ";") -> SemanticStatementReturn', [AST.STMT.StatementReturn, `
+				{
+					func foo(): void { return bar; }
 				}
 				% (statement_return)
 			`]],
@@ -946,9 +1062,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func _() with (x, ref y): void {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" CaptureClause<+Ref> ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _() with (x, ref y): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" CaptureClause<+Ref> ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _() with (x, ref y): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ")" CaptureClause<+Ref> ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _() with (x, ref y): int | float => bar;
 				}
 				% (declaration_function)
 			`]],
@@ -958,9 +1110,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func _(a: A, $b: B, c= charlie: C) with (x, ref y): void {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" CaptureClause<+Ref> ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C) with (x, ref y): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" CaptureClause<+Ref> ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C) with (x, ref y): int | float {;}
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" "_" "(" ParametersFunction ")" CaptureClause<+Ref> ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func _(a: A, $b: B, c= charlie: C) with (x, ref y): int | float => bar;
 				}
 				% (declaration_function)
 			`]],
@@ -970,9 +1158,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func foo() with (x, ref y): void { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" CaptureClause<+Ref> ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo() with (x, ref y): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" CaptureClause<+Ref> ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo() with (x, ref y): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ")" CaptureClause<+Ref> ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo() with (x, ref y): int | float => bar;
 				}
 				% (declaration_function)
 			`]],
@@ -982,9 +1206,45 @@ test.suite('Decorator', () => {
 				}
 				% (declaration_function)
 			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C): int | float => bar;
+				}
+				% (declaration_function)
+			`]],
 			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" CaptureClause<+Ref> ":" "void" Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
 				{
 					func foo(a: A, $b: B, c= charlie: C) with (x, ref y): void { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" CaptureClause<+Ref> ":" "void" "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C) with (x, ref y): void => bar;
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" CaptureClause<+Ref> ":" Type Block<-Break><+Return>) -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C) with (x, ref y): int | float { return; }
+				}
+				% (declaration_function)
+			`]],
+			['Decorate(DeclarationFunction ::= "func" IDENTIFIER "(" ParametersFunction ")" CaptureClause<+Ref> ":" Type "=>" Expression<+Block><-Break><+Return> ";") -> SemanticDeclarationFunction', [AST.STMT.DeclarationFunction, `
+				{
+					func foo(a: A, $b: B, c= charlie: C) with (x, ref y): int | float => bar;
 				}
 				% (declaration_function)
 			`]],
@@ -1043,17 +1303,6 @@ test.suite('Decorator', () => {
 							}
 						`, '(expression_compound)')), /not yet supported/);
 					});
-				});
-			});
-		});
-		['is', '!is'].forEach((op) => {
-			test.suite(`Decorate(ExpressionComparative ::= ExpressionComparative "${ op }" ExpressionAdditive) -> SemanticExpressionOperation`, () => {
-				test.test(`operator \`${ op }\` is not yet supported.`, () => {
-					assert.throws(() => new Decorator().decorate(captureParseNode(`
-						{
-							a ${ op } b;
-						}
-					`, '(expression_comparative)')), /not yet supported/);
 				});
 			});
 		});

@@ -20,6 +20,7 @@ import {
 import {
 	extract_lines,
 	assertAssignable,
+	op_maybe_string,
 	setupScript,
 } from '../utils.ts';
 
@@ -28,65 +29,62 @@ import {
 test.suite('Statement', () => {
 	test.suite('#varCheck', () => {
 		test.suite('StatementReassignment', () => {
-			test.test('does not throw if the variable is writable.', () => {
-				const {goal} = setupScript(`{
+			test.test('`set` throws if the variable is read-only.', () => {
+				const {goal, stmts} = setupScript(`{
 					val mut i: int = 42;
-					set i = 43;
-				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
+					val     j: int = 42;
+					set i = 24;
+					set j = 24;
+				}`, {varCheck: false});
+				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: false,
 				});
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
+					isWritable:      false,
+					isUninitialized: false,
+				});
+				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorReassignment);
 			});
-			test.test('throws if the variable is read-only.', () => {
-				assert.throws(() => setupScript(`{
-					val i: int = 42;
-					set i = 43;
-				}`, {typeCheck: false}), AssignmentErrorReassignment);
-			});
-			test.test('always throws for type alias reassignment.', () => {
+			test.test('`set` always throws for type alias reassignment.', () => {
 				assert.throws(() => setupScript(`{
 					type T = 42;
 					set T = 43;
 				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
-			test.test('disallows manual reassignment of the iteration variable.', () => {
+			test.test('`set` disallows manual reassignment of the iteration variable.', () => {
 				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						set it = 44;
 					};
 				}`, {typeCheck: false}), AssignmentErrorReassignment);
 			});
-		});
-
-		test.suite('StatementDelete', () => {
-			test.test('does not throw if the variable was uninitialized.', () => {
-				const {goal} = setupScript(`{
+			test.test('`delete` throws if the variable was initialized.', () => {
+				const {goal, stmts} = setupScript(`{
 					val mut i?: int;
+					val mut j:  int = 42;
 					delete i;
-				}`, {typeCheck: false}); // assert does not throw
-				return assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
+					delete j;
+				}`, {varCheck: false});
+				stmts.slice(0, 3).forEach((stmt) => stmt.varCheck());
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('i'), {
 					isWritable:      true,
 					isUninitialized: true,
 				});
+				assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('j'), {
+					isWritable:      true,
+					isUninitialized: false,
+				});
+				return assert.throws(() => stmts[3].varCheck(), AssignmentErrorDeletion);
 			});
-			test.test('throws if the variable was initialized.', () => {
-				assert.throws(() => setupScript(`{
-					val mut i: int = 42;
-					delete i;
-				}`, {typeCheck: false}), AssignmentErrorDeletion);
-				assert.throws(() => setupScript(`{
-					val i: int = 42;
-					delete i;
-				}`, {typeCheck: false}), AssignmentErrorDeletion);
-			});
-			test.test('always throws for type alias deletion.', () => {
+			test.test('`delete` always throws for type alias deletion.', () => {
 				assert.throws(() => setupScript(`{
 					type T = 42;
 					delete T;
 				}`, {typeCheck: false}), ReferenceErrorKind);
 			});
-			test.test('disallows deletion of the iteration variable.', () => {
+			test.test('`delete` disallows deletion of the iteration variable.', () => {
 				assert.throws(() => setupScript(`{
 					for it: int in [11, 22, 33] do {
 						delete it;
@@ -401,28 +399,35 @@ test.suite('Statement', () => {
 						val mut i: int = 42;
 						set i = 4.3;
 					}`, {typeCheck: false});
-					assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
 				});
-				test.test('allows reassignment when uninitialized.', () => {
-					assert.partialDeepStrictEqual(setupScript(`{
+				test.test('does not allow reassignment of `null` or `Maybe` when uninitialized.', () => {
+					const {goal, stmts} = setupScript(`{
 						val mut x?: int;
+						val mut y?: int;
 						set x = 42;
-					}`, {build: false}).goal.block!.validator.getSymbolBySource('x'), {
-						isWritable:      true,
-						isUninitialized: true,
-						type:            TYPE.INT,
-					});
-				});
-				test.test('does not allow reassignment of `null` when uninitialized.', () => {
-					const {goal} = setupScript(`{
-						val mut x?: int;
 						set x = null;
+						set x = y;
 					}`, {typeCheck: false});
+					stmts.slice(0, 3).forEach((stmt) => stmt.typeCheck());
 					assert.partialDeepStrictEqual(goal.block!.validator.getSymbolBySource('x'), {
 						isWritable:      true,
 						isUninitialized: true,
 					});
-					return assert.throws(() => goal.typeCheck(), TypeErrorNotAssignable);
+					return xjs.Array.forEachAggregated(stmts.slice(3), (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
+				});
+				test.test('None/Some assignable to Maybe, but not to each other.', () => {
+					setupScript(`{
+						val a: Maybe.<int> = None.<int>();
+						val b: Maybe.<int> = Some.<int>(42);
+					}`, {build: false}); // assert does not throw
+					const {stmts} = setupScript(`{
+						val c: Maybe.<float> = None.<int>();
+						val d: Maybe.<float> = Some.<int>(42);
+						val e: Some.<int> = None.<int>();
+						val f: None.<int> = Some.<int>(42);
+					}`, {typeCheck: false});
+					return xjs.Array.forEachAggregated(stmts, (stmt) => assert.throws(() => stmt.typeCheck(), TypeErrorNotAssignable));
 				});
 			});
 			test.suite('for property reassignment.', () => {
@@ -511,9 +516,6 @@ test.suite('Statement', () => {
 					});
 				});
 			});
-		});
-
-		test.suite('StatementDelete', () => {
 			test.suite('for property deletion.', () => {
 				test.test('throws for deletion on non-interface objects.', () => {
 					xjs.Array.forEachAggregated(extract_lines`
@@ -688,6 +690,78 @@ test.suite('Statement', () => {
 				return assert.throws(() => stmts[0].typeCheck(), TypeErrorInvalidOperation);
 			});
 		});
+
+		test.suite('StatementReturn', () => {
+			test.test('throws when returned expression is not assignable to declared return type.', () => {
+				const {stmts} = setupScript(`{
+					func foo0(): float { return 40; }
+					func foo1(): float => 41;
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { return 42; };
+					}
+					func foo3(b: bool): float => if b then 4.2 else 43;
+				}`, {typeCheck: false});
+				const fn2 = stmts[2] as AST.STMT.DeclarationFunction;
+				const fn3 = stmts[3] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1:  AST.STMT.Statement = (stmts[1] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret2a: AST.STMT.Statement = (fn2.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret2b: AST.STMT.Statement = ((fn2.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				const ret3:  AST.STMT.Statement = fn3.block.children[0];
+				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				assert.throws(() => ret0.typeCheck(), TypeErrorNotAssignable);
+				assert.throws(() => ret1.typeCheck(), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => p.typeCheck());
+				ret2a.typeCheck(); // assert does not throw
+				assert.throws(() => ret2b.typeCheck(), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => p.typeCheck());
+				return assert.throws(() => ret3.typeCheck(), TypeErrorNotAssignable);
+			});
+			test.test('throws when returned expression is present in void function.', () => {
+				const {stmts} = setupScript(`{
+					func foo0(): void { return 40; }
+					func foo1(): void => 41;
+					func foo2(b: bool): void {
+						if b then { return; } else { return 42; };
+					}
+					func foo3(b: bool): void => if b then 4.2 else 43;
+				}`, {typeCheck: false});
+				const fn2 = stmts[2] as AST.STMT.DeclarationFunction;
+				const fn3 = stmts[3] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1:  AST.STMT.Statement = (stmts[1] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret2a: AST.STMT.Statement = (fn2.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret2b: AST.STMT.Statement = ((fn2.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				const ret3:  AST.STMT.Statement = fn3.block.children[0];
+				xjs.Array.forEachAggregated([ret0, ret1, ret2a, ret2b, ret3], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				const expected: RegExp = /is returned from a void function/;
+				assert.throws(() => ret0.typeCheck(), expected);
+				assert.throws(() => ret1.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn2.parameters, (p) => p.typeCheck());
+				ret2a.typeCheck(); // assert does not throw
+				assert.throws(() => ret2b.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn3.parameters, (p) => p.typeCheck());
+				return assert.throws(() => ret3.typeCheck(), expected);
+			});
+			test.test('throws for empty return statement in non-void function.', () => {
+				const {stmts} = setupScript(`{
+					func foo0(): float { return; }
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { return; };
+					}
+				}`, {typeCheck: false});
+				const fn1 = stmts[1] as AST.STMT.DeclarationFunction;
+				const ret0:  AST.STMT.Statement = (stmts[0] as AST.STMT.DeclarationFunction).block.children[0];
+				const ret1a: AST.STMT.Statement = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent.children[0];
+				const ret1b: AST.STMT.Statement = ((fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block).children[0];
+				xjs.Array.forEachAggregated([ret0, ret1a, ret1b], (ret) => assert_instanceof(ret, AST.STMT.StatementReturn));
+				const expected: RegExp = /does not return a value/;
+				assert.throws(() => ret0.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
+				ret1a.typeCheck(); // assert does not throw
+				return assert.throws(() => ret1b.typeCheck(), expected);
+			});
+		});
 	});
 
 
@@ -726,7 +800,7 @@ test.suite('Statement', () => {
 		});
 
 		test.suite('StatementReassignment', () => {
-			test.test('for variables: pushes OP.Set instruction.', () => {
+			test.test('for variables: pushes (SET) with a value.', () => {
 				const {stmts, builder} = setupScript(`{
 					val mut x: int = 42;
 					set x = 43;
@@ -739,6 +813,28 @@ test.suite('Statement', () => {
 						(SET x (INT.CONST 43))
 						(SET x (INT.CONST 44))
 						(SET x (INT.CONST -42))
+				`.trim());
+			});
+			test.test('for optional variables: wraps value in (MAYBE.NEW).', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x?: int;
+					set x = 42;
+				}`, {build: false});
+				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
+					"block-0":
+						(SET x ${ op_maybe_string('(INT.CONST 42)') })
+				`.trim());
+			});
+			test.test('deletion: pushes (SET) with an empty (MAYBE.NEW).', () => {
+				const {stmts, builder} = setupScript(`{
+					val mut x?: int;
+					delete x;
+				}`, {build: false});
+				stmts.slice(1).forEach((stmt) => (stmt as AST.STMT.StatementReassignment).build(builder));
+				return assert.strictEqual(builder.print(), xjs.String.dedent`
+					"block-0":
+						(SET x ${ op_maybe_string() })
 				`.trim());
 			});
 			test.test('for collections: pushes OP.CollectionDynamicSet.', () => {
@@ -881,8 +977,8 @@ test.suite('Statement', () => {
 					};
 				}`, {codegen: false}).builder.print(), xjs.String.dedent`
 					"block-0":
-						(DECL <null> cond)
-						(SET cond (BOOL.CONST true))
+						(DECL <Maybe> cond ${ op_maybe_string() })
+						(SET cond ${ op_maybe_string('(BOOL.CONST true)') })
 						(GOTO.IF (EQ (GET cond) (BOOL.CONST true)) "block-1" "block-2")
 					"block-1":
 						(DROP (INT.CONST 10))

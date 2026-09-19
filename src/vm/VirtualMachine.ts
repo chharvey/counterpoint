@@ -10,6 +10,7 @@ import {Object as VmObject} from './classes/Object.ts';
 import {List} from './classes/List.ts';
 import {Dict} from './classes/Dict.ts';
 import {Map as VmMap} from './classes/Map.ts';
+import {Maybe} from './classes/Maybe.ts';
 import {utils} from './ad-hoc/utils.ts';
 import {ops} from './ad-hoc/ops.ts';
 
@@ -29,6 +30,7 @@ type TypeKey = (
 	| 'List'
 	| 'Dict'
 	| 'Map'
+	| 'Maybe'
 	| 'Function'
 );
 
@@ -219,6 +221,16 @@ const TYPES: {
 	tb.setSubType(i_map, tb.getTempHeapType(i_object));
 	tb.setOpen(i_map);
 
+	/* (type $Maybe ...) */
+	const i_maybe: number = tb.getSize();
+	tb.grow(1);
+	tb.setStructType(i_maybe, [
+		/* $id */    TypeBuilder_makeField(binaryen.i64),
+		/* $value */ TypeBuilder_makeField(tb.getTempRefType(tb.getTempHeapType(i_value), true)),
+	]);
+	tb.setSubType(i_maybe, tb.getTempHeapType(i_object));
+	// `$Maybe` is final
+
 	/* (type $Function ...) */
 	const i_function: number = tb.getSize();
 	tb.grow(1);
@@ -227,7 +239,7 @@ const TYPES: {
 		/* $arity */ TypeBuilder_makeField(binaryen.i32, 'notPacked', true),
 	]);
 	tb.setSubType(i_function, tb.getTempHeapType(i_object));
-	tb.setOpen(i_function);
+	// `$Function` is final
 
 	const heaptypes: readonly binaryen.HeapType[] = tb.buildAndDispose();
 
@@ -246,6 +258,7 @@ const TYPES: {
 			List:         heaptypes[i_list],
 			Dict:         heaptypes[i_dict],
 			Map:          heaptypes[i_map],
+			Maybe:        heaptypes[i_maybe],
 			Function:     heaptypes[i_function],
 		},
 
@@ -263,11 +276,12 @@ const TYPES: {
 			List:         binaryen.getTypeFromHeapType(heaptypes[i_list],          false),
 			Dict:         binaryen.getTypeFromHeapType(heaptypes[i_dict],          false),
 			Map:          binaryen.getTypeFromHeapType(heaptypes[i_map],           false),
+			Maybe:        binaryen.getTypeFromHeapType(heaptypes[i_maybe],         false),
 			Function:     binaryen.getTypeFromHeapType(heaptypes[i_function],      false),
 		},
 
 		reftypeNullRegistry: {
-			Value:    binaryen.getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal`
+			Value:    binaryen.getTypeFromHeapType(heaptypes[i_value],    true), // only used as the fields of `$ListInternal` and `$Maybe`
 			Property: binaryen.getTypeFromHeapType(heaptypes[i_property], true), // only used as the fields of `$DictInternal`
 			Case:     binaryen.getTypeFromHeapType(heaptypes[i_case],     true), // only used as the fields of `$MapInternal`
 		},
@@ -311,6 +325,7 @@ export class VirtualMachine {
 	public readonly List     = new List(this);
 	public readonly Dict     = new Dict(this);
 	public readonly Map      = new VmMap(this);
+	public readonly Maybe    = new Maybe(this);
 
 
 	public constructor() {

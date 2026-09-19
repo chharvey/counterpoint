@@ -42,9 +42,6 @@ export class OperationBinaryComparative extends OperationBinary {
 		operand1: Expression,
 	) {
 		super(start_node, operator, operand0, operand1);
-		if (this.operator === Operator.IS as ValidOperatorComparative) { // TODO: make a new class for comparing object instances
-			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
-		}
 	}
 
 	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
@@ -60,10 +57,10 @@ export class OperationBinaryComparative extends OperationBinary {
 	@memoizeMethod
 	public override build(builder: Builder): OP.Binop {
 		return new OP.Binop(new Map<Operator, OP.OpCodeBin>([
-			[Operator.LT,  OP.OpCode.LT],
-			[Operator.GT,  OP.OpCode.GT],
-			[Operator.LE,  OP.OpCode.LE],
-			[Operator.GE,  OP.OpCode.GE],
+			[Operator.LT, OP.OpCode.LT],
+			[Operator.GT, OP.OpCode.GT],
+			[Operator.LE, OP.OpCode.LE],
+			[Operator.GE, OP.OpCode.GE],
 		]).get(this.operator)!, this.operand0.build(builder).asTac(builder), this.operand1.build(builder).asTac(builder), this.type());
 	}
 }

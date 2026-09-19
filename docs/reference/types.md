@@ -1128,6 +1128,57 @@ bases?.[a]; % produces the consequent if it exists, else `null`
 
 
 
+## Control Abstraction Types
+
+
+### Maybes
+Maybe objects are containers of possible values.
+The Maybe type is an abstract type with exactly two concrete subtypes: Some, which contains a value, and None, which contains no value.
+Maybe objects are used for representing optional variables/parameters/entries, and in general, any value that might or might not exist.
+
+Maybe types are declared via the **generic maybe type syntax**: `Maybe[T]`
+where `T` indicates the type of the possible value.
+`T` may be any type, including a type unioned with Null or even another Maybe type. Nested Maybe types do not flatten.
+Some and None objects are constructed via the constructor syntaxes `Some[T](value)` and `None[T]()` respectively.
+```cpl
+val mut x: Maybe[int] = Some[int](42);
+set x = None[int]();
+```
+
+A shorthand for the generic syntax `Maybe[T]` is `T?`.
+```cpl
+val mut x: int? = Some[int](42);
+set x = None[int]();
+```
+
+`None` objects are considered falsy (and thus empty), and therefore return `true` when operated on by the
+[logical negation `!` and emptiness `?` operators](./expressions-operators.md#logical-negation-emptiness).
+```cpl
+val mut x: str? = Some[str]("hello");
+!x; %== false
+?x; %== false
+
+set x = None[str]();
+!x; %== true
+?x; %== true
+```
+Likewise, a `None` behaves like a falsy value in the
+[logical conjunction `&&`](./expressions-operators.md#conjunctive) and
+[logical disjunction `||`](./expressions-operators.md#disjunctive) operators.
+```cpl
+None[anything]() && "hello"; %== None()
+None[anything]() || "hello"; %== "hello"
+```
+A `Some` object is always truthy, regardless of its held value (even if that value itself is falsy).
+```cpl
+Some[bool](false) && "hello"; %== "hello"
+Some[bool](false) || "hello"; %== Some[bool](false)
+```
+
+The [maybe access operator](./expressions-operators.md#maybe-access) works very well with the Maybe type.
+
+
+
 ## Callable Types
 
 

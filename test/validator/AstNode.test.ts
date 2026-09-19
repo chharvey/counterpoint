@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	TYPE,
@@ -142,29 +143,52 @@ test.suite('AstNode', () => {
 							f;
 							return;
 						};
+						\\(): void => f as <T>;
+						func g(): void {
+							val x: T = 42;
+							f;
+							return;
+						}
+						func h(): void => f as <T>;
 					}`, {typeCheck: false}); // assert does not throw
 				});
 				test.test('throws when variable capture is not explicit.', () => {
 					const {stmts} = setupScript(`{
 						val x: int = 42;
 						\\(): void {
-							x; %> error
+							x;
 							return;
 						};
+						\\(): int => x;
+						func f(): void {
+							x;
+							return;
+						}
+						func g(): int => x;
 					}`, {varCheck: false});
 					stmts[0].varCheck();
-					const fn = (stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+					return xjs.Array.forEachAggregated([
+						...(stmts.slice(1, 3) as AST.STMT.StatementExpression[]).map((stmt) => stmt.expr as AST.EXPR.Function),
+						...(stmts.slice(3) as AST.STMT.DeclarationFunction[]),
+					], (fn) => assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared));
 				});
 				test.test('throws for undeclared variables.', () => {
 					const {stmts} = setupScript(`{
 						\\(): void {
-							z; %> error
+							x;
 							return;
 						};
+						\\(): int => x;
+						func f(): void {
+							x;
+							return;
+						}
+						func g(): int => x;
 					}`, {varCheck: false});
-					const fn = (stmts[0] as AST.STMT.StatementExpression).expr as AST.EXPR.Function;
-					return assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared);
+					xjs.Array.forEachAggregated([
+						...(stmts.slice(0, 2) as AST.STMT.StatementExpression[]).map((stmt) => stmt.expr as AST.EXPR.Function),
+						...(stmts.slice(2) as AST.STMT.DeclarationFunction[]),
+					], (fn) => assert.throws(() => fn.block.varCheck(), ReferenceErrorUndeclared));
 				});
 			});
 		});
@@ -196,6 +220,26 @@ test.suite('AstNode', () => {
 					[info_a.type, info_b.type],
 					[TYPE.FLOAT, TYPE.STR],
 				);
+			});
+		});
+
+		test.suite('Block', () => {
+			test.test('throws for lack of return statement in non-void function.', {expectFailure: true}, () => {
+				const {stmts} = setupScript(`{
+					func foo0(): float { "hello"; }
+					func foo2(b: bool): float {
+						if b then { return 4.2; } else { "world"; };
+					}
+				}`, {typeCheck: false});
+				const fn1 = stmts[1] as AST.STMT.DeclarationFunction;
+				const block0:  AST.Block = (stmts[0] as AST.STMT.DeclarationFunction).block;
+				const block1a: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent;
+				const block1b: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block;
+				const expected: RegExp = /does not return a value/;
+				assert.throws(() => block0.typeCheck(), expected);
+				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
+				block1a.typeCheck(); // assert does not throw
+				return assert.throws(() => block1b.typeCheck(), expected);
 			});
 		});
 	});

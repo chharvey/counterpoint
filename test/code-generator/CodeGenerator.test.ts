@@ -15,8 +15,8 @@ test.suite('CodeGenerator', () => {
 	let wasm: binaryen.ExpressionBuilder;
 
 	test.beforeEach(() => {
-		cg = new CodeGenerator();
-		wasm = cg.vm.mod.wasm;
+		cg   = new CodeGenerator();
+		wasm = cg.mod.wasm;
 	});
 
 
@@ -266,6 +266,23 @@ test.suite('CodeGenerator', () => {
 					cg.vm.Object.ctrPlusPlus(),
 					wasm.i32.const(3),
 				], cg.vm.heaptype.Function),
+			);
+		});
+
+		test.test('#codegenMaybe', () => {
+			assertEqualBins(
+				cg.codegenMaybe(),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					wasm.ref.null(cg.vm.reftypeNull.Value),
+				], cg.vm.heaptype.Maybe),
+			);
+			return assertEqualBins(
+				cg.codegenMaybe(genConst(cg, 42)),
+				wasm.struct.new([
+					cg.vm.Object.ctrPlusPlus(),
+					genConst(cg, 42),
+				], cg.vm.heaptype.Maybe),
 			);
 		});
 

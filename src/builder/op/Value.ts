@@ -29,19 +29,20 @@ import {
  * - RecordNew
  * - DictNew
  * - MapNew
+ * - MaybeNew
  * - TupleGet
  * - RecordGet
  * - CollectionDynamicGet
  * - Call
- * - Isset
  * - Unop
+ * - Instance
  * - Binop
  * - Phi
  * - OpFunction
  */
 export abstract class Value extends Opcode {
 	/**
-	 * @param type The type of the expression.
+	 * @param type The type of the Opcode expression.
 	 */
 	public constructor(
 		op_code: OpCode,

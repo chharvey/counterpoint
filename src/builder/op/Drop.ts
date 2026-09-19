@@ -28,7 +28,7 @@ export class Drop extends Instruction {
 	}
 
 	public override interpret(interp: Interpreter): void {
-		this.value.interpret(interp); // execute any side-effects
+		return interp.pushDrop(this.value.interpret(interp));
 	}
 
 	@memoizeMethod

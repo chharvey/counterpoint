@@ -32,7 +32,6 @@ KeywordValue ::=
 Word ::=
 	// operator
 		| "mut"
-		| "isset"
 		| "as"
 		| "is"
 		| "if"
@@ -83,7 +82,7 @@ PrimitiveLiteral ::=
 
 
 EntryType<Named, Optional>
-	::= <Named+>(Word & <Optional->":") <Optional+>"?:" Type;
+	::= <Named+>(Word & <Optional->":") <Optional+>("?" ":") Type;
 
 ItemsType ::=
 	|                                                                  ","?  EntryType<-Named><+Optional>#   ","?
@@ -139,7 +138,7 @@ TypeIntersection ::= (TypeIntersection "&")? TypeUnaryKeyword;
 TypeUnion        ::= (TypeUnion        "|")? TypeIntersection;
 
 TypeFunction
-	::= "\" "(" ParametersType? ")" "=>" "void";
+	::= "\" "(" ParametersType? ")" "=>" ("void" | Type);
 
 Type ::=
 	| TypeUnion
@@ -207,6 +206,7 @@ ExpressionUnit<Block, Break, Return> ::=
 ExpressionCompound<Block, Break, Return> ::=
 	| ExpressionUnit<?Block><?Break><?Return>
 	| ExpressionCompound<?Block><?Break><?Return> (
+		| "~?" | "~!"
 		| ("." | "?." | "!.") PropertyAccessor<?Break><?Return>
 		|  "."                GenericArguments? FunctionArguments<?Break><?Return>
 	)
@@ -217,13 +217,8 @@ ExpressionUnarySymbol<Block, Break, Return> ::=
 	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Block><?Break><?Return>
 ;
 
-ExpressionUnaryKeyword<Block, Break, Return> ::=
-	| ExpressionUnarySymbol<?Block><?Break><?Return>
-	| ("isset" | "!isset") Assignee<?Break><?Return>
-;
-
 ExpressionCast<Block, Break, Return> ::=
-	| (ExpressionCast<?Block><?Break><?Return> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block><?Break><?Return>
+	| (ExpressionCast<?Block><?Break><?Return> ("as" | "as?" | "as!"))? ExpressionUnarySymbol<?Block><?Break><?Return>
 	|  ExpressionCast<?Block><?Break><?Return>  "as"                    "<" Type ">"
 ;
 
@@ -250,7 +245,7 @@ ExpressionSwitch<Break, Return>
 	::= "switch" Expression<+Block><?Break><?Return> CaseSwitch<?Break><?Return>* "default" Expression<+Block><?Break><?Return>;
 
 ExpressionFunction
-	::= "\" "(" ParametersFunction? ")" CaptureClause<-Ref>? ":" "void" Block<-Break><+Return>;
+	::= "\" "(" ParametersFunction? ")" CaptureClause<-Ref>? ":" ("void" | Type) (Block<-Break><+Return> | "=>" Expression<+Block><-Break><+Return>);
 
 Expression<Block, Break, Return> ::=
 	| ExpressionDisjunctive<?Block><?Break><?Return>
@@ -296,8 +291,8 @@ StatementIteration<Return> ::=
 	& "do" Block<+Break><?Return> ";"
 ;
 
-StatementBreak  ::= ("break" | "skip") ";";
-StatementReturn ::=  "return"          ";";
+StatementBreak         ::= ("break" | "skip")                                      ";";
+StatementReturn<Break> ::=  "return"          Expression<+Block><?Break><+Return>? ";";
 
 Statement<Break, Return> ::=
 	| Declaration                   <?Break><?Return>
@@ -309,7 +304,7 @@ Statement<Break, Return> ::=
 	| StatementLoop                         <?Return>
 	| StatementIteration                    <?Return>
 	| <Break+> StatementBreak
-	| <Return+>StatementReturn
+	| <Return+>StatementReturn<?Break>
 ;
 
 
@@ -328,7 +323,7 @@ DeclarationVariable<Break, Return> ::=
 ;
 
 DeclarationFunction
-	::= "func" ("_" | IDENTIFIER) "(" ParametersFunction? ")" CaptureClause<+Ref>? ":" "void" Block<-Break><+Return>
+	::= "func" ("_" | IDENTIFIER) "(" ParametersFunction? ")" CaptureClause<+Ref>? ":" ("void" | Type) (Block<-Break><+Return> | "=>" Expression<+Block><-Break><+Return> ";")
 
 Declaration<Break, Return> ::=
 	| DeclarationType

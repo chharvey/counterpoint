@@ -20,15 +20,17 @@ import {SymbolSchemaFunc} from '../../index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import {Validator} from '../../Validator.ts';
 import {check_unique_param_keys} from '../utils-private.ts';
+import type {Functionlike} from '../Functionlike.ts';
 import type {ParameterFunction} from '../ParameterFunction.ts';
 import type {Capture} from '../Capture.ts';
 import type {Block} from '../Block.ts';
+import type * as AST_TYPE from '../type/index.ts';
 import * as EXPR from '../expression/index.ts';
 import {Statement} from './Statement.ts';
 
 
 
-export class DeclarationFunction extends Statement {
+export class DeclarationFunction extends Statement implements Functionlike {
 	public static override fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): DeclarationFunction {
 		const statement: Statement = Statement.fromSource(src, config);
 		assert_instanceof(statement, DeclarationFunction);
@@ -44,9 +46,10 @@ export class DeclarationFunction extends Statement {
 		private readonly identifier: Serializable | null,
 		public  readonly parameters: readonly ParameterFunction[],
 		captures: readonly Capture[],
+		public  readonly returnType: AST_TYPE.Type | null,
 		public  readonly block:      Block,
 	) {
-		super(start_node, {}, [...parameters, block]);
+		super(start_node, {}, [...parameters, ...captures, ...(returnType ? [returnType] : []), block]);
 		if (this.identifier) {
 			this.id = Validator.cookTokenIdentifier(this.identifier.source);
 		}
@@ -55,7 +58,7 @@ export class DeclarationFunction extends Statement {
 
 	@memoizeGetter
 	public override get hasBottomType(): boolean {
-		throw new Error('`DeclarationFunction#hasBottomType` not yet supported.');
+		return false; // evaluation of a function declaration will never throw
 	}
 
 	public hoist(): void {

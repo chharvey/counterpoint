@@ -1,18 +1,21 @@
 export enum Operator {
 	DOT,
-	DOT_MAY,
-	DOT_RES,
-	ORNULL,
-	OREXCP,
+	DOT_MAYBE,
+	DOT_RESULT,
+	MAYBE,
+	RESULT,
 	MUTABLE,
+	UN_MAYBE,
+	UN_RESULT,
 	NOT,
 	EMP,
 	AFF,
 	NEG,
-	ISSET,
 	CAST,
-	CAST_MAY,
-	CAST_RES,
+	CAST_MAYBE,
+	CAST_RESULT,
+	IS,
+	ISNT,
 	EXP,
 	MUL,
 	DIV,
@@ -22,8 +25,6 @@ export enum Operator {
 	GT,
 	LE,
 	GE,
-	IS,
-	ISNT,
 	ID,
 	EQ,
 	AND,
@@ -33,33 +34,36 @@ export enum Operator {
 
 export type ValidTypeAccessOperator = (
 	| Operator.DOT
-	| Operator.DOT_MAY
+	| Operator.DOT_MAYBE
 );
 
 export type ValidAccessOperator = (
 	| Operator.DOT
-	| Operator.DOT_MAY
-	| Operator.DOT_RES
+	| Operator.DOT_MAYBE
+	| Operator.DOT_RESULT
 );
 
 export type ValidTypeOperator = (
-	| Operator.ORNULL
-	| Operator.OREXCP
+	| Operator.MAYBE
+	| Operator.RESULT
 	| Operator.MUTABLE
 	| Operator.AND
 	| Operator.OR
 );
 
 export type ValidOperatorUnary = (
+	| Operator.UN_MAYBE
+	| Operator.UN_RESULT
 	| Operator.NOT
 	| Operator.EMP
 	| Operator.NEG
 );
 
 export type ValidOperatorCast = (
+	| Operator.IS
 	| Operator.CAST
-	| Operator.CAST_MAY
-	| Operator.CAST_RES
+	| Operator.CAST_MAYBE
+	| Operator.CAST_RESULT
 );
 
 export type ValidOperatorArithmetic = (

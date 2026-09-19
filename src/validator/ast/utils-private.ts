@@ -16,6 +16,10 @@ import {
 	TYPE,
 } from '../../typer/index.ts';
 import {
+	IntrinsicName,
+	INTRINSICS,
+} from '../../parser/index.ts';
+import {
 	Operator,
 	type ValidTypeAccessOperator,
 	type ValidAccessOperator,
@@ -73,50 +77,67 @@ export function check_unique_param_keys(params: readonly ParameterFunction[]): v
 
 
 
-export enum ValidIntrinsicName {
-	OBJECT = 'Object',
-}
-
-export enum ValidFunctionName {
-	INTEGER = 'Integer',
-	NATURAL = 'Natural',
-	FLOAT   = 'Float',
-	STRING  = 'String',
-	LIST    = 'List',
-	DICT    = 'Dict',
-	SET     = 'Set',
-	MAP     = 'Map',
-}
-
-export type ValidGenericFunctionName = (
-	| ValidFunctionName.LIST
-	| ValidFunctionName.DICT
-	| ValidFunctionName.SET
-	| ValidFunctionName.MAP
-);
-
-const FUNCTION_NAMES: readonly string[] = Object.values(ValidFunctionName);
-
-export const GENERIC_FUNCTION_NAMES: readonly string[] = [
-	ValidFunctionName.LIST,
-	ValidFunctionName.DICT,
-	ValidFunctionName.SET,
-	ValidFunctionName.MAP,
-];
-
-export function is_valid_intrinsic_name(source: string): source is ValidIntrinsicName {
-	return Object.values<string>(ValidIntrinsicName).includes(source);
-}
-
-export function check_valid_function_name(source: string): asserts source is ValidFunctionName {
-	if (!FUNCTION_NAMES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ FUNCTION_NAMES.join(' | ') }\`.`);
+export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
+	if (!(INTRINSICS as readonly string[]).includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ INTRINSICS.join(' | ') }\`.`);
 	}
 }
 
-export function check_valid_generic_function_name(source: string): asserts source is ValidGenericFunctionName {
-	if (!GENERIC_FUNCTION_NAMES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ GENERIC_FUNCTION_NAMES.join(' | ') }\`.`);
+/** Callable type interfaces that have generic parameters. */
+export type CallableInterfaceName = (
+	| IntrinsicName.LIST
+	| IntrinsicName.DICT
+	| IntrinsicName.SET
+	| IntrinsicName.MAP
+	| IntrinsicName.MAYBE
+	| IntrinsicName.NONE
+	| IntrinsicName.SOME
+);
+const CALLABLE_INTERFACES: readonly string[] = [
+	IntrinsicName.LIST,
+	IntrinsicName.DICT,
+	IntrinsicName.SET,
+	IntrinsicName.MAP,
+	IntrinsicName.MAYBE,
+	IntrinsicName.NONE,
+	IntrinsicName.SOME,
+];
+export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
+	if (!CALLABLE_INTERFACES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ CALLABLE_INTERFACES.join(' | ') }\`.`);
+	}
+}
+
+/** Callable classes that have value parameters. */
+export type CallableClassName = (
+	| IntrinsicName.BOOLEAN
+	| IntrinsicName.INTEGER
+	| IntrinsicName.NATURAL
+	| IntrinsicName.FLOAT
+	| IntrinsicName.STRING
+	| IntrinsicName.LIST
+	| IntrinsicName.DICT
+	| IntrinsicName.SET
+	| IntrinsicName.MAP
+	| IntrinsicName.NONE
+	| IntrinsicName.SOME
+);
+const CALLABLE_CLASSES: readonly string[] = [
+	IntrinsicName.BOOLEAN,
+	IntrinsicName.INTEGER,
+	IntrinsicName.NATURAL,
+	IntrinsicName.FLOAT,
+	IntrinsicName.STRING,
+	IntrinsicName.LIST,
+	IntrinsicName.DICT,
+	IntrinsicName.SET,
+	IntrinsicName.MAP,
+	IntrinsicName.NONE,
+	IntrinsicName.SOME,
+];
+export function validate_callable_class_name(source: string): asserts source is CallableClassName {
+	if (!CALLABLE_CLASSES.includes(source)) {
+		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ CALLABLE_CLASSES.join(' | ') }\`.`);
 	}
 }
 
@@ -136,10 +157,10 @@ type GenericArgsSpec = readonly TYPE.Type[]; // TODO: intersect with `Readonly<R
 type GenericParameterSchema = (
 	& ({readonly positional: true}) // TODO: union with `{readonly name: string}` once we have named arguments
 	& {
-		readonly covariant?:     'never' | 'always' | 'when_mutable',
-		readonly contravariant?: 'never' | 'always' | 'when_mutable',
-		readonly constraint?:    {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
-		readonly default?:       (generic_params: GenericArgsSpec) => TYPE.Type,
+		readonly readonlyVariance?: 'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to 'invariant'
+		readonly mutableVariance?:  'bivariant' | 'covariant' | 'contravariant' | 'invariant', // defaults to the value of `readonlyVariance` if given, else 'invariant'
+		readonly constraint?:       {readonly direction: 'narrows' | 'widens', readonly type: (generic_params: GenericArgsSpec) => TYPE.Type},
+		readonly default?:          (generic_params: GenericArgsSpec) => TYPE.Type,
 	}
 );
 
@@ -171,6 +192,9 @@ export type ConstructorSchema = {
 
 /**
  * ```cpl
+ * declare class data Boolean {
+ * 	new (x: anything);
+ * }
  * declare class data Integer {
  * 	new (x: int | nat | float);
  * }
@@ -183,7 +207,7 @@ export type ConstructorSchema = {
  * declare class data String {
  * 	new (x: anything);
  * }
- * declare class List<T> {
+ * declare class List<out(in) T> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -192,7 +216,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Dict<T> {
+ * declare class Dict<out(in) T> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((sym, T),));
@@ -206,7 +230,7 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(sym, T)>);
  * 	new (map:   Map.<sym, T>);
  * }
- * declare class Set<T> {
+ * declare class Set<out(in) T> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  (T,));
@@ -215,7 +239,7 @@ export type ConstructorSchema = {
  * 	new (list:  List.<T>);
  * 	new ('set': Set.<T>);
  * }
- * declare class Map<K, V> {
+ * declare class Map<out(in) K, out(in) V> extends Object {
  * 	new ();
  * 	new (tup0:  ());
  * 	new (tup1:  ((K, V),));
@@ -225,31 +249,43 @@ export type ConstructorSchema = {
  * 	new ('set': Set.<(K, V)>);
  * 	new (map:   Map.<K, V>);
  * }
+ * declare abstract class Maybe<out T> extends Object {}
+ * declare class None<out T> extends Maybe.<T> {
+ * 	new ();
+ * }
+ * declare class Some<out T> extends Maybe.<T> {
+ * 	new (value: T);
+ * }
  * ```
  */
-export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
-	[ValidFunctionName.INTEGER, {
+export const CLASS_API = new Map<CallableInterfaceName | CallableClassName, ConstructorSchema>([
+	[IntrinsicName.BOOLEAN, {
+		genericParams: [],
+		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
+		returnType:    () => TYPE.BOOL,
+	}],
+	[IntrinsicName.INTEGER, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.INT,
 	}],
-	[ValidFunctionName.NATURAL, {
+	[IntrinsicName.NATURAL, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.NAT,
 	}],
-	[ValidFunctionName.FLOAT, {
+	[IntrinsicName.FLOAT, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.NUMBER}]],
 		returnType:    () => TYPE.FLOAT,
 	}],
-	[ValidFunctionName.STRING, {
+	[IntrinsicName.STRING, {
 		genericParams: [],
 		overloads:     [[{positional: true, type: () => TYPE.ANYTHING}]],
 		returnType:    () => TYPE.STR,
 	}],
-	[ValidFunctionName.LIST, {
-		genericParams: [{positional: true}],
+	[IntrinsicName.LIST, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
@@ -257,8 +293,8 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		],
 		returnType: (generic_params) => new TYPE.List(generic_params[0]),
 	}],
-	[ValidFunctionName.DICT, {
-		genericParams: [{positional: true}],
+	[IntrinsicName.DICT, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([TYPE.SYM, generic_params[0]]))}],
@@ -268,8 +304,8 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		],
 		returnType: (generic_params) => new TYPE.Dict(generic_params[0]),
 	}],
-	[ValidFunctionName.SET, {
-		genericParams: [{positional: true}],
+	[IntrinsicName.SET, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'}],
 		overloads:     [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(generic_params[0])}],
@@ -277,15 +313,33 @@ export const CLASS_API = new Map<ValidFunctionName, ConstructorSchema>([
 		],
 		returnType: (generic_params) => new TYPE.Set(generic_params[0]),
 	}],
-	[ValidFunctionName.MAP, {
-		genericParams: [{positional: true}, {positional: true, default: (generic_params) => generic_params[0]}],
-		overloads:     [
+	[IntrinsicName.MAP, {
+		genericParams: [
+			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant'},
+			{positional: true, readonlyVariance: 'covariant', mutableVariance: 'invariant', default: (generic_params) => generic_params[0]},
+		],
+		overloads: [
 			[],
 			[{positional: true, type: (generic_params) => new TYPE.List(TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
 			[{positional: true, type: (generic_params) => new TYPE.Set (TYPE.Tuple.fromTypes([generic_params[0], generic_params[1]]))}],
 			[{positional: true, type: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1])}],
 		],
 		returnType: (generic_params) => new TYPE.Map(generic_params[0], generic_params[1]),
+	}],
+	[IntrinsicName.MAYBE, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
+		overloads:     [],
+		returnType:    (generic_params) => new TYPE.Maybe(generic_params[0]),
+	}],
+	[IntrinsicName.NONE, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
+		overloads:     [[]],
+		returnType:    (generic_params) => new TYPE.None(generic_params[0]),
+	}],
+	[IntrinsicName.SOME, {
+		genericParams: [{positional: true, readonlyVariance: 'covariant'}],
+		overloads:     [[{positional: true, type: (generic_params) => generic_params[0]}]],
+		returnType:    (generic_params) => new TYPE.Some(generic_params[0]),
 	}],
 ]);
 
@@ -307,12 +361,13 @@ function decombine(t: TYPE.Type): TYPE.Type[] {
 }
 
 export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | EXPR.Access, is_writing: boolean = false): EntryType {
-	const accessor_maybe: boolean = access.kind === Operator.DOT_MAY;
+	const accessor_maybe: boolean = access.kind === Operator.DOT_MAYBE;
 	if (base_type.isBottomType) {
 		return {type: TYPE.NOTHING, optional: accessor_maybe};
 	}
-	if (TYPE.NULL.isSubtypeOf(base_type)) {
-		return {type: get_entry_info(base_type.subtract(TYPE.NULL), access, is_writing).type.union(TYPE.NULL), optional: true};
+	if (base_type instanceof TYPE.Maybe && accessor_maybe) {
+		const info: EntryType = get_entry_info(base_type.typearg, access, is_writing);
+		return {...info, type: new TYPE.Maybe(info.type)};
 	}
 	if (base_type instanceof TYPE.Combinable) {
 		const constituents: readonly TYPE.Type[] = decombine(base_type);
@@ -427,30 +482,20 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 
 
 
-export function validate_access_kind(access_kind: ValidTypeAccessOperator | ValidAccessOperator, is_entry_optional: boolean, access: AST_TYPE.Access | EXPR.Access): void {
+export function access_type(
+	access_kind: ValidTypeAccessOperator | ValidAccessOperator,
+	base_type:   TYPE.Type,
+	entry:       EntryType,
+	access:      AST_TYPE.Access | EXPR.Access,
+): TYPE.Type {
 	if (
-		access_kind === Operator.DOT     &&  is_entry_optional ||
-		access_kind === Operator.DOT_MAY && !is_entry_optional
+		access_kind === Operator.DOT     && entry.optional ||
+		access_kind === Operator.DOT_MAYBE && !entry.optional && !(base_type instanceof TYPE.Maybe)
 	) {
 		throw new TypeErrorInvalidOperation(access);
 	}
-	if (access_kind === Operator.DOT_RES) {
-		assert.fail('Operator `!.` not yet supported.');
+	if (access_kind === Operator.DOT_RESULT) {
+		throw new Error('Operator `!.` not yet supported.');
 	}
-}
-
-
-
-export function update_accessed_type(type: TYPE.Type, access_kind: ValidTypeAccessOperator | ValidAccessOperator): TYPE.Type {
-	switch (access_kind) {
-		case Operator.DOT: {
-			return type;
-		}
-		case Operator.DOT_MAY: {
-			return type.union(TYPE.NULL);
-		}
-		case Operator.DOT_RES: {
-			assert.fail('Operator `!.` not yet supported.');
-		}
-	}
+	return entry.optional ? new TYPE.Maybe(entry.type) : entry.type;
 }

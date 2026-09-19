@@ -25,20 +25,21 @@ export class Decl extends Instruction {
 	private readonly targetType: TYPE.Type;
 	private readonly value?:     Value;
 
-	public constructor(target: SymbolSchemaVar, value?: Value);
+	public constructor(target: SymbolSchemaVar, typ: TYPE.Type, value?: Value);
 	public constructor(target: Temp);
 	public constructor(
 		private readonly target: SymbolSchemaVar | Temp,
+		typ?:   TYPE.Type,
 		value?: Value,
 	) {
 		super(OpCode.DECL);
-		this.targetType = this.target instanceof SymbolSchemaVar ? this.target.irType : this.target.type;
-		if (target instanceof SymbolSchemaVar) {
+		this.targetType = this.target instanceof SymbolSchemaVar ? typ! : this.target.type;
+		if (this.target instanceof SymbolSchemaVar) {
 			if (value) {
 				this.value = value;
 			}
-		} else if (target.value) {
-			this.value = target.value;
+		} else if (this.target.value) {
+			this.value = this.target.value;
 		}
 	}
 
@@ -53,7 +54,7 @@ export class Decl extends Instruction {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		// Use 'declared' only for declared, unset temps. Enforces setting before getting.
-		// Uninitialized variables can use 'set' becuase they can be get before setting (in which case CPL `null` will be returned).
+		// Uninitialized variables can use 'set' becuase they always have a `Maybe` value.
 		builder.setLocalStatus(this.target, (this.target instanceof SymbolSchemaVar || this.value) ? 'set' : 'declared');
 		this.value?.validate(builder);
 		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
@@ -61,6 +62,7 @@ export class Decl extends Instruction {
 
 	public override interpret(interp: Interpreter): void {
 		if (this.target instanceof SymbolSchemaVar) {
+			// @ts-expect-error --- FIXME: function params do not have an initial value
 			interp.setLocalValue(this.target, this.value?.interpret(interp));
 		} else if (this.target.value) {
 			interp.setLocalValue(this.target, this.target.value.interpret(interp));

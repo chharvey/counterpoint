@@ -1,5 +1,6 @@
 import * as assert from 'node:assert';
 import * as test from 'node:test';
+import * as xjs from 'extrajs';
 import {
 	assert_instanceof,
 	type EntryType,
@@ -236,20 +237,20 @@ test.suite('Type', () => {
 				u1,
 				u2,
 				u1.intersect(u2),
-			].map((typ) => typ.values), [
+			].map((typ) => typ.toString()), [
 				[4.2, 4.3, 4.4],
 				[4.3, 4.4, 4.5],
 				[4.3, 4.4],
-			].map((ns) => new Set<VALUE.Float>(ns.map((n) => new VALUE.Float(n)))), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
+			].map((ns) => ns.join(' | ')), '(4.2 | 4.3 | 4.4) & (4.3 | 4.4 | 4.5) == (4.3 | 4.4)');
 			assert.deepStrictEqual([
 				u3,
 				u4,
 				u3.union(u4),
-			].map((typ) => typ.values), [
+			].map((typ) => typ.toString()), [
 				[42n, 43n, 44n],
 				[43n, 44n, 45n],
 				[42n, 43n, 44n, 45n],
-			].map((ns) => new Set<VALUE.Integer>(ns.map((n) => new VALUE.Integer(n)))), '(42 | 43 | 44) | (43 | 44 | 45) == (42 | 43 | 44 | 45)');
+			].map((ns) => ns.join(' | ')), '(42 | 43 | 44) | (43 | 44 | 45) == (42 | 43 | 44 | 45)');
 		});
 	});
 
@@ -393,13 +394,22 @@ test.suite('Type', () => {
 
 
 	test.suite('#subtract', () => {
-		test.test('4-1 | `A - B == A  <->  A & B == nothing`', () => {
+		test.test('1-9 | `T  - nothing  == T`', () => {
+			xjs.Array.forEachAggregated(builtin_types, (t) => assert.strictEqual(t.subtract(TYPE.NOTHING), t, t.toString()));
+		});
+		test.test('1-a | `T  - anything == nothing`', () => {
+			xjs.Array.forEachAggregated(builtin_types, (t) => assert.strictEqual(t.subtract(TYPE.ANYTHING), TYPE.NOTHING, t.toString()));
+		});
+		test.test('1-b | `nothing - T == nothing`', () => {
+			xjs.Array.forEachAggregated(builtin_types, (t) => assert.strictEqual(TYPE.NOTHING.subtract(t), TYPE.NOTHING, t.toString()));
+		});
+		test.test('4-1 | `A - B == A  <->  A /= B`', () => {
 			predicate2(builtin_types, (a, b) => {
-				if (a.intersect(b).isBottomType) {
-					assert.ok(a.subtract(b).equals(a), `forward: ${ a }, ${ b }`);
-				}
 				if (a.subtract(b).equals(a)) {
-					assert.ok(a.intersect(b).isBottomType, `backward: ${ a }, ${ b }`);
+					assert.ok(a.isDisjointWith(b), `forward: ${ a }, ${ b }`);
+				}
+				if (a.isDisjointWith(b)) {
+					assert.ok(a.subtract(b).equals(a), `backward: ${ a }, ${ b }`);
 				}
 			});
 		});
@@ -409,26 +419,38 @@ test.suite('Type', () => {
 					assert.ok(a.subtract(b).isBottomType, `forward: ${ a }, ${ b }`);
 				}
 				if (a.subtract(b).isBottomType) {
-					assert.ok(a.isSubtypeOf(b), `forward: ${ a }, ${ b }`);
+					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`);
 				}
 			});
 		});
-		test.test('4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing`', () => {
+		test.test('4-3 | `A <: B - C  <->  A <: B  &&  A /= C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b.subtract(c))) {
-					assert.ok(a.isSubtypeOf(b) && a.intersect(c).isBottomType, `forward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(b) && a.isDisjointWith(c), `forward: ${ a }, ${ b }, ${ c }`);
 				}
-				if (a.isSubtypeOf(b) && a.intersect(c).isBottomType) {
-					assert.ok(a.isSubtypeOf(b.subtract(c)), `forward: ${ a }, ${ b }, ${ c }`);
+				if (a.isSubtypeOf(b) && a.isDisjointWith(c)) {
+					assert.ok(a.isSubtypeOf(b.subtract(c)), `backward: ${ a }, ${ b }, ${ c }`);
 				}
 			});
 		});
-		test.test('4-4 | `(A \| B) - C == (A - C) \| (B - C)`', () => {
+		test.test('4-4 | `A /= B - C  <--  A <: C  ||  A /= B`', () => {
+			predicate3(builtin_types, (a, b, c) => {
+				if (a.isSubtypeOf(c) || a.isDisjointWith(b)) {
+					assert.ok(a.isDisjointWith(b.subtract(c)), `backward: ${ a }, ${ b }, ${ c }`);
+				}
+			});
+			const [t1, t2, t3, t4, t5] = [1n, 2n, 3n, 4n, 5n].map((n) => new TYPE.Unit(new VALUE.Integer(n)));
+			const b: TYPE.Type = TYPE.Union.all(t2, t3, t4);
+			const c: TYPE.Type = TYPE.Union.all(t4, t5);
+			const a: TYPE.Type = t1.union(t4);
+			return assert.ok(a.isDisjointWith(b.subtract(c)) && !a.isSubtypeOf(c) && !a.isDisjointWith(b), 'forward direction can be false.');
+		});
+		test.test('4-5 | `(A \| B) - C == (A - C) \| (B - C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.union(b).subtract(c).equals(a.subtract(c).union(b.subtract(c))), `${ a }, ${ b }, ${ c }`);
 			});
 		});
-		test.test('4-5 | `A - (B \| C) == (A - B)  & (A - C)`', () => {
+		test.test('4-6 | `A - (B \| C) == (A - B)  & (A - C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				assert.ok(a.subtract(b.union(c)).equals(a.subtract(b).intersect(a.subtract(c))), `${ a }, ${ b }, ${ c }`);
 			});
@@ -877,6 +899,20 @@ test.suite('Type', () => {
 			});
 		});
 
+		test.suite('Maybe', () => {
+			test.test('is a subtype but not a supertype of `Object`.', () => {
+				const maybe = new TYPE.Maybe(TYPE.STR);
+				assert.ok(maybe.isSubtypeOf(TYPE.OBJ), 'Maybe[str] <: Object');
+				assert.ok(!TYPE.OBJ.isSubtypeOf(maybe), 'Object !<: Maybe[str]');
+			});
+			test.test('always covariant: `A <: B --> Maybe[A] <: Maybe[B]`.', () => {
+				const sub = new TYPE.Maybe(TYPE.INT);
+				const sup = new TYPE.Maybe(TYPE.INT.union(TYPE.FLOAT));
+				assert.ok(sub.isSubtypeOf(sup), 'Maybe[int] <: Maybe[int | float]');
+				assert.ok(!sup.isSubtypeOf(sub), 'Maybe[int | float] !<: Maybe[int]');
+			});
+		});
+
 		test.suite('TypeFunction', () => {
 			test.test('is a subtype but not a supertype of `anything` and `Object`.', () => {
 				const fn = new TYPE.Function();
@@ -934,13 +970,16 @@ test.suite('Type', () => {
 
 
 	test.suite('#equals', () => {
-		test.test('bool == false | true', () => {
-			assert.ok(TYPE.BOOL.equals(TYPE.FALSE.union(TYPE.TRUE)));
+		test.test('BOOL is equal to the union of its units.', () => {
+			assert.ok(TYPE.BOOL.equals(TYPE.FALSE.union(TYPE.TRUE)), 'bool == false | true');
+			assert.ok(TYPE.BOOL.equals(TYPE.TRUE.union(TYPE.FALSE)), 'bool == true | false');
 		});
 		test.test('0.0 != -0.0', () => {
-			assert.ok(!VALUE.FLOAT_0.identical(VALUE.FLOAT_N0), 'the values 0.0 and -0.0 are not identical (by value identity `===`)');
-			assert.ok(VALUE.FLOAT_0.equal(VALUE.FLOAT_N0),      'the values 0.0 and -0.0 are equal (by value equality `==`)');
-			assert.ok(!VALUE.FLOAT_0.toType().equals(VALUE.FLOAT_N0.toType()));
+			const VALUE_FLOAT_0  = new VALUE.Float();
+			const VALUE_FLOAT_N0 = new VALUE.Float(-0.0);
+			assert.ok(!VALUE_FLOAT_0.identical(VALUE_FLOAT_N0), 'the values 0.0 and -0.0 are not identical (by value identity `===`)');
+			assert.ok(VALUE_FLOAT_0.equal(VALUE_FLOAT_N0),      'the values 0.0 and -0.0 are equal (by value equality `==`)');
+			assert.ok(!VALUE_FLOAT_0.toType().equals(VALUE_FLOAT_N0.toType()));
 		});
 		test.test('built-in types do not equal unit types of their canonical values.', () => {
 			assert.ok(!TYPE.BOOL  .equals(TYPE.FALSE),                       'bool  != false');
@@ -954,67 +993,6 @@ test.suite('Type', () => {
 
 			assert.ok(!TYPE.INT  .equals(typeUnit(0n) .union(typeUnit(1n))),   'int   != 0   | 1');
 			assert.ok(!TYPE.FLOAT.equals(typeUnit(0.0).union(typeUnit(-0.0))), 'float != 0.0 | -0.0');
-		});
-	});
-
-
-	test.suite('#mutableOf', () => {
-		const examples: readonly TYPE.Type[] = [
-			new TYPE.List(TYPE.BOOL),
-			new TYPE.Dict(TYPE.BOOL),
-			new TYPE.Set(TYPE.NULL),
-			new TYPE.Map(TYPE.INT, TYPE.FLOAT),
-		];
-		test.test('mutable types are subtypes of their immutable counterparts.', () => {
-			[
-				...builtin_types,
-				...examples,
-			].forEach((t) => {
-				assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`);
-			});
-		});
-		test.test('non-constant mutable types are not equal to their immutable counterparts.', () => {
-			examples.forEach((t) => {
-				assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`);
-			});
-		});
-		test.test('non-constant immutable types are not subtypes of their mutable counterparts.', () => {
-			examples.forEach((t) => {
-				assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`);
-			});
-		});
-		test.suite('disributes over binary operations.', () => {
-			const types: TYPE.Type[] = [
-				...builtin_types,
-				...examples,
-			];
-			test.test('mut (A - B) == mut A - mut B', () => {
-				predicate2(types, (a, b) => {
-					const difference: TYPE.Type = a.subtract(b).mutableOf();
-					assert.ok(difference.equals(a.mutableOf().subtract(b.mutableOf())), `${ a }, ${ b }`);
-					if (difference instanceof TYPE.Difference) {
-						assert.ok(!difference.isMutable, 'Difference#isMutable === false');
-					}
-				});
-			});
-			test.test('mut (A & B) == mut A & mut B', () => {
-				predicate2(types, (a, b) => {
-					const intersection: TYPE.Type = a.intersect(b).mutableOf();
-					assert.ok(intersection.equals(a.mutableOf().intersect(b.mutableOf())), `${ a }, ${ b }`);
-					if (intersection instanceof TYPE.Intersection) {
-						assert.ok(!intersection.isMutable, 'Intersection#isMutable === false');
-					}
-				});
-			});
-			test.test('mut (A | B) == mut A | mut B', () => {
-				predicate2(types, (a, b) => {
-					const union: TYPE.Type = a.union(b).mutableOf();
-					assert.ok(union.equals(a.mutableOf().union(b.mutableOf())), `${ a }, ${ b }`);
-					if (union instanceof TYPE.Union) {
-						assert.ok(!union.isMutable, 'Union#isMutable === false');
-					}
-				});
-			});
 		});
 	});
 
@@ -1072,4 +1050,34 @@ test.suite('Type', () => {
 		});
 	});
 	/* eslint-enable no-useless-escape */
+
+
+	test.suite('ReferenceType#mutableOf', () => {
+		const without_mutability: readonly TYPE.ReferenceType[] = [
+			TYPE.OBJ,
+			...builtin_types.map((t) => new TYPE.Maybe(t)),
+			new TYPE.Function(),
+		];
+		const with_mutability: readonly TYPE.ReferenceType[] = [
+			new TYPE.List(TYPE.BOOL),
+			new TYPE.Dict(TYPE.INT),
+			new TYPE.Set(TYPE.NAT),
+			new TYPE.Map(TYPE.FLOAT, TYPE.STR),
+		];
+		test.test('mutable types are subtypes of their immutable counterparts.', () => {
+			[
+				...without_mutability,
+				...with_mutability,
+			].forEach((t) => assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`));
+		});
+		test.test('mutable types with no mutability are equal to their immutable counterparts.', () => {
+			without_mutability.forEach((t) => assert.ok(t.mutableOf().equals(t), `mut ${ t } == ${ t }`));
+		});
+		test.test('mutable types with mutability are not equal to their immutable counterparts.', () => {
+			with_mutability.forEach((t) => assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`));
+		});
+		test.test('immutable counterparts of types with mutability are not subtypes of their mutable types.', () => {
+			with_mutability.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`));
+		});
+	});
 });
