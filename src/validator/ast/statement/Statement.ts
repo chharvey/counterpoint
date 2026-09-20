@@ -7,6 +7,52 @@ import {
 import {AstNode} from '../AstNode.ts';
 import type {Buildable} from '../Buildable.ts';
 import {Block} from '../Block.ts';
+import {
+	DeclarationType,
+	DeclarationVariable,
+	StatementExpression,
+	StatementClaim,
+	StatementReassignment,
+	StatementConditional,
+	StatementLoop,
+	StatementIteration,
+	StatementBreak,
+} from './index.ts';
+
+
+
+interface StmtVisitorMethods<T> {
+	visitDeclType           (stmt: DeclarationType):       T;
+	visitDeclVariable       (stmt: DeclarationVariable):   T;
+	visitStmtExpr           (stmt: StatementExpression):   T;
+	visitStmtClaim          (stmt: StatementClaim):        T;
+	visitStmtReassignment   (stmt: StatementReassignment): T;
+	visitStmtConditional    (stmt: StatementConditional):  T;
+	visitStatementLoop      (stmt: StatementLoop):         T;
+	visitStatementIteration (stmt: StatementIteration):    T;
+	visitStatementBreak     (stmt: StatementBreak):        T;
+
+	defaultVisit(stmt: Statement): T;
+}
+export class StmtVisitor<T> {
+	public constructor(private readonly methods: Partial<StmtVisitorMethods<T>>) {}
+
+	/** @final */
+	public visit(stmt: Statement): T {
+		switch (stmt.constructor) {
+			case DeclarationType:       { return this.methods.visitDeclType           ?.(stmt as DeclarationType)       ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			case DeclarationVariable:   { return this.methods.visitDeclVariable       ?.(stmt as DeclarationVariable)   ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			case StatementExpression:   { return this.methods.visitStmtExpr           ?.(stmt as StatementExpression)   ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+			case StatementClaim:        { return this.methods.visitStmtClaim          ?.(stmt as StatementClaim)        ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			case StatementReassignment: { return this.methods.visitStmtReassignment   ?.(stmt as StatementReassignment) ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			case StatementConditional:  { return this.methods.visitStmtConditional    ?.(stmt as StatementConditional)  ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			case StatementLoop:         { return this.methods.visitStatementLoop      ?.(stmt as StatementLoop)         ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			case StatementIteration:    { return this.methods.visitStatementIteration ?.(stmt as StatementIteration)    ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			case StatementBreak:        { return this.methods.visitStatementBreak     ?.(stmt as StatementBreak)        ?? this.methods.defaultVisit?.(stmt) ?? assert.fail('Missing implementation.'); }
+			default:                    { return                                                                           this.methods.defaultVisit?.(stmt) ?? assert.fail('Unexpected subclass.'); }
+		}
+	}
+}
 
 
 
