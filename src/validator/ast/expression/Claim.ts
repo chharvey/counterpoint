@@ -28,10 +28,11 @@ export class Claim extends Expression {
 
 	public constructor(
 		start_node: SyntaxNodeType<'expression_cast'>,
-		public readonly operand:      Expression,
-		public readonly claimed_type: AST_TYPE.Type,
+		private readonly force:        boolean,
+		public  readonly operand:      Expression,
+		public  readonly claimed_type: AST_TYPE.Type,
 	) {
-		super(start_node, {}, [operand, claimed_type]);
+		super(start_node, {force}, [operand, claimed_type]);
 	}
 
 	@memoizeMethod

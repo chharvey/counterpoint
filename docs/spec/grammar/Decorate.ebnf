@@ -482,12 +482,12 @@ Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as?" E
 		Decorate(ExpressionUnarySymbol<?Block><?Break>)
 	);
 Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticExpressionClaim
-	:= (SemanticExpressionClaim
+	:= (SemanticExpressionClaim[force=false]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(Type)
 	);
 Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" "<" Type ">") -> SemanticExpressionOperation
-	:= (SemanticExpressionClaim
+	:= (SemanticExpressionClaim[force=true]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(Type)
 	);
