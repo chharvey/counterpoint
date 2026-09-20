@@ -58,9 +58,9 @@ export class Decorator {
 	]);
 
 	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
-		[Keyword.AS,     Operator.CAST],
-		[Keyword.AS_MAY, Operator.CAST_MAYBE],
-		[Keyword.AS_RES, Operator.CAST_RESULT],
+		[Keyword.AS,      Operator.CAST],
+		[Keyword.AS_QUST, Operator.CAST_MAYBE],
+		[Keyword.AS_BANG, Operator.CAST_RESULT],
 	]);
 
 	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
