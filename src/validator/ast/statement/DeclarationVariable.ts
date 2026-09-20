@@ -108,7 +108,7 @@ export class DeclarationVariable extends Statement {
 	}
 
 	@memoizeGetter
-	public override get hasBottomType(): boolean {
+	public override get completion(): boolean {
 		return this.assigned?.type().isBottomType ?? false;
 	}
 

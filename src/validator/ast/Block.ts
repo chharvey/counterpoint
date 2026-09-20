@@ -77,9 +77,10 @@ export class Block extends AstNode implements Buildable {
 		return v;
 	}
 
+	/** The kind of completion of evaluation of this block. */
 	@memoizeGetter
-	public get hasBottomType(): boolean {
-		return this.children.some((c) => c.hasBottomType);
+	public get completion(): boolean {
+		return this.children.some((c) => c.completion);
 	}
 
 	public override varCheck(): void {

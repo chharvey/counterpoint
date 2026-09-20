@@ -36,7 +36,7 @@ export class ExpressionBlock extends Expression {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		if (this.block.hasBottomType) {
+		if (this.block.completion) {
 			return TYPE.NOTHING;
 		}
 		assert.ok(this.block.children.length, 'Expected Block to contain at least 1 statement.');

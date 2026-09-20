@@ -42,8 +42,8 @@ export class StatementLoop extends StatementBreakable {
 
 
 	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.condition.type().isBottomType || this.block.hasBottomType;
+	public override get completion(): boolean {
+		return this.condition.type().isBottomType || this.block.completion;
 	}
 
 	public override varCheck(): void {

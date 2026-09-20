@@ -38,8 +38,8 @@ export class StatementConditional extends Statement {
 	}
 
 	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.condition.type().isBottomType || this.consequent.hasBottomType || (this.alternative?.hasBottomType ?? false);
+	public override get completion(): boolean {
+		return this.condition.type().isBottomType || this.consequent.completion && (this.alternative?.completion ?? false);
 	}
 
 	public override typeCheck(): void {

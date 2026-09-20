@@ -39,6 +39,13 @@ export class StatementReturn extends Statement {
 		super(start_node, {}, expression ? [expression] : []);
 	}
 
+
+	@noopGetter(memoizeGetter)
+	public override get completion(): boolean {
+		return true;
+	}
+
+
 	public override typeCheck(): void {
 		super.typeCheck();
 		let parent: AstNode | undefined = this.parent;
@@ -58,11 +65,6 @@ export class StatementReturn extends Statement {
 		} else if (return_type) {
 			throw new Error(`A function with return type \`${ return_type }\` does not return a value.`); // TODO: create new TypeError subclass
 		}
-	}
-
-	@noopGetter(memoizeGetter)
-	public override get hasBottomType(): boolean {
-		return this.expression?.type().isBottomType ?? false;
 	}
 
 	@runOnceMethod

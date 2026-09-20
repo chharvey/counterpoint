@@ -44,7 +44,7 @@ export class DeclarationType extends Statement {
 	}
 
 	@noopGetter(memoizeGetter)
-	public override get hasBottomType(): boolean {
+	public override get completion(): boolean {
 		return false;
 	}
 

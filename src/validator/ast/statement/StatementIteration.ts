@@ -57,8 +57,8 @@ export class StatementIteration extends StatementBreakable {
 	}
 
 	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return this.iterable.type().isBottomType || this.block.hasBottomType;
+	public override get completion(): boolean {
+		return this.iterable.type().isBottomType || this.block.completion;
 	}
 
 	public override varCheck(): void {

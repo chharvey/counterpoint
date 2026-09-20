@@ -38,7 +38,8 @@ export abstract class Statement extends AstNode implements Buildable {
 	}
 
 
-	public abstract get hasBottomType(): boolean;
+	/** The kind of completion of evaluation of this statement. */
+	public abstract get completion(): boolean;
 
 	/**
 	 * @inheritdoc

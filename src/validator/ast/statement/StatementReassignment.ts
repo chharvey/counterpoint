@@ -45,7 +45,7 @@ export class StatementReassignment extends Statement {
 	}
 
 	@memoizeGetter
-	public override get hasBottomType(): boolean {
+	public override get completion(): boolean {
 		return this.assignee.type().isBottomType || (this.assigned?.type().isBottomType ?? false);
 	}
 

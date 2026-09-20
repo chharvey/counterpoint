@@ -5,7 +5,6 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	noopGetter,
 	memoizeGetter,
 	runOnceMethod,
 } from '../../../lib/index.ts';
@@ -39,8 +38,8 @@ export class StatementClaim extends Statement {
 		super(start_node, {}, [assignee, claimed_type]);
 	}
 
-	@noopGetter(memoizeGetter)
-	public override get hasBottomType(): boolean {
+	@memoizeGetter
+	public override get completion(): boolean {
 		return this.assignee.type().isBottomType;
 	}
 

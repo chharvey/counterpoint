@@ -6,8 +6,9 @@ import {
 } from '../../../index.ts';
 import {
 	assert_instanceof,
-	runOnceMethod,
+	noopGetter,
 	memoizeGetter,
+	runOnceMethod,
 } from '../../../lib/index.ts';
 import {
 	type CplConfig,
@@ -55,9 +56,9 @@ export class DeclarationFunction extends Statement implements Functionlike {
 	}
 
 
-	@memoizeGetter
-	public override get hasBottomType(): boolean {
-		return false; // evaluation of a function declaration will never throw
+	@noopGetter(memoizeGetter)
+	public override get completion(): boolean {
+		return false;
 	}
 
 	public hoist(): void {

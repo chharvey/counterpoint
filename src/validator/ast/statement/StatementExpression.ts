@@ -32,7 +32,7 @@ export class StatementExpression extends Statement {
 	}
 
 	@memoizeGetter
-	public override get hasBottomType(): boolean {
+	public override get completion(): boolean {
 		return this.expr?.type().isBottomType ?? false;
 	}
 
