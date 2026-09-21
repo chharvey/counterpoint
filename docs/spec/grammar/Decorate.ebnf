@@ -486,7 +486,7 @@ Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(Type)
 	);
-Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" "<" Type ">") -> SemanticExpressionOperation
+Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" "<" Type ">") -> SemanticExpressionClaim
 	:= (SemanticExpressionClaim[force=true]
 		Decorate(ExpressionCast<?Block><?Break>)
 		Decorate(Type)

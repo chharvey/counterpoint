@@ -561,7 +561,7 @@ test.suite('Decorator', () => {
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" "<" Type ">") -> SemanticExpressionOperation', [AST.EXPR.Claim, `
+			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
 				{
 					a as! <T>;
 				}
