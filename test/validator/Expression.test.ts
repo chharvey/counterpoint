@@ -20,6 +20,7 @@ import {
 } from '../../src/index.ts';
 import {
 	extract_tokens,
+	extract_lines,
 	repeat,
 	assert_shallowStrictEqual,
 	assertAssignable,
@@ -62,7 +63,7 @@ test.suite('Expression', () => {
 				const id: bigint = Validator.cookTokenIdentifier('Name');
 				claim.validator.addSymbol(new SymbolSchemaType(id, claim.claimed_type));
 				(claim.validator.getSymbol(id) as SymbolSchemaType).typevalue = TYPE.STR;
-				assert.strictEqual(claim.type(), TYPE.STR);
+				return assert.strictEqual(claim.type(), TYPE.STR);
 			});
 			test.test('allows claiming to `nothing` even though types are disjoint.', () => {
 				assert.ok(AST.EXPR.Claim.fromSource('42 as <nothing>').type().isBottomType);
@@ -72,25 +73,31 @@ test.suite('Expression', () => {
 				const id: bigint = Validator.cookTokenIdentifier('n');
 				claim.validator.addSymbol(new SymbolSchemaVar(id, claim.operand, false, false));
 				(claim.validator.getSymbol(id) as SymbolSchemaVar).type = TYPE.NOTHING;
-				assert.strictEqual(claim.type(), TYPE.INT);
+				return assert.strictEqual(claim.type(), TYPE.INT);
 			});
 			test.test('throws when the operand type and claimed type are disjoint (and neither is `nothing`).', () => {
-				assert.throws(() => AST.EXPR.Claim.fromSource('3       as <str>')   .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.EXPR.Claim.fromSource('"three" as <int>')   .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.EXPR.Claim.fromSource('3       as <float>') .type(), TypeErrorNotAssignable);
-				assert.throws(() => AST.EXPR.Claim.fromSource('3.0     as <int>')   .type(), TypeErrorNotAssignable);
+				xjs.Array.forEachAggregated(extract_lines`
+					3       as <str>
+					"three" as <int>
+					3       as <float>
+					3.0     as <int>
+				`, (src) => assert.throws(() => AST.EXPR.Claim.fromSource(src).type(), TypeErrorNotAssignable));
 			});
 			test.test('allows disjoint types when claiming to top type first.', () => {
-				AST.EXPR.Claim.fromSource('3       as <anything> as <str>')   .type();
-				AST.EXPR.Claim.fromSource('"three" as <anything> as <int>')   .type();
-				AST.EXPR.Claim.fromSource('3       as <anything> as <float>') .type();
-				AST.EXPR.Claim.fromSource('3.0     as <anything> as <int>')   .type();
+				setupScript(`{
+					3       as <anything> as <str>;
+					"three" as <anything> as <int>;
+					3       as <anything> as <float>;
+					3.0     as <anything> as <int>;
+				}`, {build: false}); // assert does not throw
 			});
 			test.test('allows disjoint types when forcing.', () => {
-				AST.EXPR.Claim.fromSource('3       as! <str>')   .type();
-				AST.EXPR.Claim.fromSource('"three" as! <int>')   .type();
-				AST.EXPR.Claim.fromSource('3       as! <float>') .type();
-				AST.EXPR.Claim.fromSource('3.0     as! <int>')   .type();
+				setupScript(`{
+					3       as! <str>;
+					"three" as! <int>;
+					3       as! <float>;
+					3.0     as! <int>;
+				}`, {build: false}); // assert does not throw
 			});
 		});
 
