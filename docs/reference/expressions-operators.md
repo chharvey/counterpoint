@@ -556,13 +556,7 @@ when the operand’s computed type is disjoint with the claimed type.
 ```cpl
 42 as :str:; %> TypeError
 ```
-To work around this, go up and back down again:
-```cpl
-42 as :anything: as :str:;
-```
-
-`expr as! :T:` bypasses any type-errors that might be raised as a result of the claim.
-It’s equivalent to claiming to `anything` first as shown above.
+To bypass the TypeError, you can **force** the type claim with the `as!` operator.
 You should only use this if you *really* know what you’re doing.
 ```cpl
 42 as! :str:; % no error
