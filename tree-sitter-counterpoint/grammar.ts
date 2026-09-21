@@ -500,8 +500,8 @@ module.exports = grammar({
 		...parameterize('expression_unary_symbol', ({block, break: brk, return: rtn}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),
 
 		...parameterize('expression_cast', ({block, break: brk, return: rtn}) => $ => choice(
-			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk}, {return: rtn})))),
-			prec(8,      seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), 'as',                       '<', field('type_0', $._type), '>')),
+			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice('as', 'as?'), field('expression_1', call($, '_expression', {block}, {break: brk}, {return: rtn})))),
+			prec(8,      seq(field('expression_0', call($, '_expression', {block}, {break: brk}, {return: rtn})), choice('as', 'as!'), '<', field('type_0', $._type), '>')),
 		), 'block', 'break', 'return'),
 
 		...parameterize('expression_exponential',    ({block, break: brk, return: rtn}) => $ => prec.right(7, seq(call($, '_expression', {block}, {break: brk}, {return: rtn}), '^',                                                   call($, '_expression', {block}, {break: brk}, {return: rtn}))), 'block', 'break', 'return'),

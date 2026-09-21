@@ -580,15 +580,15 @@ test.suite('Decorator', () => {
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" ExpressionUnarySymbol<?Block><?Break><?Return>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryCast, `
-				{
-					a as! Klass;
-				}
-				% (expression_cast)
-			`]],
 			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
 				{
 					a as <T>;
+				}
+				% (expression_cast)
+			`]],
+			['Decorate(ExpressionCast<Block, Break, Return> ::= ExpressionCast<?Block><?Break><?Return> "as!" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
+				{
+					a as! <T>;
 				}
 				% (expression_cast)
 			`]],
