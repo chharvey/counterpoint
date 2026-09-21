@@ -1,3 +1,4 @@
+import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import type {
@@ -11,13 +12,77 @@ import type {
 import type {Interpreter} from '../Interpreter.ts';
 import {
 	type ValueTac,
+	Trap,
+	Const,
 	Get,
+	Template,
+	CollectionLinearNew,
+	RecordNew,
+	DictNew,
+	MapNew,
+	MaybeNew,
+	TupleGet,
+	RecordGet,
+	CollectionDynamicGet,
+	Call,
+	Unop,
+	Instance,
+	Binop,
 	Decl,
 } from './index.ts';
 import {
 	type OpCode,
 	Opcode,
 } from './Opcode.ts';
+
+
+
+interface ValueVisitorMethods<T> {
+	visitTrap                 (val: Trap):                 T;
+	visitConst                (val: Const):                T;
+	visitGet                  (val: Get):                  T;
+	visitTemplate             (val: Template):             T;
+	visitCollectionLinearNew  (val: CollectionLinearNew):  T;
+	visitRecordNew            (val: RecordNew):            T;
+	visitDictNew              (val: DictNew):              T;
+	visitMapNew               (val: MapNew):               T;
+	visitMaybeNew             (val: MaybeNew):             T;
+	visitTupleGet             (val: TupleGet):             T;
+	visitRecordGet            (val: RecordGet):            T;
+	visitCollectionDynamicGet (val: CollectionDynamicGet): T;
+	visitCall                 (val: Call):                 T;
+	visitUnop                 (val: Unop):                 T;
+	visitInstance             (val: Instance):             T;
+	visitBinop                (val: Binop):                T;
+
+	defaultVisit(val: Value): T;
+}
+export class ValueVisitor<T> {
+	public constructor(private readonly methods: Partial<ValueVisitorMethods<T>>) {}
+
+	/** @final */
+	public visit(val: Value): T {
+		switch (val.constructor) {
+			case Trap:                 { return this.methods.visitTrap                 ?.(val as Trap)                 ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case Const:                { return this.methods.visitConst                ?.(val as Const)                ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case Get:                  { return this.methods.visitGet                  ?.(val as Get)                  ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case Template:             { return this.methods.visitTemplate             ?.(val as Template)             ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case CollectionLinearNew:  { return this.methods.visitCollectionLinearNew  ?.(val as CollectionLinearNew)  ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case RecordNew:            { return this.methods.visitRecordNew            ?.(val as RecordNew)            ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case DictNew:              { return this.methods.visitDictNew              ?.(val as DictNew)              ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case MapNew:               { return this.methods.visitMapNew               ?.(val as MapNew)               ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case MaybeNew:             { return this.methods.visitMaybeNew             ?.(val as MaybeNew)             ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case TupleGet:             { return this.methods.visitTupleGet             ?.(val as TupleGet)             ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case RecordGet:            { return this.methods.visitRecordGet            ?.(val as RecordGet)            ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case CollectionDynamicGet: { return this.methods.visitCollectionDynamicGet ?.(val as CollectionDynamicGet) ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case Call:                 { return this.methods.visitCall                 ?.(val as Call)                 ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case Unop:                 { return this.methods.visitUnop                 ?.(val as Unop)                 ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case Instance:             { return this.methods.visitInstance             ?.(val as Instance)             ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			case Binop:                { return this.methods.visitBinop                ?.(val as Binop)                ?? this.methods.defaultVisit?.(val) ?? assert.fail('Missing implementation.'); }
+			default:                   { return                                                                           this.methods.defaultVisit?.(val) ?? assert.fail('Unexpected subclass.'); }
+		}
+	}
+}
 
 
 
