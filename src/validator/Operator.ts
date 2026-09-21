@@ -13,7 +13,6 @@ export enum Operator {
 	NEG,
 	CAST,
 	CAST_MAYBE,
-	CAST_RESULT,
 	IS,
 	ISNT,
 	EXP,
@@ -63,7 +62,6 @@ export type ValidOperatorCast = (
 	| Operator.IS
 	| Operator.CAST
 	| Operator.CAST_MAYBE
-	| Operator.CAST_RESULT
 );
 
 export type ValidOperatorArithmetic = (

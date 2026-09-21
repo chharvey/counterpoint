@@ -189,8 +189,8 @@ ExpressionUnarySymbol<Block, Break> ::=
 ;
 
 ExpressionCast<Block, Break> ::=
-	| (ExpressionCast<?Block><?Break> ("as" | "as?" | "as!"))? ExpressionUnarySymbol<?Block><?Break>
-	|  ExpressionCast<?Block><?Break>  "as"                    "<" Type ">"
+	| (ExpressionCast<?Block><?Break> ("as" | "as?"))? ExpressionUnarySymbol<?Block><?Break>
+	|  ExpressionCast<?Block><?Break> ("as" | "as!")   "<" Type ">"
 ;
 
 ExpressionExponential<Block, Break>

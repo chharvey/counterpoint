@@ -555,15 +555,15 @@ test.suite('Decorator', () => {
 				}
 				% (expression_cast)
 			`]],
-			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" ExpressionUnarySymbol<?Block><?Break>) -> SemanticExpressionOperation', [AST.EXPR.OperationBinaryCast, `
-				{
-					a as! Klass;
-				}
-				% (expression_cast)
-			`]],
 			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
 				{
 					a as <T>;
+				}
+				% (expression_cast)
+			`]],
+			['Decorate(ExpressionCast<Block, Break> ::= ExpressionCast<?Block><?Break> "as!" "<" Type ">") -> SemanticExpressionClaim', [AST.EXPR.Claim, `
+				{
+					a as! <T>;
 				}
 				% (expression_cast)
 			`]],

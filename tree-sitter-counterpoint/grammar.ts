@@ -473,8 +473,8 @@ module.exports = grammar({
 		...parameterize('expression_unary_symbol', ({block, break: brk}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
 		...parameterize('expression_cast', ({block, break: brk}) => $ => choice(
-			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
-			prec(8,      seq(field('expression_0', call($, '_expression', {block}, {break: brk})), 'as',                       '<', field('type_0', $._type), '>')),
+			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
+			prec(8,      seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as!'), '<', field('type_0', $._type), '>')),
 		), 'block', 'break'),
 
 		...parameterize('expression_exponential',    ({block, break: brk}) => $ => prec.right(7, seq(call($, '_expression', {block}, {break: brk}), '^',                                                   call($, '_expression', {block}, {break: brk}))), 'block', 'break'),

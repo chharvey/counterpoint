@@ -1077,8 +1077,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					value as  Klass;
 					value as? Klass;
-					value as! Klass;
 					value as  <T>;
+					value as! <T>;
 				}
 			`,
 			sourceExpressions(
@@ -1095,7 +1095,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'expression_cast',
 					f('expression_0', 'identifier'),
-					f('expression_1', 'identifier'),
+					f('type_0',       'identifier'),
 				),
 				s(
 					'expression_cast',

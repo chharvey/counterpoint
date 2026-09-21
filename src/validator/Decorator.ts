@@ -58,9 +58,8 @@ export class Decorator {
 	]);
 
 	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
-		[Keyword.AS,     Operator.CAST],
-		[Keyword.AS_MAY, Operator.CAST_MAYBE],
-		[Keyword.AS_RES, Operator.CAST_RESULT],
+		[Keyword.AS,      Operator.CAST],
+		[Keyword.AS_QUST, Operator.CAST_MAYBE],
 	]);
 
 	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
@@ -388,6 +387,7 @@ export class Decorator {
 					)
 					: new AST.EXPR.Claim(
 						node as SyntaxNodeType<'expression_cast'>,
+						node.children[1].type === Keyword.AS_BANG,
 						this.decorateExprNode(expression_0),
 						this.decorateTypeNode(node.childForFieldName('type_0') as SyntaxNodeSupertype<'type'>),
 					);

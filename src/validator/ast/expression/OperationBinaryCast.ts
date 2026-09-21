@@ -98,13 +98,6 @@ export class OperationBinaryCast extends OperationBinary {
 					throw new TypeErrorNotNarrow(t1, t0, this.line_index, this.col_index);
 				}
 			}
-			case Operator.CAST_RESULT: {
-				if (t1.isSubtypeOf(t0)) {
-					throw new Error('`OperationBinaryCast[operator=RESULT]#type` not yet supported.');
-				} else {
-					throw new TypeErrorNotNarrow(t1, t0, this.line_index, this.col_index);
-				}
-			}
 		}
 	}
 
@@ -150,9 +143,6 @@ export class OperationBinaryCast extends OperationBinary {
 					() => new OP.MaybeNew(this_type.typearg, new OP.Instance(OP.OpCode.CAST, op1_source, op0)),
 					() => new OP.MaybeNew(this_type.typearg),
 				);
-			}
-			case Operator.CAST_RESULT: {
-				throw new Error('`OperationBinaryCast[operator=RESULT]#build` not yet supported.');
 			}
 		}
 	}
