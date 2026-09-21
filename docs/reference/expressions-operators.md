@@ -520,8 +520,8 @@ This is important to mention because it could also affect how we write
 ```
 <Object>   `as`  <Class>
 <Object>   `as?` <Class>
-<Object>   `as!` <Class>
 <anything> `as`  `:` <Type> `:`
+<Object>   `as!` `:` <Type> `:`
 ```
 The expression `expr as Klass` explicitly **casts** the `expr` into a `Klass`.
 This means that at compile time, `expr` is treated as type `Klass` within its containing expression,
@@ -532,9 +532,6 @@ If the runtime conversion is not possible, than an error is thrown.
 
 `expr as? Klass` always returns a `Maybe[Klass]` object and never throws.
 If `expr` is a `Klass` instance (or structural equivalent), a `Some[Klass]` is returned; otherwise it returns a `None[Klass]`.
-
-`expr as! Klass` always returns a `Result[Klass]` object and never throws.
-If `expr` is a `Klass` instance (or structural equivalent), an `Ok[Klass]` is returned; otherwise it returns a `Fail[Klass]`.
 
 The expression `expr as :T:` tells the type system to treat `expr` as type `T`,
 even though it might have been computed as a different type.
@@ -561,9 +558,15 @@ when the operand’s computed type is disjoint with the claimed type.
 ```
 To work around this, go up and back down again:
 ```cpl
-42 as :anything: as ::str;
+42 as :anything: as :str:;
 ```
-In the future, the syntax `expr as! :T:` may be available.
+
+`expr as! :T:` bypasses any type-errors that might be raised as a result of the claim.
+It’s equivalent to claiming to `anything` first as shown above.
+You should only use this if you *really* know what you’re doing.
+```cpl
+42 as! :str:; % no error
+```
 
 #### Cast vs Claim
 A runtime cast (`expr as Klass`) will always check whether `Klass` is a class, and whether `expr` is actually an instance of it at runtime;
