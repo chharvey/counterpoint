@@ -101,10 +101,6 @@ export class OperationBinaryCast extends OperationBinary {
 		}
 	}
 
-	protected override type_do(): never {
-		throw new Error('`OperationBinaryCast#type_do` is not ever called.');
-	}
-
 	@memoizeMethod
 	public override build(builder: Builder): OP.Value {
 		const op0: OP.ValueTac = this.operand0.build(builder).asTac(builder);

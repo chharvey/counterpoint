@@ -53,7 +53,9 @@ export class OperationBinaryArithmetic extends OperationBinary {
 		super(start_node, operator, operand0, operand1);
 	}
 
-	protected override type_do(t0: TYPE.Type, t1: TYPE.Type): TYPE.Type {
+	@memoizeMethod
+	public override type(): TYPE.Type {
+		const [t0, t1]: readonly TYPE.Type[] = this.children.map((operand) => operand.type());
 		if (t0.isBottomType || t1.isBottomType) {
 			return TYPE.NOTHING;
 		}
