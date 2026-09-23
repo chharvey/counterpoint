@@ -18,7 +18,7 @@ class VmRecord implements HasFuncData {
 		return new Map<string, FuncImportData>([
 			['Record#get', {
 				name:   'Record.get',
-				param:  binaryen.createType([this.vm.reftype.Record, binaryen.i64]),
+				param:  binaryen.createType([this.vm.reftype.Record, binaryen.Type.i64]),
 				result: this.vm.reftype.Value,
 			}],
 		]);

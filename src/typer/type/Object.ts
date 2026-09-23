@@ -39,5 +39,9 @@ class TypeObject extends ReferenceType {
 	public override isSubtypeOf(_t: Type): boolean {
 		return false;
 	}
+
+	public override mutableOf(): Type {
+		return this;
+	}
 }
 export {TypeObject as Object};

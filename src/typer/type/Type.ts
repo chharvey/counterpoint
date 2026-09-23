@@ -314,6 +314,8 @@ export function disjointLaws(
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - TypeOperation
+ * - Nothing
+ * - Anything
  * - ValueType
  * - TypeInterface
  * - ReferenceType
@@ -357,12 +359,6 @@ export abstract class Type {
 	public get isTopType(): boolean {
 		return false;
 	}
-
-	/**
-	 * Return whether this type is a reference type or a value type.
-	 * @return `true` if this type is a reference type
-	 */
-	public abstract get isReference(): boolean;
 
 	/**
 	 * @return a string representation of this type
@@ -535,14 +531,6 @@ export abstract class Type {
 		}
 		return false; // assume not disjoint by default
 	}
-
-	public mutableOf(): Type {
-		return this;
-	}
-
-	public immutableOf(): Type {
-		return this;
-	}
 }
 
 
@@ -572,10 +560,6 @@ export class TypeInterface extends Type {
 
 	public override get isTopType(): boolean {
 		return this.properties.size === 0;
-	}
-
-	public override get isReference(): boolean {
-		return true;
 	}
 
 	public override toString(): string {
@@ -664,13 +648,5 @@ export class TypeInterface extends Type {
 		} else {
 			return super.isSubtypeOf(t);
 		}
-	}
-
-	public override mutableOf(): TypeInterface {
-		return new TypeInterface(this.properties, true);
-	}
-
-	public override immutableOf(): TypeInterface {
-		return new TypeInterface(this.properties, false);
 	}
 }

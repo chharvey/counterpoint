@@ -61,9 +61,9 @@ export class Local {
 	 * This Local must be an i32 or i64.
 	 */
 	public inc(): binaryen.ExpressionRef {
-		return this.set(this.type === binaryen.i32
+		return this.set(this.type === binaryen.Type.i32
 			? this.wasm.i32.add(this.get(), this.wasm.i32.const(1))
-			: (assert.strictEqual(this.type, binaryen.i64), this.wasm.i64.add(this.get(), this.wasm.i64.const(1n))));
+			: (assert.strictEqual(this.type, binaryen.Type.i64), this.wasm.i64.add(this.get(), this.wasm.i64.const(1n))));
 	}
 
 	/**
@@ -79,9 +79,9 @@ export class Local {
 	public plusPlus(): binaryen.ExpressionRef {
 		return this.wasm.block(null, [
 			this.inc(),
-			this.type === binaryen.i32
+			this.type === binaryen.Type.i32
 				? this.wasm.i32.sub(this.get(), this.wasm.i32.const(1))
-				: (assert.strictEqual(this.type, binaryen.i64), this.wasm.i64.sub(this.get(), this.wasm.i64.const(1n))),
+				: (assert.strictEqual(this.type, binaryen.Type.i64), this.wasm.i64.sub(this.get(), this.wasm.i64.const(1n))),
 		], this.type);
 	}
 }

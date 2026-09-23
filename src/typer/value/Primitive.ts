@@ -16,9 +16,7 @@ import {Value} from './Value.ts';
  */
 export abstract class Primitive extends Value {
 	/** @final */
-	public override get isReference(): boolean {
-		return false;
-	}
+	public override readonly isReference = false;
 
 
 	@memoizeMethod

@@ -180,7 +180,8 @@ export class Call extends Expression {
 				}
 			}
 		}
-		return constructor_schema.returnType(resolved_generic_args).mutableOf();
+		const return_type: TYPE.Type = constructor_schema.returnType(resolved_generic_args);
+		return return_type instanceof TYPE.ReferenceType ? return_type.mutableOf() : return_type;
 	}
 
 	@memoizeMethod

@@ -19,9 +19,7 @@ import {CollectionIndexed} from './CollectionIndexed.ts';
  * @final
  */
 class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
-	public override get isReference(): boolean {
-		return false;
-	}
+	public override readonly isReference = false;
 
 
 	public override toString(): string {

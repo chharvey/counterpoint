@@ -56,9 +56,5 @@ class TypeSet extends ReferenceType {
 	public override mutableOf(): TypeSet {
 		return new TypeSet(this.typearg, true);
 	}
-
-	public override immutableOf(): TypeSet {
-		return new TypeSet(this.typearg, false);
-	}
 }
 export {TypeSet as Set};

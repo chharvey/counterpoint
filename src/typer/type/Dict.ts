@@ -56,8 +56,4 @@ export class Dict extends ReferenceType {
 	public override mutableOf(): Dict {
 		return new Dict(this.typearg, true);
 	}
-
-	public override immutableOf(): Dict {
-		return new Dict(this.typearg, false);
-	}
 }

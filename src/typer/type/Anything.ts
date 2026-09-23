@@ -4,8 +4,7 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../value/index.ts';
-import type {Type} from './Type.ts';
-import {ReferenceType} from './ReferenceType.ts';
+import {Type} from './Type.ts';
 
 
 
@@ -13,7 +12,7 @@ import {ReferenceType} from './ReferenceType.ts';
  * Class for constructing the Top Type, the type containing all values.
  * @final
  */
-export class Anything extends ReferenceType {
+export class Anything extends Type {
 	public constructor() {
 		super();
 	}

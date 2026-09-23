@@ -39,29 +39,25 @@ test.suite('TypeOperation', () => {
 					type B = (int, int, int);
 					type F = [Object];
 
-					type C = mut (A & F);
-					type D = mut (A | B);
-
 					type E = mut Object; % equivalent to \`Object\`
+					type G = mut [int] | mut [Object];
 				}`, {build: false}); // assert does not throw
 			});
 
-			test.test('throws if operating on any value type.', () => {
+			test.test('throws if operating on any non-reference type.', () => {
 				[
 					'mut (int, float, str)',
 					'mut (a: int, b: float, c: str)',
 					'mut (int, int, int)',
 					'mut nothing',
+					'mut anything',
 					'mut null',
 					'mut bool',
 					'mut int',
 					'mut float',
 					'mut str',
+					'mut ([int] | [Object])',
 				].forEach((src) => assert.throws(() => AST.TYPE.Operation.fromSource(src).eval(), TypeErrorInvalidOperation));
-				[
-					'mut anything',
-					'mut Object',
-				].map((src) => AST.TYPE.Operation.fromSource(src).eval()); // assert does not throw if `[isRef=false]`
 			});
 		});
 

@@ -43,12 +43,9 @@ export class OperationUnary extends Operation {
 	@memoizeMethod
 	public override eval(): TYPE.Type {
 		const t: TYPE.Type = this.operand.eval();
-		if (this.operator === Operator.MUTABLE && !t.isReference) {
-			throw new TypeErrorInvalidOperation(this);
-		}
 		return (
 			this.operator === Operator.MAYBE   ? new TYPE.Maybe(t) :
-			this.operator === Operator.MUTABLE ? t.mutableOf() :
+			this.operator === Operator.MUTABLE ? t instanceof TYPE.ReferenceType ? t.mutableOf() : assert.fail(new TypeErrorInvalidOperation(this)) :
 			assert.fail(`TypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
 		);
 	}
