@@ -298,6 +298,7 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					type B = (bool,);
 					type C = (?: bool);
 					type D = (bool, int);
+					type D = (bool?, int);
 					type E = (bool, ?: int);
 					type U = (
 						V.0,
@@ -318,6 +319,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				s(
 					'type_tuple_literal',
 					s('entry_type', f('type_0', 'keyword_type')),
+					s('entry_type', f('type_0', 'keyword_type')),
+				),
+				s(
+					'type_tuple_literal',
+					s('entry_type', f('type_0', 'type_unary_symbol', s('keyword_type'))),
 					s('entry_type', f('type_0', 'keyword_type')),
 				),
 				s(
@@ -352,7 +358,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		TypeRecordLiteral: [
 			xjs.String.dedent`
 				{
-					type T = (a: bool, b?: int, _: str);
+					type T = (a:  bool, b?: int, _: str);
+					type T = (a?: bool, b:  int, _: str);
 					type U = (
 						a: V.0,
 						b: W.<float>,
@@ -365,6 +372,12 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'type_record_literal',
 					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
 					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named',           f('word_0', 'word'),                  f('type_0', 'keyword_type')),
+				),
+				s(
+					'type_record_literal',
+					s('entry_type__named__optional', f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
+					s('entry_type__named',           f('word_0', 'word', s('identifier')), f('type_0', 'keyword_type')),
 					s('entry_type__named',           f('word_0', 'word'),                  f('type_0', 'keyword_type')),
 				),
 				s(
@@ -655,8 +668,11 @@ function sourceExpressions(...expressions: readonly string[]): string {
 		// Property
 		// tested in #RecordLiteral
 
-		// Case
+		// CaseMap
 		// tested in #MapLiteral
+
+		// CaseSwitch
+		// tested in #ExpressionSwitch
 
 		// PropertyAccessor
 		// tested in #{ExpressionCompound,Assignee}
@@ -861,17 +877,17 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			sourceExpressions(s(
 				'expression_map_literal',
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
 				s(
-					'case',
+					'case_map',
 					s('primitive_literal', s('string')),
 					s('primitive_literal', s('integer')),
 				),
@@ -892,6 +908,8 @@ function sourceExpressions(...expressions: readonly string[]): string {
 				{
 					42.prop;
 					4.2.prop;
+					maybe~?;
+					result~!;
 					tuple.0;
 					tuple.-1;
 					tuple.+1;
@@ -922,6 +940,14 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'expression_compound',
 					f('expression_0', 'primitive_literal', s('float')),
 					f('property_accessor_0', 'property_accessor', s('word', s('identifier'))),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
+				),
+				s(
+					'expression_compound',
+					f('expression_0', 'identifier'),
 				),
 				s(
 					'expression_compound',
@@ -1043,19 +1069,6 @@ function sourceExpressions(...expressions: readonly string[]): string {
 					'expression_unary_symbol',
 					s('identifier'),
 				),
-			),
-		],
-
-		ExpressionUnaryKeyword: [
-			xjs.String.dedent`
-				{
-					isset value;
-					!isset value;
-				}
-			`,
-			sourceExpressions(
-				s('expression_unary_keyword', s('assignee', s('identifier'))),
-				s('expression_unary_keyword', s('assignee', s('identifier'))),
 			),
 		],
 
@@ -1338,8 +1351,46 @@ function sourceExpressions(...expressions: readonly string[]): string {
 			),
 		],
 
+		ExpressionSwitch: [
+			xjs.String.dedent`
+				{
+					switch a default z;
+					switch a case b -> g default z;
+					switch a case b -> d case e -> g default z;
+					switch a case b | c -> d case e | f -> g default z;
+				}
+			`,
+			sourceExpressions(
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier')),
+					s('case_switch', s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+				s(
+					'expression_switch',
+					f('expression_0', 'identifier'),
+					s('case_switch', s('identifier'), s('identifier'), s('identifier')),
+					s('case_switch', s('identifier'), s('identifier'), s('identifier')),
+					f('expression_1', 'identifier'),
+				),
+			),
+		],
+
 		// Expression
-		// consists of #Expression{Disjunctive,Conditional}
+		// consists of #Expression{Disjunctive,Conditional,Switch}
 
 
 		/* ## Statements */

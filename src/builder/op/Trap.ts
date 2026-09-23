@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import {
 	type CodeGenerator,
 	ErrorCode,
@@ -25,7 +25,7 @@ export class Trap extends ValueTac {
 
 	@noopMethod(memoizeMethod)
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.mod.unreachable();
+		return cg.mod.wasm.unreachable();
 	}
 
 	public override asTac(): this {

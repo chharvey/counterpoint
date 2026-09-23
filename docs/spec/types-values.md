@@ -14,10 +14,10 @@ Counterpoint Specification Types are only used internally within this specificat
 They are not directly observable from Counterpoint code.
 
 
-### None
-The **None** type has one value called *none*.
+### Nil
+The **Nil** type has one value called *nil*.
 It signifies a variable with no meaningful value.
-An algorithm with output type None returns a [CompletionSchema](#completionschema)
+An algorithm with output type Nil returns a [CompletionSchema](#completionschema)
 with no \`value\` property.
 
 
@@ -399,6 +399,17 @@ Maps have a dynamic size, are unordered<sup>&lowast;</sup>, and are indexable by
 <sup>&lowast;</sup>Rather, developers should not depend on any implementation of order.
 
 
+### Control Abstraction Types
+
+#### Maybe Types
+A **Maybe** type describes instances of [`Maybe`](./intrinsics.md#maybe) and is parameterized by a single type,
+called a *type argument*, representing its possibly held value.
+The objects that any given Maybe type describes are `Maybe` objects whose
+value, if it exists, is assignable to the type argument of the Maybe type.
+The **Maybe** class is abstract and enumerated by two concrete subclasses:
+**Some**, which holds a value, and **None**, which does not.
+
+
 ### Nominal Types
 Nominal types form a type hierarchy where assignability is determined by name alone.
 
@@ -754,7 +765,12 @@ Boolean ToBoolean(Value value) :=
 		1. *Return:* `false`.
 	2. *If* `value` is an instance of `Boolean`:
 		1. *Return:* `value`.
-	3. *Return:* `true`.
+	3. *If* `value` is an instance of `Maybe`:
+		1. *If* `v` does not have a value:
+			1. *Return:* `false`.
+		2. *Else:*
+			1. Fall through.
+	4. *Return:* `true`.
 ```
 
 
@@ -934,13 +950,15 @@ For brevity, this section uses the following notational conventions:
 - The [difference](#difference)               of `A` and `B`, `Minus<A, B>`, is written `A - B`. The symbol `-`  has the same precedence as `&`.
 - The [union](#union)                         of `A` and `B`, `Or<A, B>`,    is written `A | B`. The symbol `|`  is weaker than `&` and `-`.
 - The [disjunctive union](#disjunctive-union) of `A` and `B`, `Xor<A, B>`,   is written `A ^ B`. The symbol `^`  has the same precedence as `|`.
-- If `A` is a [subtype](#subtype) of `B`, we write `A <: B`.                                     The symbol `<:` is weaker than `|` and `^`.
-- If `A` is [equal](#equality)    to `B`, we write `A == B`.                                     The symbol `==` is weaker than `<:`.
+- If `A` is a [subtype](#subtype) of `B`,   we write `A <: B`.                                   The symbol `<:` is weaker than `|` and `^`.
+- If `A` is [equal](#equality)    to `B`,   we write `A == B`.                                   The symbol `==` has the same precedence as `<:`.
+- If `A` is [disjoint](#disjoint) with `B`, we write `A /= B`.                                   The symbol `/=` has the same precedence as `==`.
 - Where ‹X› and ‹Y› represent statements in prose:
-	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`.
+	- `‹X› &&  ‹Y›` denotes “‹X› and            ‹Y›”. The symbol `&&`  is weaker than `<:`, `==`, and `/=`.
 	- `‹X› ||  ‹Y›` denotes “‹X› or             ‹Y›”. The symbol `||`  is weaker than `&&`.
 	- `‹X› --> ‹Y›` denotes “‹X› implies        ‹Y›”. The symbol `-->` is weaker than `||`.
-	- `‹X› <-> ‹Y›` denotes “‹X› if and only if ‹Y›”. The symbol `<->` is weaker than `-->`.
+	- `‹X› <-- ‹Y›` denotes “‹X› is implied by  ‹Y›”. The symbol `<--` has the same precedence as `-->`.
+	- `‹X› <-> ‹Y›` denotes “‹X› if and only if ‹Y›”. The symbol `<->` is weaker than `-->` and `<--`.
 
 
 ### Special Elements
@@ -954,6 +972,9 @@ For brevity, this section uses the following notational conventions:
 1-6 | `T  & anything == T`        | Top    is The Identity   Element of Intersection
 1-7 | `T \| nothing  == T`        | Bottom is The Identity   Element of Union
 1-8 | `T \| anything == anything` | Top    is The Absorption Element of Union
+1-9 | `T  - nothing  == T`       | Bottom is The Right-Identity      Element of Subtraction
+1-a | `T  - anything == nothing` | Top    is The Right-Anti-Identity Element of Subtraction
+1-b | `nothing - T == nothing`   | Bottom is The Left-Absorption     Element of Subtraction
 
 
 ### Operation Properties
@@ -991,8 +1012,9 @@ For brevity, this section uses the following notational conventions:
 ### Difference Properties
 \# | Law | Description
 -- | --- | -----------
-4-1 | `A - B == A  <->  A & B == nothing`             | The difference of two types is the first type iff they are disjoint.
-4-2 | `A - B == nothing  <->  A <: B`                 | The difference of two types is empty iff the first type is a subtype of the second type.
-4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
-4-4 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
-4-5 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union
+4-1 | `A - B == A  <->  A /= B`       | The difference of two types is the first type iff they are disjoint.
+4-2 | `A - B == nothing  <->  A <: B` | The difference of two types is empty iff the first type is a subtype of the second type.
+4-3 | `A <: B - C  <->  A <: B  &&  A /= C` | Any subtype of a difference is a subtype of its first part and disjoint with its second part.
+4-4 | `A /= B - C  <--  A <: C  ||  A /= B` | Any type that is a subtype of a difference’s second part or disjoint with its first part is disjoint with the difference.
+4-5 | `(A \| B) - C == (A - C) \| (B - C)` | Difference is Right-Distributive    over Union
+4-6 | `A - (B \| C) == (A - B)  & (A - C)` | Difference is Left-Antidistributive over Union

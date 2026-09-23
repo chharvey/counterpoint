@@ -33,53 +33,54 @@ import {
 
 export class Decorator {
 	private static readonly ACCESSORS: ReadonlyMap<Punctuator, ValidAccessOperator> = new Map<Punctuator, ValidAccessOperator>([
-		[Punctuator.DOT,     Operator.DOT],
-		[Punctuator.DOT_MAY, Operator.DOT_MAY],
-		[Punctuator.DOT_RES, Operator.DOT_RES],
+		[Punctuator.DOT,      Operator.DOT],
+		[Punctuator.QUST_DOT, Operator.DOT_MAYBE],
+		[Punctuator.BANG_DOT, Operator.DOT_RESULT],
 	]);
 
 	private static readonly TYPEOPERATORS_UNARY: ReadonlyMap<Punctuator | Keyword, ValidTypeOperator> = new Map<Punctuator | Keyword, ValidTypeOperator>([
-		[Punctuator.ORNULL,  Operator.ORNULL],
-		[Punctuator.OREXCP,  Operator.OREXCP],
+		[Punctuator.QUST,    Operator.MAYBE],
+		[Punctuator.BANG,    Operator.RESULT],
 		[Keyword   .MUTABLE, Operator.MUTABLE],
 	]);
 
 	private static readonly TYPEOPERATORS_BINARY: ReadonlyMap<Punctuator, ValidTypeOperator> = new Map<Punctuator, ValidTypeOperator>([
-		[Punctuator.INTER, Operator.AND],
-		[Punctuator.UNION, Operator.OR],
+		[Punctuator.AMP, Operator.AND],
+		[Punctuator.BAR, Operator.OR],
 	]);
 
 	private static readonly OPERATORS_UNARY: ReadonlyMap<Punctuator, ValidOperatorUnary> = new Map<Punctuator, ValidOperatorUnary>([
-		[Punctuator.NOT, Operator.NOT],
-		[Punctuator.EMP, Operator.EMP],
-		[Punctuator.NEG, Operator.NEG],
+		[Punctuator.TILD_QST, Operator.UN_MAYBE],
+		[Punctuator.TILD_BNG, Operator.UN_RESULT],
+		[Punctuator.BANG,     Operator.NOT],
+		[Punctuator.QUST,     Operator.EMP],
+		[Punctuator.MINUS,    Operator.NEG],
 	]);
 
 	private static readonly OPERATORS_CAST: ReadonlyMap<Keyword, ValidOperatorCast> = new Map<Keyword, ValidOperatorCast>([
 		[Keyword.AS,     Operator.CAST],
-		[Keyword.AS_MAY, Operator.CAST_MAY],
-		[Keyword.AS_RES, Operator.CAST_RES],
+		[Keyword.AS_MAY, Operator.CAST_MAYBE],
+		[Keyword.AS_RES, Operator.CAST_RESULT],
 	]);
 
 	private static readonly OPERATORS_ARITHMETIC: ReadonlyMap<Punctuator, ValidOperatorArithmetic> = new Map<Punctuator, ValidOperatorArithmetic>([
-		[Punctuator.EXP, Operator.EXP],
-		[Punctuator.MUL, Operator.MUL],
-		[Punctuator.DIV, Operator.DIV],
-		[Punctuator.ADD, Operator.ADD],
-		[Punctuator.SUB, Operator.SUB],
+		[Punctuator.CFLEX, Operator.EXP],
+		[Punctuator.ASTK,  Operator.MUL],
+		[Punctuator.SLASH, Operator.DIV],
+		[Punctuator.PLUS,  Operator.ADD],
+		[Punctuator.MINUS, Operator.SUB],
 	]);
 
 	private static readonly OPERATORS_COMPARATIVE: ReadonlyMap<Punctuator | Keyword, ValidOperatorComparative> = new Map<Punctuator | Keyword, ValidOperatorComparative>([
-		[Punctuator.LT, Operator.LT],
-		[Punctuator.GT, Operator.GT],
-		[Punctuator.LE, Operator.LE],
-		[Punctuator.GE, Operator.GE],
-		[Keyword   .IS, Operator.IS as ValidOperatorComparative], // TODO: make a new class for comparing object instances
+		[Punctuator.LT,    Operator.LT],
+		[Punctuator.GT,    Operator.GT],
+		[Punctuator.LT_EQ, Operator.LE],
+		[Punctuator.GT_EQ, Operator.GE],
 	]);
 
 	private static readonly OPERATORS_EQUALITY: ReadonlyMap<Punctuator, ValidOperatorEquality> = new Map<Punctuator, ValidOperatorEquality>([
-		[Punctuator.ID, Operator.ID],
-		[Punctuator.EQ, Operator.EQ],
+		[Punctuator.EQ3, Operator.ID],
+		[Punctuator.EQ2, Operator.EQ],
 	]);
 
 
@@ -109,7 +110,8 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeSupertype<'type'>):                                    AST.TYPE.Type;
 	public decorate(syntaxnode: SyntaxNodeFamily<'string_template',           ['break']>):       AST.EXPR.Template;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property',                  ['break']>):       AST.Property;
-	public decorate(syntaxnode: SyntaxNodeFamily<'case',                      ['break']>):       AST.Case;
+	public decorate(syntaxnode: SyntaxNodeFamily<'case_map',                  ['break']>):       AST.Case;
+	public decorate(syntaxnode: SyntaxNodeFamily<'case_switch',               ['break']>):       AST.Case;
 	public decorate(syntaxnode: SyntaxNodeFamily<'property_accessor',         ['break']>):       AST.Index | AST.Key | AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_grouped',        ['break']>):       AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_tuple_literal',  ['break']>):       AST.EXPR.Tuple;
@@ -120,17 +122,18 @@ export class Decorator {
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_map_literal',    ['break']>):       AST.EXPR.Map;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_block'>):                             AST.EXPR.ExpressionBlock;
 	public decorate(syntaxnode: SyntaxNodeType<'property_assign'>):                              AST.Index | AST.Key | AST.EXPR.Expression;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                          AST.EXPR.Access | AST.EXPR.Call;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_compound'>):                          AST.EXPR.Access | AST.EXPR.Call | AST.EXPR.OperationUnary;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_unary_symbol'>):                      AST.EXPR.Expression | AST.EXPR.OperationUnary;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_cast'>):                              AST.EXPR.OperationBinaryCast | AST.EXPR.Claim;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_exponential'>):                       AST.EXPR.OperationBinaryArithmetic;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_multiplicative'>):                    AST.EXPR.OperationBinaryArithmetic;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_additive'>):                          AST.EXPR.OperationBinaryArithmetic;
-	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryComparative;
+	public decorate(syntaxnode: SyntaxNodeType<'expression_comparative'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryComparative | AST.EXPR.OperationBinaryCast;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_equality'>):                          AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryEquality;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_conjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeType<'expression_disjunctive'>):                       AST.EXPR.OperationUnary | AST.EXPR.OperationBinaryLogical;
 	public decorate(syntaxnode: SyntaxNodeFamily<'expression_conditional', ['break']>):          AST.EXPR.OperationTernary;
+	public decorate(syntaxnode: SyntaxNodeFamily<'expression_switch',      ['break']>):          AST.EXPR.Switch;
 	public decorate(syntaxnode: SyntaxNodeSupertype<'expression'>):                              AST.EXPR.Expression;
 	public decorate(syntaxnode: SyntaxNodeFamily<'assignee',              ['break']>):           AST.EXPR.Variable | AST.EXPR.Access;
 	public decorate(syntaxnode: SyntaxNodeFamily<'statement_expression',  ['break']>):           AST.STMT.StatementExpression;
@@ -286,10 +289,16 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
-			[/^case(__break)?$/, (node) => new AST.Case(
-				node as SyntaxNodeFamily<'case', ['break']>,
-				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
+			[/^case_map(__break)?$/, (node) => new AST.Case(
+				node as SyntaxNodeFamily<'case_map', ['break']>,
+				[this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>)],
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
+			)],
+
+			[/^case_switch(__break)?$/, (node) => new AST.Case(
+				node as SyntaxNodeFamily<'case_switch', ['break']>,
+				node.namedChildren.slice(0, -1).map((ant) => this.decorateExprNode(ant as SyntaxNodeSupertype<'expression'>)) as NonemptyArray<AST.EXPR.Expression>,
+				this.decorateExprNode(node.namedChildren.at(-1) as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			[/^property_accessor(__break)?$/, (node) => (
@@ -327,7 +336,7 @@ export class Decorator {
 
 			[/^expression_map_literal(__break)?$/, (node) => new AST.EXPR.Map(
 				node as SyntaxNodeFamily<'expression_map_literal', ['break']>,
-				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'case', ['break']>)) as NonemptyArray<AST.Case>,
+				node.namedChildren.map((c) => this.decorate(c as SyntaxNodeFamily<'case_map', ['break']>)) as NonemptyArray<AST.Case>,
 			)],
 
 			// NOTE: the following expression types (`_block` through `_disjunctive`) refer to aliases in the grammar --- no need for suffices
@@ -340,44 +349,31 @@ export class Decorator {
 			['expression_compound', (node) => {
 				const expression_0        = node.childForFieldName('expression_0')        as SyntaxNodeSupertype<'expression'>;
 				const property_accessor_0 = node.childForFieldName('property_accessor_0') as SyntaxNodeFamily<'property_accessor', ['break']> | null;
+				const is_function_call    = !!(node.childForFieldName('generic_arguments_0') ?? node.childForFieldName('function_arguments_0'));
 				return property_accessor_0 ? new AST.EXPR.Access(
 					node as SyntaxNodeType<'expression_compound'>,
 					Decorator.ACCESSORS.get(node.children[1].type as Punctuator)!,
 					this.decorateExprNode(expression_0),
 					this.decorate(property_accessor_0),
-				) : new AST.EXPR.Call(
+				) : is_function_call ? new AST.EXPR.Call(
 					node as SyntaxNodeType<'expression_compound'>,
 					this.decorateExprNode(expression_0),
 					node.childForFieldName('generic_arguments_0') ?.namedChildren.map((c) => this.decorateTypeNode(c as SyntaxNodeSupertype<'type'>)) ?? [],
 					node.childForFieldName('function_arguments_0')!.namedChildren.map((c) => this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)),
+				) : new AST.EXPR.OperationUnary(
+					node as SyntaxNodeType<'expression_compound'>,
+					Decorator.OPERATORS_UNARY.get(node.children[1].type as Punctuator)!,
+					this.decorateExprNode(expression_0),
 				);
 			}],
 
-			['expression_unary_symbol', (node) => (node.children[0].type === Punctuator.AFF // `+a` is a no-op
+			['expression_unary_symbol', (node) => (node.children[0].type === Punctuator.PLUS // `+a` is a no-op
 				? this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>)
 				: new AST.EXPR.OperationUnary(
 					node as SyntaxNodeType<'expression_unary_symbol'>,
 					Decorator.OPERATORS_UNARY.get(node.children[0].type as Punctuator)!,
 					this.decorateExprNode(node.firstNamedChild as SyntaxNodeSupertype<'expression'>),
 				)
-			)],
-
-			['expression_unary_keyword', (node) => ((
-				n:        SyntaxNodeType<'expression_unary_keyword'>,
-				punct:    Keyword,
-				operand:  AST.EXPR.Variable | AST.EXPR.Access,
-			) => (
-				// `!isset a` is syntax sugar for `!(isset a)`
-				punct === Keyword.ISNTSET ? new AST.EXPR.OperationUnary(
-					n,
-					Operator.NOT,
-					new AST.EXPR.Isset(n, operand),
-				) :
-				new AST.EXPR.Isset(n, operand)
-			))(
-				node as SyntaxNodeType<'expression_unary_keyword'>,
-				node.children[0].type as Keyword,
-				this.decorate(node.firstNamedChild as SyntaxNodeFamily<'assignee', ['break']>),
 			)],
 
 			['expression_cast', (node) => {
@@ -424,24 +420,29 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !< b` is syntax sugar for `!(a < b)`
-				punct === Punctuator.NLT ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.BANG_LT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryComparative(n, Operator.LT, ...operands),
 				) :
 				// `a !> b` is syntax sugar for `!(a > b)`
-				punct === Punctuator.NGT ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.BANG_GT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryComparative(n, Operator.GT, ...operands),
+				) :
+				punct === Keyword.IS ? new AST.EXPR.OperationBinaryCast(
+					n,
+					Operator.IS,
+					...operands,
 				) :
 				// `a !is b` is syntax sugar for `!(a is b)`
 				punct === Keyword.ISNT ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
-					new AST.EXPR.OperationBinaryComparative(
+					new AST.EXPR.OperationBinaryCast(
 						n,
-						Operator.IS as ValidOperatorComparative, // TODO: make a new class for comparing object instances
+						Operator.IS,
 						...operands,
 					),
 				) :
@@ -465,13 +466,13 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !== b` is syntax sugar for `!(a === b)`
-				punct === Punctuator.NID ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.BANG_EQ2 ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryEquality(n, Operator.ID, ...operands),
 				) :
 				// `a != b` is syntax sugar for `!(a == b)`
-				punct === Punctuator.NEQ ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.BANG_EQ ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryEquality(n, Operator.EQ, ...operands),
@@ -496,7 +497,7 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !& b` is syntax sugar for `!(a && b)`
-				punct === Punctuator.NAND ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.BANG_AMP ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryLogical(n, Operator.AND, ...operands),
@@ -517,7 +518,7 @@ export class Decorator {
 				operands: readonly [AST.EXPR.Expression, AST.EXPR.Expression],
 			) => (
 				// `a !| b` is syntax sugar for `!(a || b)`
-				punct === Punctuator.NOR ? new AST.EXPR.OperationUnary(
+				punct === Punctuator.BANG_BAR ? new AST.EXPR.OperationUnary(
 					n,
 					Operator.NOT,
 					new AST.EXPR.OperationBinaryLogical(n, Operator.OR, ...operands),
@@ -538,6 +539,13 @@ export class Decorator {
 				this.decorateExprNode(node.namedChild(0) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(1) as SyntaxNodeSupertype<'expression'>),
 				this.decorateExprNode(node.namedChild(2) as SyntaxNodeSupertype<'expression'>),
+			)],
+
+			[/^expression_switch(__break)?$/, (node) => new AST.EXPR.Switch(
+				node as SyntaxNodeFamily<'expression_switch', ['break']>,
+				this.decorateExprNode(node.childForFieldName('expression_0') as SyntaxNodeSupertype<'expression'>),
+				node.namedChildren.slice(1, -1).map((kase) => this.decorate(kase as SyntaxNodeFamily<'case_switch', ['break']>)),
+				this.decorateExprNode(node.childForFieldName('expression_1') as SyntaxNodeSupertype<'expression'>),
 			)],
 
 			/* ## Statements */

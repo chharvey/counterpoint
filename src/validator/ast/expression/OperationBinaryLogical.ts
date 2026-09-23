@@ -86,7 +86,7 @@ export class OperationBinaryLogical extends OperationBinary {
 		return OP.conditional_expression(
 			builder,
 			this.operand0.type().union(this.operand1.type()), // TODO: turn typeCheck optimization off and just use `this.type()` here
-			() => new OP.Unop(OP.OpCode.TOBOOL, left, TYPE.BOOL),
+			() => new OP.Unop(OP.OpCode.BOOL_FROM, left, TYPE.BOOL),
 			conseq,
 			altern,
 		);

@@ -30,7 +30,7 @@ export class List extends ReferenceType {
 		public readonly typearg: Type,
 		is_mutable: boolean = false,
 	) {
-		super(new Set<VALUE.List>([new VALUE.List()]), is_mutable);
+		super(is_mutable);
 	}
 
 	public override toString(): string {
@@ -55,9 +55,5 @@ export class List extends ReferenceType {
 
 	public override mutableOf(): List {
 		return new List(this.typearg, true);
-	}
-
-	public override immutableOf(): List {
-		return new List(this.typearg, false);
 	}
 }

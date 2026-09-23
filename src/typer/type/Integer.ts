@@ -11,7 +11,7 @@ import {ValueType} from './ValueType.ts';
  */
 export class Integer extends ValueType {
 	public constructor() {
-		super(new Set<VALUE.Integer>([VALUE.INT_0, VALUE.INT_1]));
+		super();
 	}
 
 	public override toString(): string {

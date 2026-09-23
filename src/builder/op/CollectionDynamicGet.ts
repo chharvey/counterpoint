@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import type {
 	CodeGenerator,
@@ -105,89 +105,52 @@ export class CollectionDynamicGet extends Value {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		const {vm: {Vect, Property, Case, Dict, Map: VmMap}, mod} = cg;
+		const {vm: {reftype, Vect, Value: VmValue, Case, List, Dict, Map: VmMap}, mod: {wasm}} = cg;
 
 		const collection: binaryen.ExpressionRef = this.collection.codegen(cg);
 		const accessor:   binaryen.ExpressionRef = this.accessor.codegen(cg);
-		const cast_collection = (reftype: binaryen.Type): binaryen.ExpressionRef => cg.vm.Value.cast(collection, reftype);
+		const cast_collection = (rt: binaryen.Type): binaryen.ExpressionRef => VmValue.cast(collection, rt);
 		/*
 		 * The IR already handled logic for if the collection itself is nullish, so assume by this point it’s not.
 		 * But we still need to check for nullish values in the collection.
 		 */
 		switch (this.name) {
 			case TypeName.LIST: {
-				const item: Local = cg.newLocal(mod.array.get(
-					cg.vm.List.field(cast_collection(cg.vm.reftype.List)).internal,
-					mod.i32.wrap(Vect.asInt(cg.vm.Value.field(accessor).primitive)),
-					cg.vm.reftypeNull.Value,
-				)); // `array.get` will trap if array length is 0 or if index is out of bounds. this is by design
-
-				return mod.block(null, [
-					item.set(),
-					// if `(ref.null $Value)` is returned, return Counterpoint `null`; else return the value
-					mod.if(
-						mod.ref.is_null(item.get()),
-						cg.getConst(null),
-						mod.ref.as_non_null(item.get()),
-					),
-				], cg.vm.reftype.Value);
+				return List.get(
+					cast_collection(reftype.List),
+					wasm.i32.wrap_i64(Vect.asInt(VmValue.field(accessor).primitive)),
+				);
 			}
 			case TypeName.DICT: {
-				const maybe_prop: Local = cg.newLocal(mod.tuple.extract(Dict.find(
-					cast_collection(cg.vm.reftype.Dict),
-					Vect.asNat(cg.vm.Value.field(accessor).primitive),
-				), 1));
-
-				return mod.block(null, [
-					maybe_prop.set(),
-					// if `(ref.null $Property)` or a tombstone is returned, return Counterpoint `null`; else return the property value
-					mod.if(
-						mod.i32.or(
-							mod.ref.is_null(maybe_prop.get()),
-							Property.isTombstone(maybe_prop.get()),
-						),
-						cg.getConst(null),
-						Property.field(maybe_prop.get()).val,
-					),
-				], cg.vm.reftype.Value);
+				return Dict.get(
+					cast_collection(reftype.Dict),
+					Vect.asNat(VmValue.field(accessor).primitive),
+				);
 			}
 			case TypeName.SET: {
-				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
-					cast_collection(cg.vm.reftype.Map),
+				const maybe_case: Local = cg.newLocal(wasm.tuple.extract(VmMap.find(
+					cast_collection(reftype.Map),
 					accessor,
 				), 1));
 
-				return mod.block(null, [
+				return wasm.block(null, [
 					maybe_case.set(),
 					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `false`; else return `true`
-					mod.if(
-						mod.i32.or(
-							mod.ref.is_null(maybe_case.get()),
+					wasm.if(
+						wasm.i32.or(
+							wasm.ref.is_null(maybe_case.get()),
 							Case.isTombstone(maybe_case.get()),
 						),
 						cg.getConst(false),
 						cg.getConst(true),
 					),
-				], cg.vm.reftype.Value);
+				], reftype.Value);
 			}
 			case TypeName.MAP: {
-				const maybe_case: Local = cg.newLocal(mod.tuple.extract(VmMap.find(
-					cast_collection(cg.vm.reftype.Map),
+				return VmMap.get(
+					cast_collection(reftype.Map),
 					accessor,
-				), 1));
-
-				return mod.block(null, [
-					maybe_case.set(),
-					// if `(ref.null $Case)` or a tombstone is returned, return Counterpoint `null`; else return the consequent
-					mod.if(
-						mod.i32.or(
-							mod.ref.is_null(maybe_case.get()),
-							Case.isTombstone(maybe_case.get()),
-						),
-						cg.getConst(null),
-						Case.field(maybe_case.get()).con,
-					),
-				], cg.vm.reftype.Value);
+				);
 			}
 		}
 	}

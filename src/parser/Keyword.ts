@@ -16,8 +16,6 @@ export enum Keyword {
 
 	// operator
 	MUTABLE = 'mut',
-	ISSET   = 'isset',
-	ISNTSET = '!isset',
 	AS      = 'as',
 	AS_MAY  = 'as?',
 	AS_RES  = 'as!',
@@ -26,6 +24,9 @@ export enum Keyword {
 	IF      = 'if',
 	THEN    = 'then',
 	ELSE    = 'else',
+	SWITCH  = 'switch',
+	CASE    = 'case',
+	DEFAULT = 'default',
 
 	// storage
 	TYPE   = 'type',

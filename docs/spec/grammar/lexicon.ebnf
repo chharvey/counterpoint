@@ -27,9 +27,8 @@ Punctuator :::=
 		| "[" | "]"
 		| "{" | "}"
 		| "," | "->"
-		| "?:"
 	// compound
-		| "." | "?." | "!."
+		| "." | "?." | "!." | "~?" | "~!"
 	// unary
 		| "!" | "?" | "+" | "-"
 	// binary
@@ -64,8 +63,6 @@ KeywordValue :::=
 KeywordOther :::=
 	// operator
 		| "mut"
-		| "isset"
-		| "!isset"
 		| "as"
 		| "as?"
 		| "as!"
@@ -74,6 +71,9 @@ KeywordOther :::=
 		| "if"
 		| "then"
 		| "else"
+		| "switch"
+		| "case"
+		| "default"
 	// storage
 		| "type"
 		| "val"

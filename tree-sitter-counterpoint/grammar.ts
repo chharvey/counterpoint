@@ -106,7 +106,7 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 /* # LEXER HELPERS */
 function rg(s: string | RegExp): RegExp { // s -> (s)
-	return new RegExp(`(${ typeof s === 'string' ? s.replace(/[-[\]{}()*+!<=:?./\\^$|#\s,]/g, '\\$&') : s.source })`); // TODO: in Node 24, use `RegExp.escape()`
+	return new RegExp(`(${ typeof s === 'string' ? RegExp.escape(s) : s.source })`);
 }
 function ro(s: string | RegExp): RegExp { // s -> (s)?
 	return new RegExp(rg(s).source.concat('?'));
@@ -219,7 +219,7 @@ const OPT_COM = optional(',');
  * Otherwise, spread it into a rule:
  * @example
  * {
- * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?:', $._type), 'named'),
+ * 	...parameterize('entry_type__optional', ({named}) => $ => seq(...iff(named, $.word), '?', ':', $._type), 'named'),
  * }
  * @param condition   the condition to test
  * @param consequent  if condition is true, this will be produced
@@ -318,12 +318,14 @@ module.exports = grammar({
 		word: $ => choice(
 			// operator
 			'mut',
-			'isset',
 			'as',
 			'is',
 			'if',
 			'then',
 			'else',
+			'switch',
+			'case',
+			'default',
 			// storage
 			'type',
 			'val',
@@ -360,7 +362,7 @@ module.exports = grammar({
 
 		/* ## Types */
 		...parameterize('entry_type', ({named, optional}) => (
-			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, '?:'), field('type_0', $._type))
+			$ => seq(...iff(named, seq(field('word_0', $.word), ...iff(!optional, ':'))), ...iff(optional, seq('?', ':')), field('type_0', $._type))
 		), 'named', 'optional'),
 
 		_items_type: $ => {
@@ -432,8 +434,9 @@ module.exports = grammar({
 			seq(optional(call($, '_expression', 'block', {break: brk})), ',', repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM),
 		), 'break'),
 
-		...parameterize('property', ({break: brk}) => $ => seq($.word,                                        '=',  call($, '_expression', 'block', {break: brk})), 'break'),
-		...parameterize('case',     ({break: brk}) => $ => seq(call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
+		...parameterize('property',    ({break: brk}) => $ => seq(                                                                         $.word,                                        '=',  call($, '_expression', 'block', {break: brk})), 'break'),
+		...parameterize('case_map',    ({break: brk}) => $ => seq(                                                                         call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
+		...parameterize('case_switch', ({break: brk}) => $ => seq('case', repeat(seq(call($, '_expression', 'block', {break: brk}), '|')), call($, '_expression', 'block', {break: brk}), '->', call($, '_expression', 'block', {break: brk})), 'break'),
 
 		...parameterize('property_accessor', ({break: brk}) => $ => choice($.integer, $.natural, $.word, seq('[', call($, '_expression', 'block', {break: brk}), ']')), 'break'),
 
@@ -443,10 +446,10 @@ module.exports = grammar({
 		...parameterize('expression_list_literal',   ({break: brk}) => $ => seq('[', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ']'), 'break'),
 		...parameterize('expression_dict_literal',   ({break: brk}) => $ => seq('[',              OPT_COM, repCom1(call($, 'property',             {break: brk})), OPT_COM,   ']'), 'break'),
 		...parameterize('expression_set_literal',    ({break: brk}) => $ => seq('{', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), '}'), 'break'),
-		...parameterize('expression_map_literal',    ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case',                 {break: brk})), OPT_COM,   '}'), 'break'),
+		...parameterize('expression_map_literal',    ({break: brk}) => $ => seq('{',              OPT_COM, repCom1(call($, 'case_map',             {break: brk})), OPT_COM,   '}'), 'break'),
 		...parameterize('function_arguments',        ({break: brk}) => $ => seq('(', optional(seq(OPT_COM, repCom1(call($, '_expression', 'block', {break: brk})), OPT_COM)), ')'), 'break'),
 
-		...parameterize('_expression_unit', ({block, break: brk}) => $ => prec(12, choice(
+		...parameterize('_expression_unit', ({block, break: brk}) => $ => choice(
 			$.identifier,
 			$.primitive_literal,
 			call($, 'string_template',           {break: brk}),
@@ -458,15 +461,16 @@ module.exports = grammar({
 			call($, 'expression_set_literal',    {break: brk}),
 			call($, 'expression_map_literal',    {break: brk}),
 			...iff(block, alias(call($, 'block', {break: brk}), $.expression_block)),
-		)), 'block', 'break'),
+		), 'block', 'break'),
 
-		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(11, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice(
+		...parameterize('expression_compound', ({block, break: brk}) => $ => prec(10, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice(
+			'~?',
+			'~!',
 			seq(choice('.', '?.', '!.'), field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
 			seq('.',                     optional(field('generic_arguments_0', $.generic_arguments)), field('function_arguments_0', call($, 'function_arguments', {break: brk}))),
 		))), 'block', 'break'),
 
-		...parameterize('expression_unary_symbol',  ({block,    break: brk}) => $ => prec(10, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
-		...parameterize('expression_unary_keyword', ({block: _, break: brk}) => $ => prec( 9, seq(choice('isset', '!isset'),  call($, 'assignee',             {break: brk}))), 'block', 'break'),
+		...parameterize('expression_unary_symbol', ({block, break: brk}) => $ => prec(9, seq(choice('!', '?', '+', '-'), call($, '_expression', {block}, {break: brk}))), 'block', 'break'),
 
 		...parameterize('expression_cast', ({block, break: brk}) => $ => choice(
 			prec.left(8, seq(field('expression_0', call($, '_expression', {block}, {break: brk})), choice('as', 'as?', 'as!'), field('expression_1', call($, '_expression', {block}, {break: brk})))),
@@ -490,12 +494,19 @@ module.exports = grammar({
 			call($, '_expression', {break: brk}),
 		), 'break'),
 
+		...parameterize('expression_switch', ({break: brk}) => $ => seq(
+			'switch',
+			field('expression_0', call($, '_expression', 'block', {break: brk})),
+			repeat(call($, 'case_switch', {break: brk})),
+			'default',
+			field('expression_1', call($, '_expression', 'block', {break: brk})),
+		), 'break'),
+
 		...parameterize('_expression', ({block, break: brk}) => $ => choice(
 			call($, '_expression_unit', {block}, {break: brk}),
 
 			alias(call($, 'expression_compound',       {block}, {break: brk}), $.expression_compound),
 			alias(call($, 'expression_unary_symbol',   {block}, {break: brk}), $.expression_unary_symbol),
-			alias(call($, 'expression_unary_keyword',  {block}, {break: brk}), $.expression_unary_keyword),
 			alias(call($, 'expression_cast',           {block}, {break: brk}), $.expression_cast),
 			alias(call($, 'expression_exponential',    {block}, {break: brk}), $.expression_exponential),
 			alias(call($, 'expression_multiplicative', {block}, {break: brk}), $.expression_multiplicative),
@@ -506,14 +517,15 @@ module.exports = grammar({
 			alias(call($, 'expression_disjunctive',    {block}, {break: brk}), $.expression_disjunctive),
 
 			call($, 'expression_conditional', {break: brk}),
+			call($, 'expression_switch',      {break: brk}),
 		), 'block', 'break'),
 
 
 		/* ## Statements */
-		...parameterize('assignee', ({break: brk}) => $ => prec(13, choice(
+		...parameterize('assignee', ({break: brk}) => $ => choice(
 			field('identifier_0', $.identifier),
 			seq(field('expression_0', call($, '_expression', 'block', {break: brk})), '.', field('property_accessor_0', call($, 'property_accessor', {break: brk}))),
-		)), 'break'),
+		), 'break'),
 
 		...parameterize('statement_expression', ({break: brk}) => $ => seq(optional(call($, '_expression', 'block', {break: brk})), ';'), 'break'),
 
@@ -589,9 +601,11 @@ module.exports = grammar({
 	 * Uses the GLR algorithm to resolve *intended conflicts* in the grammar.
 	 * @see https://tree-sitter.github.io/tree-sitter/creating-parsers/2-the-grammar-dsl.html
 	 */
-	conflicts: _$ => [
+	conflicts: $ => [
 		// example:
-		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => _$[rulename]),
+		// familyNameAll('entry_type', ['named', 'optional']).map((rulename) => $[rulename]),
+		[$.word, $.primitive_literal],
+		[$.word, $._type_unit],
 	],
 
 	/**
@@ -613,12 +627,14 @@ module.exports = grammar({
 		global: _$ => [
 			// operator
 			'mut',
-			'isset',
 			'as',
 			'is',
 			'if',
 			'then',
 			'else',
+			'switch',
+			'case',
+			'default',
 			// storage
 			'type',
 			'val',

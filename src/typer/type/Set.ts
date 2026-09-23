@@ -30,7 +30,7 @@ class TypeSet extends ReferenceType {
 		public readonly typearg: Type,
 		is_mutable: boolean = false,
 	) {
-		super(new Set<VALUE.Set>([new VALUE.Set()]), is_mutable);
+		super(is_mutable);
 	}
 
 	public override toString(): string {
@@ -55,10 +55,6 @@ class TypeSet extends ReferenceType {
 
 	public override mutableOf(): TypeSet {
 		return new TypeSet(this.typearg, true);
-	}
-
-	public override immutableOf(): TypeSet {
-		return new TypeSet(this.typearg, false);
 	}
 }
 export {TypeSet as Set};

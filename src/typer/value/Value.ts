@@ -27,8 +27,12 @@ export function identical(
  * Known subclasses:
  * - Primitive
  * - Collection
+ * - Maybe
  */
 export abstract class Value {
+	/** Whether this value is of a reference type or a value type. */
+	public abstract readonly isReference: boolean;
+
 	/**
 	 * Return the “logical value” of this value.
 	 * @returns the associated Boolean value of this value

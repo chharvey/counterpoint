@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {runOnceSetter} from '../../lib/index.ts';
 import type {Interpreter} from '../Interpreter.ts';

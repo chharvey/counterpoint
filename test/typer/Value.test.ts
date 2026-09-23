@@ -2,10 +2,14 @@ import * as assert from 'node:assert';
 import * as test from 'node:test';
 import {
 	VALUE,
-	bigint_to_i64,
+	TYPE,
+	Interpreter,
 	CodeGenerator,
 } from '../../src/index.ts';
-import {assertEqualBins} from '../utils.ts';
+import {
+	assertEqualBins,
+	setupScript,
+} from '../utils.ts';
 
 
 
@@ -64,6 +68,16 @@ test.suite('Value', () => {
 					[0x101n, new VALUE.String('wind')],
 					[0x102n, new VALUE.String('fire')],
 				]))), '[a= "earth", b= "wind", c= "fire"] !== [a= "earth", b= "wind", c= "fire"]');
+			});
+		});
+
+		test.suite('Maybe', () => {
+			test.test('different Nones are not identical.', () => {
+				assert.ok(!new VALUE.Maybe(TYPE.STR).identical(new VALUE.Maybe(TYPE.STR)));
+			});
+			test.test('Somes with identical values are not identical.', () => {
+				const v = new VALUE.String('water');
+				return assert.ok(!new VALUE.Maybe(v).identical(new VALUE.Maybe(v)));
 			});
 		});
 	});
@@ -143,16 +157,20 @@ test.suite('Value', () => {
 					new VALUE.String('fire'),
 				])), '["earth", "wind", "fire"] == ["earth", "wind", "fire"]');
 			});
-			test.test.todo('Lists may contain circular references.', () => {
-				// TODO: need an interpreter to test this
-				`
-					val a: mut List.<List.<Object>> = List.<List.<Object>>(());
-					val b: mut List.<List.<Object>> = List.<List.<Object>>(());
-					a.append.(b);
-					b.append.(a);
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
+			test.test('Lists may contain circular references.', () => {
+				const interp = new Interpreter();
+				setupScript(`{
+					val a: mut [[Object]] = [];
+					val b: mut [[Object]] = [];
+					set a.[0] = b; % a.append.(b);
+					set b.[0] = a; % b.append.(a);
+					a == b; %== true
+					b == a; %== true
+				}`, {codegen: false}).builder.interpret(interp);
+				return assert.deepStrictEqual(interp.drops, [
+					VALUE.TRUE,
+					VALUE.TRUE,
+				]);
 			});
 		});
 
@@ -168,16 +186,20 @@ test.suite('Value', () => {
 					[0x101n, new VALUE.String('wind')],
 				]))), '[a= "earth", b= "wind", c= "fire"] == [a= "earth", c= "fire", b= "wind"]');
 			});
-			test.test.todo('Dicts may contain circular references.', () => {
-				// TODO: need an interpreter to test this
-				`
-					val a: mut Dict.<anything> = [x= null];
-					val b: mut Dict.<anything> = [x= null];
-					a.set.(@x, b);
-					b.set.(@x, a);
-					assert.equal.(a, b);
-					assert.equal.(b, a);
-				`;
+			test.test('Dicts may contain circular references.', () => {
+				const interp = new Interpreter();
+				setupScript(`{
+					val a: mut [:anything] = [x= null];
+					val b: mut [:anything] = [x= null];
+					set a.[@x] = b; % a.set.(@x, b);
+					set b.[@x] = a; % b.set.(@x, a);
+					a == b; %== true
+					b == a; %== true
+				}`, {codegen: false}).builder.interpret(interp);
+				return assert.deepStrictEqual(interp.drops, [
+					VALUE.TRUE,
+					VALUE.TRUE,
+				]);
 			});
 		});
 
@@ -206,6 +228,37 @@ test.suite('Value', () => {
 				]))));
 			});
 		});
+
+		test.suite('Maybe', () => {
+			test.test('different Nones are equal.', () => {
+				assert.ok(new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(TYPE.STR)));
+			});
+			test.test('Somes with equal values are equal.', () => {
+				assert.ok(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				]))));
+			});
+			test.test('Somes with unequal values are not equal.', () => {
+				assert.ok(!new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('earth'),
+					new VALUE.String('wind'),
+					new VALUE.String('fire'),
+				])).equal(new VALUE.Maybe(new VALUE.List<VALUE.String>([
+					new VALUE.String('clubs'),
+					new VALUE.String('spades'),
+					new VALUE.String('diamonds'),
+				]))));
+			});
+			test.test('None and Some are never equal.', () => {
+				assert.ok(!new VALUE.Maybe(TYPE.STR).equal(new VALUE.Maybe(new VALUE.String('hearts'))));
+			});
+		});
 	});
 
 
@@ -231,10 +284,10 @@ test.suite('Value', () => {
 
 		test.test('Symbol', () => {
 			const cg = new CodeGenerator();
-			const {vm: {Vect, Value}, mod} = cg;
+			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
-				[new VALUE.Symbol(0x100n, 'hello').codegen(cg)],
-				[Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, 0x100n)))],
+				new VALUE.Symbol(0x100n, 'hello').codegen(cg),
+				Value.newPrimitive(Vect.newNat(wasm.i64.const(0x100n))),
 			);
 		});
 
@@ -255,10 +308,10 @@ test.suite('Value', () => {
 				(-5n) ** (2n * 3n),
 			];
 			const cg = new CodeGenerator();
-			const {vm: {Vect, Value}, mod} = cg;
+			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Integer(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newInt(bigint_to_i64(mod, x)))),
+				data.map((x) => Value.newPrimitive(Vect.newInt(wasm.i64.const(x)))),
 			);
 		});
 
@@ -271,10 +324,10 @@ test.suite('Value', () => {
 				(42n ** 2n * 420n) % (2n ** 64n),
 			];
 			const cg = new CodeGenerator();
-			const {vm: {Vect, Value}, mod} = cg;
+			const {vm: {Vect, Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				data.map((x) => new VALUE.Natural(x).codegen(cg)),
-				data.map((x) => Value.newPrimitive(Vect.newNat(bigint_to_i64(mod, x, true)))),
+				data.map((x) => Value.newPrimitive(Vect.newNat(wasm.i64.const(x)))),
 			);
 		});
 
@@ -289,28 +342,28 @@ test.suite('Value', () => {
 				];
 				/* eslint-enable @stylistic/array-element-newline */
 				const cg = new CodeGenerator();
-				const {vm: {Vect, Value}, mod} = cg;
+				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					data.map((x) => new VALUE.Float(x).codegen(cg)),
-					data.map((x) => Value.newPrimitive(Vect.newFloat(mod.f64.const(x)))),
+					data.map((x) => Value.newPrimitive(Vect.newFloat(wasm.f64.const(x)))),
 				);
 			});
 			test.test('builds `0.0` and `-0.0` differently.', () => {
 				const cg = new CodeGenerator();
-				const {vm: {Vect, Value}, mod} = cg;
+				const {vm: {Vect, Value}, mod: {wasm}} = cg;
 				return assertEqualBins(
 					[0.0, -0.0].map((x) => new VALUE.Float(x).codegen(cg)),
-					[mod.f64.const(0.0), mod.f64.ceil(mod.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
+					[wasm.f64.const(0.0), wasm.f64.ceil(wasm.f64.const(-0.5))].map((c) => Value.newPrimitive(Vect.newFloat(c))),
 				);
 			});
 		});
 
 		test.test('String', () => {
 			const cg = new CodeGenerator();
-			const {vm: {Value}, mod} = cg;
+			const {vm: {Value}, mod: {wasm}} = cg;
 			return assertEqualBins(
 				new VALUE.String('hello').codegen(cg),
-				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => mod.i32.const(c)))),
+				Value.newComposite(cg.codegenString([0x68, 0x65, 0x6c, 0x6c, 0x6f].map((c) => wasm.i32.const(c)))),
 			);
 		});
 	});
@@ -333,8 +386,8 @@ test.suite('Value', () => {
 			});
 			test.test('does not overwrite non-identical (even if equal) elements.', () => {
 				assert.strictEqual(new VALUE.Set(new Set([
-					VALUE.FLOAT_0,
-					VALUE.FLOAT_N0,
+					new VALUE.Float(),
+					new VALUE.Float(-0.0),
 				])).count, 2n);
 			});
 		});
@@ -347,8 +400,8 @@ test.suite('Value', () => {
 				const lists = new VALUE.Set(new Set([new VALUE.List()]));
 				assert.strictEqual(lists.get(new VALUE.List()), VALUE.FALSE, 'returns false when testing non-identical, even if equal, reference types.');
 
-				const floats = new VALUE.Set(new Set([VALUE.FLOAT_0]));
-				assert.strictEqual(floats.get(VALUE.FLOAT_N0), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
+				const floats = new VALUE.Set(new Set([new VALUE.Float()]));
+				assert.strictEqual(floats.get(new VALUE.Float(-0.0)), VALUE.FALSE, 'returns false when testing non-identical, even if equal, value types (floating zeros are the only case of this).');
 			});
 		});
 	});

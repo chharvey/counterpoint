@@ -18,7 +18,7 @@ SemanticProperty
 	::= SemanticKey SemanticExpression;
 
 SemanticCase
-	::= SemanticExpression SemanticExpression;
+	::= SemanticExpression+ SemanticExpression;
 
 
 
@@ -61,7 +61,7 @@ SemanticTypeAccess[kind: NORMAL | MAYBE]
 SemanticTypeCall
 	::= SemanticType SemanticType+;
 
-SemanticTypeOperation[operator: ORNULL | OREXCP | MUTABLE]
+SemanticTypeOperation[operator: MAYBE | RESULT | MUTABLE]
 	::= SemanticType;
 SemanticTypeOperation[operator: AND | OR]
 	::= SemanticType SemanticType;
@@ -77,8 +77,8 @@ SemanticExpression =:=
 	| SemanticExpressionAccess
 	| SemanticExpressionCall
 	| SemanticExpressionClaim
-	| SemanticExpressionIsset
 	| SemanticExpressionOperation
+	| SemanticExpressionSwitch
 ;
 
 
@@ -123,14 +123,11 @@ SemanticExpressionCall
 SemanticExpressionClaim
 	::= SemanticExpression SemanticType;
 
-SemanticExpressionIsset
-	::= SemanticExpressionVariable | SemanticExpressionAccess;
-
-SemanticExpressionOperation[operator: NOT | EMP]
+SemanticExpressionOperation[operator: UN_MAYBE | UN_RESULT | NOT | EMP]
 	::= SemanticExpression;
 SemanticExpressionOperation[operator: NEG]
 	::= SemanticExpression[type: Number];
-SemanticExpressionOperation[operator: CAST | MAYBE | RESULT | IS]
+SemanticExpressionOperation[operator: IS | CAST | MAYBE | RESULT]
 	::= SemanticExpression SemanticExpression[type: Class];
 SemanticExpressionOperation[operator: EXP | MUL | DIV | ADD | SUB | LT | LE | GT | GE]
 	::= SemanticExpression[type: Number] SemanticExpression[type: Number];
@@ -139,6 +136,9 @@ SemanticExpressionOperation[operator: ID | EQ | AND | OR]
 SemanticExpressionOperation[operator: COND]
 	::= SemanticExpression[type: Boolean] SemanticExpression SemanticExpression;
 
+SemanticExpressionSwitch
+	::= SemanticExpression SemanticCase* SemanticExpression;
+
 
 
 SemanticStatement =:=
@@ -146,7 +146,6 @@ SemanticStatement =:=
 	| SemanticStatementExpression
 	| SemanticStatementClaim
 	| SemanticStatementReassignment
-	| SemanticStatementDelete
 	| SemanticStatementConditional
 	| SemanticStatementLoop
 	| SemanticStatementIteration

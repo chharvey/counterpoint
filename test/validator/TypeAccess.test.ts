@@ -130,17 +130,17 @@ test.suite('TypeAccess', () => {
 					type RecoC = (a: 1,   b?: 2.0,   c: "three");
 					type RecoV = (a: int, b?: float, c: str);
 
-					type D1 = TupoC?.2; % type \`"three" | null\`
-					type D2 = TupoV?.2; % type \`str | null\`
+					type D1 = TupoC?.2; % type \`Maybe["three"]\`
+					type D2 = TupoV?.2; % type \`Maybe[str]\`
 
-					type E1 = RecoC?.b; % type \`2.0 | null\`
-					type E2 = RecoV?.b; % type \`float | null\`
+					type E1 = RecoC?.b; % type \`Maybe[2.0]\`
+					type E2 = RecoV?.b; % type \`Maybe[float]\`
 				}`, 4, [
-					typeUnit('three').union(TYPE.NULL),
-					TYPE.STR.union(TYPE.NULL),
+					new TYPE.Maybe(typeUnit('three')),
+					new TYPE.Maybe(TYPE.STR),
 
-					typeUnit(2.0).union(TYPE.NULL),
-					TYPE.FLOAT.union(TYPE.NULL),
+					new TYPE.Maybe(typeUnit(2.0)),
+					new TYPE.Maybe(TYPE.FLOAT),
 				]);
 			});
 			test.test('throws when entry is not optional.', () => {
@@ -154,8 +154,8 @@ test.suite('TypeAccess', () => {
 					type D1 = TupoC?.2;
 					type D2 = TupoV?.2;
 
-					type E1 = RecoC?.b; % type \`2.0 | null\`
-					type E2 = RecoV?.b; % type \`float | null\`
+					type E1 = RecoC?.b;
+					type E2 = RecoV?.b;
 				}`, 4, repeat(TypeErrorInvalidOperation, 4));
 			});
 		});

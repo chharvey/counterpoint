@@ -6,16 +6,12 @@ import {
 	type CplConfig,
 	CONFIG_DEFAULT,
 } from '../../../core/index.ts';
-import type {
-	EntryType,
-	TYPE,
-} from '../../../typer/index.ts';
+import type {TYPE} from '../../../typer/index.ts';
 import type {SyntaxNodeType} from '../../utils-private.ts';
 import type {ValidTypeAccessOperator} from '../../Operator.ts';
 import {
 	get_entry_info,
-	validate_access_kind,
-	update_accessed_type,
+	access_type,
 } from '../utils-private.ts';
 import type {Index} from '../Index-.ts';
 import type {Key} from '../Key.ts';
@@ -41,8 +37,7 @@ export class Access extends Type {
 
 	@memoizeMethod
 	public override eval(): TYPE.Type {
-		const entry: EntryType = get_entry_info(this.base.eval(), this);
-		validate_access_kind(this.kind, entry.optional, this);
-		return update_accessed_type(entry.type, this.kind);
+		const base_type: TYPE.Type = this.base.eval();
+		return access_type(this.kind, base_type, get_entry_info(base_type, this), this);
 	}
 }

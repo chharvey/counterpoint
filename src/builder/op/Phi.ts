@@ -1,5 +1,5 @@
 import * as xjs from 'extrajs';
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {
 	memoizeMethod,
@@ -67,7 +67,7 @@ class Phi extends Value {
 			return drop_then(cg, [arg0], arg2);
 		}
 
-		return cg.mod.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
+		return cg.mod.wasm.if(cg.vm.Vect.isConst(cg.newVect(arg0), true), arg1, arg2);
 	}
 	/* eslint-enable */
 }

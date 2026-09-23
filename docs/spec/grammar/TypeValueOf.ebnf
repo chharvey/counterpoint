@@ -82,8 +82,7 @@ Type! TypeValueOf(SemanticTypeAccess access) :=
 	3. *Let* `accessor` be `access.children.1`.
 	4. *Let* `base_type` be *Unwrap:* `TypeValueOf(base)`.
 	5. *Let* `entry` be *Unwrap:* `GetEntryInfo(base_type, access, false)`.
-	6. *Perform:* *Unwrap:* `ValidateAccessKind(access.kind, entry.optional)`.
-	7. *Return:* `UpdateAccessedType(entry.type, access.kind)`.
+	6. *Return:* `AccessType(access.kind, base_type, entry)`.
 ;
 
 
@@ -104,28 +103,29 @@ Type! TypeValueOf(SemanticTypeCall call) :=
 			4. *If* `base.source` is "Set":
 				1. *Return:* a Set type under the type argument `genericarg`.
 		2. *Throw:* a new TypeError.
-	5. *Else:*
-		1. *Assert:* `base.source` is "Map".
-		2. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
-		3. *If* `call.children.count` is 2:
+	5. *Else If* `base.source` is "Map":
+		1. *Let* `antecedenttype` be *Unwrap:* `TypeValueOf(call.children.1)`.
+		2. *If* `call.children.count` is 2:
 			1. *Let* `consequenttype` be `antecedenttype`.
-		4. *Else If* `call.children.count` is 3:
+		3. *Else If* `call.children.count` is 3:
 			1. *Let* `consequenttype` be *Unwrap:* `TypeValueOf(call.children.2)`.
-		5. *Else:*
+		4. *Else:*
 			1. *Throw:* a new TypeError.
-		6. *Return:* a Map type under an antecedent type argument `antecedenttype`
+		5. *Return:* a Map type under an antecedent type argument `antecedenttype`
 			and a consequent type argument `consequenttype`.
+	6. *Else:*
+		// TODO: see Class API
 ;
 
 
 
-Type! TypeValueOf(SemanticTypeOperation[operator: ORNULL] oper) :=
+Type! TypeValueOf(SemanticTypeOperation[operator: MAYBE] oper) :=
 	1. *Assert:* `oper.children.count` is 1.
 	2. *Let* `t0` be *Unwrap:* `TypeValueOf(oper.children.0)`.
-	3. *Return:* `Union(t0, Null)`.
+	3. *Return:* `Maybe(t0)`.
 ;
 
-Type! TypeValueOf(SemanticTypeOperation[operator: OREXCP] oper) :=
+Type! TypeValueOf(SemanticTypeOperation[operator: RESULT] oper) :=
 	// TODO: implement
 ;
 

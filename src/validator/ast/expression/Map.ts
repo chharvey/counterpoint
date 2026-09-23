@@ -41,11 +41,11 @@ class ExpressionMap extends Collection {
 
 	@memoizeMethod
 	public override type(): TYPE.Type {
-		if (this.children.some((c) => c.antecedent.type().isBottomType || c.consequent.type().isBottomType)) {
+		if (this.children.some((c) => c.antecedents[0].type().isBottomType || c.consequent.type().isBottomType)) {
 			return TYPE.NOTHING;
 		}
 		return new TYPE.Map(
-			TYPE.Union.all(...this.children.map((c) => c.antecedent.type())),
+			TYPE.Union.all(...this.children.map((c) => c.antecedents[0].type())),
 			TYPE.Union.all(...this.children.map((c) => c.consequent.type())),
 			true,
 		);
@@ -54,7 +54,7 @@ class ExpressionMap extends Collection {
 	@memoizeMethod
 	public override build(builder: Builder): OP.MapNew {
 		return new OP.MapNew(new Map(this.children.map((c) => [
-			c.antecedent.build(builder).asTac(builder),
+			c.antecedents[0].build(builder).asTac(builder),
 			c.consequent.build(builder).asTac(builder),
 		])), this.type());
 	}
@@ -64,7 +64,7 @@ class ExpressionMap extends Collection {
 		if (assignee instanceof TYPE.Map) {
 			// better error reporting to check entry-by-entry instead of checking `this.type().typearg_{ant,con}`
 			return xjs.Array.forEachAggregated(this.children, (case_) => (
-				xjs.Array.forEachAggregated([case_.antecedent, case_.consequent], (expr, i) => (
+				xjs.Array.forEachAggregated([case_.antecedents[0], case_.consequent], (expr, i) => (
 					typecheck_assign(expr, [assignee.typearg_ant, assignee.typearg_con][i], expr)
 				))
 			));

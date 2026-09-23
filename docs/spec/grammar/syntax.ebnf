@@ -32,12 +32,14 @@ KeywordValue ::=
 Word ::=
 	// operator
 		| "mut"
-		| "isset"
 		| "as"
 		| "is"
 		| "if"
 		| "then"
 		| "else"
+		| "switch"
+		| "case"
+		| "default"
 	// storage
 		| "type"
 		| "val"
@@ -76,7 +78,7 @@ PrimitiveLiteral ::=
 
 
 EntryType<Named, Optional>
-	::= <Named+>(Word & <Optional->":") <Optional+>"?:" Type;
+	::= <Named+>(Word & <Optional->":") <Optional+>("?" ":") Type;
 
 ItemsType ::=
 	|                                                                  ","?  EntryType<-Named><+Optional>#   ","?
@@ -142,8 +144,9 @@ Items<Break> ::=
 	| Expression<+Block><?Break>? "," Expression<+Block><?Break># ","?
 ;
 
-Property <Break> ::= Word                       "="  Expression<+Block><?Break>;
-Case     <Break> ::= Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+Property   <Break> ::=                                          Word                       "="  Expression<+Block><?Break>;
+CaseMap    <Break> ::=                                          Expression<+Block><?Break> "->" Expression<+Block><?Break>;
+CaseSwitch <Break> ::= "case" (Expression<+Block><?Break> "|")* Expression<+Block><?Break> "->" Expression<+Block><?Break>;
 
 PropertyAccessor<Break>
 	::= INTEGER | NATURAL | Word | "[" Expression<+Block><?Break> "]";
@@ -154,7 +157,7 @@ ExpressionRecordLiteral <Break> ::= "("  ","? Property<?Break>#           ","?  
 ExpressionListLiteral   <Break> ::= "[" (","? Expression<+Block><?Break># ","?)? "]";
 ExpressionDictLiteral   <Break> ::= "["  ","? Property<?Break>#           ","?   "]";
 ExpressionSetLiteral    <Break> ::= "{" (","? Expression<+Block><?Break># ","?)? "}";
-ExpressionMapLiteral    <Break> ::= "{"  ","? Case<?Break>#               ","?   "}";
+ExpressionMapLiteral    <Break> ::= "{"  ","? CaseMap<?Break>#            ","?   "}";
 FunctionArguments       <Break> ::= "(" (","? Expression<+Block><?Break># ","?)? ")";
 
 ExpressionUnit<Block, Break> ::=
@@ -174,6 +177,7 @@ ExpressionUnit<Block, Break> ::=
 ExpressionCompound<Block, Break> ::=
 	| ExpressionUnit<?Block><?Break>
 	| ExpressionCompound<?Block><?Break> (
+		| "~?" | "~!"
 		| ("." | "?." | "!.") PropertyAccessor<?Break>
 		|  "."                GenericArguments? FunctionArguments<?Break>
 	)
@@ -184,13 +188,8 @@ ExpressionUnarySymbol<Block, Break> ::=
 	| ("!" | "?" | "+" | "-") ExpressionUnarySymbol<?Block><?Break>
 ;
 
-ExpressionUnaryKeyword<Block, Break> ::=
-	| ExpressionUnarySymbol<?Block><?Break>
-	| ("isset" | "!isset") Assignee<?Break>
-;
-
 ExpressionCast<Block, Break> ::=
-	| (ExpressionCast<?Block><?Break> ("as" | "as?" | "as!"))? ExpressionUnaryKeyword<?Block><?Break>
+	| (ExpressionCast<?Block><?Break> ("as" | "as?" | "as!"))? ExpressionUnarySymbol<?Block><?Break>
 	|  ExpressionCast<?Block><?Break>  "as"                    "<" Type ">"
 ;
 
@@ -213,9 +212,13 @@ ExpressionConditional<Break> ::=
 	& Expression<-Block><?Break>
 ;
 
+ExpressionSwitch<Break>
+	::= "switch" Expression<+Block><?Break> CaseSwitch<?Break>* "default" Expression<+Block><?Break>;
+
 Expression<Block, Break> ::=
 	| ExpressionDisjunctive<?Block><?Break>
 	| ExpressionConditional<?Break>
+	| ExpressionSwitch<?Break>
 ;
 
 

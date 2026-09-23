@@ -1,5 +1,5 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import {
 	type ConstructorType,
@@ -113,10 +113,44 @@ export function assertEqualTypes(arg0: TYPE.Type | readonly TYPE.Type[] | Readon
 	}
 }
 
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(actual: readonly Ref[], expected: readonly Ref[]): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(bins: ReadonlyMap<Ref, Ref>): void;
-export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Module>(arg0: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, arg1?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
+/**
+ * Assert equal interpreter values.
+ * but if that fails, compares by `Value#equal` (Counterpoint equality).
+ * @param actual   the actual value
+ * @param expected what `actual` is expected to equal
+ * @throws {AssertionError} actual and expected fail equality
+ */
+export function assert_equal_values(actual: VALUE.Value, expected: VALUE.Value): void;
+/**
+ * Assert equal interpreter values.
+ * but if that fails, compares by `Value#equal` (Counterpoint equality).
+ * @param actual   an array of actual values
+ * @param expected an array of what `actual` is expected to equal
+ * @throws {AssertionError} if a corresponding type fails equality
+ */
+export function assert_equal_values(actual: readonly VALUE.Value[], expected: readonly VALUE.Value[]): void;
+/**
+ * Assert equal interpreter values.
+ * but if that fails, compares by `Value#equal` (Counterpoint equality).
+ * @param types a map of keys and values to compare
+ * @throws {AssertionError} if one of the pairs fails equality
+ */
+export function assert_equal_values(types: ReadonlyMap<VALUE.Value, VALUE.Value>): void;
+export function assert_equal_values(arg0: VALUE.Value | readonly VALUE.Value[] | ReadonlyMap<VALUE.Value, VALUE.Value>, arg1?: VALUE.Value | readonly VALUE.Value[]): void {
+	if (arg0 instanceof Map) {
+		return assert_equal_values([...arg0.keys()], [...arg0.values()]);
+	} else if (Array.isArray(arg0)) {
+		assert.strictEqual(arg0.length, (arg1 as VALUE.Value[]).length, 'Expected arrays to have the same length.');
+		return xjs.Array.forEachAggregated(arg0, (act, i) => assert_equal_values(act as VALUE.Value, (arg1 as VALUE.Value[])[i]));
+	} else {
+		return assert.ok((arg0 as VALUE.Value).equal(arg1 as VALUE.Value), `${ arg0 as VALUE.Value } == ${ arg1 }`);
+	}
+}
+
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: Ref, expected: Ref, message?: Parameters<typeof assert.strictEqual>[2]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(actual: readonly Ref[], expected: readonly Ref[]): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(bins: ReadonlyMap<Ref, Ref>): void;
+export function assertEqualBins<Ref extends binaryen.ExpressionRef>(arg0: Ref | readonly Ref[] | ReadonlyMap<Ref, Ref>, arg1?: Ref | readonly Ref[], message?: Parameters<typeof assert.strictEqual>[2]): void {
 	if (arg0 instanceof Map) {
 		return assertEqualBins([...arg0.keys()], [...arg0.values()]);
 	} else if (Array.isArray(arg0)) {
@@ -139,6 +173,12 @@ export function assertEqualBins<Ref extends binaryen.ExpressionRef | binaryen.Mo
 			return assert.strictEqual(binaryen.emitText(arg0 as Ref), binaryen.emitText(arg1 as Ref));
 		}
 	}
+}
+
+
+
+export function op_maybe_string(val?: string): string {
+	return `(MAYBE.NEW${ val ? ` ${ val }` : '' })`;
 }
 
 
@@ -170,9 +210,6 @@ export function typeUnit(value: symbol | bigint | number | string, tag?: string)
 	TYPE_UNIT_MEMO.has(value) || TYPE_UNIT_MEMO.set(value, (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
-		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
-		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
-		value === ''              ? VALUE.STR_EMPTY :
 		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
@@ -205,8 +242,6 @@ export function genConst(cg: CodeGenerator, value: null | boolean | symbol | big
 	return (
 		value === 0n              ? VALUE.INT_0 :
 		value === 1n              ? VALUE.INT_1 :
-		Object.is(value,  0.0)    ? VALUE.FLOAT_0 :
-		Object.is(value, -0.0)    ? VALUE.FLOAT_N0 :
 		typeof value === 'symbol' ? new VALUE.Symbol(BigInt(value.description ?? ''), tag ?? '') :
 		typeof value === 'bigint' ? new VALUE.Integer(value) :
 		typeof value === 'number' ? new VALUE.Float(value) :
@@ -236,7 +271,7 @@ export function setupScript(
 	readonly stmts:   NonNullable<typeof goal.block>['children'],
 	readonly builder: Builder,
 	readonly cg:      CodeGenerator,
-	readonly mod:     CodeGenerator['mod'],
+	readonly wasm:    binaryen.ExpressionBuilder,
 } {
 	const goal: AST.Goal = AST.Goal.fromSource(source);
 	const builder = new Builder();
@@ -255,6 +290,6 @@ export function setupScript(
 		builder,
 		cg,
 		stmts: goal.block.children,
-		mod:   cg.mod,
+		wasm:  cg.mod.wasm,
 	};
 }

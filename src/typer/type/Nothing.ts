@@ -4,8 +4,7 @@ import {
 	memoizeBinOp,
 } from '../utils-private.ts';
 import type * as VALUE from '../value/index.ts';
-import type {Type} from './Type.ts';
-import {ValueType} from './ValueType.ts';
+import {Type} from './Type.ts';
 
 
 
@@ -13,7 +12,7 @@ import {ValueType} from './ValueType.ts';
  * Class for constructing the Bottom Type, the type containing no values.
  * @final
  */
-export class Nothing extends ValueType {
+export class Nothing extends Type {
 	public constructor() {
 		super();
 	}

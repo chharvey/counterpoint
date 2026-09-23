@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import {memoizeGetter} from '../../lib/index.ts';
 import type {VirtualMachine} from '../VirtualMachine.ts';
 import type {
@@ -26,21 +26,26 @@ class VmMap implements HasFuncData {
 	public get funcImportDataMap(): ReadonlyMap<string, FuncImportData> {
 		const {reftype, reftypeNull} = this.vm;
 		return new Map<string, FuncImportData>([
-			['Map#count', {name: 'Map.count', param: reftype.Map, result: binaryen.i32}],
+			['Map#count', {name: 'Map.count', param: reftype.Map, result: binaryen.Type.i32}],
 			['Map#find', {
 				name:   'Map.find',
 				param:  binaryen.createType([reftype.Map, reftype.Value]),
-				result: binaryen.createType([binaryen.i32, reftypeNull.Case]),
+				result: binaryen.createType([binaryen.Type.i32, reftypeNull.Case]),
 			}],
 			['Map#adjustCapacity', {
 				name:   'Map.adjust-capacity',
-				param:  binaryen.createType([reftype.Map, binaryen.i32]),
-				result: binaryen.none,
+				param:  binaryen.createType([reftype.Map, binaryen.Type.i32]),
+				result: binaryen.Type.none,
+			}],
+			['Map#get', {
+				name:   'Map.get',
+				param:  binaryen.createType([reftype.Map, reftype.Value]),
+				result: reftype.Value,
 			}],
 			['Map#set', {
 				name:   'Map.set',
 				param:  binaryen.createType([reftype.Map, reftype.Value, reftype.Value]),
-				result: binaryen.none,
+				result: binaryen.Type.none,
 			}],
 			['Map#delete', {
 				name:   'Map.delete',
@@ -58,13 +63,13 @@ class VmMap implements HasFuncData {
 		/** @return `(struct.set $Map $size     <ref> <val>)` */ setSize    (val: binaryen.ExpressionRef /* i32 */):                binaryen.ExpressionRef /* void */,
 		/** @return `(struct.set $Map $internal <ref> <val>)` */ setInternal(val: binaryen.ExpressionRef /* (ref $MapInternal) */): binaryen.ExpressionRef /* void */,
 	} {
-		const {mod, reftype} = this.vm;
+		const {mod: {wasm}, reftype} = this.vm;
 		return {
-			get size()     { return mod.struct.get(FIELD.SIZE,     ref, binaryen.i32); },
-			get internal() { return mod.struct.get(FIELD.INTERNAL, ref, reftype.MapInternal); },
+			get size()     { return wasm.struct.get(FIELD.SIZE,     ref, binaryen.Type.i32); },
+			get internal() { return wasm.struct.get(FIELD.INTERNAL, ref, reftype.MapInternal); },
 
-			setSize(val)     { return mod.struct.set(FIELD.SIZE,     ref, val); },
-			setInternal(val) { return mod.struct.set(FIELD.INTERNAL, ref, val); },
+			setSize(val)     { return wasm.struct.set(FIELD.SIZE,     ref, val); },
+			setInternal(val) { return wasm.struct.set(FIELD.INTERNAL, ref, val); },
 		};
 	}
 
@@ -73,7 +78,7 @@ class VmMap implements HasFuncData {
 	 * “Live” elements are non-null, non-tombstone cases.
 	 */
 	public count(map: binaryen.ExpressionRef /* (ref $Map) */): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.call('Map.count', [map], binaryen.i32);
+		return this.vm.mod.wasm.call('Map.count', [map], binaryen.Type.i32);
 	}
 
 	/**
@@ -93,7 +98,7 @@ class VmMap implements HasFuncData {
 	 *  	- if a non-null, “live” Case is returned, it was deleted from the Map and replaced with a tombstone; *do not* change the Map’s size (as tombstones are still counted)
 	 */
 	public find(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* i32 (ref null $Case) */ {
-		return this.vm.mod.call('Map.find', [map, ant], binaryen.createType([binaryen.i32, this.vm.reftypeNull.Case]));
+		return this.vm.mod.wasm.call('Map.find', [map, ant], binaryen.createType([binaryen.Type.i32, this.vm.reftypeNull.Case]));
 	}
 
 	/**
@@ -103,7 +108,15 @@ class VmMap implements HasFuncData {
 	 * There is no guarantee the entries’ positioning and/or order will be preserved.
 	 */
 	public adjustCapacity(map: binaryen.ExpressionRef /* (ref $Map) */, capacity: binaryen.ExpressionRef /* i32 */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('Map.adjust-capacity', [map, capacity], binaryen.none);
+		return this.vm.mod.wasm.call('Map.adjust-capacity', [map, capacity], binaryen.Type.none);
+	}
+
+	/**
+	 * Get a Map consequent given an antecedent.
+	 * If there is no consequent at the given antecedent, Counterpoint’s `null` value is returned.
+	 */
+	public get(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref $Value) */ {
+		return this.vm.mod.wasm.call('Map.get', [map, ant], this.vm.reftype.Value);
 	}
 
 	/**
@@ -111,7 +124,7 @@ class VmMap implements HasFuncData {
 	 * This method first reallocates if necessary, then adds the consequent.
 	 */
 	public set(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */, con: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* void */ {
-		return this.vm.mod.call('Map.set', [map, ant, con], binaryen.none);
+		return this.vm.mod.wasm.call('Map.set', [map, ant, con], binaryen.Type.none);
 	}
 
 	/**
@@ -121,7 +134,7 @@ class VmMap implements HasFuncData {
 	 * This method removes the Case first (if found), then reallocates if necessary.
 	 */
 	public delete(map: binaryen.ExpressionRef /* (ref $Map) */, ant: binaryen.ExpressionRef /* (ref $Value) */): binaryen.ExpressionRef /* (ref null $Value) */ {
-		return this.vm.mod.call('Map.delete', [map, ant], this.vm.reftypeNull.Value);
+		return this.vm.mod.wasm.call('Map.delete', [map, ant], this.vm.reftypeNull.Value);
 	}
 }
 export {VmMap as Map};

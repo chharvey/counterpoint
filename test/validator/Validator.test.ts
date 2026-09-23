@@ -29,15 +29,21 @@ test.suite('Validator', () => {
 		};
 		test.test('assigns intrinsic ids an index.', () => {
 			const intrinsics = [
-				'Object',
+				'Null',
+				'Boolean',
+				'Symbol',
 				'Integer',
 				'Natural',
 				'Float',
 				'String',
+				'Object',
 				'List',
 				'Dict',
 				'Set',
 				'Map',
+				'Maybe',
+				'None',
+				'Some',
 			];
 			return assert.deepStrictEqual(
 				intrinsics.map((s) => Validator.cookTokenIdentifier(s)),
@@ -86,7 +92,7 @@ test.suite('Validator', () => {
 				datas.forEach((data, i) => {
 					const actual_raw: RegExpMatchArray = data.src.match(/[A-Za-z_][A-Za-z0-9_]*|'[^']*'/g)!;
 					let cooked: bigint[] = [];
-					test.test.before(() => {
+					test.before(() => {
 						assert.deepStrictEqual(actual_raw, data.raw);
 						cooked = actual_raw.map((word) => Validator.cookTokenIdentifier(word));
 					});

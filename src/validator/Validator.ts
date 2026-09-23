@@ -8,16 +8,13 @@ import {
 	Punctuator,
 	type Keyword,
 	KEYWORDS,
+	INTRINSICS,
 } from '../parser/index.ts';
 import type {SymbolSchema} from './index.ts';
 import {
 	type SyntaxNodeType,
 	isSyntaxNodeType,
 } from './utils-private.ts';
-import {
-	ValidIntrinsicName,
-	ValidFunctionName,
-} from './ast/utils-private.ts';
 
 
 
@@ -120,9 +117,9 @@ function tokenWorthFloat(text: string): number {
 	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT));
 	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT)) * base ** -fracpart.length;
 	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
-		exppart.startsWith(Punctuator.AFF) ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
-		exppart.startsWith(Punctuator.NEG) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
-		                                     `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT) }` // eslint-disable-line @stylistic/indent
+		exppart.startsWith(Punctuator.PLUS)  ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
+		exppart.startsWith(Punctuator.MINUS) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
+		                                       `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT) }` // eslint-disable-line @stylistic/indent
 	));
 	return (wholevalue + fracvalue) * expvalue;
 }
@@ -206,19 +203,6 @@ function tokenWorthString(text: string): CodeUnit[] {
  * 	to `(sum (const 2) (const 3))`
  */
 export class Validator {
-	/** A bank of unique intrinsic identifier names. */
-	private static readonly INTRINSICS: ReadonlySet<string> = new Set<string>([
-		ValidIntrinsicName.OBJECT,
-		ValidFunctionName.INTEGER,
-		ValidFunctionName.NATURAL,
-		ValidFunctionName.FLOAT,
-		ValidFunctionName.STRING,
-		ValidFunctionName.LIST,
-		ValidFunctionName.DICT,
-		ValidFunctionName.SET,
-		ValidFunctionName.MAP,
-	]);
-
 	/** The minimum allowed cooked value of a reserved keyword token. */
 	private static readonly MIN_VALUE_KEYWORD = 0x40n;
 
@@ -257,8 +241,8 @@ export class Validator {
 	 * @return       the unique id identifying the token
 	 */
 	public static cookTokenIdentifier(source: string): bigint {
-		if (Validator.INTRINSICS.has(source)) {
-			return Validator.MIN_VALUE_INTRINSIC + BigInt([...Validator.INTRINSICS].indexOf(source));
+		if ((INTRINSICS as readonly string[]).includes(source)) {
+			return Validator.MIN_VALUE_INTRINSIC + BigInt((INTRINSICS as readonly string[]).indexOf(source));
 		}
 		return Validator.MIN_VALUE_IDENTIFIER + Validator.#hashString(source);
 	}
@@ -271,10 +255,10 @@ export class Validator {
 	 * @return       the numeric value, cooked
 	 */
 	public static cookTokenNumber(source: string): {type: 'int' | 'nat', value: bigint} | {type: 'float', value: number} {
-		const has_unary:  boolean   = ([Punctuator.AFF, Punctuator.NEG] as string[]).includes(source[0]);
-		const multiplier: number    = (has_unary && source.startsWith(Punctuator.NEG)) ? -1 : 1;
-		const has_radix:  boolean   = (has_unary) ? source[1] === ESCAPER : source.startsWith(ESCAPER);
-		const radix:      RadixType = (has_radix) ? new Map<string, RadixType>([
+		const has_unary:  boolean   = ([Punctuator.PLUS, Punctuator.MINUS] as string[]).includes(source[0]);
+		const multiplier: number    = has_unary && source.startsWith(Punctuator.MINUS) ? -1 : 1;
+		const has_radix:  boolean   = has_unary ? source[1] === ESCAPER : source.startsWith(ESCAPER);
+		const radix:      RadixType = has_radix ? new Map<string, RadixType>([
 			['b',  2n],
 			['q',  4n],
 			['s',  6n],

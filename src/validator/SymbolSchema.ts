@@ -43,13 +43,16 @@ export class SymbolSchemaType extends SymbolSchema {
 export class SymbolSchemaVar extends SymbolSchema {
 	/**
 	 * The variable’s assignee type.
-	 * This is the type declared in the annotation.
+	 * This is the type declared in the annotation (or inferred on initialization).
 	 */
 	public type: TYPE.Type = TYPE.ANYTHING;
 
 	/**
-	 * The variable’s assigned value type as represented in IR.
-	 * This will typically be narrower than the assignee type.
+	 * A volatile storage for creating OP codes in the IR.
+	 * Represents the variable’s assigned IR value type.
+	 * This will typically be narrower than the assignee type
+	 * (except in cases of optional variables).
+	 * @deprecated
 	 */
 	public irType: TYPE.Type = TYPE.NOTHING;
 

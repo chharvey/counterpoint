@@ -1,4 +1,4 @@
-import type binaryen from 'binaryen';
+import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import type {
 	VALUE,
@@ -29,17 +29,19 @@ import {
  * - RecordNew
  * - DictNew
  * - MapNew
+ * - MaybeNew
  * - TupleGet
  * - RecordGet
  * - CollectionDynamicGet
  * - Call
  * - Unop
+ * - Instance
  * - Binop
  * - Phi
  */
 export abstract class Value extends Opcode {
 	/**
-	 * @param type The type of the expression.
+	 * @param type The type of the Opcode expression.
 	 */
 	public constructor(
 		op_code: OpCode,

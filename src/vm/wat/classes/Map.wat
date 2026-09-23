@@ -135,10 +135,28 @@
 
 
 
+(func $Map.get (export "Map#get") (param $map (ref $Map)) (param $ant (ref $Value)) (result (ref $Value))
+	;; case at the specified antecedent.
+	(local $case (ref null $Case))
+	(call $Map.find (local.get $map) (local.get $ant))
+	(local.set $case)
+	(drop)
+	(if (result (ref $Value))
+		(i32.or
+			(ref.is_null (local.get $case))
+			(call $Case.is-tombstone (local.get $case))
+		)
+		(then (call $Value.new-primitive (global.get $Vect.NULL)))
+		(else (struct.get $Case $con (local.get $case)))
+	)
+)
+
+
+
 (func $Map.set (export "Map#set") (param $map (ref $Map)) (param $ant (ref $Value)) (param $con (ref $Value))
 	;; index of the array to set to.
 	(local $index i32)
-	;; case at the specified index.
+	;; case at the specified antecedent.
 	(local $case (ref null $Case))
 	;; capacity needed for adjustment.
 	(local $new-capacity i32)

@@ -1,11 +1,9 @@
-import * as xjs from 'extrajs';
 import {
 	assert_context_name,
 	memoizeMethod,
 	memoizeGetter,
 } from '../../lib/index.ts';
 import {
-	language_values_identical,
 	strictEqual,
 	memoizeBinOp,
 } from '../utils-private.ts';
@@ -15,8 +13,15 @@ import {
 	Union,
 	Difference,
 	Unit,
+	None,
+	Some,
 	NOTHING,
 	ANYTHING,
+	SYM,
+	INT,
+	NAT,
+	FLOAT,
+	STR,
 	NULL,
 	FALSE,
 	TYPE_CONSTANTS,
@@ -144,7 +149,19 @@ export function differenceLaws(
 		if (this === t) {
 			return NOTHING;
 		}
-		/* 4-1 | `A - B == A  <->  A & B == nothing` */
+		/* 1-b | `nothing - T == nothing` */
+		if (this.isBottomType) {
+			return NOTHING;
+		}
+		/* 1-9 | `T  - nothing  == T` */
+		if (t.isBottomType) {
+			return this;
+		}
+		/* 1-a | `T  - anything == nothing` */
+		if (t.isTopType) {
+			return NOTHING;
+		}
+		/* 4-1 | `A - B == A  <->  A /= B` */
 		if (this.isDisjointWith(t)) {
 			return this;
 		}
@@ -152,7 +169,7 @@ export function differenceLaws(
 		if (this.isSubtypeOf(t)) {
 			return NOTHING;
 		}
-		/* 4-5 | `A - (B \| C) == (A - B)  & (A - C)` */
+		/* 4-6 | `A - (B \| C) == (A - B)  & (A - C)` */
 		if (t instanceof Union) {
 			return Intersection.all(this, ...t.operands.map((s) => this.subtract(s))); // `(A - B) & (A - C) == A & -B & -C`
 		}
@@ -256,7 +273,7 @@ export function subtypeLaws(
 				return true;
 			}
 		}
-		/* 4-3 | `A <: B - C  <->  A <: B  &&  A & C == nothing` */
+		/* 4-3 | `A <: B - C  <->  A <: B  &&  A /= C` */
 		if (t instanceof Difference) {
 			return this.isSubtypeOf(t.left) && this.isDisjointWith(t.right);
 		}
@@ -278,11 +295,14 @@ export function disjointLaws(
 ): typeof method {
 	assert_context_name(context, 'isDisjointWith');
 	return function (this: Type, t) {
+		if (this.isBottomType || t.isBottomType) {
+			return true;
+		}
 		if (this === t) {
 			return false;
 		}
-		if (this.isBottomType || t.isBottomType) {
-			return true;
+		if (this.isSubtypeOf(t) || t.isSubtypeOf(this)) {
+			return false;
 		}
 		return method.call(this, t);
 	};
@@ -294,6 +314,8 @@ export function disjointLaws(
  * Parent class for all Counterpoint Language Types.
  * Known subclasses:
  * - TypeOperation
+ * - Nothing
+ * - Anything
  * - ValueType
  * - TypeInterface
  * - ReferenceType
@@ -312,12 +334,8 @@ export abstract class Type {
 	/**
 	 * Construct a new Type object.
 	 * @param isMutable Whether this type is mutable. Mutable objects may change fields/entries and call mutating methods.
-	 * @param values    An enumerated set of values that are assignable to this type.
 	 */
-	public constructor(
-		public readonly values:    ReadonlySet<VALUE.Value> = new Set(),
-		public readonly isMutable: boolean = false,
-	) {
+	public constructor(public readonly isMutable: boolean = false) {
 	}
 
 	/**
@@ -341,12 +359,6 @@ export abstract class Type {
 	public get isTopType(): boolean {
 		return false;
 	}
-
-	/**
-	 * Return whether this type is a reference type or a value type.
-	 * @return `true` if this type is a reference type
-	 */
-	public abstract get isReference(): boolean;
 
 	/**
 	 * @return a string representation of this type
@@ -407,9 +419,7 @@ export abstract class Type {
 	 * @param v the value to check
 	 * @returns Is `v` assignable to this type?
 	 */
-	public includes(v: VALUE.Value): boolean {
-		return xjs.Set.has(this.values, v, language_values_identical);
-	}
+	public abstract includes(v: VALUE.Value): boolean;
 
 	/**
 	 * Return the type intersection of this type with another.
@@ -494,18 +504,32 @@ export abstract class Type {
 	@memoizeBinOp(true)
 	@disjointLaws
 	public isDisjointWith(t: Type): boolean {
-		if (t instanceof Intersection || t instanceof Union || t instanceof Unit) {
+		if ([
+			Intersection,
+			Union,
+			Difference,
+			Unit,
+			None,
+			Some,
+		].some((klass) => t instanceof klass)) {
 			return t.isDisjointWith(this);
 		}
-		return this.intersect(t).isBottomType;
+		return this.isDisjointWith_do(t);
 	}
 
-	public mutableOf(): Type {
-		return this;
-	}
-
-	public immutableOf(): Type {
-		return this;
+	/** @final */
+	protected isDisjointWith_do(t: Type): boolean {
+		const value_types = [
+			SYM,
+			INT,
+			NAT,
+			FLOAT,
+			STR,
+		];
+		if (value_types.includes(this) || value_types.includes(t)) {
+			return true;
+		}
+		return false; // assume not disjoint by default
 	}
 }
 
@@ -526,7 +550,7 @@ export class TypeInterface extends Type {
 		is_mutable: boolean = false,
 		private readonly typeparams: ReadonlyMap<string, GenericParameter> = new Map(),
 	) {
-		super(new Set<VALUE.Value>(), is_mutable);
+		super(is_mutable);
 	}
 
 	@memoizeGetter
@@ -536,10 +560,6 @@ export class TypeInterface extends Type {
 
 	public override get isTopType(): boolean {
 		return this.properties.size === 0;
-	}
-
-	public override get isReference(): boolean {
-		return true;
 	}
 
 	public override toString(): string {
@@ -628,13 +648,5 @@ export class TypeInterface extends Type {
 		} else {
 			return super.isSubtypeOf(t);
 		}
-	}
-
-	public override mutableOf(): TypeInterface {
-		return new TypeInterface(this.properties, true);
-	}
-
-	public override immutableOf(): TypeInterface {
-		return new TypeInterface(this.properties, false);
 	}
 }

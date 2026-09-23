@@ -1,13 +1,15 @@
 import * as assert from 'node:assert';
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import * as xjs from 'extrajs';
 import type {CodeGenerator} from '../index.ts';
 import {runOnceMethod} from '../lib/index.ts';
 import type {TYPE} from '../typer/index.ts';
 import type {SymbolSchemaVar} from '../validator/index.ts';
-import type {Interpreter} from './Interpreter.ts';
+import {
+	OP,
+	type Interpreter,
+} from './index.ts';
 import {CfgNode} from './CfgNode.ts';
-import {OP} from './index.ts';
 
 
 

@@ -87,7 +87,7 @@ test.suite('Type', () => {
 					TYPE.NULL,
 					TYPE.FALSE,
 					TYPE.TRUE,
-					new VALUE.Symbol(0x54n, 'then').toType(),
+					new VALUE.Symbol(0x52n, 'then').toType(),
 					new VALUE.Symbol(0x46n, 'str').toType(),
 					new VALUE.Symbol(0x49n, 'false').toType(),
 					new VALUE.Symbol(Validator.cookTokenIdentifier('foobar'), 'foobar').toType(),
@@ -140,7 +140,7 @@ test.suite('Type', () => {
 					type _ = float | T;
 				}`, {typeCheck: false}), ReferenceErrorUndeclared);
 			});
-			test.test.todo('throws when there is a temporal dead zone.', () => {
+			test.test('throws when there is a temporal dead zone.', {expectFailure: true}, () => {
 				assert.throws(() => setupScript(`{
 					T;
 					type T = int;

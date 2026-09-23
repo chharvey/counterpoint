@@ -42,7 +42,7 @@ class TypeTuple extends ValueType {
 	 * @param typeargs this type’s item types
 	 */
 	public constructor(public readonly typeargs: readonly EntryType[] = []) {
-		super(new Set<VALUE.Tuple>([VALUE.TUPLE_EMPTY]));
+		super();
 	}
 
 	/** The minimum possible number of items in this tuple type. */

@@ -1,4 +1,4 @@
-import binaryen from 'binaryen';
+import * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import {TypeName} from './utils-public.ts';
 
@@ -20,6 +20,7 @@ export function stringify_type_name(typename: TypeName): string | undefined {
 		[TypeName.DICT,   'Dict'],
 		[TypeName.SET,    'Set'],
 		[TypeName.MAP,    'Map'],
+		[TypeName.MAYBE,  'Maybe'],
 		[TypeName.ANY,    'anything'],
 	]).get(typename);
 }
@@ -40,5 +41,5 @@ export function drop_then(
 	final: binaryen.ExpressionRef | boolean,
 ): binaryen.ExpressionRef {
 	const last_item: binaryen.ExpressionRef = typeof final === 'number' ? final : final ? cg.vm.Vect.TRUE : cg.vm.Vect.FALSE;
-	return cg.mod.block(null, [...args.map((arg) => cg.mod.drop(arg)), last_item], binaryen.getExpressionType(last_item));
+	return cg.mod.wasm.block(null, [...args.map((arg) => cg.mod.wasm.drop(arg)), last_item], binaryen.getExpressionType(last_item));
 }
