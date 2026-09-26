@@ -194,7 +194,7 @@ test.suite('Declaration', () => {
 					return src
 						.map((s) => s.trim())
 						.filter((s) => !!s)
-						.forEach((s) => typeCheckGoal(`{${ s }}`, expect_thrown));
+						.forEach((s) => typeCheckGoal(`{${s}}`, expect_thrown));
 				}
 				const {goal} = setupScript(src, {typeCheck: false});
 				return (expect_thrown)
@@ -220,7 +220,7 @@ test.suite('Declaration', () => {
 				`, (stmt) => {
 					setupScript(`{
 						type Name = str;
-						${ stmt }
+						${stmt}
 					}`, {build: false}); // assert does not throw
 				});
 			});
@@ -246,12 +246,12 @@ test.suite('Declaration', () => {
 				]);
 				test.test('for read-only variables, infers the unit type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([fixedtype], src) => assertEqualTypes((setupScript(`{
-						val fixed = ${ src };
+						val fixed = ${src};
 					}`, {build: false}).goal.block!.validator.getSymbolBySource('fixed') as SymbolSchemaVar).type, fixedtype));
 				});
 				test.test('for unfixed variables, infers the narrowest primitive type.', () => {
 					xjs.Map.forEachAggregated(PRIMS, ([_, unfixedtype], src) => assertEqualTypes((setupScript(`{
-						val mut unfixed = ${ src };
+						val mut unfixed = ${src};
 					}`, {build: false}).goal.block!.validator.getSymbolBySource('unfixed') as SymbolSchemaVar).type, unfixedtype));
 				});
 				test.test('always infers `str` for string templates.', () => {
@@ -441,7 +441,7 @@ test.suite('Declaration', () => {
 							agency:       str,
 							hours_worked: float,
 						);
-						val bob: Employee | Volunteer = ${ BOB };
+						val bob: Employee | Volunteer = ${BOB};
 					}`, (err) => {
 						const id_name:         bigint = Validator.cookTokenIdentifier('name');
 						const id_id:           bigint = Validator.cookTokenIdentifier('id');
@@ -451,8 +451,8 @@ test.suite('Declaration', () => {
 						assertAssignable(err as Error, {
 							cons:   AggregateError,
 							errors: [
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(${ id_name }: str, ${ id_id }: int, ${ id_job_title }: str, ${ id_hours_worked }: float)\`.`},
-								{cons: TypeErrorNotAssignable, message: `Expression \`${ BOB }\` is not assignable to type \`(${ id_name }: str, ${ id_agency }: str, ${ id_hours_worked }: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(${id_name}: str, ${id_id}: int, ${id_job_title}: str, ${id_hours_worked}: float)\`.`},
+								{cons: TypeErrorNotAssignable, message: `Expression \`${BOB}\` is not assignable to type \`(${id_name}: str, ${id_agency}: str, ${id_hours_worked}: float)\`.`},
 							],
 						});
 						return true;
@@ -599,7 +599,7 @@ test.suite('Declaration', () => {
 				"block-0":
 					(DROP (INT.CONST 42))
 					(DECL <int> assignee_a (INT.CONST 42))
-					(DECL <Maybe> assignee_b ${ op_maybe_string() })
+					(DECL <Maybe> assignee_b ${op_maybe_string()})
 					(DECL <int> assignee_c (INT.CONST 42))
 					(DROP (GET assignee_c))
 					(DECL <int> assignee_d (GET assignee_c))

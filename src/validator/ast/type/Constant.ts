@@ -43,7 +43,7 @@ export class Constant extends Type {
 			[Keyword.NULL,     TYPE.NULL],
 			[Keyword.FALSE,    TYPE.FALSE],
 			[Keyword.TRUE,     TYPE.TRUE],
-		]).get(source) ?? assert.fail(`TypeConstant.keywordType did not expect the keyword \`${ source }\`.`);
+		]).get(source) ?? assert.fail(`TypeConstant.keywordType did not expect the keyword \`${source}\`.`);
 	}
 
 
@@ -59,7 +59,7 @@ export class Constant extends Type {
 		if (isSyntaxNodeType(this.start_node, 'keyword_type')) {
 			return Constant.keywordType(this.start_node.children[0].text);
 		}
-		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${ this.start_node } to be a primitive.`);
+		assert.ok(isSyntaxNodeType(this.start_node, 'primitive_literal'), `Expected ${this.start_node} to be a primitive.`);
 		const node: SyntaxNode = this.start_node.namedChild(0)!;
 		switch (true) {
 			case isSyntaxNodeType(node, /^(integer|natural|float)$/): {
@@ -72,7 +72,7 @@ export class Constant extends Type {
 				return Constant.keywordType(node.children[0].text);
 			}
 			default: {
-				assert.strictEqual(this.start_node.children.length, 2, `Expected ${ this.start_node } to be a symbol.`);
+				assert.strictEqual(this.start_node.children.length, 2, `Expected ${this.start_node} to be a symbol.`);
 				assert.ok(isSyntaxNodeType(node, 'word'));
 				return new VALUE.Symbol(Validator.wordNodeId(node), node.text).toType();
 			}

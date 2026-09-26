@@ -224,7 +224,7 @@ export abstract class Opcode {
 
 	/** Represent this Opcode as a string for inspection. */
 	public toString(...args: readonly {toString(): string}[]): string {
-		return `(${ [OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ') })`;
+		return `(${[OpCode[this.opCode].replace(/_/, '.'), ...args].join(' ')})`;
 	}
 
 	/** Type-validate this Opcode. Throws if invalid. */

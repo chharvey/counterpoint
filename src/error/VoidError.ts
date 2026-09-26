@@ -23,8 +23,8 @@ export class VoidError extends ErrorCode {
 			message,
 			name: VoidError.name,
 			code: VoidError.#CODE + code,
-			...((line !== void 0) ? {line_index: line} : {}),
-			...((col  !== void 0) ? {col_index:  col}  : {}),
+			...(line !== undefined ? {line_index: line} : {}),
+			...(col  !== undefined ? {col_index:  col}  : {}),
 		});
 	}
 }

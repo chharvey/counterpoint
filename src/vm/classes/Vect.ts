@@ -148,7 +148,7 @@ export class Vect implements HasFuncData {
 	 * @returns      the result of calling `$Vect.is-{null,false,true}` based on the given tag
 	 */
 	public isConst(vect: binaryen.ExpressionRef /* v128 */, tag: boolean | null): binaryen.ExpressionRef /* i32 */ {
-		return this.vm.mod.wasm.call(`Vect.is-${ tag }`, [vect], binaryen.Type.i32);
+		return this.vm.mod.wasm.call(`Vect.is-${tag}`, [vect], binaryen.Type.i32);
 	}
 
 	/** Whether the value is intended to be interpreted as a signed integer. */

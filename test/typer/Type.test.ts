@@ -98,7 +98,7 @@ test.suite('Type', () => {
 				TYPE.Union.all(           TYPE.FALSE),
 				TYPE.Union.all(TYPE.NULL            ),
 				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
-			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${ t }\` to be definitely falsy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyFalsy, `Expected \`${t}\` to be definitely falsy.`));
 		});
 		test.test('any other types are not definitely falsy.', () => {
 			[
@@ -113,7 +113,7 @@ test.suite('Type', () => {
 				TYPE.NULL.union(TYPE.FLOAT),
 				TYPE.FALSE.union(TYPE.STR),
 				TYPE.OBJ,
-			].forEach((t) => assert.ok(!t.isDefinitelyFalsy, `Expected \`${ t }\` to not be definitely falsy.`));
+			].forEach((t) => assert.ok(!t.isDefinitelyFalsy, `Expected \`${t}\` to not be definitely falsy.`));
 		});
 	});
 
@@ -125,7 +125,7 @@ test.suite('Type', () => {
 				TYPE.Union.all(           TYPE.FALSE),
 				TYPE.Union.all(TYPE.NULL            ),
 				TYPE.Union.all(TYPE.NULL, TYPE.FALSE),
-			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${t}\` to not be definitely truthy.`));
 		});
 		test.test('unions of falsy types are not definitely truthy.', () => {
 			[
@@ -133,7 +133,7 @@ test.suite('Type', () => {
 				TYPE.BOOL,
 				TYPE.NULL.union(TYPE.FLOAT),
 				TYPE.FALSE.union(TYPE.STR),
-			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${ t }\` to not be definitely truthy.`));
+			].forEach((t) => assert.ok(!t.isDefinitelyTruthy, `Expected \`${t}\` to not be definitely truthy.`));
 		});
 		test.test('primitive value types (except `bool`) are definitely truthy.', () => {
 			[
@@ -143,13 +143,13 @@ test.suite('Type', () => {
 				TYPE.NAT,
 				TYPE.FLOAT,
 				TYPE.STR,
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${t}\` to be definitely truthy.`));
 		});
 		test.test('compound value types are definitely truthy.', () => {
 			[
 				TYPE.Tuple.fromTypes(),
 				TYPE.Record.fromTypes(new Map([[0x100n, TYPE.INT]])),
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${t}\` to be definitely truthy.`));
 		});
 		test.test('reference types are definitely truthy.', () => {
 			[
@@ -158,7 +158,7 @@ test.suite('Type', () => {
 				new TYPE.Dict(TYPE.INT),
 				new TYPE.Set(TYPE.INT),
 				new TYPE.Map(TYPE.INT, TYPE.INT),
-			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${ t }\` to be definitely truthy.`));
+			].forEach((t) => assert.ok(t.isDefinitelyTruthy, `Expected \`${t}\` to be definitely truthy.`));
 		});
 	});
 
@@ -175,7 +175,7 @@ test.suite('Type', () => {
 			[TYPE.FLOAT,    TYPE.NOTHING],
 			[TYPE.STR,      TYPE.NOTHING],
 			[TYPE.OBJ,      TYPE.NOTHING],
-		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${ left.falsySide } == ${ right }`));
+		]).forEach((right, left) => assert.ok(left.falsySide.equals(right), `${left.falsySide} == ${right}`));
 	});
 
 
@@ -190,7 +190,7 @@ test.suite('Type', () => {
 			[TYPE.FLOAT,   TYPE.FLOAT],
 			[TYPE.STR,     TYPE.STR],
 			[TYPE.OBJ,     TYPE.OBJ],
-		]).forEach((right, left) => assert.ok(left.truthySide.equals(right), `${ left.truthySide } == ${ right }`));
+		]).forEach((right, left) => assert.ok(left.truthySide.equals(right), `${left.truthySide} == ${right}`));
 	});
 
 
@@ -231,27 +231,27 @@ test.suite('Type', () => {
 	test.suite('#intersect', () => {
 		test.test('1-5 | `T  & nothing  == nothing`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(TYPE.NOTHING).isBottomType, `${ t }`);
+				assert.ok(t.intersect(TYPE.NOTHING).isBottomType, `${t}`);
 			});
 		});
 		test.test('1-6 | `T  & anything == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.intersect(TYPE.ANYTHING).equals(t), `${ t }`);
+				assert.ok(t.intersect(TYPE.ANYTHING).equals(t), `${t}`);
 			});
 		});
 		test.test('2-4 | `A  & B == B  & A`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.intersect(b).equals(b.intersect(a)), `${ a }, ${ b }`);
+				assert.ok(a.intersect(b).equals(b.intersect(a)), `${a}, ${b}`);
 			});
 		});
 		test.test('2-6 | `(A  & B)  & C == A  & (B  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.intersect(b).intersect(c).equals(a.intersect(b.intersect(c))), `${ a }, ${ b }, ${ c }`);
+				assert.ok(a.intersect(b).intersect(c).equals(a.intersect(b.intersect(c))), `${a}, ${b}, ${c}`);
 			});
 		});
 		test.test('2-8 | `A  & (B \| C) == (A  & B) \| (A  & C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${ a }, ${ b }, ${ c }`);
+				assert.ok(a.intersect(b.union(c)).equals(a.intersect(b).union(a.intersect(c))), `${a}, ${b}, ${c}`);
 			});
 		});
 		test.test('3-9 | `C <: A --> (A  & B)  & C == B  & C`', () => {
@@ -298,27 +298,27 @@ test.suite('Type', () => {
 	test.suite('#union', () => {
 		test.test('1-7 | `T \| nothing  == T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(TYPE.NOTHING).equals(t), `${ t }`);
+				assert.ok(t.union(TYPE.NOTHING).equals(t), `${t}`);
 			});
 		});
 		test.test('1-8 | `T \| anything == anything`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.union(TYPE.ANYTHING).isTopType, `${ t }`);
+				assert.ok(t.union(TYPE.ANYTHING).isTopType, `${t}`);
 			});
 		});
 		test.test('2-5 | `A \| B == B \| A`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.union(b).equals(b.union(a)), `${ a }, ${ b }`);
+				assert.ok(a.union(b).equals(b.union(a)), `${a}, ${b}`);
 			});
 		});
 		test.test('2-7 | `(A \| B) \| C == A \| (B \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.union(b).union(c).equals(a.union(b.union(c))), `${ a }, ${ b }, ${ c }`);
+				assert.ok(a.union(b).union(c).equals(a.union(b.union(c))), `${a}, ${b}, ${c}`);
 			});
 		});
 		test.test('2-9 | `A \| (B  & C) == (A \| B)  & (A \| C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${ a }, ${ b }, ${ c }`);
+				assert.ok(a.union(b.intersect(c)).equals(a.union(b).intersect(a.union(c))), `${a}, ${b}, ${c}`);
 			});
 		});
 		test.test('3-a | `A <: C --> (A \| B) \| C == B \| C`', () => {
@@ -379,37 +379,37 @@ test.suite('Type', () => {
 		test.test('4-1 | `A - B == A  <->  A /= B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.subtract(b).equals(a)) {
-					assert.ok(a.isDisjointWith(b), `forward: ${ a }, ${ b }`);
+					assert.ok(a.isDisjointWith(b), `forward: ${a}, ${b}`);
 				}
 				if (a.isDisjointWith(b)) {
-					assert.ok(a.subtract(b).equals(a), `backward: ${ a }, ${ b }`);
+					assert.ok(a.subtract(b).equals(a), `backward: ${a}, ${b}`);
 				}
 			});
 		});
 		test.test('4-2 | `A - B == nothing  <->  A <: B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
-					assert.ok(a.subtract(b).isBottomType, `forward: ${ a }, ${ b }`);
+					assert.ok(a.subtract(b).isBottomType, `forward: ${a}, ${b}`);
 				}
 				if (a.subtract(b).isBottomType) {
-					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`);
+					assert.ok(a.isSubtypeOf(b), `backward: ${a}, ${b}`);
 				}
 			});
 		});
 		test.test('4-3 | `A <: B - C  <->  A <: B  &&  A /= C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b.subtract(c))) {
-					assert.ok(a.isSubtypeOf(b) && a.isDisjointWith(c), `forward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(b) && a.isDisjointWith(c), `forward: ${a}, ${b}, ${c}`);
 				}
 				if (a.isSubtypeOf(b) && a.isDisjointWith(c)) {
-					assert.ok(a.isSubtypeOf(b.subtract(c)), `backward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(b.subtract(c)), `backward: ${a}, ${b}, ${c}`);
 				}
 			});
 		});
 		test.test('4-4 | `A /= B - C  <--  A <: C  ||  A /= B`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(c) || a.isDisjointWith(b)) {
-					assert.ok(a.isDisjointWith(b.subtract(c)), `backward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isDisjointWith(b.subtract(c)), `backward: ${a}, ${b}, ${c}`);
 				}
 			});
 			const [t1, t2, t3, t4, t5] = [1n, 2n, 3n, 4n, 5n].map((n) => new TYPE.Unit(new VALUE.Integer(n)));
@@ -420,12 +420,12 @@ test.suite('Type', () => {
 		});
 		test.test('4-5 | `(A \| B) - C == (A - C) \| (B - C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.union(b).subtract(c).equals(a.subtract(c).union(b.subtract(c))), `${ a }, ${ b }, ${ c }`);
+				assert.ok(a.union(b).subtract(c).equals(a.subtract(c).union(b.subtract(c))), `${a}, ${b}, ${c}`);
 			});
 		});
 		test.test('4-6 | `A - (B \| C) == (A - B)  & (A - C)`', () => {
 			predicate3(builtin_types, (a, b, c) => {
-				assert.ok(a.subtract(b.union(c)).equals(a.subtract(b).intersect(a.subtract(c))), `${ a }, ${ b }, ${ c }`);
+				assert.ok(a.subtract(b.union(c)).equals(a.subtract(b).intersect(a.subtract(c))), `${a}, ${b}, ${c}`);
 			});
 		});
 	});
@@ -434,93 +434,93 @@ test.suite('Type', () => {
 	test.suite('#isSubtypeOf', () => {
 		test.test('1-1 | `nothing  <: T`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(TYPE.NOTHING.isSubtypeOf(t), `${ t }`);
+				assert.ok(TYPE.NOTHING.isSubtypeOf(t), `${t}`);
 			});
 		});
 		test.test('1-2 | `T        <: anything`', () => {
 			builtin_types.forEach((t) => {
-				assert.ok(t.isSubtypeOf(TYPE.ANYTHING), `${ t }`);
+				assert.ok(t.isSubtypeOf(TYPE.ANYTHING), `${t}`);
 			});
 		});
 		test.test('1-3 | `T        <: nothing  <->  T == nothing`', () => {
 			builtin_types.forEach((t) => {
 				if (t.isSubtypeOf(TYPE.NOTHING)) {
-					assert.ok(t.isBottomType, `${ t }`);
+					assert.ok(t.isBottomType, `${t}`);
 				}
 			});
 		});
 		test.test('1-4 | `anything <: T        <->  T == anything`', () => {
 			builtin_types.forEach((t) => {
 				if (TYPE.ANYTHING.isSubtypeOf(t)) {
-					assert.ok(t.isTopType, `${ t }`);
+					assert.ok(t.isTopType, `${t}`);
 				}
 			});
 		});
 		test.test('2-a | `A <: A`', () => {
 			builtin_types.forEach((a) => {
-				assert.ok(a.isSubtypeOf(a), `${ a }`);
+				assert.ok(a.isSubtypeOf(a), `${a}`);
 			});
 		});
 		test.test('2-b | `A <: B  &&  B <: A  -->  A == B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(a)) {
-					assert.ok(a.equals(b), `${ a }, ${ b }`);
+					assert.ok(a.equals(b), `${a}, ${b}`);
 				}
 			});
 		});
 		test.test('2-c | `A <: B  &&  B <: C  -->  A <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(b) && b.isSubtypeOf(c)) {
-					assert.ok(a.isSubtypeOf(c), `${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(c), `${a}, ${b}, ${c}`);
 				}
 			});
 		});
 		test.test('3-1 | `A  & B <: A  &&  A  & B <: B`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.intersect(b).isSubtypeOf(a), `${ a }, ${ b }`);
-				assert.ok(a.intersect(b).isSubtypeOf(b), `${ a }, ${ b }`);
+				assert.ok(a.intersect(b).isSubtypeOf(a), `${a}, ${b}`);
+				assert.ok(a.intersect(b).isSubtypeOf(b), `${a}, ${b}`);
 			});
 		});
 		test.test('3-2 | `A <: A \| B  &&  B <: A \| B`', () => {
 			predicate2(builtin_types, (a, b) => {
-				assert.ok(a.isSubtypeOf(a.union(b)), `${ a }, ${ b }`);
-				assert.ok(b.isSubtypeOf(a.union(b)), `${ a }, ${ b }`);
+				assert.ok(a.isSubtypeOf(a.union(b)), `${a}, ${b}`);
+				assert.ok(b.isSubtypeOf(a.union(b)), `${a}, ${b}`);
 			});
 		});
 		test.test('3-3 | `A <: B  <->  A  & B == A`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
-					assert.ok(a.intersect(b).equals(a), `forward: ${ a }, ${ b }`);
+					assert.ok(a.intersect(b).equals(a), `forward: ${a}, ${b}`);
 				}
 				if (a.intersect(b).equals(a)) {
-					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`);
+					assert.ok(a.isSubtypeOf(b), `backward: ${a}, ${b}`);
 				}
 			});
 		});
 		test.test('3-4 | `A <: B  <->  A \| B == B`', () => {
 			predicate2(builtin_types, (a, b) => {
 				if (a.isSubtypeOf(b)) {
-					assert.ok(a.union(b).equals(b), `forward: ${ a }, ${ b }`);
+					assert.ok(a.union(b).equals(b), `forward: ${a}, ${b}`);
 				}
 				if (a.union(b).equals(b)) {
-					assert.ok(a.isSubtypeOf(b), `backward: ${ a }, ${ b }`);
+					assert.ok(a.isSubtypeOf(b), `backward: ${a}, ${b}`);
 				}
 			});
 		});
 		test.test('3-5 | `A <: C    &&  A <: D  <->  A <: C  & D`', () => {
 			predicate3(builtin_types, (a, c, d) => {
 				if (a.isSubtypeOf(c) && a.isSubtypeOf(d)) {
-					assert.ok(a.isSubtypeOf(c.intersect(d)), `forward: ${ a }, ${ c }, ${ d }`);
+					assert.ok(a.isSubtypeOf(c.intersect(d)), `forward: ${a}, ${c}, ${d}`);
 				}
 				if (a.isSubtypeOf(c.intersect(d))) {
-					assert.ok(a.isSubtypeOf(c) && a.isSubtypeOf(d), `backward: ${ a }, ${ c }, ${ d }`);
+					assert.ok(a.isSubtypeOf(c) && a.isSubtypeOf(d), `backward: ${a}, ${c}, ${d}`);
 				}
 			});
 		});
 		test.test('3-6 | `A <: C  \|\|  A <: D  -->  A <: C \| D`', () => {
 			predicate3(builtin_types, (a, c, d) => {
 				if (a.isSubtypeOf(c) || a.isSubtypeOf(d)) {
-					assert.ok(a.isSubtypeOf(c.union(d)), `${ a }, ${ c }, ${ d }`);
+					assert.ok(a.isSubtypeOf(c.union(d)), `${a}, ${c}, ${d}`);
 				}
 			});
 			assert.ok(
@@ -537,17 +537,17 @@ test.suite('Type', () => {
 		test.test('3-7 | `A <: C    &&  B <: C  <->  A \| B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(c) && b.isSubtypeOf(c)) {
-					assert.ok(a.union(b).isSubtypeOf(c), `forward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.union(b).isSubtypeOf(c), `forward: ${a}, ${b}, ${c}`);
 				}
 				if (a.union(b).isSubtypeOf(c)) {
-					assert.ok(a.isSubtypeOf(c) && b.isSubtypeOf(c), `backward: ${ a }, ${ b }, ${ c }`);
+					assert.ok(a.isSubtypeOf(c) && b.isSubtypeOf(c), `backward: ${a}, ${b}, ${c}`);
 				}
 			});
 		});
 		test.test('3-8 | `A <: C  \|\|  B <: C  -->  A  & B <: C`', () => {
 			predicate3(builtin_types, (a, b, c) => {
 				if (a.isSubtypeOf(c) || b.isSubtypeOf(c)) {
-					assert.ok(a.intersect(b).isSubtypeOf(c), `${ a }, ${ b }, ${ c }`);
+					assert.ok(a.intersect(b).isSubtypeOf(c), `${a}, ${b}, ${c}`);
 				}
 			});
 			assert.ok(
@@ -569,7 +569,7 @@ test.suite('Type', () => {
 				TYPE.STR,
 			].forEach((t, _, arr) => {
 				arr.filter((u) => u !== t).forEach((u) => {
-					assert.ok(!u.isSubtypeOf(t), `${ u }, ${ t }`);
+					assert.ok(!u.isSubtypeOf(t), `${u}, ${t}`);
 				});
 			});
 		});
@@ -590,17 +590,17 @@ test.suite('Type', () => {
 			});
 			test.test('unit Integer types should be subtypes of `int`.', () => {
 				[42n, -42n, 0n, -0n].map((v) => typeUnit(v)).forEach((itype) => {
-					assert.ok(itype.isSubtypeOf(TYPE.INT), `${ itype }`);
+					assert.ok(itype.isSubtypeOf(TYPE.INT), `${itype}`);
 				});
 			});
 			test.test('unit Float types should be subtypes of `float`.', () => {
 				[4.2, -4.2e-2, 0.0, -0.0].map((v) => typeUnit(v)).forEach((ftype) => {
-					assert.ok(ftype.isSubtypeOf(TYPE.FLOAT), `${ ftype }`);
+					assert.ok(ftype.isSubtypeOf(TYPE.FLOAT), `${ftype}`);
 				});
 			});
 			test.test('unit String types should be subtypes of `str`.', () => {
 				['a4.2', 'b-4.2e-2', 'c0.0', 'd-0.0'].map((v) => typeUnit(v)).forEach((stype) => {
-					assert.ok(stype.isSubtypeOf(TYPE.STR), `${ stype }`);
+					assert.ok(stype.isSubtypeOf(TYPE.STR), `${stype}`);
 				});
 			});
 		});
@@ -949,8 +949,8 @@ test.suite('Type', () => {
 				test.test('factors out common union operands from intersection: `(A \| B)  & (A \| C) == A \| (B  & C)`.', () => {
 					const actual:   TYPE.Type = a.union(b).intersect(a.union(c));
 					const expected: TYPE.Type = a.union(b.intersect(c));
-					assert.ok(actual.equals(expected), `(${ a } | ${ b }) & (${ a } | ${ c }) == ${ a } | ${ b } & ${ c }`);
-					return assert.deepStrictEqual(actual, expected, `${ actual } == ${ expected }`);
+					assert.ok(actual.equals(expected), `(${a} | ${b}) & (${a} | ${c}) == ${a} | ${b} & ${c}`);
+					return assert.deepStrictEqual(actual, expected, `${actual} == ${expected}`);
 				});
 			});
 
@@ -958,7 +958,7 @@ test.suite('Type', () => {
 				test.test('factors out common intersection operands from union: `(A  & B) \| (A  & C) == A  & (B \| C)`.', () => {
 					const actual:   TYPE.Type = a.intersect(b).union(a.intersect(c));
 					const expected: TYPE.Type = a.intersect(b.union(c));
-					assert.ok(actual.equals(expected), `${ a } & ${ b } | ${ a } & ${ c } == ${ a } & (${ b } | ${ c })`);
+					assert.ok(actual.equals(expected), `${a} & ${b} | ${a} & ${c} == ${a} & (${b} | ${c})`);
 					return assert.deepStrictEqual(actual, expected);
 				});
 			});
@@ -973,7 +973,7 @@ test.suite('Type', () => {
 
 					const as_union: TYPE.Type = intersection.denormalize();
 					const expected            = new TYPE.Union(b.intersect(a), c.intersect(a));
-					assert.ok(as_union.equals(expected), `(${ b } | ${ c }) & ${ a } == ${ b } & ${ a } | ${ c } & ${ a }`);
+					assert.ok(as_union.equals(expected), `(${b} | ${c}) & ${a} == ${b} & ${a} | ${c} & ${a}`);
 					return assert.deepStrictEqual(as_union, expected);
 				});
 			});
@@ -985,7 +985,7 @@ test.suite('Type', () => {
 
 					const as_intersection: TYPE.Type = union.denormalize();
 					const expected                   = new TYPE.Intersection(b.union(a), c.union(a));
-					assert.ok(as_intersection.equals(expected), `${ b } & ${ c } | ${ a } == (${ b } | ${ a }) & (${ c } | ${ a })`);
+					assert.ok(as_intersection.equals(expected), `${b} & ${c} | ${a} == (${b} | ${a}) & (${c} | ${a})`);
 					return assert.deepStrictEqual(as_intersection, expected);
 				});
 			});
@@ -1009,16 +1009,16 @@ test.suite('Type', () => {
 			[
 				...without_mutability,
 				...with_mutability,
-			].forEach((t) => assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${ t } <: ${ t }`));
+			].forEach((t) => assert.ok(t.mutableOf().isSubtypeOf(t), `mut ${t} <: ${t}`));
 		});
 		test.test('mutable types with no mutability are equal to their immutable counterparts.', () => {
-			without_mutability.forEach((t) => assert.ok(t.mutableOf().equals(t), `mut ${ t } == ${ t }`));
+			without_mutability.forEach((t) => assert.ok(t.mutableOf().equals(t), `mut ${t} == ${t}`));
 		});
 		test.test('mutable types with mutability are not equal to their immutable counterparts.', () => {
-			with_mutability.forEach((t) => assert.ok(!t.mutableOf().equals(t), `mut ${ t } != ${ t }`));
+			with_mutability.forEach((t) => assert.ok(!t.mutableOf().equals(t), `mut ${t} != ${t}`));
 		});
 		test.test('immutable counterparts of types with mutability are not subtypes of their mutable types.', () => {
-			with_mutability.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${ t } !<: mut ${ t }`));
+			with_mutability.forEach((t) => assert.ok(!t.isSubtypeOf(t.mutableOf()), `${t} !<: mut ${t}`));
 		});
 	});
 });

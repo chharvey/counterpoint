@@ -19,7 +19,7 @@ public class Integer {
 
 	internal toString(radix?: nat = +10): Result[str, RangeException] {
 		if radix < +2 || +36 < radix then {
-			return Fail[str, RangeException](RangeException("""Invalid radix: {{ radix }}. Must be between 2 and 36 (inclusive)."""));
+			return Fail[str, RangeException](RangeException("""Invalid radix: {{radix}}. Must be between 2 and 36 (inclusive)."""));
 		};
 
 		if this.data == 0 then {
@@ -37,12 +37,12 @@ public class Integer {
 			if rem != 0 then {
 				rem = rem - Integer(radix);
 			};
-			set returned  = """{{ DIGITS.get(rem)~? }}{{ returned }}""";
+			set returned  = """{{DIGITS.get(rem)~?}}{{returned}}""";
 			set copy     /= Integer(radix);
 		} until copy == 0;
 
 		if is_negative then {
-			set returned = """-{{ returned }}""";
+			set returned = """-{{returned}}""";
 		};
 
 		return returned;

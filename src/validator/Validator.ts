@@ -96,7 +96,7 @@ function tokenWorthInt(
 	if (text.length === 1) {
 		const digitvalue: number = parseInt(text, Number(radix));
 		if (Number.isNaN(digitvalue)) {
-			throw new Error(`Invalid number format: \`${ text }\``);
+			throw new Error(`Invalid number format: \`${text}\``);
 		}
 		return BigInt(digitvalue);
 	}
@@ -112,14 +112,14 @@ function tokenWorthFloat(text: string): number {
 	const pointindex: number = text.indexOf(POINT);
 	const expindex:   number = text.indexOf(EXPONENT);
 	const wholepart:  string = text.slice(0, pointindex);
-	const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
-	const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
+	const fracpart:   string = expindex < 0 ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
+	const exppart:    string = expindex < 0 ? '0'                        : text.slice(expindex   + 1);
 	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT));
 	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT)) * base ** -fracpart.length;
-	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${ ... }`) `` is more accurate than `base ** tokenWorthInt(...)`
-		exppart.startsWith(Punctuator.PLUS)  ? `1e+${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
-		exppart.startsWith(Punctuator.MINUS) ? `1e-${ tokenWorthInt(exppart.slice(1), RADIX_DEFAULT) }` :
-		                                       `1e${  tokenWorthInt(exppart,          RADIX_DEFAULT) }` // eslint-disable-line @stylistic/indent
+	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${...}`) `` is more accurate than `base ** tokenWorthInt(...)`
+		exppart.startsWith(Punctuator.PLUS)  ? `1e+${tokenWorthInt(exppart.slice(1), RADIX_DEFAULT)}` :
+		exppart.startsWith(Punctuator.MINUS) ? `1e-${tokenWorthInt(exppart.slice(1), RADIX_DEFAULT)}` :
+		                                       `1e${ tokenWorthInt(exppart,          RADIX_DEFAULT)}` // eslint-disable-line @stylistic/indent
 	));
 	return (wholevalue + fracvalue) * expvalue;
 }
@@ -151,7 +151,7 @@ function tokenWorthString(text: string): CodeUnit[] {
 				]).get(text[1])!,
 				...tokenWorthString(text.slice(2)),
 			];
-		} else if (`${ text[1] }${ text[2] }` === 'u{') {
+		} else if (`${text[1]}${text[2]}` === 'u{') {
 			/* an escape sequence */
 			const sequence: RegExpMatchArray = text.match(/\\u{[0-9a-f_]*}/)!;
 			return [
@@ -171,7 +171,7 @@ function tokenWorthString(text: string): CodeUnit[] {
 				...tokenWorthString([...text].slice(2).join('')/* UTF-16 */),
 			];
 		}
-	} else if (`${ text[0] }${ text[1] }` === COMMENTER_MULTI) {
+	} else if (`${text[0]}${text[1]}` === COMMENTER_MULTI) {
 		/* an in-string multiline comment */
 		const match: string = text.match(/%%(?:%?[^'%])*(?:%%)?/)![0];
 		return tokenWorthString(text.slice(match.length));
@@ -232,7 +232,7 @@ export class Validator {
 		const index: number = KEYWORDS.indexOf(source);
 		return (0 <= index && index < KEYWORDS.length)
 			? BigInt(index) + Validator.MIN_VALUE_KEYWORD
-			: assert.fail(new RangeError(`Token \`${ source }\` is not a valid keyword.`));
+			: assert.fail(new RangeError(`Token \`${source}\` is not a valid keyword.`));
 	}
 
 	/**
@@ -266,7 +266,7 @@ export class Validator {
 			['d', 10n],
 			['x', 16n],
 			['z', 36n],
-		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
+		]).get(has_unary ? source[2] : source[1])! : RADIX_DEFAULT;
 
 		const typ: 'int' | 'nat' | 'float' = source.includes(POINT) ? 'float' : has_unary && multiplier === 1 ? 'nat' : 'int';
 

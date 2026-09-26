@@ -18,7 +18,7 @@ export class MutabilityError01 extends MutabilityError {
 	 */
 	public constructor(typ: TYPE.Type, node: AST.STMT.StatementReassignment) {
 		super(
-			`Mutation of an object of immutable type \`${ typ }\`.`,
+			`Mutation of an object of immutable type \`${typ}\`.`,
 			MutabilityError.CODES.get(MutabilityError01),
 			node.line_index,
 			node.col_index,

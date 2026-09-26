@@ -43,7 +43,7 @@ export class Decl extends Instruction {
 
 	public override toString(): string {
 		return super.toString(
-			`<${ stringify_type_name(ast_type_name(this.targetType)) }>`,
+			`<${stringify_type_name(ast_type_name(this.targetType))}>`,
 			this.target instanceof SymbolSchemaVar ? this.target.source : this.target.name,
 			...(this.value ? [this.value] : []),
 		);
@@ -53,9 +53,9 @@ export class Decl extends Instruction {
 	public override validate(builder: Builder): void {
 		// Use 'declared' only for declared, unset temps. Enforces setting before getting.
 		// Uninitialized variables can use 'set' becuase they always have a `Maybe` value.
-		builder.setLocalStatus(this.target, (this.target instanceof SymbolSchemaVar || this.value) ? 'set' : 'declared');
+		builder.setLocalStatus(this.target, this.target instanceof SymbolSchemaVar || this.value ? 'set' : 'declared');
 		this.value?.validate(builder);
-		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
+		return this.value && assert.ok(this.value.type.isSubtypeOf(this.targetType), `${this.value.type} must be a subtype of ${this.targetType}.`);
 	}
 
 	public override interpret(interp: Interpreter): void {

@@ -16,7 +16,7 @@ export class AssignmentErrorReassignment extends AssignmentError {
 	 */
 	public constructor(variable: AST.EXPR.Variable) {
 		super(
-			`Reassignment of read-only variable \`${ variable.source }\`.`,
+			`Reassignment of read-only variable \`${variable.source}\`.`,
 			AssignmentError.CODES.get(AssignmentErrorReassignment),
 			variable.line_index,
 			variable.col_index,

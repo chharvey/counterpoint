@@ -61,7 +61,7 @@ export class DeclarationType extends Statement {
 	public override typeCheck(): void {
 		const typevalue: TYPE.Type = this.assigned.eval(); // evaluate first before checking, to rethrow any errors
 		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaType;
 			symbol.typevalue = typevalue;
 		}

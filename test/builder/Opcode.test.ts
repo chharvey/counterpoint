@@ -86,8 +86,8 @@ test.suite('Opcode', () => {
 					val mut x: int = 85;
 
 					"""42😀""";
-					"""the answer is {{ 7 * 3 * 2 }} but what is the question?""";
-					"""the answer is {{ x / 2 }} but what is the question?""";
+					"""the answer is {{7 * 3 * 2}} but what is the question?""";
+					"""the answer is {{x / 2}} but what is the question?""";
 				}`), [
 					new VALUE.String('42😀'),
 					new VALUE.String('the answer is 42 but what is the question?'),
@@ -249,12 +249,12 @@ test.suite('Opcode', () => {
 				`;
 				function interpret_unops(op: string, tested: readonly string[] = operands): VALUE.Value[] {
 					return interpret_extracted_drops(`{
-						${ tested.map((operand) => `${ op } ${ operand };`).join('\n') }
+						${tested.map((operand) => `${op} ${operand};`).join('\n')}
 					}`);
 				}
 				function interpret_calls(ctor: string, tested: readonly string[] = operands): VALUE.Value[] {
 					return interpret_extracted_drops(`{
-						${ tested.map((operand) => `${ ctor }.(${ operand });`).join('\n') }
+						${tested.map((operand) => `${ctor}.(${operand});`).join('\n')}
 					}`);
 				}
 				test.test('[operator=BOOL_FROM]', () => {
@@ -536,7 +536,7 @@ test.suite('Opcode', () => {
 								try {
 									instr.interpret(interp);
 								} catch (err) {
-									return assert.deepStrictEqual(err, new Error(`Invalid cast to ${ name }.`));
+									return assert.deepStrictEqual(err, new Error(`Invalid cast to ${name}.`));
 								}
 								if (instr instanceof OP.Drop) {
 									return assert_equal_values(interp.drops.at(-1)!, expecteds[i]);
@@ -550,7 +550,7 @@ test.suite('Opcode', () => {
 			test.suite('Binop', () => {
 				function interpret_binops(tested: readonly string[]): VALUE.Value[] {
 					return interpret_extracted_drops(`{
-						${ tested.map((expr) => `${ expr };`).join('\n') }
+						${tested.map((expr) => `${expr};`).join('\n')}
 					}`);
 				}
 				test.test('integer operations.', () => {
@@ -1012,7 +1012,7 @@ test.suite('Opcode', () => {
 			test.test('Template returns (block) containing static repetition of (array.copy).', () => {
 				const {builder, cg, wasm} = setupScript(`{
 					val user: (name: str) = (name= "Alan");
-					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new messages.""";
+					"""Hello, {{user.name}}, you have {{2 * 3}} new messages.""";
 				}`);
 				const {reftype, Value} = cg.vm;
 
@@ -1679,7 +1679,7 @@ test.suite('Opcode', () => {
 			test.suite('Instance', () => {
 				test.test('INSTANCEOF', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ [
+						${[
 							IntrinsicName.SYMBOL,
 							IntrinsicName.INTEGER,
 							IntrinsicName.NATURAL,
@@ -1693,7 +1693,7 @@ test.suite('Opcode', () => {
 							IntrinsicName.MAYBE,
 							IntrinsicName.NONE,
 							IntrinsicName.SOME,
-						].map((classname) => `null is ${ classname };`).join('\n') };
+						].map((classname) => `null is ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.map((instr) => instr.codegen(cg)), [
@@ -1714,7 +1714,7 @@ test.suite('Opcode', () => {
 				});
 				test.test('CAST', () => {
 					const {builder, cg, wasm} = setupScript(`{
-						${ INTRINSICS.map((classname) => `null as <anything> as ${ classname };`).join('\n') };
+						${INTRINSICS.map((classname) => `null as <anything> as ${classname};`).join('\n')};
 					}`);
 					const operand: binaryen.ExpressionRef = genConst(cg);
 					return assertEqualBins(builder.instructions.filter((instr) => instr instanceof OP.Drop).map((instr) => instr.codegen(cg)), [

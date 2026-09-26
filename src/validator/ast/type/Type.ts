@@ -83,7 +83,7 @@ export abstract class Type extends AstNode {
 	 * @returns      a new Type representing the given source
 	 */
 	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Type {
-		const statement: STMT.DeclarationType = STMT.DeclarationType.fromSource(`type T = ${ src };`, config);
+		const statement: STMT.DeclarationType = STMT.DeclarationType.fromSource(`type T = ${src};`, config);
 		return statement.assigned;
 	}
 

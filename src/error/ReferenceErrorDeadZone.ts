@@ -16,7 +16,7 @@ export class ReferenceErrorDeadZone extends CplReferenceError {
 	 */
 	public constructor(variable: AST.TYPE.TypeAlias | AST.EXPR.Variable) {
 		super(
-			`\`${ variable.source }\` is used before it is declared.`,
+			`\`${variable.source}\` is used before it is declared.`,
 			CplReferenceError.CODES.get(ReferenceErrorDeadZone),
 			variable.line_index,
 			variable.col_index,

@@ -15,7 +15,7 @@ export class TypeErrorInvalidOperation extends CplTypeError {
 	 */
 	public constructor(expression: AST.TYPE.Access | AST.TYPE.Operation | AST.EXPR.Access | AST.EXPR.Operation) {
 		super(
-			`Invalid operation: \`${ expression.source }\` at line ${ expression.line_index + 1 } col ${ expression.col_index + 1 }.`,
+			`Invalid operation: \`${expression.source}\` at line ${expression.line_index + 1} col ${expression.col_index + 1}.`,
 			CplTypeError.CODES.get(TypeErrorInvalidOperation),
 			expression.line_index,
 			expression.col_index,

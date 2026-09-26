@@ -20,7 +20,7 @@ export class TypeErrorNotAssignable extends CplTypeError {
 	 */
 	public constructor(assigned: AST.EXPR.Expression, assignee_type: TYPE.Type, assignment: AST.AstNode = assigned) {
 		super(
-			`Expression \`${ assigned.source }\` is not assignable to type \`${ assignee_type }\`.`,
+			`Expression \`${assigned.source}\` is not assignable to type \`${assignee_type}\`.`,
 			CplTypeError.CODES.get(TypeErrorNotAssignable),
 			assignment.line_index,
 			assignment.col_index,

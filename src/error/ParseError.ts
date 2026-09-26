@@ -27,8 +27,8 @@ class ParseError extends ErrorCode {
 			message,
 			name: ParseError.name,
 			code: ParseError.#CODE + code,
-			...((line !== void 0) ? {line_index: line} : {}),
-			...((col  !== void 0) ? {col_index:  col}  : {}),
+			...(line !== undefined ? {line_index: line} : {}),
+			...(col  !== undefined ? {col_index:  col}  : {}),
 		});
 	}
 }
@@ -48,7 +48,7 @@ export class ParseError01 extends ParseError {
 	 */
 	public constructor(token: Serializable) {
 		super(
-			`Unexpected token: \`${ token.source }\` at line ${ token.line_index + 1 } col ${ token.col_index + 1 }.`,
+			`Unexpected token: \`${token.source}\` at line ${token.line_index + 1} col ${token.col_index + 1}.`,
 			ParseError01.#CODE,
 			token.line_index,
 			token.col_index,

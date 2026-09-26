@@ -21,7 +21,7 @@ export class TypeErrorNoEntry extends CplTypeError {
 	 */
 	public constructor(manner: 'index' | 'key' | 'parameter', base: TYPE.Type, accessor: AST.Index | AST.Key | AST.EXPR.Expression) {
 		super(
-			`${ manner[0].toUpperCase() }${ manner.slice(1) } \`${ accessor.source }\` does not exist on type \`${ base }\`.`,
+			`${manner[0].toUpperCase()}${manner.slice(1)} \`${accessor.source}\` does not exist on type \`${base}\`.`,
 			CplTypeError.CODES.get(TypeErrorNoEntry),
 			accessor.line_index,
 			accessor.col_index,
