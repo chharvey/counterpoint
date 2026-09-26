@@ -51,7 +51,7 @@ class TypeRecord extends ValueType {
 	}
 
 	public override toString(): string {
-		return `(${ [...this.typeargs].map(([key, value]) => `${ key }${ value.optional ? '?:' : ':' } ${ value.type }`).join(', ') })`;
+		return `(${[...this.typeargs].map(([key, value]) => `${key}${value.optional ? '?:' : ':'} ${value.type}`).join(', ')})`;
 	}
 
 	@instanceOf(() => VALUE.Record)

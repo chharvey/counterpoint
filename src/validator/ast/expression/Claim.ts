@@ -42,7 +42,7 @@ export class Claim extends Expression {
 		/* If the types are disjoint and neither of the types are the Bottom Type, throw an error. */
 		if (!this.force && computed_type.isDisjointWith(claimed_type) && !computed_type.isBottomType && !claimed_type.isBottomType) {
 			/*
-				`Conversion of type \`${ computed_type }\` to type \`${ claimed_type }\` may be a mistake
+				`Conversion of type \`${computed_type}\` to type \`${claimed_type}\` may be a mistake
 				because neither type sufficiently overlaps with the other.
 				If this was intentional, convert the expression to \`anything\` first.`;
 			*/

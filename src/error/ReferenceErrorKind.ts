@@ -24,7 +24,7 @@ export class ReferenceErrorKind extends CplReferenceError {
 	 */
 	public constructor(symbol: AST.TYPE.TypeAlias | AST.EXPR.Variable, refers_to: SymbolKind, used_as: SymbolKind) {
 		super(
-			`\`${ symbol.source }\` refers to a ${ refers_to }, but is used as a ${ used_as }.`,
+			`\`${symbol.source}\` refers to a ${refers_to}, but is used as a ${used_as}.`,
 			CplReferenceError.CODES.get(ReferenceErrorKind),
 			symbol.line_index,
 			symbol.col_index,

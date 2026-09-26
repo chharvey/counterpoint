@@ -34,7 +34,7 @@ export class Dict extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }Dict.<${ this.typearg }>`;
+		return `${this.isMutable ? `${Keyword.MUTABLE} ` : ''}Dict.<${this.typearg}>`;
 	}
 
 	@instanceOf(() => VALUE.Dict)

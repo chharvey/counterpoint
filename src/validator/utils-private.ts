@@ -25,12 +25,12 @@ export function isSyntaxNodeType<T extends string>(node: SyntaxNode | null, type
 
 
 type Join<Strings extends Readonly<NonemptyArray<string>>> = Strings extends [infer S0, ...infer SRest]
-	? `${ S0 extends string ? '' | `__${ S0 }` : '' }${ SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : '' }`
+	? `${S0 extends string ? '' | `__${S0}` : ''}${SRest extends Readonly<NonemptyArray<string>> ? Join<SRest> : ''}`
 	: '';
 
 
 
-export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> = SyntaxNodeType<`${ Name }${ Join<Suffices> }`>;
+export type SyntaxNodeFamily<Name extends string, Suffices extends Readonly<NonemptyArray<string>>> = SyntaxNodeType<`${Name}${Join<Suffices>}`>;
 
 
 
@@ -43,7 +43,7 @@ function argsArr(nth: number, params: readonly string[]): string[] {
 		.map(([param, _to_include]) => param);                   // `['static', 'method']`
 }
 function familyName<RuleName extends string>(family_name: string, suffices: readonly string[]): RuleName {
-	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
+	return family_name.concat((suffices.length) ? `__${suffices.join('__')}` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
 	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, argsArr(nth, params)));

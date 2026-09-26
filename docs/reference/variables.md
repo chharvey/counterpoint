@@ -202,9 +202,9 @@ The code below has to claim that `item.1` is of type `int` every time it’s ref
 ```
 val item: [str, int | str] = ["apples", 42];
 """
-	Clerk: How many {{ item.0 }} would you like?
-	Customer: {{ item.1 as <int> }} please.
-	Clerk: Wow, {{ item.1 as <int> }} is a lot!
+	Clerk: How many {{item.0}} would you like?
+	Customer: {{item.1 as <int>}} please.
+	Clerk: Wow, {{item.1 as <int>}} is a lot!
 """;
 ```
 One way to simplify this would be to declare a new variable:
@@ -212,9 +212,9 @@ One way to simplify this would be to declare a new variable:
 val item: [str, int | str] = ["apples", 42];
 val quantity: int = item.1 as <int>;
 """
-	Clerk: How many {{ item.0 }} would you like?
-	Customer: {{ quantity }} please.
-	Clerk: Wow, {{ quantity }} is a lot!
+	Clerk: How many {{item.0}} would you like?
+	Customer: {{quantity}} please.
+	Clerk: Wow, {{quantity}} is a lot!
 """;
 ```
 But a new variable could take up space on the runtime machine.
@@ -225,9 +225,9 @@ Type claims take place only in the compiler, so no memory is wasted.
 val item: [str, int | str] = ["apples", 42];
 claim item.1: int;
 """
-	Clerk: How many {{ item.0 }} would you like?
-	Customer: {{ item.1 }} please.
-	Clerk: Wow, {{ item.1 }} is a lot!
+	Clerk: How many {{item.0}} would you like?
+	Customer: {{item.1}} please.
+	Clerk: Wow, {{item.1}} is a lot!
 """;
 ```
 

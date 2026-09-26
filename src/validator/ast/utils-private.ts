@@ -49,7 +49,7 @@ function only_errors_of_type<E extends Error = Error>(err: unknown, types: reado
 
 export function validate_intrinsic_name(source: string): asserts source is IntrinsicName {
 	if (!(INTRINSICS as readonly string[]).includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ INTRINSICS.join(' | ') }\`.`);
+		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${INTRINSICS.join(' | ')}\`.`);
 	}
 }
 
@@ -74,7 +74,7 @@ const CALLABLE_INTERFACES: readonly string[] = [
 ];
 export function validate_callable_interface_name(source: string): asserts source is CallableInterfaceName {
 	if (!CALLABLE_INTERFACES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ CALLABLE_INTERFACES.join(' | ') }\`.`);
+		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${CALLABLE_INTERFACES.join(' | ')}\`.`);
 	}
 }
 
@@ -107,7 +107,7 @@ const CALLABLE_CLASSES: readonly string[] = [
 ];
 export function validate_callable_class_name(source: string): asserts source is CallableClassName {
 	if (!CALLABLE_CLASSES.includes(source)) {
-		throw new SyntaxError(`Unexpected token: \`${ source }\`; expected \`${ CALLABLE_CLASSES.join(' | ') }\`.`);
+		throw new SyntaxError(`Unexpected token: \`${source}\`; expected \`${CALLABLE_CLASSES.join(' | ')}\`.`);
 	}
 }
 
@@ -392,7 +392,7 @@ export function get_entry_info(base_type: TYPE.Type, access: AST_TYPE.Access | E
 				};
 			}
 			default: {
-				assert.fail(`Expected ${ base_type } to be an intersection or union.`);
+				assert.fail(`Expected ${base_type} to be an intersection or union.`);
 			}
 		}
 	}

@@ -162,7 +162,7 @@ test.suite('Expression', () => {
 		test.test('Template returns an OP.Template.', () => {
 			assert.strictEqual(setupScript(`{
 					val user: (name: str) = (name= "Alan");
-					"""Hello, {{ user.name }}, you have {{ 2 * 3 }} new {{ "messages" }}.""";
+					"""Hello, {{user.name}}, you have {{2 * 3}} new {{"messages"}}.""";
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <record> user (RECORD.NEW @name->(STR.CONST "Alan")))
@@ -175,7 +175,7 @@ test.suite('Expression', () => {
 		});
 		test.test('three-address code format.', () => {
 			assert.strictEqual(setupScript(`{
-				"""hello {{ """great {{ 42 }} big""" }} world""";
+				"""hello {{"""great {{42}} big"""}} world""";
 			}`, {codegen: false}).builder.print(), xjs.String.dedent`
 				"block-0":
 					(DECL <str> $0 (STR.FROM (INT.CONST 42)))
@@ -551,10 +551,10 @@ test.suite('Expression', () => {
 		function initTemplates(): AST.EXPR.Template[] {
 			return [
 				AST.EXPR.Template.fromSource('"""42😀"""'),
-				AST.EXPR.Template.fromSource('"""the answer is {{ 7 * 3 * 2 }} but what is the question?"""'),
+				AST.EXPR.Template.fromSource('"""the answer is {{7 * 3 * 2}} but what is the question?"""'),
 				(setupScript(`{
 					val mut x: int = 21;
-					"""the answer is {{ x * 2 }} but what is the question?""";
+					"""the answer is {{x * 2}} but what is the question?""";
 				}`, {build: false}).stmts[1] as AST.STMT.StatementExpression).expr as AST.EXPR.Template,
 			];
 		}
@@ -628,7 +628,7 @@ test.suite('Expression', () => {
 							cons:   AggregateError,
 							errors: dupes.map((k) => ({
 								cons:    AssignmentErrorDuplicateKey,
-								message: `Duplicate record/dict key \`${ k }\`.`,
+								message: `Duplicate record/dict key \`${k}\`.`,
 							})),
 						});
 						return true;

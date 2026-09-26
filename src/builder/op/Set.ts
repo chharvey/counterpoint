@@ -51,11 +51,11 @@ class OpSet extends Instruction {
 	@runOnceMethod
 	public override validate(builder: Builder): void {
 		if (builder.getLocalStatus(this.target) === undefined) {
-			throw new ReferenceError(`Local with id \`${ this.target.id }\` must be declared before setting!`);
+			throw new ReferenceError(`Local with id \`${this.target.id}\` must be declared before setting!`);
 		}
 		builder.setLocalStatus(this.target, 'set');
 		this.value.validate(builder);
-		return assert.ok(this.value.type.isSubtypeOf(this.targetType), `${ this.value.type } must be a subtype of ${ this.targetType }.`);
+		return assert.ok(this.value.type.isSubtypeOf(this.targetType), `${this.value.type} must be a subtype of ${this.targetType}.`);
 	}
 
 	public override interpret(interp: Interpreter): void {
@@ -64,7 +64,7 @@ class OpSet extends Instruction {
 
 	@memoizeMethod
 	public override codegen(cg: CodeGenerator): binaryen.ExpressionRef {
-		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local with id \`${ this.target.id }\` must be set first!`));
+		return cg.getLocal(this.target)?.set(this.value.codegen(cg)) ?? assert.fail(new ReferenceError(`Local with id \`${this.target.id}\` must be set first!`));
 	}
 }
 export {OpSet as Set};

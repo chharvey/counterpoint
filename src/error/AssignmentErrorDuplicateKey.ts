@@ -18,7 +18,7 @@ export class AssignmentErrorDuplicateKey extends AssignmentError {
 	 */
 	public constructor(key: AST.Key) {
 		super(
-			`Duplicate record/dict key \`${ key.source }\`.`,
+			`Duplicate record/dict key \`${key.source}\`.`,
 			AssignmentError.CODES.get(AssignmentErrorDuplicateKey),
 			key.line_index,
 			key.col_index,

@@ -13,12 +13,12 @@ import {
 		case Command.HELP: {
 			console.log(Cli.HELPTEXT);
 			if (cli.argv.config) {
-				console.log(`\n${ Cli.CONFIGTEXT }`);
+				console.log(`\n${Cli.CONFIGTEXT}`);
 			}
 			break;
 		}
 		case Command.VERSION: {
-			console.log(`counterpoint version ${ PACKAGE.version }`);
+			console.log(`counterpoint version ${PACKAGE.version}`);
 			break;
 		}
 		case Command.INTERPRET: {

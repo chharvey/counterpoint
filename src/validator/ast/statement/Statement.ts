@@ -77,7 +77,7 @@ export abstract class Statement extends AstNode implements Buildable {
 	 * @returns      a new Statement representing the given source
 	 */
 	public static fromSource(src: string, config: CplConfig = CONFIG_DEFAULT): Statement {
-		const block: Block = Block.fromSource(`{ ${ src } }`, config);
+		const block: Block = Block.fromSource(`{ ${src} }`, config);
 		assert.strictEqual(block.children.length, 1, 'semantic block should have 1 child');
 		return block.children[0];
 	}

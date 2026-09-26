@@ -146,8 +146,8 @@ export class Cli {
 		unknown(arg) {
 			if (arg.startsWith('-')) { // only check unsupported options // NB https://github.com/substack/minimist/issues/86
 				throw new Error(xjs.String.dedent`
-					Unknown CLI option: ${ arg }
-					${ Cli.HELPTEXT }
+					Unknown CLI option: ${arg}
+					${Cli.HELPTEXT}
 				`.trimStart());
 			}
 			return true;
@@ -182,7 +182,7 @@ export class Cli {
 		if (this.argv.out === '' || this.argv.project === '') {
 			throw new Error(`
 				Invalid CLI arguments!
-				${ Cli.HELPTEXT }
+				${Cli.HELPTEXT}
 			`);
 		}
 	}
@@ -226,7 +226,7 @@ export class Cli {
 		if (!this.argv._[1]) {
 			throw new Error(`
 				No path specified!
-				${ Cli.HELPTEXT }
+				${Cli.HELPTEXT}
 			`);
 		}
 		return path.join(cwd, path.normalize(this.argv._[1]));
@@ -245,7 +245,7 @@ export class Cli {
 		return [
 			xjs.String.dedent`
 				Interpreting………
-				Source file: ${ inputfilepath }
+				Source file: ${inputfilepath}
 			`.trimStart(),
 			() => program.interpret(),
 		];
@@ -270,8 +270,8 @@ export class Cli {
 			// eslint-disable-next-line @typescript-eslint/await-thenable --- we want to return the string and promise together while it’s resolving
 			xjs.String.dedent`
 				Compiling………
-				Source file: ${ inputfilepath }
-				${ (this.command === Command.DEV) ? 'Intermediate text file (for debugging):' : 'Destination binary file:' } ${ outputfilepath }
+				Source file: ${inputfilepath}
+				${(this.command === Command.DEV) ? 'Intermediate text file (for debugging):' : 'Destination binary file:'} ${outputfilepath}
 			`.trimStart(),
 			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()) as Promise<undefined>,
 		]);
@@ -287,7 +287,7 @@ export class Cli {
 		return [
 			xjs.String.dedent`
 				Executing………
-				Binary path: ${ inputfilepath }
+				Binary path: ${inputfilepath}
 			`.trimStart(),
 			...(Object.values((await WebAssembly.instantiate(await bytes)).instance.exports) as Array<() => unknown>).map((func) => func()),
 		];

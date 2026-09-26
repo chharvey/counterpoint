@@ -16,7 +16,7 @@ function argsArr(nth: number, params: readonly string[]): string[] {
 		.map(([param, _to_include]) => param);                   // `['static', 'method']`
 }
 function familyName<RuleName extends string>(family_name: string, suffices: readonly string[]): RuleName {
-	return family_name.concat((suffices.length) ? `__${ suffices.join('__') }` : '') as RuleName;
+	return family_name.concat((suffices.length) ? `__${suffices.join('__')}` : '') as RuleName;
 }
 function familyNameAll<RuleName extends string>(family_name: string, params: readonly string[]): RuleName[] {
 	return [...new Array<undefined>(2 ** params.length)].map((_, nth) => familyName(family_name, argsArr(nth, params)));
@@ -106,7 +106,7 @@ function call<RuleName extends string>($: GrammarSymbols<RuleName>, family_name:
 
 /* # LEXER HELPERS */
 function rg(s: string | RegExp): RegExp { // s -> (s)
-	return new RegExp(`(${ typeof s === 'string' ? RegExp.escape(s) : s.source })`);
+	return new RegExp(`(${typeof s === 'string' ? RegExp.escape(s) : s.source})`);
 }
 function ro(s: string | RegExp): RegExp { // s -> (s)?
 	return new RegExp(rg(s).source.concat('?'));

@@ -34,7 +34,7 @@ export class List extends ReferenceType {
 	}
 
 	public override toString(): string {
-		return `${ this.isMutable ? `${ Keyword.MUTABLE } ` : '' }List.<${ this.typearg }>`;
+		return `${this.isMutable ? `${Keyword.MUTABLE} ` : ''}List.<${this.typearg}>`;
 	}
 
 	@instanceOf(() => VALUE.List)

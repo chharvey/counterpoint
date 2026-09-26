@@ -23,7 +23,7 @@ class ValueTuple<T extends Value = Value> extends CollectionIndexed<T> {
 
 
 	public override toString(): string {
-		return `(${ super.toString() }${ this.items.length === 1 ? ',' : '' })`;
+		return `(${super.toString()}${this.items.length === 1 ? ',' : ''})`;
 	}
 
 	@strictEqual

@@ -17,7 +17,7 @@ export class TypeErrorNotNarrow extends CplTypeError {
 	 */
 	public constructor(subtype: TYPE.Type, supertype: TYPE.Type, line_index: number, col_index: number) {
 		super(
-			`Type \`${ subtype }\` is not a subtype of type \`${ supertype }\`.`,
+			`Type \`${subtype}\` is not a subtype of type \`${supertype}\`.`,
 			CplTypeError.CODES.get(TypeErrorNotNarrow),
 			line_index,
 			col_index,

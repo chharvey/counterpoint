@@ -48,7 +48,7 @@ export class ParseError01 extends ParseError {
 	 */
 	public constructor(token: Serializable) {
 		super(
-			`Unexpected token: \`${ token.source }\` at line ${ token.line_index + 1 } col ${ token.col_index + 1 }.`,
+			`Unexpected token: \`${token.source}\` at line ${token.line_index + 1} col ${token.col_index + 1}.`,
 			ParseError01.#CODE,
 			token.line_index,
 			token.col_index,

@@ -56,7 +56,7 @@ function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 				value instanceof VALUE.Natural ? TYPE.NAT :
 				value instanceof VALUE.Float   ? TYPE.FLOAT :
 				value instanceof VALUE.String  ? TYPE.STR :
-				assert.fail(`Expected ${ value } to be a primitive value.`)
+				assert.fail(`Expected ${value} to be a primitive value.`)
 			);
 		}
 		case node instanceof EXPR.Tuple: {
@@ -69,7 +69,7 @@ function writable_inferred_type(node: EXPR.Expression): TYPE.Type {
 			return node.type();
 		}
 		default: {
-			assert.fail(`${ node.source } should be an instance of ${ EXPR.Constant.name }, ${ EXPR.Tuple.name }, ${ EXPR.Record.name }, or ${ EXPR.Call.name }.`);
+			assert.fail(`${node.source} should be an instance of ${EXPR.Constant.name}, ${EXPR.Tuple.name}, ${EXPR.Record.name}, or ${EXPR.Call.name}.`);
 		}
 	}
 }
@@ -138,7 +138,7 @@ export class DeclarationVariable extends Statement {
 		);
 		this.assigned && typecheck_assign(this.assigned, assignee_type, this);
 		if (this.assignee) {
-			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
+			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${this.id}.`);
 			const symbol = this.validator.getSymbol(this.id!) as SymbolSchemaVar;
 			symbol.type = assignee_type;
 		}

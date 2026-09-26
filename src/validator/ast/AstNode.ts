@@ -283,10 +283,10 @@ export class AstNode implements Serializable {
 			['source', this.source],
 		]);
 		Object.entries(this.attributes).forEach(([key, value]) => {
-			attributes.set(key, `${ value }`);
+			attributes.set(key, `${value}`);
 		});
 		const contents: string = this.children.map((child) => child.serialize()).join('');
-		return `<${ this.tagname } ${ stringifyAttributes(attributes) }${ (contents) ? `>${ contents }</${ this.tagname }>` : '/>' }`;
+		return `<${this.tagname} ${stringifyAttributes(attributes)}${(contents) ? `>${contents}</${this.tagname}>` : '/>'}`;
 	}
 
 	/**

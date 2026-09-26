@@ -44,7 +44,7 @@ export class OperationBinary extends Operation {
 		return (
 			(this.operator === Operator.AND) ? t0.intersect(t1) :
 			(this.operator === Operator.OR)  ? t0.union    (t1) :
-			assert.fail(`TypeOperationBinary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
+			assert.fail(`TypeOperationBinary#eval did not expect the operator \`${Operator[this.operator]}\`.`)
 		);
 	}
 }

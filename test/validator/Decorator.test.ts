@@ -20,7 +20,7 @@ import type {SyntaxNodeType} from '../../src/validator/utils-private.ts';
 test.suite('Decorator', () => {
 	test.suite('#decorate', () => {
 		function captureParseNode(source: string, query: string): SyntaxNode {
-			const captures: QueryCapture[] = new Query(Counterpoint, `${ query } @capt`).captures(TS_PARSER.parse(source).rootNode);
+			const captures: QueryCapture[] = new Query(Counterpoint, `${query} @capt`).captures(TS_PARSER.parse(source).rootNode);
 			assert.ok(captures.length, 'could not find any captures.');
 			return captures[0].node;
 		}
@@ -298,13 +298,13 @@ test.suite('Decorator', () => {
 			`]],
 			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticExpressionTemplate', [AST.EXPR.Template, `
 				{
-					"""hello {{ "to" }} the {{ "whole" }} great {{ "big" }} world""";
+					"""hello {{"to"}} the {{"whole"}} great {{"big"}} world""";
 				}
 				% (string_template)
 			`]],
 			['Decorate(StringTemplate<Break> ::= TEMPLATE_HEAD Expression<+Block><?Break>? (TEMPLATE_MIDDLE Expression<+Block><?Break>?)* TEMPLATE_TAIL) -> SemanticExpressionTemplate', [AST.EXPR.Template, `
 				{
-					"""hello {{ """to {{ """the {{ "whole" }} great""" }} big""" }} world""";
+					"""hello {{"""to {{"""the {{"whole"}} great"""}} big"""}} world""";
 				}
 				% (string_template)
 			`]],
@@ -601,16 +601,16 @@ test.suite('Decorator', () => {
 				% (expression_additive)
 			`]],
 
-			...['<', '>', '<=', '>='].map((op) => [`Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${ op }" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationBinaryComparative, `
+			...['<', '>', '<=', '>='].map((op) => [`Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${op}" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationBinaryComparative, `
 				{
-					a ${ op } b;
+					a ${op} b;
 				}
 				% (expression_comparative)
 			`]] as const),
 
-			...['!<', '!>'].map((op) => [`Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${ op }" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationUnary, `
+			...['!<', '!>'].map((op) => [`Decorate(ExpressionComparative<Block, Break> ::= ExpressionComparative<?Block><?Break> "${op}" ExpressionAdditive<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationUnary, `
 				{
-					a ${ op } b;
+					a ${op} b;
 				}
 				% (expression_comparative)
 			`]] as const),
@@ -629,16 +629,16 @@ test.suite('Decorator', () => {
 				% (expression_comparative)
 			`]],
 
-			...['===', '=='].map((op) => [`Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "${ op }" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationBinaryEquality, `
+			...['===', '=='].map((op) => [`Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "${op}" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationBinaryEquality, `
 				{
-					a ${ op } b;
+					a ${op} b;
 				}
 				% (expression_equality)
 			`]] as const),
 
-			...['!==', '!='].map((op) => [`Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "${ op }" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationUnary, `
+			...['!==', '!='].map((op) => [`Decorate(ExpressionEquality<Block, Break> ::= ExpressionEquality<?Block><?Break> "${op}" ExpressionComparative<?Block><?Break>) -> SemanticExpressionOperation`, [AST.EXPR.OperationUnary, `
 				{
-					a ${ op } b;
+					a ${op} b;
 				}
 				% (expression_equality)
 			`]] as const),
@@ -936,15 +936,15 @@ test.suite('Decorator', () => {
 				} else {
 					instance = decorator.decorate(parsenode);
 				}
-				return assert_instanceof(instance, klass, `\`${ parsenode.text }\` should be an instance of ${ klass.name }.`);
+				return assert_instanceof(instance, klass, `\`${parsenode.text}\` should be an instance of ${klass.name}.`);
 			});
 		});
 		['!'].forEach((op) => {
-			test.suite(`Decorate(TypeUnarySymbol ::= TypeUnarySymbol "${ op }") -> SemanticTypeOperation`, () => {
-				test.test(`operator \`${ op }\` is not yet supported.`, () => {
+			test.suite(`Decorate(TypeUnarySymbol ::= TypeUnarySymbol "${op}") -> SemanticTypeOperation`, () => {
+				test.test(`operator \`${op}\` is not yet supported.`, () => {
 					assert.throws(() => new Decorator().decorate(captureParseNode(`
 						{
-							type T = U${ op };
+							type T = U${op};
 						}
 					`, '(type_unary_symbol)')), /not yet supported/);
 				});
@@ -952,11 +952,11 @@ test.suite('Decorator', () => {
 		});
 		['!.'].forEach((op) => {
 			['1', '_', 'p', '[a + b]'].forEach((accessor) => {
-				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${ op }" PropertyAccessor) -> SemanticExpressionAccess`, () => {
-					test.test(`operator \`${ op }\` is not yet supported.`, () => {
+				test.suite(`Decorate(ExpressionCompound<Block> ::= ExpressionCompound<?Block> "${op}" PropertyAccessor) -> SemanticExpressionAccess`, () => {
+					test.test(`operator \`${op}\` is not yet supported.`, () => {
 						assert.throws(() => new Decorator().decorate(captureParseNode(`
 							{
-								v${ op }${ accessor };
+								v${op}${accessor};
 							}
 						`, '(expression_compound)')), /not yet supported/);
 					});

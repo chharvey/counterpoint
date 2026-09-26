@@ -277,7 +277,7 @@ export class Decorator {
 			[/^string_template(__break)?$/, (node) => new AST.EXPR.Template(
 				node as SyntaxNodeFamily<'string_template', ['break']>,
 				node.namedChildren.map((c) => ((isSyntaxNodeType(c, /^template_(full|head|middle|tail)$/))
-					? new AST.EXPR.Constant(c as SyntaxNodeType<`template_${ 'full' | 'head' | 'middle' | 'tail' }`>)
+					? new AST.EXPR.Constant(c as SyntaxNodeType<`template_${'full' | 'head' | 'middle' | 'tail'}`>)
 					: this.decorateExprNode(c as SyntaxNodeSupertype<'expression'>)
 				)),
 			)],
@@ -675,7 +675,7 @@ export class Decorator {
 			decorators.get(syntaxnode.type) ??
 			[...decorators].find(([key]) => key instanceof RegExp && isSyntaxNodeType(syntaxnode, key))?.[1] ??
 			((node) => {
-				throw new TypeError(`Could not find type of parse node \`${ node.type }\`.`);
+				throw new TypeError(`Could not find type of parse node \`${node.type}\`.`);
 			})
 		)(syntaxnode);
 	}

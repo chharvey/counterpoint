@@ -563,7 +563,7 @@ export class TypeInterface extends Type {
 	}
 
 	public override toString(): string {
-		return `[${ [...this.properties].map((prop) => prop.join(': ')).join(', ') }]`;
+		return `[${[...this.properties].map((prop) => prop.join(': ')).join(', ')}]`;
 	}
 
 	public override includes(v: VALUE.Value): boolean {

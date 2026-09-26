@@ -34,7 +34,7 @@ function report_syntax_errors(node: SyntaxNode): void {
 			// @ts-expect-error --- TODO: write class for `ParseError02`
 			err.message = (n.type === 'MISSING')
 				? err.message.replace(/Unexpected/, 'Expected')
-				: `Expected token: \`${ n.type }\` at line ${ serializable.line_index + 1 } col ${ serializable.col_index + 1 }.`;
+				: `Expected token: \`${n.type}\` at line ${serializable.line_index + 1} col ${serializable.col_index + 1}.`;
 			throw err;
 		} else if (n.childCount) {
 			report_syntax_errors(n);

@@ -46,7 +46,7 @@ export class VoidErrorOutOfBounds extends VoidError {
 		accessor:     AST.Index | AST.Key | AST.EXPR.Expression,
 	) {
 		super(
-			`${ manner[0].toUpperCase() }${ manner.slice(1) } \`${ index_or_key }\` is out of bounds on \`${ base }\`.`,
+			`${manner[0].toUpperCase()}${manner.slice(1)} \`${index_or_key}\` is out of bounds on \`${base}\`.`,
 			VoidError.CODES.get(VoidErrorOutOfBounds),
 			accessor.line_index,
 			accessor.col_index,

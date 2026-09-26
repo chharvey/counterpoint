@@ -44,7 +44,7 @@ export class Integer extends ValueNumber<Integer> {
 	}
 
 	public override toString(): string {
-		return `${ this.data }`;
+		return `${this.data}`;
 	}
 
 	@strictEqual

@@ -10,6 +10,6 @@ public class abstract Object {
 	@return a string representation of this object
 	%%%
 	public open '%%toString%%'(): str {
-		return """<Object instance {{ String('::Value::hash'(this), 16) }}>""";
+		return """<Object instance {{String('::Value::hash'(this), 16)}}>""";
 	}
 }

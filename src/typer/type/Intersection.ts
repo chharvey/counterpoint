@@ -72,7 +72,7 @@ export class Intersection extends Combinable {
 
 	@botOrTopString
 	public override toString(): string {
-		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).toSorted().join(' & ');
+		return this.operands.map((s) => s instanceof Union ? `(${s})` : s).toSorted().join(' & ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
@@ -95,7 +95,7 @@ export class Intersection extends Combinable {
 				return filtered_operands[0].intersect(t);
 			} else {
 				/* 3-5 | `A <: C    &&  A <: D  <->  A <: C  & D` */
-				assert.ok(t.isSubtypeOf(this), `Expected ${ t } to be a subtype of ${ this }.`);
+				assert.ok(t.isSubtypeOf(this), `Expected ${t} to be a subtype of ${this}.`);
 				return assert.fail('`@intersectionLaws` should have already returned.');
 			}
 		} else {

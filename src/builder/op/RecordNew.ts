@@ -28,7 +28,7 @@ export class RecordNew extends Value {
 	}
 
 	public override toString(): string {
-		return super.toString(...[...this.props].map(([keyid, {keysrc, value}]) => `@${ keysrc || `\\x${ keyid.toString(16) }` }->${ value }`));
+		return super.toString(...[...this.props].map(([keyid, {keysrc, value}]) => `@${keysrc || `\\x${keyid.toString(16)}`}->${value}`));
 	}
 
 	@runOnceMethod

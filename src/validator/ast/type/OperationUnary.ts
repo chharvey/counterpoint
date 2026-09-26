@@ -36,7 +36,7 @@ export class OperationUnary extends Operation {
 	) {
 		super(start_node, operator, [operand]);
 		if ([Operator.RESULT].includes(this.operator)) {
-			throw new TypeError(`Operator ${ this.operator } not yet supported.`);
+			throw new TypeError(`Operator ${this.operator} not yet supported.`);
 		}
 	}
 
@@ -46,7 +46,7 @@ export class OperationUnary extends Operation {
 		return (
 			this.operator === Operator.MAYBE   ? new TYPE.Maybe(t) :
 			this.operator === Operator.MUTABLE ? t instanceof TYPE.ReferenceType ? t.mutableOf() : assert.fail(new TypeErrorInvalidOperation(this)) :
-			assert.fail(`TypeOperationUnary#eval did not expect the operator \`${ Operator[this.operator] }\`.`)
+			assert.fail(`TypeOperationUnary#eval did not expect the operator \`${Operator[this.operator]}\`.`)
 		);
 	}
 }

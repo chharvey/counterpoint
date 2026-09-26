@@ -51,7 +51,7 @@ export class Difference extends TypeOperation {
 
 	@botOrTopString
 	public override toString(): string {
-		return this.operands.map((s) => s instanceof Union ? `(${ s })` : s).join(' - ');
+		return this.operands.map((s) => s instanceof Union ? `(${s})` : s).join(' - ');
 	}
 
 	public override includes(v: VALUE.Value): boolean {
