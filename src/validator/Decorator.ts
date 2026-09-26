@@ -682,16 +682,16 @@ export class Decorator {
 
 	public decorateTypeNode(typenode: SyntaxNodeSupertype<'type'>): AST.TYPE.Type {
 		return (
-			(isSyntaxNodeType(typenode, 'identifier'))        ? new AST.TYPE.TypeAlias (typenode) :
-			(isSyntaxNodeType(typenode, 'primitive_literal')) ? new AST.TYPE.Constant  (typenode) :
+			isSyntaxNodeType(typenode, 'identifier')        ? new AST.TYPE.TypeAlias (typenode) :
+			isSyntaxNodeType(typenode, 'primitive_literal') ? new AST.TYPE.Constant  (typenode) :
 			this.decorate(typenode)
 		);
 	}
 
 	public decorateExprNode(exprnode: SyntaxNodeSupertype<'expression'>): AST.EXPR.Expression {
 		return (
-			(isSyntaxNodeType(exprnode, 'identifier'))        ? new AST.EXPR.Variable(exprnode) :
-			(isSyntaxNodeType(exprnode, 'primitive_literal')) ? new AST.EXPR.Constant(exprnode) :
+			isSyntaxNodeType(exprnode, 'identifier')        ? new AST.EXPR.Variable(exprnode) :
+			isSyntaxNodeType(exprnode, 'primitive_literal') ? new AST.EXPR.Constant(exprnode) :
 			this.decorate(exprnode)
 		);
 	}

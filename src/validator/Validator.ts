@@ -112,8 +112,8 @@ function tokenWorthFloat(text: string): number {
 	const pointindex: number = text.indexOf(POINT);
 	const expindex:   number = text.indexOf(EXPONENT);
 	const wholepart:  string = text.slice(0, pointindex);
-	const fracpart:   string = (expindex < 0) ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
-	const exppart:    string = (expindex < 0) ? '0'                        : text.slice(expindex   + 1);
+	const fracpart:   string = expindex < 0 ? text.slice(pointindex + 1) : text.slice(pointindex + 1, expindex);
+	const exppart:    string = expindex < 0 ? '0'                        : text.slice(expindex   + 1);
 	const wholevalue: number = Number(tokenWorthInt(wholepart, RADIX_DEFAULT));
 	const fracvalue:  number = Number(tokenWorthInt(fracpart,  RADIX_DEFAULT)) * base ** -fracpart.length;
 	const expvalue:   number = parseFloat(( // HACK: `` parseFloat(`1e${...}`) `` is more accurate than `base ** tokenWorthInt(...)`
@@ -266,7 +266,7 @@ export class Validator {
 			['d', 10n],
 			['x', 16n],
 			['z', 36n],
-		]).get((has_unary) ? source[2] : source[1])! : RADIX_DEFAULT;
+		]).get(has_unary ? source[2] : source[1])! : RADIX_DEFAULT;
 
 		const typ: 'int' | 'nat' | 'float' = source.includes(POINT) ? 'float' : has_unary && multiplier === 1 ? 'nat' : 'int';
 

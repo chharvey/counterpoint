@@ -42,8 +42,8 @@ export class OperationBinary extends Operation {
 		const t0: TYPE.Type = this.operand0.eval();
 		const t1: TYPE.Type = this.operand1.eval();
 		return (
-			(this.operator === Operator.AND) ? t0.intersect(t1) :
-			(this.operator === Operator.OR)  ? t0.union    (t1) :
+			this.operator === Operator.AND ? t0.intersect(t1) :
+			this.operator === Operator.OR  ? t0.union    (t1) :
 			assert.fail(`TypeOperationBinary#eval did not expect the operator \`${Operator[this.operator]}\`.`)
 		);
 	}

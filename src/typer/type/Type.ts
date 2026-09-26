@@ -581,7 +581,7 @@ export class TypeInterface extends Type {
 		if (t instanceof TypeInterface) {
 			const props = new Map<string, Type>([...this.properties]);
 			[...t.properties].forEach(([name, type_]) => {
-				props.set(name, (props.has(name)) ? props.get(name)!.intersect(type_) : type_);
+				props.set(name, props.get(name)?.intersect(type_) ?? type_);
 			});
 			return new TypeInterface(props);
 		} else {

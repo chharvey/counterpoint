@@ -164,8 +164,8 @@ export class Cli {
 	public constructor(process_argv: readonly string[]) {
 		this.argv = minimist<CustomArgsType>(process_argv.slice(2), Cli.MINIMIST_OPTS);
 		this.command = (
-			(this.argv.help || this.argv.config) ? Command.HELP :
-			(this.argv.version) ? Command.VERSION :
+			this.argv.help || this.argv.config ? Command.HELP :
+			this.argv.version                  ? Command.VERSION :
 			new Map<string, Command>([
 				['help',      Command.HELP],
 				['version',   Command.VERSION],
@@ -271,7 +271,7 @@ export class Cli {
 			xjs.String.dedent`
 				Compiling………
 				Source file: ${inputfilepath}
-				${(this.command === Command.DEV) ? 'Intermediate text file (for debugging):' : 'Destination binary file:'} ${outputfilepath}
+				${this.command === Command.DEV ? 'Intermediate text file (for debugging):' : 'Destination binary file:'} ${outputfilepath}
 			`.trimStart(),
 			fs.promises.writeFile(outputfilepath, this.command === Command.DEV ? program.print() : program.compile()) as Promise<undefined>,
 		]);

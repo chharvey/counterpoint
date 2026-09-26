@@ -35,7 +35,7 @@ function is_inferrable(node?: EXPR.Expression): boolean {
 			EXPR.Constant,
 			EXPR.Template,
 			EXPR.Call, // TODO: distinguish between constructor calls and function calls
-		].some((klass) => (node instanceof klass)) ? true :
+		].some((klass) => node instanceof klass) ? true :
 		node instanceof EXPR.Tuple  ? node.children.every((expr) => is_inferrable(expr)) :
 		node instanceof EXPR.Record ? node.children.every((prop) => is_inferrable(prop.val)) :
 		false
@@ -132,7 +132,7 @@ export class DeclarationVariable extends Statement {
 				EXPR.Constant,
 				EXPR.Tuple,
 				EXPR.Record,
-			].some((klass) => (this.assigned instanceof klass))) ? writable_inferred_type(this.assigned!) :
+			].some((klass) => this.assigned instanceof klass)) ? writable_inferred_type(this.assigned!) :
 			this.assigned instanceof EXPR.Template ? TYPE.STR :
 			this.assigned!.type()
 		);

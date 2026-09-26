@@ -67,7 +67,7 @@ export class Goal extends AstNode implements Buildable {
 		public readonly block: Block | null,
 		config: CplConfig,
 	) {
-		super(start_node, {}, (block) ? [block] : []);
+		super(start_node, {}, block ? [block] : undefined);
 		this.#validator = new Validator(config);
 	}
 
