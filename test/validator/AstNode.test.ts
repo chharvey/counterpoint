@@ -224,7 +224,7 @@ test.suite('AstNode', () => {
 		});
 
 		test.suite('Block', () => {
-			test.test('throws for lack of return statement in non-void function.', {expectFailure: true}, () => {
+			test.test('throws for lack of return statement in every code path.', () => {
 				const {stmts} = setupScript(`{
 					func foo0(): float { "hello"; }
 					func foo2(b: bool): float {
@@ -235,11 +235,58 @@ test.suite('AstNode', () => {
 				const block0:  AST.Block = (stmts[0] as AST.STMT.DeclarationFunction).block;
 				const block1a: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).consequent;
 				const block1b: AST.Block = (fn1.block.children[0] as AST.STMT.StatementConditional).alternative as AST.Block;
-				const expected: RegExp = /does not return a value/;
+				const expected: RegExp = /does not return in every control route/;
 				assert.throws(() => block0.typeCheck(), expected);
 				xjs.Array.forEachAggregated(fn1.parameters, (p) => p.typeCheck());
 				block1a.typeCheck(); // assert does not throw
-				return assert.throws(() => block1b.typeCheck(), expected);
+				block1b.typeCheck(); // assert does not throw
+				return assert.throws(() => fn1.block.typeCheck(), expected);
+			});
+			test.test('throws when not all code paths return.', () => {
+				const {stmts} = setupScript(`{
+					\\(): void {
+						42;
+					};
+					\\(b: bool): void {
+						if b then {
+							return;
+						};
+					};
+					\\(b: bool): void {
+						if b then ({
+							return;
+						}) else 42;
+					};
+					\\(): int {
+						switch 1
+							case 2 -> 3
+							case 4 | 5 -> { return 6; }
+						default { return 7; };
+					};
+					func f(): void {
+						42;
+					}
+					func g(b: bool): void {
+						if b then {
+							return;
+						};
+					}
+					func h(b: bool): void {
+						if b then ({
+							return;
+						}) else 42;
+					}
+					func i(): int {
+						switch 1
+							case 2 -> 3
+							case 4 | 5 -> { return 6; }
+						default { return 7; };
+					}
+				}`, {typeCheck: false});
+				return xjs.Array.forEachAggregated([
+					...stmts.slice(0, 4).map((stmt) => (stmt as AST.STMT.StatementExpression).expr as AST.EXPR.Function),
+					...stmts.slice(4).map((stmt) => stmt as AST.STMT.DeclarationFunction),
+				], (fn) => assert.throws(() => fn.typeCheck(), /does not return in every control route/));
 			});
 		});
 	});

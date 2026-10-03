@@ -21,7 +21,7 @@ import {
 	STMT,
 	EXPR,
 } from './index.ts';
-import type {CompletionKind} from './CompletionKind.ts';
+import {CompletionKind} from './CompletionKind.ts';
 import {AstNode} from './AstNode.ts';
 import {is_Functionlike} from './Functionlike.ts';
 import type {Buildable} from './Buildable.ts';
@@ -69,7 +69,7 @@ export class Block extends AstNode implements Buildable {
 		const is_func_block: boolean = !!this.parent && is_Functionlike(this.parent);
 		const v = new Validator(this.config, is_func_block ? undefined : this.parent?.validator);
 		if (is_func_block) {
-			this.parent?.validator.getAllSymbols().forEach((symb) => {
+			this.parent!.validator.getAllSymbols().forEach((symb) => {
 				// add all implicitly-captured symbols to the function block
 				if (symb instanceof SymbolSchemaType || symb instanceof SymbolSchemaFunc) { // TODO: add a property of SymbolSchema
 					v.addSymbol(symb);
@@ -88,6 +88,13 @@ export class Block extends AstNode implements Buildable {
 	public override varCheck(): void {
 		xjs.Array.forEachAggregated(this.children.filter((stmt) => stmt instanceof STMT.DeclarationFunction), (fn) => fn.hoist());
 		return super.varCheck();
+	}
+
+	public override typeCheck(): void {
+		super.typeCheck();
+		if (!!this.parent && is_Functionlike(this.parent) && this.completion !== CompletionKind.RETURN_OR_THROW) {
+			throw new Error(`Function \`${ this.parent.source }\` does not return in every control route.`); // TODO: create new error subclass
+		}
 	}
 
 	/**
