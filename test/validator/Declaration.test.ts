@@ -671,6 +671,14 @@ test.suite('Declaration', () => {
 					]))),
 				]);
 			});
+			test.test('throws when overloads have identical signatures.', () => {
+				const {stmts} = setupScript(`{
+					func f(a: int): void { "1"; return; }
+					func f(b: int): void { "2"; return; }
+				}`, {typeCheck: false});
+				stmts[0].typeCheck(); // assert does not throw
+				return assert.throws(() => stmts[1].typeCheck(), /Identical function overload type/);
+			});
 		});
 	});
 
