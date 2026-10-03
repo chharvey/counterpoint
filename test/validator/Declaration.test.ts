@@ -635,12 +635,14 @@ test.suite('Declaration', () => {
 				assert_instanceof(info_f, SymbolSchemaFunc);
 				assert_instanceof(info_a, SymbolSchemaVar);
 				assert_instanceof(info_b, SymbolSchemaVar);
+				assert.strictEqual(info_f.types.length, 0);
 				assert_shallowStrictEqual(
-					[info_f.type, info_a.type, info_b.type],
-					repeat(TYPE.ANYTHING, 3),
+					[info_a.type, info_b.type],
+					repeat(TYPE.ANYTHING, 2),
 				);
 				fn.typeCheck();
-				assertEqualTypes(info_f.type, new TYPE.Function(TYPE.Tuple.fromTypes([
+				assert.strictEqual(info_f.types.length, 1);
+				assertEqualTypes(info_f.types[0], new TYPE.Function(TYPE.Tuple.fromTypes([
 					TYPE.FLOAT,
 					TYPE.STR,
 				])));
@@ -648,6 +650,26 @@ test.suite('Declaration', () => {
 					[info_a.type, info_b.type],
 					[TYPE.FLOAT, TYPE.STR],
 				);
+			});
+			test.test('pushes to array of overload signatures.', () => {
+				const {stmts, goal} = setupScript(`{
+					func f(a: int): void { "1"; return; }
+					func f($b: nat): void { "2"; return; }
+				}`, {typeCheck: false});
+				const {validator} = goal.block!;
+				const id_f: bigint = Validator.cookTokenIdentifier('f');
+				assert.ok(validator.hasSymbol(id_f));
+				const info_f: SymbolSchema | undefined = validator.getSymbol(id_f);
+				assert_instanceof(info_f, SymbolSchemaFunc);
+				assert.strictEqual(info_f.types.length, 0);
+				stmts[0].typeCheck();
+				stmts[1].typeCheck();
+				return assertEqualTypes(info_f.types, [
+					new TYPE.Function(TYPE.Tuple.fromTypes([TYPE.INT])),
+					new TYPE.Function(new TYPE.Tuple(), TYPE.Record.fromTypes(new Map<bigint, TYPE.Type>([
+						[Validator.cookTokenIdentifier('b'), TYPE.NAT],
+					]))),
+				]);
 			});
 		});
 	});

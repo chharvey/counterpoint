@@ -75,7 +75,7 @@ export class DeclarationFunction extends Statement {
 		const fn_type: TYPE.Type = EXPR.Function.prototype.type.call(this);
 		if (this.identifier) {
 			assert.ok(this.validator.hasSymbol(this.id!), `The validator symbol table should include ${ this.id }.`);
-			(this.validator.getSymbol(this.id!) as SymbolSchemaFunc).type = fn_type;
+			(this.validator.getSymbol(this.id!) as SymbolSchemaFunc).types.push(fn_type);
 		}
 	}
 

@@ -61,7 +61,7 @@ export class Variable extends Expression implements Reassignable {
 			return symbol.isUninitialized ? new TYPE.Maybe(symbol.type) : symbol.type;
 		} else {
 			assert_instanceof(symbol, SymbolSchemaFunc);
-			return symbol.type;
+			return TYPE.Intersection.all(...symbol.types);
 		}
 	}
 

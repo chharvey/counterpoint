@@ -72,8 +72,8 @@ export class SymbolSchemaVar extends SymbolSchema {
 
 /** The symbol of a declared function. */
 export class SymbolSchemaFunc extends SymbolSchema {
-	/** The declared function type. */
-	public type: TYPE.Type = TYPE.ANYTHING;
+	/** The declared function types (one per overload). */
+	public readonly types: TYPE.Type[] = [];
 
 
 	public constructor(id: bigint, node: Serializable) {

@@ -20,7 +20,7 @@ Type TypeOf(SemanticExpressionVariable var) :=
 			1. *Return:* `symbol.type`.
 	3. *Else*:
 		1. *Assert:* `symbol` is an instance of `SymbolSchemaFunc`.
-		2. *Return:* `symbol.type`.
+		2. *Return:* a reduction of `symbol.types` with `isect` for each `type` to *UnwrapAffirm:* `Intersection(isect, type)` starting with `Anything`.
 ;
 
 
