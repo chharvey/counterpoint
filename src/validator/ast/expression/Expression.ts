@@ -35,57 +35,57 @@ import {
 
 
 
-interface ExprVisitorMethods<T> {
-	visitConstant                   (expr: Constant):                   T;
-	visitVariable                   (expr: Variable):                   T;
-	visitTuple                      (expr: Tuple):                      T;
-	visitRecord                     (expr: Record):                     T;
-	visitList                       (expr: List):                       T;
-	visitDict                       (expr: Dict):                       T;
-	visitSet                        (expr: Set):                        T;
-	visitMap                        (expr: Map):                        T;
-	visitExprBlock                  (expr: ExpressionBlock):            T;
-	visitAccess                     (expr: Access):                     T;
-	visitCall                       (expr: Call):                       T;
-	visitClaim                      (expr: Claim):                      T;
-	visitOperationUnary             (expr: OperationUnary):             T;
-	visitOperationBinaryCast        (expr: OperationBinaryCast):        T;
-	visitOperationBinaryArithmetic  (expr: OperationBinaryArithmetic):  T;
-	visitOperationBinaryComparative (expr: OperationBinaryComparative): T;
-	visitOperationBinaryEquality    (expr: OperationBinaryEquality):    T;
-	visitOperationBinaryLogical     (expr: OperationBinaryLogical):     T;
-	visitOperationTernary           (expr: OperationTernary):           T;
-	visitSwitch                     (expr: Switch):                     T;
+export abstract class ExprVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitConstant                   (expr: Constant):                   T { return this.defaultVisit(expr); }
+	public visitVariable                   (expr: Variable):                   T { return this.defaultVisit(expr); }
+	public visitTuple                      (expr: Tuple):                      T { return this.defaultVisit(expr); }
+	public visitRecord                     (expr: Record):                     T { return this.defaultVisit(expr); }
+	public visitList                       (expr: List):                       T { return this.defaultVisit(expr); }
+	public visitDict                       (expr: Dict):                       T { return this.defaultVisit(expr); }
+	public visitSet                        (expr: Set):                        T { return this.defaultVisit(expr); }
+	public visitMap                        (expr: Map):                        T { return this.defaultVisit(expr); }
+	public visitExprBlock                  (expr: ExpressionBlock):            T { return this.defaultVisit(expr); }
+	public visitAccess                     (expr: Access):                     T { return this.defaultVisit(expr); }
+	public visitCall                       (expr: Call):                       T { return this.defaultVisit(expr); }
+	public visitClaim                      (expr: Claim):                      T { return this.defaultVisit(expr); }
+	public visitOperationUnary             (expr: OperationUnary):             T { return this.defaultVisit(expr); }
+	public visitOperationBinaryCast        (expr: OperationBinaryCast):        T { return this.defaultVisit(expr); }
+	public visitOperationBinaryArithmetic  (expr: OperationBinaryArithmetic):  T { return this.defaultVisit(expr); }
+	public visitOperationBinaryComparative (expr: OperationBinaryComparative): T { return this.defaultVisit(expr); }
+	public visitOperationBinaryEquality    (expr: OperationBinaryEquality):    T { return this.defaultVisit(expr); }
+	public visitOperationBinaryLogical     (expr: OperationBinaryLogical):     T { return this.defaultVisit(expr); }
+	public visitOperationTernary           (expr: OperationTernary):           T { return this.defaultVisit(expr); }
+	public visitSwitch                     (expr: Switch):                     T { return this.defaultVisit(expr); }
+	/* eslint-enable @stylistic/space-before-function-paren */
 
-	defaultVisit(expr: Expression): T;
-}
-export class ExprVisitor<T> {
-	public constructor(private readonly methods: Partial<ExprVisitorMethods<T>>) {}
+	public abstract defaultVisit(expr: Expression): T;
 
 	/** @final */
 	public visit(expr: Expression): T {
 		switch (expr.constructor) {
-			case Constant:                   { return this.methods.visitConstant                   ?.(expr as Constant)                   ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Variable:                   { return this.methods.visitVariable                   ?.(expr as Variable)                   ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Tuple:                      { return this.methods.visitTuple                      ?.(expr as Tuple)                      ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Record:                     { return this.methods.visitRecord                     ?.(expr as Record)                     ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case List:                       { return this.methods.visitList                       ?.(expr as List)                       ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Dict:                       { return this.methods.visitDict                       ?.(expr as Dict)                       ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Set:                        { return this.methods.visitSet                        ?.(expr as Set)                        ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Map:                        { return this.methods.visitMap                        ?.(expr as Map)                        ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case ExpressionBlock:            { return this.methods.visitExprBlock                  ?.(expr as ExpressionBlock)            ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Access:                     { return this.methods.visitAccess                     ?.(expr as Access)                     ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Call:                       { return this.methods.visitCall                       ?.(expr as Call)                       ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Claim:                      { return this.methods.visitClaim                      ?.(expr as Claim)                      ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case OperationUnary:             { return this.methods.visitOperationUnary             ?.(expr as OperationUnary)             ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case OperationBinaryCast:        { return this.methods.visitOperationBinaryCast        ?.(expr as OperationBinaryCast)        ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case OperationBinaryArithmetic:  { return this.methods.visitOperationBinaryArithmetic  ?.(expr as OperationBinaryArithmetic)  ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case OperationBinaryComparative: { return this.methods.visitOperationBinaryComparative ?.(expr as OperationBinaryComparative) ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case OperationBinaryEquality:    { return this.methods.visitOperationBinaryEquality    ?.(expr as OperationBinaryEquality)    ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case OperationBinaryLogical:     { return this.methods.visitOperationBinaryLogical     ?.(expr as OperationBinaryLogical)     ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case OperationTernary:           { return this.methods.visitOperationTernary           ?.(expr as OperationTernary)           ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			case Switch:                     { return this.methods.visitSwitch                     ?.(expr as Switch)                     ?? this.methods.defaultVisit?.(expr) ?? assert.fail('Missing implementation.'); }
-			default:                         { return                                                                                        this.methods.defaultVisit?.(expr) ?? assert.fail('Unexpected subclass.'); }
+			case Constant:                   { return this.visitConstant                   (expr as Constant); }
+			case Variable:                   { return this.visitVariable                   (expr as Variable); }
+			case Tuple:                      { return this.visitTuple                      (expr as Tuple); }
+			case Record:                     { return this.visitRecord                     (expr as Record); }
+			case List:                       { return this.visitList                       (expr as List); }
+			case Dict:                       { return this.visitDict                       (expr as Dict); }
+			case Set:                        { return this.visitSet                        (expr as Set); }
+			case Map:                        { return this.visitMap                        (expr as Map); }
+			case ExpressionBlock:            { return this.visitExprBlock                  (expr as ExpressionBlock); }
+			case Access:                     { return this.visitAccess                     (expr as Access); }
+			case Call:                       { return this.visitCall                       (expr as Call); }
+			case Claim:                      { return this.visitClaim                      (expr as Claim); }
+			case OperationUnary:             { return this.visitOperationUnary             (expr as OperationUnary); }
+			case OperationBinaryCast:        { return this.visitOperationBinaryCast        (expr as OperationBinaryCast); }
+			case OperationBinaryArithmetic:  { return this.visitOperationBinaryArithmetic  (expr as OperationBinaryArithmetic); }
+			case OperationBinaryComparative: { return this.visitOperationBinaryComparative (expr as OperationBinaryComparative); }
+			case OperationBinaryEquality:    { return this.visitOperationBinaryEquality    (expr as OperationBinaryEquality); }
+			case OperationBinaryLogical:     { return this.visitOperationBinaryLogical     (expr as OperationBinaryLogical); }
+			case OperationTernary:           { return this.visitOperationTernary           (expr as OperationTernary); }
+			case Switch:                     { return this.visitSwitch                     (expr as Switch); }
+
+			default: { return this.defaultVisit(expr); }
 		}
 	}
 }

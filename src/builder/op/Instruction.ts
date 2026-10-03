@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import type * as binaryen from 'binaryen.ts';
 import type {CodeGenerator} from '../../index.ts';
 import type {Interpreter} from '../Interpreter.ts';
@@ -13,27 +12,27 @@ import {Opcode} from './Opcode.ts';
 
 
 
-interface InstrVisitorMethods<T> {
-	visitDrop                  (instr: Drop):                  T;
-	visitDecl                  (instr: Decl):                  T;
-	visitSet                   (instr: OpSet):                 T;
-	visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T;
-	visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T;
+export abstract class InstrVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitDrop                  (instr: Drop):                  T { return this.defaultVisit(instr); }
+	public visitDecl                  (instr: Decl):                  T { return this.defaultVisit(instr); }
+	public visitSet                   (instr: OpSet):                 T { return this.defaultVisit(instr); }
+	public visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T { return this.defaultVisit(instr); }
+	public visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T { return this.defaultVisit(instr); }
+	/* eslint-enable @stylistic/space-before-function-paren */
 
-	defaultVisit(instr: Instruction): T;
-}
-export class InstrVisitor<T> {
-	public constructor(private readonly methods: Partial<InstrVisitorMethods<T>>) {}
+	public abstract defaultVisit(instr: Instruction): T;
 
 	/** @final */
 	public visit(instr: Instruction): T {
 		switch (instr.constructor) {
-			case Drop:                  { return this.methods.visitDrop                  ?.(instr as Drop)                  ?? this.methods.defaultVisit?.(instr) ?? assert.fail('Missing implementation.'); }
-			case Decl:                  { return this.methods.visitDecl                  ?.(instr as Decl)                  ?? this.methods.defaultVisit?.(instr) ?? assert.fail('Missing implementation.'); }
-			case OpSet:                 { return this.methods.visitSet                   ?.(instr as OpSet)                 ?? this.methods.defaultVisit?.(instr) ?? assert.fail('Missing implementation.'); }
-			case CollectionDynamicSet:  { return this.methods.visitCollectionDynamicSet  ?.(instr as CollectionDynamicSet)  ?? this.methods.defaultVisit?.(instr) ?? assert.fail('Missing implementation.'); }
-			case CollectionDynamicCopy: { return this.methods.visitCollectionDynamicCopy ?.(instr as CollectionDynamicCopy) ?? this.methods.defaultVisit?.(instr) ?? assert.fail('Missing implementation.'); }
-			default:                    { return                                                                               this.methods.defaultVisit?.(instr) ?? assert.fail('Unexpected subclass.'); }
+			case Drop:                  { return this.visitDrop                  (instr as Drop); }
+			case Decl:                  { return this.visitDecl                  (instr as Decl); }
+			case OpSet:                 { return this.visitSet                   (instr as OpSet); }
+			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (instr as CollectionDynamicSet); }
+			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (instr as CollectionDynamicCopy); }
+
+			default: { return this.defaultVisit(instr); }
 		}
 	}
 }

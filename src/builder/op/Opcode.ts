@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import type {Builder} from '../Builder.ts';
 import {
 	Value,
@@ -137,76 +136,75 @@ export enum OpCode {
 
 
 
-interface OpcodeVisitorMethods<T> {
-	visitTrap                 (val: Trap):                 T;
-	visitConst                (val: Const):                T;
-	visitGet                  (val: Get):                  T;
-	visitTemplate             (val: Template):             T;
-	visitCollectionLinearNew  (val: CollectionLinearNew):  T;
-	visitRecordNew            (val: RecordNew):            T;
-	visitDictNew              (val: DictNew):              T;
-	visitMapNew               (val: MapNew):               T;
-	visitMaybeNew             (val: MaybeNew):             T;
-	visitTupleGet             (val: TupleGet):             T;
-	visitRecordGet            (val: RecordGet):            T;
-	visitCollectionDynamicGet (val: CollectionDynamicGet): T;
-	visitCall                 (val: Call):                 T;
-	visitUnop                 (val: Unop):                 T;
-	visitInstance             (val: Instance):             T;
-	visitBinop                (val: Binop):                T;
-	visitValue                (val: Value):                T;
+export abstract class OpcodeVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitTrap                 (val: Trap):                 T { return this.defaultVisit(val); }
+	public visitConst                (val: Const):                T { return this.defaultVisit(val); }
+	public visitGet                  (val: Get):                  T { return this.defaultVisit(val); }
+	public visitTemplate             (val: Template):             T { return this.defaultVisit(val); }
+	public visitCollectionLinearNew  (val: CollectionLinearNew):  T { return this.defaultVisit(val); }
+	public visitRecordNew            (val: RecordNew):            T { return this.defaultVisit(val); }
+	public visitDictNew              (val: DictNew):              T { return this.defaultVisit(val); }
+	public visitMapNew               (val: MapNew):               T { return this.defaultVisit(val); }
+	public visitMaybeNew             (val: MaybeNew):             T { return this.defaultVisit(val); }
+	public visitTupleGet             (val: TupleGet):             T { return this.defaultVisit(val); }
+	public visitRecordGet            (val: RecordGet):            T { return this.defaultVisit(val); }
+	public visitCollectionDynamicGet (val: CollectionDynamicGet): T { return this.defaultVisit(val); }
+	public visitCall                 (val: Call):                 T { return this.defaultVisit(val); }
+	public visitUnop                 (val: Unop):                 T { return this.defaultVisit(val); }
+	public visitInstance             (val: Instance):             T { return this.defaultVisit(val); }
+	public visitBinop                (val: Binop):                T { return this.defaultVisit(val); }
+	public visitValue                (val: Value):                T { return this.defaultVisit(val); }
 
-	visitDrop                  (instr: Drop):                  T;
-	visitDecl                  (instr: Decl):                  T;
-	visitSet                   (instr: OpSet):                 T;
-	visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T;
-	visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T;
-	visitInstruction           (instr: Instruction):           T;
+	public visitDrop                  (instr: Drop):                  T { return this.defaultVisit(instr); }
+	public visitDecl                  (instr: Decl):                  T { return this.defaultVisit(instr); }
+	public visitSet                   (instr: OpSet):                 T { return this.defaultVisit(instr); }
+	public visitCollectionDynamicSet  (instr: CollectionDynamicSet):  T { return this.defaultVisit(instr); }
+	public visitCollectionDynamicCopy (instr: CollectionDynamicCopy): T { return this.defaultVisit(instr); }
+	public visitInstruction           (instr: Instruction):           T { return this.defaultVisit(instr); }
 
-	visitGoto            (term: Goto):            T;
-	visitGotoConditional (term: GotoConditional): T;
-	visitEndProgram      (term: EndProgram):      T;
-	visitTerminator      (term: Terminator):      T;
+	public visitGoto            (term: Goto):            T { return this.defaultVisit(term); }
+	public visitGotoConditional (term: GotoConditional): T { return this.defaultVisit(term); }
+	public visitEndProgram      (term: EndProgram):      T { return this.defaultVisit(term); }
+	public visitTerminator      (term: Terminator):      T { return this.defaultVisit(term); }
+	/* eslint-enable @stylistic/space-before-function-paren */
 
-	defaultVisit(op: Opcode): T;
-}
-export class OpcodeVisitor<T> {
-	public constructor(private readonly methods: Partial<OpcodeVisitorMethods<T>>) {}
+	public abstract defaultVisit(op: Opcode): T;
 
 	/** @final */
 	public visit(op: Opcode): T {
 		switch (op.constructor) {
-			case Trap:                  { return this.methods.visitTrap                 ?.(op as Trap)                 ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Const:                 { return this.methods.visitConst                ?.(op as Const)                ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Get:                   { return this.methods.visitGet                  ?.(op as Get)                  ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Template:              { return this.methods.visitTemplate             ?.(op as Template)             ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case CollectionLinearNew:   { return this.methods.visitCollectionLinearNew  ?.(op as CollectionLinearNew)  ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case RecordNew:             { return this.methods.visitRecordNew            ?.(op as RecordNew)            ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case DictNew:               { return this.methods.visitDictNew              ?.(op as DictNew)              ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case MapNew:                { return this.methods.visitMapNew               ?.(op as MapNew)               ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case MaybeNew:              { return this.methods.visitMaybeNew             ?.(op as MaybeNew)             ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case TupleGet:              { return this.methods.visitTupleGet             ?.(op as TupleGet)             ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case RecordGet:             { return this.methods.visitRecordGet            ?.(op as RecordGet)            ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case CollectionDynamicGet:  { return this.methods.visitCollectionDynamicGet ?.(op as CollectionDynamicGet) ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Call:                  { return this.methods.visitCall                 ?.(op as Call)                 ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Unop:                  { return this.methods.visitUnop                 ?.(op as Unop)                 ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Instance:              { return this.methods.visitInstance             ?.(op as Instance)             ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Binop:                 { return this.methods.visitBinop                ?.(op as Binop)                ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Value:                 { return this.methods.visitValue                ?.(op as Value)                ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
+			case Trap:                  { return this.visitTrap                 (op as Trap); }
+			case Const:                 { return this.visitConst                (op as Const); }
+			case Get:                   { return this.visitGet                  (op as Get); }
+			case Template:              { return this.visitTemplate             (op as Template); }
+			case CollectionLinearNew:   { return this.visitCollectionLinearNew  (op as CollectionLinearNew); }
+			case RecordNew:             { return this.visitRecordNew            (op as RecordNew); }
+			case DictNew:               { return this.visitDictNew              (op as DictNew); }
+			case MapNew:                { return this.visitMapNew               (op as MapNew); }
+			case MaybeNew:              { return this.visitMaybeNew             (op as MaybeNew); }
+			case TupleGet:              { return this.visitTupleGet             (op as TupleGet); }
+			case RecordGet:             { return this.visitRecordGet            (op as RecordGet); }
+			case CollectionDynamicGet:  { return this.visitCollectionDynamicGet (op as CollectionDynamicGet); }
+			case Call:                  { return this.visitCall                 (op as Call); }
+			case Unop:                  { return this.visitUnop                 (op as Unop); }
+			case Instance:              { return this.visitInstance             (op as Instance); }
+			case Binop:                 { return this.visitBinop                (op as Binop); }
+			case Value:                 { return this.visitValue                (op as Value); }
 
-			case Drop:                  { return this.methods.visitDrop                  ?.(op as Drop)                  ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Decl:                  { return this.methods.visitDecl                  ?.(op as Decl)                  ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case OpSet:                 { return this.methods.visitSet                   ?.(op as OpSet)                 ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case CollectionDynamicSet:  { return this.methods.visitCollectionDynamicSet  ?.(op as CollectionDynamicSet)  ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case CollectionDynamicCopy: { return this.methods.visitCollectionDynamicCopy ?.(op as CollectionDynamicCopy) ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Instruction:           { return this.methods.visitInstruction           ?.(op as Instruction)           ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
+			case Drop:                  { return this.visitDrop                  (op as Drop); }
+			case Decl:                  { return this.visitDecl                  (op as Decl); }
+			case OpSet:                 { return this.visitSet                   (op as OpSet); }
+			case CollectionDynamicSet:  { return this.visitCollectionDynamicSet  (op as CollectionDynamicSet); }
+			case CollectionDynamicCopy: { return this.visitCollectionDynamicCopy (op as CollectionDynamicCopy); }
+			case Instruction:           { return this.visitInstruction           (op as Instruction); }
 
-			case Goto:                  { return this.methods.visitGoto            ?.(op as Goto)            ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case GotoConditional:       { return this.methods.visitGotoConditional ?.(op as GotoConditional) ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case EndProgram:            { return this.methods.visitEndProgram      ?.(op as EndProgram)      ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
-			case Terminator:            { return this.methods.visitTerminator      ?.(op as Terminator)      ?? this.methods.defaultVisit?.(op) ?? assert.fail('Missing implementation.'); }
+			case Goto:                  { return this.visitGoto            (op as Goto); }
+			case GotoConditional:       { return this.visitGotoConditional (op as GotoConditional); }
+			case EndProgram:            { return this.visitEndProgram      (op as EndProgram); }
+			case Terminator:            { return this.visitTerminator      (op as Terminator); }
 
-			default: { return this.methods.defaultVisit?.(op) ?? assert.fail('Unexpected subclass.'); }
+			default: { return this.defaultVisit(op); }
 		}
 	}
 }

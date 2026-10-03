@@ -1,4 +1,3 @@
-import * as assert from 'node:assert';
 import {
 	type CplConfig,
 	CONFIG_DEFAULT,
@@ -23,41 +22,41 @@ import {
 
 
 
-interface TypeVisitorMethods<T> {
-	visitConstant        (typenode: Constant):        T;
-	visitTypeAlias       (typenode: TypeAlias):       T;
-	visitTuple           (typenode: Tuple):           T;
-	visitRecord          (typenode: Record):          T;
-	visitList            (typenode: List):            T;
-	visitDict            (typenode: Dict):            T;
-	visitSet             (typenode: Set):             T;
-	visitMap             (typenode: Map):             T;
-	visitAccess          (typenode: Access):          T;
-	visitCall            (typenode: Call):            T;
-	visitOperationUnary  (typenode: OperationUnary):  T;
-	visitOperationBinary (typenode: OperationBinary): T;
+export abstract class TypeVisitor<T> {
+	/* eslint-disable @stylistic/space-before-function-paren */
+	public visitConstant        (typenode: Constant):        T { return this.defaultVisit(typenode); }
+	public visitTypeAlias       (typenode: TypeAlias):       T { return this.defaultVisit(typenode); }
+	public visitTuple           (typenode: Tuple):           T { return this.defaultVisit(typenode); }
+	public visitRecord          (typenode: Record):          T { return this.defaultVisit(typenode); }
+	public visitList            (typenode: List):            T { return this.defaultVisit(typenode); }
+	public visitDict            (typenode: Dict):            T { return this.defaultVisit(typenode); }
+	public visitSet             (typenode: Set):             T { return this.defaultVisit(typenode); }
+	public visitMap             (typenode: Map):             T { return this.defaultVisit(typenode); }
+	public visitAccess          (typenode: Access):          T { return this.defaultVisit(typenode); }
+	public visitCall            (typenode: Call):            T { return this.defaultVisit(typenode); }
+	public visitOperationUnary  (typenode: OperationUnary):  T { return this.defaultVisit(typenode); }
+	public visitOperationBinary (typenode: OperationBinary): T { return this.defaultVisit(typenode); }
+	/* eslint-enable @stylistic/space-before-function-paren */
 
-	defaultVisit(typenode: Type): T;
-}
-export class TypeVisitor<T> {
-	public constructor(private readonly methods: Partial<TypeVisitorMethods<T>>) {}
+	public abstract defaultVisit(typenode: Type): T;
 
 	/** @final */
 	public visit(typenode: Type): T {
 		switch (typenode.constructor) {
-			case Constant:        { return this.methods.visitConstant        ?.(typenode as Constant)        ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
-			case TypeAlias:       { return this.methods.visitTypeAlias       ?.(typenode as TypeAlias)       ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case Tuple:           { return this.methods.visitTuple           ?.(typenode as Tuple)           ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case Record:          { return this.methods.visitRecord          ?.(typenode as Record)          ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case List:            { return this.methods.visitList            ?.(typenode as List)            ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case Dict:            { return this.methods.visitDict            ?.(typenode as Dict)            ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case Set:             { return this.methods.visitSet             ?.(typenode as Set)             ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case Map:             { return this.methods.visitMap             ?.(typenode as Map)             ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case Access:          { return this.methods.visitAccess          ?.(typenode as Access)          ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case Call:            { return this.methods.visitCall            ?.(typenode as Call)            ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case OperationUnary:  { return this.methods.visitOperationUnary  ?.(typenode as OperationUnary)  ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			case OperationBinary: { return this.methods.visitOperationBinary ?.(typenode as OperationBinary) ?? this.methods.defaultVisit?.(typenode) ?? assert.fail('Missing implementation.'); }
-			default:              { return                                                                      this.methods.defaultVisit?.(typenode) ?? assert.fail('Unexpected subclass.'); }
+			case Constant:        { return this.visitConstant        (typenode as Constant); } // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+			case TypeAlias:       { return this.visitTypeAlias       (typenode as TypeAlias); }
+			case Tuple:           { return this.visitTuple           (typenode as Tuple); }
+			case Record:          { return this.visitRecord          (typenode as Record); }
+			case List:            { return this.visitList            (typenode as List); }
+			case Dict:            { return this.visitDict            (typenode as Dict); }
+			case Set:             { return this.visitSet             (typenode as Set); }
+			case Map:             { return this.visitMap             (typenode as Map); }
+			case Access:          { return this.visitAccess          (typenode as Access); }
+			case Call:            { return this.visitCall            (typenode as Call); }
+			case OperationUnary:  { return this.visitOperationUnary  (typenode as OperationUnary); }
+			case OperationBinary: { return this.visitOperationBinary (typenode as OperationBinary); }
+
+			default: { return this.defaultVisit(typenode); }
 		}
 	}
 }
